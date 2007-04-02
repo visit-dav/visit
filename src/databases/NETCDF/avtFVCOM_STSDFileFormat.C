@@ -21,6 +21,7 @@
 
 #include <NETCDFFileObject.h>
 #include <avtFVCOMReader.h>
+#include <avtMaterial.h>
 #include <netcdf.h>
 
 using     std::string;
@@ -179,7 +180,6 @@ avtFVCOM_STSDFileFormat::~avtFVCOM_STSDFileFormat()
 void
 avtFVCOM_STSDFileFormat::FreeUpResources(void)
 {
-    debug4 << "avtFVCOM_STSDFileFormat::FreeUpResources: " << endl;
     reader->FreeUpResources();
 }
 
@@ -278,9 +278,38 @@ avtFVCOM_STSDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtFVCOM_STSDFileFormat::GetMesh(const char *meshname)
 {
-    return reader->GetMesh(0, meshname);
+    reader->SetDomainIndexForCaching(0);
+    return reader->GetMesh(0, meshname, cache);
 }
 
+
+
+
+// ****************************************************************************
+// Method: avtFVCOM_STSDFileFormat::GetAuxiliaryData
+//
+// Purpose: 
+//   Gets the material object for the particles.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: David Stuebe
+// Creation:   Mon Jul 17 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void *
+avtFVCOM_STSDFileFormat::GetAuxiliaryData(const char *var,
+    const char *type, void *args, DestructorFunction &df)
+{
+  return reader->GetAuxiliaryData(var, 0, type, args, df);
+}
 
 // ****************************************************************************
 //  Method: avtFVCOM_STSDFileFormat::GetVar
@@ -301,7 +330,8 @@ avtFVCOM_STSDFileFormat::GetMesh(const char *meshname)
 vtkDataArray *
 avtFVCOM_STSDFileFormat::GetVar(const char *varname)
 {
-    return reader->GetVar(0, varname);
+   reader->SetDomainIndexForCaching(0);
+   return reader->GetVar(0, varname, cache);
 }
 
 

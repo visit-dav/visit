@@ -2,11 +2,17 @@
 # Do a little magic to run perl from anywhere in your path.
 
 lines=`cat $0 | wc -l`
-lines=`expr $lines - 10`
-tail -$lines $0 > /tmp/visitfelperl$$
-echo "__END__" >> /tmp/visitfelperl$$
-echo "$0 $*" >> /tmp/visitfelperl$$
-exec perl /tmp/visitfelperl$$ $0 ${1+"$@"}
+lines=`expr $lines - 16`
+if (test -z "$TMPDIR") then
+    TMPDIR=$HOME
+fi
+tail -$lines $0 1> $TMPDIR/visitfelperl$$ 2>/dev/null
+if (test $? -ne 0) then
+    tail --lines=$lines $0 1>> $TMPDIR/visitfelperl$$
+fi
+echo "__END__" >> $TMPDIR/visitfelperl$$
+echo "$0 $*" >> $TMPDIR/visitfelperl$$
+exec perl $TMPDIR/visitfelperl$$ $0 ${1+"$@"}
 
 unlink $0;
 $0 = shift @ARGV;

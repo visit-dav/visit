@@ -1,11 +1,11 @@
 // ************************************************************************* //
 //                            avtFVCOMParticleFileFormat.C                   //
 // ************************************************************************* //
-
+    
 #include <avtFVCOMParticleFileFormat.h>
 #include <avtMTSDFileFormatInterface.h>
 #include <avtTypes.h>
-    
+
 #include <string>
 
 #include <vtkFloatArray.h>
@@ -185,6 +185,7 @@ avtFVCOMParticleFileFormat::GetNTimesteps(void)
 void
 avtFVCOMParticleFileFormat::GetTimes(doubleVector &t)
 {
+
     const char *mName = "avtFVCOMParticleFileObject::GetTimes: ";
 
     debug4 << mName << endl;
@@ -279,6 +280,7 @@ avtFVCOMParticleFileFormat::GetCycles(intVector &cyc)
     if (varndims != 1 )
     {
         debug4 << mName << "Cycles has the wrong dimensions" << endl; 
+    
     }
 
     else if (varndims == 1)
@@ -286,9 +288,9 @@ avtFVCOMParticleFileFormat::GetCycles(intVector &cyc)
         if(vartype == NC_INT)
         {
             debug4 << "IINT returned to cyc as NC_INT" << endl;
-            int *ci = new int[ntimesteps+1];
+        int *ci = new int[ntimesteps+1];
             fileObject->ReadVariableInto("iint", INTEGERARRAY_TYPE, ci);
-            for(int n=0; n<ntimesteps; ++n)
+        for(int n=0; n<ntimesteps; ++n)
             {
                 cyc.push_back(ci[n]);
             }

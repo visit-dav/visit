@@ -5,6 +5,7 @@
 #ifndef AVT_FVCOM_READER_H
 #define AVT_FVCOM_READER_H
 #include <vectortypes.h>
+#include <avtVariableCache.h>
 
 class vtkDataArray;
 class vtkDataSet;
@@ -36,6 +37,9 @@ class avtFVCOMReader
                        avtFVCOMReader(const char *);
     virtual           ~avtFVCOMReader();
 
+    void               SetDomainIndexForCaching(int dom) {CacheDomainIndex = dom; }
+
+
     //
     // If you know the times and cycle numbers, overload this function.
     // Otherwise, VisIt will make up some reasonable ones for you.
@@ -45,15 +49,36 @@ class avtFVCOMReader
     int            GetNTimesteps(void);
 
     void           FreeUpResources();
-    vtkDataSet    *GetMesh(int, const char *);
-    vtkDataArray  *GetVar(int, const char *);
+    vtkDataSet    *GetMesh(int, const char *, avtVariableCache *);
+    vtkDataArray  *GetVar(int, const char *, avtVariableCache *);
     vtkDataArray  *GetVectorVar(int, const char *);
     void           PopulateDatabaseMetaData(avtDatabaseMetaData *,
                                             const int ts, const char *dbtype);
 
+    virtual void          *GetAuxiliaryData(const char *var,
+                                            int timeState,
+                                            const char *type,
+                                            void *args,
+                                            DestructorFunction &);
+
+
   protected:
     // DATA MEMBERS
     NETCDFFileObject      *fileObject;
+
+    int  CacheDomainIndex;
+
+  private:
+    // Pass timestate to these methods!
+    vtkDataArray  *DENS3(int, avtVariableCache *);
+    //    vtkDataArray  *DENS2(int, avtVariableCache *);
+    vtkDataArray  *DENS(int, avtVariableCache *);
+    vtkDataArray  *THETA(int, avtVariableCache *);
+    // Pass (S,T,P) to these methods!
+    double        ATG(double, double, double);
+    double        SVAN(double, double, double);
+
+
 };
 
 

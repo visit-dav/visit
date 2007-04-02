@@ -48,6 +48,8 @@
 #include <avtFVCOM_STSDFileFormat.h>
 #include <avtFVCOM_MTSDFileFormat.h>
 #include <avtFVCOMParticleFileFormat.h>
+#include <avtFVCOM_MTMDFileFormat.h>
+
 
 // ****************************************************************************
 // Method: NETCDF_CreateFileFormatInterface
@@ -109,16 +111,21 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 flavor = 3;
                 debug4 << "Database is avtFVCOM_STSDFileFormat" << endl;
             }
+            if(flavor == -1 && avtFVCOM_MTMDFileFormat::Identify(f))
+            {
+                flavor = 4;
+                debug4 << "Database is avtFVCOM_MTMDFileFormat" << endl;
+            }
 
             if(flavor == -1 && avtFVCOM_MTSDFileFormat::Identify(f))
             {
-                flavor = 4;
+                flavor = 5;
                 debug4 << "Database is avtFVCOM_MTSDFileFormat" << endl;
             }
 
             if(flavor == -1 && avtFVCOMParticleFileFormat::Identify(f))
             {
-                flavor = 5;
+                flavor = 6;
                 debug4 << "Database is avtFVCOMParticleFileFormat" << endl;
             }
 
@@ -147,9 +154,12 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             ffi = avtFVCOM_STSDFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         case 4:
-            ffi = avtFVCOM_MTSDFileFormat::CreateInterface(f, list, nList, nBlock);
+            ffi = avtFVCOM_MTMDFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         case 5:
+            ffi = avtFVCOM_MTSDFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+        case 6:
             ffi = avtFVCOMParticleFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         default:

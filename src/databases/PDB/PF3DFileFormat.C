@@ -986,11 +986,17 @@ PF3DFileFormat::FreeUpResources()
 //   Brad Whitlock, Mon Dec 5 10:18:53 PDT 2005
 //   Added mdserver-specific coding to check if variables are valid.
 //
+//   Brad Whitlock, Thu Sep 7 16:28:34 PST 2006
+//   Added more debugging log information.
+//
 // ****************************************************************************
 
 void
 PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
+    const char *mName = "PF3DFileFormat::PopulateDatabaseMetaData: ";
+    debug4 << mName << "start" << endl;
+
     //
     // Set the database comment.
     //
@@ -1030,7 +1036,15 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
        glob_nams.size() == glob_units.size())
     {
 #ifdef MDSERVER
+        debug4 << mName << "Get the name of domain 0's file." << endl;
+
         PDBFileObject *domainPDB = GetDomainFileObject(0);
+
+        debug4 << mName << "Domain 0 handle=" << ((void*)domainPDB);
+        if(domainPDB != 0)
+            debug4 << ", filename=" << domainPDB->GetName().c_str();
+        debug4 << endl;
+        debug4 << mName << "Start creating scalar metadata. " << endl;
 #endif
 
         for(int i = 0; i < glob_nams.size(); ++i)
@@ -1038,11 +1052,14 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             avtScalarMetaData *smd = new avtScalarMetaData(
                 glob_nams[i], "mesh", AVT_ZONECENT);
 
+            debug4 << mName << "var[" << i << "] = " << glob_nams[i].c_str();
+
             // Set the units if there are any.
             if(glob_units[i] != "")
             {
                 smd->hasUnits = true;
                 smd->units = glob_units[i];
+                debug4 << ", units=" << glob_units[i].c_str() << endl;
             }
 
 #ifdef MDSERVER
@@ -1058,6 +1075,8 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 // a directory before checking for the variable.
                 std::string varName(int_nams[i]);
                 varName = master.Get_dom_prefix_for_domain(0) + varName;
+
+                debug4 << "Getting info for " << varName.c_str() << endl;
 
                 if(domainPDB->SymbolExists(varName.c_str(), &varType,
                      &varTotalElements, &vardims, &varndims))
@@ -1076,6 +1095,11 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                               "dimensions in: " << int_nams[i].c_str()
                            << endl;
                 }
+            }
+            else
+            {
+                debug4 << "Domain 0 handle is 0 so the var will be "
+                          "marked as invalid." << endl;
             }
 #endif
 
@@ -1115,7 +1139,10 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Set up the domain connectivity arrays so this file format can
     // use VisIt's automatic ghost zone creation facilities.
     //
+    debug4 << mName << "Setting up domain connectivity." << endl;
     SetUpDomainConnectivity();
+
+    debug4 << mName << "end" << endl;
 }
 
 // ****************************************************************************
@@ -2124,6 +2151,7 @@ PF3DFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
 {
     const char *mName = "avtPF3DFileFormat::PopulateIOInformation: ";
     int nGroups = master.Get_num_grp_size();
+
     if(nGroups > 0)
     {
         vector<vector<int> > groups;
@@ -2690,6 +2718,26 @@ PF3DFileFormat::MasterInformation::Get_grp_size(int grp) const
     return retval;
 }
 
+// ****************************************************************************
+// Method: PF3DFileFormat::MasterInformation::Get_grp_members
+//
+// Purpose: 
+//   Returns a pointer to the first member of the i'th group.
+//
+// Arguments:
+//   grp : The group that we want.
+//
+// Returns:    The pointer to the first member of the group.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 7 16:26:07 PST 2006
+//
+// Modifications:
+//   Brad Whitlock, Thu Sep 7 16:25:53 PST 2006
+//   I made it use index 0 instead of index 1.
+//   
+// ****************************************************************************
+
 const long *
 PF3DFileFormat::MasterInformation::Get_grp_members(int grp) const
 {
@@ -2698,7 +2746,7 @@ PF3DFileFormat::MasterInformation::Get_grp_members(int grp) const
     if(m != 0)
     {
         retval = (const long *)(m->data);
-        retval += grp * m->dims[1];
+        retval += grp * m->dims[0];
     }
 
     return retval;

@@ -3,23 +3,30 @@
 // ************************************************************************* //
 
 #include <avtFVCOMReader.h>
+#include <map>
     
-
 #include <string>
 
 #include <vtkFloatArray.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkObject.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellArray.h>
 #include <vtkPoints.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtVariableCache.h>
+
+// Removed materials for now, 1.5.4
+//#include <avtMaterial.h>
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 
 #include <NETCDFFileObject.h>
 #include <netcdf.h>
-
+#include <Expression.h>
 
 using     std::string;
 
@@ -54,7 +61,7 @@ avtFVCOMReader::Identify(NETCDFFileObject *fileObject)
     std::string source;
     if(fileObject->ReadStringAttribute("source", source))
     {
-      isFVCOM = strncmp("FVCOM",source.c_str(),5)==0;
+        isFVCOM = strncmp("FVCOM",source.c_str(),5)==0;
     }
 
     return isFVCOM;
@@ -249,9 +256,9 @@ avtFVCOMReader::GetCycles(intVector &cyc)
     if(vartype == NC_INT)
     {
         debug4 << mName << "IINT returned to cyc as NC_INT" << endl;
-        int *ci = new int[ntimesteps];
+    int *ci = new int[ntimesteps];
         fileObject->ReadVariableInto("iint", INTEGERARRAY_TYPE, ci);
-        for(int n=0; n<ntimesteps; ++n)
+    for(int n=0; n<ntimesteps; ++n)
         {
             cyc.push_back(ci[n]);
         }
@@ -314,7 +321,7 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
         if(fileObject->ReadStringAttribute("source", source))
             comment += (std::string(", source=") + source);
-
+ 
         if(fileObject->ReadStringAttribute("history", history))
             comment += (std::string(", history=") + history);
         if(fileObject->ReadStringAttribute("references", references))
@@ -331,8 +338,8 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     //---------------------------------------------------------------
     // Add the Bathymetry_Mesh.
     //
-    std::string meshName_BM("Bathymetry_Mesh");
-    avtMeshMetaData *md_BM = new avtMeshMetaData(meshName_BM, 
+    std::string Bathymetry_Mesh("Bathymetry_Mesh");
+    avtMeshMetaData *md_BM = new avtMeshMetaData(Bathymetry_Mesh, 
       1, 1, 1, 0, 3, 2, AVT_UNSTRUCTURED_MESH);
 
     //  Get the units for the mesh.
@@ -356,8 +363,8 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     //
     // Add the SSH_Mesh.
     //
-    std::string meshName_SSH("SSH_Mesh");
-    avtMeshMetaData *md_SSH = new avtMeshMetaData(meshName_SSH, 
+    std::string SSH_Mesh("SSH_Mesh");
+    avtMeshMetaData *md_SSH = new avtMeshMetaData(SSH_Mesh, 
       1, 1, 1, 0, 3, 2, AVT_UNSTRUCTURED_MESH);
 
     // Get the units for the mesh.
@@ -377,10 +384,32 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     debug4 << mName << "Added SSH Mesh to MetaData" << endl;
     //-------------------------------------------------------------------
     //
+    // Add the TWOD_Mesh.
+    //
+    // This mesh has been removed for the public relase 1.5.4
+    std::string TWOD_Mesh("TWOD_Mesh");
+    avtMeshMetaData *md_2D = new avtMeshMetaData(TWOD_Mesh, 
+      1, 1, 1, 0, 3, 2, AVT_UNSTRUCTURED_MESH);
+
+    // Get the units for the mesh.
+    fileObject->ReadStringAttribute("x", "units", xUnits);
+    fileObject->ReadStringAttribute("x", "long_name", xLabel);
+    fileObject->ReadStringAttribute("y", "units", yUnits);
+    fileObject->ReadStringAttribute("y", "long_name", yLabel);
+    md_2D->xUnits = xUnits;
+    md_2D->xLabel = xLabel;
+    md_2D->yUnits = yUnits;
+    md_2D->yLabel = yLabel;
+    md_2D->zUnits = zUnits;
+    md_2D->zLabel = zLabel;
+    md->Add(md_2D);
+    debug4 << mName << "Added TWOD_Mesh to MetaData" << endl;
+    //-------------------------------------------------------------------
+    //
     // Add the SigmaLayer_Mesh.
     //
-    std::string meshName_LAY("SigmaLayer_Mesh");
-    avtMeshMetaData *md_LAY = new avtMeshMetaData(meshName_LAY, 
+    std::string SigmaLayer_Mesh("SigmaLayer_Mesh");
+    avtMeshMetaData *md_LAY = new avtMeshMetaData(SigmaLayer_Mesh, 
       1, 1, 1, 0, 3, 3, AVT_UNSTRUCTURED_MESH);
 
     // Get the units for the mesh:
@@ -402,8 +431,8 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     //------------------------------------------------------------------
     // Add the SigmaLevel_Mesh.
     //
-    std::string meshName_LEV("SigmaLevel_Mesh");
-    avtMeshMetaData *md_LEV = new avtMeshMetaData(meshName_LEV, 
+    std::string SigmaLevel_Mesh("SigmaLevel_Mesh");
+    avtMeshMetaData *md_LEV = new avtMeshMetaData(SigmaLevel_Mesh, 
       1, 1, 1, 0, 3, 3, AVT_UNSTRUCTURED_MESH);
 
     // Get the units for the mesh.
@@ -435,22 +464,100 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     status = nc_inq(ncid, &nDims, &nVars, &nGlobalAtts, &unlimitedDimension);
     if(status != NC_NOERR)
     {
-        fileObject-> HandleError(status);
+       fileObject-> HandleError(status);
     }
 
     // Get the sizes of all dimensions. 
     //         (Referenced to get the real dimension of each variable)
     //          ( Example:  dimSizes[vardims[1]]  )
     size_t *dimSizes = new size_t[nDims];
+    debug4 << "All dims=[" ; 
     for(i = 0; i < nDims; ++i)
     {
-        int status = nc_inq_dimlen(ncid, i, &dimSizes[i]);
-        if(status != NC_NOERR)
-            fileObject->HandleError(status);
+        char   dimName[NC_MAX_NAME+1];
+    status = nc_inq_dim(ncid, i, dimName, &dimSizes[i]);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    debug4<< dimSizes[i] << " ";
     }
+    debug4<< "]" << endl;
 
-    // Get dimensions of time, siglay, siglev, nodes and cells to compare each variable:
-    // That is how we identify what the variable is and how to read it.
+
+    // Get dimsizes for know dim names!
+    // SCALAR
+    size_t scalar;
+    int scalar_id;
+    status = nc_inq_dimid(ncid, "scalar", &scalar_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, scalar_id, &scalar);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    // NODE
+    size_t nNodesPerLayer;
+    int node_id;
+    status = nc_inq_dimid(ncid, "node", &node_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, node_id, &nNodesPerLayer);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    // NELE
+    size_t nCellsPerLayer;
+    int nele_id;
+    status = nc_inq_dimid(ncid, "nele", &nele_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, nele_id, &nCellsPerLayer);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+
+    //SIGLAY
+    size_t nSigLayers;
+    int siglay_id;
+    status = nc_inq_dimid(ncid, "siglay", &siglay_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, siglay_id, &nSigLayers);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    //SIGLEV
+    size_t nSigLevels;
+    int siglev_id;
+    status = nc_inq_dimid(ncid, "siglev", &siglev_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, siglev_id, &nSigLevels);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    //THREE
+    size_t three;
+    int three_id;
+    status = nc_inq_dimid(ncid, "three", &three_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, three_id, &three);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+    //FOUR
+    size_t four;
+    int four_id;
+    status = nc_inq_dimid(ncid, "four", &four_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, four_id, &four);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+
+    //MAXNODE
+    size_t maxnode;
+    int maxnode_id;
+    status = nc_inq_dimid(ncid, "maxnode", &maxnode_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, maxnode_id, &maxnode);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+   //MAXELEM
+    size_t maxelem;
+    int maxelem_id;
+    status = nc_inq_dimid(ncid, "maxelem", &maxelem_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, maxelem_id, &maxelem);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+    //TIME
     size_t ntimesteps;
     int time_id;
     status = nc_inq_dimid(ncid, "time", &time_id);
@@ -458,211 +565,335 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     status = nc_inq_dimlen(ncid, time_id, &ntimesteps);
     if (status != NC_NOERR) fileObject-> HandleError(status);
 
-    size_t nSigLayers, nSigLevels, nNodesPerLayer, nCellsPerLayer;
-    int siglay_id, siglev_id, node_id, nele_id;
 
-    status = nc_inq_dimid(ncid, "siglay", &siglay_id);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
-    status = nc_inq_dimlen(ncid, siglay_id, &nSigLayers);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
 
-    status = nc_inq_dimid(ncid, "siglev", &siglev_id);
-    if (status != NC_NOERR) fileObject->HandleError(status);
-    status = nc_inq_dimlen(ncid, siglev_id, &nSigLevels);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
-    
-    status = nc_inq_dimid(ncid, "node", &node_id);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
-    status = nc_inq_dimlen(ncid, node_id, &nNodesPerLayer);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
+    std::map<std::string, bool> componentExists;
 
-    status = nc_inq_dimid(ncid, "nele", &nele_id);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
-    status = nc_inq_dimlen(ncid, nele_id, &nCellsPerLayer);
-    if (status != NC_NOERR) fileObject-> HandleError(status);
 
-    int got_velocity=0;
-    int known_var =0; // is this a recognized variable type: scalar (1) or vector (2)
-    int what_type = 0; // is the variable a float (1) or int (2)
     debug4 << "nVars = " << nVars << endl;
     debug4 << "Finding all variable to plot on the grid!" << endl;
     for(i = 0; i < nVars; ++i)
     {
         // First identify variable type!
-        debug4 << "Examining variable#" << i ;
+        debug4 << "Examining variable#" << i << endl;
 
-        known_var=0;
-        what_type=0;
         char varname[NC_MAX_NAME+1];
         nc_type vartype;
         int  varndims;
         int  vardims[NC_MAX_VAR_DIMS];
         int  varnatts;
         if((status = nc_inq_var(ncid, i, varname, &vartype, &varndims, 
-                                vardims, &varnatts)) == NC_NOERR)
-        {
-            debug4 << " ;" << varname << endl;
-            debug4 << "variable type";
-            if(vartype == NC_BYTE)
-                debug4 << "NC_BYTE";
-            else if(vartype == NC_CHAR)
-                debug4 << "NC_CHAR";
-            else if(vartype == NC_SHORT)
-                debug4 << "NC_SHORT";
-            else if(vartype == NC_INT)
-            {
-                debug4 << "NC_INT";
-                what_type=2; // if int set what_type=2
-            }
-            else if(vartype == NC_FLOAT)
-            { 
-                debug4 << "NC_FLOAT";
-                what_type = 1;  // if float set what_type=1
-            }
-            else if(vartype == NC_DOUBLE)
-                debug4 << "NC_DOUBLE";
-            else 
-                debug4 << "unknown type";
-        }
-        else  // if(status = NC_NOERR
-        {
-            debug4 << "Could not nc_inq_var??? Try next variable";
+                                vardims, &varnatts)) != NC_NOERR)
             fileObject-> HandleError(status);
-        }   // end if(status = NC_NOERR)
+        
+    //  This just for debugging it is not needed to id vars!
+    debug4 << "Variable name: " << varname << endl;
+    debug4 << "variable type";
+    if(vartype == NC_BYTE)
+        debug4 << "NC_BYTE";
+    else if(vartype == NC_CHAR)
+        debug4 << "NC_CHAR";
+    else if(vartype == NC_SHORT)
+        debug4 << "NC_SHORT";
+    else if(vartype == NC_INT)
+        debug4 << "NC_INT";
+    else if(vartype == NC_FLOAT)
+        debug4 << "NC_FLOAT";
+    else if(vartype == NC_DOUBLE)
+        debug4 << "NC_DOUBLE";
+    else 
+        debug4 << "unknown type";
 
-        debug4<< endl; // this ends either,
-        // 'examining variable' or 'variable type'
+    debug4<< endl;
 
-        // Make variable for variable location
-        avtCentering centering = AVT_NODECENT;
-        // Make variable for mesh type (bathy, ssh, level, layer)
-        string *var_mesh;
 
-        // There are too many if statements nested here, 
-        // but I can't think of a simpler way to to do this.
+    debug4<< "Variable Dimensions=[";
 
-        if(what_type==1) 
+    for (int vd=0; vd<varndims; ++vd)
+    {
+        debug4<< dimSizes[vardims[vd]] << " ";
+    }
+
+        debug4<< "]" << endl;
+
+
+
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    if (varndims==1)
+    {
+        if (dimSizes[vardims[0]] == nNodesPerLayer )
         {
-            // Match dimensions to a particular grid and add the variable 
-            // to the meta data
-            debug4 << "Var "<< varname << " is float: Has ndims="
-                   << varndims << endl;
-       
-            if (varndims ==3) // Get 3D node center scalars
-            {
-                if(dimSizes[vardims[1]]== nSigLayers && 
-                   dimSizes[vardims[2]]== nNodesPerLayer) 
-                {   // Time must be the 0rd dim
-                    var_mesh = &meshName_LAY;
-                    centering = AVT_NODECENT;  // Most scalar variables are here
-                    known_var=1;
-                }
-                // Now for velocity and turbulent variables! nCellsPerLayer
-                else if(dimSizes[vardims[1]]== nSigLayers && 
-                        dimSizes[vardims[2]]== nCellsPerLayer) 
-                {   // Time must be the 0rd dim
-                    std::string unknown_units;
-                    fileObject->ReadStringAttribute(varname, "units",
-                        unknown_units);  
-                    // Check how many velocity variable we have:
-                    // What is the are the units of the variable?
-                    if(got_velocity == 0 && 
-                       strcmp("meters s-1", unknown_units.c_str() )==0) 
-                    {
-                        // This is the first variable that looks like a velocity
-                        // Wait for the second to add only one velocity variable.
-                        got_velocity=got_velocity+1;
-                    }
-                    // Is it the diffusivity?
-                    // Diffusivity has changed location: bug fix
-                    // fvcom<2.5 has km on zonecent
-                    // fvcom 2.5 has km on nodecent
-                    else if(strcmp("meters2 s-1", unknown_units.c_str() )==0 )
-                    {
-                        known_var=1; // scalar!  KM for zonecent 
-                        centering=AVT_ZONECENT; 
-                        var_mesh = &meshName_LEV;
-                    }
-                    else if (got_velocity==1 && 
-                             strcmp("meters s-1", unknown_units.c_str() )==0)
-                    {
-                        known_var=2; // Second velocity: add 2D vel (U V)
-                        var_mesh = &meshName_LEV;
-                        centering = AVT_ZONECENT;
-                        // This puts velocity in natural location
-                        got_velocity=got_velocity+1;
-                    }
-                    else if(got_velocity == 2 && 
-                            strcmp("meters s-1", unknown_units.c_str() )==0)
-                    {   // if there is a third velocity get 3d vel
-                        known_var=3; // Vector 3D too!
-                        var_mesh = &meshName_LEV;
-                        centering = AVT_ZONECENT;              
-                    }
-                } // end if vardims ....
-                else if(dimSizes[vardims[1]]== nSigLevels && 
-                        dimSizes[vardims[2]]== nNodesPerLayer) 
-                {   // Time must be the 0rd dim
-                    var_mesh = &meshName_LEV;
-                    centering = AVT_NODECENT;  // This is KM in FVCOM2.5+
-                    known_var=1;
-                }
-
-            } // end if varndims=3        
-            else if (varndims ==2) // Get Sea surface height
-            {
-                if(dimSizes[vardims[0]]== ntimesteps && 
-                   dimSizes[vardims[1]]== nNodesPerLayer)
-                {
-                    var_mesh = &meshName_SSH;
-                    centering = AVT_NODECENT;
-                    known_var=1;
-                } // end if vardims ....
-            } // end if varndims=2...    
-            else if(varndims==1) // Get Bathymetry
-            {
-                if(dimSizes[vardims[0]]== nNodesPerLayer &&
-                   strncmp("h", varname,1)==0 )
-                { // must compare varname, x, y, lat and lon have same dimension 
-                    var_mesh= &meshName_BM;
-                    centering= AVT_NODECENT;
-                    known_var=1;
-                }
-            } // end if varndims==1
-
-            if (known_var==1) // add the scalar variable
-            {
-                avtScalarMetaData *smd = new avtScalarMetaData(varname,
-                    *var_mesh, centering);
+               if (strncmp(varname, "h",1)==0)
+        {
+            // THIS GETS THE BATHYMETRY, WHICH HAS THE SAME DIMESIONS
+            // AS THE GRID VARIABLES.
+            avtScalarMetaData *smd = new avtScalarMetaData(varname,
+              Bathymetry_Mesh, AVT_NODECENT);
+                    smd->hasUnits = fileObject->ReadStringAttribute(varname,
+                      "units", smd->units);
+                    md->Add(smd);
+            componentExists[varname] = true;
+        }
+        else
+        {
+            // THIS ONE IS JUST FOR THE GRID VARS.
+            avtScalarMetaData *smd = new avtScalarMetaData(varname,
+              TWOD_Mesh, AVT_NODECENT);
+                    smd->hasUnits = fileObject->ReadStringAttribute(varname,
+              "units", smd->units);
+                    md->Add(smd);
+            componentExists[varname] = true;
+        }
+          } // end if:   (dimSizes[vardims[0]] == nNodesPerLayer )
+        else if  (dimSizes[vardims[0]] == nCellsPerLayer )
+        {
+                // THIS GETS THE PARALLEL PROCESSING DOMAINS
+        avtScalarMetaData *smd = new avtScalarMetaData(varname,
+                  TWOD_Mesh, AVT_ZONECENT);
                 smd->hasUnits = fileObject->ReadStringAttribute(varname,
-                    "units", smd->units);
+                  "units", smd->units);
                 md->Add(smd);
-            }
-            else if (known_var==2) // add the variable
-            {
-                avtVectorMetaData *smd = new avtVectorMetaData("Velocity2D",
-                    *var_mesh, centering,3);
-                smd->hasUnits = fileObject->ReadStringAttribute(varname, 
-                    "units", smd->units);
-                md->Add(smd);
-            }
-            else if (known_var==3)
-            {
-                avtVectorMetaData *smd = new avtVectorMetaData("Velocity3D",
-                    *var_mesh, centering,3);
-                smd->hasUnits = fileObject->ReadStringAttribute(varname, 
-                    "units", smd->units);
-                md->Add(smd);
-            }
-            // if know_var==0  do nothing!
-        }// end if what type ==1 : this is for Floats!
-    
-    // add nprocs and other INTs here using: what_type==2
+            componentExists[varname] = true;
+        } // end if:   (dimSizes[vardims[0]] == nCellsPerLayer )
+
+        // Add more 1D data here!
+
+    } // end if (varndims ==1 )
+
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    else if (varndims==2)
+    {
+            if  (dimSizes[vardims[0]] == ntimesteps &&
+         dimSizes[vardims[1]] == nNodesPerLayer)
+        {
+            // SEA SURFACE HEIGHT
+            avtScalarMetaData *smd = new avtScalarMetaData(varname,
+          SSH_Mesh, AVT_NODECENT);
+        smd->hasUnits = fileObject->ReadStringAttribute(varname,
+          "units", smd->units);
+        md->Add(smd);
+        componentExists[varname] = true;
+        } // end if: (dimSizes[vardims[0]] == time &&
+          //          dimSizes[vardims[1]] == nNodesPerLayer)
+
+
+        // I am adding arrays to the TWOD mesh for now...
+
+        else if (dimSizes[vardims[0]] == three &&
+             dimSizes[vardims[1]] == nCellsPerLayer)
+        {
+          // Cell Angle arrays for gradient operator and NV
+          //          avtArrayMetaData *smd = new avtArrayMetaData(varname,
+          //            TWOD_Mesh, AVT_ZONECENT, three);
+          //              md->Add(smd);
+          //          componentExists[varname] = true;
+        }
+
+        else if (dimSizes[vardims[0]] == four &&
+             dimSizes[vardims[1]] == nCellsPerLayer)
+        {
+          // More Cell Angle arrays for gradient operator
+          //          avtArrayMetaData *smd = new avtArrayMetaData(varname,
+          //            TWOD_Mesh, AVT_ZONECENT, four);
+          //              md->Add(smd);
+          //          componentExists[varname] = true;
+        }
+
+        else if (dimSizes[vardims[0]] == maxnode &&
+             dimSizes[vardims[1]] == nNodesPerLayer)
+        {
+          // nbsn: nodes surrounding each node
+          //          avtArrayMetaData *smd = new avtArrayMetaData(varname,
+          //            TWOD_Mesh, AVT_NODECENT, maxnode);
+          //              md->Add(smd);
+          //          componentExists[varname] = true;
+        }
+
+        else if (dimSizes[vardims[0]] == maxelem &&
+             dimSizes[vardims[1]] == nNodesPerLayer)
+        {
+          // nbve: Cells surrounding each node
+          //          avtArrayMetaData *smd = new avtArrayMetaData(varname,
+          //            TWOD_Mesh, AVT_NODECENT, maxelem);
+          //              md->Add(smd);
+          //          componentExists[varname] = true;
+        }
+
+      // add more 2D data here     
+
+    }// end if: (varndims==2)
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    else if (varndims==3)
+    {
+        if  (dimSizes[vardims[0]] == ntimesteps &&
+                 dimSizes[vardims[1]] == nSigLayers &&
+             dimSizes[vardims[2]] == nNodesPerLayer)
+        {
+        // This catches all the usual scalars!
+            avtScalarMetaData *smd = new avtScalarMetaData(varname,
+          SigmaLayer_Mesh, AVT_NODECENT);
+        smd->hasUnits = fileObject->ReadStringAttribute(varname,
+                  "units", smd->units);
+        md->Add(smd);
+        componentExists[varname] = true;
+        }
+        else if  (dimSizes[vardims[0]] == ntimesteps &&
+                      dimSizes[vardims[1]] == nSigLevels &&
+                  dimSizes[vardims[2]] == nNodesPerLayer)
+        {
+        // This catches KM in the new, correct location!
+            avtScalarMetaData *smd = new avtScalarMetaData(varname,
+          SigmaLevel_Mesh, AVT_NODECENT);
+        smd->hasUnits = fileObject->ReadStringAttribute(varname,
+                  "units", smd->units);
+        md->Add(smd);
+        componentExists[varname] = true;
+        }
+        else if  (dimSizes[vardims[0]] == ntimesteps &&
+                      dimSizes[vardims[1]] == nSigLayers &&
+                  dimSizes[vardims[2]] == nCellsPerLayer)
+        {
+        // This catches KM in the old, incorrect location
+        // This also catches u,v,w if they exist!
+            avtScalarMetaData *smd = new avtScalarMetaData(varname,
+          SigmaLevel_Mesh, AVT_ZONECENT);
+                smd->hasUnits = fileObject->ReadStringAttribute(varname,
+                  "units", smd->units);
+        md->Add(smd);
+        componentExists[varname] = true;
+        }
+        
+    } // end if: (varndims ==3)
+
     } // end for nvars !!!
+
+
+    if(componentExists.find("u") != componentExists.end() &&
+       componentExists.find("v") != componentExists.end() &&
+       componentExists.find("ww") != componentExists.end())
+    {
+        debug4 << mName << "Velocity is 3D" << endl;
+    avtVectorMetaData *smd = new avtVectorMetaData("3DVEL",
+          SigmaLevel_Mesh, AVT_ZONECENT,3);
+        smd->hasUnits = fileObject->ReadStringAttribute("u", 
+          "units", smd->units);
+        md->Add(smd);    
+    }
+
+    if(componentExists.find("u") != componentExists.end() &&
+        componentExists.find("v") != componentExists.end())
+    {
+        debug4 << mName <<"Velocity is 2D" << endl;
+    avtVectorMetaData *smd = new avtVectorMetaData("2DVEL",
+      SigmaLevel_Mesh, AVT_ZONECENT,3);
+    smd->hasUnits = fileObject->ReadStringAttribute("u", 
+      "units", smd->units);
+    md->Add(smd);
+    }
+
+    // Add conditional variables!
+    // IF temperature and salinity variables exist calculate density
+    // Three options are available, one using potential temperature
+    //                              one using insitu temperature
+    //                              one for shallow water
+    if(componentExists.find("temp") != componentExists.end() &&
+       componentExists.find("salinity") != componentExists.end())
+    {
+        debug4 << mName << "Adding Density Variables:" << endl;
+    
+    avtScalarMetaData *dens3_md = new avtScalarMetaData("Dens3{S,Theta,P}",
+      SigmaLayer_Mesh, AVT_NODECENT);
+    dens3_md->hasUnits = true;
+    dens3_md->units = "kg/m3";
+    md->Add(dens3_md);
+    componentExists["Dens3{S,Theta,P}"] = true;
+
+    avtScalarMetaData *dens_md = new avtScalarMetaData("Dens{S,T,P}",
+          SigmaLayer_Mesh, AVT_NODECENT);
+    dens_md->hasUnits = true;
+    dens_md->units = "kg/m3";
+    md->Add(dens_md);
+    componentExists["Dens{S,T,P}"] = true;
+
+    avtScalarMetaData *theta_md = new avtScalarMetaData("Theta{S,T,P,0}",
+          SigmaLayer_Mesh, AVT_NODECENT);
+    theta_md->hasUnits = true;
+    theta_md->units = "Degrees_C";
+    md->Add(theta_md);
+    componentExists["Theta{S,T,P,0}"] = true;
+
+    // Removed for 1.5.4 release
+    //      avtScalarMetaData *dens2_md = new avtScalarMetaData("Dens2(S,Theta,0)",
+    //          SigmaLayer_Mesh, AVT_NODECENT);
+    //      dens2_md->hasUnits = true;
+    //      dens2_md->units = "kg/m3";
+    //      md->Add(dens2_md);
+    //      componentExists["Dens2(S,Theta,0)"] = true;
+    
+    }
+
+
+    avtScalarMetaData *Lnodes_md = new avtScalarMetaData("Select Layer",
+        SigmaLayer_Mesh, AVT_NODECENT);
+    Lnodes_md->hasUnits = false;
+    md->Add(Lnodes_md);
+
+    avtScalarMetaData *Levnodes_md = new avtScalarMetaData("Select Level",
+        SigmaLevel_Mesh, AVT_NODECENT);
+    Levnodes_md->hasUnits = false;
+    md->Add(Levnodes_md);
+
+
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ALL Variables added to META DATA
+
+    // Removed Materials from 1.5.4
+    // Not needed because ISOSURFACE works better!
+# ifdef Materials_stuff
+    //Add Material MetaData for: SigmaLayer_Mesh
+    avtMaterialMetaData *matmd_1 = new avtMaterialMetaData;
+    matmd_1->name = "Sigma_Layers";
+    matmd_1->meshName = "SigmaLayer_Mesh";
+    matmd_1->numMaterials=nSigLayers;
+
+    for (int i=0; i < nSigLayers; ++i)
+    {
+
+        char buffer[50];
+    int n;
+    n=sprintf(buffer, "Layer %d",i);
+    matmd_1->materialNames.push_back(buffer);
+    }
+
+
+    md->Add(matmd_1);
+
+
+    //Add Material MetaData for: SigmaLevel_Mesh
+    avtMaterialMetaData *matmd_2 = new avtMaterialMetaData;
+    matmd_2->name = "Sigma_Levels";
+    matmd_2->meshName = "SigmaLevel_Mesh";
+    matmd_2->numMaterials=nSigLayers;
+
+    for (int i=0; i < nSigLayers; ++i)
+    {
+        char buffer [50];
+    int n;
+    n=sprintf(buffer, "Layer %d",i);
+    matmd_2->materialNames.push_back(buffer);
+
+    }
+
+    md->Add(matmd_2);
+# endif
+
 
     delete [] dimSizes;
 
-    debug4 << "avtFVCOMReader: end PopulateDatabaseMetaData"<<endl;
+    debug4 << mName << "END" <<endl;
 }
 
 
@@ -686,11 +917,31 @@ avtFVCOMReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 // ****************************************************************************
 
 vtkDataSet *
-avtFVCOMReader::GetMesh(int timestate, const char *mesh)
+avtFVCOMReader::GetMesh(int timestate, const char *mesh, avtVariableCache *cache)
 {
     const char *mName = "avtFVCOMReader::GetMesh: ";
     debug4 << mName << "meshname=" << mesh  << " timestate="
            << timestate << endl;
+
+
+    debug4 << mName << "Looking to see if Mesh is in cache" << endl;
+    vtkObject *obj =0;
+    int domain=CacheDomainIndex; // for now: Set domain in MTMD!!!
+    const char *matname = "all";
+    obj = cache->GetVTKObject(mesh, avtVariableCache::DATASET_NAME,
+        timestate, domain, matname);
+    if(obj != 0)
+    {
+        debug4 << mName << "Getting mesh: " << mesh << " from Cache" << endl;
+
+        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *)obj;
+        ugrid->Register(NULL);
+        return ugrid;
+    }
+    else
+    {
+        debug4 << mName << "Mesh Not in Cache. Load from data." << endl;
+    }
 
     vtkDataSet *retval = 0;
 
@@ -778,7 +1029,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
             {
                 verts[vrt] = nvvals[vrt * nCellsPerLayer + cell] -1;
             }
-            ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+        ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
         }
 
         delete [] xvals;
@@ -787,7 +1038,67 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
         delete [] nvvals;
 
         debug4 << mName;
-        debug4 << "Success Returning VTK_TRIANCLE for Bathymetry" << endl;
+    debug4 << "Success Returning VTK_TRIANCLE for Bathymetry" << endl;
+
+        retval = ugrid;
+    } // End if Bathymetry_Mesh
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
+//    Make the mesh for simple 2D data sets
+    else if(strcmp(mesh, "TWOD_Mesh") == 0)
+    {
+        debug4 << mName << "Getting TWOD_Mesh" << endl;
+        // for 2D mesh we only need one layer, only nNodesPerLayer nodes!
+        vtkPoints *pts = vtkPoints::New();
+        pts->Allocate(nNodesPerLayer);
+
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        ugrid->SetPoints(pts);
+        ugrid->Allocate(nCellsPerLayer);
+        pts->Delete();
+        debug4 << "Allocated ugrid and pts" << endl;
+
+        // Get Node locations  
+        float *xvals = new float[nNodesPerLayer];
+        fileObject->ReadVariableInto("x", FLOATARRAY_TYPE, xvals);
+          
+        float *yvals = new float[nNodesPerLayer];
+        fileObject->ReadVariableInto("y", FLOATARRAY_TYPE, yvals);
+    
+
+        // Get Node Connectivity
+        int *nvvals= new int[3 * nCellsPerLayer];
+        fileObject->ReadVariableInto("nv", INTEGERARRAY_TYPE, nvvals);
+
+        debug4 << mName << "Read nodes locations and connectivity"<< endl;
+
+        // insert nodes into mesh pts object
+        for(int i= 0; i< nNodesPerLayer; ++i)
+        {
+            float pt[2]={xvals[i], yvals[i]};
+            pts->InsertNextPoint(pt);
+        }
+  
+
+        // insert cells in to mesh cell object
+        vtkIdType verts[3];
+        for(int cell = 0; cell < nCellsPerLayer; ++cell)
+        {
+            for(int vrt =0; vrt <3; ++vrt)
+            {
+                verts[vrt] = nvvals[vrt * nCellsPerLayer + cell] -1;
+            }
+        ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+        }
+
+        delete [] xvals;
+        delete [] yvals;
+        delete [] nvvals;
+
+        debug4 << mName;
+    debug4 << "Success Returning VTK_TRIANCLE for TWOD_MESH" << endl;
 
         retval = ugrid;
     } // End if Bathymetry_Mesh
@@ -797,7 +1108,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
     else if(strcmp(mesh, "SSH_Mesh") == 0) // is mesh: SSH_Mesh
     {    
         debug4 << mName << "Getting SSH_Mesh"<< endl;
-        // for SSH mesh we only need one layer, only nNodesPerLayer nodes!
+    // for SSH mesh we only need one layer, only nNodesPerLayer nodes!
         vtkPoints *pts = vtkPoints::New();
         pts->Allocate(nNodesPerLayer);
 
@@ -836,7 +1147,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
         fileObject->ReadVariableInto("nv", INTEGERARRAY_TYPE, nvvals);
 
         debug4 << mName;
-        debug4 << "Read nodes locations and connectivity"<< endl;
+    debug4 << "Read nodes locations and connectivity"<< endl;
 
         // insert nodes into mesh pts object
         for(int i= 0; i< nNodesPerLayer; ++i)
@@ -862,7 +1173,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
         delete [] nvvals;
 
         debug4 << mName;
-        debug4 << "Success Returning VTK_TRIANCLE for ssh mesh" << endl;
+    debug4 << "Success Returning VTK_TRIANCLE for ssh mesh" << endl;
 
         retval = ugrid;
     } // End if SSH_Mesh
@@ -871,7 +1182,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
 //--------------------------------------------------------------------------
 //--------------------------------------------------------------------------
     else if(strcmp(mesh, "SigmaLayer_Mesh") == 0)
-    { // SigmaLayer_Mesh
+      { // SigmaLayer_Mesh
         // Plot scalars which are calculated at cell edge centers
         // On this grid these scalars will be on cell nodes
         
@@ -926,7 +1237,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
         // Get Node Connectivity
         int *nvvals= new int[3 * nCellsPerLayer];
         fileObject->ReadVariableInto("nv", INTEGERARRAY_TYPE, nvvals);
-        debug4 << mName; 
+    debug4 << mName; 
         debug4 << "Read nodes locations and connectivity"<< endl;
 
         // insert nodes into mesh pts object
@@ -954,8 +1265,8 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
                     {
                         verts[vrt + TB*3] = lay*nNodesPerLayer + 
                         // offset each layer by the number of nodes
-
-                        (nvvals[vrt * nCellsPerLayer + cell]-1) + 
+                        
+            (nvvals[vrt * nCellsPerLayer + cell]-1) + 
                         // offset each nvval by the number of cells per layer
 
                         TB*nNodesPerLayer;
@@ -963,6 +1274,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
 
                     } // End for verts per cell and TB
 
+    
                 ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
             } // End for nCellsPerLayer
         } // End For nSigLayers
@@ -975,7 +1287,7 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
         delete [] SigLayers;
 
         debug4 << mName;
-        debug4 << "Success Returning VTK_WEDGE: SigmaLayerMesh" << endl;
+    debug4 << "Success Returning VTK_WEDGE: SigmaLayerMesh" << endl;
 
         retval = ugrid;
     } // end SigmaLayers Mesh!
@@ -1095,8 +1407,150 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
         EXCEPTION1(InvalidVariableException, mesh);
     }
 
+    // Loaded variable succesfully, add to cache
+    debug4 << mName << "Add mesh to cache!" << endl;
+    cache->CacheVTKObject(mesh, avtVariableCache::DATASET_NAME, timestate, domain,
+                          matname, retval);
+
+    debug4 << mName << "END" << endl;
+
     return retval;
 }
+
+
+
+
+// ****************************************************************************
+// Method: avtFVCOMReaderFileFormat::GetAuxiliaryData
+//
+// Purpose: 
+//   Gets the material object for the particles.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: David Stuebe
+// Creation:   Mon Jul 17 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void *
+avtFVCOMReader::GetAuxiliaryData(const char *var, int ts,
+    const char *type, void *args, DestructorFunction &df)
+{
+    void *retval = 0;
+
+
+    const char *mName = "avtFVCOMReader::GetAuxiliaryData: ";
+    debug4 << mName << "timestate=" << ts << endl
+           << ", varname=" << var << endl
+       << "type=" << type << endl
+       << "args=" << args << endl;
+
+#ifdef materials_method
+    // NOT WORKING PROPERLY>>>> compiles and runs with out error, 
+    // UNEXPECTED BEHAVIOR: does not turn on and off the right cells?
+
+
+    if(strcmp(type, AUXILIARY_DATA_MATERIAL) == 0 &&
+       strcmp(var, "Sigma_Levels") == 0)
+    {
+    int status;
+    int ncid;
+    ncid=fileObject->GetFileHandle(); 
+
+    // NELE
+    size_t nCellsPerLayer;
+    int nele_id;
+    status = nc_inq_dimid(ncid, "nele", &nele_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, nele_id, &nCellsPerLayer);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    //SIGLAY
+    size_t nSigLayers;
+    int siglay_id;
+    status = nc_inq_dimid(ncid, "siglay", &siglay_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, siglay_id, &nSigLayers);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    
+    int nzones=nSigLayers*nCellsPerLayer; // there are nSigLayers
+    // in the levels mesh. There are nSigLayers-1 in the Sigma_Layers
+    // mesh because its nodes are at the edge centers of the original 
+    // mesh.
+ 
+    // Create matnos and names arrays so we can create an avtMaterial.
+    int *matnos = new int[nSigLayers];
+    char **names = new char *[nSigLayers];
+    for(int i = 0; i < nSigLayers; ++i)
+    {
+        matnos[i] = i + 1;
+        char buffer [50];
+        int n;
+        n=sprintf(buffer, "Layer %d",i);
+        names[i] = (char *)buffer;
+        debug4 <<"i="<< i << ", matnos=" << 
+          matnos[i] << ", names=" << names[i] << endl;
+
+    }
+    
+
+    int *matlist =new int[nzones];
+    int mod;
+    int this_mat=0;
+    for (int i =0; i< nzones; ++i)
+    {
+        mod = i % nCellsPerLayer;
+        if(mod==0) matlist[i]=++this_mat;
+       
+        else matlist[i]=this_mat;
+
+        debug4 << "matlist=" << matlist[i] << endl;
+    }
+    
+    
+    // Create the avtMaterial.
+    int dims[3]= {1,1,1};
+    dims[0] = nzones;
+    int ndims=3;
+    avtMaterial *mat= new avtMaterial(
+                 nSigLayers,
+                 matnos,
+                 names,
+                 ndims,
+                 dims,
+                 0,
+                 matlist,
+                 0, // length of mix arrays
+                 0, // mix_mat array
+                 0, // mix_next array
+                 0, // mix_zone array
+                 0  // mix_vf array
+                 );
+    
+    delete [] matlist;
+    delete [] matnos;
+    //    for (int i = 0; i < nSigLayers; ++i)
+    //  delete [] names[i];
+    delete [] names;
+    retval =(void *)mat;
+    df = avtMaterial::Destruct;
+    }
+    
+
+#endif
+    debug4 << mName << "END" << endl;
+    
+    return retval;
+}
+
+
 
 
 // ****************************************************************************
@@ -1118,12 +1572,65 @@ avtFVCOMReader::GetMesh(int timestate, const char *mesh)
 // ****************************************************************************
 
 vtkDataArray *
-avtFVCOMReader::GetVar(int timestate, const char *varname)
+avtFVCOMReader::GetVar(int timestate, const char *varname, avtVariableCache *cache)
 {
     const char *mName = "avtFVCOMReader::GetVar: ";
     debug4 << mName << "timestate=" << timestate
            << ", varname=" << varname << endl;
 
+
+
+    debug4 << mName << "Looking to see if Variable is in cache" << endl;
+    vtkObject *obj =0;
+    int domain=CacheDomainIndex;
+            // for now: Set domain in MTMD!!!
+ 
+    const char *matname = "all";
+    obj = cache->GetVTKObject(varname, avtVariableCache::DATASET_NAME,
+        timestate, domain, matname);
+    if(obj != 0)
+    {
+        debug4 << mName << "Getting variable: " << varname << " from Cache" << endl;
+        vtkDataArray *ds = (vtkDataArray *)obj;
+        ds->Register(NULL);
+        return ds;
+    }
+    else
+    {
+        debug4 << mName << "Variable Not in Cache. Load from data." << endl;
+    }
+
+
+    // Special variables created in Visit for FVCOM
+    if (strcmp("Dens3{S,Theta,P}", varname)==0)
+    {
+        debug4 << mName << "Variable is Dens3"<< endl;
+    vtkDataArray *rv =  DENS3(timestate, cache);
+    return rv;
+    }  
+    else if (strcmp("Dens{S,T,P}", varname)==0)
+    {
+        debug4 << mName << "Variable is Dens"<< endl;
+    vtkDataArray *rv =  DENS(timestate, cache);
+    return rv;
+    }  
+    else if (strcmp("Theta{S,T,P,0}", varname)==0)
+    {
+        debug4 << mName << "Variable is Theta"<< endl;
+    vtkDataArray *rv =  THETA(timestate, cache);
+    return rv;
+    }  
+
+    //    else if (strcmp("Dens2(S,Theta,0)", varname)==0)
+    //    {
+    //        debug4 << mName << "Variable is Dens2"<< endl;
+    //    vtkDataArray *rv =  DENS2(timestate, cache);
+    //    return rv;
+    //    }  
+
+
+    
+    // Variables saved in NETCDF OUT
     // Bail out if we can't get the file handle.
     int ncid = fileObject->GetFileHandle();
     if(ncid == -1)
@@ -1131,44 +1638,213 @@ avtFVCOMReader::GetVar(int timestate, const char *varname)
         EXCEPTION1(InvalidVariableException, varname);
     }
 
+
+    debug4 << "Try to get all known dimensions used in FVCOM" << endl;
+    debug4 << "Some may return unknown: that is okay!" << endl;
+
+    int status;
+    // Get dimsizes for known dim names!
+    // SCALAR
+    size_t scalar;
+    int scalar_id;
+    status = nc_inq_dimid(ncid, "scalar", &scalar_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, scalar_id, &scalar);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    // NODE
+    size_t nNodesPerLayer;
+    int node_id;
+    status = nc_inq_dimid(ncid, "node", &node_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, node_id, &nNodesPerLayer);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    // NELE
+    size_t nCellsPerLayer;
+    int nele_id;
+    status = nc_inq_dimid(ncid, "nele", &nele_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, nele_id, &nCellsPerLayer);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+
+    //SIGLAY
+    size_t nSigLayers;
+    int siglay_id;
+    status = nc_inq_dimid(ncid, "siglay", &siglay_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, siglay_id, &nSigLayers);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    //SIGLEV
+    size_t nSigLevels;
+    int siglev_id;
+    status = nc_inq_dimid(ncid, "siglev", &siglev_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, siglev_id, &nSigLevels);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    //THREE
+    size_t three;
+    int three_id;
+    status = nc_inq_dimid(ncid, "three", &three_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, three_id, &three);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+    //FOUR
+    size_t four;
+    int four_id;
+    status = nc_inq_dimid(ncid, "four", &four_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, four_id, &four);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+
+    //MAXNODE
+    size_t maxnode;
+    int maxnode_id;
+    status = nc_inq_dimid(ncid, "maxnode", &maxnode_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, maxnode_id, &maxnode);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+   //MAXELEM
+    size_t maxelem;
+    int maxelem_id;
+    status = nc_inq_dimid(ncid, "maxelem", &maxelem_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, maxelem_id, &maxelem);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+    //TIME
+    size_t ntimesteps;
+    int time_id;
+    status = nc_inq_dimid(ncid, "time", &time_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, time_id, &ntimesteps);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    debug4 << "end get dimensions" << endl;
+    
+    // Make return variable
+    vtkFloatArray *rv = vtkFloatArray::New();
+
+
+    // Get the threshold variables for ploting single layers
+    if (strcmp("Select Layer", varname)==0)
+    {
+        debug4 << mName << "Layer_Nodes"<< endl;
+    int ntuples = nNodesPerLayer*nSigLayers;  
+    
+    // Put the data into the vtkFloatArray   
+    rv->SetNumberOfTuples(ntuples);
+    
+    int count =0;
+    float val=0.9999999; // the first level should be less than one
+    for (int i = 0 ; i < nSigLayers ; i++)
+    {
+        for (int j = 0; j <nNodesPerLayer; j++) 
+        {
+        rv->SetTuple1(count, val);
+        count++;
+        }
+        val=float(i+2); // add two because i starts at zero
+    }
+    return rv;
+    }  
+    else if (strcmp("Select Level", varname)==0)
+    {
+        debug4 << mName << "Level_Nodes"<< endl;
+
+    int ntuples = nNodesPerLayer*nSigLevels;  
+    
+    // Put the data into the vtkFloatArray   
+    rv->SetNumberOfTuples(ntuples);
+    
+    int count =0;
+    float val=0.9999999; // The first layer should be less than one
+    for (int i = 0 ; i < nSigLevels ; i++)
+    {
+        for (int j = 0; j <nNodesPerLayer; j++) 
+            {
+        rv->SetTuple1(count, val);
+        count++;
+        }
+        val=float(i+2); // add two because i starts at zero
+    }
+
+
+    return rv;
+    }  
+
+
     TypeEnum t = NO_TYPE;
     int ndims = 0, *dims;
     fileObject->InqVariable(varname, &t, &ndims, &dims);
 
-    debug4 << mName << ", varname=" << varname
-           << "; vartype=" << t 
-           << "; varndims="<< ndims<< endl;
-    debug4 << "; Vardims:" << endl;
+    debug4 << mName << ", varname=" << varname << endl
+           << "; vartype=" << t << endl
+           << "; varndims="<< ndims<< endl
+           << "; Vardims: [" ;
     for(int i=0; i<ndims; ++i)
     {
-        debug4 << dims[i] << endl;
+       debug4 << dims[i] << ",";
     }
+
+    debug4 << endl;
+
 
     // declare variables for vtk      
     int ntuples=0;
-    float *vals;
     if(ndims == 1)
     {
         debug4 << "Variable: " << varname << "is 1d" << endl;
     
         if (t == FLOATARRAY_TYPE)
+    {
+        ntuples = dims[0];  
+            float *vals = new float[ntuples];
+            fileObject->ReadVariableInto(varname, FLOATARRAY_TYPE, vals);    
+
+        // Put the data into the vtkFloatArray   
+        rv->SetNumberOfTuples(ntuples);
+        for (int i = 0 ; i < ntuples ; i++)
         {
-            ntuples = dims[0];  
-            vals = new float[ntuples];
-            fileObject->ReadVariableInto(varname, FLOATARRAY_TYPE, vals);       
+        rv->SetTuple1(i, vals[i]);
         }
+        delete [] vals;
+        delete [] dims;
+    }
+    else if (t== INTEGERARRAY_TYPE)
+    {
+        ntuples = dims[0];  
+            int *vals = new int[ntuples];
+            fileObject->ReadVariableInto(varname, INTEGERARRAY_TYPE, vals); 
+        
+        // Put the data into the vtkFloatArray   
+              rv->SetNumberOfTuples(ntuples);
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+        rv->SetTuple1(i, vals[i]);
+        }
+        delete [] vals;
+        delete [] dims;
+    }
     }
     else if(ndims == 2)    
     {
         debug4 << "Variable: " << varname << "is 2d" << endl;
 
-        if (t == FLOATARRAY_TYPE)
-        {
+    if (t == FLOATARRAY_TYPE &&
+        dims[0] == ntimesteps)
+    {
             ntuples = dims[1];    
             size_t starts[]={timestate,0};
             size_t counts[]={1, dims[1]};
             ptrdiff_t stride[]={1,1};
-            vals = new float[ntuples];
+            float *vals = new float[ntuples];
             int var_id;
 
             int status = nc_inq_varid (fileObject->GetFileHandle(),
@@ -1176,20 +1852,31 @@ avtFVCOMReader::GetVar(int timestate, const char *varname)
             if (status != NC_NOERR) fileObject-> HandleError(status);
             status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
                 starts, counts, stride, vals);
-            if (status != NC_NOERR) fileObject-> HandleError(status);   
+            if (status != NC_NOERR) fileObject-> HandleError(status);
+
+        // Put the data into the vtkFloatArray   
+               rv->SetNumberOfTuples(ntuples);
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+        rv->SetTuple1(i, vals[i]);
         }
+        delete [] vals;
+        delete [] dims;
+    }
+
     }
     else if (ndims == 3)
     {
         debug4 << "Variable: " << varname << "is 3d" << endl;
 
-        if (t == FLOATARRAY_TYPE)
-        {
+        if (t == FLOATARRAY_TYPE &&
+        dims[0] == ntimesteps)
+    {
             ntuples = dims[1]*dims[2];    
             size_t starts[]={timestate,0,0};
             size_t counts[]={1, dims[1], dims[2]};
             ptrdiff_t stride[]={1,1,1};
-            vals = new float[ntuples];
+            float *vals = new float[ntuples];
             int var_id;
     
             int status = nc_inq_varid (fileObject->GetFileHandle(), 
@@ -1199,26 +1886,28 @@ avtFVCOMReader::GetVar(int timestate, const char *varname)
             status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
                 starts, counts, stride, vals);
             if (status != NC_NOERR) fileObject-> HandleError(status);
+
+        // Put the data into the vtkFloatArray   
+               rv->SetNumberOfTuples(ntuples);
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+        rv->SetTuple1(i, vals[i]);
         }
+        delete [] vals;
+        delete [] dims;
+    }
     }
     else
     {
         EXCEPTION1(InvalidVariableException, varname);
     }
 
-    debug4 << "ntuples=" << ntuples << endl;
 
-    // Put the data into the vtkFloatArray   
-    vtkFloatArray *rv = vtkFloatArray::New();
+    debug4 << mName << "Add Variable to cache!" << endl;
+    cache->CacheVTKObject(varname, avtVariableCache::DATASET_NAME, timestate, domain,
+                          matname, rv);
 
-    rv->SetNumberOfTuples(ntuples);
-    for (int i = 0 ; i < ntuples ; i++)
-    {
-        rv->SetTuple1(i, vals[i]);
-    }
 
-    delete [] dims;
-    delete [] vals;
     
     debug4 << mName << "end" << endl;
 
@@ -1253,6 +1942,10 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var)
     debug4 << mName << "timestate=" << timestate
            << ", varname=" << var << endl;
 
+    // For Arrays, var, should be the var name idenfied in the metadata
+
+
+
     // Bail out if we can't get the file handle.
     int ncid = fileObject->GetFileHandle();
     if(ncid == -1)
@@ -1260,30 +1953,102 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var)
         EXCEPTION1(InvalidVariableException, var);
     }
 
-    // Determine which type of Velocity we are loading
-    int type;    
-    if (strcmp("Velocity2D", var)==0) 
-    {
-        type=2;
-    }
-    else if (strcmp("Velocity3D",var)==0)
-    {
-        type=3;
-    }
-    else 
-    {
-        EXCEPTION1(InvalidVariableException, var);
-    }
+    int var_id; // Use later in 'if' statement to identify variable!
 
-    // Get V info:
-    int v_id, status;
-    status = nc_inq_varid (ncid, "v", &v_id);
-    if(status != NC_NOERR)
+    int status;
+    // Get dimsizes for known dim names!
+    // SCALAR
+    size_t scalar;
+    int scalar_id;
+    status = nc_inq_dimid(ncid, "scalar", &scalar_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, scalar_id, &scalar);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    // NODE
+    size_t nNodesPerLayer;
+    int node_id;
+    status = nc_inq_dimid(ncid, "node", &node_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, node_id, &nNodesPerLayer);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    // NELE
+    size_t nCellsPerLayer;
+    int nele_id;
+    status = nc_inq_dimid(ncid, "nele", &nele_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, nele_id, &nCellsPerLayer);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+
+    //SIGLAY
+    size_t nSigLayers;
+    int siglay_id;
+    status = nc_inq_dimid(ncid, "siglay", &siglay_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, siglay_id, &nSigLayers);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    //SIGLEV
+    size_t nSigLevels;
+    int siglev_id;
+    status = nc_inq_dimid(ncid, "siglev", &siglev_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, siglev_id, &nSigLevels);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    //THREE
+    size_t three;
+    int three_id;
+    status = nc_inq_dimid(ncid, "three", &three_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, three_id, &three);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+    //FOUR
+    size_t four;
+    int four_id;
+    status = nc_inq_dimid(ncid, "four", &four_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, four_id, &four);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+
+    //MAXNODE
+    size_t maxnode;
+    int maxnode_id;
+    status = nc_inq_dimid(ncid, "maxnode", &maxnode_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, maxnode_id, &maxnode);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+   //MAXELEM
+    size_t maxelem;
+    int maxelem_id;
+    status = nc_inq_dimid(ncid, "maxelem", &maxelem_id);
+    if (status != NC_NOERR) fileObject->HandleError(status);
+    status = nc_inq_dimlen(ncid, maxelem_id, &maxelem);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+ 
+    //TIME
+    size_t ntimesteps;
+    int time_id;
+    status = nc_inq_dimid(ncid, "time", &time_id);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+    status = nc_inq_dimlen(ncid, time_id, &ntimesteps);
+    if (status != NC_NOERR) fileObject-> HandleError(status);
+
+    // Create return variable
+    vtkFloatArray *rv = vtkFloatArray::New();
+
+
+    if (strcmp("2DVEL", var)==0) 
     {
-        fileObject-> HandleError(status);
-        debug4<< mName << ": Returned early, could not nc_inq this file!" << endl;
-        return 0;
-    }
+        // Get V info:
+        int v_id, status;
+    status = nc_inq_varid (ncid, "v", &v_id);
+    if(status != NC_NOERR) fileObject-> HandleError(status);
 
     TypeEnum v_t = NO_TYPE;
     int v_ndims = 0, *v_dims;
@@ -1298,12 +2063,7 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var)
     // Get U info:
     int u_id;
     status = nc_inq_varid (ncid, "u", &u_id);
-    if(status != NC_NOERR)
-    {
-        fileObject-> HandleError(status);
-        debug4<< mName << ": Returned early, could not nc_inq this file!" << endl;
-        return 0;
-    }
+    if(status != NC_NOERR) fileObject-> HandleError(status);
 
     TypeEnum u_t = NO_TYPE;
     int u_ndims = 0, *u_dims;
@@ -1321,36 +2081,40 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var)
     size_t starts[]={timestate,0,0};
     size_t counts[]={1, v_dims[1], v_dims[2]};
     ptrdiff_t stride[]={1,1,1};
-
+    
     v_vals = new float[ntuples];    
     status = nc_get_vars_float(fileObject->GetFileHandle(),v_id,
-                   starts, counts, stride, v_vals);
-    if (status != NC_NOERR)
-    {
-        fileObject-> HandleError(status);
-        delete [] v_vals;
-        EXCEPTION1(InvalidVariableException, var);
-    }
-
-    u_vals = new float[ntuples];    
-    status = nc_get_vars_float(fileObject->GetFileHandle(),u_id,
-                   starts, counts, stride, u_vals);
+      starts, counts, stride, v_vals);
     if (status != NC_NOERR)
     {
         fileObject-> HandleError(status);
         delete [] v_vals;
         delete [] u_vals;
+        delete [] u_dims;
+        delete [] v_dims;
+
+        EXCEPTION1(InvalidVariableException, var);
+    }
+    
+    u_vals = new float[ntuples];    
+    status = nc_get_vars_float(fileObject->GetFileHandle(),u_id,
+      starts, counts, stride, u_vals);
+    if (status != NC_NOERR)
+    {
+        fileObject-> HandleError(status);
+        delete [] v_vals;
+        delete [] u_vals;
+        delete [] u_dims;
+        delete [] v_dims;
         EXCEPTION1(InvalidVariableException, var);
     }
 
     debug4 << "ntuples=" << ntuples << endl;
-    vtkFloatArray *rv = vtkFloatArray::New();
-    if (type==2)
-    {
+
         int ncomps = 3;  // This is the rank of the vector
         rv->SetNumberOfComponents(ncomps);
         rv->SetNumberOfTuples(ntuples);
-        float one_entry[3];
+        float one_entry[ncomps];
         for (int i = 0 ; i < ntuples ; i++)
         {
             one_entry[0]=u_vals[i];
@@ -1362,52 +2126,120 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var)
         delete [] v_vals;
         delete [] u_dims;
         delete [] v_dims;
-    } //end if type==2
-    else if (type==3) // Get W info:
+
+    debug4<< mName << "Returned Velocity data" << endl;
+
+
+    }
+    else if (strcmp("3DVEL",var)==0)
     {
-        int ncid, ww_id, status;
 
-        ncid=fileObject->GetFileHandle();
-        status = nc_inq_varid (ncid, "ww", &ww_id); 
-        if(status != NC_NOERR)
-        {
-            fileObject-> HandleError(status);
-            debug4<< mName << ": Returned early, could not nc_inq this file!" << endl;
-            return 0;
-        }
+        // Get V info:
+        int v_id, status;
+    status = nc_inq_varid (ncid, "v", &v_id);
+    if(status != NC_NOERR) fileObject-> HandleError(status);
 
-        TypeEnum ww_t = NO_TYPE;
-        int ww_ndims = 0, *ww_dims = 0;
-        fileObject->InqVariable("ww", &ww_t, &ww_ndims, &ww_dims);
-        debug4 << mName << ", ww_ndims="<< ww_ndims<< endl;
-        debug4 << "ww_dims:" << endl;
-        for(int i=0; i<ww_ndims; ++i)
-        {
-            debug4 << ww_dims[i] << endl;
-        }
+    TypeEnum v_t = NO_TYPE;
+    int v_ndims = 0, *v_dims;
+    fileObject->InqVariable("v", &v_t, &v_ndims, &v_dims);
+    debug4 << mName << ", v_ndims="<< v_ndims<< endl;
+    debug4 << "v_dims:" << endl;
+    for(int i=0; i<v_ndims; ++i)
+    {
+        debug4 << v_dims[i] << endl;
+    }
 
-        float *ww_vals = new float[ntuples];    
-        status = nc_get_vars_float(fileObject->GetFileHandle(),ww_id,
-            starts, counts, stride, ww_vals);
-        if (status != NC_NOERR)
-        {
-            fileObject-> HandleError(status);
-            delete [] u_vals; 
-            delete [] u_dims;
-            delete [] v_vals;
-            delete [] v_dims;
-            delete [] ww_vals;
-            delete [] ww_dims;
-            rv->Delete();
-            EXCEPTION1(InvalidVariableException, var);
-        }
+    // Get U info:
+    int u_id;
+    status = nc_inq_varid (ncid, "u", &u_id);
+    if(status != NC_NOERR) fileObject-> HandleError(status);
 
-        debug4 << "ntuples=" << ntuples << endl;
-      
+    TypeEnum u_t = NO_TYPE;
+    int u_ndims = 0, *u_dims;
+    fileObject->InqVariable("u", &u_t, &u_ndims, &u_dims);
+    debug4 << mName << ", u_ndims="<< u_ndims<< endl;
+    debug4 << "u_dims:" << endl;
+    for(int i=0; i<u_ndims; ++i)
+    {
+        debug4 << u_dims[i] << endl;
+    }
+
+    // Get W info:
+    int ww_id;
+    status = nc_inq_varid (ncid, "ww", &ww_id);
+    if(status != NC_NOERR) fileObject-> HandleError(status);
+
+    TypeEnum ww_t = NO_TYPE;
+    int ww_ndims = 0, *ww_dims;
+    fileObject->InqVariable("ww", &ww_t, &ww_ndims, &ww_dims);
+    debug4 << mName << ", ww_ndims="<< ww_ndims<< endl;
+    debug4 << "ww_dims:" << endl;
+    for(int i=0; i<ww_ndims; ++i)
+    {
+        debug4 << ww_dims[i] << endl;
+    }
+
+
+    // Get variables for vtk      
+    float *v_vals = 0, *u_vals = 0, *ww_vals=0;
+    int ntuples = v_dims[1]*v_dims[2];    
+    size_t starts[]={timestate,0,0};
+    size_t counts[]={1, v_dims[1], v_dims[2]};
+    ptrdiff_t stride[]={1,1,1};
+    
+    v_vals = new float[ntuples];    
+    status = nc_get_vars_float(ncid,v_id,
+      starts, counts, stride, v_vals);
+    if (status != NC_NOERR)
+    {
+        fileObject-> HandleError(status);
+        delete [] v_vals;
+        delete [] u_vals;
+        delete [] ww_vals;
+        delete [] u_dims;
+        delete [] v_dims;
+        delete [] ww_dims;
+        EXCEPTION1(InvalidVariableException, var);
+    }
+    
+    u_vals = new float[ntuples];    
+    status = nc_get_vars_float(ncid,u_id,
+      starts, counts, stride, u_vals);
+    if (status != NC_NOERR)
+    {
+        fileObject-> HandleError(status);
+        delete [] v_vals;
+        delete [] u_vals;
+        delete [] ww_vals;
+        delete [] u_dims;
+        delete [] v_dims;
+        delete [] ww_dims;
+        EXCEPTION1(InvalidVariableException, var);
+    }
+
+
+
+    ww_vals = new float[ntuples];    
+    status = nc_get_vars_float(ncid,ww_id,
+      starts, counts, stride, ww_vals);
+    if (status != NC_NOERR)
+    {
+        fileObject-> HandleError(status);
+        delete [] v_vals;
+        delete [] u_vals;
+        delete [] ww_vals;
+        delete [] u_dims;
+        delete [] v_dims;
+        delete [] ww_dims;
+        EXCEPTION1(InvalidVariableException, var);
+    }
+
+    debug4 << "ntuples=" << ntuples << endl;
+
         int ncomps = 3;  // This is the rank of the vector
         rv->SetNumberOfComponents(ncomps);
         rv->SetNumberOfTuples(ntuples);
-        float one_entry[3];
+        float one_entry[ncomps];
         for (int i = 0 ; i < ntuples ; i++)
         {
             one_entry[0]=u_vals[i];
@@ -1415,19 +2247,844 @@ avtFVCOMReader::GetVectorVar(int timestate, const char *var)
             one_entry[2]=ww_vals[i];
             rv->SetTuple(i, one_entry); 
         }
-
         delete [] u_vals; 
         delete [] v_vals;
         delete [] u_dims;
         delete [] v_dims;
+    delete [] ww_vals;
+    delete [] ww_dims;
 
-        delete [] ww_vals;
-        delete [] ww_dims;
-    } // end if type==3
-
-    debug4<< "Got RV in GetVectorVar" << endl;
     debug4<< mName << "Returned Velocity data" << endl;
+
+
+       
+    }
+    else if ((status = nc_inq_varid(ncid, var, &var_id)) == NC_NOERR)
+    {
+        // Variable Appears to be an Array!
+        debug4 << "Variable:" << var << ": Appears to be an array" << endl;
+        TypeEnum t = NO_TYPE;
+    int varndims = 0, *vardims;
+    fileObject->InqVariable(var, &t, &varndims, &vardims);
+        if  (status != NC_NOERR) fileObject-> HandleError(status);
+
+    if (varndims==2)
+    {
+        int nvars = vardims[0]; // The number of columns in the array   
+        int nvals = vardims[1]; // The number of rows in the array
+        // nvals is also the number of elements for array variables!
+
+        debug4<< "nvars=" << nvars << endl;
+        debug4 << "nvals=" << nvals << endl;
+        float *vals = new float[nvals*nvars];
+        status = nc_get_var_float(ncid,var_id,vals);
+        if  (status != NC_NOERR) fileObject-> HandleError(status);
+
+        rv->SetNumberOfComponents(nvars);
+        rv->SetNumberOfTuples(nvals);
+        for (int i = 0 ; i < nvals ; i++)
+            for (int j = 0 ; j < nvars ; j++)
+          rv->SetComponent(i, j, vals[nvars*i+j]);
+
+        delete [] vals;
+
+        debug4<< mName << "Returned Array data" << endl;
+    }
+
+    //else if (varndims==3)
+    //{
+    //int nvars = vardims[1]; //Number of layers or levels 
+    //int nvals = vardims[2]; //Number of zones or nodes    
+    //size_t starts[]={timestate,0,0};
+    //size_t counts[]={1, vardims[1], vardims[2]};
+    //ptrdiff_t stride[]={1,1,1};
+    //float *vals = new float[nvars*nvals];
+    //
+    //status = nc_get_vars_float(fileObject->GetFileHandle(),var_id,
+    //      starts, counts, stride, vals);
+    //  if (status != NC_NOERR) fileObject-> HandleError(status);
+    //
+    //
+    //  rv->SetNumberOfComponents(nvars);
+    //  rv->SetNumberOfTuples(nvals);
+    //  for (int i = 0 ; i < nvals ; i++)
+    //      for (int j = 0 ; j < nvars ; j++)
+    //  rv->SetComponent(i, j, vals[nvars*i+j]);
+    //
+    //  delete [] vals;
+    //
+    //  debug4<< mName << "Returned Array data" << endl;
+    //}
+    delete [] vardims;
+
+    }
+    else 
+    {
+        fileObject-> HandleError(status);
+        EXCEPTION1(InvalidVariableException, var);
+    }
 
     return rv;    
 }
 
+
+
+
+
+// ****************************************************************************
+//  Method: avtFVCOMReader::DENS
+//
+//  Purpose:
+//          Calculate the density from the temperature, salinity and pressure 
+//               :use Fofonoff and Millard equation of state
+//
+//  Arguments:
+//      timestate  The index of the timestate.  If GetNTimesteps returned
+//                 'N' time steps, this is guaranteed to be between 0 and N-1.
+//
+//
+//  Programmer: David Stuebe
+//  Creation:   Thu May 18 08:39:01 PDT 2006
+//
+// ****************************************************************************
+
+
+//==============================================================================|
+//   Calculate Potential Density Based on Potential Temp and Salinity           |
+//     Pressure effects are incorported (Can Model Fresh Water < 4 Deg C)       |
+//     Ref:  algorithms for computation of fundamental properties of            |
+//         seawater , Fofonoff and Millard.                        |
+//                                                                              |
+//  calculates: rho1(nnode) density at nodes                        |
+//  calculates: rho (ncell) density at elements                        |
+//==============================================================================|
+   
+vtkDataArray *
+avtFVCOMReader::DENS(int timestate, avtVariableCache *cache)
+{
+    const char *mName = "avtFVCOMReader::DENS: ";
+    debug4 << mName << "timestate=" << timestate << endl;
+
+
+    // Bail out if we can't get the file handle.
+    int ncid = fileObject->GetFileHandle();
+    if(ncid == -1)
+    {
+        EXCEPTION1(InvalidVariableException, "Density");
+    }
+
+    debug4 << mName << "Loading: salinity" << endl;
+    vtkDataArray *salt = GetVar(timestate,"salinity",cache);
+
+    debug4 << mName << "Loading: Theta{S,T,P,0}" << endl;
+    vtkDataArray *ptmp = GetVar(timestate,"Theta{S,T,P,0}",cache);
+
+    debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
+    vtkDataSet *mesh =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
+    
+    int ntuples = mesh->GetNumberOfPoints();
+       
+    
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfTuples(ntuples);
+    
+    double GRAV=9.81;
+    double xyz[3];
+    double sval;
+    double tval;
+    double pbar;
+    // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+    for (int i = 0 ; i < ntuples+1 ; i++) 
+    {
+    
+        if (i<ntuples)
+    {
+        tval= ptmp->GetComponent(i,1);
+        sval= salt->GetComponent(i,1);
+        mesh->GetPoint(i,xyz); 
+        // This returns xyz location of each point
+        pbar = GRAV *1.025 * fabs(xyz[2]) * 0.01; 
+        // Calculate pressure in Bar at depth z in meters
+        //dbar = 9.81 *ave_dens * depth_m /100
+    }
+    else if (i==ntuples)
+    {
+        //  Check Values go here!
+        tval=40;
+        sval=40;
+        pbar = 1000; 
+    }      
+
+    // Compute density (kg/m3) at standard one atmosphere pressure
+
+    
+    // Loaded Theta above! Converted from temp:
+    double rho = SVAN(sval,tval,pbar);
+
+    if (i<ntuples)
+        rv->SetTuple1(i, rho);
+
+    else
+        debug4 << "Dens_Fofonoff_Millard CHECK VAL!" << endl
+               << "check Values: (T=40 C, S=40 PSU, 1000 bar)" << endl
+           << "RHO1 = 59.82037     (kg/m3)" << endl
+           << "VALUE=" << rho << endl;
+
+    }
+
+
+    debug4 << mName << "end" << endl;
+
+    return rv;
+} // END DENS
+
+
+// ****************************************************************************
+//  Method: avtFVCOMReader::DENS2
+//
+//  Purpose:
+//          Calculate the density from the potential temperature and salinity 
+//               :use Unknown equation of state equation of state
+//
+//  Arguments:
+//      timestate  The index of the timestate.  If GetNTimesteps returned
+//                 'N' time steps, this is guaranteed to be between 0 and N-1.
+//
+//
+//  Programmer: David Stuebe
+//  Creation:   Thu May 18 08:39:01 PDT 2006
+//
+// ****************************************************************************
+
+   
+// REMOVED DENS 2
+
+#ifdef DENS2_unknown
+
+
+vtkDataArray *
+avtFVCOMReader::DENS2(int timestate, avtVariableCache *cache)
+{
+    const char *mName = "avtFVCOMReader::DENS2: ";
+    debug4 << mName << "timestate=" << timestate << endl;
+
+
+    // Bail out if we can't get the file handle.
+    int ncid = fileObject->GetFileHandle();
+    if(ncid == -1)
+    {
+        EXCEPTION1(InvalidVariableException, "Density");
+    }
+
+    debug4 << mName << "Loading: salinity" << endl;
+    vtkDataArray *salt = GetVar(timestate,"salinity",cache);
+
+    debug4 << mName << "Loading Potential Temperature variable: temp;" << endl;
+    vtkDataArray *ptmp = GetVar(timestate,"temp",cache);
+
+    debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
+    vtkDataSet *mesh =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
+    
+    int ntuples = mesh->GetNumberOfPoints();
+       
+    
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfTuples(ntuples);
+    
+    double sval;
+    double tval;
+    double rho;
+    double sval2;
+    double sval3;
+    double tval2;
+    double tval3;
+
+    //Constant coefficients of equation of state
+    double a1 = +6.76786136E-6;
+    double a2 = -4.8249614E-4;
+    double a3 = +8.14876577E-1;
+    double a4 = -0.225845860E0;
+
+    double b1 = +1.667E-8;
+    double b2 = -8.164E-7;
+    double b3 = +1.803E-5;
+
+    double c1 = -1.0843E-6;
+    double c2 = +9.8185E-5;
+    double c3 = -4.786E-3;
+
+    double d1 = +6.7678613E-6;
+    double d2 = -4.8249614E-4;
+    double d3 = 8.14876577E-1;
+    double d4 = 3.895414E-2;
+
+    double e1 = -3.98;
+
+    double f1 = 283;
+
+    double g1 = +503.57;
+    double g2 = +67.26;
+
+
+
+    // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+    for (int i = 0 ; i < ntuples+1 ; i++) 
+    {
+    
+        if (i<ntuples)
+    {
+        tval= ptmp->GetComponent(i,1);
+        sval= salt->GetComponent(i,1);
+
+    }
+    else if (i==ntuples)
+    {
+        //  Check Values go here!
+        tval=40;
+        sval=40;
+    }      
+
+    // Compute density (kg/m3)
+
+    sval2= sval * sval;
+    sval3 =  sval2 * sval;
+
+    tval2 = tval *tval;
+    tval3 =  tval2 * tval;
+
+    rho = ( ( a1 * sval3 + a2 * sval2 + a3 * sval + a4 ) *
+        ( b1 * tval3 + b2 * tval2 + b3 * tval ) + 
+          c1 * tval3 + c2 * tval2 + c3 * tval + 1 ) *
+              ( d1 +sval3 + d2 * sval2 + d3 * sval +d4 ) -
+          (tval + e1) * (tval + e1) * (tval + f1 ) / ( g1 * tval + g2);
+
+
+
+    if (i<ntuples)
+        rv->SetTuple1(i, rho);
+
+    else
+        debug4 << "Don't know where this equation of state came from?" << endl
+               << "check Values: ?)" << endl;
+          // << "RHO1 = 59.82037     (kg/m3)" << endl
+          //   << "VALUE=" << rho << endl;
+
+    }
+
+
+    debug4 << mName << "end" << endl;
+
+    return rv;
+} // END DENS2
+
+
+#endif
+
+// ****************************************************************************
+//  Method: avtFVCOMReader::DENS3
+//
+//  Purpose:
+//          Calculate the density from the temperature, salinity and pressure 
+//               :use Jackett and McDougall equation of state
+//
+//  Arguments:
+//      timestate  The index of the timestate.  If GetNTimesteps returned
+//                 'N' time steps, this is guaranteed to be between 0 and N-1.
+//
+//
+//  Programmer: David Stuebe
+//  Creation:   Thu May 18 08:39:01 PDT 2006
+//
+// ****************************************************************************
+
+//==============================================================================|
+//     COMPUTE IN SITU DENSITY - 1000  USING SALINITY, POTENTIAL TEMP,          |
+//     AND PRESSURE FROM A POLYNOMIAL EXPRESSION (JACKETT & MCDOUGALL,          |
+//     1995). IT ASSUMES  NO  PRESSURE  VARIATION  ALONG GEOPOTENTIAL           |
+//     SURFACES, THAT IS, DEPTH (METERS; NEGATIVE) AND PRESSURE (DBAR           |
+//     ASSUMED NEGATIVE HERE) ARE INTERCHANGEABLE.                              |
+//                                                                              |
+//     check Values: (T=3 C, S=35.5 PSU, Z=-5000 m)                             |
+//        RHOF  = 1050.3639165364     (kg/m3)                                   |
+//        DEN1  = 1028.2845117925     (kg/m3)                                   |
+//                                                                              |
+//  Reference:                                                                  |
+//                                                                              |
+//  Jackett, D. R. and T. J. McDougall, 1995, Minimal Adjustment of             |
+//    Hydrostatic Profiles to Achieve Static Stability, J. of Atmos.            |
+//    and Oceanic Techn., vol. 12, pp. 381-389.                                 |
+//                                            | 
+//    CALCULATES: RHO1(M) DENSITY AT NODES                                |
+//    CALCULATES: RHO (N) DENSITY AT ELEMENTS                        |
+//==============================================================================|
+
+
+
+vtkDataArray *
+avtFVCOMReader::DENS3(int timestate, avtVariableCache *cache)
+{
+    const char *mName = "avtFVCOMReader::DENS3: ";
+    debug4 << mName << "timestate=" << timestate << endl;
+
+
+    // Bail out if we can't get the file handle.
+    int ncid = fileObject->GetFileHandle();
+    if(ncid == -1)
+    {
+        EXCEPTION1(InvalidVariableException, "Density");
+    }
+
+    debug4 << mName << "Loading: salinity" << endl;
+    vtkDataArray *salt = GetVar(timestate,"salinity",cache);
+
+    debug4 << mName << "Loading Potential Temperature variable: temp;" << endl;
+    vtkDataArray *ptmp = GetVar(timestate,"temp",cache);
+
+    debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
+    vtkDataSet *mesh =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
+    
+    int ntuples = mesh->GetNumberOfPoints();
+    
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfTuples(ntuples);
+    
+    double TEMP[10]; // This will be temporary storage for intermediate steps!
+    double GRAV=9.81;
+    double xyz[3];
+    float tval;
+    float sval;
+    float sqrtsval;
+    double PBAR;
+    
+
+
+    
+    //==============================================================================|
+    //  Polynomial  expansion  coefficients for the computation of in situ          |
+    //  density  via  the  nonlinear  equation of state  for seawater as a          |
+    //  function of potential temperature, salinity, and pressure (Jackett          |
+    //  and McDougall, 1995).                                                       |
+        
+    double A00 = +1.965933e+04;
+    double A01 = +1.444304e+02;
+    double A02 = -1.706103e+00;
+    double A03 = +9.648704e-03;
+    double A04 = -4.190253e-05;
+    double B00 = +5.284855e+01;
+    double B01 = -3.101089e-01;
+    double B02 = +6.283263e-03;
+    double B03 = -5.084188e-05;
+    double D00 = +3.886640e-01;
+    double D01 = +9.085835e-03;
+    double D02 = -4.619924e-04;
+    double E00 = +3.186519e+00;
+    double E01 = +2.212276e-02;
+    double E02 = -2.984642e-04;
+    double E03 = +1.956415e-06;
+    double F00 = +6.704388e-03;
+    double F01 = -1.847318e-04;
+    double F02 = +2.059331e-07;
+    double G00 = +1.480266e-04;
+    double G01 = +2.102898e-04;
+    double G02 = -1.202016e-05;
+    double G03 = +1.394680e-07;
+    double H00 = -2.040237e-06;
+    double H01 = +6.128773e-08;
+    double H02 = +6.207323e-10;
+    
+    double Q00 = +9.99842594e+02;
+    double Q01 = +6.793952e-02;
+    double Q02 = -9.095290e-03;
+    double Q03 = +1.001685e-04;
+    double Q04 = -1.120083e-06;
+    double Q05 = +6.536332e-09;
+    double U00 = +8.24493e-01;
+    double U01 = -4.08990e-03;
+    double U02 = +7.64380e-05;
+    double U03 = -8.24670e-07;
+    double U04 = +5.38750e-09;
+    double V00 = -5.72466e-03;
+    double V01 = +1.02270e-04;
+    double V02 = -1.65460e-06;
+    double W00 = +4.8314e-04;
+    
+
+    // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+    for (int i = 0 ; i < ntuples+1 ; i++) 
+    {
+    
+    if (i<ntuples)
+    {
+        tval= ptmp->GetComponent(i,1);
+        sval= salt->GetComponent(i,1);
+        sqrtsval = sqrt(sval);
+        mesh->GetPoint(i,xyz); 
+        // This returns xyz location of each point
+        PBAR = GRAV *1.025 * fabs(xyz[2]) * 0.01; 
+        // Calculate pressure in Bar at depth z in meters
+        //Bar = 9.81 *ave_dens * depth_m /100
+    }
+    else if (i==ntuples)
+    {
+        tval=3;
+        sval=35.5;
+        sqrtsval = sqrt(sval);
+        PBAR = 300; 
+    }      
+
+    // Compute density (kg/m3) at standard one atmosphere pressure
+    
+    TEMP[1]=Q00+tval*(Q01+tval*(Q02+tval*(Q03+tval*(Q04+tval*Q05))));
+    TEMP[2]=U00+tval*(U01+tval*(U02+tval*(U03+tval*U04)));
+    TEMP[3]=V00+tval*(V01+tval*V02);
+    double DEN1=TEMP[1]+sval*(TEMP[2]+sqrtsval*TEMP[3]+sval*W00);
+
+    // Compute secant bulk modulus (BULK = BULK0 + BULK1*PBAR + BULK2*PBAR*PBAR)
+    
+    TEMP[4]=A00+tval*(A01+tval*(A02+tval*(A03+tval*A04)));
+    TEMP[5]=B00+tval*(B01+tval*(B02+tval*B03));
+    TEMP[6]=D00+tval*(D01+tval*D02);
+    TEMP[7]=E00+tval*(E01+tval*(E02+tval*E03));
+    TEMP[8]=F00+tval*(F01+tval*F02);
+    TEMP[9]=G01+tval*(G02+tval*G03);
+    TEMP[10]=H00+tval*(H01+tval*H02);
+    
+    double BULK0=TEMP[4]+sval*(TEMP[5]+sqrtsval*TEMP[6]);
+    double BULK1=TEMP[7]+sval*(TEMP[8]+sqrtsval*G00);
+    double BULK2=TEMP[9]+sval*TEMP[10];
+    double BULK = BULK0 + PBAR * (BULK1 + PBAR * BULK2);
+    
+    //  Compute "in situ" density anomaly (kg/m3)
+    double RHOF=(DEN1*BULK)/(BULK-PBAR);
+    if (i<ntuples)
+        rv->SetTuple1(i, RHOF);
+    
+    else
+        debug4 << "Dens_Jackett_McDougall CHECK VAL!" << endl
+               << "check Values: (T=3 C, S=35.5 PSU, 300 bar)" << endl
+           << "RHOF = 1041.83267     (kg/m3)" << endl
+           << "VALUE=" << RHOF << endl;
+              
+      }
+
+
+      debug4 << mName << "end" << endl;
+
+      return rv;
+}// end DENS3
+
+
+// ****************************************************************************
+//  Method: avtFVCOMReader::THETA
+//
+//  Purpose: Calculate potential temperature for insitu temperature, salinity, 
+//           Pressure, and a reference pressure.
+//
+//  Arguments:
+//      timestate  The index of the timestate.  If GetNTimesteps returned
+//                 'N' time steps, this is guaranteed to be between 0 and N-1.
+//
+//
+//  Programmer: David Stuebe
+//  Creation:   Thu May 18 08:39:01 PDT 2006
+//
+// ****************************************************************************
+
+
+//==============================================================================|
+// to compute local potential temperature at pr using                           |
+// bryden 1973 polynomial for adiabatic lapse rate and                          |
+// runge-kutta 4th order integration algorithm.                                 |
+// ref: bryden,h.,1973,deep-sea res.,20,401-408;                                |
+// fofonoff,n.,1977,deep-sea res.,24,489-491                                    |
+//                                                                              |
+// units:                                                                       |
+//       pressure        p04       decibars                                     |
+//       temperature     t04       deg celsius (ipts-68)                        |
+//       salinity         s4        (ipss-78)                                   |
+//       reference prs    pr       decibars                                     |
+//       potential tmp.  theta     deg celsius                                  |
+// checkvalue:                                                                  |
+//             theta= 36.89073 c,s=40 (ipss-78),                                |
+//             t0=40 deg c,p0=10000 decibars,pr=0 decibars                      |
+//                                                                              |
+//==============================================================================|
+
+
+vtkDataArray *
+avtFVCOMReader::THETA(int timestate, avtVariableCache *cache)
+{
+    const char *mName = "avtFVCOMReader::THETA: ";
+    debug4 << mName << "timestate=" << timestate << endl;
+
+
+    // Bail out if we can't get the file handle.
+    int ncid = fileObject->GetFileHandle();
+    if(ncid == -1)
+    {
+        EXCEPTION1(InvalidVariableException, "Density");
+    }
+
+    debug4 << mName << "Loading: salinity" << endl;
+    vtkDataArray *salt = GetVar(timestate,"salinity",cache);
+
+    debug4 << mName << "Loading insitu temperature variable: temp;" << endl;
+    vtkDataArray *tmp = GetVar(timestate,"temp",cache);
+
+    debug4 << mName << "Loading: SigmaLayer_Mesh" << endl;
+    vtkDataSet *mesh =  GetMesh(timestate,"SigmaLayer_Mesh", cache);
+    
+    int ntuples = mesh->GetNumberOfPoints();
+    
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfTuples(ntuples);
+    double GRAV = 9.81;   
+    double xyz[3];
+    float tval;
+    float sval;
+    double pbar;
+    
+    // Set Reference pressure here!
+    double p_ref=0.0;
+    // if you change this please change the name of the variable in the meta data
+    // as well for clarity!!!!
+
+
+    // ADDED CHECK VAL TO DEBUG!!! when i=ntuples do check val!
+    for (int i = 0 ; i < ntuples+1 ; i++) 
+    {
+    
+    if (i<ntuples)
+    {
+        tval= tmp->GetComponent(i,1);
+        sval= salt->GetComponent(i,1);
+        mesh->GetPoint(i,xyz); 
+        // This returns xyz location of each point
+        pbar = GRAV *1.025 * fabs(xyz[2]) * 0.01; 
+        // Calculate pressure in Bar at depth z in meters
+        //Bar = 9.81 *ave_dens * depth_m /100
+    }
+    else if (i==ntuples)
+    {
+        tval=40;
+        sval=40;
+        pbar = 1000; 
+    }      
+
+    
+    
+    
+    
+    //==============================================================================|
+
+    double S4 = sval;
+    double P4 = pbar*10.0;
+    double T4 = tval;
+    double PR = p_ref;
+    double H4;
+    double XK;
+    double Q4;
+    H4 = PR - P4;
+    XK = H4 * ATG(S4,T4,P4);
+    T4 = T4 + 0.5*XK;
+    Q4 = XK;
+    P4 = P4 + 0.5*H4;
+    XK = H4 * ATG(S4,T4,P4);
+    T4 = T4 + 0.29289322*(XK-Q4);
+    Q4 = 0.58578644*XK + 0.121320344*Q4;
+    XK = H4 * ATG(S4,T4,P4);
+    T4 = T4 + 1.707106781*(XK-Q4);
+    Q4 = 3.414213562*XK - 4.121320344*Q4;
+    P4 = P4 + 0.5*H4;
+    XK = H4 * ATG(S4,T4,P4);
+    double ptmp = T4 + (XK-2.0*Q4)/6.0;
+    
+    
+    if (i<ntuples)
+        rv->SetTuple1(i, ptmp);
+
+    else
+        debug4 << "THETA CHECK VAL!" << endl
+               << "check Values: (T=40 C, S=40 (ipss-78), 1000 bar)" << endl
+           << "RHOF = 36.89073   (c)" << endl
+           << "VALUE=" << ptmp << endl;
+              
+      }
+
+
+      debug4 << mName << "end" << endl;
+
+      return rv;
+}// end THETA
+
+
+
+
+//==============================================================================|
+// adiabatic temperature gradient deg c per decibar                        |
+// ref: bryden, h., 1973,deep-sea res.,20,401-408                               |
+//                                                                              |
+// units:                                                                       |
+//       pressure        P4        decibars                                     |
+//       temperature     T4        deg celsius(ipts-68)                         |
+//       salinity        s4        (ipss-78)                                    |
+//       adiabatic      atg        deg. c/decibar                               |
+// checkvalue: atg=3.255976e-4 c/dbar for s=40 (ipss-78),                       |
+// t=40 deg c,p0=10000 decibars                                                 |
+//==============================================================================|
+
+double
+avtFVCOMReader::ATG(double S4, double T4, double P4)
+{
+  
+    double ds  = S4 - 35.0;
+    double atg = (((-2.1687e-16*T4+1.8676e-14)*T4-4.6206e-13)*P4
+      +((2.7759e-12*T4-1.1351e-10)*ds+((-5.4481e-14*T4
+      +8.733e-12)*T4-6.7795e-10)*T4+1.8741e-8))*P4
+      +(-4.2393e-8*T4+1.8932e-6)*ds 
+      +((6.6228e-10*T4-6.836e-8)*T4+8.5258e-6)*T4+3.5803e-5;
+
+    return atg;
+}
+
+
+
+//==============================================================================!
+// specific volume anomaly (steric anomaly) based on 1980 equation              |
+// of state for seawater and 1978 practerical salinity scale.                   |
+// references:                                                                  |
+// millero, et al (1980) deep-sea res.,27a,255-264                              |
+// millero and poisson 1981,deep-sea res.,28a pp 625-629.                       |
+// both above references are also found in unesco report 38 (1981)              |
+//                                                                              |
+// units:                                                                       |
+//       pressure        p04       decibars                                     |
+//       temperature     t4        deg celsius (ipts-68)                        |
+//       salinity        s4        (ipss-78)                                    |
+//       spec. vol. ana. svan     m**3/kg *1.0e-8                               |
+//       density ana.    sigma    kg/m**3                                       |
+//                                                                              |
+// check value: svan=981.3021 e-8 m**3/kg. for s = 40 (ipss-78),                |
+// t = 40 deg c, p0= 10000 decibars.                                            |
+// check value: sigma = 59.82037  kg/m**3. for s = 40 (ipss-78) ,               |
+// t = 40 deg c, p0= 10000 decibars.                                            |
+//==============================================================================!
+
+double
+avtFVCOMReader::SVAN(double S4, double T4, double P4)
+{
+
+    // Declare storage variable here!
+    double SIG,SR,RR1,RR2,RR3,V350P,DK;
+    double A4,B4,C4,D4,E4,AA1,BB1,AW,BW,KK,K0,KW,K35,SVA;
+    double GAM,PK,DVAN,DR35P, SVAN;
+    
+    // Return variable:
+    double SIGMA;    
+
+    double R3500 = 1028.1063;
+    double RR4   = 4.8314E-4;
+    double DR350 = 28.106331;
+    
+    // rr4 is refered to as  c  in millero and poisson 1981
+    // pressure is bars and take square root salinity.
+    
+    //   P4=P04/10.0_SP  Input pressure is bars not dbar!!!
+    SR  = sqrt(fabs(S4));
+    
+    // pure water density at atmospheric pressure
+    //   bigg p.h.,(1967) br. j. applied physics 8 pp 521-537.
+    //
+    
+    RR1 = ((((6.536332E-9*T4 - 1.120083E-6)*T4 + 1.001685E-4)*T4
+      -9.095290E-3)*T4 + 6.793952E-2)*T4 - 28.263737;
+
+
+    // seawater density atm press.
+    //  coefficients involving salinity
+    //  rr2 = a   in notation of millero and poisson 1981
+
+    RR2 = (((5.3875E-9*T4 - 8.2467E-7)*T4 + 7.6438E-5)*T4
+      -4.0899E-3)*T4 + 8.24493E-1;
+
+    //  rr3 = b4  in notation of millero and poisson 1981
+
+    RR3 = (-1.6546E-6*T4 + 1.0227E-4)*T4 - 5.72466E-3;
+
+    //  international one-atmosphere equation of state of seawater
+
+    SIG = (RR4*S4 + RR3*SR + RR2)*S4 + RR1;
+
+    // specific volume at atmospheric pressure
+
+    V350P = 1.0/R3500;
+    SVA   = -SIG*V350P/(R3500 + SIG);
+    SIGMA = SIG + DR350;
+
+    //  scale specific vol. anamoly to normally reported units
+
+    SVAN=SVA*1.0E+8;
+    if(P4 == 0.0) return SIGMA;
+    
+    //-------------------------------------------------------------|
+    //    new high pressure equation of sate for seawater          |
+    //                                                             |
+    //        millero, el al., 1980 dsr 27a, pp 255-264            |
+    //        constant notation follows article                    |
+    //-------------------------------------------------------------|
+    // compute compression terms
+
+    E4  = (9.1697E-10*T4 + 2.0816E-8)*T4 - 9.9348E-7;
+    BW  = (5.2787E-8*T4 - 6.12293E-6)*T4 + 3.47718E-5;
+    B4  = BW + E4*S4;
+     
+    D4  = 1.91075E-4;
+    C4  = (-1.6078E-6*T4 - 1.0981E-5)*T4 + 2.2838E-3;
+    AW  = ((-5.77905E-7*T4 + 1.16092E-4)*T4 + 1.43713E-3)*T4
+          -0.1194975;
+    A4  = (D4*SR + C4)*S4 + AW;
+     
+    BB1 = (-5.3009E-4*T4 + 1.6483E-2)*T4 + 7.944E-2;
+    AA1 = ((-6.1670E-5*T4 + 1.09987E-2)*T4 - 0.603459)*T4 + 54.6746;
+    KW  = (((-5.155288E-5*T4 + 1.360477E-2)*T4 - 2.327105)*T4
+      +148.4206)*T4 - 1930.06;
+    K0  = (BB1*SR + AA1)*S4 + KW;
+     
+    // evaluate pressure polynomial
+    //-----------------------------------------------------|
+    //   k equals the secant bulk modulus of seawater      |
+    //   dk=k(s,t,p)-k(35,0,p)                             |
+    //   k35=k(35,0,p)                                     |
+    //-----------------------------------------------------|
+    
+    DK  = (B4*P4 + A4)*P4 + K0;
+    K35 = (5.03217E-5*P4 + 3.359406)*P4 + 21582.27;
+    GAM = P4/K35;
+    PK  = 1.0 - GAM;
+    SVA = SVA*PK + (V350P + SVA)*P4*DK/(K35*(K35+DK));
+
+    //  scale specific vol. anamoly to normally reported units
+
+    SVAN  = SVA*1.0E+8;
+    V350P = V350P*PK;
+
+    //----------------------------------------------------------|
+    // compute density anamoly with respect to 1000.0 kg/m**3   |
+    //  1) dr350: density anamoly at 35 (ipss-78),              |
+    //                               0 deg. c and 0 decibars    |
+    //  2) dr35p: density anamoly at 35 (ipss-78),              |
+    //                               0 deg. c, pres. variation  |
+    //  3) dvan : density anamoly variations involving specific |
+    //            volume anamoly                                |
+    //                                                          |
+    // check values: sigma = 59.82037 kg/m**3                   |
+    // for s = 40 (ipss-78), t = 40 deg c, p0= 10000 decibars.  |
+    //----------------------------------------------------------|
+
+    DR35P = GAM/V350P;
+    DVAN  = SVA/(V350P*(V350P + SVA));
+    SIGMA = DR350 + DR35P - DVAN;
+
+
+  return SIGMA;
+}

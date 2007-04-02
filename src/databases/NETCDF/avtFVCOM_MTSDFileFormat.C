@@ -20,6 +20,7 @@
 
 #include <NETCDFFileObject.h>
 #include <avtFVCOMReader.h>
+#include <avtMaterial.h>
 #include <netcdf.h>
 
 using     std::string;
@@ -191,10 +192,8 @@ avtFVCOM_MTSDFileFormat::GetNTimesteps(void)
 void
 avtFVCOM_MTSDFileFormat::FreeUpResources(void)
 {
-    debug4 << "avtFVCOM_MTSDFileFormat::FreeUpResources: " << endl;
     reader->FreeUpResources();
 }
-
 
 // ****************************************************************************
 // Method: avtFVCOMReader::GetCycles
@@ -242,6 +241,7 @@ avtFVCOM_MTSDFileFormat::GetTimes(std::vector<double> &times)
     reader->GetTimes(times);
 }
 
+
 // ****************************************************************************
 //  Method: avtFVCOM_MTSDFileFormat::PopulateDatabaseMetaData
 //
@@ -284,7 +284,36 @@ avtFVCOM_MTSDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 vtkDataSet *
 avtFVCOM_MTSDFileFormat::GetMesh(int timestate, const char *meshname)
 {
-    return reader->GetMesh(timestate, meshname);
+  reader->SetDomainIndexForCaching(0);
+  return reader->GetMesh(timestate, meshname, cache);
+}
+
+
+
+// ****************************************************************************
+// Method: avtFVCOM_MTSDFileFormat::GetAuxiliaryData
+//
+// Purpose: 
+//   Gets the material object for the particles.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: David Stuebe
+// Creation:   Mon Jul 17 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void *
+avtFVCOM_MTSDFileFormat::GetAuxiliaryData(const char *var, int ts,
+    const char *type, void *args, DestructorFunction &df)
+{
+  return reader->GetAuxiliaryData(var, ts, type, args, df);
 }
 
 
@@ -309,7 +338,8 @@ avtFVCOM_MTSDFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataArray *
 avtFVCOM_MTSDFileFormat::GetVar(int timestate, const char *varname)
 {
-    return reader->GetVar(timestate, varname);
+  reader->SetDomainIndexForCaching(0);
+  return reader->GetVar(timestate, varname, cache);
 }
 
 
