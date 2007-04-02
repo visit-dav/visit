@@ -93,6 +93,9 @@ using     std::sort;
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added meshCoordType.
 //
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
+//    Changed origNodesRequiredForPick to origElementsRequiredForPick.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -145,7 +148,7 @@ avtDataAttributes::avtDataAttributes()
     numStates = 1;
     mirOccurred = false;
     canUseOrigZones = true;
-    origNodesRequiredForPick = false;
+    origElementsRequiredForPick = false;
     meshCoordType = AVT_XY;
 }
 
@@ -319,6 +322,9 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added meshCoordType.
+//
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
+//    Changed origNodesRequiredForPick to origElementsRequiredForPick.
 //
 // ****************************************************************************
 
@@ -564,7 +570,7 @@ avtDataAttributes::Print(ostream &out)
         out << "Material Interace Reconstruction occurred. " << endl;
     if (canUseOrigZones)
         out << "Original Zones cannot be used for Pick." << endl;
-    if (origNodesRequiredForPick)
+    if (origElementsRequiredForPick)
         out << "Original Nodes are required for Pick." << endl;
 
     switch (meshCoordType)
@@ -674,6 +680,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added meshCoordType.
 //
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
+//    Changed origNodesRequiredForPick to origElementsRequiredForPick.
+//
 // ****************************************************************************
 
 void
@@ -757,7 +766,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     numStates = di.numStates;
     mirOccurred = di.mirOccurred;
     canUseOrigZones = di.canUseOrigZones;
-    origNodesRequiredForPick = di.origNodesRequiredForPick;
+    origElementsRequiredForPick = di.origElementsRequiredForPick;
     meshCoordType = di.meshCoordType;
 }
 
@@ -858,6 +867,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added meshCoordType.
+//
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
+//    Changed origNodesRequiredForPick to origElementsRequiredForPick.
 //
 // ****************************************************************************
 
@@ -1062,7 +1074,7 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     canUseTransform &= da.canUseTransform;
     mirOccurred |= da.mirOccurred;
     canUseOrigZones &= da.canUseOrigZones;
-    origNodesRequiredForPick |= da.origNodesRequiredForPick;
+    origElementsRequiredForPick |= da.origElementsRequiredForPick;
 }
 
 
@@ -2068,6 +2080,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added meshCoordType.
 //
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
+//    Changed origNodesRequiredForPick to origElementsRequiredForPick.
+//
 // ****************************************************************************
 
 void
@@ -2099,7 +2114,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[18] = numStates;
     vals[19] = mirOccurred;
     vals[20] = canUseOrigZones;
-    vals[21] = origNodesRequiredForPick;
+    vals[21] = origElementsRequiredForPick;
     vals[22] = meshCoordType;
     vals[23] = activeVariable;
     vals[24] = variables.size();
@@ -2291,6 +2306,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Fri Feb  3 10:32:12 PST 2006
 //    Added meshCoordType.
 //
+//    Kathleen Bonnell, Mon May  1 08:57:41 PDT 2006 
+//    Changed origNodesRequiredForPick to origElementsRequiredForPick.
+//
 // ****************************************************************************
 
 int
@@ -2387,7 +2405,7 @@ avtDataAttributes::Read(char *input)
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
-    origNodesRequiredForPick = (tmp != 0 ? true : false);
+    origElementsRequiredForPick = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

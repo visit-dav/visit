@@ -335,6 +335,9 @@ avtPosCMFEAlgorithm::DesiredPoints::~DesiredPoints()
 //    Hank Childs, Sat Mar 18 09:42:29 PST 2006
 //    Optimize for rectilinear grids.
 //
+//    Kathleen Bonnell, Tue May  2 08:58:01 PDT 2006 
+//    Use correct dims index for Y and Z coords tests. 
+//
 // ****************************************************************************
 
 void
@@ -385,7 +388,7 @@ avtPosCMFEAlgorithm::DesiredPoints::AddDataset(vtkDataSet *ds)
         {
             if (isNodal)
                 newY[i] = y->GetTuple1(i);
-            else if (dims[0] == 1)
+            else if (dims[1] == 1)
                 newY[i] = y->GetTuple1(i);
             else
                 newY[i] = (y->GetTuple1(i) + y->GetTuple1(i+1)) / 2.;
@@ -402,7 +405,7 @@ avtPosCMFEAlgorithm::DesiredPoints::AddDataset(vtkDataSet *ds)
         {
             if (isNodal)
                 newZ[i] = z->GetTuple1(i);
-            else if (dims[0] == 1)
+            else if (dims[2] == 1)
                 newZ[i] = z->GetTuple1(i);
             else
                 newZ[i] = (z->GetTuple1(i) + z->GetTuple1(i+1)) / 2.;

@@ -460,6 +460,9 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 //    Kathleen Bonnell, Thu Mar  2 14:26:06 PST 2006 
 //    Set ZonesSplit.
 //
+//    Kathleen Bonnell, Fri Apr 28 10:57:21 PDT 2006 
+//    Set OrigElementsRequiredForPick.
+//
 // ****************************************************************************
 
 void
@@ -467,6 +470,36 @@ avtClipFilter::RefashionDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().ZonesSplit();
+    GetOutput()->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
 }
 
+
+// ****************************************************************************
+//  Method: avtClipFilter::PeformRestriction
+//
+//  Purpose:
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   Apr 28, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtPipelineSpecification_p
+avtClipFilter::PerformRestriction(avtPipelineSpecification_p spec)
+{
+ 
+    if (spec->GetDataSpecification()->MayRequireZones() ||
+        spec->GetDataSpecification()->MayRequireNodes())
+    {
+        avtPipelineSpecification_p ns = new avtPipelineSpecification(spec);
+        // Turn on both Nodes and Zones, to prevent another re-execution if 
+        // user switches between zone and node pick.
+        ns->GetDataSpecification()->TurnZoneNumbersOn();
+        ns->GetDataSpecification()->TurnNodeNumbersOn();
+        return ns;
+    }
+    return spec;
+}
 
