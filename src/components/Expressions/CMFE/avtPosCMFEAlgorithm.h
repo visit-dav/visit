@@ -25,6 +25,14 @@ class     vtkDataSet;
 //  Programmer: Hank Childs
 //  Creation:   January 21, 2006 (originally in avtPosCMFEExpression)
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Mar 18 09:42:29 PST 2006
+//    Add support for rectilinear desired points.  Also have
+//    FastLookupGrouping cache lists of overlapping elements, so that
+//    subsequent searches can use this as a guess rather than traversing
+//    the interval tree.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtPosCMFEAlgorithm
@@ -38,6 +46,26 @@ class EXPRESSION_API avtPosCMFEAlgorithm
 
     class DesiredPoints
     {
+      //
+      // DesiredPoints is a tricky class because of two subtleties.
+      // First: It has two ways to store data.  It stores rectilinear grids
+      // one way and other grids another way.  Further, its interface tries
+      // to unify them in places and not unify them in other places.  For
+      // example, pt_list and pt_list_size correspond to non-rectilinear grids,
+      // while rgrid_pts and rgrid_pts_size correspond to rectilinear grids.
+      // But total_nvals corresponds to the total number of values across both.
+      // The thinking is that the interface for the class should be
+      // generalized, except where having knowledge of rectilinear layout will
+      // impact performance, such as is the case for pivot finding.  Of course,
+      // the bookkeeping under the covers is difficult.
+      //
+      // The other subtlety is the two forms this object will take.  Before
+      // calling "RelocatePointsUsingSpatialPartition", this object contains
+      // the desired points for this processor.  But, after the call, it
+      // contains the desired points for this processor's spatial partition.
+      // When "UnRelocatePoints" is called, it switches back to the desired
+      // points for this processor.  Again, bookkeeping overhead causes the
+      // coding of this class to be more complex.
       public:
                               DesiredPoints(bool, int);
         virtual              ~DesiredPoints();
@@ -45,8 +73,12 @@ class EXPRESSION_API avtPosCMFEAlgorithm
         void                  AddDataset(vtkDataSet *);
         void                  Finalize();
 
-        int                   GetNumberOfPoints() {return total_nvals;};
+        int                   GetNumberOfPoints() { return total_nvals; };
+        int                   GetRGridStart()     { return rgrid_start; };
+        int                   GetNumberOfRGrids() { return num_rgrids; };
         void                  GetPoint(int, float *) const;
+        void                  GetRGrid(int, const float *&, const float *&,
+                                       const float *&, int &, int &, int &);
         void                  SetValue(int, float *);
 
         const float          *GetValue(int, int) const;
@@ -59,15 +91,27 @@ class EXPRESSION_API avtPosCMFEAlgorithm
         int                   nComps;
         int                   total_nvals;
         int                   num_datasets;
+        int                   num_rgrids;
+        int                   rgrid_start;
         vector<float *>       pt_list;
         vector<int>           pt_list_size;
+        vector<float *>       rgrid_pts;
+        vector<int>           rgrid_pts_size;
         int                  *map_to_ds;
         int                  *ds_start;
         float                *vals;
 
         vector<float *>       orig_pt_list;
         vector<int>           orig_pt_list_size;
-        vector<int>           num_return_to_proc;
+        vector<float *>       orig_rgrid_pts;
+        vector<int>           orig_rgrid_pts_size;
+        vector<int>           pt_list_came_from;
+        vector<int>           rgrid_came_from;
+
+        void                  GetProcessorsForGrid(int, std::vector<int> &,
+                                                   std::vector<float> &,
+                                                   SpatialPartition &);
+        bool                  GetSubgridForBoundary(int, float *, int *);
     };
 
     class FastLookupGrouping
@@ -83,6 +127,8 @@ class EXPRESSION_API avtPosCMFEAlgorithm
         void          RelocateDataUsingPartition(SpatialPartition &);
 
         bool          GetValue(const float *, float *);
+        bool          GetValueUsingList(std::vector<int> &, const float *, 
+                                        float *);
 
       protected:
         std::string            varname;
@@ -92,6 +138,7 @@ class EXPRESSION_API avtPosCMFEAlgorithm
         avtIntervalTree       *itree;
         int                   *map_to_ds;
         int                   *ds_start;
+        std::vector<int>       list_from_last_successful_search;
     };
 
     class SpatialPartition
@@ -106,6 +153,8 @@ class EXPRESSION_API avtPosCMFEAlgorithm
         int                   GetProcessor(float *);
         int                   GetProcessor(vtkCell *);
         void                  GetProcessorList(vtkCell *, std::vector<int> &);
+        void                  GetProcessorBoundaries(float *,
+                                    std::vector<int> &, std::vector<float> &);
 
       protected:
         avtIntervalTree      *itree;

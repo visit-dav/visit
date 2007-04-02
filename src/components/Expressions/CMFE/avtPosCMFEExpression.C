@@ -4,41 +4,7 @@
 
 #include <avtPosCMFEExpression.h>
 
-#include <float.h>
-#include <math.h>
-
-#ifdef PARALLEL
-#include <mpi.h>
-#endif
-
-#include <vtkAppendFilter.h>
-#include <vtkCellData.h>
-#include <vtkCellLocator.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkFloatArray.h>
-#include <vtkGenericCell.h>
-#include <vtkPointData.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkUnstructuredGridRelevantPointsFilter.h>
-#include <vtkUnstructuredGridWriter.h>
-#include <vtkUnstructuredGridReader.h>
-
-#include <Utility.h>
-#include <vtkVisItUtility.h>
-
-#include <avtCommonDataFunctions.h>
-#include <avtDatasetExaminer.h>
-#include <avtIntervalTree.h>
-#include <avtParallel.h>
 #include <avtPosCMFEAlgorithm.h>
-#include <avtSILRestrictionTraverser.h>
-
-#include <DebugStream.h>
-#include <ExpressionException.h>
-#include <InvalidMergeException.h>
-#include <TimingsManager.h>
 
 
 // ****************************************************************************
