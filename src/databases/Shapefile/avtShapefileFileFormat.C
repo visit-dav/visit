@@ -55,16 +55,18 @@
 #include <Expression.h>
 #include <ExpressionList.h>
 #include <DebugStream.h>
+#include <stdlib.h>
 
-using     std::string;
-
-#define POLYGONS_AS_LINES
 
 // ****************************************************************************
 //  Method: avtShapefileFileFormat constructor
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Mar 24 12:18:02 PDT 2005
+//
+//  Modifications:
+//    Brad Whitlock, Wed Feb 28 16:02:49 PST 2007
+//    Added VISIT_SHAPEFILE_POLYGONS_AS_LINES environment variable.
 //
 // ****************************************************************************
 
@@ -74,6 +76,10 @@ avtShapefileFileFormat::avtShapefileFileFormat(const char *filename)
     initialized = false;
     numShapeTypes = 0;
     dbfFile = 0;
+
+    // Record whether we'll use polygons as lines. Let's not do it by
+    // default.
+    polygonsAsLines = (getenv("VISIT_SHAPEFILE_POLYGONS_AS_LINES") != 0);
 }
 
 // ****************************************************************************
@@ -111,6 +117,9 @@ avtShapefileFileFormat::~avtShapefileFileFormat()
 void
 avtShapefileFileFormat::FreeUpResources(void)
 {
+    debug4 << "avtShapefileFileFormat::FreeUpResources: this=" << (void*)this
+           << endl;
+
     // Free all of the shapes objects.
     for(int i = 0; i < shapes.size(); ++i)
         esriFreeShape(shapes[i].shapeType, shapes[i].shape);
@@ -143,6 +152,8 @@ avtShapefileFileFormat::FreeUpResources(void)
 void
 avtShapefileFileFormat::ActivateTimestep(void)
 {
+    debug4 << "avtShapefileFileFormat::ActivateTimestep: this=" << (void*)this
+           << endl;
     Initialize();
 }
 
@@ -164,6 +175,9 @@ avtShapefileFileFormat::ActivateTimestep(void)
 //   Brad Whitlock, Wed Apr 6 10:48:52 PDT 2005
 //   Changed dbfInitialize interface.
 //
+//   Brad Whitlock, Tue Feb 27 11:46:22 PDT 2007
+//   Added call to CountShapeTypes to set the numShapeTypes member.
+//
 // ****************************************************************************
 
 static void
@@ -180,6 +194,8 @@ avtShapefileFileFormat::Initialize()
     {
         esriShapefile_t *f = 0;
         esriFileError_t code;
+
+        debug4 << mName << "this=" << (void*)this << endl;
 
         // Look at the filename string and chop off the extension.
         std::string SHPfile, DBFfile, fName(filename);
@@ -340,6 +356,9 @@ avtShapefileFileFormat::Initialize()
             }
         }
 
+        // Now that the file has been read, count the number of shapes.
+        numShapeTypes = CountShapeTypes();
+
         initialized = true;
     }
 }
@@ -425,6 +444,88 @@ avtShapefileFileFormat::CountMemberPoints(esriShapeType_t shapeType) const
     }
 
     return npts;
+}
+
+// ****************************************************************************
+// Method: avtShapefileFileFormat::CountShapeTypes
+//
+// Purpose: 
+//   Counts the number of shape types that were read from the file.
+//
+// Returns:    Returns the number of shape types in the file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 27 11:11:07 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+avtShapefileFileFormat::CountShapeTypes() const
+{
+
+    int i, ret = 0, shapeCounts[15];
+    for(i = 0; i < 15; ++i)
+        shapeCounts[i] = 0;
+
+    // Count the number of instances of each shape.
+    for(i = 0; i < shapes.size(); ++i)
+    {
+        switch(shapes[i].shapeType)
+        {
+        case esriNullShape:
+            shapeCounts[0]++;
+            break;
+        case esriPoint:
+            shapeCounts[1]++;
+            break;
+        case esriPolyLine:
+            shapeCounts[2]++;
+            break;
+        case esriPolygon:
+            shapeCounts[3]++;
+            break;
+        case esriMultiPoint:
+            shapeCounts[4]++;
+            break;
+        case esriPointZ:
+            shapeCounts[5]++;
+            break;
+        case esriPolyLineZ:
+            shapeCounts[6]++;
+            break;
+        case esriPolygonZ:
+            shapeCounts[7]++;
+            break;
+        case esriMultiPointZ:
+            shapeCounts[9]++;
+            break;
+        case esriPointM:
+            shapeCounts[10]++;
+            break;
+        case esriPolyLineM:
+            shapeCounts[11]++;
+            break;
+        case esriPolygonM:
+            shapeCounts[12]++;
+            break;
+        case esriMultiPointM:
+            shapeCounts[13]++;
+            break;
+        case esriMultiPatch:
+            shapeCounts[14]++;
+            break;
+        default:
+            debug4 << "Unknown type!" << endl;
+        }
+    }
+
+    // Sum up the number of shape types.
+    for(i = 0; i < 15; ++i)
+        ret += ((shapeCounts[i] > 0) ? 1 : 0);
+
+    return ret;
 }
 
 // ****************************************************************************
@@ -549,6 +650,9 @@ avtShapefileFileFormat::CountCellsForShape(esriShapeType_t shapeType) const
 //    Brad Whitlock, Wed Mar 30 15:43:26 PST 2005
 //    Added code to serve up x,y,z expressions.
 //
+//    Brad Whitlock, Tue Feb 27 11:13:08 PDT 2007
+//    Count the shape types elsewhere.
+//
 // ****************************************************************************
 
 void
@@ -560,11 +664,8 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     std::string  meshname;
     stringVector meshes;
     intVector    is3D;
-#ifdef POLYGONS_AS_LINES
-    int polygonTopDim = 1;
-#else
-    int polygonTopDim = 2;
-#endif
+    int polygonTopDim = polygonsAsLines ? 1 : 2;
+
     int npts = 0;
     if((npts = CountMemberPoints(esriPoint)) > 0)
     {
@@ -697,8 +798,6 @@ avtShapefileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         meshes.push_back(meshname);
         is3D.push_back(1);
     }
-
-    numShapeTypes = meshes.size();
 
     //
     // Add the DBF file's records to the metadata. Note that we're adding
@@ -1063,10 +1162,28 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         int firstPoint = pointIndex;
                         int index = 0;
                         CHECK_VERTS_SIZE(nverts);
-#ifdef POLYGONS_AS_LINES
-                        for(j = start; j < end; ++j, ++index)
+                        if(polygonsAsLines)
                         {
-                            if(j < end - 1)
+                            for(j = start; j < end; ++j, ++index)
+                            {
+                                if(j < end - 1)
+                                {
+                                    // Stash the point
+                                    pts[0] = pg->points[j].x;
+                                    pts[1] = pg->points[j].y;
+                                    pts[2] = 0.f;
+                                    pts += 3;
+                                    verts[index] = pointIndex++;
+                                }
+                                else
+                                    verts[index] = firstPoint;
+                            }
+
+                            pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
+                        }
+                        else
+                        {
+                            for(j = start; j < end-1; ++j, ++index)
                             {
                                 // Stash the point
                                 pts[0] = pg->points[j].x;
@@ -1075,24 +1192,9 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                                 pts += 3;
                                 verts[index] = pointIndex++;
                             }
-                            else
-                                verts[index] = firstPoint;
-                        }
 
-                        pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
-#else
-                        for(j = start; j < end-1; ++j, ++index)
-                        {
-                            // Stash the point
-                            pts[0] = pg->points[j].x;
-                            pts[1] = pg->points[j].y;
-                            pts[2] = 0.f;
-                            pts += 3;
-                            verts[index] = pointIndex++;
+                            pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
                         }
-
-                        pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
-#endif
                     }
 
                     } // end new scope
@@ -1109,10 +1211,28 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         int firstPoint = pointIndex;
                         int index = 0;
                         CHECK_VERTS_SIZE(nverts);
-#ifdef POLYGONS_AS_LINES
-                        for(j = start; j < end; ++j, ++index)
+                        if(polygonsAsLines)
                         {
-                            if(j < end - 1)
+                            for(j = start; j < end; ++j, ++index)
+                            {
+                                if(j < end - 1)
+                                {
+                                    // Stash the point
+                                    pts[0] = pg->points[j].x;
+                                    pts[1] = pg->points[j].y;
+                                    pts[2] = 0.f;
+                                    pts += 3;
+                                    verts[index] = pointIndex++;
+                                }
+                                else
+                                    verts[index] = firstPoint;
+                            }
+
+                            pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
+                        }
+                        else
+                        {
+                            for(j = start; j < end-1; ++j, ++index)
                             {
                                 // Stash the point
                                 pts[0] = pg->points[j].x;
@@ -1121,24 +1241,9 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                                 pts += 3;
                                 verts[index] = pointIndex++;
                             }
-                            else
-                                verts[index] = firstPoint;
-                        }
 
-                        pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
-#else
-                        for(j = start; j < end-1; ++j, ++index)
-                        {
-                            // Stash the point
-                            pts[0] = pg->points[j].x;
-                            pts[1] = pg->points[j].y;
-                            pts[2] = 0.f;
-                            pts += 3;
-                            verts[index] = pointIndex++;
+                            pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
                         }
-
-                        pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
-#endif
                     }
                     } // end new scope
                     break;
@@ -1154,10 +1259,28 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                         int firstPoint = pointIndex;
                         int index = 0;
                         CHECK_VERTS_SIZE(nverts);
-#ifdef POLYGONS_AS_LINES
-                        for(j = start; j < end; ++j, ++index)
+                        if(polygonsAsLines)
                         {
-                            if(j < end - 1)
+                            for(j = start; j < end; ++j, ++index)
+                            {
+                                if(j < end - 1)
+                                {
+                                    // Stash the point
+                                    pts[0] = pg->points[j].x;
+                                    pts[1] = pg->points[j].y;
+                                    pts[2] = pg->z[j];
+                                    pts += 3;
+                                    verts[index] = pointIndex++;
+                                }
+                                else
+                                    verts[index] = firstPoint;
+                            }
+
+                            pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
+                        }
+                        else
+                        {
+                            for(j = start; j < end-1; ++j, ++index)
                             {
                                 // Stash the point
                                 pts[0] = pg->points[j].x;
@@ -1166,24 +1289,9 @@ avtShapefileFileFormat::GetMesh(const char *meshname)
                                 pts += 3;
                                 verts[index] = pointIndex++;
                             }
-                            else
-                                verts[index] = firstPoint;
-                        }
 
-                        pd->InsertNextCell(VTK_POLY_LINE, nverts, verts);
-#else
-                        for(j = start; j < end-1; ++j, ++index)
-                        {
-                            // Stash the point
-                            pts[0] = pg->points[j].x;
-                            pts[1] = pg->points[j].y;
-                            pts[2] = pg->z[j];
-                            pts += 3;
-                            verts[index] = pointIndex++;
+                            pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
                         }
-
-                        pd->InsertNextCell(VTK_POLYGON, nverts-1, verts);
-#endif
                     }
                     } // end new scope
                     break;

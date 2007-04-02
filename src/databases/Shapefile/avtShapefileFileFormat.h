@@ -61,6 +61,9 @@
 //    Brad Whitlock, Fri Apr 1 23:41:51 PST 2005
 //    Added GetNumRepeats.
 //
+//    Brad Whitlock, Tue Feb 27 11:45:59 PDT 2007
+//    Added CountShapeTypes.
+//
 // ****************************************************************************
 
 class avtShapefileFileFormat : public avtSTSDFileFormat
@@ -112,11 +115,13 @@ protected:
     int                    CountShapes(esriShapeType_t) const;
     int                    CountCellsForShape(esriShapeType_t) const;
     int                    GetNumRepeats(void *shape, esriShapeType_t shapeType) const;
+    int                    CountShapeTypes() const;
 
     bool                   initialized;
     esriShapeVector        shapes;
     int                    numShapeTypes;
-    dbfFile_t              *dbfFile;
+    dbfFile_t             *dbfFile;
+    bool                   polygonsAsLines;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };
