@@ -120,6 +120,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Added methods to set/get admissibleDataTypes
 //    Added methods to set/get needNativePrecision 
 //
+//    Hank Childs, Tue Aug 16 16:11:57 PDT 2005
+//    Added methods to simplify heavily mixed zones.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -262,6 +265,16 @@ class PIPELINE_API avtDataSpecification
     void                         SetUseNewMIRAlgorithm(bool unma)
                                      { useNewMIRAlgorithm = unma; }
 
+    bool                         SimplifyHeavilyMixedZones(void)
+                                     { return simplifyHeavilyMixedZones;}
+    void                         SetSimplifyHeavilyMixedZones(bool shmz)
+                                     { simplifyHeavilyMixedZones = shmz; }
+
+    int                          MaxMaterialsPerZone(void)
+                                     { return maxMatsPerZone;}
+    void                         SetMaxMaterialsPerZone(int mmpz)
+                                     { maxMatsPerZone = mmpz; }
+
     bool                         VariablesAreTheSame(const avtDataSpecification &);
 
     int                          AddDataSelection(avtDataSelection *sel);
@@ -310,6 +323,8 @@ class PIPELINE_API avtDataSpecification
     bool                         needSmoothMaterialInterfaces;
     bool                         needCleanZonesOnly;
     bool                         useNewMIRAlgorithm;
+    bool                         simplifyHeavilyMixedZones;
+    int                          maxMatsPerZone;
     bool                         maintainOriginalConnectivity;
     bool                         needNativePrecision;
     avtGhostDataType             desiredGhostDataType;

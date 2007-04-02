@@ -3299,3 +3299,56 @@ int vtkVisItCellLocator::IntersectWithLine(float a0[3], float a1[3],
   return cells->GetNumberOfIds() > 0; 
 }
 
+// ****************************************************************************
+//  Method:  vtkVisItCellLocator::FindClosestPointToLine
+//
+//  Purpose:
+//    Return the point closest to the line along the pick ray, independent
+//    of depth.  It is intended to help pick on point meshes.
+//
+//  Arguments:
+//    a0,a1      points along the ray
+//    dist2      (output) distance^2 from closest point to line
+//    cellId     (output) cellid of closest point to line
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 17, 2005
+//
+// ****************************************************************************
+void
+vtkVisItCellLocator::FindClosestPointToLine(float a0[3], float a1[3],
+                                            float &dist2, vtkIdType &cellId)
+{
+    int npoints = this->DataSet->GetNumberOfPoints();
+
+    dist2 = VTK_LARGE_FLOAT;
+    cellId = -1;
+
+    for (vtkIdType p=0; p<npoints; p++)
+    {
+        float pt[3];
+        this->DataSet->GetPoint(p, pt);
+
+        // v0 is vector along ray
+        float v0[3] = {a1[0]-a0[0], a1[1]-a0[1], a1[2]-a0[2]};
+
+        // v1 is vector from some point on ray to this node
+        float v1[3] = {a0[0]-pt[0], a0[1]-pt[1], a0[2]-pt[2]};
+
+        // cross product
+        float cp[3] = {v0[1]*v1[2] - v1[1]*v0[2],
+                       v0[2]*v1[0] - v1[2]*v0[0],
+                       v0[0]*v1[1] - v1[0]*v0[1]};
+
+        // distance^2
+        float dist_squared = ((cp[0]*cp[0] + cp[1]*cp[1] + cp[2]*cp[2]) /
+                              (v0[0]*v0[0] + v0[1]*v0[1] + v0[2]*v0[2]));
+
+        if (dist2 > dist_squared)
+        {
+            dist2 = dist_squared;
+            cellId = p;
+        }
+    }
+}
+  

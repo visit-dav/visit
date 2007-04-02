@@ -85,6 +85,9 @@ using     std::map;
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added admissibleDataTypes and needNativePrecision
 //
+//    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -106,6 +109,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
     useNewMIRAlgorithm = false;
+    simplifyHeavilyMixedZones = false;
+    maxMatsPerZone = 3;
     desiredGhostDataType = NO_GHOST_DATA;
     maintainOriginalConnectivity = false;
     needNativePrecision = false;
@@ -193,6 +198,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added admissibleDataTypes and needNativePrecision
 //
+//    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -213,6 +221,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     needSmoothMaterialInterfaces = false;
     needCleanZonesOnly = false;
     useNewMIRAlgorithm = false;
+    simplifyHeavilyMixedZones = false;
+    maxMatsPerZone = 3;
     desiredGhostDataType = NO_GHOST_DATA;
     maintainOriginalConnectivity = false;
     needNativePrecision = false;
@@ -432,6 +442,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added admissibleDataTypes and needNativePrecision
 //
+//    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
+//    Add support for simplifying heavily mixed zones.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -479,6 +492,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     needMixedVariableReconstruction = spec.needMixedVariableReconstruction;
     needSmoothMaterialInterfaces    = spec.needSmoothMaterialInterfaces;
     needCleanZonesOnly              = spec.needCleanZonesOnly;
+    simplifyHeavilyMixedZones       = spec.simplifyHeavilyMixedZones;
+    maxMatsPerZone                  = spec.maxMatsPerZone;
     useNewMIRAlgorithm              = spec.useNewMIRAlgorithm;
     desiredGhostDataType            = spec.desiredGhostDataType;
     maintainOriginalConnectivity    = spec.maintainOriginalConnectivity;
@@ -567,6 +582,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //
 //    Mark C. Miller, Tue Apr  5 10:30:16 PDT 2005
 //    Added admissibleDataTypes and needNativePrecision
+//
+//    Hank Childs, Tue Aug 16 16:17:03 PDT 2005
+//    Add support for simplifying heavily mixed zones.
 //
 // ****************************************************************************
 
@@ -681,6 +699,16 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (useNewMIRAlgorithm != ds.useNewMIRAlgorithm)
+    {
+        return false;
+    }
+
+    if (simplifyHeavilyMixedZones != ds.simplifyHeavilyMixedZones)
+    {
+        return false;
+    }
+
+    if (maxMatsPerZone != ds.maxMatsPerZone)
     {
         return false;
     }

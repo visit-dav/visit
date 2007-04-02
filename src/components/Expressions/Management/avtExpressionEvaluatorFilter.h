@@ -61,6 +61,9 @@ class avtSourceFromAVTDataset;
 //   Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
 //   Added const char* arg to QueryCoords. 
 //
+//   Hank Childs, Tue Aug 16 16:50:56 PDT 2005
+//   Add method VerifyVariableTypes.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -105,6 +108,8 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
 
   private:
     int                          currentTimeState;
+
+    void                         VerifyVariableTypes(void);
 };
 
 

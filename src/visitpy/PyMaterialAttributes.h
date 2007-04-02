@@ -16,5 +16,7 @@ PyObject       *PyMaterialAttributes_WrapPyObject(const MaterialAttributes *attr
 void            PyMaterialAttributes_SetLogging(bool val);
 void            PyMaterialAttributes_SetDefaults(const MaterialAttributes *atts);
 
+PyObject       *PyMaterialAttributes_StringRepresentation(const MaterialAttributes *atts);
+
 #endif
 

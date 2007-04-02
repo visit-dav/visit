@@ -7,6 +7,7 @@
 class MaterialAttributes;
 class QLabel;
 class QCheckBox;
+class QNarrowLineEdit;
 
 // ****************************************************************************
 // Class: QvisMaterialWindow
@@ -25,6 +26,9 @@ class QCheckBox;
 //
 //    Jeremy Meredith, Fri Sep  5 15:17:20 PDT 2003
 //    Added a toggle for the new MIR algorithm.
+//
+//    Hank Childs, Tue Aug 16 15:36:43 PDT 2005
+//    Add a toggle for "simplify heavily mixed zones".
 //
 // ****************************************************************************
 
@@ -53,6 +57,8 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     void forceMIRChanged(bool val);
     void cleanZonesOnlyChanged(bool val);
     void useNewMIRChanged(bool val);
+    void simplifyHeavilyMixedZonesChanged(bool val);
+    void maxMatsPerZoneProcessText(void);
   private:
     MaterialAttributes *atts;
 
@@ -61,6 +67,9 @@ class QvisMaterialWindow : public QvisPostableWindowObserver
     QCheckBox *forceMIR;
     QCheckBox *cleanZonesOnly;
     QCheckBox *useNewMIR;
+    QCheckBox *simplifyHeavilyMixedZones;
+    QNarrowLineEdit *maxMatsPerZone;
+    QLabel *maxMatsPerZoneLabel;
 };
 
 #endif

@@ -96,6 +96,9 @@ struct MatZoneMap
 //        a) lists of elements containing each material
 //        b) sparse volume fractions arrays
 //
+//    Hank Childs, Wed Aug 17 10:18:12 PDT 2005
+//    Added SimplifyHeavilyMixedZones.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -135,6 +138,7 @@ class PIPELINE_API avtMaterial
                                                  const char *domain);
 
     avtMaterial                     *CreatePackedMaterial() const;
+    avtMaterial                     *SimplifyHeavilyMixedZones(int) const;
 
     virtual                         ~avtMaterial();
     static void                      Destruct(void *);

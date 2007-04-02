@@ -15,4 +15,10 @@
     <Field name="useNewMIRAlgorithm" label="Use new MIR algorithm" type="bool">
       true
     </Field>
+    <Field name="simplifyHeavilyMixedZones" label="Simplify Heavily Mixed Zones" type="bool">
+      false
+    </Field>
+    <Field name="maxMaterialsPerZone" label="Maximum Materials Per Zone" type="int" enabler="simplifyHeavilyMixedZones:true">
+      3
+    </Field>
   </Attribute>

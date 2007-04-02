@@ -557,6 +557,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Hank Childs, Wed Jul 13 10:38:02 PDT 2005
 //    Added call to SetTime to prevent UMR when exporting databases.
 //
+//    Hank Childs, Wed Aug 17 21:55:55 PDT 2005
+//    Pass along the material options to simplify the interface reconstruction.
+//
 // ****************************************************************************
 
 void
@@ -608,6 +611,8 @@ NetworkManager::StartNetwork(const string &format,
     dspec->SetNeedCleanZonesOnly(matopts.GetCleanZonesOnly());
     dspec->SetNeedValidFaceConnectivity(matopts.GetNeedValidConnectivity());
     dspec->SetUseNewMIRAlgorithm(matopts.GetUseNewMIRAlgorithm());
+    dspec->SetSimplifyHeavilyMixedZones(matopts.GetSimplifyHeavilyMixedZones());
+    dspec->SetMaxMaterialsPerZone(matopts.GetMaxMaterialsPerZone());
     workingNet->SetDataSpec(dspec);
     workingNet->SetTime(dspec->GetTimestep());
 

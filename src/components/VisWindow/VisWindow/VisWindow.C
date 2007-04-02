@@ -18,6 +18,7 @@
 #include <vtkMath.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkVisItCellLocator.h>
@@ -5509,6 +5510,10 @@ VisWindow::ResumeTranslucentGeometry()
 //   Kathleen Bonnell, Mon Nov  8 15:47:32 PST 2004
 //   Moved support for full-frame mode to ViewerQueryManager.
 //
+//   Jeremy Meredith, Wed Aug 17 16:37:03 PDT 2005
+//   Added support for unglyphed point meshes.  This simply returns
+//   the point closest to the pick ray, independent of depth.
+//
 // ****************************************************************************
 void
 VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum, 
@@ -5561,6 +5566,15 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum,
             {
                 if (ds->GetNumberOfPoints() == 0)
                     continue;
+
+                bool unglyphedDataset = false;
+                if (ds->GetDataObjectType() == VTK_POLY_DATA &&
+                    (((vtkPolyData*)ds)->GetNumberOfVerts() ==
+                     ((vtkPolyData*)ds)->GetNumberOfCells()))
+                {
+                    unglyphedDataset = true;
+                }
+
                 vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
                 cellLocator->SetIgnoreGhosts(true);
                 cellLocator->SetIgnoreLines(true);
@@ -5581,7 +5595,16 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum,
                         success = 1;
                     }
                 }
-                else 
+                else if (unglyphedDataset)
+                { /* RAY CLOSEST POINT LOCATE */
+                    cellLocator->FindClosestPointToLine(r1, r2,
+                                                        dist, foundCell);
+                    if (foundCell >= 0 && dist >= 0)
+                    {
+                        success = 1;
+                    }
+                }
+                else
                 { /* RAY-INTERSECT LOCATE */
                     success = cellLocator->IntersectWithLine(r1, r2, 
                                   dist, isect, pcoords, subId, foundCell);
@@ -5631,9 +5654,24 @@ VisWindow::GlyphPick(const float *rp1, const float *rp2, int &dom, int &elNum,
                 }
                 else
                 {
-                    debug5 << "GlyphPick: Data does not have "
-                           << "avtOriginalCellsArray or avtOriginaNodesArray."
-                           << endl;
+                    // In the unglyphed point mesh case, the
+                    // avtOriginalNodeNumbers array remains at the
+                    // points instead of being copied to the cell
+                    // data.  Simply make sure to check for it there.
+
+                    oc = ds->GetPointData()->GetArray("avtOriginalNodeNumbers");
+                    if (oc != NULL)
+                    {
+                        elNum = (int) oc->GetComponent(cell, 1);
+                        dom   = (int) oc->GetComponent(cell, 0);
+                        forCell = false;
+                    }
+                    else
+                    {
+                        debug5 << "GlyphPick: Data does not have "
+                               << "avtOriginalCellsArray or avtOriginaNodesArray."
+                               << endl;
+                    }
                 }
             }
         }

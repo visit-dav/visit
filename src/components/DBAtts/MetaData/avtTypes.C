@@ -79,6 +79,50 @@ avtExtentType_FromString(const std::string &s, avtExtentType &m)
     return false;
 }
 
+
+// ****************************************************************************
+//  Function: avtVarTypeToString
+//
+//  Purpose:
+//      Creates a string from an avtVarType.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 16, 2005
+//
+// ****************************************************************************
+
+std::string
+avtVarTypeToString(avtVarType v)
+{
+    switch (v)
+    {
+      case AVT_MESH:
+        return "mesh";
+      case AVT_SCALAR_VAR:
+        return "scalar";
+      case AVT_VECTOR_VAR:
+        return "vector";
+      case AVT_TENSOR_VAR:
+        return "tensor";
+      case AVT_SYMMETRIC_TENSOR_VAR:
+        return "symmetric tensor";
+      case AVT_ARRAY_VAR:
+        return "array";
+      case AVT_LABEL_VAR:
+        return "label";
+      case AVT_MATERIAL:
+        return "material";
+      case AVT_MATSPECIES:
+        return "species";
+      case AVT_CURVE:
+        return "curve";
+      default:
+        break;
+    }
+    return "unknown";
+}
+
+
 // ****************************************************************************
 // Function: GuessVarTypeFromNumDimsAndComps
 //
