@@ -102,6 +102,9 @@ avtZonePickQuery::SetInvTransform(const avtMatrix *m)
 //    were Created, we have the Ghosts array and the data is structured.  
 //    E.g. when we are picking on the Contour plot of AMR data.
 //
+//    Kathleen Bonnell, Fri Jul  8 14:15:21 PDT 2005 
+//    Modified test for determining if 'real' id needs to be calculated. 
+//
 // ****************************************************************************
 
 void
@@ -118,14 +121,24 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
 
     int pickedZone = pickAtts.GetElementNumber();
     int type = ds->GetDataObjectType();
-    bool hasGhosts = (ds->GetCellData()->GetArray("avtGhostZones") != NULL);
+
     //
     // We may need the real Id when we are picking on a Contour of an
     // AMR mesh. 
     //
-    int needRealId = (pickedZone == -1 && hasGhosts &&
-                      ghostType == AVT_CREATED_GHOSTS &&
-               (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID));
+    bool needRealId = false;
+    if (pickedZone == -1 && ghostType == AVT_CREATED_GHOSTS &&
+        (type == VTK_STRUCTURED_GRID || type == VTK_RECTILINEAR_GRID))
+    {
+        if (pickAtts.GetHasMixedGhostTypes() == -1)
+        {
+            needRealId = vtkVisItUtility::ContainsMixedGhostZoneTypes(ds);
+        }
+        else 
+        {
+            needRealId = (pickAtts.GetHasMixedGhostTypes() == 1);
+        }
+    }
 
     if (pickedZone == -1)
     {

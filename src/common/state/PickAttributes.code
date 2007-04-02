@@ -554,6 +554,9 @@ Definition:
 //   Kathleen Bonnell, Thu Oct 21 15:17:05 PDT 2004 
 //   Reset requiresPickGlyph. 
 //
+//   Kathleen Bonnell, Fri Jul  8 14:27:26 PDT 2005 
+//   Reset hasMixedGhostTypes. 
+//
 // ****************************************************************************
 
 void
@@ -569,6 +572,7 @@ PickAttributes::PrepareForNewPick()
     nodePoint[0] = nodePoint[1] = nodePoint[2] = 0;
     needTransformMessage = false;
     ghostType = 0;
+    hasMixedGhostTypes = -1;
 
     if (!incidentElements.empty())
         incidentElements.clear();

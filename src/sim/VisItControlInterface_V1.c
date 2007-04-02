@@ -27,7 +27,7 @@
 //    Abstraction of VisIt Engine wrapper library.  Handles the
 //    grunt work of actually connecting to visit that must be done
 //    outside of the VisItEngine DLL, such as:
-//       1) setting up a non-blocking listen socket
+//       1) setting up a listen socket
 //       2) writing a .sim file
 //       3) opening the VisItEngine .so and retrieving the functions from it
 //       4) accepting an incoming socket connection
@@ -411,8 +411,6 @@ static int StartListening(void)
         setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 #endif
 
-        // Set the listen socket to non-blocking
-        err = fcntl(listenSocket, F_SETFL, O_NONBLOCK);
         err = bind(listenSocket, (struct sockaddr *)&listenSockAddr,
                    sizeof(listenSockAddr));
         if (err)
@@ -625,6 +623,8 @@ static int ReadEnvironmentFromCommand(const char *visitpath, char *output)
    {
       ptr += n;
    }
+   *ptr = '\0';
+
    return (ptr - output);
 }
 

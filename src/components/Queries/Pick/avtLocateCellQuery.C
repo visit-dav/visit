@@ -120,6 +120,12 @@ avtLocateCellQuery::~avtLocateCellQuery()
 //    Kathleen Bonnell, Wed Oct 20 17:10:21 PDT 2004 
 //    Use vtkVisItUtility method for computing cell center. 
 //
+//    Kathleen Bonnell, Fri Jul  8 14:15:21 PDT 2005 
+//    Added another option when zones are preserved -- to determine
+//    whether the ghost zones are mixed (AMR & other types) or simply AMR -- 
+//    will be used by PickQuery in determining the correct zone id to display
+//    to the user.
+//
 // ****************************************************************************
 
 void
@@ -175,11 +181,18 @@ avtLocateCellQuery::Execute(vtkDataSet *ds, const int dom)
                    << " cells but the array was not found in the dataset."
                    << endl;
         }
-        else if (info.GetValidity().GetZonesPreserved() &&
-                 info.GetAttributes().GetContainsGhostZones() 
-                    != AVT_CREATED_GHOSTS)
+        else if (info.GetValidity().GetZonesPreserved()) 
         {
-            foundElement = foundCell;
+            if (info.GetAttributes().GetContainsGhostZones() 
+                    != AVT_CREATED_GHOSTS)
+            {
+                foundElement = foundCell;
+            }
+            else
+            {
+                pickAtts.SetHasMixedGhostTypes(
+                    vtkVisItUtility::ContainsMixedGhostZoneTypes(ds));
+            }
         }
 
         //
