@@ -19,13 +19,10 @@
         0
       </Field>
       <Field name="zonePortions" label="zonePortions" type="intVector">
-	PartOfZone
       </Field>
       <Field name="lowerBounds" label="lowerBounds" type="doubleVector">
-        -1e+37
       </Field>
       <Field name="upperBounds" label="upperBounds" type="doubleVector">
-	1e+37
       </Field>
       <Field name="defaultVarName" label="defaultVarName" type="string">
 	default

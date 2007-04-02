@@ -2426,6 +2426,9 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map plots to the engine used to create them.
 //
+//    Brad Whitlock, Fri Mar 23 16:02:01 PST 2007
+//    Don't pass a plot name to NewPlot() and it will get the default name.
+//
 // ****************************************************************************
 
 int
@@ -2446,7 +2449,7 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     TRY
     {
         newPlot = NewPlot(type, engineKey, hostName, databaseName,
-                          var, applyOperators);
+                          var, applyOperators, 0);
         if (newPlot == 0)
         {
             Error("VisIt could not create the desired plot.");
@@ -2850,6 +2853,10 @@ ViewerPlotList::MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame)
 //    to copy the plot list's database, engine, key, time sliders, etc but
 //    don't necessarily want to copy its plots.
 //
+//    Brad Whitlock, Mon Mar 26 14:47:04 PST 2007
+//    Make plots in each plot list have the same name so legend annotation
+//    objects are set properly later.
+//
 // ****************************************************************************
 
 void
@@ -2905,6 +2912,12 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
              TRY
              {
                  dest = new ViewerPlot(*src);
+
+                 // Since the plot lists are different, it's okay in this
+                 // case for the plots from each plot list to have the
+                 // same name. That fixes things with the legend annotation
+                 // objects as well.
+                 dest->SetPlotName(src->GetPlotName());
              }
              CATCH(VisItException)
              {
@@ -2982,6 +2995,7 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
 int
 ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 {
+    const char *mName = "ViewerPlotList::SimpleAddPlot: ";
     int i;
     int plotId = -1;
 
@@ -2991,13 +3005,8 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
     //
     if (replacePlots)
     {
-        for (i = 0; i < nPlots; ++i)
-        {
-            delete plots[i].plot;
-            plots[i].active = false;
-            plots[i].realized = false;
-        }
-        nPlots = 0;
+        while(nPlots > 0)
+            DeletePlot(plots[0].plot, false);
     }
 
     //
@@ -3036,6 +3045,44 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
     plots[nPlots].plot->SetSpatialExtentsType(spatialExtentsType);
     plots[nPlots].plot->RegisterViewerPlotList(this);
     nPlots++;
+
+    //
+    // If the new plot provides a legend then create a legend attributes
+    // annotation object in the window and send a delayed message to 
+    // update the annotation object list in the client.
+    //
+    if(plot->ProvidesLegend())
+    {
+        // Get the annotation object attributes for the plot list's window so we
+        // know the names of the existing annotations. We check because we don't
+        // want a legend annotation object if one already exists for this plot
+        // (as when we've restored a session file).
+        AnnotationObjectList annots;
+        window->UpdateAnnotationObjectList(annots);
+
+        // If there is no annotation object
+        if(annots.IndexForName(plot->GetPlotName()) == -1)
+        {
+            if(window->AddAnnotationObject((int)AnnotationObject::LegendAttributes, 
+               plot->GetPlotName()))
+            {
+                debug1 << mName << "Added legend annotation object "
+                    "for plot " << plot->GetPlotName() << endl;
+                ViewerWindowManager::Instance()->UpdateAnnotationObjectList(true);
+            }
+            else
+            {
+                debug1 << mName << "Could not add legend annotation object "
+                    "for plot " << plot->GetPlotName() << endl;
+            }
+        }
+        else
+        {
+            debug1 << mName << "legend annotation object already exists for "
+                   << "plot " << plot->GetPlotName() << endl;
+        }
+    }
+
     return plotId;
 }
 
@@ -3106,15 +3153,16 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   variable name from the catch all mesh name
 //
 //   Brad Whitlock, Thu Mar 22 02:23:42 PDT 2007
-//   Added code to create a new legend annotation object with the same name
-//   as the new plot.
+//   Added code to set the plot name so we can use it later to match
+//   legend annotation objects to plots.
 //
 // ****************************************************************************
 
 ViewerPlot *
 ViewerPlotList::NewPlot(int type, const EngineKey &ek,
                         const std::string &host, const std::string &db,
-                        const std::string &var, bool applyOperators)
+                        const std::string &var, bool applyOperators,
+                        const char *optionalPlotName)
 {
     //
     // Get the correlation for the plotDB and use that for the number of states.
@@ -3210,19 +3258,9 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
                                        cacheIndex, cacheSize);
         plot->RegisterViewerPlotList(this);
 
-        //
-        // If the new plot provides a legend then create a legend attributes
-        // annotation object in the window and send a delayed message to 
-        // update the annotation object list in the client.
-        //
-        if(plot->ProvidesLegend())
-        {
-            if(window->AddAnnotationObject((int)AnnotationObject::LegendAttributes, 
-               plot->GetPlotName()))
-            {
-                ViewerWindowManager::Instance()->UpdateAnnotationObjectList(true);
-            }
-        }
+        // If the user passed a plot name then let's call the plot by that name.
+        if(optionalPlotName != 0)
+            plot->SetPlotName(optionalPlotName);
     }
     CATCH(VisItException)
     {
@@ -7453,6 +7491,9 @@ ViewerPlotList::GetNKeyframesWasUserSet() const
 //   saved with session files.  Added extra logic to avoid saving a simulation
 //   as the current active source as well.
 //
+//   Brad Whitlock, Fri Mar 23 16:02:43 PST 2007
+//   Added code to save the plot name.
+//
 // ****************************************************************************
 
 void
@@ -7525,6 +7566,8 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
         // the state back in SetFromNode, it is easier to get at the fields
         // that we need to recreate the right type of ViewerPlot.
         //
+        plotNode->AddNode(new DataNode("plotName",
+            plots[i].plot->GetPlotName()));
         plotNode->AddNode(new DataNode("pluginID",
             std::string(plots[i].plot->GetPluginID())));
 
@@ -7884,7 +7927,8 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
         // Look for the required bits of information to recreate the plot.
         //
         bool haveRequiredFields = true;
-        std::string pluginID, plotHost, plotDB, plotVar;        
+        std::string pluginID, plotHost, plotDB, plotVar, plotNameStr;
+        const char *plotName = 0;
         if((node = plotNode->GetNode("pluginID")) != 0)
             pluginID = node->AsString();
         else
@@ -7922,6 +7966,14 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
             plotVar = node->AsString();
         else
             haveRequiredFields = false;
+
+        // Get the plot name. It's not required but it helps us link plots
+        // to legend annotation objects.
+        if((node = plotNode->GetNode("plotName")) != 0)
+        {
+            plotNameStr = node->AsString();
+            plotName = plotNameStr.c_str();
+        }
 
         bool createdPlot = false;
         if(haveRequiredFields)
@@ -7966,7 +8018,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
                     TRY
                     {
                         plot = NewPlot(type,engineKey,plotHost,
-                                       plotDB,plotVar,false);
+                                       plotDB,plotVar,false,plotName);
                     }
                     CATCHALL(...)
                     {

@@ -530,6 +530,9 @@ ViewerWindowManager::SetGeometry(const char *windowGeometry)
 //    Brad Whitlock, Fri Apr 15 17:06:49 PST 2005
 //    Added code to copy action data.
 //
+//    Brad Whitlock, Mon Mar 26 14:53:21 PST 2007
+//    Allow legend annotation objects from being copied to the new window.
+//
 // ****************************************************************************
 
 void
@@ -557,7 +560,7 @@ ViewerWindowManager::AddWindow(bool copyAtts)
         ViewerWindow *src = windows[activeWindow];
         dest->CopyGeneralAttributes(src);
         dest->CopyAnnotationAttributes(src);
-        dest->CopyAnnotationObjectList(src);
+        dest->CopyAnnotationObjectList(src, true);
         dest->CopyLightList(src);
         dest->CopyViewAttributes(src);
         dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);
@@ -681,6 +684,9 @@ ViewerWindowManager::ClearWindow(int windowIndex)
 //   Brad Whitlock, Thu Nov 6 17:15:32 PST 2003
 //   I made it copy the annotation object list.
 //
+//   Brad Whitlock, Mon Mar 26 14:54:03 PST 2007
+//   Prevent legend annotation objects from being copied.
+//
 // ****************************************************************************
 
 void
@@ -695,7 +701,7 @@ ViewerWindowManager::CopyAnnotationsToWindow(int from, int to)
     if(windows[from] != 0 && windows[to] != 0)
     {
         windows[to]->CopyAnnotationAttributes(windows[from]);
-        windows[to]->CopyAnnotationObjectList(windows[from]);
+        windows[to]->CopyAnnotationObjectList(windows[from], false);
         if(to == activeWindow)
         {
             UpdateAnnotationAtts();
@@ -1952,6 +1958,10 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    Eric Brugger, Thu Mar 22 12:53:34 PDT 2007
 //    Modified so that it doesn't use screen capture when in nowin mode.
 //
+//    Eric Brugger, Tue Mar 27 12:12:55 PDT 2007
+//    Modified so that the screen capture behavior depends on whether it is
+//    using the mesa stub library or not.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1970,6 +1980,7 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
 
         if(screenCapture)
         {
+#ifdef MESA_STUB
             if(windows[index]->GetNoWinMode() == false)
             {
                 retval = windows[index]->ScreenCapture();
@@ -1990,6 +2001,9 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
                     CopyTo(retval, extImage);
                 }
             }
+#else
+            retval = windows[index]->ScreenCapture();
+#endif
         }
         else
         {
@@ -3883,6 +3897,9 @@ ViewerWindowManager::SetWindowLayout(const int windowLayout)
 //    has not been set. This prevents problems where the new window does not
 //    have a database and the right time sliders.
 //
+//    Brad Whitlock, Mon Mar 26 16:43:07 PST 2007
+//    Copy the annotation objects too.
+//
 // ****************************************************************************
 
 void
@@ -3923,6 +3940,7 @@ ViewerWindowManager::SetActiveWindow(const int windowId)
             //
             dest->CopyGeneralAttributes(src);
             dest->CopyAnnotationAttributes(src);
+            dest->CopyAnnotationObjectList(src, true);
             dest->CopyLightList(src);
             dest->CopyViewAttributes(src);
             dest->GetPlotList()->CopyFrom(src->GetPlotList(), true);

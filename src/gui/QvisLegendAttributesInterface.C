@@ -64,6 +64,14 @@
 // Allow this when text opacity is supported.
 //#define TEXT_OPACITY_SUPPORTED
 
+// The bits that we store in the IntAttribute1 field.
+#define LEGEND_MANAGE_POSITION 0
+#define LEGEND_DRAW_BOX        1
+#define LEGEND_DRAW_LABELS     2
+#define LEGEND_ORIENTATION0    3
+#define LEGEND_ORIENTATION1    4
+#define LEGEND_DRAW_TITLE      5
+
 // ****************************************************************************
 // Method: QvisLegendAttributesInterface::QvisLegendAttributesInterface
 //
@@ -78,7 +86,9 @@
 // Creation:   Tue Mar 20 15:31:44 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 26 11:41:10 PDT 2007
+//   Added drawTitlesCheckBox.
+//
 // ****************************************************************************
 
 QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
@@ -150,11 +160,15 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
     cLayout->addMultiCellWidget(boundingBoxOpacity, row, row, 2, 3);
     ++row;
 
-
+    // Turn off pieces of the legend.
+    drawTitleCheckBox = new QCheckBox("Draw title", this, "drawTitleCheckBox");
+    connect(drawTitleCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(drawTitleToggled(bool)));
+    cLayout->addWidget(drawTitleCheckBox, row, 0);
     drawLabelsCheckBox = new QCheckBox("Draw labels", this, "drawLabelsCheckBox");
     connect(drawLabelsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(drawLabelsToggled(bool)));
-    cLayout->addWidget(drawLabelsCheckBox, row, 0);
+    cLayout->addMultiCellWidget(drawLabelsCheckBox, row, row, 1, 3);
     ++row;
 
     QFrame *splitter2 = new QFrame(this, "splitter");
@@ -240,7 +254,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent,
 //   Destructor for the QvisLegendAttributesInterface class.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:47:58 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -340,7 +354,9 @@ QvisLegendAttributesInterface::SetBool(int bit, bool val)
 // Creation:   Tue Mar 20 15:58:02 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 26 12:01:37 PDT 2007
+//   Added checkbox for turning off title.
+//
 // ****************************************************************************
 
 void
@@ -411,6 +427,11 @@ QvisLegendAttributesInterface::UpdateControls()
         formatString->setText(annotText[0].c_str());
     else
         formatString->setText("");
+
+    // Set the "draw labels" box.
+    drawTitleCheckBox->blockSignals(true);
+    drawTitleCheckBox->setChecked(GetBool(LEGEND_DRAW_TITLE));
+    drawTitleCheckBox->blockSignals(false);
 
     // Set the "draw labels" box.
     drawLabelsCheckBox->blockSignals(true);
@@ -550,7 +571,7 @@ QvisLegendAttributesInterface::layoutChanged(bool val)
 //   position line edit.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:49:46 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -576,7 +597,7 @@ QvisLegendAttributesInterface::positionChanged(double x, double y)
 //   w : The new width in percent.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:49:46 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -605,7 +626,7 @@ QvisLegendAttributesInterface::widthChanged(int w)
 //   h : The new height in percent.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:50:58 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -631,7 +652,7 @@ QvisLegendAttributesInterface::heightChanged(int h)
 //   text line edit.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:49:46 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -678,7 +699,7 @@ QvisLegendAttributesInterface::fontHeightChanged()
 //   c : The new start color.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:49:46 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -704,7 +725,7 @@ QvisLegendAttributesInterface::textColorChanged(const QColor &c)
 //   opacity : The new start opacity.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:49:46 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -748,7 +769,7 @@ QvisLegendAttributesInterface::drawBoundingBoxToggled(bool val)
 //   c : The new color.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:49:46 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -774,7 +795,7 @@ QvisLegendAttributesInterface::boundingBoxColorChanged(const QColor &c)
 //   opacity : The new bbox opacity.
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 11:49:46 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -800,7 +821,7 @@ QvisLegendAttributesInterface::boundingBoxOpacityChanged(int opacity)
 //   family  : The new font family.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 6 16:00:28 PST 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -814,10 +835,44 @@ QvisLegendAttributesInterface::fontFamilyChanged(int family)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisLegendAttributesInterface::drawLabelsToggled
+//
+// Purpose: 
+//   Called when the draw labels checkbox is toggled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 26 12:02:51 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
 QvisLegendAttributesInterface::drawLabelsToggled(bool val)
 {
     SetBool(LEGEND_DRAW_LABELS, val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisLegendAttributesInterface::drawTitleToggled
+//
+// Purpose: 
+//   Called when the draw title checkbox is toggled.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 26 12:02:51 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisLegendAttributesInterface::drawTitleToggled(bool val)
+{
+    SetBool(LEGEND_DRAW_TITLE, val);
     SetUpdate(false);
     Apply();
 }
@@ -832,7 +887,7 @@ QvisLegendAttributesInterface::drawLabelsToggled(bool val)
 //   val : The new bold flag.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 6 16:01:03 PST 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -856,7 +911,7 @@ QvisLegendAttributesInterface::boldToggled(bool val)
 //   val : The new italic flag.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 6 16:01:44 PST 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -881,7 +936,7 @@ QvisLegendAttributesInterface::italicToggled(bool val)
 //   val : The new shadow setting.
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Nov 6 16:02:22 PST 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   
@@ -906,7 +961,7 @@ QvisLegendAttributesInterface::shadowToggled(bool val)
 //   val : The new setting for useForegroundColor
 //
 // Programmer: Brad Whitlock
-// Creation:   Wed Nov 5 12:34:48 PDT 2003
+// Creation:   Mon Mar 26 12:03:56 PDT 2007
 //
 // Modifications:
 //   

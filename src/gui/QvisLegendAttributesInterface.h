@@ -49,12 +49,6 @@ class QvisColorButton;
 class QvisOpacitySlider;
 class QvisScreenPositionEdit;
 
-#define LEGEND_MANAGE_POSITION 0
-#define LEGEND_DRAW_BOX        1
-#define LEGEND_DRAW_LABELS     2
-#define LEGEND_ORIENTATION0    3
-#define LEGEND_ORIENTATION1    4
-
 // ****************************************************************************
 // Class: QvisLegendAttributesInterface
 //
@@ -106,6 +100,7 @@ private slots:
     void drawBoundingBoxToggled(bool);
     void boundingBoxColorChanged(const QColor &);
     void boundingBoxOpacityChanged(int);
+    void drawTitleToggled(bool);
 private:
     QCheckBox              *manageLayout;
     QvisScreenPositionEdit *positionEdit;
@@ -124,6 +119,7 @@ private:
     QCheckBox              *useForegroundColorCheckBox;
 
     QCheckBox              *drawLabelsCheckBox;
+    QCheckBox              *drawTitleCheckBox;
 
     QCheckBox              *drawBoundingBoxCheckBox;
     QvisColorButton        *boundingBoxColorButton;

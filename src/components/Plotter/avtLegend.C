@@ -351,6 +351,38 @@ avtLegend::GetCurrentlyDrawn() const
 }
 
 // ****************************************************************************
+// Method: avtLegend::SetTitleVisibility
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLegend::SetTitleVisibility(bool)
+{
+    // Do nothing
+}
+
+// ****************************************************************************
+// Method: avtLegend::GetTitleVisibility
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 22 02:09:25 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtLegend::GetTitleVisibility() const
+{
+    return true;
+}
+
+// ****************************************************************************
 // Method: avtLegend::SetLabelVisibility
 //
 // Programmer: Brad Whitlock

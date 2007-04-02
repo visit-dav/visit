@@ -127,6 +127,8 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Kathleen Bonnell, Tue Jan 30 16:25:23 PST 2007 
 //    Send nodeid to RetrieveVarInfo.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 void
@@ -159,7 +161,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     // Verify the node number is in range.
     if (!pickAtts.GetElementIsGlobal() && (nodeid < 0 || nodeid >= maxEls))
     {
-        EXCEPTION2(BadNodeException, nodeid, maxEls);
+        EXCEPTION2(BadNodeException, nodeid+nodeOrigin, maxEls+nodeOrigin);
     } 
 
     bool DBsuppliedNodeId = true;
@@ -172,7 +174,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
             if (nodeid == -1)
                 return;
             pickAtts.SetGlobalElement(pickAtts.GetElementNumber());
-            pickAtts.SetElementNumber(nodeid);
+            pickAtts.SetElementNumber(nodeid+nodeOrigin);
             DBsuppliedNodeId = false;
         }
         GetNodeCoords(ds, nodeid);    

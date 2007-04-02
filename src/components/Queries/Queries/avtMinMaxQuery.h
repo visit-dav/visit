@@ -74,6 +74,8 @@ class vtkDataSet;
 //    Added InfoToString, CreateMessage, FindElement, FinalizeZoneCoord,
 //    FinalizeNodeCoord.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
@@ -101,6 +103,7 @@ class QUERY_API avtMinMaxQuery : virtual public avtDatasetQuery
     int                     topoDim;
     int                     blockOrigin;
     int                     cellOrigin;
+    int                     nodeOrigin;
     bool                    singleDomain;
     bool                    scalarCurve;
     bool                    nodeCentered;

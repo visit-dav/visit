@@ -2084,6 +2084,8 @@ avtMiliFileFormat::GetNTimesteps()
 //    Thomas R. Treadway, Tue Dec  5 15:14:11 PST 2006
 //    Added a derived strain and displacement algorithms
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 void
@@ -2109,6 +2111,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         mesh->numBlocks = ndomains;
         mesh->blockOrigin = 0;
         mesh->cellOrigin = 1; // Bob Corey says all mili writers so far are Fortran
+        mesh->nodeOrigin = 1; // Bob Corey says all mili writers so far are Fortran
         mesh->spatialDimension = dims;
         mesh->topologicalDimension = dims;
         mesh->blockTitle = "processors";
@@ -2142,6 +2145,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 fnmesh->numBlocks = ndomains;
                 fnmesh->blockOrigin = 0;
                 fnmesh->cellOrigin = 1; // All mili writers so far are Fortran
+                fnmesh->nodeOrigin = 1; // All mili writers so far are Fortran
                 fnmesh->spatialDimension = dims;
                 fnmesh->topologicalDimension = 0;
                 fnmesh->blockTitle = "processors";
@@ -2155,6 +2159,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 nofnmesh->numBlocks = ndomains;
                 nofnmesh->blockOrigin = 0;
                 nofnmesh->cellOrigin = 1; // All mili writers so far are Fortran
+                nofnmesh->nodeOrigin = 1; // All mili writers so far are Fortran
                 nofnmesh->spatialDimension = dims;
                 nofnmesh->topologicalDimension = dims;
                 nofnmesh->blockTitle = "processors";

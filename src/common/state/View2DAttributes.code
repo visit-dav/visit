@@ -15,6 +15,10 @@ Definition:
 // Programmer: Mark C. Miller
 // Creation:   July 20, 2005
 //
+//  Modifications:
+//    Shelly Prevost, Fri Mar 23 15:03:31 PDT 2007
+//    Added code to check for DBL_MAX to avoid doing math that
+//    exceeded maximums and cause a crash.
 // ****************************************************************************
 
 bool
@@ -28,7 +32,15 @@ View2DAttributes::GetUseFullFrame(const double *limits) const
 
     if (limits == 0)
         return false;
-
+        
+    // if the limits are not initialized then doing math
+    // with them will cause an error so check them first.
+    if ( limits[0] == DBL_MAX  || limits[2] == DBL_MAX ||
+         limits[1] == -DBL_MAX || limits[3] == -DBL_MAX   )
+    {
+        return false;
+    }
+    
     double dlimit1 = limits[1] - limits[0];
     double dlimit2 = limits[3] - limits[2];
     double aspect;

@@ -28,16 +28,10 @@ vtkAssembly.cxx
 vtkAxisActor2D.cxx
 vtkCamera.cxx
 vtkCameraInterpolator.cxx
-vtkCellCenterDepthSort.cxx
 vtkCellPicker.cxx
-vtkChooserPainter.cxx
-vtkClipPlanesPainter.cxx
-vtkCoincidentTopologyResolutionPainter.cxx
 vtkCuller.cxx
 vtkCullerCollection.cxx
 vtkDataSetMapper.cxx
-vtkDefaultPainter.cxx
-vtkDisplayListPainter.cxx
 vtkExporter.cxx
 vtkFollower.cxx
 vtkFrustumCoverageCuller.cxx
@@ -69,30 +63,18 @@ vtkInteractorStyleUser.cxx
 vtkLODActor.cxx
 vtkLODProp3D.cxx
 vtkLabeledDataMapper.cxx
-vtkLeaderActor2D.cxx
 vtkLight.cxx
 vtkLightCollection.cxx
 vtkLightKit.cxx
-vtkLightingPainter.cxx
-vtkLinesPainter.cxx
 vtkMapper.cxx
 vtkMapperCollection.cxx
-vtkMultiGroupPolyDataMapper.cxx
 vtkOBJExporter.cxx
-vtkObserverMediator.cxx
 vtkOOGLExporter.cxx
-vtkPainter.cxx
-vtkPainterDeviceAdapter.cxx
-vtkPainterPolyDataMapper.cxx
 vtkParallelCoordinatesActor.cxx
 vtkPicker.cxx
-vtkPointsPainter.cxx
 vtkPointPicker.cxx
 vtkPolyDataMapper.cxx
 vtkPolyDataMapper2D.cxx
-vtkPolyDataPainter.cxx
-vtkPolygonsPainter.cxx
-vtkPrimitivePainter.cxx
 vtkProp3D.cxx
 vtkProp3DCollection.cxx
 vtkPropPicker.cxx
@@ -104,14 +86,9 @@ vtkRenderWindowInteractor.cxx
 vtkRenderer.cxx
 vtkRendererCollection.cxx
 vtkRendererSource.cxx
-vtkRepresentationPainter.cxx
 vtkScalarBarActor.cxx
-vtkScalarsToColorsPainter.cxx
 vtkScaledTextActor.cxx
 vtkSelectVisiblePoints.cxx
-vtkShader.cxx
-vtkShaderProgram.cxx
-vtkStandardPolyDataPainter.cxx
 vtkTesting.cxx
 vtkTextActor.cxx
 # vtkTextActor2D.cxx
@@ -120,9 +97,7 @@ vtkTextMapper.cxx
 vtkTextProperty.cxx
 vtkTexture.cxx
 vtkTransformInterpolator.cxx
-vtkTStripsPainter.cxx
 vtkTupleInterpolator.cxx
-vtkVisibilitySort.cxx
 vtkVRMLExporter.cxx
 vtkVolume.cxx
 vtkVolumeCollection.cxx
@@ -137,44 +112,21 @@ IF(VTK_USE_GL2PS)
   ADD_DEFINITIONS(-DGL2PS_HAVE_ZLIB)
 ENDIF(VTK_USE_GL2PS)
 
-IF(VTK_USE_CG_SHADERS)
-  SET(Kit_SRCS ${Kit_SRCS} 
-    vtkCgShader.cxx
-    vtkCgShaderProgram.cxx
-    )
-  INCLUDE_DIRECTORIES(${CG_INCLUDE_PATH})
-  SET (KIT_LIBS ${KIT_LIBS} ${CG_LIBRARY} ${CG_GL_LIBRARY})
-ENDIF(VTK_USE_CG_SHADERS)
-
-
 SET( KitOpenGL_SRCS
   vtkOpenGLActor.cxx
   vtkOpenGLCamera.cxx
-  vtkOpenGLClipPlanesPainter.cxx
-  vtkOpenGLCoincidentTopologyResolutionPainter.cxx
-  vtkOpenGLDisplayListPainter.cxx
   vtkOpenGLExtensionManager.cxx
   vtkOpenGLImageActor.cxx
   vtkOpenGLImageMapper.cxx
   vtkOpenGLLight.cxx
-  vtkOpenGLLightingPainter.cxx
-  vtkOpenGLPainterDeviceAdapter.cxx
   vtkOpenGLPolyDataMapper.cxx
   vtkOpenGLPolyDataMapper2D.cxx
   vtkOpenGLProperty.cxx
   vtkOpenGLRenderWindow.cxx
   vtkOpenGLRenderer.cxx
-  vtkOpenGLRepresentationPainter.cxx
-  vtkOpenGLScalarsToColorsPainter.cxx
   vtkOpenGLTexture.cxx
   )
 
-IF(VTK_USE_GLSL_SHADERS)
-  SET(KitOpenGL_SRCS ${KitOpenGL_SRCS}
-    vtkGLSLShader.cxx
-    vtkGLSLShaderProgram.cxx
-    )
-ENDIF(VTK_USE_GLSL_SHADERS)
 
 SET_SOURCE_FILES_PROPERTIES(
 vtkAbstractMapper3D
@@ -187,13 +139,7 @@ vtkImporter
 vtkInteractorObserver
 vtkMapper
 vtkOpenGLRenderWindow
-vtkPainter
-vtkPolyDataPainter
-vtkPrimitivePainter
 vtkProp3D
-vtkShader
-vtkShaderProgram
-vtkVisibilitySort.cxx
 ABSTRACT
 )
 
@@ -372,33 +318,27 @@ ELSE (WIN32)
     ENDIF (OPENGL_gl_LIBRARY)
   ENDIF (APPLE)
 ENDIF (WIN32)
-IF(VTK_USE_CG_SHADERS)
-  SET(KIT_LIBS ${KIT_LIBS} ${OPENGL_glu_LIBRARY})
-ENDIF(VTK_USE_CG_SHADERS)
 
 IF (VTK_USE_MANGLED_MESA)
   IF (MANGLED_MESA_LIBRARY)
     SET ( KitOpenGL_SRCS ${KitOpenGL_SRCS}
                  vtkMesaActor.cxx
                  vtkMesaCamera.cxx
-                 vtkMesaClipPlanesPainter.cxx
-                 vtkMesaCoincidentTopologyResolutionPainter.cxx
-                 vtkMesaDisplayListPainter.cxx
                  vtkMesaImageActor.cxx
                  vtkMesaImageMapper.cxx
                  vtkMesaLight.cxx
-                 vtkMesaLightingPainter.cxx
-                 vtkMesaPainterDeviceAdapter.cxx
                  vtkMesaPolyDataMapper.cxx
                  vtkMesaPolyDataMapper2D.cxx
                  vtkMesaProperty.cxx
                  vtkMesaRenderWindow.cxx
                  vtkMesaRenderer.cxx
-                 vtkMesaRepresentationPainter.cxx
-                 vtkMesaScalarsToColorsPainter.cxx
                  vtkMesaTexture.cxx
-                 vtkXMesaRenderWindow.cxx
                 )
+    IF (VTK_USE_X)
+      SET(KitOpenGL_SRCS ${KitOpenGL_SRCS}
+        vtkXMesaRenderWindow.cxx
+      )
+    ENDIF (VTK_USE_X)
     SET(KitOpenGL_SRCS ${KitOpenGL_SRCS}
       vtkMesaFreeTypeTextMapper.cxx
     )
@@ -466,7 +406,7 @@ ENDIF (VTK_WRAP_TCL)
 
 #-----------------------------------------------------------------------------
 # Include CMake code common to all kits.
-INCLUDE(${VTK_CMAKE_DIR}/KitCommonBlock.cmake)
+INCLUDE(${VTK_SOURCE_DIR}/CMake/KitCommonBlock.cmake)
 #-----------------------------------------------------------------------------
 
 IF(NOT VTK_INSTALL_NO_DEVELOPMENT)
@@ -485,9 +425,11 @@ IF (VTK_WRAP_PYTHON)
           )
        ADD_LIBRARY(vtkRenderingPythonTkWidgets SHARED
                    ${RenderingPythonTkWidgets_SRCS})
-       TARGET_LINK_LIBRARIES (vtkRenderingPythonTkWidgets
-                              vtk${KIT}
-                              ${VTK_TK_LIBRARIES})
+       IF(APPLE OR WIN32)
+         TARGET_LINK_LIBRARIES (vtkRenderingPythonTkWidgets
+                                vtk${KIT}
+                                ${VTK_TK_LIBRARIES})
+       ENDIF(APPLE OR WIN32)
 
        # Apply user-defined properties to the library target.
        IF(VTK_LIBRARY_PROPERTIES)
@@ -503,7 +445,9 @@ IF (VTK_WRAP_PYTHON)
 ENDIF (VTK_WRAP_PYTHON)
 
 IF(VTK_USE_X)
-  TARGET_LINK_LIBRARIES(vtk${KIT} -lXt ${X11_LIBRARIES})
+  IF(APPLE OR WIN32)
+    TARGET_LINK_LIBRARIES(vtk${KIT} -lXt ${X11_LIBRARIES})
+  ENDIF(APPLE OR WIN32)
 ENDIF(VTK_USE_X)
 
 IF(NOT VTK_INSTALL_NO_DEVELOPMENT)

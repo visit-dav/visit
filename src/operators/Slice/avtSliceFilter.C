@@ -731,6 +731,9 @@ avtSliceFilter::SetUpProjection(void)
 //    Added meshName specified in atts to QueryCoords call.  Added more to
 //    warning message.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:07 PDT 2007
+//    Added support for nodeOrigin offsets in node numbers
+//
 // ****************************************************************************
 
 void
@@ -853,9 +856,11 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
       {
           avtTerminatingSource *src = GetInput()->GetTerminatingSource();
           int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+          int nodeOrigin  = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
           int domain = atts.GetOriginNodeDomain();
           domain -= blockOrigin;
           int node = atts.GetOriginNode();
+          node -= nodeOrigin;
           double point[3];
           point[0] = DBL_MAX;
           point[1] = DBL_MAX;
@@ -893,7 +898,8 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
               sprintf(warning, "Was not able to locate domain %d, node %d. "
                                " They may not be defined on this mesh. " 
                                " Using point (0., 0., 0.) instead.",
-                                                    domain+blockOrigin, node);
+                                                    domain+blockOrigin,
+                                                    node+nodeOrigin);
               avtCallback::IssueWarning(warning);
           }
           else

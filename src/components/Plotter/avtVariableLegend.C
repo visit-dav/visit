@@ -106,6 +106,7 @@ avtVariableLegend::avtVariableLegend()
 
     barVisibility = 1;
     rangeVisibility = 1;
+    titleVisibility = true;
     labelVisibility = true;
 
     //
@@ -166,6 +167,7 @@ avtVariableLegend::avtVariableLegend(int)
     barVisibility = 1;
     rangeVisibility = 1;
     labelVisibility = true;
+    titleVisibility = true;
 }
 
 
@@ -248,6 +250,50 @@ avtVariableLegend::GetLegendSize(double, double &w, double &h)
 
     size[0] = w;
     size[1] = h;
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetTitleVisibility
+//
+// Purpose: 
+//   Sets whether titles are visible.
+//
+// Arguments:
+//   val : True if titles are to be visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:17 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetTitleVisibility(bool val)
+{
+    titleVisibility = val;
+    sBar->SetTitleVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: avtVariableLegend::GetTitleVisibility
+//
+// Purpose: 
+//   Returns whether titles are visible.
+//
+// Returns:    Whether titles are visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:48 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtVariableLegend::GetTitleVisibility() const
+{
+    return titleVisibility;
 }
 
 // ****************************************************************************

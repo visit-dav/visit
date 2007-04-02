@@ -326,6 +326,8 @@ Definition:
 //    Jeremy Meredith, Thu Feb 15 11:42:44 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 inline void
 Indent(ostream &out, int indent)
@@ -353,6 +355,9 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Cell origin = " << cellOrigin 
         << " (origin within one block of the cells)." << endl;
+    Indent(out, indent);
+    out << "Node origin = " << nodeOrigin 
+        << " (origin within one block of the nodes)." << endl;
     Indent(out, indent);
     out << "Group origin = " << groupOrigin << endl;
     Indent(out, indent);

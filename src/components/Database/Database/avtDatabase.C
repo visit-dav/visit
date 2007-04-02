@@ -566,6 +566,8 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Jeremy Meredith, Thu Feb 15 12:53:11 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 void
@@ -590,6 +592,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     if (mmd != NULL)
     {
         atts.SetCellOrigin(mmd->cellOrigin);
+        atts.SetNodeOrigin(mmd->nodeOrigin);
         atts.SetBlockOrigin(mmd->blockOrigin);
         atts.SetGroupOrigin(mmd->groupOrigin);
         atts.SetTopologicalDimension(mmd->topologicalDimension);

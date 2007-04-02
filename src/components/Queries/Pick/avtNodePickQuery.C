@@ -140,6 +140,8 @@ avtNodePickQuery::~avtNodePickQuery()
 //    Also, transform the point to be used as 'pick letter' when this
 //    pick did not use the locate query to determine that point.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 void
@@ -281,6 +283,8 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetElementNumber(pickAtts.GetRealElementNumber());
         pickAtts.SetIncidentElements(pickAtts.GetRealIncidentElements());
     }
+
+    pickAtts.SetElementNumber(pickAtts.GetElementNumber() + nodeOrigin);
 
     //
     // CellPoint should now contain the actual node coordinates.

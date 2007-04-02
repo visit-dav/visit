@@ -115,6 +115,8 @@ class PLOTTER_API  avtLegend
     bool                          GetLegendOn(void) const;
     bool                          GetCurrentlyDrawn() const;
 
+    virtual void                  SetTitleVisibility(bool);
+    virtual bool                  GetTitleVisibility() const;
     virtual void                  SetLabelVisibility(bool);
     virtual bool                  GetLabelVisibility() const;
     virtual void                  SetNumberFormat(const char *);

@@ -216,6 +216,8 @@ class     PlotInfoAttributes;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added node origin
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -302,6 +304,10 @@ class PIPELINE_API avtDataAttributes
     int                      GetCellOrigin(void) const
                                    { return cellOrigin; };
     void                     SetCellOrigin(int);
+
+    int                      GetNodeOrigin(void) const
+                                   { return nodeOrigin; };
+    void                     SetNodeOrigin(int);
 
     int                      GetBlockOrigin(void) const
                                    { return blockOrigin; };
@@ -462,6 +468,7 @@ class PIPELINE_API avtDataAttributes
     int                      spatialDimension;
     int                      topologicalDimension;
     int                      cellOrigin;
+    int                      nodeOrigin;
     int                      blockOrigin;
     int                      groupOrigin;
     double                   dtime;

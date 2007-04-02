@@ -100,6 +100,8 @@ avtLevelsLegend::avtLevelsLegend()
 
     barVisibility = 1;
     rangeVisibility = 1;
+    labelVisibility = true;
+    titleVisibility = true;
 
     //
     // Set the legend to also point to sBar, so the base methods will work
@@ -206,6 +208,50 @@ avtLevelsLegend::GetLegendSize(double maxHeight, double &w, double &h)
 
     size[0] = w;
     size[1] = h;
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetTitleVisibility
+//
+// Purpose: 
+//   Sets whether titles are visible.
+//
+// Arguments:
+//   val : True if titles are to be visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:17 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetTitleVisibility(bool val)
+{
+    titleVisibility = val;
+    sBar->SetTitleVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::GetTitleVisibility
+//
+// Purpose: 
+//   Returns whether titles are visible.
+//
+// Returns:    Whether titles are visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:48 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtLevelsLegend::GetTitleVisibility() const
+{
+    return titleVisibility;
 }
 
 // ****************************************************************************

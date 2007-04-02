@@ -115,6 +115,8 @@ class PLOTTER_API avtVariableLegend : public avtLegend
 
     virtual void               GetLegendSize(double, double &, double &);
 
+    virtual void               SetTitleVisibility(bool);
+    virtual bool               GetTitleVisibility() const;
     virtual void               SetLabelVisibility(bool);
     virtual bool               GetLabelVisibility() const;
     virtual void               SetNumberFormat(const char *);
@@ -142,6 +144,7 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     double                     scale[2];
     int                        barVisibility;
     int                        rangeVisibility;
+    bool                       titleVisibility;
     bool                       labelVisibility;
 
     virtual void               ChangePosition(double, double);

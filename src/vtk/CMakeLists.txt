@@ -840,11 +840,18 @@ SUBDIRS(
   Graphics
   GenericFiltering
   IO)
+# For Visit, we don't build a lot in Hybrid, so must not build Widgets,
+# either.
+#IF(VTK_USE_RENDERING)
+#  SUBDIRS(Rendering)
+#  SUBDIRS(VolumeRendering)
+#  SUBDIRS(Hybrid)
+#  SUBDIRS(Widgets)
+#ENDIF(VTK_USE_RENDERING)
 IF(VTK_USE_RENDERING)
   SUBDIRS(Rendering)
   SUBDIRS(VolumeRendering)
   SUBDIRS(Hybrid)
-  SUBDIRS(Widgets)
 ENDIF(VTK_USE_RENDERING)
 IF(VTK_USE_PARALLEL)
   SUBDIRS(Parallel)

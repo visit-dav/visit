@@ -92,11 +92,13 @@ using     std::string;
 //    Kathleen Bonnell, Mon Aug 30 17:56:29 PDT 2004 
 //    Initialize skippedLocate.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 avtPickQuery::avtPickQuery()
 {
-    blockOrigin = cellOrigin = 0;
+    blockOrigin = cellOrigin = nodeOrigin = 0;
     transform = NULL;
     needTransform = false;
     ghostType = AVT_NO_GHOSTS;
@@ -339,6 +341,8 @@ avtPickQuery::PostExecute(void)
 //    Kathleen Bonnell, Wed Jun 14 16:41:03 PDT 2006
 //    Require update if Pick's timestep doesn't match the pipeline timestep.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 avtDataObject_p
@@ -349,6 +353,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     avtDataAttributes &inAtts = inData->GetInfo().GetAttributes();
     blockOrigin = inAtts.GetBlockOrigin();
     cellOrigin = inAtts.GetCellOrigin();
+    nodeOrigin = inAtts.GetNodeOrigin();
     ghostType = (avtGhostType)pickAtts.GetGhostType();
     pickAtts.SetDimension(inAtts.GetSpatialDimension());
 
@@ -553,6 +558,8 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 //    Hank Childs, Thu Mar 10 11:03:37 PST 2005
 //    Fix memory leak.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 void
@@ -579,11 +586,13 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
               false);
            if (pickAtts.GetDimension() == 2)
            {
-               SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
+               SNPRINTF(buff, 80, "<%d, %d>",
+                   ijk[0]+nodeOrigin, ijk[1]+nodeOrigin);
            }
            else 
            {
-               SNPRINTF(buff, 80, "<%d, %d, %d>", ijk[0], ijk[1], ijk[2]);
+               SNPRINTF(buff, 80, "<%d, %d, %d>",
+                   ijk[0]+nodeOrigin, ijk[1]+nodeOrigin, ijk[2]+nodeOrigin);
            }
            nodeCoords.push_back(buff);
            pickAtts.SetDnodeCoords(nodeCoords);
@@ -1022,6 +1031,8 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //    Kathleen Bonnell, Mon May 16 07:35:27 PDT 2005 
 //    Fix memory leak. 
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 bool
@@ -1118,12 +1129,13 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
                          ptIds->GetId(i), ijk, false);
                     if (pickAtts.GetDimension() == 2)
                     {
-                        SNPRINTF(buff, 80, "<%d, %d>", ijk[0], ijk[1]);
+                        SNPRINTF(buff, 80, "<%d, %d>",
+                            ijk[0]+nodeOrigin, ijk[1]+nodeOrigin);
                     }
                     else 
                     {
                         SNPRINTF(buff, 80, "<%d, %d, %d>", 
-                                 ijk[0], ijk[1], ijk[2]);
+                            ijk[0]+nodeOrigin, ijk[1]+nodeOrigin, ijk[2]+nodeOrigin);
                     }
                     dnodeCoords.push_back(buff);
                 }

@@ -459,6 +459,8 @@ avtPointAttribute::ResolveZone(avtDataObject_p &in_do)
 //    Hank Childs, Sun Jun 16 21:08:50 PDT 2002
 //    Account for non 0-origin blocks.
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 void
@@ -469,15 +471,18 @@ avtPointAttribute::ResolveNode(avtDataObject_p &in_do)
 
     int domain, node;
     int blockOrigin = ds->GetInfo().GetAttributes().GetBlockOrigin();
+    int nodeOrigin  = ds->GetInfo().GetAttributes().GetNodeOrigin();
     if (attributes.GetValueType() == Point::VT_Node)
     {
         attributes.GetNodeArgs(node);
         domain = 0;
+        node -= nodeOrigin;
     }
     else
     {
         attributes.GetDomainNodeArgs(domain, node);
         domain -= blockOrigin;
+        node -= nodeOrigin;
     }
 
     point[0] = DBL_MAX;
@@ -512,7 +517,8 @@ avtPointAttribute::ResolveNode(avtDataObject_p &in_do)
         point[2] = 0.;
         char warning[1024];
         sprintf(warning, "Was not able to locate domain %d, node %d, using "
-                         "point (0., 0., 0.)", domain+blockOrigin, node);
+                         "point (0., 0., 0.)", domain+blockOrigin,
+                                               node+nodeOrigin);
         avtCallback::IssueWarning(warning);
     }
     else

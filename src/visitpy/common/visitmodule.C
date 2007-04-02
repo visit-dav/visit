@@ -139,6 +139,7 @@
 #include <PyImageObject.h>
 #include <PyInteractorAttributes.h>
 #include <PyKeyframeAttributes.h>
+#include <PyLegendAttributesObject.h>
 #include <PyLineObject.h>
 #include <PyLightAttributes.h>
 #include <PyMaterialAttributes.h>
@@ -9998,9 +9999,10 @@ UpdateAnnotationHelper(AnnotationObject *annot)
         // The annotation was in the local object list.
         AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
         bool found = false;
-        for(int i = 0; aol->GetNumAnnotations(); ++i)
+        for(int i = 0; i < aol->GetNumAnnotations(); ++i)
         {
-            AnnotationObject &viewerAnnot = aol->operator[](i);
+            AnnotationObject &viewerAnnot = aol->GetAnnotation(i);
+
             if(viewerAnnot.GetObjectName() == annot->GetObjectName())
             {
                 found = true;                
@@ -10025,7 +10027,7 @@ UpdateAnnotationHelper(AnnotationObject *annot)
         if(!found)
         {
             debug1 << mName << "Annotation object " << annot->GetObjectName()
-                   << "was not found in the viewer's annotation object list."
+                   << " was not found in the viewer's annotation object list."
                    << endl;
         }
 
@@ -10145,6 +10147,9 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
 //   Brad Whitlock, Tue Jun 28 11:48:50 PDT 2005
 //   Added John Anderson's objects.
 //
+//   Brad Whitlock, Fri Mar 23 17:24:54 PST 2007
+//   Added PyLegendAttributesObject and added an error message.
+//
 // ****************************************************************************
 
 PyObject *
@@ -10172,8 +10177,19 @@ CreateAnnotationWrapper(AnnotationObject *annot)
         // Create a Image wrapper for the new annotation object.
         retval = PyImageObject_WrapPyObject(annot);
     }
-
+    else if(annot->GetObjectType() == AnnotationObject::LegendAttributes)
+    {
+        // Create a Image wrapper for the new annotation object.
+        retval = PyLegendAttributesObject_WrapPyObject(annot);
+    }
+    
     // Add more cases here later...
+
+    else
+    {
+        debug1 << "CreateAnnotationWrapper was asked to create a " << annot->GetObjectType()
+               << " object and could not because that is an unsupported type." << endl;
+    }
 
     return retval;
 }
@@ -10195,7 +10211,8 @@ CreateAnnotationWrapper(AnnotationObject *annot)
 //   Updated due to code generation changes.
 //
 //   Brad Whitlock, Tue Mar 20 09:36:05 PDT 2007
-//   Added ability to name an object when it is created.
+//   Added ability to name an object when it is created. Added a message for
+//   how to get at the legend attributes.
 //
 // ****************************************************************************
 
@@ -10225,6 +10242,17 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
         annotTypeIndex = 3;
     else if(strcmp(annotType, "Image") == 0)
         annotTypeIndex = 7;
+    else if(strcmp(annotType, "LegendAttributes") == 0)
+    {
+        VisItErrorFunc("Legends are created by plots and the legend attributes "
+            "annotation objects associated with plot legends are created when "
+            "plots are created. You may access the legend attributes by "
+            "passing the name of a plot instance to GetAnnotationObject like "
+            "this: \n\n"
+            "    index = 0 # The index of the plot that you want in the plot list.\n"
+            "    legend = GetAnnotationObject(GetPlotList().GetPlots(index).plotName)\n");
+        return NULL;
+    }
     else
     {
         char message[400];
@@ -10339,7 +10367,7 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
                 {
                     debug1 << mName << "Found object called "
                            << pos->second.object->GetObjectName()
-                           << " with an index of" << annotIndex
+                           << " with an index of " << annotIndex
                            << endl;
 
                     AnnotationObject *annot = pos->second.object;
@@ -10390,14 +10418,23 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
                 //
                 AnnotationObject *localCopy = new AnnotationObject(newObject);
 
-                // Cache references based on the object name.
-                AnnotationObjectRef ref;
-                ref.object = localCopy;
-                ref.refCount = 1;
-                ref.index = localObjectMap.size();
-          
-                localObjectMap[newObject.GetObjectName()] = ref;
                 retval = CreateAnnotationWrapper(localCopy);
+
+                if(retval != 0)
+                {
+                    // Cache references based on the object name.
+                    AnnotationObjectRef ref;
+                    ref.object = localCopy;
+                    ref.refCount = 1;
+                    ref.index = localObjectMap.size();
+         
+                    localObjectMap[newObject.GetObjectName()] = ref;
+                }
+                else
+                {
+                    delete localCopy;
+                    debug1 << mName << "CreateAnnotationWrapper returned 0!" << endl;
+                }
             }
             else
             {
@@ -10406,6 +10443,50 @@ visit_GetAnnotationObject(PyObject *self, PyObject *args)
                 VisItErrorFunc(msg);
             }
         }
+    }
+
+    MUTEX_UNLOCK();
+
+    return retval;
+}
+
+// ****************************************************************************
+// Function: visit_GetAnnotationObjectNames
+//
+// Purpose:
+//   Returns a tuple containing the annotation object names.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 23 18:24:31 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetAnnotationObjectNames(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    Synchronize();
+    MUTEX_LOCK();
+
+    // Allocate a tuple the with enough entries to hold the plugin name list.
+    PyObject *retval = PyTuple_New(GetViewerState()->GetAnnotationObjectList()->
+        GetNumAnnotations());
+
+    for(int i = 0;
+        i < GetViewerState()->GetAnnotationObjectList()->GetNumAnnotations();
+        ++i)
+    {
+        const AnnotationObject &annot = GetViewerState()->
+            GetAnnotationObjectList()->GetAnnotation(i);
+        PyObject *sval = PyString_FromString(annot.GetObjectName().c_str());
+        if(sval == NULL)
+            continue;
+        PyTuple_SET_ITEM(retval, i, sval);
     }
 
     MUTEX_UNLOCK();
@@ -11371,6 +11452,9 @@ AddDefaultMethods()
                                                 visit_GetAnimationTimeout_doc);
     AddMethod("GetAnnotationObject", visit_GetAnnotationObject,
                                                 visit_GetAnnotationObject_doc);
+    AddMethod("GetAnnotationObjectNames", visit_GetAnnotationObjectNames,
+                                                NULL);
+
     AddMethod("GetLocalHostName", visit_GetLocalHostName,
                                                        visit_GetLocalName_doc);
     AddMethod("GetLocalUserName", visit_GetLocalUserName,

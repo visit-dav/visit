@@ -90,7 +90,10 @@ Definition:
 //   Kathleen Bonnell, Fri Mar 31 14:14:25 PST 2006
 //   Handle the case where the parentNode saved postion as float instead
 //   of double.
-//   
+//
+//   Brad Whitlock, Fri Mar 23 17:08:29 PST 2007
+//   Added objectName.
+//
 // ****************************************************************************
 
 void
@@ -105,6 +108,8 @@ AnnotationObject::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("objectName")) != 0)
+        SetObjectName(node->AsString());
     if((node = searchNode->GetNode("objectType")) != 0)
     {
         // Allow enums to be int or string in the config file

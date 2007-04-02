@@ -105,6 +105,8 @@ avtNodeCoordsQuery::~avtNodeCoordsQuery()
 //    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004 
 //    Add 'global' to output string as necessary. 
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 void
@@ -153,6 +155,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 
     char msg[120];
 
+    int nodeOrigin = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
     if (success)
     {
         int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
@@ -164,12 +167,12 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
             if (dim == 2)
             {
                 SNPRINTF(msg, 120, "The coords of %s node %d are (%g, %g).", 
-                         global.c_str(), qA->GetElement(), coord[0], coord[1]);
+                         global.c_str(), qA->GetElement()+nodeOrigin, coord[0], coord[1]);
             }
             else 
             {
                 SNPRINTF(msg, 120, "The coords of %s node %d are (%g, %g, %g).", 
-                         global.c_str(), qA->GetElement(), 
+                         global.c_str(), qA->GetElement()+nodeOrigin, 
                          coord[0], coord[1], coord[2]);
             }
         }
@@ -185,13 +188,13 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
             if (dim == 2)
             {
                 SNPRINTF(msg, 120, "The coords of node %d (%s) are (%g, %g).", 
-                         qA->GetElement(), domainName.c_str(),
+                         qA->GetElement()+nodeOrigin, domainName.c_str(),
                          coord[0], coord[1]);
             }
             else 
             {
                 SNPRINTF(msg, 120, "The coords of node %d (%s) are (%g, %g, %g).", 
-                         qA->GetElement(), domainName.c_str(),
+                         qA->GetElement()+nodeOrigin, domainName.c_str(),
                          coord[0], coord[1], coord[2]);
             }
         }
@@ -207,7 +210,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
         if (singleDomain)
         {
             SNPRINTF(msg, 120, "The coords of node %d could not be determined.",
-                     qA->GetElement());
+                     qA->GetElement()+nodeOrigin);
         }
         else
         {
@@ -219,7 +222,7 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
             string domainName;
             src->GetDomainName(var, ts, domain, domainName);
             SNPRINTF(msg, 120, "The coords of node %d (%s) could not be determined.",
-                     qA->GetElement(), domainName.c_str());
+                     qA->GetElement()+nodeOrigin, domainName.c_str());
         }
     }
 
@@ -247,6 +250,8 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 bool
@@ -255,8 +260,9 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
     intVector dlist;
 
     int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
+    int nodeOrigin  = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
     int domain      = queryAtts.GetDomain()  - blockOrigin;
-    int node        = queryAtts.GetElement(); 
+    int node        = queryAtts.GetElement() - nodeOrigin; 
     int ts          = queryAtts.GetTimeStep();
     string var      = queryAtts.GetVariables()[0];
 
@@ -320,12 +326,15 @@ avtNodeCoordsQuery::FindLocalCoord(double coord[3])
 //
 //  Modifications:
 //
+//    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+//    Added support for node origin
 // ****************************************************************************
 
 bool
 avtNodeCoordsQuery::FindGlobalCoord(double coord[3])
 {
-    int node        = queryAtts.GetElement(); 
+    int nodeOrigin  = GetInput()->GetInfo().GetAttributes().GetNodeOrigin();
+    int node        = queryAtts.GetElement() - nodeOrigin; 
     int ts          = queryAtts.GetTimeStep();
     string var      = queryAtts.GetVariables()[0];
 
