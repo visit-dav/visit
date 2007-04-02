@@ -162,6 +162,9 @@ avtThreeSliceFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Thu Jul  6 13:30:38 PDT 2006  
 //    Fix to work with new vtk pipeline changes. 
 //
+//    Kathleen Bonnell, Wed Sep  6 14:20:59 PDT 2006 
+//    Another fix for new vtk pipeline changes. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -346,7 +349,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
         if (cellList[i])
             delete[] cellList[i];
     }
-        
+
     slicer->SetInputConnection(0,NULL);
     vtkPolyData *p = vtkPolyData::New();
     slicer->GetExecutive()->SetOutputData(0, p);
@@ -354,8 +357,8 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
     vtkPolyData *rv = vtkPolyData::New();
 
-    merger->SetOutput(rv);
     merger->Update();
+    rv->ShallowCopy(merger->GetOutput());
     
     //
     // Clean up memory.
