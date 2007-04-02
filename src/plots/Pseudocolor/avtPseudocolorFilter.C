@@ -111,6 +111,9 @@ avtPseudocolorFilter::RefashionDataObjectInfo(void)
 //  Creation:   October 29, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Jun 10 13:37:09 PDT 2005
+//    Verify the existence of a valid variable before attempting to retrieve
+//    its centering.
 //
 // ****************************************************************************
 
@@ -141,12 +144,22 @@ avtPseudocolorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     if (pspec->GetDataSpecification()->MayRequireZones())
     {
         keepNodeZone = true;
-        if (data.GetCentering() == AVT_NODECENT)
+        if (data.ValidActiveVariable())
         {
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
+            if (data.GetCentering() == AVT_NODECENT)
+            {
+                rv->GetDataSpecification()->TurnNodeNumbersOn();
+            }
+            else if (data.GetCentering() == AVT_ZONECENT)
+            {
+                rv->GetDataSpecification()->TurnZoneNumbersOn();
+            }
         }
-        else if (data.GetCentering() == AVT_ZONECENT)
+        else 
         {
+            // canot determine variable centering, so turn on both
+            // node numbers and zone numbers.
+            rv->GetDataSpecification()->TurnNodeNumbersOn();
             rv->GetDataSpecification()->TurnZoneNumbersOn();
         }
     }
@@ -154,7 +167,6 @@ avtPseudocolorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     {
         keepNodeZone = false;
     }
-
 
     return rv;
 }

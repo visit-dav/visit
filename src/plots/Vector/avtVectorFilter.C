@@ -309,6 +309,10 @@ avtVectorFilter::SetMagVarName(const string &mname)
 //    Kathleen Bonnell, Wed Dec  1 09:19:31 PST 2004 
 //    Turn on Node/Zone numbers when 'MayRequireNodes' is true. 
 //
+//    Kathleen Bonnell, Fri Jun 10 13:37:09 PDT 2005
+//    Verify the existence of a valid variable before attempting to retrieve
+//    its centering.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -316,10 +320,12 @@ avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
 {
     avtPipelineSpecification_p rv = pspec;
     avtDataSpecification_p ds = pspec->GetDataSpecification();
+
     //
     // Create the expression definition
     //
     string edef = string("magnitude(") + ds->GetVariable() + string(")");
+
 
     ExpressionList *elist = ParsingExprList::Instance()->GetList();
     Expression *e = new Expression();
@@ -342,12 +348,22 @@ avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
         pspec->GetDataSpecification()->MayRequireNodes())
     {
         keepNodeZone = true;
-        if (data.GetCentering() == AVT_NODECENT)
+        if (data.ValidActiveVariable())
         {
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
+            if (data.GetCentering() == AVT_NODECENT)
+            {
+                rv->GetDataSpecification()->TurnNodeNumbersOn();
+            }
+            else if (data.GetCentering() == AVT_ZONECENT)
+            {
+                rv->GetDataSpecification()->TurnZoneNumbersOn();
+            }
         }
-        else if (data.GetCentering() == AVT_ZONECENT)
+        else 
         {
+            // canot determine variable centering, so turn on both
+            // node numbers and zone numbers.
+            rv->GetDataSpecification()->TurnNodeNumbersOn();
             rv->GetDataSpecification()->TurnZoneNumbersOn();
         }
     }
