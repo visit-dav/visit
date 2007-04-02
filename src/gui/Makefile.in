@@ -361,6 +361,10 @@
 #    QvisSessionSourceChanger, QvisSessionSourceChangerDialog,
 #    QvisFileOpenDialog.
 #
+#    Shelly Prevost Thu Nov 30 19:26:49 PST 200
+#    I added QvisStripChart.C and QvisStripChart.h to support the new
+#    strip chart widget in the simulation window.
+#
 ##############################################################################
 
 ##
@@ -473,6 +477,7 @@ HDRMOC = \
     QvisSessionSourceChangerDialog.h \
     QvisSimulationWindow.h \
     QvisSpectrumBar.h \
+      QvisStripChart.h \
     QvisSubsetListView.h \
     QvisSubsetWindow.h \
     QvisText2DInterface.h \
@@ -488,6 +493,7 @@ HDRMOC = \
     QvisWizard.h \
     SimCommandSlots.h \
     SplashScreen.h
+  
 
 # Then, all of the rest of the header files
 HDR = ${HDRMOC} \

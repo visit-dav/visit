@@ -224,8 +224,10 @@ Update_UI_Commands()
 {
       /* put updated UI information here. */
       static int timeStep = 0;
+      static double dataValue = 0;
       char value[MAX_CMD_STR_LEN];
       char modValue[MAX_CMD_STR_LEN];
+      int enable = 1;
 
       /* move the progess bar and update the value in the spin box */
       VisItSetCMDValue (*md, "progressBar1",  (timeStep *10)% 100);
@@ -255,13 +257,18 @@ Update_UI_Commands()
       VisItSetCMDValue(*md,  "ShellyDial_1",timeStep % 360);
       sprintf (modValue, "%5d", timeStep % 360);
       VisItSetCMDText(*md, "ShellyLineEdit1",modValue);
-      VisItInitGenericCMD( *md, STATUS_MESSAGE,"MessageViewerTextEdit","Sim Message","My Message",1);
+      VisItSetStatusMessage( *md,"My Sim Message","black");
       VisItSetCMDText(*md, "ShellyText_2",modValue);
+      
+      // send a data point to the strip chart
+      if (timeStep > 0 )
+          VisItAddStripChartDataPoint( *md, timeStep, (int)(dataValue) % 75 -20, enable);
  
       md->currentCycle = cycle;
       md->currentTime  = timeStep;
       md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
       timeStep++;
+      dataValue = dataValue + 5.3;
 }
 
 /*****************************************************************************

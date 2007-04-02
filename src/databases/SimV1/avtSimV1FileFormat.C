@@ -530,6 +530,7 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         VisIt_SimulationControlCommand *scc = &vsmd->customCommands[c];
         avtSimulationCommandSpecification::CommandArgumentType t;
+        t =  avtSimulationCommandSpecification::CmdArgString;
         avtSimulationCommandSpecification scs;
         scs.SetName(scc->name);
         scs.SetText(scc->text);
