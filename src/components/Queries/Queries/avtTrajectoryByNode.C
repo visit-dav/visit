@@ -125,6 +125,8 @@ avtTrajectoryByNode::Preparation(const avtDataAttributes &inAtts)
 //  Creation:   November 8, 2005 
 //
 //  Modifications:
+//    Brad Whitlock, Tue Mar 13 11:26:59 PDT 2007
+//    Updated due to code generation changes.
 //
 // ****************************************************************************
 
@@ -144,8 +146,8 @@ avtTrajectoryByNode::PostExecute(void)
             pickAtts.CreateOutputString(msg);
             SetResultMessage(msg.c_str());
             doubleVector res;
-            res.push_back(pickAtts.GetPickVarInfo(0).GetValues()[0]);
-            res.push_back(pickAtts.GetPickVarInfo(1).GetValues()[0]);
+            res.push_back(pickAtts.GetVarInfo(0).GetValues()[0]);
+            res.push_back(pickAtts.GetVarInfo(1).GetValues()[0]);
             SetResultValues(res);
         }
         else

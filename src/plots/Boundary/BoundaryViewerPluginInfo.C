@@ -456,18 +456,18 @@ BoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     int idx = 0;
     for(pos = sv.begin(); pos != sv.end(); ++pos)
     {
-        if (idx < boundaryAtts->GetMultiColor().GetNumColorAttributes())
+        if (idx < boundaryAtts->GetMultiColor().GetNumColors())
         {
             // The meshIndex is within the defaultAtts' color
             // vector size.
-            cal.AddColorAttribute(boundaryAtts->GetMultiColor()[idx]);
+            cal.AddColors(boundaryAtts->GetMultiColor()[idx]);
         }
         else
         {
             // The meshIndex is greater than the size of the
             // defaultAtts' color vector. Use colors from the
             // default discrete color table.
-            cal.AddColorAttribute(ca[idx]);
+            cal.AddColors(ca[idx]);
         }
         ++idx;
     }

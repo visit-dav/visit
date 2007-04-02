@@ -53,11 +53,16 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+// Modifications:
+//   Brad Whitlock, Wed Mar 7 16:05:46 PST 2007
+//   Added keyframing check box.
+//
 // ****************************************************************************
+
 XMLEditAttribute::XMLEditAttribute(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 7,3, 5);
+    QGridLayout *topLayout = new QGridLayout(this, 8,3, 5);
     int row = 0;
 
     name = new QLineEdit(this);
@@ -89,6 +94,10 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(persistent, row,row, 0,2);
     row++;
 
+    keyframe = new QCheckBox("Generate keyframing methods", this);
+    topLayout->addMultiCellWidget(keyframe, row,row, 0,2);
+    row++;
+
     topLayout->setRowStretch(row, 100);
 
     connect(name, SIGNAL(textChanged(const QString &)),
@@ -103,6 +112,8 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p, const QString &n)
             this,  SLOT(exportIncludeTextChanged(const QString &)));
     connect(persistent, SIGNAL(clicked()),
             this, SLOT(persistentChanged()));
+    connect(keyframe, SIGNAL(clicked()),
+            this, SLOT(keyframeChanged()));
 }
 
 // ****************************************************************************
@@ -113,6 +124,10 @@ XMLEditAttribute::XMLEditAttribute(QWidget *p, const QString &n)
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
+//
+//  Modifications:
+//    Brad Whitlock, Wed Mar 7 16:06:43 PST 2007
+//    Added keyframe.
 //
 // ****************************************************************************
 void
@@ -140,6 +155,7 @@ XMLEditAttribute::UpdateWindowContents()
         exportInclude->setText(a->exportInclude);
     }
     persistent->setChecked(a->persistent);
+    keyframe->setChecked(a->keyframe);
 
     UpdateWindowSensitivity();
 
@@ -177,6 +193,10 @@ XMLEditAttribute::UpdateWindowSensitivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 17, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 7 16:06:43 PST 2007
+//    Added keyframe.
+//
 // ****************************************************************************
 void
 XMLEditAttribute::BlockAllSignals(bool block)
@@ -187,6 +207,7 @@ XMLEditAttribute::BlockAllSignals(bool block)
     exportAPI->blockSignals(block);
     exportInclude->blockSignals(block);
     persistent->blockSignals(block);
+    keyframe->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -290,4 +311,17 @@ void
 XMLEditAttribute::persistentChanged()
 {
     xmldoc->attribute->persistent = persistent->isChecked();    
+}
+
+// ****************************************************************************
+//  Method:  XMLEditAttribute::keyframeChanged
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Mar 7 16:07:46 PST 2007
+//
+// ****************************************************************************
+void
+XMLEditAttribute::keyframeChanged()
+{
+    xmldoc->attribute->keyframe = keyframe->isChecked();    
 }

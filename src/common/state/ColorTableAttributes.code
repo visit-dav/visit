@@ -149,7 +149,7 @@ ColorTableAttributes::AddColorTable(const std::string &name,
 
     // Append the color table to the list.
     names.push_back(name);
-    AddColorControlPointList(cpts);
+    AddColorTables(cpts);
 
     // Store the name, colortable pairs into a map.
     std::map<std::string, AttributeGroup *> sortMap;
@@ -245,7 +245,7 @@ ColorTableAttributes::RemoveColorTable(int index)
         Select(0, (void *)&names);
 
         // erase the color table from the vector.
-        RemoveColorControlPointList(index);
+        RemoveColorTables(index);
 
         // If it is the active color table that was removed, reset the
         // active color table to the first element.
@@ -265,33 +265,6 @@ ColorTableAttributes::RemoveColorTable(int index)
         }
     }
 }
-
-
-
-Function:  GetNumColorTables
-Declaration: int GetNumColorTables() const;
-Definition:
-// ****************************************************************************
-// Method: ColorTableAttributes::GetNumColorTables
-//
-// Purpose: 
-//   Return the number of color tables in the list.
-//
-// Returns:    The number of color tables in the list.
-//
-// Programmer: Brad Whitlock
-// Creation:   Sat Jun 16 20:37:44 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-ColorTableAttributes::GetNumColorTables() const
-{
-    return names.size();
-}
-
 
 
 Function:  CreateNode
@@ -325,6 +298,9 @@ Definition:
 //   Brad Whitlock, Wed Dec 17 12:21:24 PDT 2003
 //   I added another bool argument.
 //
+//   Brad Whitlock, Tue Mar 13 10:40:04 PDT 2007
+//   Updated due to code generator changes.
+//
 // ****************************************************************************
 
 bool
@@ -344,25 +320,25 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
     int index = 0;
     for(int i = 0; i < colorTables.size(); ++i)    
     {
-        const ColorControlPointList *ccpl = GetColorControlPoints(i);
-        if(ccpl && !ccpl->GetExternalFlag())
+        const ColorControlPointList &ccpl = GetColorTables(i);
+        if(!ccpl.GetExternalFlag())
         {
             SNPRINTF(tmp, 100, "table%02d", index++);
             DataNode *ctNode = new DataNode(tmp);
             // Add the color table attributes to the ctNode.
             ctNode->AddNode(new DataNode("ctName", names[i]));
-            if(!ccpl->FieldsEqual(1, &defaultObject))
-                ctNode->AddNode(new DataNode("equal", ccpl->GetEqualSpacingFlag()));
-            if(!ccpl->FieldsEqual(2, &defaultObject))
-                ctNode->AddNode(new DataNode("smooth", ccpl->GetSmoothingFlag()));
-            if(!ccpl->FieldsEqual(3, &defaultObject))
-                ctNode->AddNode(new DataNode("discrete", ccpl->GetDiscreteFlag()));
+            if(!ccpl.FieldsEqual(1, &defaultObject))
+                ctNode->AddNode(new DataNode("equal", ccpl.GetEqualSpacingFlag()));
+            if(!ccpl.FieldsEqual(2, &defaultObject))
+                ctNode->AddNode(new DataNode("smooth", ccpl.GetSmoothingFlag()));
+            if(!ccpl.FieldsEqual(3, &defaultObject))
+                ctNode->AddNode(new DataNode("discrete", ccpl.GetDiscreteFlag()));
 
             // Add the control points to the vector that we'll save out.
             floatVector fvec;
-            for(int j = 0; j < ccpl->GetNumColorControlPoints(); ++j)
+            for(int j = 0; j < ccpl.GetNumControlPoints(); ++j)
             {
-                const ColorControlPoint &cp = ccpl->operator[](j);
+                const ColorControlPoint &cp = ccpl.operator[](j);
                 fvec.push_back(cp.GetPosition());
                 fvec.push_back(float(cp.GetColors()[0]));
                 fvec.push_back(float(cp.GetColors()[1]));
@@ -460,7 +436,7 @@ ColorTableAttributes::SetFromNode(DataNode *parentNode)
                                               (unsigned char)(fvec[index+2]),
                                               (unsigned char)(fvec[index+3]),
                                               255);
-                        ccpl.AddColorControlPoint(cpt);
+                        ccpl.AddControlPoints(cpt);
                     }
 
                     // If the color table is already in the list, remove it.

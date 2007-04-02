@@ -487,19 +487,19 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     int idx = 0;
     for(pos = sv.begin(); pos != sv.end(); ++pos, ++idx)
     {
-        if (idx < boundaryAtts->GetMultiColor().GetNumColorAttributes())
+        if (idx < boundaryAtts->GetMultiColor().GetNumColors())
         {
             if (matColors.size() && matColors[idx] != "")
             {
                 ColorAttribute tmpca;
                 tmpca.SetByName(matColors[idx].c_str());
-                cal.AddColorAttribute(tmpca);
+                cal.AddColors(tmpca);
             }
             else
             {
                 // The meshIndex is within the defaultAtts' color
                 // vector size.
-                cal.AddColorAttribute(boundaryAtts->GetMultiColor()[idx]);
+                cal.AddColors(boundaryAtts->GetMultiColor()[idx]);
             }
         }
         else
@@ -511,11 +511,11 @@ FilledBoundaryViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
             {
                 ColorAttribute tmpca;
                 tmpca.SetByName(matColors[idx].c_str());
-                cal.AddColorAttribute(tmpca);
+                cal.AddColors(tmpca);
             }
             else
             {
-                cal.AddColorAttribute(ca[idx]);
+                cal.AddColors(ca[idx]);
             }
         }
     }

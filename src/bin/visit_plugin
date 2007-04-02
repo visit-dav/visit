@@ -25,6 +25,17 @@
 #   Moved all instructions to single place. Made it send a single email
 #   for all recipients so all could see who received it.
 #
+#   Mark C. Miller, Thu Mar 15 21:45:31 PDT 2007
+#   Fixed problems with mutt being unreliable. Added contrib and keep files
+#   to be cleaned from the TEMPORARY copy of the plugin dir we make.
+#
+#   Mark C. Miller, Thu Mar 15 21:26:08 PST 2007
+#   Modified instructions to include information on building when VisIt
+#   installation wasn't built to include the plugin
+#
+#   Mark C. Miller, Thu Mar 15 22:53:04 PST 2007
+#   Added support for testing on the user's end (during install)
+#
 # ----------------------------------------------------------------------------
 #
 
@@ -37,6 +48,7 @@
 cleanPluginDir () {
     pushd $1
     rm -f .depend .cmake.depend .cmake.state Makefile *.o
+    rm -f *.contrib* *.keep*
     rm -f *PluginInfo*.[Ch]
     chmod -f 664 *
     popd
@@ -46,25 +58,29 @@ cleanPluginDir () {
 # Buil the README file to be included in the tarball
 #
 makeInstructionsFile () {
+    typeset upperPluginName=`echo $pluginName | tr \[a-z\] \[A-Z\]`
+
 cat > $1 <<- EOF
     The associated tarball is a VisIt plugin. This update is being
     furnished to you to address the following problem(s)...
 
         $commentString
 
-    Commands for installing and UNinstalling (VisIt 1.6 and newer)
+    Simple commands for installing/UNinstalling a plugin
+    (Works in most cases)
     --------------------------------------------------------------
     (Note: no '.tar.gz' after the plugin's name)
     % visit_plugin -install $pluginName 
     % visit_plugin -uninstall $pluginName
 
-    Commands for installing and UNinstalling (VisIt 1.5.5 and older)
+    Manual commands for installing and UNinstalling
+    (If the above commands fail, you can try this appraoch) 
     ----------------------------------------------------------------
     % gunzip < $pluginName.tar.gz | tar xvf -
     % cd $pluginName
     To install...
-    % xml2info -clobber <pluginname>.xml
-    % xml2makefile -clobber <pluginname>.xml
+    % xml2info -clobber $pluginName.xml
+    % xml2makefile -clobber $pluginName.xml
     % make
     To UNinstall...
     % make clean
@@ -82,19 +98,18 @@ cat > $1 <<- EOF
     not install or, once installed, not run correctly. You may be
     required to update either VisIt and/or the third party I/O library(s)
     this plugin may require. 
+
 EOF
 
     if test $testBuild -ne 0; then
         if test -n "$testRun"; then
             cat >> $1 <<- EOF
-
     Prior to sending you this tarball, it was confirmed to build and
     run correctly with version $versionBuiltWith of VisIt.
 
 EOF
         else
             cat >> $1 <<- EOF
-
     Prior to sending you this tarball, it was confirmed to build with
     version $versionBuiltWith of VisIt.
 
@@ -119,6 +134,23 @@ cat >> $1 <<- EOF
     To correct this situation, simply uninstall your private plugin
     following the instructions here.
 
+    If VisIt was installed on your system without this database plugin,
+    then you will most likely have to use the Manual approach for installing
+    and UNinstalling the plugin. Also, you will most likely have to modify
+    the Makefile that gets created by xml2makefile to specify the location(s)
+    of any applicable third party include and library files. Typically,
+    you would do this by editing Makefile and defining something like... 
+
+    ${upperPluginName}_INCLUDE="-I/usr/local/foo/include -I/usr/local/bar/include"
+    ${upperPluginName}_LIB="-L/usr/local/foo/lib -lfoo -L/usr/local/bar/lib -lbar"
+
+    You would place these lines AFTER the include directive that includes
+    'make-variables' near the top of the Makefile. Alternatively, you may
+    need to statically link to third party libraries by specifing the complete
+    path to the .a files in ${upperPluginName}_LIB like so...
+
+    ${upperPluginName}_LIB="/usr/local/foo/lib/libfoo.a /usr/local/bar/lib/libbar.a"
+
     If you would like VisIt to test the plugin and automatically uninstall
     it if the test fails, give the command
         % visit_plugin -install . -testrun <Filename>:<PlotType>:<Varname>
@@ -139,6 +171,14 @@ packagePluginDir () {
     cleanPluginDir $TMPDIR/${theDir}_tmp.$$/$theDir 1>/dev/null 2>&1
     pushd $TMPDIR/${theDir}_tmp.$$ 1>/dev/null 2>&1
     makeInstructionsFile $theDir/README 1>/dev/null 2>&1
+    if test -n "$requiredVersions"; then
+        echo $requiredVersions | cut -d' ' -f1 > $theDir/.REQUIRED_VISIT_VERSION
+    fi
+    if test -n "$testRun"; then
+        inputFileName=`echo $testRun | cut -d':' -f1`
+        cp $inputFileName $theDir/.
+        echo $testRun > $theDir/.TEST_RUN_COMMAND
+    fi
     tar cf - $theDir | gzip > $theDir.tar.gz
     popd 1>/dev/null 2>&1
     cp $TMPDIR/${theDir}_tmp.$$/$theDir.tar.gz .
@@ -151,16 +191,18 @@ packagePluginDir () {
 testBuildPluginTarball () {
     typeset theTarball=$1
     typeset deleteIt=$2
-    vers=
-    if test -n "$requiredVersions"; then
-        vers="-v `echo $requiredVersions | cut -d' ' -f1`"
-    fi
     thePluginName=`basename $theTarball .tar.gz`
     mkdir $TMPDIR/${theTarball}_tmp.$$
     cp $theTarball $TMPDIR/${theTarball}_tmp.$$/.
     pushd $TMPDIR/${theTarball}_tmp.$$ 1>/dev/null 2>&1
     gunzip < $theTarball | tar xf -
     cd $thePluginName
+    vers=
+    if test -n "$requiredVersions"; then
+        vers="-v `echo $requiredVersions | cut -d' ' -f1`"
+    elif test -e .REQUIRED_VISIT_VERSION; then
+        vers="-v `cat .REQUIRED_VISIT_VERSION`"
+    fi
     xml2info $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
     xml2makefile $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
     make -j 2 1>/dev/null 2>&1
@@ -184,10 +226,19 @@ testRunPluginTarball () {
     vers=
     if test -n "$requiredVersions"; then
         vers="-v `echo $requiredVersions | cut -d' ' -f1`"
+    elif test -e $tarballDir/.REQUIRED_VISIT_VERSION; then
+        vers="-v `cat $tarballDir/.REQUIRED_VISIT_VERSION`"
     fi
     fileName=`echo $testRun | cut -d':' -f1`
     plotType=`echo $testRun | cut -d':' -f2`
     varName=`echo $testRun | cut -d':' -f3`
+    if test $action = install && test -e $tarballDir/.TEST_RUN_COMMAND; then
+        fileName=`cat $tarballDir/.TEST_RUN_COMMAND | cut -d':' -f1`
+        fileName=`basename $fileName`
+        fileName=$tarballDir/$fileName
+        plotType=`cat $tarballDir/.TEST_RUN_COMMAND | cut -d':' -f2`
+        varName=`cat $tarballDir/.TEST_RUN_COMMAND | cut -d':' -f3`
+    fi
     mkdir $TMPDIR/visit_plugin_test.$$
     pushd $TMPDIR/visit_plugin_test.$$ 1>/dev/null 2>&1
     cat > visit_plugin_test.py <<- EOF
@@ -214,13 +265,15 @@ EOF
     passedIt=`visit $vers -debug 5 -cli -nowin -s visit_plugin_test.py 2>&1 | grep '###PASSED###'`
     if test -z "$passedIt"; then
         origDir=`pushd 1>/dev/null 2>&1; pwd ; pushd 1>/dev/null`
-        cp *.log $origDir/.
+        cp *.5.log $origDir/.
     fi
     popd 1>/dev/null 2>&1
     rm -rf $TMPDIR/visit_plugin_test.$$
-    pushd $tarballDir 1>/dev/null 2>&1
-    make clean 1>/dev/null 2>&1
-    popd 1>/dev/null 2>&1
+    if test $action = pack; then
+        pushd $tarballDir 1>/dev/null 2>&1
+        make clean 1>/dev/null 2>&1
+        popd 1>/dev/null 2>&1
+    fi
     rm -rf $tarballDir
     if test -n "$passedIt"; then
         echo 0
@@ -293,7 +346,7 @@ do
              echo "Expected colon separated list of <Filename:PlotType:VarName> for $1"
              optError=1
          else
-         testBuild=1
+             testBuild=1
              testRun=$2
              shift 2
          fi
@@ -463,14 +516,28 @@ if test $action = pack; then
     # Email tarball to recipients if specified
     #
     if test -n "$emailRecipients"; then
+        oldTmpDir=$TMPDIR
+        TMPDIR=$TMPDIR/mutt$$
+	export TMPDIR
+	mkdir $TMPDIR
+	chmod 700 $TMPDIR
         makeInstructionsFile mutt.msg 1>/dev/null 2>&1
-        if test "$execEmail" = "unknown"; then
-            mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg
-        else
-            mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg
-        fi
+	while true; do
+            if test "$execEmail" = "unknown"; then
+                mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg >& $TMPDIR/mutt.errors
+            else
+                mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg
+            fi
+	    if test -z "`cat $TMPDIR/mutt.errors`"; then
+	        break;
+	    else
+	        sleep 1
+	    fi
+	done
+	rm -rf $TMPDIR
+	TMPDIR=$oldTmpDir
+	export TMPDIR
         tarballsToRemove="$tarballsToRemove $pluginName.tar.gz"
-	sleep 3
         rm -f mutt.msg
     fi
 
@@ -486,17 +553,33 @@ elif test $action = install; then
     #
     # Try to install the plugin
     #
-    if test -f $pluginName.tar.gz; then
+    if test -e $pluginName.tar.gz; then
+        echo -n "Compiling the plugin..."
         buildResult=`testBuildPluginTarball $pluginName.tar.gz 0`
         buildError=`echo $buildResult | cut -d' ' -f1`
         buildDir=`echo $buildResult | cut -d' ' -f2`
         if test $buildError -ne 0; then
-            echo "Install failed"
+            echo "Failed. UNinstalling it"
             pushd $buildDir 1>/dev/null 2>&1
             make clean 1>/dev/null 2>&1
             popd 1>/dev/null 2>&1
             exit 1
         else
+            echo "Succeeded."
+            if test -n "$testRun" || test -e $buildDir/$pluginName/.TEST_RUN_COMMAND; then
+	        echo -n "Testing it..."
+                if test `testRunPluginTarball $buildDir/$pluginName` -ne 0; then
+                    echo "Failed."
+		    echo "Check debug logs copied to `pwd`."
+		    echo "Uninstalling it"
+                    pushd $buildDir/$pluginName 1>/dev/null 2>&1
+                    make clean 1>/dev/null 2>&1
+                    popd 1>/dev/null 2>&1
+                    rm -rf $buildDir
+                    exit 1
+                fi
+		echo "Succeeded."
+            fi
             echo "Installed successfully."
             echo "To UNinstall it, use $0 -uninstall $pluginName"
             rm -rf $buildDir

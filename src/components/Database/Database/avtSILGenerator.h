@@ -72,6 +72,9 @@ class     avtSIL;
 //    Jeremy Meredith, Tue Aug 29 16:52:36 EDT 2006
 //    Added enumerated scalar subset support.
 //
+//    Brad Whitlock, Thu Mar 8 09:46:17 PDT 2007
+//    Changed AddSpecies method.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSILGenerator
@@ -95,7 +98,7 @@ class DATABASE_API avtSILGenerator
     void                AddSpecies(avtSIL *, int,
                                    const std::vector<std::string>&,
                                    const std::string &,
-                                   const std::vector<avtMatSpeciesMetaData*> &,
+                                   const avtSpeciesMetaData *,
                                    int);
     void                AddMaterialSubsets(avtSIL *, const std::vector<int> &,
                                            int, int , const std::vector<int> &,

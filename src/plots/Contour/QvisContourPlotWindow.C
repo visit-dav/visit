@@ -1261,7 +1261,7 @@ void
 QvisContourPlotWindow::multipleColorChanged(const QColor &color, int index)
 {
     if(index >= 0 &&
-       index < contourAtts->GetMultiColor().GetNumColorAttributes())
+       index < contourAtts->GetMultiColor().GetNumColors())
     {
         contourAtts->GetMultiColor()[index].SetRgb(color.red(), color.green(),
                                                    color.blue());
@@ -1299,7 +1299,7 @@ void
 QvisContourPlotWindow::opacityChanged(int opacity, int index)
 {
     if(index >= 0 &&
-       index < contourAtts->GetMultiColor().GetNumColorAttributes())
+       index < contourAtts->GetMultiColor().GetNumColors())
     {
         contourAtts->GetMultiColor()[index].SetAlpha(opacity);
         contourAtts->SelectMultiColor();

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="avtSimulationCommandSpecification" purpose="Contains the specification for one command" persistent="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h">
+  <Attribute name="avtSimulationCommandSpecification" purpose="Contains the specification for one command" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h">
     <Enum name="RunMode">
       Unknown
       Running

@@ -1413,7 +1413,7 @@ QvisGUIApplication::Quit()
     if(!viewerInitiatedQuit)
     {
         if(GetViewerState()->GetClientInformationList()->
-           GetNumClientInformations() > 1)
+           GetNumClients() > 1)
         {
             // disconnect some slots so we don't keep getting the dialog.
             disconnect(mainApp, SIGNAL(aboutToQuit()), mainApp, SLOT(closeAllWindows()));
@@ -3417,7 +3417,7 @@ QvisGUIApplication::WriteConfigFile(const char *filename)
     const PlotList *pl = GetViewerState()->GetPlotList();
     for(int j = 0; j < pl->GetNumPlots(); ++j)
     {
-        const Plot &p = pl->GetPlot(j);
+        const Plot &p = pl->GetPlots(j);
 
         // Make sure we're not saving a simulation as a valid database
         if (p.GetIsFromSimulation())

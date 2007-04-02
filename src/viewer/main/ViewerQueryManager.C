@@ -2183,12 +2183,12 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             // Note we will only create one histogram.  So if there are multiple
             // array variables, just choose the last one.
             //
-            int np = pickAtts->GetNumPickVarInfos();
+            int np = pickAtts->GetNumVarInfos();
             bool haveArray = false;
             std::string arrayname;
             for (int i = 0 ; i < np ; i++)
             {
-                PickVarInfo &info = pickAtts->GetPickVarInfo(i);
+                PickVarInfo &info = pickAtts->GetVarInfo(i);
                 if (info.GetVariableType() == "array")
                 {
                     haveArray = true;

@@ -666,7 +666,7 @@ QvisHostProfileWindow::UpdateProfileList()
 
     // If there are host profiles, add the empty tab. Otherwise remove it.
     hostTabs->blockSignals(true);
-    if(profiles->GetNumHostProfiles() < 1)
+    if(profiles->GetNumProfiles() < 1)
     {
         // Clear the tab map.
         for(pos = hostTabMap.begin(); pos != hostTabMap.end(); ++pos)
@@ -706,7 +706,7 @@ QvisHostProfileWindow::UpdateProfileList()
 
     // Find a list of hosts that need a tab and do not have one.
     HostTabMap additional;
-    for(i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         QString host(profiles->operator[](i).GetHost().c_str());
         if(hostTabMap.find(host) == hostTabMap.end())
@@ -768,7 +768,7 @@ QvisHostProfileWindow::UpdateProfileList()
     // Now that the tabs are settled, go through and add all of the 
     // profiles to the appropriate tab.
     hostTabs->blockSignals(true);
-    for(i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         const HostProfile &current = profiles->operator[](i);
 
@@ -1140,7 +1140,7 @@ QvisHostProfileWindow::ReplaceLocalHost()
 {
     HostProfileList *profiles = (HostProfileList *)subject;
     std::string      lh("localhost");
-    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         HostProfile &current = profiles->operator[](i);
         if(current.GetHost() == lh)
@@ -1329,7 +1329,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
     int widget = 0;
 
     // If there are no profiles, get out.
-    if((profiles->GetNumHostProfiles() < 1) ||
+    if((profiles->GetNumProfiles() < 1) ||
        (profiles->GetActiveProfile() < 0))
         return needNotify;
 
@@ -1568,7 +1568,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             needNotify = true;
 
         // Change all profiles with the same hostname
-        for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
         {
             HostProfile &prof = profiles->operator[](i);
 
@@ -1589,7 +1589,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             needNotify = true;
 
         // Change all profiles with the same hostname
-        for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
         {
             HostProfile &prof = profiles->operator[](i);
 
@@ -1609,7 +1609,7 @@ QvisHostProfileWindow::GetCurrentValues(int which_widget)
             needNotify = true;
 
         // Change all profiles with the same hostname
-        for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+        for(int i = 0; i < profiles->GetNumProfiles(); ++i)
         {
             HostProfile &prof = profiles->operator[](i);
 
@@ -1741,7 +1741,7 @@ QvisHostProfileWindow::newProfile()
 
     HostProfile temp;
     // If there is a profile from which to copy, copy from it.
-    if(profiles->GetNumHostProfiles() > 0)
+    if(profiles->GetNumProfiles() > 0)
     {
         const HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
         temp = current;
@@ -1762,8 +1762,8 @@ QvisHostProfileWindow::newProfile()
     temp.SetProfileName(std::string(profileName.latin1()));
 
     // Add the new profile to the list and make it the active profile.
-    profiles->AddHostProfile(temp);
-    profiles->SetActiveProfile(profiles->GetNumHostProfiles() - 1);
+    profiles->AddProfiles(temp);
+    profiles->SetActiveProfile(profiles->GetNumProfiles() - 1);
     profiles->Notify();
 }
 
@@ -1857,7 +1857,7 @@ QvisHostProfileWindow::userNameChanged(const QString &u)
         return;
     HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         HostProfile &prof = profiles->operator[](i);
 
@@ -2481,7 +2481,7 @@ QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
     HostProfileList *profiles = (HostProfileList *)subject;
     HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         HostProfile &prof = profiles->operator[](i);
 
@@ -2624,7 +2624,7 @@ QvisHostProfileWindow::activateProfile(QListBoxItem *item)
     // Get the index of the selected profile in the profile list.
     keepSearching = true;
     int index = 0;
-    for(int i = 0; i < profiles->GetNumHostProfiles() && keepSearching; ++i)
+    for(int i = 0; i < profiles->GetNumProfiles() && keepSearching; ++i)
     {
         const HostProfile &current = profiles->operator[](i);
         if(current.GetHost() == hostName &&
@@ -2637,7 +2637,7 @@ QvisHostProfileWindow::activateProfile(QListBoxItem *item)
 
     // We now have the index. If it is good, and is not equal to the
     // current active profile's index, change the active profile.
-    if((index < profiles->GetNumHostProfiles()) &&
+    if((index < profiles->GetNumProfiles()) &&
        (index != profiles->GetActiveProfile()))
     {
         profiles->SetActiveProfile(index);
@@ -2716,7 +2716,7 @@ QvisHostProfileWindow::pageTurned(QWidget *tab)
         // Get the index of the active profile and activate it.
         int index = 0;
         bool keepGoing = true;
-        for(int i = 0; i < profiles->GetNumHostProfiles() && keepGoing; ++i)
+        for(int i = 0; i < profiles->GetNumProfiles() && keepGoing; ++i)
         {
             HostProfile &current = profiles->operator[](i);
             if(current == *activeProfile)
@@ -2728,7 +2728,7 @@ QvisHostProfileWindow::pageTurned(QWidget *tab)
 
         // We now have the index. If it is good, and is not equal to the
         // current active profile's index, change the active profile.
-        if(index < profiles->GetNumHostProfiles())
+        if(index < profiles->GetNumProfiles())
         {
             profiles->MarkHostProfiles();
             profiles->SetActiveProfile(index);
@@ -2794,7 +2794,7 @@ QvisHostProfileWindow::toggleSSHPort(bool state)
         return;
     HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         HostProfile &prof = profiles->operator[](i);
 
@@ -2833,7 +2833,7 @@ QvisHostProfileWindow::sshPortChanged(const QString &portStr)
         return;
     HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         HostProfile &prof = profiles->operator[](i);
 
@@ -2866,7 +2866,7 @@ QvisHostProfileWindow::clientHostNameMethodChanged(int m)
         return;
     HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         HostProfile &prof = profiles->operator[](i);
 
@@ -2918,7 +2918,7 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
         return;
     HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
 
-    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         HostProfile &prof = profiles->operator[](i);
 

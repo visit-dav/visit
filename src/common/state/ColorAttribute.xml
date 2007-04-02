@@ -38,9 +38,9 @@
     </Function>
     <Function name="GetByName" user="true" member="true">
     </Function>
-    <Function name="RgbStrToRgb" user="true" member="false">
+    <Function name="RgbStrToRgb" user="true" member="true">
     </Function>
-    <Function name="RgbToRgbStr" user="true" member="false">
+    <Function name="RgbToRgbStr" user="true" member="true">
     </Function>
     <Constant name="namedColors" member="false">
     </Constant>

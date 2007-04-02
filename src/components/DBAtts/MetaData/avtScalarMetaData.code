@@ -1,0 +1,267 @@
+Function: avtScalarMetaData2
+Declaration: avtScalarMetaData(std::string, std::string, avtCentering);
+Definition:
+// ****************************************************************************
+//  Method: avtScalarMetaData constructor
+//
+//  Arguments:
+//      n           The name of the scalar variable.
+//      mn          The name of the mesh the scalar var is defined on.
+//      c           The centering of the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:44:42 PST 2004
+//    Added units.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
+// ****************************************************************************
+
+avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
+                                     avtCentering c)
+    : AttributeSubject(avtScalarMetaData::TypeMapFormatString)
+{
+    // Initialize all values.
+    *this = avtScalarMetaData();
+
+    // Override some initialization with the passed arguments.
+    name           = n;
+    originalName   = name;
+    meshName       = mn;
+    centering      = c;
+    hasDataExtents = false;
+    validVariable  = true;
+    treatAsASCII   = false;
+    hasUnits       = false;
+    isEnumeration  = false;
+}
+
+Function: avtScalarMetaData3
+Declaration: avtScalarMetaData(std::string, std::string, avtCentering, double, double);
+Definition:
+// ****************************************************************************
+//  Method: avtScalarMetaData constructor
+//
+//  Arguments:
+//      n           The name of the scalar variable.
+//      mn          The name of the mesh the scalar var is defined on.
+//      c           The centering of the variable.
+//      min         The minimum value of the scalar variable.
+//      max         The maximum value of the scalar variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 25, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Brad Whitlock, Tue Jul 20 13:45:12 PST 2004
+//    Added units.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Initialized treatAsASCII.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
+// ****************************************************************************
+
+avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
+                                     avtCentering c, double min, double max)
+    : AttributeSubject(avtScalarMetaData::TypeMapFormatString)
+{
+    // Initialize all values.
+    *this = avtScalarMetaData();
+
+    // Override some initialization with the passed arguments.
+    name           = n;
+    originalName   = name;
+    meshName       = mn;
+    centering      = c;
+    validVariable  = true;
+    treatAsASCII   = false;
+    hasUnits       = false;
+    isEnumeration  = false;
+
+    double  extents[2] = { min, max };
+    SetExtents(extents);
+}
+
+Function: SetExtents
+Declaration: void SetExtents(const double *);
+Definition:
+// ****************************************************************************
+//  Method: avtScalarMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the scalar variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Tue May  1 12:53:10 PDT 2001
+//    Check for NULL extents.
+//
+// ****************************************************************************
+
+void
+avtScalarMetaData::SetExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasDataExtents = false;
+    }
+    else
+    {
+        hasDataExtents = true;
+        minDataExtents = extents[0];
+        maxDataExtents = extents[1];
+    }
+}
+
+Function: UnsetExtents
+Declaration: void UnsetExtents();
+Definition:
+void
+avtScalarMetaData::UnsetExtents()
+{
+    hasDataExtents = false;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtScalarMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Print out validVariable.
+//
+//    Kathleen Bonnell, Thu Jul 22 12:10:19 PDT 2004 
+//    Print out treatAsASCII.
+//
+//    Brad Whitlock, Tue Jul 20 13:47:04 PST 2004
+//    Added units.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+
+void
+avtScalarMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = " << originalName.c_str() << endl;
+    }
+
+    Indent(out, indent);
+    out << "Mesh is = " << meshName.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
+
+    if(hasUnits)
+    {
+        Indent(out, indent);
+        out << "Units are: " << units.c_str() << endl;
+    }
+
+    if (hasDataExtents)
+    {
+        Indent(out, indent);
+        out << "Extents are: (" << minDataExtents << ", " 
+            << maxDataExtents << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The extents are not set." << endl;
+    }
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+    if (treatAsASCII)
+    {
+        Indent(out, indent);
+        out << "This variable should be treated as ASCII." << endl;
+    }
+
+    if (isEnumeration)
+    {
+        Indent(out, indent);
+        out << "This variable contains enumerated values." << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "This variable does not contain enumerated values." << endl;
+    }
+}

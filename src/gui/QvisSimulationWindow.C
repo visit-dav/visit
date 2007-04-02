@@ -993,16 +993,19 @@ QvisSimulationWindow::UpdateWindow(bool doAll)
 //   The new version of UpdateUIComponent requires you pass in the
 //   window as an arguement.
 //
+//   Brad Whitlock, Fri Mar 9 17:08:29 PST 2007
+//   Updated so it uses new metadata interface.
+//
 // ****************************************************************************
 
 void
 QvisSimulationWindow::UpdateCustomUI (avtDatabaseMetaData *md)
 {
-    int numCustCommands = md->GetSimInfo().GetNumAvtSimulationCustCommandSpecifications();
+    int numCustCommands = md->GetSimInfo().GetNumCustomCommands();
     // loop thru all command updates and updates the matching UI component.
     for (int c=0; c<numCustCommands; c++)
     {
-        UpdateUIComponent (DynamicCommandsWin,&(md->GetSimInfo().GetAvtSimulationCustCommandSpecification(c)));
+        UpdateUIComponent (DynamicCommandsWin,&(md->GetSimInfo().GetCustomCommands(c)));
     }
 }
 
@@ -1029,12 +1032,12 @@ QvisSimulationWindow::UpdateCustomUI (avtDatabaseMetaData *md)
 void
 QvisSimulationWindow::UpdateSimulationUI (avtDatabaseMetaData *md)
 {
-    int numCommands = md->GetSimInfo().GetNumAvtSimulationCommandSpecifications();
+    int numCommands = md->GetSimInfo().GetNumGenericCommands();
     // loop thru all command updates and updates the matching UI component.
     for (int c=NUM_GENRIC_BUTTONS; c<numCommands; c++)
     {
-        UpdateUIComponent (this,&(md->GetSimInfo().GetAvtSimulationCommandSpecification(c)));
-        SpecialWidgetUpdate (&(md->GetSimInfo().GetAvtSimulationCommandSpecification(c)));
+        UpdateUIComponent (this,&(md->GetSimInfo().GetGenericCommands(c)));
+        SpecialWidgetUpdate (&(md->GetSimInfo().GetGenericCommands(c)));
     }
 }
 
@@ -1146,6 +1149,9 @@ QvisSimulationWindow::UpdateStatusArea()
 //   Shelly Prevost, Tue Nov 28 17:12:04 PST 2006
 //   Removed hard code button number
 //
+//   Brad Whitlock, Fri Mar 9 17:10:40 PST 2007
+//   Made it use new metadata api.
+//
 // ****************************************************************************
 
 void
@@ -1253,18 +1259,18 @@ QvisSimulationWindow::UpdateInformation(int index)
 
         for (int c=0; c<NUM_GENRIC_BUTTONS; c++)
         {
-            if (md->GetSimInfo().GetNumAvtSimulationCommandSpecifications()<=c)
+            if (md->GetSimInfo().GetNumGenericCommands()<=c)
             {
                 cmdButtons[c]->hide();
             }
             else
             {
                 avtSimulationCommandSpecification::CommandArgumentType t;
-                t = md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetArgumentType();
-                bool e = md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetEnabled();
+                t = md->GetSimInfo().GetGenericCommands(c).GetArgumentType();
+                bool e = md->GetSimInfo().GetGenericCommands(c).GetEnabled();
                 if (t == avtSimulationCommandSpecification::CmdArgNone)
                 {
-                    QString bName = QString(md->GetSimInfo().GetAvtSimulationCommandSpecification(c).GetName().c_str());
+                    QString bName = QString(md->GetSimInfo().GetGenericCommands(c).GetName().c_str());
                     cmdButtons[c]->setText(bName);
                     if ( c != CUSTOM_BUTTON  )cmdButtons[c]->setEnabled(e);
                     cmdButtons[c]->show();

@@ -349,7 +349,7 @@ avtContourPlot::SetColors()
     {
         const ColorAttribute ca = atts.GetSingleColor();
         ColorAttributeList cal; 
-        cal.AddColorAttribute(atts.GetSingleColor());
+        cal.AddColors(atts.GetSingleColor());
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
         levelsMapper->SetColors(cal);
     }

@@ -1,0 +1,27 @@
+Function: avtMatSpeciesMetaData2
+Declaration: avtMatSpeciesMetaData(int, const stringVector &);
+Definition:
+// ****************************************************************************
+//  Method: avtMatSpeciesMetaData constructor
+//
+//  Arguments:
+//      ns           The number of species for this material.
+//      sn           The name of each species for this material.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 13, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+// ****************************************************************************
+
+avtMatSpeciesMetaData::avtMatSpeciesMetaData(int ns, const stringVector &sn)
+    : AttributeSubject(avtMatSpeciesMetaData::TypeMapFormatString)
+{
+    numSpecies    = ns;
+    speciesNames  = sn;
+    validVariable = true;
+}

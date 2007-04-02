@@ -168,6 +168,9 @@ class SILAttributes;
 //    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
 //    Added ability to force using a specific plugin when opening a file.
 //
+//    Brad Whitlock, Wed Mar 14 20:33:41 PST 2007
+//    Added overload of GetMetaDataForState.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -222,6 +225,11 @@ public:
     const avtDatabaseMetaData *GetMetaDataForState(const std::string &host,
                                                    const std::string &filename,
                                                    int timeState,
+                                                   const std::string &forcedFileType = "");
+    const avtDatabaseMetaData *GetMetaDataForState(const std::string &host,
+                                                   const std::string &filename,
+                                                   int timeState,
+                                                   bool forceReadAllCyclesAndTimes,
                                                    const std::string &forcedFileType = "");
 
     //

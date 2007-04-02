@@ -52,7 +52,7 @@ ColorControlPointList::GetColors(unsigned char *rgb, int ncolors) const
      *            control point list and put into
      *            local vars.
      *******************************************/
-    int npoints = GetNumColorControlPoints();
+    int npoints = GetNumControlPoints();
     bool equal  = GetEqualSpacingFlag();
     bool smooth = GetSmoothingFlag();
     bool discrete = GetDiscreteFlag();
@@ -326,7 +326,7 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
     //
     // Save out the color control points as vectors of uchar and float.
     //
-    int npts = GetNumColorControlPoints();
+    int npts = GetNumControlPoints();
     if(npts > 0)
     {
         unsignedCharVector compactColors;
@@ -335,7 +335,7 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         compactPositions.reserve(npts);
         for(int i = 0; i < npts; ++i)
         {
-            const ColorControlPoint &cpt = GetColorControlPoint(i);
+            const ColorControlPoint &cpt = GetControlPoints(i);
             const unsigned char *c = cpt.GetColors();
             compactColors.push_back(c[0]);
             compactColors.push_back(c[1]);
@@ -415,7 +415,7 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
     DataNode *node;
     DataNode **children;
     // Clear all the ColorControlPoints.
-    ClearColorControlPoints();
+    ClearControlPoints();
 
     //
     // Try setting the colors from the compact color and position vectors.
@@ -435,7 +435,7 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
             for(int i = 0; i < npts; ++i)
             { 
                 int index = i << 2;
-                AddColorControlPoint(ColorControlPoint(positions[i],
+                AddControlPoints(ColorControlPoint(positions[i],
                     colors[index],
                     colors[index+1],
                     colors[index+2],
@@ -457,7 +457,7 @@ ColorControlPointList::SetFromNode(DataNode *parentNode)
             {
                 ColorControlPoint temp;
                 temp.SetFromNode(children[i]);
-                AddColorControlPoint(temp);
+                AddControlPoints(temp);
             }
         }
     }

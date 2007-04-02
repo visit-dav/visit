@@ -527,7 +527,7 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
         BoundaryAttributes::ColorBySingleColor);
     singleColorOpacity->setEnabled(boundaryAtts->GetColorType() ==
         BoundaryAttributes::ColorBySingleColor);
-    bool mEnabled = (boundaryAtts->GetMultiColor().GetNumColorAttributes() > 0) &&
+    bool mEnabled = (boundaryAtts->GetMultiColor().GetNumColors() > 0) &&
                     (boundaryAtts->GetColorType() == BoundaryAttributes::ColorByMultipleColors);
     multipleColorLabel->setEnabled(mEnabled);
     multipleColorList->setEnabled(mEnabled);
@@ -1114,7 +1114,7 @@ QvisBoundaryPlotWindow::multipleColorChanged(const QColor &color)
         for(int i = 0; i < multipleColorList->count(); ++i)
         {
             if(multipleColorList->isSelected(i) &&
-               (i < boundaryAtts->GetMultiColor().GetNumColorAttributes()))
+               (i < boundaryAtts->GetMultiColor().GetNumColors()))
             {
                 boundaryAtts->GetMultiColor()[i].SetRgb(color.red(),
                                                       color.green(),
@@ -1156,7 +1156,7 @@ QvisBoundaryPlotWindow::multipleColorOpacityChanged(int opacity)
         for(int i = 0; i < multipleColorList->count(); ++i)
         {
             if(multipleColorList->isSelected(i) &&
-               (i < boundaryAtts->GetMultiColor().GetNumColorAttributes()))
+               (i < boundaryAtts->GetMultiColor().GetNumColors()))
             {
                 boundaryAtts->GetMultiColor()[i].SetAlpha(opacity);
             }

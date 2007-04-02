@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+  <Attribute name="avtSpeciesMetaData" purpose="Contains species metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtSpeciesMetaData.code">
+    <Field name="name" label="Name" type="string" access="public">
+      Species
+    </Field>
+    <Field name="originalName" label="Original name" type="string" access="public">
+      Species
+    </Field>
+    <Field name="validVariable" label="Valid variable" type="bool" access="public">
+      true
+    </Field>
+    <Field name="meshName" label="Mesh name" type="string" access="public">
+      mesh
+    </Field>
+    <Field name="materialName" label="Material name" type="string" access="public">
+      material
+    </Field>
+    <Field name="numMaterials" label="Number of materials" type="int" access="public">
+      0
+    </Field>
+    <Field name="species" label="Species objects" type="attVector" subtype="avtMatSpeciesMetaData" access="private">
+    </Field>
+    <Function name="avtSpeciesMetaData2" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+  </Attribute>

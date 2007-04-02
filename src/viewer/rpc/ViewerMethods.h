@@ -69,6 +69,9 @@ class ViewerState;
 //   that convert method calls into ViewerRPC's are centralized into one 
 //   object that can be used outside of ViewerProxy.
 //
+//   Brad Whitlock, Fri Mar 9 16:22:07 PST 2007
+//   Added RequestMetaData.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -113,6 +116,7 @@ public:
     void ReOpenDatabase(const std::string &database, bool forceClose = true);
     void ReplaceDatabase(const std::string &database, int timeState = 0);
     void OverlayDatabase(const std::string &database);
+    void RequestMetaData(const std::string &database, int ts = -1);
     void ClearCache(const std::string &hostName, const std::string &simName);
     void ClearCacheForAllEngines();
     void UpdateDBPluginInfo(const std::string &hostName);

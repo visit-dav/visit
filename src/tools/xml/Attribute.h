@@ -89,6 +89,9 @@
 //    Hank Childs, Tue Aug 16 14:53:44 PDT 2005
 //    Add additional variable types.
 //
+//    Brad Whitlock, Wed Feb 28 19:15:07 PST 2007
+//    Added access and keyframe.
+//
 // ****************************************************************************
 
 class Attribute
@@ -97,6 +100,7 @@ class Attribute
     QString name;
     QString purpose;
     bool    persistent;
+    bool    keyframe;
     QString exportAPI;
     QString exportInclude;
     vector<Field*> fields;
@@ -119,6 +123,7 @@ class Attribute
         if (codeFile)
             codeFile->Parse();
         persistent = true;
+        keyframe = true;
     }
     bool HasFunction(const QString &f)
     {
@@ -162,6 +167,7 @@ class Attribute
         WriteTagAttr(out, "name", name);
         WriteTagAttr(out, "purpose", purpose);
         WriteTagAttr(out, "persistent", Bool2Text(persistent));
+        WriteTagAttr(out, "keyframe", Bool2Text(keyframe));
         WriteTagAttr(out, "exportAPI", exportAPI);
         WriteTagAttr(out, "exportInclude", exportInclude);
         if (codeFile)
@@ -216,6 +222,15 @@ class Attribute
                 }
                 WriteTagAttr(out, "vartypes", varTypeString);
             }
+            if (f->accessType == Field::AccessPublic)
+            {
+                WriteTagAttr(out, "access", "public");
+            }
+            else if (f->accessType == Field::AccessProtected)
+            {
+                WriteTagAttr(out, "access", "protected");
+            }
+
             FinishOpenTag(out);
 
             WriteValues(out, f->GetValueAsText(), indent);

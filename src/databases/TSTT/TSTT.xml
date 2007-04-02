@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+  <Plugin name="TSTT" type="database" label="TSTT" version="1.0" dbtype="STMD">
+    <Extensions> cub vmesh </Extensions>
+    <CXXFLAGS> $(TSTT_INCLUDE) </CXXFLAGS>
+    <LIBS>     $(TSTT_LIB) </LIBS>
+  </Plugin>

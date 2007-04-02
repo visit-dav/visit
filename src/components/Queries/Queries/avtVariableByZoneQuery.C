@@ -130,6 +130,8 @@ avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 //  Creation:   July 29, 2004 
 //
 //  Modifications:
+//    Brad Whitlock, Tue Mar 13 11:26:59 PDT 2007
+//    Updated due to code generation changes.
 //
 // ****************************************************************************
 
@@ -148,7 +150,7 @@ avtVariableByZoneQuery::PostExecute(void)
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             SetResultMessage(msg.c_str());
-            SetResultValues(pickAtts.GetPickVarInfo(0).GetValues());
+            SetResultValues(pickAtts.GetVarInfo(0).GetValues());
         }
         else
         {

@@ -67,6 +67,9 @@
 //   Added SwitchDefaultToTrueVariableNameIfScalar and flag that indicates
 //   whether default plot variable is scalar.
 //
+//   Mark Blair, Tue Mar 13 19:51:29 PDT 2007
+//   Added ForceAttributeConsistency.
+//
 // ****************************************************************************
 
 class ThresholdAttributes : public AttributeSubject
@@ -111,6 +114,7 @@ public:
 
     void SupplyMissingDefaultsIfAppropriate();
     bool AttributesAreConsistent() const;
+    void ForceAttributeConsistency();
     void SwitchDefaultToTrueVariableNameIfScalar();
 
     // Property getting methods

@@ -24,7 +24,7 @@ Postfix:
         }
         if (!done)
         {
-            multiColor.RemoveColorAttribute(index);
+            multiColor.RemoveColors(index);
             for (int i=index+1; i<boundaryNames.size(); i++)
                 boundaryNames[i-1] = boundaryNames[i];
             boundaryNames.resize(boundaryNames.size() - 1);

@@ -179,6 +179,9 @@ ParseCharacters(const QString &buff)
 //    Cyrus Harrison, Wed Mar  7 09:35:48 PST 2007
 //    Allow for engine-specific code in a plugin's source files.
 //
+//    Brad Whitlock, Wed Feb 28 18:34:33 PST 2007
+//    Added support for fields that should be public. Added keyframe flag.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -300,6 +303,7 @@ class XMLParser : public QXmlDefaultHandler
             QString purpose       = atts.value("purpose");
             QString codefile      = atts.value("codefile");
             QString persistent    = atts.value("persistent");
+            QString keyframe      = atts.value("keyframe");
             QString exportAPI     = atts.value("exportAPI");
             if (exportAPI.isNull())
                 exportAPI = "";
@@ -314,6 +318,11 @@ class XMLParser : public QXmlDefaultHandler
                 currentAttribute->persistent = true;
             else
                 currentAttribute->persistent = Text2Bool(persistent);
+
+            if (keyframe.isNull())
+                currentAttribute->keyframe = true;
+            else
+                currentAttribute->keyframe = Text2Bool(keyframe);
 
             if (currentAttribute->codeFile)
             {
@@ -468,6 +477,19 @@ class XMLParser : public QXmlDefaultHandler
                 currentField->ignoreEquality = Text2Bool(ignoreeq);
             }
 
+            QString access    = atts.value("access");
+            if (!access.isNull())
+            {
+                if(access == "public")
+                    currentField->SetPublicAccess();
+                else if(access == "protected")
+                    currentField->SetProtectedAccess();
+                else
+                    currentField->SetPrivateAccess();
+            }
+            else
+                currentField->SetPrivateAccess();
+
             QString init      = atts.value("init");
             if (!init.isNull())
             {
@@ -515,6 +537,7 @@ class XMLParser : public QXmlDefaultHandler
                     atts.qName(i) != "enabler" &&
                     atts.qName(i) != "internal"&&
                     atts.qName(i) != "ignoreeq"&&
+                    atts.qName(i) != "access"  &&
                     atts.qName(i) != "init"    )
                 {
                     currentField->SetAttrib(atts.qName(i),atts.value(i));

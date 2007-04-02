@@ -227,6 +227,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Fri Nov 10 09:36:57 PDT 2006
 //   Added ImportEntireStateWithDifferentSources RPC.
 //
+//   Brad Whitlock, Wed Mar 14 18:16:12 PST 2007
+//   Updated some state object interfaces and added metadata functions.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -294,6 +297,7 @@ public class ViewerProxy implements SimpleObserver
         meshManagementAtts = new MeshManagementAttributes();
         logRPC = new ViewerRPC();
         plotInfoAtts = new PlotInfoAttributes();
+        metaData = new avtDatabaseMetaData();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -370,18 +374,16 @@ public class ViewerProxy implements SimpleObserver
 
             PrintMessage("Adding state objects.");
 
-            // Set up xfer and the RPC's
+            // Set up xfer and the RPC's. The state objects herein must appear
+            // in the same order as in ViewerState.h.
+
             xfer.SetRemoteProcess(viewer);
             xfer.Add(rpc);
             xfer.Add(postponedAction);
             xfer.Add(syncAtts);
             xfer.Add(messageAtts);
             xfer.Add(statusAtts);
-            // For simulations. Note that the metadata is being
-            // added as a dummy so Xfer can skip its bytes when
-            // messages come in because we don't have an object
-            // for it yet.
-            xfer.AddDummy(); // metadata
+            xfer.Add(metaData);
             xfer.Add(silAtts);
             xfer.Add(dbPluginInfoAtts);
             xfer.Add(exportDBAtts);
@@ -389,8 +391,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(clientMethod);
             xfer.Add(clientInformation);
             xfer.Add(clientInformationList);
-            xfer.Add(plotInfoAtts);
-
+            // The following objects can be sent to the viewer anytime.
             xfer.Add(pluginAtts);
             xfer.Add(appearanceAtts);
             xfer.Add(globalAtts);
@@ -424,6 +425,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(movieAtts);
             xfer.Add(meshManagementAtts);
             xfer.Add(logRPC);
+            xfer.Add(plotInfoAtts);
 
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
@@ -687,6 +689,15 @@ public class ViewerProxy implements SimpleObserver
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_OVERLAYDATABASERPC);
         rpc.SetDatabase(database);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;
+    }
+
+    public boolean RequestMetaData(String database, int ts)
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_REQUESTMETADATARPC);
+        rpc.SetDatabase(database);
+        rpc.SetStateNumber(ts);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
     }
@@ -1822,6 +1833,7 @@ public class ViewerProxy implements SimpleObserver
     public MeshManagementAttributes GetMeshManagementAttributes() { return meshManagementAtts; }
     public ConstructDDFAttributes GetDDFAttributes() { return constructDDFAtts; }
     public PlotInfoAttributes GetPlotInfoAttributes() { return plotInfoAtts; }
+    public avtDatabaseMetaData GetMetaData() { return metaData; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1971,6 +1983,7 @@ public class ViewerProxy implements SimpleObserver
     private ExpressionList           expressionList;
     private AnnotationAttributes     annotationAtts;
     private SILRestrictionAttributes silRestrictionAtts;
+    private avtDatabaseMetaData      metaData;
     private ViewCurveAttributes      viewCurve;
     private View2DAttributes         view2D;
     private View3DAttributes         view3D;

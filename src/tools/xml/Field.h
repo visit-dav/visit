@@ -84,6 +84,12 @@
 //    Brad Whitlock, Wed Dec 8 15:41:56 PST 2004
 //    Added VariableName type.
 //
+//    Brad Whitlock, Wed Feb 28 18:35:43 PST 2007
+//    Added public/protected/private access.
+//
+//    Jeremy Meredith, Tue Mar 13 15:16:08 EDT 2007
+//    Qt's ToDouble doesn't correctly understant +/-1e37, so use atof instead.
+//
 // ****************************************************************************
 
 
@@ -108,6 +114,10 @@ class Field
     bool              valueSet;
 
     bool              ignoreEquality;
+
+    typedef enum {AccessPrivate, AccessProtected, AccessPublic} AccessType;
+
+    AccessType        accessType;
 
     Field            *enabler;
     vector<QString>   enableval;
@@ -134,6 +144,7 @@ class Field
         isVector = (type.right(6) == "Vector");
         ignoreEquality = false;
         varTypes = 0;
+        accessType = AccessPrivate;
     }
     virtual ~Field() { }
     virtual void ClearValues() { }
@@ -144,6 +155,7 @@ class Field
         enableval = f->enableval;
         index = f->index;
         codeFile = f->codeFile;
+        accessType = f->accessType;
     }
     void SetInitCode(const QString &ic)
     {
@@ -169,6 +181,18 @@ class Field
     {
         internal = Text2Bool(v);
     }
+    void SetPublicAccess()
+    {
+        accessType = AccessPublic;
+    }
+    void SetProtectedAccess()
+    {
+        accessType = AccessProtected;
+    }
+    void SetPrivateAccess()
+    {
+        accessType = AccessPrivate;
+    }
     virtual void Print(ostream &out)
     {
         char s[1000];
@@ -178,6 +202,10 @@ class Field
         out << s << endl;
         if (internal)
             cout << "            (INTERNAL)" << endl;
+        if (accessType == AccessPublic)
+            cout << "            (PUBLIC)" << endl;
+        else if (accessType == AccessProtected)
+            cout << "            (PROTECTED)" << endl;
         if (enabler)
         {
             cout << "            enabled when " << enabler->name << " equals ";
@@ -554,7 +582,10 @@ class DoubleVector : public virtual Field
     }
     virtual void SetValue(const QString &s, int = 0)
     {
-        val.push_back(s.toDouble());
+        // can't use toDouble -- some versions of Qt disallow exponents beyond
+        // single precision range.
+        //val.push_back(s.toDouble());
+        val.push_back(atof(s.latin1()));
         valueSet = true;
     }
     virtual void Print(ostream &out)
@@ -1193,6 +1224,296 @@ class Enum : public virtual Field
 };
 
 
+#define AVT_FIELD_METHODS \
+    virtual void SetValue(const QString &s, int = 0)\
+    {\
+        val = -1;\
+        int nsym = 0;\
+        const char **sym = GetSymbols(nsym);\
+        for(int i = 0; val == -1 && i < nsym; ++i)\
+        {\
+            if(s == sym[i])\
+                val = i;\
+        }\
+        if(val == -1)\
+            val = s.toInt();\
+        valueSet = true;\
+    }\
+    virtual vector<QString> GetValueAsText()\
+    {\
+        vector<QString> retval;\
+        if (valueSet)\
+        {\
+            int n = 0;\
+            const char **sym = GetSymbols(n);\
+            if(val >= 0 && val < n)\
+                retval.push_back(sym[val]);\
+            else\
+                retval.push_back(QString().sprintf("%d", val));\
+        }\
+        return retval;\
+    }\
+    virtual void Print(ostream &out)\
+    {\
+        Field::Print(out);\
+        if (valueSet)\
+        {\
+            int n = 0;\
+            const char **sym = GetSymbols(n);\
+            if(val >= 0 && val < n)\
+                out << "            value: " << sym[val] << endl;\
+            else\
+                out << "            value: " << val << endl;\
+        }\
+    }
+
+
+//
+// ------------------------------------ avtCenteringField -----------------------------------
+//
+class avtCenteringField : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    avtCenteringField(const QString &n, const QString &l) : Field("avtCentering",n,l)
+    {
+    }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "avtCentering";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "AVT_NODECENT",
+            "AVT_ZONECENT",
+            "AVT_NO_VARIABLE",
+            "AVT_UNKNOWN_CENT"
+        };
+        n = 4;
+        return symbols;
+    }
+    AVT_FIELD_METHODS
+};
+
+//
+// ------------------------------------ avtGhostTypeField -----------------------------------
+//
+class avtGhostTypeField : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    avtGhostTypeField(const QString &n, const QString &l) : Field("avtGhostType",n,l)
+    {
+    }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "avtGhostType";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "AVT_NO_GHOSTS",
+            "AVT_HAS_GHOSTS",
+            "AVT_CREATED_GHOSTS",
+            "AVT_MAYBE_GHOSTS"
+        };
+        n = 4;
+        return symbols;
+    }
+    AVT_FIELD_METHODS
+};
+
+//
+// ------------------------------------ avtSubsetTypeField -----------------------------------
+//
+class avtSubsetTypeField : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    avtSubsetTypeField(const QString &n, const QString &l) : Field("avtSubsetType",n,l)
+    {
+    }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "avtSubsetType";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "AVT_DOMAIN_SUBSET",
+            "AVT_GROUP_SUBSET", 
+            "AVT_MATERIAL_SUBSET",
+            "AVT_ENUMSCALAR_SUBSET",
+            "AVT_UNKNOWN_SUBSET"
+        };
+        n = 5;
+        return symbols;
+    }
+    AVT_FIELD_METHODS
+};
+
+//
+// ------------------------------------ avtVarTypeField -----------------------------------
+//
+class avtVarTypeField : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    avtVarTypeField(const QString &n, const QString &l) : Field("avtVarType",n,l)
+    {
+    }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "avtVarType";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "AVT_MESH",
+            "AVT_SCALAR_VAR",
+            "AVT_VECTOR_VAR",
+            "AVT_TENSOR_VAR",
+            "AVT_SYMMETRIC_TENSOR_VAR",
+            "AVT_ARRAY_VAR",
+            "AVT_LABEL_VAR",
+            "AVT_MATERIAL",
+            "AVT_MATSPECIES",
+            "AVT_CURVE",
+            "AVT_UNKNOWN_TYPE"
+        };
+        n = 11;
+        return symbols;
+    }
+    AVT_FIELD_METHODS
+};
+
+//
+// ------------------------------------ avtMeshTypeField -----------------------------------
+//
+class avtMeshTypeField : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    avtMeshTypeField(const QString &n, const QString &l) : Field("avtMeshType",n,l)
+    {
+    }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "avtMeshType";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "AVT_RECTILINEAR_MESH",
+            "AVT_CURVILINEAR_MESH",
+            "AVT_UNSTRUCTURED_MESH",
+            "AVT_POINT_MESH",
+            "AVT_SURFACE_MESH",
+            "AVT_CSG_MESH",
+            "AVT_AMR_MESH",
+            "AVT_UNKNOWN_MESH"
+        };
+        n = 8;
+        return symbols;
+    }
+    AVT_FIELD_METHODS
+};
+
+//
+// ------------------------------------ avtExtentTypeField -----------------------------------
+//
+class avtExtentTypeField : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    avtExtentTypeField(const QString &n, const QString &l) : Field("avtExtentType",n,l)
+    {
+    }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "avtExtentType";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "AVT_ORIGINAL_EXTENTS",
+            "AVT_ACTUAL_EXTENTS",
+            "AVT_SPECIFIED_EXTENTS",
+            "AVT_UNKNOWN_EXTENT_TYPE"
+        };
+        n = 4;
+        return symbols;
+    }
+    AVT_FIELD_METHODS
+};
+
+//
+// ------------------------------------ avtMeshCoordTypeField -----------------------------------
+//
+class avtMeshCoordTypeField : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    avtMeshCoordTypeField(const QString &n, const QString &l) : Field("avtMeshCoordType",n,l)
+    {
+    }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "avtMeshCoordType";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "AVT_XY",
+            "AVT_RZ",
+            "AVT_ZR"
+        };
+        n = 3;
+        return symbols;
+    }
+    AVT_FIELD_METHODS
+};
+
+//
+// ------------------------------------ LoadBalanceSchemeField -----------------------------------
+//
+class LoadBalanceSchemeField : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    LoadBalanceSchemeField(const QString &n, const QString &l) : Field("LoadBalanceScheme",n,l)
+    {
+    }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "LoadBalanceScheme";
+    }
+    virtual const char **GetSymbols(int &n) const
+    {
+        static const char *symbols[] = {
+            "LOAD_BALANCE_UNKNOWN",
+            "LOAD_BALANCE_CONTIGUOUS_BLOCKS_TOGETHER",
+            "LOAD_BALANCE_STRIDE_ACROSS_BLOCKS",
+            "LOAD_BALANCE_RANDOM_ASSIGNMENT",
+            "LOAD_BALANCE_DBPLUGIN_DYNAMIC",
+            "LOAD_BALANCE_RESTRICTED",
+            "LOAD_BALANCE_ABSOLUTE"
+        };
+        n = 7;
+        return symbols;
+    }
+    AVT_FIELD_METHODS
+};
+
 // ****************************************************************************
 //  Class:  FieldFactory
 //
@@ -1208,6 +1529,9 @@ class Enum : public virtual Field
 //
 //    Brad Whitlock, Wed Dec 8 15:41:27 PST 2004
 //    Added VariableName.
+//
+//    Brad Whitlock, Fri Mar 2 14:31:41 PST 2007
+//    Added some built-in AVT enums.
 //
 // ****************************************************************************
 
@@ -1245,6 +1569,16 @@ class FieldFactory
         else if (type == "att")          f = new Att(subtype,name,label);
         else if (type == "attVector")    f = new AttVector(subtype,name,label);
         else if (type == "enum")         f = new Enum(subtype, name, label);
+
+        // Special built-in AVT enums
+        else if (type == "avtCentering")      f = new avtCenteringField(name, label);
+        else if (type == "avtVarType")        f = new avtVarTypeField(name, label);
+        else if (type == "avtSubsetType")     f = new avtSubsetTypeField(name, label);
+        else if (type == "avtExtentType")     f = new avtExtentTypeField(name, label);
+        else if (type == "avtMeshType")       f = new avtMeshTypeField(name, label);
+        else if (type == "avtGhostType")      f = new avtGhostTypeField(name, label);
+        else if (type == "avtMeshCoordType")  f = new avtMeshCoordTypeField(name, label);
+        else if (type == "LoadBalanceScheme") f = new LoadBalanceSchemeField(name, label);
 
         if (!f)
             throw QString().sprintf("FieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());

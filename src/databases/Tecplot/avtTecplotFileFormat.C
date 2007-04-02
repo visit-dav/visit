@@ -937,7 +937,7 @@ avtTecplotFileFormat::ReadFile()
                                 newE.SetName(exprName);
                                 newE.SetDefinition(exprDef);
                                 newE.SetType(Expression::VectorMeshVar);
-                                expressions.AddExpression(newE);
+                                expressions.AddExpressions(newE);
                             }
                         }
                     }

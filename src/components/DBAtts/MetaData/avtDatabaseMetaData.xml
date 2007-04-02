@@ -1,0 +1,312 @@
+<?xml version="1.0"?>
+  <Attribute name="avtDatabaseMetaData" purpose="Contains database metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtDatabaseMetaData.code">
+    <Field name="hasTemporalExtents" label="Has temporal extents" type="bool">
+      false
+    </Field>
+    <Field name="minTemporalExtents" label="Minimum temporal extents" type="double">
+      0.
+    </Field>
+    <Field name="maxTemporalExtents" label="Maximum temporal extents" type="double">
+      0.
+    </Field>
+    <Field name="numStates" label="Number of time states" type="int">
+      0
+    </Field>
+    <Field name="isVirtualDatabase" label="Virtual database" type="bool">
+      false
+    </Field>
+    <Field name="mustRepopulateOnStateChange" label="Repopulate on time state change" type="bool">
+      false
+    </Field>
+    <Field name="mustAlphabetizeVariables" label="Alphabetize variables" type="bool">
+      true
+    </Field>
+    <Field name="formatCanDoDomainDecomposition" label="Format can decompose data" type="bool">
+      false
+    </Field>
+    <Field name="useCatchAllMesh" label="Use catch-all mesh" type="bool">
+      false
+    </Field>
+    <Field name="timeStepPath" label="Path for virtual database timesteps" type="string">
+    </Field>
+    <Field name="timeStepNames" label="Virtual database timestep names" type="stringVector">
+    </Field>
+    <Field name="cycles" label="Cycles" type="intVector">
+    </Field>
+    <Field name="cyclesAreAccurate" label="Cycles are accurate" type="intVector">
+    </Field>
+    <Field name="times" label="Times" type="doubleVector">
+    </Field>
+    <Field name="timesAreAccurate" label="Times are accurate" type="intVector">
+    </Field>
+    <Field name="databaseName" label="Database name" type="string">
+    </Field>
+    <Field name="fileFormat" label="File format" type="string">
+    </Field>
+    <Field name="databaseComment" label="Database comment" type="string">
+    </Field>
+    <Field name="exprList" label="Expression list" type="att" subtype="ExpressionList">
+    </Field>
+    <Field name="meshes" label="Meshes" type="attVector" subtype="avtMeshMetaData">
+    </Field>
+    <Field name="scalars" label="Scalars" type="attVector" subtype="avtScalarMetaData">
+    </Field>
+    <Field name="vectors" label="Vectors" type="attVector" subtype="avtVectorMetaData">
+    </Field>
+    <Field name="tensors" label="Tensors" type="attVector" subtype="avtTensorMetaData">
+    </Field>
+    <Field name="symmTensors" label="Symmetric tensors" type="attVector" subtype="avtSymmetricTensorMetaData">
+    </Field>
+    <Field name="arrays" label="Arrays" type="attVector" subtype="avtArrayMetaData">
+    </Field>
+    <Field name="materials" label="Materials" type="attVector" subtype="avtMaterialMetaData">
+    </Field>
+    <Field name="species" label="Species" type="attVector" subtype="avtSpeciesMetaData">
+    </Field>
+    <Field name="curves" label="Curves" type="attVector" subtype="avtCurveMetaData">
+    </Field>
+    <Field name="labels" label="Labels" type="attVector" subtype="avtLabelMetaData">
+    </Field>
+    <Field name="defaultPlots" label="Default plots" type="attVector" subtype="avtDefaultPlotMetaData">
+    </Field>
+    <Field name="SILs" label="SILs" type="attVector" subtype="avtSILMetaData">
+    </Field>
+    <Field name="isSimulation" label="Is simulation" type="bool">
+      false
+    </Field>
+    <Field name="simInfo" label="Simulation information" type="att" subtype="avtSimulationInformation">
+    </Field>
+    <Function name="SetNumStates" user="false" member="true">
+    </Function>
+    <Function name="SetTemporalExtents" user="true" member="true">
+    </Function>
+    <Function name="SetFormatCanDoDomainDecomposition" user="false" member="true">
+    </Function>
+    <Function name="SetCycle" user="true" member="true">
+    </Function>
+    <Function name="SetCycleIsAccurate" user="true" member="true">
+    </Function>
+    <Function name="SetCyclesAreAccurate" user="true" member="true">
+    </Function>
+    <Function name="IsCycleAccurate" user="true" member="true">
+    </Function>
+    <Function name="AreAllCyclesAccurateAndValid" user="true" member="true">
+    </Function>
+    <Function name="SetTime" user="true" member="true">
+    </Function>
+    <Function name="SetTimeIsAccurate" user="true" member="true">
+    </Function>
+    <Function name="SetTimesAreAccurate" user="true" member="true">
+    </Function>
+    <Function name="IsTimeAccurate" user="true" member="true">
+    </Function>
+    <Function name="AreAllTimesAccurateAndValid" user="true" member="true">
+    </Function>
+    <Function name="ReplaceForbiddenCharacters" user="true" member="true">
+    </Function>
+    <Function name="Add1" user="true" member="true">
+    </Function>
+    <Function name="Add2" user="true" member="true">
+    </Function>
+    <Function name="Add3" user="true" member="true">
+    </Function>
+    <Function name="Add4" user="true" member="true">
+    </Function>
+    <Function name="Add5" user="true" member="true">
+    </Function>
+    <Function name="Add6" user="true" member="true">
+    </Function>
+    <Function name="Add7" user="true" member="true">
+    </Function>
+    <Function name="Add8" user="true" member="true">
+    </Function>
+    <Function name="Add9" user="true" member="true">
+    </Function>
+    <Function name="Add10" user="true" member="true">
+    </Function>
+    <Function name="Add11" user="true" member="true">
+    </Function>
+    <Function name="Add12" user="true" member="true">
+    </Function>
+    <Function name="GetMesh1" user="true" member="true">
+    </Function>
+    <Function name="GetMesh2" user="true" member="true">
+    </Function>
+    <Function name="GetScalar1" user="true" member="true">
+    </Function>
+    <Function name="GetScalar2" user="true" member="true">
+    </Function>
+    <Function name="GetVector1" user="true" member="true">
+    </Function>
+    <Function name="GetVector2" user="true" member="true">
+    </Function>
+    <Function name="GetTensor1" user="true" member="true">
+    </Function>
+    <Function name="GetTensor2" user="true" member="true">
+    </Function>
+    <Function name="GetSymmTensor1" user="true" member="true">
+    </Function>
+    <Function name="GetSymmTensor2" user="true" member="true">
+    </Function>
+    <Function name="GetArray1" user="true" member="true">
+    </Function>
+    <Function name="GetArray2" user="true" member="true">
+    </Function>
+    <Function name="GetMaterial1" user="true" member="true">
+    </Function>
+    <Function name="GetMaterial2" user="true" member="true">
+    </Function>
+    <Function name="GetSpecies2" user="true" member="true">
+    </Function>
+    <Function name="GetCurve1" user="true" member="true">
+    </Function>
+    <Function name="GetCurve2" user="true" member="true">
+    </Function>
+    <Function name="GetSIL1" user="true" member="true">
+    </Function>
+    <Function name="GetSIL2" user="true" member="true">
+    </Function>
+    <Function name="GetLabel1" user="true" member="true">
+    </Function>
+    <Function name="GetLabel2" user="true" member="true">
+    </Function>
+    <Function name="GetDefaultPlot" user="true" member="true">
+    </Function>
+    <Function name="SetBlocksForMesh" user="true" member="true">
+    </Function>
+    <Function name="SetContainsGhostZones" user="true" member="true">
+    </Function>
+    <Function name="GetContainsGhostZones" user="true" member="true">
+    </Function>
+    <Function name="SetContainsOriginalCells" user="true" member="true">
+    </Function>
+    <Function name="SetContainsOriginalNodes" user="true" member="true">
+    </Function>
+    <Function name="SetContainsGlobalNodeIds" user="true" member="true">
+    </Function>
+    <Function name="SetContainsGlobalZoneIds" user="true" member="true">
+    </Function>
+    <Function name="AddGroupInformation" user="true" member="true">
+    </Function>
+    <Function name="SetExtents" user="true" member="true">
+    </Function>
+    <Function name="UnsetExtents" user="true" member="true">
+    </Function>
+    <Function name="AddExpression" user="true" member="true">
+    </Function>
+    <Function name="GetExpression" user="true" member="true">
+    </Function>
+    <Function name="GetNumberOfExpressions" user="true" member="true">
+    </Function>
+    <Function name="ConvertCSGDomainToBlockAndRegion" user="true" member="true">
+    </Function>
+    <Function name="GetNDomains" user="true" member="true">
+    </Function>
+    <Function name="DetermineVarType" user="true" member="true">
+    </Function>
+    <Function name="DetermineSubsetType" user="true" member="true">
+    </Function>
+    <Function name="MeshForVar" user="true" member="true">
+    </Function>
+    <Function name="MaterialOnMesh" user="true" member="true">
+    </Function>
+    <Function name="SpeciesOnMesh" user="true" member="true">
+    </Function>
+    <Function name="GetMaterialOnMesh" user="true" member="true">
+    </Function>
+    <Function name="GetSpeciesOnMesh" user="true" member="true">
+    </Function>
+    <Function name="GetAllVariableNames" user="true" member="true">
+    </Function>
+    <Function name="GetAllMeshNames" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+    <Function name="RegisterWarningCallback" user="true" member="true" access="private">
+    </Function>
+    <Function name="WarnCallbackData1" user="true" member="true" access="private">
+    </Function>
+    <Function name="WarnCallbackData2" user="true" member="true" access="private">
+    </Function>
+    <Function name="IssueWarning" user="true" member="true" access="private">
+    </Function>
+    <Function name="VarIsCompound" user="true" member="true" access="private">
+    </Function>
+    <Function name="ParseCompoundForVar" user="true" member="true" access="private">
+    </Function>
+    <Function name="ParseCompoundForMesh" user="true" member="true" access="private">
+    </Function>
+    <Function name="ParseCompoundForCategory" user="true" member="true" access="private">
+    </Function>
+    <Function name="VariableNamesEqual" user="true" member="true" access="private">
+    </Function>
+    <Include file="header" quoted="false">
+       Expression.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtArrayMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtCurveMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtDatabaseMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtDefaultPlotMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtLabelMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtMatSpeciesMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtMaterialMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtMeshMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtSILCollectionMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtSILMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtScalarMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtSpeciesMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtSymmetricTensorMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtTensorMetaData.h
+    </Include>
+    <Include file="header" quoted="false">
+       avtVectorMetaData.h
+    </Include>
+    <Include file="source" quoted="false">
+       ImproperUseException.h
+    </Include>
+    <Include file="source" quoted="false">
+       InvalidVariableException.h
+    </Include>
+    <Include file="source" quoted="false">
+       BadIndexException.h
+    </Include>
+    <Include file="source" quoted="false">
+       DebugStream.h
+    </Include>
+    <Include file="source" quoted="false">
+       ParsingExprList.h
+    </Include>
+    <Include file="source" quoted="false">
+       ExprNode.h
+    </Include>
+    <Include file="source" quoted="false">
+       snprintf.h
+    </Include>
+  </Attribute>

@@ -56,222 +56,26 @@
 #    endorsement purposes.
 #
 # Modifications:
-#    Jeremy Meredith, Wed Jan  9 13:21:35 PST 2002
-#    Added configured LDFLAGS to the local ones.
-#
-#    Jeremy Meredith, Thu Feb 14 15:03:47 PST 2002
-#    Added utility library.
-#
-#    Brad Whitlock, Tue Mar 26 17:03:01 PST 2002
-#    I removed the rpc library.
-#
-#    Hank Childs, Wed May 22 08:43:01 PDT 2002
-#    Put LDFLAGS in front of the object files.  g++ does not preprocess the
-#    command line and take in flags, so some flags are effectively ignored if
-#    not positioned correctly.
-#
-#    Hank Childs, Fri May 24 07:59:22 PDT 2002
-#    Renamed SaveImageAtts to SaveWindowAtts.
-#
-#    Jeremy Meredith, Fri Jul 12 14:29:43 PDT 2002
-#    Unified include directories.
-#
-#    Brad Whitlock, Tue Sep 24 09:31:40 PDT 2002
-#    I added WindowInformation and RenderingAttributes.
-#
-#    Jeremy Meredith, Thu Oct 24 16:41:59 PDT 2002
-#    Added material options.
-#
-#    Eric Brugger, Mon Nov 18 16:20:47 PST 2002
-#    I added keyframe options.
-#
-#    Sean Ahern, Wed Feb  5 16:38:11 PST 2003
-#    DBAtts uses the parser, so I included that library.
-#
-#    Kathleen Bonnell, Fri Jun  6 12:22:12 PDT 2003 
-#    Added pick options.
-#
-#    Eric Brugger, Wed Aug 20 14:16:41 PDT 2003
-#    I added View2DAttributes, View3DAttributes and ViewCurveAttributes.
-#
-#    Brad Whitlock, Wed Dec 3 17:27:44 PST 2003
-#    I added PyTimeSliderObject and PyText2DObject.
-#
-#    Brad Whitlock, Fri Mar 19 08:49:00 PDT 2004
-#    I added PyGlobalAttributes.
-#
-#    Kathleen Bonnell, Tue Mar 30 16:32:39 PST 2004 
-#    I added PyQueryOverTimeAttributes.
-#
-#    Kathleen Bonnell, Thu Jul 22 09:31:45 PDT 2004 
-#    I added PyGlobalLineoutAtributes.
-#
-#    Kathleen Bonnell, Mon Aug 16 11:41:34 PDT 2004 
-#    I added PyInteractorAttributes.
-#
-#    Eric Brugger, Fri Sep  3 16:56:35 PDT 2004
-#    I removed -L/usr/local/lib from the LDFLAGS.  The cli doesn't need
-#    anything from that directory, but it can cause problems sometimes.
-#    In particular, on gps the wrong libstdc++ gets loaded and the cli
-#    crashes on startup.
-#
-#    Jeremy Meredith, Fri Oct 29 16:48:40 PDT 2004
-#    Added support for lighting.
-#
-#    Jeremy Meredith, Tue Nov 23 14:53:07 PST 2004
-#    Refactored the expression parser into two separate libraries.
-#
-#    Jeremy Meredith, Fri Dec 10 14:14:18 PST 2004
-#    Added support for version-specific visit scripts and the ability to
-#    launch tools without passing them as an argument to the visit script.
-#
-#    Brad Whitlock, Thu Mar 17 11:21:29 PDT 2005
-#    Added PyDatabaseCorrelation.
-#
-#    Hank Childs, Mon Jun 13 11:25:47 PDT 2005
-#    Added PyMethodDoc.
-#
-#    Brad Whitlock, Tue Jun 28 11:46:49 PDT 2005
-#    Added John Anderson's PyLineObject and PyImageObject.
-#
-#    Hank Childs, Thu Jun 30 11:11:55 PDT 2005
-#    Added PyExportDBAtts.
-#
-#    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-#    Added mesh management attributes
-#
-#    Brad Whitlock, Mon Jan 9 10:35:55 PDT 2006
-#    Added Logging.C
-#
-#    Hank Childs, Mon Feb 13 21:13:27 PST 2006
-#    Added ConstructDDFAttributes.
-#
-#    Brad Whitlock, Wed Nov 22 12:01:56 PDT 2006
-#    I changed how the visit module gets built.
 #
 ##############################################################################
 
-##
-## Programs and options...
-##
 @SET_MAKE@
 @VARIABLES@
-
-##
-## Files...
-##
-SRC= \
-    PyAnimationAttributes.C \
-    PyAnnotationAttributes.C \
-    PyConstructDDFAttributes.C \
-    PyDatabaseCorrelation.C \
-    PyExportDBAttributes.C \
-    PyGlobalAttributes.C \
-    PyGlobalLineoutAttributes.C \
-    PyHostProfile.C \
-    PyImageObject.C \
-    PyInteractorAttributes.C \
-    PyKeyframeAttributes.C \
-    PyLightAttributes.C \
-    PyLineObject.C \
-    PyMaterialAttributes.C \
-    PyMeshManagementAttributes.C \
-    PyMethodDoc.C \
-    PyPickAttributes.C \
-    PyPrinterAttributes.C \
-    PyProcessAttributes.C \
-    PyQueryOverTimeAttributes.C \
-    PyRenderingAttributes.C \
-    PySaveWindowAttributes.C \
-    PySILRestriction.C \
-    PyText2DObject.C \
-    PyTimeSliderObject.C \
-    PyView2DAttributes.C \
-    PyView3DAttributes.C \
-    PyViewAttributes.C \
-    PyViewCurveAttributes.C \
-    PyWindowInformation.C \
-    Logging.C \
-    visitmodule.C
-
-HDR= \
-    PyAnimationAttributes.h \
-    PyAnnotationAttributes.h \
-    PyExportDBAttributes.h \
-    PyDatabaseCorrelation.h \
-    PyGlobalAttributes.h \
-    PyGlobalLineoutAttributes.h \
-    PyHostProfile.h \
-    PyImageObject.h \
-    PyInteractorAttributes.h \
-    PyKeyframeAttributes.h \
-    PyLightAttributes.h \
-    PyLineObject.h \
-    PyMaterialAttributes.h \
-    PyMeshManagementAttributes.h \
-    PyMethodDoc.h \
-    PyPickAttributes.h \
-    PyPrinterAttributes.h \
-    PyProcessAttributes.h \
-    PyQueryOverTimeAttributes.h \
-    PyRenderingAttributes.h \
-    PySaveWindowAttributes.h \
-    PySILRestriction.h \
-    PyText2DObject.h \
-    PyTimeSliderObject.h \
-    PyView2DAttributes.h \
-    PyView3DAttributes.h \
-    PyViewAttributes.h \
-    PyViewCurveAttributes.h \
-    PyWindowInformation.h
-
-OBJ=$(SRC:.C=.o)
-CLI=$(tmpbin)/cli
+@DIRTARGETS@
+@MPI_CC@
+@MPI_CXX@
 
 PY_BUILD_VISITMODULE=@PY_BUILD_VISITMODULE@
 
-##
-## Override the certain variables with values from configure.
-##
-LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@
-LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
-     -lplugin -ldbatts -lavtexceptions -lexpr -lparser @PY_LIB@
-CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
-
-
-##
-## Standard targets...
-##
-all:  message $(CLI) $(PY_BUILD_VISITMODULE)
-
-$(CLI): $(OBJ) cli.o
-	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $(OBJ) cli.o @PY_CLI_LIB@ $(LIBS)
-
-pure: $(OBJ) cli.o
-	purify $(CXX) -o $(CLI) $(CXXFLAGS) $(LDFLAGS) $(OBJ) cli.o @PY_CLI_LIB@ $(LIBS)
-
-clean:
-	$(RM) $(CLI)
-	$(RM) $(OBJ) cli.o
-
-visitmodule:
-	$(PYTHON) build_visitmodule.py build
-	cp `find . -name visitmodule.@SHLIB_SOEXT@` $(libdir)
-	$(PYTHON) build_visitfrontend.py build
-	cp `find . -name visit.@SHLIB_SOEXT@` $(libdir)
-	$(PYTHON) build_visitfrontend.py install
+# subdirectory `visitpy' must be first.
+SUBDIRS=visitpy cli $(PY_BUILD_VISITMODULE)
 
 message:
 	@echo
 	@echo "****************************************************************************"
 	@echo "****************************************************************************"
 	@echo "***"
-	@echo "*** Building VisIt's Scripting Interface ($(tmpbin)/cli)"
+	@echo "*** Building VisIt's Python interface ($(tmpbin)/visitpy)"
 	@echo "***"
 	@echo "****************************************************************************"
 	@echo "****************************************************************************"
-
-##
-## Automatic dependency stuff
-##
-@TARGETS@

@@ -1,0 +1,145 @@
+Function: avtMaterialMetaData2
+Declaration: avtMaterialMetaData(const std::string &, const std::string &, int, const stringVector &);
+Definition:
+// ****************************************************************************
+//  Method: avtMaterialMetaData constructor
+//
+//  Arguments:
+//      n            The name of the material.
+//      mesh         The name of the mesh the material is defined on.
+//      nm           The number of materials.
+//      names        The name of each material.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+//  Modifications:
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames stringVector
+//
+// ****************************************************************************
+
+avtMaterialMetaData::avtMaterialMetaData(const std::string &n, const std::string &mesh,
+    int nm, const stringVector &names) : AttributeSubject(avtMaterialMetaData::TypeMapFormatString)
+{
+    // Initialize all members.
+    *this = avtMaterialMetaData();
+
+    // Override members
+    name          = n;
+    originalName  = name;
+    meshName      = mesh;
+    numMaterials  = nm;
+    materialNames = names;
+}
+
+Function: avtMaterialMetaData3
+Declaration: avtMaterialMetaData(const std::string &, const std::string &, int, const stringVector &, const stringVector &);
+Definition:
+// ****************************************************************************
+//  Method: avtMaterialMetaData constructor
+//
+//  Purpose: constructor that includes material colors
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   July 12, 2006
+//
+// ****************************************************************************
+
+avtMaterialMetaData::avtMaterialMetaData(const std::string &n, 
+    const std::string &mesh, int nm, const stringVector &names,
+    const stringVector &colors)
+    : AttributeSubject(avtMaterialMetaData::TypeMapFormatString)
+{
+    // Initialize all members.
+    *this = avtMaterialMetaData();
+
+    // Override members
+    name          = n;
+    originalName  = name;
+    meshName      = mesh;
+    numMaterials  = nm;
+    materialNames = names;
+    colorNames    = colors;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtMaterialMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//    Brad Whitlock, Tue Aug 20 15:18:26 PST 2002
+//    Changed to remove a trailing comma.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+//    Mark C. Miller, Thu Jul 13 22:41:56 PDT 2006
+//    Added colorNames stringVector
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+void
+avtMaterialMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = " << originalName.c_str() << endl;
+    }
+
+    Indent(out, indent);
+    out << "Mesh Name = " << meshName.c_str() << endl;
+    Indent(out, indent);
+    out << "Number of Materials = " << numMaterials << endl;
+
+    Indent(out, indent);
+    out << "The materials names are = ";
+    for (int i = 0; i < materialNames.size() ; ++i)
+    {
+        out << "\"" << materialNames[i].c_str() << "\"";
+        if (colorNames.size() && colorNames[i] != "")
+            out << "(color=\"" << colorNames[i].c_str() << "\")";
+        if(i < materialNames.size() - 1)
+            out << ", ";
+    }
+    out << endl;
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}
+

@@ -1631,7 +1631,7 @@ QvisPlotManagerWidget::keyReleaseEvent(QKeyEvent *key)
         {
             if(plotListBox->isSelected(i))
             {
-                int plotType = plotList->GetPlot(i).GetPlotType();
+                int plotType = plotList->GetPlots(i).GetPlotType();
                 emit activatePlotWindow(plotType);
             }
         }

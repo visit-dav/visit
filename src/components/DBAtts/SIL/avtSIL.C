@@ -95,6 +95,9 @@ avtSIL::avtSIL()
 //    Hank Childs, Fri Nov 15 06:39:37 PST 2002
 //    Add SIL matrices.
 //
+//    Brad Whitlock, Tue Mar 13 11:07:55 PDT 2007
+//    Updated due to code generation changes.
+//
 // ****************************************************************************
 
 avtSIL::avtSIL(const SILAttributes &atts)
@@ -132,7 +135,7 @@ avtSIL::avtSIL(const SILAttributes &atts)
     const vector<int> &superset = atts.GetSuperset();
     for (i = 0 ; i < nColls ; i++)
     {
-        const NamespaceAttributes &nsa = atts.GetNamespaceAttributes(i);
+        const NamespaceAttributes &nsa = atts.GetNspace(i);
         avtSILNamespace *ns = avtSILNamespace::GetNamespace(&nsa);
         SILCategoryRole r = (SILCategoryRole) role[i];
         avtSILCollection_p coll = new avtSILCollection(cats[i], r,
@@ -143,10 +146,10 @@ avtSIL::avtSIL(const SILAttributes &atts)
     //
     // Add the matrices to the SIL.
     //
-    int nMatrices = atts.GetNumSILMatrixAttributess();
+    int nMatrices = atts.GetNumMatrices();
     for (i = 0 ; i < nMatrices ; i++)
     {
-        const SILMatrixAttributes &ma = atts.GetSILMatrixAttributes(i);
+        const SILMatrixAttributes &ma = atts.GetMatrices(i);
         avtSILMatrix_p matrix = new avtSILMatrix(ma);
         AddMatrix(matrix);
     }
@@ -751,6 +754,9 @@ avtSIL::TranslateCollectionInfo(int index, avtSILMatrix_p &mat, int &out_ind)
 //    Hank Childs, Fri Nov 15 06:39:37 PST 2002
 //    Add SIL matrices.
 //
+//    Brad Whitlock, Tue Mar 13 11:09:25 PDT 2007
+//    Updated due to code generation changes.
+//
 // ****************************************************************************
 
 SILAttributes *
@@ -796,7 +802,7 @@ avtSIL::MakeSILAttributes(void) const
         supersets.push_back(col->GetSupersetIndex());
         const avtSILNamespace *ns = col->GetSubsets();
         NamespaceAttributes *na = ns->GetAttributes();
-        rv->AddNamespaceAttributes(*na);
+        rv->AddNspace(*na);
         delete na;
     }
     rv->SetCategory(cats);
@@ -810,7 +816,7 @@ avtSIL::MakeSILAttributes(void) const
     for (i = 0 ; i < nMatrices ; i++)
     {
         SILMatrixAttributes *atts = matrices[i]->MakeAttributes();
-        rv->AddSILMatrixAttributes(*atts);
+        rv->AddMatrices(*atts);
         delete atts;
     }
 

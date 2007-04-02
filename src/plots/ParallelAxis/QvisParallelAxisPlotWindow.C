@@ -86,7 +86,7 @@ QvisParallelAxisPlotWindow::QvisParallelAxisPlotWindow(const int type,
     plotType = type;
     parAxisAtts = parAxisAtts_;
 
-    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
+    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
 }
 
 
@@ -459,7 +459,7 @@ void
 QvisParallelAxisPlotWindow::prevAxisClicked()
 {
     parAxisAtts->ShowPreviousAxisVariableData();
-    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
+    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -482,7 +482,7 @@ void
 QvisParallelAxisPlotWindow::nextAxisClicked()
 {
     parAxisAtts->ShowNextAxisVariableData();
-    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
+    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -506,7 +506,7 @@ void
 QvisParallelAxisPlotWindow::axisAdded(const QString &axisToAdd)
 {
     parAxisAtts->InsertAxis(axisToAdd.latin1());
-    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
+    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -530,7 +530,7 @@ void
 QvisParallelAxisPlotWindow::axisDeleted(const QString &axisToDelete)
 {
     parAxisAtts->DeleteAxis(axisToDelete.latin1(), 2);
-    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
+    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -554,7 +554,7 @@ void
 QvisParallelAxisPlotWindow::leftAxisSelected(const QString &axisToSelect)
 {
     parAxisAtts->SwitchToLeftAxis(axisToSelect.latin1());
-    latestGUIShownOrd = parAxisAtts->GetShownVariableAxisOrdinal();
+    latestGUIShownOrd = parAxisAtts->GetShownVarAxisOrdinal();
 
     UpdateShownFields(true);
 }
@@ -590,7 +590,7 @@ QvisParallelAxisPlotWindow::UpdateShownFields(bool applyvalues)
         latestGUIShownOrd = parAxisAtts->GetAxisMinima().size() - 1;
     }
 
-    parAxisAtts->SetShownVariableAxisOrdinal(latestGUIShownOrd);
+    parAxisAtts->SetShownVarAxisOrdinal(latestGUIShownOrd);
 
     QString fieldString = parAxisAtts->GetShownVariableAxisName().c_str();
     axisVariable->setText(fieldString);

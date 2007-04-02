@@ -142,6 +142,10 @@ avtDeferExpressionFilter::Equivalent(const AttributeGroup *a)
 //  Programmer: Hank Childs
 //  Creation:   September 1, 2005
 //
+//  Modifications:
+//    Brad Whitlock, Fri Mar 9 17:31:44 PST 2007
+//    Updated because of small change to ExpressionList.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -170,9 +174,9 @@ avtDeferExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         bool foundMatch = false;
         for (i = 0 ; i < el->GetNumExpressions() ; i++)
-            if (atts.GetExprs()[j] == el->GetExpression(i).GetName())
+            if (atts.GetExprs()[j] == el->GetExpressions(i).GetName())
             {
-                new_el.AddExpression(el->GetExpression(i));
+                new_el.AddExpressions(el->GetExpressions(i));
                 foundMatch = true;
                 break;
             }
@@ -182,8 +186,8 @@ avtDeferExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
         // If this is a vector, then look for the magnitude as well.
         std::string newName = atts.GetExprs()[j] + "_AVT_mag";
         for (i = 0 ; i < el->GetNumExpressions() ; i++)
-            if (newName == el->GetExpression(i).GetName())
-                new_el.AddExpression(el->GetExpression(i));
+            if (newName == el->GetExpressions(i).GetName())
+                new_el.AddExpressions(el->GetExpressions(i));
     }
 
     ExpressionList orig_el = *el;

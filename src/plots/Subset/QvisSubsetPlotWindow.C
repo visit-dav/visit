@@ -581,7 +581,7 @@ QvisSubsetPlotWindow::UpdateWindow(bool doAll)
         SubsetAttributes::ColorBySingleColor);
     singleColorOpacity->setEnabled(subsetAtts->GetColorType() ==
         SubsetAttributes::ColorBySingleColor);
-    bool mEnabled = (subsetAtts->GetMultiColor().GetNumColorAttributes() > 0) &&
+    bool mEnabled = (subsetAtts->GetMultiColor().GetNumColors() > 0) &&
                     (subsetAtts->GetColorType() == SubsetAttributes::ColorByMultipleColors);
     multipleColorLabel->setEnabled(mEnabled);
     multipleColorList->setEnabled(mEnabled);
@@ -1186,7 +1186,7 @@ QvisSubsetPlotWindow::multipleColorChanged(const QColor &color)
         for(int i = 0; i < multipleColorList->count(); ++i)
         {
             if(multipleColorList->isSelected(i) &&
-               (i < subsetAtts->GetMultiColor().GetNumColorAttributes()))
+               (i < subsetAtts->GetMultiColor().GetNumColors()))
             {
                 subsetAtts->GetMultiColor()[i].SetRgb(color.red(),
                                                       color.green(),
@@ -1231,7 +1231,7 @@ QvisSubsetPlotWindow::multipleColorOpacityChanged(int opacity)
         for(int i = 0; i < multipleColorList->count(); ++i)
         {
             if(multipleColorList->isSelected(i) &&
-               (i < subsetAtts->GetMultiColor().GetNumColorAttributes()))
+               (i < subsetAtts->GetMultiColor().GetNumColors()))
             {
                 subsetAtts->GetMultiColor()[i].SetAlpha(opacity);
             }

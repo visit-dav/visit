@@ -441,7 +441,7 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
         attributeData.push_back(0.0);
 
     parAxisAtts->SetOrderedAxisNames(axisNames);
-    parAxisAtts->SetShownVariableAxisOrdinal(0);
+    parAxisAtts->SetShownVarAxisOrdinal(0);
     parAxisAtts->SetAxisMinima(axisMins);
     parAxisAtts->SetAxisMaxima(axisMaxs);
     parAxisAtts->SetExtentMinima(extMins);

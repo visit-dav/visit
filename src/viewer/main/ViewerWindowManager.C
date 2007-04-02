@@ -2998,7 +2998,7 @@ ViewerWindowManager::CreateMultiWindowCorrelationHelper(const stringVector &dbs)
             if(correlation)
             {
                 // Add the new correlation to the correlation list.
-                cL->AddDatabaseCorrelation(*correlation);
+                cL->AddCorrelations(*correlation);
                 cL->Notify();
                 delete correlation; 
                 correlation = cL->FindCorrelation(newName);
@@ -5712,7 +5712,7 @@ ViewerWindowManager::CreateDatabaseCorrelation(const std::string &name,
         //
         if(correlation)
         {
-            cL->AddDatabaseCorrelation(*correlation);
+            cL->AddCorrelations(*correlation);
             cL->Notify();
 
             //
@@ -5893,11 +5893,11 @@ ViewerWindowManager::DeleteDatabaseCorrelation(const std::string &name)
             //
             // Remove the correlation.
             //
-            for(int i = 0; i < cL->GetNumDatabaseCorrelations(); ++i)
+            for(int i = 0; i < cL->GetNumCorrelations(); ++i)
             {
-                if(cL->GetDatabaseCorrelation(i).GetName() == name)
+                if(cL->GetCorrelations(i).GetName() == name)
                 {
-                    cL->RemoveDatabaseCorrelation(i);
+                    cL->RemoveCorrelations(i);
                     cL->Notify();
 
                     // Make any plot lists that used the correlation that
@@ -6258,7 +6258,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                 //
                 DatabaseCorrelationList *cL = fs->GetDatabaseCorrelationList();
                 stringVector alteredCorrelations;
-                for(i = 0; i < cL->GetNumDatabaseCorrelations(); ++i)
+                for(i = 0; i < cL->GetNumCorrelations(); ++i)
                 {
                     DatabaseCorrelation &correlation = cL->operator[](i);
                     if(correlation.UsesDatabase(hDB))
@@ -6284,7 +6284,7 @@ ViewerWindowManager::CheckForNewStates(const std::string &hostDatabase)
                 if(newCorr != 0)
                 {
                     debug4 << "New correlation for " << hDB.c_str() << *newCorr << endl;
-                    cL->AddDatabaseCorrelation(*newCorr);
+                    cL->AddCorrelations(*newCorr);
                     delete newCorr;
                 }
                 if(originalNStates != newNStates)

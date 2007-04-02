@@ -169,6 +169,10 @@ using std::vector;
 //    Cyrus Harrison, Wed Mar  7 09:47:13 PST 2007
 //    Allow for engine-specific code in a plugin's source files
 //
+//    Brad Whitlock, Thu Mar 1 16:06:53 PST 2007
+//    Added support for some AVT enums and for public/protected/private members.
+//    I also changed the names of the generated access methods for attVectors.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -487,6 +491,7 @@ class AttsGeneratorField : public virtual Field
             c << "(" << name << " == obj." << name << ")";
         }
     }
+    virtual QString GetFieldType() const { return type; }
 };
 
 //
@@ -510,7 +515,6 @@ class AttsGeneratorInt : public virtual Int , public virtual AttsGeneratorField
         c << "    " << name << " = " << val << ";" << endl;
     }
 };
-
 
 //
 // -------------------------------- IntArray --------------------------------
@@ -1075,12 +1079,16 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     }
     virtual void WriteHeaderAGVectorProto(ostream &h)
     {
-        h << "    void Add" << AttType << "(const " << attType << " &);" << endl;
-        h << "    void Clear" << AttType << "s();" << endl;
-        h << "    void Remove" << AttType << "(int i);" << endl;
-        h << "    int  GetNum" << AttType << "s() const;" << endl;
-        h << "    " << attType << " &Get" << AttType << "(int i);" << endl;
-        h << "    const " << attType << " &Get" << AttType << "(int i) const;" << endl;
+        QString plural("");
+        if(Name[Name.length()-1] != 's')
+            plural = "s";
+
+        h << "    void Add" << Name << "(const " << attType << " &);" << endl;
+        h << "    void Clear" << Name << plural << "();" << endl;
+        h << "    void Remove" << Name << "(int i);" << endl;
+        h << "    int  GetNum" << Name << plural << "() const;" << endl;
+        h << "    " << attType << " &Get" << Name << "(int i);" << endl;
+        h << "    const " << attType << " &Get" << Name << "(int i) const;" << endl;
         h << endl;
     }
     virtual void WriteHeaderSoloAGVectorProto(ostream &h)
@@ -1142,8 +1150,12 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     }
     virtual void WriteSourceSetFromNode(ostream &c)
     {
+        QString plural("");
+        if(Name[Name.length()-1] != 's')
+            plural = "s";
+
         c << "    // Clear all the " << attType << "s." << endl;
-        c << "    Clear" << AttType << "s();" << endl;
+        c << "    Clear" << Name << plural << "();" << endl;
         c << endl;
         c << "    // Go through all of the children and construct a new" << endl;
         c << "    // " << attType << " for each one of them." << endl;
@@ -1155,7 +1167,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "        {" << endl;
         c << "            " << attType << " temp;" << endl;
         c << "            temp.SetFromNode(children[i]);" << endl;
-        c << "            Add" << AttType << "(temp);" << endl;
+        c << "            Add" << Name << "(temp);" << endl;
         c << "        }" << endl;
         c << "    }" << endl << endl;
     }
@@ -1163,10 +1175,13 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     {
         QString methodName;
         QString s = attType;
+        QString plural("");
+        if(Name[Name.length()-1] != 's')
+            plural = "s";
 
         // Write the Add method.
         methodName = "Add";
-        methodName += AttType;
+        methodName += Name;
         WriteMethodComment(c, classname, methodName, purpose);
         c << "void" << endl;
         c << classname << "::" << methodName << "(const " << s << " &obj)" << endl;
@@ -1180,8 +1195,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the Clear method
         methodName = "Clear";
-        methodName += AttType;
-        methodName += "s";
+        methodName += Name + plural;
         WriteMethodComment(c, classname, methodName, purpose);
         c << "void" << endl;
         c << classname << "::" << methodName << "()" << endl;
@@ -1198,7 +1212,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the Remove method
         methodName = "Remove";
-        methodName += AttType;
+        methodName += Name;
         WriteMethodComment(c, classname, methodName, purpose);
         c << "void" << endl;
         c << classname << "::" << methodName << "(int index)" << endl;
@@ -1222,8 +1236,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the GetNum method
         methodName = "GetNum";
-        methodName += AttType;
-        methodName += "s";
+        methodName += Name + plural;
         WriteMethodComment(c, classname, methodName, purpose);
         c << "int" << endl;
         c << classname << "::" << methodName << "() const" << endl;
@@ -1233,7 +1246,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the Get method
         methodName = "Get";
-        methodName += AttType;
+        methodName += Name;
         WriteMethodComment(c, classname, methodName, purpose);
         c << s << " &" << endl;
         c << classname << "::" << methodName << "(int i)" << endl;
@@ -1243,7 +1256,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
 
         // Write the const Get method
         methodName = "Get";
-        methodName += AttType;
+        methodName += Name;
         WriteMethodComment(c, classname, methodName, purpose);
         c << "const " << s << " &" << endl;
         c << classname << "::" << methodName << "(int i) const" << endl;
@@ -1357,10 +1370,135 @@ class AttsGeneratorEnum : public virtual Enum , public virtual AttsGeneratorFiel
 };
 
 
+#define AVT_GENERATOR_METHODS \
+    virtual void AddSystemIncludes(UniqueStringList &sl) \
+    { \
+        sl.AddString("#include <avtTypes.h>\n");\
+    }\
+    virtual QString GetAttributeGroupID()\
+    {\
+        return "i";\
+    }\
+    virtual QString DataNodeConversion()\
+    {\
+        return "AsInt";\
+    }\
+    virtual void WriteSourceSetDefault(ostream &c)\
+    {\
+        c << "    " << name << " = ";\
+        int nsym = 0;\
+        const char **sym = GetSymbols(nsym);\
+        if(val >= 0 && val < nsym)\
+            c << sym[val];\
+        else\
+            c << val;\
+        c << ";" << endl;\
+    }\
+    virtual QString GetFieldType() const { return "int"; }
+
+//
+// ----------------------------------- avtCentering -----------------------------------
+//
+class AttsGeneratoravtCentering : public virtual AttsGeneratorField, public virtual avtCenteringField
+{
+  public:
+    AttsGeneratoravtCentering(const QString &n, const QString &l)
+        : avtCenteringField(n,l), AttsGeneratorField("avtCentering",n,l), Field("avtCentering",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtGhostType -----------------------------------
+//
+class AttsGeneratoravtGhostType : public virtual AttsGeneratorField, public virtual avtGhostTypeField
+{
+  public:
+    AttsGeneratoravtGhostType(const QString &n, const QString &l)
+        : avtGhostTypeField(n,l), AttsGeneratorField("avtGhostType",n,l), Field("avtGhostType",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtSubsetType -----------------------------------
+//
+class AttsGeneratoravtSubsetType : public virtual AttsGeneratorField, public virtual avtSubsetTypeField
+{
+  public:
+    AttsGeneratoravtSubsetType(const QString &n, const QString &l)
+        : avtSubsetTypeField(n,l), AttsGeneratorField("int",n,l), Field("int",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtVarType -----------------------------------
+//
+class AttsGeneratoravtVarType : public virtual AttsGeneratorField, public virtual avtVarTypeField
+{
+  public:
+    AttsGeneratoravtVarType(const QString &n, const QString &l)
+        : avtVarTypeField(n,l), AttsGeneratorField("avtVarType",n,l), Field("avtVarTypeField",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtMeshType -----------------------------------
+//
+class AttsGeneratoravtMeshType : public virtual AttsGeneratorField, public virtual avtMeshTypeField
+{
+  public:
+    AttsGeneratoravtMeshType(const QString &n, const QString &l)
+        : avtMeshTypeField(n,l), AttsGeneratorField("avtMeshType",n,l), Field("avtMeshTypeField",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtExtentType -----------------------------------
+//
+class AttsGeneratoravtExtentType : public virtual AttsGeneratorField, public virtual avtExtentTypeField
+{
+  public:
+    AttsGeneratoravtExtentType(const QString &n, const QString &l)
+        : avtExtentTypeField(n,l), AttsGeneratorField("avtExentType",n,l), Field("avtExtentType",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- avtMeshCoordType -----------------------------------
+//
+class AttsGeneratoravtMeshCoordType : public virtual AttsGeneratorField, public virtual avtMeshCoordTypeField
+{
+  public:
+    AttsGeneratoravtMeshCoordType(const QString &n, const QString &l)
+        : avtMeshCoordTypeField(n,l), AttsGeneratorField("avtMeshCoordType",n,l), Field("avtMeshCoordType",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
+//
+// ----------------------------------- LoadBalanceScheme -----------------------------------
+//
+class AttsGeneratorLoadBalanceScheme : public virtual AttsGeneratorField, public virtual LoadBalanceSchemeField
+{
+  public:
+    AttsGeneratorLoadBalanceScheme(const QString &n, const QString &l)
+        : LoadBalanceSchemeField(n,l), AttsGeneratorField("LoadBalanceScheme",n,l), Field("LoadBalanceScheme",n,l)
+    { }
+    AVT_GENERATOR_METHODS
+};
+
 // ----------------------------------------------------------------------------
 // Modifications:
 //    Brad Whitlock, Wed Dec 8 15:47:03 PST 2004
 //    Added support for variable names.
+//
+//    Brad Whitlock, Thu Mar 1 14:17:10 PST 2007
+//    Added support for various avt enums.
 //
 // ----------------------------------------------------------------------------
 class AttsFieldFactory
@@ -1398,6 +1536,16 @@ class AttsFieldFactory
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new AttsGeneratorEnum(subtype, name, label);
 
+        // Special built-in AVT enums
+        else if (type == "avtCentering")      f = new AttsGeneratoravtCentering(name, label);
+        else if (type == "avtVarType")        f = new AttsGeneratoravtVarType(name, label);
+        else if (type == "avtSubsetType")     f = new AttsGeneratoravtSubsetType(name, label);
+        else if (type == "avtExtentType")     f = new AttsGeneratoravtExtentType(name, label);
+        else if (type == "avtMeshType")       f = new AttsGeneratoravtMeshType(name, label);
+        else if (type == "avtGhostType")      f = new AttsGeneratoravtGhostType(name, label);
+        else if (type == "avtMeshCoordType")  f = new AttsGeneratoravtMeshCoordType(name, label);
+        else if (type == "LoadBalanceScheme") f = new AttsGeneratorLoadBalanceScheme(name, label);
+
         if (!f)
             throw QString().sprintf("AttsFieldFactory: unknown type for field %s: %s",name.latin1(),type.latin1());
 
@@ -1413,13 +1561,20 @@ class AttsFieldFactory
 //   Mark C. Miller, Tue Oct 26 16:18:21 PDT 2004
 //   Changed operator = to return & to class & check for assignment to self
 //
+//   Brad Whitlock, Wed Mar 7 15:57:54 PST 2007
+//   Added ability to turn off keyframing methods.
+//
+//   Jeremy Meredith, Tue Mar 13 15:17:14 EDT 2007
+//   Made non-member constants written before the class, and don't add
+//   whitespace for empty constant defs (like #defines in the header file).
+//
 // ----------------------------------------------------------------------------
 class AttsGeneratorAttribute
 {
   public:
     QString name;
     QString purpose;
-    bool    persistent;
+    bool    persistent, keyframe;
     QString exportAPI;
     QString exportInclude;
     vector<AttsGeneratorField*> fields;
@@ -1440,6 +1595,7 @@ class AttsGeneratorAttribute
         if (codeFile)
             codeFile->Parse();
         persistent = false;
+        keyframe = true;
     }
     bool HasFunction(const QString &f)
     {
@@ -1519,7 +1675,10 @@ class AttsGeneratorAttribute
     void WriteHeaderSelectFunctions(ostream &h)
     {
         for (int i=0; i<fields.size(); i++)
-            fields[i]->WriteHeaderSelectFunction(h);
+        {
+            if(fields[i]->accessType == Field::AccessPrivate)
+                fields[i]->WriteHeaderSelectFunction(h);
+        }
     }
 
     void WriteHeaderEnumConversions(ostream &h)
@@ -1566,47 +1725,59 @@ class AttsGeneratorAttribute
     }
     bool SelectFunctionsNeeded()
     {
-        if (fields.size() <= 1)
-            return false;
         for (int i=0; i<fields.size(); i++)
+        {
+            if(fields[i]->accessType != Field::AccessPrivate)
+                continue;
             if (fields[i]->CanHaveConst())
                 return true;
+        }
         return false;
     }
     bool HaveAGVectors()
     {
         for (int i=0; i<fields.size(); i++)
+        {
             if (fields[i]->type=="attVector")
                 return true;
+        }
         return false;
     }
     bool HaveSoloAGVector()
     {
         int count = 0;
         for (int i=0; i<fields.size(); i++)
+        {
             if (fields[i]->type=="attVector")
                 count++;
+        }
         return (count == 1);
     }
     bool HaveArrays()
     {
         for (int i=0; i<fields.size(); i++)
+        {
             if (fields[i]->isArray)
                 return true;
+        }
         return false;
     }
     bool HaveArraysThatNeedIndexVar()
     {
         for (int i=0; i<fields.size(); i++)
+        {
             if (fields[i]->isArray && fields[i]->length >= 4)
                 return true;
+        }
         return false;
     }
     bool HaveVectors()
     {
         for (int i=0; i<fields.size(); i++)
+        {
             if (fields[i]->isVector)
                 return true;
+        }
         return false;
     }
 
@@ -1637,6 +1808,14 @@ class AttsGeneratorAttribute
         }
 
         h << endl;
+
+        // write non-member constants
+        for (i=0; i<constants.size(); i++)
+        {
+            if (! constants[i]->member)
+                h << constants[i]->decl << endl;
+        }
+
         WriteHeaderClassComment(h);
         if(exportAPI.isEmpty())
             h << "class " << name << " : public AttributeSubject" << endl;
@@ -1657,9 +1836,11 @@ class AttsGeneratorAttribute
             }
             h << "    };" << endl;
         }
+        // write member constants
         for (i=0; i<constants.size(); i++)
         {
-            h << "    " << constants[i]->decl << endl;
+            if (constants[i]->member)
+                h << "    " << constants[i]->decl << endl;
         }
         if (EnumType::enums.size() || constants.size())
             h << endl;
@@ -1680,18 +1861,44 @@ class AttsGeneratorAttribute
         h << "    virtual void SelectAll();" << endl;
         WriteHeaderSelectFunctions(h);
 
-        h << endl;
-        h << "    // Property setting methods" << endl;
+        // Determine whether there are public and private fields.
+        bool hasPrivateFields = false;
+        bool hasProtectedFields = false;
+        bool hasPublicFields = false;
+        for (i=0; i<fields.size(); i++)
+        {
+            if(fields[i]->accessType == Field::AccessPrivate)
+                hasPrivateFields = true;
+            if(fields[i]->accessType == Field::AccessProtected)
+                hasProtectedFields = true;
+            if(fields[i]->accessType == Field::AccessPublic)
+                hasPublicFields = true;
+        }
+
+        if(hasPrivateFields)
+        {
+            h << endl;
+            h << "    // Property setting methods" << endl;
+        }
         // Write out all the set prototypes
         for (i=0; i<fields.size(); i++)
+        {
+            if(fields[i]->accessType != Field::AccessPrivate)
+                continue;
             fields[i]->WriteHeaderSetFunction(h);
+        }
 
         int totalWidth = CalculateTotalWidth(true);
-        h << endl;
-        h << "    // Property getting methods" << endl;
+        if(hasPrivateFields)
+        {
+            h << endl;
+            h << "    // Property getting methods" << endl;
+        }
         // Write out all the get prototypes
         for (i=0; i<fields.size(); i++)
         {
+            if(fields[i]->accessType != Field::AccessPrivate)
+                continue;
             int minus = 0;
             if (fields[i]->CanHaveConst())
                 minus = 6;
@@ -1731,13 +1938,16 @@ class AttsGeneratorAttribute
         WriteHeaderEnumConversions(h);
 
         // Methods for keyframing
-        h << endl;
-        h << "    // Keyframing methods" << endl;
-        h << "    virtual std::string               GetFieldName(int index) const;" << endl;
-        h << "    virtual AttributeGroup::FieldType GetFieldType(int index) const;" << endl;
-        h << "    virtual std::string               GetFieldTypeName(int index) const;" << endl;
-        h << "    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;" << endl;
-        h << endl;
+        if(keyframe)
+        {
+            h << endl;
+            h << "    // Keyframing methods" << endl;
+            h << "    virtual std::string               GetFieldName(int index) const;" << endl;
+            h << "    virtual AttributeGroup::FieldType GetFieldType(int index) const;" << endl;
+            h << "    virtual std::string               GetFieldTypeName(int index) const;" << endl;
+            h << "    virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;" << endl;
+            h << endl;
+        }
 
         // Write user-defined methods
         bool wroteUserDefinedHeading = false;
@@ -1762,13 +1972,45 @@ class AttsGeneratorAttribute
         }
 
         totalWidth = CalculateTotalWidth(false);
-        // Write out all the private attributes
-        h << "private:" << endl;
-        for (i=0; i<fields.size(); i++)
-        {
-            fields[i]->WriteHeaderAttribute(h, totalWidth);
-        }
 
+        // Write out all the public attributes.
+        if(hasPublicFields)
+        {
+            h << "public:" << endl;
+            for (i=0; i<fields.size(); i++)
+            {
+                if(fields[i]->accessType != Field::AccessPublic)
+                    continue;
+                fields[i]->WriteHeaderAttribute(h, totalWidth);
+            }
+        }
+        // Write out all the protected attributes
+        if(hasProtectedFields)
+        {
+            h << "protected:" << endl;
+            for (i=0; i<fields.size(); i++)
+            {
+                if(fields[i]->accessType != Field::AccessProtected)
+                    continue;
+                fields[i]->WriteHeaderAttribute(h, totalWidth);
+            }
+        }
+        // Write out all the private attributes
+        if(hasPrivateFields)
+        {
+            h << "private:" << endl;
+            for (i=0; i<fields.size(); i++)
+            {
+                if(fields[i]->accessType != Field::AccessPrivate)
+                    continue;
+                fields[i]->WriteHeaderAttribute(h, totalWidth);
+            }
+        }
+        h << endl;
+        if(!hasPrivateFields)
+            h << "private:" << endl;
+        h << "    // Static class format string for type map." << endl;
+        h << "    static const char *TypeMapFormatString;" << endl;
         h << "};" << endl;
         h << endl;
 
@@ -1817,17 +2059,21 @@ class AttsGeneratorAttribute
 
     void WriteSourceConstructor(ostream &c)
     {
+        // Write the typemap format string.
+        QString formatString;
+        int i;
+        for (i=0; i<fields.size(); i++)
+            formatString += fields[i]->GetAttributeGroupID();
+        c << "// Type map format string" << endl;
+        c << "const char *" << name << "::TypeMapFormatString = \"" << formatString << "\";";
+        c << endl << endl;
+
         // Write the method comment.
         QString purposeString("Constructor for the ");
         purposeString += (name + " class.");
         WriteMethodComment(c, name, name, purposeString);
 
-        QString formatString;
-        int i;
-        for (i=0; i<fields.size(); i++)
-            formatString += fields[i]->GetAttributeGroupID();
-
-        c << name << "::" << name << "() : AttributeSubject(\"" << formatString << "\")";
+        c << name << "::" << name << "() : \n    AttributeSubject(" << name << "::TypeMapFormatString)";
 
         // Count the number of fields that require an initializer
         int nInitializers = 0;
@@ -1904,14 +2150,10 @@ class AttsGeneratorAttribute
         purposeString += (name + " class.");
         WriteMethodComment(c, name, name, purposeString);
 
-        // Figure out the format string.        
-        QString formatString;
-        for (int i=0; i<fields.size(); i++)
-            formatString += fields[i]->GetAttributeGroupID();
-
         c << name << "::" << name << "(const "
-          << name << " &obj) : AttributeSubject(\"" << formatString
-          << "\")" << endl;
+          << name << " &obj) : \n    AttributeSubject(" << name
+          << "::TypeMapFormatString)" << endl;
+
         c << "{" << endl;
         WriteSourceCopyCode(c);
         c << "}" << endl << endl;
@@ -2354,7 +2596,7 @@ class AttsGeneratorAttribute
         c << "    switch (index)" << endl;
         c << "    {" << endl;
         for (i=0; i<fields.size(); i++)
-            c << "        case "<<i<<":  return FieldType_"<<fields[i]->type<<";" << endl;
+            c << "        case "<<i<<":  return FieldType_"<<fields[i]->GetFieldType()<<";" << endl;
         c << "        default:  return FieldType_unknown;" << endl;
         c << "    }" << endl;
         c << "}" << endl;
@@ -2474,8 +2716,11 @@ class AttsGeneratorAttribute
         {
             for (i=0; i<constants.size(); i++)
             {
-                c << constants[i]->def;
-                c << endl;
+                if (!constants[i]->def.simplifyWhiteSpace().isEmpty())
+                {
+                    c << constants[i]->def;
+                    c << endl;
+                }
             }
         }
 
@@ -2511,6 +2756,9 @@ class AttsGeneratorAttribute
         c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
         for (i=0; i<fields.size(); i++)
         {
+            if(fields[i]->accessType != Field::AccessPrivate)
+                continue;
+
             if (!HasFunction("Set"+fields[i]->Name))
             {
                 fields[i]->WriteSourceSetFunction(c, name);
@@ -2528,6 +2776,8 @@ class AttsGeneratorAttribute
         c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
         for (i=0; i<fields.size(); i++)
         {
+            if(fields[i]->accessType != Field::AccessPrivate)
+                continue;
             fields[i]->WriteSourceGetFunction(c, name, true);
             if (fields[i]->CanHaveConst())
                 fields[i]->WriteSourceGetFunction(c, name, false);
@@ -2540,7 +2790,11 @@ class AttsGeneratorAttribute
             c << "// Select property methods" << endl;
             c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
             for (i=0; i<fields.size(); i++)
+            {
+                if(fields[i]->accessType != Field::AccessPrivate)
+                    continue;
                 fields[i]->WriteSourceSelectFunction(c, name);
+            }
         }
 
         if (HaveAGVectors())
@@ -2549,7 +2803,11 @@ class AttsGeneratorAttribute
             c << "// AttributeGroupVector convenience methods." << endl;
             c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
             for (i=0; i<fields.size(); i++)
+            {
+                if(fields[i]->accessType != Field::AccessPrivate)
+                    continue;
                 fields[i]->WriteSourceAGVectorFunctions(c, name, purpose);
+            }
         }
 
         if (HaveSoloAGVector())
@@ -2559,10 +2817,13 @@ class AttsGeneratorAttribute
         }
 
         // Write out all the keyframe methods
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-        c << "// Keyframing methods" << endl;
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
-        WriteSourceKeyframeFunctions(c);
+        if(keyframe)
+        {
+            c << "///////////////////////////////////////////////////////////////////////////////" << endl;
+            c << "// Keyframing methods" << endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+            WriteSourceKeyframeFunctions(c);
+        }
 
         c << "///////////////////////////////////////////////////////////////////////////////" << endl;
         c << "// User-defined methods." << endl;

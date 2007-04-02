@@ -538,12 +538,15 @@ avtLevelsMapper::SetColors(const ColorAttributeList &c)
 //    Brad Whitlock, Fri Nov 15 10:08:24 PDT 2002
 //    Changed the map type.
 //
+//    Brad Whitlock, Tue Mar 13 11:19:16 PDT 2007
+//    Changed due to code generation.
+//
 // ****************************************************************************
 
 void
 avtLevelsMapper::GetLevelColor(const string &name, double col[4])
 {
-    int nc = cal.GetNumColorAttributes();
+    int nc = cal.GetNumColors();
     if (nc == 1)  // constant color for all levels
     {
         col[0] = cal[0].Red()   * INV_255;
@@ -609,12 +612,16 @@ avtLevelsMapper::GetLevelColor(const string &name, double col[4])
 // Programmer: Kathleen Bonnell 
 // Creation:   September 24, 2001 
 //
+// Modifications:
+//   Brad Whitlock, Tue Mar 13 11:19:47 PDT 2007
+//   Changed due to code generation.
+//
 // ****************************************************************************
 
 void
 avtLevelsMapper::GetLevelColor(const int levelNum, double col[4])
 {
-    int nc = cal.GetNumColorAttributes();
+    int nc = cal.GetNumColors();
     if (nc == 1)  // constant color for all levels
     {
         col[0] = cal[0].Red()   * INV_255;

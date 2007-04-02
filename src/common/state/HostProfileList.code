@@ -278,12 +278,15 @@ Definition:
 //    Jeremy Meredith, Tue Jul 17 18:00:10 PDT 2001
 //    Reworded "default profile" to be "active profile".
 //
+//    Brad Whitlock, Tue Mar 13 10:53:44 PDT 2007
+//    Updated due to code generation.
+//
 // ****************************************************************************
 
 void
 HostProfileList::RemoveActiveProfile()
 {
-    if(GetNumHostProfiles() < 1)
+    if(GetNumProfiles() < 1)
         return;
 
     int i;
@@ -291,13 +294,13 @@ HostProfileList::RemoveActiveProfile()
     std::string oldHost(p.GetHost());
 
     // Remove the active profile.
-    RemoveHostProfile(GetActiveProfile());
+    RemoveProfiles(GetActiveProfile());
 
     // Go through the list and look for the first profile that has the
     // same host as the one that was deleted. We'll make that the
     // new active profile.
     bool keepGoing = true;
-    for(i = 0; i < GetNumHostProfiles() && keepGoing; ++i)
+    for(i = 0; i < GetNumProfiles() && keepGoing; ++i)
     {
         const HostProfile &current = this->operator[](i);
         if(current.GetHost() == oldHost)
@@ -320,7 +323,7 @@ HostProfileList::RemoveActiveProfile()
     else
     {
         // We didn't find another profile having the same host.
-        SetActiveProfile((GetNumHostProfiles() > 0) ? 0 : -1);
+        SetActiveProfile((GetNumProfiles() > 0) ? 0 : -1);
     }
 }
 
@@ -347,6 +350,9 @@ Definition:
 //    Jeremy Meredith, Wed Feb 27 11:03:55 PST 2002
 //    Added a check to make sure the host was changing before doing
 //    some logic to reset to the old active profile for the new host.
+//
+//    Brad Whitlock, Tue Mar 13 10:55:56 PDT 2007
+//    Updated due to code generation.
 //
 // ****************************************************************************
 
@@ -385,7 +391,7 @@ HostProfileList::ChangeHostForActiveProfile(const std::string &newHost)
             // Look through the list and make the first profile
             // for oldHost, the active profile for that host.
             bool notDone = true;
-            for(int i = 0; i < GetNumHostProfiles() &&
+            for(int i = 0; i < GetNumProfiles() &&
                 notDone; ++i)
             {
                 HostProfile &profile = this->operator[](i);
@@ -403,7 +409,7 @@ HostProfileList::ChangeHostForActiveProfile(const std::string &newHost)
     if(GetProfileForHost(newHost) == 0)
     {
         bool notDone = true;
-        for(int i = 0; i < GetNumHostProfiles() && notDone; ++i)
+        for(int i = 0; i < GetNumProfiles() && notDone; ++i)
         {
             HostProfile &profile = this->operator[](i);
             if(newHost == profile.GetHost())
@@ -506,7 +512,7 @@ HostProfileList::SetFromNode(DataNode *parentNode)
             // host profile and add it to the list.
             if(notFound)
             {
-                AddHostProfile(temp);
+                AddProfiles(temp);
                 profileIndex = profiles.size() - 1;
             }
 

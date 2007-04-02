@@ -374,7 +374,7 @@ avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     e->SetName(magVarName.c_str());
     e->SetDefinition(edef.c_str());
     e->SetType(Expression::ScalarMeshVar);
-    elist->AddExpression(*e);
+    elist->AddExpressions(*e);
     delete e;
 
     // Create a new dpspec so that we can add the secondary var.

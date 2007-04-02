@@ -4424,6 +4424,90 @@ ViewerSubject::CloseDatabase()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::HandleRequestMetaData
+//
+// Purpose: 
+//   Gets metadata for the specified database and time state and returns it
+//   to the client. There should be no side effects such as setting the 
+//   active database.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 9 16:30:48 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::HandleRequestMetaData()
+{
+    const char *mName = "ViewerSubject::HandleRequestMetaData: ";
+
+    //
+    // Expand the new database name and then set it into the plot list.
+    //
+    std::string hdb(GetViewerState()->GetViewerRPC()->GetDatabase()), host, db;
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    fs->ExpandDatabaseName(hdb, host, db);
+
+    //
+    // Get the number of time states and set that information into the
+    // active animation. The mdserver will clamp the time state that it
+    // uses to open the database if timeState is out of range at this point.
+    //
+    const avtDatabaseMetaData *md = NULL;
+    int ts = GetViewerState()->GetViewerRPC()->GetStateNumber();
+    if(ts == -1)
+    {
+        debug4 << mName << "Calling fs->GetMetaData(" << host
+               << ", " << db << ", true)" << endl;
+        md = fs->GetMetaData(host, db, true);
+    }
+    else
+    {
+        // The time state is not "ANY" so we will ask for a particular
+        // database state. Some file formats can be time-varying or
+        // time-invariant and we don't know which it will be so we
+        // need to clear the metadata for the database so we will read
+        // it again at the right time state.
+        fs->ClearFile(hdb);
+
+        debug4 << mName << "Calling fs->GetMetaDataForState(" << host
+               << ", " << db << ", " << ts << ", \"\")" << endl;
+        md = fs->GetMetaDataForState(host, db, ts, true, "");
+    }
+
+    if(md != 0)
+    {
+        // Copy the metadata so we can send it to the client.
+        *GetViewerState()->GetDatabaseMetaData() = *md;
+
+        // Print the metadata to the debug logs.
+        debug5 << mName << "Metadata contains: " << endl;
+        if(debug5_real)
+            md->Print(debug5_real, 1);
+    }
+    else
+    {
+        // Empty out the metadata.
+        *GetViewerState()->GetDatabaseMetaData() = avtDatabaseMetaData();
+
+        debug5 << mName << "No metadata was found." << endl;
+    }
+    GetViewerState()->GetDatabaseMetaData()->SelectAll();
+    GetViewerState()->GetDatabaseMetaData()->Notify();
+
+    //
+    // Check to see if there were errors in the mdserver
+    //
+    string err = ViewerFileServer::Instance()->GetPluginErrors(host);
+    if (!err.empty())
+    {
+        Warning(err.c_str());
+    }
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::CreateDatabaseCorrelation
 //
 // Purpose: 
@@ -6996,6 +7080,9 @@ ViewerSubject::SendKeepAlives()
 //    Brad Whitlock, Mon Feb 12 16:35:16 PST 2007
 //    Made it use ViewerState.
 //
+//    Brad Whitlock, Fri Mar 9 16:26:48 PST 2007
+//    Added RequestMetaData.
+//
 // ****************************************************************************
 
 void
@@ -7340,6 +7427,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::UpdatePlotInfoAttsRPC:
         UpdatePlotInfoAtts();
+        break;
+    case ViewerRPC::RequestMetaDataRPC:
+        HandleRequestMetaData();
         break;
     case ViewerRPC::MaxRPC:
         break;
@@ -7710,6 +7800,9 @@ ViewerSubject::HandleClientMethod()
 //   Brad Whitlock, Mon Feb 12 16:36:28 PST 2007
 //   Made it use ViewerState.
 //
+//   Brad Whitlock, Tue Mar 13 11:42:29 PDT 2007
+//   Updated due to code generation changes.
+//
 // ****************************************************************************
 
 void
@@ -7717,11 +7810,11 @@ ViewerSubject::HandleClientInformation()
 {
     debug5 << "Received client information. Sending new client information "
               "list to all clients." << endl;
-    GetViewerState()->GetClientInformationList()->AddClientInformation(
+    GetViewerState()->GetClientInformationList()->AddClients(
         *GetViewerState()->GetClientInformation());
 
     // Print the client information list to the debug logs.
-    for(int i = 0; i < GetViewerState()->GetClientInformationList()->GetNumClientInformations(); ++i)
+    for(int i = 0; i < GetViewerState()->GetClientInformationList()->GetNumClients(); ++i)
     {
         const ClientInformation &client = GetViewerState()->GetClientInformationList()->operator[](i);
         debug3 << "client["<< i << "] = " << client.GetClientName().c_str()
@@ -7752,6 +7845,9 @@ ViewerSubject::HandleClientInformation()
 //   Brad Whitlock, Mon Feb 12 16:39:49 PST 2007
 //   Made it use ViewerState.
 //
+//   Brad Whitlock, Tue Mar 13 11:42:29 PDT 2007
+//   Updated due to code generation changes.
+//
 // ****************************************************************************
 
 void
@@ -7760,7 +7856,7 @@ ViewerSubject::DiscoverClientInformation()
     debug1 << "DiscoverClientInformation: clear the client information list "
               "and send _QueryClientInformation to all clients. " << endl;
     // Clear out what we know about the clients.
-    GetViewerState()->GetClientInformationList()->ClearClientInformations();
+    GetViewerState()->GetClientInformationList()->ClearClients();
 
     // Ask the current set of clients to tell us about themselves.
     GetViewerState()->GetClientMethod()->SetMethodName("_QueryClientInformation");

@@ -632,7 +632,7 @@ PickAttributes::PrepareForNewPick()
     for (int i = 0; i < 6; ++i)
         plotBounds[i] = 0.;
 
-    ClearPickVarInfos();
+    ClearVarInfos();
 
     if (!invalidVars.empty())
         invalidVars.clear();
@@ -727,7 +727,7 @@ PickAttributes::SetFromNode(DataNode *parentNode)
         SetDisplayGlobalIds(node->AsBool());
 
     // Clear all the PickVarInfos.
-    ClearPickVarInfos();
+    ClearVarInfos();
 
 }
 

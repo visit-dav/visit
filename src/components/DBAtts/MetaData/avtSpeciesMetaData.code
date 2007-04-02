@@ -1,0 +1,125 @@
+Function: avtSpeciesMetaData2
+Declaration: avtSpeciesMetaData::avtSpeciesMetaData(const std::string &n, const std::string &meshn, const std::string &matn, int nummat, const intVector &ns, const std::vector<stringVector> &sn);
+Definition:
+// ****************************************************************************
+//  Method: avtSpeciesMetaData constructor
+//
+//  Arguments:
+//      n            The name of the species
+//      meshn        The name of the mesh the species is defined on.
+//      matn         The name of the material the species is defined on.
+//      nummat       The number of materials in matn.
+//      ns           The number of species for each material.
+//      sn           The name of each species for each material.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2000
+//
+//  Modifications:
+//    Hank Childs, Fri Feb 23 13:30:13 PST 2001
+//    Added nummat argument.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Initialized validVariable.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+// ****************************************************************************
+
+avtSpeciesMetaData::avtSpeciesMetaData(const std::string &n,
+    const std::string &meshn, const std::string &matn,
+    int nummat, const intVector &ns, const std::vector<stringVector> &sn)
+    : AttributeSubject(avtSpeciesMetaData::TypeMapFormatString)
+{
+    // Initialize all.
+    *this = avtSpeciesMetaData();
+
+    // Override members
+    name         = n;
+    originalName = name;
+    meshName     = meshn;
+    materialName = matn;
+    numMaterials = nummat;
+
+    ClearSpecies();
+    for (int i=0; i<ns.size(); i++)
+        AddSpecies(avtMatSpeciesMetaData(ns[i], sn[i]));
+    validVariable = true;
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtSpeciesMetaData::Print
+//
+//  Purpose:
+//      Print statement for debugging.
+//
+//  Arguments:
+//      out      The stream to output to.
+//      indent   The number of tabs to indent each line with.
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 28, 2000
+//
+//  Modifications:
+//    Brad Whitlock, Tue Aug 20 16:10:53 PST 2002
+//    I changed the printing a little bit.
+//
+//    Hank Childs, Mon Dec  9 17:04:39 PST 2002
+//    Added validVariable.
+//
+//    Hank Childs, Mon Feb 14 14:16:49 PST 2005
+//    Added original name.
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+void
+avtSpeciesMetaData::Print(ostream &out, int indent) const
+{
+    Indent(out, indent);
+    out << "Name = " << name.c_str() << endl;
+    if (name != originalName)
+    {
+        Indent(out, indent);
+        out << "Original Name = " << originalName.c_str() << endl;
+    }
+
+    Indent(out, indent);
+    out << "Mesh Name = " << meshName.c_str() << endl;
+    Indent(out, indent);
+    out << "Material Name = " << materialName.c_str() << endl;
+    Indent(out, indent);
+    out << "Number of materials = " << numMaterials << endl;
+    for (int i = 0 ; i < GetNumSpecies() ; i++)
+    {
+        Indent(out, indent);
+        const avtMatSpeciesMetaData &s = GetSpecies(i);
+        out << "Material " << i << ", number of species = " 
+            << s.numSpecies << endl;
+        Indent(out, indent);
+        out << "Species names are: ";
+        for (int j = 0 ; j < s.numSpecies ; j++)
+        {
+            out << "\"" << s.speciesNames[j].c_str() << "\"";
+            if(j < s.numSpecies - 1)
+                out << ", ";
+        }
+        out << endl;
+    }
+
+    if (!validVariable)
+    {
+        Indent(out, indent);
+        out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+}

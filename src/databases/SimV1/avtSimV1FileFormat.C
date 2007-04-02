@@ -366,6 +366,9 @@ avtSimV1FileFormat::FreeUpResources(void)
 //    Brad Whitlock, Wed Jan 10 12:19:53 PDT 2007
 //    Added check for NULL strings coming from the simulation commands.
 //
+//    Brad Whitlock, Fri Mar 9 17:17:16 PST 2007
+//    Made it use new metadata api.
+//
 // ****************************************************************************
 
 void
@@ -527,7 +530,7 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         scs.SetSignal(NOT_NULL(scc->signal));
         scs.SetArgumentType(t);
         scs.SetEnabled(scc->enabled);
-        md->GetSimInfo().AddAvtSimulationCommandSpecification(scs);
+        md->GetSimInfo().AddGenericCommands(scs);
     }
  
     for (int c=0; c<vsmd->numCustomCommands; c++)
@@ -544,7 +547,7 @@ avtSimV1FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         scs.SetClassName(NOT_NULL(scc->className));
         scs.SetArgumentType(t);
         scs.SetEnabled(scc->enabled);
-        md->GetSimInfo().AddAvtSimulationCustCommandSpecification(scs);
+        md->GetSimInfo().AddCustomCommands(scs);
     }
  
     for (int mat=0; mat<vsmd->numMaterials; mat++)

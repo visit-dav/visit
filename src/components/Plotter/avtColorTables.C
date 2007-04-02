@@ -530,7 +530,7 @@ avtColorTables::avtColorTables()
                                 (unsigned char)(fptr[2]*255),
                                 (unsigned char)(fptr[3]*255),
                                 255);
-            ccpl.AddColorControlPoint(p);
+            ccpl.AddControlPoints(p);
             fptr += 4;
         }
 
@@ -840,7 +840,9 @@ avtColorTables::GetSampledColors(const std::string &ctName, int nColors) const
 // Creation:   Wed Nov 20 13:47:28 PST 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 13 11:21:38 PDT 2007
+//   Changed due to code generation changes.
+//
 // ****************************************************************************
 
 bool
@@ -852,7 +854,7 @@ avtColorTables::GetControlPointColor(const std::string &ctName, int i,
     if((index = ctAtts->GetColorTableIndex(ctName)) != -1)
     {
         const ColorControlPointList &ct = ctAtts->operator[](index);
-        int j = i % ct.GetNumColorControlPoints();
+        int j = i % ct.GetNumControlPoints();
 
         rgb[0] = ct[j].GetColors()[0];
         rgb[1] = ct[j].GetColors()[1];

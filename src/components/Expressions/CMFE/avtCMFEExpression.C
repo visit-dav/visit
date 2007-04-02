@@ -414,7 +414,7 @@ avtCMFEExpression::Execute()
     exp.SetName(expr_var.c_str());
     exp.SetDefinition(argument_expression);
     exp.SetType(Expression::Unknown);
-    new_list.AddExpression(exp);
+    new_list.AddExpressions(exp);
     *(pel->GetList()) = new_list;
 
     TRY

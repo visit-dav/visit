@@ -241,10 +241,10 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
         // of correlation names.
         //
         NameSimplifier simplifier;
-        int i, nC = correlationList->GetNumDatabaseCorrelations();
+        int i, nC = correlationList->GetNumCorrelations();
         for(i = 0; i < nC; ++i)
         {
-            const DatabaseCorrelation &c = correlationList->GetDatabaseCorrelation(i);
+            const DatabaseCorrelation &c = correlationList->GetCorrelations(i);
             simplifier.AddName(c.GetName());
         }
         stringVector shortNames;
@@ -252,7 +252,7 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
         nameMap.clear();
         for(i = 0; i < shortNames.size(); ++i)
         {
-            const DatabaseCorrelation &c = correlationList->GetDatabaseCorrelation(i);
+            const DatabaseCorrelation &c = correlationList->GetCorrelations(i);
             nameMap[shortNames[i]] = c.GetName();
             correlationListBox->insertItem(shortNames[i].c_str());
         }
@@ -319,7 +319,7 @@ QvisDatabaseCorrelationListWindow::UpdateButtons()
     bool deleteEnabled = false;
 
     if(highlightedCorrelation >= 0 &&
-       highlightedCorrelation < correlationList->GetNumDatabaseCorrelations())
+       highlightedCorrelation < correlationList->GetNumCorrelations())
     {
         // Get the name of the correlation from the list box and send
         // it through nameMap because we likely shortened the name.

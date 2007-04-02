@@ -504,7 +504,7 @@ QvisExportDBWindow::fileFormatChanged(int index)
             // The atts have the array as [R, W, R, W, ...], so for plugin I,
             // its write atts are 2*I+1.
             DBOptionsAttributes &atts = 
-                               dbPluginInfoAtts->GetDBOptionsAttributes(2*i+1);
+                               dbPluginInfoAtts->GetDbOptions(2*i+1);
             exportDBAtts->SetOpts(atts);
         }
     }

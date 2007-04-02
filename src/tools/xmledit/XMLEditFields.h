@@ -66,6 +66,9 @@ class QPushButton;
 //    Brad Whitlock, Fri Dec 10 10:27:41 PDT 2004
 //    Added controls for setting some variable name attributes.
 //
+//    Brad Whitlock, Wed Feb 28 18:41:56 PST 2007
+//    Added public/private
+//
 // ****************************************************************************
 
 class XMLEditFields : public QFrame
@@ -97,6 +100,7 @@ class XMLEditFields : public QFrame
     void fieldlistUp();
     void fieldlistDown();
     void variableTypeClicked(int);
+    void accessChanged(int);
   private:
     XMLDocument     *xmldoc;
 
@@ -116,6 +120,7 @@ class XMLEditFields : public QFrame
     QNarrowLineEdit *length;
     QCheckBox       *internal;
     QCheckBox       *ignoreeq;
+    QButtonGroup    *access;
     QGroupBox       *variableNameGroup;
     QButtonGroup    *varNameButtons;
     QCheckBox       *init;

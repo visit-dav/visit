@@ -508,7 +508,7 @@ QvisFileOpenWindow::UpdateHostComboBox()
     // Add all of the hosts from the host profiles that are not already
     // in the hosts list.
     //
-    for(int i = 0; i < profiles->GetNumHostProfiles(); ++i)
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
     {
         // Create a constant reference to the i'th profile.
         const HostProfile &p = profiles->operator[](i);

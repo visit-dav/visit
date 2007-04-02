@@ -920,7 +920,7 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
     spectrumBar->setSmoothing(volumeAtts->GetSmoothingFlag());
     spectrumBar->setEqualSpacing(volumeAtts->GetEqualSpacingFlag());
 
-    if(spectrumBar->numControlPoints() == cpts.GetNumColorControlPoints())
+    if(spectrumBar->numControlPoints() == cpts.GetNumControlPoints())
     {
         // Set the control points' colors and positions
         for(i = 0; i < spectrumBar->numControlPoints(); ++i)
@@ -932,7 +932,7 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
             spectrumBar->setControlPointPosition(i, cpts[i].GetPosition());
         }
     }
-    else if(spectrumBar->numControlPoints() < cpts.GetNumColorControlPoints())
+    else if(spectrumBar->numControlPoints() < cpts.GetNumControlPoints())
     {
         // Set the control points' colors and positions
         for(i = 0; i < spectrumBar->numControlPoints(); ++i)
@@ -945,7 +945,7 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
         }
 
         // We need to add control points.
-        for(i = spectrumBar->numControlPoints(); i < cpts.GetNumColorControlPoints(); ++i)
+        for(i = spectrumBar->numControlPoints(); i < cpts.GetNumControlPoints(); ++i)
         {
             QColor ctmp((int)cpts[i].GetColors()[0],
                         (int)cpts[i].GetColors()[1],
@@ -956,7 +956,7 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
     else
     {
         // We need to remove control points.
-        for(i = spectrumBar->numControlPoints()-1; i >= cpts.GetNumColorControlPoints(); --i)
+        for(i = spectrumBar->numControlPoints()-1; i >= cpts.GetNumControlPoints(); --i)
             spectrumBar->removeControlPoint();
 
         // Set the control points' colors and positions
@@ -995,7 +995,7 @@ QvisVolumePlotWindow::UpdateGaussianControlPoints()
 {
     alphaWidget->blockSignals(true);
     // Create an array that can be fed to the widget in one shot.
-    int n=volumeAtts->GetOpacityControlPoints().GetNumGaussianControlPoints();
+    int n=volumeAtts->GetOpacityControlPoints().GetNumControlPoints();
     if(n > 0)
     {
         float *gcpts = new float[n * 5];
@@ -1137,7 +1137,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     {
         // Store the widget's control points.
         ColorControlPointList cpts;
-        cpts.ClearColorControlPoints();
+        cpts.ClearControlPoints();
         for(i = 0; i < spectrumBar->numControlPoints(); ++i)
         {
             QColor c(spectrumBar->controlPointColor(i));
@@ -1151,7 +1151,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
             ptColors[3] = 0;
             pt.SetColors(ptColors);
             pt.SetPosition(pos);
-            cpts.AddColorControlPoint(pt);
+            cpts.AddControlPoints(pt);
         }
         cpts.SetEqualSpacingFlag(spectrumBar->equalSpacing());
         cpts.SetSmoothingFlag(spectrumBar->smoothing());
@@ -1178,7 +1178,7 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
                 gcpt.SetWidth(w);
                 gcpt.SetXBias(bx);
                 gcpt.SetYBias(by);
-                cpts.AddGaussianControlPoint(gcpt);
+                cpts.AddControlPoints(gcpt);
             }
             volumeAtts->SetOpacityControlPoints(cpts);
         }

@@ -1,0 +1,143 @@
+Function: avtSILCollectionMetaData2
+Declaration: avtSILCollectionMetaData(const std::string &_classOfCollection, const std::string &_defaultMemberBasename, int _collectionSize, int _collectionIdOfParent, int _indexOfParent, int _collectionIdOfChildren, int *_indicesOfChildren);
+Definition:
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData constructor 
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+avtSILCollectionMetaData::avtSILCollectionMetaData(
+   const std::string &_classOfCollection, const std::string &_defaultMemberBasename,
+   int _collectionSize,
+   int _collectionIdOfParent, int _indexOfParent,
+   int _collectionIdOfChildren, int *_indicesOfChildren)
+   : AttributeSubject(avtSILCollectionMetaData::TypeMapFormatString)
+{
+    if (_collectionSize <= 0)
+    {
+       EXCEPTION1(ImproperUseException, _classOfCollection);
+    }
+
+    classOfCollection = _classOfCollection;
+    defaultMemberBasename = _defaultMemberBasename;
+    collectionSize = _collectionSize;
+    collectionIdOfParent = _collectionIdOfParent;
+    indexOfParent = _indexOfParent;
+    collectionIdOfChildren = _collectionIdOfChildren;
+    if (_indicesOfChildren != NULL)
+    {
+        indicesOfChildren =  intVector(collectionSize);
+        for (int i = 0; i < collectionSize; i++)
+            indicesOfChildren[i] = _indicesOfChildren[i];
+    }
+}
+
+Function: Print
+Declaration: void Print(ostream &, int = 0) const;
+Definition:
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData::Print
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    02Sep03 
+//
+// ****************************************************************************
+inline void
+Indent(ostream &out, int indent)
+{
+    for (int i = 0 ; i < indent ; i++)
+    {
+        out << "\t";
+    }
+}
+void
+avtSILCollectionMetaData::Print(ostream& out, int indent) const
+{
+    Indent(out, indent);
+    out << "Class = " << classOfCollection.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Default Member Basename = " << defaultMemberBasename.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Size = " << collectionSize << endl;
+
+    Indent(out, indent);
+    out << "Parent = (" << collectionIdOfParent << "," <<
+            indexOfParent << ")" << endl;
+
+    Indent(out, indent);
+    out << "Children are from collection " << collectionIdOfChildren << endl;
+
+    if (indicesOfChildren.size())
+    {
+       Indent(out, indent);
+       out << "Children ids are... ";
+       for (int i = 0; i < collectionSize; i++)
+       {
+          if (!((i+1)%10))
+          {
+             out << endl;
+             Indent(out, indent);
+             out << "                   ";
+          }
+          out << " " << indicesOfChildren[i];
+       }
+       out << endl;
+    }
+}
+
+Function: GetSize
+Declaration: int GetSize(void) const;
+Definition:
+int
+avtSILCollectionMetaData::GetSize(void) const
+{
+    return collectionSize;
+}
+
+Function: GetType
+Declaration: CollectionType GetType(void) const;
+Definition:
+// ****************************************************************************
+//  Method: avtSILCollectionMetaData::GetType
+//
+//  Purpose: returns whether or not the given collection entry represents
+//  a collection class, a pure collection (only links in the SIL) or a 
+//  collection and sets.
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    14Sep03 
+//
+// ****************************************************************************
+avtSILCollectionMetaData::CollectionType
+avtSILCollectionMetaData::GetType(void) const
+{
+    if(collectionIdOfParent     == -1 &&
+       indexOfParent            == -1 &&
+       collectionIdOfChildren   == -1 &&
+       indicesOfChildren.size() == 0)
+        return Class;
+    else if (collectionIdOfParent   != -1 &&
+             indexOfParent          != -1 &&
+             collectionIdOfChildren != -1)
+        return PureCollection;
+    else if (collectionIdOfParent     != -1 &&
+             indexOfParent            != -1 &&
+             collectionIdOfChildren   == -1 &&
+             indicesOfChildren.size() == 0)
+        return CollectionAndSets;
+
+    return Unknown;
+}
+
+Function: GetClassName
+Declaration: const std::string& GetClassName(void) const;
+Definition:
+const std::string &
+avtSILCollectionMetaData::GetClassName(void) const
+{
+    return classOfCollection;
+}

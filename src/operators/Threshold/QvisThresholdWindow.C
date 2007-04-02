@@ -312,11 +312,17 @@ QvisThresholdWindow::CreateWindowContents()
 //   then reopens GUI, or if user moves an arrowhead in Extents tool of a second
 //   vis window tool-locked to the Threshold operator's vis window.  Too bad.
 //
+//   Mark Blair, Tue Mar 13 19:51:29 PDT 2007
+//   Now forces attribute consistency if inconsistent, which can occur, for
+//   instance, if user specifies an invalid attribute combination in the CLI.
+//
 // ****************************************************************************
 
 void
 QvisThresholdWindow::UpdateWindow(bool doAll)
 {
+    atts->ForceAttributeConsistency();
+
     QString fieldString;
     std::string shownVarName = atts->GetShownVariable();
     bool varListIsEmpty =
@@ -343,7 +349,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
 
             case 3:  // zonePortions
                 zonePortion->setButton((int)atts->GetZonePortion());
-
+                
                 zonePortion->setEnabled(enableZonePortion);
                 zonePortionLabel->setEnabled(enableZonePortion);
                 

@@ -1,0 +1,148 @@
+<?xml version="1.0"?>
+  <Attribute name="avtMeshMetaData" purpose="Contains mesh metadata attributes" persistent="false" keyframe="false" exportAPI="DBATTS_API" exportInclude="dbatts_exports.h" codefile="avtMeshMetaData.code">
+    <Field name="name" label="Name" type="string" access="public">
+      mesh
+    </Field>
+    <Field name="originalName" label="Original name" type="string" access="public">
+    </Field>
+    <Field name="validVariable" label="Valid variable" type="bool" access="public">
+      true
+    </Field>
+    <Field name="meshType" label="Mesh type" type="avtMeshType" access="public">
+      AVT_UNKNOWN_MESH
+    </Field>
+    <Field name="meshCoordType" label="Mesh coordinate type" type="avtMeshCoordType" access="public">
+      AVT_XY
+    </Field>
+    <Field name="cellOrigin" label="Cell origin" type="int" access="public">
+      0
+    </Field>
+    <Field name="spatialDimension" label="Spatial dimension" type="int" access="public">
+      3
+    </Field>
+    <Field name="topologicalDimension" label="Topological dimension" type="int" access="public">
+      3
+    </Field>
+    <Field name="xUnits" label="X units" type="string" access="public">
+    </Field>
+    <Field name="yUnits" label="Y units" type="string" access="public">
+    </Field>
+    <Field name="zUnits" label="Z units" type="string" access="public">
+    </Field>
+    <Field name="xLabel" label="X label" type="string" access="public">
+      X-Axis
+    </Field>
+    <Field name="yLabel" label="Y label" type="string" access="public">
+      Y-Axis
+    </Field>
+    <Field name="zLabel" label="Z label" type="string" access="public">
+      Z-Axis
+    </Field>
+    <Field name="hasSpatialExtents" label="Has spatial extents" type="bool" access="public">
+      false
+    </Field>
+    <Field name="minSpatialExtents" label="Minimum spatial extents" type="doubleArray" length="3" access="public">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="maxSpatialExtents" label="Maximum spatial extents" type="doubleArray" length="3" access="public">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="numBlocks" label="Number of domains" type="int" access="public">
+      1
+    </Field>
+    <Field name="blockOrigin" label="Domain origin" type="int" access="public">
+      0
+    </Field>
+    <Field name="blockPieceName" label="Block piece name" type="string" access="public">
+      domain
+    </Field>
+    <Field name="blockTitle" label="Block title" type="string" access="public">
+      domains
+    </Field>
+    <Field name="blockNames" label="Block names" type="stringVector" access="public">
+    </Field>
+    <Field name="numGroups" label="Number of groups" type="int" access="public">
+      0
+    </Field>
+    <Field name="groupOrigin" label="Group origin" type="int" access="public">
+      0
+    </Field>
+    <Field name="groupPieceName" label="Group piece name" type="string" access="public">
+      group
+    </Field>
+    <Field name="groupTitle" label="Group titles" type="string" access="public">
+      groups
+    </Field>
+    <Field name="groupIds" label="Group ids" type="intVector" access="public">
+    </Field>
+    <Field name="disjointElements" label="Contains disjoint elements" type="bool" access="public">
+      false
+    </Field>
+    <Field name="containsGhostZones" label="Contains ghost zones" type="avtGhostType" access="public">
+      AVT_MAYBE_GHOSTS
+    </Field>
+    <Field name="containsOriginalCells" label="Contains original cells" type="bool" access="public">
+      false
+    </Field>
+    <Field name="containsOriginalNodes" label="Contains original nodes" type="bool" access="public">
+      false
+    </Field>
+    <Field name="containsGlobalNodeIds" label="Contains global node ids" type="bool" access="public">
+      false
+    </Field>
+    <Field name="containsGlobalZoneIds" label="Contains global zone ids" type="bool" access="public">
+      false
+    </Field>
+    <Field name="loadBalanceScheme" label="Load balance scheme" type="LoadBalanceScheme" access="public">
+      LOAD_BALANCE_UNKNOWN
+    </Field>
+    <Field name="nodesAreCritical" label="Nodes are critical" type="bool" access="public">
+      false
+    </Field>
+    <Field name="unitCellVectors" label="Unit cell vectors" type="floatArray" length="9" access="public">
+      1.000000
+      0.000000
+      0.000000
+      0.000000
+      1.000000
+      0.000000
+      0.000000
+      0.000000
+      1.000000
+    </Field>
+    <Field name="rectilinearGridHasTransform" label="RectilinearGrid has transform" type="bool" access="public">
+      false
+    </Field>
+    <Field name="rectilinearGridTransform" label="RectilinearGrid transform" type="doubleArray" length="16" access="public">
+      1.000000
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+      1.000000
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+      1.000000
+      0.000000
+      0.000000
+      0.000000
+      0.000000
+      1.000000
+    </Field>
+    <Function name="avtMeshMetaData2" user="true" member="true">
+    </Function>
+    <Function name="avtMeshMetaData3" user="true" member="true">
+    </Function>
+    <Function name="SetExtents" user="true" member="true">
+    </Function>
+    <Function name="UnsetExtents" user="true" member="true">
+    </Function>
+    <Function name="Print" user="true" member="true">
+    </Function>
+  </Attribute>

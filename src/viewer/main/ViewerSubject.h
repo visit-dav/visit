@@ -423,6 +423,9 @@ struct avtDefaultPlotMetaData;
 //    Brad Whitlock, Tue Feb 13 14:00:29 PST 2007
 //    I made it use ViewerState for all of its state objects.
 //
+//    Brad Whitlock, Fri Mar 9 16:25:33 PST 2007
+//    Added HandleRequestMetaData.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -495,6 +498,7 @@ private:
     void ReOpenDatabase();
     void ReplaceDatabase();
     void OverlayDatabase();
+    void HandleRequestMetaData();
     void CreateDatabaseCorrelation();
     void AlterDatabaseCorrelation();
     void DeleteDatabaseCorrelation();

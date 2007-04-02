@@ -43,6 +43,7 @@
 #include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qgroupbox.h>
+#include <qhbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
@@ -69,6 +70,9 @@
 //
 //    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
 //    Added arrays.
+//
+//    Brad Whitlock, Wed Feb 28 18:42:51 PST 2007
+//    Added public/protected/private.
 //
 // ****************************************************************************
 
@@ -98,7 +102,7 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
 
     hLayout->addSpacing(10);
 
-    QGridLayout *topLayout = new QGridLayout(hLayout, 11,5, 5);
+    QGridLayout *topLayout = new QGridLayout(hLayout, 12,5, 5);
     int row = 0;
 
     topLayout->setColStretch(0, 0);
@@ -119,11 +123,13 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
 
     type = new QComboBox(this);
     type->insertItem("");
+    type->setMinimumWidth(150);
     topLayout->addMultiCellWidget(new QLabel("Type", this), row,row, 0,0);
-    topLayout->addMultiCellWidget(type, row,row, 1,2);
-    length = new QNarrowLineEdit(this);
-    topLayout->addWidget(new QLabel("Length", this), row, 3);
-    topLayout->addMultiCellWidget(length, row,row, 4,4);
+    topLayout->addMultiCellWidget(type, row,row, 1,3);
+    QHBox *lengthHBox = new QHBox(this, "lengthHBox");
+    new QLabel("Length", lengthHBox);
+    length = new QNarrowLineEdit(lengthHBox);
+    topLayout->addWidget(lengthHBox, row, 4);
     row++;
 
     subtype = new QLineEdit(this);
@@ -200,6 +206,14 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(ignoreeq, row,row, 0,2);
     row++;
 
+    access = new QButtonGroup("Access", this, "access");
+    access->setColumns(1);
+    new QRadioButton("private", access, "private");
+    new QRadioButton("protected", access, "protected");
+    new QRadioButton("public", access, "public");
+    topLayout->addMultiCellWidget(access, row,row, 0,2);
+    row++;
+
     init = new QCheckBox("Special initialization code", this);
     topLayout->addMultiCellWidget(init, row,row, 0,2);
     row++;
@@ -242,6 +256,8 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
             this, SLOT(fieldlistUp()));
     connect(downButton, SIGNAL(pressed()),
             this, SLOT(fieldlistDown()));
+    connect(access, SIGNAL(clicked(int)),
+            this, SLOT(accessChanged(int)));
 }
 
 // ****************************************************************************
@@ -283,6 +299,9 @@ XMLEditFields::UpdateWindowContents()
 //    Brad Whitlock, Fri Dec 10 10:35:26 PDT 2004
 //    I added variableNameGroup.
 //
+//    Brad Whitlock, Wed Feb 28 18:47:36 PST 2007
+//    Added access.
+//
 // ****************************************************************************
 
 void
@@ -306,6 +325,7 @@ XMLEditFields::UpdateWindowSensitivity()
     variableNameGroup->setEnabled(active && type->currentText() == "variablename");
     init->setEnabled(active);
     values->setEnabled(active);
+    access->setEnabled(active);
 }
 
 // ****************************************************************************
@@ -320,6 +340,9 @@ XMLEditFields::UpdateWindowSensitivity()
 //  Modifications:
 //     Brad Whitlock, Fri Dec 10 10:35:44 PDT 2004
 //     I added code to update a new button group.
+//
+//     Brad Whitlock, Wed Feb 28 18:49:14 PST 2007
+//     Added access.
 //
 // ****************************************************************************
 
@@ -342,6 +365,7 @@ XMLEditFields::UpdateWindowSingleItem()
         enableval->setText("");
         internal->setChecked(false);
         ignoreeq->setChecked(false);
+        access->setButton(0);
         init->setChecked(false);
         values->setText("");
         for(int i = 0; i < varNameButtons->count(); ++i)
@@ -412,7 +436,12 @@ XMLEditFields::UpdateWindowSingleItem()
         }
         internal->setChecked(f->internal);
         ignoreeq->setChecked(f->ignoreEquality);
-
+        if(f->accessType == Field::AccessPrivate)
+            access->setButton(0);
+        else if(f->accessType == Field::AccessProtected)
+            access->setButton(1);
+        else if(f->accessType == Field::AccessPublic)
+            access->setButton(2);
         if(f->type == "variablename")
         {
             int mask = 1;
@@ -461,6 +490,9 @@ XMLEditFields::UpdateWindowSingleItem()
 //    Brad Whitlock, Fri Dec 10 10:01:30 PDT 2004
 //    I added variablename.
 //
+//    Brad Whitlock, Thu Mar 1 17:15:02 PST 2007
+//    Added built-in AVT enums.
+//
 // ****************************************************************************
 void
 XMLEditFields::UpdateTypeList()
@@ -488,6 +520,18 @@ XMLEditFields::UpdateTypeList()
     type->insertItem("variablename");
     type->insertItem("att");
     type->insertItem("attVector");
+
+    // Add built-in AVT enums
+    type->insertItem("LoadBalanceScheme");
+    type->insertItem("avtCentering");
+    type->insertItem("avtExtentType");
+    type->insertItem("avtGhostType");
+    type->insertItem("avtMeshCoordType");
+    type->insertItem("avtMeshType");
+    type->insertItem("avtSubsetType");
+    type->insertItem("avtVarType");
+
+    // Add enums
     for (int i=0; i<EnumType::enums.size(); i++)
     {
         type->insertItem(QString("enum:") + EnumType::enums[i]->type);
@@ -535,6 +579,9 @@ XMLEditFields::UpdateEnablerList()
 //    Brad Whitlock, Fri Dec 10 10:45:37 PDT 2004
 //    Added variablename type support.
 //
+//    Brad Whitlock, Wed Feb 28 18:49:38 PST 2007
+//    Added access.
+//
 // ****************************************************************************
 void
 XMLEditFields::BlockAllSignals(bool block)
@@ -552,6 +599,7 @@ XMLEditFields::BlockAllSignals(bool block)
     varNameButtons->blockSignals(block);
     init->blockSignals(block);
     values->blockSignals(block);
+    access->blockSignals(block);
 }
 
 // ----------------------------------------------------------------------------
@@ -792,6 +840,30 @@ XMLEditFields::ignoreeqChanged()
     Field *f = a->fields[index];
 
     f->ignoreEquality = ignoreeq->isChecked();
+}
+
+// ****************************************************************************
+//  Method:  XMLEditFields::accessChanged
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Feb 28 18:50:06 PST 2007
+//
+// ****************************************************************************
+void
+XMLEditFields::accessChanged(int btn)
+{
+    Attribute *a = xmldoc->attribute;
+    int index = fieldlist->currentItem();
+    if (index == -1)
+        return;
+    Field *f = a->fields[index];
+
+    if(btn == 0)
+        f->SetPrivateAccess();
+    else if(btn == 1)
+        f->SetProtectedAccess();
+    else
+        f->SetPublicAccess();
 }
 
 // ****************************************************************************
