@@ -939,6 +939,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Mon Sep 26 14:05:52 PDT 2005
 //    Added code to query for AlphabetizeVariables
 //
+//    Jeremy Meredith, Fri Oct  7 17:08:21 PDT 2005
+//    Added VARTYPE to defvar defines to avoid namespace conflict.
+//
 // ****************************************************************************
 
 void
@@ -1075,7 +1078,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         origdir_names[i] = new char[strlen(toc->dir_names[i])+1];
         strcpy(origdir_names[i], toc->dir_names[i]);
     }
-#ifdef DB_SCALAR // this test can be removed after Silo-4.5-pre3 is released
+#ifdef DB_VARTYPE_SCALAR // this test can be removed after Silo-4.5-pre3 is released
     int      ndefvars = toc->ndefvars;
     char   **defvars_names = new char*[ndefvars];
     for (i = 0 ; i < ndefvars; i++)
@@ -2372,7 +2375,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     //
     // Add defvars objects (like _visit_defvars except a real Silo object)
     //
-#ifdef DB_SCALAR // this test can be removed after Silo-4.5-pre3 is released
+#ifdef DB_VARTYPE_SCALAR // this test can be removed after Silo-4.5-pre3 is released
     for (i = 0; i < ndefvars; i++)
     {
         DBdefvars *defv = DBGetDefvars(dbfile, defvars_names[i]); 
@@ -2384,13 +2387,13 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             Expression::ExprType vartype = Expression::Unknown;
             switch (defv->types[j])
             {
-                case DB_SCALAR: vartype = Expression::ScalarMeshVar; break;
-                case DB_VECTOR: vartype = Expression::VectorMeshVar; break;
-                case DB_TENSOR: vartype = Expression::TensorMeshVar; break;
-#ifdef DB_ARRAY // this test can be removed after Silo-4.5-pre3 is released
-                case DB_ARRAY:  vartype = Expression::ArrayMeshVar; break;
-                case DB_MATERIAL: vartype = Expression::Material; break;
-                case DB_SPECIES: vartype = Expression::Species ; break;
+                case DB_VARTYPE_SCALAR:   vartype = Expression::ScalarMeshVar; break;
+                case DB_VARTYPE_VECTOR:   vartype = Expression::VectorMeshVar; break;
+                case DB_VARTYPE_TENSOR:   vartype = Expression::TensorMeshVar; break;
+#ifdef DB_VARTYPE_ARRAY // this test can be removed after Silo-4.5-pre3 is released
+                case DB_VARTYPE_ARRAY:    vartype = Expression::ArrayMeshVar; break;
+                case DB_VARTYPE_MATERIAL: vartype = Expression::Material; break;
+                case DB_VARTYPE_SPECIES:  vartype = Expression::Species ; break;
 #endif
                 default:        vartype = Expression::Unknown; break;
             }
@@ -2574,7 +2577,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         delete [] origdir_names[i];
     }
     delete [] origdir_names;
-#ifdef DB_SCALAR // this test can be removed after Silo-4.5-pre3 is released
+#ifdef DB_VARTYPE_SCALAR // this test can be removed after Silo-4.5-pre3 is released
     for (i = 0 ; i < ndefvars; i++)
     {
         delete [] defvars_names[i];

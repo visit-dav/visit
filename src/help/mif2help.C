@@ -758,6 +758,7 @@ public:
 #define READ_TABLEID       14
 #define READ_INSERTTABLE   15
 #define READ_TEXTFLOW      16
+#define READ_IGNORE        17
 
 // ****************************************************************************
 // Class: MIF_To_HTML
@@ -1066,11 +1067,24 @@ MIF_To_HTML::WriteHTMLString(const char *str)
 //   Modified the usages of strings to use the c_str method when adding its
 //   contents to an iostream.
 //
+//   Brad Whitlock, Fri Oct 7 15:37:18 PST 2005
+//   Added some debug printing statements.
+//
 // ****************************************************************************
+
+#ifdef DEBUG_PRINT
+static int indent = 0;
+#endif
 
 void
 MIF_To_HTML::EndTag(int state, const string &token)
 {
+#ifdef DEBUG_PRINT
+    for(int sp=0; sp < indent; ++sp)
+        cout << "    ";
+    cout << "EndTag: state=" << state << " tok=" << token << endl;
+#endif
+
     if(state == READ_PARA)
     {
         if(paragraphString.length() > 0)
@@ -1220,9 +1234,21 @@ MIF_To_HTML::EndTag(int state, const string &token)
     }
     else if(state == READ_TABLE)
     {
-         currentTable->EndTable();
-         tables.push_back(currentTable);
-         currentTable = 0;
+         if(currentTable == 0)
+         {
+#ifdef DEBUG_PRINT
+             cout << "*** Ending a table but its pointer is zero!" << endl;
+#endif
+         }
+         else
+         {
+#ifdef DEBUG_PRINT
+             cout << "*** Ending a table!" << endl;
+#endif
+             currentTable->EndTable();
+             tables.push_back(currentTable);
+             currentTable = 0;
+         }
     }
     else if(state == READ_TABLEROW && currentTable != 0)
     {
@@ -1296,6 +1322,10 @@ MIF_To_HTML::EndTag(int state, const string &token)
 //   Brad Whitlock, Mon Jun 21 16:47:24 PST 2004
 //   I added support for subscript and tables.
 //
+//   Brad Whitlock, Fri Oct 7 15:36:06 PST 2005
+//   I added code to get around slight changes in the MIF formatting due to
+//   using a new version of FrameMaker.
+//
 // ****************************************************************************
 
 void
@@ -1312,6 +1342,12 @@ MIF_To_HTML::Scan(FILE *fp)
 
     EMPTY_TOKEN();
 
+#ifdef DEBUG_PRINT
+    for(int sp=0; sp < indent; ++sp)
+        cout << "    ";
+    cout << "Scan" << endl;
+#endif
+
     while(!feof(fp))
     {
         char c = fgetc(fp);
@@ -1322,8 +1358,17 @@ MIF_To_HTML::Scan(FILE *fp)
             {
                 APPEND_TOKEN("&lt;");
             }
+            else if(state == READ_IGNORE)
+            {
+                APPEND_TOKEN(c);
+            }
             else
+            {
+#ifdef DEBUG_PRINT
+                ++indent;
+#endif
                 Scan(fp);
+            }
         }
         else if(escaped)
         {
@@ -1345,6 +1390,9 @@ MIF_To_HTML::Scan(FILE *fp)
         else if(c == '>')
         {
             EndTag(state, token);
+#ifdef DEBUG_PRINT
+            --indent;
+#endif
             return;
         }
         else if(c == '#')
@@ -1412,8 +1460,23 @@ MIF_To_HTML::Scan(FILE *fp)
         {
             state = READ_TABLE;
             EMPTY_TOKEN();
+
+            // Hack. 
+            if(currentTable != 0)
+            {
+#ifdef DEBUG_PRINT
+                cout << "*** Ending an existing table before creating a new one." << endl;
+#endif
+                currentTable->EndTable();
+                tables.push_back(currentTable);
+            }
+
             currentTable = new TableObject;
             currentTable->BeginTable();
+
+#ifdef DEBUG_PRINT
+            cout << "*** Creating a new table" << endl;
+#endif
         }
         else if(COMPARE_TOKEN("Row") && currentTable != 0)
         {
@@ -1454,6 +1517,13 @@ MIF_To_HTML::Scan(FILE *fp)
             state = READ_TEXTFLOW;
             readingTextFlow = true;
             EMPTY_TOKEN();
+        }
+        else if(COMPARE_TOKEN("VariableDef") ||
+                COMPARE_TOKEN("XRefDef") ||
+                COMPARE_TOKEN("ImportObFileDI"))
+        { 
+            state = READ_IGNORE;
+            escaped = true;
         }
     }
 }

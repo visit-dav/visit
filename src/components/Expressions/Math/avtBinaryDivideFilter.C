@@ -72,6 +72,9 @@ avtBinaryDivideFilter::~avtBinaryDivideFilter()
 //    Hank Childs, Thu Aug 14 11:18:07 PDT 2003
 //    Add support for vector and scalar types mixing.
 //
+//    Hank Childs, Fri Oct  7 10:43:28 PDT 2005
+//    Add support for dividing by zero.
+//
 // ****************************************************************************
 
 void
@@ -87,11 +90,16 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         {
             float val1 = in1->GetTuple1(i);
             float val2 = in2->GetTuple1(i);
-            if (val2 == 0.)
+            if (val1 == 0. && val2 == 0.)
+            {
+                out->SetTuple1(i, 1.);
+            }
+            else if (val2 == 0. && val1 != 0.)
             {
                 EXCEPTION1(ExpressionException, "You can't divide by zero");
             }
-            out->SetTuple1(i, val1 / val2);
+            else
+                out->SetTuple1(i, val1 / val2);
         }
     }
     else if (in1ncomps > 1 && in2ncomps == 1)

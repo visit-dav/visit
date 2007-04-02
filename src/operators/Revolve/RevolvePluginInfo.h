@@ -43,6 +43,7 @@ class RevolveGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtua
     virtual const char *GetMenuName() const;
     virtual QvisPostableWindowObserver *CreatePluginWindow(int type,
         AttributeSubject *attr, QvisNotepadArea *notepad);
+    virtual const char **XPMIconData() const;
 };
 
 class RevolveViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public virtual RevolveCommonPluginInfo
@@ -56,6 +57,7 @@ class RevolveViewerPluginInfo : public virtual ViewerOperatorPluginInfo, public 
     virtual void InitializeOperatorAtts(AttributeSubject *atts,
                                         const ViewerPlot *plot,
                                         const bool fromDefault);
+    virtual const char **XPMIconData() const;
 
     static void InitializeGlobalObjects();
   private:

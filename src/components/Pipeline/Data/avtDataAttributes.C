@@ -87,6 +87,9 @@ using     std::sort;
 //    Jeremy Meredith, Thu Aug 25 11:07:00 PDT 2005
 //    Added groupOrigin.
 //
+//    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
+//    Added fullDBName.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -117,6 +120,7 @@ avtDataAttributes::avtDataAttributes()
 
     meshname               = "<unknown>";
     filename               = "<unknown>";
+    fullDBName             = "<unknown>";
     containsGhostZones     = AVT_MAYBE_GHOSTS;
     containsOriginalCells  = false;
     containsOriginalNodes  = false;
@@ -306,6 +310,9 @@ avtDataAttributes::DestructSelf(void)
 //    Jeremy Meredith, Thu Aug 25 11:07:11 PDT 2005
 //    Added group origin.
 //
+//    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
+//    Added fullDBName.
+//
 // ****************************************************************************
 
 void
@@ -403,6 +410,7 @@ avtDataAttributes::Print(ostream &out)
 
     out << "The mesh's name is " << meshname.c_str() << endl;
     out << "The filename is " << filename.c_str() << endl;
+    out << "The full db name is " << fullDBName.c_str() << endl;
     out << "The X-units are " << xUnits.c_str() << endl;
     out << "The Y-units are " << yUnits.c_str() << endl;
     out << "The Z-units are " << zUnits.c_str() << endl;
@@ -641,6 +649,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added canUseOrigZones, origNodesRequiredForPick.
 //
+//    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
+//    Added fullDBName.
+//
 // ****************************************************************************
 
 void
@@ -673,6 +684,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 
     SetMeshname(di.GetMeshname());
     SetFilename(di.GetFilename());
+    SetFullDBName(di.GetFullDBName());
     SetXUnits(di.GetXUnits());
     SetYUnits(di.GetYUnits());
     SetZUnits(di.GetZUnits());
@@ -2020,6 +2032,9 @@ avtDataAttributes::SetTime(double d)
 //    Jeremy Meredith, Thu Aug 25 11:09:40 PDT 2005
 //    Added group origin.
 //
+//    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
+//    Added fullDBName.
+//
 // ****************************************************************************
 
 void
@@ -2110,6 +2125,10 @@ avtDataAttributes::Write(avtDataObjectString &str,
 
     wrtr->WriteInt(str, filename.size());
     str.Append((char *) filename.c_str(), filename.size(),
+                  avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+
+    wrtr->WriteInt(str, fullDBName.size());
+    str.Append((char *) fullDBName.c_str(), fullDBName.size(),
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
 
     wrtr->WriteInt(str, xUnits.size());
@@ -2231,6 +2250,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //
 //    Jeremy Meredith, Thu Aug 25 11:09:34 PDT 2005
 //    Added group origin.
+//
+//    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
+//    Added fullDBName.
 //
 // ****************************************************************************
 
@@ -2464,6 +2486,14 @@ avtDataAttributes::Read(char *input)
     filename = l;
     size += filenameSize;
     input += filenameSize;
+
+    int fullDBNameSize;
+    memcpy(&fullDBNameSize, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    string l3(input, fullDBNameSize);
+    fullDBName = l3;
+    size += fullDBNameSize;
+    input += fullDBNameSize;
 
     int unitSize;
     memcpy(&unitSize, input, sizeof(int));

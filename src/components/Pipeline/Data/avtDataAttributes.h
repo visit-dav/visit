@@ -153,6 +153,9 @@ class     avtExtents;
 //    Jeremy Meredith, Thu Aug 25 11:06:41 PDT 2005
 //    Added origin for groups.
 //
+//    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
+//    Added fullDBName.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -288,6 +291,9 @@ class PIPELINE_API avtDataAttributes
     void                     SetMeshname(const std::string &s) { meshname=s; };
     const std::string       &GetFilename(void) const { return filename; };
     void                     SetFilename(const std::string &s) { filename=s; };
+    const std::string       &GetFullDBName(void) const { return fullDBName; };
+    void                     SetFullDBName(const std::string &s) 
+                                                     { fullDBName=s; };
 
     const std::string       &GetXUnits(void) const { return xUnits; };
     void                     SetXUnits(const std::string &s) { xUnits=s; };
@@ -411,7 +417,15 @@ class PIPELINE_API avtDataAttributes
 
     std::vector<std::string> labels;
     std::string              meshname;
+
+    // Filename: a short name appropriate for placing in a legend.
     std::string              filename;
+
+    // FullDBName: a fully path qualified name for the whole database.  This
+    // can even include virtual database strings.  This is the name used by
+    // the network manager.
+    std::string              fullDBName;
+
     std::string              xUnits;
     std::string              yUnits;
     std::string              zUnits;

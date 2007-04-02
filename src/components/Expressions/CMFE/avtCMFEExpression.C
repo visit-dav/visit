@@ -103,6 +103,9 @@ avtCMFEExpression::PreExecute(void)
 //    Hank Childs, Fri Sep  9 09:38:08 PDT 2005
 //    Add suport for expressions in first argument.
 //
+//    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
+//    Add support for implied database names.
+//
 // ****************************************************************************
 
 void
@@ -169,7 +172,9 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
                    "The first argument of the database comparison "
                    "expression must be a database.");
     }
-    db = db_expr->GetFile()->GetFullpath();
+    db = "";
+    if (db_expr->GetFile() != NULL)
+        db = db_expr->GetFile()->GetFullpath();
 
     TimeExpr *time_expr = db_expr->GetTime();
     if (time_expr == NULL)
@@ -258,11 +263,17 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
 //    Hank Childs, Thu Sep  8 13:50:17 PDT 2005
 //    Add handling for expressions.
 //
+//    Hank Childs, Fri Oct  7 08:31:30 PDT 2005
+//    Add support for implied database names.  Also use the same SIL
+//    restriction if the derived type thinks we should.
+//
 // ****************************************************************************
 
 void
 avtCMFEExpression::Execute()
 {
+    if (db == "")
+        db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
     if (*dbp == NULL)
         EXCEPTION1(InvalidFilesException, db.c_str());
@@ -287,6 +298,11 @@ avtCMFEExpression::Execute()
                               expr_var.c_str());
     avtPipelineSpecification_p spec = 
                 new avtPipelineSpecification(ds, 1);
+    if (UseIdenticalSIL())
+    {
+        ds = new avtDataSpecification(ds, firstDBSIL);
+        spec = new avtPipelineSpecification(spec, ds);
+    }
     spec->GetDataSpecification()->SetTimestep(actualTimestep);
 
     avtExpressionEvaluatorFilter *eef = new avtExpressionEvaluatorFilter;
@@ -484,6 +500,11 @@ avtCMFEExpression::GetTimestate(ref_ptr<avtDatabase> dbp)
 //  Programmer: Hank Childs
 //  Creation:   September 1, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct  7 10:33:20 PDT 2005
+//    Cache the SIL restriction as well.
+//
 // ****************************************************************************
 
 void
@@ -492,6 +513,7 @@ avtCMFEExpression::ExamineSpecification(avtPipelineSpecification_p spec)
     avtExpressionFilter::ExamineSpecification(spec);
 
     firstDBTime = spec->GetDataSpecification()->GetTimestep();
+    firstDBSIL  = spec->GetDataSpecification()->GetRestriction();
 }
 
 

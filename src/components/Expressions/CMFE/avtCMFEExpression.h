@@ -6,6 +6,7 @@
 #define AVT_CMFE_EXPRESSION_H
 
 #include <avtExpressionFilter.h>
+#include <avtSILRestriction.h>
 #include <ExprNode.h>
 
 class     vtkDataArray;
@@ -54,6 +55,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     double                    dtime;
     bool                      isDelta;
     int                       firstDBTime;
+    avtSILRestriction_p       firstDBSIL;
     std::string               argument_expression;
     int                       varDim;
 
@@ -64,6 +66,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
                                           const std::string &, 
                                           const std::string &) = 0;
     virtual void              ExamineSpecification(avtPipelineSpecification_p);
+    virtual bool              UseIdenticalSIL(void) { return false; };
     int                       GetTimestate(ref_ptr<avtDatabase>);
 };
 

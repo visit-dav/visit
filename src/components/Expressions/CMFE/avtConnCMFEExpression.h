@@ -39,6 +39,7 @@ class EXPRESSION_API avtConnCMFEExpression : public avtCMFEExpression
     virtual avtDataTree_p     ExecuteTree(avtDataTree_p, avtDataTree_p,
                                           const std::string &,
                                           const std::string &);
+    virtual bool              UseIdenticalSIL(void) { return true; };
 };
 
 

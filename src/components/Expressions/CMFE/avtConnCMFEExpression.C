@@ -11,6 +11,8 @@
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 
+#include <avtSILRestrictionTraverser.h>
+
 #include <DebugStream.h>
 #include <InvalidMergeException.h>
 
@@ -82,6 +84,11 @@ avtConnCMFEExpression::PerformCMFE(avtDataTree_p in1, avtDataTree_p in2,
 //  Programmer: Hank Childs
 //  Creation:   August 26, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct  7 11:07:33 PDT 2005
+//    Modify warning message to account for material selection.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -134,22 +141,56 @@ avtConnCMFEExpression::ExecuteTree(avtDataTree_p in1, avtDataTree_p in2,
         char msg[1024];
         if (in_ds1->GetNumberOfCells() != in_ds2->GetNumberOfCells())
         {
-            sprintf(msg, "The databases cannot be compared because they have "
-                         " a different number of cells for domain %d.  The "
-                         " cell counts are %d and %d.", 
-                         in1->GetDataRepresentation().GetDomain(),
-                         in_ds1->GetNumberOfCells(), 
-                         in_ds2->GetNumberOfCells());
+            avtSILRestrictionTraverser trav(firstDBSIL);
+            if (trav.UsesAllMaterials())
+            {
+                sprintf(msg, "The databases cannot be compared because they "
+                             "have a different number of cells for domain %d."
+                             " The cell counts are %d and %d.", 
+                             in1->GetDataRepresentation().GetDomain(),
+                             in_ds1->GetNumberOfCells(), 
+                             in_ds2->GetNumberOfCells());
+            }
+            else
+            {
+                sprintf(msg, "The databases cannot be compared because they"
+                             " have a different number of cells for domain %d."
+                             " The cell counts are %d and %d.  It appears that" 
+                             " you have removed some materials.  Databases "
+                             "cannot be compared in this manner when materials"
+                             " have been removed (and the simulation is "
+                             "Eulerian).",
+                             in1->GetDataRepresentation().GetDomain(),
+                             in_ds1->GetNumberOfCells(), 
+                             in_ds2->GetNumberOfCells());
+            }
             EXCEPTION1(InvalidMergeException, msg);
         }
         if (in_ds1->GetNumberOfPoints() != in_ds2->GetNumberOfPoints())
         {
-            sprintf(msg, "The databases cannot be compared because they have "
-                         " a different number of points for domain %d.  The "
-                         " point counts are %d and %d.", 
+            avtSILRestrictionTraverser trav(firstDBSIL);
+            if (trav.UsesAllMaterials())
+            {
+                sprintf(msg, "The databases cannot be compared because they "
+                             "have a different number of points for domain %d."
+                             "  The point counts are %d and %d.", 
                          in1->GetDataRepresentation().GetDomain(),
                          in_ds1->GetNumberOfPoints(), 
                          in_ds2->GetNumberOfPoints());
+            }
+            if (trav.UsesAllMaterials())
+            {
+                sprintf(msg, "The databases cannot be compared because they "
+                             "have a different number of points for domain %d."
+                             "  The point counts are %d and %d.  It appears ", 
+                             "that you have removed some materials.  Databases"
+                             " cannot be compared in this manner when materials"
+                             " have been removed (and the simulation is "
+                             "Eulerian).",
+                         in1->GetDataRepresentation().GetDomain(),
+                         in_ds1->GetNumberOfPoints(), 
+                         in_ds2->GetNumberOfPoints());
+            }
             EXCEPTION1(InvalidMergeException, msg);
         }
 
