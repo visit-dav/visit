@@ -30,6 +30,7 @@
 #include <QueryAttributes.h>
 #include <SILAttributes.h>
 #include <SocketConnection.h>
+#include <TimingsManager.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectReader.h>
@@ -1692,6 +1693,9 @@ Engine::EngineAbortCallback(void *data)
 //    Jeremy Meredith, Thu Jul 10 11:37:48 PDT 2003
 //    Made the engine an object.
 //
+//    Mark C. Miller, Fri Nov 11 09:45:42 PST 2005
+//    Adding timing stuff to throttle progress messages to once per second
+//
 // ****************************************************************************
 
 void
@@ -1729,6 +1733,14 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
     }
     else
     {
+        static double timeOfLastProgressCallback = -1.0;
+        double timeOfThisProgressCallback = TOA_THIS_LINE;
+
+        if (timeOfThisProgressCallback < timeOfLastProgressCallback + 1.0)
+            return;
+
+        timeOfLastProgressCallback = timeOfThisProgressCallback;
+
         rpc->SendStatus(int(100. * float(cur)/float(total)),
                         rpc->GetCurStageNum(),
                         desc ? desc : type,

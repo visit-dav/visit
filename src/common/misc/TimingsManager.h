@@ -27,7 +27,8 @@
 #endif
 
 // useful macro for computing time of arrival at a particular line of code
-#define DELTA_TOA_HERE TimingsManager::TimeSinceLastCall(__FILE__, __LINE__)
+#define DELTA_TOA_THIS_LINE TimingsManager::TimeSinceLine(__FILE__, __LINE__)
+#define TOA_THIS_LINE TimingsManager::TimeSinceInit()
 
 // ****************************************************************************
 //  Class: TimingsManager
@@ -62,6 +63,10 @@
 //    Added optional force argument to Start/Stop methods to permit
 //    getting timer info in return value even if not logging to file
 //
+//    Mark C. Miller, Fri Nov 11 09:45:42 PST 2005
+//    Added TimeSinceInit method, changed name of TimeSinceLastCall to
+//    TimeSinceLine
+//
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -70,7 +75,8 @@ class MISC_API TimingsManager
                                TimingsManager();
     virtual                   ~TimingsManager() {;};
 
-    static double              TimeSinceLastCall(const char *file, int line);
+    static double              TimeSinceLine(const char *file, int line);
+    static double              TimeSinceInit();
 
     static TimingsManager     *Initialize(const char *);
     void                       SetFilename(const std::string &s);
@@ -129,7 +135,6 @@ class MISC_API MPITimingsManager : public TimingsManager
 
   protected:
     std::vector<double>        values;
-
     virtual void               PlatformStartTimer(void);
     virtual double             PlatformStopTimer(int);
 };

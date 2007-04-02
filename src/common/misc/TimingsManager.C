@@ -29,6 +29,7 @@ int ftime(struct timeb *);
 
 TimingsManager   *visitTimer = NULL;
 
+static struct TIMEINFO initTimeInfo;
 
 // ****************************************************************************
 //  Function:GetCurrentTimeInfo 
@@ -51,17 +52,23 @@ GetCurrentTimeInfo(struct TIMEINFO &timeInfo)
 }
 
 // ****************************************************************************
-//  Method: TimingsManager::TimeSinceLastCall
+//  Function: TimingsManager::TimeSinceLine
 //
-//  Purpose:
-//      Computes time since last called with same key 
+//  Purpose: Computes time since last called with same key. When the key is
+//  specified as __FILE__ and __LINE__, this function is useful in computing
+//  the time since last arrival at a given source code line.
 // 
 //  Programmer: Mark C. Miller 
 //  Creation:   April 20, 2004 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Thu Nov 10 18:46:12 PST 2005
+//    Changed the name to better represent meaning of function.
+//
 // ****************************************************************************
 double
-TimingsManager::TimeSinceLastCall(const char *file, int line)
+TimingsManager::TimeSinceLine(const char *file, int line)
 {
     static std::map<std::string, TIMEINFO> keyMap;
 
@@ -89,6 +96,24 @@ TimingsManager::TimeSinceLastCall(const char *file, int line)
         keyMap[key] = currentTime;
         return DiffTime(lastTime, currentTime);
     }
+}
+
+// ****************************************************************************
+//  Function: TimingsManager::TimeSinceInit
+//
+//  Purpose: Computes time since initialize was called. 
+// 
+//  Programmer: Mark C. Miller 
+//  Creation:   November 11, 2005
+//
+// ****************************************************************************
+
+double
+TimingsManager::TimeSinceInit()
+{
+    struct TIMEINFO currentTimeInfo;
+    GetCurrentTimeInfo(currentTimeInfo);
+    return DiffTime(initTimeInfo, currentTimeInfo);
 }
 
 // ****************************************************************************
@@ -145,6 +170,9 @@ TimingsManager::TimingsManager()
 //    Do not initialize the visit timer with a static constructor, because
 //    we don't know the name of the process yet.
 //
+//    Mark C. Miller, Fri Nov 11 09:45:42 PST 2005
+//    Added initialization of initTimeInfo
+//
 // ****************************************************************************
 
 TimingsManager *
@@ -157,6 +185,7 @@ TimingsManager::Initialize(const char *fname)
     visitTimer = new MPITimingsManager;
 #else
     visitTimer = new SystemTimingsManager;
+    GetCurrentTimeInfo(initTimeInfo);
 #endif
 
     visitTimer->SetFilename(fname);
