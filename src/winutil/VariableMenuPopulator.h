@@ -53,6 +53,9 @@ class QObject;
 //   Brad Whitlock, Fri Apr 1 16:21:46 PST 2005
 //   I added label var support.
 //
+//   Hank Childs, Tue Jul 19 14:23:56 PDT 2005
+//   Added array var support.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -115,7 +118,7 @@ private:
     // Create some lists to keep track of the variable names.
     VariableList   meshVars, scalarVars, materialVars, vectorVars, subsetVars,
                    speciesVars, curveVars, tensorVars, symmTensorVars,
-                   labelVars;
+                   labelVars, arrayVars;
 };
 
 #endif

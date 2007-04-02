@@ -152,6 +152,12 @@ const char *expr_tensor[] = {
     NULL
 };
 
+const char *expr_array[] = {
+    "array_compose",
+    "array_decompose",
+    NULL
+};
+
 const char *expr_materials[] = {
     "materror",
     "matvf",
@@ -195,6 +201,7 @@ ExprNameList exprlist[] =
     {"Math",          expr_math},
     {"Vector",        expr_vector},
     {"Tensor",        expr_tensor},
+    {"Array",         expr_array},
     {"Material",      expr_materials},
     {"Mesh",          expr_mesh},
     {"Mesh Quality",  expr_meshquality},
@@ -271,6 +278,9 @@ QvisExpressionsWindow::~QvisExpressionsWindow()
 //    Brad Whitlock, Thu Dec 9 10:50:12 PDT 2004
 //    I added a variable button that lets us insert variables.
 //
+//    Hank Childs, Thu Jul 21 11:12:43 PDT 2005
+//    Add support for array mesh variables.
+//
 // ****************************************************************************
 
 void
@@ -331,7 +341,7 @@ QvisExpressionsWindow::CreateWindowContents()
     typeLabel = new QLabel("Type", f2, "typeLabel");
     typeList = new QComboBox(f2, "typeList");
     int numtypes = Expression::GetNumTypes();
-    numtypes = 5;  // HACK!!!  Variable types after 5 currently fail.  FIXME!!!
+    numtypes = 6;  // HACK!!!  Variable types after 6 currently fail.  FIXME!!!
     int i;
     for (i=1; i < numtypes ; i++)
         typeList->insertItem(Expression::GetTypeString((Expression::ExprType)i));

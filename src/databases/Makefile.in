@@ -154,6 +154,9 @@
 #   Brad Whitlock, Wed Jul 6 16:04:28 PST 2005
 #   Added NASTRAN and ANSYS readers.
 #
+#   Hank Childs, Wed Jul 20 16:01:09 PDT 2005
+#   Add Xmdv reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -172,7 +175,7 @@ SAF=SAF
 SAMPLES=Rect Hex
 REQUIRED=ANALYZE ANSYS AUXFile BOV CMAT Curve2D Dune EnSight Image Lines \
  NASTRAN OVERFLOW PLOT2D PLOT3D Point3D SAR STL Shapefile Silo SimV1 \
- Spheral TFT Tecplot Vista VTK WavefrontOBJ
+ Spheral TFT Tecplot Vista VTK WavefrontOBJ Xmdv
 VISUS=ViSUS
 
 OPTIONAL=

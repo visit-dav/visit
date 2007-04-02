@@ -95,6 +95,9 @@
 //    Hank Childs, Mon May 23 17:03:54 PDT 2005
 //    Add support for DBOptions.  Plus fix typo in comment (SetUp -> Setup).
 //
+//    Hank Childs, Tue Jul 19 13:51:03 PDT 2005
+//    Add support for array variables.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -914,6 +917,8 @@ class InfoGeneratorPlugin
                     c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
                 else if (types[i] == "label")
                     c << "VAR_CATEGORY_LABEL";
+                else if (types[i] == "array")
+                    c << "VAR_CATEGORY_ARRAY";
             }
             c << ";" << endl;
 
@@ -1223,6 +1228,8 @@ class InfoGeneratorPlugin
                     c << "VAR_CATEGORY_SYMMETRIC_TENSOR";
                 else if (types[i] == "label")
                     c << "VAR_CATEGORY_LABEL";
+                else if (types[i] == "array")
+                    c << "VAR_CATEGORY_ARRAY";
             }
             c << ";" << endl;
             c << "}" << endl;

@@ -148,6 +148,9 @@ ParsingExprList::Update(Subject *)
 //      Sean Ahern, Mon Mar 17 23:01:02 America/Los_Angeles 2003
 //      Changed the expression type names.
 //   
+//      Hank Childs, Tue Jul 19 13:39:12 PDT 2005
+//      Added array expression.
+//
 // ****************************************************************************
 avtVarType
 ParsingExprList::GetAVTType(const Expression::ExprType type)
@@ -168,6 +171,9 @@ ParsingExprList::GetAVTType(const Expression::ExprType type)
         break;
     case Expression::SymmetricTensorMeshVar:
         retval = AVT_SYMMETRIC_TENSOR_VAR;
+        break;
+    case Expression::ArrayMeshVar:
+        retval = AVT_ARRAY_VAR;
         break;
     case Expression::Mesh:
         retval = AVT_MESH;

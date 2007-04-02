@@ -12,7 +12,7 @@
 // the order that we want them to appear in the menu; not their
 // real order.
 //
-#define N_VAR_CATEGORIES 9
+#define N_VAR_CATEGORIES 11
 static const char *categoryMenuNames[] = {
     "Scalars",
     "Vectors",
@@ -23,7 +23,8 @@ static const char *categoryMenuNames[] = {
     "Curves",
     "Tensors",
     "Symmetric Tensors",
-    "Labels"
+    "Labels",
+    "Arrays"
 };
 //
 // Masks of the types of variables in the order that we want them
@@ -39,7 +40,8 @@ static int categoryMasks[] = {
     VAR_CATEGORY_CURVE,
     VAR_CATEGORY_TENSOR,
     VAR_CATEGORY_SYMMETRIC_TENSOR,
-    VAR_CATEGORY_LABEL
+    VAR_CATEGORY_LABEL,
+    VAR_CATEGORY_ARRAY
 };
 
 // ****************************************************************************
@@ -218,6 +220,7 @@ const int QvisVariableButton::Curves           = VAR_CATEGORY_CURVE;
 const int QvisVariableButton::Tensors          = VAR_CATEGORY_TENSOR;
 const int QvisVariableButton::SymmetricTensors = VAR_CATEGORY_SYMMETRIC_TENSOR;
 const int QvisVariableButton::Labels           = VAR_CATEGORY_LABEL;
+const int QvisVariableButton::Arrays           = VAR_CATEGORY_ARRAY;
 
 // ****************************************************************************
 // Method: QvisVariableButton::QvisVariableButton

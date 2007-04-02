@@ -1121,6 +1121,9 @@ avtGenericDatabase::ManageMemoryForNonCachableMesh(vtkDataSet *v)
 //    Hank Childs, Mon Jun 27 16:24:23 PDT 2005
 //    Added data specification argument.
 //
+//    Hank Childs, Tue Jul 19 14:54:22 PDT 2005
+//    Add support for arrays.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1163,6 +1166,11 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 
       case AVT_SYMMETRIC_TENSOR_VAR:
         rv = GetSymmetricTensorVarDataset(varname, ts, domain, matname,
+                 needNativePrecision, admissibleDataTypes);
+        break;
+
+      case AVT_ARRAY_VAR:
+        rv = GetArrayVarDataset(varname, ts, domain, matname,
                  needNativePrecision, admissibleDataTypes);
         break;
 
@@ -1361,6 +1369,9 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 //    Kathleen Bonnell, Tue May 17 10:03:38 PDT 2005 
 //    Fix memory leak related to species vars. 
 //
+//    Hank Childs, Tue Jul 19 14:54:22 PDT 2005
+//    Add support for array variables.
+//
 // ****************************************************************************
 
 void
@@ -1468,6 +1479,20 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             }
             break;
 
+          case AVT_ARRAY_VAR:
+            {
+                const avtArrayMetaData *lmd=GetMetaData(ts)->GetArray(varName);
+                if (lmd->centering == AVT_NODECENT)
+                {
+                    atts = ds->GetPointData();
+                }
+                else
+                {
+                    atts = ds->GetCellData();
+                }
+            }
+            break;
+
           case AVT_MATSPECIES:
             atts = ds->GetCellData();
             break;
@@ -1500,6 +1525,10 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
             break;
           case AVT_LABEL_VAR:
             dat = GetLabelVariable(varName, ts, domain, material);
+            break;
+          case AVT_ARRAY_VAR:
+            dat = GetArrayVariable(varName, ts, domain, material,
+                      needNativePrecision, admissibleDataTypes);
             break;
           case AVT_MATSPECIES:
             dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
@@ -1851,6 +1880,80 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
     else
     {
         mesh->GetCellData()->SetTensors(var);
+    }
+
+    return mesh;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetArrayVarDataset
+//
+//  Purpose:
+//      Constructs a dataset for an array variable.
+//
+//  Arguments:
+//      varname      The variable for that domain.
+//      ts           The timestep of interest.
+//      domain       The domain of the dataset to retrieve.
+//      material     The name of the material we are getting.
+//
+//  Returns:         The dataset for that block.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
+                                        int domain, const char *material,
+                                        const bool needNativePrecision,
+                                        const vector<int>& admissibleDataTypes)
+{
+    const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varname);
+    if (tmd == NULL)
+    {
+        EXCEPTION1(InvalidVariableException, varname);
+    }
+
+    string meshname  = GetMetaData(ts)->MeshForVar(varname);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material,
+                            needNativePrecision, admissibleDataTypes);
+
+    if (mesh == NULL)
+    {
+        //
+        // Some file formats don't have a mesh for every domain (like Exodus
+        // when material selection is applied).  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material,
+                            needNativePrecision, admissibleDataTypes);
+
+    if (var == NULL)
+    {
+        //
+        // Some variables don't have a var for every domain, even if the
+        // mesh exists there.  Just propagate the NULL up.  
+        //
+        return NULL;
+    }
+
+    //
+    // Set up the array var's name in case we have more than one.
+    //
+    var->SetName(varname);
+
+    if (tmd->centering == AVT_NODECENT)
+    {
+        mesh->GetPointData()->AddArray(var);
+    }
+    else
+    {
+        mesh->GetCellData()->AddArray(var);
     }
 
     return mesh;
@@ -2912,6 +3015,186 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 
     return var;
 }
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::GetArrayVariable
+//
+//  Purpose:
+//      Checks to see if a variable is already in cache and fetches it if it
+//      is not.
+//
+//  Arguments:
+//      varname    The name of the variable.
+//      ts         The timestep for the variable.
+//      domain     The domain for the variable.
+//      material   The name of the material we are getting.
+//
+//  Returns:    A vtkDataArray for the variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 19, 2005
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
+                                     const char *material,
+                                     const bool needNativePrecision,
+                                     const vector<int>& admissibleDataTypes)
+{
+    //
+    // We have to be leery about doing any caching when the variables are
+    // defined on sub-meshes.  This is because if we add new secondary
+    // variables, some parts of the mesh may drop out, and the size of the
+    // cached objects are now wrong.
+    //
+    vtkDataArray *var = NULL;
+    if (!Interface->HasVarsDefinedOnSubMeshes())
+    {
+        //
+        // First, look for native precision data in the cache
+        //
+        var = (vtkDataArray *) cache.GetVTKObject(varname,
+                         avtVariableCache::NATIVE_ARRAYS_NAME,
+                         ts, domain, material);
+
+        if ((var != NULL) &&
+            IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
+        {
+            if (!needNativePrecision &&
+                (PrecisionInBytes(var) > sizeof(float)))
+            {
+                var = (vtkDataArray *) cache.GetVTKObject(varname,
+                                 avtVariableCache::ARRAYS_NAME,
+                                 ts, domain, material);
+
+                if (var == NULL)
+                {
+                    //
+                    // At this point, we know we've got ONLY native data
+                    // in the cache but either visit is NOT requesting
+                    // native data or the native precision is greater
+                    // than float. So, even though the pipeline supports
+                    // this data, we're going to convert because there
+                    // is no value added in running with higher precision
+                    // when it is not necessary. After we've converted
+                    // we'll cache the converted result.
+                    //
+                    var = (vtkDataArray *) cache.GetVTKObject(varname,
+                        avtVariableCache::NATIVE_ARRAYS_NAME,
+                        ts, domain, material);
+                    vtkDataArray *var1 = ConvertDataArrayToFloat(var);
+                    if (var1)
+                    {
+                        cache.CacheVTKObject(varname,
+                            avtVariableCache::ARRAYS_NAME,
+                            ts, domain, material, var1);
+                        var1->Delete();
+                        var = var1;
+                    }
+                }
+            }
+        }
+        else
+        {
+            var = (vtkDataArray *) cache.GetVTKObject(varname,
+                             avtVariableCache::ARRAYS_NAME,
+                             ts, domain, material);
+        }
+
+    }
+
+    //
+    // Translate the variable name into something the interface understands.
+    // Note: use the "real_varname" when talking to the Interface, but use
+    // the standard "varname" for caching and all other places.
+    //
+    const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varname);
+    if (tmd == NULL)
+        EXCEPTION1(InvalidVariableException, varname);
+    const char *real_varname = varname;
+    if (tmd->originalName != tmd->name && tmd->originalName != "")
+    {
+        real_varname = tmd->originalName.c_str();
+    }
+
+    if (var == NULL)
+    {
+        //
+        // We haven't read in this domain before, so fetch it from the files.
+        // Note: we use the vector var interface to get arrays.
+        //
+        var = Interface->GetVectorVar(ts, domain, real_varname);
+
+        if (var != NULL)
+        {
+            //
+            // Convert BEFORE caching only if native precision is greater
+            // than float and VisIt has NOT asked for native precision
+            //
+            const char *cacheTypeName = 
+                var->GetDataType() == VTK_FLOAT ?
+                avtVariableCache::ARRAYS_NAME :
+                avtVariableCache::NATIVE_ARRAYS_NAME;
+            if (PrecisionInBytes(var) > sizeof(float) && !needNativePrecision)
+            {
+                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
+                if (var1)
+                {
+                    var->Delete();
+                    var = var1;
+                    cacheTypeName = avtVariableCache::ARRAYS_NAME;
+                }
+            }
+
+            if (Interface->CanCacheVariable(real_varname))
+            {
+                cache.CacheVTKObject(varname, cacheTypeName,
+                                     ts, domain, material, var);
+            }
+            else
+            {
+                ManageMemoryForNonCachableVar(var);
+            }
+
+            //
+            // We need to decrement the reference count of the variable 
+            // returned from FetchVar, but we could not do it previously 
+            // because it would knock the count down to 0 and delete it.
+            // Since we have cached it, we can do it now.
+            //
+            var->Delete();
+
+            //
+            // Convert BEFORE returning to VisIt only if precision in
+            // cache is NOT supported by current pipeline. Also, if we
+            // convert here, go ahead and cache the converted result too.
+            //
+            if (!IsAdmissibleDataType(admissibleDataTypes, var->GetDataType()))
+            {
+                vtkDataArray *var1 = ConvertDataArrayToFloat(var);
+
+                if (var1)
+                {
+                    if (Interface->CanCacheVariable(real_varname))
+                    {
+                        cache.CacheVTKObject(varname, avtVariableCache::ARRAYS_NAME,
+                                             ts, domain, material, var1);
+                    }
+                    else
+                    {
+                        ManageMemoryForNonCachableVar(var1);
+                    }
+                    var1->Delete();
+                    var = var1;
+                }
+            }
+        }
+    }
+
+    return var;
+}
+
 
 // ****************************************************************************
 // Method: avtGenericDatabase::GetLabelVariable
@@ -7811,6 +8094,123 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
                     sprintf(buff, "(%d)", element);
                     names.push_back(buff); 
                     tensors->GetTuple(element, temp);
+                    for (int i = 0; i < nComponents; i++)
+                        vals.push_back(temp[i]);
+                }
+                delete [] temp;
+            }
+        }
+        if (!vals.empty())
+        {
+            varInfo.SetNames(names);
+            varInfo.SetValues(vals);
+            vals.clear();
+            names.clear();
+            rv = true;
+        }
+    }
+    // 
+    // This is where we could allow the interface to add more information.
+    // 
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::QueryArrays
+//
+//  Purpose:
+//    Queries the db regarding array var info for a specific cell or nodes.  
+//
+//  Arguments:
+//    varName     The variable on which to retrieve data.
+//    dom         The domain to query.
+//    zone        The zone to query.
+//    ts          The timestep to query.
+//    nodes       The nodes to query.
+//    varInfo     A place to store the results. 
+//
+//  Returns:
+//    True if data was successfully retrieved, false otherwise.
+//
+//  Programmer:   Hank Childs
+//  Creation:     July 19, 2005
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::QueryArrays(const string &varName, const int dom, 
+                                 const int element, const int ts, 
+                                 const intVector &incidentElements, 
+                                 PickVarInfo &varInfo, const bool zonePick)
+{
+    bool rv = false;
+    if (varInfo.GetValues().empty())
+    {
+        const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varName);
+        if (!tmd)
+        {
+            debug5 << "Querying array var, but could not retrieve"
+                   << " meta data!" << endl;
+            return false;
+        }
+
+        stringVector names;
+        doubleVector vals;
+        char buff[80];
+
+        //
+        // admissibleDataTypes and needNativePrecision are placeholders for
+        // information that will eventually come from additional args to this
+        // method or PickVarInfo
+        //
+        vector<int> admissibleDataTypes;
+        admissibleDataTypes.push_back(VTK_FLOAT);
+        bool needNativePrecision = false;
+        vtkDataArray *array = GetArrayVariable(varName.c_str(), ts, dom,
+                                                  "_all", needNativePrecision,
+                                                  admissibleDataTypes);
+        int nComponents = 0;; 
+        double *temp = NULL; 
+        if (array)
+        {
+            bool zoneCent = false, validCentering = true;
+            if (tmd->centering == AVT_NODECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Nodal);
+                zoneCent = false;
+            }
+            else if (tmd->centering == AVT_ZONECENT)
+            {
+                varInfo.SetCentering(PickVarInfo::Zonal);
+                zoneCent = true;
+            }
+            else 
+            {
+                validCentering = false;
+            }
+            if (validCentering)
+            {
+                nComponents = array->GetNumberOfComponents();
+                temp = new double[nComponents];
+                if (zonePick != zoneCent) 
+                { 
+                    // info we're after is associated with incidentElements
+                    for (int k = 0; k < incidentElements.size(); k++)
+                    {
+                        sprintf(buff, "(%d)", incidentElements[k]); 
+                        names.push_back(buff); 
+                        array->GetTuple(incidentElements[k], temp);
+                        for (int i = 0; i < nComponents; i++)
+                            vals.push_back(temp[i]);
+                    }
+                }
+                else 
+                {
+                    // info we're after is associated with element 
+                    sprintf(buff, "(%d)", element);
+                    names.push_back(buff); 
+                    array->GetTuple(element, temp);
                     for (int i = 0; i < nComponents; i++)
                         vals.push_back(temp[i]);
                 }

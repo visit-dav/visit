@@ -16,8 +16,6 @@ class vtkMatrix4x4;
 class vtkPoints;
 class vtkPolyData;
 
-#define MAX_LABEL_SIZE 36
-
 // ****************************************************************************
 //  Class: avtLabelRenderer
 //
@@ -37,6 +35,10 @@ class vtkPolyData;
 //    so I made it do caching on a per-vtkDataset basis.  This renderer is
 //    freed when significant changes happen to the dataset, so there should
 //    be no possibility for major leaks.
+//
+//    Hank Childs, Thu Jul 21 14:45:04 PDT 2005
+//    Make MAX_LABEL_SIZE be a dynamic quantity based on the size of the
+//    variable being rendered (ie scalar, vector, tensor, array, mesh).
 //
 // ****************************************************************************
 
@@ -87,6 +89,7 @@ protected:
     vtkMatrix4x4 *WorldToDisplayMatrix() const;
 
     LabelAttributes        atts;
+    int                    MAX_LABEL_SIZE;
 
     std::map<vtkDataSet*,vtkPolyData*> inputMap;
 

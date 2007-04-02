@@ -2845,6 +2845,9 @@ avtSiloFileFormat::FindGmapConnectivity(DBfile *dbfile, int &ndomains,
 //    Hank Childs, Mon Jun  6 14:12:34 PDT 2005
 //    Add support for slash characters.
 //
+//    Hank Childs, Thu Jul 21 14:12:39 PDT 2005
+//    Add support for array variables.
+//
 // ****************************************************************************
 
 inline void GetWord(char *&s, char *word, bool allowSlash)
@@ -2938,6 +2941,8 @@ AddDefvars(const char *defvars, avtDatabaseMetaData *md)
             vartype = Expression::VectorMeshVar;
         else if (strcmp(vartype_str, "tensor") == 0)
             vartype = Expression::TensorMeshVar;
+        else if (strcmp(vartype_str, "array") == 0)
+            vartype = Expression::ArrayMeshVar;
         else if (strcmp(vartype_str, "material") == 0)
             vartype = Expression::Material;
         else if (strcmp(vartype_str, "species") == 0)

@@ -1,13 +1,13 @@
-// Programmer: Jeremy Meredith
-// Date      : April  4, 2005
-//
-// Modifications:
-//    Jeremy Meredith, Thu Apr 28 18:17:02 PDT 2005
-//    Changed it to a rectilinear mesh.
-//
-//    Jeremy Meredith, Wed May 11 11:05:50 PDT 2005
-//    Added ghost zones.  Added domain lists for restricted load balancing.
-// 
+/* Programmer: Jeremy Meredith
+ * Date      : April  4, 2005
+ *
+ * Modifications:
+ *    Jeremy Meredith, Thu Apr 28 18:17:02 PDT 2005
+ *    Changed it to a rectilinear mesh.
+ *
+ *    Jeremy Meredith, Wed May 11 11:05:50 PDT 2005
+ *    Added ghost zones.  Added domain lists for restricted load balancing.
+ */ 
 #include "sim.h"
 
 #include <VisItControlInterface_V1.h>

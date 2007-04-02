@@ -2399,6 +2399,9 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
 //    Hank Childs, Thu Jun 30 10:57:47 PDT 2005
 //    Added DefineTensorExpression
 //
+//    Hank Childs, Thu Jul 21 14:26:03 PDT 2005
+//    Added DefineArrayExpression.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2417,6 +2420,12 @@ STATIC PyObject *
 visit_DefineTensorExpression(PyObject *self, PyObject *args)
 {
     return ExpressionDefinitionHelper(args, "DefineTensorExpression", Expression::TensorMeshVar);
+}
+
+STATIC PyObject *
+visit_DefineArrayExpression(PyObject *self, PyObject *args)
+{
+    return ExpressionDefinitionHelper(args, "DefineArrayExpression", Expression::ArrayMeshVar);
 }
 
 STATIC PyObject *
@@ -6678,6 +6687,10 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
 //   Hank Childs, Mon Dec  2 14:11:12 PST 2002
 //   Use reference counted SIL restrictions to meet new interface.
 //
+//   Kathleen Bonnell, Thu Jul 21 13:11:49 PDT 2005 
+//   Removed test for number of maps, so that domains can still be listed
+//   even with the presense of groups in the data. 
+//
 // ****************************************************************************
 
 void
@@ -6698,10 +6711,7 @@ ListCategoryHelper(SILCategoryRole role)
                 const std::vector<int> &sets = collection->GetSubsetList();
                 if(sets.size() > 0)
                 {
-                    // If more than one collection maps into this set, we don't
-                    // want to display it because it's crossed with something else.
-                    if(collection->GetSupersetIndex() == silr->GetTopSet() &&
-                       silr->GetSILSet(sets[0])->GetMapsIn().size() < 2)
+                    if(collection->GetSupersetIndex() == silr->GetTopSet()) 
                     {
                         printf("%s:\n", collection->GetCategory().c_str());
                         for(int j = 0; j < sets.size(); ++j)
@@ -6820,6 +6830,10 @@ GetCategoryTupleHelper(SILCategoryRole role)
 //   I made it return a boolean value indicating whether or not there were
 //   errors.
 //
+//   Kathleen Bonnell, Thu Jul 21 13:11:49 PDT 2005 
+//   Removed test for number of maps, so that domains can still be turned
+//   on/off even with the presense of groups in the data. 
+//
 // ****************************************************************************
 
 bool
@@ -6837,10 +6851,7 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
             const std::vector<int> &sets = collection->GetSubsetList();
             if(sets.size() > 0)
             {
-                // If more than one collection maps into this set, we don't
-                // want to display it because it's crossed with something else.
-                if(collection->GetSupersetIndex() == silr->GetTopSet() &&
-                   silr->GetSILSet(sets[0])->GetMapsIn().size() < 2)
+                if(collection->GetSupersetIndex() == silr->GetTopSet()) 
                 {
                     silr->SuspendCorrectnessChecking();
 
@@ -10541,6 +10552,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Hank Childs, Mon Jun 13 11:23:41 PDT 2005
 //   Added docstrings.
 //
+//   Hank Childs, Thu Jul 21 16:28:48 PDT 2005
+//   Added DefineArrayExpression.
+//
 // ****************************************************************************
 
 static void
@@ -10605,6 +10619,8 @@ AddDefaultMethods()
                                              visit_CreateAnnotationObject_doc);
     AddMethod("CreateDatabaseCorrelation", visit_CreateDatabaseCorrelation,
                                           visit_CreateDatabaseCorrelation_doc);
+    AddMethod("DefineArrayExpression", visit_DefineArrayExpression,
+                                               visit_DefineExpression_doc);
     AddMethod("DefineMeshExpression", visit_DefineMeshExpression,
                                                visit_DefineExpression_doc);
     AddMethod("DefineMaterialExpression", visit_DefineMaterialExpression,
@@ -10613,6 +10629,8 @@ AddDefaultMethods()
                                              visit_DefineExpression_doc);
     AddMethod("DefineSpeciesExpression", visit_DefineSpeciesExpression,
                                             visit_DefineExpression_doc);
+    AddMethod("DefineTensorExpression", visit_DefineTensorExpression,
+                                             visit_DefineExpression_doc);
     AddMethod("DefineVectorExpression", visit_DefineVectorExpression,
                                              visit_DefineExpression_doc);
     AddMethod("DeleteDatabaseCorrelation", visit_DeleteDatabaseCorrelation,

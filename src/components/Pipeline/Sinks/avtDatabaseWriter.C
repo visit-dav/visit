@@ -5,6 +5,7 @@
 #include <avtDatabaseWriter.h>
 
 #include <Expression.h>
+#include <ParsingExprList.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtTerminatingSource.h>
@@ -145,6 +146,9 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    Do not write auto-expressions.  Also allow for re-execution to be turned
 //    off.
 //
+//    Hank Childs, Thu Jul 21 16:11:55 PDT 2005
+//    Add more support for expressions.  Fix typo with vectors/scalars.
+//
 // ****************************************************************************
 
 void
@@ -193,7 +197,24 @@ avtDatabaseWriter::Write(const std::string &filename,
                 {
                     const avtVectorMetaData *vmd = md->GetVector(i);
                     if (vmd->name == varlist[j])
-                       scalarList.push_back(vmd->name);
+                       vectorList.push_back(vmd->name);
+                }
+                if (md->GetNumMeshes() == 1 && !shouldNeverDoExpressions)
+                {
+                    ParsingExprList *pel = ParsingExprList::Instance();
+                    ExpressionList *el = pel->GetList();
+                    for (i = 0 ; i < el->GetNumExpressions() ; i++)
+                    {
+                        const Expression &expr = el->GetExpression(i);
+                        if (expr.GetName() == varlist[j])
+                        {
+                            Expression::ExprType type = expr.GetType();
+                            if (type == Expression::ScalarMeshVar)
+                                scalarList.push_back(varlist[j]);
+                            else if (type == Expression::VectorMeshVar)
+                                vectorList.push_back(varlist[j]);
+                        }
+                    }
                 }
                 ds->AddSecondaryVariable(varlist[j].c_str());
             }

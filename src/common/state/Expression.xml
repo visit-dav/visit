@@ -6,6 +6,7 @@
       VectorMeshVar
       TensorMeshVar
       SymmetricTensorMeshVar
+      ArrayMeshVar
       Mesh
       Material
       Species
