@@ -1362,6 +1362,10 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds, const int origZone)
 //    Kathleen Bonnell, Thu Jun 30 15:39:03 PDT 2005
 //    Correct the logic for finding current zones.
 //
+//    Jeremy Meredith, Thu Jul  7 09:20:39 PDT 2005
+//    Made the zoneFound array dynamically allocated to make more
+//    compilers happy.
+//
 // ****************************************************************************
 
 intVector
@@ -1379,7 +1383,7 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds,
         int i, j;
         unsigned int *oc = origCells->GetPointer(0);
         int nFound = 0;
-        bool zoneFound[origZones.size()];
+        bool *zoneFound = new bool[origZones.size()];
         for (i = 0; i < origZones.size(); i++)
             zoneFound[i] = false;
         for (i = 0; i < nTuples && nFound < origZones.size(); i++)
@@ -1395,6 +1399,7 @@ avtPickQuery::GetCurrentZoneForOriginal(vtkDataSet *ds,
                 }
             }
         }
+        delete[] zoneFound;
     }
     return currentZones;
 }
