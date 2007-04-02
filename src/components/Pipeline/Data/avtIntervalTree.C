@@ -1614,6 +1614,10 @@ avtIntervalTree::GetElementsListFromLine(double pt1[3], double pt2[3],
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 14, 2006 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Sep 11 09:31:14 PDT 2006
+//    Removed unsued ivars.
+//
 // ****************************************************************************
 
 bool
@@ -1621,7 +1625,6 @@ IntersectsWithRay(double origin[3], double rayDir[3], int block,
            int nDims, const double *nodeExtents, double isect[3])
 {
     double bnds[6] = { 0., 0., 0., 0., 0., 0.};
-    double coord[3] = { 0., 0., 0.}, t;
 
     for (int i = 0; i < nDims; i++)
     {
@@ -1658,6 +1661,10 @@ IntersectsWithRay(double origin[3], double rayDir[3], int block,
 //  Programmer: Kathleen Bonnell
 //  Creation:   August 14, 2006 
 //
+//  Modifications:
+//    Kathleen Bonnell, Mon Sep 11 09:31:14 PDT 2006
+//    Removed unsued ivars.
+//
 // ****************************************************************************
 
 bool
@@ -1665,7 +1672,6 @@ IntersectsWithLine(double pt1[3], double pt2[3], int block,  int nDims,
            const double *nodeExtents, double isect[3])
 {
     double bnds[6] = { 0., 0., 0., 0., 0., 0.};
-    double coord[3] = { 0., 0., 0.}, t;
 
     for (int i = 0; i < nDims; i++)
     {

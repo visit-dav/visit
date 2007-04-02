@@ -84,8 +84,6 @@ struct CellInfo
     vector<Point> isect;  
 } ;
 
-void ClosestPointOnLine(const double*, const double*, const double*, double*);
-bool CanUseCellPoints(double *pt1, double *pt2, double *cpt);
 
 // ****************************************************************************
 //  Method: avtLineoutFilter constructor
@@ -395,6 +393,9 @@ avtLineoutFilter::PostExecute(void)
 //    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
 //    Create RectilinearGrid instead of PolyData for curve representation. 
 //
+//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
+//    Removed calculation of ClosestPointOnLine, no longer using cell centers. 
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -433,8 +434,7 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
     for (i = 0; i < npts; i++)
     {
         pts->GetPoint(i, currentPoint);
-        ClosestPointOnLine(pt1, pt2, currentPoint, closestPoint);
-        newX = sqrt(vtkMath::Distance2BetweenPoints(pt1, closestPoint));
+        newX = sqrt(vtkMath::Distance2BetweenPoints(pt1, currentPoint));
         if (newX < oldX)
         {
             requiresSort = true;
@@ -526,6 +526,9 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //
 //    Kathleen Bonnell, Mon Aug 21 13:34:18 PDT 2006 
 //    Tell IntervalTree to NOT do communication (via arg to constructor). 
+//
+//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
+//    Removed calculation of cell centers.
 //
 // ****************************************************************************
 
@@ -681,28 +684,13 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     vtkIdList *cells = vtkIdList::New();
     vtkPoints *pts = vtkPoints::New();
     double cpt[3];
-    vtkVisItUtility::GetCellCenter(in_ds->GetCell(isectedCells[0]), cpt);
-    if (CanUseCellPoints(pt1, pt2, cpt))
+    for (int i = 0; i < isectedCells.size(); i++)
     {
+        cpt[0] = isectedPts[i*3];
+        cpt[1] = isectedPts[i*3+1];
+        cpt[2] = isectedPts[i*3+2];
         pts->InsertNextPoint(cpt);
-        cells->InsertNextId(isectedCells[0]);
-        for (int i = 1; i < isectedCells.size(); i++)
-        {
-            cells->InsertNextId(isectedCells[i]);
-            vtkVisItUtility::GetCellCenter(in_ds->GetCell(isectedCells[i]),cpt);
-            pts->InsertNextPoint(cpt);
-        }
-    }
-    else
-    {
-        for (int i = 0; i < isectedCells.size(); i++)
-        {
-            cpt[0] = isectedPts[i*3];
-            cpt[1] = isectedPts[i*3+1];
-            cpt[2] = isectedPts[i*3+2];
-            pts->InsertNextPoint(cpt);
-            cells->InsertNextId(isectedCells[i]);
-        }
+        cells->InsertNextId(isectedCells[i]);
     }
 
     if (!useOriginalCells)
@@ -845,6 +833,9 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 //    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
 //    Remove unnecessary if(origCells) statements. 
 //
+//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
+//    Removed calculation of ClosestPointOnLine, no longer using cell centers. 
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -930,23 +921,23 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
     vtkIdList *ptIds = vtkIdList::New();
     double sum = 0.;
     bool requiresSort = false;
+    CellInfo cellInfo;
     
     for (i = 0; i < cellInfoList.size(); i++)
     {
-        int nDups = cellInfoList[i].currCell.size();
+        cellInfo = cellInfoList[i];
+        int nDups = cellInfo.currCell.size();
+        
         if (nDups == 1)
         {
-        ClosestPointOnLine(pt1, pt2, cellInfoList[i].isect[0].x, closestPoint);
-        newX = sqrt(vtkMath::Distance2BetweenPoints(pt1, closestPoint));
+        newX = sqrt(vtkMath::Distance2BetweenPoints(pt1, cellInfo.isect[0].x));
         }
         else
         {
             sum = 0.;
             for (j = 0; j < nDups; j++)
             {
-                ClosestPointOnLine(pt1, pt2, cellInfoList[i].isect[j].x, 
-                                   closestPoint);
-                sum += vtkMath::Distance2BetweenPoints(pt1, closestPoint);
+              sum += vtkMath::Distance2BetweenPoints(pt1, cellInfo.isect[j].x);
             }
             newX = sqrt(sum/(double)nDups);
         }
@@ -1035,82 +1026,5 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
     }
 
     return rgrid;
-}
-
-
-// ****************************************************************************
-//  ClosestPointOnLine
-//
-//  Purpose:  Determines the point on a line closest to a given point not on
-//            the line.
-//
-//  Arguments:
-//    pt1     The origin of the line.
-//    pt2     The endpoint of the line.
-//    cpt     The point not-on-the-line.
-//    npt     The closest point.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   October 20, 2004 
-//
-// ****************************************************************************
-
-void 
-ClosestPointOnLine(const double *pt1, const double *pt2, const double *cpt, 
-                   double *npt)
-{
-    // Take the points and convert them to vectors.
-    avtVector p1(pt1);
-    avtVector p2(pt2);
-    avtVector cp(cpt);
-
-    // Create direction vectors of the line, and from the point to the 
-    // line origin 
-    avtVector v(p2-p1);
-    avtVector R(cp-p1);
-
-    double t = (R*v)/(v*v);
-
-    avtVector newPt(p1 + v*t);
-    
-    npt[0] = newPt.x;
-    npt[1] = newPt.y;
-    npt[2] = newPt.z;
-}
-
-
-// ****************************************************************************
-//  CanUseCellPoints
-//
-//  Purpose:  Determines whether the cell centers are close enough to the line 
-//            segment to be used in creating the curve.
-//
-//  Arguments:
-//    pt1     The origin of the line.
-//    pt2     The endpoint of the line.
-//    cpt     The first cell-center point. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   May 19, 2005 
-//
-// ****************************************************************************
-
-bool
-CanUseCellPoints(double *pt1, double *pt2, double *cpt)
-{
-    // 
-    //  Only want to use the cell-centers if the distance
-    //  to the line is less than the length of the line segment.
-    // 
-    avtVector p1(pt1);
-    avtVector p2(pt2);
-    avtVector cp(cpt);
-    avtVector BC(cp-p2);
-    avtVector AB(p2-p1);
-    double lenAB = AB.norm();
-    double c = (AB%BC).norm();
-    if (lenAB > 0)
-        c /= lenAB;
-    return (c < lenAB);
 }
 
