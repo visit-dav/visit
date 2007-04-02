@@ -57,7 +57,7 @@ esac
 #
 hoth=true
 sunspot=true
-quad=false
+quad=true
 gps=true
 berg=true
 up=true
