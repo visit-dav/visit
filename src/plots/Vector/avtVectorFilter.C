@@ -313,6 +313,10 @@ avtVectorFilter::SetMagVarName(const string &mname)
 //    Verify the existence of a valid variable before attempting to retrieve
 //    its centering.
 //
+//    Kathleen Bonnell, Thu Jan 19 08:29:59 PST 2006
+//    Surround the variable with <> in defining the magnitude expression,
+//    to account for variables stored in subdirs.
+// 
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -324,7 +328,7 @@ avtVectorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
     //
     // Create the expression definition
     //
-    string edef = string("magnitude(") + ds->GetVariable() + string(")");
+    string edef = string("magnitude(<") + ds->GetVariable() + string(">)");
 
 
     ExpressionList *elist = ParsingExprList::Instance()->GetList();
