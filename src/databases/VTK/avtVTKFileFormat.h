@@ -78,6 +78,9 @@ class DBOptionsAttributes;
 //    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
 //    Added 'extension' to store file extension. 
 //
+//    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006
+//    Added GetTime method.
+//
 // ****************************************************************************
 
 class avtVTKFileFormat : public avtSTSDFileFormat
@@ -99,6 +102,7 @@ class avtVTKFileFormat : public avtSTSDFileFormat
     virtual void          FreeUpResources(void);
 
     int                   GetCycleFromFilename(const char *f) const;
+    virtual double        GetTime(void);
 
   protected:
     vtkDataSet           *dataset;
@@ -109,7 +113,7 @@ class avtVTKFileFormat : public avtSTSDFileFormat
     char                 *matvarname;
     std::vector<int>      matnos;
     std::vector<std::string> matnames;
-
+    double                vtk_time;
 
     std::string           extension;
 

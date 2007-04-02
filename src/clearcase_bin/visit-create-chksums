@@ -73,7 +73,6 @@ do
    $cmd visit-install                       >> $output
    $cmd jvisit$version.tar.gz               >> $output
    $cmd visit$version.exe                   >> $output
-#  $cmd visit$version-win98.exe             >> $output
    $cmd visit$version2.aix.tar.gz           >> $output
    $cmd visit$version2.aix64-xlc.tar.gz     >> $output
    $cmd visit$version2.darwin.tar.gz        >> $output
@@ -82,7 +81,6 @@ do
    $cmd visit$version2.linux-ia64.tar.gz    >> $output
    $cmd visit$version2.linux-x86_64.tar.gz  >> $output
    $cmd visit$version2.linux_chaos.tar.gz   >> $output
-#  $cmd visit$version2.linux_rh71.tar.gz    >> $output
    $cmd visit$version2.linux_rhel3.tar.gz   >> $output
    $cmd visit$version2.osf1.tar.gz          >> $output
    $cmd visit$version2.sunos5.tar.gz        >> $output
@@ -98,6 +96,7 @@ do
    $cmd CMake_020314.tar.gz                 >> ../visit$version/$output
    $cmd CMake1.4.7-src-unix.tar.gz          >> ../visit$version/$output
    $cmd cmake-1.8.1.tar.gz                  >> ../visit$version/$output
+   $cmd cmake-2.2.3.tar.gz                  >> ../visit$version/$output
    $cmd Mesa-4.1-mangled.tar.gz             >> ../visit$version/$output
    $cmd Mesa-5.0-mangled.tar.gz             >> ../visit$version/$output
    $cmd Python-2.1.2.tar.gz                 >> ../visit$version/$output
@@ -110,10 +109,12 @@ do
    $cmd silo050228.sh                       >> ../visit$version/$output
    $cmd silo050506.sh                       >> ../visit$version/$output
    $cmd silo051121.sh                       >> ../visit$version/$output
+   $cmd silo060605.sh                       >> ../visit$version/$output
    $cmd VTK_020314.tar.gz                   >> ../visit$version/$output
    $cmd vtk_cvs_16Dec02.tar.gz              >> ../visit$version/$output
    $cmd vtk_cvs_2003_10_28.tar.gz           >> ../visit$version/$output
    $cmd vtk_cvs_2003_10_28c.tar.gz          >> ../visit$version/$output
+   $cmd vtk-5.0.0a.tar.gz                   >> ../visit$version/$output
    cd ../visit$version
 
    shift

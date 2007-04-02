@@ -507,6 +507,10 @@ foreach platform ($platforms)
    mkdir distribution/visit/$Version/$platform/plugins/operators
    mkdir distribution/visit/$Version/$platform/plugins/databases
    mkdir distribution/visit/$Version/$platform/java
+   mkdir distribution/visit/$Version/$platform/libsim
+   mkdir distribution/visit/$Version/$platform/libsim/V1
+   mkdir distribution/visit/$Version/$platform/libsim/V1/include
+   mkdir distribution/visit/$Version/$platform/libsim/V1/lib
 end
 
 #
@@ -641,6 +645,7 @@ set incdir = distribution/visit/$Version/$visitbindir/include
 set helpdir = distribution/visit/$Version/$visitbindir/help
 set plugindir = distribution/visit/$Version/$visitbindir/plugins
 set javadir = distribution/visit/$Version/$visitbindir/java
+set simv1dir = distribution/visit/$Version/$visitbindir/libsim/V1
 set frameworkdir = distribution/visit/$Version/$visitbindir/Frameworks
 
 #
@@ -956,6 +961,19 @@ if (-e $VisItDir/java/llnl/visit/ViewerProxy.class) then
 endif
 if (-e $VisItDir/java/RunViewer.class) then
    cp -R $VisItDir/java/RunViewer.class $javadir
+endif
+
+#
+# Install libsim
+#
+if (-e $VisItDir/archives/libsim.a) then
+    cp $VisItDir/archives/libsim.a $simv1dir/lib
+    cp $VisItDir/sim/lib/VisItControlInterface_V1.h $simv1dir/include
+    cp $VisItDir/sim/lib/visitfortransiminterface.inc $simv1dir/include
+    cp $VisItDir/databases/SimV1/VisItDataInterface_V1.h $simv1dir/include
+endif
+if (-e $VisItDir/archives/libsimf.a) then
+    cp $VisItDir/archives/libsimf.a $simv1dir/lib
 endif
 
 #

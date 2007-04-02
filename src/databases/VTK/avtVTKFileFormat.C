@@ -100,6 +100,9 @@ static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
 //     Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
 //     Save the file extension. 
 //
+//     Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
+//     Add vtk_time, to store time from the VTK file if it is available.
+//
 // ****************************************************************************
 
 avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *) 
@@ -117,6 +120,7 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
             start = i;
 
     extension = string(fname, start+1, len-1);
+    vtk_time = INVALID_TIME;
 }
 
 
@@ -171,6 +175,9 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //    Kathleen Bonnell, Wed May 17 14:03:29 PDT 2006 
 //    Remove call to SetSource(NULL), as it now removes information necessary
 //    to the dataset.
+//
+//     Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
+//     Retrieve TIME from FieldData if available.
 //
 // ****************************************************************************
 
@@ -264,6 +271,11 @@ avtVTKFileFormat::ReadInDataset(void)
         reader->Delete();
     } 
 
+    vtk_time = INVALID_TIME;
+    if (dataset->GetFieldData()->GetArray("TIME") != 0)
+    {
+        vtk_time = dataset->GetFieldData()->GetArray("TIME")->GetTuple1(0);
+    }
 
     if (dataset->GetDataObjectType() == VTK_STRUCTURED_POINTS)
     {
@@ -940,4 +952,21 @@ int
 avtVTKFileFormat::GetCycleFromFilename(const char *f) const
 {
     return GuessCycle(f);
+}
+
+
+// ****************************************************************************
+//  Method: avtVTKFileFormat::GetTime
+//
+//  Purpose: Return the time associated with this curve file
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   Jun 29, 2006 
+//
+// ****************************************************************************
+
+double
+avtVTKFileFormat::GetTime()
+{
+    return vtk_time;
 }
