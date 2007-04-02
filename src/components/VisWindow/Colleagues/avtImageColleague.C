@@ -255,6 +255,9 @@ avtImageColleague::ShouldBeAddedToRenderer() const
 //    I added code to set the object's visibility so objects that are not
 //    visible remain invisible when restoring a session file.
 //
+//    Dave Bremer, Fri Mar  9 16:09:36 PST 2007
+//    Slight change to error reporting message, for files that aren't readable
+//
 // ****************************************************************************
 void
 avtImageColleague::SetOptions(const AnnotationObject &annot)
@@ -394,7 +397,7 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
         if(!haveImage)
         {
             char msg[1024];
-            SNPRINTF(msg, 1024, "Could not find image file: %s.", text[0].c_str());
+            SNPRINTF(msg, 1024, "Could not read image file: %s.", text[0].c_str());
             avtCallback::IssueWarning(msg);
         }
     }
@@ -428,6 +431,8 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
 //   Brad Whitlock, Tue Jun 28 17:12:24 PST 2005
 //   Added code to delete the image reader.
 //
+//   Dave Bremer, Fri Mar  9 16:09:36 PST 2007
+//   Added more error checking on image reads.
 // ****************************************************************************
 
 bool
@@ -452,10 +457,21 @@ avtImageColleague::UpdateImage(std::string filename)
         r->SetFileName(filename.c_str());
         r->Update();
         iData = r->GetOutput();
-        iData->Register(NULL);
 
+        // Sometimes VTK reads fail silently.  Check image dims to
+        // make sure this did not happen.  Will return 1,1,1 on some
+        // failures.
+        int dims[3];
+        iData->GetDimensions(dims);
+        if (dims[0] <= 1 && dims[1] <= 1)
+        {
+            iData = NULL;
+        }
+        
         if(iData != 0)
         {
+            iData->Register(NULL);
+            
             // Set the height and width.
             width = height = 100;
 

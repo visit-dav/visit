@@ -4969,12 +4969,20 @@ ViewerPlot::GetWindowId() const
 //    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004
 //    Return unknown mesh type if MeshMetaData is NULL.
 //
+//    Dave Bremer, Fri Mar  9 17:35:45 PST 2007
+//    Added a NULL pointer check after GetMetaData().
+//    Assume that I should handle the error the same way 
+//    as when  md->GetMesh(meshName) returns NULL.
+//
 // ****************************************************************************
 
 avtMeshType
 ViewerPlot::GetMeshType() const
 {
     const avtDatabaseMetaData *md = GetMetaData();
+    if (!md)
+        return AVT_UNKNOWN_MESH;
+    
     string meshName = md->MeshForVar(variableName);
     const avtMeshMetaData *mmd = md->GetMesh(meshName);
     if (mmd)
