@@ -885,6 +885,9 @@ avtSpheralFileFormat::GetNodeListIndexFromName(const char *name)
 //    Add support for the mesh name as a field (this happens when you do a
 //    mesh plot).
 //
+//    Hank Childs, Tue May 23 11:42:55 PDT 2006
+//    Accept "Materials" as well as "Materials(Node List)".
+//
 // ****************************************************************************
 
 int
@@ -899,6 +902,8 @@ avtSpheralFileFormat::GetFieldIndexFromName(const char *name)
     }
 
     if (strcmp(name, "Materials(Node List)") == 0)
+        return -1;
+    if (strcmp(name, "Materials") == 0)
         return -1;
     if (strcmp(name, "Processor Decomposition(Node List)") == 0)
         return -1;
@@ -1516,6 +1521,56 @@ avtSpheralFileFormat::GetLine(istream &ifile, char *line, vector<int> &offsets)
         return GetLine(ifile, line, offsets);
 
     return nwords;
+}
+
+
+// ****************************************************************************
+//  Method: avtSpheralFileFormat::GetTimeFromFilename
+//
+//  Purpose:
+//      Parses out the time from a filename.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2006
+//
+// ****************************************************************************
+
+double
+avtSpheralFileFormat::GetTimeFromFilename(const char *f) const
+{
+    if (f == NULL || f[0] == '\0')
+        return 0.;
+
+    if (strstr(f, "time=") == NULL)
+        return FORMAT_INVALID_TIME;
+
+    double rv = atof(strstr(f, "time=") + strlen("time="));
+    return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSpheralFileFormat::GetCycleFromFilename
+//
+//  Purpose:
+//      Parses out the cycle from a filename.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 23, 2006
+//
+// ****************************************************************************
+
+int
+avtSpheralFileFormat::GetCycleFromFilename(const char *f) const
+{
+    if (f == NULL || f[0] == '\0')
+        return 0;
+
+    if (strstr(f, "cycle=") == NULL)
+        return FORMAT_INVALID_CYCLE;
+
+    int rv = atoi(strstr(f, "cycle=") + strlen("cycle="));
+    return rv;
 }
 
 
