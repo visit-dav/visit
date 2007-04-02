@@ -25,7 +25,8 @@ warp=false
 sc=true
 tidalwave=true
 white=true
-emperor=true
+uv=true
+lilac=true
 
 dist=undefined
 
@@ -44,7 +45,8 @@ do
          sc=false
          tidalwave=false
          white=false
-         emperor=false
+         uv=false
+         lilac=false
          shift
          ;;
       -hitit)
@@ -95,12 +97,20 @@ do
          white=true
          shift
          ;;
-      -emperor)
-         emperor=false
+      -uv)
+         uv=false
          shift
          ;;
-      +emperor)
-         emperor=true
+      +uv)
+         uv=true
+         shift
+         ;;
+      -lilac)
+         lilac=false
+         shift
+         ;;
+      +lilac)
+         lilac=true
          shift
          ;;
       -d)
@@ -174,7 +184,7 @@ then
    then
       scp -P 22 hitit hitit:hitit_buildit
       scp -P 22 $dist.tar.gz hitit:hitit_$dist.tar.gz
-      ssh -p 22 hitit "chmod 750 hitit_buildit;./hitit_buildit &"
+      ssh -p 22 hitit "chmod 750 hitit_buildit;./hitit_buildit" &
    fi
 fi
 
@@ -222,7 +232,7 @@ then
    then
       scp -P 22 sunset sunset:sunset_buildit
       scp -P 22 $dist.tar.gz sunset:sunset_$dist.tar.gz
-      ssh -p 22 sunset "chmod 750 sunset_buildit;./sunset_buildit &"
+      ssh -p 22 sunset "chmod 750 sunset_buildit;./sunset_buildit" &
    fi
 fi
 
@@ -271,7 +281,7 @@ then
    then
       scp -P 22 warp warp:warp_buildit
       scp -P 22 $dist.tar.gz warp:warp_$dist.tar.gz
-      ssh -p 22 warp "chmod 750 warp_buildit;./warp_buildit &"
+      ssh -p 22 warp "chmod 750 warp_buildit;./warp_buildit"
    fi
 fi
 
@@ -281,16 +291,16 @@ fi
 rm -f sc
 cat <<EOF > sc
 #!/bin/sh
-if test ! -d /nfs/tmp3/$user ; then
-   mkdir /nfs/tmp3/$user
+if test ! -d /nfs/tmp1/$user ; then
+   mkdir /nfs/tmp1/$user
 fi
-if test ! -d /nfs/tmp3/$user/sc ; then
-   mkdir /nfs/tmp3/$user/sc
+if test ! -d /nfs/tmp1/$user/sc ; then
+   mkdir /nfs/tmp1/$user/sc
 fi
-rm -rf /nfs/tmp3/$user/sc/visitbuild
-mkdir /nfs/tmp3/$user/sc/visitbuild
-mv sc_$dist.tar.gz /nfs/tmp3/$user/sc/visitbuild/$dist.tar.gz
-cd /nfs/tmp3/$user/sc/visitbuild
+rm -rf /nfs/tmp1/$user/sc/visitbuild
+mkdir /nfs/tmp1/$user/sc/visitbuild
+mv sc_$dist.tar.gz /nfs/tmp1/$user/sc/visitbuild/$dist.tar.gz
+cd /nfs/tmp1/$user/sc/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
@@ -367,7 +377,7 @@ then
    then
       scp tidalwave tidalwave:tidalwave_buildit
       scp $dist.tar.gz tidalwave:tidalwave_$dist.tar.gz
-      ssh tidalwave "chmod 750 tidalwave_buildit;./tidalwave_buildit &"
+      ssh tidalwave "chmod 750 tidalwave_buildit;./tidalwave_buildit" &
    fi
 fi
 
@@ -421,32 +431,33 @@ then
 fi
 
 #
-# Build on emperor, both serial and parallel versions.
+# Build on uv, both serial and parallel versions.
 #
-rm -f emperor
-cat <<EOF > emperor
+rm -f uv
+cat <<EOF > uv
 #!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
+PATH=/usr/local/bin:$PATH
+if test ! -d /p/guv1/$user ; then
+   mkdir /p/guv1/$user
 fi
-if test ! -d /usr/tmp/$user/emperor ; then
-   mkdir /usr/tmp/$user/emperor
+if test ! -d /p/guv1/$user/uv ; then
+   mkdir /p/guv1/$user/uv
 fi
-rm -rf /usr/tmp/$user/emperor/visitbuild
-mkdir /usr/tmp/$user/emperor/visitbuild
-mv emperor_$dist.tar.gz /usr/tmp/$user/emperor/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/emperor/visitbuild
+rm -rf /p/guv1/$user/uv/visitbuild
+mkdir /p/guv1/$user/uv/visitbuild
+mv uv_$dist.tar.gz /p/guv1/$user/uv/visitbuild/$dist.tar.gz
+cd /p/guv1/$user/uv/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ..
+env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
+gmake -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -compiler xlc >> ../buildlog 2>&1
+mv visit\$ver2.aix.tar.gz ..
 cd ..
-echo "        build of visit on emperor"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
+echo "        build of visit on uv"           > resultlog 2>&1
+echo "       ----------------------"          >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -458,13 +469,61 @@ echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
-if [ $emperor = true ]
+if [ $uv = true ]
 then
    if [ $test = no ]
    then
-      scp emperor emperor0:emperor_buildit
-      scp $dist.tar.gz emperor0:emperor_$dist.tar.gz
-      ssh emperor0 "chmod 750 emperor_buildit;./emperor_buildit &"
+      scp uv uv:uv_buildit
+      scp $dist.tar.gz uv:uv_$dist.tar.gz
+      ssh uv "chmod 750 uv_buildit;./uv_buildit" &
+   fi
+fi
+
+#
+# Build on lilac, both serial and parallel versions.
+#
+rm -f lilac
+cat <<EOF > lilac
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/lilac ; then
+   mkdir /usr/tmp/$user/lilac
+fi
+rm -rf /usr/tmp/$user/lilac/visitbuild
+mkdir /usr/tmp/$user/lilac/visitbuild
+mv lilac_$dist.tar.gz /usr/tmp/$user/lilac/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/lilac/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+make -j 3 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ..
+cd ..
+echo "        build of visit on lilac"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $lilac = true ]
+then
+   if [ $test = no ]
+   then
+      scp lilac lilac3:lilac_buildit
+      scp $dist.tar.gz lilac3:lilac_$dist.tar.gz
+      ssh lilac3 "chmod 750 lilac_buildit;./lilac_buildit" &
    fi
 fi
 
@@ -473,5 +532,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit sunset warp sc tidalwave white emperor
+   rm -f hitit sunset warp sc tidalwave white uv lilac
 fi

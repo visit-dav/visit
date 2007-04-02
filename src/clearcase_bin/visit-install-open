@@ -393,7 +393,7 @@ if [ $pengra = true ]
 then
    if [ $test = no ]
    then
-      scp pengra0:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp pengra1:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
       scp visit$ver2.linux_chaos.tar.gz gps15:visit$ver2.linux.tar.gz
       scp visit-install gps15:
       scp pengra gps15:pengra_install
@@ -429,7 +429,7 @@ if [ $alc = true ]
 then
    if [ $test = no ]
    then
-      scp pengra0:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp pengra1:/usr/tmp/brugger/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
       scp visit$ver2.linux_chaos.tar.gz alc0:visit$ver2.linux.tar.gz
       scp visit-install alc0:
       scp alc alc0:alc_install
@@ -437,8 +437,8 @@ then
       # Temporary until the gnu shared libraries are fixed on alc.  Copying
       # the gcc 3.2.3 shared libraries to visit's shared library directory so
       # that it gets them instead of the broken gnu 3.3.3 shared libraries.
-      scp pengra0:/usr/lib/libstdc++.so.5.0.3 .
-      scp pengra0:/lib/libgcc_s.so.1 .
+      scp pengra1:/usr/lib/libstdc++.so.5.0.3 .
+      scp pengra1:/lib/libgcc_s.so.1 .
       chmod 664 libstdc++.so.5.0.3 libgcc_s.so.1
       scp libstdc++.so.5.0.3 alc:/usr/gapps/visit/$ver/linux-intel/lib
       scp libgcc_s.so.1 alc:/usr/gapps/visit/$ver/linux-intel/lib

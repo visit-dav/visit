@@ -204,7 +204,7 @@ QvisImageAnnotationInterface::UpdateControls()
     // Set the source name.
     imageSource->blockSignals(true);
     if(annot->GetText().size() > 0)
-        imageSource->setText(annot->GetText()[0]);
+        imageSource->setText(annot->GetText()[0].c_str());
     imageSource->blockSignals(false);
 
     // Set the start position.
