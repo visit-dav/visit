@@ -11,6 +11,33 @@
 
 #include <hdf5.h>
 
+struct {
+  int i;
+  int j;
+} typedef intvect2d;
+
+struct {
+  int i;
+  int j;
+  int k;
+} typedef intvect3d;
+
+struct {
+  intvect2d lo;
+  intvect2d hi;
+} typedef box2d;
+
+struct{
+  intvect3d lo;
+  intvect3d hi;
+} typedef box3d;
+
+union
+{
+  box2d b2;
+  box3d b3;
+} typedef box;
+
 
 // ****************************************************************************
 //  Class: avtChomboFileFormat
