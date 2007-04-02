@@ -140,6 +140,9 @@ avtStreamer::ReleaseData(void)
 //    Hank Childs, Tue Jul  5 09:41:28 PDT 2005
 //    Fix cut-n-paste bug with last change.
 //
+//    Hank Childs, Wed Aug 31 09:10:11 PDT 2005
+//    Make sure that -dump in parallel increments the dump index.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -174,7 +177,7 @@ avtStreamer::ExecuteDataTree(vtkDataSet* ds, int dom, std::string label)
         if (PAR_Size() > 1)
         {
             int rank = PAR_Rank();
-            sprintf(name, "after_%s%d.%d.vtk", GetType(), times, rank);
+            sprintf(name, "after_%s%d.%d.vtk", GetType(), times++, rank);
         }
         else
             sprintf(name, "after_%s%d.vtk", GetType(), times++);

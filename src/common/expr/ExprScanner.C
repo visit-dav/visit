@@ -72,6 +72,12 @@ static const bool StateAcceptance[13] = {
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  5, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Sep  2 16:27:14 PDT 2005
+//    Made it be more relaxed about allowing special characters
+//    inside the "<>" angle brackets.  This is important as it is our
+//    only means of quoting these.
+//
 // ****************************************************************************
 int
 ExprScanner::GetCharType(const char c)
@@ -100,12 +106,22 @@ ExprScanner::GetCharType(const char c)
         else
             type = Err;
 
-        // If we're parsing a file or var name in <>, it can contain "+-."
+        // If we're parsing a file or var name in <>, we should treat
+        // it (as much as possible) as if it were quoting special chars.
         // Just treat these characters as alphabetic in these cases.
         if (s == FileSpec || s == VarSpec)
         {
-            if (type==Sgn || type==Dot || type == Eee)
+            if (c != '<' &&
+                c != '>' &&
+                c != '[' &&
+                c != ']' &&
+                c != ':' &&
+                c != '@' &&
+                c != '/' &&
+                c != '\\')
+            {
                 type = Alp;
+            }
         }
     }
 

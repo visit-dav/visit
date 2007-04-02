@@ -81,6 +81,9 @@
 #    Brad Whitlock, Tue Aug 23 14:40:07 PST 2005
 #    Added support for NETCDF on MacOS X.
 #
+#    Brad Whitlock, Thu Sep 1 17:17:43 PST 2005
+#    Added support for CGNS on MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -112,7 +115,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libosmesa libmesagl \
-     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@
+     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)
@@ -202,21 +205,23 @@ create_silo_link:
 create_mili_link:
 	$(RM) libmili.@SHLIB_LIBEXT@ libgahl.@SHLIB_LIBEXT@
 	ln -s @MILI_DIR@/libmili.@SHLIB_LIBEXT@ .
-	ln -s @MILI_DIR@/libgahl.@SHLIB_LIBEXT@ .
 
 create_hdf5_link:
 	$(RM) libhdf5.@SHLIB_LIBEXT@
 	ln -s @HDF5_LIB@ .
 
 create_hdf4_link:
-	$(RM) libdf.@SHLIB_LIBEXT@ libmfhdf.@SHLIB_LIBEXT@ libjpeg.@SHLIB_LIBEXT@
+	$(RM) libdf.@SHLIB_LIBEXT@ libmfhdf.@SHLIB_LIBEXT@
 	ln -s @HDF4_LIBDIR@/libdf.@SHLIB_LIBEXT@ .
 	ln -s @HDF4_LIBDIR@/libmfhdf.@SHLIB_LIBEXT@ .
-	ln -s $(LIBVTKJPEG) libjpeg.@SHLIB_LIBEXT@
 
 create_netcdf_link:
 	$(RM) libnetcdf.@SHLIB_LIBEXT@
 	ln -s @NETCDF_LIB@ .
+
+create_cgns_link:
+	$(RM) libcgns.@SHLIB_LIBEXT@
+	ln -s @CGNS_LIB@ .
 
 clean distclean:
 	$(RM) \

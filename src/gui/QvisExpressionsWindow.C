@@ -919,6 +919,9 @@ QvisExpressionsWindow::insertFunction(int id)
 //
 // Modifications:
 //   
+//    Jeremy Meredith, Fri Sep  2 16:26:42 PDT 2005
+//    Made it be more aggressive about quoting.
+//
 // ****************************************************************************
 
 void
@@ -927,11 +930,28 @@ QvisExpressionsWindow::insertVariable(const QString &var)
     if (!definitionEdit->isEnabled())
         return;
 
-    // If the variable name contains slashes then put the <> around the
-    // variable name.
-    QString newVar(var);
-    if(var.find("/") != -1)
+    // If the variable name contains special characters
+    // then put the <> around the variable name.
+    bool needs_quoting = false;
+
+    for (int i=0; i<var.length(); i++)
+    {
+        char c = var[i];
+        if ((c < 'A' || c > 'Z') &&
+            (c < 'a' || c > 'z') &&
+            (c < '0' || c > '9') &&
+            c != '_')
+        {
+            needs_quoting = true;
+            break;
+        }
+    }
+
+    QString newVar;
+    if (needs_quoting)
         newVar = QString("<") + var + QString(">");
+    else
+        newVar = var;
 
     definitionEdit->insert(newVar);
     definitionEdit->setFocus();
