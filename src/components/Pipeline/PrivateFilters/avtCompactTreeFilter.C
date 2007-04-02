@@ -14,6 +14,7 @@
 
 #include <vtkAppendFilter.h>
 #include <vtkAppendPolyData.h>
+#include <vtkCleanPolyData.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -26,11 +27,17 @@
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 12, 2001 
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Aug 24 15:45:14 PDT 2005
+//    Initialized createCleanPolyData.
+//
 // ****************************************************************************
 
 avtCompactTreeFilter::avtCompactTreeFilter()
 {
     executionDependsOnDLB = false;
+    createCleanPolyData = false;
 }
 
 // ****************************************************************************
@@ -69,6 +76,9 @@ avtCompactTreeFilter::avtCompactTreeFilter()
 //    Kathleen Bonnell, Thu May 30 09:31:36 PDT 2002 
 //    Added debug lines for developer information if PruneTree returns
 //    am empty tree.
+//
+//    Hank Childs, Wed Aug 24 15:45:14 PDT 2005
+//    Create clean poly data if requested.
 //
 // ****************************************************************************
 
@@ -168,8 +178,19 @@ avtCompactTreeFilter::Execute(void)
         {
             ds = vtkPolyData::New();
             pmap->polyFilter->SetOutput((vtkPolyData*)ds);
-            pmap->polyFilter->Update();
-            outTree = new avtDataTree(ds, -1);
+            if (createCleanPolyData)
+            {
+                vtkCleanPolyData *cpd = vtkCleanPolyData::New();
+                cpd->SetInput((vtkPolyData *) ds);
+                cpd->Update();
+                outTree = new avtDataTree(cpd->GetOutput(), -1);
+                cpd->Delete();
+            }
+            else
+            {
+                ds->Update();
+                outTree = new avtDataTree(ds, -1);
+            }
             ds->Delete();
         }
         else 

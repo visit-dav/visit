@@ -654,6 +654,9 @@ SplitValues(const string &buff, char delim)
 //   Brad Whitlock, Wed Feb 16 09:29:44 PDT 2005
 //   Moved from ConfigManager class, deleted old modification comments.
 //
+//   Hank Childs, Wed Aug 24 16:38:55 PDT 2005
+//   Allow for files with absolute paths.
+//
 // ****************************************************************************
 
 char *
@@ -662,6 +665,16 @@ GetDefaultConfigFile(const char *filename, const char *home)
     char *retval;
     char *configFileName;
     int  filenameLength;
+
+    // If the filename has an absolute path, do not prepend the home
+    // directory.
+    if (filename != NULL && filename[0] == SLASH_CHAR)
+    {
+        // Must make a copy because the caller will delete this.
+        retval = new char[strlen(filename)+1];
+        strcpy(retval, filename);
+        return retval;
+    }
 
     // Figure out the proper filename to use. If no filename was given, use
     // "config" as the default filename.

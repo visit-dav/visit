@@ -16,6 +16,7 @@ class QvisOpacitySlider;
 class QvisColorButton;
 class QvisLineStyleWidget;
 class QvisLineWidthWidget;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisExternalSurfaceWindow
@@ -26,7 +27,7 @@ class QvisLineWidthWidget;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Sat Aug 3 12:12:37 PDT 2002
+// Creation:   Tue Aug 23 09:43:51 PDT 2005
 //
 // Modifications:
 //   
@@ -47,9 +48,10 @@ class QvisExternalSurfaceWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
-    void dummyChanged(bool val);
+    void removeGhostsChanged(bool val);
   private:
-    QCheckBox *dummy;
+    QCheckBox *removeGhosts;
+    QLabel *removeGhostsLabel;
 
     ExternalSurfaceAttributes *atts;
 };

@@ -85,6 +85,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Wed Aug  3 10:21:31 PDT 2005
 #    Added -stereo to the help text.
 #
+#    Hank Childs, Wed Aug 24 16:48:02 PDT 2005
+#    Added text to -config for absolute paths.
+#
 ###############################################################################
 
 
@@ -134,7 +137,8 @@ $usage = "
                              Note that this argument only takes effect with
                              -gui or -movie.
         -config <filename>   Initialize the viewer at startup using the named
-                             config file from your .visit directory.
+                             config file.  If an absolute path is not given,
+                             the file is assumed to be in the .visit directory.
         -noconfig            Don't process configuration files at startup.
         -launchengine <host> Launch an engine at startup. The <host> parameter
                              is optional. If it is not specified, the engine

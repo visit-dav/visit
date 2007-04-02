@@ -163,6 +163,9 @@
 #   Brad Whitlock, Tue Aug 9 17:42:08 PST 2005
 #   Added netCDF support and a reader for it.
 #
+#   Jeremy Meredith, Tue Aug 23 13:27:44 PDT 2005
+#   Added a FLASH reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -174,7 +177,7 @@ BOXLIB2D=Boxlib2D
 BOXLIB3D=Boxlib3D
 EXODUS=Exodus TimeVaryingExodus
 HDF4=Cosmos Enzo
-HDF5=Tetrad SAMRAI CosmosPP Pixie
+HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH
 MILI=Mili
 PDB=KullLite PDB
 SAF=SAF

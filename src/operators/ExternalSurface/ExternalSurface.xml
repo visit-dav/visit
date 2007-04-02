@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
   <Plugin name="ExternalSurface" type="operator" label="External Surface" version="1.0" enabled="false" mdspecificcode="false" onlyengine="false" noengine="false">
     <Attribute name="ExternalSurfaceAttributes" purpose="This class contains attributes for the external surface operator." persistent="true">
-      <Field name="dummy" label="dummy" type="bool">
+      <Field name="removeGhosts" label="Remove ghost faces?" type="bool">
+        false
       </Field>
     </Attribute>
   </Plugin>

@@ -10,7 +10,6 @@
 #include <avtDatasetToDatasetFilter.h>
 
 
-
 // ****************************************************************************
 //  Class: avtCompactTreeFilter
 //
@@ -35,6 +34,9 @@
 //    Removed PostExecute method. It's purpose is better served 
 //    in avtSubsetFilter.
 //    
+//    Hank Childs, Wed Aug 24 15:45:14 PDT 2005
+//    Add an option for cleaning poly-data.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
@@ -51,9 +53,14 @@ class PIPELINE_API avtCompactTreeFilter : public avtDatasetToDatasetFilter
                               { executionDependsOnDLB = true; };
     void                  DLBDependentExecutionOFF(void)
                               { executionDependsOnDLB = false; };
+
+    void                  CreateCleanPolyData(bool v)
+                              { createCleanPolyData = v; };
+
   protected:
     virtual void          Execute(void);
     bool                  executionDependsOnDLB;
+    bool                  createCleanPolyData;
 };
 
 

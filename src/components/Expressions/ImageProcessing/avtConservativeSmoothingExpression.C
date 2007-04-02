@@ -89,6 +89,11 @@ avtConservativeSmoothingExpression::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   August 16, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 23 09:37:51 PDT 2005
+//    Fix indexing bug.
+//
 // ****************************************************************************
 
 void
@@ -185,7 +190,7 @@ avtConservativeSmoothingExpression::DoOperation(vtkDataArray *in1, vtkDataArray 
                                 continue;
                             for (int kk = k-1 ; kk <= k+1 ; kk++)
                             {
-                                if (kk < 0 || kk >= dims[1])
+                                if (kk < 0 || kk >= dims[2])
                                     continue;
                                 if (ii == i && jj == j && kk == k)
                                     continue;
