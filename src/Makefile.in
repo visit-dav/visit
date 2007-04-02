@@ -118,6 +118,9 @@
 #    Mark C. Miller, Fri Dec  2 00:11:45 PST 2005
 #    Added third_party_builtin directory
 #
+#    Mark C. Miller, Wed Dec  7 14:02:41 PST 2005
+#    Changed order of SUBDIRS so third_party_builtin is built first, not last
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -126,10 +129,10 @@
 
 DISTRIB=configure configure.in VERSION
 
-SUBDIRS=include lib bin common @VTKQT@ visit_vtk components engine \
-        launcher @METADATA_SERVER@ winutil @VIEWER@ @GUI@ @VISITPY@ \
-        @JAVA_TARGET@ plots operators databases @HELP@ tools \
-	third_party_builtin/
+SUBDIRS=include lib bin third_party_builtin common @VTKQT@ visit_vtk \
+        components engine launcher @METADATA_SERVER@ winutil @VIEWER@ \
+	@GUI@ @VISITPY@ @JAVA_TARGET@ plots operators databases @HELP@ \
+	tools
 
 #
 # Make sure that the installation directories exist
