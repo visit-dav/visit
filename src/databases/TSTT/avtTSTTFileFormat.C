@@ -46,8 +46,9 @@
 
 #include <avtTSTTFileFormat.h>
 
-#include <string>
 #include <map>
+#include <string>
+#include <vector>
 
 #include <vtkCellType.h>
 #include <vtkCharArray.h>
@@ -60,22 +61,27 @@
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 
+#include <BJHash.h>
+#include <DebugStream.h>
 #include <Expression.h>
 
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
 
-using     std::string;
 using     std::map;
+using     std::string;
+using     std::vector;
 
 static char* entTypes[] = {
     "vertex", "edge", "face", "region", "all types"};
+
 static char* entTopologies[] = {
     "point", "line segment", "polygon", "triangle",
     "quadrilateral", "polyhedron", "tetrahedron",
     "pyramid", "prism", "hexahedron", "septahedron",
     "all topologies"};
 
-static char *dataTypes[] = {
+static char *tsttDataTypeNames[] = {
     "integer", "double", "ehandle", "bytes" };
 
 static int TSTTEntityTopologyToVTKZoneType(int ttype)
@@ -95,6 +101,164 @@ static int TSTTEntityTopologyToVTKZoneType(int ttype)
     return -1;
 }
 
+#if 0
+static int NextDomainId(bool init = false)
+{
+    static int n;
+    if (init) n = 0;
+    n++;
+    return n-1;
+}
+
+static void
+ClassifyEntitySet(TSTTM::Mesh mesh, EntitySetHandle esh, int level, int memId,
+    map<EntitySetHandle, VisItEntitySetInfo_t> &esMap)
+{
+    TSTTB::EntSet mesh_eset = aMesh;
+    TSTTB::EntTag mesh_ent = aMesh;
+    TSTTB::SetTag mesh_stag = aMesh;
+
+    // compute an indentation for debugging
+    std::string ident;
+    for (int i = 0; i < level; i++)
+        ident += "    ";
+
+    VisItEntitySetInfo_t esInfo;
+
+    if (level == 1)
+    {
+        if (mesh_eset.getNumEntSets(esh, 0) > 0)
+            esInfo.domainId = NextDomainId();
+    }
+
+    sidl::array<TagHandle> tags;
+    int tags_size;
+    mesh_stag.getAllEntSetTags(esh, tags, tags_size);
+    if (tags_size)
+    {
+        debug5 << ident << "  tags = " << tags_size << endl;
+        debug5 << ident << "  {" << endl;
+        debug5 << ident << "                name           type     size     value(s)..." << endl;
+        for (int t = 0; t < tags_size; t++)
+        {
+            TSTTB::TagValueType tagType = mesh_stag.getTagType(tags[t]);
+            int tagSize = mesh_stag.getTagSizeValues(tags[t]);
+            string tagName = mesh_stag.getTagName(tags[t]);
+
+            char lineBuf[256]; // for debugging output
+            if (tagType == TSTTB::TagValueType_INTEGER)
+            {
+                int theVal = mesh_stag.getEntSetIntData(esh, tags[t]);
+                if (debug5_real)
+                {
+                    sprintf(lineBuf, "% 16s     % 8s     %03d     %d", 
+                        tagName.c_str(), tsttDataTypeNames[tagType], tagSize, theVal);
+                }
+            }
+            else if (tagType == TSTTB::TagValueType_DOUBLE)
+            {
+                double theVal = mesh_stag.getEntSetDblData(esh, tags[t]);
+                if (debug5_real)
+                {
+                    sprintf(lineBuf, "% 16s     % 8s     %03d     %f", 
+                        tagName.c_str(), tsttDataTypeNames[tagType], tagSize, theVal);
+                }
+            }
+            else if (tagType == TSTTB::TagValueType_ENTITY_HANDLE)
+            {
+                EntitySetHandle theVal = mesh_stag.getEntSetEHData(esh, tags[t]);
+                if (debug5_real)
+                {
+                    sprintf(lineBuf, "% 16s     % 8s     %03d     %X", 
+                        tagName.c_str(), tsttDataTypeNames[tagType], tagSize, theVal);
+                }
+            }
+            else if (tagType == TSTTB::TagValueType_BYTES)
+            {
+                sidl::array<char> theVal;
+                int theValSize;
+                mesh_stag.getEntSetData(esh, tags[t], theVal, theValSize);
+                std::string valBuf;
+                for (int k = 0; k < theValSize; k++)
+                {
+                    char tmpChars[32];
+                    if (theValSize > 4)
+                        sprintf(tmpChars, "%c", theVal[k]);
+                    else
+                        sprintf(tmpChars, "%hhX", theVal[k]);
+                    valBuf += std::string(tmpChars);
+                }
+
+                // classify group by hash on category value
+                if (tagName == "CATEGORY")
+                {
+                    esInfo.groupId = BJHash::Hash(valBuf.c_str(), valBuf.size(), 0);
+                }
+
+                if (debug5_real)
+                {
+                    sprintf(lineBuf, "% 16s     % 8s     %03d     %s", 
+                        tagName.c_str(), tsttDataTypeNames[tagType], tagSize, valBuf.c_str());
+                }
+            }
+            else
+            {
+                if (debug5_real)
+                {
+                    sprintf(lineBuf, "% 16s     % 8s     %03d     %s", 
+                        tagName.c_str(), "UNKNOWN", tagSize, "UNKNOWN");
+                }
+            }
+            debug5 << ident << "       " << lineBuf << endl;
+        }
+        debug5 << ident << "  }" << endl;
+    }
+    else
+    {
+        debug5 << ident << "  tags = NONE" << endl;
+    }
+}
+
+static void
+ProcessEntitySetHierarchy(TSTTM::Mesh aMesh, int level, int esId, EntitySetHandle esh,
+    map<EntitySetHandle,VisItEntitySetInfo_t> &esMap)
+{
+    TSTTB::EntSet mesh_eset = aMesh;
+    TSTTB::EntTag mesh_ent = aMesh; 
+    TSTTB::SetTag mesh_stag = aMesh;
+
+    // compute an indentation for debugging
+    std::string ident;
+    for (int i = 0; i < level; i++)
+        ident += "    ";
+
+    debug5 << ident << "For Entity Set<" << level << "," << esId << ">:" << endl;
+    debug5 << ident << "{" << endl;
+
+    sidl::array<EntitySetHandle> sets;
+    int sets_size;
+    mesh_eset.getEntSets(esh, 1, sets, sets_size);
+    if (sets_size > 0)
+    {
+        debug5 << ident << "  sub-entity sets = " << sets_size << endl;
+        debug5 << ident << "  {" << endl;
+
+        for (int i = 0; i < sets_size; i++)
+        {
+            // recurse first, then classify
+            ProcessEntitySetHierarchy(aMesh, level+1, i, sets[i], esMap);
+            ClassifyEntitySet(aMesh, level, i, sets[i], esMap);
+        }
+
+        debug5 << ident << "  }" << endl;
+    }
+    else
+    {
+        debug5 << ident << "    entity sets = NONE" << endl;
+    }
+}
+#endif
+
 // ****************************************************************************
 //  Method: avtTSTT constructor
 //
@@ -107,9 +271,9 @@ avtTSTTFileFormat::avtTSTTFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
     vmeshFileName = filename;
-    rootSet = vertEnts = edgeEnts = faceEnts = regEnts = 0;
     geomDim = topoDim = 0;
-    numVerts = numEdges = numFaces = numRegs = 0;
+    vertEnts = edgeEnts = faceEnts = regnEnts = 0;
+    numVerts = numEdges = numFaces = numRegns = 0;
     haveMixedElementMesh = false;
 }
 
@@ -131,6 +295,18 @@ avtTSTTFileFormat::avtTSTTFileFormat(const char *filename)
 void
 avtTSTTFileFormat::FreeUpResources(void)
 {
+    if (vertEnts != 0)
+        delete vertEnts;
+    vertEnts = 0;
+    if (edgeEnts != 0)
+        delete edgeEnts;
+    edgeEnts = 0;
+    if (faceEnts != 0)
+        delete faceEnts;
+    faceEnts = 0;
+    if (regnEnts != 0)
+        delete regnEnts;
+    regnEnts = 0;
 }
 
 
@@ -144,6 +320,12 @@ avtTSTTFileFormat::FreeUpResources(void)
 //
 //  Programmer: miller -- generated by xml2avt
 //  Creation:   Wed Mar 7 17:15:33 PST 2007
+//
+//  Modifications:
+//
+//    Mark C. Miller, Thu Mar 22 09:37:55 PDT 2007
+//    Added code to detect variable centering and populate md with variable
+//    info
 //
 // ****************************************************************************
 
@@ -183,16 +365,16 @@ avtTSTTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         numFaces = tsttMesh.getNumOfType(rootSet, TSTTM::EntityType_FACE);
         if (numFaces > 0)
             topoDim = 2;
-        numRegs = tsttMesh.getNumOfType(rootSet, TSTTM::EntityType_REGION);
-        if (numRegs > 0)
+        numRegns = tsttMesh.getNumOfType(rootSet, TSTTM::EntityType_REGION);
+        if (numRegns > 0)
             topoDim = 3;
 
         //
         // Decide if we've got a 'mixed element' mesh
         //
         if ((numEdges > 0 && numFaces > 0) ||
-            (numEdges > 0 && numRegs > 0) ||
-            (numFaces > 0 && numRegs > 0))
+            (numEdges > 0 && numRegns > 0) ||
+            (numFaces > 0 && numRegns > 0))
             haveMixedElementMesh = true;
 
         //
@@ -213,7 +395,7 @@ avtTSTTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 domToEntType[blockPieceNames.size()] = TSTTM::EntityType_FACE;
                 blockPieceNames.push_back("FACE");
             }
-            if (numRegs)
+            if (numRegns)
             {
                 domToEntType[blockPieceNames.size()] = TSTTM::EntityType_REGION;
                 blockPieceNames.push_back("REGION");
@@ -231,10 +413,111 @@ avtTSTTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 domToEntType[0] = TSTTM::EntityType_EDGE;
             else if (numFaces > 0)
                 domToEntType[0] = TSTTM::EntityType_FACE;
-            else if (numRegs > 0)
+            else if (numRegns > 0)
                 domToEntType[0] = TSTTM::EntityType_REGION;
             AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, 0, 1, 0,
                 geomDim, topoDim);
+        }
+
+        //
+        // Because its so convenient, add the zonetype expression as a
+        // variable on the mesh
+        //
+        Expression expr;
+        expr.SetName("zonetype");
+        expr.SetDefinition("zonetype(mesh)");
+        expr.SetType(Expression::ScalarMeshVar);
+        md->AddExpression(&expr);
+
+        // create variants of the tsttMesh object handle ??
+        TSTTB::EntSet tsttMeshes = tsttMesh;
+        TSTTB::SetTag tsttMesht  = tsttMesh;
+        TSTTM::Entity tsttMeshe  = tsttMesh;
+        TSTTB::EntTag tsttMeshet = tsttMesh;
+        TSTTB::ArrTag tsttMeshat = tsttMesh;
+
+        //
+        // How to determine centering WITHOUT invoking problem sized
+        // data work; e.g. an array of entity handles? We pick the
+        // first entity in each type class (0d, 1d, 2d, and 3d) and
+        // find all the tags defined on those entities and then
+        // register them as node or zone centered variables.
+        //
+        int entTypeClass;
+        for (entTypeClass = 0; entTypeClass < 4; entTypeClass++)
+        {
+            // initialize an entity iterator and get the first entity
+            void *entIt;
+            tsttMeshe.initEntIter(rootSet, (TSTTM::EntityType) entTypeClass,
+                TSTTM::EntityTopology_ALL_TOPOLOGIES, entIt);
+            void *oneEntity;
+            tsttMeshe.getNextEntIter(entIt, oneEntity);
+            tsttMeshe.endEntIter(entIt);
+
+            // get all the tags defined on this one entity
+            sidl::array<void*> tagsOnOneEntity;
+            int tagsOnOneEntity_size;
+            tsttMeshet.getAllTags(oneEntity, tagsOnOneEntity, tagsOnOneEntity_size);
+
+            // make a vector of the found handles and copy it
+            // to the saved list of primitive tag handles
+            vector<void*> tmpTagHandles;
+            for (int kk = 0; kk < tagsOnOneEntity_size; kk++)
+                tmpTagHandles.push_back(tagsOnOneEntity[kk]);
+            primitiveTagHandles[entTypeClass] = tmpTagHandles;
+        }
+
+        for (entTypeClass = 0; entTypeClass < 4; entTypeClass++)
+        {
+            avtCentering centering = entTypeClass == 0 ? AVT_NODECENT : AVT_ZONECENT;
+
+            vector<void*> tagHandles = primitiveTagHandles[entTypeClass];
+
+            for (int tagIdx = 0; tagIdx < tagHandles.size(); tagIdx++)
+            {
+                void *theTag = tagHandles[tagIdx]; 
+                string tagName = tsttMesht.getTagName(theTag);
+                int valSize = tsttMesht.getTagSizeValues(theTag);
+                avtVarType var_type = GuessVarTypeFromNumDimsAndComps(geomDim, valSize);
+
+                // TSTT can sometimes define same tag on multiple entities
+                bool shouldSkip = false;
+                if (entTypeClass > 0)
+                {
+                    vector<void*> tagHandlesOnVerts = primitiveTagHandles[0];
+                    for (int t = 0; t < tagHandlesOnVerts.size(); t++)
+                    {
+                        string vertTagName = tsttMesht.getTagName(tagHandlesOnVerts[t]);
+                        if (vertTagName == tagName)
+                        {
+                            shouldSkip = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSkip)
+                    continue;
+
+                if (var_type == AVT_SCALAR_VAR)
+                    AddScalarVarToMetaData(md, tagName, "mesh", centering);
+                else if (var_type == AVT_VECTOR_VAR)
+                    AddVectorVarToMetaData(md, tagName, "mesh", centering, valSize);
+                else if (var_type == AVT_SYMMETRIC_TENSOR_VAR)
+                    AddSymmetricTensorVarToMetaData(md, tagName, "mesh", centering, valSize);
+                else if (var_type == AVT_TENSOR_VAR)
+                    AddTensorVarToMetaData(md, tagName, "mesh", centering, valSize);
+                else
+                {
+                    vector<string> memberNames;
+                    for (int c = 0; c < valSize; c++)
+                    {
+                        char tmpName[64];
+                        SNPRINTF(tmpName, sizeof(tmpName), "%s_%03d", tagName.c_str(), c);
+                        memberNames.push_back(tmpName);
+                    }
+                    AddArrayVarToMetaData(md, tagName, memberNames, "mesh", centering);
+                }
+            }
         }
     }
     catch (TSTTB::Error TErr)
@@ -247,172 +530,6 @@ avtTSTTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             cerr << msg << endl;
         return;
     }
-
-    //
-    // Because its so convenient, add the zonetype expression as a
-    // variable on the mesh
-    //
-    Expression expr;
-    expr.SetName("zonetype");
-    expr.SetDefinition("zonetype(mesh)");
-    expr.SetType(Expression::ScalarMeshVar);
-    md->AddExpression(&expr);
-
-    // create variants of the tsttMesh object handle ??
-    TSTTB::EntSet tsttMeshes = tsttMesh;
-    TSTTB::SetTag tsttMesht  = tsttMesh;
-    TSTTM::Entity tsttMeshe  = tsttMesh;
-    TSTTB::EntTag tsttMeshet = tsttMesh;
-    TSTTB::ArrTag tsttMeshat = tsttMesh;
-
-#if 0
-
-    //
-    // How to determine centering WITHOUT invoking problem sized
-    // data work; e.g. an array of entity handles
-    //
-    for (int qq = 0; qq < 4; qq++)
-    {
-        void *entIt;
-        tsttMeshe.initEntIter(rootSet, (TSTTM::EntityType) qq,
-            TSTTM::EntityTopology_ALL_TOPOLOGIES, entIt);
-        void *oneEntity;
-        tsttMeshe.getNextEntIter(entIt, oneEntity);
-        tsttMeshe.endEntIter(entIt);
-        sidl::array<void*> tagsOnOneEntity;
-        int tagsOnOneEntity_size;
-        tsttMeshet.getAllTags(oneEntity, tagsOnOneEntity, tagsOnOneEntity_size);
-        cerr << "Tags found on first " << qq << "d entity..." << endl;
-        for (int kk = 0; kk < tagsOnOneEntity_size; kk++)
-        {
-            void *theTag = tagsOnOneEntity[kk];
-            cerr << "    theTag = " << theTag << endl;
-            cerr << "    name = \"" << tsttMesht.getTagName(theTag) << "\"" << endl;
-            cerr << "    size values = " << tsttMesht.getTagSizeValues(theTag) << endl;
-            cerr << "    size bytes = " << tsttMesht.getTagSizeBytes(theTag) << endl;
-            int typeId = tsttMesht.getTagType(theTag);
-            cerr << "    type = \"" <<
-                (typeId < sizeof(dataTypes)/sizeof(dataTypes[0]) ? dataTypes[typeId] : "unknown")
-                 << "\"" << endl; 
-        }
-        cerr << "DONE DONE DONE" << endl;
-    }
-
-    // look for variables stored in the form of 'tags' on entity sets
-    sidl::array<void*> esets;
-    int esets_size;
-    tsttMeshes.getEntSets(rootSet, 0, esets, esets_size);
-
-    cerr << "Found " << esets_size << " entity sets" << endl;
-
-    // build a map of the tag names and handles
-    std::map<string, void*> tagMap;
-    for (i = 0; i < esets_size; i++)
-    {
-        sidl::array<void*> tags;
-        int tags_size;
-        tsttMesht.getAllEntSetTags(esets[i], tags, tags_size);
-        cerr << "For entity set " << i << ", found " << tags_size << " tags" << endl;
-    
-        for (j = 0; j < tags_size; j++)
-            tagMap[tsttMesht.getTagName(tags[j])] = tags[j];
-
-        
-        int eh_size;
-        sidl::array<void*> eh;
-        tsttMesh.getEntities(esets[i], TSTTM::EntityType_ALL_TYPES,
-            TSTTM::EntityTopology_ALL_TOPOLOGIES, eh, eh_size);
-        cerr << "    found " << eh_size << " entities for this entity set" << endl;
-
-        for (int qq = 0; qq < eh_size; qq++)
-        {
-            sidl::array<void*> tagsOnOneEntity;
-            int tagsOnOneEntity_size = 0;
-            tsttMeshet.getAllTags(eh[qq], tagsOnOneEntity, tagsOnOneEntity_size);
-            cerr << "    Tags found on entity " << qq << endl;
-            for (int uu = 0; uu < tagsOnOneEntity_size; uu++)
-            {
-                void *theTag = tagsOnOneEntity[uu];
-                cerr << "        theTag = " << theTag << endl;
-                cerr << "        name = \"" << tsttMesht.getTagName(theTag) << "\"" << endl;
-                cerr << "        size values = " << tsttMesht.getTagSizeValues(theTag) << endl;
-                cerr << "        size bytes = " << tsttMesht.getTagSizeBytes(theTag) << endl;
-                int typeId = tsttMesht.getTagType(theTag);
-                cerr << "        type = \"" <<
-                    (typeId < sizeof(dataTypes)/sizeof(dataTypes[0]) ? dataTypes[typeId] : "unknown")
-                     << "\"" << endl; 
-                if (typeId == 0)
-                {
-                    try
-                    {
-                        cerr << "        data = " << tsttMeshet.getIntData(eh[qq], theTag);
-                    }
-                    catch (TSTTB::Error TErr)
-                    {
-                        cerr << "Encountered TSTT error \"" << TErr.getDescription() << "\"" << endl;
-                        cerr << "Encountered TSTT type " << TErr.getErrorType() << endl;
-                    }
-                }
-                else
-                    cerr << "        data = unknown" << endl;
-            }
-        }
-    }
-    
-    // iterate through tags, defining mesh variables, handle
-    // any specially named tags (e.g. 'UNIQUE_ID', 'MATERIAL')
-    std::map<string, void*>::const_iterator mit;
-    void *anIntTag;
-    for (mit = tagMap.begin(); mit != tagMap.end(); mit++)
-    {
-        cerr << "Processing entry in map keyed at \"" << mit->first << "\"" << endl;
-        void *theTag = mit->second;
-        
-        cerr << "    name = \"" << tsttMesht.getTagName(theTag) << "\"" << endl;
-        cerr << "    size values = " << tsttMesht.getTagSizeValues(theTag) << endl;
-        cerr << "    size bytes = " << tsttMesht.getTagSizeBytes(theTag) << endl;
-        int typeId = tsttMesht.getTagType(theTag);
-        cerr << "    type = \"" <<
-            (typeId < sizeof(dataTypes)/sizeof(dataTypes[0]) ? dataTypes[typeId] : "unknown")
-             << "\"" << endl; 
-
-        if (string(tsttMesht.getTagName(theTag)) == "MATERIAL_SET")
-        {
-            anIntTag = theTag;
-            cerr << "Setting anIntTag" << endl;
-        }
-        if (tsttMesht.getTagSizeValues(theTag) == 1)
-            AddScalarVarToMetaData(md, tsttMesht.getTagName(theTag), "mesh", AVT_NODECENT);
-        else if (tsttMesht.getTagSizeValues(theTag) == 3)
-            AddVectorVarToMetaData(md, tsttMesht.getTagName(theTag), "mesh", AVT_NODECENT, 3);
-        else if (tsttMesht.getTagSizeValues(theTag) == 9)
-            AddTensorVarToMetaData(md, tsttMesht.getTagName(theTag), "mesh", AVT_NODECENT, 9);
-    }
-
-#if 0
-    int eh_size;
-    sidl::array<void*> eh;
-    tsttMesh.getEntities(rootSet, TSTTM::EntityType_REGION,
-        TSTTM::EntityTopology_ALL_TOPOLOGIES, eh, eh_size);
-    cerr << "For VERTEX, got eh_size = " << eh_size << endl;
-    sidl::array<int> intArray;
-    int intArray_size;
-
-    try
-    {
-        tsttMeshat.getIntArrData(eh, eh_size, anIntTag, intArray, intArray_size); 
-    }
-    catch (TSTTB::Error TErr)
-    {
-        cerr << "Encountered TSTT error \"" << TErr.getDescription() << "\"" << endl;
-        cerr << "Encountered TSTT type " << TErr.getErrorType() << endl;
-    }
-
-    for (i = 0; i < intArray_size; i++)
-        cerr << "intArray[" << i << "] = " << intArray[i] << endl;
-#endif
-#endif
-
 }
 
 
@@ -443,80 +560,79 @@ avtTSTTFileFormat::GetMesh(int domain, const char *meshname)
 
     try
     {
+        //
+        // The domain number indicates the entity type we're looking for
+        //
+        TSTTM::EntityType entType = domToEntType[domain]; 
+        int numEnts = tsttMesh.getNumOfType(rootSet, entType);
+        if (numEnts == 0)
+            return 0;
 
-    //
-    // The domain number indicates the entity type we're looking for
-    //
-    TSTTM::EntityType entType = domToEntType[domain]; 
-    int numEnts = tsttMesh.getNumOfType(rootSet, entType);
-    if (numEnts == 0)
-        return 0;
+        int coords2Size, mapSize;
+        sidl::array<double> coords2;
+        sidl::array<int> inEntSetMap;
+        TSTTM::StorageOrder storageOrder2 = TSTTM::StorageOrder_UNDETERMINED;
+        tsttMesh.getAllVtxCoords(rootSet, coords2, coords2Size,
+            inEntSetMap, mapSize, storageOrder2);
 
-    int coords2Size, mapSize;
-    sidl::array<double> coords2;
-    sidl::array<int> inEntSetMap;
-    TSTTM::StorageOrder storageOrder2 = TSTTM::StorageOrder_UNDETERMINED;
-    tsttMesh.getAllVtxCoords(rootSet, coords2, coords2Size,
-        inEntSetMap, mapSize, storageOrder2);
+        int vertCount = mapSize;
+        if (vertCount == 0)
+            return 0;
 
-    int vertCount = mapSize;
-    if (vertCount == 0)
-        return 0;
+        //
+        // If its a 1D or 2D mesh, the coords could be 3-tuples where
+        // the 'extra' values are always zero or they could be reduced
+        // dimensioned tuples. The TSTT interface doesn't specify.
+        //
+        int tupleSize = coords2Size / vertCount;
 
-    //
-    // If its a 1D or 2D mesh, the coords could be 3-tuples where
-    // the 'extra' values are always zero or they could be reduced
-    // dimensioned tuples. The TSTT interface doesn't specify.
-    //
-    int tupleSize = coords2Size / vertCount;
-
-    //
-    // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
-    //
-    vtkPoints *points  = vtkPoints::New();
-    points->SetNumberOfPoints(vertCount);
-    float *pts = (float *) points->GetVoidPointer(0);
-    for (i = 0; i < vertCount; i++)
-    {
-        if (storageOrder2 == TSTTM::StorageOrder_INTERLEAVED)
+        //
+        // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+        //
+        vtkPoints *points  = vtkPoints::New();
+        points->SetNumberOfPoints(vertCount);
+        float *pts = (float *) points->GetVoidPointer(0);
+        for (i = 0; i < vertCount; i++)
         {
-            for (j = 0; j < tupleSize; j++)
-                pts[i*3+j] = (float) coords2.get(i*tupleSize+j);
-            for (j = tupleSize; j < 3; j++)
-                pts[i*3+j] = 0.0;
+            if (storageOrder2 == TSTTM::StorageOrder_INTERLEAVED)
+            {
+                for (j = 0; j < tupleSize; j++)
+                    pts[i*3+j] = (float) coords2.get(i*tupleSize+j);
+                for (j = tupleSize; j < 3; j++)
+                    pts[i*3+j] = 0.0;
+            }
+            else if (storageOrder2 == TSTTM::StorageOrder_BLOCKED)
+            {
+                for (j = 0; j < tupleSize; j++)
+                    pts[i*3+j] = (float) coords2.get(j*vertCount+i);
+                for (j = tupleSize; j < 3; j++)
+                    pts[i*3+j] = 0.0;
+            }
         }
-        else if (storageOrder2 == TSTTM::StorageOrder_BLOCKED)
+
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New(); 
+        ugrid->SetPoints(points);
+        points->Delete();
+
+        sidl::array<int> offset; int offsetSize;
+        sidl::array<int> index; int indexSize;
+        sidl::array<TSTTM::EntityTopology> topos; int32_t toposSize;
+        tsttMesh.getVtxCoordIndex(rootSet, entType,
+            TSTTM::EntityTopology_ALL_TOPOLOGIES, TSTTM::EntityType_VERTEX, 
+            offset, offsetSize, index, indexSize, topos, toposSize);
+
+        for (int off = 0; off < offsetSize; off++)
         {
-            for (j = 0; j < tupleSize; j++)
-                pts[i*3+j] = (float) coords2.get(j*vertCount+i);
-            for (j = tupleSize; j < 3; j++)
-                pts[i*3+j] = 0.0;
+            int vtkZoneType = TSTTEntityTopologyToVTKZoneType(topos[off]);
+            vtkIdType vertIds[256];
+            int jj = 0;
+            for (int idx = offset[off];
+                 idx < ((off+1) < offsetSize ? offset[off+1] : indexSize); idx++)
+                vertIds[jj++] = index[idx];
+            ugrid->InsertNextCell(vtkZoneType, jj, vertIds);
         }
-    }
 
-    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New(); 
-    ugrid->SetPoints(points);
-    points->Delete();
-
-    sidl::array<int> offset; int offsetSize;
-    sidl::array<int> index; int indexSize;
-    sidl::array<TSTTM::EntityTopology> topos; int32_t toposSize;
-    tsttMesh.getVtxCoordIndex(rootSet, entType,
-        TSTTM::EntityTopology_ALL_TOPOLOGIES, TSTTM::EntityType_VERTEX, 
-        offset, offsetSize, index, indexSize, topos, toposSize);
-
-    for (int off = 0; off < offsetSize; off++)
-    {
-        int vtkZoneType = TSTTEntityTopologyToVTKZoneType(topos[off]);
-        vtkIdType vertIds[256];
-        int jj = 0;
-        for (int idx = offset[off];
-             idx < ((off+1) < offsetSize ? offset[off+1] : indexSize); idx++)
-            vertIds[jj++] = index[idx];
-        ugrid->InsertNextCell(vtkZoneType, jj, vertIds);
-    }
-
-    return ugrid;
+        return ugrid;
 
     }
     catch (TSTTB::Error TErr)
@@ -554,122 +670,139 @@ avtTSTTFileFormat::GetMesh(int domain, const char *meshname)
 vtkDataArray *
 avtTSTTFileFormat::GetVar(int domain, const char *varname)
 {
-    return 0;
-
     TSTTB::SetTag tsttMesht  = tsttMesh;
-    void *tagHandle = tsttMesht.getTagHandle(varname);
-
-    int numComps = tsttMesht.getTagSizeValues(tagHandle);
-
-#if 0
-    void *entHandles = 0;
-    int ents_size;
-    switch (entType)
-    {
-        case TSTTM::EntityType::VERTEX:
-        {
-            if (vertEnts == 0)
-                tsttMesh.getEntities(rootSet, entType,
-                    TSTTM::EntityTopology::ALL_TOPOLOGIES, vertEnts,
-                    ents_size);
-            if (ents_size != numVerts)
-                cerr << "numVerts (" << numVerts << ") != ents_size (" << ents_size << ")" << endl;
-            entHandles = vertEnts;
-            break;
-        }
-        case TSTTM::EntityType::EDGE:
-        {
-            if (edgeEnts == 0)
-                tsttMesh.getEntities(rootSet, entType,
-                    TSTTM::EntityTopology::ALL_TOPOLOGIES, edgeEnts,
-                    ents_size);
-            if (ents_size != numEdges)
-                cerr << "numEdges (" << numEdges << ") != ents_size (" << ents_size << ")" << endl;
-            entHandles = edgeEnts;
-            break;
-        }
-        case TSTTM::EntityType::FACE:
-        {
-            if (faceEnts == 0)
-                tsttMesh.getEntities(rootSet, entType,
-                    TSTTM::EntityTopology::ALL_TOPOLOGIES, faceEnts,
-                    ents_size);
-            if (ents_size != numFaces)
-                cerr << "numFaces (" << numFaces << ") != ents_size (" << ents_size << ")" << endl;
-            entHandles = faceEnts;
-            break;
-        }
-        case TSTTM::EntityType::REGION:
-        {
-            if (regEnts == 0)
-                tsttMesh.getEntities(rootSet, entType,
-                    TSTTM::EntityTopology::ALL_TOPOLOGIES, regEnts,
-                    ents_size);
-            if (ents_size != numRegs)
-                cerr << "numRegs (" << numRegs << ") != ents_size (" << ents_size << ")" << endl;
-            entHandles = regEnts;
-            break;
-        }
-    }
-#endif
-
-    int tag_value_size;
-
+    TSTTB::ArrTag tsttMeshat = tsttMesh;
     vtkDataArray *result = 0;
 
-    switch (tsttMesht.getTagType(tagHandle))
+    //
+    // Scan through known primitive tags looking for one with the given name
+    //
+    int entType;
+    void *tagToGet = 0;
+    for (entType = 0; entType < 4; entType++)
     {
-        case TSTTB::TagValueType_INTEGER:
+        vector<void*> tagHandles = primitiveTagHandles[entType];
+        for (int tagIdx = 0; tagIdx < tagHandles.size(); tagIdx++)
         {
-            sidl::array<int> tag_value;
-            //tsttMesht.getEntSetIntData(rootSet, tagHandle, tag_value, tag_value_size);
-            vtkIntArray *ia = vtkIntArray::New();
-            ia->SetNumberOfComponents(numComps);
-            ia->SetNumberOfTuples(tag_value_size);
-            cerr << "Processing integer data..." << endl;
-            for (int i = 0; i < tag_value_size; i++)
+            void *theTag = tagHandles[tagIdx]; 
+            string tagName = tsttMesht.getTagName(theTag);
+            int nmsz = tagName.size();
+            if (string(tagName, 0, nmsz) == string(varname, 0, nmsz))
             {
-                ia->SetValue(i, tag_value[i]);
-                cerr << "    value[" << i << "] = " << tag_value[i] << endl;
+                tagToGet = theTag;
+                goto tagFound;
             }
-            result = ia;
-            break;
         }
-        case TSTTB::TagValueType_DOUBLE:
+    }
+    EXCEPTION1(InvalidVariableException, varname);
+
+tagFound:
+    try
+    {
+        //
+        // Get the array of entities if we haven't already
+        //
+        sidl::array<void*> *entHandles_p = 0;
+        int ents_size;
+        switch (entType)
         {
-            sidl::array<double> tag_value;
-            //tsttMesht.getEntSetDblData(rootSet, tagHandle, tag_value, tag_value_size);
-            vtkDoubleArray *da = vtkDoubleArray::New();
-            da->SetNumberOfComponents(numComps);
-            da->SetNumberOfTuples(tag_value_size);
-            cerr << "Processing double data..." << endl;
-            for (int i = 0; i < tag_value_size; i++)
+            case TSTTM::EntityType_VERTEX: entHandles_p = vertEnts; ents_size = numVerts; break;
+            case TSTTM::EntityType_EDGE:   entHandles_p = edgeEnts; ents_size = numFaces; break;
+            case TSTTM::EntityType_FACE:   entHandles_p = faceEnts; ents_size = numEdges; break;
+            case TSTTM::EntityType_REGION: entHandles_p = regnEnts; ents_size = numRegns; break;
+        }
+        if (entHandles_p == 0)
+        {
+            entHandles_p = new sidl::array<void*>;
+            tsttMesh.getEntities(rootSet, (TSTTM::EntityType) entType,
+                TSTTM::EntityTopology_ALL_TOPOLOGIES, *entHandles_p, ents_size);
+            int expectedSize;
+            switch (entType)
             {
-                da->SetValue(i, tag_value[i]);
-                cerr << "    value[" << i << "] = " << tag_value[i] << endl;
+                case TSTTM::EntityType_VERTEX:
+                    vertEnts = entHandles_p; expectedSize = numVerts; break;
+                case TSTTM::EntityType_EDGE:
+                    edgeEnts = entHandles_p; expectedSize = numEdges; break;
+                case TSTTM::EntityType_FACE:
+                    faceEnts = entHandles_p; expectedSize = numFaces; break;
+                case TSTTM::EntityType_REGION:
+                    regnEnts = entHandles_p; expectedSize = numRegns; break;
             }
-            result = da;
-            break;
-        }
-        case TSTTB::TagValueType_ENTITY_HANDLE:
-        {
-        }
-        case TSTTB::TagValueType_BYTES:
-        {
-            sidl::array<char> tag_value;
-            tsttMesht.getEntSetData(rootSet, tagHandle, tag_value, tag_value_size);
-            vtkCharArray *ca = vtkCharArray::New();
-            ca->SetNumberOfComponents(numComps);
-            ca->SetNumberOfTuples(tag_value_size);
-            cerr << "Processing double data..." << endl;
-            for (int i = 0; i < tag_value_size; i++)
+            if (expectedSize != ents_size)
             {
-                ca->SetValue(i, tag_value[i]);
-                cerr << "    value[" << i << "] = " << tag_value[i] << endl;
+                char tmpMsg[256];
+                SNPRINTF(tmpMsg, sizeof(tmpMsg), "for variable \"%s\" "
+                    "getEntities() returned %d entities but VisIt expected %d",
+                    varname, ents_size, expectedSize);
+                EXCEPTION1(InvalidVariableException, tmpMsg);
             }
-            result = ca;
-            break;
         }
+
+        //
+        // Now, get the tag data and put it in an appropriate vtk data array 
+        //
+        int tagSizeValues = tsttMesht.getTagSizeValues(tagToGet);
+        int tagTypeId = tsttMesht.getTagType(tagToGet);
+        int arraySize;
+        switch (tagTypeId)
+        {
+            case TSTTB::TagValueType_INTEGER:
+            {
+                sidl::array<int> intArray;
+                tsttMeshat.getIntArrData(*entHandles_p, ents_size, tagToGet, intArray, arraySize); 
+                if (arraySize != ents_size * tagSizeValues)
+                {
+                    char tmpMsg[256];
+                    SNPRINTF(tmpMsg, sizeof(tmpMsg), "getIntArrData() returned %d values "
+                        " but VisIt expected %d * %d", arraySize, ents_size, tagSizeValues);
+                    EXCEPTION1(InvalidVariableException, tmpMsg);
+                }
+                vtkIntArray *ia = vtkIntArray::New();
+                ia->SetNumberOfComponents(tagSizeValues);
+                ia->SetNumberOfTuples(ents_size);
+                for (int i = 0; i < arraySize; i++)
+                    ia->SetValue(i, intArray[i]);
+                result = ia;
+                break;
+            }
+            case TSTTB::TagValueType_DOUBLE:
+            {
+                sidl::array<double> dblArray;
+                tsttMeshat.getDblArrData(*entHandles_p, ents_size, tagToGet, dblArray, arraySize); 
+                if (arraySize != ents_size * tagSizeValues)
+                {
+                    char tmpMsg[256];
+                    SNPRINTF(tmpMsg, sizeof(tmpMsg), "getDblArrData() returned %d values "
+                        " but VisIt expected %d * %d", arraySize, ents_size, tagSizeValues);
+                    EXCEPTION1(InvalidVariableException, tmpMsg);
+                }
+                vtkDoubleArray *da = vtkDoubleArray::New();
+                da->SetNumberOfComponents(tagSizeValues);
+                da->SetNumberOfTuples(ents_size);
+                for (int i = 0; i < arraySize; i++)
+                    da->SetValue(i, dblArray[i]);
+                result = da;
+                break;
+            }
+            case TSTTB::TagValueType_ENTITY_HANDLE:
+            case TSTTB::TagValueType_BYTES:
+            {
+                char tmpMsg[256];
+                SNPRINTF(tmpMsg, sizeof(tmpMsg), "Unable to handle data type of \"%s\"",
+                    tsttDataTypeNames[tagTypeId]);
+                EXCEPTION1(InvalidVariableException, tmpMsg);
+            }
+        }
+    }
+    catch (TSTTB::Error TErr)
+    {
+        char msg[256];
+        SNPRINTF(msg, sizeof(msg), "Encountered TSTT error (%d) \"%s\""
+            "\nUnable to open file!", TErr.getDescription().c_str(),
+            TErr.getErrorType());
+        if (!avtCallback::IssueWarning(msg))
+            cerr << msg << endl;
+        return 0;
     }
 
     return result;
@@ -698,5 +831,5 @@ avtTSTTFileFormat::GetVar(int domain, const char *varname)
 vtkDataArray *
 avtTSTTFileFormat::GetVectorVar(int domain, const char *varname)
 {
-    return 0;
+    return GetVar(domain, varname);
 }

@@ -45,6 +45,7 @@
 
 #include <vtkLookupTable.h>
 #include <vtkVerticalScalarBarActor.h>
+#include <DebugStream.h>
 
 // ****************************************************************************
 //  Method: avtLevelsLegend constructor
@@ -70,12 +71,18 @@
 //    I added nLevels, barVisibility and rangeVisibility.  I changed the
 //    default size and position of the legend.
 //
+//    Brad Whitlock, Wed Mar 21 21:43:27 PST 2007
+//    Added scale.
+//
 // ****************************************************************************
 
 avtLevelsLegend::avtLevelsLegend()
 {
     min = 0.;
     max = 1.;
+    scale[0] = scale[1] = 1.;
+    maxScale = 1.;
+    setMaxScale = true;
 
     nLevels = 0;
 
@@ -153,12 +160,15 @@ avtLevelsLegend::~avtLevelsLegend()
 //    Eric Brugger, Thu Jul 17 08:20:28 PDT 2003
 //    Added maxSize argument.
 //
+//    Brad Whitlock, Wed Mar 21 21:41:53 PST 2007
+//    Added scaling.
+//
 // ****************************************************************************
 
 void
-avtLevelsLegend::GetLegendSize(double maxSize, double &w, double &h)
+avtLevelsLegend::GetLegendSize(double maxHeight, double &w, double &h)
 {
-    w = 0.08;
+    w = 0.08 * scale[0];
 
     //
     // The fudge factor added to nLines when barVisibility is true is
@@ -175,25 +185,193 @@ avtLevelsLegend::GetLegendSize(double maxSize, double &w, double &h)
     if (rangeVisibility)      nLines += 2.0;
     if (barVisibility)        nLines += nLevels * 1.1 + 1.0 + fudge;
 
-    h = nLines * fontHeight;
+    h = nLines * fontHeight * scale[1];
 
     //
     // If the legend is larger than the maximum size, then try to shrink
     // the color bar so that it fits within the maximum size.
     //
-    if (h > maxSize && barVisibility)
+    if (h > maxHeight && barVisibility)
     {
         double hTitles = h - (nLevels * 1.1 + 1.0 + fudge) * fontHeight;
-        double nLevelsSpace = (maxSize - hTitles) / (fontHeight * 1.1);
+        double nLevelsSpace = (maxHeight - hTitles) / (fontHeight * 1.1);
         if (nLevelsSpace > 2.)
         {
-            h = maxSize;
+            h = maxHeight;
         }
     }
 
-    sBar->SetPosition2(w, h);
+    if(setMaxScale)
+        maxScale = maxHeight;
+
+    size[0] = w;
+    size[1] = h;
 }
 
+// ****************************************************************************
+// Method: avtLevelsLegend::SetLabelVisibility
+//
+// Purpose: 
+//   Sets whether labels are visible.
+//
+// Arguments:
+//   val : True if labels are to be visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:17 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetLabelVisibility(bool val)
+{
+    labelVisibility = val;
+    sBar->SetLabelVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::GetLabelVisibility
+//
+// Purpose: 
+//   Returns whether labels are visible.
+//
+// Returns:    Whether labels are visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:31:48 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtLevelsLegend::GetLabelVisibility() const
+{
+    return labelVisibility;
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetLegendScale
+//
+// Purpose: 
+//   Set the legend scale.
+//
+// Arguments:
+//   xScale : The scale factor in X.
+//   yScale : The scale factor in Y.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:33:20 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetLegendScale(double xScale, double yScale)
+{
+    // Scale the color bar
+    double colorBarScale = sBar->GetBarWidth() / scale[0];
+    colorBarScale *= xScale;
+    sBar->SetBarWidth(colorBarScale);
+
+    // Save the scales.
+    scale[0] = xScale;
+    scale[1] = yScale;
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetBoundingBoxVisibility
+//
+// Purpose: 
+//   Sets whether the bounding box around the legend will be visible.
+//
+// Arguments:
+//   val : True to make the box visible.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:34:03 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetBoundingBoxVisibility(bool val)
+{
+    sBar->SetBoundingBoxVisibility(val?1:0);
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetBoundingBoxColor
+//
+// Purpose: 
+//   Set the bounding box color.
+//
+// Arguments:
+//   color : An rgba tuple of colors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:34:36 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetBoundingBoxColor(const double *color)
+{
+    sBar->SetBoundingBoxColor((double*)color);
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetOrientation
+//
+// Purpose: 
+//   Set the orientation of the legend -- allowing for horizontal, vertical, ...
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:34:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetOrientation(LegendOrientation)
+{
+    debug1 << "avtLevelsLegend::SetOrientation: NOT IMPLEMENTED" << endl;
+}
+
+// ****************************************************************************
+// Method: avtLevelsLegend::SetFont
+//
+// Purpose: 
+//   Set the font properties for the legend.
+//
+// Arguments:
+//   family : VTK_ARIAL, VTK_COURIER, VTK_TIMES
+//   bold   : True to make the text bold.
+//   italic : True to make the text italic.
+//   shadow : True to make the text shadowed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:35:31 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLevelsLegend::SetFont(int family, bool bold, bool italic, bool shadow)
+{
+    sBar->SetFontFamily(family);
+    sBar->SetBold(bold?1:0);
+    sBar->SetItalic(italic?1:0);
+    sBar->SetShadow(shadow?1:0);
+}
 
 // ****************************************************************************
 //  Method: avtLevelsLegend::SetColorBarVisibility
@@ -449,6 +627,10 @@ avtLevelsLegend::SetVarRange(double nmin, double nmax)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 1, 2001 
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 21 21:46:36 PST 2007
+//    Set position2.
+//
 // ****************************************************************************
 
 void
@@ -456,6 +638,13 @@ avtLevelsLegend::ChangePosition(double x, double y)
 {
     sBar->GetPositionCoordinate()->SetCoordinateSystemToNormalizedViewport();
     sBar->GetPositionCoordinate()->SetValue(x, y, 0.);
+
+    // Set the position 2, incorporating the scale.
+    double w, h;
+    setMaxScale = false;
+    GetLegendSize(maxScale, w, h);
+    setMaxScale = true;
+    sBar->SetPosition2(w, h); 
 }
 
 
@@ -499,11 +688,14 @@ avtLevelsLegend::ChangeTitle(const char *t)
 //  Creation:   October 25, 2005 
 // 
 //  Modifications:
+//    Brad Whitlock, Wed Mar 21 20:19:59 PST 2007
+//    Scale the text taking scale into account.
 //
 // ****************************************************************************
 
 void
 avtLevelsLegend::ChangeFontHeight(double fh)
 {
-    sBar->SetFontHeight(fh);
+    double minScale = (scale[0] < scale[1]) ? scale[0] : scale[1];
+    sBar->SetFontHeight(fh * minScale);
 }

@@ -330,6 +330,9 @@ private:
 //    Re-order arguments to constructor to match declaration order (addresses
 //    compiler warning).
 //
+//    Mark C. Miller, Thu Mar 22 19:09:43 PST 2007
+//    Made AddCutZones return bool indicating if it indeed added anything.
+//
 // ****************************************************************************
 
 class Box
@@ -572,7 +575,7 @@ public:
     vector<int> zids;
 };
 
-  static void AddCutZones(vtkUnstructuredGrid *cutBox, vtkPoints *points,
+  static bool AddCutZones(vtkUnstructuredGrid *cutBox, vtkPoints *points,
                            vtkUnstructuredGrid *ugrid,
                            map<float, map<float, map<float, int> > >& nodemap);
   static void MakeMeshZone(const Box *aBox, vtkPoints *points,

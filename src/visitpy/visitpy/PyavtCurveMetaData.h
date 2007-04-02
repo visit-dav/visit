@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyavtCurveMetaData_StartUp(avtCurveMetaData *subj, void *data);
 void VISITPY_API           PyavtCurveMetaData_CloseDown();
-PyMethodDef * VISITPY_API  PyavtCurveMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyavtCurveMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtCurveMetaData_Check(PyObject *obj);
-avtCurveMetaData * VISITPY_API PyavtCurveMetaData_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyavtCurveMetaData_New();
-PyObject * VISITPY_API     PyavtCurveMetaData_Wrap(const avtCurveMetaData *attr);
+VISITPY_API avtCurveMetaData *  PyavtCurveMetaData_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyavtCurveMetaData_New();
+VISITPY_API PyObject *      PyavtCurveMetaData_Wrap(const avtCurveMetaData *attr);
 void VISITPY_API           PyavtCurveMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtCurveMetaData_SetDefaults(const avtCurveMetaData *atts);
 std::string VISITPY_API    PyavtCurveMetaData_GetLogString();

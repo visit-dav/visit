@@ -67,7 +67,7 @@
                     </size>
                 </property>
             </spacer>
-            <widget class="QvisFileLineEdit" row="0" column="1">
+            <widget class="QvisDialogLineEdit" row="0" column="1">
                 <property name="name">
                     <cstring>CURVE_DATABASE</cstring>
                 </property>
@@ -120,8 +120,8 @@
 </widget>
 <customwidgets>
     <customwidget>
-        <class>QvisFileLineEdit</class>
-        <header location="global">/data_vobs/VisIt/gui/QvisFileLineEdit.h</header>
+        <class>QvisDialogLineEdit</class>
+        <header location="global">/data_vobs/VisIt/gui/QvisDialogLineEdit.h</header>
         <sizehint>
             <width>-1</width>
             <height>-1</height>
@@ -145,6 +145,6 @@
 </images>
 <layoutdefaults spacing="6" margin="11"/>
 <includehints>
-    <includehint>qvisfilelineedit.h</includehint>
+    <includehint>QvisDialogLineEdit.h</includehint>
 </includehints>
 </UI>

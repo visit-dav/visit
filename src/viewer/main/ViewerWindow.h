@@ -407,6 +407,12 @@ class ViewerToolbar;
 //    Brad Whitlock, Mon Feb 12 17:41:58 PST 2007
 //    Added ViewerBase base class.
 //
+//    Brad Whitlock, Tue Mar 20 10:02:18 PDT 2007
+//    Name new annotation objects.
+//
+//    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007 
+//    Added SetScaleMode method.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -524,9 +530,10 @@ public:
     const AnnotationAttributes *GetAnnotationAttributes() const;
     void CopyAnnotationAttributes(const ViewerWindow *);
     void CopyAnnotationObjectList(const ViewerWindow *);
-    void AddAnnotationObject(int annotType);
+    bool AddAnnotationObject(int annotType, const std::string &annotName);
     void HideActiveAnnotationObjects();
     void DeleteActiveAnnotationObjects();
+    bool DeleteAnnotationObject(const std::string &name);
     void DeleteAllAnnotationObjects();
     void RaiseActiveAnnotationObjects();
     void LowerActiveAnnotationObjects();
@@ -640,6 +647,8 @@ public:
 
     void GlyphPick(const double pt3[3], const double pt2[3], 
                    int &dom, int &elNum, bool &forCell);
+
+    void SetScaleMode(ScaleMode ds, ScaleMode rs);
 
 private:
     void RecenterViewCurve(const double *limits);

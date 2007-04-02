@@ -110,6 +110,8 @@ class HistogramViewerPluginInfo: public virtual ViewerPlotPluginInfo, public vir
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
 
+    virtual bool ProvidesLegend() const { return false; }
+
     static void InitializeGlobalObjects();
   private:
     static HistogramAttributes *defaultAtts;

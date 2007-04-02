@@ -43,6 +43,8 @@
 // Forward declarations.
 class AnnotationAttributes;
 class AnnotationObjectList;
+class PlotList;
+
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
@@ -98,6 +100,9 @@ class QvisLineWidthWidget;
 //   Split the 2D and 3D tabs in 2 and added controls for setting axis titles
 //   and units.
 //
+//   Brad Whitlock, Wed Mar 21 21:13:39 PST 2007
+//   Added plotList.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -112,6 +117,7 @@ public:
 
     void ConnectAnnotationAttributes(AnnotationAttributes *a);
     void ConnectAnnotationObjectList(AnnotationObjectList *a);
+    void ConnectPlotList(PlotList *pl);
     virtual void SubjectRemoved(Subject *TheRemovedSubject);
 
     virtual void CreateNode(DataNode *);
@@ -216,6 +222,7 @@ private slots:
 private:
     AnnotationAttributes *annotationAtts;
     AnnotationObjectList *annotationObjectList;
+    PlotList             *plotList;
 
     QvisAnnotationObjectInterface **objectInterfaces;
     int                             nObjectInterfaces;

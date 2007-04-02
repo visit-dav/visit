@@ -3301,6 +3301,7 @@ VisWindow::GetAnnotationAtts() const
 //
 // Arguments:
 //   annotType : The type of annotation to create.
+//   annotName : The name of the annotation object.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Dec 2 15:32:59 PST 2003
@@ -3309,10 +3310,10 @@ VisWindow::GetAnnotationAtts() const
 //   
 // ****************************************************************************
 
-void
-VisWindow::AddAnnotationObject(int annotType)
+bool
+VisWindow::AddAnnotationObject(int annotType, const std::string &annotName)
 {
-    annotations->AddAnnotationObject(annotType);
+    return annotations->AddAnnotationObject(annotType, annotName);
 }
 
 // ****************************************************************************
@@ -3351,6 +3352,25 @@ void
 VisWindow::DeleteActiveAnnotationObjects()
 {
     annotations->DeleteActiveAnnotationObjects();
+}
+
+// ****************************************************************************
+// Method: VisWindow::DeleteAnnotationObject
+//
+// Purpose: 
+//   Deletes the specified annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 20 12:20:29 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VisWindow::DeleteAnnotationObject(const std::string &name)
+{
+    return annotations->DeleteAnnotationObject(name);
 }
 
 // ****************************************************************************

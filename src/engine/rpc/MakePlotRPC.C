@@ -55,11 +55,16 @@ using std::string;
 //  Programmer:  Jeremy Meredith
 //  Creation:    March  4, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 21 22:49:17 PST 2007
+//    Added name.
+//
 // ****************************************************************************
 PreparePlotRPC::PreparePlotRPC() 
-    : BlockingRPC("s")
+    : BlockingRPC("ss")
 {
     id = "unknown";
+    name = "";
     makePlotRPC = NULL;
 }
 
@@ -102,12 +107,18 @@ PreparePlotRPC::SetMakePlotRPC(MakePlotRPC *rpc)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March  4, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 21 22:50:35 PST 2007
+//    Added plotName.
+//
 // ****************************************************************************
 void
-PreparePlotRPC::operator()(const std::string &n)
+PreparePlotRPC::operator()(const std::string &plotName, const std::string &pluginID)
 {
-    id = n;
+    name = plotName;
+    id = pluginID;
     Select(0, (void*)&id);
+    Select(1, (void*)&name);
     Execute();
 }
 
@@ -125,6 +136,7 @@ void
 PreparePlotRPC::SelectAll()
 {
     Select(0, (void*)&id);
+    Select(1, (void*)&name);
 }
 
 // ****************************************************************************
@@ -141,6 +153,22 @@ string
 PreparePlotRPC::GetID()
 {
     return id;
+}
+
+// ****************************************************************************
+//  Method:  PreparePlotRPC::GetName
+//
+//  Purpose:
+//    
+//
+//  Programmer:  Brad Whitlock, 
+//  Creation:    Wed Mar 21 22:50:57 PST 2007
+//
+// ****************************************************************************
+string
+PreparePlotRPC::GetName()
+{
+    return name;
 }
 
 // ****************************************************************************
@@ -318,6 +346,22 @@ MakePlotRPC::GetID()
 }
 
 // ****************************************************************************
+//  Method:  MakePlotRPC::GetName
+//
+//  Purpose:
+//    
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    Wed Mar 21 22:58:07 PST 2007
+//
+// ****************************************************************************
+std::string
+MakePlotRPC::GetName()
+{
+    return preparePlotRPC.GetName();
+}
+
+// ****************************************************************************
 //  Method:  MakePlotRPC::GetAtts
 //
 //  Purpose:
@@ -400,12 +444,16 @@ MakePlotRPC::GetPreparePlotRPC()
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added windowID
 //
+//    Brad Whitlock, Wed Mar 21 22:53:02 PST 2007
+//    Added plotName.
+//
 // ****************************************************************************
 int
-MakePlotRPC::operator()(const string &n, const AttributeSubject *a,
-                        const std::vector<double> &extents, int winID)
+MakePlotRPC::operator()(const std::string &plotName,
+    const string &pluginID, const AttributeSubject *a,
+    const std::vector<double> &extents, int winID)
 {
-    preparePlotRPC(n);
+    preparePlotRPC(plotName, pluginID);
     if (preparePlotRPC.GetStatus() == VisItRPC::error)
     {
         reply.SetStatus(VisItRPC::error);

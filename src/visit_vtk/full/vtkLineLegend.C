@@ -48,6 +48,7 @@
 #include "vtkLineLegend.h"
 
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkObjectFactory.h>
 #include <vtkLineSource.h>
 #include <vtkPolyData.h>
@@ -61,9 +62,14 @@
 #include <limits.h>
 #include <float.h>
 
+#define LEFT_OFFSET 0.045
 
 vtkStandardNewMacro(vtkLineLegend);
 
+// Modifications:
+//   Brad Whitlock, Thu Mar 22 00:21:44 PDT 2007
+//   Added bounding box.
+//
 //-----------------------------------------------------------------------------
 vtkLineLegend::vtkLineLegend()  
 {
@@ -91,6 +97,19 @@ vtkLineLegend::vtkLineLegend()
   this->TitleVisibility = 1;
   this->TitleOkayToDraw = 1;
 
+  this->BoundingBox = vtkPolyData::New();
+  this->BoundingBoxMapper = vtkPolyDataMapper2D::New();
+  this->BoundingBoxMapper->SetInput(this->BoundingBox);
+  this->BoundingBoxActor = vtkActor2D::New();
+  this->BoundingBoxActor->SetMapper(this->BoundingBoxMapper);
+  this->BoundingBoxActor->GetPositionCoordinate()->
+    SetReferenceCoordinate(this->PositionCoordinate);
+  this->BoundingBoxColor[0] = 0.8;
+  this->BoundingBoxColor[1] = 0.8;
+  this->BoundingBoxColor[2] = 0.8;
+  this->BoundingBoxColor[3] = 1.;
+  this->BoundingBoxVisibility = 0;
+
   this->BarWidth = 0.04;
 
   this->LastOrigin[0] = 0;
@@ -98,36 +117,36 @@ vtkLineLegend::vtkLineLegend()
   this->LastSize[0] = 0;
   this->LastSize[1] = 0;
 
-  // Construct the line
-  vtkLineSource *line = vtkLineSource::New();
-  line->SetPoint1(0,0,0);
-  line->SetPoint2(10,0,0);
-  line->SetResolution(11);
-
-  this->Transform = vtkTransform::New();
-  this->TransformFilter = vtkTransformPolyDataFilter::New();
-  this->TransformFilter->SetTransform(this->Transform);
-  this->TransformFilter->SetInput(line->GetOutput());
-  line->Delete();
-
+  this->Line = vtkPolyData::New();
   this->LineMapper = vtkPolyDataMapper2D::New();
-  this->LineMapper->SetInput(this->TransformFilter->GetOutput());
-  
+  this->LineMapper->SetInput(this->Line);
   this->LineActor = vtkActor2D::New();
   this->LineActor->SetMapper(this->LineMapper);
+  this->LineActor->GetPositionCoordinate()->
+    SetReferenceCoordinate(this->PositionCoordinate);
 }
 
 // Release any graphics resources that are being consumed by this actor.
 // The parameter window could be used to determine which graphic
 // resources to release.
+//
+// Modifications:
+//   Brad Whitlock, Thu Mar 22 00:23:08 PDT 2007
+//   Added bounding box.
+//
 //-----------------------------------------------------------------------------
 void vtkLineLegend::ReleaseGraphicsResources(vtkWindow *win)
 {
   this->TitleActor->ReleaseGraphicsResources(win);
   this->LineActor->ReleaseGraphicsResources(win);
+  this->BoundingBoxActor->ReleaseGraphicsResources(win);
 }
 
 
+// Modifications:
+//   Brad Whitlock, Thu Mar 22 00:23:22 PDT 2007
+//   Added bounding box.
+//
 //-----------------------------------------------------------------------------
 vtkLineLegend::~vtkLineLegend()
 {
@@ -143,18 +162,23 @@ vtkLineLegend::~vtkLineLegend()
   this->TitleMapper->Delete();
   this->TitleActor->Delete();
 
+  this->BoundingBox->Delete();
+  this->BoundingBoxMapper->Delete();
+  this->BoundingBoxActor->Delete();
+
+  this->Line->Delete();
   this->LineActor->Delete();
   this->LineMapper->Delete();
-  this->Transform->Delete();
-  this->TransformFilter->Delete();
 }
 
 
 //-----------------------------------------------------------------------------
 //  Modifications:
-//
 //    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
 //    Removed unused variable.
+//
+//    Brad Whitlock, Thu Mar 22 00:24:03 PDT 2007
+//    Added bounding box.
 //
 //-----------------------------------------------------------------------------
 int 
@@ -163,6 +187,10 @@ vtkLineLegend::RenderOverlay(vtkViewport *viewport)
   int renderedSomething = 0;
   
   // Everything is built, just have to render
+  if (this->BoundingBoxVisibility)
+    {
+    this->BoundingBoxActor->RenderOverlay(viewport);
+    }
   if (this->Title != NULL && this->TitleOkayToDraw && this->TitleVisibility)
     {
     renderedSomething += this->TitleActor->RenderOverlay(viewport);
@@ -208,7 +236,7 @@ vtkLineLegend::BuildTitle(vtkViewport *viewport)
   //
   int tsizePixels[2];
   this->TitleMapper->GetSize(viewport, tsizePixels); 
-  titleOrigin[0] = 0;
+  titleOrigin[0] = 0.;
   int legURy = LastOrigin[1] + LastSize[1];
   int distFromOrigin = (legURy-tsizePixels[1]-LastOrigin[1]);
   titleOrigin[1] = (double)(distFromOrigin) /(double)viewSize[1] ; 
@@ -227,81 +255,170 @@ vtkLineLegend::BuildTitle(vtkViewport *viewport)
 //    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
 //    Removed unused variable.
 //
+//    Brad Whitlock, Thu Mar 22 01:33:35 PDT 2007
+//    Rewrote.
+//
 //-----------------------------------------------------------------------------
 void 
 vtkLineLegend::BuildLine(vtkViewport *viewport)
 {
-  this->TransformFilter->GetInput()->Update();
-  double *bounds = ((vtkPolyData*)this->TransformFilter->GetInput())->GetBounds();
+  int *viewSize = viewport->GetSize();
 
-  //Get position information
-  int *x1, *x2, *x3;
-  double p1[2], p2[2];
-  x1 = this->PositionCoordinate->GetComputedViewportValue(viewport);
-  x2 = this->Position2Coordinate->GetComputedViewportValue(viewport);
-  x3 = this->TitleActor->GetPositionCoordinate()->
-             GetComputedViewportValue(viewport);
+  //
+  // Build bounding box object
+  //
+  vtkPoints *pts = vtkPoints::New();
+  pts->SetNumberOfPoints(2);
+  vtkCellArray *lines = vtkCellArray::New();
+  lines->Allocate(2); 
 
-  p1[0] = (double)x1[0]; 
-  p1[1] = (double)x1[1]; 
-  p2[0] = (double)x2[0]; 
-  p2[1] = (double)x3[1]; 
+  this->Line->Initialize();
+  this->Line->SetPoints(pts);
+  this->Line->SetLines(lines);
+  pts->Delete(); lines->Delete();
 
-  int tempi[2];
-  double sf, twr, swr = 0.0;
+  //
+  // generate points for bounding box
+  //
+  int *LL = this->GetPositionCoordinate()->
+                GetComputedViewportValue(viewport);
+  int *UR = this->GetPosition2Coordinate()->
+                GetComputedViewportValue(viewport);
+  double width = UR[0] - LL[0];
+  double height = UR[1] - LL[1];
+  double maxX = UR[0];
 
-  if ( (bounds[3]-bounds[2]) == 0.0 )
+  // Need to account for the widest text to accurately calculate the width.
+  if(this->TitleVisibility)
     {
-    swr = 1.0;
-    }
-  else
-    {
-    swr = (bounds[1]-bounds[0]) / (bounds[3]-bounds[2]);
+        int *titleLL = this->TitleActor->GetPositionCoordinate()->
+            GetComputedViewportValue(viewport);
+        maxX = titleLL[0] + 0.06 * viewSize[0];
     }
 
-  this->TitleMapper->GetSize(viewport,tempi);
-  twr = (double)tempi[0]/tempi[1];
-  double symbolSize = swr / (swr + twr);
+  width = maxX - LL[0];
 
-  int size[2];
-  size[0] = (int)(symbolSize*(p2[0] - p1[0]));
-  size[1] = (int)((p2[1] - p1[1]));
+  const double border = 4;
+  double pt[3];
+  pt[0] = 0. - LEFT_OFFSET * viewSize[0];
+  pt[1] = 0.;
+  pt[2] = 0.;
+  pts->SetPoint(0, pt);
 
-  if ( (bounds[1]-bounds[0]) == 0.0 ) 
-    { 
-    sf = VTK_LARGE_FLOAT; 
-    }
-  else 
-    { 
-    sf = size[0]/(bounds[1]-bounds[0]); 
-    }
-        
-  if ( (bounds[3]-bounds[2]) == 0.0 )
-    {
-    if ( sf >= VTK_LARGE_FLOAT )          
-      {
-      sf = 1.0;
-      }
-    }
-  else if ( (size[1]/(bounds[3]-bounds[2])) < sf )
-    {
-    sf = size[1]/(bounds[3]-bounds[2]);
-    }
+  pt[0] = width;
+  pt[1] = 0.;
+  pts->SetPoint(1, pt);
 
-  double posX = p1[0];
-  double posY = p2[1] - 0.1*size[1]; 
-  this->Transform->Identity();
-  this->Transform->Translate(posX, posY, 0.0);
-  this->Transform->Scale(sf, sf, 1);
-  this->BuildTime.Modified();
+  //
+  // Polygon
+  //
+  vtkIdType ptIds[2] = {0,1};
+  lines->InsertNextCell(2,ptIds);
 }
 
+// ****************************************************************************
+// Method: vtkLineLegend::BuildBoundingBox
+//
+// Purpose: 
+//   Builds the bounding box.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 16:24:05 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void vtkLineLegend::BuildBoundingBox(vtkViewport *viewport)
+{
+  int *viewSize = viewport->GetSize();
+
+  //
+  // Build bounding box object
+  //
+  vtkPoints *pts = vtkPoints::New();
+  pts->SetNumberOfPoints(4);
+  vtkCellArray *polys = vtkCellArray::New();
+  polys->Allocate(4); 
+  vtkUnsignedCharArray *colors = vtkUnsignedCharArray::New();
+  colors->SetNumberOfComponents(4);
+  colors->SetNumberOfTuples(1);
+
+  this->BoundingBoxActor->SetProperty(this->GetProperty());
+  this->BoundingBox->Initialize();
+  this->BoundingBox->SetPoints(pts);
+  this->BoundingBox->SetPolys(polys);
+  this->BoundingBox->GetCellData()->SetScalars(colors);
+  pts->Delete(); polys->Delete(); colors->Delete(); 
+
+  //
+  // generate points for bounding box
+  //
+  int *LL = this->GetPositionCoordinate()->
+                GetComputedViewportValue(viewport);
+  int *UR = this->GetPosition2Coordinate()->
+                GetComputedViewportValue(viewport);
+  double width = UR[0] - LL[0];
+  double height = UR[1] - LL[1];
+  double maxX = UR[0];
+
+  // Need to account for the widest text to accurately calculate the width.
+  if(this->TitleVisibility)
+    {
+        int *titleLL = this->TitleActor->GetPositionCoordinate()->
+            GetComputedViewportValue(viewport);
+        int rightX = titleLL[0] + 
+            this->TitleMapper->GetWidth(viewport);
+        if(rightX > maxX)
+            maxX = rightX;
+    }
+
+  width = maxX - LL[0];
+
+  double leftOffset = LEFT_OFFSET * viewSize[0];
+  const double border = 4;
+  double pt[3];
+  pt[0] = 0. - leftOffset - border;
+  pt[1] = 0. - border;
+  pt[2] = 0.;
+  pts->SetPoint(0, pt);
+
+  pt[0] = width;
+  pt[1] = 0. - border;
+  pts->SetPoint(1, pt);
+
+  pt[0] = width;
+  pt[1] = height;
+  pts->SetPoint(2, pt);
+
+  pt[0] = 0.- leftOffset - border;
+  pt[1] = height;
+  pts->SetPoint(3, pt);
+
+  //
+  // Polygon
+  //
+  vtkIdType ptIds[4] = {0,1,2,3};
+  polys->InsertNextCell(4,ptIds);
+
+  //
+  // Color
+  //
+  unsigned char *rgba = colors->GetPointer(0);
+  rgba[0] = (unsigned char)(int(this->BoundingBoxColor[0] * 255.));
+  rgba[1] = (unsigned char)(int(this->BoundingBoxColor[1] * 255.));
+  rgba[2] = (unsigned char)(int(this->BoundingBoxColor[2] * 255.));
+  rgba[3] = (unsigned char)(int(this->BoundingBoxColor[3] * 255.));
+} // BuildBoundingBox
 
 //-----------------------------------------------------------------------------
 //  Modifications:
 //
 //    Hank Childs, Fri Jun  9 12:54:36 PDT 2006
 //    Removed unused variable.
+//
+//    Brad Whitlock, Thu Mar 22 00:25:54 PDT 2007
+//    Added bounding box.
 //
 //-----------------------------------------------------------------------------
 int 
@@ -352,12 +469,17 @@ vtkLineLegend::RenderOpaqueGeometry(vtkViewport *viewport)
       }
 
     this->BuildLine(viewport); 
+    if( this->BoundingBoxVisibility )
+      this->BuildBoundingBox(viewport);
 
     this->BuildTime.Modified();
     }
 
   // Everything is built, just have to render
-
+  if ( this->BoundingBoxVisibility )
+    {
+    renderedSomething += this->BoundingBoxActor->RenderOpaqueGeometry(viewport);
+    }
   if (this->Title != NULL && this->TitleOkayToDraw && this->TitleVisibility)
     {
     renderedSomething += this->TitleActor->RenderOpaqueGeometry(viewport);
@@ -367,6 +489,10 @@ vtkLineLegend::RenderOpaqueGeometry(vtkViewport *viewport)
   return renderedSomething;
 }
 
+// Modifications:
+//   Brad Whitlock, Thu Mar 22 00:27:17 PDT 2007
+//   Added bounding box.
+//
 //----------------------------------------------------------------------------
 void 
 vtkLineLegend::PrintSelf(ostream& os, vtkIndent indent)
@@ -397,10 +523,18 @@ vtkLineLegend::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Bar Width: " << this->BarWidth << "\n";
   os << indent << "Title Visibility: " 
      << (this->TitleVisibility ? "On\n" : "Off\n");
+  os << indent << "BoundingBox Visibility: " 
+     << (this->BoundingBoxVisibility ? "On\n" : "Off\n");
+
   os << indent << "Position: " << this->PositionCoordinate << "\n";
   this->PositionCoordinate->PrintSelf(os, indent.GetNextIndent());
   os << indent << "Width: " << this->GetWidth() << "\n";
   os << indent << "Height: " << this->GetHeight() << "\n";
+  os << indent << "BoundingBoxColor: "
+     << this->BoundingBoxColor[0] << ", "
+     << this->BoundingBoxColor[1] << ", "
+     << this->BoundingBoxColor[2] << ", "
+     << this->BoundingBoxColor[3] << "\n";
 }
 
 
@@ -448,6 +582,10 @@ vtkLineLegend::GetPosition2()
   return this->Position2Coordinate->GetValue(); 
 }
 
+// Modifications:
+//   Brad Whitlock, Thu Mar 22 00:27:49 PDT 2007
+//   Added bounding box.
+//
 //----------------------------------------------------------------------------
 void 
 vtkLineLegend::ShallowCopy(vtkProp *prop)
@@ -465,6 +603,7 @@ vtkLineLegend::ShallowCopy(vtkProp *prop)
     this->SetBarWidth(a->GetBarWidth());
 
     this->SetTitleVisibility(a->GetTitleVisibility());
+    this->SetBoundingBoxVisibility(a->GetBoundingBoxVisibility());
 
     this->GetPositionCoordinate()->SetCoordinateSystem(
       a->GetPositionCoordinate()->GetCoordinateSystem());    

@@ -2600,10 +2600,68 @@ class AttsGeneratorLoadBalanceScheme : public virtual PythonGeneratorField, publ
     AVT_GENERATOR_METHODS
 };
 
+//
+// --------------------------------- ScaleMode --------------------------------
+//
+class AttsGeneratorScaleMode : public virtual ScaleMode , public virtual PythonGeneratorField
+{
+  public:
+    AttsGeneratorScaleMode(const QString &n, const QString &l)
+        : ScaleMode(n,l), PythonGeneratorField("scalemode",n,l), Field("scalemode",n,l) { }
+    virtual void WriteSetMethodBody(ostream &c, const QString &className)
+    {
+        c << "    int ival;" << endl;
+        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << endl;
+        c << "        return NULL;" << endl;
+        c << endl;
+        c << "    // Set the " << name << " in the object." << endl;
+        c << "    if(ival >= 0 && ival <= 1)" << endl;
+        c << "        obj->data->" << MethodNameSet() << "(ival);" << endl;
+        c << "    else" << endl;
+        c << "    {" << endl;
+        c << "        fprintf(stderr, \"An invalid  value was given. \"" << endl;
+        c << "                        \"Valid values are in the range of [0,1]. \"" << endl;
+        c << "                        \"You can also use the following names: \"" << endl;
+        c << "                        \"\\\"LINEAR\\\", \\\"LOG\\\"\\n\");" << endl;
+        c << "        return NULL;" << endl;
+        c << "    }" << endl;
+    }
+
+    virtual void WriteGetMethodBody(ostream &c, const QString &className)
+    {
+        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->"<<MethodNameGet()<<"()));" << endl;
+    }
+
+    virtual void StringRepresentation(ostream &c, const QString &classname)
+    {
+        c << "    const char *" << name << "_values[] = {\"LINEAR\", \"LOG\"};" << endl;
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s  # LINEAR, LOG\\n\", prefix, " << name << "_values[atts->" << MethodNameGet() << "()]);" << endl;
+        c << "    str += tmpStr;" << endl;
+    }
+
+    virtual void WriteGetAttr(ostream &c, const QString &classname)
+    {
+        if (internal)
+            return;
+
+        c << "    if(strcmp(name, \"" << name << "\") == 0)" << endl;
+        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << endl;
+        c << "    if(strcmp(name, \"LINEAR\") == 0)" << endl;
+        c << "        return PyInt_FromLong(long(0));" << endl;
+        c << "    else if(strcmp(name, \"LOG\") == 0)" << endl;
+        c << "        return PyInt_FromLong(long(1));" << endl;
+        c << endl;
+    }
+};
+
+
 // ----------------------------------------------------------------------------
 // Modifications:
 //    Brad Whitlock, Wed Dec 8 15:55:08 PST 2004
 //    Added support for variable names.
+//
+//    Kathleen Bonnell, Thu Mar 22 16:58:23 PDT 2007 
+//    Added scalemode.
 //
 // ----------------------------------------------------------------------------
 class PythonFieldFactory
@@ -2640,6 +2698,7 @@ class PythonFieldFactory
         else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);
         else if (type == "attVector")    f = new AttsGeneratorAttVector(subtype,name,label);
         else if (type == "enum")         f = new PythonGeneratorEnum(subtype, name, label);
+        else if (type == "scalemode")    f = new AttsGeneratorScaleMode(name,label);
 
         // Special built-in AVT enums
         else if (type == "avtCentering")      f = new AttsGeneratoravtCentering(name, label);
@@ -2747,11 +2806,11 @@ class PythonGeneratorAttribute
         h << "//" << endl;
         h << "void "<<api<<"           Py"<<name<<"_StartUp("<<name<<" *subj, void *data);" << endl;
         h << "void "<<api<<"           Py"<<name<<"_CloseDown();" << endl;
-        h << "PyMethodDef * "<<api<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
+        h << api << " " << "PyMethodDef * "<<"  Py"<<name<<"_GetMethodTable(int *nMethods);" << endl;
         h << "bool "<<api<<"           Py"<<name<<"_Check(PyObject *obj);" << endl;
-        h << name << " * "<<api<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
-        h << "PyObject * "<<api<<"     Py"<<name<<"_New();" << endl;
-        h << "PyObject * "<<api<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << endl;
+        h << api << " " << name << " * "<<" Py"<<name<<"_FromPyObject(PyObject *obj);" << endl;
+        h << api << " " << "PyObject * "<<"     Py"<<name<<"_New();" << endl;
+        h << api << " " << "PyObject * "<<"     Py"<<name<<"_Wrap(const " << name << " *attr);" << endl;
         h << "void "<<api<<"           Py"<<name<<"_SetParent(PyObject *obj, PyObject *parent);" << endl;
         h << "void "<<api<<"           Py"<<name<<"_SetDefaults(const "<<name<<" *atts);" << endl;
         h << "std::string "<<api<<"    Py"<<name<<"_GetLogString();" << endl;

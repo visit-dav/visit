@@ -265,6 +265,12 @@ class avtToolInterface;
 //    Brad Whitlock, Mon Feb 12 12:18:39 PDT 2007
 //    I made it inherit ViewerBase and I added support for alternate displays.
 //
+//    Brad Whitlock, Mon Mar 19 17:58:59 PST 2007
+//    Changed GetPlotName to GetPlotTypeName and added new GetPlotName.
+//
+//    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
+//    Added SetScaleMode, xScaleMode, yScaleMode in support of log-scaled views
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -290,9 +296,18 @@ class VIEWER_API ViewerPlot : public ViewerBase
     //
     // Methods to identify the plot plugin.
     //
-    const char *GetPlotName() const;
+    const char *GetPlotTypeName() const;
     const char *GetPluginID() const;
-    int GetType() const;
+    int         GetType() const;
+
+    //
+    // Methods to set/get the name of the plot, which is an identifier that
+    // can be used to lookup the plot.
+    //
+    std::string GetPlotName() const;
+
+    // Returns whether the plot provides a legend.
+    bool        ProvidesLegend() const;
 
     //
     // Get/Set the plot's database and variable.
@@ -450,6 +465,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     bool SetFullFrameScaling(bool, double *);
 
     const PlotInfoAttributes *GetPlotInfoAtts(void);
+    void SetScaleMode(ScaleMode ds, ScaleMode rs);
 
   protected:
     void CopyHelper(const ViewerPlot &);
@@ -467,6 +483,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     ViewerPlotList         *viewerPlotList;
     int                     type;
     ViewerPlotPluginInfo   *viewerPluginInfo;
+    std::string             plotName;
 
     void                   *alternateDisplay;
     ViewerObserverToSignal *alternateDisplayObserver;
@@ -493,6 +510,9 @@ class VIEWER_API ViewerPlot : public ViewerBase
     double                  bgColor[3];
     double                  fgColor[3];
 
+    ScaleMode               xScaleMode;
+    ScaleMode               yScaleMode;
+
     int                     nOperators;
     int                     nOperatorsAlloc;
     ViewerOperator        **operators;
@@ -515,6 +535,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     static avtActor_p             nullActor;
     static avtDataObjectReader_p  nullReader;
     static vector<double>         nullDataExtents;
+    static int                    numPlotsCreated;
 
     int                    clonedNetworkId;
 };

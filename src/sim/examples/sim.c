@@ -159,6 +159,11 @@ void currentChanged(char *cmd)
     printf( "sim >>>>  inside simulation currentChanged code callback .... \n");
 }
 
+void alert(char *cmd)
+{
+    printf( "sim >>>>  ALERT ALERT ALERT .... \n");
+}
+
 /*****************************************************************************
 * Function: visit_broadcast_int_callback
 *
@@ -834,6 +839,8 @@ main(int argc, char *argv[])
     VisItAddConnection("timeEdit1" ,"valueChanged()", valueChanged);
     VisItAddConnection("dateEdit1" ,"valueChanged()", valueChanged);
     VisItAddConnection("CheckBox1", "clicked()" , testSlot2);
+
+    VisItAddConnection("StripChart","ALERT" , alert);
 
     if (par_rank == 0)
     {

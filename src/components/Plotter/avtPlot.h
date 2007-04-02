@@ -57,11 +57,13 @@
 #include <avtBehavior.h>
 
 #include <vector>
+#include <enumtypes.h>
 
 class     avtCondenseDatasetFilter;
 class     avtDatasetToDatasetFilter;
 class     avtSmoothPolyDataFilter;
 class     avtVertexNormalsFilter;
+class     avtMeshLogFilter;
 class     AttributeGroup;
 class     AttributeSubject;
 class     PlotInfoAttributes;
@@ -211,6 +213,10 @@ class     WindowAttributes;
 //    Kathleen Bonnell Tue Jun 20 16:02:38 PDT 2006
 //    Added GetPlotInfoAtts.
 //
+//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
+//    To facilitate log-views, added avtMeshLogFilter, SetScaleMode, 
+//    xScaleMode, yScaleMode, havePerformedLogX, havePerformedLogY.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -275,6 +281,9 @@ class PLOTTER_API avtPlot
     float                      GetCellCountMultiplierForSRThreshold() const;
     const PlotInfoAttributes  *GetPlotInfoAtts(); 
 
+    void                      SetScaleMode(ScaleMode, ScaleMode);
+    void                      GetScaleMode(ScaleMode &ds, ScaleMode &rs)
+                                {ds = xScaleMode, rs = yScaleMode; }
   protected:
     bool                       needsRecalculation;
     int                        index;
@@ -287,6 +296,7 @@ class PLOTTER_API avtPlot
     avtDatasetToDatasetFilter *ghostZoneAndFacelistFilter;
     avtDatasetToDatasetFilter *compactTreeFilter;
     avtDatasetToDatasetFilter *currentExtentFilter;
+    avtMeshLogFilter          *logMeshFilter;
     avtVertexNormalsFilter    *vertexNormalsFilter;
     avtSmoothPolyDataFilter   *smooth;
     avtSILRestriction_p        silr;
@@ -312,6 +322,7 @@ class PLOTTER_API avtPlot
     avtDataObject_p            ReduceGeometry(avtDataObject_p);
     avtDataObject_p            CompactTree(avtDataObject_p);
     avtDataObject_p            SetCurrentExtents(avtDataObject_p);
+    avtDataObject_p            SetScaleMode(avtDataObject_p);
 
     avtDataObject_p            intermediateDataObject;
 
@@ -322,6 +333,11 @@ class PLOTTER_API avtPlot
 
     virtual void               SetCellCountMultiplierForSRThreshold(
                                    const avtDataObject_p dob);
+
+    ScaleMode xScaleMode;
+    ScaleMode yScaleMode;
+    bool havePerformedLogX;
+    bool havePerformedLogY;
 };
 
 typedef ref_ptr<avtPlot> avtPlot_p;

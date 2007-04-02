@@ -242,6 +242,9 @@ avtText2DColleague::ShouldBeAddedToRenderer() const
 //    I added code to set the object's visibility so objects that are not
 //    visible remain invisible when restoring a session file.
 //
+//    Brad Whitlock, Thu Mar 22 15:02:23 PST 2007
+//    Changed FieldsEqual due to state object changes.
+//
 // ****************************************************************************
 
 void
@@ -328,8 +331,8 @@ avtText2DColleague::SetOptions(const AnnotationObject &annot)
     //
     // Set the position coordinates if they are different
     //
-    if(!currentOptions.FieldsEqual(3, &annot) ||
-       !currentOptions.FieldsEqual(4, &annot) || textChanged)
+    if(!currentOptions.FieldsEqual(4, &annot) ||
+       !currentOptions.FieldsEqual(5, &annot) || textChanged)
     {
         const double *p1 = annot.GetPosition();
         const double *p2 = annot.GetPosition2();

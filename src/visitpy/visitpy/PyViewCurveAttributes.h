@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyViewCurveAttributes_StartUp(ViewCurveAttributes *subj, void *data);
 void VISITPY_API           PyViewCurveAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyViewCurveAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyViewCurveAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyViewCurveAttributes_Check(PyObject *obj);
-ViewCurveAttributes * VISITPY_API PyViewCurveAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyViewCurveAttributes_New();
-PyObject * VISITPY_API     PyViewCurveAttributes_Wrap(const ViewCurveAttributes *attr);
+VISITPY_API ViewCurveAttributes *  PyViewCurveAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyViewCurveAttributes_New();
+VISITPY_API PyObject *      PyViewCurveAttributes_Wrap(const ViewCurveAttributes *attr);
 void VISITPY_API           PyViewCurveAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyViewCurveAttributes_SetDefaults(const ViewCurveAttributes *atts);
 std::string VISITPY_API    PyViewCurveAttributes_GetLogString();

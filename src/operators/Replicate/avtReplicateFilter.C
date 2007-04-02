@@ -49,6 +49,7 @@
 #include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkCellArray.h>
 
 #include <avtDataTree.h>
 #include <avtDatasetExaminer.h>
@@ -258,7 +259,21 @@ avtReplicateFilter::RefashionDataObjectInfo(void)
 //  Modifications:
 //    Jeremy Meredith, Tue Feb 27 11:04:04 EST 2007
 //    Enhanced to support transformed rectilinear grids.  In these cases
-//    the x/y/z vectors need to be 
+//    the x/y/z vectors also need to have the transform accounted for.
+//
+//    Jeremy Meredith, Thu Mar 22 13:39:05 EDT 2007
+//    Added support for replicating the atoms lying on cell boundaries.
+//    If we were to add this to the Molecule plot, two problems appear: first,
+//    it's too late to create bonds using these atoms, and second, we have to
+//    scan the entire dataset attempting to discover if the normalized extents
+//    across which to replicate have changed from [0,1,0,1,0,1].  Since
+//    creating bonds should already happen after the replicate operator, the
+//    first problem is solved.  Since the new normalized extents are simply
+//    the number of replications in this operator attributes (i.e. they are
+//    [0,nx,0,ny,0,nz]), the second problem is solved.  At the moment
+//    this new kind of replication is only allowed when we are merging into
+//    a single dataset, but this was mostly for convenience and this
+//    constraint can be relaxed with a straightforward loop over all datasets.
 //
 // ****************************************************************************
 static void TransformVector(const double m[16], double v[3])
@@ -353,6 +368,17 @@ avtReplicateFilter::ExecuteDataTree(vtkDataSet *in_ds, int dom, string str)
             }
             vtkPolyData *output = append->GetOutput();
             output->Update();
+            // If we're merging into a single data set, we can also
+            // replicate periodically the unit cell boundary atoms
+            if (atts.GetReplicateUnitCellAtoms())
+            {
+                vtkPolyData *newoutput = ReplicateUnitCellAtoms(output);
+                if (newoutput)
+                {
+                    //output->Delete();
+                    output = newoutput;
+                }
+            }
             rv = new avtDataTree(1, (vtkDataSet**)(&output), dom, str);
         }
         else
@@ -641,6 +667,192 @@ avtReplicateFilter::ReplicatePointSet(vtkPointSet *ds, double offset[3])
 
     return out;
 }
+
+// ****************************************************************************
+//  Method:  avtReplicateFilter::ReplicateUnitCellAtoms
+//
+//  Purpose:
+//    For atoms lying along the unit cell boundaries, replicate them to the
+//    far boundaries.  In normalized coordinates, for example, an atom lying
+//    at (0,.5,.5), i.e.  at the center of the x-min face, should be
+//    replicated to (1,.5,.5).  As another example, an atom at any of the unit
+//    cell corners, e.g. (1,0,1), should be replicated to all of the other 7
+//    corners.  And similarly, an atom lying along an edge should be
+//    replicated to 3 new locations.  Note, however, that the min/max values
+//    are not necessarily 0 and 1.  If we're replicating the whole data set by
+//    a displacement of the unit cell to make a supercell, the max value along
+//    any axis will be an integer corresponding to the number of replications
+//    along that normalized axis.  By placing this new operation inside the
+//    Replicate operator, however, we actually know exactly what these numbers
+//    are as they are part of these operator attributes.
+//
+//  Arguments:
+//    in         the polydata containing potential atoms (Verts) to replicate
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    March 22, 2007
+//
+// ****************************************************************************
+static void
+CalculateBoundaryConditions(double *normpt, float maxx, float maxy, float maxz,
+                            bool &ib, bool &jb, bool &kb)
+{
+    const double threshold = 0.001;
+    bool i0 = fabs(normpt[0])      < threshold;
+    bool i1 = fabs(normpt[0]-maxx) < threshold;
+    bool j0 = fabs(normpt[1])      < threshold;
+    bool j1 = fabs(normpt[1]-maxy) < threshold;
+    bool k0 = fabs(normpt[2])      < threshold;
+    bool k1 = fabs(normpt[2]-maxz) < threshold;
+    ib = i0 || i1;
+    jb = j0 || j1;
+    kb = k0 || k1;
+}
+
+vtkPolyData *
+avtReplicateFilter::ReplicateUnitCellAtoms(vtkPolyData *in)
+{
+    // Make sure we have molecular data; if there are polygons
+    // in here, some of our assumptions will be wrong.
+    if (in->GetNumberOfCells() != in->GetNumberOfVerts() + in->GetNumberOfLines() ||
+        in->GetNumberOfVerts() != in->GetNumberOfPoints())
+    {
+        return NULL;
+    }
+
+    // Get the unit cell vectors and construct transform matrices from them.
+    const avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+    const float *unitCell = datts.GetUnitCellVectors();
+    vtkMatrix4x4 *ucvM = vtkMatrix4x4::New();
+    vtkMatrix4x4 *ucvI = vtkMatrix4x4::New();
+    ucvM->Identity();
+    for (int i=0; i<3; i++)
+        for (int j=0; j<3; j++)
+            ucvM->Element[j][i] = unitCell[3*i+j];
+    vtkMatrix4x4::Invert(ucvM, ucvI);
+
+    // Get some info from the input dataset.
+    vtkPointData *inPD   = in->GetPointData();
+    vtkCellData  *inCD   = in->GetCellData();
+    vtkPoints    *inPts  = in->GetPoints();
+    vtkCellArray *inLines= in->GetLines();
+    int nPts = in->GetNumberOfPoints();
+    int nLines = in->GetNumberOfLines();
+
+    // We need to make our first pass over the dataset to figure out how
+    // many new points we will need.
+    int newpts=0;
+    float maxx = float(atts.GetXReplications());
+    float maxy = float(atts.GetYReplications());
+    float maxz = float(atts.GetZReplications());
+    for (int c=0; c<nPts; c++)
+    {
+        double pt[4] = {0,0,0,1};
+        double normpt[4] = {0,0,0,1};
+        in->GetPoint(c, pt);
+        ucvI->MultiplyPoint(pt, normpt);
+        bool ib, jb, kb;
+        CalculateBoundaryConditions(normpt, maxx,maxy,maxz, ib,jb,kb);
+        // Every atom has at least one image: the original.
+        // Each boundary we match means a doubling of this number of images.
+        int images=1;
+        if (ib) images*=2;
+        if (jb) images*=2;
+        if (kb) images*=2;
+        newpts += images;
+    }
+
+    // Construct an output data set
+    vtkPolyData  *out      = (vtkPolyData*)in->NewInstance();
+    vtkPointData *outPD    = out->GetPointData();
+    vtkCellData  *outCD    = out->GetCellData();
+    vtkPoints    *outPts   = vtkPoints::New();
+    vtkCellArray *outVerts = vtkCellArray::New();
+    vtkCellArray *outLines = vtkCellArray::New();
+    out->GetFieldData()->ShallowCopy(in->GetFieldData());
+    out->SetPoints(outPts);
+    out->SetVerts(outVerts);
+    out->SetLines(outLines);
+    outPts->Delete();
+    outVerts->Delete();
+    outLines->Delete();
+
+    // Allocate space for the number of points, verts, and lines we'll have
+    outPts->SetNumberOfPoints(newpts);
+    outPD->CopyAllocate(in->GetPointData(),newpts);
+    outCD->CopyAllocate(in->GetCellData(),newpts + nLines);
+
+    // Copy the original points and verts
+    int outc = 0;
+    for (int c=0; c<nPts; c++)
+    {
+        outPts->SetPoint(outc, inPts->GetPoint(c));
+        outPD->CopyData(inPD, c, outc);
+        outVerts->InsertNextCell(1);
+        outVerts->InsertCellPoint(outc);
+        outCD->CopyData(inCD, c, outc);
+        outc++;
+    }
+    // Make new points/verts for those that matched a boundary condition
+    for (int c=0; c<nPts; c++)
+    {
+        double pt[4]     = {0,0,0,1};
+        double normpt[4] = {0,0,0,1};
+        in->GetPoint(c, pt);
+        ucvI->MultiplyPoint(pt, normpt);
+        bool ib, jb, kb;
+        CalculateBoundaryConditions(normpt, maxx,maxy,maxz, ib,jb,kb);
+
+        double normnewpt[4] = {0,0,0,1};
+        double newpt[4]     = {0,0,0,1};
+        for (int itest=0; itest<=1; itest++)
+        {
+            for (int jtest=0; jtest<=1; jtest++)
+            {
+                for (int ktest=0; ktest<=1; ktest++)
+                {
+                    // we already added the original image of this
+                    // atom; don't do it again.
+                    if (!itest && !jtest && !ktest)
+                        continue;
+
+                    // Apply the tests for this image, and add it if it passes
+                    if ((!itest || ib) &&
+                        (!jtest || jb) &&
+                        (!ktest || kb))
+                    {
+                        normnewpt[0] = itest ? maxx-normpt[0] : normpt[0];
+                        normnewpt[1] = jtest ? maxy-normpt[1] : normpt[1];
+                        normnewpt[2] = ktest ? maxz-normpt[2] : normpt[2];
+                        ucvM->MultiplyPoint(normnewpt, newpt);
+                        outPts->SetPoint(outc, newpt);
+                        outPD->CopyData(inPD, c, outc);
+                        outVerts->InsertNextCell(1);
+                        outVerts->InsertCellPoint(outc);
+                        outCD->CopyData(inCD, c, outc);
+                        outc++;
+                    }
+                }
+            }
+        }
+    }
+    // And copy the cells and cell data for the lines (bonds).
+    outLines->DeepCopy(inLines);
+    for (int l=0; l<nLines; l++)
+    {
+        // The "line" cells are indexed following the verts, thus the "npts+l".
+        outCD->CopyData(inCD, nPts + l, outc);
+        outc++;
+    }
+
+    // Free out temporary memory
+    ucvM->Delete();
+    ucvI->Delete();
+
+    // And return the new data set.
+    return out;    
+}
+
 
 // ****************************************************************************
 //  Method:  avtReplicateFilter::FilterUnderstandsTransformedRectMesh

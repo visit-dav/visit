@@ -1,5 +1,14 @@
 <?xml version="1.0"?>
-  <Attribute name="AnnotationObjectList" purpose="Contains a list of AnnotationObjectAttributes" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="AnnotationObjectList" purpose="Contains a list of AnnotationObjectAttributes" codefile="AnnotationObjectList.code" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Field name="annotation" label="Annotation" type="attVector" subtype="AnnotationObject">
     </Field>
+    <Function name="RemoveAnnotation2" user="true" member="true">
+    </Function>
+    <Function name="GetNewObjectName" user="true" member="true">
+    </Function>
+    <Function name="IndexForName" user="true" member="true">
+    </Function>
+    <Include file="source" quoted="false">
+      snprintf.h
+    </Include>
   </Attribute>

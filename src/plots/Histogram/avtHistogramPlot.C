@@ -197,6 +197,9 @@ avtHistogramPlot::GetMapper(void)
 //    Changed to use filters from the expressions library and the engine 
 //    specific code mechanism
 //
+//    Kathleen Bonnell, Thu Mar 22 09:19:55 PDT 2007 
+//    Added return of input if ENGINE not defined.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -236,6 +239,7 @@ avtHistogramPlot::ApplyOperators(avtDataObject_p input)
     HistogramFilter->SetInput(af->GetOutput());
     return HistogramFilter->GetOutput();
 #endif
+    return input;
 }
 
 

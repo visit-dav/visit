@@ -67,6 +67,8 @@
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Mar 19 11:30:16 EDT 2007
+//    Added background color for fading with context.
 //   
 // ****************************************************************************
 
@@ -75,6 +77,7 @@ avtParallelAxisPlot::avtParallelAxisPlot()
     levelsMapper  = new avtLevelsMapper;
     avtLUT        = new avtLookupTable;
     parAxisFilter = NULL;
+    bgColor[0] = bgColor[1] = bgColor[2] = 1.0;  // white
 }
 
 
@@ -175,6 +178,9 @@ avtParallelAxisPlot::SetAtts(const AttributeGroup *a)
 //    must come first so the Context is drawn behind the other data curve
 //    lines and annotations.
 //
+//    Jeremy Meredith, Mon Mar 19 11:28:57 EDT 2007
+//    Fade context colors nicely into background color at low end.
+//
 // ****************************************************************************
 
 void
@@ -189,7 +195,6 @@ avtParallelAxisPlot::SetColors()
 
     for (redID = 0; redID < numColorEntries; redID += 4)
     {
-        float scale = 1;
         switch (redID)
         {
           case PCP_CTX_BRIGHTNESS_LEVELS*4 + 0:
@@ -213,18 +218,19 @@ avtParallelAxisPlot::SetColors()
             blue  = (PCP_DEFAULT_RANGE_BOUND_COLOR >>  8) & 0xff;
             break;
           default:
-            red   = atts.GetContextColor().Red();
-            green = atts.GetContextColor().Green();
-            blue  = atts.GetContextColor().Blue();
-            scale = ((redID)/4.)/float(PCP_CTX_BRIGHTNESS_LEVELS);
+            {
+            float scale = ((redID)/4.)/float(PCP_CTX_BRIGHTNESS_LEVELS);
+            int bgred   = int(bgColor[0]*255);
+            int bggreen = int(bgColor[1]*255);
+            int bgblue  = int(bgColor[2]*255);
+            int hired   = atts.GetContextColor().Red();
+            int higreen = atts.GetContextColor().Green();
+            int hiblue  = atts.GetContextColor().Blue();            
+            red   = int(scale*hired   + (1.-scale)*bgred);
+            green = int(scale*higreen + (1.-scale)*bggreen);
+            blue  = int(scale*hiblue  + (1.-scale)*bgblue);
+            }
             break;
-        }
-
-        if (scale != 1)
-        {
-            red   = int(red*scale);
-            green = int(green*scale);
-            blue  = int(blue*scale);
         }
 
         colorAtt.SetRgba(red, green, blue, 255);
@@ -490,4 +496,36 @@ avtParallelAxisPlot::ReleaseData(void)
     avtSurfaceDataPlot::ReleaseData();
 
     if (parAxisFilter != NULL) parAxisFilter->ReleaseData();
+}
+
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::SetBackgroundColor
+//
+//  Purpose:
+//    Sets the background color.
+//
+//  Returns:    True if using this color will require the plot to be redrawn.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   March 19, 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtParallelAxisPlot::SetBackgroundColor(const double *bg)
+{
+    if (bgColor[0] == bg[0] && bgColor[1] == bg[1] && bgColor[2] == bg[2])
+    {
+        return false;
+    }
+
+    bgColor[0] = bg[0];
+    bgColor[1] = bg[1];
+    bgColor[2] = bg[2];
+    SetColors();
+
+    return true;
 }

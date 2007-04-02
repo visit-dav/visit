@@ -1036,10 +1036,13 @@ NetworkManager::AddFilter(const string &filtertype,
 //    Eric Brugger, Fri Mar 19 15:25:20 PST 2004
 //    Modified the rpc to set the data extents in the engine.
 //
+//    Brad Whitlock, Wed Mar 21 23:00:00 PST 2007
+//    Added plotName.
+//
 // ****************************************************************************
 void
-NetworkManager::MakePlot(const string &id, const AttributeGroup *atts,
-                         const vector<double> &dataExtents)
+NetworkManager::MakePlot(const string &plotName, const string &pluginID, 
+    const AttributeGroup *atts, const vector<double> &dataExtents)
 {
     if (workingNet == NULL)
     {
@@ -1062,12 +1065,13 @@ NetworkManager::MakePlot(const string &id, const AttributeGroup *atts,
     }
 
     avtPlot *p = PlotPluginManager::Instance()->
-                                GetEnginePluginInfo(id)->AllocAvtPlot();
+                                GetEnginePluginInfo(pluginID)->AllocAvtPlot();
 
     p->SetDataExtents(dataExtents);
     workingNet->SetPlot(p);
     workingNet->GetPlot()->SetAtts(atts);
-    workingNet->SetPlottype(id);
+    workingNet->SetPlottype(pluginID);
+    workingNet->SetPlotName(plotName);
 }
 
 // ****************************************************************************
@@ -1875,6 +1879,11 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Brad Whitlock, Wed Mar 21 23:06:04 PST 2007
+//    Set the actor's name to that of the plot so legend attributes can be
+//    set via the annotation object list.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1999,6 +2008,11 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 int t5 = visitTimer->StartTimer();
                 avtActor_p anActor = workingNetSaved->GetActor(dob);
                 visitTimer->StopTimer(t5, "Calling GetActor for DOB");
+
+                // Make sure that the actor's name is set to the plot's name so
+                // the legend annotation objects in the annotation object list
+                // will be able to set the plot's legend attributes.
+                anActor->SetActorName(workingNetSaved->GetPlotName().c_str());
 
                 // record cell counts including and not including polys
                 if (cellCountMultiplier > INT_MAX/2.)

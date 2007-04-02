@@ -361,6 +361,9 @@ class VisitInteractor;
 //    Mark Blair, Wed Oct 25 15:12:55 PDT 2006
 //    Added GetPlotInfoAtts.
 //
+//    Brad Whitlock, Tue Mar 20 10:08:50 PDT 2007
+//    Name annotation objects.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -473,9 +476,10 @@ public:
 
     void                 SetAnnotationAtts(const AnnotationAttributes *);
     const AnnotationAttributes *GetAnnotationAtts() const;
-    void                 AddAnnotationObject(int annotType);
+    bool                 AddAnnotationObject(int annotType, const std::string &annotName);
     void                 HideActiveAnnotationObjects();
     void                 DeleteActiveAnnotationObjects();
+    bool                 DeleteAnnotationObject(const std::string &);
     void                 DeleteAllAnnotationObjects();
     void                 RaiseActiveAnnotationObjects();
     void                 LowerActiveAnnotationObjects();

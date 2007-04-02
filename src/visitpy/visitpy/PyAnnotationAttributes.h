@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyAnnotationAttributes_StartUp(AnnotationAttributes *subj, void *data);
 void VISITPY_API           PyAnnotationAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyAnnotationAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyAnnotationAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyAnnotationAttributes_Check(PyObject *obj);
-AnnotationAttributes * VISITPY_API PyAnnotationAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyAnnotationAttributes_New();
-PyObject * VISITPY_API     PyAnnotationAttributes_Wrap(const AnnotationAttributes *attr);
+VISITPY_API AnnotationAttributes *  PyAnnotationAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyAnnotationAttributes_New();
+VISITPY_API PyObject *      PyAnnotationAttributes_Wrap(const AnnotationAttributes *attr);
 void VISITPY_API           PyAnnotationAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAnnotationAttributes_SetDefaults(const AnnotationAttributes *atts);
 std::string VISITPY_API    PyAnnotationAttributes_GetLogString();

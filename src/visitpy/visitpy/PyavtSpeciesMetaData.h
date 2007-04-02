@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyavtSpeciesMetaData_StartUp(avtSpeciesMetaData *subj, void *data);
 void VISITPY_API           PyavtSpeciesMetaData_CloseDown();
-PyMethodDef * VISITPY_API  PyavtSpeciesMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyavtSpeciesMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtSpeciesMetaData_Check(PyObject *obj);
-avtSpeciesMetaData * VISITPY_API PyavtSpeciesMetaData_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyavtSpeciesMetaData_New();
-PyObject * VISITPY_API     PyavtSpeciesMetaData_Wrap(const avtSpeciesMetaData *attr);
+VISITPY_API avtSpeciesMetaData *  PyavtSpeciesMetaData_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyavtSpeciesMetaData_New();
+VISITPY_API PyObject *      PyavtSpeciesMetaData_Wrap(const avtSpeciesMetaData *attr);
 void VISITPY_API           PyavtSpeciesMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtSpeciesMetaData_SetDefaults(const avtSpeciesMetaData *atts);
 std::string VISITPY_API    PyavtSpeciesMetaData_GetLogString();

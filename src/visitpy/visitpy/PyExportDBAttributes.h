@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyExportDBAttributes_StartUp(ExportDBAttributes *subj, void *data);
 void VISITPY_API           PyExportDBAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyExportDBAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyExportDBAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyExportDBAttributes_Check(PyObject *obj);
-ExportDBAttributes * VISITPY_API PyExportDBAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyExportDBAttributes_New();
-PyObject * VISITPY_API     PyExportDBAttributes_Wrap(const ExportDBAttributes *attr);
+VISITPY_API ExportDBAttributes *  PyExportDBAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyExportDBAttributes_New();
+VISITPY_API PyObject *      PyExportDBAttributes_Wrap(const ExportDBAttributes *attr);
 void VISITPY_API           PyExportDBAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyExportDBAttributes_SetDefaults(const ExportDBAttributes *atts);
 std::string VISITPY_API    PyExportDBAttributes_GetLogString();

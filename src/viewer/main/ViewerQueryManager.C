@@ -1860,8 +1860,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         bool needInvTrans = (pickType == PickAttributes::Node ||
                              pickType == PickAttributes::Zone);
 
-        if ((strcmp(plot->GetPlotName(), "Vector") == 0) ||
-            (strcmp(plot->GetPlotName(), "Tensor") == 0)) 
+        if ((strcmp(plot->GetPlotTypeName(), "Vector") == 0) ||
+            (strcmp(plot->GetPlotTypeName(), "Tensor") == 0)) 
         {
             if ( plot->GetVariableCentering() == AVT_NODECENT)
                 needZones = false;
@@ -2004,14 +2004,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         pickAtts->SetRayPoint2(rp2);
 
         bool doGlyphPick = 
-                  (strcmp(plot->GetPlotName(), "Vector") == 0) ||
-                  (strcmp(plot->GetPlotName(), "Tensor") == 0) ||
+                  (strcmp(plot->GetPlotTypeName(), "Vector") == 0) ||
+                  (strcmp(plot->GetPlotTypeName(), "Tensor") == 0) ||
                   ((plot->GetMeshType() == AVT_POINT_MESH) &&
-                   (strcmp(plot->GetPlotName(), "Label") != 0));
+                   (strcmp(plot->GetPlotTypeName(), "Label") != 0));
 
         bool isLinesData = (plot->GetSpatialDimension() == 2) &&
-                  ((strcmp(plot->GetPlotName(), "Boundary") == 0) ||
-                   (strcmp(plot->GetPlotName(), "Contour") == 0));
+                  ((strcmp(plot->GetPlotTypeName(), "Boundary") == 0) ||
+                   (strcmp(plot->GetPlotTypeName(), "Contour") == 0));
         pickAtts->SetLinesData(isLinesData);
         pickAtts->SetInputTopoDim(plot->GetTopologicalDimension());
                   

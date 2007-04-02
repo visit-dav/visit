@@ -36,6 +36,10 @@
 #   Mark C. Miller, Thu Mar 15 22:53:04 PST 2007
 #   Added support for testing on the user's end (during install)
 #
+#   Mark C. Miller, Tue Mar 20 08:50:53 PDT 2007
+#   Removed incorrect instructions verbage regarding having to install
+#   plugin on both client and server.
+#
 # ----------------------------------------------------------------------------
 #
 
@@ -66,11 +70,13 @@ cat > $1 <<- EOF
 
         $commentString
 
-    Simple commands for installing/UNinstalling a plugin
+    Simple commands for installing and UNinstalling a plugin
     (Works in most cases)
     --------------------------------------------------------------
     (Note: no '.tar.gz' after the plugin's name)
+    To install...
     % visit_plugin -install $pluginName 
+    To UNinstall...
     % visit_plugin -uninstall $pluginName
 
     Manual commands for installing and UNinstalling
@@ -85,19 +91,17 @@ cat > $1 <<- EOF
     To UNinstall...
     % make clean
 
-    If you have problems, email visit-help@llnl.gov
+    If you have problems, email mailto:visit-help@llnl.gov
 
     Additional information to be aware of
     -------------------------------------
-    Note that if you run VisIt in client/server mode, you will need to
-    make sure to install the plugin on both the client machine (usually
-    your desktop machine) and the server.
-
     If you are running a version of VisIt that is older than the most
-    current release, be aware there is always a chance the plugin will
-    not install or, once installed, not run correctly. You may be
-    required to update either VisIt and/or the third party I/O library(s)
-    this plugin may require. 
+    current release, be aware there is always a chance the plugin
+    will not install or, once installed, not run correctly. You may
+    be required to update either VisIt and/or the third party I/O
+    library(s) this plugin may require. In general, the VisIt team
+    trys to avoid this situation but depending on where we are in a
+    release cycle, it can crop up and is something to be aware of.
 
 EOF
 
@@ -127,37 +131,50 @@ cat >> $1 <<- EOF
     plugins in the public directory. You can disable this behavior by
     adding '-publicpluginsonly' on the command line to launch VisIt.
 
-    Over time, as you install private plugins and/or VisIt, you can wind
-    up having private plugins that are not compatibile with the version
-    of VisIt you are running. VisIt will warn you of this occurance during
-    startup and ignore your private plugin in favor of the public one.
-    To correct this situation, simply uninstall your private plugin
-    following the instructions here.
+    Over time, as you install private plugins and/or VisIt, you can
+    wind up having private plugins that are not compatibile with the
+    version of VisIt you are running. VisIt will warn you of this
+    occurance during startup and ignore your private plugin in favor
+    of the public one.  To correct this situation, simply uninstall
+    your private plugin following the instructions here.
 
-    If VisIt was installed on your system without this database plugin,
-    then you will most likely have to use the Manual approach for installing
-    and UNinstalling the plugin. Also, you will most likely have to modify
-    the Makefile that gets created by xml2makefile to specify the location(s)
-    of any applicable third party include and library files. Typically,
-    you would do this by editing Makefile and defining something like... 
+    If you are working with a binary distribution of VisIt (that is,
+    you did not build and install it from sources) or if VisIt was
+    installed on your system without this database plugin,
+    then you will most likely have to use the Manual approach for
+    installing and UNinstalling the plugin. Also, you will most likely
+    have to modify the Makefile that gets created by xml2makefile to
+    specify the location(s) of any applicable third party include and
+    library files. Typically, you would do this by editing Makefile
+    and defining something like... 
 
     ${upperPluginName}_INCLUDE="-I/usr/local/foo/include -I/usr/local/bar/include"
     ${upperPluginName}_LIB="-L/usr/local/foo/lib -lfoo -L/usr/local/bar/lib -lbar"
 
-    You would place these lines AFTER the include directive that includes
-    'make-variables' near the top of the Makefile. Alternatively, you may
-    need to statically link to third party libraries by specifing the complete
-    path to the .a files in ${upperPluginName}_LIB like so...
+    In other words, modify the above make variables to point to
+    your local installation of any applicable third party include
+    and library files.
+
+    You would place these lines AFTER the include directive that
+    includes 'make-variables' near the top of the Makefile.
+    Alternatively, you may need to statically link to third party
+    libraries by specifing the complete path to the .a files in
+    ${upperPluginName}_LIB like so...
 
     ${upperPluginName}_LIB="/usr/local/foo/lib/libfoo.a /usr/local/bar/lib/libbar.a"
 
-    If you would like VisIt to test the plugin and automatically uninstall
-    it if the test fails, give the command
+    If you would like VisIt to test the plugin and automatically
+    uninstall it if the test fails, give the command
         % visit_plugin -install . -testrun <Filename>:<PlotType>:<Varname>
-    VisIt will build the plugin, install it and then attempt to open the
-    specified file and display the specified plot with the specified
-    variable.  If this test fails, VisIt will automatically uninstall
-    the plugin and inform you of the failure.
+    VisIt will build the plugin, install it and then attempt to open
+    the specified file and display the specified plot with the
+    specified variable.  If this test fails, VisIt will automatically
+    uninstall the plugin and inform you of the failure.
+
+    If the tarball we've sent you was test-run'd before we emailed it
+    to you, installing it will automatically behave as described above.
+    That is, it will automatically attempt to run the plugin and, if
+    it cannot, UNinstall it from your private plugins.
 EOF
 }
 
@@ -176,7 +193,9 @@ packagePluginDir () {
     fi
     if test -n "$testRun"; then
         inputFileName=`echo $testRun | cut -d':' -f1`
-        cp $inputFileName $theDir/.
+	pushd
+        cp $inputFileName $TMPDIR/${theDir}_tmp.$$/$theDir/. 
+	pushd
         echo $testRun > $theDir/.TEST_RUN_COMMAND
     fi
     tar cf - $theDir | gzip > $theDir.tar.gz
@@ -194,6 +213,7 @@ testBuildPluginTarball () {
     thePluginName=`basename $theTarball .tar.gz`
     mkdir $TMPDIR/${theTarball}_tmp.$$
     cp $theTarball $TMPDIR/${theTarball}_tmp.$$/.
+    oldDir=`pwd`
     pushd $TMPDIR/${theTarball}_tmp.$$ 1>/dev/null 2>&1
     gunzip < $theTarball | tar xf -
     cd $thePluginName
@@ -205,7 +225,7 @@ testBuildPluginTarball () {
     fi
     xml2info $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
     xml2makefile $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
-    make -j 2 1>/dev/null 2>&1
+    make -j 2 1>$oldDir/visit_plugin_${thePluginName}_make.log 2>&1
     hadError=$?
     if test -z "$deleteIt" || test $deleteIt -ne 0; then
         make clean 1>/dev/null 2>&1
@@ -404,6 +424,15 @@ if test $optError -eq 0 && test -z "$action"; then
     echo "************************************************"
 fi
 
+if test $optError -eq 0 && test -z "$pluginName"; then
+    optError=1
+    echo "************************"
+    echo "************************"
+    echo "No Plugin Dir specified."
+    echo "************************"
+    echo "************************"
+fi
+
 if test "$optError" = "1"; then
     echo "Usage:  $0 <options> [dirs]"
     echo "Available options:"
@@ -468,7 +497,7 @@ if test $action = pack; then
             buildError=`echo $buildResult | cut -d' ' -f1`
             buildDir=`echo $buildResult | cut -d' ' -f2`
             if test $buildError -ne 0; then
-                echo "Test Build failed"
+                echo "Test Build failed. Check visit_plugin_${pluginName}_make.log"
                 pushd $buildDir 1>/dev/null 2>&1
                 make clean 1>/dev/null 2>&1
                 popd 1>/dev/null 2>&1

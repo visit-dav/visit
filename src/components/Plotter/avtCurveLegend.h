@@ -60,7 +60,9 @@ class  vtkLineLegend;
 //  Creation:   October 25, 2005
 //
 //  Modifications:
-// 
+//    Brad Whitlock, Thu Mar 22 00:03:26 PDT 2007
+//    Added methods for controlling some more properties.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtCurveLegend : public avtLegend
@@ -69,13 +71,25 @@ class PLOTTER_API avtCurveLegend : public avtLegend
                                avtCurveLegend();
     virtual                   ~avtCurveLegend();
 
+    virtual void               GetLegendSize(double, double &, double &);
+
+    virtual void               SetLabelVisibility(bool);
+    virtual bool               GetLabelVisibility() const;
+
+    virtual void               SetLegendScale(double xScale, double yScale);
+    virtual void               SetBoundingBoxVisibility(bool);
+    virtual void               SetBoundingBoxColor(const double *);
+    virtual void               SetFont(int family, bool bold, bool italic, bool shadow);
+
     void                       SetLineWidth(_LineWidth lw);
     void                       SetLineStyle(_LineStyle ls);
     void                       SetColor(const double[3]);
     void                       SetColor(double, double, double);
 
   protected:
-    vtkLineLegend              *lineLegend;
+    vtkLineLegend             *lineLegend;
+    double                     scale[2];
+    bool                       labelVisibility;
 
     virtual void               ChangePosition(double, double);
     virtual void               ChangeTitle(const char *);

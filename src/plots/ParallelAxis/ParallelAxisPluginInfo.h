@@ -113,6 +113,8 @@ class ParallelAxisViewerPluginInfo: public virtual ViewerPlotPluginInfo, public 
     virtual const char **XPMIconData() const;
     virtual int GetVariableTypes() const;
 
+    virtual bool ProvidesLegend() const { return false; }
+
     static void InitializeGlobalObjects();
 
   private:

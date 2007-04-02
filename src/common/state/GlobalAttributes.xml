@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="GlobalAttributes" purpose="This class contains attributes associated with the main window." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="GlobalAttributes.code">
+  <Attribute name="GlobalAttributes" purpose="This class contains attributes associated with the main window." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="GlobalAttributes.code">
     <Field name="sources" label="Sources" type="stringVector">
     </Field>
     <Field name="windows" label="windows" type="intVector">

@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyWindowInformation_StartUp(WindowInformation *subj, void *data);
 void VISITPY_API           PyWindowInformation_CloseDown();
-PyMethodDef * VISITPY_API  PyWindowInformation_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyWindowInformation_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyWindowInformation_Check(PyObject *obj);
-WindowInformation * VISITPY_API PyWindowInformation_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyWindowInformation_New();
-PyObject * VISITPY_API     PyWindowInformation_Wrap(const WindowInformation *attr);
+VISITPY_API WindowInformation *  PyWindowInformation_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyWindowInformation_New();
+VISITPY_API PyObject *      PyWindowInformation_Wrap(const WindowInformation *attr);
 void VISITPY_API           PyWindowInformation_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyWindowInformation_SetDefaults(const WindowInformation *atts);
 std::string VISITPY_API    PyWindowInformation_GetLogString();

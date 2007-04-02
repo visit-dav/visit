@@ -63,6 +63,8 @@ class avtLookupTable;
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Mar 19 11:28:57 EDT 2007
+//    Added background color so context will fade nicely into background.
 //   
 // ****************************************************************************
 
@@ -85,6 +87,7 @@ protected:
 
     avtLookupTable          *avtLUT;
     ParallelAxisAttributes  atts;
+    double                   bgColor[3];
 
     virtual avtMapper       *GetMapper(void);
     virtual avtDataObject_p  ApplyOperators(avtDataObject_p);
@@ -94,6 +97,7 @@ protected:
     avtPipelineSpecification_p EnhanceSpecification(avtPipelineSpecification_p in_spec);
     virtual avtLegend_p      GetLegend(void) { return NULL; };
     void                     SetColors();
+    virtual bool             SetBackgroundColor(const double *);
 };
 
 #endif

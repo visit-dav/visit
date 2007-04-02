@@ -5,7 +5,7 @@ void
 Plot::AddOperator(int op)
 {
     operators.push_back(op);
-    Select(6, (void *)&operators);
+    Select(8, (void *)&operators);
 }
 
 Function: ClearAllOperators
@@ -17,7 +17,7 @@ Plot::ClearAllOperators()
     if(operators.size() > 0)
     {
         operators.clear();
-        Select(6, (void *)&operators);
+        Select(8, (void *)&operators);
     }
 }
 
@@ -48,6 +48,6 @@ Plot::RemoveLastOperator()
     if(operators.size() > 0)
     {
         operators.pop_back();
-        Select(6, (void *)&operators);
+        Select(8, (void *)&operators);
     }
 }

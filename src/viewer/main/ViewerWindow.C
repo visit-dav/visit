@@ -3146,14 +3146,24 @@ ViewerWindow::CopyAnnotationObjectList(const ViewerWindow *source)
 // Creation:   Tue Dec 2 15:24:08 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 10:01:35 PDT 2007
+//   Name the new object.
+//
 // ****************************************************************************
 
-void
-ViewerWindow::AddAnnotationObject(int annotType)
+bool
+ViewerWindow::AddAnnotationObject(int annotType, const std::string &annotName)
 {
-    visWindow->AddAnnotationObject(annotType);
-    SendUpdateFrameMessage();
+    bool ret;
+
+    if((ret = visWindow->AddAnnotationObject(annotType, annotName)) == true)
+        SendUpdateFrameMessage();
+    else
+    {
+        Warning("The annotation object could not be added.");
+    }
+
+    return ret;
 }
 
 // ****************************************************************************
@@ -3194,6 +3204,28 @@ ViewerWindow::DeleteActiveAnnotationObjects()
 {
     visWindow->DeleteActiveAnnotationObjects();
     SendUpdateFrameMessage();
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::DeleteAnnotationObject
+//
+// Purpose: 
+//   Deletes the specified annotation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 20 12:18:09 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::DeleteAnnotationObject(const std::string &name)
+{
+    bool ret = visWindow->DeleteAnnotationObject(name);
+    if(ret)
+        SendUpdateFrameMessage();
+    return ret;
 }
 
 // ****************************************************************************
@@ -3694,6 +3726,9 @@ ViewerWindow::GetScaleFactorAndType(double &s, int &t)
 //    I removed coding for handling degenerate views since this was now
 //    handled in avtViewCurve.
 //
+//    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
+//    Added support for Log scaling.
+//
 // ****************************************************************************
 
 void
@@ -3728,6 +3763,17 @@ ViewerWindow::RecenterViewCurve(const double *limits)
     viewCurve.domain[1] = boundingBoxCurve[1];
     viewCurve.range[0]  = boundingBoxCurve[2];
     viewCurve.range[1]  = boundingBoxCurve[3];
+#define SMALL 1e-100
+    if (viewCurve.domainScale == LOG)
+    {
+        viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) + SMALL);
+        viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) + SMALL);
+    }
+    if (viewCurve.rangeScale == LOG)
+    {
+        viewCurve.range[0] = log10(fabs(viewCurve.range[0]) + SMALL);
+        viewCurve.range[1] = log10(fabs(viewCurve.range[1]) + SMALL);
+    }
 
     visWindow->SetViewCurve(viewCurve);
 
@@ -3992,6 +4038,9 @@ ViewerWindow::RecenterView3d(const double *limits)
 //    reset the view.  I also set more flags indicating the view is invalid
 //    in the case were we don't reset the view just to be on the safe side.
 //
+//    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
+//    Added support for Log scaling.
+//
 // ****************************************************************************
 
 void
@@ -4031,7 +4080,17 @@ ViewerWindow::ResetViewCurve()
     viewCurve.domain[1]  = boundingBoxCurve[1];
     viewCurve.range[0]   = boundingBoxCurve[2];
     viewCurve.range[1]   = boundingBoxCurve[3];
-
+#define SMALL 1e-100
+    if (viewCurve.domainScale == LOG)
+    {
+        viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) +SMALL);
+        viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) +SMALL);
+    }
+    if (viewCurve.rangeScale == LOG)
+    {
+        viewCurve.range[0] = log10(fabs(viewCurve.range[0]) +SMALL);
+        viewCurve.range[1] = log10(fabs(viewCurve.range[1]) +SMALL);
+    }
     visWindow->SetViewCurve(viewCurve);
 
     //
@@ -8197,6 +8256,10 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye information to support stereo SR
+//
+//    Brad Whitlock, Wed Mar 21 22:18:06 PST 2007
+//    Added the plot names (unique viewer names for the plot).
+//
 // ****************************************************************************
 
 void
@@ -8207,7 +8270,8 @@ ViewerWindow::GetExternalRenderRequestInfo(
     ClearExternalRenderRequestInfo(theRequest);
 
     // get information about the plots, their hosts, ids, and attributes
-    GetPlotList()->GetPlotAtts(theRequest.pluginIDsList,
+    GetPlotList()->GetPlotAtts(theRequest.plotNames,
+                               theRequest.pluginIDsList,
                                theRequest.engineKeysList,
                                theRequest.plotIdsList,
                                theRequest.attsList);
@@ -8689,5 +8753,43 @@ ViewerWindow::GlyphPick(const double pt1[3], const double pt2[3],
                         int &dom, int &elNum, bool &forCell)
 {
     visWindow->GlyphPick(pt1, pt2, dom, elNum, forCell, GetNoWinMode()); 
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::SetScaleMode
+//
+// Purpose: 
+//
+// Arguments:
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 6, 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetScaleMode(ScaleMode ds, ScaleMode rs)
+{
+    bool updatesEnabled = UpdatesEnabled();
+
+    // remove all plot's actors from the VisWindow
+    if (updatesEnabled)
+        DisableUpdates();
+    ClearPlots();
+
+    // scale the plots
+    GetPlotList()->SetScaleMode(ds, rs);
+
+    if (updatesEnabled)
+    {
+        EnableUpdates();
+        GetPlotList()->UpdateFrame();
+    }
+
+    // update the window information
+    ViewerWindowManager::Instance()->UpdateWindowInformation(
+        WINDOWINFO_WINDOWFLAGS, windowId);
 }
 

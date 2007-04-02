@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyView2DAttributes_StartUp(View2DAttributes *subj, void *data);
 void VISITPY_API           PyView2DAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyView2DAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyView2DAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyView2DAttributes_Check(PyObject *obj);
-View2DAttributes * VISITPY_API PyView2DAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyView2DAttributes_New();
-PyObject * VISITPY_API     PyView2DAttributes_Wrap(const View2DAttributes *attr);
+VISITPY_API View2DAttributes *  PyView2DAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyView2DAttributes_New();
+VISITPY_API PyObject *      PyView2DAttributes_Wrap(const View2DAttributes *attr);
 void VISITPY_API           PyView2DAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyView2DAttributes_SetDefaults(const View2DAttributes *atts);
 std::string VISITPY_API    PyView2DAttributes_GetLogString();

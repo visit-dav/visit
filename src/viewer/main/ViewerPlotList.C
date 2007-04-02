@@ -52,6 +52,7 @@
 #include <ViewerSubject.h>
 
 #include <AbortException.h>
+#include <AnnotationObject.h>
 #include <DatabaseCorrelation.h>
 #include <DatabaseCorrelationList.h>
 #include <DataNode.h>
@@ -196,6 +197,9 @@ PlaybackMode_FromString(const std::string &s,
 //    Brad Whitlock, Mon Feb 12 17:41:27 PST 2007
 //    Added ViewerBase base class.
 //
+//    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007
+//    Added xScaleMode, yScaleMode.
+//
 // ****************************************************************************
 
 ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) : 
@@ -219,6 +223,8 @@ ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) :
     nKeyframesWasUserSet = false;
     nKeyframes = 1;
     pipelineCaching = false;
+    xScaleMode == LINEAR;
+    yScaleMode == LINEAR;
 }
 
 // ****************************************************************************
@@ -3099,6 +3105,10 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   I added code to support the catch-all mesh feature and compute a new
 //   variable name from the catch all mesh name
 //
+//   Brad Whitlock, Thu Mar 22 02:23:42 PDT 2007
+//   Added code to create a new legend annotation object with the same name
+//   as the new plot.
+//
 // ****************************************************************************
 
 ViewerPlot *
@@ -3200,6 +3210,19 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
                                        cacheIndex, cacheSize);
         plot->RegisterViewerPlotList(this);
 
+        //
+        // If the new plot provides a legend then create a legend attributes
+        // annotation object in the window and send a delayed message to 
+        // update the annotation object list in the client.
+        //
+        if(plot->ProvidesLegend())
+        {
+            if(window->AddAnnotationObject((int)AnnotationObject::LegendAttributes, 
+               plot->GetPlotName()))
+            {
+                ViewerWindowManager::Instance()->UpdateAnnotationObjectList(true);
+            }
+        }
     }
     CATCH(VisItException)
     {
@@ -3306,6 +3329,10 @@ ViewerPlotList::ClearActors()
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Tue Mar 20 12:13:26 PDT 2007
+//    Added code to remove the plot's annotation object.
+//
 // ****************************************************************************
 
 void
@@ -3313,6 +3340,7 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 {
     int  nPlotsNew = 0;
     bool plotDeleted = false;
+    bool legendDeleted = false;
 
     //
     // Loop over the list deleting the designated plot.  As it traverses
@@ -3327,6 +3355,10 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
         //
         if (plots[i].plot == whichOne)
         {
+            // If the plot provides legend, remove its annotation object from the list.
+            if(plots[i].plot->ProvidesLegend())
+                legendDeleted = window->DeleteAnnotationObject(plots[i].plot->GetPlotName());
+
             delete plots[i].plot;
             plotDeleted = true;
         }
@@ -3337,12 +3369,14 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
         }
     }
     nPlots = nPlotsNew;
- 
+
     if (plotDeleted && doUpdate)
     {
         //
         // Update the client attributes.
         //
+        if(legendDeleted)
+            ViewerWindowManager::Instance()->UpdateAnnotationObjectList();
         UpdatePlotList();
         UpdatePlotAtts();
         UpdateSILRestrictionAtts();
@@ -3410,6 +3444,9 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    hostDatabaseName in its correlation and replaced it with very similar
 //    logic by calling ValidateTimeSlider in all cases.
 //
+//    Brad Whitlock, Tue Mar 20 12:14:10 PDT 2007
+//    Added code to remove the plot's annotation object.
+//
 // ****************************************************************************
 
 void
@@ -3423,6 +3460,7 @@ ViewerPlotList::DeleteActivePlots()
     int       nPlotsNew;
 
     nPlotsNew = 0;
+    int nDeletedLegends = 0;
     for (int i = 0; i < nPlots; i++)
     {
         //
@@ -3431,6 +3469,13 @@ ViewerPlotList::DeleteActivePlots()
         //
         if (plots[i].active == true || nPlots == 1)
         {
+            // If the plot provides legend, remove its annotation object from the list.
+            if(plots[i].plot->ProvidesLegend())
+            {
+                if(window->DeleteAnnotationObject(plots[i].plot->GetPlotName()))
+                    ++nDeletedLegends;
+            }
+
             // Tell the query that this plot is being deleted. 
             ViewerQueryManager::Instance()->Delete(plots[i].plot);
             delete plots[i].plot;
@@ -3468,6 +3513,8 @@ ViewerPlotList::DeleteActivePlots()
     //
     // Update the client attributes.
     //
+    if(nDeletedLegends > 0)
+        ViewerWindowManager::Instance()->UpdateAnnotationObjectList();
     UpdatePlotList();
     UpdatePlotAtts();
     UpdateSILRestrictionAtts();
@@ -3528,7 +3575,7 @@ ViewerPlotList::FindCompatiblePlot(ViewerPlot *givenPlot)
         {
             int numFeaturesMatched = 0;
 
-            if (strcmp(plots[i].plot->GetPlotName(),givenPlot->GetPlotName()) == 0)
+            if (strcmp(plots[i].plot->GetPlotTypeName(),givenPlot->GetPlotTypeName()) == 0)
                 numFeaturesMatched++;
             if (strcmp(plots[i].plot->GetPluginID(),givenPlot->GetPluginID()) == 0)
                 numFeaturesMatched++;
@@ -4298,7 +4345,7 @@ ViewerPlotList::ReplaceDatabase(const EngineKey &key,
                 SNPRINTF(str, 1024, "The %s plot of \"%s\" cannot be regenerated "
                              "using the database: %s since the variable "
                              "is not contained in the new database.",
-                             plot->GetPlotName(),
+                             plot->GetPlotTypeName(),
                              plot->GetVariableName().c_str(),
                              database.c_str());
                 Error(str);
@@ -4416,7 +4463,7 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
             SNPRINTF(str, 1024, "The %s plot of \"%s\" cannot be overlayed "
                          "using the database: %s since the variable "
                          "is not contained in the new database.",
-                         plots[i].plot->GetPlotName(),
+                         plots[i].plot->GetPlotTypeName(),
                          plots[i].plot->GetVariableName().c_str(),
                          database.c_str());
             Error(str);
@@ -5610,7 +5657,7 @@ CreatePlot(void *info)
                 char message[256];
                 SNPRINTF(message, sizeof(message),
                     "The %s plot of variable \"%s\" yielded no data.",
-                    plotInfo->plot->GetPlotName(),
+                    plotInfo->plot->GetPlotTypeName(),
                     plotInfo->plot->GetVariableName().c_str());
                 plotInfo->plotList->Warning(message);
             }
@@ -5727,6 +5774,9 @@ CreatePlot(void *info)
 //    Added support for keyframing. I also changed how the opaque flag for
 //    mesh plots is set.
 //
+//    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007
+//    Added support for Log scaling.
+//
 // ****************************************************************************
 
 void
@@ -5823,9 +5873,18 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
             {
                 // Indicate that the plot has no error.
                 plots[i].plot->SetErrorFlag(false);
-
+#define SMALL 1e-100
                 double *plotExtents = plots[i].plot->GetSpatialExtents();
-
+                if (xScaleMode == LOG)
+                {
+                    plotExtents[0] = log10(fabs(plotExtents[0]) + SMALL);
+                    plotExtents[1] = log10(fabs(plotExtents[1]) + SMALL);
+                }
+                if (yScaleMode == LOG)
+                {
+                    plotExtents[2] = log10(fabs(plotExtents[2]) + SMALL);
+                    plotExtents[3] = log10(fabs(plotExtents[3]) + SMALL);
+                }
                 switch (plotDimension)
                 {
                   case 3:
@@ -6274,14 +6333,19 @@ ViewerPlotList::UpdatePlotAtts(bool updateThoseNotRepresented) const
 //    Brad Whitlock, Mon Apr 5 12:21:02 PDT 2004
 //    I made it use GetPlotAtts and I renamed the method.
 //
+//    Brad Whitlock, Wed Mar 21 22:14:40 PST 2007
+//    Get the plot names (unique ids assigned by the viewer) since they are 
+//    needed to match plots to annotation object attributes for the legends.
+//
 // ****************************************************************************
 
 void
 ViewerPlotList::GetPlotAtts(
-   std::vector<const char*>&             pluginIDsList,
-   std::vector<EngineKey>&               engineKeysList,
-   std::vector<int>&                     plotIdsList,
-   std::vector<const AttributeSubject*>& attsList) const
+   std::vector<std::string>             &plotNames,
+   std::vector<const char*>             &pluginIDsList,
+   std::vector<EngineKey>               &engineKeysList,
+   std::vector<int>                     &plotIdsList,
+   std::vector<const AttributeSubject*> &attsList) const
 {
     for (int i = 0; i < nPlots; i++)
     {
@@ -6290,6 +6354,7 @@ ViewerPlotList::GetPlotAtts(
         {
             ViewerPlot *plot = plots[i].plot;
 
+            plotNames.push_back(plot->GetPlotName());
             pluginIDsList.push_back(plot->GetPluginID());
             engineKeysList.push_back(plot->GetEngineKey());
             plotIdsList.push_back(plot->GetNetworkID());
@@ -8291,3 +8356,36 @@ ViewerPlotList::AlternateDisplayChangedPlotAttributes(ViewerPlot *plot)
         UpdateFrame();
     }
 }
+
+// ****************************************************************************
+// Method: ViewerPlotList::SetScaleMode
+//
+// Purpose: 
+//   Sets the scalemode ivars, and tells all the plots to do the same.
+//   In support of log scaled views.
+//
+// Arguments:
+//   ds        domain (x) scale mode 
+//   rs        range  (y) scale mode
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 6, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+ViewerPlotList::SetScaleMode(ScaleMode ds, ScaleMode rs)
+{
+    xScaleMode = ds;
+    yScaleMode = rs;
+    for (int i = 0; i < nPlots; ++i)
+    {
+        if (plots[i].active && !plots[i].hidden)
+        {
+            plots[i].plot->SetScaleMode(ds, rs);
+        }
+    }
+}
+

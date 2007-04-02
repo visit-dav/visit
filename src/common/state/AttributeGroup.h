@@ -102,6 +102,9 @@ class DataNode;
 //    Brad Whitlock, Tue May 3 11:05:15 PDT 2005
 //    I added SelectField, SelectFields and made Select private.
 //
+//    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
+//    Added FieldType_scalemode. 
+//
 // ****************************************************************************
 
 class STATE_API AttributeGroup
@@ -132,7 +135,8 @@ public:
         FieldType_variablename,
         FieldType_att,
         FieldType_attVector,
-        FieldType_enum        
+        FieldType_enum,
+        FieldType_scalemode
     };
 
 public:

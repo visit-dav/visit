@@ -62,7 +62,7 @@
 #include <qwidgetfactory.h>
 
 #include <QvisColorButton.h>
-#include <QvisFileLineEdit.h>
+#include <QvisDialogLineEdit.h>
 #include <QvisOpacitySlider.h>
 #include <QvisPredefinedViewports.h>
 #include <QvisScreenPositionEdit.h>
@@ -1241,9 +1241,9 @@ QvisSaveMovieWizard::CreateSequencesPage()
         "Map to viewport", page5_sequenceProperties), 1, 0);
 
     // Create the uiFile name controls
-    page5_sequenceUIFile = new QvisFileLineEdit(page5_sequenceProperties,
+    page5_sequenceUIFile = new QvisDialogLineEdit(page5_sequenceProperties,
         "page5_sequenceUIFile");
-    page5_sequenceUIFile->setDialogMode(QvisFileLineEdit::ChooseLocalFile);
+    page5_sequenceUIFile->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
     connect(page5_sequenceUIFile, SIGNAL(returnPressed()),
             this, SLOT(page5_sequenceUIFileChanged()));
     page5_sequenceUIFile->setDialogFilter("User interface (*.ui)");
@@ -1363,8 +1363,8 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     QLabel *filenameLabel = new QLabel("Template filename",
         frame, "filenameLabel");
     gLayout->addWidget(filenameLabel, 2, 0);
-    page7_templateFile = new QvisFileLineEdit(frame, "page7_templateDescription");
-    page7_templateFile->setDialogMode(QvisFileLineEdit::ChooseLocalFile);
+    page7_templateFile = new QvisDialogLineEdit(frame, "page7_templateDescription");
+    page7_templateFile->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
     page7_templateFile->setDialogCaption("Choose template filename");
     page7_templateFile->setDialogFilter("*");
     connect(page7_templateFile, SIGNAL(textChanged(const QString &)),
@@ -1377,8 +1377,8 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     QLabel *previewImageLabel = new QLabel("Preview image filename",
         frame, "previewImageLabel");
     gLayout->addWidget(previewImageLabel, 3, 0);
-    page7_previewImageFile = new QvisFileLineEdit(frame, "page7_previewImageFile");
-    page7_previewImageFile->setDialogMode(QvisFileLineEdit::ChooseLocalFile);
+    page7_previewImageFile = new QvisDialogLineEdit(frame, "page7_previewImageFile");
+    page7_previewImageFile->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
     page7_previewImageFile->setDialogCaption("Choose preview image filename");
     page7_previewImageFile->setDialogFilter("XPM image (*.xpm)");
     connect(page7_previewImageFile, SIGNAL(textChanged(const QString &)),

@@ -81,11 +81,16 @@ using std::string;
 //
 //    Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
 //    Added leftEye;
+//
+//    Brad Whitlock, Wed Mar 21 22:13:26 PST 2007
+//    Added plot names.
+//
 // ****************************************************************************
 
 
 typedef struct _ExternalRenderRequestInfo
 {
+    vector<std::string>                   plotNames;
     vector<const char*>                   pluginIDsList;
     vector<EngineKey>                     engineKeysList;
     vector<int>                           plotIdsList;

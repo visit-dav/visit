@@ -217,7 +217,7 @@ public:
     void SetAnnotationAttributes();
     void SetDefaultAnnotationAttributes();
     void ResetAnnotationAttributes();
-    void AddAnnotationObject(int annotType);
+    void AddAnnotationObject(int annotType, const std::string &annotName);
     void HideActiveAnnotationObjects();
     void DeleteActiveAnnotationObjects();
     void RaiseActiveAnnotationObjects();

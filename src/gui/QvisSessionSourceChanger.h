@@ -41,7 +41,7 @@
 #include <map>
 
 class QListBox;
-class QvisFileLineEdit;
+class QvisDialogLineEdit;
 
 // ****************************************************************************
 // Class: QvisSessionSourceChanger
@@ -79,9 +79,9 @@ private slots:
 private:
     void updateControls(int ci);
 
-    QListBox         *sourceList;
-    QvisFileLineEdit *fileLineEdit;
-    QListBox         *useList;
+    QListBox           *sourceList;
+    QvisDialogLineEdit *fileLineEdit;
+    QListBox           *useList;
 
     stringVector sourceIds;
     stringVector sources;

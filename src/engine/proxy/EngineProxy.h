@@ -284,6 +284,9 @@ class ExportDBAttributes;
 //    Added a SimulationCommand object so the simulation can send simulation
 //    commands back to the viewer.
 //
+//    Brad Whitlock, Wed Mar 21 22:54:33 PST 2007
+//    Added plotName to MakePlot.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -333,7 +336,8 @@ public:
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name,
                                                 int nargs);
-    int                      MakePlot(const std::string&, 
+    int                      MakePlot(const std::string &plotName,
+                                      const std::string &pluginID, 
                                       const AttributeSubject*,
                                       const std::vector<double>&,
                                       int winID);

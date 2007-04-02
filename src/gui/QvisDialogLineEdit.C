@@ -34,8 +34,9 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#include <QvisFileLineEdit.h>
+#include <QvisDialogLineEdit.h>
 #include <qfiledialog.h>
+#include <qfontdialog.h>
 #include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qtooltip.h>
@@ -43,7 +44,7 @@
 #include <QvisFileOpenDialog.h>
 
 // ****************************************************************************
-// Method: QvisFileLineEdit::QvisFileLineEdit
+// Method: QvisDialogLineEdit::QvisDialogLineEdit
 //
 // Purpose: 
 //   Constructor.
@@ -59,18 +60,20 @@
 //   
 // ****************************************************************************
 
-QvisFileLineEdit::QvisFileLineEdit(QWidget *parent, const char *name)
+QvisDialogLineEdit::QvisDialogLineEdit(QWidget *parent, const char *name)
     : QHBox(parent, name), dialogFilter("*"), dialogCaption("Open")
 {
     dialogMode = ChooseFile;
     setSpacing(0);
 
     lineEdit = new QLineEdit(this, "lineEdit");
+    lineEdit->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
+        QSizePolicy::Minimum));
     connect(lineEdit, SIGNAL(returnPressed()),
             this, SIGNAL(returnPressed()));
     connect(lineEdit, SIGNAL(textChanged(const QString &)),
             this, SIGNAL(textChanged(const QString &)));
-    QPushButton *pushButton = new QPushButton("...",
+    pushButton = new QPushButton("...",
         this, "pushButton");
 #ifndef Q_WS_MACX
     pushButton->setMaximumWidth(
@@ -83,10 +86,12 @@ QvisFileLineEdit::QvisFileLineEdit(QWidget *parent, const char *name)
 
     // Make the line edit take most of the space.
     setStretchFactor(lineEdit, 100);
+    setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
+        QSizePolicy::Minimum));
 }
 
 // ****************************************************************************
-// Method: QvisFileLineEdit::~QvisFileLineEdit
+// Method: QvisDialogLineEdit::~QvisDialogLineEdit
 //
 // Purpose: 
 //   Destructor.
@@ -98,7 +103,7 @@ QvisFileLineEdit::QvisFileLineEdit(QWidget *parent, const char *name)
 //   
 // ****************************************************************************
 
-QvisFileLineEdit::~QvisFileLineEdit()
+QvisDialogLineEdit::~QvisDialogLineEdit()
 {
 }
 
@@ -107,7 +112,7 @@ QvisFileLineEdit::~QvisFileLineEdit()
 //
 
 void
-QvisFileLineEdit::setText(const QString &s)
+QvisDialogLineEdit::setText(const QString &s)
 {
     QToolTip::remove(lineEdit);
     QToolTip::add(lineEdit, s);
@@ -115,33 +120,61 @@ QvisFileLineEdit::setText(const QString &s)
 }
 
 QString
-QvisFileLineEdit::text()
+QvisDialogLineEdit::text()
 {
     return lineEdit->text();
 }
 
 QString
-QvisFileLineEdit::displayText()
+QvisDialogLineEdit::displayText()
 {
     return lineEdit->displayText();
 }
 
 void
-QvisFileLineEdit::setDialogFilter(const QString &s)
+QvisDialogLineEdit::setDialogFilter(const QString &s)
 {
     dialogFilter = s;
 }
 
 void
-QvisFileLineEdit::setDialogCaption(const QString &s)
+QvisDialogLineEdit::setDialogCaption(const QString &s)
 {
     dialogCaption = s;
 }
 
 void
-QvisFileLineEdit::setDialogMode(QvisFileLineEdit::DialogMode m)
+QvisDialogLineEdit::setDialogMode(QvisDialogLineEdit::DialogMode m)
 {
     dialogMode = m;
+}
+
+// ****************************************************************************
+// Method: QvisDialogLineEdit::fontChange
+//
+// Purpose: 
+//   Update the width of the font button when the font changes.
+//
+// Arguments:
+//   oldFont : The old font.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 15 17:03:41 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisDialogLineEdit::fontChange(const QFont &oldFont)
+{
+    QHBox::fontChange(oldFont);
+
+#ifndef Q_WS_MACX
+    pushButton->setMaximumWidth(
+         QFontMetrics(font()).boundingRect("...").width() + 6);
+    update();
+#endif
 }
 
 //
@@ -149,7 +182,7 @@ QvisFileLineEdit::setDialogMode(QvisFileLineEdit::DialogMode m)
 //
 
 // ****************************************************************************
-// Method: QvisFileLineEdit::pushButtonClicked
+// Method: QvisDialogLineEdit::pushButtonClicked
 //
 // Purpose: 
 //   This method is called when the "..." button is clicked and it lets the
@@ -160,13 +193,16 @@ QvisFileLineEdit::setDialogMode(QvisFileLineEdit::DialogMode m)
 // Creation:   Tue Nov 14 16:25:09 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar 16 15:09:38 PST 2007
+//   Added support for fonts.
+//
 // ****************************************************************************
 
 void
-QvisFileLineEdit::pushButtonClicked()
+QvisDialogLineEdit::pushButtonClicked()
 {
     QString name(text());
+    QFont f;
 
     if(dialogMode == ChooseFile)
     {
@@ -185,6 +221,16 @@ QvisFileLineEdit::pushButtonClicked()
         name = QFileDialog::getExistingDirectory(name, this,
             "getDirectoryDialog", dialogCaption);
     }
+    else if(dialogMode == ChooseFont)
+    {
+        // Choose a directory.
+        bool okay = false;
+        f = QFontDialog::getFont(&okay, font(), this, "getFontDialog");
+        if(okay)
+            name = f.toString();
+        else
+            name = QString();
+    }
 
     //
     // If a file or directory was chosen, use it.
@@ -196,9 +242,11 @@ QvisFileLineEdit::pushButtonClicked()
 
         lineEdit->blockSignals(true);
         lineEdit->setText(name);
+        lineEdit->home(false);
         lineEdit->blockSignals(false);
 
         emit returnPressed();
         emit textChanged(name);
     }
 }
+

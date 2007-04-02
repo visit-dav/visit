@@ -1517,6 +1517,42 @@ class LoadBalanceSchemeField : public virtual Field
     AVT_FIELD_METHODS
 };
 
+//
+// --------------------------------- ScaleMode --------------------------------
+//
+class ScaleMode : public virtual Field
+{
+  public:
+    int  val;
+  public:
+    ScaleMode(const QString &n, const QString &l) : Field("scalemode",n,l) { }
+    virtual QString GetCPPName(bool, const QString &) 
+    {
+        return "int";
+    }
+    virtual void SetValue(const QString &s, int = 0)
+    {
+        val = s.toInt();
+        valueSet = true;
+    }
+    virtual void Print(ostream &out)
+    {
+        Field::Print(out);
+        if (valueSet)
+        {
+            out << "            value: " << val << endl;
+        }
+    }
+    virtual vector<QString> GetValueAsText()
+    {
+        vector<QString> retval;
+        if (valueSet)
+            retval.push_back(QString().sprintf("%d", val));
+        return retval;
+    }
+};
+
+
 // ****************************************************************************
 //  Class:  FieldFactory
 //
@@ -1535,6 +1571,9 @@ class LoadBalanceSchemeField : public virtual Field
 //
 //    Brad Whitlock, Fri Mar 2 14:31:41 PST 2007
 //    Added some built-in AVT enums.
+//
+//    Kathleen Bonnell, Thu Mar 22 16:52:37 PDT 2007
+//    Added scalemode.
 //
 // ****************************************************************************
 
@@ -1572,6 +1611,7 @@ class FieldFactory
         else if (type == "att")          f = new Att(subtype,name,label);
         else if (type == "attVector")    f = new AttVector(subtype,name,label);
         else if (type == "enum")         f = new Enum(subtype, name, label);
+        else if (type == "scalemode")    f = new ScaleMode(name,label);
 
         // Special built-in AVT enums
         else if (type == "avtCentering")      f = new avtCenteringField(name, label);

@@ -297,6 +297,10 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //
 //    Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
 //    Added SetStereoEnabled
+//
+//    Brad Whitlock, Wed Mar 21 22:59:34 PST 2007
+//    Added plotName to MakePlot.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -321,7 +325,9 @@ class NetworkManager
     void          AddFilter(const std::string&,
                             const AttributeGroup* = NULL,
                             const unsigned int ninputs = 1);
-    void          MakePlot(const std::string&, const AttributeGroup*,
+    void          MakePlot(const std::string &plotName, 
+                           const std::string &pluginID, 
+                           const AttributeGroup*,
                            const std::vector<double> &);
     int           EndNetwork(int windowID);
     void          CancelNetwork();

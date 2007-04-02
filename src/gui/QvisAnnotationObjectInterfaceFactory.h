@@ -38,6 +38,7 @@
 #ifndef QVIS_ANNOTATION_OBJECT_INTERFACE_FACTORY_H
 #define QVIS_ANNOTATION_OBJECT_INTERFACE_FACTORY_H
 #include <gui_exports.h>
+#include <AnnotationObject.h>
 
 class QvisAnnotationObjectInterface;
 class QWidget;
@@ -54,7 +55,7 @@ class QWidget;
 // Creation:   Fri Oct 31 09:19:35 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationObjectInterfaceFactory
@@ -64,7 +65,8 @@ public:
     virtual ~QvisAnnotationObjectInterfaceFactory();
 
     int GetMaxInterfaces() const;
-    QvisAnnotationObjectInterface *CreateInterface(int i, QWidget *parent) const;
+    QvisAnnotationObjectInterface *CreateInterface(
+        AnnotationObject::AnnotationType i, QWidget *parent) const;
 };
 
 #endif

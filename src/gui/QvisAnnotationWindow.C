@@ -41,6 +41,7 @@
 #include <qcombobox.h>
 #include <qcheckbox.h>
 #include <qgroupbox.h>
+#include <qinputdialog.h>
 #include <qlayout.h>
 #include <qpushbutton.h>
 #include <qlabel.h>
@@ -61,6 +62,7 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObject.h>
 #include <AnnotationObjectList.h>
+#include <PlotList.h>
 #include <DataNode.h>
 #include <ViewerProxy.h>
 
@@ -92,6 +94,9 @@
 //   Brad Whitlock, Thu Oct 30 17:40:39 PST 2003
 //   Changed it to a QvisPostableWindowSimpleObserver and added objButtonGroup.
 //
+//   Brad Whitlock, Wed Mar 21 21:08:54 PST 2007
+//   Made it observe the plot list.
+//
 // ****************************************************************************
 
 QvisAnnotationWindow::QvisAnnotationWindow(const char *caption,
@@ -102,6 +107,7 @@ QvisAnnotationWindow::QvisAnnotationWindow(const char *caption,
     // Initialize the subject pointers.
     annotationAtts = 0;
     annotationObjectList = 0;
+    plotList = 0;
 
     objectInterfaces = 0;
     nObjectInterfaces = 0;
@@ -140,6 +146,9 @@ QvisAnnotationWindow::QvisAnnotationWindow(const char *caption,
 //   Brad Whitlock, Thu Oct 30 16:49:20 PST 2003
 //   Added detachment of subjects and deletion of objButtonGroup.
 //
+//   Brad Whitlock, Wed Mar 21 21:09:21 PST 2007
+//   Detach plot list.
+//
 // ****************************************************************************
 
 QvisAnnotationWindow::~QvisAnnotationWindow()
@@ -149,6 +158,9 @@ QvisAnnotationWindow::~QvisAnnotationWindow()
 
     if(annotationObjectList)
         annotationObjectList->Detach(this);
+
+    if(plotList)
+        plotList->Detach(this);
 
     // Delete parentless widgets.
     delete axisLabelsButtons2D;
@@ -204,6 +216,26 @@ QvisAnnotationWindow::ConnectAnnotationObjectList(AnnotationObjectList *a)
 }
 
 // ****************************************************************************
+// Method: QvisAnnotationWindow::ConnectPlotList
+//
+// Purpose: 
+//   Makes the window observe the plot list.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Mar 21 21:09:45 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::ConnectPlotList(PlotList *pl)
+{
+    plotList = pl;
+    pl->Attach(this);
+}
+
+// ****************************************************************************
 // Method: QvisAnnotationWindow::SubjectRemoved
 //
 // Purpose: 
@@ -216,7 +248,9 @@ QvisAnnotationWindow::ConnectAnnotationObjectList(AnnotationObjectList *a)
 // Creation:   Tue Dec 2 15:16:47 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 21 21:10:32 PST 2007
+//   Added the plot list.
+//
 // ****************************************************************************
 
 void
@@ -227,6 +261,9 @@ QvisAnnotationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 
     if(TheRemovedSubject == annotationObjectList)
         annotationObjectList = 0;
+
+    if(TheRemovedSubject == plotList)
+        plotList = 0;
 }
 
 // ****************************************************************************
@@ -1137,7 +1174,9 @@ QvisAnnotationWindow::CreateColorTab()
 // Creation:   Thu Oct 30 17:00:19 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 15:19:03 PST 2007
+//   Made it so some interfaces don't have to provide a new instance button.
+//
 // ****************************************************************************
 
 void
@@ -1175,6 +1214,7 @@ QvisAnnotationWindow::CreateObjectsTab()
     // Create the annotation object list and controls to do things to them.
     //
     QGridLayout *annotListLayout = new QGridLayout(hLayout, 3, 2);
+    hLayout->setStretchFactor(annotListLayout, 10);
     annotListLayout->addMultiCellWidget(new QLabel("Annotation objects",
         pageObjects), 0, 0, 0, 1);
     annotationListBox = new QListBox(pageObjects, "annotationListBox");
@@ -1207,7 +1247,8 @@ QvisAnnotationWindow::CreateObjectsTab()
         bool notFirstInterface = false;
         for(int i = 0; i < factory.GetMaxInterfaces(); ++i)
         {
-            objectInterfaces[i] = factory.CreateInterface(i, pageObjects);
+            objectInterfaces[i] = factory.CreateInterface(
+                (AnnotationObject::AnnotationType)i, pageObjects);
 
             if(objectInterfaces[i])
             {
@@ -1221,11 +1262,14 @@ QvisAnnotationWindow::CreateObjectsTab()
                         this, SLOT(setUpdateForWindow(bool)));
 
                 // Add a new button to create the annotation.
-                QPushButton *btn = new QPushButton(objectInterfaces[i]->GetName(),
-                    newObjectGroup);
-                objButtonGroup->insert(btn, i);
-                objButtonLayout->addWidget(btn);
-            
+                if(objectInterfaces[i]->AllowInstantiation())
+                {
+                    QPushButton *btn = new QPushButton(objectInterfaces[i]->GetName(),
+                        newObjectGroup);
+                    objButtonGroup->insert(btn, i);
+                    objButtonLayout->addWidget(btn);
+                }
+    
                 // Add the annotation interface to the top object layout.
                 objTopLayout->addWidget(objectInterfaces[i]);
 
@@ -1259,7 +1303,9 @@ QvisAnnotationWindow::CreateObjectsTab()
 // Creation:   Thu Oct 30 18:02:56 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Mar 21 21:11:09 PST 2007
+//   Update the annotation object interfaces when the plot list changes.
+//
 // ****************************************************************************
 
 void
@@ -1270,7 +1316,9 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 
     if(SelectedSubject() == annotationAtts || doAll)
         UpdateAnnotationControls(doAll);
-    if(SelectedSubject() == annotationObjectList || doAll)
+    if(SelectedSubject() == annotationObjectList ||
+       SelectedSubject() == plotList ||
+       doAll)
         UpdateAnnotationObjectControls(doAll);
 }
 
@@ -1810,7 +1858,9 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
 // Creation:   Thu Oct 30 18:01:38 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 15:25:46 PST 2007
+//   Set the enabled state for the hide/show and delete buttons.
+//
 // ****************************************************************************
 
 void
@@ -1821,6 +1871,7 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
     //
     QvisAnnotationObjectInterface *firstInterface = 0;
     int i, firstInterfaceIndex = -1;
+    bool hideDeleteEnabled = true;
     annotationListBox->blockSignals(true);
     annotationListBox->clear();
     for(i = 0; i < annotationObjectList->GetNumAnnotations(); ++i)
@@ -1843,10 +1894,17 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
                 QString mText(objectInterfaces[annotType]->GetMenuText(annot));
                 annotationListBox->insertItem(mText);
                 annotationListBox->setSelected(i, annot.GetActive());
+
+                if(annot.GetActive())
+                    hideDeleteEnabled &= objectInterfaces[annotType]->AllowInstantiation();
             }
         }
     }
     annotationListBox->blockSignals(false);
+
+    // Set the enabled state for the hide/show and delete buttons.
+    hideShowAnnotationButton->setEnabled(hideDeleteEnabled);
+    deleteAnnotationButton->setEnabled(hideDeleteEnabled);
 
     //
     // If no objects were selected, then make sure that we show the first
@@ -3949,18 +4007,26 @@ QvisAnnotationWindow::gradientStyleChanged(int index)
 // Creation:   Mon Aug 27 17:14:17 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 14:33:49 PST 2007
+//   Fixed so it uses the new names.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::tabSelected(const QString &tabLabel)
 {
-    if(tabLabel == QString("2D Options"))
+    if(tabLabel == QString("2D"))
         activeTab = 0;
-    else if(tabLabel == QString("3D Options"))
+    else if(tabLabel == QString("3D"))
         activeTab = 1;
-    else
+    else if(tabLabel == QString("Colors"))
         activeTab = 2;
+    else if(tabLabel == QString("Objects"))
+        activeTab = 3;
+    else
+    {
+        debug1 << "QvisAnnotationWindow::tabSelected: Unsupported tab name. FIX ME!" << endl;
+    }
 }
 
 // ****************************************************************************
@@ -4140,7 +4206,9 @@ QvisAnnotationWindow::applyObjectListChanges()
 // Creation:   Tue Dec 2 15:12:54 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 09:47:08 PDT 2007
+//   Allow the user to name the object.
+//
 // ****************************************************************************
 
 void
@@ -4152,10 +4220,22 @@ QvisAnnotationWindow::addNewAnnotationObject(int annotType)
     //
     ApplyObjectList(true);
 
+    // Prompt the user for a name for the new annotation object.
+    bool ok = false;
+    QString newName(GetViewerState()->GetAnnotationObjectList()->GetNewObjectName().c_str());
+    QString annotName = QInputDialog::getText("VisIt", 
+        "Enter a name for the new annotation object.",
+        QLineEdit::Normal, newName, &ok, this);
+
     //
     // Tell the viewer to create a new annotation object.
     //
-    GetViewerMethods()->AddAnnotationObject(annotType);
+    if(ok && !annotName.isEmpty())
+    {
+        GetViewerMethods()->AddAnnotationObject(annotType, annotName.latin1());
+    }
+    else
+        Warning("No annotation object was created.");
 }
 
 // ****************************************************************************
@@ -4168,7 +4248,10 @@ QvisAnnotationWindow::addNewAnnotationObject(int annotType)
 // Creation:   Tue Dec 2 15:14:12 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 15:14:24 PST 2007
+//   Disable the hide/show and delete buttons when the interface does not
+//   permit objects to be instantiated.
+//
 // ****************************************************************************
 
 void
@@ -4183,7 +4266,7 @@ QvisAnnotationWindow::setActiveAnnotations()
         AnnotationObject &annot = annotationObjectList->operator[](i);
         annot.SetActive(isSelected);
     }
-
+ 
     // Apply the changes but make sure that we do it once we're back in
     // the main event loop because updating the annotation object list
     // can clear out and repopulate the annotation list box.

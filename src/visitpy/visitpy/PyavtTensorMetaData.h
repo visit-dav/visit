@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyavtTensorMetaData_StartUp(avtTensorMetaData *subj, void *data);
 void VISITPY_API           PyavtTensorMetaData_CloseDown();
-PyMethodDef * VISITPY_API  PyavtTensorMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyavtTensorMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtTensorMetaData_Check(PyObject *obj);
-avtTensorMetaData * VISITPY_API PyavtTensorMetaData_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyavtTensorMetaData_New();
-PyObject * VISITPY_API     PyavtTensorMetaData_Wrap(const avtTensorMetaData *attr);
+VISITPY_API avtTensorMetaData *  PyavtTensorMetaData_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyavtTensorMetaData_New();
+VISITPY_API PyObject *      PyavtTensorMetaData_Wrap(const avtTensorMetaData *attr);
 void VISITPY_API           PyavtTensorMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtTensorMetaData_SetDefaults(const avtTensorMetaData *atts);
 std::string VISITPY_API    PyavtTensorMetaData_GetLogString();

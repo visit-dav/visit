@@ -55,6 +55,10 @@ class MakePlotRPC;
 //  Programmer:  Jeremy Meredith
 //  Creation:    March  2, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Mar 21 22:48:12 PST 2007
+//    Added name.
+//
 // ****************************************************************************
 class ENGINE_RPC_API PreparePlotRPC : public BlockingRPC
 {
@@ -67,12 +71,14 @@ class ENGINE_RPC_API PreparePlotRPC : public BlockingRPC
     void SetMakePlotRPC(MakePlotRPC*);
     MakePlotRPC *GetMakePlotRPC();
 
-    void operator()(const std::string &n);
+    void operator()(const std::string &plotName, const std::string &pluginID);
     void SelectAll();
     std::string GetID();
+    std::string GetName();
   private:
     MakePlotRPC *makePlotRPC;
     std::string id;
+    std::string name;
 };
 
 
@@ -98,6 +104,9 @@ class ENGINE_RPC_API PreparePlotRPC : public BlockingRPC
 //    Mark C. Miller, Wed Dec 15 21:56:26 PST 2004
 //    Added windowID
 //
+//    Brad Whitlock, Wed Mar 21 22:46:44 PST 2007
+//    Added plotName arg to operator().
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
@@ -119,11 +128,13 @@ class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
 
     const std::string TypeName() const { return "MakePlotRPC";};
 
-    int operator()(const std::string&, const AttributeSubject*,
+    int operator()(const std::string &, const std::string&,
+                   const AttributeSubject*,
                    const std::vector<double> &, int);
 
     virtual void SelectAll();
 
+    std::string GetName();
     std::string GetID();
     AttributeSubject *GetAtts();
     const std::vector<double> &GetDataExtents() const;

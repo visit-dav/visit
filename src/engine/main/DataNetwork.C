@@ -64,6 +64,9 @@ using std::deque;
 //    Kathleen Bonnell, Tue Mar 15 17:41:26 PST 2005 
 //    Initialize clone.
 //
+//    Brad Whitlock, Wed Mar 21 23:03:25 PST 2007
+//    Initialize plotName.
+//
 // ****************************************************************************
 DataNetwork::DataNetwork(void)
 {
@@ -74,6 +77,7 @@ DataNetwork::DataNetwork(void)
     writer = NULL;
     plotActor = NULL;
     clone = false;
+    plotName = "";
 }
 
 // ****************************************************************************

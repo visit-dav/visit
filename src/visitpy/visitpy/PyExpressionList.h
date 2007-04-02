@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyExpressionList_StartUp(ExpressionList *subj, void *data);
 void VISITPY_API           PyExpressionList_CloseDown();
-PyMethodDef * VISITPY_API  PyExpressionList_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyExpressionList_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyExpressionList_Check(PyObject *obj);
-ExpressionList * VISITPY_API PyExpressionList_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyExpressionList_New();
-PyObject * VISITPY_API     PyExpressionList_Wrap(const ExpressionList *attr);
+VISITPY_API ExpressionList *  PyExpressionList_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyExpressionList_New();
+VISITPY_API PyObject *      PyExpressionList_Wrap(const ExpressionList *attr);
 void VISITPY_API           PyExpressionList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyExpressionList_SetDefaults(const ExpressionList *atts);
 std::string VISITPY_API    PyExpressionList_GetLogString();

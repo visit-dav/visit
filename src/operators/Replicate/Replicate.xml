@@ -30,5 +30,8 @@
       <Field name="mergeResults" label="Merge into one block when possible" type="bool">
         true
       </Field>
+      <Field name="replicateUnitCellAtoms" label="Periodically replicate atoms at unit cell boundaries" type="bool" enabler="mergeResults:true">
+        false
+      </Field>
     </Attribute>
   </Plugin>

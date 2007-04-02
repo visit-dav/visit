@@ -64,7 +64,7 @@ class QvisVariableButton;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Fri Jun 23 15:54:02 PST 2006
+// Creation:   Thu Mar 22 12:57:41 PDT 2007
 //
 // Modifications:
 //   
@@ -93,6 +93,7 @@ class QvisReplicateWindow : public QvisOperatorWindow
     void yReplicationsProcessText();
     void zReplicationsProcessText();
     void mergeResultsChanged(bool val);
+    void replicateUnitCellAtomsChanged(bool val);
   private:
     QCheckBox *useUnitCellVectors;
     QLineEdit *xVector;
@@ -102,6 +103,7 @@ class QvisReplicateWindow : public QvisOperatorWindow
     QLineEdit *yReplications;
     QLineEdit *zReplications;
     QCheckBox *mergeResults;
+    QCheckBox *replicateUnitCellAtoms;
     QLabel *useUnitCellVectorsLabel;
     QLabel *xVectorLabel;
     QLabel *yVectorLabel;
@@ -110,6 +112,7 @@ class QvisReplicateWindow : public QvisOperatorWindow
     QLabel *yReplicationsLabel;
     QLabel *zReplicationsLabel;
     QLabel *mergeResultsLabel;
+    QLabel *replicateUnitCellAtomsLabel;
 
     ReplicateAttributes *atts;
 };

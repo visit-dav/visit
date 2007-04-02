@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyAnimationAttributes_StartUp(AnimationAttributes *subj, void *data);
 void VISITPY_API           PyAnimationAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyAnimationAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyAnimationAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyAnimationAttributes_Check(PyObject *obj);
-AnimationAttributes * VISITPY_API PyAnimationAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyAnimationAttributes_New();
-PyObject * VISITPY_API     PyAnimationAttributes_Wrap(const AnimationAttributes *attr);
+VISITPY_API AnimationAttributes *  PyAnimationAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyAnimationAttributes_New();
+VISITPY_API PyObject *      PyAnimationAttributes_Wrap(const AnimationAttributes *attr);
 void VISITPY_API           PyAnimationAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyAnimationAttributes_SetDefaults(const AnimationAttributes *atts);
 std::string VISITPY_API    PyAnimationAttributes_GetLogString();

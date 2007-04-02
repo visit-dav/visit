@@ -96,7 +96,7 @@
                     <string>Classification text color</string>
                 </property>
             </widget>
-            <widget class="QvisFileLineEdit" row="0" column="2">
+            <widget class="QvisDialogLineEdit" row="0" column="2">
                 <property name="name">
                     <cstring>DATABASE</cstring>
                 </property>
@@ -297,8 +297,8 @@
         <property type="String">variable</property>
     </customwidget>
     <customwidget>
-        <class>QvisFileLineEdit</class>
-        <header location="global">/data_vobs/VisIt/gui/QvisFileLineEdit.h</header>
+        <class>QvisDialogLineEdit</class>
+        <header location="global">/data_vobs/VisIt/gui/QvisDialogLineEdit.h</header>
         <sizehint>
             <width>-1</width>
             <height>-1</height>
@@ -328,7 +328,7 @@
 </images>
 <layoutdefaults spacing="6" margin="11"/>
 <includehints>
-    <includehint>qvisfilelineedit.h</includehint>
+    <includehint>QvisDialogLineEdit.h</includehint>
     <includehint>qviscolorbutton.h</includehint>
     <includehint>qvisvariablebutton.h</includehint>
     <includehint>qviscolorbutton.h</includehint>

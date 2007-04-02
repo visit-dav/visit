@@ -74,13 +74,16 @@
         2.000000
       </Field>
       <Field name="contextNumPartitions" label="Number of partitions" type="int">
-        32
+        512
       </Field>
       <Field name="contextColor" label="Context color" type="color" length="4">
         0
-        255
+        220
         0
         255
+      </Field>
+      <Field name="drawLinesOnlyIfExtentsOn" label="Draw lines only when extents have been limited" type="bool">
+        true
       </Field>
       <Function name="InsertAxis" user="true" member="true">
       </Function>

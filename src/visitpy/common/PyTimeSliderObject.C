@@ -730,6 +730,9 @@ TimeSliderObject_Delete(PyObject *self, PyObject *args)
     // references, this object will own it.
     obj->owns = DeleteAnnotationObjectHelper(obj->data);
 
+    // Decrement this object's reference count.
+    Py_DECREF(self);
+
     Py_INCREF(Py_None);
     return Py_None;
 }

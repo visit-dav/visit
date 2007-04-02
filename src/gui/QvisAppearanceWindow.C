@@ -38,11 +38,13 @@
 #include <QvisAppearanceWindow.h>
 #include <qapplication.h>
 #include <qcombobox.h>
-#include <qfontdialog.h>
 #include <qlayout.h>
 #include <qlabel.h>
+#include <qlineedit.h>
 #include <qpushbutton.h>
+
 #include <QvisColorButton.h>
+#include <QvisDialogLineEdit.h>
 #include <AppearanceAttributes.h>
 #include <ViewerProxy.h>
 
@@ -139,6 +141,9 @@ QvisAppearanceWindow::~QvisAppearanceWindow()
 //   Brad Whitlock, Fri Aug 15 13:08:37 PST 2003
 //   I changed how the style menu is populated.
 //
+//   Brad Whitlock, Thu Mar 15 15:25:51 PST 2007
+//   Added font support.
+//
 // ****************************************************************************
 
 void
@@ -182,13 +187,13 @@ QvisAppearanceWindow::CreateWindowContents()
     mainLayout->addWidget(new QLabel(orientationComboBox, "GUI orientation",
                                      central, "orientationLabel"),3,0);
 
-#if 0
-    // Create the font button.
-    QPushButton *fontButton = new QPushButton("Select font...", central, "fontButton");
-    connect(fontButton, SIGNAL(clicked()),
-            this, SLOT(handleFontClicked()));
-    mainLayout->addWidget(fontButton, 4, 0);
-#endif
+    // Create the font edit.
+    fontName = new QvisDialogLineEdit(central, "fontName");
+    fontName->setDialogMode(QvisDialogLineEdit::ChooseFont);
+    connect(fontName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(fontNameChanged(const QString &)));
+    mainLayout->addWidget(fontName, 4, 1);
+    mainLayout->addWidget(new QLabel(fontName,"GUI font", central), 4, 0);
 }
 
 // ****************************************************************************
@@ -212,6 +217,9 @@ QvisAppearanceWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Aug 15 13:10:28 PST 2003
 //   I changed how the styles are set.
+//
+//   Brad Whitlock, Thu Mar 15 15:26:07 PST 2007
+//   Added font support.
 //
 // ****************************************************************************
 
@@ -247,7 +255,10 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
             foregroundColorButton->blockSignals(false);
         }
             break;
-        case 2: // fontDescription
+        case 2: // fontName
+            fontName->blockSignals(true);
+            fontName->setText(atts->GetFontName().c_str());
+            fontName->blockSignals(false);
             break;
         case 3: // style
             for(j = 0; j < numStyleNames; ++j)
@@ -274,6 +285,35 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
 }
 
 // ****************************************************************************
+// Method: QvisAppearanceWindow::GetCurrentValues
+//
+// Purpose: 
+//   This method gets the current values from line edits.
+//
+// Arguments:
+//   which : The index of the widget that we want to get.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 15 15:45:17 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAppearanceWindow::GetCurrentValues(int which)
+{
+    AppearanceAttributes *atts = (AppearanceAttributes *)subject;
+
+    if(which == 0 || which == -1)
+    {
+        std::string newFontName(fontName->text().latin1());
+        if(QFont().fromString(newFontName.c_str()))
+            atts->SetFontName(newFontName);
+    }
+}
+
+// ****************************************************************************
 // Method: QvisAppearanceWindow::Apply
 //
 // Purpose: 
@@ -286,6 +326,9 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Tue Sep 18 13:58:39 PST 2001
 //   Removed an unused variable.
 //
+//   Brad Whitlock, Thu Mar 15 15:51:22 PST 2007
+//   Call GetCurrentValues.
+//
 // ****************************************************************************
 
 void
@@ -293,6 +336,8 @@ QvisAppearanceWindow::Apply(bool ignore)
 {
     if(AutoUpdate() || ignore)
     {
+        GetCurrentValues(-1);
+
         emit changeAppearance(true);
     }
 }
@@ -461,7 +506,7 @@ QvisAppearanceWindow::styleChanged(int index)
 }
 
 // ****************************************************************************
-// Method: QvisAppearanceWindow::handleFontClicked
+// Method: QvisAppearanceWindow::fontNameChanged
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the Font... button is
@@ -471,30 +516,18 @@ QvisAppearanceWindow::styleChanged(int index)
 // Creation:   Thu Sep 6 19:38:04 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Mar 15 15:31:57 PST 2007
+//   Rewrote.
+//
 // ****************************************************************************
 
 void
-QvisAppearanceWindow::handleFontClicked()
+QvisAppearanceWindow::fontNameChanged(const QString &newFont)
 {
     AppearanceAttributes *atts = (AppearanceAttributes *)subject;
-    bool  okay;
-
-    // Get a font using the current font.
-    QFont currentFont(atts->GetFontDescription().c_str());
-
-    // Open the font dialog box and select a new font.
-    QFont newFont = QFontDialog::getFont(&okay, currentFont, this);
-    if(okay)
-    {
-        QApplication::setFont(newFont, true);
-
-        // The user selected a valid font. Put the name of that font into the
-        // appearance attributes.
-        atts->SetFontDescription(newFont.rawName().latin1());
-        SetUpdate(false);
-        Apply();
-    }
+    atts->SetFontName(newFont.latin1());
+    SetUpdate(false);
+    Apply();
 }
 
 // ****************************************************************************

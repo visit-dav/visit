@@ -49,6 +49,7 @@
 #include <string>
 #include <map>
 #include <vectortypes.h>
+#include <enumtypes.h>
 
 #define KF_TIME_SLIDER "Keyframe animation"
 
@@ -263,6 +264,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Brad Whitlock, Mon Feb 12 17:40:22 PST 2007
 //    Added ViewerBase base class.
 //
+//    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007 
+//    Added SetScaleMode.
+//
 // ****************************************************************************
 
 
@@ -386,7 +390,8 @@ public:
 
     bool NotActivePlotList() const;
     void UpdatePlotAtts(bool=true) const;
-    void GetPlotAtts(std::vector<const char*> &pluginIDsList,
+    void GetPlotAtts(std::vector<std::string> &plotNames,
+                     std::vector<const char*> &pluginIDsList,
                      std::vector<EngineKey> &engineKeysList,
                      intVector &plotIdsList,
                      std::vector<const AttributeSubject*> &attsList) const; 
@@ -431,6 +436,9 @@ public:
     void CreateNode(DataNode *, const std::map<std::string, std::string> &);
     bool SetFromNode(DataNode *, const std::map<std::string, std::string> &);
     static bool SessionContainsErrors(DataNode *);
+
+    void SetScaleMode(ScaleMode ds, ScaleMode rs);
+
   protected:
     bool        AskForCorrelationPermission(const stringVector &dbs) const;
     bool        AllowAutomaticCorrelation(const stringVector &dbs) const;
@@ -467,6 +475,9 @@ public:
     StringIntMap           timeSliders;
     AnimationMode          animationMode;
     PlaybackMode           playbackMode;
+
+    ScaleMode              xScaleMode;
+    ScaleMode              yScaleMode;
 
     bool                   keyframeMode;
     bool                   nKeyframesWasUserSet;

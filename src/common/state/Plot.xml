@@ -8,6 +8,7 @@
     </Enum>
     <Field name="stateType" type="enum" subtype="StateType">NewlyCreated</Field>
     <Field name="plotType" type="int">0</Field>
+    <Field name="plotName" type="string"></Field>
     <Field name="activeFlag" type="bool">false</Field>
     <Field name="hiddenFlag" type="bool">false</Field>
     <Field name="expandedFlag" type="bool">false</Field>

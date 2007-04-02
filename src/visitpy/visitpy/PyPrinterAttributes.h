@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyPrinterAttributes_StartUp(PrinterAttributes *subj, void *data);
 void VISITPY_API           PyPrinterAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyPrinterAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyPrinterAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyPrinterAttributes_Check(PyObject *obj);
-PrinterAttributes * VISITPY_API PyPrinterAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyPrinterAttributes_New();
-PyObject * VISITPY_API     PyPrinterAttributes_Wrap(const PrinterAttributes *attr);
+VISITPY_API PrinterAttributes *  PyPrinterAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyPrinterAttributes_New();
+VISITPY_API PyObject *      PyPrinterAttributes_Wrap(const PrinterAttributes *attr);
 void VISITPY_API           PyPrinterAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyPrinterAttributes_SetDefaults(const PrinterAttributes *atts);
 std::string VISITPY_API    PyPrinterAttributes_GetLogString();

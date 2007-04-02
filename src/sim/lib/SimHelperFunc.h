@@ -62,8 +62,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef char *CMD_String[64] ;
-void Update_UI_Commands();
+/* set to maximum length of command name string  */
+#define MAX_CMD_STR_LEN 64
+typedef char *CMD_String[MAX_CMD_STR_LEN];
 extern void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  );
 extern int VisItFindCMD (VisIt_SimulationMetaData mdd, char *name, int customCMD );
 extern void VisItCreateCMD ( VisIt_SimulationMetaData mdd, char *name );

@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyMeshManagementAttributes_StartUp(MeshManagementAttributes *subj, void *data);
 void VISITPY_API           PyMeshManagementAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyMeshManagementAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyMeshManagementAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyMeshManagementAttributes_Check(PyObject *obj);
-MeshManagementAttributes * VISITPY_API PyMeshManagementAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyMeshManagementAttributes_New();
-PyObject * VISITPY_API     PyMeshManagementAttributes_Wrap(const MeshManagementAttributes *attr);
+VISITPY_API MeshManagementAttributes *  PyMeshManagementAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyMeshManagementAttributes_New();
+VISITPY_API PyObject *      PyMeshManagementAttributes_Wrap(const MeshManagementAttributes *attr);
 void VISITPY_API           PyMeshManagementAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyMeshManagementAttributes_SetDefaults(const MeshManagementAttributes *atts);
 std::string VISITPY_API    PyMeshManagementAttributes_GetLogString();

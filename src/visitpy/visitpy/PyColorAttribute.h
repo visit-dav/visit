@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyColorAttribute_StartUp(ColorAttribute *subj, void *data);
 void VISITPY_API           PyColorAttribute_CloseDown();
-PyMethodDef * VISITPY_API  PyColorAttribute_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyColorAttribute_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyColorAttribute_Check(PyObject *obj);
-ColorAttribute * VISITPY_API PyColorAttribute_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyColorAttribute_New();
-PyObject * VISITPY_API     PyColorAttribute_Wrap(const ColorAttribute *attr);
+VISITPY_API ColorAttribute *  PyColorAttribute_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyColorAttribute_New();
+VISITPY_API PyObject *      PyColorAttribute_Wrap(const ColorAttribute *attr);
 void VISITPY_API           PyColorAttribute_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyColorAttribute_SetDefaults(const ColorAttribute *atts);
 std::string VISITPY_API    PyColorAttribute_GetLogString();

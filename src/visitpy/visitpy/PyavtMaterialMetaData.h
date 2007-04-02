@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyavtMaterialMetaData_StartUp(avtMaterialMetaData *subj, void *data);
 void VISITPY_API           PyavtMaterialMetaData_CloseDown();
-PyMethodDef * VISITPY_API  PyavtMaterialMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyavtMaterialMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtMaterialMetaData_Check(PyObject *obj);
-avtMaterialMetaData * VISITPY_API PyavtMaterialMetaData_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyavtMaterialMetaData_New();
-PyObject * VISITPY_API     PyavtMaterialMetaData_Wrap(const avtMaterialMetaData *attr);
+VISITPY_API avtMaterialMetaData *  PyavtMaterialMetaData_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyavtMaterialMetaData_New();
+VISITPY_API PyObject *      PyavtMaterialMetaData_Wrap(const avtMaterialMetaData *attr);
 void VISITPY_API           PyavtMaterialMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtMaterialMetaData_SetDefaults(const avtMaterialMetaData *atts);
 std::string VISITPY_API    PyavtMaterialMetaData_GetLogString();

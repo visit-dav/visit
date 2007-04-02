@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyHostProfile_StartUp(HostProfile *subj, void *data);
 void VISITPY_API           PyHostProfile_CloseDown();
-PyMethodDef * VISITPY_API  PyHostProfile_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyHostProfile_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyHostProfile_Check(PyObject *obj);
-HostProfile * VISITPY_API PyHostProfile_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyHostProfile_New();
-PyObject * VISITPY_API     PyHostProfile_Wrap(const HostProfile *attr);
+VISITPY_API HostProfile *  PyHostProfile_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyHostProfile_New();
+VISITPY_API PyObject *      PyHostProfile_Wrap(const HostProfile *attr);
 void VISITPY_API           PyHostProfile_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyHostProfile_SetDefaults(const HostProfile *atts);
 std::string VISITPY_API    PyHostProfile_GetLogString();

@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyColorTableAttributes_StartUp(ColorTableAttributes *subj, void *data);
 void VISITPY_API           PyColorTableAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyColorTableAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyColorTableAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyColorTableAttributes_Check(PyObject *obj);
-ColorTableAttributes * VISITPY_API PyColorTableAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyColorTableAttributes_New();
-PyObject * VISITPY_API     PyColorTableAttributes_Wrap(const ColorTableAttributes *attr);
+VISITPY_API ColorTableAttributes *  PyColorTableAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyColorTableAttributes_New();
+VISITPY_API PyObject *      PyColorTableAttributes_Wrap(const ColorTableAttributes *attr);
 void VISITPY_API           PyColorTableAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyColorTableAttributes_SetDefaults(const ColorTableAttributes *atts);
 std::string VISITPY_API    PyColorTableAttributes_GetLogString();

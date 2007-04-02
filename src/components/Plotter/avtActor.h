@@ -134,6 +134,9 @@ class     avtTransparencyActor;
 //    Brad Whitlock, Mon Sep 18 11:19:11 PDT 2006
 //    Added SetColorTexturingFlag.
 //
+//    Brad Whitlock, Mon Mar 19 17:44:19 PST 2007
+//    Added actorName.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -192,6 +195,9 @@ class PLOTTER_API avtActor
     void                          MakeUnPickable(void);
     double                        GetZPosition(void);
 
+    const char                   *GetActorName() const;
+    void                          SetActorName(const char *);
+
   protected:
     avtBehavior_p                 behavior;
     avtDrawable_p                 drawable;
@@ -201,6 +207,7 @@ class PLOTTER_API avtActor
     bool                          isVisible;
     
     const char                   *typeName;
+    char                         *actorName;
 
     vtkRenderer                  *renderer;
 };

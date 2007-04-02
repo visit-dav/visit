@@ -142,6 +142,16 @@ public:
   vtkSetClampMacro(BarWidth,double, 0.0, 0.5);
   vtkGetMacro(BarWidth,double);
 
+  // Description:
+  // Set/Get the visibility of the bounding box.
+  vtkSetMacro(BoundingBoxVisibility, int);
+  vtkGetMacro(BoundingBoxVisibility, int);
+  vtkBooleanMacro(BoundingBoxVisibility, int);
+
+  // Description:
+  // Set the bounding box color
+  vtkSetVector4Macro(BoundingBoxColor, double);
+
   // Shallow copy of a scalar bar actor. Overloads the virtual vtkProp method.
   void ShallowCopy(vtkProp *prop);
 
@@ -151,6 +161,7 @@ protected:
 
   void BuildTitle(vtkViewport *);
   void BuildLine(vtkViewport *);
+  void BuildBoundingBox(vtkViewport *);
 
   int   Bold;
   int   Italic;
@@ -167,11 +178,16 @@ protected:
   vtkActor2D    *TitleActor;
   int            TitleVisibility;
   int            TitleOkayToDraw;
+  int            BoundingBoxVisibility;
 
-  vtkTransform               *Transform;
-  vtkTransformPolyDataFilter *TransformFilter;
+  vtkPolyData                *Line;
   vtkPolyDataMapper2D        *LineMapper;
   vtkActor2D                 *LineActor;
+
+  vtkPolyData                *BoundingBox;
+  vtkPolyDataMapper2D        *BoundingBoxMapper;
+  vtkActor2D                 *BoundingBoxActor;
+  double                      BoundingBoxColor[4];
 
   vtkTimeStamp  BuildTime;
   int LastSize[2];

@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyGlobalLineoutAttributes_StartUp(GlobalLineoutAttributes *subj, void *data);
 void VISITPY_API           PyGlobalLineoutAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyGlobalLineoutAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyGlobalLineoutAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyGlobalLineoutAttributes_Check(PyObject *obj);
-GlobalLineoutAttributes * VISITPY_API PyGlobalLineoutAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyGlobalLineoutAttributes_New();
-PyObject * VISITPY_API     PyGlobalLineoutAttributes_Wrap(const GlobalLineoutAttributes *attr);
+VISITPY_API GlobalLineoutAttributes *  PyGlobalLineoutAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyGlobalLineoutAttributes_New();
+VISITPY_API PyObject *      PyGlobalLineoutAttributes_Wrap(const GlobalLineoutAttributes *attr);
 void VISITPY_API           PyGlobalLineoutAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyGlobalLineoutAttributes_SetDefaults(const GlobalLineoutAttributes *atts);
 std::string VISITPY_API    PyGlobalLineoutAttributes_GetLogString();

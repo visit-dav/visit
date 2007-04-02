@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyColorControlPointList_StartUp(ColorControlPointList *subj, void *data);
 void VISITPY_API           PyColorControlPointList_CloseDown();
-PyMethodDef * VISITPY_API  PyColorControlPointList_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyColorControlPointList_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyColorControlPointList_Check(PyObject *obj);
-ColorControlPointList * VISITPY_API PyColorControlPointList_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyColorControlPointList_New();
-PyObject * VISITPY_API     PyColorControlPointList_Wrap(const ColorControlPointList *attr);
+VISITPY_API ColorControlPointList *  PyColorControlPointList_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyColorControlPointList_New();
+VISITPY_API PyObject *      PyColorControlPointList_Wrap(const ColorControlPointList *attr);
 void VISITPY_API           PyColorControlPointList_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyColorControlPointList_SetDefaults(const ColorControlPointList *atts);
 std::string VISITPY_API    PyColorControlPointList_GetLogString();

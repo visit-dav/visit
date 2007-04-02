@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyProcessAttributes_StartUp(ProcessAttributes *subj, void *data);
 void VISITPY_API           PyProcessAttributes_CloseDown();
-PyMethodDef * VISITPY_API  PyProcessAttributes_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyProcessAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyProcessAttributes_Check(PyObject *obj);
-ProcessAttributes * VISITPY_API PyProcessAttributes_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyProcessAttributes_New();
-PyObject * VISITPY_API     PyProcessAttributes_Wrap(const ProcessAttributes *attr);
+VISITPY_API ProcessAttributes *  PyProcessAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyProcessAttributes_New();
+VISITPY_API PyObject *      PyProcessAttributes_Wrap(const ProcessAttributes *attr);
 void VISITPY_API           PyProcessAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyProcessAttributes_SetDefaults(const ProcessAttributes *atts);
 std::string VISITPY_API    PyProcessAttributes_GetLogString();

@@ -76,6 +76,9 @@
 //    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
 //    Initialize typeName to indicate unknown.
 //
+//    Brad Whitlock, Mon Mar 19 17:39:01 PST 2007
+//    Added actorName.
+//
 // ****************************************************************************
 
 avtActor::avtActor()
@@ -88,6 +91,8 @@ avtActor::avtActor()
     transparencyIndex      = -1;
     isVisible              = true;
     typeName               = "<unknown>";
+    actorName              = new char[1];
+    actorName[0] = '\0';
 }
 
 
@@ -104,6 +109,12 @@ avtActor::~avtActor()
     if (transparencyActor != NULL && transparencyIndex >= 0)
     {
         transparencyActor->RemoveInput(transparencyIndex);
+    }
+
+    if(actorName != NULL)
+    {
+        delete actorName;
+        actorName = NULL;
     }
 }
 
@@ -222,6 +233,51 @@ const char *avtActor::GetTypeName()
     return typeName;
 }
 
+// ****************************************************************************
+// Method: avtActor::GetActorName
+//
+// Purpose: 
+//   Get the actor's name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 19 17:43:14 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const char *
+avtActor::GetActorName() const
+{
+    return actorName;
+}
+
+// ****************************************************************************
+// Method: avtActor::SetActorName
+//
+// Purpose: 
+//   Set the actor's name.
+//
+// Arguments:
+//   newName : The new name for the actor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 19 17:43:03 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtActor::SetActorName(const char *newName)
+{
+    if(newName != NULL)
+    {
+        delete [] actorName;
+        actorName = new char[strlen(newName) + 1];
+        strcpy(actorName, newName);
+    }
+}
 
 // ****************************************************************************
 //  Method: avtActor::Add

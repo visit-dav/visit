@@ -492,13 +492,16 @@ EngineProxy::ApplyOperator(const string &name, const AttributeSubject *atts)
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id
 //
+//    Brad Whitlock, Wed Mar 21 22:55:12 PST 2007
+//    Added plotName.
+//
 // ****************************************************************************
 int
-EngineProxy::MakePlot(const string &name, const AttributeSubject *atts,
-                      const vector<double> &extents, int winID)
+EngineProxy::MakePlot(const std::string &plotName, const string &pluginID,
+    const AttributeSubject *atts, const vector<double> &extents, int winID)
 {
     int id;
-    id = makePlotRPC(name, atts, extents, winID);
+    id = makePlotRPC(plotName, pluginID, atts, extents, winID);
     if (makePlotRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(makePlotRPC.GetExceptionType(),

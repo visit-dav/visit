@@ -106,6 +106,7 @@ extern ViewerSubject *viewerSubject;   // FIX_ME This is a hack.
 avtActor_p ViewerPlot::nullActor((avtActor *)0);
 avtDataObjectReader_p ViewerPlot::nullReader((avtDataObjectReader *)0);
 vector<double> ViewerPlot::nullDataExtents;
+int ViewerPlot::numPlotsCreated = 0;
 
 // ****************************************************************************
 //  Method: ViewerPlot constructor
@@ -185,6 +186,12 @@ vector<double> ViewerPlot::nullDataExtents;
 //    Brad Whitlock, Wed Feb 7 16:40:25 PST 2007
 //    Added alternateDisplay and made it inherit ViewerBase.
 //
+//    Brad Whitlock, Mon Mar 19 18:04:00 PST 2007
+//    Added plotName.
+//
+//    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
+//    Added xScaleMode, yScaleMode. 
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
@@ -221,6 +228,9 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     bgColor[0] = bgColor[1] = bgColor[2] = 1.0; 
     fgColor[0] = fgColor[1] = fgColor[2] = 0.0; 
     spatialExtentsType  = AVT_ORIGINAL_EXTENTS;
+
+    xScaleMode = LINEAR;
+    yScaleMode = LINEAR;
 
     //
     // Initialize operator related members.
@@ -289,6 +299,14 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     viewerPluginInfo->InitializePlotAtts(curPlotAtts, this);
     plotAtts = new AttributeSubjectMap;
     plotAtts->SetAtts(0, curPlotAtts);
+
+    //
+    // Set the name of the plot that will be used to identify it and link it
+    // to legends attributes, etc.
+    //
+    char tmp[100];
+    SNPRINTF(tmp, 100, "Plot%04d", numPlotsCreated++);
+    plotName = std::string(tmp);
 }
 
 // ****************************************************************************
@@ -450,6 +468,9 @@ ViewerPlot::operator = (const ViewerPlot &obj)
 //   Brad Whitlock, Wed Feb 14 12:15:57 PDT 2007
 //   Added code for alternate displays.
 //
+//    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
+//    Added xScaleMode, yScaleMode. 
+//
 // ****************************************************************************
 
 void
@@ -490,6 +511,8 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
         bgColor[i] = obj.bgColor[i];
         fgColor[i] = obj.fgColor[i];
     }
+    xScaleMode = obj.xScaleMode;
+    yScaleMode = obj.yScaleMode;
 
     // Copy the database attributes
     databaseAtts        = new AttributeSubjectMap(*(obj.databaseAtts));
@@ -541,6 +564,14 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
             this, SLOT(emitAlternateDisplayChangedPlotAttributes()));
     updateFromAlternateDisplay = false;
     alternateDisplayAllowsClientUpdates = true;
+
+    //
+    // Set the name of the plot that will be used to identify it and link it
+    // to legends attributes, etc.
+    //
+    char tmp[100];
+    SNPRINTF(tmp, 100, "Plot%04d", numPlotsCreated++);
+    plotName = std::string(tmp);
 }
 
 // ****************************************************************************
@@ -1155,20 +1186,22 @@ ViewerPlot::GetSource() const
 }
 
 // ****************************************************************************
-// Method: ViewerPlot::GetPlotName
+// Method: ViewerPlot::GetPlotTypeName
 //
 // Purpose: 
-//   Returns the name of the plot.
+//   Returns the name of the plot type.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Mar 7 11:32:51 PDT 2002
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 19 17:59:15 PST 2007
+//   Renamed.
+//
 // ****************************************************************************
 
 const char *
-ViewerPlot::GetPlotName() const
+ViewerPlot::GetPlotTypeName() const
 {
     return viewerPluginInfo->GetName();
 }
@@ -1188,6 +1221,42 @@ const char *
 ViewerPlot::GetPluginID() const
 {
     return viewerPluginInfo->GetID();
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::ProvidesLegend
+//
+// Purpose: 
+//   Returns whether the plot provides a legend.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 20 11:46:40 PDT 2007
+//   
+// ****************************************************************************
+
+bool
+ViewerPlot::ProvidesLegend() const
+{
+    return viewerPluginInfo->ProvidesLegend();
+}
+
+// ****************************************************************************
+// Method: ViewerPlot::GetPlotName
+//
+// Purpose: 
+//   Returns the name of the plot.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Mar 19 18:05:31 PST 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+ViewerPlot::GetPlotName() const
+{
+    return plotName;
 }
 
 // ****************************************************************************
@@ -2688,6 +2757,13 @@ ViewerPlot::GetReader() const
 //    Brad Whitlock, Wed Feb 7 16:45:07 PST 2007
 //    Added code to support alternate displays.
 //
+//    Brad Whitlock, Thu Mar 22 02:22:04 PDT 2007
+//    Make sure that actor has the same name as the plot so we can match
+//    legend annotation names later.
+//
+//    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
+//    Added xScaleMode, yScaleMode. 
+//
 // ****************************************************************************
 
 void
@@ -2735,7 +2811,6 @@ ViewerPlot::CreateActor(bool createNew,
             // that it has changed out from underneath them.
             viewerPlotList->UpdateSILRestrictionAtts();
         }
-
         if (!createNew)
         {
             reader = ViewerEngineManager::Instance()->
@@ -2860,14 +2935,13 @@ ViewerPlot::CreateActor(bool createNew,
             }
         }
     }
-
     plotList[cacheIndex]->SetAtts(curPlotAtts);
     plotList[cacheIndex]->SetVarName(variableName.c_str());
     plotList[cacheIndex]->SetBackgroundColor(bgColor);
     plotList[cacheIndex]->SetForegroundColor(fgColor);
     plotList[cacheIndex]->SetIndex(networkID);
     plotList[cacheIndex]->SetCurrentSILRestriction(silr);
-
+    plotList[cacheIndex]->SetScaleMode(xScaleMode, yScaleMode);
 
     // assume the actor has data
     actorHasNoData = false;
@@ -2908,7 +2982,8 @@ ViewerPlot::CreateActor(bool createNew,
 
         this->SetActor(actor);
 
-        actor->SetTypeName(GetPlotName());
+        actor->SetTypeName(GetPlotTypeName());
+        actor->SetActorName(GetPlotName().c_str());
 
         // Indicate that this plot has no error.
         this->errorFlag = false;
@@ -2989,7 +3064,7 @@ ViewerPlot::ClearActors()
     //
     for (int i = 0; i < cacheSize; i++)
     {
-        debug5 << GetPlotName() << ": Clearing actor at state " << i << endl;
+        debug5 << GetPlotTypeName() << ": Clearing actor at state " << i << endl;
         plotList[i]   = (avtPlot *)0;
         actorList[i]  = (avtActor *)0;
         readerList[i] = (avtDataObjectReader *)0;
@@ -3281,6 +3356,7 @@ ViewerPlot::GetSpatialExtents(avtExtentType extsType) const
     int extentSize = ((dim * 2) < 6) ? 6 : (dim * 2);
     double *buffer = new double[extentSize];
 
+
     if (realExtsType == AVT_ORIGINAL_EXTENTS)
     {
         if (atts.GetSpatialExtents(buffer))
@@ -3393,6 +3469,9 @@ ViewerPlot::SetSpatialExtentsType(avtExtentType extsType)
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added WindowID to calls to MakePlot
 //
+//    Brad Whitlock, Wed Mar 21 22:43:18 PST 2007
+//    Pass GetPlotName to MakePlot.
+//
 // ****************************************************************************
 
 bool
@@ -3410,13 +3489,15 @@ ViewerPlot::ExecuteEngineRPC()
     bool successful;
     if (viewerPlotList->GetMaintainDataMode())
     {
-        successful = engineMgr->MakePlot(engineKey, viewerPluginInfo->GetID(),
-            curPlotAtts, dataExtents, GetWindowId(), &networkID);
+        successful = engineMgr->MakePlot(engineKey, GetPlotName(),
+            GetPluginID(), curPlotAtts, dataExtents, 
+            GetWindowId(), &networkID);
     }
     else
     {
-        successful = engineMgr->MakePlot(engineKey, viewerPluginInfo->GetID(),
-            curPlotAtts, nullDataExtents, GetWindowId(), &networkID);
+        successful = engineMgr->MakePlot(engineKey, GetPlotName(),
+            GetPluginID(), curPlotAtts, nullDataExtents, 
+            GetWindowId(), &networkID);
     }
 
     if(!successful)
@@ -4696,7 +4777,9 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
 // Creation:   Mon Apr 5 09:57:43 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Mar 19 18:14:18 PST 2007
+//   Made it set the plot's name.
+//
 // ****************************************************************************
 
 void
@@ -4704,6 +4787,8 @@ ViewerPlot::InitializePlot(Plot &plot) const
 {
     // Set the plot type.
     plot.SetPlotType(type);
+    // Set the plot's name
+    plot.SetPlotName(GetPlotName());
     // Set the database name and add the plot to the plot list.
     plot.SetDatabaseName(GetSource());
     // Set the plot variable.
@@ -5242,5 +5327,43 @@ bool
 ViewerPlot::AlternateDisplayAllowClientUpdates() const
 {
     return alternateDisplayAllowsClientUpdates;
+}
+
+
+// ****************************************************************************
+// Method: ViewerPlot::SetScaleMode
+//
+// Purpose: 
+//   Sets the scaling mode for this plot -- updates the Actor with the
+//   new scaling.  In support of log-scaled views. 
+//
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   March 6, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerPlot::SetScaleMode(ScaleMode ds, ScaleMode rs)
+{
+    xScaleMode = ds;
+    yScaleMode = rs;
+    for(int i = 0; i < cacheSize; ++i)
+    {
+        if (*plotList[i] != 0)
+            plotList[i]->SetScaleMode(ds, rs);
+    }
+
+    avtDataObjectReader_p reader = GetReader(); 
+    avtActor_p actor = plotList[cacheIndex]->Execute(reader);
+
+    this->SetActor(actor);
+    actor->SetTypeName(GetPlotTypeName());
+    actor->SetActorName(GetPlotName().c_str());
+
+    // Indicate that this plot has no error.
+    this->errorFlag = false;
 }
 

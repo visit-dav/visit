@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyPickVarInfo_StartUp(PickVarInfo *subj, void *data);
 void VISITPY_API           PyPickVarInfo_CloseDown();
-PyMethodDef * VISITPY_API  PyPickVarInfo_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyPickVarInfo_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyPickVarInfo_Check(PyObject *obj);
-PickVarInfo * VISITPY_API PyPickVarInfo_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyPickVarInfo_New();
-PyObject * VISITPY_API     PyPickVarInfo_Wrap(const PickVarInfo *attr);
+VISITPY_API PickVarInfo *  PyPickVarInfo_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyPickVarInfo_New();
+VISITPY_API PyObject *      PyPickVarInfo_Wrap(const PickVarInfo *attr);
 void VISITPY_API           PyPickVarInfo_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyPickVarInfo_SetDefaults(const PickVarInfo *atts);
 std::string VISITPY_API    PyPickVarInfo_GetLogString();

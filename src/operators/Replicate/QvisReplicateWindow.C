@@ -67,7 +67,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Fri Jun 23 15:54:02 PST 2006
+// Creation:   Thu Mar 22 12:57:41 PDT 2007
 //
 // Modifications:
 //   
@@ -91,7 +91,7 @@ QvisReplicateWindow::QvisReplicateWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Fri Jun 23 15:54:02 PST 2006
+// Creation:   Thu Mar 22 12:57:41 PDT 2007
 //
 // Modifications:
 //   
@@ -108,23 +108,30 @@ QvisReplicateWindow::~QvisReplicateWindow()
 // Purpose: 
 //   Creates the widgets for the window.
 //
-// Programmer: xml2window
-// Creation:   Fri Jun 23 15:54:02 PST 2006
+// Programmer: Jeremy Meredith
+// Creation:   March 22, 2007
 //
 // Modifications:
+//    Jeremy Meredith, Thu Mar 22 13:34:20 EDT 2007
+//    This is almost unchanged from the original xml2window code, with the
+//    following exceptions: 1) the replicateUnitCellAtoms text was changed 
+//    to two lines long and more descriptive, and 2) the checkboxes are
+//    added using addMultiCellWidget so they can span columns 0 and 1.
+//    If this file is regenerated, be mindful of these changes.
 //   
 // ****************************************************************************
 
 void
 QvisReplicateWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 8,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 9,2,  10, "mainLayout");
 
 
+    useUnitCellVectorsLabel = NULL;
     useUnitCellVectors = new QCheckBox("Use provided unit cell vectors", central, "useUnitCellVectors");
     connect(useUnitCellVectors, SIGNAL(toggled(bool)),
             this, SLOT(useUnitCellVectorsChanged(bool)));
-    mainLayout->addWidget(useUnitCellVectors, 0,0);
+    mainLayout->addMultiCellWidget(useUnitCellVectors, 0,0, 0,1);
 
     xVectorLabel = new QLabel("Vector for X", central, "xVectorLabel");
     mainLayout->addWidget(xVectorLabel,1,0);
@@ -168,10 +175,18 @@ QvisReplicateWindow::CreateWindowContents()
             this, SLOT(zReplicationsProcessText()));
     mainLayout->addWidget(zReplications, 6,1);
 
+    mergeResultsLabel = NULL;
     mergeResults = new QCheckBox("Merge into one block when possible", central, "mergeResults");
     connect(mergeResults, SIGNAL(toggled(bool)),
             this, SLOT(mergeResultsChanged(bool)));
-    mainLayout->addWidget(mergeResults, 7,0);
+    mainLayout->addMultiCellWidget(mergeResults, 7,7, 0,1);
+
+    replicateUnitCellAtomsLabel = NULL;
+    replicateUnitCellAtoms = new QCheckBox("For molecular data, periodically replicate\natoms at unit cell boundaries.",
+                                           central, "replicateUnitCellAtoms");
+    connect(replicateUnitCellAtoms, SIGNAL(toggled(bool)),
+            this, SLOT(replicateUnitCellAtomsChanged(bool)));
+    mainLayout->addMultiCellWidget(replicateUnitCellAtoms, 8,8, 0,1);
 
 }
 
@@ -183,7 +198,7 @@ QvisReplicateWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Fri Jun 23 15:54:02 PST 2006
+// Creation:   Thu Mar 22 12:57:41 PDT 2007
 //
 // Modifications:
 //   
@@ -194,15 +209,6 @@ QvisReplicateWindow::UpdateWindow(bool doAll)
 {
     QString temp;
     double r;
-
-    xReplications->blockSignals(true);
-    yReplications->blockSignals(true);
-    zReplications->blockSignals(true);
-    xVector->blockSignals(true);
-    yVector->blockSignals(true);
-    zVector->blockSignals(true);
-    mergeResults->blockSignals(true);
-    useUnitCellVectors->blockSignals(true);
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -227,76 +233,106 @@ QvisReplicateWindow::UpdateWindow(bool doAll)
             if (atts->GetUseUnitCellVectors() == false)
             {
                 xVector->setEnabled(true);
-                xVectorLabel->setEnabled(true);
+                if(xVectorLabel)
+                    xVectorLabel->setEnabled(true);
             }
             else
             {
                 xVector->setEnabled(false);
-                xVectorLabel->setEnabled(false);
+                if(xVectorLabel)
+                    xVectorLabel->setEnabled(false);
             }
             if (atts->GetUseUnitCellVectors() == false)
             {
                 yVector->setEnabled(true);
-                yVectorLabel->setEnabled(true);
+                if(yVectorLabel)
+                    yVectorLabel->setEnabled(true);
             }
             else
             {
                 yVector->setEnabled(false);
-                yVectorLabel->setEnabled(false);
+                if(yVectorLabel)
+                    yVectorLabel->setEnabled(false);
             }
             if (atts->GetUseUnitCellVectors() == false)
             {
                 zVector->setEnabled(true);
-                zVectorLabel->setEnabled(true);
+                if(zVectorLabel)
+                    zVectorLabel->setEnabled(true);
             }
             else
             {
                 zVector->setEnabled(false);
-                zVectorLabel->setEnabled(false);
+                if(zVectorLabel)
+                    zVectorLabel->setEnabled(false);
             }
+            useUnitCellVectors->blockSignals(true);
             useUnitCellVectors->setChecked(atts->GetUseUnitCellVectors());
+            useUnitCellVectors->blockSignals(false);
             break;
           case 1: //xVector
             dptr = atts->GetXVector();
             temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
+            xVector->blockSignals(true);
             xVector->setText(temp);
+            xVector->blockSignals(false);
             break;
           case 2: //yVector
             dptr = atts->GetYVector();
             temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
+            yVector->blockSignals(true);
             yVector->setText(temp);
+            yVector->blockSignals(false);
             break;
           case 3: //zVector
             dptr = atts->GetZVector();
             temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
+            zVector->blockSignals(true);
             zVector->setText(temp);
+            zVector->blockSignals(false);
             break;
           case 4: //xReplications
+            xReplications->blockSignals(true);
             temp.sprintf("%d", atts->GetXReplications());
             xReplications->setText(temp);
+            xReplications->blockSignals(false);
             break;
           case 5: //yReplications
+            yReplications->blockSignals(true);
             temp.sprintf("%d", atts->GetYReplications());
             yReplications->setText(temp);
+            yReplications->blockSignals(false);
             break;
           case 6: //zReplications
+            zReplications->blockSignals(true);
             temp.sprintf("%d", atts->GetZReplications());
             zReplications->setText(temp);
+            zReplications->blockSignals(false);
             break;
           case 7: //mergeResults
+            if (atts->GetMergeResults() == true)
+            {
+                replicateUnitCellAtoms->setEnabled(true);
+                if(replicateUnitCellAtomsLabel)
+                    replicateUnitCellAtomsLabel->setEnabled(true);
+            }
+            else
+            {
+                replicateUnitCellAtoms->setEnabled(false);
+                if(replicateUnitCellAtomsLabel)
+                    replicateUnitCellAtomsLabel->setEnabled(false);
+            }
+            mergeResults->blockSignals(true);
             mergeResults->setChecked(atts->GetMergeResults());
+            mergeResults->blockSignals(false);
+            break;
+          case 8: //replicateUnitCellAtoms
+            replicateUnitCellAtoms->blockSignals(true);
+            replicateUnitCellAtoms->setChecked(atts->GetReplicateUnitCellAtoms());
+            replicateUnitCellAtoms->blockSignals(false);
             break;
         }
     }
-
-    xReplications->blockSignals(false);
-    yReplications->blockSignals(false);
-    zReplications->blockSignals(false);
-    xVector->blockSignals(false);
-    yVector->blockSignals(false);
-    zVector->blockSignals(false);
-    mergeResults->blockSignals(false);
-    useUnitCellVectors->blockSignals(false);
 }
 
 
@@ -307,7 +343,7 @@ QvisReplicateWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Fri Jun 23 15:54:02 PST 2006
+// Creation:   Thu Mar 22 12:57:41 PDT 2007
 //
 // Modifications:
 //   
@@ -463,6 +499,12 @@ QvisReplicateWindow::GetCurrentValues(int which_widget)
         // Nothing for mergeResults
     }
 
+    // Do replicateUnitCellAtoms
+    if(which_widget == 8 || doAll)
+    {
+        // Nothing for replicateUnitCellAtoms
+    }
+
 }
 
 
@@ -531,6 +573,15 @@ void
 QvisReplicateWindow::mergeResultsChanged(bool val)
 {
     atts->SetMergeResults(val);
+    Apply();
+}
+
+
+void
+QvisReplicateWindow::replicateUnitCellAtomsChanged(bool val)
+{
+    atts->SetReplicateUnitCellAtoms(val);
+    SetUpdate(false);
     Apply();
 }
 

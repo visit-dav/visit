@@ -55,7 +55,9 @@ class avtAnnotationColleague;
 // Creation:   Wed Oct 29 14:21:00 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 20 10:10:34 PDT 2007
+//   Name the annotation objects.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAnnotations : public VisWinColleague
@@ -88,9 +90,10 @@ public:
     virtual void SetFrameAndState(int, int, int, int, int, int, int);
 
     // New methods for annotations
-    bool         AddAnnotationObject(int annotType);
+    bool         AddAnnotationObject(int annotType, const std::string &annotName);
     void         HideActiveAnnotationObjects();
     void         DeleteActiveAnnotationObjects();
+    bool         DeleteAnnotationObject(const std::string &);
     void         DeleteAllAnnotationObjects();
     void         RaiseActiveAnnotationObjects();
     void         LowerActiveAnnotationObjects();
@@ -98,7 +101,13 @@ public:
     void         UpdateAnnotationObjectList(AnnotationObjectList &al);
     void         CreateAnnotationObjectsFromList(const AnnotationObjectList &al);
 private:
+    void UpdateLegends();
+
     std::vector<avtAnnotationColleague *> annotations;
+
+    // DO NOT USE avtActor_p BECAUSE WHEN WE CLEAR THE VECTOR, THE ACTORS GET 
+    // DELETED AGAIN!
+    std::vector<avtActor *>               actorList;
 };
 
 #endif

@@ -279,6 +279,16 @@ public:
   vtkBooleanMacro(LabelVisibility, int);
 
   // Description:
+  // Set/Get the visibility of the bounding box.
+  vtkSetMacro(BoundingBoxVisibility, int);
+  vtkGetMacro(BoundingBoxVisibility, int);
+  vtkBooleanMacro(BoundingBoxVisibility, int);
+
+  // Description:
+  // Set the bounding box color
+  vtkSetVector4Macro(BoundingBoxColor, double);
+
+  // Description:
   // Shallow copy of a scalar bar actor. Overloads the virtual vtkProp method.
   void ShallowCopy(vtkProp *prop);
 
@@ -317,6 +327,7 @@ protected:
   void BuildTics(double, double, double, int);
   void BuildLabels(vtkViewport *, double, double, double, int);
   virtual void BuildColorBar(vtkViewport *);
+  void BuildBoundingBox(vtkViewport *viewport);
 
   double SkewTheValue(double, double, double);
   bool   ShouldCollapseDiscrete(void);
@@ -341,7 +352,8 @@ protected:
   int RangeVisibility;
   int ColorBarVisibility;
   int ReverseOrder;
-  
+  int BoundingBoxVisibility;
+
   double BarWidth;
 
   vtkPolyData         *ColorBar;
@@ -360,6 +372,11 @@ protected:
   vtkPolyData         *Tics;
   vtkPolyDataMapper2D *TicsMapper;
   vtkActor2D          *TicsActor;
+
+  vtkPolyData         *BoundingBox;
+  vtkPolyDataMapper2D *BoundingBoxMapper;
+  vtkActor2D          *BoundingBoxActor;
+  double               BoundingBoxColor[4];
 
   vtkTimeStamp  BuildTime;
   int LastSize[2];
