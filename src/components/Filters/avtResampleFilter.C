@@ -707,6 +707,9 @@ avtResampleFilter::ResampleInput(void)
 //    Hank Childs, Sat Apr 29 15:15:05 PDT 2006
 //    Add support for 2D.
 //
+//    Hank Childs, Fri May 26 10:00:01 PDT 2006
+//    Do not allow for 0 dimensions.
+//
 // ****************************************************************************
 
 void
@@ -762,8 +765,11 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
         double tmp = atts.GetTargetVal() / multiplier;
         double amountInX = pow(tmp, 0.3333333);
         width  = (int)(amountInX * ratioX);
+        width  = (width <= 1 ? 2 : width);
         height = (int)(amountInX * ratioY);
+        height = (height <= 1 ? 2 : height);
         depth  = (int)(amountInX * ratioZ);
+        depth  = (depth <= 1 ? 2 : depth);
 
         if (atts.GetPrefersPowersOfTwo())
         {
