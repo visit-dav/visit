@@ -235,6 +235,8 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Brad Whitlock, Tue Mar 7 17:37:24 PST 2006
 //    Initialized undoViewStack and redoViewStack.
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added scalableStereoType to support stereo SR
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : undoViewStack(true), redoViewStack()
@@ -281,6 +283,7 @@ ViewerWindow::ViewerWindow(int windowIndex) : undoViewStack(true), redoViewStack
     isVisible = false;
     isChangingScalableRenderingMode = false;
     targetScalableRenderingMode = false;
+    scalableStereoType = -1;
     nameOfCtChangedSinceLastRender = "";
     isCompressingScalableImage = false;
     compressionActivationMode = RenderingAttributes::Never;
@@ -5436,6 +5439,8 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //   Add shading.
 //
+//   Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//   Added code to set stereo rendering information
 // ****************************************************************************
 
 WindowAttributes
@@ -5502,15 +5507,22 @@ ViewerWindow::GetWindowAttributes() const
     renderAtts.SetScalableAutoThreshold(GetScalableThreshold());
     renderAtts.SetScalableActivationMode(
         (RenderingAttributes::TriStateMode) GetScalableActivationMode());
+
     renderAtts.SetDisplayListMode(
         (RenderingAttributes::TriStateMode) GetDisplayListMode());
+
     renderAtts.SetAntialiasing(GetAntialiasing());
+
     renderAtts.SetGeometryRepresentation(
        (RenderingAttributes::GeometryRepresentation) GetSurfaceRepresentation());
+
     renderAtts.SetSpecularFlag(GetSpecularFlag());
     renderAtts.SetSpecularCoeff(GetSpecularCoeff());
     renderAtts.SetSpecularPower(GetSpecularPower());
     renderAtts.SetSpecularColor(GetSpecularColor());
+
+    renderAtts.SetStereoRendering(GetStereo());
+    renderAtts.SetStereoType((RenderingAttributes::StereoTypes)GetStereoType());
 
     renderAtts.SetDoShadowing(GetDoShading());
     renderAtts.SetShadowStrength(GetShadingStrength());
@@ -6195,12 +6207,32 @@ ViewerWindow::GetRenderTimes(double times[6]) const
 //
 // Modifications:
 //   
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    For certain cases of stereo and SR, all the stereo work is done on the
+//    engine and the Viewer's visWindow object should NOT be in stereo. In
+//    Other cases, it is necessary for the Viewer's visWindow object to als
+//    be in stereo.
 // ****************************************************************************
 
 void
 ViewerWindow::SetStereoRendering(bool enabled, int type)
 {
-    visWindow->SetStereoRendering(enabled, type);
+    scalableStereoType = -1;
+    if (enabled == false)
+        visWindow->SetStereoRendering(false, type);
+    else
+    {
+        if (GetScalableRendering())
+        {
+            scalableStereoType = type;
+            if (type == (int) RenderingAttributes::CrystalEyes)
+                visWindow->SetStereoRendering(true, type);
+        }
+        else
+        {
+            visWindow->SetStereoRendering(true, type);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -6214,12 +6246,18 @@ ViewerWindow::SetStereoRendering(bool enabled, int type)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added logic to deal with cases in which the visWindow object itself
+//    may not be in stereo even though we are indeed doing stereo rendering.
 // ****************************************************************************
 
 bool
 ViewerWindow::GetStereo() const
 {
-    return visWindow->GetStereo();
+    if (scalableStereoType != -1)
+        return true;
+    else
+        return visWindow->GetStereo();
 }
 
 // ****************************************************************************
@@ -6233,12 +6271,18 @@ ViewerWindow::GetStereo() const
 //
 // Modifications:
 //   
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added logic to deal with cases in which the visWindow object itself
+//    may not be in stereo even though we are indeed doing stereo rendering.
 // ****************************************************************************
 
 int
 ViewerWindow::GetStereoType() const
 {
-    return visWindow->GetStereoType();
+    if (scalableStereoType != -1)
+        return scalableStereoType;
+    else
+        return visWindow->GetStereoType();
 }
 
 // ****************************************************************************
@@ -6586,6 +6630,11 @@ ViewerWindow::GetNotifyForEachRender() const
 //
 //   Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //   Reset compression flag 
+//
+//   Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//   Since the visWindow object isn't always in stereo for stereo SR, we
+//   need logic here to correctly put the visWindow into stereo when changing
+//   out of SR, if needed.
 // ****************************************************************************
 
 void
@@ -6607,6 +6656,23 @@ ViewerWindow::ChangeScalableRenderingMode(bool newMode)
         // transmute the plots
         SendWindowEnvironmentToEngine(GetPlotList()->GetEngineKey());
         GetPlotList()->TransmutePlots(!newMode);
+
+        // If we're stereo rendering, then it may be the case that the
+        // visWindow isn't already in stereo. Make it so.
+        if (GetStereo())
+        {
+            if (newMode == true)
+            {
+                scalableStereoType = visWindow->GetStereoType();
+                if (visWindow->GetStereoType() != (int) RenderingAttributes::CrystalEyes)
+                    visWindow->SetStereoRendering(false, visWindow->GetStereoType());
+            }
+            else
+            {
+                visWindow->SetStereoRendering(true, scalableStereoType);
+                scalableStereoType = -1;
+            }
+        }
 
         // set scalable rendering mode in the vis window 
         visWindow->SetScalableRendering(newMode);
@@ -7713,6 +7779,8 @@ ViewerWindow::ShouldSendScalableRenderingModeChangeMessage(bool *newMode) const
 // Programmer: Mark C. Miller 
 // Creation:   Monday, December 13, 2004
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye information
 // ****************************************************************************
 
 void
@@ -7732,6 +7800,7 @@ ViewerWindow::ClearExternalRenderRequestInfo(ExternalRenderRequestInfo& info) co
     for (i = 0; i < 6; i++)
         info.viewExtents[i] = (i%2 ? 1.0 : 0.0);
     info.lastChangedCtName = "";
+    info.leftEye = true;
 }
 
 // ****************************************************************************
@@ -7799,6 +7868,9 @@ ViewerWindow::ClearLastExternalRenderRequestInfo()
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added code to manage name of last color table to change
+//
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye information
 // ****************************************************************************
 
 void
@@ -7836,6 +7908,7 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
     for (i = 0; i < 6; i++)
         lastExternalRenderRequest.viewExtents[i] = newRequest.viewExtents[i];
     lastExternalRenderRequest.lastChangedCtName = ""; 
+    lastExternalRenderRequest.leftEye       = newRequest.leftEye;
 
     nameOfCtChangedSinceLastRender = "";
 
@@ -7888,12 +7961,28 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added code to filter compression mode from influencing skip 
+//
+//    Mark C. Miller, Sat Jul 22 16:55:44 PDT 2006
+//    Added logic to deal with multiple renders for stereo. For stereo modes
+//    in which left/right images are in separate buffers (e.g. crystal-eyes),
+//    two render requests are needed. However, for all others, a single render
+//    request for a complete, stereo image, is all that is needed.
 // ****************************************************************************
 
 bool
 ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest) const
 {
     const ExternalRenderRequestInfo& lastRequest = lastExternalRenderRequest;
+
+    //
+    // Don't skip render for either eye when using crystal-eyes stereo
+    //
+    if (thisRequest.leftEye != lastRequest.leftEye)
+    {
+        if (thisRequest.winAtts.GetRenderAtts().GetStereoType() ==
+            RenderingAttributes::CrystalEyes)
+            return false;
+    }
 
     // compare window attributes but ignore a few of them by forcing
     // old/new to be equal for those few
@@ -8027,11 +8116,15 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
 //
 //    Mark C. Miller, Tue Oct 19 20:18:22 PDT 2004
 //    Added code to manage name of last color table to change
+//
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye information to support stereo SR
 // ****************************************************************************
 
 void
 ViewerWindow::GetExternalRenderRequestInfo(
-    ExternalRenderRequestInfo &theRequest) const
+    ExternalRenderRequestInfo &theRequest,
+    bool leftEye) const
 {
     ClearExternalRenderRequestInfo(theRequest);
 
@@ -8067,6 +8160,7 @@ ViewerWindow::GetExternalRenderRequestInfo(
     }
 
     theRequest.lastChangedCtName = nameOfCtChangedSinceLastRender;
+    theRequest.leftEye = leftEye;
 }
 
 // ****************************************************************************
@@ -8223,6 +8317,9 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
 //   and since we don't want that to fail if we can help it, clear the
 //   error message and then iterate through one more time. Hopefully, the
 //   right compute engine gets launched.
+//
+//   Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//   Added leftEye arg to GetExternalRenderRequestInfo
 //  
 // ****************************************************************************
 
@@ -8239,7 +8336,7 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
     {
         debug4 << mName << "Calling GetExternalRenderRequestInfo" << endl;
         ExternalRenderRequestInfo thisRequest;
-        GetExternalRenderRequestInfo(thisRequest);
+        GetExternalRenderRequestInfo(thisRequest, 1);
 
         // adjust rendering request info for this manual render
         debug4 << mName << "Making it do scalable rendering always" << endl;
@@ -8287,9 +8384,11 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
 //   Mark C. Miller, Wed Oct 20 15:52:51 PDT 2004
 //   Added fault tolerance to external render request
 //
+//   Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//   Added leftEye to support stereo SR
 // ****************************************************************************
 void
-ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
+ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob, bool leftEye)
 {
     if (!GetScalableRendering())
     {
@@ -8298,7 +8397,7 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
     }
 
     ExternalRenderRequestInfo thisRequest;
-    GetExternalRenderRequestInfo(thisRequest);
+    GetExternalRenderRequestInfo(thisRequest, leftEye);
 
     if (thisRequest.plotIdsList.size() == 0)
     {
@@ -8331,7 +8430,7 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
         {
             GetPlotList()->ClearActors();
             GetPlotList()->UpdateFrame();
-            GetExternalRenderRequestInfo(thisRequest);
+            GetExternalRenderRequestInfo(thisRequest, leftEye);
         }
         trys++;
     }
@@ -8386,12 +8485,24 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob)
 //   Paired down to just dereference the void * for the window and call into
 //   the objects method
 //
+//   Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
+//   Extract multiple args from data buffer and pass to ExternalRenderAuto
+//   This is to support stereo SR.
+//
 // ****************************************************************************
 void
 ViewerWindow::ExternalRenderCallback(void *data, avtDataObject_p& dob)
 {
-    ViewerWindow *win = (ViewerWindow *)data;
-    win->ExternalRenderAuto(dob);
+    unsigned char* argsBuf = (unsigned char*) data;
+    ViewerWindow *win;
+    bool leftEye;
+    int i = 0;
+
+    memcpy(&win, &argsBuf[0], sizeof(void*));
+    i += sizeof(void*);
+    memcpy(&leftEye, &argsBuf[i], sizeof(bool));
+
+    win->ExternalRenderAuto(dob, leftEye);
 }
 
 

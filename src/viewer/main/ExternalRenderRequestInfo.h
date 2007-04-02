@@ -78,6 +78,9 @@ using std::string;
 //
 //    Mark C. Miller, Tue Oct 19 19:21:49 PDT 2004
 //    Added lastChangedCtName
+//
+//    Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
+//    Added leftEye;
 // ****************************************************************************
 
 
@@ -95,6 +98,7 @@ typedef struct _ExternalRenderRequestInfo
     int                                   frameAndState[7];
     double                                viewExtents[6];
     string                                lastChangedCtName;
+    bool                                  leftEye;
 } ExternalRenderRequestInfo;
 
 #endif

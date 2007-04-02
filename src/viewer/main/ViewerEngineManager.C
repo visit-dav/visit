@@ -1429,6 +1429,8 @@ ViewerEngineManager::LaunchMessage(const EngineKey &ek)  const
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added windowID to support multiwindow SR
 //    
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to Render rpc to support stereo SR
 // ****************************************************************************
 
 bool
@@ -1451,6 +1453,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
     const int* frameAndState                         = reqInfo.frameAndState;
     const double *viewExtents                        = reqInfo.viewExtents;
     string ctName                                    = reqInfo.lastChangedCtName;
+    bool leftEye                                     = reqInfo.leftEye;
 
     bool retval = true;
     EngineKey ek;
@@ -1527,7 +1530,7 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 
             avtDataObjectReader_p rdr =
                 engines[ek].proxy->Render(sendZBuffer, pos->second, annotMode,
-                                          windowID,
+                                          windowID, leftEye,
                                           ViewerSubject::ProcessEventsCB,
                                           (void *)viewerSubject);
 

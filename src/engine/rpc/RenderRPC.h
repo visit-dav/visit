@@ -60,6 +60,9 @@
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id
+//
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to support stereo SR
 // ****************************************************************************
 class ENGINE_RPC_API RenderRPC : public NonBlockingRPC
 {
@@ -68,7 +71,7 @@ public:
     virtual ~RenderRPC();
 
     // Invokation method
-    void operator()(const intVector&,bool,int,int);
+    void operator()(const intVector&,bool,int,int,bool);
 
     // Property selection methods
     virtual void SelectAll();
@@ -78,18 +81,21 @@ public:
     void SetSendZBuffer(bool);
     void SetAnnotMode(int);
     void SetWindowID(int);
+    void SetLeftEye(bool);
 
     // Property getting methods
     const intVector& GetIDs() const;
     bool GetSendZBuffer() const;
     int  GetAnnotMode() const;
     int GetWindowID() const;
+    bool GetLeftEye() const;
 
 private:
     intVector ids;
     bool sendZBuffer;
     int annotMode;
     int windowID;
+    bool leftEye;
 };
 
 #endif

@@ -79,6 +79,7 @@ typedef struct _EngineVisWinInfo
     std::vector<int>            plotsCurrentlyInWindow;
     std::vector<avtPlot_p>      imageBasedPlots;
     bool                        markedForDeletion;
+    bool                        handleLeftRightEye;
 } EngineVisWinInfo;
 
 typedef void   (*InitializeProgressCallback)(void *, int);
@@ -292,6 +293,8 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006 
 //    Add PickForIntersection.
 //
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye arg to Render method
 // ****************************************************************************
 
 class NetworkManager
@@ -352,7 +355,7 @@ class NetworkManager
                                     bool calledForRender,
                                     float *cellCountMultiplier);
     avtDataObjectWriter_p Render(intVector networkIds, bool getZBuffer,
-                                 int annotMode, int windowID);
+                                 int annotMode, int windowID, bool leftEye);
  
     void          StartPickMode(const bool);
     void          StopPickMode(void);

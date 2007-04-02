@@ -863,18 +863,22 @@ EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added windowID
+//
+//    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
+//    Added leftEye to support stereo SR
 // ****************************************************************************
 
 avtDataObjectReader_p
 EngineProxy::Render(bool sendZBuffer, const intVector& networkIDs,
-    int annotMode, int windowID, void (*waitCB)(void *), void *cbData)
+    int annotMode, int windowID, bool leftEye,
+    void (*waitCB)(void *), void *cbData)
 {
 
     // Send a status message indicating that we're starting a scalable render 
     Status("Scalable Rendering.");
 
     // Do it!
-    renderRPC(networkIDs, sendZBuffer, annotMode, windowID);
+    renderRPC(networkIDs, sendZBuffer, annotMode, windowID, leftEye);
 
     // Get the reply and update the progress bar
     while (renderRPC.GetStatus() == VisItRPC::incomplete ||

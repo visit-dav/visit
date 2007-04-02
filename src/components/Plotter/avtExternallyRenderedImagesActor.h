@@ -119,6 +119,9 @@ class     vtkRenderer;
 //    Added alternative visibility interface that remembers state of
 //    visibility flag for each object that set it so that it can be
 //    easily restored to its prior state 
+//
+//    Mark C. Miller, Fri Jul 21 08:05:15 PDT 2006
+//    To support stereo SR mode, added vtkCamera argument to PrepareForRender
 // ****************************************************************************
 
 class PLOTTER_API avtExternallyRenderedImagesActor
@@ -140,7 +143,7 @@ class PLOTTER_API avtExternallyRenderedImagesActor
 
     // used to send essential information to ERIA so that it will have that
     // information when it receives a render request
-    void                 PrepareForRender(void);
+    void                 PrepareForRender(const vtkCamera *const cam);
 
     // used to temporarily control visibility of ERIA while its in a window
     bool                 SetVisibility(const bool mode);
@@ -157,7 +160,7 @@ class PLOTTER_API avtExternallyRenderedImagesActor
   private:
 
     // used to invoke the external render request
-    void                 DoExternalRender(avtDataObject_p &);
+    void                 DoExternalRender(avtDataObject_p &, bool);
 
     // used to indicate if the ERIA is active or not
     bool                 makeExternalRenderRequests;

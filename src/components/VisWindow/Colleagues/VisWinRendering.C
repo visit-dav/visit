@@ -1552,6 +1552,9 @@ VisWinRendering::GetRenderTimes(double times[6]) const
 //   Issue a warning if the user tried to start stereo without putting
 //   "-stereo" on the command line ['4432].
 //
+//   Mark C. Miller, Sat Jul 22 17:53:43 PDT 2006
+//   Added left/right overrides to support stereo SR
+//
 // ****************************************************************************
 
 void
@@ -1578,6 +1581,10 @@ VisWinRendering::SetStereoRendering(bool enabled, int type)
                 GetRenderWindow()->SetStereoType(VTK_STEREO_INTERLACED);
             else if(stereoType == 2)
                 GetRenderWindow()->SetStereoType(VTK_STEREO_CRYSTAL_EYES);
+            else if(stereoType == 4)
+                GetRenderWindow()->SetStereoType(VTK_STEREO_LEFT);
+            else if(stereoType == 5)
+                GetRenderWindow()->SetStereoType(VTK_STEREO_RIGHT);
             else 
             {
                 //GetRenderWindow()->SetStereoType(VTK_STEREO_RED_GREEN);
