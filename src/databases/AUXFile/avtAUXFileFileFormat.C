@@ -22,6 +22,8 @@
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
 
+#include <Utility.h>
+
 using     std::string;
 
 
@@ -115,6 +117,9 @@ avtAUXFileFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Brad Whitlock, Fri Jun 17 14:53:02 PST 2005
 //    Modified so it works on Windows.
 //
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -129,15 +134,9 @@ avtAUXFileFileFormat::GetMesh(const char *meshname)
     //
     // Read the whole file's contents into a buffer
     //
-#if defined(_WIN32)
-    struct _stat statbuf;
-    _stat(fileName.c_str(), &statbuf);
-    off_t fileSize = statbuf.st_size;
-#else
-    struct stat statbuf;
-    stat(fileName.c_str(), &statbuf);
-    off_t fileSize = statbuf.st_size;
-#endif
+    VisItStat_t statbuf;
+    VisItStat(fileName.c_str(), &statbuf);
+    VisItOff_t fileSize = statbuf.st_size;
 
     FILE *fd = fopen(fileName.c_str(), "r");
     if(fd == 0)

@@ -3,6 +3,7 @@
 
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
+#include <Utility.h>
 #include <avtSTMDFileFormatInterface.h>
 
 #include <avtDatabase.h>
@@ -619,6 +620,9 @@ PF3DFileFormat::GetType()
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 // ****************************************************************************
 
 bool
@@ -635,8 +639,8 @@ PF3DFileFormat::CanAccessFile(const std::string &filename) const
     int   ngids = getgroups(100, gids);
 
     // Get information about the file.
-    struct stat s;
-    stat(filename.c_str(), &s);
+    VisItStat_t s;
+    VisItStat(filename.c_str(), &s);
 
     bool isdir = S_ISDIR(s.st_mode);
     bool canaccess = false;

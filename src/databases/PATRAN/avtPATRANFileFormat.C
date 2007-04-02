@@ -22,6 +22,7 @@
 
 #include <TimingsManager.h>
 #include <DebugStream.h>
+#include <Utility.h>
 
 #define PATRAN_PACKET_NODE_DATA        1
 #define PATRAN_PACKET_ELEMENT_DATA     2
@@ -431,6 +432,9 @@ ProcessComponent(char *line, const int compno, const int ncomps,
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 // ****************************************************************************
 
 bool
@@ -455,20 +459,14 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
     int nCells = 100;
     if(nLines == ALL_LINES)
     {
-#if defined(_WIN32)
-        struct _stat statbuf;
-        _stat(name, &statbuf);
-        off_t fileSize = statbuf.st_size;
-#else
-        struct stat statbuf;
-        stat(name, &statbuf);
-        off_t fileSize = statbuf.st_size;
-#endif
+        VisItStat_t statbuf;
+        VisItStat(name, &statbuf);
+        VisItOff_t fileSize = statbuf.st_size;
 
         // Make a guess about the number of cells and points based on
         // the size of the file.
-        nPoints = fileSize / 220;
-        nCells  = fileSize / 320;
+        nPoints = fileSize / (VisItOff_t) 220;
+        nCells  = fileSize / (VisItOff_t) 320;
     }
     visitTimer->StopTimer(guessingSize, "Determining file size");
     int initArrays = visitTimer->StartTimer();

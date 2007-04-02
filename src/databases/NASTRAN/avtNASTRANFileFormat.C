@@ -19,6 +19,7 @@
 
 #include <TimingsManager.h>
 #include <DebugStream.h>
+#include <Utility.h>
 
 //
 // NASTRAN models have a node id associated with each vertex and that nodeid
@@ -150,6 +151,9 @@ avtNASTRANFileFormat::ActivateTimestep()
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 // ****************************************************************************
 
 bool
@@ -172,20 +176,14 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
     int nCells = 100;
     if(nLines == ALL_LINES)
     {
-#if defined(_WIN32)
-        struct _stat statbuf;
-        _stat(name, &statbuf);
-        off_t fileSize = statbuf.st_size;
-#else
-        struct stat statbuf;
-        stat(name, &statbuf);
-        off_t fileSize = statbuf.st_size;
-#endif
+        VisItStat_t statbuf;
+        VisItStat(name, &statbuf);
+        VisItOff_t fileSize = statbuf.st_size;
 
         // Make a guess about the number of cells and points based on
         // the size of the file.
-        nPoints = fileSize / 130;
-        nCells  = fileSize / 150;
+        nPoints = fileSize / (VisItOff_t) 130;
+        nCells  = fileSize / (VisItOff_t) 150;
     }
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(nPoints);

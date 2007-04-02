@@ -38,6 +38,8 @@
 #include "vtkUnsignedLongArray.h"
 #include "vtkUnsignedShortArray.h"
 
+#include "Utility.h"
+
 #include <ctype.h>
 #include <sys/stat.h>
 
@@ -355,6 +357,10 @@ int vtkVisItDataReader::Read(double *result)
 
 
 // Open a vtk data file. Returns zero if error.
+//
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 int vtkVisItDataReader::OpenVTKFile()
 {
   if (this->ReadFromInputString)
@@ -387,8 +393,8 @@ int vtkVisItDataReader::OpenVTKFile()
 
     // first make sure the file exists, this prevents an empty file from
     // being created on older compilers
-    struct stat fs;
-    if (stat(this->FileName, &fs) != 0) 
+    VisItStat_t fs;
+    if (VisItStat(this->FileName, &fs) != 0) 
       {
       vtkErrorMacro(<< "Unable to open file: "<< this->FileName);
       this->SetErrorCode( vtkErrorCode::CannotOpenFileError );

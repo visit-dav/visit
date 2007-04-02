@@ -533,6 +533,9 @@ avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
 //    I changed the code so it gives a different kind of exception if the
 //    desired file does not exist.
 //
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 // ****************************************************************************
 
 #if defined(_WIN32)
@@ -564,8 +567,8 @@ CheckPermissions(const char *filename)
         SetUpUserInfo();
     }
 
-    struct stat s;
-    int rv = stat(filename, &s);
+    VisItStat_t s;
+    int rv = VisItStat(filename, &s);
     if (rv < 0)
     {
         if(errno == ENOENT || errno == ENOTDIR)

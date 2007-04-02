@@ -1343,6 +1343,9 @@ MDServerConnection::ReadFileList()
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 // ****************************************************************************
 
 void
@@ -1371,8 +1374,8 @@ MDServerConnection::ReadFileListAttributes(GetFileListRPC::FileList &fl,
             origType == GetFileListRPC::UNCHECKED_REMOVE_IF_NOT_DIR))
         {
             ++nStat;
-            struct stat s;
-            stat((currentWorkingDirectory + "/" + fl.names[i]).c_str(), &s);
+            VisItStat_t s;
+            VisItStat((currentWorkingDirectory + "/" + fl.names[i]).c_str(), &s);
     
             mode_t mode = s.st_mode;
 

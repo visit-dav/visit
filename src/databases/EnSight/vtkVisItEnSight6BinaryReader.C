@@ -27,6 +27,7 @@
 #include "vtkStructuredGrid.h"
 #include "vtkStructuredPoints.h"
 #include "vtkUnstructuredGrid.h"
+#include "Utility.h"
 
 #include <sys/stat.h>
 #include <ctype.h>
@@ -66,6 +67,9 @@ vtkVisItEnSight6BinaryReader::~vtkVisItEnSight6BinaryReader()
     }
 }
 
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 //----------------------------------------------------------------------------
 int vtkVisItEnSight6BinaryReader::OpenFile(const char* filename)
 {
@@ -85,8 +89,8 @@ int vtkVisItEnSight6BinaryReader::OpenFile(const char* filename)
   
   // Open the new file
   vtkDebugMacro(<< "Opening file " << filename);
-  struct stat fs;
-  if ( !stat( filename, &fs) )
+  VisItStat_t fs;
+  if ( !VisItStat( filename, &fs) )
     {
     // Find out how big the file is.
     this->FileSize = (int)(fs.st_size);

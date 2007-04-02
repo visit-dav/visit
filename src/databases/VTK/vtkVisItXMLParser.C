@@ -29,6 +29,7 @@
 
 #include "vtkVisItXMLParser.h"
 #include "vtkObjectFactory.h"
+#include "Utility.h"
 #include <expat.h>
 #include <ctype.h>
 #include <sys/stat.h>
@@ -197,6 +198,9 @@ int vtkVisItXMLParser::Parse(const char* inputString, unsigned int length)
 }
 
 
+//    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
+//    Made it use VisItStat instead of stat
+//
 //----------------------------------------------------------------------------
 int vtkVisItXMLParser::Parse()
 {
@@ -205,8 +209,8 @@ int vtkVisItXMLParser::Parse()
   if ( !this->InputString && !this->Stream && this->FileName )
     {
     // If it is file, open it and set the appropriate stream
-    struct stat fs;
-    if (stat(this->FileName, &fs) != 0)
+    VisItStat_t fs;
+    if (VisItStat(this->FileName, &fs) != 0)
       {
       vtkErrorMacro("Cannot open XML file: " << this->FileName);
       return 0;
