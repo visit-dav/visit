@@ -42,7 +42,7 @@
 #ifndef AVT_ViSUS_FILE_FORMAT_H
 #define AVT_ViSUS_FILE_FORMAT_H
 
-#include <visus_idx.h>
+#include <idx_input.h>
 
 #include <database_exports.h>
 

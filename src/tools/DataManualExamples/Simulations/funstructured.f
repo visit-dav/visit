@@ -1,6 +1,6 @@
 c-----------------------------------------------------------------------------
 c
-c Copyright (c) 2000 - 2006, The Regents of the University of California
+c Copyright (c) 2000 - 2007, The Regents of the University of California
 c Produced at the Lawrence Livermore National Laboratory
 c All rights reserved.
 c

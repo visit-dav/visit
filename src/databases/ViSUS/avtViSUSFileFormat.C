@@ -41,7 +41,7 @@
 
 #include <math.h>
 
-#include <visus_idx.h>
+#include <idx_input.h>
 
 #include <avtViSUSFileFormat.h>
 
