@@ -201,10 +201,11 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libquery
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS)
-COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lavtview -lvisit_vtk -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING)
-SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -lavtfilters_ser -lexpressions_ser -ldatabase_ser -lmir_ser $(VTK_LIBS) $(X_LIBS) @LIBS@
-PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -lavtfilters_par -lexpressions_par -ldatabase_par -lmir_par $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+SERLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) -lavtddf_ser
+PARLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) -lavtddf_par
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lavtview -lvisit_vtk -llightweight_visit_vtk
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -lavtfilters_ser -lexpressions_ser -ldatabase_ser -lmir_ser $(SERLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS) @LIBS@
+PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -lavtfilters_par -lexpressions_par -ldatabase_par -lmir_par $(PARLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

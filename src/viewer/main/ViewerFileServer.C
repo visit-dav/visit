@@ -1089,6 +1089,9 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Brad Whitlock, Wed Feb 2 14:25:31 PST 2005
 //    Improved the error message for "Could not connect" exception.
 //
+//    Brad Whitlock, Fri Mar 17 10:56:20 PDT 2006
+//    Improved the "Cound not connect" exception error message even more.
+//
 // ****************************************************************************
 
 void
@@ -1178,15 +1181,71 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
     }
     CATCH(CouldNotConnectException)
     {
-        char message[200];
-        SNPRINTF(message, 200,
-                "The metadata server on host %s could not be launched or it "
-                "could not connect back to your local computer. "
-                "You might try using \"Parse from SSH_CLIENT\" in your host "
-                "profile for host %s. You may also want to make sure your "
-                "PATH environment variable includes the program \"visit\".",
-                host.c_str(), host.c_str());
+        char *message = new char[10000];
+        const char *h = host.c_str();
+        SNPRINTF(message, 10000,
+            "The metadata server on host %s could not be launched or it "
+            "could not connect back to your local computer. This can "
+            "happen for a variety of reasons.\n\n"
+
+            "It is possible that SSH was unable to launch VisIt on %s. "
+            "If you want to verify this, run "
+            "\"visit -debug 5\" and then check to see if any vcl, "
+            "mdserver, or engine log files are present on %s in your "
+            "home directory. If no log files were created then SSH was "
+            "probably not able to launch VisIt components on %s. In that "
+            "case, check that you can SSH to %s and check your local "
+            "VisIt installation's Host profiles to make sure the path "
+            "to VisIt on %s is specified. Alternatively, you set the "
+            "PATH environment variable on %s so it contains the "
+            "path to the program \"visit\".\n\n"
+
+            "If there were no debug logs to be found on %s and your local "
+            "computer runs a newer version of Linux then quit VisIt and "
+            "try running \"visit -nopty -debug 5\". The \"-nopty\" option "
+            "tells VisIt not to allocate a pseudoterminal in which to "
+            "run SSH. When you run with the \"-nopty\" option, VisIt's "
+            "password window will not be used. Instead, look for an SSH "
+            "prompt in the terminal window where you ran VisIt. You should "
+            "be able to enter your password at that prompt. If successful, "
+            "SSH should continue trying to launch VisIt on %s. If VisIt "
+            "still cannot connect after SSH launches VisIt's remote "
+            "components, check for debug logs on %s to see if VisIt "
+            "was at least able to launch there.\n\n"
+
+            "If you found debug log files on %s but VisIt still can't "
+            "connect then it's possible that %s cannot connect to your "
+            "local computer. Some desktop computers do not provide a "
+            "valid network name when VisIt asks for one. If you suspect "
+            "that this could be the cause of the launch failure, try "
+            "using \"Parse from SSH_CLIENT\" in your host profile for "
+            "host %s. If that does not work and if you are using VPN "
+            "then you should try manually setting the local host name "
+            "VisIt will use when telling its remote components to connect "
+            "back to your local computer. Open the Host profiles window "
+            "and go to the Advanced options tab. Click the \"Specify manually\" "
+            "radio button and type in the IP address of your VPN session "
+            "into the adjacent text field before you try connecting again.\n\n"
+
+            "If changing the above settings still does not allow you to "
+            "connect then you may have a local firewall blocking "
+            "ports 5600-5609, which are the ports that VisIt uses to "
+            "listen for incoming connections (when they are expected) "
+            "from remote VisIt components. If you've tried the previous "
+            "suggestions and none of them worked then you may have a "
+            "firewall denying VisIt access to local computer. Try turning "
+            "the firewall off or allowing ports 5600-5609 and run VisIt "
+            "again. If you do not know how to enable ports for your "
+            "firewall or if you do not have the required privileges, "
+            "contact your system administrator.\n\n"
+
+            "If none of these suggestions allow you to successfully "
+            "connect to %s then contact visit-help@llnl.gov and provide "
+            "information about how you are trying to connect. Be sure to "
+            "include the VisIt version and platform on which you are "
+            "running.", h,h,h,h,h,h,h,h,h,h,h,h,h,h);
         Error(message);
+        delete [] message;
 
         delete newServer;
         delete dialog;

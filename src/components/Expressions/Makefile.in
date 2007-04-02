@@ -300,8 +300,8 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libexpressions
-SERLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) -lavtfilters_ser
-PARLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) -lavtfilters_par
+SERLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) -lavtfilters_ser -lavtddf_ser
+PARLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) -lavtfilters_par -lavtddf_par
 COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lvisit_vtk -llightweight_visit_vtk -lavtview
 SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -ldatabase_ser -lmir_ser $(VTK_LIBS) $(SERLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@
 PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -ldatabase_par -lmir_par $(VTK_LIBS) $(PARLIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@

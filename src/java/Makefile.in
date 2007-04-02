@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2005
+#                            Copyright 2000 - 2006
 #                 The Regents of the University of California.
 #                             All rights reserved.
 # 
@@ -125,6 +125,7 @@ ColorAttributeList.java \
 ColorControlPoint.java \
 ColorControlPointList.java \
 ColorTableAttributes.java \
+ConstructDDFAttributes.java \
 CouldNotConnectException.java \
 DBOptionsAttributes.java \
 DBPluginInfoAttributes.java \

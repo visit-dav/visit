@@ -1,5 +1,6 @@
 #ifndef CONSTRUCTDDFATTRIBUTES_H
 #define CONSTRUCTDDFATTRIBUTES_H
+#include <state_exports.h>
 #include <string>
 #include <AttributeSubject.h>
 
@@ -18,7 +19,7 @@
 //   
 // ****************************************************************************
 
-class ConstructDDFAttributes : public AttributeSubject
+class STATE_API ConstructDDFAttributes : public AttributeSubject
 {
 public:
     enum BinningScheme

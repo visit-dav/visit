@@ -60,7 +60,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windows.h>
 #elif defined(__APPLE__)
 #include <Carbon/Carbon.h>
-#include <qwidget.h>
 #else
 #include <X11/Intrinsic.h>
 #endif
@@ -266,8 +265,9 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     // Note that this only works because we've made the GenericDisplayId 
     // method return the GL widget pointer. On other platforms where 
     // the display is actually used for something, this does not work.
-    QWidget *gl = (QWidget *)window->GetGenericDisplayId();
-    int H = gl->height();
+    typedef struct { int x,y,w,h; void *handle; } OverlayInfo;
+    OverlayInfo *info = (OverlayInfo *)window->GetGenericDisplayId();
+    int H = info->h;
 
     //
     // Try and create the window if we've not yet created it.
@@ -276,11 +276,11 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     {
         // Get the GL widget's global screen coordinates.
         Rect wRect;
-        wRect.left = gl->x();
-        wRect.right = gl->x() + gl->width();
-        wRect.top = gl->y();
-        wRect.bottom = gl->y() + gl->height();
-        QDLocalToGlobalRect(GetWindowPort((WindowPtr)gl->handle()), &wRect );
+        wRect.left = info->x;
+        wRect.right = info->x + info->w;
+        wRect.top = info->y;
+        wRect.bottom = info->y + info->h;
+        QDLocalToGlobalRect(GetWindowPort((WindowPtr)info->handle), &wRect );
         
         // Try and create the overlay window.        
         overlay = new vtkDashedXorGridMapper2DOverlay;
@@ -309,8 +309,8 @@ void vtkDashedXorGridMapper2D::RenderOverlay(vtkViewport* viewport, vtkActor2D* 
     CGRect r;
     r.origin.x = 0;
     r.origin.y = 0;
-    r.size.width = gl->width();
-    r.size.height = gl->height();
+    r.size.width = info->w;
+    r.size.height = info->h;
     CGContextClearRect(overlay->ctx, r);
 
 #else

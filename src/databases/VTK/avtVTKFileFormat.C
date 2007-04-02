@@ -653,7 +653,7 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     else 
     {
         avtMeshCoordType mct =(avtMeshCoordType)
-         dataset->GetFieldData()->GetArray("MeshCoordType")->GetComponent(0, 0);
+         int(dataset->GetFieldData()->GetArray("MeshCoordType")->GetComponent(0, 0));
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = MESHNAME;
         mesh->meshType = type;

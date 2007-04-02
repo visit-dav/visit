@@ -48,12 +48,33 @@
 #   Brad Whitlock, Mon Nov 21 16:57:39 PST 2005
 #   I made it copy libbz2.{dll,lib}.
 #
+#   Brad Whitlock, Thu Mar 16 11:59:27 PDT 2006
+#   I added code to copy the NERSC and ORNL config files. I also added an
+#   optional -nodist argument that can make the script use an existing
+#   source distribution.
+#
 #------------------------------------------------------------------------------
 
 if(`pwd` != "/data_vobs/VisIt") then
     echo "The visit-windows-dist script must be run from the top level VOB directory."
     exit(-1)
 endif
+
+# Parse the comand line arguents.
+set create_src_dist = true
+set option_found = true
+while ($option_found == true)
+   switch ($1)
+      case -nodist:
+         # Use an existing source distribution.
+         set create_src_dist = false
+         shift
+         breaksw
+      default:
+         set option_found = false
+         breaksw
+   endsw
+end
 
 # Set some directory variables.
 set TOPDIR = "/data_vobs/VisIt"
@@ -64,8 +85,10 @@ set VisItDev = "$TOPDIR/VisItDev$VERSION"
 set VISITSRC="visit"
 
 # Run the visit-dist script so it creates a source distribution
-echo "Creating intermediate source package..."
-$SCRIPTDIR/visit-dist -withhelp $VISITSRC
+if ($create_src_dist == true) then
+    echo "Creating intermediate source package..."
+    $SCRIPTDIR/visit-dist -withhelp $VISITSRC
+endif
 
 # Create a directory to contain the VisIt source distribution.
 echo "Creating $VisItDev directory..."
@@ -185,6 +208,8 @@ foreach configdir (Debug Release MSVC7.Net/Debug MSVC7.Net/Release)
     # Copy the host config files to the right bin dir.
     $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-open.ini   bin/$configdir/visit-config-open.ini
     $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-closed.ini bin/$configdir/visit-config-closed.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-nersc.ini  bin/$configdir/visit-config-nersc.ini
+    $SCRIPTDIR/converttextfile $SCRIPTDIR/visit-config-ornl.ini   bin/$configdir/visit-config-ornl.ini
     mkdir bin/$configdir/help
     cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
     mkdir bin/$configdir/databases

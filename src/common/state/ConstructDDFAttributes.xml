@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ConstructDDFAttributes" purpose="Attributes for constructing DDFs" persistent="true" exportAPI="" exportInclude="">
+  <Attribute name="ConstructDDFAttributes" purpose="Attributes for constructing DDFs" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="BinningScheme">
       Uniform
       Unknown

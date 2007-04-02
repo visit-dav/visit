@@ -18,7 +18,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's <i>Weighted variable sum</i> query now has an option to weight by the revolved volume for 2D datasets that are revolved into 3D.</li>
 <li>VisIt now intermittently saves the components of your settings that are related to the paths that you've visited so they can be recalled more easily in future VisIt sessions without requiring all settings to be saved.</li>
 <li>Visit's Silo database reader plugin now supports Silo's Curve objects.</li>
-<li>VisIt now supports 1-button mice, which are common on MacOS X systems. The default clicking behavior is still mapped to the left mouse button. Right mouse button is simualted by holding down the <i>Alt-key</i> while you click the mouse. Middle mouse button is simulated by holding down <i>Shift+Alt</i> while you click the mouse.</li>
+<li>VisIt now supports 1-button mice, which are common on MacOS X systems. The default clicking behavior is still mapped to the left mouse button. Right mouse button is simulated by holding down the <i>Alt-key</i> while you click the mouse. Middle mouse button is simulated by holding down <i>Shift+Alt</i> while you click the mouse.</li>
 <li>VisIt now supports <i>redo view</i> in addition to <i>undo view</i>. Redo view is used to re-apply views that have been undone using <i>undo view</i>.</li>
 <li>VisIt has a new <i>ijk_gradient</i> expression that can be used for more efficiently creating the gradient for structured meshes. The new expression also does not suffer from any potential sampling errors that can happen when sampling the gradient spatially.</li>
 <li>VisIt's Resample operator can now resample variables defined on a point mesh onto a rectilinear mesh.</li>
@@ -54,6 +54,7 @@ off-screen and advancing through time.</li>
 <li>Using shadows during scalable rendering for 2D plots causes the compute engine to crash.</li>
 <li>VisIt's viewer hangs when deleting a plot after doing some picks while in scalable rendering mode.</li>
 <li>VisIt crashes when opening LEOS data files with many variables.</li>
+<li>VisIt's CLI hangs when started by the <i>Save movie</i> wizard in the GUI on the Windows platform. The CLI's synchronization code was improved so that it takes far less CPU.</li>
 <li>The InverseGhostZone operator does not work with SIL selections.</li>
 <li>The <i>Spatial extents</i> query does not return the original extents when required. </li>
 <li>If scalable rendering fails when generating a movie in the CLI, the CLI will halt with a Python error instead of fixing the problem and continuing.</li>
@@ -68,7 +69,7 @@ off-screen and advancing through time.</li>
 <li>VisIt's <i>Choose center</i> feature does not work in scalable rendering mode again.</li>
 <li>Middle mouse interaction with 3D interactors does not work using the SGI executable built on that <i>quad</i> machine.</li>
 <li>The OnionPeel operator does not work properly when there are multiple "domain" collections in a dataset's SIL.</li>
-<li>Rubber band lines and boxes for the zoom interactors are not drawn in the MacOS X version of VisIt</li>
+<li>Rubber band lines and boxes for the zoom interactors are not drawn in the MacOS X version of VisIt.</li>
 <li>The option for determining how VisIt picks a vis window for curves created from queries over time has been clarified in the <b>Global Lineout window</b>.</li>
 <li>Various debugging error messages are printed to the terminal where VisIt was launched when zooming in on plots using the MacOS X version of VisIt.</li>
 <li>The screen position control used in the <b>Annotation window</b> to control the position of annotation objects is missing its down arrow.</li>

@@ -22,6 +22,10 @@
 //    Hank Childs, Fri Mar  4 16:02:03 PST 2005
 //    Added support for deferring reading in all of the TOC.
 //
+//    Brad Whitlock, Thu Mar 16 14:54:01 PST 2006
+//    Added byte offset so we can skip past a header. I also added a new
+//    flag for dividing a brick into bricklets.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -53,12 +57,14 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     int                        cycle;
     int                        full_size[3];
     int                        bricklet_size[3];
+    int                        byteOffset;
     char                      *varname;
     bool                       hasBoundaries;
     bool                       declaredEndianess;
     bool                       littleEndian;
     bool                       nodalCentering;
     bool                       byteData;
+    bool                       divideBrick;
     float                      min, max;
     float                      origin[3];
     float                      dimensions[3];

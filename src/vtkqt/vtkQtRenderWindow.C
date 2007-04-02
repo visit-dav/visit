@@ -951,8 +951,16 @@ void *vtkQtRenderWindow::GetGenericDisplayId()
 #elif defined(Q_WS_X11)
     return (void *)this->x11Display();
 #elif defined(Q_WS_MACX)
-    // Return the GL widget so we can create a transparent window over it.
-    return (void *)gl;
+    // Return the information about the GL widget so we can create a
+    // transparent window over it.
+    typedef struct { int x,y,w,h; void *handle; } OverlayInfo;
+    OverlayInfo *info = new OverlayInfo;
+    info->x = gl->x();
+    info->y = gl->y();
+    info->w = gl->width();
+    info->h = gl->height();
+    info->handle = (void *)gl->handle();
+    return (void *)info;
 #endif
 };
 

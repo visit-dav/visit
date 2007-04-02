@@ -96,6 +96,9 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Brad Whitlock, Wed Jan 11 09:53:23 PDT 2006
 //   I fixed an errant tooltip.
 //
+//   Brad Whitlock, Fri Mar 17 09:46:58 PDT 2006
+//   Added UpdateMacroCheckBoxes.
+//
 // ****************************************************************************
 
 void
@@ -206,6 +209,9 @@ QvisCommandWindow::CreateWindowContents()
 
     // Load the saved Python scripts.
     LoadScripts();
+
+    // Update the window's check boxes.
+    UpdateMacroCheckBoxes();
 }
 
 // ****************************************************************************
@@ -255,7 +261,9 @@ QvisCommandWindow::CreateNode(DataNode *node)
 // Creation:   Fri Jan 6 17:01:57 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Mar 17 09:43:25 PDT 2006
+//   Moved code to update widgets into UpdateMacroCheckBoxes.
+//
 // ****************************************************************************
 
 void
@@ -277,13 +285,42 @@ QvisCommandWindow::SetFromNode(DataNode *parentNode, const int *borders)
     if((n = winNode->GetNode("macroAppend")) != 0)
         macroAppend = n->AsBool();
 
-    macroStorageComboBox->blockSignals(true);
-    macroStorageComboBox->setCurrentItem(macroStorageMode);
-    macroStorageComboBox->blockSignals(false);
+    UpdateMacroCheckBoxes();
+}
 
-    macroAppendCheckBox->blockSignals(true);
-    macroAppendCheckBox->setChecked(macroAppend);
-    macroAppendCheckBox->blockSignals(false);
+// ****************************************************************************
+// Method: QvisCommandWindow::UpdateMacroCheckBoxes
+//
+// Purpose: 
+//   Updates the macro check boxes.
+//
+// Note:       If anymore code is added to this method, you must check to
+//             make sure the widget you're setting is non-NULL since this
+//             method can be called before the window's widgets are created.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Mar 17 09:43:39 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::UpdateMacroCheckBoxes()
+{
+    if(macroStorageComboBox != 0)
+    {
+        macroStorageComboBox->blockSignals(true);
+        macroStorageComboBox->setCurrentItem(macroStorageMode);
+        macroStorageComboBox->blockSignals(false);
+    }
+
+    if(macroAppendCheckBox != 0)
+    {
+        macroAppendCheckBox->blockSignals(true);
+        macroAppendCheckBox->setChecked(macroAppend);
+        macroAppendCheckBox->blockSignals(false);
+    }
 }
 
 // ****************************************************************************
