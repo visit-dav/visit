@@ -131,6 +131,8 @@ avtGDALFileFormat::GetDataset()
 // Creation:   Tue Sep 6 11:54:59 PDT 2005
 //
 // Modifications:
+//   Brad Whitlock, Thu Sep 22 16:38:54 PST 2005
+//   Fixed calls to log10 so it builds on win32.
 //
 // ****************************************************************************
 
@@ -235,8 +237,10 @@ avtGDALFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Figure out a format string for when we need to add WxH.
     //
     char whFormat[20];
-    int ndigX = int(log10(xdims)) + 1;
-    int ndigY = int(log10(ydims)) + 1;
+    float lxd = log10((float)xdims);
+    float lyd = log10((float)ydims);
+    int ndigX = int(lxd) + 1;
+    int ndigY = int(lyd) + 1;
     int ndigits = (ndigX > ndigY) ? ndigX : ndigY;
     SNPRINTF(whFormat, 20, "%%s%%0%ddx%%0%dd", ndigits, ndigits);
 

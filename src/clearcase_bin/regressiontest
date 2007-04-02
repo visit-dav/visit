@@ -282,6 +282,7 @@ esac
 # set list of tests/modes to skip
 skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
+          scalable,parallel:tests/rendering/saveformats.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
 	  optimized:tests/plots/tensor.py \

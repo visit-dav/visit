@@ -81,7 +81,7 @@ avtTimeVaryingExodusFileFormat::ReadInDataset(void)
     numBlocks = rdr->GetNumberOfBlocks();
     validBlock.resize(numBlocks);
     blockId.resize(numBlocks);
-    for (int i = 0 ; i < numBlocks; i++)
+    for (i = 0 ; i < numBlocks; i++)
     {
         if (rdr->GetNumberOfElementsInBlock(i) != 0)
         {

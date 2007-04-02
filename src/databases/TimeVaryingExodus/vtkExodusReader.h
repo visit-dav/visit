@@ -61,13 +61,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __vtkExodusReader_h
 #define __vtkExodusReader_h
-#include <database_exports.h>
 
 #include <stdio.h>
 #include "vtkUnstructuredGridSource.h"
 #include "vtkIntArray.h"
 
-class DATABASE_API VTK_EXPORT vtkExodusReader : public vtkUnstructuredGridSource 
+class vtkExodusReader : public vtkUnstructuredGridSource 
 {
 public:
   static vtkExodusReader *New();

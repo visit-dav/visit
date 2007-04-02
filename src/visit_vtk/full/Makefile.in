@@ -251,6 +251,9 @@
 #    Kathleen Bonnell, Tue Aug 30 15:20:40 PDT 2005 
 #    Added vtkVisItTensorGlyph.
 #
+#    Kathleen Bonnell, Wed Sep 21 17:15:58 PDT 2005
+#    Added vtkPolyDataOnionPeelFilter.
+#
 ##############################################################################
 
 ##
@@ -276,6 +279,7 @@ SRC=InitVTK.C \
     vtkOBJWriter.C \
     vtkOnionPeelFilter.C \
     vtkOSMesaRenderWindow.C \
+    vtkPolyDataOnionPeelFilter.C \
     vtkPPMWriter.C \
     vtkRGBWriter.C \
     vtkRectilinearGridFacelistFilter.C \

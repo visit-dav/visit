@@ -5,10 +5,12 @@
 #include <avtOnionPeelFilter.h>
 
 #include <vtkCellData.h>
+#include <vtkDataSetRemoveGhostCells.h>
 #include <vtkFieldData.h>
 #include <vtkIntArray.h>
 #include <vtkOnionPeelFilter.h>
-#include <vtkDataSetRemoveGhostCells.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataOnionPeelFilter.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <avtTerminatingSource.h>
@@ -52,12 +54,15 @@ using std::vector;
 //    Kathleen Bonnell, Thu Aug 15 18:30:44 PDT 2002 
 //    Added another bad seed category (ghost), and flag specifying groups.
 //
+//    Kathleen Bonnell, Wed Sep 21 17:09:03 PDT 2005 
+//    Add poly_opf, so that polydata input can be returned as polydata output. 
+//
 // ****************************************************************************
 
 avtOnionPeelFilter::avtOnionPeelFilter()
 {
-    opf  = vtkOnionPeelFilter::New();
-    opf->SetBadSeedCallback(avtOnionPeelFilter::BadSeedCallback, this);
+    opf = NULL;
+    poly_opf = NULL;
 
     encounteredBadSeed = false;
     encounteredGhostSeed = false;
@@ -72,13 +77,23 @@ avtOnionPeelFilter::avtOnionPeelFilter()
 //  Creation:   September 10, 2000
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed Sep 21 17:09:03 PDT 2005 
+//    Add poly_opf.
 //
 // ****************************************************************************
 
 avtOnionPeelFilter::~avtOnionPeelFilter()
 {
-    opf->Delete();
-    opf = NULL;
+    if (opf)
+    {
+        opf->Delete();
+        opf = NULL;
+    }
+    if (poly_opf)
+    {
+        poly_opf->Delete();
+        poly_opf = NULL;
+    }
 }
 
 
@@ -201,6 +216,9 @@ avtOnionPeelFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Wed Jan 19 16:15:35 PST 2005 
 //    Add support for nodal seedId.
 //
+//    Kathleen Bonnell, Wed Sep 21 17:09:03 PDT 2005 
+//    Add poly_opf, so that polydata input can be returned as polydata output. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -210,7 +228,17 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
     {
         return NULL;
     }
-   
+    if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        opf  = vtkOnionPeelFilter::New();
+        opf->SetBadSeedCallback(avtOnionPeelFilter::BadSeedCallback, this);
+    }
+    else 
+    {
+        poly_opf  = vtkPolyDataOnionPeelFilter::New();
+        poly_opf->SetBadSeedCallback(avtOnionPeelFilter::BadSeedCallback, this);
+    }
+
     encounteredBadSeed = false;
     encounteredGhostSeed = false;
 
@@ -323,39 +351,62 @@ avtOnionPeelFilter::ExecuteData(vtkDataSet *in_ds, int DOM, std::string)
         {
             seed = 0;
         }
-        opf->SetSeedId(seed);
+        if (opf)
+            opf->SetSeedId(seed);
+        else 
+            poly_opf->SetSeedId(seed);
     }
     else
     {
         if (id.size() == 3)
-           opf->SetLogicalIndex(id[0], id[1], id[2]);
+           if (opf)
+               opf->SetLogicalIndex(id[0], id[1], id[2]);
+           else 
+               poly_opf->SetLogicalIndex(id[0], id[1], id[2]);
         else  
-           opf->SetLogicalIndex(id[0], id[1]);
+           if (opf)
+               opf->SetLogicalIndex(id[0], id[1]);
+           else 
+               poly_opf->SetLogicalIndex(id[0], id[1]);
     }
-    opf->SetInput(ds);
-    opf->SetRequestedLayer(atts.GetRequestedLayer());
-    opf->SetAdjacencyType(atts.GetAdjacencyType());
-    opf->SetSeedIdIsForCell((int)
-        (atts.GetSeedType() == OnionPeelAttributes::SeedCell));
-    opf->SetReconstructOriginalCells((int)
-        !GetInput()->GetInfo().GetValidity().GetZonesPreserved());
 
-    vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
-    opf->SetOutput(out_ug);
-    out_ug->Delete();
+    vtkDataSet *outds;
 
-    //
-    // Update will check the modifed time and call Execute.  We have no direct
-    // hooks into the Execute method.
-    //
-    opf->Update();
-    
+    if (opf)
+    {
+        opf->SetInput(ds);
+        opf->SetRequestedLayer(atts.GetRequestedLayer());
+        opf->SetAdjacencyType(atts.GetAdjacencyType());
+        opf->SetSeedIdIsForCell((int)
+            (atts.GetSeedType() == OnionPeelAttributes::SeedCell));
+        opf->SetReconstructOriginalCells((int)
+            !GetInput()->GetInfo().GetValidity().GetZonesPreserved());
+        outds = vtkUnstructuredGrid::New();
+        opf->SetOutput((vtkUnstructuredGrid*)outds);
+        outds->Delete();
+        outds->Update();
+    }
+    else 
+    {
+        poly_opf->SetInput((vtkPolyData*)ds);
+        poly_opf->SetRequestedLayer(atts.GetRequestedLayer());
+        poly_opf->SetAdjacencyType(atts.GetAdjacencyType());
+        poly_opf->SetSeedIdIsForCell((int)
+            (atts.GetSeedType() == OnionPeelAttributes::SeedCell));
+        poly_opf->SetReconstructOriginalCells((int)
+            !GetInput()->GetInfo().GetValidity().GetZonesPreserved());
+        outds = vtkPolyData::New();
+        poly_opf->SetOutput((vtkPolyData*)outds);
+        outds->Delete();
+        outds->Update();
+    }
+
     if (removeGhostCells != NULL)
     { 
         removeGhostCells->Delete(); 
     }
     successfullyExecuted |= (!encounteredBadSeed && !encounteredGhostSeed);
-    return out_ug;
+    return outds;
 }
 
 // ****************************************************************************
@@ -827,16 +878,29 @@ avtOnionPeelFilter::PreExecute()
 //    Hank Childs, Fri Mar 11 07:37:05 PST 2005
 //    Fix non-problem size leak introduced with last fix.
 //
+//    Kathleen Bonnell, Wed Sep 21 17:09:03 PDT 2005 
+//    Add poly_opf.
+//
 // ****************************************************************************
 
 void
 avtOnionPeelFilter::ReleaseData(void)
 {
     avtPluginStreamer::ReleaseData();
-    opf->SetInput(NULL);
-    vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
-    opf->SetOutput(ug);
-    ug->Delete();
+    if (opf)
+    {
+        opf->SetInput(NULL);
+        vtkUnstructuredGrid *ug = vtkUnstructuredGrid::New();
+        opf->SetOutput(ug);
+        ug->Delete();
+    }
+    if (poly_opf)
+    {
+        poly_opf->SetInput(NULL);
+        vtkPolyData *pdata = vtkPolyData::New();
+        poly_opf->SetOutput(pdata);
+        pdata->Delete();
+    }
 }
 
 
