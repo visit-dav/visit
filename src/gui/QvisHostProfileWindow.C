@@ -213,6 +213,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Hank Childs, Fri Dec  9 07:13:44 PST 2005
 //   Change the word 'window' to 'tab' in disclaimer for hardware acceleration.
 //
+//   Eric Brugger, Tue Nov 28 13:48:04 PST 2006
+//   Added a psub/mpirun launch option.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -342,6 +345,7 @@ QvisHostProfileWindow::CreateWindowContents()
     launchMethod->insertItem("mpirun");
     launchMethod->insertItem("poe");
     launchMethod->insertItem("psub");
+    launchMethod->insertItem("psub/mpirun");
     launchMethod->insertItem("psub/poe");
     launchMethod->insertItem("psub/prun");
     launchMethod->insertItem("psub/srun");

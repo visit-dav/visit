@@ -46,13 +46,13 @@ esac
 hoth=true
 sunspot=true
 quad=true
-gps=true
 berg=true
 up=true
 pengra=true
 pengra_icc=true
 thunder=true
 vertex=true
+yana=true
 
 dist=undefined
 
@@ -68,13 +68,13 @@ do
          hoth=false
          sunspot=false
          quad=false
-         gps=false
          berg=false
          up=false
          pengra=false
          pengra_icc=false
          thunder=false
          vertex=false
+         yana=false
          shift
          ;;
       -hoth)
@@ -99,14 +99,6 @@ do
          ;;
       +quad)
          quad=true
-         shift
-         ;;
-      -gps)
-         gps=false
-         shift
-         ;;
-      +gps)
-         gps=true
          shift
          ;;
       -berg)
@@ -155,6 +147,14 @@ do
          ;;
       +vertex)
          vertex=true
+         shift
+         ;;
+      -yana)
+         yana=false
+         shift
+         ;;
+      +yana)
+         yana=true
          shift
          ;;
       -d)
@@ -337,61 +337,6 @@ then
       scp quad quad:quad_buildit
       scp $dist.tar.gz quad:quad_$dist.tar.gz
       ssh quad "chmod 750 quad_buildit;./quad_buildit" &
-   fi
-fi
-
-#
-# Build on gps.
-#
-rm -f gps
-cat <<EOF > gps
-#!/bin/sh
-if test ! -e /nfs/tmp0/$user ; then
-   mkdir /nfs/tmp0/$user
-fi
-if test ! -e /nfs/tmp0/$user/gps; then
-   mkdir /nfs/tmp0/$user/gps
-fi
-rm -rf /nfs/tmp0/$user/gps/visitbuild
-mkdir /nfs/tmp0/$user/gps/visitbuild
-mv gps_$dist.tar.gz /nfs/tmp0/$user/gps/visitbuild/$dist.tar.gz
-cd /nfs/tmp0/$user/gps/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-cp /usr/local/tools/gnu/gcc/3.3.3_tru64_5/lib/libgcc_s.so.1 lib
-cp /usr/local/tools/gnu/gcc/3.3.3_tru64_5/lib/libstdc++.so.5 lib
-cd databases/Fluent
-sed "s/\\\$(CXXFLAGSORIG)/-isystem \\/usr\\/local\\/include -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
-cd ../..
-gmake >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
-mv visit\$ver2.osf1.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on gps"          > resultlog 2>&1
-echo "       -----------------------"         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $gps = true ]
-then
-   if [ $test = no ]
-   then
-      scp gps gps15:gps_buildit
-      scp $dist.tar.gz gps15:gps_$dist.tar.gz
-      ssh gps15 "chmod 750 gps_buildit;./gps_buildit" &
    fi
 fi
 
@@ -678,8 +623,8 @@ env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libgcc_s.so.1 lib
 cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.6 lib
 make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ..
+clearcase_bin/visit-bin-dist -switch ib >> ../buildlog 2>&1
+mv visit\$ver2.linux-x86_64-ib.tar.gz ..
 cd ..
 rm -f resultlog
 echo "        build of visit on vertex"       > resultlog 2>&1
@@ -707,9 +652,61 @@ then
 fi
 
 #
+# Build on yana.
+#
+rm -f yana
+cat <<EOF > yana
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/yana ; then
+   mkdir /usr/tmp/$user/yana
+fi
+rm -rf /usr/tmp/$user/yana/visitbuild
+mkdir /usr/tmp/$user/yana/visitbuild
+mv yana_$dist.tar.gz /usr/tmp/$user/yana/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/yana/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
+cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libgcc_s.so.1 lib
+cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.6 lib
+make -j 6 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ..
+cd ..
+rm -f resultlog
+echo "        build of visit on yana"         > resultlog 2>&1
+echo "       ------------------------"        >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $yana = true ]
+then
+   if [ $test = no ]
+   then
+      scp yana yana3:yana_buildit
+      scp $dist.tar.gz yana3:yana_$dist.tar.gz
+      ssh yana3 "chmod 750 yana_buildit;./yana_buildit" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad gps berg up pengra pengra_icc thunder vertex
+   rm -f hoth sunspot quad berg up pengra pengra_icc thunder vertex yana
 fi

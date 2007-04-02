@@ -323,6 +323,50 @@
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">serial</Field>
+                <Field name="host" type="string">prism.llnl.gov</Field>
+                <Field name="hostAliases" type="string">prism#.llnl.gov prism##.llnl.gov prism# prism##</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">1</Field>
+                <Field name="numNodesSet" type="bool">false</Field>
+                <Field name="numNodes" type="int">0</Field>
+                <Field name="partitionSet" type="bool">false</Field>
+                <Field name="partition" type="string"></Field>
+                <Field name="bankSet" type="bool">false</Field>
+                <Field name="bank" type="string"></Field>
+                <Field name="timeLimitSet" type="bool">false</Field>
+                <Field name="timeLimit" type="string"></Field>
+                <Field name="launchMethodSet" type="bool">false</Field>
+                <Field name="launchMethod" type="string"></Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">true</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                <Field name="parallel" type="bool">false</Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">parallel pbatch</Field>
+                <Field name="host" type="string">prism.llnl.gov</Field>
+                <Field name="hostAliases" type="string">prism#.llnl.gov prism##.llnl.gov prism# prism##</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">8</Field>
+                <Field name="numNodesSet" type="bool">true</Field>
+                <Field name="numNodes" type="int">4</Field>
+                <Field name="partitionSet" type="bool">true</Field>
+                <Field name="partition" type="string">pbatch</Field>
+                <Field name="bankSet" type="bool">true</Field>
+                <Field name="bank" type="string">bdivp</Field>
+                <Field name="timeLimitSet" type="bool">true</Field>
+                <Field name="timeLimit" type="string">30m</Field>
+                <Field name="launchMethodSet" type="bool">true</Field>
+                <Field name="launchMethod" type="string">psub/srun</Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">false</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                <Field name="parallel" type="bool">true</Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">serial</Field>
                 <Field name="host" type="string">pvc.llnl.gov</Field>
                 <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc###.llnl.gov pvc# pvc## pvc###</Field>
                 <Field name="timeout" type="int">480</Field>
@@ -681,7 +725,7 @@
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">true</Field>
-                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
                 <Field name="parallel" type="bool">false</Field>
             </Object>
             <Object name="HostProfile">
@@ -700,6 +744,72 @@
                 <Field name="timeLimit" type="string"></Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
                 <Field name="launchMethod" type="string">srun</Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">false</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib"</Field>
+                <Field name="parallel" type="bool">true</Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">serial</Field>
+                <Field name="host" type="string">yana.llnl.gov</Field>
+                <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">1</Field>
+                <Field name="numNodesSet" type="bool">false</Field>
+                <Field name="numNodes" type="int">0</Field>
+                <Field name="partitionSet" type="bool">false</Field>
+                <Field name="partition" type="string"></Field>
+                <Field name="bankSet" type="bool">false</Field>
+                <Field name="bank" type="string"></Field>
+                <Field name="timeLimitSet" type="bool">false</Field>
+                <Field name="timeLimit" type="string"></Field>
+                <Field name="launchMethodSet" type="bool">false</Field>
+                <Field name="launchMethod" type="string"></Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">true</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
+                <Field name="parallel" type="bool">false</Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">parallel</Field>
+                <Field name="host" type="string">yana.llnl.gov</Field>
+                <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">4</Field>
+                <Field name="numNodesSet" type="bool">false</Field>
+                <Field name="numNodes" type="int">0</Field>
+                <Field name="partitionSet" type="bool">false</Field>
+                <Field name="partition" type="string"></Field>
+                <Field name="bankSet" type="bool">false</Field>
+                <Field name="bank" type="string"></Field>
+                <Field name="timeLimitSet" type="bool">false</Field>
+                <Field name="timeLimit" type="string"></Field>
+                <Field name="launchMethodSet" type="bool">true</Field>
+                <Field name="launchMethod" type="string">mpirun</Field>
+                <Field name="forceStatic" type="bool">true</Field>
+                <Field name="forceDynamic" type="bool">false</Field>
+                <Field name="active" type="bool">false</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit"</Field>
+                <Field name="parallel" type="bool">true</Field>
+            </Object>
+            <Object name="HostProfile">
+                <Field name="profileName" type="string">parallel batch</Field>
+                <Field name="host" type="string">yana.llnl.gov</Field>
+                <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
+                <Field name="timeout" type="int">480</Field>
+                <Field name="numProcessors" type="int">8</Field>
+                <Field name="numNodesSet" type="bool">true</Field>
+                <Field name="numNodes" type="int">1</Field>
+                <Field name="partitionSet" type="bool">true</Field>
+                <Field name="partition" type="string">yana</Field>
+                <Field name="bankSet" type="bool">true</Field>
+                <Field name="bank" type="string">bdivp</Field>
+                <Field name="timeLimitSet" type="bool">true</Field>
+                <Field name="timeLimit" type="string">30m</Field>
+                <Field name="launchMethodSet" type="bool">true</Field>
+                <Field name="launchMethod" type="string">psub/mpirun</Field>
                 <Field name="forceStatic" type="bool">true</Field>
                 <Field name="forceDynamic" type="bool">false</Field>
                 <Field name="active" type="bool">false</Field>

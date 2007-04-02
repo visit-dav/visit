@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtFVCOMFileFormat.C                           //
+//                            avtFVCOM_MTMDFileFormat.C                      //
 // ************************************************************************* //
 
 #include <avtFVCOM_MTMDFileFormat.h>
@@ -168,7 +168,18 @@ avtFVCOM_MTMDFileFormat::avtFVCOM_MTMDFileFormat(const char *filename,
 
 avtFVCOM_MTMDFileFormat::~avtFVCOM_MTMDFileFormat()
 {
-    delete fileObject;
+
+  debug4 << "avtFVCOM_MTMDFileFormat::~avtFVCOM_MTMDFileFormat" << endl;
+
+      for (int dom=0; dom<ndoms; ++dom)
+      {
+        debug4 << "dom: " << dom << endl;
+          domainFiles[dom]->FreeUpResources();
+      }
+  
+      delete fileObject;
+  debug4 << "avtFVCOM_MTMDFileFormat::~avtFVCOM_MTMDFileFormat: end" << endl;
+
 }
 
 // ****************************************************************************
@@ -349,6 +360,8 @@ avtFVCOM_MTMDFileFormat::Init()
 
     // Set init equal to true so we don't do this again!
     init = true;
+    debug4 << mName << " end" << endl;
+
 }
 
 // ****************************************************************************
@@ -365,8 +378,11 @@ avtFVCOM_MTMDFileFormat::Init()
 int
 avtFVCOM_MTMDFileFormat::GetNTimesteps(void)
 {
+  debug4 << "avtFVCOM_MTMDFileFormat::GetNTimesteps" << endl;
     Init();
     return domainFiles[0]->GetNTimesteps();
+  debug4 << "avtFVCOM_MTMDFileFormat::GetNTimesteps: end" << endl;
+
 }
 
 // ****************************************************************************
@@ -435,10 +451,18 @@ avtFVCOM_MTMDFileFormat::GetTimes(std::vector<double> &times)
 void
 avtFVCOM_MTMDFileFormat::FreeUpResources(void)
 {    
-    for (int dom=0; dom<ndoms; ++dom)
-    {
-        domainFiles[dom]->FreeUpResources();
-    }
+  debug4 << "avtFVCOM_MTMDFileFormat::FreeUpResources: turned off!" << endl;
+
+
+//     for (int dom=0; dom<ndoms; ++dom)
+//     {
+//       debug4 << "dom: " << dom << endl;
+//         domainFiles[dom]->FreeUpResources();
+//     }
+
+
+    debug4 << "avtFVCOM_MTMDFileFormat::FreeUpResources; complete" << endl;
+
 }
 
 
@@ -464,25 +488,325 @@ avtFVCOM_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 {
     const char *mName = "avtFVCOM_MTMDFileFormat::PopulateDatabaseMetaData: ";
 
+    debug4 << mName << "timestate= "<< timeState << endl;
+
+
     Init();
     // Let domain 0 provide the metadata.
     domainFiles[0]->PopulateDatabaseMetaData(md, timeState, GetType() );
     
+
+
+
     for(int i = 0; i < md->GetNumMeshes(); ++i)
     {
         avtMeshMetaData *mmd = const_cast<avtMeshMetaData*>(md->GetMesh(i));
         mmd->numBlocks = domainFiles.size();
     }
 
+
 #ifndef MDSERVER
+    // If we are not in the MDSERVER Get the spatial and data extents.
+
+    int nts = GetNTimesteps();
+    int ndoms = domainFiles.size();
+
+
+    // 
+    // Let's iterate through all the Meshs and try to cache the spatial extents
+    // for each time steps domains.
+
+    //    debug4 << "GOT HERE1" << endl;
+    int status=1;
+    TypeEnum x_t = NO_TYPE;
+    int x_ndims = 0, *x_dims = 0;
+    void *x_values = 0;
+    
+    TypeEnum y_t = NO_TYPE;
+    int y_ndims = 0, *y_dims = 0;
+    void *y_values = 0;
+    
+    TypeEnum h_t = NO_TYPE;
+    int h_ndims = 0, *h_dims = 0;
+    void *h_values = 0;
+    
+    TypeEnum zeta_t = NO_TYPE;
+    int zeta_ndims = 0, *zeta_dims = 0;
+    void *zeta_values = 0;
+    
+    status *= fileObject->ReadVariable("x_ext", &x_t, &x_ndims, &x_dims, &x_values);
+    if (x_t != FLOATARRAY_TYPE) status=0;
+    
+    status *= fileObject->ReadVariable("y_ext", &y_t, &y_ndims, &y_dims, &y_values);
+    if (y_t != FLOATARRAY_TYPE) status=0;
+    
+    status *= fileObject->ReadVariable("h_ext", &h_t, &h_ndims, &h_dims, &h_values);
+    if (h_t != FLOATARRAY_TYPE) status=0;
+    
+    status *= fileObject->ReadVariable("zeta_ext", &zeta_t, &zeta_ndims, &zeta_dims,
+                                      &zeta_values);
+    if (zeta_t != FLOATARRAY_TYPE) status=0;
+
+    //    debug4 << "GOT HERE2" << endl;
+
+
+    
+    if (status == 1)
+    {
+        debug4 << mName << "Makeing pointers to spatial extents variables" << endl;
+        float *x_fptr = (float *)x_values;
+        float *y_fptr = (float *)y_values;
+        float *h_fptr = (float *)h_values;
+        //float *zeta_fptr = (float *)zeta_values;
+        //        debug4 << "GOT HERE3" << endl;
+
+        for(int i = 0; i < md->GetNumMeshes(); ++i)
+        { 
+            avtMeshMetaData *mmd = const_cast<avtMeshMetaData*>(md->GetMesh(i));
+            std::string MeshName(mmd->name);
+            //mmd->numBlocks = domainFiles.size();
+
+
+            double  extents[6];
+            if(MeshName == "Bathymetry_Mesh")
+            {
+                debug4 << mName << "Adding Bathymetry_Mesh spatial extents" << endl;
+                avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                
+                for (int j = 0; j < ndoms; j++)
+                {
+                    extents[0] = x_fptr[j*2+1];
+                    extents[1] = x_fptr[j*2];
+
+                    extents[2] = y_fptr[j*2+1];
+                    extents[3] = y_fptr[j*2];
+
+                    // Watch the negative sign on h!!!
+                    extents[4] = -h_fptr[j*2];
+                    extents[5] = -h_fptr[j*2+1];
+                           itree->AddElement(j, extents);
+//1.5.3                    itree->AddDomain(j, extents);
+                    
+                    debug5 << "\tdomain[" << j << "] = X{"
+                           << extents[0] << ", " << extents[1] << "}" << endl;
+                    debug5 << "\tdomain[" << j << "] = Y{"
+                           << extents[2] << ", " << extents[3] << "}" << endl;
+                    debug5 << "\tdomain[" << j << "] = Z{"
+                           << extents[4] << ", " << extents[5] << "}" << endl;
+                }
+                itree->Calculate(true);
+                // Cache the extents for all doms and all ts.
+                void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+                cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+                                    -1, -1, vr);
+                debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+            } // END Bathymetry Mesh spatial extents
+            else if(MeshName == "TWOD_Mesh")
+            {
+                debug4 << mName << "Adding TWOD_Mesh spatial extents" << endl;
+                avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                
+                for (int j = 0; j < ndoms; j++)
+                {
+                    extents[0] = x_fptr[j*2+1];
+                    extents[1] = x_fptr[j*2];
+
+                    extents[2] = y_fptr[j*2+1];
+                    extents[3] = y_fptr[j*2];
+
+                    // USE DUMMY VALUES FOR TWOD MESH
+                    extents[4] = -1;
+                    extents[5] = 1;
+                           itree->AddElement(j, extents);
+//1.5.3                    itree->AddDomain(j, extents);
+                    
+                    debug5 << "\tdomain[" << j << "] = X{"
+                           << extents[0] << ", " << extents[1] << "}" << endl;
+                    debug5 << "\tdomain[" << j << "] = Y{"
+                           << extents[2] << ", " << extents[3] << "}" << endl;
+                    debug5 << "\tdomain[" << j << "] = Z{"
+                           << extents[4] << ", " << extents[5] << "}" << endl;
+                }
+                itree->Calculate(true);
+                // Cache the extents for all doms and all ts.
+                void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+                cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+                                    -1, -1, vr);
+                debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+            } // END TWOD Mesh spatial extents
+
+            else if(MeshName == "SSH_Mesh")
+            {
+                debug4 << mName << "Adding SSH_Mesh spatial extents" << endl;
+                
+                float *zeta_fptr = (float *)zeta_values;
+                for (int t = 0; t < nts; t++)
+                {
+                    debug4 << "Spatial Extents for: " << MeshName <<
+                      ": ts = " << t << endl;
+
+                    avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+                
+                    for (int j = 0; j < ndoms; j++)
+                    {
+                        extents[0] = x_fptr[j*2+1];
+                        extents[1] = x_fptr[j*2];
+                        
+                        extents[2] = y_fptr[j*2+1];
+                        extents[3] = y_fptr[j*2];
+                        
+                        extents[4] = zeta_fptr[j*2+1];
+                        extents[5] = zeta_fptr[j*2];
+
+                            itree->AddElement(j, extents);
+//1.5.3                        itree->AddDomain(j, extents);
+                        
+                        debug5 << "\tdomain[" << j << "] = X{"
+                               << extents[0] << ", " << extents[1] << "}" << endl;
+                        debug5 << "\tdomain[" << j << "] = Y{"
+                               << extents[2] << ", " << extents[3] << "}" << endl;
+                        debug5 << "\tdomain[" << j << "] = Z{"
+                           << extents[4] << ", " << extents[5] << "}" << endl;
+                    }
+                    itree->Calculate(true);
+                    // Cache the extents for all doms and all ts.
+                    void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+                    cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS,
+                                        t, -1, vr);
+                    debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+
+                    // Advance zeta_fptr to the next time step!
+                    zeta_fptr += (ndoms * 2);
+
+                }
+                //delete [] zeta_fptr;                
+            }  // end SSH MESH   spatial extents
+
+
+            else if(MeshName == "SigmaLayer_Mesh")
+            {
+                debug4 << mName << "Adding SigmaLayer_Mesh spatial extents" << endl;
+                
+                float *zeta_fptr = (float *)zeta_values;
+                for (int t = 0; t < nts; t++)
+                {
+                    debug4 << "Spatial Extents for: " << MeshName <<
+                      ": ts = " << t << endl;
+
+                    avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+
+                    for (int j = 0; j < ndoms; j++)
+                    {
+                        extents[0] = x_fptr[j*2+1];
+                        extents[1] = x_fptr[j*2];
+                        
+                        extents[2] = y_fptr[j*2+1];
+                        extents[3] = y_fptr[j*2];
+                        
+                        // for sigma layer mesh: use zeta to get ssh
+                        //                       use -h to get bathymetry
+                        // Watch the sign of H!!!
+                        extents[4] = -h_fptr[j*2];
+                        extents[5] = zeta_fptr[j*2];
+
+                            itree->AddElement(j, extents);
+//1.5.3                        itree->AddDomain(j, extents);
+                        
+                        debug5 << "\tdomain[" << j << "] = X{"
+                               << extents[0] << ", " << extents[1] << "}" << endl;
+                        debug5 << "\tdomain[" << j << "] = Y{"
+                               << extents[2] << ", " << extents[3] << "}" << endl;
+                        debug5 << "\tdomain[" << j << "] = Z{"
+                           << extents[4] << ", " << extents[5] << "}" << endl;
+                    }
+                    itree->Calculate(true);
+                    // Cache the extents for all doms and all ts.
+                    void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+                    cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+                                        t, -1, vr);
+                    debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+
+                    // Advance zeta_fptr to the next time step!
+                    zeta_fptr += (ndoms * 2);
+
+                }
+                //delete [] zeta_fptr;                
+            }  // end SigmaLayer MESH   spatial extents
+            else if(MeshName == "SigmaLevel_Mesh")
+            {
+                debug4 << mName << "Adding SigmaLevel_Mesh spatial extents" << endl;
+                
+                float *zeta_fptr = (float *)zeta_values;
+                for (int t = 0; t < nts; t++)
+                {
+                    debug4 << "Spatial Extents for: " << MeshName <<
+                      ": ts = " << t << endl;
+
+                    avtIntervalTree *itree = new avtIntervalTree(ndoms, 3);
+
+                    for (int j = 0; j < ndoms; j++)
+                    {
+                        extents[0] = x_fptr[j*2+1];
+                        extents[1] = x_fptr[j*2];
+                        
+                        extents[2] = y_fptr[j*2+1];
+                        extents[3] = y_fptr[j*2];
+                        
+                        // for sigma layer mesh: use zeta to get ssh
+                        //                       use h to get bathymetry
+                        extents[4] = -h_fptr[j*2];
+                        extents[5] = zeta_fptr[j*2];
+                            itree->AddElement(j, extents);
+//1.5.3                        itree->AddDomain(j, extents);
+                        
+                        debug5 << "\tdomain[" << j << "] = X{"
+                               << extents[0] << ", " << extents[1] << "}" << endl;
+                        debug5 << "\tdomain[" << j << "] = Y{"
+                               << extents[2] << ", " << extents[3] << "}" << endl;
+                        debug5 << "\tdomain[" << j << "] = Z{"
+                           << extents[4] << ", " << extents[5] << "}" << endl;
+                    }
+                    itree->Calculate(true);
+                    // Cache the extents for all doms and all ts.
+                    void_ref_ptr vr = void_ref_ptr(itree, avtIntervalTree::Destruct);
+                    cache->CacheVoidRef(MeshName.c_str(), AUXILIARY_DATA_SPATIAL_EXTENTS, 
+                                        t, -1, vr);
+                    debug4 << mName << "Cached spatial extents for " << MeshName << endl;
+
+                    // Advance zeta_fptr to the next time step!
+                    zeta_fptr += (ndoms * 2);
+
+                } // end time for loop
+
+            }  // end SigmaLevel MESH   spatial extents
+            
+        } // end for # of meshs 
+
+    } // end if got spatial extent data!
+
+    delete [] x_dims;
+    delete [] y_dims;
+    delete [] h_dims;
+    delete [] zeta_dims;
+
+    // free mem: ( varname, type)
+    free_void_mem(x_values, x_t);
+    
+    free_void_mem(y_values, y_t);
+    
+    free_void_mem(h_values, h_t);
+    
+    free_void_mem(zeta_values, zeta_t);
+    
+    
+
     //
     // Let's iterate through all of the scalars and try to cache data extents
     // for each time step's domains. We do this here as opposed to doing it
     // inside of the GetAuxiliaryData method because GetAuxiliaryData does not
     // get called for MTMD when requesting data for all domains.
     //
-    int nts = GetNTimesteps();
-    int ndoms = domainFiles.size();
+
     for(int i = 0; i < md->GetNumScalars(); ++i)
     {
         const avtScalarMetaData *smd = md->GetScalar(i);
@@ -520,6 +844,7 @@ avtFVCOM_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
                             range[0] = fptr[j*2+1];
                             range[1] = fptr[j*2];
                             itree->AddElement(j, range);
+//1.5.3                            itree->AddDomain(j, range);
 
                             debug5 << "\tdomain[" << j << "] = {"
                                    << range[0] << ", " << range[1] << "}" << endl;
@@ -548,6 +873,7 @@ avtFVCOM_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
                         range[0] = fptr[j*2+1];
                         range[1] = fptr[j*2];
                         itree->AddElement(j, range);
+//1.5.3                        itree->AddDomain(j, range);
 
                         debug5 << "\tdomain[" << j << "] = {"
                                << range[0] << ", " << range[1] << "}" << endl;
@@ -561,6 +887,7 @@ avtFVCOM_MTMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
                     debug4 << mName << "Cache data extents for " << smd->name.c_str()
                            << " all times." << endl;
                 }
+
             }
 
             delete [] dims;
@@ -636,6 +963,10 @@ avtFVCOM_MTMDFileFormat::GetAuxiliaryData(const char *var, int timestate,
 vtkDataSet *
 avtFVCOM_MTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
+    const char *mName = "avtFVCOM_MTMD::GetMesh: ";
+    debug4 << mName << "timestate= "<< timestate << "; domain= " << domain <<
+      "; meshname= " << meshname << endl;
+
     Init();
     
     // Let the avtFVCOMFileFormat object know which value to use for domain
@@ -646,11 +977,12 @@ avtFVCOM_MTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname
     // domain at the desired time step.
     vtkDataSet *retval = domainFiles[domain]->GetMesh(timestate, meshname, cache);
 
+
+    debug4 << mName << "Got mesh: try to add Ghost Zones" << endl;
     // ADD GHOST ZONES!
     int nCells = retval->GetNumberOfCells();
     int *blanks = new int[nCells];
 
-    debug4 << "nCells= " << nCells << endl;
 
     int *helems = new int[ndoms];
     int *telems = new int[ndoms];
@@ -660,10 +992,7 @@ avtFVCOM_MTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname
     
     if(have_h && have_t)
     {
-        debug4 << "Got Here" << endl;
-        debug4 << "domain= "<< domain << endl;
-        debug4 << "helems(domain)= "<< helems[domain] << endl;
-
+      
         if (nCells == telems[domain])
         {
             for (int i = 0 ; i < nCells ; i++)
@@ -678,28 +1007,29 @@ avtFVCOM_MTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname
         else
         {
             int nl = nCells/telems[domain];
-            debug4 << "nl=" << nl << endl;
-    
+
+            int count;
             for (int j = 0 ; j < nl ; j++)
             {
-                for (int i = 0 ; i < nCells ; i++)
+                for (int i = 0 ; i < telems[domain] ; i++)
                 {
-                    blanks[i]=0;
-                    if ( i < (nCells - helems[domain]) ) 
+                  count = j * telems[domain]+i;
+                    blanks[count]=0;
+                    if ( i < (telems[domain] - helems[domain]) ) 
                     { 
-                        blanks[i]=1;
+                        blanks[count]=1;
                     }
                 }
             }
         }
-        debug4 << "Got Here2" << endl;
+
 
         unsigned char RealVal=0, ghost=1;
     
         avtGhostData::AddGhostZoneType(ghost,DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
         vtkUnsignedCharArray *ghostCells= vtkUnsignedCharArray::New();
 
-        debug4 << "Got Here3" << endl;
+
 
         ghostCells->SetName("avtGhostZones");
         ghostCells->Allocate(nCells);
@@ -716,6 +1046,9 @@ avtFVCOM_MTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname
         retval->GetCellData()->AddArray(ghostCells);
         retval->SetUpdateGhostLevel(0);
         ghostCells->Delete();
+        debug4 << mName << "Found Ghost Zones" << endl;
+
+
     }
     else
     {
@@ -726,6 +1059,8 @@ avtFVCOM_MTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname
     delete [] blanks;
     delete [] helems;
     delete [] telems;
+
+    debug4 << mName << "end"<< endl;
 
     return  retval;
 }
@@ -755,6 +1090,11 @@ avtFVCOM_MTMDFileFormat::GetMesh(int timestate, int domain, const char *meshname
 vtkDataArray *
 avtFVCOM_MTMDFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
+    
+    const char *mName = "avtFVCOM_MTMD::GetVar: ";
+    debug4 << mName << "timestate= "<< timestate << "; domain= " << domain <<
+      "; varname= " << varname << endl;
+
     Init();
     
     // Let the avtFVCOMFileFormat object know which value to use for domain
@@ -791,10 +1131,18 @@ avtFVCOM_MTMDFileFormat::GetVar(int timestate, int domain, const char *varname)
 vtkDataArray *
 avtFVCOM_MTMDFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
 {
+
+    const char *mName = "avtFVCOM_MTMD::GetVectorVar: ";
+    debug4 << mName << "timestate= "<< timestate << "; domain= " << domain <<
+      "; varname= " << varname << endl;
+
     Init();
 
-    // No cache for vector variables yet? Don't really need it.
 
-    return domainFiles[domain]->GetVectorVar(timestate, varname);
+    // Let the avtFVCOMFileFormat object know which value to use for domain
+    // when it needs to cache something.
+    domainFiles[domain]->SetDomainIndexForCaching(domain);
+
+    return domainFiles[domain]->GetVectorVar(timestate, varname, cache);
 
 }

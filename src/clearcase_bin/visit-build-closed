@@ -256,16 +256,16 @@ fi
 rm -f sc
 cat <<EOF > sc
 #!/bin/sh
-if test ! -d /nfs/tmp1/$user ; then
-   mkdir /nfs/tmp1/$user
+if test ! -d /nfs/tmp0/$user ; then
+   mkdir /nfs/tmp0/$user
 fi
-if test ! -d /nfs/tmp1/$user/sc ; then
-   mkdir /nfs/tmp1/$user/sc
+if test ! -d /nfs/tmp0/$user/sc ; then
+   mkdir /nfs/tmp0/$user/sc
 fi
-rm -rf /nfs/tmp1/$user/sc/visitbuild
-mkdir /nfs/tmp1/$user/sc/visitbuild
-mv sc_$dist.tar.gz /nfs/tmp1/$user/sc/visitbuild/$dist.tar.gz
-cd /nfs/tmp1/$user/sc/visitbuild
+rm -rf /nfs/tmp0/$user/sc/visitbuild
+mkdir /nfs/tmp0/$user/sc/visitbuild
+mv sc_$dist.tar.gz /nfs/tmp0/$user/sc/visitbuild/$dist.tar.gz
+cd /nfs/tmp0/$user/sc/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
@@ -297,9 +297,9 @@ if [ $sc = true ]
 then
    if [ $test = no ]
    then
-      scp sc sc1:sc_buildit
-      scp $dist.tar.gz sc1:sc_$dist.tar.gz
-      ssh sc1 "chmod 750 sc_buildit;./sc_buildit" &
+      scp sc sc7:sc_buildit
+      scp $dist.tar.gz sc7:sc_$dist.tar.gz
+      ssh sc7 "chmod 750 sc_buildit;./sc_buildit" &
    fi
 fi
 
@@ -531,8 +531,8 @@ env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
 cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libgcc_s.so.1 lib
 cp /usr/local/tools/gnu/gcc/3.4.4_RH_chaos_3_x86_64/usr/lib64/libstdc++.so.6 lib
 make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ..
+clearcase_bin/visit-bin-dist -switch ib >> ../buildlog 2>&1
+mv visit\$ver2.linux-x86_64-ib.tar.gz ..
 cd ..
 rm -f resultlog
 echo "        build of visit on gauss"        > resultlog 2>&1

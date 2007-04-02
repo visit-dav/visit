@@ -6,6 +6,9 @@
 #define AVT_FVCOM_READER_H
 #include <vectortypes.h>
 #include <avtVariableCache.h>
+#include <netcdf.h>
+#include <map>
+#include <DebugStream.h>
 
 class vtkDataArray;
 class vtkDataSet;
@@ -51,7 +54,7 @@ class avtFVCOMReader
     void           FreeUpResources();
     vtkDataSet    *GetMesh(int, const char *, avtVariableCache *);
     vtkDataArray  *GetVar(int, const char *, avtVariableCache *);
-    vtkDataArray  *GetVectorVar(int, const char *);
+    vtkDataArray  *GetVectorVar(int, const char *, avtVariableCache *);
     void           PopulateDatabaseMetaData(avtDatabaseMetaData *,
                                             const int ts, const char *dbtype);
 
@@ -65,11 +68,14 @@ class avtFVCOMReader
   protected:
     // DATA MEMBERS
     NETCDFFileObject      *fileObject;
+    bool alloc_fileObject;
 
     int  CacheDomainIndex;
+          
 
   private:
-    // Pass timestate to these methods!
+
+     // Pass timestate to these methods!
     vtkDataArray  *DENS3(int, avtVariableCache *);
     //    vtkDataArray  *DENS2(int, avtVariableCache *);
     vtkDataArray  *DENS(int, avtVariableCache *);
@@ -78,6 +84,44 @@ class avtFVCOMReader
     double        ATG(double, double, double);
     double        SVAN(double, double, double);
 
+
+    virtual void          GetDimensions(void);
+    bool NeedDimensions;
+
+    int status, ncid, nDims, nVars, nGlobalAtts, unlimitedDimension;
+    int nScalarID, nNodeID, nElemID, nSiglayID, nSiglevID, 
+      nThreeID, nFourID, nMaxnodeID, nMaxelemID, nTimeID;
+
+/*     size_t  nScalar, nNode, nElem, nSiglay, nSiglev,  */
+/*       nThree, nFour, nMaxnode, nMaxelem, nTime; */
+/*     size_t *dimSizes; */
+
+    
+    int  nScalar, nNode, nElem, nSiglay, nSiglev, 
+      nThree, nFour, nMaxnode, nMaxelem, nTime;
+    int *dimSizes;
+    bool alloc_dimSizes;
+    
+
+    char   DimName[NC_MAX_NAME+1],VarName[NC_MAX_NAME+1];
+            
+    int VarnDims, VarnAtts, VarDimIDs[NC_MAX_VAR_DIMS], VarID;
+
+
+
+    virtual void   GetStaticGridVariables(void);
+    bool NeedGridVariables;  
+
+    std::map<std::string, bool> meshExists;
+
+    std::string SigLayCoordType,SigLevCoordType;
+
+    float *xvals, *yvals, *zvals, *SigLayers, *SigLevels;
+    bool alloc_xvals, alloc_yvals, alloc_zvals, alloc_SigLayers,
+      alloc_SigLevels;
+
+    int *nvvals;
+    bool alloc_nvvals;
 
 };
 

@@ -139,13 +139,18 @@ avtFVCOM_STSDFileFormat::CreateInterface(NETCDFFileObject *f,
 avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(const char *filename)
     : avtSTSDFileFormat(filename)
 {
+  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat" << endl;
+
     reader = new avtFVCOMReader(filename);
+  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat: end" << endl;
 }
 
 avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(const char *filename,
    NETCDFFileObject *f)   : avtSTSDFileFormat(filename)
 {
+  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(name f)" << endl;
     reader = new avtFVCOMReader(filename,f);
+  debug4 << "avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(name f): end" << endl;
 }
 
 
@@ -159,7 +164,12 @@ avtFVCOM_STSDFileFormat::avtFVCOM_STSDFileFormat(const char *filename,
 
 avtFVCOM_STSDFileFormat::~avtFVCOM_STSDFileFormat()
 {
-    delete reader;
+  debug4 << "avtFVCOM_STSDFileFormat::~avtFVCOM_STSDFileFormat" << endl;
+  // debug4 << "reader: " << reader << endl;
+
+  delete reader;
+  debug4 << "avtFVCOM_STSDFileFormat::~avtFVCOM_STSDFileFormat: end" << endl;
+
 }
 
 
@@ -180,7 +190,11 @@ avtFVCOM_STSDFileFormat::~avtFVCOM_STSDFileFormat()
 void
 avtFVCOM_STSDFileFormat::FreeUpResources(void)
 {
+  debug4 << "avtFVCOM_STSDFileFormat::FreeUpResources" << endl;
+
     reader->FreeUpResources();
+  debug4 << "avtFVCOM_STSDFileFormat::FreeUpResources: end" << endl;
+
 }
 
 
@@ -203,11 +217,14 @@ avtFVCOM_STSDFileFormat::FreeUpResources(void)
 int
 avtFVCOM_STSDFileFormat::GetCycle(void)
 {
-    std::vector<int> cycles;
-    reader->GetCycles(cycles);
-    debug4 << "Cycle size=" << cycles.size() << endl;
-    debug4 << "Cycles=" << cycles[0] << endl;
-    return (cycles.size() > 0) ? cycles[0] : 0;
+
+  //  reader->GetNTimesteps();
+  
+  std::vector<int> cycles;
+  reader->GetCycles(cycles);
+  debug4 << "Cycle size=" << cycles.size() << endl;
+  debug4 << "Cycles=" << cycles[0] << endl;
+  return (cycles.size() > 0) ? cycles[0] : 0;
 }
 
 
@@ -354,5 +371,6 @@ avtFVCOM_STSDFileFormat::GetVar(const char *varname)
 vtkDataArray *
 avtFVCOM_STSDFileFormat::GetVectorVar(const char *varname)
 {
-    return reader->GetVectorVar(0, varname);
+  reader->SetDomainIndexForCaching(0);
+  return reader->GetVectorVar(0, varname, cache);
 }

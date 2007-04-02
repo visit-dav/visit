@@ -154,7 +154,11 @@ avtFVCOM_MTSDFileFormat::avtFVCOM_MTSDFileFormat(const char *filename,
 
 avtFVCOM_MTSDFileFormat::~avtFVCOM_MTSDFileFormat()
 {
+  debug4 << "avtFVCOM_MTSDFileFormat::~avtFVCOM_MTSDFileFormat" << endl;
+
     delete reader;
+
+ debug4 << "avtFVCOM_MTSDFileFormat::~avtFVCOM_MTSDFileFormat:end" << endl;
 }
 
 // ****************************************************************************
@@ -192,7 +196,10 @@ avtFVCOM_MTSDFileFormat::GetNTimesteps(void)
 void
 avtFVCOM_MTSDFileFormat::FreeUpResources(void)
 {
+  debug4 << "avtFVCOM_MTSDFileFormat::FreeUpResources(void)" << endl;
     reader->FreeUpResources();
+  debug4 << "avtFVCOM_MTSDFileFormat::FreeUpResources(void): end" << endl;
+
 }
 
 // ****************************************************************************
@@ -258,6 +265,7 @@ avtFVCOM_MTSDFileFormat::GetTimes(std::vector<double> &times)
 void
 avtFVCOM_MTSDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
+
     reader->PopulateDatabaseMetaData(md, timeState, GetType());
 }
 
@@ -364,5 +372,6 @@ avtFVCOM_MTSDFileFormat::GetVar(int timestate, const char *varname)
 vtkDataArray *
 avtFVCOM_MTSDFileFormat::GetVectorVar(int timestate, const char *varname)
 {
-    return reader->GetVectorVar(timestate, varname);
+  reader->SetDomainIndexForCaching(0);
+  return reader->GetVectorVar(timestate, varname, cache);
 }
