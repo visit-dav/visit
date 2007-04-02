@@ -139,6 +139,10 @@
 #
 #    Mark C. Miller, Fri Aug 19 10:16:30 PDT 2005
 #    Added label.py to skipList for optimized mode
+#
+#    Jeremy Meredith, Tue Oct 11 13:10:37 PDT 2005
+#    Changed website address.
+#
 # ----------------------------------------------------------------------------
 
 # list of users who want email every night with the log file
@@ -162,7 +166,7 @@ msgftr_build="\n\n------ build log follows ------\n\n"
 msghdr_testfailed="From: visit@llnl.gov\n\
 Subject: failed regression test\n\
 \n\
-Results posted at https://dnt-cs.llnl.gov/visit/\
+Results posted at http://alderaan.llnl.gov/visit/\
 \n\
 This is an automated error message: \n\
 \n\
@@ -171,7 +175,7 @@ The VisIt regression test failed during an automatic run\n"
 msghdr_testpassed="From: visit@llnl.gov\n\
 Subject: passed regression test\n\
 \n\
-Results posted at https://dnt-cs.llnl.gov/visit/\
+Results posted at http://alderaan.llnl.gov/visit/\
 \n\
 This is an automated message: \n\
 \n\
@@ -180,7 +184,7 @@ The VisIt regression test passed the automatic run\n"
 msghdr_partialpass="From: visit@llnl.gov\n\
 Subject: partially passed regression test\n\
 \n\
-Results posted at https://dnt-cs.llnl.gov/visit/\
+Results posted at http://alderaan.llnl.gov/visit/\
 \n\
 This is an automated message: \n\
 \n\

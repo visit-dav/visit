@@ -354,9 +354,19 @@ avtBoxlib3DFileFormat::InitializeReader(void)
             int index = nVectors;
             ++nVectors;
             if (startsWithFirst)
-                vectorNames.push_back(needle.substr(1, needle.length() - 1));
+            {
+                if (needle.length() > 1)
+                    vectorNames.push_back(needle.substr(1, needle.length() - 1));
+                else
+                    vectorNames.push_back(varNames[i]+varNames[id2]+varNames[id3]+"_vec");
+            }
             else
-                vectorNames.push_back(needle.substr(0, needle.length() - 1));
+            {
+                if (needle.length() > 1)
+                    vectorNames.push_back(needle.substr(0, needle.length() - 1));
+                else
+                    vectorNames.push_back(varNames[i]+varNames[id2]+varNames[id3]+"_vec");
+            }
             vectorCentering.push_back(varCentering[i]);
 
             vectorComponents.resize(nVectors);
