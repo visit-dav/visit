@@ -102,7 +102,7 @@ PDBGeneralPluginInfo::GetName() const
 char *
 PDBGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "1.1";
 }
 
 // ****************************************************************************
@@ -121,7 +121,7 @@ PDBGeneralPluginInfo::GetVersion() const
 char *
 PDBGeneralPluginInfo::GetID() const
 {
-    return "PDB_1.0";
+    return "PDB_1.1";
 }
 // ****************************************************************************
 //  Method: PDBGeneralPluginInfo::EnabledByDefault

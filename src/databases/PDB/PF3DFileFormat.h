@@ -64,6 +64,9 @@ class vtkDataArray;
 //   Brad Whitlock, Thu Dec 1 14:53:29 PST 2005
 //   Added ability to dynamically determine the size of visnams.
 //
+//   Brad Whitlock, Thu Jun 22 16:43:21 PST 2006
+//   Added support for PF3D files that contain more than 1 domain per file.
+//
 // ****************************************************************************
 
 class PF3DFileFormat : public PDBReader, public avtSTMDFileFormat
@@ -82,6 +85,8 @@ public:
     virtual double        GetTime(void);
 
     virtual void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    virtual void          PopulateIOInformation(avtIOInformation &);
+
     virtual void         *GetAuxiliaryData(const char *var, int dom,
                                            const char *type, void *,
                                            DestructorFunction &df);
@@ -134,6 +139,10 @@ protected:
         const char *  Get_visname_for_domain(int dom, int comp) const;
         const double *GetMinArray(const std::string &varName) const;
         const double *GetMaxArray(const std::string &varName) const;
+        std::string   Get_dom_prefix_for_domain(int dim) const;
+        int           Get_num_grp_size() const;
+        int           Get_grp_size(int grp) const;
+        const long   *Get_grp_members(int grp) const;
 
         ostream &operator << (ostream &os);
     private:
