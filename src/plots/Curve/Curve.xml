@@ -2,13 +2,11 @@
   <Plugin name="Curve" type="plot" label="Curve" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="curve" iconFile="Curve.xpm">
     <Files components="V">
       avtCurveFilter.C
-      avtWarpFilter.C
     </Files>
     <Files components="E">
       avtCurveFilter.C
-      avtWarpFilter.C
     </Files>
-    <Attribute name="CurveAttributes" purpose="Attributes for the xy plot" persistent="true" codefile="CurveAttributes.code">
+    <Attribute name="CurveAttributes" purpose="Attributes for the xy plot" persistent="true" exportAPI="" exportInclude="" codefile="CurveAttributes.code">
       <Field name="lineStyle" label="Line Style" type="linestyle">
         0
       </Field>

@@ -3353,6 +3353,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Added Volume2, which calculates hex-volumes differently than
 //    Volume (which uses verdict).
 //
+//    Hank Childs, Fri Nov  3 15:49:40 PST 2006
+//    Added total length query.
+//
 // ****************************************************************************
 
 void
@@ -3426,6 +3429,7 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("3D surface area", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Volume2", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Total Length", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Localized Compactness Factor", dq, sr, basic, 1, 0, qt);

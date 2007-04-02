@@ -92,6 +92,9 @@
 #    Hank Childs, Thu Jul  6 17:25:57 PDT 2006
 #    Added avtLineScanFilter.
 #
+#    Hank Childs, Fri Nov  3 16:38:45 PST 2006
+#    Moved avtWarpFilter from /plots/Curve.
+#
 ##############################################################################
 
 ##
@@ -135,6 +138,7 @@ SRC=\
  avtTiledImageCompositor.C \
  avtTransform.C \
  avtVertexNormalsFilter.C \
+ avtWarpFilter.C \
  avtWholeImageCompositerWithZ.C \
  avtWholeImageCompositerNoZ.C \
  avtWorldSpaceToImageSpaceTransform.C
