@@ -747,6 +747,9 @@ avtResampleFilter::ResampleInput(void)
 //    Hank Childs, Fri May 26 10:00:01 PDT 2006
 //    Do not allow for 0 dimensions.
 //
+//    Hank Childs, Tue Sep  5 15:39:58 PDT 2006
+//    Check for degenerate input.
+//
 // ****************************************************************************
 
 void
@@ -840,6 +843,13 @@ avtResampleFilter::GetDimensions(int &width, int &height, int &depth,
         height = atts.GetHeight();
         depth  = atts.GetDepth();
     }
+    if (width <= 0 || height <= 0 || depth < 0)
+    {
+        EXCEPTION1(VisItException, "The grid to resample on is degenerate."
+                  "Make sure that the number of samples in each direction "
+                  "is positive.");
+    }
+
     debug5 << "Resampling onto grid of dimensions: " << width << ", "
            << height << ", " << depth << endl;
 }

@@ -113,6 +113,9 @@ QvisDisplaceWindow::~QvisDisplaceWindow()
 //
 // Modifications:
 //   
+//   Hank Childs, Tue Sep  5 15:51:59 PDT 2006
+//   Remove vestiges of "DISPL".
+//
 // ****************************************************************************
 
 void
@@ -131,7 +134,7 @@ QvisDisplaceWindow::CreateWindowContents()
     mainLayout->addWidget(new QLabel("Displacement variable", central, "variableLabel"),1,0);
     variable = new QvisVariableButton(true, true, true,
         QvisVariableButton::Vectors, central, "variable");
-    variable->setDefaultVariable("DISPL");
+    variable->setDefaultVariable("default");
     connect(variable, SIGNAL(activated(const QString&)),
             this, SLOT(variableChanged(const QString&)));
     mainLayout->addWidget(variable, 1,1);

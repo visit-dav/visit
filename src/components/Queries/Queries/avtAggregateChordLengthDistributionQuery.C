@@ -36,16 +36,15 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtMassDistributionQuery.C                       //
+//                  avtAggregateChordLengthDistributionQuery.C               //
 // ************************************************************************* //
 
-#include <avtMassDistributionQuery.h>
+#include <avtAggregateChordLengthDistributionQuery.h>
 
 #include <stdio.h>
 #include <math.h>
 
 #include <vtkCellData.h>
-#include <vtkExecutive.h>
 #include <vtkIdList.h>
 #include <vtkPolyData.h>
 
@@ -53,124 +52,88 @@
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTerminatingSource.h>
-#include <avtTotalSurfaceAreaQuery.h>
-#include <avtTotalVolumeQuery.h>
-#include <avtWeightedVariableSummationQuery.h>
 
 #include <DebugStream.h>
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery constructor
+//  Method: avtAggregateChordLengthDistributionQuery constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 31, 2006
 //
 // ****************************************************************************
 
-avtMassDistributionQuery::avtMassDistributionQuery()
+avtAggregateChordLengthDistributionQuery::avtAggregateChordLengthDistributionQuery()
 {
-    mass      = new double[numBins];
+    numChords = new int[numBins];
 }
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery destructor
+//  Method: avtAggregateChordLengthDistributionQuery destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 31, 2006
 //
 // ****************************************************************************
 
-avtMassDistributionQuery::~avtMassDistributionQuery()
+avtAggregateChordLengthDistributionQuery::~avtAggregateChordLengthDistributionQuery()
 {
-    delete [] mass;
+    delete [] numChords;;
 }
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery::PreExecute
+//  Method: avtAggregateChordLengthDistributionQuery::PreExecute
 //
 //  Purpose:
 //      Does some initialization work before the query executes.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 31, 2006
 //
 // ****************************************************************************
 
 void
-avtMassDistributionQuery::PreExecute(void)
+avtAggregateChordLengthDistributionQuery::PreExecute(void)
 {
     avtLineScanQuery::PreExecute();
 
-    delete [] mass;
-    mass = new double[numBins];
+    delete [] numChords;
+    numChords = new int[numBins];
     for (int i = 0 ; i < numBins ; i++)
-        mass[i] = 0.;
+        numChords[i] = 0;
 }
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery::PostExecute
+//  Method: avtAggregateChordLengthDistributionQuery::PostExecute
 //
 //  Purpose:
-//      Outputs the mass distribution.
+//      Outputs the chord counts.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 31, 2006
 //
 // ****************************************************************************
 
 void
-avtMassDistributionQuery::PostExecute(void)
+avtAggregateChordLengthDistributionQuery::PostExecute(void)
 {
     int   i;
 
-    avtWeightedVariableSummationQuery summer;
-    avtDataObject_p dob = GetInput();
-    summer.SetInput(dob);
-    QueryAttributes qa;
-    summer.PerformQuery(&qa);
-    double totalMass = qa.GetResultsValue()[0];
-
-    bool didVolume = false;
-    bool didSA     = false;
-    if (totalMass == 0.)
-    {
-        if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
-        {
-            avtTotalVolumeQuery tvq;
-            avtDataObject_p dob = GetInput();
-            tvq.SetInput(dob);
-            QueryAttributes qa;
-            tvq.PerformQuery(&qa);
-            totalMass = qa.GetResultsValue()[0];
-            didVolume = true;
-        }
-        else
-        {
-            avtTotalSurfaceAreaQuery saq;
-            avtDataObject_p dob = GetInput();
-            saq.SetInput(dob);
-            QueryAttributes qa;
-            saq.PerformQuery(&qa);
-            totalMass = qa.GetResultsValue()[0];
-            didSA = true;
-        }
-    }
-
     int times = 0;
     char name[1024];
-    sprintf(name, "md%d.ult", times++);
+    sprintf(name, "cld_a%d.ult", times++);
 
     if (PAR_Rank() == 0)
     {
@@ -181,36 +144,34 @@ avtMassDistributionQuery::PostExecute(void)
             if (ifile.fail())
                 lookingForUnused = false;
             else
-                sprintf(name, "md%d.ult", times++);
+                sprintf(name, "cld_a%d.ult", times++);
         }
     }
 
     char msg[1024];
-    const char *mass_string = (didVolume ? "volume" : (didSA ? "area" : "mass"));
-    sprintf(msg, "The %s distribution has been outputted as an "
-                 "Ultra file (%s), which can then be imported into VisIt.  The"
-                 " total %s considered was %f\n", 
-                 mass_string, name, mass_string, totalMass);
+    sprintf(msg, "The aggregate chord length distribution has been outputted "
+            "as an Ultra file (%s), which can then be imported into VisIt.", 
+            name);
     SetResultMessage(msg);
     SetResultValue(0.);
 
-    double *m2 = new double[numBins];
-    SumDoubleArrayAcrossAllProcessors(mass, m2, numBins);
-    delete [] mass;
-    mass = m2;
-
-    double totalMassFromLines = 0.;
-    for (i = 0 ; i < numBins ; i++)
-        totalMassFromLines += mass[i];
+    int *nc2 = new int[numBins];
+    SumIntArrayAcrossAllProcessors(numChords, nc2, numBins);
+    delete [] numChords;
+    numChords = nc2;
 
     if (PAR_Rank() == 0)
     {
-        if (totalMassFromLines == 0.)
+        double binWidth = (maxLength-minLength) / numBins;
+        double totalArea = 0.;
+        for (i = 0 ; i < numBins ; i++)
+            totalArea += binWidth*numChords[i];
+        if (totalArea == 0.)
         {
-            sprintf(msg, "The mass distribution could not be calculated "
-                    "becuase none of the lines intersected the data set."
-                    "  If you have used a fairly large number of lines, then "
-                    "this may be indicative of an error state.");
+            sprintf(msg, "The chord length distribution could not be "
+                    "calculated because none of the lines intersected the data"
+                    " set.  If you have used a fairly large number of lines, "
+                    "then this may be indicative of an error state.");
             SetResultMessage(msg);
             return;
         }
@@ -222,13 +183,15 @@ avtMassDistributionQuery::PostExecute(void)
             SetResultMessage(msg);
             return;
         }
-        ofile << "# Mass distribution" << endl;
-        double binWidth = (maxLength-minLength) / numBins;
+        ofile << "# Chord length distribution (aggregate)" << endl;
+
         for (int i = 0 ; i < numBins ; i++)
         {
+            //double x = minLength + (i+0.5)*binWidth;
             double x1 = minLength + (i)*binWidth;
             double x2 = minLength + (i+1)*binWidth;
-            double y = (totalMass*mass[i]) / (totalMassFromLines*binWidth); 
+            double y = numChords[i] / totalArea; // Make it be 
+                            // a distribution ... the area under the curve: 1
             ofile << x1 << " " << y << endl;
             ofile << x2 << " " << y << endl;
         }
@@ -237,7 +200,7 @@ avtMassDistributionQuery::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery::ExecuteLineScan
+//  Method: avtAggregateChordLengthDistributionQuery::ExecuteLineScan
 //
 //  Purpose:
 //      Examines the input data.  Note that the line scan filter will organize
@@ -245,12 +208,12 @@ avtMassDistributionQuery::PostExecute(void)
 //      the same vtkPolyData input.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 31, 2006
 //
 // ****************************************************************************
 
 void
-avtMassDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
+avtAggregateChordLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
 {
     vtkIntArray *lineids = (vtkIntArray *) 
                                   pd->GetCellData()->GetArray("avtLineID");
@@ -260,22 +223,31 @@ avtMassDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
     int npts = pd->GetNumberOfPoints();
     vector<bool> usedPoint(npts, false);
     
-    vtkDataArray *arr = pd->GetCellData()->GetArray(varname.c_str());
-
     pd->BuildLinks();
     pd->BuildCells();
 
-    int extraMsg = 100;
-    int totalProg = totalNodes * extraMsg;
-    int amtPerMsg = npts / extraMsg + 1;
-    UpdateProgress(extraMsg*currentNode+2*extraMsg/3, totalProg);
-    int lastMilestone = 0;
+    // When we determine which line segments are on one side of another,
+    // we need to examine the other segments.  But we only want to consider
+    // segments that are from the same line (i.e. have the same lineid).
+    // So we are using this data structure to keep track of which segments
+    // come from which line.  (Instead of having to iterate through all the
+    // other segments each time we examine a segment.)
+    //
+    // So why hash?
+    // The lines are spread out over many processors.  So proc X may have
+    // lines 100,000 - 100,500.  So we either have to have vectors that are
+    // way too big (100,500 entries with the first 100,000 empty),
+    // or we have to do some clever indexing.  So we are doing
+    // some clever indexing.  In this case, hashing.
+    int hashSize = 10000;
+    vector< vector<int> >    hashed_lineid_lookup(hashSize);
+    vector< vector<double> > hashed_segment_length(hashSize);
 
     for (int i = 0 ; i < npts ; i++)
     {
         if (usedPoint[i])
             continue;
-        int seg1 = 0, seg2 = 0;
+        int seg1, seg2;
         int numMatches = GetCellsForPoint(i, pd, lineids, -1, seg1, seg2);
         if (numMatches == 0)
             continue;
@@ -313,45 +285,40 @@ avtMassDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         double dist = sqrt((pt2[0]-pt1[0])*(pt2[0]-pt1[0]) + 
                            (pt2[1]-pt1[1])*(pt2[1]-pt1[1]) + 
                            (pt2[2]-pt1[2])*(pt2[2]-pt1[2]));
-        int bin = (int)((dist-minLength) / (maxLength-minLength) * numBins);
-        if (bin < 0)
-            bin = 0;
-        if (bin >= numBins)
-            bin = numBins-1;
-        int curId = oneSide;
-        numMatches = GetCellsForPoint(curId, pd, lineids, -1, seg1, seg2);
-        int curCell = seg1;
-        double curSegMass = 0.;
-        while (curId != otherSide)
-        {
-           double curSegDen = (arr != NULL ? arr->GetTuple1(curCell) : 1.);
-           int newPtId, newCellId;
-           WalkChain1(pd, curId, curCell, lineids, lineid, 
-                      newPtId, newCellId);
-           pd->GetPoint(curId, pt1);
-           pd->GetPoint(newPtId, pt2);
-           double dist = sqrt((pt2[0]-pt1[0])*(pt2[0]-pt1[0]) + 
-                              (pt2[1]-pt1[1])*(pt2[1]-pt1[1]) + 
-                              (pt2[2]-pt1[2])*(pt2[2]-pt1[2]));
-           curSegMass += curSegDen*dist;
-           curId = newPtId;
-           curCell = newCellId;
-           if (curCell == -1 && curId != otherSide)
-           {
-               debug1 << "INTERNAL ERROR: path could not be reproduced." 
-                      << endl;
-               break;
-           }
-        }
-        mass[bin] += curSegMass;
+ 
+        int hashid = lineid % hashSize;
+        hashed_lineid_lookup[hashid].push_back(lineid);
+        hashed_segment_length[hashid].push_back(dist);
+    }
 
-        int currentMilestone = (int)(((float) i) / amtPerMsg);
-        if (currentMilestone > lastMilestone)
+    for (int i = 0 ; i < hashSize ; i++)
+    {
+        vector<int> already_considered;
+        for (int j = 0 ; j < hashed_lineid_lookup[i].size() ; j++)
         {
-            UpdateProgress((int)(
-                        extraMsg*currentNode+2*extraMsg/3.+currentMilestone/3),
-                           extraMsg*totalNodes);
-            lastMilestone = currentMilestone;
+             bool alreadyDoneLineId = false;
+             int  k;
+             for (k = 0 ; k < already_considered.size() ; k++)
+                 if (hashed_lineid_lookup[i][j] == already_considered[k])
+                     alreadyDoneLineId = true;
+             if (alreadyDoneLineId)
+                 continue;
+
+             int lineid = hashed_lineid_lookup[i][j];
+             already_considered.push_back(lineid);
+             double length = 0.;
+             for (k = j ; k < hashed_lineid_lookup[i].size() ; k++)
+             {
+                 if (hashed_lineid_lookup[i][k] == lineid)
+                     length += hashed_segment_length[i][k];
+             }
+
+             int bin = (int)((length-minLength)/(maxLength-minLength) * numBins);
+             if (bin < 0)
+                 bin = 0;
+             if (bin >= numBins)
+                 bin = numBins-1;
+             numChords[bin]++;
         }
     }
 }

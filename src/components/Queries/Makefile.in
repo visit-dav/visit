@@ -165,6 +165,9 @@
 #   Hank Childs, Sun Aug 27 16:38:52 PDT 2006
 #   Added expected value query.
 #
+#   Hank Childs, Mon Aug 28 16:55:05 PDT 2006
+#   Added avtPartialWeightedLineSegmentDistributionQuery.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -204,17 +207,20 @@ Queries_src= \
  Queries/avtActualDataMinMaxQuery.C  \
  Queries/avtActualDataNumNodesQuery.C  \
  Queries/avtActualDataNumZonesQuery.C  \
+ Queries/avtAggregateChordLengthDistributionQuery.C  \
+ Queries/avtAggregateRayLengthDistributionQuery.C  \
  Queries/avtAreaBetweenCurvesQuery.C  \
  Queries/avtAverageMeanCurvatureQuery.C \
  Queries/avtBestFitLineQuery.C \
  Queries/avtCentroidQuery.C  \
- Queries/avtChordLengthDistributionQuery.C  \
  Queries/avtCompactnessQuery.C  \
  Queries/avtCycleQuery.C  \
  Queries/avtDistanceFromBoundaryQuery.C  \
  Queries/avtEllipticalCompactnessFactorQuery.C  \
  Queries/avtEulerianQuery.C \
  Queries/avtExpectedValueQuery.C  \
+ Queries/avtIndividualChordLengthDistributionQuery.C  \
+ Queries/avtIndividualRayLengthDistributionQuery.C  \
  Queries/avtIntegrateQuery.C  \
  Queries/avtKurtosisQuery.C  \
  Queries/avtLineScanQuery.C  \

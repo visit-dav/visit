@@ -150,6 +150,10 @@ class ProcessAttributes;
 //    Hank Childs, Mon Feb 13 22:25:04 PST 2006
 //    Added ConstructDDF.
 //
+//    Hank Childs, Tue Sep  5 10:45:13 PDT 2006
+//    Make ResetTimeout be a public function, since query over time and
+//    some of the line scan algorithms may take more than ten minutes.
+//
 // ****************************************************************************
 
 class Engine
@@ -209,12 +213,12 @@ class Engine
     static void     EngineUpdateProgressCallback(void*, const char*,
                                                  const char*, int,int);
     static void     EngineWarningCallback(void *, const char *);
+    void            ResetTimeout(int timeout);
 
     // Internal methods
   protected:
                     Engine();
     void            ProcessCommandLine(int argc, char *argv[]);
-    void            ResetTimeout(int timeout);
 
     static void     AlarmHandler(int signal);
     static void     NewHandler(void);

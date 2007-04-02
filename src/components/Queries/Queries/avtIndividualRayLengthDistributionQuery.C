@@ -36,10 +36,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtMassDistributionQuery.C                       //
+//                    avtIndividualRayLengthDistributionQuery.C              //
 // ************************************************************************* //
 
-#include <avtMassDistributionQuery.h>
+#include <avtIndividualRayLengthDistributionQuery.h>
 
 #include <stdio.h>
 #include <math.h>
@@ -53,124 +53,96 @@
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTerminatingSource.h>
-#include <avtTotalSurfaceAreaQuery.h>
-#include <avtTotalVolumeQuery.h>
 #include <avtWeightedVariableSummationQuery.h>
 
 #include <DebugStream.h>
+#include <VisItException.h>
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery constructor
+//  Method: avtIndividualRayLengthDistributionQuery constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 28, 2006
 //
 // ****************************************************************************
 
-avtMassDistributionQuery::avtMassDistributionQuery()
+avtIndividualRayLengthDistributionQuery::avtIndividualRayLengthDistributionQuery()
 {
-    mass      = new double[numBins];
+    count = new double[numBins];
 }
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery destructor
+//  Method: avtIndividualRayLengthDistributionQuery destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 28, 2006
 //
 // ****************************************************************************
 
-avtMassDistributionQuery::~avtMassDistributionQuery()
+avtIndividualRayLengthDistributionQuery::~avtIndividualRayLengthDistributionQuery()
 {
-    delete [] mass;
+    delete [] count;
 }
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery::PreExecute
+//  Method: avtIndividualRayLengthDistributionQuery::PreExecute
 //
 //  Purpose:
 //      Does some initialization work before the query executes.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 28, 2006
 //
 // ****************************************************************************
 
 void
-avtMassDistributionQuery::PreExecute(void)
+avtIndividualRayLengthDistributionQuery::PreExecute(void)
 {
     avtLineScanQuery::PreExecute();
 
-    delete [] mass;
-    mass = new double[numBins];
+    if (minLength != 0.)
+    {
+        EXCEPTION1(VisItException, "This query only makes sense with minimum "
+                     "lengths of 0.  Please try again with that length.");
+    }
+
+    delete [] count;
+    count = new double[numBins];
     for (int i = 0 ; i < numBins ; i++)
-        mass[i] = 0.;
+        count[i] = 0.;
 }
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery::PostExecute
+//  Method: avtIndividualRayLengthDistributionQuery::PostExecute
 //
 //  Purpose:
-//      Outputs the mass distribution.
+//      Outputs the probability distribution of encountering specific masses.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 28, 2006
 //
 // ****************************************************************************
 
 void
-avtMassDistributionQuery::PostExecute(void)
+avtIndividualRayLengthDistributionQuery::PostExecute(void)
 {
     int   i;
 
-    avtWeightedVariableSummationQuery summer;
-    avtDataObject_p dob = GetInput();
-    summer.SetInput(dob);
-    QueryAttributes qa;
-    summer.PerformQuery(&qa);
-    double totalMass = qa.GetResultsValue()[0];
-
-    bool didVolume = false;
-    bool didSA     = false;
-    if (totalMass == 0.)
-    {
-        if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
-        {
-            avtTotalVolumeQuery tvq;
-            avtDataObject_p dob = GetInput();
-            tvq.SetInput(dob);
-            QueryAttributes qa;
-            tvq.PerformQuery(&qa);
-            totalMass = qa.GetResultsValue()[0];
-            didVolume = true;
-        }
-        else
-        {
-            avtTotalSurfaceAreaQuery saq;
-            avtDataObject_p dob = GetInput();
-            saq.SetInput(dob);
-            QueryAttributes qa;
-            saq.PerformQuery(&qa);
-            totalMass = qa.GetResultsValue()[0];
-            didSA = true;
-        }
-    }
-
     int times = 0;
     char name[1024];
-    sprintf(name, "md%d.ult", times++);
+    sprintf(name, "rld_i%d.ult", times++);
 
     if (PAR_Rank() == 0)
     {
@@ -181,40 +153,37 @@ avtMassDistributionQuery::PostExecute(void)
             if (ifile.fail())
                 lookingForUnused = false;
             else
-                sprintf(name, "md%d.ult", times++);
+                sprintf(name, "rld_i%d.ult", times++);
         }
     }
 
     char msg[1024];
-    const char *mass_string = (didVolume ? "volume" : (didSA ? "area" : "mass"));
-    sprintf(msg, "The %s distribution has been outputted as an "
-                 "Ultra file (%s), which can then be imported into VisIt.  The"
-                 " total %s considered was %f\n", 
-                 mass_string, name, mass_string, totalMass);
+    sprintf(msg, "The ray length distribution has been outputted as an "
+                 "Ultra file (%s), which can then be imported into VisIt.",
+                 name);
     SetResultMessage(msg);
     SetResultValue(0.);
 
     double *m2 = new double[numBins];
-    SumDoubleArrayAcrossAllProcessors(mass, m2, numBins);
-    delete [] mass;
-    mass = m2;
+    SumDoubleArrayAcrossAllProcessors(count, m2, numBins);
+    delete [] count;
+    count = m2;
 
-    double totalMassFromLines = 0.;
+    double    totalCount = 0;
     for (i = 0 ; i < numBins ; i++)
-        totalMassFromLines += mass[i];
+        totalCount += count[i];
 
     if (PAR_Rank() == 0)
     {
-        if (totalMassFromLines == 0.)
+        if (totalCount == 0.)
         {
-            sprintf(msg, "The mass distribution could not be calculated "
-                    "becuase none of the lines intersected the data set."
+            sprintf(msg, "The ray length distribution could not be calculated"
+                    " because none of the lines intersected the data set."
                     "  If you have used a fairly large number of lines, then "
                     "this may be indicative of an error state.");
             SetResultMessage(msg);
             return;
         }
-
         ofstream ofile(name);
         if (ofile.fail())
         {
@@ -222,13 +191,13 @@ avtMassDistributionQuery::PostExecute(void)
             SetResultMessage(msg);
             return;
         }
-        ofile << "# Mass distribution" << endl;
-        double binWidth = (maxLength-minLength) / numBins;
+        ofile << "# Ray length distribution (individual)" << endl;
+        double binWidth = (maxLength) / numBins;
         for (int i = 0 ; i < numBins ; i++)
         {
-            double x1 = minLength + (i)*binWidth;
-            double x2 = minLength + (i+1)*binWidth;
-            double y = (totalMass*mass[i]) / (totalMassFromLines*binWidth); 
+            double x1 = (i)*binWidth;
+            double x2 = (i+1)*binWidth;
+            double y = (count[i]) / (totalCount*binWidth); 
             ofile << x1 << " " << y << endl;
             ofile << x2 << " " << y << endl;
         }
@@ -237,7 +206,7 @@ avtMassDistributionQuery::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtMassDistributionQuery::ExecuteLineScan
+//  Method: avtIndividualRayLengthDistributionQuery::ExecuteLineScan
 //
 //  Purpose:
 //      Examines the input data.  Note that the line scan filter will organize
@@ -245,13 +214,14 @@ avtMassDistributionQuery::PostExecute(void)
 //      the same vtkPolyData input.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 20, 2006
+//  Creation:   August 28, 2006
 //
 // ****************************************************************************
 
 void
-avtMassDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
+avtIndividualRayLengthDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
 {
+    //Get array of cast lines
     vtkIntArray *lineids = (vtkIntArray *) 
                                   pd->GetCellData()->GetArray("avtLineID");
     if (lineids == NULL)
@@ -273,6 +243,7 @@ avtMassDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
 
     for (int i = 0 ; i < npts ; i++)
     {
+        // glue segments into one long line
         if (usedPoint[i])
             continue;
         int seg1 = 0, seg2 = 0;
@@ -306,44 +277,10 @@ avtMassDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
             // statistics.
             continue;
         }
-        double pt1[3];
-        double pt2[3];
-        pd->GetPoint(oneSide, pt1);
-        pd->GetPoint(otherSide, pt2);
-        double dist = sqrt((pt2[0]-pt1[0])*(pt2[0]-pt1[0]) + 
-                           (pt2[1]-pt1[1])*(pt2[1]-pt1[1]) + 
-                           (pt2[2]-pt1[2])*(pt2[2]-pt1[2]));
-        int bin = (int)((dist-minLength) / (maxLength-minLength) * numBins);
-        if (bin < 0)
-            bin = 0;
-        if (bin >= numBins)
-            bin = numBins-1;
-        int curId = oneSide;
-        numMatches = GetCellsForPoint(curId, pd, lineids, -1, seg1, seg2);
-        int curCell = seg1;
-        double curSegMass = 0.;
-        while (curId != otherSide)
-        {
-           double curSegDen = (arr != NULL ? arr->GetTuple1(curCell) : 1.);
-           int newPtId, newCellId;
-           WalkChain1(pd, curId, curCell, lineids, lineid, 
-                      newPtId, newCellId);
-           pd->GetPoint(curId, pt1);
-           pd->GetPoint(newPtId, pt2);
-           double dist = sqrt((pt2[0]-pt1[0])*(pt2[0]-pt1[0]) + 
-                              (pt2[1]-pt1[1])*(pt2[1]-pt1[1]) + 
-                              (pt2[2]-pt1[2])*(pt2[2]-pt1[2]));
-           curSegMass += curSegDen*dist;
-           curId = newPtId;
-           curCell = newCellId;
-           if (curCell == -1 && curId != otherSide)
-           {
-               debug1 << "INTERNAL ERROR: path could not be reproduced." 
-                      << endl;
-               break;
-           }
-        }
-        mass[bin] += curSegMass;
+
+        // Drop values from the line into the appropriate mass bins
+        WalkLine(oneSide, otherSide, pd, lineids, lineid, arr);
+        WalkLine(otherSide, oneSide, pd, lineids, lineid, arr);
 
         int currentMilestone = (int)(((float) i) / amtPerMsg);
         if (currentMilestone > lastMilestone)
@@ -355,5 +292,95 @@ avtMassDistributionQuery::ExecuteLineScan(vtkPolyData *pd)
         }
     }
 }
+
+
+
+// ****************************************************************************
+//  Method: avtIndividualRayLengthDistributionQuery::WalkLine
+//
+//  Purpose:
+//
+//  Programmer: Hank Childs
+//  Creation:   August 28, 2006
+//
+// ****************************************************************************
+
+void
+avtIndividualRayLengthDistributionQuery::WalkLine(int startPtId, int endPtId, 
+                                     vtkPolyData *output, vtkIntArray *lineids, 
+                                     int lineid, vtkDataArray *arr)
+{
+    int curPtId = startPtId;
+    int curCellId, dummyCellId;
+    double pt1[3];
+    double pt2[3];
+
+    GetCellsForPoint(curPtId, output, lineids, -1, curCellId, dummyCellId);
+    output->GetPoint(startPtId, pt1);
+    output->GetPoint(endPtId, pt2);
+    double massEncounteredSoFar = 0.0;
+    double binSize = (maxLength) / (double)numBins;
+
+    // Walk segments in the line
+    while (curPtId != endPtId)
+    {
+        double curSegDen = (arr != NULL ? arr->GetTuple1(curCellId) : 1.);
+        int newPtId, newCellId;
+        WalkChain1(output, curPtId, curCellId, lineids, lineid, 
+                   newPtId, newCellId);
+        output->GetPoint(curPtId, pt1);
+        output->GetPoint(newPtId, pt2);
+        double dist = sqrt((pt2[0]-pt1[0])*(pt2[0]-pt1[0]) + 
+                           (pt2[1]-pt1[1])*(pt2[1]-pt1[1]) + 
+                           (pt2[2]-pt1[2])*(pt2[2]-pt1[2]));
+
+        // Walk bins that overlap this segment, first with respect to the start point,
+        // then with respect to the end point.
+        int ii;
+        double massForThisSegment = dist*curSegDen;
+        double massAfterThisSegment = massEncounteredSoFar+massForThisSegment;
+    
+        int startBin = (int)floor(massEncounteredSoFar / binSize);
+        int endBin   = (int)floor(massAfterThisSegment / binSize);
+
+        for (int currBin = startBin ; currBin <= endBin ; currBin++) 
+        {
+            int bin = (currBin < 0 ? 0 : (currBin >= numBins ? numBins-1
+                            : currBin));
+            if (currBin == startBin && startBin == endBin)
+            {
+                count[bin] += curSegDen*dist;
+            }
+            else if (currBin == startBin)
+            {
+                double massForNextBin = (currBin+1)*binSize;
+                double massContrib = massForNextBin - massEncounteredSoFar;
+                count[bin] += massContrib;
+            }
+            else if (currBin == endBin) 
+            {
+                double massThroughStartOfBin = (currBin)*binSize;
+                double massLeft = massAfterThisSegment - massThroughStartOfBin;
+                count[bin] += massLeft;
+            }
+            else
+            {
+                count[bin] += curSegDen*binSize;
+            }
+        }
+        massEncounteredSoFar += massForThisSegment;
+
+        curPtId   = newPtId;
+        curCellId = newCellId;
+
+        if (curCellId == -1 && curPtId != endPtId)
+        {
+            debug1 << "INTERNAL ERROR: path could not be reproduced." 
+                   << endl;
+            return;
+        }
+    }
+}
+
 
 

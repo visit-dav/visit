@@ -50,6 +50,7 @@
 #include <vtkIdList.h>
 #include <vtkPolyData.h>
 
+#include <avtCallback.h>
 #include <avtLineScanFilter.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
@@ -328,17 +329,6 @@ avtLineScanQuery::Execute(vtkDataSet *ds, const int chunk)
     int totalProg = totalNodes * extraMsg;
     UpdateProgress(extraMsg*currentNode, totalProg);
 
-    //
-    // Check to make sure we have a mass variable before running clean
-    // poly data, since that takes a *long* time.
-    //
-    if (ds->GetCellData()->GetArray(varname.c_str()) == NULL)
-    {
-        EXCEPTION1(VisItException, "This query is only set up for zonal"
-                                   " variables.  You should be applying this "
-                                   "query to a pseudocolor plot of density.");
-    }
-
     vtkPolyData *pd = (vtkPolyData *) ds;
     vtkCleanPolyData *cpd = vtkCleanPolyData::New();
     cpd->SetToleranceIsAbsolute(0);
@@ -366,6 +356,11 @@ avtLineScanQuery::Execute(vtkDataSet *ds, const int chunk)
 //
 //  Programmer: Hank Childs
 //  Creation:   July 20, 2006
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Sep  5 11:40:33 PDT 2006
+//    Reset the time out so that queries can take longer than ten minutes.
 //
 // ****************************************************************************
 
@@ -409,6 +404,11 @@ avtLineScanQuery::Execute(avtDataTree_p tree)
         avtDataset_p ds2 = filt.GetTypedOutput();
         avtDataTree_p tree = ds2->GetDataTree();
         ExecuteTree(tree);
+
+        //
+        // Reset the timeout for the next iteration.
+        //
+        avtCallback::ResetTimeout(60*5);
     }
 }
 

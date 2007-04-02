@@ -230,6 +230,9 @@
 #   Jeremy Meredith, Wed Jul 26 17:21:58 EDT 2006
 #   Added VASP and CTRL molecular formats.
 #
+#   Tom Fogal, Fri Sep  1 15:58:15 PDT 2006
+#   Added the GGCM reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -260,6 +263,7 @@ REQUIRED=\
  Curve2D \
  Dune \
  EnSight \
+ GGCM \
  Image \
  Lines \
  MFIX \

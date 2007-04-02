@@ -53,6 +53,9 @@ using std::string;
 WarningCallback               avtCallback::warningCallback = NULL;
 void                         *avtCallback::warningCallbackArgs = NULL;
 
+ResetTimeoutCallback          avtCallback::resetTimeoutCallback = NULL;
+void                         *avtCallback::resetTimeoutCallbackArgs = NULL;
+
 ImageCallback                 avtCallback::imageCallback = NULL;
 void                         *avtCallback::imageCallbackArgs = NULL;
 
@@ -132,6 +135,54 @@ avtCallback::IssueWarning(const char *msg)
                << "\", but no callback was registered." << endl;
         return false;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtCallback::RegisterResetTimeoutCallback
+//
+//  Purpose:
+//      Registers a callback that allows AVT modules to reset the timeout.
+//
+//  Arguments:
+//      rtc     The reset timeout callback.
+//      args    The arguments to the reset timeout callback.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 5, 2006
+//
+// ****************************************************************************
+
+void
+avtCallback::RegisterResetTimeoutCallback(ResetTimeoutCallback wc, void *args)
+{
+    resetTimeoutCallback     = wc;
+    resetTimeoutCallbackArgs = args;
+}
+
+
+// ****************************************************************************
+//  Method: avtCallback::ResetTimeout
+//
+//  Purpose:
+//      Resets the timeout.
+//
+//  Arguments:
+//      secs    The number of seconds to reset the timer to.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 5, 2006
+//
+// ****************************************************************************
+
+void
+avtCallback::ResetTimeout(int secs)
+{
+    if (resetTimeoutCallback != NULL)
+        resetTimeoutCallback(resetTimeoutCallbackArgs, secs);
+    else
+        debug1 << "Would like to have reset the timeout"
+               << ", but no callback was registered." << endl;
 }
 
 

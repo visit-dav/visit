@@ -4806,6 +4806,10 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
 //    Hank Childs, Tue Jan 11 14:48:38 PST 2005
 //    Translate tetrahedrons as well.
 //
+//    Hank Childs, Tue Sep  5 17:19:35 PDT 2006
+//    Add logic for case where there really is one real zone and the rest
+//    are ghost ['7279].
+//
 // ****************************************************************************
 
 void
@@ -5023,7 +5027,7 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
     const int first = zl->min_index - minIndexOffset;  // where the real zones start
     const int last = zl->max_index - maxIndexOffset;   // where the real zones end
 
-    if (first == 0 && last == 0 )
+    if (first == 0 && last == 0  && numCells > 27)
     {
        debug5 << "Cannot tell if ghost zones are present"
               << " because min_index & max_index are both zero!" << endl;

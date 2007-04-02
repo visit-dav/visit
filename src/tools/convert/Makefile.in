@@ -80,6 +80,9 @@
 #   Hank Childs, Sun Feb 19 13:08:29 PST 2006
 #   Added libavtddf.
 #
+#   Mark C. Miller, Tue Sep  5 10:16:03 PDT 2006
+#   Replaced '$(OBJ)' with '$(SEROBJ) $(PAROBJ) in clean target
+#
 ##############################################################################
 
 ##
@@ -110,7 +113,7 @@ PAROBJ=$(SRC:.C=_par.o)
 all: $(LIB) @CONVERT_SER@ @CONVERT_PAR@
 
 clean:
-	$(RM) $(OBJ) @CONVERT_SER@ @CONVERT_PAR@
+	$(RM) $(SEROBJ) $(PAROBJ) @CONVERT_SER@ @CONVERT_PAR@
 
 ##
 ## Other targets...

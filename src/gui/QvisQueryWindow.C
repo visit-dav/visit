@@ -162,6 +162,10 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
 //   Connect useGlobal to its slot.
 //
+//   Hank Childs, Fri Sep  1 16:21:35 PDT 2006
+//   Change mechanism for handling query groups so that this code doesn't need
+//   to be modified every time a new group is added.
+//
 // ****************************************************************************
 
 void
@@ -173,12 +177,29 @@ QvisQueryWindow::CreateWindowContents()
     // Create the display mode
     displayMode = new QComboBox(central, "displayMode");
     displayMode->insertItem("All", 0);
-    displayMode->insertItem("Curve-related", 1);
-    displayMode->insertItem("Mesh-related",  2);
-    displayMode->insertItem("Pick-related",  3);
-    displayMode->insertItem("Time-related",  4);
-    displayMode->insertItem("Variable-related",  5);
-    displayMode->insertItem("All queries-over-time", 6);
+    for (int i = 0 ; i < QueryList::NumGroups ; i++)
+    {
+        std::string groupName = QueryList::Groups_ToString((QueryList::Groups) i);
+        const char *str = groupName.c_str();
+        int len = strlen(str);
+        int related_len = strlen("Related");
+        if (len > related_len)
+        {
+            if (strncmp(str + len - related_len, "Related", related_len) == 0)
+            {
+                char buff[1024];
+                strcpy(buff, str);
+                char *overwrite = buff + len - related_len;
+                strcpy(overwrite, "-related");
+                displayMode->insertItem(buff, i+1);
+            }
+            else
+            {
+                displayMode->insertItem(str, i+1);
+            }
+        }
+    }
+    displayMode->insertItem("All queries-over-time", QueryList::NumGroups+1);
     connect(displayMode, SIGNAL(activated(int)),
             this, SLOT(displayModeChanged(int)));
     

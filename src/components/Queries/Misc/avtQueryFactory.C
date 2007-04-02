@@ -43,17 +43,20 @@
 #include <avtActualDataMinMaxQuery.h>
 #include <avtActualDataNumNodesQuery.h>
 #include <avtActualDataNumZonesQuery.h>
+#include <avtAggregateChordLengthDistributionQuery.h>
+#include <avtAggregateRayLengthDistributionQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
 #include <avtAverageMeanCurvatureQuery.h>
 #include <avtBestFitLineQuery.h>
 #include <avtCentroidQuery.h>
-#include <avtChordLengthDistributionQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtCycleQuery.h>
 #include <avtDistanceFromBoundaryQuery.h>
 #include <avtEllipticalCompactnessFactorQuery.h>
 #include <avtEulerianQuery.h>
 #include <avtExpectedValueQuery.h>
+#include <avtIndividualChordLengthDistributionQuery.h>
+#include <avtIndividualRayLengthDistributionQuery.h>
 #include <avtIntegrateQuery.h>
 #include <avtL2NormQuery.h>
 #include <avtL2NormBetweenCurvesQuery.h>
@@ -221,6 +224,10 @@ avtQueryFactory::Instance()
 //    Hank Childs, Fri Aug 25 15:40:35 PDT 2006
 //    Added expected value query.
 //
+//    Hank Childs, Mon Aug 28 16:52:47 PDT 2006
+//    Added aggregate and individual variants of chord and ray length
+//    distributions.
+//
 // ****************************************************************************
 
 
@@ -278,10 +285,37 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     {
         query = new avtL2NormQuery();
     }
-    else if (qname == "Chord Length Distribution")
+    else if (qname == "Chord Length Distribution (aggregate)")
     {
-        avtChordLengthDistributionQuery *cldq =
-                                         new avtChordLengthDistributionQuery();
+        avtAggregateChordLengthDistributionQuery *cldq =
+                                new avtAggregateChordLengthDistributionQuery();
+        cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
+        cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
+        cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        query = cldq;
+    }
+    else if (qname == "Chord Length Distribution (individual)")
+    {
+        avtIndividualChordLengthDistributionQuery *cldq =
+                                new avtIndividualChordLengthDistributionQuery();
+        cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
+        cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
+        cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        query = cldq;
+    }
+    else if (qname == "Ray Length Distribution (aggregate)")
+    {
+        avtAggregateRayLengthDistributionQuery *cldq =
+                                new avtAggregateRayLengthDistributionQuery();
+        cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
+        cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
+        cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        query = cldq;
+    }
+    else if (qname == "Ray Length Distribution (individual)")
+    {
+        avtIndividualRayLengthDistributionQuery *cldq =
+                                new avtIndividualRayLengthDistributionQuery();
         cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
         cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 

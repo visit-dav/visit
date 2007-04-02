@@ -118,6 +118,9 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    Update Queryable source at end, to ensure the pipeline is in the same 
 //    state as when we began.
 //
+//    Hank Childs, Tue Sep  5 14:07:59 PDT 2006
+//    Reset the timeout through a callback, in case this takes a long time.
+//
 // ****************************************************************************
 
 bool
@@ -170,6 +173,8 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
         {
             skippedTimes.push_back(currentTime);
         }
+
+        avtCallback::ResetTimeout(5*60);
     } 
 
     //
