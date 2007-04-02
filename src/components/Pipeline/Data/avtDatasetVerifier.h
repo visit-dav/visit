@@ -40,6 +40,9 @@ class     vtkDataSetAttributes;
 //    Changed arguments for CorrectVarMismatch, to make the method able to
 //    handle more var types. 
 //
+//    Hank Childs, Tue Jul  5 16:22:56 PDT 2005
+//    Add variable name to IssueWarning call.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDatasetVerifier
@@ -56,7 +59,7 @@ class PIPELINE_API avtDatasetVerifier
     void        VerifyDataset(vtkDataSet *, int);
     void        CorrectVarMismatch(vtkDataArray *, vtkDataSetAttributes*, int); 
 
-    void        IssueVarMismatchWarning(int, int, bool, int);
+    void        IssueVarMismatchWarning(int, int, bool, int, const char *);
 };
 
 

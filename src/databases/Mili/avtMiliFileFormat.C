@@ -1057,6 +1057,10 @@ avtMiliFileFormat::ReadMesh(int dom)
 //    obtained from the .mili file). Set validate vars flag after run.
 //    Changed sub_records to hold the mili Subrecord structure.
 //
+//    Kathleen Bonnell, Wed Jul  6 14:27:42 PDT 2005 
+//    Initialize sv with memset to remove free of invalid pointer when
+//    mc_cleanse_st_variable is called.
+//
 // ****************************************************************************
 
 void
@@ -1115,6 +1119,8 @@ avtMiliFileFormat::ValidateVariables(int dom)
             for (int k = 0 ; k < sr.qty_svars ; k++)
             {
                  State_variable sv;
+                 memset(&sv, 0, sizeof(sv));
+
                  mc_get_svar_def(dbid[dom], sr.svar_names[k], &sv);
 
                  int sameAsVar = -1;

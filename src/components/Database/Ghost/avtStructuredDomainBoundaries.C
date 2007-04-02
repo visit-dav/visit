@@ -4,6 +4,8 @@
 
 #include <avtStructuredDomainBoundaries.h>
 
+#include <algorithm>
+
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
@@ -15,6 +17,7 @@
 #include <avtIntervalTree.h>
 #include <avtMaterial.h>
 #include <avtMixedVariable.h>
+#include <avtParallel.h>
 
 #include <TimingsManager.h>
 #include <VisItException.h>
@@ -22,11 +25,12 @@
 
 #ifdef PARALLEL
 #include <mpi.h>
-#include <avtParallel.h>
 #endif
 
 
 using   std::string;
+using   std::vector;
+using   std::sort;
 
 
 // ----------------------------------------------------------------------------
@@ -96,6 +100,9 @@ avtStructuredDomainBoundaries::CreateDomainToProcessorMap(const vector<int> &dom
 //    Hank Childs, Mon Jun 27 10:02:55 PDT 2005
 //    Added timing info.
 //
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Add argument to DeleteNeighbor.
+//
 // ****************************************************************************
 void
 avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation(
@@ -116,7 +123,7 @@ avtStructuredDomainBoundaries::CreateCurrentDomainBoundaryInformation(
         for (int j=0; j<wbi.neighbors.size(); j++)
         {
             if (domain2proc[wbi.neighbors[j].domain] < 0)
-                boundary[i].DeleteNeighbor(wbi.neighbors[j].domain);
+                boundary[i].DeleteNeighbor(wbi.neighbors[j].domain, boundary);
         }
     }
     visitTimer->StopTimer(t0, "avtStructuredDomainBoundaries::CurrentDBI");
@@ -172,6 +179,11 @@ BoundaryHelperFunctions<T>::InitializeBoundaryData()
 //    Jeremy Meredith, Thu Dec 13 11:54:58 PST 2001
 //    Templatized this function.
 //
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -191,7 +203,7 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
             bnddata[d1][n] = new T[n1->ncells * ncomp];
 
         int d2 = n1->domain;
-        int mi = sdb->boundary[d2].FindNeighborIndex(d1);
+        int mi = n1->match;
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
                 
         int *n2extents = (isPointData ? n2->nextents : n2->zextents);
@@ -240,6 +252,11 @@ BoundaryHelperFunctions<T>::FillBoundaryData(int      d1,
 //    Hank Childs, Thu Nov 13 08:56:18 PST 2003
 //    Removed unused variables.
 //
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -260,7 +277,7 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
         bnddata[d1][n] = new T[n1->npts*3];
 
         int d2 = n1->domain;
-        int mi = sdb->boundary[d2].FindNeighborIndex(d1);
+        int mi = n1->match;
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
                 
         int *n2extents = n2->nextents;
@@ -307,6 +324,13 @@ BoundaryHelperFunctions<T>::FillRectilinearBoundaryData(int      d1,
 //  Note:  bnddata, bndmixmat, and bndmixzone may each be NULL.  
 //         olddata may be NULL as well as long as the mixlen is zero.
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -325,7 +349,7 @@ BoundaryHelperFunctions<T>::FillMixedBoundaryData(int          d1,
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
-        int mi = sdb->boundary[d2].FindNeighborIndex(d1);
+        int mi = n1->match;
         Neighbor *n2 = &(sdb->boundary[d2].neighbors[mi]);
         int *n2extents = n2->zextents;
 
@@ -573,6 +597,11 @@ BoundaryHelperFunctions<T>::CommunicateBoundaryData(const vector<int> &domain2pr
 //    Mark C. Miller, Wed Jun  9 21:50:12 PDT 2004
 //    Eliminated use of MPI_ANY_TAG and modified to use GetUniqueMessageTags
 //
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -601,7 +630,7 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
-            int mi = sdb->boundary[d2].FindNeighborIndex(bi->domain);
+            int mi = n1->match;
 
             if (domain2proc[d1] != domain2proc[d2])
             {
@@ -632,7 +661,7 @@ BoundaryHelperFunctions<T>::CommunicateMixedBoundaryData(const vector<int> &doma
         {
             Neighbor *n1 = &bi->neighbors[n];
             int d2 = n1->domain;
-            int mi = sdb->boundary[d2].FindNeighborIndex(bi->domain);
+            int mi = n1->match;
             int size = bndmixlen[d1][n];
 
             if (domain2proc[d1] != domain2proc[d2])
@@ -930,6 +959,11 @@ avtStructuredDomainBoundaries::SetExistence(int      d1,
 //    Jeremy Meredith, Thu Dec 13 11:54:58 PST 2001
 //    Templatized this function.
 //
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -945,7 +979,7 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
 
-        int mi = sdb->boundary[d2].FindNeighborIndex(bi->domain);
+        int mi = n1->match;
         T *data = bnddata[d2][mi];
         if (!data)
             EXCEPTION1(VisItException,"Null array");
@@ -990,6 +1024,13 @@ BoundaryHelperFunctions<T>::SetNewBoundaryData(int       d1,
 //  Programmer:  Hank Childs
 //  Creation:    November 11, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1006,8 +1047,8 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
+        int mi = n1->match;
 
-        int mi = sdb->boundary[d2].FindNeighborIndex(bi->domain);
         T *data = coord[d2][mi];
         if (!data)
             EXCEPTION1(VisItException,"Null array");
@@ -1072,6 +1113,11 @@ BoundaryHelperFunctions<T>::SetNewRectilinearBoundaryData(int d1,
 //    Jeremy Meredith, Mon Oct 28 19:29:12 PST 2002
 //    Added newmixlen as an output argument.
 //
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
 // ****************************************************************************
 template <class T>
 void
@@ -1096,7 +1142,7 @@ BoundaryHelperFunctions<T>::SetNewMixedBoundaryData(int       d1,
     {
         Neighbor *n1 = &bi->neighbors[n];
         int d2 = n1->domain;
-        int mi = sdb->boundary[d2].FindNeighborIndex(bi->domain);
+        int mi = n1->match;
 
         if (!bndmatlist[d2][mi])
             EXCEPTION1(VisItException,"Null array");
@@ -1923,6 +1969,11 @@ avtStructuredDomainBoundaries::ExchangeIntVector(vector<int>        domainNum,
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
 //
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
+//
 // ****************************************************************************
 vector<avtMaterial*>
 avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
@@ -1977,8 +2028,8 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
         for (int n=0; n<bi.neighbors.size(); n++)
         {
             int d1 = bi.domain;
+            int mi = bi.neighbors[n].match;
             int d2 = bi.neighbors[n].domain;
-            int mi = boundary[d2].FindNeighborIndex(d1);
             newmixlen += mixlen[d2][mi];
         }
 
@@ -2068,6 +2119,11 @@ avtStructuredDomainBoundaries::ExchangeMaterial(vector<int>          domainNum,
 //
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Cache domain2proc.
+//
+//    Hank Childs, Wed Jul  6 06:50:55 PDT 2005
+//    Instead of calculating index into domain's neighbor list in a non-robust
+//    way, use the "match", which is already pre-computed by the client for
+//    this purpose.
 //
 // ****************************************************************************
 vector<avtMixedVariable*>
@@ -2164,8 +2220,8 @@ avtStructuredDomainBoundaries::ExchangeMixVar(vector<int>            domainNum,
         for (int n=0; n<bi.neighbors.size(); n++)
         {
             int d1 = bi.domain;
+            int mi = bi.neighbors[n].match;
             int d2 = bi.neighbors[n].domain;
-            int mi = boundary[d2].FindNeighborIndex(d1);
             newmixlen += mixlen[d2][mi];
         }
 
@@ -2896,6 +2952,10 @@ avtStructuredDomainBoundaries::SetIndicesForAMRPatch(int domain,
 //    Hank Childs, Mon Jun 27 10:48:41 PDT 2005
 //    Re-wrote to use interval trees for more efficient overlap finding.
 //
+//    Hank Childs, Wed Jul  6 06:56:02 PDT 2005
+//    Do some sorting so that we know the "match" entry for the neighbor
+//    index will be correct.
+//
 // ****************************************************************************
 
 void
@@ -2934,6 +2994,12 @@ avtStructuredDomainBoundaries::CalculateBoundaries(void)
         max_vec[2] = (float) extents[6*i+5];
         vector<int> list;
         itree.GetDomainsListFromRange(min_vec, max_vec, list);
+
+        // To get the "match" entry correct, we have to sort the list.  This
+        // will ensure that we can predict what a domain's match number will be
+        // for its neighbor.
+        sort(list.begin(), list.end());
+
         for (j = 0 ; j < list.size() ; j++)
         {
             if (i == list[j])

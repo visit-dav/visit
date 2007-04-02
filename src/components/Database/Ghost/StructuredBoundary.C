@@ -201,31 +201,63 @@ Boundary::AddNeighbor(int d, int mi, int o[3], int e[6])
 //  Programmer:  Jeremy Meredith
 //  Creation:    November 21, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jul  5 14:05:09 PDT 2005
+//    Do not call FindNeighborIndex, since it assumes that any pair of domains
+//    can have at most one boundary.
+//
 // ****************************************************************************
 void
-Boundary::DeleteNeighbor(int d)
+Boundary::DeleteNeighbor(int d, vector<Boundary> &wholelist)
 {
-    int n = FindNeighborIndex(d);
+    int   i;
+
+    vector<int> delete_list;
+    for (i=0; i<neighbors.size(); i++)
+        if (neighbors[i].domain == d)
+            delete_list.push_back(i);
+
+    if (delete_list.size() == 0)
+    {
+        // If we have two boundaries between two domains, both those boundaries
+        // will be removed when this method is called.  But because of 
+        // bookkeeping issues, this method may be called twice.  So just ignore
+        // rather than throwing an exception.
+        //
+        // EXCEPTION1(VisItException,
+        //                  "No match for domain in Boundary::DeleteNeighbor");
+        return;
+    }
+
+    for (i = delete_list.size()-1 ; i >= 0 ; i--)
+    {
+        int n = delete_list[i];
+        // Stop expansion of the boundary
+        if (neighbors[n].type == IMIN)
+            expand[0] = 0;
+        if (neighbors[n].type == IMAX)
+            expand[1] = 0;
+        if (neighbors[n].type == JMIN)
+            expand[2] = 0;
+        if (neighbors[n].type == JMAX)
+            expand[3] = 0;
+        if (neighbors[n].type == KMIN)
+            expand[4] = 0;
+        if (neighbors[n].type == KMAX)
+            expand[5] = 0;
     
-    // Stop expansion of the boundary
-    if (neighbors[n].type == IMIN)
-        expand[0] = 0;
-    if (neighbors[n].type == IMAX)
-        expand[1] = 0;
-    if (neighbors[n].type == JMIN)
-        expand[2] = 0;
-    if (neighbors[n].type == JMAX)
-        expand[3] = 0;
-    if (neighbors[n].type == KMIN)
-        expand[4] = 0;
-    if (neighbors[n].type == KMAX)
-        expand[5] = 0;
-
-    // Remove the neighbor from the list
-    for (int i=n+1; i<neighbors.size(); i++)
-        neighbors[i-1] = neighbors[i];
-    neighbors.resize(neighbors.size()-1);
-
+        // Remove the neighbor from the list
+        for (int i=n+1; i<neighbors.size(); i++)
+        {
+            int d = neighbors[i].domain;
+            int entry = neighbors[i].match;
+            wholelist[d].neighbors[entry].match--;
+            neighbors[i-1] = neighbors[i];
+        }
+        neighbors.resize(neighbors.size()-1);
+    }
+    
     Finish();
 }
 
@@ -268,29 +300,6 @@ Boundary::Finish()
     newzextents[5] = oldzextents[5] + expand[5];
 }
 
-// ****************************************************************************
-//  Method:  Boundary::FindNeighborIndex
-//
-//  Purpose:
-//    Finds the index the requested domain in our list.
-//
-//  Arguments:
-//    d          the domain to find
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    November 21, 2001
-//
-// ****************************************************************************
-int
-Boundary::FindNeighborIndex(int d)
-{
-    for (int i=0; i<neighbors.size(); i++)
-        if (neighbors[i].domain == d)
-            return i;
-
-    EXCEPTION1(VisItException,
-               "No match for domain in Boundary::FindNeighborIndex");
-}
 
 // ****************************************************************************
 //  Method:  Boundary::IsGhostZone

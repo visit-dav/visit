@@ -40,6 +40,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's window layout logic has been changed so VisIt will always create the largest square windows in the available space.</li>
 <li>VisIt's rarely used 4x4 window layout has been replaced by a 2x3 window layout.</li>
 <li>VisIt now supports the creation of red/green stereo images.</li>
+<li>When VisIt issues a warning about bad input data, it now tells you which variables are incorrectly sized.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.4.4</font></b></p>
 <ul>
@@ -47,6 +48,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Expressions are being recalculated each time the user picks on a surface.</li>
 <li>It is not possible to select a high cell seed number for an OnionPeel operator that has been applied to a FilledBoundary plot.</li>
 <li>VisIt's Silo database reader plugin does not correctly recognize blocks/groups from HYDRA.</li>
+<li>VisIt can now correctly handle ghost zone construction when two domains contain more than one boundary.</li>
 <li>Creating an elevated Surface of a 2D dataset using the Elevate operator makes VisIt lose the ability to control lighting on that surface.</li>
 <li>The <i>divergence</i> expression now works on 2D vectors.</li>
 <li>Unhiding a Mesh plot when VisIt is in scalable-rendering mode forces the Mesh plot to be opaque.</li>
@@ -64,6 +66,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Picking on plots using the <i>mirvf</i> expression yields incorrect results on second and subsequent picks.</li>
 <li>Picking on 2D Contour plots is broken.</li>
 <li>Pick letters are not visible with an opaque Mesh plot of Boxlib data.</li>
+<li>Node pick query over time for expression in Mili file fails.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.4.3.html">VisIt 1.4.3 Release Notes</a>.</p>

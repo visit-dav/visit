@@ -73,6 +73,9 @@ $0 = shift @ARGV;
 #    Added support for -newconsole. I split the makemovie.py script and
 #    made this program call makemoviemain.py.
 #
+#    Jeremy Meredith, Wed Jul  6 14:46:56 PDT 2005
+#    Added xlc compiler-specific support.
+#
 ###############################################################################
 
 
@@ -595,9 +598,18 @@ for ($os) {
     /aix/ && do {
         if ($ENV{OBJECT_MODE} and $ENV{OBJECT_MODE} eq "64")
         {
-            push @supportedarchs, "ibm-aix-pwr64";
+            if ($req_compiler eq "xlc") {
+                push @supportedarchs, "ibm-aix-pwr64-xlc";
+            }
+            else {
+                push @supportedarchs, "ibm-aix-pwr64";
+            }
         }
-        push @supportedarchs, "ibm-aix-pwr";
+        if ($req_compiler eq "xlc") {
+            push @supportedarchs, "ibm-aix-pwr-xlc";
+        } else {
+            push @supportedarchs, "ibm-aix-pwr";
+        }
         $launch = "poe" if ($procs_set && $launch eq "");
         last;
     };
