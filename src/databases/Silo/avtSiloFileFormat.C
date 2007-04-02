@@ -155,6 +155,9 @@ bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 //    Hank Childs, Sat Mar  5 19:13:05 PST 2005
 //    Don't do dynamic load balancing where we are in parallel.
 //
+//    Mark C. Miller, Mon Jun 12 22:22:38 PDT 2006
+//    Enabled Silo's checksums
+//
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
@@ -173,6 +176,16 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
         //
         DBShowErrors(DB_ALL, ExceptionGenerator);
         madeGlobalSiloCalls = true;
+
+        //
+        // Turn on silo's checksumming feature. This is harmless if the
+        // underlying file DOES NOT contain checksums and will cause only
+        // a small performance hit if it does.
+        //
+#ifdef E_CHECKSUM
+        DBSetEnableChecksums(1);
+#endif
+
     }
 
     dbfiles = new DBfile*[MAX_FILES];
