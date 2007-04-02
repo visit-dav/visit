@@ -431,6 +431,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Sat Jan 21 14:43:45 PST 2006
 //      Added symm_eval_transform.
 //
+//      Hank Childs, Tue Feb 14 14:03:47 PST 2006
+//      Added logical gradient.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -523,6 +526,12 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtMeshCoordinateFilter();
     else if (functionName == "procid")
         f = new avtProcessorIdFilter();
+    else if (functionName == "ijk_gradient" || functionName == "ij_gradient")
+    {
+        avtGradientFilter *g = new avtGradientFilter();
+        g->SetDoLogicalGradient(true);
+        f = g;
+    }
     else if (functionName == "gradient")
         f = new avtGradientFilter();
     else if (functionName == "curl")

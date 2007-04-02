@@ -56,6 +56,9 @@
 //    Hank Childs, Sun Jan 22 12:47:29 PST 2006
 //    Renamed comparison to relational.  Added new category for comparison.
 //
+//    Hank Childs, Tue Feb 14 14:06:20 PST 2006
+//    Added ijk_gradient.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -203,6 +206,8 @@ const char *expr_misc[] = {
     "curl",
     "divergence",
     "gradient",
+    "ij_gradient",
+    "ijk_gradient",
     "Laplacian",
     "recenter",
     "resrad",

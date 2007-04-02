@@ -13,6 +13,7 @@ class     vtkDataArray;
 class     vtkDataSet;
 class     vtkIdList;
 class     vtkRectilinearGrid;
+class     vtkStructuredGrid;
 
 
 // ****************************************************************************
@@ -34,6 +35,10 @@ class     vtkRectilinearGrid;
 //    Hank Childs, Fri Mar  4 08:21:04 PST 2005
 //    Removed data centering conversion modules.
 //
+//    Hank Childs, Mon Feb 13 14:45:18 PST 2006
+//    Add support for logical gradients.  Also add perform restriction, so we
+//    can request ghost zones.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtGradientFilter : public avtSingleInputExpressionFilter
@@ -42,11 +47,18 @@ class EXPRESSION_API avtGradientFilter : public avtSingleInputExpressionFilter
                               avtGradientFilter();
     virtual                  ~avtGradientFilter();
 
+    void                      SetDoLogicalGradient(bool b)
+                               { doLogicalGradients = b; };
     virtual const char       *GetType(void)   { return "avtGradientFilter"; };
     virtual const char       *GetDescription(void)
-                               { return "Calculating Gradient of Each Node"; };
+                               { return "Calculating Gradient"; };
+
+    virtual void              PreExecute(void);
 
   protected:
+    bool                      doLogicalGradients;
+    bool                      haveIssuedWarning;
+
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension() { return 3; }
 
@@ -57,6 +69,9 @@ class EXPRESSION_API avtGradientFilter : public avtSingleInputExpressionFilter
     float                     EvaluateValue(float, float, float, vtkDataSet *,
                                             vtkDataArray *,vtkIdList *,bool &);
     vtkDataArray             *RectilinearGradient(vtkRectilinearGrid *);
+    vtkDataArray             *LogicalGradient(vtkStructuredGrid *);
+    virtual avtPipelineSpecification_p
+                               PerformRestriction(avtPipelineSpecification_p);
 };
 
 

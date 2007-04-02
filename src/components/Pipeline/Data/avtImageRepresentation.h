@@ -40,6 +40,10 @@ class  vtkImageData;
 //
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //    Added additional compression related data members 
+//
+//    Hank Childs, Mon Feb  6 14:59:43 PST 2006
+//    Allow image to avoid copying the Z-buffer.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImageRepresentation
@@ -47,7 +51,7 @@ class PIPELINE_API avtImageRepresentation
   public:
                          avtImageRepresentation();
                          avtImageRepresentation(vtkImageData *);
-                         avtImageRepresentation(vtkImageData *, float *);
+                         avtImageRepresentation(vtkImageData *, float *, bool = false);
                          avtImageRepresentation(char *, int);
                          avtImageRepresentation(const avtImageRepresentation &);
     virtual             ~avtImageRepresentation();
