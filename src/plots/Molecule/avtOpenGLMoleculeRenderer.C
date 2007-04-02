@@ -49,6 +49,8 @@
   #include <GL/gl.h>
 #endif
 
+#define SHORTEN_BONDS
+
 static int sphere_quality_levels[4][2] = {
     {6,3},
     {12,6},
@@ -452,6 +454,40 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
     }
     float *bonds = bond_array ? (float*)bond_array->GetVoidPointer(0) : NULL;
 
+#ifdef SHORTEN_BONDS
+    //
+    // Get radius variable
+    //
+    bool shortenBonds = atts.GetDrawAtomsAs() ==
+                        MoleculeAttributes::ImposterAtoms;
+    float *radiusvar = NULL;
+    bool sbv  = atts.GetScaleRadiusBy() == MoleculeAttributes::Variable;
+    bool sbar = atts.GetScaleRadiusBy() == MoleculeAttributes::Atomic;
+    bool sbcr = atts.GetScaleRadiusBy() == MoleculeAttributes::Covalent;
+    float radiusscale = atts.GetRadiusScaleFactor();
+    float dpt[3];
+    if (shortenBonds || sbv)
+    {
+        if (atts.GetRadiusVariable() == "default")
+            radiusvar = scalar;
+        else
+        {
+            vtkDataArray *radius_array = data->GetCellData()->GetArray(
+                                          atts.GetRadiusVariable().c_str());
+            if (!radius_array)
+                radius_array = data->GetPointData()->GetArray(
+                                          atts.GetRadiusVariable().c_str());
+            if (!radius_array)
+            {
+                // This shouldn't have gotten this far if it couldn't
+                // read the variable like we asked.
+                EXCEPTION1(ImproperUseException, "Couldn't read radius variable");
+            }
+            radiusvar = (float*)radius_array->GetVoidPointer(0);
+        }
+    }
+#endif
+
     //
     // Create a map of atom indices for bond indexing
     //
@@ -526,6 +562,21 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                                (pt_0[1]+pt_1[1])/2.,
                                (pt_0[2]+pt_1[2])/2.};
 
+#ifdef SHORTEN_BONDS
+            if(shortenBonds)
+            {
+                dpt[0] = pt_1[0] - pt_0[0];
+                dpt[1] = pt_1[1] - pt_0[1];
+                dpt[2] = pt_1[2] - pt_0[2];
+                vtkMath::Normalize(dpt);
+
+                float pt_0_cpy[3] = {pt_0[0], pt_0[1], pt_0[2]};
+                float pt_1_cpy[3] = {pt_1[0], pt_1[1], pt_1[2]};
+                pt_0 = pt_0_cpy;
+                pt_1 = pt_1_cpy;
+            }
+#endif
+
             for (int half=0; half<=1; half++)
             {
                 int atom  = (half==0) ? v0 : v1;
@@ -540,6 +591,35 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
 
                 if (element_number < 0 || element_number >= MAX_ELEMENT_NUMBER)
                     element_number = MAX_ELEMENT_NUMBER-1;
+
+#ifdef SHORTEN_BONDS
+                if(shortenBonds)
+                {
+                    // Determine radius
+                    float atom_radius = atts.GetRadiusFixed();
+                    if (element && sbar)
+                        atom_radius = atomic_radius[element_number] * radiusscale;
+                    else if (element && sbcr)
+                        atom_radius = covalent_radius[element_number] * radiusscale;
+                    else if (radiusvar && sbv)
+                        atom_radius = radiusvar[i] * radiusscale;
+
+                    const float fudge = 0.9;
+
+                    if (half == 0)
+                    {
+                        pt_a[0] += atom_radius * dpt[0] * fudge;
+                        pt_a[1] += atom_radius * dpt[1] * fudge;
+                        pt_a[2] += atom_radius * dpt[2] * fudge;
+                    }
+                    else
+                    {
+                        pt_b[0] -= atom_radius * dpt[0] * fudge;
+                        pt_b[1] -= atom_radius * dpt[1] * fudge;
+                        pt_b[2] -= atom_radius * dpt[2] * fudge;
+                    }
+                }
+#endif
 
                 float radius = atts.GetBondRadius();
 
@@ -633,7 +713,8 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
                                  float _varmin, float _varmax,
                                  float _ambient_coeff,
                                  float _spec_coeff, float _spec_power,
-                                 float _spec_r, float _spec_g, float _spec_b)
+                                 float _spec_r, float _spec_g, float _spec_b,
+                                 const int *winsize)
 {
     if (!data->GetCellData()->GetScalars() &&
         !data->GetPointData()->GetScalars())
@@ -733,14 +814,26 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
     TRY
     {
         SetColors(data, atts);
+        bool doBonds = atts.GetDrawBondsAs() != MoleculeAttributes::NoBonds;
 
-        if (atts.GetDrawAtomsAs() == MoleculeAttributes::SphereAtoms ||
-            atts.GetDrawAtomsAs() == MoleculeAttributes::ImposterAtoms)
+        if (atts.GetDrawAtomsAs() == MoleculeAttributes::SphereAtoms)
         {
             DrawAtomsAsSpheres(data,atts);
         }
+        else if(atts.GetDrawAtomsAs() == MoleculeAttributes::ImposterAtoms)
+        {
+            // Set some hints in the imposter atom texturer.
+            ((avtOpenGLAtomTexturer *)tex)->SetHint(
+                 avtOpenGLAtomTexturer::HINT_SET_DEPTH, doBonds ? 0 : 1);
+            ((avtOpenGLAtomTexturer *)tex)->SetHint(
+                 avtOpenGLAtomTexturer::HINT_SET_SCREEN_WIDTH, winsize[0]);
+            ((avtOpenGLAtomTexturer *)tex)->SetHint(
+                 avtOpenGLAtomTexturer::HINT_SET_SCREEN_HEIGHT, winsize[1]);
 
-        if (atts.GetDrawBondsAs() != MoleculeAttributes::NoBonds)
+            DrawAtomsAsSpheres(data,atts);
+        }
+
+        if (doBonds)
         {
             DrawBonds(data,atts);
         }

@@ -115,7 +115,12 @@ avtMoleculeRenderer::New(void)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Brad Whitlock, Fri Apr 7 11:36:04 PDT 2006
+//    Pass window size to the renderer implementation.
+//
 // ****************************************************************************
+
 void
 avtMoleculeRenderer::Render(vtkDataSet *ds)
 {
@@ -146,13 +151,18 @@ avtMoleculeRenderer::Render(vtkDataSet *ds)
     // get data set
     vtkPolyData *polydata = (vtkPolyData*)ds;
 
+
+    int winsize[2];
+    winsize[0] = VTKRen->GetVTKWindow()->GetSize()[0];
+    winsize[1] = VTKRen->GetVTKWindow()->GetSize()[1];
+
     rendererImplementation->Render(polydata,
                                    atts,
                                    immediateModeRendering,
                                    varmin, varmax,
                                    ambient_coeff,
                                    spec_coeff, spec_power,
-                                   spec_r, spec_g, spec_b);
+                                   spec_r, spec_g, spec_b, winsize);
 }
 
 
