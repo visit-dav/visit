@@ -69,6 +69,10 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Thu Apr 28 18:02:28 PDT 2005
 #    Added multi-compiler support.  Added linux-intel-icc platform.
 #
+#    Brad Whitlock, Mon May 9 11:45:21 PDT 2005
+#    Added support for -newconsole. I split the makemovie.py script and
+#    made this program call makemoviemain.py.
+#
 ###############################################################################
 
 
@@ -252,6 +256,7 @@ $fullusage = "$usage
         -gdb-mdserver        Run the mdserver under gdb.
         -break <funcname>    Add the specified breakpoint in gdb.
         -xterm               Run gdb in an xterm window.
+        -newconsole          Run any VisIt component in a new console window.
         -totalview <comp>    Run totalview on the given component.
         -valgrind <comp>     Run valgrind on the given component.
         -numrestarts <#>     Number of attempts to restart a failed engine.
@@ -328,6 +333,7 @@ $add_movie_args = 0;
 $envonly        = 0;
 $logging        = 0;
 $req_compiler   = "";
+$use_new_console = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -378,6 +384,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-gdb-mdserver")     { if($exe_name eq "mdserver") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-gdb-vcl")          { if($exe_name eq "vcl") {$debug_gdb = 1;} else {push @visitargs, $arg;}}
     elsif ($arg eq "-xterm")            { if($debug_gdb) {$gdb_xterm = 1;} else {push @visitargs, $arg;}}
+    elsif ($arg eq "-newconsole")       { $use_new_console = 1; }
     elsif ($arg eq "-break")            { if($debug_gdb) {$bp = shift; push @breakpoints, $bp; } else {push @visitargs, $arg;}}
     elsif ($arg eq "-compiler")         { $req_compiler = shift; push @visitargs, "-compiler", $req_compiler; }
     elsif ($arg eq "-totalview" )       {
@@ -778,7 +785,7 @@ EOF
 # Add the movie script to the arguments.
 if($add_movie_args)
 {
-    push @visitargs, "-s", "$visitscriptdir/makemovie.py", "-nowin";
+    push @visitargs, "-s", "$visitscriptdir/makemoviemain.py", "-nowin";
 }
 
 
@@ -1244,6 +1251,14 @@ else
         chomp($printcmd[0] = `basename $printcmd[0]`);
         print STDERR "Running: @printcmd\n";
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
+
+        if($use_new_console)
+        {
+            @tmpcmd = @visitcmd;
+            @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
+            push @visitcmd, @tmpcmd;
+        }
+
         exec @visitcmd or die "Can't execute visit: $!\n";
     }
 }

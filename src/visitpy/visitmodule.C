@@ -41,6 +41,9 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObject.h>
 #include <AnnotationObjectList.h>
+#include <ClientMethod.h>
+#include <ClientInformation.h>
+#include <ClientInformationList.h>
 #include <ColorTableAttributes.h>
 #include <DatabaseCorrelationList.h>
 #include <DatabaseCorrelation.h>
@@ -275,6 +278,7 @@ private:
 static PyObject             *visitModule = 0;
 static bool                  moduleInitialized = false;
 static bool                  keepGoing = true;
+static bool                  viewerInitiatedQuit = false;
 static ViewerProxy          *viewer = 0;
 static FILE                 *logFile = 0;
 static bool                  logging = true;
@@ -289,12 +293,18 @@ static VisItMessageObserver *messageObserver = 0;
 static VisItStatusObserver  *statusObserver = 0;
 static bool                  moduleVerbose = false;
 static ObserverToCallback   *pluginLoader = 0;
+static ObserverToCallback   *clientMethodObserver = 0;
 static bool                  localNameSpace = false;
-static int                   syncCount = 0;
+static bool                  interruptScript = false;
+static int                   syncCount = 1000;
 static PyObject             *VisItError;
+static PyObject             *VisItInterrupt;
 
 static int                   cli_argc = 0;
 static char                **cli_argv = 0;
+
+static PyThreadState        *mainThreadState = NULL;
+
 
 static std::vector<AnnotationObject *>   localObjectList;
 static std::map<AnnotationObject *, int> localObjectReferenceCount;
@@ -2509,6 +2519,115 @@ STATIC PyObject *
 visit_OpenMDServer(PyObject *self, PyObject *args)
 {
     return OpenComponentHelper(self, args, false);
+}
+
+// ****************************************************************************
+// Function: OpenClientHelper
+//
+// Purpose: 
+//   Helps us open a client.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon May 9 09:23:27 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+OpenClientHelper(PyObject *self, PyObject *args, int componentNumber)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    static const char *OCEError = "Arguments must be: clientName, program, arg | (args...)";
+    char  *clientName = 0;
+    char  *program = 0;
+    char  *arg1 = 0;
+    stringVector argv;
+
+    if(componentNumber == 1)
+    {
+        clientName = "GUI";
+        program = "visit";
+        argv.push_back("-gui");
+
+        // Make sure it's a tuple.
+        if(!GetStringVectorFromPyObject(args, argv))
+        {
+            VisItErrorFunc(OCEError);
+            return NULL;
+        }
+
+        PyErr_Clear();
+    }
+    else if (!PyArg_ParseTuple(args, "ss", &clientName, &program))
+    {
+        if (!PyArg_ParseTuple(args, "sss", &clientName, &program, &arg1))
+        {
+            PyObject *tuple;
+            if (PyArg_ParseTuple(args, "ssO", &clientName, &program, &tuple))
+            {
+                // Make sure it's a tuple.
+                if(!GetStringVectorFromPyObject(tuple, argv))
+                {
+                    VisItErrorFunc(OCEError);
+                    return NULL;
+                }
+            }
+        }
+        else
+        {
+            // Store arg1 in the argument vector.
+            argv.push_back(arg1);
+        }
+
+        PyErr_Clear();
+    }
+
+    MUTEX_LOCK();
+        // Open a client
+        viewer->OpenClient(clientName, program, argv);
+
+        if(logging)
+        {
+            if(argv.size() == 0)
+                fprintf(logFile, "OpenClient(\"%s\", \"%s\")\n", 
+                        clientName, program);
+            else if(argv.size() == 1)
+            {
+                fprintf(logFile, "OpenClient(\"%s\", \"%s\", \"%s\")\n",
+                        clientName, program, argv[0].c_str());
+            }
+            else
+            {
+                fprintf(logFile, "launchArguments = (");
+                for(int i = 0; i < argv.size(); ++i)
+                {
+                    fprintf(logFile, "\"%s\"", argv[i].c_str());
+                    if(i < argv.size() - 1)
+                        fprintf(logFile, ", ");
+                }
+                fprintf(logFile, ")\n");
+                fprintf(logFile, "OpenClient(\"%s\", \"%s\", launchArguments)\n",
+                        clientName, program);
+            }
+        }
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+STATIC PyObject *
+visit_OpenClient(PyObject *self, PyObject *args)
+{
+    return OpenClientHelper(self, args, 0);
+}
+
+STATIC PyObject *
+visit_OpenGUI(PyObject *self, PyObject *args)
+{
+    return OpenClientHelper(self, args, 1);
 }
 
 // ****************************************************************************
@@ -9632,6 +9751,295 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
     return transferOwnership;
 }
 
+// ****************************************************************************
+// Function: PopulateMethodArgs
+//
+// Purpose: 
+//   Recurses and populates the client method arguments from the python
+//   object provided.
+//
+// Arguments:
+//   m   : The client method object to populate.
+//   obj : The python object to use to populate m.
+//
+// Returns:    false if there was an error.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 17:38:04 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static bool
+PopulateMethodArgs(ClientMethod *m, PyObject *obj)
+{
+    bool noErrors = true;
+
+    if(PyInt_Check(obj))
+    {
+        m->AddArgument((int)PyInt_AS_LONG(obj));
+    }
+    else if(PyLong_Check(obj))
+    {
+        m->AddArgument((int)PyLong_AsLong(obj));
+    }
+    else if(PyFloat_Check(obj))
+    {
+        m->AddArgument((double)PyFloat_AS_DOUBLE(obj));
+    }
+    else if(PyString_Check(obj))
+    {
+        m->AddArgument(std::string(PyString_AS_STRING(obj)));
+    }
+    else if(PyTuple_Check(obj))
+    {
+        // Extract arguments from the tuple.
+        for(int i = 0; i < PyTuple_Size(obj) && noErrors; ++i)
+            noErrors = PopulateMethodArgs(m, PyTuple_GET_ITEM(obj, i));
+    }
+    else if(PyTuple_Check(obj))
+    {
+        // Extract arguments from the tuple.
+        for(int i = 0; i < PyList_Size(obj) && noErrors; ++i)
+            noErrors = PopulateMethodArgs(m, PyList_GET_ITEM(obj, i));
+    }
+    else
+        noErrors = false;
+
+    return noErrors;
+}
+
+// ****************************************************************************
+// Function: visit_ClientMethod
+//
+// Purpose: 
+//   Tells VisIt to execute a client method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 17:06:44 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ClientMethod(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *name = 0;
+    char *arg1 = 0;
+    const char *CMError = "The tuple passed as the arguments to the"
+                          "client method must contain only int, long, "
+                          " float, tuples, or lists.";
+    ClientMethod *m = viewer->GetClientMethod();
+    m->ClearArgs();
+
+    if (!PyArg_ParseTuple(args, "s", &name))
+    {
+        PyObject *obj = 0;
+        if(!PyArg_ParseTuple(args, "sO", &name, &obj))
+        {
+            VisItErrorFunc(CMError);
+            return NULL;
+        }
+
+        if(!PopulateMethodArgs(m, obj))
+        {
+            VisItErrorFunc(CMError);
+            return NULL;
+        }
+
+        PyErr_Clear();
+    }
+
+    // Send the client method to the viewer where it will be sent to
+    // the other clients.
+    m->SetMethodName(name);
+    clientMethodObserver->SetUpdate(false);
+    m->Notify();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
+// Function: visit_exec_client_method
+//
+// Purpose:
+//   This method is a thread callback function whose sole purpose is to
+//   execute the method stored in the ClientMethod object that is passed in.
+//
+// Notes:      If the method being asked for is implemented here, try and 
+//             execute it.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 16:58:15 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+#if defined(_WIN32)
+static DWORD WINAPI
+visit_exec_client_method(LPVOID data)
+#else
+static void *
+visit_exec_client_method(void *data)
+#endif
+{
+    ClientMethod *m = (ClientMethod *)data;
+
+    // get the global lock
+    PyEval_AcquireLock();
+
+    // get a reference to the PyInterpreterState
+    PyInterpreterState * mainInterpreterState = mainThreadState->interp;
+    // create a thread state object for this thread
+    PyThreadState * myThreadState = PyThreadState_New(mainInterpreterState);
+
+    // swap in my thread state
+    PyThreadState_Swap(myThreadState);
+    
+    // Execute the method
+    if(m->GetMethodName() == "Quit")
+    {
+        // Tell the 2nd thread to quit.
+        keepGoing = false;
+        // Make the interpreter quit.
+        viewerInitiatedQuit = true;
+        PyRun_SimpleString("import sys; sys.exit(0)");
+    }
+    else if(m->GetMethodName() == "Interpret")
+    {
+        // Interpret all of the strings stored in the method arguments.
+        const stringVector &code = m->GetStringArgs();
+        for(int i = 0; i < code.size(); ++i)
+        {
+            int len = code[i].size() + 1;
+            char *buf = new char[len];
+            strcpy(buf, code[i].c_str());
+            PyRun_SimpleString(buf);
+            delete [] buf;
+        }
+    }
+
+    // clear the thread state
+    PyThreadState_Swap(NULL);
+    // clear out any cruft from thread state object
+    PyThreadState_Clear(myThreadState);
+    // delete my thread state object
+    PyThreadState_Delete(myThreadState);
+
+    delete m;
+
+    // release our hold on the global interpreter
+    PyEval_ReleaseLock();
+
+    return NULL;
+}
+
+// ****************************************************************************
+// Function: ExecuteClientMethod
+//
+// Purpose:
+//   This method is called when the clientMethodObserver gets client method
+//   data from the viewer.
+//
+// Notes:      If the method being asked for is implemented here, try and 
+//             execute it. We execute the method on a new thread because this
+//             method is called by the 2nd thread, which is the messaging
+//             thread and it must return so it can listen for synchronizes
+//             and other data from the viewer.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed May 4 16:58:15 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+ExecuteClientMethod(Subject *, void *)
+{
+    ClientMethod *method = viewer->GetClientMethod();
+
+    if(method->GetMethodName() == "_QueryClientInformation")
+    {
+        debug1 << "CLI received _QueryClientInformation method. Tell the "
+                  "viewer which client methods the CLI supports." << endl;
+
+        // The viewer uses this method to discover information about the GUI.
+        ClientInformation *info = viewer->GetClientInformation();
+        info->SetClientName("cli");
+        info->ClearMethods();
+
+        // Populate the method names and prototypes that the CLI supports
+        // but don't advertise _QueryClientInformation.
+        info->DeclareMethod("Quit", "");
+        info->DeclareMethod("Interpret", "s");
+        info->DeclareMethod("Interrupt", "");
+        viewer->SetXferUpdate(true);
+        info->SelectAll();
+        info->Notify();
+        viewer->SetXferUpdate(false);
+    }
+    else if(method->GetMethodName() == "Interrupt")
+    {
+        debug1 << "CLI received Interrupt method" << endl;
+        interruptScript = true;
+    }
+    else
+    {
+        // Determine whether the method is supported by this client.
+        int okay = viewer->MethodRequestHasRequiredInformation();
+     
+        if(okay == 0)
+        {
+            debug1 << "Client method " << method->GetMethodName().c_str()
+                   << " is not supported by the CLI." << endl;
+        }
+        else if(okay == 1)
+        {
+            debug1 << "Client method " << method->GetMethodName().c_str()
+                   << " is supported by the CLI but not enough information "
+                      "was passed in the method request." << endl;
+        }
+        else
+        {
+            //
+            // We're going to interpret the Python code. We need another 
+            // thread so this thread can get back to reading output from the
+            // viewer.
+            //
+            ClientMethod *m = new ClientMethod(*method);
+#if defined(_WIN32)
+            // Create the thread with the WIN32 API.
+            DWORD Id;
+            if(CreateThread(0, 0, visit_exec_client_method, (LPVOID)m, 0, &Id) == INVALID_HANDLE_VALUE)
+            {
+                delete m;
+                fprintf(stderr, "VisIt: Error - Could not create work thread to "
+                        "execute %s client method.\n", m->GetMethodName().c_str());
+            }
+#else
+            // Create the thread using PThreads.
+            pthread_t tid;
+            if(pthread_create(&tid, &thread_atts, visit_exec_client_method, (void *)m) == -1)
+            {
+                delete m;
+                fprintf(stderr, "VisIt: Error - Could not create work thread to "
+                        "execute %s client method.\n", m->GetMethodName().c_str());
+            }
+#endif
+        }
+    }
+}
+
+
 //
 // Method table
 //
@@ -9837,6 +10245,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Thu Mar 17 10:17:32 PDT 2005
 //   Added ToggleLockTools, GetDatabaseCorrelation, GetDatabaseCorrelationNames.
 //
+//   Brad Whitlock, Wed May 4 10:45:53 PDT 2005
+//   Added OpenClient and OpenGUI.
+//
 //   Hank Childs, Mon Jun 13 11:23:41 PDT 2005
 //   Added docstrings.
 //
@@ -9889,6 +10300,7 @@ AddDefaultMethods()
     AddMethod("ClearViewKeyframes", visit_ClearViewKeyframes,
                                                  visit_ClearViewKeyframes_doc);
     AddMethod("ClearWindow", visit_ClearWindow, visit_Clear_doc);
+    AddMethod("ClientMethod", visit_ClientMethod);
     AddMethod("CloneWindow",  visit_CloneWindow, visit_CloneWindow_doc);
     AddMethod("CloseComputeEngine", visit_CloseComputeEngine, 
                                                  visit_CloseComputeEngine_doc);
@@ -9996,8 +10408,10 @@ AddDefaultMethods()
                                                    visit_MoveViewKeyframe_doc);
     AddMethod("NodePick", visit_NodePick, visit_NodePick_doc);
     AddMethod("OpenDatabase", visit_OpenDatabase, visit_OpenDatabase_doc);
+    AddMethod("OpenClient", visit_OpenClient);
     AddMethod("OpenComputeEngine", visit_OpenComputeEngine,
                                                   visit_OpenComputeEngine_doc);
+    AddMethod("OpenGUI", visit_OpenGUI);
     AddMethod("OpenMDServer", visit_OpenMDServer, visit_OpenMDServer_doc);
     AddMethod("OverlayDatabase", visit_OverlayDatabase, 
                                                     visit_OverlayDatabase_doc);
@@ -10639,6 +11053,11 @@ NeedToLoadPlugins(Subject *, void *)
 //   I added an observer that helps us do thread synchronization that does
 //   not involve polling so we don't waste the CPU.
 //
+//   Brad Whitlock, Wed May 4 08:35:00 PDT 2005
+//   I changed the for-loop to add arguments to the viewer proxy since the
+//   the cli_argv array now has argv[0] in it so the ParentProcess inside of
+//   the ViewerProxy can work.
+//
 // ****************************************************************************
 
 static int
@@ -10708,7 +11127,7 @@ InitializeModule()
     //
     // Add the optional command line arguments coming from cli_argv.
     //
-    for(int i = 0; i < cli_argc; ++i)
+    for(int i = 1; i < cli_argc; ++i)
         viewer->AddArgument(cli_argv[i]);
 
     //
@@ -10719,6 +11138,9 @@ InitializeModule()
     statusObserver->SetVerbose(moduleVerbose);
     pluginLoader = new ObserverToCallback(viewer->GetPluginManagerAttributes(),
                                           NeedToLoadPlugins);
+    clientMethodObserver = new ObserverToCallback(viewer->GetClientMethod(),
+                                          ExecuteClientMethod);
+
 #ifndef POLLING_SYNCHRONIZE
     synchronizeCallback = new ObserverToCallback(viewer->GetSyncAttributes(),
                                                  WakeMainThread);
@@ -10775,6 +11197,10 @@ InitializeModule()
 //   I made the viewer not show windows by default.  Thus, after we start
 //   up the viewer, we have to tell it to show its windows.
 //
+//   Brad Whitlock, Tue May 3 16:53:29 PST 2005
+//   Added cli_argc, cli_argv to the Create call so we can do reverse
+//   launching (viewer launching cli).
+//
 // ****************************************************************************
 
 static void
@@ -10785,7 +11211,7 @@ LaunchViewer()
         //
         // Try and connect to the viewer.
         //
-        viewer->Create();
+        viewer->Create(&cli_argc, &cli_argv);
 
         //
         // Tell the windows to show themselves
@@ -10868,6 +11294,10 @@ CreateListenerThread()
 //   Brad Whitlock, Tue Jan 7 16:25:24 PST 2003
 //   I added code to write closing information to the debug logs.
 //
+//   Brad Whitlock, Wed May 4 16:56:32 PST 2005
+//   Added code to delete clientMethodObserver. I also made the CLI just
+//   detach from the viewer instead of telling it to close.
+//
 // ****************************************************************************
 
 static void
@@ -10878,6 +11308,7 @@ CloseModule()
     // Delete the observers
     delete messageObserver;
     delete pluginLoader;
+    delete clientMethodObserver;
 
     // Make each extension delete its observer
     debug1 << "Closing the extensions." << endl;
@@ -10887,7 +11318,8 @@ CloseModule()
     if(viewer)
     {
         debug1 << "Telling the viewer to close." << endl;
-        viewer->Close();
+        if(!viewerInitiatedQuit)
+            viewer->Detach();
         delete viewer;
         viewer = 0;
         debug1 << "The viewer closed." << endl;
@@ -11054,12 +11486,21 @@ initscriptfunctions()
 //   renamed the error exception to VisItException to make it more like the
 //   C++ version since we can actually trap for the exception now.
 //
+//   Brad Whitlock, Wed May 4 19:15:05 PST 2005
+//   Added code to get a pointer to the main thread state. I also added the
+//   VisItInterrupt exception.
+//
 // ****************************************************************************
 
 void
 initvisit()
 {
     int initCode = 0;
+
+    // save a pointer to the main PyThreadState object
+    mainThreadState = PyThreadState_Get();
+    // release the lock
+    PyEval_ReleaseLock();
 
     //
     // Initialize the module, but only do it one time.
@@ -11084,6 +11525,8 @@ initvisit()
     d = PyModule_GetDict(visitModule);
     VisItError = PyErr_NewException("visit.VisItException", NULL, NULL);
     PyDict_SetItemString(d, "VisItException", VisItError);
+    VisItInterrupt = PyErr_NewException("visit.VisItInterrupt", NULL, NULL);
+    PyDict_SetItemString(d, "VisItInterrupt", VisItInterrupt);
 
     // Define builtin visit functions that are written in python.
     initscriptfunctions();
@@ -11231,6 +11674,9 @@ visit_eventloop(void *)
 //   made it return a value of -1 if the viewer happened to die while we were
 //   synchronizing. In that case, I also added code to set the error string.
 //
+//   Brad Whitlock, Tue Jun 21 10:59:04 PDT 2005
+//   Added support for script interruption.
+//
 // ****************************************************************************
 
 static int
@@ -11294,12 +11740,22 @@ Synchronize()
 
     // If the viewer has terminated while we were waiting for the sync tag
     // then call the error function now that we're in thread 1.
+    int retval = keepGoing ? messageObserver->ErrorFlag() : -1;
     if(!keepGoing)
     {
         VisItErrorFunc(terminationMsg);
     }
 
+    // If we interrupted the script via the Interrupt client method then
+    // reset the interruptScript flag and make sure we return an error value.
+    if(interruptScript)
+    {
+        PyErr_SetString(VisItInterrupt, "Interrupted script");
+        interruptScript = false;
+        retval = -1;
+    }
+
     // Return whether or not there is an error in the message observer.
     // Also indicate an error if the viewer is dead.
-    return keepGoing ? messageObserver->ErrorFlag() : -1;
+    return retval;
 }

@@ -15,6 +15,9 @@ class AnnotationAttributes;
 class AnnotationObjectList;
 class AppearanceAttributes;
 class AttributeSubject;
+class ClientMethod;
+class ClientInformation;
+class ClientInformationList;
 class ColorTableAttributes;
 class Connection;
 class DatabaseCorrelationList;
@@ -31,6 +34,8 @@ class KeyframeAttributes;
 class LightList;
 class MaterialAttributes;
 class MessageAttributes;
+class MovieAttributes;
+class ParentProcess;
 class PickAttributes;
 class PlotList;
 class PluginManagerAttributes;
@@ -374,6 +379,14 @@ class Xfer;
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added SetTryHarderCyclesTimes
+//
+//    Brad Whitlock, Tue May 3 16:01:45 PST 2005
+//    Added methods to tell the viewer to launch a VisIt client and added
+//    objects necessary to allow the viewer to launch the client. I also added
+//    clientMethod, a new state object that lets a client execute "methods" on
+//    another client. I added a Detach method that lets the client detach from
+//    the viewer and leave the other clients running.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -389,8 +402,9 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void ProcessInput();
 
     void AddArgument(const std::string &arg);
-    void Create();
+    void Create(int *argc = 0, char ***argv = 0);
     void Close();
+    void Detach();
     void LoadPlugins();
 
     void AddWindow();
@@ -611,6 +625,11 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                const std::string &command,
                                const std::string &argument);
 
+    void OpenClient(const std::string &clientName, 
+                    const std::string &program,
+                    const stringVector &args);
+    int MethodRequestHasRequiredInformation() const;
+
     // Methods for returning pointers to state obects.
     AnimationAttributes        *GetAnimationAttributes() const 
                                     {return animationAtts;};
@@ -688,11 +707,25 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
                                     {return silAtts; }
     ProcessAttributes          *GetProcessAttributes() const
                                     {return procAtts; }
-           
+    ClientMethod               *GetClientMethod() const
+                                    {return clientMethod; }
+    ClientInformation          *GetClientInformation() const
+                                    {return clientInformation; }
+    const ClientInformationList *GetClientInformationList() const
+                                    {return clientInformationList; }
+    MovieAttributes            *GetMovieAttributes() const
+                                    {return movieAtts; }
+
+    // Don't use this method unless absolutely necessary.
+    void SetXferUpdate(bool val);
+
   protected:
     virtual void Update(Subject *subj);
   private:
+    void ConnectXfer();
+
     RemoteProcess              *viewer;
+    ParentProcess              *viewerP;
     Xfer                       *xfer;
     ViewerRPC                  *viewerRPC;
 
@@ -740,6 +773,10 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     avtDatabaseMetaData        *metaData;
     SILAttributes              *silAtts;
     ProcessAttributes          *procAtts;
+    ClientMethod               *clientMethod;
+    ClientInformation          *clientInformation;
+    ClientInformationList      *clientInformationList;
+    MovieAttributes            *movieAtts;
 
     AttributeSubject           **plotAtts;
     AttributeSubject           **operatorAtts;

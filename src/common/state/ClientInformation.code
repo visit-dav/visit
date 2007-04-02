@@ -1,0 +1,61 @@
+Function: DeclareMethod
+Declaration: void DeclareMethod(const std::string &name, const std::string &proto);
+Definition:
+void
+ClientInformation::DeclareMethod(const std::string &name, const std::string &proto)
+{
+    methodNames.push_back(name);
+    methodPrototypes.push_back(proto);
+    SelectField(1);
+    SelectField(2);
+}
+
+Function: GetMethodIndex
+Declaration: int GetMethodIndex(const std::string &name) const;
+Definition:
+int
+ClientInformation::GetMethodIndex(const std::string &name) const
+{
+    for(int i = 0; i < methodNames.size(); ++i)
+    {
+        if(methodNames[i] == name)
+            return i;
+    }
+
+    return -1;
+}
+
+Function: GetMethod
+Declaration: std::string GetMethod(int i) const;
+Definition:
+std::string
+ClientInformation::GetMethod(int i) const
+{
+    if(i >= 0 && i < methodNames.size())
+        return methodNames[i];
+    return "";
+}
+
+Function: GetMethodPrototype
+Declaration: std::string GetMethodPrototype(int i) const;
+Definition:
+std::string
+ClientInformation::GetMethodPrototype(int i) const
+{
+    if(i >= 0 && i < methodPrototypes.size())
+        return methodPrototypes[i];
+    return "";
+}
+
+Function: ClearMethods
+Declaration: void ClearMethods();
+Definition:
+void
+ClientInformation::ClearMethods()
+{
+    methodNames.clear();
+    methodPrototypes.clear();
+    SelectField(1);
+    SelectField(2);
+}
+

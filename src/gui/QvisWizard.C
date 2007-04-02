@@ -68,3 +68,22 @@ QvisWizard::SendAttributes()
         atts->Notify();
     }
 }
+
+// ****************************************************************************
+// Method: QvisWizard::UpdateAttributes
+//
+// Purpose: 
+//   Writes over the wizard's local atts with the original atts.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jun 22 11:44:22 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+QvisWizard::UpdateAttributes()
+{
+    return localCopy->CopyAttributes(atts);
+}

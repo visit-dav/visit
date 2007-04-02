@@ -23,12 +23,15 @@ class QTimer;
 class QvisAppearanceWindow;
 class QvisApplication;
 class QvisColorTableWindow;
+class QvisInterpreter;
 class QvisMainWindow;
 class QvisMessageWindow;
+class QvisMovieProgressDialog;
 class QvisOutputWindow;
 class QvisPickWindow;
 class QvisPluginWindow;
 class QvisPreferencesWindow;
+class QvisSaveMovieWizard;
 class QvisVisItUpdate;
 class SplashScreen;
 
@@ -237,11 +240,17 @@ class SplashScreen;
 //    Brad Whitlock, Wed Feb 9 17:51:44 PST 2005
 //    Added an object that knows how to update VisIt.
 //
+//    Brad Whitlock, Mon Mar 21 15:19:37 PST 2005
+//    Added support for saving movies.
+//
 //    Jeremy Meredith, Mon Apr  4 16:07:59 PDT 2005
 //    Added a simulations window.
 //
 //    Hank Childs, Tue May 24 17:07:58 PDT 2005
 //    Added a export DB window.
+//
+//    Brad Whitlock, Wed May 4 18:00:32 PST 2005
+//    Added support for executing client methods.
 //
 // ****************************************************************************
 
@@ -288,8 +297,10 @@ private:
     void Synchronize(int tag);
     void HandleSynchronize(int val);
     void HandleMetaDataUpdate();
-
+    void HandleClientMethod();
     void GetVirtualDatabaseDefinitions(StringStringVectorMap &defs);
+
+    QString SaveSessionFile(const QString &s);
 
     // Internal callbacks
     static void StartMDServer(const std::string &hostName,
@@ -297,10 +308,13 @@ private:
     static void UpdatePrinterAttributes(Subject *subj, void *data);
     static void SyncCallback(Subject *s, void *data);
     static void UpdateMetaDataAttributes(Subject *subj, void *data);
+    static void ClientMethodCallback(Subject *subj, void *data);
 
 public slots:
     void newExpression();
+    void Interpret(const QString &);
 private slots:
+    void Quit();
     void HeavyInitialization();
     void ReadFromViewer(int);
     void DelayedReadFromViewer();
@@ -315,7 +329,13 @@ private slots:
     void CustomizeAppearance(bool notify);
     void LoadPlugins();
     void FinalInitialization();
+    void SendInterface();
+    void InterpreterSync();
+    void SendMessageBoxResult0();
+    void SendMessageBoxResult1();
+    void CancelMovie();
 
+    void SaveMovie();
     void SaveWindow();
     void SetPrinterOptions();
     void PrintWindow();
@@ -337,6 +357,7 @@ private slots:
     void showEngineWindow();
     void showAnimationWindow();
     void showAnnotationWindow();
+    void showCommandWindow();
     void showExpressionsWindow();
     void showSubsetWindow();
     void showViewWindow();
@@ -363,6 +384,9 @@ private:
     int                          completeInit;
     int                          stagedInit;
     bool                         viewerIsAlive;
+    bool                         closeAllClients;
+    bool                         viewerInitiatedQuit;
+    bool                         reverseLaunch;
 
     MessageAttributes            message;
 
@@ -390,7 +414,7 @@ private:
     int    qt_argc;
     char **qt_argv;
 
-    // Crucial Windows.
+    // Crucial Windows
     QvisMainWindow               *mainWin;
     QvisMessageWindow            *messageWin;
     QvisOutputWindow             *outputWin;
@@ -399,7 +423,11 @@ private:
     QvisPickWindow               *pickWin;
     QvisPreferencesWindow        *preferencesWin;
     QvisColorTableWindow         *colorTableWin;
+    QvisSaveMovieWizard          *saveMovieWizard;
+    QvisMovieProgressDialog      *movieProgress;
 
+    // Important objects
+    QvisInterpreter              *interpreter;
     QvisVisItUpdate              *visitUpdate;
 
     // Contains pointers to all of the plot windows.
@@ -445,6 +473,9 @@ private:
     int                          heavyInitStage;
     int                          windowInitStage;
     int                          windowTimeId;
+
+    // Client method attributes
+    ObserverToCallback           *clientMethodObserver;
 
     // Config file storage
     DataNode                     *systemSettings;

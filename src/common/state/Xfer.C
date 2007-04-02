@@ -280,6 +280,9 @@ Xfer::SubjectRemoved(Subject *TheRemovedSubject)
 //   Jeremy Meredith, Tue Mar  4 13:10:25 PST 2003
 //   Added length to the new buffer because MPIXfer needs it.
 //
+//   Brad Whitlock, Thu May 5 16:59:28 PST 2005
+//   I changed the code so interrupt can be handled as a special opcode.
+//
 // ****************************************************************************
 
 bool
@@ -288,19 +291,20 @@ Xfer::ReadPendingMessages()
     // While there are complete messages, read them.
     while(ReadHeader())
     {
-        if (opcode > nextSpecialOpcode && opcode < -1)
+        if (opcode > nextSpecialOpcode && opcode < 0)
         {
+            if (opcode == -1)
+                bufferedInput.Flush();
+
             // If the callback and the data were provided, call the callback
             // so it can process the user-defined opcode.
             if(specialOpcodeCallback != 0)
                 specialOpcodeCallback(opcode, specialOpcodeCallbackData);
 
+            if (opcode == -1)
+                return true;
+
             continue;
-        }
-        else if (opcode == -1)
-        {
-            bufferedInput.Flush();
-            return true;
         }
 
         bufferedInput.WriteInt(opcode);

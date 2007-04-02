@@ -2,6 +2,7 @@
   <Attribute name="ViewerRPC" purpose="This class contains the attributes for controlling the viewer." persistent="false" exportAPI="VIEWER_RPC_API" exportInclude="viewerrpc_exports.h" codefile="ViewerRPC.code">
     <Enum name="ViewerRPCType">
       CloseRPC
+      DetachRPC
       AddWindowRPC
       DeleteWindowRPC
       SetWindowLayoutRPC
@@ -153,6 +154,7 @@
       UpdateDBPluginInfoRPC
       ExportDBRPC
       SetTryHarderCyclesTimesRPC
+      OpenClientRPC
       MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">

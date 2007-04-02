@@ -33,6 +33,7 @@ static const char usage[] =
 "        -background <color>  Background color for GUI\n"
 "        -foreground <color>  Foreground color for GUI\n"
 "        -nowin               Run without viewer windows\n"
+"        -newconsole          Run the component in a new console window\n"
 "\n"
 "    Scripting arguments:\n"
 "        -s    <scriptname>   Runs the specified VisIt script. Note that\n"
@@ -93,6 +94,9 @@ int ReadKey(const char *key, char **keyval);
  *   Brad Whitlock, Fri Jun 3 14:46:18 PST 2005
  *   Added code to flush stderr so the Java client can start up the viewer.
  *
+ *   Brad Whitlock, Wed Jun 22 17:24:08 PST 2005
+ *   Added support for -newconsole.
+ *
  *****************************************************************************/
 
 int
@@ -103,6 +107,7 @@ main(int argc, char *argv[])
          *visitargs = 0, *cptr = 0, *cptr2 = 0;
     int i, size = 0, retval = 0, skipping = 0;
     int addMovieArguments = 0, addVISITARGS = 1, useShortFileName = 0;
+    int newConsole = 0;
 
     /*
      * Default values.
@@ -183,10 +188,21 @@ main(int argc, char *argv[])
             /* Skip the next argument too. */
             ++i;
         }
+        else if(ARG("-newconsole"))
+        {
+            newConsole = 1;
+        }
         else
         {
             PUSHARG(argv[i]);
         }
+    }
+
+    /* If we want a new console, allocate it now. */
+    if(newConsole)
+    {
+        FreeConsole();
+        AllocConsole();
     }
 
     /*

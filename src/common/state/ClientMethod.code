@@ -1,0 +1,44 @@
+Function: ClearArgs
+Declaration: void ClearArgs();
+Definition:
+void
+ClientMethod::ClearArgs()
+{
+    intArgs.clear();
+    doubleArgs.clear();
+    stringArgs.clear();
+    SelectField(1);
+    SelectField(2);
+    SelectField(3);
+}
+
+Function: AddArgument
+Declaration: void AddArgument(int);
+Definition:
+void
+ClientMethod::AddArgument(int val)
+{
+    intArgs.push_back(val);
+    SelectField(1);
+}
+
+Function: AddArgument2
+Declaration: void AddArgument(double);
+Definition:
+void
+ClientMethod::AddArgument(double val)
+{
+    doubleArgs.push_back(val);
+    SelectField(2);
+}
+
+Function: AddArgument3
+Declaration: void AddArgument(const std::string &);
+Definition:
+void
+ClientMethod::AddArgument(const std::string &val)
+{
+    stringArgs.push_back(val);
+    SelectField(3);
+}
+

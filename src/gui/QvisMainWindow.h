@@ -134,6 +134,9 @@ class WindowInformation;
 //   Hank Childs, Tue May 24 16:59:38 PDT 2005
 //   Added export database window.
 //
+//   Brad Whitlock, Wed Apr 20 17:37:56 PST 2005
+//   Added command window and a quit signal.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -157,6 +160,7 @@ public:
     bool GetShowSelectedFiles() const;
     bool GetAllowFileSelectionChange() const;
 signals:
+    void quit();
     void iconifyWindows(bool = false);
     void deIconifyWindows();
 
@@ -170,10 +174,10 @@ signals:
     void activatePrintWindow();
     void activateSaveWindow();
     void activateExportDBWindow();
-    void activateMovieWindow();
     void activateAnimationWindow();
     void activateAnnotationWindow();
     void activateColorTableWindow();
+    void activateCommandWindow();
     void activateCorrelationListWindow();
     void activateExpressionsWindow();
     void activateCommandLineWindow();

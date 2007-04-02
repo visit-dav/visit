@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+  <Attribute name="MovieAttributes" purpose="This class contains the attributes used for saving movies." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Enum name="MovieTypeEnum">
+      UseLastSettings
+      NewSimple
+      NewUsingTemplate
+    </Enum>
+    <Enum name="GenerationMethodEnum">
+      NowCurrentInstance
+      NowNewInstance
+      Later
+    </Enum>
+    <Field name="generationMethod" label="Generation method" type="enum" subtype="GenerationMethodEnum">
+      NowCurrentInstance
+    </Field>
+    <Field name="movieType" label="Movie type" type="enum" subtype="MovieTypeEnum">
+      NewSimple
+    </Field>
+    <Field name="outputDirectory" label="Output directory" type="string">
+      .
+    </Field>
+    <Field name="outputName" label="Output name" type="string">
+      movie
+    </Field>
+    <Field name="fileFormats" label="File formats" type="stringVector">
+    </Field>
+    <Field name="useCurrentSize" label="Use current size" type="ucharVector">
+    </Field>
+    <Field name="widths" label="Widths" type="intVector">
+    </Field>
+    <Field name="heights" label="Heights" type="intVector">
+    </Field>
+    <Field name="scales" label="Scales" type="doubleVector">
+    </Field>
+    <Field name="stereo" label="Stereo" type="bool">
+      false
+    </Field>
+    <Field name="templateFile" label="Template file" type="string">
+    </Field>
+  </Attribute>

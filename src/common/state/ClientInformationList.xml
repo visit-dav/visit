@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+  <Attribute name="ClientInformationList" purpose="Contains the information for all connected clients." persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="clients" label="Clients" type="attVector" subtype="ClientInformation">
+    </Field>
+  </Attribute>

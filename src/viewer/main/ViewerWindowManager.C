@@ -6566,6 +6566,39 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
             windowInfo->SetUsingScalableRendering(win->GetScalableRendering());
         }
 
+        //
+        // Get the window size.
+        //
+        if((flags & WINDOWINFO_WINDOWSIZE) != 0)
+        {
+            int wsize[2];
+            win->GetSize(wsize[0], wsize[1]);
+            windowInfo->SetWindowSize(wsize);
+        }
+
+        //
+        // Get some rendering information.
+        //
+        if((flags & WINDOWINFO_RENDERINFO) != 0)
+        {
+            float times[3] = {0., 0., 0.};
+            win->GetRenderTimes(times);
+            windowInfo->SetLastRenderMin(times[0]);
+            windowInfo->SetLastRenderAvg(times[1]);
+            windowInfo->SetLastRenderMax(times[2]);
+
+            // Set the approximate number of triangles.
+            windowInfo->SetNumPrimitives(win->GetNumPrimitives());
+
+            // Set the bounding box.
+            double extents[6] = {0., 0., 0., 0., 0., 0.};
+            if (win->GetWindowMode() == WINMODE_3D)
+                win->GetExtents(3, extents);
+            else
+                win->GetExtents(2, extents);
+            windowInfo->SetExtents(extents);
+        }
+
         windowInfo->Notify();
     }
 }
@@ -6584,10 +6617,14 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
 // Creation:   Fri Jan 23 16:00:25 PST 2004
 //
 // Modifications:
-//
 //   Mark C. Miller, Thu Mar  3 17:38:36 PST 2005
 //   Changed GetNumTriangles to GetNumPrimitives
-//   
+//
+//   Brad Whitlock, Tue Jun 21 12:16:25 PDT 2005
+//   I made the query for the window size happen with each render but we
+//   only send it back to the client if the window size is different from the
+//   values that we've already sent.
+//
 // ****************************************************************************
 
 void
@@ -6595,28 +6632,23 @@ ViewerWindowManager::UpdateWindowRenderingInformation(int windowIndex)
 {
     int index = (windowIndex == -1) ? activeWindow : windowIndex;
     ViewerWindow *win = windows[index];
-    if(win != 0 && index == activeWindow &&
-       win->GetNotifyForEachRender())
+    if(win != 0 && index == activeWindow)
     {
-        float times[3] = {0., 0., 0.};
-        win->GetRenderTimes(times);
-        windowInfo->SetLastRenderMin(times[0]);
-        windowInfo->SetLastRenderAvg(times[1]);
-        windowInfo->SetLastRenderMax(times[2]);
-
-        // Set the approximate number of triangles.
-        windowInfo->SetNumPrimitives(win->GetNumPrimitives());
-
-        // Set the bounding box.
-        double extents[6] = {0., 0., 0., 0., 0., 0.};
-        if (win->GetWindowMode() == WINMODE_3D)
-            win->GetExtents(3, extents);
+        if(win->GetNotifyForEachRender())
+            UpdateWindowInformation(WINDOWINFO_RENDERINFO | WINDOWINFO_WINDOWSIZE);
         else
-            win->GetExtents(2, extents);
-        windowInfo->SetExtents(extents);
-
-        // Send the new state to the client.
-        windowInfo->Notify();
+        {
+            // Get the window size. If it differs from what we've stored in
+            // the object then send it back to the client.
+            int wsize[2];
+            win->GetSize(wsize[0], wsize[1]);
+            if(windowInfo->GetWindowSize()[0] != wsize[0] ||
+               windowInfo->GetWindowSize()[1] != wsize[1])
+            {
+                windowInfo->SetWindowSize(wsize);
+                windowInfo->Notify();
+            }
+        }
     }
 }
 

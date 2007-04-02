@@ -2509,6 +2509,11 @@ ViewerEngineManager::UpdateEngineList()
 //    Brad Whitlock, Wed Aug 4 17:29:21 PST 2004
 //    Changed EngineMap.
 //
+//    Brad Whitlock, Thu May 5 17:10:40 PST 2005
+//    I removed interruption of the engine since it's handled as a special
+//    opcode coming from the clients and we don't need to check for it here
+//    anymore since we always listen to the clients now.
+//
 // ****************************************************************************
 
 void
@@ -2565,11 +2570,6 @@ ViewerEngineManager::Update(Subject *TheChangedSubject)
                statusAtts->GetCurrentStage(),
                statusAtts->GetCurrentStageName().c_str(),
                statusAtts->GetMaxStage());
-    }
-
-    if (viewerSubject->ReadFromParentAndCheckForInterruption())
-    {
-        InterruptEngine(ek);
     }
 }
 

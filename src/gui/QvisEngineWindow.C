@@ -90,6 +90,11 @@ QvisEngineWindow::~QvisEngineWindow()
 //    Jeremy Meredith, Tue Mar 30 09:32:57 PST 2004
 //    I made the engine area label a class member so it could mutate.
 //
+//    Brad Whitlock, Wed Jun 22 09:43:48 PDT 2005
+//    I moved the "Clear cache" button so the window is a little more
+//    consistent with the simulation window and so it takes less vertical
+//    space.
+//
 // ****************************************************************************
 
 void
@@ -149,23 +154,22 @@ QvisEngineWindow::CreateWindowContents()
     stageProgressBar->setTotalSteps(100);
     topLayout->addWidget(stageProgressBar);
 
-    QGridLayout *buttonLayout1 = new QGridLayout(topLayout, 2, 3);
+    QHBoxLayout *buttonLayout1 = new QHBoxLayout(topLayout);
     buttonLayout1->setSpacing(10);
-    interruptEngineButton = new QPushButton("Interrupt engine", central, "interruptEngineButton");
+    interruptEngineButton = new QPushButton("Interrupt", central, "interruptEngineButton");
     connect(interruptEngineButton, SIGNAL(clicked()), this, SLOT(interruptEngine()));
     interruptEngineButton->setEnabled(false);
-    buttonLayout1->addWidget(interruptEngineButton, 0, 0);
-    buttonLayout1->setColStretch(1, 10);
-
-    closeEngineButton = new QPushButton("Close engine", central, "closeEngineButton");
-    connect(closeEngineButton, SIGNAL(clicked()), this, SLOT(closeEngine()));
-    closeEngineButton->setEnabled(false);
-    buttonLayout1->addWidget(closeEngineButton, 0, 2);
+    buttonLayout1->addWidget(interruptEngineButton);
 
     clearCacheButton = new QPushButton("Clear cache", central, "clearCacheButton");
     connect(clearCacheButton, SIGNAL(clicked()), this, SLOT(clearCache()));
     clearCacheButton->setEnabled(false);
-    buttonLayout1->addWidget(clearCacheButton, 1, 0);
+    buttonLayout1->addWidget(clearCacheButton);
+
+    closeEngineButton = new QPushButton("Close engine", central, "closeEngineButton");
+    connect(closeEngineButton, SIGNAL(clicked()), this, SLOT(closeEngine()));
+    closeEngineButton->setEnabled(false);
+    buttonLayout1->addWidget(closeEngineButton);
 
     topLayout->addSpacing(10);
 }
