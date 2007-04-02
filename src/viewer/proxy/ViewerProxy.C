@@ -5300,12 +5300,15 @@ ViewerProxy::SetWindowArea(int x, int y, int w, int h)
 //   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
 //   Added optional bool globalflag.
 //   
+//   Hank Childs, Mon Jul 10 17:37:14 PDT 2006
+//   Added two double arguments.
+//
 // ****************************************************************************
 
 void
 ViewerProxy::DatabaseQuery(const std::string &queryName,
     const stringVector &vars, const bool bflag, const int arg1, const int arg2,
-    const bool globalFlag)
+    const bool globalFlag, const double darg1, const double darg2)
 {
     //
     // Set the rpc type.
@@ -5317,6 +5320,8 @@ ViewerProxy::DatabaseQuery(const std::string &queryName,
     viewerRPC->SetIntArg2(arg2);
     viewerRPC->SetBoolFlag(bflag);
     viewerRPC->SetIntArg3((int)globalFlag);
+    viewerRPC->SetDoubleArg1(darg1);
+    viewerRPC->SetDoubleArg2(darg2);
 
     //
     // Issue the RPC.

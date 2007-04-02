@@ -47,6 +47,7 @@
 #include <avtAverageMeanCurvatureQuery.h>
 #include <avtBestFitLineQuery.h>
 #include <avtCentroidQuery.h>
+#include <avtChordLengthDistributionQuery.h>
 #include <avtCompactnessQuery.h>
 #include <avtCycleQuery.h>
 #include <avtEllipticalCompactnessFactorQuery.h>
@@ -56,6 +57,7 @@
 #include <avtL2NormBetweenCurvesQuery.h>
 #include <avtLocalizedCompactnessFactorQuery.h>
 #include <avtKurtosisQuery.h>
+#include <avtMassDistributionQuery.h>
 #include <avtMomentOfInertiaQuery.h>
 #include <avtNodeCoordsQuery.h>
 #include <avtOriginalDataMinMaxQuery.h>
@@ -205,6 +207,12 @@ avtQueryFactory::Instance()
 //    Hank Childs, Thu May 11 13:21:18 PDT 2006
 //    Added average mean curvature.
 //
+//    Hank Childs, Sat Jul  8 11:25:45 PDT 2006
+//    Added chord length distribution query.
+//
+//    Hank Childs, Thu Jul 20 11:23:07 PDT 2006
+//    Added mass distribution query.
+//
 // ****************************************************************************
 
 
@@ -256,6 +264,23 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "L2Norm")
     {
         query = new avtL2NormQuery();
+    }
+    else if (qname == "Chord Length Distribution")
+    {
+        avtChordLengthDistributionQuery *cldq =
+                                         new avtChordLengthDistributionQuery();
+        cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
+        cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
+        cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        query = cldq;
+    }
+    else if (qname == "Mass Distribution")
+    {
+        avtMassDistributionQuery *mdq = new avtMassDistributionQuery();
+        mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
+        mdq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
+        mdq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        query = mdq;
     }
     else if (qname == "Kurtosis")
     {

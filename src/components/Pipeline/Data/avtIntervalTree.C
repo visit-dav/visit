@@ -48,8 +48,9 @@
 #include <avtIntervalTree.h>
 #include <float.h>
 
-#include <IntervalTreeNotCalculatedException.h>
 #include <BadDomainException.h>
+#include <ImproperUseException.h>
+#include <IntervalTreeNotCalculatedException.h>
 
 #include <vtkCellIntersections.h>
 #include <vtkVisItUtility.h>
@@ -85,6 +86,8 @@ static double    EquationsValueAtPoint(const double *, int, int, int,
                                       const double *);
 static bool     Intersects(const double *, double, int, int, const double *);
 static bool     Intersects(double [3], double[3], int, int, const double *);
+static bool     AxiallySymmetricLineIntersection(const double *, const double*,
+                                                 int, const double *);
 static int      QsortBoundsSorter(const void *arg1, const void *arg2);
 static bool     IntersectsWithRay(double [3], double[3], int, int, 
                                   const double *, double[3]);
@@ -435,6 +438,10 @@ avtIntervalTree::ConstructTree(void)
 //  Programmer: Hank Childs
 //  Creation:   June 27, 2005
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Aug 23 08:53:58 PDT 2006
+//    Changed return values from true/false to 1, -1, 0
 // ****************************************************************************
 
 int
@@ -455,16 +462,16 @@ QsortBoundsSorter(const void *arg1, const void *arg2)
         double B_mid = (B[(2*globalCurrentDepth + 2*i) % vectorSize].f
                        + B[(2*globalCurrentDepth+1 + 2*i) % vectorSize].f) / 2;
         if (A_mid < B_mid)
-            return true;
+            return 1;
         else if (A_mid > B_mid)
-            return false;
+            return -1;
     }
 
     //
     // Bounds are exactly identical.  This can cause problems if you are
     // not careful.
     //
-    return false;
+    return 0;
 }
 
 
@@ -708,6 +715,83 @@ avtIntervalTree::GetElementsListFromRange(const double *min_vec,
 
 
 // ****************************************************************************
+//  Method: avtIntervalTree::GetElementsFromAxiallySymmetricLineIntersection
+//
+//  Purpose:
+//      This test will only work with 2D items (called domains) and 
+//      intersections with a 3D line.  The idea is that the "domains" are
+//      revolved into 3D and we need to figure out which domains intersect
+//      with a line when revolved into 3D.
+//
+//  Arguments:
+//      P1         A point on the line.
+//      D1         The direction of the line.
+//      list          The list of domains that satisfy the linear equation.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 28, 2006
+//
+// ****************************************************************************
+
+void
+avtIntervalTree::GetElementsFromAxiallySymmetricLineIntersection(
+                                const double *P1, const double *D1,
+                                std::vector<int> &list) const
+{
+    if (hasBeenCalculated == false)
+    {
+        EXCEPTION0(IntervalTreeNotCalculatedException);
+    }
+
+    if (nDims != 2)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    list.clear();
+
+    int nodeStack[100]; // Only need log amount
+    int nodeStackSize = 0;
+
+    //
+    // Populate the stack by putting on the root domain.  This domain contains
+    // all the other domains in its extents.
+    //
+    nodeStack[0] = 0;
+    nodeStackSize++;
+
+    while (nodeStackSize > 0)
+    {
+        nodeStackSize--;
+        int stackIndex = nodeStack[nodeStackSize];
+        if (AxiallySymmetricLineIntersection(P1, D1, stackIndex, nodeExtents))
+        {
+            //
+            // The equation has a solution contained by the current extents.
+            //
+            if (nodeIDs[stackIndex] < 0)
+            {
+                //
+                // This is not a leaf, so put children on stack
+                //
+                nodeStack[nodeStackSize] = 2 * stackIndex + 1;
+                nodeStackSize++;
+                nodeStack[nodeStackSize] = 2 * stackIndex + 2;
+                nodeStackSize++;
+            }
+            else
+            {
+                //
+                // Leaf node, put in list
+                //
+                list.push_back(nodeIDs[stackIndex]);
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Function: Intersects
 //
 //  Purpose:
@@ -790,6 +874,290 @@ Intersects(const double *params, double solution, int block, int nDims,
     //
     // All of the extents were too large or too small, so there was no
     // intersection.
+    //
+    return false;
+}
+
+
+// ****************************************************************************
+//  Function: AxiallySymmetricLineIntersection
+//
+//  Purpose:
+//      Determine if the 2D bounding box of the current item, if revolved into
+//      3D, will intersect the specified line.
+//
+//  Arguments:
+//      P1           A point on the line
+//      D1           A direction on the line
+//      block        The block in the nodeExtents that should be checked for an
+//                   intersection.
+//      nodeExtents  The extents at each node.
+//
+//  Returns:    true if there is an intersection, false otherwise.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 28, 2006
+//
+// ****************************************************************************
+
+bool
+AxiallySymmetricLineIntersection(const double *P1, const double *D1,
+                                 int block, const double *nodeExtents)
+{
+    int  i;
+
+    double Zmin = nodeExtents[4*block];
+    double Zmax = nodeExtents[4*block+1];
+    double Rmin = nodeExtents[4*block+2];
+    double Rmax = nodeExtents[4*block+3];
+
+    //
+    // We are solving for "t" in two inequalities:
+    //  Zmin <= P1[2] + t*D1[2] <= Zmax
+    //  Rmin <= (P1[0] + t*D1[0])^2 + (P1[1] + t*D1[1])^2 <= Rmax
+    //
+    // In both cases, we solve for "t" (sorting out special cases as we go)
+    // and see if the line intersects the cylinder.
+    //
+
+    //
+    // Solve for 't' with the inequality focusing on 'Z'.
+    //
+    double tRangeFromZ[2];
+    if (D1[2] == 0)
+    {
+        if (Zmin <= P1[2] && P1[2] <= Zmax)
+        {
+            tRangeFromZ[0] = -10e30;
+            tRangeFromZ[1] = +10e30;
+        }
+        else
+            return false;
+    }
+    else
+    {
+        double t1 = (Zmin-P1[2]) / D1[2];
+        double t2 = (Zmax-P1[2]) / D1[2];
+        tRangeFromZ[0] = (t1 < t2 ? t1 : t2);
+        tRangeFromZ[1] = (t1 > t2 ? t1 : t2);
+    }
+
+    //
+    // Solve for 't' with the inequality focusing on 'R'.
+    //
+    // Expanding out gives:
+    //    Rmin^2 <= At^2 + Bt + C <= Rmax^2
+    //    with:
+    //       A = D1[0]^2 + D1[1]^2
+    //       B = 2*P1[0]*D1[0] + 2*P1[1]*D1[1]
+    //       C = P1[0]^2 + P1[1]^2
+    //
+    // Note that there is some subtlety to solving quadratic equations with
+    // inequalities:
+    //  C0 <= t^2 <= C1
+    //  has solutions
+    //    C0^0.5 <= t <=  C1^0.5
+    //   -C1^0.5 <= t <= -C0^0.5
+    //  
+    // Here's the game plan for solving the inequalities:
+    //  Find the roots for Rmin = At^2 + Bt + C
+    //  This will divide the number line into 3 intervals:
+    //  (-inf, R0), (R0, R1), (R1, inf)
+    //  Then check to see if the intervals meet the inequality or not.
+    //  Keep the intervals that meet the inequality, discard those that don't.
+    //  If there are no roots, then check the interval (-inf, inf) and see
+    //  if that satisfies the inequality.
+    //
+    //  Then repeat for the other inequality.
+    //
+    double r1_int1[2] = { 10e30, -10e30 };
+    double r1_int2[2] = { 10e30, -10e30 };
+    double A = D1[0]*D1[0] + D1[1]*D1[1];
+    double B = 2*P1[0]*D1[0] + 2*P1[1]*D1[1];
+    double C0 = P1[0]*P1[0] + P1[1]*P1[1];
+    double C = C0-Rmin*Rmin;
+    double det = B*B - 4*A*C;
+    if (det < 0)
+    {
+        // There are no roots, so the inequality is either always true
+        // or always false (for all t).  So evaluate it and see which one.
+        // Use T = 0.  And if this inequality can't be true, then there are
+        // no solutions, so just return.
+        if (C0 >= Rmin*Rmin)
+        {
+            r1_int1[0] = -10e30;
+            r1_int1[1] = +10e30;
+        }
+        else
+            return false;
+    }
+    else
+    {
+        double root = sqrt(det);
+        double soln1 = (-B + root) / (2*A);
+        double soln2 = (-B - root) / (2*A);
+        if (soln1 == soln2)
+        {
+            // This is a parabola with its vertex on the X-axis.  So the
+            // vertex is ambiguous, everything else is either one way or 
+            // another.  Test a non-solution point and see whether it is
+            // valid.  If so, declare the whole range valid.
+            double I0 = (soln1 == 0. ? 1. : 0.);
+            if (A*I0*I0 + B*I0 + C0 >= Rmin*Rmin)
+            {
+                r1_int1[0] = -10e30;
+                r1_int1[1] = +10e30;
+            }
+            else if (A*soln1*soln1 + B*soln1 + C0 >= Rmin*Rmin)
+            {
+                r1_int1[0] = soln1;
+                r1_int1[1] = soln1;
+            }
+        }
+        else
+        {
+            if (soln1 > soln2)
+            {
+                double tmp = soln1;
+                soln1 = soln2;
+                soln2 = tmp;
+            }
+
+            double half = (soln2-soln1) * 0.5;
+            double val = soln1 - half;
+            if (A*val*val + B*val + C0 >= Rmin*Rmin)
+            {
+                r1_int1[0] = -10e30;
+                r1_int1[1] = soln1;
+                r1_int2[0] = soln2;
+                r1_int2[1] = +10e30;
+            }
+            else
+            {
+                r1_int1[0] = soln1;
+                r1_int1[1] = soln2;
+            }
+        }
+    }
+
+    double r2_int1[2] = { 10e30, -10e30 };
+    double r2_int2[2] = { 10e30, -10e30 };
+    C = C0-Rmax*Rmax;
+    det = B*B - 4*A*C;
+    if (det < 0)
+    {
+        // There are no roots, so the inequality is either always true
+        // or always false (for all t).  So evaluate it and see which one.
+        // Use T = 0.  And if this inequality can't be true, then there are
+        // no solutions, so just return.
+        if (C0 <= Rmax*Rmax)
+        {
+            r2_int1[0] = -10e30;
+            r2_int1[1] = +10e30;
+        }
+        else
+            return false;
+    }
+    else
+    {
+        double root = sqrt(det);
+        double soln1 = (-B + root) / (2*A);
+        double soln2 = (-B - root) / (2*A);
+        if (soln1 == soln2)
+        {
+            // This is a parabola with its vertex on the X-axis.  So the
+            // vertex is ambiguous, everything else is either one way or 
+            // another.  Test a non-solution point and see whether it is
+            // valid.  If so, declare the whole range valid.
+            double I0 = (soln1 == 0. ? 1. : 0.);
+            if (A*I0*I0 + B*I0 + C0 <= Rmax*Rmax)
+            {
+                r2_int1[0] = -10e30;
+                r2_int1[1] = +10e30;
+            }
+            else if (A*soln1*soln1 + B*soln1 + C0 <= Rmax*Rmax)
+            {
+                r2_int1[0] = soln1;
+                r2_int1[1] = soln1;
+            }
+        }
+        else
+        {
+            if (soln1 > soln2)
+            {
+                double tmp = soln1;
+                soln1 = soln2;
+                soln2 = tmp;
+            }
+
+            double half = (soln2-soln1) * 0.5;
+            double val = soln1 - half;
+            if (A*val*val + B*val + C0 <= Rmax*Rmax)
+            {
+                r2_int1[0] = -10e30;
+                r2_int1[1] = soln1;
+                r2_int2[0] = soln2;
+                r2_int2[1] = +10e30;
+            }
+            else
+            {
+                r2_int1[0] = soln1;
+                r2_int1[1] = soln2;
+            }
+        }
+    }
+
+
+    //
+    // Now that we have t-ranges for all the inequalities, see if we
+    // can find a 't' that makes them all true.  If so, we are inside
+    // the cylinder.  If not, we are outside.
+    //
+    double t[2];
+
+    // Try Z, R1_int1, R2_int1.
+    t[0] = tRangeFromZ[0];
+    t[1] = tRangeFromZ[1];
+    t[0] = (t[0] < r1_int1[0] ? r1_int1[0] : t[0]);
+    t[1] = (t[1] > r1_int1[1] ? r1_int1[1] : t[1]);
+    t[0] = (t[0] < r2_int1[0] ? r2_int1[0] : t[0]);
+    t[1] = (t[1] > r2_int1[1] ? r2_int1[1] : t[1]);
+    if (t[0] <= t[1])
+        return true;
+
+    // Try Z, R1_int1, R2_int2.
+    t[0] = tRangeFromZ[0];
+    t[1] = tRangeFromZ[1];
+    t[0] = (t[0] < r1_int1[0] ? r1_int1[0] : t[0]);
+    t[1] = (t[1] > r1_int1[1] ? r1_int1[1] : t[1]);
+    t[0] = (t[0] < r2_int2[0] ? r2_int2[0] : t[0]);
+    t[1] = (t[1] > r2_int2[1] ? r2_int2[1] : t[1]);
+    if (t[0] <= t[1])
+        return true;
+
+    // Try Z, R1_int2, R2_int1.
+    t[0] = tRangeFromZ[0];
+    t[1] = tRangeFromZ[1];
+    t[0] = (t[0] < r1_int2[0] ? r1_int2[0] : t[0]);
+    t[1] = (t[1] > r1_int2[1] ? r1_int2[1] : t[1]);
+    t[0] = (t[0] < r2_int1[0] ? r2_int1[0] : t[0]);
+    t[1] = (t[1] > r2_int1[1] ? r2_int1[1] : t[1]);
+    if (t[0] <= t[1])
+        return true;
+
+    // Try Z, R1_int2, R2_int2.
+    t[0] = tRangeFromZ[0];
+    t[1] = tRangeFromZ[1];
+    t[0] = (t[0] < r1_int2[0] ? r1_int2[0] : t[0]);
+    t[1] = (t[1] > r1_int2[1] ? r1_int2[1] : t[1]);
+    t[0] = (t[0] < r2_int2[0] ? r2_int2[0] : t[0]);
+    t[1] = (t[1] > r2_int2[1] ? r2_int2[1] : t[1]);
+    if (t[0] <= t[1])
+        return true;
+    
+    //
+    // None of the intervals overlap.  No 't' will make this true, so there
+    // is no intersection.
     //
     return false;
 }

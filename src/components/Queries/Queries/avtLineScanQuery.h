@@ -36,53 +36,75 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtRandomFilter.h                             //
+//                             avtLineScanQuery.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_RANDOM_FILTER_H
-#define AVT_RANDOM_FILTER_H
+#ifndef AVT_LINE_SCAN_QUERY_H
+#define AVT_LINE_SCAN_QUERY_H
 
-#include <avtSingleInputExpressionFilter.h>
+#include <query_exports.h>
 
-class     vtkDataArray;
-class     ArgsExpr;
-class     ExprPipelineState;
+#include <avtDatasetQuery.h>
+
+class     vtkPolyData;
+class     vtkIntArray;
+
 
 // ****************************************************************************
-//  Class: avtRandomFilter
+//  Class: avtLineScanQuery
 //
 //  Purpose:
-//      Creates a random number at each point.  Mostly used for odd effects in
-//      movie-making.
-//          
+//    An abstract query that provides a common base type for queries that
+//    operate on line scans.  This query also provides many methods and 
+//    services that are useful to concrete line scan queries.
+//
 //  Programmer: Hank Childs
-//  Creation:   March 7, 2003
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined constructor and destructor definitions to .C files
-//    because certain compilers have problems with them.
-//
-//    Hank Childs, Mon Jul 10 09:03:13 PDT 2006
-//    Added PreExecute.
+//  Creation:   August 2, 2006
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
+class QUERY_API avtLineScanQuery : public avtDatasetQuery
 {
   public:
-                              avtRandomFilter();
-    virtual                  ~avtRandomFilter();
+                              avtLineScanQuery();
+    virtual                  ~avtLineScanQuery();
 
-    virtual const char       *GetType(void) { return "avtRandomFilter"; };
+    virtual const char       *GetType(void)  { return "avtLineScanQuery"; };
     virtual const char       *GetDescription(void)
-                                           {return "Assigning random #.";};
-    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
+                                           { return "Querying line scans."; };
+
+    void                      SetNumberOfLines(int nl) { numLines = nl; };
+    void                      SetNumberOfBins(int nb)  { numBins  = nb; };
+    void                      SetRange(double r1, double r2) 
+                                { minLength = r1; maxLength = r2; };
+
+    virtual int               GetNFilters(void);
+
   protected:
+    int                       numBins;
+    int                       numLines;
+    double                    minLength;
+    double                    maxLength;
+    int                       numLinesPerIteration;
+    std::string               varname;
+
     virtual void              PreExecute(void);
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual bool              IsPointVariable(void)  { return true; };
+    virtual void              Execute(vtkDataSet *, int);
+
+    int                       GetCellsForPoint(int ptId, vtkPolyData *pd, 
+                                               vtkIntArray *lineids,int lineid,
+                                               int &seg1, int &seg2);
+    int                       WalkChain(vtkPolyData *pd, int ptId, int cellId, 
+                                        std::vector<bool> &usedPoint,
+                                        vtkIntArray *lineids, int lineid);
+    void                      WalkChain1(vtkPolyData *pd, int ptId, int cellId,
+                                         vtkIntArray *lineids, int lineid, 
+                                         int &newPtId, int &newCellId);
+
+  private:
+    virtual void              Execute(avtDataTree_p);
+    virtual void              ExecuteTree(avtDataTree_p);
+    virtual void              ExecuteLineScan(vtkPolyData *) = 0;
 };
 
 

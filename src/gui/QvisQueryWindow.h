@@ -98,6 +98,9 @@ class QueryList;
 //   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
 //   Added slot 'useGlobalToggled'.
 //
+//   Hank Childs, Mon Jul 10 17:23:24 PDT 2006
+//   Added GetFloatingPointNumber.
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -128,6 +131,7 @@ private:
     void Apply(bool ignore = false, bool doTime = false);
     bool GetPoint(int index, const QString &pname, double pt[3]);
     bool GetNumber(int index, int *num);
+    bool GetFloatingPointNumber(int index, double *num);
     bool GetVars(int index, stringVector &vars);
 private slots:
     void apply();

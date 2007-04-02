@@ -36,53 +36,45 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtRandomFilter.h                             //
+//                      avtChordLengthDistributionQuery.h                    //
 // ************************************************************************* //
 
-#ifndef AVT_RANDOM_FILTER_H
-#define AVT_RANDOM_FILTER_H
+#ifndef AVT_CHORD_LENGTH_DISTRIBUTION_QUERY_H
+#define AVT_CHORD_LENGTH_DISTRIBUTION_QUERY_H
 
-#include <avtSingleInputExpressionFilter.h>
+#include <query_exports.h>
 
-class     vtkDataArray;
-class     ArgsExpr;
-class     ExprPipelineState;
+#include <avtLineScanQuery.h>
+
 
 // ****************************************************************************
-//  Class: avtRandomFilter
+//  Class: avtChordLengthDistributionQuery
 //
 //  Purpose:
-//      Creates a random number at each point.  Mostly used for odd effects in
-//      movie-making.
-//          
+//    A query that calculates the chord length distribution.
+//
 //  Programmer: Hank Childs
-//  Creation:   March 7, 2003
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined constructor and destructor definitions to .C files
-//    because certain compilers have problems with them.
-//
-//    Hank Childs, Mon Jul 10 09:03:13 PDT 2006
-//    Added PreExecute.
+//  Creation:   July 7, 2006
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
+class QUERY_API avtChordLengthDistributionQuery : public avtLineScanQuery
 {
   public:
-                              avtRandomFilter();
-    virtual                  ~avtRandomFilter();
+                              avtChordLengthDistributionQuery();
+    virtual                  ~avtChordLengthDistributionQuery();
 
-    virtual const char       *GetType(void) { return "avtRandomFilter"; };
+    virtual const char       *GetType(void) 
+                                 { return "avtChordLengthDistributionQuery"; };
     virtual const char       *GetDescription(void)
-                                           {return "Assigning random #.";};
-    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
+                          { return "Calculating chord length distribution."; };
+
   protected:
+    int                      *numChords;
+
     virtual void              PreExecute(void);
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual bool              IsPointVariable(void)  { return true; };
+    virtual void              PostExecute(void);
+    virtual void              ExecuteLineScan(vtkPolyData *);
 };
 
 

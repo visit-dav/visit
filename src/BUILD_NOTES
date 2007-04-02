@@ -345,6 +345,45 @@ cd VTK
 #     this->NumberOfDivisions[1] = iy > 0 ? iy : 1;
 #     this->NumberOfDivisions[2] = iz > 0 ? iz : 1;
 #
+
+# 
+# On Altix systems using g++ 3.3.3, the VTK library exhibits a compiler bug.
+# (The code works fine when print statements are added, but fails without them).
+# The code is in /Common/vtkByteSwap.cxx, which VisIt uses indirectly with 
+# reader and writer routines that are used to serialize data sets on the engine
+# and send them to the viewer (all binary messages in VTK are big-endian, even
+# when both sender and receiver are little-endian).  To get around this 
+# compiler bug, modify the vtkByteSwap.cxx file on for the method:
+#   template <class T>
+#   inline void vtkByteSwapRangeWrite(const T* first, vtkIdType num,
+#                                     ostream* os, long)
+#  (located at ~line 130)
+#
+#  From:
+#  for(const T* p=first; p != last; ++p)
+#    {
+#    T temp = *p;
+#    vtkByteSwapper<sizeof(T)>::Swap(&temp);
+#    os->write((char*)&temp, sizeof(temp));
+#    }
+#
+#
+#  To:
+#   for(const T* p=first; p != last; ++p)
+#    {
+#    T temp = *p;
+#    vtkByteSwapper<sizeof(T)>::Swap(&temp);
+#    T temp2 = *p;
+#    vtkByteSwapper<sizeof(T)>::Swap(&temp2);
+#    if (temp != temp2)
+#        cerr << "A COMPILER BUG HAS BEEN EXPOSED ... CONTACT VISIT TEAM" << endl;
+#    os->write((char*)&temp, sizeof(temp));
+#    }
+#
+#  Again, this change has only been found to be necessary for Altix systems 
+#  gcc 3.3.3.
+#
+
 make
 
 #

@@ -73,6 +73,9 @@
 //    Hank Childs, Mon Jun 27 09:01:01 PDT 2005
 //    Remove unused methods for sorting.
 //
+//    Hank Childs, Fri Jul 28 08:09:23 PDT 2006
+//    Add axially-symmetric line intersection test.
+//
 //    Kathleen Bonnell, Mon Aug 21 13:34:18 PDT 2006 
 //    Add default bool arg to constructor -- specifies whether or not this tree
 //    will required collective communication. 
@@ -96,6 +99,9 @@ class PIPELINE_API avtIntervalTree
     void                      GetElementsListFromRange(const double *,
                                                       const double *,
                                                       std::vector<int>&) const;
+    void                      GetElementsFromAxiallySymmetricLineIntersection(
+                                       const double *, const double *,
+                                       std::vector<int>&) const;
     void                      GetElementsListFromRay(double [3], double[3],
                                           intVector &, doubleVector &) const; 
     void                      GetElementsListFromLine(double [3], double[3],

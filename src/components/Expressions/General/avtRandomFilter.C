@@ -88,6 +88,25 @@ avtRandomFilter::~avtRandomFilter()
 
 
 // ****************************************************************************
+//  Method: avtRandomFilter::PreExecute
+//
+//  Purpose:
+//      Called before the execution begins.  Initializes the random number
+//      generator (srand).
+//
+//  Programmer: Hank Childs
+//  Creation:   July 10, 2006
+//
+// ****************************************************************************
+
+void
+avtRandomFilter::PreExecute(void)
+{
+    srand(0);
+}
+
+
+// ****************************************************************************
 //  Method: avtRandomFilter::DeriveVariable
 //
 //  Purpose:

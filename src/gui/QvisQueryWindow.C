@@ -599,6 +599,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Reflect changes in queryList -- timeQuery is now queryMode. 
 //   Allow 'Query' button to not be shown for QueryMde == TimeOnly.
 //
+//   Hank Childs, Mon Jul 10 17:23:24 PDT 2006
+//   Add support for a line distribution.
+//
 // ****************************************************************************
 
 void
@@ -716,6 +719,21 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[0]->setText("default");
             showWidgets[0] = true;
             showDataOptions = true;
+        }
+        else if (winT == QueryList::LineDistribution)
+        {
+            labels[0]->setText("Number of Lines");
+            textFields[0]->setText("100");
+            showWidgets[0] = true;
+            labels[1]->setText("Number of Bins");
+            textFields[1]->setText("30");
+            showWidgets[1] = true;
+            labels[2]->setText("Min Length");
+            textFields[2]->setText("0.");
+            showWidgets[2] = true;
+            labels[3]->setText("Max Length");
+            textFields[3]->setText("1.");
+            showWidgets[3] = true;
         }
 
         // hide and show the right text widgets.
@@ -1041,6 +1059,24 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                     }
                 }
             }
+            else if (winT == QueryList::LineDistribution)
+            {
+                int nLines=0;
+                if(!GetNumber(0, &nLines))
+                    noErrors = false;
+                int nBins = 0;
+                if(!GetNumber(1, &nBins))
+                    noErrors = false;
+                double min = 0.;
+                if(!GetFloatingPointNumber(2, &min))
+                    noErrors = false;
+                double max = 0.;
+                if(!GetFloatingPointNumber(3, &max))
+                    noErrors = false;
+                if (noErrors)
+                    viewer->DatabaseQuery(names[index], vars, false, nLines, 
+                                          nBins, true, min, max);
+            }
 
             // Display a status message.
             if(noErrors)
@@ -1138,6 +1174,43 @@ QvisQueryWindow::GetNumber(int index, int *num)
         if(okay)
         {
             okay = (sscanf(temp.latin1(), "%d", num) == 1);
+        }
+    }
+
+    return okay;
+}
+
+// ****************************************************************************
+// Method: QvisQueryWindow::GetFloatingPointNumber
+//
+// Purpose: 
+//   Gets an floating point number from the i'th text field.
+//
+// Arguments:
+//   index : The index of the text field to use.
+//   num   : The floating point number for storage.
+//
+// Returns:    True if it worked.
+//
+// Programmer: Hank Childs
+// Creation:   July 10, 2006
+//
+// ****************************************************************************
+
+bool
+QvisQueryWindow::GetFloatingPointNumber(int index, double *num)
+{
+    bool okay = false;
+
+    if(index >= 0 && index < 4)
+    {
+        QString temp(textFields[index]->displayText().simplifyWhiteSpace());
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            float tmp;
+            okay = (sscanf(temp.latin1(), "%g", &tmp) == 1);
+            *num = tmp;
         }
     }
 
