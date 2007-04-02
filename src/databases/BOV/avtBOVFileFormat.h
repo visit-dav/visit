@@ -26,6 +26,9 @@
 //    Added byte offset so we can skip past a header. I also added a new
 //    flag for dividing a brick into bricklets.
 //
+//    Brad Whitlock, Thu May 4 09:36:53 PDT 2006
+//    Added support for double and int.
+//
 // ****************************************************************************
 
 class avtBOVFileFormat : public avtSTMDFileFormat
@@ -34,10 +37,11 @@ class avtBOVFileFormat : public avtSTMDFileFormat
                                avtBOVFileFormat(const char *);
     virtual                   ~avtBOVFileFormat();
 
-    virtual const char        *GetType(void) { return "Brick of floats"; };
+    virtual const char        *GetType(void) { return "Brick of values"; };
 
     virtual vtkDataSet        *GetMesh(int, const char *);
     virtual vtkDataArray      *GetVar(int, const char *);
+    virtual vtkDataArray      *GetVectorVar(int, const char *);
     virtual void              *GetAuxiliaryData(const char *var, int,
                                                 const char *type, void *args,
                                                 DestructorFunction &);
@@ -49,7 +53,17 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     void                       ActivateTimestep(void);
 
   protected:
+    typedef enum {ByteData, IntegerData, FloatData, DoubleData} DataFormatEnum;
+
     void                       ReadTOC(void);
+    void                       ReadWholeAndExtractBrick(void *dest, bool gzipped,
+                                  void *file_handle, void *gz_handle,
+                                  unsigned int unit_size,
+                                  unsigned int x_start, unsigned int x_stop, 
+                                  unsigned int y_start, unsigned int y_stop, 
+                                  unsigned int z_start, unsigned int z_stop, 
+                                  unsigned int dx, unsigned int dy,
+                                  unsigned int whole_size);
 
     bool                       haveReadTOC;
     char                      *path;
@@ -63,8 +77,10 @@ class avtBOVFileFormat : public avtSTMDFileFormat
     bool                       declaredEndianess;
     bool                       littleEndian;
     bool                       nodalCentering;
-    bool                       byteData;
     bool                       divideBrick;
+    bool                       byteToFloatTransform;
+    DataFormatEnum             dataFormat;
+    int                        dataNumComponents;
     float                      min, max;
     float                      origin[3];
     float                      dimensions[3];

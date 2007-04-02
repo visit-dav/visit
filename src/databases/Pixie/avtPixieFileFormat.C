@@ -90,15 +90,29 @@ avtPixieFileFormat::~avtPixieFileFormat()
 //    Eric Brugger, Mon Nov 29 15:52:39 PST 2004
 //    Modified the reader to handle gaps in the cycle numbering (e.g. allowing
 //    0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
-//   
+//
+//    Brad Whitlock, Thu Apr 27 11:49:07 PDT 2006
+//    Fixed it so it works if cycles are never read.
+//
 // ****************************************************************************
 
 void
 avtPixieFileFormat::GetCycles(std::vector<int> &cycles)
 {
     int nts = (nTimeStates < 1) ? 1 : nTimeStates;
+    int lastCycle = 0;
     for(int i = 0; i < nts; ++i)
-        cycles.push_back(this->cycles[i]);
+    {
+        if(i < this->cycles.size())
+        {
+            cycles.push_back(this->cycles[i]);
+            lastCycle = this->cycles[i];
+        }
+        else
+        {
+            cycles.push_back(lastCycle++);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -117,15 +131,30 @@ avtPixieFileFormat::GetCycles(std::vector<int> &cycles)
 //    Eric Brugger, Mon Nov 29 15:52:39 PST 2004
 //    Modified the reader to handle gaps in the cycle numbering (e.g. allowing
 //    0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
-//   
+//
+//    Brad Whitlock, Thu Apr 27 11:49:07 PDT 2006
+//    Fixed it so it works if cycles are never read.
+//
 // ****************************************************************************
 
 void
 avtPixieFileFormat::GetTimes(std::vector<double> &times)
 {
     int nts = (nTimeStates < 1) ? 1 : nTimeStates;
+    double lastTime = 0.;
     for(int i = 0; i < nts; ++i)
-        times.push_back(double(cycles[i]));
+    {
+        if(i < cycles.size())
+        {
+            times.push_back(double(cycles[i]));
+            lastTime = double(cycles[i]);
+        }
+        else
+        {
+            times.push_back(lastTime);
+            lastTime = lastTime + 1.;
+        }
+    }
 }
 
 // ****************************************************************************
