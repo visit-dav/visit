@@ -55,6 +55,7 @@
 #include <avtEllipticalCompactnessFactorQuery.h>
 #include <avtEulerianQuery.h>
 #include <avtExpectedValueQuery.h>
+#include <avtHohlraumFluxQuery.h>
 #include <avtIndividualChordLengthDistributionQuery.h>
 #include <avtIndividualRayLengthDistributionQuery.h>
 #include <avtIntegrateQuery.h>
@@ -205,7 +206,7 @@ avtQueryFactory::Instance()
 //    Brad Whitlock, Thu Nov 17 10:18:41 PDT 2005
 //    Added Best Fit Line.
 //
-//    Kathleen Bonnell, Tue Jan 31 15:52:18 PST 2006 
+//    Kathleen Bonnell, Tue Jan 31 15:52:18 PST 2006
 //    Added OriginalData SpatialExtents query.
 //
 //    Hank Childs, Sat Apr 29 14:40:47 PDT 2006
@@ -239,6 +240,9 @@ avtQueryFactory::Instance()
 //
 //    Hank Childs, Fri Nov  3 15:49:40 PST 2006
 //    Added total length query.
+//
+//    Dave Bremer, Fri Dec  8 17:52:22 PST 2006
+//    Added hohlraum flux query.
 //
 // ****************************************************************************
 
@@ -311,7 +315,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                                 new avtLineScanTransformQuery();
         lst->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         lst->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        lst->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        lst->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = lst;
     }
     else if (qname == "Chord Length Distribution (aggregate)")
@@ -320,7 +324,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                                 new avtAggregateChordLengthDistributionQuery();
         cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = cldq;
     }
     else if (qname == "Chord Length Distribution (individual)")
@@ -329,7 +333,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                                 new avtIndividualChordLengthDistributionQuery();
         cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = cldq;
     }
     else if (qname == "Ray Length Distribution (aggregate)")
@@ -338,7 +342,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                                 new avtAggregateRayLengthDistributionQuery();
         cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = cldq;
     }
     else if (qname == "Ray Length Distribution (individual)")
@@ -347,7 +351,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                                 new avtIndividualRayLengthDistributionQuery();
         cldq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         cldq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        cldq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        cldq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = cldq;
     }
     else if (qname == "Mass Distribution")
@@ -355,7 +359,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         avtMassDistributionQuery *mdq = new avtMassDistributionQuery();
         mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         mdq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        mdq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        mdq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = mdq;
     }
     else if (qname == "Distance From Boundary")
@@ -363,7 +367,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         avtDistanceFromBoundaryQuery *mdq = new avtDistanceFromBoundaryQuery();
         mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
         mdq->SetNumberOfBins(qa->GetDomain()); // Domain == intarg2
-        mdq->SetRange(qa->GetDarg1(), qa->GetDarg2()); 
+        mdq->SetRange(qa->GetDarg1()[0], qa->GetDarg2()[0]);
         query = mdq;
     }
     else if (qname == "Kurtosis")
@@ -421,7 +425,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     {
         query = new avtWeightedVariableSummationQuery();
     }
-    else if (qname == "Variable by Zone") 
+    else if (qname == "Variable by Zone")
     {
         query = new avtVariableByZoneQuery();
     }
@@ -479,7 +483,7 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
         {
             query = new avtActualDataNumNodesQuery();
         }
-        else 
+        else
         {
             query = new avtOriginalDataNumNodesQuery();
         }
@@ -511,6 +515,18 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (qname == "Average Mean Curvature")
     {
         query = new avtAverageMeanCurvatureQuery();
+    }
+    else if (qname == "Hohlraum Flux")
+    {
+        avtHohlraumFluxQuery *mdq = new avtHohlraumFluxQuery();
+        mdq->SetVariableNames(qa->GetVariables());
+        mdq->SetNumberOfLines(qa->GetElement()); // Element == intarg1
+        mdq->SetRayCenter(qa->GetDarg1()[0],
+                          qa->GetDarg1()[1],
+                          qa->GetDarg1()[2]);
+        mdq->SetRadius(qa->GetDarg2()[0]);
+        mdq->SetThetaPhi(qa->GetDarg2()[1], qa->GetDarg2()[2]);
+        query = mdq;
     }
 
     if (query == NULL && !foundAQuery)

@@ -174,6 +174,9 @@
 #   Hank Childs, Fri Nov  3 15:29:19 PST 2006
 #   Added total length query.
 #
+#   Dave Bremer, Wed Jan 17 16:16:36 PST 2007
+#   Added hohlraum flux query.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -225,6 +228,7 @@ Queries_src= \
  Queries/avtEllipticalCompactnessFactorQuery.C  \
  Queries/avtEulerianQuery.C \
  Queries/avtExpectedValueQuery.C  \
+ Queries/avtHohlraumFluxQuery.C \
  Queries/avtIndividualChordLengthDistributionQuery.C  \
  Queries/avtIndividualRayLengthDistributionQuery.C  \
  Queries/avtIntegrateQuery.C  \

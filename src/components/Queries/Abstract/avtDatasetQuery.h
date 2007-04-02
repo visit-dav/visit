@@ -130,6 +130,8 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
     virtual void             Execute(vtkDataSet*, const int) = 0;
     virtual avtDataObject_p  ApplyFilters(avtDataObject_p);
 
+    virtual void             GetSecondaryVars( std::vector<std::string> &outVars );
+    
     QueryAttributes          queryAtts;
 
     int                      totalNodes;

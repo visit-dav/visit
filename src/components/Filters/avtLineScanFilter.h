@@ -44,6 +44,7 @@
 
 
 #include <avtStreamer.h>
+#include <avtVector.h>
 #include <filters_exports.h>
 #include <string>
 
@@ -63,9 +64,12 @@
 //    Hank Childs, Fri Jul 28 09:44:24 PDT 2006
 //    Added CylindricalExecute.
 //
-//    Dave Bremer, Thu Sep  7 16:38:28 PDT 2006
-//    Added accessor for line parameters.
-//
+//    David Bremer, Tue Nov 21 17:35:17 PST 2006
+//    Added cylindrical ray distribution for hohlraum flux queries.
+//    In this case, generate a cylindrical column of rays, all with 
+//    the same direction and evenly distributed in space.  In 2D,
+//    use a rectangular column of rays.  Rays may not cover the 
+//    entire mesh.  FYI, this is unrelated to "CylindricalExecute"
 // ****************************************************************************
 
 class AVTFILTERS_API avtLineScanFilter : public avtStreamer
@@ -85,10 +89,28 @@ class AVTFILTERS_API avtLineScanFilter : public avtStreamer
 
     virtual const double           *GetLines() const { return lines; }
 
+    enum LineDistributionType {
+        UNIFORM_RANDOM_DISTRIB,     //Uniform position and direction within
+                                    //a circle or sphere enclosing the data
+        CYLINDER_DISTRIB            //Uniform spatial distribution along the 
+                                    //length of a user-defined cylinder in 3D,
+                                    //or a rectangle in 2D.
+    };
+
+    virtual void                   SetUniformRandomDistrib();
+    virtual void                   SetCylinderDistrib(float *pos_, 
+                                                      float  theta_,
+                                                      float  phi_, 
+                                                      float  radius_);
+
   protected:
     int                             nLines;
     int                             seed;
     double                         *lines;
+
+    LineDistributionType            distribType;
+    avtVector                       pos;
+    float                           theta, phi, radius;
 
     virtual void                    PreExecute(void);
     virtual void                    PostExecute(void);

@@ -48,6 +48,7 @@
 
 class     vtkPolyData;
 class     vtkIntArray;
+class     avtLineScanFilter;
 
 
 // ****************************************************************************
@@ -61,57 +62,54 @@ class     vtkIntArray;
 //  Programmer: Hank Childs
 //  Creation:   August 2, 2006
 //
-//  Modifications:
-//    Dave Bremer, Thu Sep  7 17:44:25 PDT 2006
-//    Added lines member as a way to give base classes access to the
-//    line parameters during the Execute call.
-//
 // ****************************************************************************
 
 class QUERY_API avtLineScanQuery : public avtDatasetQuery
 {
   public:
-                              avtLineScanQuery();
-    virtual                  ~avtLineScanQuery();
+                               avtLineScanQuery();
+    virtual                   ~avtLineScanQuery();
 
-    virtual const char       *GetType(void)  { return "avtLineScanQuery"; };
-    virtual const char       *GetDescription(void)
+    virtual const char        *GetType(void)  { return "avtLineScanQuery"; };
+    virtual const char        *GetDescription(void)
                                            { return "Querying line scans."; };
 
-    void                      SetNumberOfLines(int nl) { numLines = nl; };
-    void                      SetNumberOfBins(int nb)  { numBins  = nb; };
-    void                      SetRange(double r1, double r2) 
+    void                       SetNumberOfLines(int nl) { numLines = nl; };
+    void                       SetNumberOfBins(int nb)  { numBins  = nb; };
+    void                       SetRange(double r1, double r2) 
                                 { minLength = r1; maxLength = r2; };
 
-    virtual int               GetNFilters(void);
+    virtual int                GetNFilters(void);
+
 
   protected:
-    int                       numBins;
-    int                       numLines;
-    double                    minLength;
-    double                    maxLength;
-    int                       numLinesPerIteration;
-    std::string               varname;
+    int                        numBins;
+    int                        numLines;
+    double                     minLength;
+    double                     maxLength;
+    int                        numLinesPerIteration;
+    std::string                varname;
 
-    const double             *lines;  //Set only during Execute.  Stores data for use by base classes.
+    const double              *lines;  //Set only during Execute.  Stores data for use by base classes.
 
-    virtual void              PreExecute(void);
-    virtual void              Execute(vtkDataSet *, const int);
+    virtual void               PreExecute(void);
+    virtual void               Execute(vtkDataSet *, const int);
+    virtual avtLineScanFilter *CreateLineScanFilter();
 
-    int                       GetCellsForPoint(int ptId, vtkPolyData *pd, 
-                                               vtkIntArray *lineids,int lineid,
-                                               int &seg1, int &seg2);
-    int                       WalkChain(vtkPolyData *pd, int ptId, int cellId, 
-                                        std::vector<bool> &usedPoint,
-                                        vtkIntArray *lineids, int lineid);
-    void                      WalkChain1(vtkPolyData *pd, int ptId, int cellId,
-                                         vtkIntArray *lineids, int lineid, 
-                                         int &newPtId, int &newCellId);
+    int                        GetCellsForPoint(int ptId, vtkPolyData *pd, 
+                                                vtkIntArray *lineids,int lineid,
+                                                int &seg1, int &seg2);
+    int                        WalkChain(vtkPolyData *pd, int ptId, int cellId, 
+                                         std::vector<bool> &usedPoint,
+                                         vtkIntArray *lineids, int lineid);
+    void                       WalkChain1(vtkPolyData *pd, int ptId, int cellId,
+                                          vtkIntArray *lineids, int lineid, 
+                                          int &newPtId, int &newCellId);
 
   private:
-    virtual void              Execute(avtDataTree_p);
-    virtual void              ExecuteTree(avtDataTree_p);
-    virtual void              ExecuteLineScan(vtkPolyData *) = 0;
+    virtual void               Execute(avtDataTree_p);
+    virtual void               ExecuteTree(avtDataTree_p);
+    virtual void               ExecuteLineScan(vtkPolyData *) = 0;
 };
 
 

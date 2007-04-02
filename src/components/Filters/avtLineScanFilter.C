@@ -98,6 +98,14 @@ avtLineScanFilter::avtLineScanFilter()
     nLines = 1000;
     lines  = NULL;
     seed   = 0;
+
+    distribType = UNIFORM_RANDOM_DISTRIB;
+    pos.x  = 0.0f;
+    pos.y  = 0.0f;
+    pos.z  = 0.0f;
+    theta  = 0.0f;
+    phi    = 0.0f;
+    radius = 1.0f;
 }
 
 
@@ -135,6 +143,59 @@ avtLineScanFilter::SetNumberOfLines(int nl)
 
 
 // ****************************************************************************
+//  Method: avtLineScanFilter::SetUniformRandomDistrib
+//
+//  Purpose:
+//    Set the distribution of lines to be random and uniformly distributed in
+//    both position and orientation, within a sphere enclosing the data bounds.
+//
+//  Programmer: David Bremer
+//  Creation:   Dec 5, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLineScanFilter::SetUniformRandomDistrib()
+{
+    distribType = avtLineScanFilter::UNIFORM_RANDOM_DISTRIB;
+}
+
+
+// ****************************************************************************
+//  Method: avtLineScanFilter::SetCylinderDistrib
+//
+//  Purpose:
+//    Set the distribution of lines to be within a cylinder (3D) or rectangle 
+//    (2D) given by the parameters.  Lines all have the same orientation, and 
+//    are uniformly distributed in space.  This was done to support Hank Shay's
+//    request for the Hohlraum Flux Query.
+//
+//  Programmer: David Bremer
+//  Creation:   Dec 5, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtLineScanFilter::SetCylinderDistrib(float *pos_, 
+                                      float  theta_,
+                                      float  phi_, 
+                                      float  radius_)
+{
+    distribType = avtLineScanFilter::CYLINDER_DISTRIB;
+    pos.x = pos_[0];
+    pos.y = pos_[1];
+    pos.z = pos_[2];
+    theta = theta_;
+    phi = phi_;
+    radius = radius_;
+}
+
+
+// ****************************************************************************
 //  Method: avtLineScanFilter::PreExecute
 //
 //  Purpose:
@@ -143,7 +204,7 @@ avtLineScanFilter::SetNumberOfLines(int nl)
 //
 //  Notes:
 //      The construction for the lines comes from Michael Cannon's and Tony
-//      Warnock's Line Scan Transform paper.  That paper claims that this 
+//      Warnock's Line Scan Transform paper.  That paper claims that this
 //      construction gnerates lines that randomly and uniformly cover a
 //      set of objects.  The uniformity is critical so that no portion of
 //      object is over represented.
@@ -151,7 +212,7 @@ avtLineScanFilter::SetNumberOfLines(int nl)
 //      u1, u2: random numbers
 //      2D: r=u1
 //          theta=2pi*u2
-//          
+//
 //      Construction: go r units along angle theta from the origin, choose
 //                    tangent line.
 //
@@ -162,6 +223,13 @@ avtLineScanFilter::SetNumberOfLines(int nl)
 //
 //  Programmer: Hank Childs
 //  Creation:   July 6, 2006
+//
+//  Modifications:
+//      Dave Bremer, Tue Dec  5 12:27:31 PST 2006
+//      Added construction of lines within a cylinder or rectangle.
+//
+//      Dave Bremer, Wed Dec 20 16:22:06 PST 2006
+//      Only use the cylindrical execute mode if we are in two dimensions.
 //
 // ****************************************************************************
 
@@ -181,7 +249,8 @@ avtLineScanFilter::PreExecute(void)
     avtDatasetExaminer::GetSpatialExtents(input, extents);
     UnifyMinMax(extents, 6);
 
-    if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_RZ)
+    if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_RZ &&
+        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
         spatDim = 3;
         extents[4] = extents[0];
@@ -204,81 +273,143 @@ avtLineScanFilter::PreExecute(void)
     origin[2] = (extents[4]+extents[5])/2.;
 
     srand(nLines+seed);
-    for (int i = 0 ; i < nLines ; i++)
+    if (distribType == UNIFORM_RANDOM_DISTRIB)
     {
-        if (spatDim == 3)
+        for (int i = 0 ; i < nLines ; i++)
         {
-            double u1 = (double) rand() / (double) RAND_MAX;
-            double u2 = (double) rand() / (double) RAND_MAX;
-            double z = (1-2*u1);
-            double rt_z = sqrt(1-z*z);
-            double x = cos(2*M_PI*u2)*rt_z;
-            double y = sin(2*M_PI*u2)*rt_z;
-            lines[6*i+0] = x*length - origin[0];
-            lines[6*i+2] = y*length - origin[1];
-            lines[6*i+4] = z*length - origin[2];
-
-            u1 = (double) rand() / (double) RAND_MAX;
-            u2 = (double) rand() / (double) RAND_MAX;
-            z = (1-2*u1);
-            rt_z = sqrt(1-z*z);
-            x = cos(2*M_PI*u2)*rt_z;
-            y = sin(2*M_PI*u2)*rt_z;
-            lines[6*i+1] = x*length + origin[0];
-            lines[6*i+3] = y*length + origin[1];
-            lines[6*i+5] = z*length + origin[2];
-        }
-        else
-        {
-            //
-            // Tangent line has eqn: xcos + ysin = R
-            // So when is this equal to unit circle:
-            // x^2 + y^2 = 1
-            // You can do the following derivation:
-            // y = (-xcos/sin + R/sin)
-            // and then substitute that into the unit circle eqn and ultimately
-            // get:
-            // x^2 - 2R*x*cos + (R^2-sin^2) = 0
-            // which has roots
-            // X=-B +/- sqrt(B^2 - 4AC)
-            //       / 2A
-            double u1 = (double) rand() / (double) RAND_MAX;
-            double u2 = (double) rand() / (double) RAND_MAX;
-            double r = u1;
-            double theta = 2*M_PI*u2;
-            double cosT = cos(theta);
-            double sinT = sin(theta);
-            double x1, x2, y1, y2;
-            if (fabs(sinT) > 1e-8)
+            if (spatDim == 3)
             {
-                double B = -2*r*cosT;
-                double C = r*r-sinT*sinT;
-                double determinant = sqrt(B*B - 4*C);
-                x1 = (-B + determinant) * 0.5;
-                x2 = (-B - determinant) * 0.5;
-                y1 = -x1*cosT / sinT + r/sinT;
-                y2 = -x2*cosT / sinT + r/sinT;
+                double u1 = (double) rand() / (double) RAND_MAX;
+                double u2 = (double) rand() / (double) RAND_MAX;
+                double z = (1-2*u1);
+                double rt_z = sqrt(1-z*z);
+                double x = cos(2*M_PI*u2)*rt_z;
+                double y = sin(2*M_PI*u2)*rt_z;
+                lines[6*i+0] = x*length - origin[0];
+                lines[6*i+2] = y*length - origin[1];
+                lines[6*i+4] = z*length - origin[2];
+        
+                u1 = (double) rand() / (double) RAND_MAX;
+                u2 = (double) rand() / (double) RAND_MAX;
+                z = (1-2*u1);
+                rt_z = sqrt(1-z*z);
+                x = cos(2*M_PI*u2)*rt_z;
+                y = sin(2*M_PI*u2)*rt_z;
+                lines[6*i+1] = x*length + origin[0];
+                lines[6*i+3] = y*length + origin[1];
+                lines[6*i+5] = z*length + origin[2];
             }
             else
             {
-                // Easy derivation here:
-                // sinT = 0, so tangent line is vertical.  We know X is
-                // at either +r or -r (depending on theta), which can
-                // be written as cosT*r.  Then we can directly calculate Y
-                // on the sphere since we know X.
-                x1 = cosT*r;
-                x2 = cosT*r;
-                y1 = sqrt(1-x1*x1);
-                y2 = -sqrt(1-x2*x2);
+                //
+                // Tangent line has eqn: xcos + ysin = R
+                // So when is this equal to unit circle:
+                // x^2 + y^2 = 1
+                // You can do the following derivation:
+                // y = (-xcos/sin + R/sin)
+                // and then substitute that into the unit circle eqn and ultimately
+                // get:
+                // x^2 - 2R*x*cos + (R^2-sin^2) = 0
+                // which has roots
+                // X=-B +/- sqrt(B^2 - 4AC)
+                //       / 2A
+                double u1 = (double) rand() / (double) RAND_MAX;
+                double u2 = (double) rand() / (double) RAND_MAX;
+                double r = u1;
+                double t = 2*M_PI*u2;
+                double cosT = cos(t);
+                double sinT = sin(t);
+                double x1, x2, y1, y2;
+                if (fabs(sinT) > 1e-8)
+                {
+                    double B = -2*r*cosT;
+                    double C = r*r-sinT*sinT;
+                    double determinant = sqrt(B*B - 4*C);
+                    x1 = (-B + determinant) * 0.5;
+                    x2 = (-B - determinant) * 0.5;
+                    y1 = -x1*cosT / sinT + r/sinT;
+                    y2 = -x2*cosT / sinT + r/sinT;
+                }
+                else
+                {
+                    // Easy derivation here:
+                    // sinT = 0, so tangent line is vertical.  We know X is
+                    // at either +r or -r (depending on theta), which can
+                    // be written as cosT*r.  Then we can directly calculate Y
+                    // on the sphere since we know X.
+                    x1 = cosT*r;
+                    x2 = cosT*r;
+                    y1 = sqrt(1-x1*x1);
+                    y2 = -sqrt(1-x2*x2);
+                }
+                lines[6*i+0] = x1*length + origin[0];
+                lines[6*i+2] = y1*length + origin[1];
+                lines[6*i+4] = 0.;
+                lines[6*i+1] = x2*length + origin[0];
+                lines[6*i+3] = y2*length + origin[1];
+                lines[6*i+5] = 0.;
             }
-            lines[6*i+0] = x1*length + origin[0];
-            lines[6*i+2] = y1*length + origin[1];
-            lines[6*i+4] = 0.;
-            lines[6*i+1] = x2*length + origin[0];
-            lines[6*i+3] = y2*length + origin[1];
-            lines[6*i+5] = 0.;
         }
+    }
+    else if (distribType == CYLINDER_DISTRIB)
+    {
+        if (spatDim == 3)
+        {
+            double cosT = cos(theta);
+            double sinT = sin(theta);
+            double cosP = cos(phi);
+            double sinP = sin(phi);
+            avtVector dir( sinT*sinP, sinT*cosP, cosT );
+            avtVector perp0(0,1,0), perp1(1,0,0);
+            if (theta != 0.0f)
+            {
+                perp0 = avtVector(0,0,1) % dir;
+                perp1 = perp0 % dir;
 
+                //I don't think normalization is necessary here, but not 100% sure.
+                perp0.normalize();
+                perp1.normalize();
+            }
+
+            for (int i = 0 ; i < nLines ; i++)
+            {
+                double u1 = (double) rand() / (double) RAND_MAX;
+                double u2 = (double) rand() / (double) RAND_MAX;
+
+                // u1 is uniformly in [0..2pi]
+                // u2 is in [0..radius], and sqrt is used to push points toward the outside,
+                //   creating a uniform spatial distribution
+                u1 *= 2.0 * M_PI;
+                u2 = sqrt(u2) * radius;
+
+                avtVector  randPt = pos + perp0*cos(u1)*u2 + perp1*sin(u1)*u2;
+
+                lines[6*i+0] = randPt.x - length*dir.x;
+                lines[6*i+1] = randPt.x + length*dir.x;
+                lines[6*i+2] = randPt.y - length*dir.y;
+                lines[6*i+3] = randPt.y + length*dir.y;
+                lines[6*i+4] = randPt.z - length*dir.z;
+                lines[6*i+5] = randPt.z + length*dir.z;
+            }
+        }
+        else
+        {
+            avtVector dir( cos(theta), sin(theta), 0 );
+            avtVector perp( -dir.y, dir.x, 0 );
+
+            for (int i = 0 ; i < nLines ; i++)
+            {
+                double u1 = radius * (2.0 * (double) rand() / (double) RAND_MAX - 1.0);
+                avtVector  randPt = pos + perp*u1;
+
+                lines[6*i+0] = randPt.x - length*dir.x;
+                lines[6*i+1] = randPt.x + length*dir.x;
+                lines[6*i+2] = randPt.y - length*dir.y;
+                lines[6*i+3] = randPt.y + length*dir.y;
+                lines[6*i+4] = 0;
+                lines[6*i+5] = 0;
+            }
+        }
     }
 }
 
@@ -287,7 +418,7 @@ static int
 AssignToProc(int val, int nlines)
 {
     static int nprocs = PAR_Size();
-    
+
     int linesPerProc = nlines/nprocs + 1;
     int proc = val / linesPerProc;
     return proc;
@@ -521,15 +652,16 @@ avtLineScanFilter::PostExecute(void)
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Aug 27 16:16:52 PDT 2004
-//    Rename ghost data array.
+//    Dave Bremer, Wed Dec 20 16:22:06 PST 2006
+//    Only use the cylindrical execute mode if we are in two dimensions.
 //
 // ****************************************************************************
 
 vtkDataSet *
 avtLineScanFilter::ExecuteData(vtkDataSet *ds, int dom, std::string)
 {
-    if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_RZ)
+    if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_RZ &&
+        GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
     {
         return CylindricalExecute(ds);
     }
@@ -847,8 +979,8 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
                 ds->GetPoint(id2, ePt2);
 
                 double curInter[100];  // shouldn't really be more than 4.
-                int numInter = 
-                    IntersectLineWithRevolvedSegment(pt1, dir, ePt1, ePt2, 
+                int numInter =
+                    IntersectLineWithRevolvedSegment(pt1, dir, ePt1, ePt2,
                                                      curInter);
                 for (int l = 0 ; l < numInter ; l++)
                     inter.push_back(curInter[l]);

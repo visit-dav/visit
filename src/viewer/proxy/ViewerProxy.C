@@ -5325,13 +5325,13 @@ ViewerProxy::SetWindowArea(int x, int y, int w, int h)
 // ****************************************************************************
 // Method: ViewerProxy::DatabaseQuery
 //
-// Purpose: 
+// Purpose:
 //   Tells the viewer to perform the named database query.
 //
 // Arguments:
 //   queryName : The name of the query to perform.
 //   vars      : The variables that we're querying.
-//   arg1      : Optional integer argument. 
+//   arg1      : Optional integer argument.
 //   arg2      : Optional integer argument.
 //
 // Programmer: Brad Whitlock
@@ -5339,9 +5339,9 @@ ViewerProxy::SetWindowArea(int x, int y, int w, int h)
 //
 // Modifications:
 //   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
-//   Added optional integer args. 
+//   Added optional integer args.
 //
-//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004 
+//   Kathleen Bonnell, Wed Dec 15 17:12:47 PST 2004
 //   Added optional bool globalflag.
 //
 //   Hank Childs, Mon Jul 10 17:37:14 PDT 2006
@@ -5352,7 +5352,7 @@ ViewerProxy::SetWindowArea(int x, int y, int w, int h)
 void
 ViewerProxy::DatabaseQuery(const std::string &queryName,
     const stringVector &vars, const bool bflag, const int arg1, const int arg2,
-    const bool globalFlag, const double darg1, const double darg2)
+    const bool globalFlag, const doubleVector &darg1, const doubleVector &darg2)
 {
     //
     // Set the rpc type.

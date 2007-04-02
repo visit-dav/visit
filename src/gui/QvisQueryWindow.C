@@ -439,20 +439,20 @@ QvisQueryWindow::UpdateTimeQueryButton()
 // ****************************************************************************
 // Method: QvisQueryWindow::UpdateQueryList
 //
-// Purpose: 
+// Purpose:
 //   Populates the list of available queries.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 9 16:55:15 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004
 //   Removed unncessary argument.  Restructured to display the queries list
 //   according to the displayMode specified by user.  All individual lists
 //   are now sorted.
 //
-//   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
-//   Reflect changes in queryList -- timeQuery is now queryMode. 
+//   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//   Reflect changes in queryList -- timeQuery is now queryMode.
 //
 // ****************************************************************************
 
@@ -497,7 +497,7 @@ QvisQueryWindow::UpdateQueryList()
         selectedIndex = 0;
         for (i = 0; i < queryList->count(); i++)
         {
-            if (queryList->text(i) == queryName) 
+            if (queryList->text(i) == queryName)
             {
                 selectedIndex = i;
                 break;
@@ -576,52 +576,55 @@ QvisQueryWindow::UpdateResults(bool)
 //   Jeremy Meredith, Sat Apr 12 11:31:22 PDT 2003
 //   Added compactness.
 //
-//   Kathleen Bonnell, Wed Jul 23 16:02:22 PDT 2003 
+//   Kathleen Bonnell, Wed Jul 23 16:02:22 PDT 2003
 //   Added 'Variable by Zone'.
 //
 //   Hank Childs, Fri Oct  3 16:22:03 PDT 2003
 //   Added L2Norm and more.
 //
-//   Kathleen Bonnell, Mon Nov 17 14:01:45 PST 2003 
+//   Kathleen Bonnell, Mon Nov 17 14:01:45 PST 2003
 //   Added 'Plot MinMax'.
-// 
+//
 //   Kathleen Bonnell, Thu Nov 26 08:30:49 PST 2003
-//   Reworked code to create panel based on specified window type for a 
-//   particular query.  Removed all references to specific query names. 
-// 
+//   Reworked code to create panel based on specified window type for a
+//   particular query.  Removed all references to specific query names.
+//
 //   Kathleen Bonnell, Thu Apr  1 18:46:55 PST 2004
 //   Added code to handle new time query capabilities.
-// 
-//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004 
-//   Made the default for dataOpts be 'actual data'. 
 //
-//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004 
-//   Made the default for dataOpts be 'original data'. 
+//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004
+//   Made the default for dataOpts be 'actual data'.
 //
-//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004 
+//   Kathleen Bonnell, Tue Aug 24 15:31:56 PDT 2004
+//   Made the default for dataOpts be 'original data'.
+//
+//   Kathleen Bonnell, Sat Sep  4 11:49:58 PDT 2004
 //   Changed argument from index to qname -- because queryList box may
-//   have fewer items than all queries. 
-// 
-//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
-//   Removed references to QueryList::CoordRep and coordLabel, 
-//   no longer exists. 
+//   have fewer items than all queries.
 //
-//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
-//   Added logic to handle useGlobal checkbox. 
+//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004
+//   Removed references to QueryList::CoordRep and coordLabel,
+//   no longer exists.
 //
-//   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005 
+//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004
+//   Added logic to handle useGlobal checkbox.
+//
+//   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
 //   Enabled state of labels[0] and textFields[0] may change if useGlobal is
-//   toggled, so reset the state to true here. 
+//   toggled, so reset the state to true here.
 //
-//   Kathleen Bonnell, Mon May  9 13:27:49 PDT 2005 
+//   Kathleen Bonnell, Mon May  9 13:27:49 PDT 2005
 //   Removed 'Samples' from 'DoublePoint' (lineout) query.
 //
-//   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
-//   Reflect changes in queryList -- timeQuery is now queryMode. 
+//   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//   Reflect changes in queryList -- timeQuery is now queryMode.
 //   Allow 'Query' button to not be shown for QueryMde == TimeOnly.
 //
 //   Hank Childs, Mon Jul 10 17:23:24 PDT 2006
 //   Add support for a line distribution.
+//
+//   Dave Bremer, Fri Dec  8 17:52:22 PST 2006
+//   Added a GUI for the hohlraum flux query.
 //
 // ****************************************************************************
 
@@ -646,7 +649,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
     useGlobal->setChecked(0);
     labels[0]->setEnabled(true);
     textFields[0]->setEnabled(true);
-    
+
     if(index >= 0 && index < winType.size())
     {
         bool showWidgets[4] = {false, false, false, false};
@@ -655,7 +658,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
         bool showTime = queryMode[index] != QueryList::QueryOnly;
         bool showQuery = queryMode[index] != QueryList::TimeOnly;
-      
+
         labels[0]->setText("Variables");
         textFields[0]->setText("default");
 
@@ -756,6 +759,24 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             textFields[3]->setText("1.");
             showWidgets[3] = true;
         }
+        else if (winT == QueryList::HohlraumFlux)
+        {
+            labels[0]->setText("Variable Names");
+            textFields[0]->setText("absorbtivity emissivity");
+            showWidgets[0] = true;
+
+            labels[1]->setText("Number of Lines");
+            textFields[1]->setText("100");
+            showWidgets[1] = true;
+
+            labels[2]->setText("Ray Center");
+            textFields[2]->setText("0 0 0");
+            showWidgets[2] = true;
+
+            labels[3]->setText("Radius, Theta, Phi");
+            textFields[3]->setText("1 0 0");
+            showWidgets[3] = true;
+        }
 
         // hide and show the right text widgets.
         for(int i = 0; i < 4; ++i)
@@ -775,7 +796,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         {
             useGlobal->show();
         }
-        else 
+        else
         {
             useGlobal->hide();
         }
@@ -793,12 +814,12 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
 
         if (showTime)
             timeQueryButton->show();
-        else 
+        else
             timeQueryButton->hide();
 
         if (showQuery)
             queryButton->show();
-        else 
+        else
             queryButton->hide();
     }
 }
@@ -806,7 +827,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
 // ****************************************************************************
 // Method: QvisQueryWindow::SubjectRemoved
 //
-// Purpose: 
+// Purpose:
 //   Called when subjects that the window observes are destroyed.
 //
 // Arguments:
@@ -816,9 +837,9 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
 // Creation:   Mon Sep 9 16:57:28 PST 2002
 //
 // Modifications:
-//   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002 
-//   Test for queryAtts, too. 
-//   
+//   Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
+//   Test for queryAtts, too.
+//
 // ****************************************************************************
 
 void
@@ -902,23 +923,26 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   utilize new WindowType ivar.
 //
 //   Kathleen Bonnell,  Thu Apr  1 18:46:55 PST 2004
-//   Added doTime arge to viewer query calls. 
-// 
-//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004
-//   Added useActualData to basic DatabaseQuery call. 
-// 
-//   Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004 
-//   Switch order of dom and el in viewerProxy call.  
-// 
-//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004 
-//   Removed references to QueryList::CoordRep, no longer exists. 
+//   Added doTime arge to viewer query calls.
 //
-//   Kathleen Bonnell, Fri Sep 10 13:28:33 PDT 2004 
+//   Kathleen Bonnell, Thu Apr 22 15:31:24 PDT 2004
+//   Added useActualData to basic DatabaseQuery call.
+//
+//   Kathleen Bonnell, Tue May 25 16:09:15 PDT 2004
+//   Switch order of dom and el in viewerProxy call.
+//
+//   Kathleen Bonnell, Wed Sep  8 10:06:16 PDT 2004
+//   Removed references to QueryList::CoordRep, no longer exists.
+//
+//   Kathleen Bonnell, Fri Sep 10 13:28:33 PDT 2004
 //   The 'currentItem' of the queryList is not the correct index into queries.
 //   Test the currentText against queries->names to get valid index.
 //
-//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004 
+//   Kathleen Bonnell, Wed Dec 15 17:16:17 PST 2004
 //   Added logic to handle useGlobal checkbox and new WindowTypes.
+//
+//   Dave Bremer, Fri Dec  8 17:52:22 PST 2006
+//   Added argument parsing for the hohlraum flux query.
 //
 // ****************************************************************************
 
@@ -973,7 +997,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
             }
             else if ((winT == QueryList::DomainZone) ||
                      (winT == QueryList::DomainNode) || 
-                     (winT == QueryList::DomainZoneVars) || 
+                     (winT == QueryList::DomainZoneVars) ||
                      (winT == QueryList::DomainNodeVars))
             {
                 int dom = 0, el = 0;
@@ -1095,8 +1119,56 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 if(!GetFloatingPointNumber(3, &max))
                     noErrors = false;
                 if (noErrors)
-                    viewer->DatabaseQuery(names[index], vars, false, nLines, 
-                                          nBins, true, min, max);
+                {
+                    doubleVector vmin(1), vmax(1);
+                    vmin[0] = min;
+                    vmax[0] = max;
+                    viewer->DatabaseQuery(names[index], vars, false, nLines,
+                                          nBins, true, vmin, vmax);
+                }
+            }
+            else if (winT == QueryList::HohlraumFlux)
+            {
+                stringVector v;
+
+                if (!GetVars(0, vars))
+                    noErrors = false;
+
+                if (vars.size() != 2)
+                    noErrors = false;
+
+                int nLines=0;
+                if(!GetNumber(1, &nLines))
+                    noErrors = false;
+
+                doubleVector pos(3);
+                if (!GetVars(2, v))
+                    noErrors = false;
+                if (v.size() != 3)
+                    noErrors = false;
+                if (noErrors)
+                {
+                    pos[0] = atof(v[0].c_str());
+                    pos[1] = atof(v[1].c_str());
+                    pos[2] = atof(v[2].c_str());
+                }
+
+                doubleVector radiusThetaPhi(3);
+                v.resize(0);
+                if (!GetVars(3, v))
+                    noErrors = false;
+
+                if (v.size() != 3)
+                    noErrors = false;
+                if (noErrors)
+                {
+                    radiusThetaPhi[0] = atof(v[0].c_str());
+                    radiusThetaPhi[1] = atof(v[1].c_str());
+                    radiusThetaPhi[2] = atof(v[2].c_str());
+                }
+                if (noErrors)
+                    viewer->DatabaseQuery(names[index], vars, doTime, nLines,
+                                          0, true, pos, radiusThetaPhi);
             }
 
             // Display a status message.
@@ -1113,7 +1185,7 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
 // ****************************************************************************
 // Method: QvisQueryWindow::GetPoint
 //
-// Purpose: 
+// Purpose:
 //   Gets a point from the i'th text field.
 //
 // Arguments:
@@ -1204,7 +1276,7 @@ QvisQueryWindow::GetNumber(int index, int *num)
 // ****************************************************************************
 // Method: QvisQueryWindow::GetFloatingPointNumber
 //
-// Purpose: 
+// Purpose:
 //   Gets an floating point number from the i'th text field.
 //
 // Arguments:
@@ -1241,7 +1313,7 @@ QvisQueryWindow::GetFloatingPointNumber(int index, double *num)
 // ****************************************************************************
 // Method: QvisQueryWindow::GetVars
 //
-// Purpose: 
+// Purpose:
 //   Gets a list of variables from the i'th text field.
 //
 // Arguments:

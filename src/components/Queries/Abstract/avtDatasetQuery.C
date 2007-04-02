@@ -316,12 +316,19 @@ avtDatasetQuery::PostExecute()
 //    Kathleen Bonnell, Mon Jan  3 15:12:19 PST 2005 
 //    Modify timeVarying case. 
 //
+//    David Bremer, Fri Jan  5 11:13:38 PST 2007
+//    Add secondary variables to the query, by querying a
+//    virtual function that derived classes can override.
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 {
-    if (!timeVarying)
+    std::vector<std::string>  secondaryVars;
+    GetSecondaryVars( secondaryVars );
+
+    if (!timeVarying && secondaryVars.size() == 0)
     {
         avtDataObject_p rv;
         CopyTo(rv, dob);
@@ -329,6 +336,8 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
     }
     else 
     {
+        int ii;
+        
         avtPipelineSpecification_p orig_pspec = dob->GetTerminatingSource()->
             GetGeneralPipelineSpecification();
         
@@ -336,8 +345,17 @@ avtDatasetQuery::ApplyFilters(avtDataObject_p dob)
 
         avtDataSpecification_p newDS = new 
             avtDataSpecification(oldSpec, querySILR);
-        newDS->SetTimestep(queryAtts.GetTimeStep());
+            
+        if (timeVarying)
+        {
+            newDS->SetTimestep(queryAtts.GetTimeStep());
+        }
 
+        for (ii = 0 ; ii < secondaryVars.size() ; ii++)
+        {
+            newDS->AddSecondaryVariable( secondaryVars[ii].c_str() );
+        }
+        
         avtPipelineSpecification_p pspec = 
             new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
 
@@ -388,4 +406,25 @@ avtDatasetQuery::GetResultValue(const int i)
 
     return resValue[i];
 }
+
+
+// ****************************************************************************
+//  Method: avtDatasetQuery::GetSecondaryVars
+//
+//  Purpose:
+//    Returns an array of secondary variables to be added to the query.  This 
+//    is a stub method to be overridden by derived classes.
+//
+//  Programmer: David Bremer 
+//  Creation:   January 4, 2007
+//
+// ****************************************************************************
+
+void
+avtDatasetQuery::GetSecondaryVars( std::vector<std::string> &outVars )
+{
+    outVars.clear();
+}
+
+
 
