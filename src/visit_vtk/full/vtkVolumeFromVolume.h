@@ -77,6 +77,9 @@ class vtkUnstructuredGrid;
 //    Added new data members shapes and nshapes.  Also added 
 //    GetNumberOfPointsPerShape method to ShapeList.
 //
+//    Jeremy Meredith, Tue Aug 29 14:33:30 EDT 2006
+//    Added support for lines and vertices.
+//
 // ****************************************************************************
 
 class vtkVolumeFromVolume : public vtkDataSetFromVolume
@@ -155,6 +158,24 @@ class TriList : public ShapeList
     void           AddTri(int, int, int, int);
 };
 
+class LineList : public ShapeList
+{
+  public:
+                   LineList();
+    virtual       ~LineList();
+    virtual int    GetVTKType(void) const { return VTK_LINE; };
+    void           AddLine(int, int, int);
+};
+
+class VertexList : public ShapeList
+{
+  public:
+                   VertexList();
+    virtual       ~VertexList();
+    virtual int    GetVTKType(void) const { return VTK_VERTEX; };
+    void           AddVertex(int, int);
+};
+
 struct CentroidPointEntry
 {
     int     nPts;
@@ -220,6 +241,10 @@ typedef struct
                         { quads.AddQuad(z, v0, v1, v2, v3); }
     void           AddTri(int z, int v0, int v1, int v2)
                         { tris.AddTri(z, v0, v1, v2); }
+    void           AddLine(int z, int v0, int v1)
+                        { lines.AddLine(z, v0, v1); }
+    void           AddVertex(int z, int v0)
+                        { vertices.AddVertex(z, v0); }
 
   protected:
     CentroidPointList  centroid_list;
@@ -229,8 +254,10 @@ typedef struct
     TetList            tets;
     QuadList           quads;
     TriList            tris;
+    LineList           lines;
+    VertexList         vertices;
 
-    ShapeList         *shapes[6];
+    ShapeList         *shapes[8];
     const int          nshapes;
 
     void               ConstructDataSet(vtkPointData *, vtkCellData *,

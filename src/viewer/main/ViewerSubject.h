@@ -429,6 +429,9 @@ struct avtDefaultPlotMetaData;
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
 //    Added UpatePlotInfoAtts. 
 //
+//    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
+//    Added ability to force using a specific plugin when opening a file.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public QObject
@@ -492,7 +495,8 @@ private:
     void CustomizeAppearance();
     void InitializeWorkArea();
     int  OpenDatabaseHelper(const std::string &db, int timeState,
-                            bool loadDefaultPlots, bool udpateWindowInfo);
+                            bool loadDefaultPlots, bool udpateWindowInfo,
+                            const std::string &forcedFileType = "");
 
     DataNode *CreateAttributesDataNode(const avtDefaultPlotMetaData *) const;
 

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+  <Plugin name="Replicate" type="operator" label="Replicate" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="Replicate.xpm">
+    <Attribute name="ReplicateAttributes" purpose="This class contains attributes for the replicate operator." persistent="true">
+      <Field name="useUnitCellVectors" label="Use provided unit cell vectors" type="bool">
+      </Field>
+      <Field name="xVector" label="Vector for X" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        1.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="yVector" label="Vector for Y" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        0.000000
+        1.000000
+        0.000000
+      </Field>
+      <Field name="zVector" label="Vector for Z" type="doubleArray" length="3" enabler="useUnitCellVectors:false">
+        0.000000
+        0.000000
+        1.000000
+      </Field>
+      <Field name="xReplications" label="Replications in X" type="int">
+        1
+      </Field>
+      <Field name="yReplications" label="Replications in Y" type="int">
+        1
+      </Field>
+      <Field name="zReplications" label="Replications in Z" type="int">
+        1
+      </Field>
+      <Field name="mergeResults" label="Merge into one block when possible" type="bool">
+        true
+      </Field>
+    </Attribute>
+  </Plugin>

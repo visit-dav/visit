@@ -149,10 +149,13 @@ VariableNamesEqual(const std::string &v1, const std::string &v2)
 //
 //    Mark C. Miller, Tue Aug 15 21:48:46 PDT 2006
 //    Called SetExtents to initialize extents. Keeps purify happy.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiii")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibF")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
@@ -179,6 +182,14 @@ avtMeshMetaData::avtMeshMetaData()
     zLabel = "Z-Axis";
     loadBalanceScheme = LOAD_BALANCE_UNKNOWN;
     meshCoordType = AVT_XY;
+    nodesAreCritical = false;
+    for (int j=0; j<3; j++)
+    {
+        for (int k=0; k<3; k++)
+        {
+            unitCellVectors[j*3+k] = (j==k) ? 1.0 : 0.0;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -243,12 +254,14 @@ avtMeshMetaData::avtMeshMetaData()
 //    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
 //    Added meshCoordType.
 //
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
                                  int bo, int co, int go, int sd, int td,
                                  avtMeshType mt)
-    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiii")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibF")
 {
     name                 = s;
     originalName         = name;
@@ -277,6 +290,14 @@ avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
     zLabel = "Z-Axis";
     loadBalanceScheme    = LOAD_BALANCE_UNKNOWN;
     meshCoordType    = AVT_XY;
+    nodesAreCritical = false;
+    for (int j=0; j<3; j++)
+    {
+        for (int k=0; k<3; k++)
+        {
+            unitCellVectors[j*3+k] = (j==k) ? 1.0 : 0.0;
+        }
+    }
 }
 
 
@@ -343,11 +364,14 @@ avtMeshMetaData::avtMeshMetaData(const double *extents, std::string s, int nb,
 //
 //    Mark C. Miller, Tue Aug 15 21:48:46 PDT 2006
 //    Called SetExtents to initialize extents. Keeps purify happy.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
                                  int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiii")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibF")
 {
     name                 = s;
     originalName         = name;
@@ -379,6 +403,14 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
 
     loadBalanceScheme = LOAD_BALANCE_UNKNOWN;
     meshCoordType = AVT_XY;
+    nodesAreCritical = false;
+    for (int j=0; j<3; j++)
+    {
+        for (int k=0; k<3; k++)
+        {
+            unitCellVectors[j*3+k] = (j==k) ? 1.0 : 0.0;
+        }
+    }
 }
 
 
@@ -444,10 +476,13 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
 //    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
 //    Added meshCoordType.
 //
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiii")
+    : AttributeSubject("sssiiiiiibDDs*ii*ssbssssssibbbbbsiiibF")
 {
     name                     = rhs.name;
     originalName             = rhs.originalName;
@@ -486,6 +521,14 @@ avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
     validVariable            = rhs.validVariable;
     loadBalanceScheme        = rhs.loadBalanceScheme;
     meshCoordType            = rhs.meshCoordType;
+    nodesAreCritical         = rhs.nodesAreCritical;
+    for (int j=0; j<3; j++)
+    {
+        for (int k=0; k<3; k++)
+        {
+            unitCellVectors[j*3+k] = rhs.unitCellVectors[j*3+k];
+        }
+    }
 }
 
 
@@ -565,6 +608,9 @@ avtMeshMetaData::~avtMeshMetaData()
 //    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
 //    Added meshCoordType.
 //
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
 // ****************************************************************************
 
 const avtMeshMetaData &
@@ -607,6 +653,14 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
     validVariable            = rhs.validVariable;
     loadBalanceScheme        = rhs.loadBalanceScheme;
     meshCoordType            = rhs.meshCoordType;
+    nodesAreCritical         = rhs.nodesAreCritical;
+    for (int j=0; j<3; j++)
+    {
+        for (int k=0; k<3; k++)
+        {
+            unitCellVectors[j*3+k] = rhs.unitCellVectors[j*3+k];
+        }
+    }
 
     return *this;
 }
@@ -665,6 +719,9 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
 //    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
 //    Added meshCoordType.
 //
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
 // ****************************************************************************
 
 void
@@ -704,6 +761,8 @@ avtMeshMetaData::SelectAll()
     Select(31, (void*)&groupOrigin);
     Select(32, (void*)&loadBalanceScheme);
     Select(33, (void*)&meshCoordType);
+    Select(34, (void*)&nodesAreCritical);
+    Select(35, (void*)unitCellVectors, 9);
 }
 
 
@@ -818,6 +877,9 @@ avtMeshMetaData::SetExtents(const double *extents)
 //
 //    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
 //    Added meshCoordType.
+//
+//    Jeremy Meredith, Fri Aug 25 17:14:58 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
 //
 // ****************************************************************************
 
@@ -994,6 +1056,19 @@ avtMeshMetaData::Print(ostream &out, int indent) const
         Indent(out, indent);
         out << "Mesh coord type is ZR" << endl;
     }
+
+    Indent(out, indent);
+    out << "Mesh is primarily "
+        << (nodesAreCritical ? "point" : "cell") << "-based" << endl;
+
+    for (int i=0; i<3; i++)
+    {
+        Indent(out, indent);
+        out << "Unit cell vector #"<<i<<" is "
+            << unitCellVectors[i*3+0] << " "
+            << unitCellVectors[i*3+1] << " "
+            << unitCellVectors[i*3+2] << endl;
+    }
 }
 
 
@@ -1018,14 +1093,18 @@ avtMeshMetaData::Print(ostream &out, int indent) const
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData()
-    : AttributeSubject("ssibddbbbss")
+    : AttributeSubject("ssibddbbbssbs*i*")
 {
     validVariable = true;
     treatAsASCII = false;
     hasUnits = false;
+    isEnumeration  = false;
 }
    
 
@@ -1053,11 +1132,14 @@ avtScalarMetaData::avtScalarMetaData()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn, 
                                      avtCentering c)
-    : AttributeSubject("ssibddbbbss")
+    : AttributeSubject("ssibddbbbssbs*i*")
 {
     name           = n;
     originalName   = name;
@@ -1067,6 +1149,7 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     validVariable  = true;
     treatAsASCII   = false;
     hasUnits       = false;
+    isEnumeration  = false;
 }
    
 
@@ -1096,11 +1179,14 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
                                      avtCentering c, double min, double max)
-    : AttributeSubject("ssibddbbbss")
+    : AttributeSubject("ssibddbbbsbs*i*")
 {
     name           = n;
     originalName   = name;
@@ -1109,6 +1195,7 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
     validVariable  = true;
     treatAsASCII   = false;
     hasUnits       = false;
+    isEnumeration  = false;
 
     double  extents[2] = { min, max };
     SetExtents(extents);
@@ -1140,10 +1227,13 @@ avtScalarMetaData::avtScalarMetaData(std::string n, std::string mn,
 //    Jeremy Meredith, Wed Mar 16 17:44:36 PST 2005
 //    Added missing 'b'.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
 // ****************************************************************************
 
 avtScalarMetaData::avtScalarMetaData(const avtScalarMetaData &rhs)
-    : AttributeSubject("ssibddbbbss")
+    : AttributeSubject("ssibddbbbssbs*i*")
 {
     name           = rhs.name;
     originalName   = name;
@@ -1156,6 +1246,9 @@ avtScalarMetaData::avtScalarMetaData(const avtScalarMetaData &rhs)
     treatAsASCII   = rhs.treatAsASCII;
     hasUnits       = rhs.hasUnits;
     units          = rhs.units;
+    isEnumeration  = rhs.isEnumeration;
+    enumNames      = rhs.enumNames;
+    enumValues     = rhs.enumValues;
 }
 
 
@@ -1196,6 +1289,9 @@ avtScalarMetaData::~avtScalarMetaData()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
 // ****************************************************************************
 
 const avtScalarMetaData &
@@ -1212,6 +1308,9 @@ avtScalarMetaData::operator=(const avtScalarMetaData &rhs)
     treatAsASCII   = rhs.treatAsASCII;
     hasUnits       = rhs.hasUnits;
     units          = rhs.units;
+    isEnumeration  = rhs.isEnumeration;
+    enumNames      = rhs.enumNames;
+    enumValues     = rhs.enumValues;
 
     return *this;
 }
@@ -1235,6 +1334,9 @@ avtScalarMetaData::operator=(const avtScalarMetaData &rhs)
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
 // ****************************************************************************
 
 void
@@ -1251,6 +1353,9 @@ avtScalarMetaData::SelectAll()
     Select(8, (void*)&hasUnits);
     Select(9, (void*)&units);
     Select(10, (void*)&originalName);
+    Select(11, (void*)&isEnumeration);
+    Select(12, (void*)&enumNames);
+    Select(13, (void*)&enumValues);
 }
 
 
@@ -1315,6 +1420,9 @@ avtScalarMetaData::SetExtents(const double *extents)
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
 // ****************************************************************************
 
 void
@@ -1377,6 +1485,17 @@ avtScalarMetaData::Print(ostream &out, int indent) const
     {
         Indent(out, indent);
         out << "This variable should be treated as ASCII." << endl;
+    }
+
+    if (isEnumeration)
+    {
+        Indent(out, indent);
+        out << "This variable contains enumerated values." << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "This variable does not contain enumerated values." << endl;
     }
 }
 
@@ -7961,6 +8080,9 @@ avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar,
 //    Kathleen Bonnell, Fri Aug 22 18:02:15 PDT 2003
 //    Subset vars are no longer always 'compound', parse accordingly.
 // 
+//    Jeremy Meredith, Wed Aug 23 18:23:16 EDT 2006
+//    Find enumerated scalar type subsets.
+//
 // ****************************************************************************
 
 avtSubsetType
@@ -7996,7 +8118,10 @@ avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) const
         blockTitle = mmd->blockTitle;
         groupTitle = mmd->groupTitle;
     }
- 
+
+    //
+    // Check Blocks/Domains and Groups first
+    //
     if (category == blockTitle)
     {
         return AVT_DOMAIN_SUBSET;
@@ -8005,15 +8130,25 @@ avtDatabaseMetaData::DetermineSubsetType(const std::string &inVar) const
     {
         return AVT_GROUP_SUBSET; 
     }
-    else
-    {
-        const avtMaterialMetaData *matmd = GetMaterialOnMesh(mesh); 
 
-        if (matmd != NULL && matmd->name == category)
-            return AVT_MATERIAL_SUBSET;
-        else
-            return AVT_UNKNOWN_SUBSET;
-    }
+    //
+    // Check material next
+    //
+    const avtMaterialMetaData *matmd = GetMaterialOnMesh(mesh); 
+
+    if (matmd != NULL && matmd->name == category)
+        return AVT_MATERIAL_SUBSET;
+    //
+    // Check enumerated scalars next
+    //
+    const avtScalarMetaData *smd = GetScalar(category);
+    if (smd != NULL && smd->isEnumeration)
+        return AVT_ENUMSCALAR_SUBSET;
+
+    //
+    // No match on any known subset types
+    //
+    return AVT_UNKNOWN_SUBSET;
 }
 
 // ****************************************************************************

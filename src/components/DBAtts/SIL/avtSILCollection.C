@@ -134,6 +134,9 @@ avtSILCollection::GetSubsetList(void) const
 //    Jeremy Meredith, Fri Dec 14 16:25:54 PST 2001
 //    Added species.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added enumerated scalars.
+//
 // ****************************************************************************
 
 void
@@ -166,6 +169,9 @@ avtSILCollection::Print(ostream &out) const
         break;
       case SIL_SPECIES:
         roleS = "species";
+        break;
+      case SIL_ENUMERATION:
+        roleS = "enumeration";
         break;
       case SIL_USERD:
         roleS = "user defined";

@@ -184,6 +184,9 @@ class WindowInformation;
 //   Brad Whitlock, Tue Jul 25 09:42:39 PDT 2006
 //   Added support for a splitter.
 //
+//   Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
+//   Added File Open window.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -219,6 +222,7 @@ signals:
     void activateEngineWindow();
     void activateHostWindow();
     void activateFileWindow();
+    void activateFileOpenWindow();
     void activateFileInformationWindow();
     void activateSimulationWindow();
     void activatePrintWindow();

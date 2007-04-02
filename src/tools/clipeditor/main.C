@@ -40,6 +40,10 @@
 //
 // Programmer: Jeremy Meredith
 // Date:       August 11, 2003
+//
+//    Jeremy Meredith, Tue Aug 29 16:13:43 EDT 2006
+//    Added Line and Vertex shapes.  Added missing help text for other shapes.
+//
 // ----------------------------------------------------------------------------
 
 #include <qapplication.h>
@@ -98,6 +102,10 @@ int main(int argc, char *argv[])
     cerr << "   W:  wedge\n";
     cerr << "   P:  pyramid\n";
     cerr << "   T:  tetrahedron\n";
+    cerr << "   Q:  quad\n";
+    cerr << "   R:  triangle\n";
+    cerr << "   L:  line\n";
+    cerr << "   V:  vertex\n";
     cerr << "   N:  newpoint (centroid based) (four max newpoints per case)\n";
     cerr << "\n";
     cerr << " Step 2: choose number of points (NewPoint only)\n";

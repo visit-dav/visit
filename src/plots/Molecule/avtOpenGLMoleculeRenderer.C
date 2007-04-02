@@ -250,6 +250,11 @@ SetColor3ubv(const unsigned char *c)
 //    Brad Whitlock, Mon Mar 27 17:39:40 PST 2006
 //    Added imposter rendering.
 //
+//    Jeremy Meredith, Mon Aug 28 18:18:17 EDT 2006
+//    Bonds are now line segments cells, and atoms are both points and
+//    vertex cells.  This means we cannot look at cell data when looking
+//    for atom arrays.  Also, account for model number directory prefix.
+//
 // ****************************************************************************
 
 void
@@ -257,22 +262,46 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
                                               const MoleculeAttributes &atts)
 {
     vtkPoints *points = data->GetPoints();
-    const float *vertices = (float*)points->GetVoidPointer(0);
 
-    vtkDataArray *element = data->GetCellData()->GetArray("element");
-    float *elementnos = element ? (float*)element->GetVoidPointer(0) : NULL;
-
-    vtkDataArray *primary = data->GetCellData()->GetScalars();
+    vtkDataArray *primary = data->GetPointData()->GetScalars();
     if (!primary)
-        primary = data->GetPointData()->GetScalars();
+    {
+        // Let's just assume we don't want to plot the spheres for
+        // a cell-centered variable
+        return;
+    }
+    if (primary && !primary->IsA("vtkFloatArray"))
+    {
+        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
+        return;
+    }
     float *scalar = (float*)primary->GetVoidPointer(0);
 
-    bool color_by_element = primary && ct_is_discrete &&
-        (string(primary->GetName()) == "element");
-    bool is_resseq = string(primary->GetName()) == "resseq";
-    bool color_by_levels = primary && ct_is_discrete &&
-        (is_resseq ||
-         string(primary->GetName()) == "restype");
+    string primaryname = primary->GetName();
+    bool primary_is_element = (primaryname == "element" ||
+                    (primaryname.length() > 8 &&
+                     primaryname.substr(primaryname.length()-8) == "/element"));
+    bool primary_is_resseq = (primaryname == "resseq" ||
+                    (primaryname.length() > 7 &&
+                     primaryname.substr(primaryname.length()-7) == "/resseq"));
+    bool primary_is_restype = (primaryname == "restype" ||
+                    (primaryname.length() > 8 &&
+                     primaryname.substr(primaryname.length()-8) == "/restype"));
+
+    vtkDataArray *element = primary_is_element ? primary : 
+                                   data->GetPointData()->GetArray("element");
+    if (element && !element->IsA("vtkFloatArray"))
+    {
+        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
+        return;
+    }
+    float *elementnos = element ? (float*)element->GetVoidPointer(0) : NULL;
+
+
+    bool color_by_levels = (primary_is_element ||
+                            primary_is_restype ||
+                            primary_is_resseq)     && ct_is_discrete;
+    bool color_by_element = color_by_levels && primary_is_element;
 
     float *radiusvar = NULL;
     bool sbv  = atts.GetScaleRadiusBy() == MoleculeAttributes::Variable;
@@ -286,16 +315,18 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
             radiusvar = scalar;
         else
         {
-            vtkDataArray *radius_array = data->GetCellData()->GetArray(
-                                          atts.GetRadiusVariable().c_str());
-            if (!radius_array)
-                radius_array = data->GetPointData()->GetArray(
+            vtkDataArray *radius_array = data->GetPointData()->GetArray(
                                           atts.GetRadiusVariable().c_str());
             if (!radius_array)
             {
                 // This shouldn't have gotten this far if it couldn't
                 // read the variable like we asked.
                 EXCEPTION1(ImproperUseException, "Couldn't read radius variable");
+            }
+            if (radius_array && !radius_array->IsA("vtkFloatArray"))
+            {
+                debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
+                return;
             }
             radiusvar = (float*)radius_array->GetVoidPointer(0);
         }
@@ -340,7 +371,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
     }
 
     glBegin(GL_QUADS);
-    for (int i=0; i<data->GetNumberOfCells(); i++)
+    for (int i=0; i<data->GetNumberOfPoints(); i++)
     {
         int element_number = 0;
         if (element)
@@ -366,7 +397,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
         }
         else if (color_by_levels)
         {
-            int level = int(scalar[i]) - (is_resseq ? 1 : 0);
+            int level = int(scalar[i]) - (primary_is_resseq ? 1 : 0);
             if(levelsLUT != 0)
             {
                 const unsigned char *rgb = 
@@ -402,7 +433,7 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
             glNormal3f(radius, radius, radius);
             for(int j = 0; j < 4; ++j)
             {
-                glVertex3fv(&vertices[3*i]);
+                glVertex3dv(points->GetPoint(i));
                 glTexCoord2fv(texCoords[j]);
             }
         }
@@ -411,10 +442,11 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
             // Plot squares
             for(int j = 0; j < 4; ++j)
             {
+                double *pt = points->GetPoint(i);
                 float vert[3];
-                vert[0] = vertices[3*i+0] + ptOffsets[j][0] * radius;
-                vert[1] = vertices[3*i+1] + ptOffsets[j][1] * radius;
-                vert[2] = vertices[3*i+2] + ptOffsets[j][2] * radius;
+                vert[0] = pt[0] + ptOffsets[j][0] * radius;
+                vert[1] = pt[1] + ptOffsets[j][1] * radius;
+                vert[2] = pt[2] + ptOffsets[j][2] * radius;
                 glVertex3fv(vert);
                 glTexCoord2fv(texCoords[j]);
             }
@@ -422,9 +454,10 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
         else
         {
             // Plot spheres
-            DrawSphereAsQuads(vertices[3*i+0],
-                              vertices[3*i+1],
-                              vertices[3*i+2],
+            double *pt = points->GetPoint(i);
+            DrawSphereAsQuads(pt[0],
+                              pt[1],
+                              pt[2],
                               radius,
                               atts.GetAtomSphereQuality());
         }
@@ -450,73 +483,90 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 //  Creation:    February  3, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:18:17 EDT 2006
+//    Bonds are now line segments cells, and atoms are both points and
+//    vertex cells.  This means we cannot look at cell data when looking
+//    for atom arrays.  Also, account for model number directory prefix.
 //
 // ****************************************************************************
+
 void
 avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                                      const MoleculeAttributes &atts)
 {
-
     vtkPoints *points = data->GetPoints();
-    float *vertices = (float*)points->GetVoidPointer(0);
+    int numverts = data->GetNumberOfVerts();
     vtkCellArray *lines = data->GetLines();
     vtkIdType *segments = lines->GetPointer();
 
-    vtkDataArray *element = data->GetCellData()->GetArray("element");
-    float *elementnos = element ? (float*)element->GetVoidPointer(0) : NULL;
-
-    vtkDataArray *primary = data->GetCellData()->GetScalars();
+    bool primary_is_cell_centered = false;
+    vtkDataArray *primary = data->GetPointData()->GetScalars();
     if (!primary)
-        primary = data->GetPointData()->GetScalars();
+    {
+        primary = data->GetCellData()->GetScalars();
+        primary_is_cell_centered = true;
+    }
+    if (!primary)
+    {
+        // eh? no variable at all?  that's a logic error....
+        EXCEPTION1(ImproperUseException, "Expected a variable of some sort.");
+    }
+    if (primary && !primary->IsA("vtkFloatArray"))
+    {
+        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
+        return;
+    }
     float *scalar = (float*)primary->GetVoidPointer(0);
 
-    bool color_by_element = primary && ct_is_discrete &&
-        (string(primary->GetName()) == "element");
-    bool is_resseq = string(primary->GetName()) == "resseq";
-    bool color_by_levels = primary && ct_is_discrete &&
-        (is_resseq  ||
-         string(primary->GetName()) == "restype");
+    string primaryname = primary->GetName();
+    bool primary_is_element = (primaryname == "element" ||
+                    (primaryname.length() > 8 &&
+                     primaryname.substr(primaryname.length()-8) == "/element"));
+    bool primary_is_resseq = (primaryname == "resseq" ||
+                    (primaryname.length() > 7 &&
+                     primaryname.substr(primaryname.length()-7) == "/resseq"));
+    bool primary_is_restype = (primaryname == "restype" ||
+                    (primaryname.length() > 8 &&
+                     primaryname.substr(primaryname.length()-8) == "/restype"));
 
-    vtkUnsignedIntArray *origcell_array = vtkUnsignedIntArray::SafeDownCast(
-                      data->GetCellData()->GetArray("avtOriginalCellNumbers"));
-    //vtkDataArray *origcell_array = data->GetCellData()->GetArray("avtOriginalCellNumbers");
-    if (!origcell_array)
+    vtkDataArray *element = primary_is_element ? primary : 
+                                   data->GetPointData()->GetArray("element");
+    if (element && !element->IsA("vtkFloatArray"))
     {
-        EXCEPTION1(ImproperUseException, "Couldn't read original cell number array.");
+        debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
+        return;
     }
-    //cerr << "cell number array type = "<<origcell_array->GetDataType()<<" "<<vtkImageScalarTypeNameMacro(origcell_array->GetDataType())<<endl;
-    //int *orig_index = origcell_array ? (int*)(origcell_array->GetTuple(0)) : NULL;
-    unsigned int *orig_index = origcell_array ? origcell_array->GetPointer(0) : NULL;
+    float *elementnos = element ? (float*)element->GetVoidPointer(0) : NULL;
 
-    vtkDataArray *bond_array = data->GetCellData()->GetArray("bonds");
-    if (!bond_array)
-    {
-        EXCEPTION1(ImproperUseException, "Couldn't read bonds array.");
-    }
-    float *bonds = bond_array ? (float*)bond_array->GetVoidPointer(0) : NULL;
+    bool color_by_levels = (primary_is_element ||
+                            primary_is_restype ||
+                            primary_is_resseq)     && ct_is_discrete;
+    bool color_by_element = color_by_levels && primary_is_element;
 
-#ifdef SHORTEN_BONDS
     //
     // Get radius variable
     //
-    bool shortenBonds = atts.GetDrawAtomsAs() ==
-                        MoleculeAttributes::ImposterAtoms;
+#ifdef SHORTEN_BONDS
     float *radiusvar = NULL;
     bool sbv  = atts.GetScaleRadiusBy() == MoleculeAttributes::Variable;
     bool sbar = atts.GetScaleRadiusBy() == MoleculeAttributes::Atomic;
     bool sbcr = atts.GetScaleRadiusBy() == MoleculeAttributes::Covalent;
     float radiusscale = atts.GetRadiusScaleFactor();
-    float dpt[3];
-    if (shortenBonds || sbv)
+
+    if (sbv)
     {
         if (atts.GetRadiusVariable() == "default")
+        {
+            if (primary_is_cell_centered)
+            {
+                EXCEPTION1(ImproperUseException,
+                           "Radius variable cannot be cell-centered.");
+            }
             radiusvar = scalar;
+        }
         else
         {
-            vtkDataArray *radius_array = data->GetCellData()->GetArray(
-                                          atts.GetRadiusVariable().c_str());
-            if (!radius_array)
-                radius_array = data->GetPointData()->GetArray(
+            vtkDataArray *radius_array = data->GetPointData()->GetArray(
                                           atts.GetRadiusVariable().c_str());
             if (!radius_array)
             {
@@ -524,30 +574,15 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                 // read the variable like we asked.
                 EXCEPTION1(ImproperUseException, "Couldn't read radius variable");
             }
+            if (radius_array && !radius_array->IsA("vtkFloatArray"))
+            {
+                debug4 << "avtOpenGLMoleculeRenderer: found a non-float array\n";
+                return;
+            }
             radiusvar = (float*)radius_array->GetVoidPointer(0);
         }
     }
 #endif
-
-    //
-    // Create a map of atom indices for bond indexing
-    //
-    int max_index = 0;
-    for (int i=0; i<data->GetNumberOfCells(); i++)
-    {
-        if (orig_index[2*i+1] > max_index)
-            max_index = orig_index[2*i+1];
-    }
-    int *atom_index_map = new int[max_index+1];
-    for (int i=0; i<=max_index; i++)
-    {
-        atom_index_map[i] = -1;
-    }
-    for (int i=0; i<data->GetNumberOfCells(); i++)
-    {
-        int ix = orig_index[2*i+1];
-        atom_index_map[ix] = i;
-    }
 
     if (atts.GetDrawBondsAs() == MoleculeAttributes::CylinderBonds)
     {
@@ -571,58 +606,33 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
         glBegin(GL_LINES);
     }
 
-    for (int i=0; i<data->GetNumberOfCells(); i++)
+    int *segptr = segments;
+    for (int i=0; i<data->GetNumberOfLines(); i++)
     {
-        for (int b=0; b<4; b++)
+        if (*segptr == 2)
         {
-            int v0_orig = orig_index[2*i+1];
-            int v1_orig = int(bonds[4*i+b]);
+            int v0 = *(segptr+1);
+            int v1 = *(segptr+2);
 
-            // Skip bonds that didn't exist in the first place
-            if (v1_orig == -1)
-                continue;
+            double pt_0[3];
+            double pt_1[3];
+            points->GetPoint(v0, pt_0);
+            points->GetPoint(v1, pt_1);
 
-            // Skip bonds to atoms outside the valid original cells numbers
-            if (v1_orig > max_index)
-                continue;
-
-            // By symmetry, don't plot bonds twice
-            if (v0_orig > v1_orig)
-                continue;
-
-            int v0 = i;
-            int v1 = atom_index_map[v1_orig];
-
-            // Skip bonds to atoms that were removed
-            if (v1 == -1)
-                continue;
-
-            float *pt_0 = &vertices[3*v0];
-            float *pt_1 = &vertices[3*v1];
-            float pt_mid[3] = {(pt_0[0]+pt_1[0])/2.,
-                               (pt_0[1]+pt_1[1])/2.,
-                               (pt_0[2]+pt_1[2])/2.};
+            double pt_mid[3] = {(pt_0[0]+pt_1[0])/2.,
+                                (pt_0[1]+pt_1[1])/2.,
+                                (pt_0[2]+pt_1[2])/2.};
 
 #ifdef SHORTEN_BONDS
-            if(shortenBonds)
-            {
-                dpt[0] = pt_1[0] - pt_0[0];
-                dpt[1] = pt_1[1] - pt_0[1];
-                dpt[2] = pt_1[2] - pt_0[2];
-                vtkMath::Normalize(dpt);
-
-                float pt_0_cpy[3] = {pt_0[0], pt_0[1], pt_0[2]};
-                float pt_1_cpy[3] = {pt_1[0], pt_1[1], pt_1[2]};
-                pt_0 = pt_0_cpy;
-                pt_1 = pt_1_cpy;
-            }
+            double dpt[3] = {pt_1[0]-pt_0[0], pt_1[1]-pt_0[1], pt_1[2]-pt_0[2]};
+            vtkMath::Normalize(dpt);
 #endif
 
             for (int half=0; half<=1; half++)
             {
                 int atom  = (half==0) ? v0 : v1;
-                float *pt_a = (half==0) ? pt_0 : pt_mid;
-                float *pt_b = (half==0) ? pt_mid : pt_1;
+                double *pt_a = (half==0) ? pt_0 : pt_mid;
+                double *pt_b = (half==0) ? pt_mid : pt_1;
 
                 int element_number = 0;
                 if (element)
@@ -634,31 +644,28 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                     element_number = MAX_ELEMENT_NUMBER-1;
 
 #ifdef SHORTEN_BONDS
-                if(shortenBonds)
+                // Determine radius
+                float atom_radius = atts.GetRadiusFixed();
+                if (element && sbar)
+                    atom_radius = atomic_radius[element_number] * radiusscale;
+                else if (element && sbcr)
+                    atom_radius = covalent_radius[element_number] * radiusscale;
+                else if (radiusvar && sbv)
+                    atom_radius = radiusvar[i] * radiusscale;
+
+                const float fudge = 0.9;
+
+                if (half == 0)
                 {
-                    // Determine radius
-                    float atom_radius = atts.GetRadiusFixed();
-                    if (element && sbar)
-                        atom_radius = atomic_radius[element_number] * radiusscale;
-                    else if (element && sbcr)
-                        atom_radius = covalent_radius[element_number] * radiusscale;
-                    else if (radiusvar && sbv)
-                        atom_radius = radiusvar[i] * radiusscale;
-
-                    const float fudge = 0.9;
-
-                    if (half == 0)
-                    {
-                        pt_a[0] += atom_radius * dpt[0] * fudge;
-                        pt_a[1] += atom_radius * dpt[1] * fudge;
-                        pt_a[2] += atom_radius * dpt[2] * fudge;
-                    }
-                    else
-                    {
-                        pt_b[0] -= atom_radius * dpt[0] * fudge;
-                        pt_b[1] -= atom_radius * dpt[1] * fudge;
-                        pt_b[2] -= atom_radius * dpt[2] * fudge;
-                    }
+                    pt_a[0] += atom_radius * dpt[0] * fudge;
+                    pt_a[1] += atom_radius * dpt[1] * fudge;
+                    pt_a[2] += atom_radius * dpt[2] * fudge;
+                }
+                else
+                {
+                    pt_b[0] -= atom_radius * dpt[0] * fudge;
+                    pt_b[1] -= atom_radius * dpt[1] * fudge;
+                    pt_b[2] -= atom_radius * dpt[2] * fudge;
                 }
 #endif
 
@@ -671,6 +678,12 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                 }
                 else // (atts.GetColorBonds() == MoleculeAttributes::ColorByAtom)
                 {
+                    float scalarval;
+                    if (primary_is_cell_centered)
+                        scalarval = scalar[i + numverts];
+                    else
+                        scalarval = scalar[atom];
+
                     if (color_by_element)
                     {
                         int level = element_number % numcolors;
@@ -678,7 +691,7 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                     }
                     else if (color_by_levels)
                     {
-                        int level = int(scalar[i]) - (is_resseq ? 1 : 0);
+                        int level = int(scalarval) - (primary_is_resseq ? 1 : 0);
                         if(levelsLUT != 0)
                         {
                             const unsigned char *rgb = 
@@ -697,7 +710,7 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                         if (varmax == varmin)
                             alpha = 0.5;
                         else
-                            alpha = (scalar[atom] - varmin) / (varmax - varmin);
+                            alpha = (scalarval - varmin) / (varmax - varmin);
             
                         int color = int((float(numcolors)-.01) * alpha);
                         if (color < 0)
@@ -715,15 +728,15 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                 }
                 else // == MoleculeAttributes::Wireframe
                 {
-                    glVertex3fv(pt_a);
-                    glVertex3fv(pt_b);
+                    glVertex3dv(pt_a);
+                    glVertex3dv(pt_b);
                 }
             }
         }
+
+        segptr += (*segptr) + 1;
     }
     glEnd();
-
-    delete[] atom_index_map;
 }
 
 
@@ -812,11 +825,6 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
     spec_r        = _spec_r;
     spec_g        = _spec_g;
     spec_b        = _spec_b;
-
-    vtkPoints *points = data->GetPoints();
-    const float *vertices = (float*)points->GetVoidPointer(0);
-    vtkCellArray *lines = data->GetLines();
-    vtkIdType *segments = lines->GetPointer();
 
     glPushAttrib(GL_COLOR_BUFFER_BIT |
                  GL_DEPTH_BUFFER_BIT |
@@ -918,6 +926,10 @@ avtOpenGLMoleculeRenderer::Render(vtkPolyData *data,
 //  Creation:    February 14, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:18:17 EDT 2006
+//    Bonds are now line segments cells, and atoms are both points and
+//    vertex cells.  This means we cannot look at cell data when looking
+//    for atom arrays.  Also, account for model number directory prefix.
 //
 // ****************************************************************************
 
@@ -936,13 +948,13 @@ avtOpenGLMoleculeRenderer::SetColors(vtkPolyData *data,
     //
     string new_colortablename;
     string varName = "";
-    if (data->GetCellData()->GetScalars())
-    {
-        varName = data->GetCellData()->GetScalars()->GetName();
-    }
-    else if (data->GetPointData()->GetScalars())
+    if (data->GetPointData()->GetScalars())
     {
         varName = data->GetPointData()->GetScalars()->GetName();
+    }
+    else if (data->GetCellData()->GetScalars())
+    {
+        varName = data->GetCellData()->GetScalars()->GetName();
     }
 
     if (varName == "")
@@ -950,7 +962,8 @@ avtOpenGLMoleculeRenderer::SetColors(vtkPolyData *data,
         new_colortablename = "";
         new_numcolors = 0;
     }
-    else if (varName == "element")
+    else if (varName == "element" ||
+             (varName.length()>8 && varName.substr(varName.length()-8)=="/element"))
     {
         new_colortablename = atts.GetElementColorTable();
         if (new_colortablename == "Default")
@@ -958,7 +971,8 @@ avtOpenGLMoleculeRenderer::SetColors(vtkPolyData *data,
 
         new_numcolors = 110;
     }
-    else if (varName == "resseq")
+    else if (varName == "resseq" ||
+             (varName.length()>7 && varName.substr(varName.length()-7)=="/resseq"))
     {
         new_colortablename = atts.GetResidueSequenceColorTable();
         if (new_colortablename == "Default")
@@ -966,7 +980,8 @@ avtOpenGLMoleculeRenderer::SetColors(vtkPolyData *data,
 
         new_numcolors = 256;
     }
-    else if (varName == "restype")
+    else if (varName == "restype" ||
+             (varName.length()>8 && varName.substr(varName.length()-8)=="/restype"))
     {
         new_colortablename = atts.GetResidueTypeColorTable();
         if (new_colortablename == "Default")
@@ -1197,11 +1212,13 @@ avtOpenGLMoleculeRenderer::DrawSphereAsQuads(float x0,
 //  Creation:    February 10, 2006
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:25:02 EDT 2006
+//    Point locations are now doubles, not floats.
 //
 // ****************************************************************************
 void
-avtOpenGLMoleculeRenderer::DrawCylinderBetweenTwoPoints(float *p0,
-                                                        float *p1,
+avtOpenGLMoleculeRenderer::DrawCylinderBetweenTwoPoints(double *p0,
+                                                        double *p1,
                                                         float r,
                                                         int detail)
 {

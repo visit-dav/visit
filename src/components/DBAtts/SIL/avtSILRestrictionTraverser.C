@@ -137,6 +137,111 @@ avtSILRestrictionTraverser::Equal(avtSILRestriction_p silr2)
     return true;
 }
 
+// ****************************************************************************
+//  Method:  avtSILRestrictionTraverser::GetEnumerationCount
+//
+//  Purpose:
+//    Count the number of collections that are enumerated scalars.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+// ****************************************************************************
+
+int
+avtSILRestrictionTraverser::GetEnumerationCount()
+{
+    int count = 0;
+
+    int  i, j;
+    avtSILSet_p set = silr->GetSILSet(silr->topSet);
+    const vector<int> &mapsOut = set->GetMapsOut();
+ 
+    //
+    // Identify the collection that has role of an enumeration
+    //
+    const vector<unsigned char> &useSet = silr->useSet;
+    bool  foundOneOff = false;
+    for (i = 0 ; i < mapsOut.size() ; i++)
+    {
+        avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
+        if (coll->GetRole() == SIL_ENUMERATION)
+        {
+            count++;
+        }
+    }
+ 
+    return count;
+}
+
+
+// ****************************************************************************
+//  Method:  avtSILRestrictionTraverser::GetEnumerationCount
+//
+//  Purpose:
+//    Count the number of collections that are enumerated scalars.
+//
+//  Arguments:
+//    index      0 <= index < GetEnumerationCount()
+//    enumList   output: boolean vector for each set's enabled state
+//    name       output: name of the collection (should match scalar var)
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+// ****************************************************************************
+
+bool
+avtSILRestrictionTraverser::GetEnumeration(int index,
+                                           vector<bool> &enumList,
+                                           string &name)
+{
+    int count = 0;
+
+    int  i, j;
+    enumList.clear();
+    avtSILSet_p set = silr->GetSILSet(silr->topSet);
+    const vector<int> &mapsOut = set->GetMapsOut();
+ 
+    //
+    // Identify the collection that has role of an enumeration
+    //
+    const vector<unsigned char> &useSet = silr->useSet;
+    bool  foundOneOff = false;
+    for (i = 0 ; i < mapsOut.size() ; i++)
+    {
+        avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
+        if (coll->GetRole() == SIL_ENUMERATION)
+        {
+            if (index == count)
+            {
+                //
+                // Now that we have found the right enumeration collection,
+                // look at each subset and determine if it is on or off.
+                //
+                name = coll->GetCategory();
+                const vector<int> &setList = coll->GetSubsetList();
+                enumList.resize(setList.size());
+                for (j = 0 ; j < setList.size() ; j++)
+                {
+                    bool val = (useSet[setList[j]] != NoneUsed ? true : false);
+                    enumList[j] = val;
+                    if (!val)
+                    {
+                        foundOneOff = true;
+                    }
+                }
+            }
+            count++;
+        }
+    }
+ 
+    return foundOneOff;
+}
+
 
 // ****************************************************************************
 //  Method: avtSILRestrictionTraverser::GetSpecies

@@ -448,6 +448,9 @@ class Xfer;
 //    Hank Childs, Mon Jul 10 17:36:41 PDT 2006
 //    Add more args to DatabaseQuery.
 //
+//    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
+//    Added ability to force using a specific plugin when opening a file.
+//
 // ****************************************************************************
 
 class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
@@ -493,7 +496,8 @@ class VIEWER_PROXY_API ViewerProxy : public SimpleObserver
     void OpenMDServer(const std::string &hostName, const stringVector &argv);
 
     void OpenDatabase(const std::string &database, int timeState = 0,
-                      bool addDefaultPlots = true);
+                      bool addDefaultPlots = true,
+                      const std::string &forcedFileType = "");
     void CloseDatabase(const std::string &database);
     void ActivateDatabase(const std::string &database);
     void CheckForNewStates(const std::string &database);

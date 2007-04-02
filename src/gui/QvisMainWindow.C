@@ -284,6 +284,9 @@
 //    Brad Whitlock, Mon Jul 24 17:43:18 PST 2006
 //    Added splitters.
 //
+//   Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
+//   Added File Open window.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -349,6 +352,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup = new QPopupMenu( this );
     menuBar()->insertItem( tr("&File"), filePopup );
     filePopup->insertItem(openIcon, tr("Select &file . . ."), this, SIGNAL(activateFileWindow()), CTRL+Key_F );
+    filePopup->insertItem(openIcon, tr("Open file . . ."), this, SIGNAL(activateFileOpenWindow()), CTRL+Key_O);
 
     // Advanced pull-right menu.
     fileAdvancedPopup = new QPopupMenu(filePopup, "fileAdvancedPopup");
@@ -375,7 +379,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->insertItem( tr("Simulations . . ."), this, SIGNAL(activateSimulationWindow()), CTRL+SHIFT+Key_S);
     filePopup->insertSeparator();
     filePopup->insertItem(saveIcon, tr("&Save window"), this, SIGNAL(saveWindow()), CTRL+Key_S );
-    filePopup->insertItem( tr("Set Save &options . . ."), this, SIGNAL(activateSaveWindow()), CTRL+Key_O);
+    filePopup->insertItem( tr("Set Save &options . . ."), this, SIGNAL(activateSaveWindow()), CTRL+SHIFT+Key_O);
     filePopup->insertItem(saveMovieIcon, tr("Save movie . . ."), this, SIGNAL(saveMovie()));
     id = filePopup->insertItem(tr("Export database . . ."), this, SIGNAL(activateExportDBWindow()));
     id = filePopup->insertItem(printIcon, tr("Print window"), this, SIGNAL(printWindow()));
@@ -2026,6 +2030,10 @@ QvisMainWindow::GetTimeStateFormat() const
 //   Added support for menus that hide depending on if the selected files
 //   are showing.
 //
+//   Jeremy Meredith, Mon Aug 28 17:30:47 EDT 2006
+//   Changed positions of some menu entries to account for the new File
+//   Open entry.
+//
 // ****************************************************************************
 
 void
@@ -2044,7 +2052,7 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
 
             fileAdvancedPopup = new QPopupMenu(filePopup, "fileAdvancedPopup");
             fileAdvancedPopupId = filePopup->insertItem(tr("Advanced file options"),
-                                  fileAdvancedPopup, -1, 1);
+                                  fileAdvancedPopup, -1, 2);
 
             // ReOpen pull-right menu.
             reopenPopup = new QPopupMenu(fileAdvancedPopup, "reopenPopup");
@@ -2080,14 +2088,14 @@ QvisMainWindow::SetShowSelectedFiles(bool val)
             reopenPopup = new QPopupMenu(filePopup, "reopenPopup");
             connect(reopenPopup, SIGNAL(activated(int)),
                     this, SLOT(reopenFile(int)));
-            reopenPopupId = filePopup->insertItem(tr("ReOpen file"), reopenPopup, -1, 1);
+            reopenPopupId = filePopup->insertItem(tr("ReOpen file"), reopenPopup, -1, 2);
             filePopup->setItemEnabled(reopenPopupId, false);
 
             // Close pull-right menu
             closePopup = new QPopupMenu(filePopup, "closePopup");
             connect(closePopup, SIGNAL(activated(int)),
                     this, SLOT(closeFile(int)));
-            closePopupId = filePopup->insertItem(tr("Close file"), closePopup, -1, 2);
+            closePopupId = filePopup->insertItem(tr("Close file"), closePopup, -1, 3);
             filePopup->setItemEnabled(closePopupId, false);
             advancedMenuShowing = false;
 

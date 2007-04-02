@@ -58,6 +58,9 @@
 # Programmer:  Jeremy Meredith
 # Date:        July 25, 2003
 #
+#    Jeremy Meredith, Tue Aug 29 16:16:06 EDT 2006
+#    Fixed flags for compilation.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -96,7 +99,7 @@ $(PROG): Makefile $(OBJ) $(MOCOBJ)
 
 # (compile)
 .C.o   : $(SRC)
-	 $(CXX) $(CFLAGS) $(INCDIR) -c $<
+	 $(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCDIR) -c $<
 
 # (moc)
 $(MOCSRC) or_no_widgets:

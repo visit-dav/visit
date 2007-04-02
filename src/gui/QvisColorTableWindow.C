@@ -151,6 +151,9 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Brad Whitlock, Tue Jul 1 16:38:50 PST 2003
 //   I added an export button.
 //
+//   Jeremy Meredith, Fri Aug 11 17:14:32 EDT 2006
+//   Refactoring of color grid widget caused index to lose "color" in names.
+//   
 // ****************************************************************************
 
 void
@@ -308,7 +311,7 @@ QvisColorTableWindow::CreateWindowContents()
     discreteColors->setFrame(false);
     discreteColors->setBoxSize(16);
     discreteColors->setBoxPadding(8);
-    discreteColors->setSelectedColorIndex(0);
+    discreteColors->setSelectedIndex(0);
     connect(discreteColors, SIGNAL(selectedColor(const QColor &, int)),
             this, SLOT(activateDiscreteColor(const QColor &, int)));
     connect(discreteColors, SIGNAL(activateMenu(const QColor &, int, int, const QPoint &)),
@@ -955,6 +958,8 @@ QvisColorTableWindow::PopupColorSelect(const QColor &c, const QPoint &p)
 // Creation:   Thu Nov 21 13:38:52 PST 2002
 //
 // Modifications:
+//    Jeremy Meredith, Fri Aug 11 17:14:32 EDT 2006
+//    Refactoring of color grid widget caused index to lose "color" in names.
 //   
 // ****************************************************************************
 
@@ -970,7 +975,7 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
     if(updateDiscrete)
     {
         discreteColors->blockSignals(true);
-        discreteColors->setPaletteColor(c, discreteColors->selectedColorIndex());
+        discreteColors->setPaletteColor(c, discreteColors->selectedIndex());
         discreteColors->blockSignals(false);
     }
     else
@@ -1016,6 +1021,8 @@ QvisColorTableWindow::ShowSelectedColor(const QColor &c)
 // Creation:   Thu Nov 21 13:38:22 PST 2002
 //
 // Modifications:
+//    Jeremy Meredith, Fri Aug 11 17:14:32 EDT 2006
+//    Refactoring of color grid widget caused index to lose "color" in names.
 //   
 // ****************************************************************************
 
@@ -1032,7 +1039,7 @@ QvisColorTableWindow::ChangeSelectedColor(const QColor &c)
         { 
             // Use the selected color in the discreteColors widget to determine
             // which color needs to be replaced in the color control point list.
-            index = discreteColors->selectedColorIndex();
+            index = discreteColors->selectedIndex();
         }
         else
             index = spectrumBar->activeControlPoint();

@@ -53,6 +53,9 @@
 //    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
 //    Added Voxel and Pixel shapes.
 //
+//    Jeremy Meredith, Tue Aug 29 16:13:43 EDT 2006
+//    Added Line and Vertex shapes.  Added copyright string.
+//
 // ----------------------------------------------------------------------------
 
 #include "ClipEditor.h"
@@ -62,6 +65,44 @@
 
 #include <stdlib.h>
 #include <visitstream.h>
+
+std::string copyright_str = 
+"/*****************************************************************************\n"
+"*\n"
+"* Copyright (c) 2000 - 2006, The Regents of the University of California\n"
+"* Produced at the Lawrence Livermore National Laboratory\n"
+"* All rights reserved.\n"
+"*\n"
+"* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The\n"
+"* full copyright notice is contained in the file COPYRIGHT located at the root\n"
+"* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.\n"
+"*\n"
+"* Redistribution  and  use  in  source  and  binary  forms,  with  or  without\n"
+"* modification, are permitted provided that the following conditions are met:\n"
+"*\n"
+"*  - Redistributions of  source code must  retain the above  copyright notice,\n"
+"*    this list of conditions and the disclaimer below.\n"
+"*  - Redistributions in binary form must reproduce the above copyright notice,\n"
+"*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the\n"
+"*    documentation and/or materials provided with the distribution.\n"
+"*  - Neither the name of the UC/LLNL nor  the names of its contributors may be\n"
+"*    used to  endorse or  promote products derived from  this software without\n"
+"*    specific prior written permission.\n"
+"*\n"
+"* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS \"AS IS\"\n"
+"* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE\n"
+"* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE\n"
+"* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF\n"
+"* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR\n"
+"* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL\n"
+"* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR\n"
+"* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER\n"
+"* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT\n"
+"* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY\n"
+"* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH\n"
+"* DAMAGE.\n"
+"*\n"
+"*****************************************************************************/\n";
 
 inline int ConvertedCaseIndex(int i, bool qpconv, bool hvconv)
 {
@@ -245,6 +286,16 @@ ClipEditor::ClipEditor(const QString &st,
     {
         ncases    = 8;
         shapetype = ST_TRIANGLE;
+    }
+    else if (st.left(3) == "lin")
+    {
+        ncases    = 4;
+        shapetype = ST_LINE;
+    }
+    else if (st.left(3) == "vtx")
+    {
+        ncases    = 2;
+        shapetype = ST_VERTEX;
     }
     else
     {
@@ -463,6 +514,18 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                         datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color = 
                             1 - datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color;
                     }
+                    switch (datasets[caseindex]->shapes[datasets[caseindex]->selectedShape].color)
+                    {
+                      case 0:
+                        cerr << "Set shape color to blue\n";
+                        break;
+                      case 1:
+                        cerr << "Set shape color to green\n";
+                        break;
+                      case 2:
+                        cerr << "Set shape color to NOCOLOR\n";
+                        break;
+                    }
                 }
                 else if (datasets[caseindex]->selectedShape == 0)
                 {
@@ -497,7 +560,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                 textMode = TM_ADD;
                 addedpoints = -2;
                 pts = "";
-                cerr << "Adding new shape, please choose Hex, Wedge, Pyramid, Tet, Quad, tRiangle, or NewPoint\n";
+                cerr << "Adding new shape, please choose\n Hex, Wedge, Pyramid, Tet, Quad, tRiangle, Line, Vertex, or NewPoint\n";
             }
         }
         else if (kev->key() == Qt::Key_Delete)
@@ -512,7 +575,7 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                     datasets[caseindex]->selectedShape < datasets[caseindex]->shapes.size())
                 {
                     cerr << "Deleting shape\n";
-                    vector<Shape> &shapes = datasets[caseindex]->shapes;
+                    std::vector<Shape> &shapes = datasets[caseindex]->shapes;
                     for (int i=datasets[caseindex]->selectedShape; i<shapes.size(); i++)
                     {
                         shapes[i] = shapes[i+1];
@@ -577,6 +640,20 @@ ClipEditor::keyPressEvent(QKeyEvent *kev)
                 addingShape = ST_TRIANGLE;
                 addedpoints = 0;
                 cerr << "Chose Triangle; please choose 4 points\n";
+            }
+            else if (kev->key() == 'L')
+            {
+                npts = 2;
+                addingShape = ST_LINE;
+                addedpoints = 0;
+                cerr << "Chose Line; please choose 2 points\n";
+            }
+            else if (kev->key() == 'V')
+            {
+                npts = 1;
+                addingShape = ST_VERTEX;
+                addedpoints = 0;
+                cerr << "Chose Vertex; please choose 1 point\n";
             }
             else if (kev->key() == 'N')
             {
@@ -682,6 +759,8 @@ ClipEditor::LoadFromFile()
       case ST_QUAD:    lower="Qua"; upper="QUA"; break;
       case ST_PIXEL:   lower="Pix"; upper="PIX"; break;
       case ST_TRIANGLE:lower="Tri"; upper="TRI"; break;
+      case ST_LINE:    lower="Lin"; upper="LIN"; break;
+      case ST_VERTEX:  lower="Vtx"; upper="VTX"; break;
       default: cerr << "Error\n"; break;
     }
     sprintf(fname, "ClipCases%s.C", lower);
@@ -819,6 +898,16 @@ ClipEditor::LoadFromFile()
                 st=ST_TRIANGLE;
                 nv=3;
             }
+            else if (!strcmp(buff,"ST_LIN"))
+            {
+                st=ST_LINE;
+                nv=2;
+            }
+            else if (!strcmp(buff,"ST_VTX"))
+            {
+                st=ST_VERTEX;
+                nv=1;
+            }
             else if (!strcmp(buff,"ST_PNT"))
             {
                 st=ST_POINT;
@@ -905,6 +994,8 @@ ClipEditor::SaveToFile()
       case ST_QUAD:    lower="Qua"; upper="QUA"; break;
       case ST_PIXEL:   lower="Pix"; upper="PIX"; break;
       case ST_TRIANGLE:lower="Tri"; upper="TRI"; break;
+      case ST_LINE:    lower="Lin"; upper="LIN"; break;
+      case ST_VERTEX:  lower="Vtx"; upper="VTX"; break;
       default: cerr << "Error\n"; break;
     }
     sprintf(fname, "ClipCases%s.C", lower);
@@ -947,6 +1038,8 @@ ClipEditor::SaveToFile()
         cerr << "ERROR: Couldn't write file!!!\n";
         return;
     }
+
+    out << copyright_str.c_str() << endl;
 
     out << "#include \"ClipCases.h\"\n";
 
@@ -1075,6 +1168,8 @@ ClipEditor::SaveToFile()
                       case ST_QUAD:    out << "  ST_QUA, "; break;
                       case ST_PIXEL:   out << "  ST_PIX, "; break;
                       case ST_TRIANGLE:out << "  ST_TRI, "; break;
+                      case ST_LINE:    out << "  ST_LIN, "; break;
+                      case ST_VERTEX:  out << "  ST_VTX, "; break;
                       default: cerr << "Error\n";
                     }
 

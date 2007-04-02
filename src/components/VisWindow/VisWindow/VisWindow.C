@@ -5587,6 +5587,10 @@ VisWindow::ResumeTranslucentGeometry()
 //   Added support for unglyphed point meshes.  This simply returns
 //   the point closest to the pick ray, independent of depth.
 //
+//   Jeremy Meredith, Mon Aug 28 16:20:38 EDT 2006
+//   Changed support for unglyphed point meshes slightly.  It will now
+//   also select nearest points even in the presence of line segment cells.
+//
 // ****************************************************************************
 void
 VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom, int &elNum, 
@@ -5643,7 +5647,8 @@ VisWindow::GlyphPick(const double *rp1, const double *rp2, int &dom,
                 bool unglyphedDataset = false;
                 if (ds->GetDataObjectType() == VTK_POLY_DATA &&
                     (((vtkPolyData*)ds)->GetNumberOfVerts() ==
-                     ((vtkPolyData*)ds)->GetNumberOfCells()))
+                     ((vtkPolyData*)ds)->GetNumberOfPoints()) &&
+                    (((vtkPolyData*)ds)->GetNumberOfPolys() == 0))
                 {
                     unglyphedDataset = true;
                 }

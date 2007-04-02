@@ -291,6 +291,10 @@ class     PickVarInfo;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Replaced type conversion args on many Get functions to data spec 
+//
+//    Jeremy Meredith, Mon Aug 28 16:39:17 EDT 2006
+//    Added support for enumerated scalars.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -463,6 +467,10 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                  intVector &, boolVector &, 
                                  avtDataSpecification_p &,
                                  avtSourceFromDatabase *);
+    void                       EnumScalarSelect(avtDatasetCollection &,
+                                                const boolVector &,
+                                                const avtDatabaseMetaData*,
+                                                const string &);
     void                       CreateOriginalZones(avtDatasetCollection &,
                                                    intVector &, 
                                                    avtSourceFromDatabase *);

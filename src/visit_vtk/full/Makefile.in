@@ -343,10 +343,10 @@ SRC=InitVTK.C \
     vtkVisItAxisActor2D.C \
     vtkVisItCellDataToPointData.C \
     vtkVisItCellLocator.C \
+    vtkVisItClipper.C \
     vtkVisItContourFilter.C \
     vtkVisItCubeAxesActor.C \
     vtkVisItCutter.C \
-    vtkVisItClipper.C \
     vtkVisItDataSetMapper.C \
     vtkVisItExtractGrid.C \
     vtkVisItExtractRectilinearGrid.C \

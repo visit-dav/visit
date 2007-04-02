@@ -3782,11 +3782,15 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
 //    Added security key to simulation connection.
 //
+//    Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
+//    Added ability to force using a specific plugin when opening a file.
+//
 // ****************************************************************************
 
 int
 ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
-    int timeState, bool addDefaultPlots, bool updateWindowInfo)
+    int timeState, bool addDefaultPlots, bool updateWindowInfo,
+    const std::string &forcedFileType)
 {
     int  i;
     const char *mName = "ViewerSubject::OpenDatabaseHelper: ";
@@ -3812,7 +3816,9 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
     // active animation. The mdserver will clamp the time state that it
     // uses to open the database if timeState is out of range at this point.
     //
-    const avtDatabaseMetaData *md = fs->GetMetaDataForState(host, db, timeState);
+    const avtDatabaseMetaData *md = fs->GetMetaDataForState(host, db,
+                                                            timeState,
+                                                            forcedFileType);
     if (md != NULL)
     {
         //
@@ -4078,13 +4084,17 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
 //   Brad Whitlock, Mon Apr 19 10:00:13 PDT 2004
 //   I added another argument to OpenDatabaseHelper.
 //
+//   Jeremy Meredith, Mon Aug 28 16:55:01 EDT 2006
+//   Added ability to force using a specific plugin when opening a file.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::OpenDatabase()
 {
     OpenDatabaseHelper(viewerRPC.GetDatabase(), viewerRPC.GetIntArg1(),
-                       viewerRPC.GetBoolFlag(), true);
+                       viewerRPC.GetBoolFlag(), true,
+                       viewerRPC.GetStringArg1());
 }
 
 // ****************************************************************************

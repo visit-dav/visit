@@ -118,6 +118,7 @@
 #include <QvisExpressionsWindow.h>
 #include <QvisFileInformationWindow.h>
 #include <QvisFileSelectionWindow.h>
+#include <QvisFileOpenWindow.h>
 #include <QvisGlobalLineoutWindow.h>
 #include <QvisHelpWindow.h>
 #include <QvisHostProfileWindow.h>
@@ -205,6 +206,7 @@
 #define WINDOW_EXPORT_DB        28
 #define WINDOW_COMMAND          29
 #define WINDOW_MESH_MANAGEMENT  30
+#define WINDOW_FILE_OPEN        31
 
 const char *QvisGUIApplication::windowNames[] = {
 "File selection",
@@ -237,7 +239,8 @@ const char *QvisGUIApplication::windowNames[] = {
 "Simulations",
 "Export Database",
 "Commands",
-"Mesh Management Options"
+"Mesh Management Options",
+"File open"
 };
 
 // Some internal prototypes.
@@ -2428,6 +2431,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Brad Whitlock, Tue Mar 7 10:17:30 PDT 2006
 //   Hooked up the selected files window to UpdateSavedConfigFile.
 //
+//   Jeremy Meredith, Mon Aug 28 17:28:05 EDT 2006
+//   Added File Open window.
+//
 // ****************************************************************************
 
 void
@@ -2491,6 +2497,8 @@ QvisGUIApplication::SetupWindows()
      //
      connect(mainWin, SIGNAL(activateFileWindow()),
              this, SLOT(showFileSelectionWindow()));
+     connect(mainWin, SIGNAL(activateFileOpenWindow()),
+             this, SLOT(showFileOpenWindow()));
      connect(mainWin, SIGNAL(activateFileInformationWindow()),
              this, SLOT(showFileInformationWindow()));
      connect(mainWin, SIGNAL(activateHostWindow()),
@@ -2582,6 +2590,10 @@ QvisGUIApplication::SetupWindows()
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interfaces to GetMetaData and GetSIL
+//
+//   Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
+//   Added File Open window.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -2784,9 +2796,17 @@ QvisGUIApplication::WindowFactory(int i)
                 this, SLOT(Interpret(const QString &)));
         break;
     case WINDOW_MESH_MANAGEMENT:
-        // Create the animation window.
+        // Create the mesh management window.
         win = new QvisMeshManagementWindow(viewer->GetMeshManagementAttributes(),
             windowNames[i], "MeshManagement", mainWin->GetNotepad());
+        break;
+    case WINDOW_FILE_OPEN:
+        // Create a file open window.
+        { QvisFileOpenWindow *foWin = new QvisFileOpenWindow(windowNames[i]);
+            foWin->ConnectSubjects(viewer->GetHostProfileList(),
+                                   viewer->GetDBPluginInfoAttributes());
+          win = foWin;
+        }
         break;
     }
 
@@ -5733,12 +5753,11 @@ QvisGUIApplication::HandleMetaDataUpdate()
 // Creation:   Tue Dec 14 09:29:05 PDT 2004
 //
 // Modifications:
-//
-//      Mark Blair, Mon Aug 21 18:29:00 PDT 2006
-//      Pass additional information to plot wizard being created.
+//   Mark Blair, Mon Aug 21 18:29:00 PDT 2006
+//   Pass additional information to plot wizard being created.
 //   
-//      Mark Blair, Tue Aug 22 16:12:00 PDT 2006
-//      Changed interface to GetMetaData.
+//   Mark Blair, Tue Aug 22 16:12:00 PDT 2006
+//   Changed interface to GetMetaData.
 //   
 // ****************************************************************************
 
@@ -6795,6 +6814,7 @@ QvisGUIApplication::InterpreterSync()
 //
 
 void QvisGUIApplication::showFileSelectionWindow()   { GetInitializedWindowPointer(WINDOW_FILE_SELECTION)->show(); }
+void QvisGUIApplication::showFileOpenWindow()        { GetInitializedWindowPointer(WINDOW_FILE_OPEN)->show(); }
 void QvisGUIApplication::showFileInformationWindow() { GetInitializedWindowPointer(WINDOW_FILE_INFORMATION)->show(); }
 void QvisGUIApplication::showHostProfilesWindow()    { GetInitializedWindowPointer(WINDOW_HOSTPROFILES)->show(); }
 void QvisGUIApplication::showSaveWindow()            { GetInitializedWindowPointer(WINDOW_SAVE)->show(); }

@@ -65,6 +65,7 @@
 
 using std::string;
 using std::vector;
+using std::pair;
 
 string
 TrimTrailingSpaces(char *s)
@@ -82,11 +83,15 @@ TrimTrailingSpaces(char *s)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 17:48:22 EDT 2006
+//    Changed to STSD.
+//
 // ****************************************************************************
 
 avtProteinDataBankFileFormat::avtProteinDataBankFileFormat(const char *fn,
                                                 DBOptionsAttributes *readOpts)
-    : avtMTSDFileFormat(&fn, 1)
+    : avtSTSDFileFormat(fn)
 {
     filename = fn;
     OpenFileAtBeginning();
@@ -95,26 +100,6 @@ avtProteinDataBankFileFormat::avtProteinDataBankFileFormat(const char *fn,
     metadata_read = false;
     dbTitle = "";
 }
-
-
-// ****************************************************************************
-//  Method: avtEMSTDFileFormat::GetNTimesteps
-//
-//  Purpose:
-//      Tells the rest of the code how many timesteps there are in this file.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   March 23, 2006
-//
-// ****************************************************************************
-
-int
-avtProteinDataBankFileFormat::GetNTimesteps(void)
-{
-    ReadAllMetaData();
-    return nmodels==0 ? 1 : nmodels;
-}
-
 
 // ****************************************************************************
 //  Method: avtProteinDataBankFileFormat::FreeUpResources
@@ -128,6 +113,10 @@ avtProteinDataBankFileFormat::GetNTimesteps(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 17:48:22 EDT 2006
+//    Changed bonds to line elements.
+//
 // ****************************************************************************
 
 void
@@ -135,10 +124,7 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 {
     in.close();
 
-    bonds[0].clear();
-    bonds[1].clear();
-    bonds[2].clear();
-    bonds[3].clear();
+    bonds.clear();
     for (int i=0; i<allatoms.size(); i++)
     {
         allatoms[i].clear();
@@ -161,28 +147,72 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 17:49:30 EDT 2006
+//    Exposed models through directories instead of time steps.
+//
 // ****************************************************************************
 
 void
-avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 {
     ReadAllMetaData();
     md->SetDatabaseComment(dbTitle);
 
-    AddMeshToMetaData(md, "mesh",  AVT_POINT_MESH,
-                      NULL, 1, 0, 3, 0);
+    char prefix[20] = "";
+    int count = 1;
+    if (nmodels > 1)
+        count = nmodels + 1;
+    for (int i=0; i<count; i++)
+    {
+        if (count > 1 && i != count-1)
+        {
+            sprintf(prefix, "models/model_%02d/", i);
+        }
+        else
+        {
+            sprintf(prefix, "");
+        }
 
-    AddScalarVarToMetaData(md, "element", "mesh", AVT_ZONECENT);
-    AddScalarVarToMetaData(md, "restype", "mesh", AVT_ZONECENT);
-    AddScalarVarToMetaData(md, "resseq",  "mesh", AVT_ZONECENT);
-    AddScalarVarToMetaData(md, "backbone","mesh", AVT_ZONECENT);
-    AddArrayVarToMetaData(md, "bonds", 4, "mesh", AVT_ZONECENT);
+        char name_mesh[80];
+        char name_el[80],name_rt[80],name_rs[80],name_bk[80];
+        char name_nm[80],name_rn[80],name_lr[80],name_en[80];
+        sprintf(name_mesh, "%smesh",        prefix, i);
+        sprintf(name_el,   "%selement",     prefix, i);
+        sprintf(name_rt,   "%srestype",     prefix, i);
+        sprintf(name_rs,   "%sresseq",      prefix, i);
+        sprintf(name_bk,   "%sbackbone",    prefix, i);
+        sprintf(name_nm,   "%sname",        prefix, i);
+        sprintf(name_rn,   "%sresname",     prefix, i);
+        sprintf(name_lr,   "%slongresname", prefix, i);
+        sprintf(name_en,   "%selementname", prefix, i);
 
-    // Add a couple of label variables.
-    md->Add(new avtLabelMetaData("name", "mesh", AVT_ZONECENT));
-    md->Add(new avtLabelMetaData("resname", "mesh", AVT_ZONECENT));
-    md->Add(new avtLabelMetaData("longresname", "mesh", AVT_ZONECENT));
-    md->Add(new avtLabelMetaData("elementname", "mesh", AVT_ZONECENT));
+        avtMeshMetaData *mmd = new avtMeshMetaData(name_mesh, 1, 0,0,0,
+                                                   3, 0,
+                                                   AVT_POINT_MESH);
+        mmd->nodesAreCritical = true;
+        md->Add(mmd);
+
+        avtScalarMetaData *el_smd =
+            new avtScalarMetaData(name_el, name_mesh, AVT_NODECENT);
+        el_smd->isEnumeration = true;
+        for (int a=0; a<MAX_ELEMENT_NUMBER; a++)
+        {
+            el_smd->enumNames.push_back(element_names[a]);
+            el_smd->enumValues.push_back(a+1);
+        }
+        md->Add(el_smd);
+
+        AddScalarVarToMetaData(md, name_rt, name_mesh, AVT_NODECENT);
+        AddScalarVarToMetaData(md, name_rs, name_mesh, AVT_NODECENT);
+        AddScalarVarToMetaData(md, name_bk, name_mesh, AVT_NODECENT);
+
+        // Add a couple of label variables.
+        md->Add(new avtLabelMetaData(name_nm, name_mesh, AVT_NODECENT));
+        md->Add(new avtLabelMetaData(name_rn, name_mesh, AVT_NODECENT));
+        md->Add(new avtLabelMetaData(name_lr, name_mesh, AVT_NODECENT));
+        md->Add(new avtLabelMetaData(name_en, name_mesh, AVT_NODECENT));
+    }
 }
 
 
@@ -203,12 +233,27 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, 
 //  Programmer: Jeremy Meredith
 //  Creation:   March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 17:49:30 EDT 2006
+//    Exposed models through directories instead of time steps.
+//    Changed bonds to line segment elements.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtProteinDataBankFileFormat::GetMesh(int timestate, const char *meshname)
+avtProteinDataBankFileFormat::GetMesh(const char *orig_meshname)
 {
-    int model = timestate;
+    int model = 0;
+    const char *meshname = orig_meshname;
+    if (sscanf(orig_meshname, "models/model_%02d/", &model))
+    {
+        meshname = &(orig_meshname[16]);
+    }
+    else
+    {
+        model = 0;
+    }
+
     ReadAtomsForModel(model);
 
     vector<Atom> &atoms = allatoms[model];
@@ -227,6 +272,15 @@ avtProteinDataBankFileFormat::GetMesh(int timestate, const char *meshname)
                       atoms[j].z);
     }
  
+    vtkCellArray *lines = vtkCellArray::New();
+    pd->SetLines(lines);
+    for (int k = 0 ; k < bonds.size() ; k++)
+    {
+        lines->InsertNextCell(2);
+        lines->InsertCellPoint(bonds[k].first);
+        lines->InsertCellPoint(bonds[k].second);
+    }
+
     vtkCellArray *verts = vtkCellArray::New();
     pd->SetVerts(verts);
     for (int k = 0 ; k < atoms.size() ; k++)
@@ -236,6 +290,7 @@ avtProteinDataBankFileFormat::GetMesh(int timestate, const char *meshname)
     }
 
     pts->Delete();
+    lines->Delete();
     verts->Delete();
 
     return pd;
@@ -263,12 +318,25 @@ avtProteinDataBankFileFormat::GetMesh(int timestate, const char *meshname)
 //    Hank Childs, Thu May 18 11:15:01 PDT 2006
 //    Fix UMR.
 //
+//    Jeremy Meredith, Mon Aug 28 17:51:07 EDT 2006
+//    Exposed models through directories, not time steps.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtProteinDataBankFileFormat::GetVar(int timestate, const char *varname)
+avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
 {
-    int model = timestate;
+    int model = 0;
+    const char *varname = orig_varname;
+    if (sscanf(orig_varname, "models/model_%02d/", &model))
+    {
+        varname = &(orig_varname[16]);
+    }
+    else
+    {
+        model = 0;
+    }
+
     ReadAtomsForModel(model);
 
     vector<Atom> &atoms = allatoms[model];
@@ -404,32 +472,15 @@ avtProteinDataBankFileFormat::GetVar(int timestate, const char *varname)
 //  Programmer: Jeremy Meredith
 //  Creation:   March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 17:49:30 EDT 2006
+//    Bonds are now line segment cells, not an atom-centered 4-comp array.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtProteinDataBankFileFormat::GetVectorVar(int timestate, const char *varname)
+avtProteinDataBankFileFormat::GetVectorVar(const char *varname)
 {
-    int model = timestate;
-    ReadAtomsForModel(model);
-
-    vector<Atom> &atoms = allatoms[model];
-
-    if (string(varname) == "bonds")
-    {
-        vtkFloatArray *scalars = vtkFloatArray::New();
-        scalars->SetNumberOfComponents(4);
-        scalars->SetNumberOfTuples(atoms.size());
-        float *ptr = (float *) scalars->GetVoidPointer(0);
-        for (int i=0; i<atoms.size(); i++)
-        {
-            ptr[i*4 + 0] = bonds[0][i];
-            ptr[i*4 + 1] = bonds[1][i];
-            ptr[i*4 + 2] = bonds[2][i];
-            ptr[i*4 + 3] = bonds[3][i];
-        }
-        return scalars;
-    }
-
     return NULL;
 }
 
@@ -489,20 +540,21 @@ AtomsShouldBeBonded(const vector<Atom> &atoms, int a1, int a2)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 17:49:30 EDT 2006
+//    Bonds are now line segment cells, not an atom-centered 4-comp array.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::CreateBondsFromModel_Slow(int model)
 {
     // We should only have to create bonds once for all models
-    if (bonds[0].size() > 0)
+    if (bonds.size() > 0)
         return;
 
     vector<Atom> &atoms = allatoms[model];
     int natoms = atoms.size();
-    bonds[0].resize(natoms, -1);
-    bonds[1].resize(natoms, -1);
-    bonds[2].resize(natoms, -1);
-    bonds[3].resize(natoms, -1);
+    bonds.reserve(natoms);  // just a guess
 
     //
     // This is an N^2 algorithm.  Slow, but safe.
@@ -511,19 +563,11 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Slow(int model)
     //
     for (int i=0; i<natoms; i++)
     {
-        int ctr = 0;
-        for (int j=0; j<natoms && ctr<4; j++)
+        for (int j=0; j<i; j++)
         {
-            if (i==j)
-                continue;
-
-            float dx = atoms[i].x - atoms[j].x;
-            float dy = atoms[i].y - atoms[j].y;
-            float dz = atoms[i].z - atoms[j].z;
-            float dist2 = dx*dx + dy*dy + dz*dz;
             if (AtomsShouldBeBonded(atoms,i,j))
             {
-                bonds[ctr++][i] = j;
+                bonds.push_back(pair<int,int>(i,j));
             }
         }
     }
@@ -541,21 +585,20 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Slow(int model)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 17:49:30 EDT 2006
+//    Bonds are now line segment cells, not an atom-centered 4-comp array.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 {
     // We should only have to create bonds once for all models
-    if (bonds[0].size() > 0)
+    if (bonds.size() > 0)
         return;
 
     vector<Atom> &atoms = allatoms[model];
     int natoms = atoms.size();
-
-    bonds[0].resize(natoms, -1);
-    bonds[1].resize(natoms, -1);
-    bonds[2].resize(natoms, -1);
-    bonds[3].resize(natoms, -1);
 
     //
     // The strategy here is to divide atoms into 3D spatial bins
@@ -662,9 +705,15 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 
                                     int a2 = atomgrid[index2][aa];
 
+                                    // Only create one direction of
+                                    // each bond pair
+                                    if (a1 > a2)
+                                        continue;
+
                                     if (AtomsShouldBeBonded(atoms,a1,a2))
                                     {
-                                        bonds[ctr++][a1] = a2;
+                                        bonds.push_back(pair<int,int>(a1,a2));
+                                        ctr++;
                                     }
                                 }
                             }
@@ -791,6 +840,9 @@ avtProteinDataBankFileFormat::OpenFileAtBeginning()
 //    Brad Whitlock, Thu Mar 23 18:27:48 PST 2006
 //    Added support for HETNAM.
 //
+//    Jeremy Meredith, Mon Aug 28 17:53:21 EDT 2006
+//    Added support for CONECT records.
+//
 // ****************************************************************************
 
 void
@@ -877,6 +929,12 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
             longhetnam += TrimTrailingSpaces(line + 15);
             hetnam = het;
         }
+        else if (record == "CONECT")
+        {
+            ConnectRecord c(line);
+            connect.push_back(c);
+            //c.Print(cout);
+        }
         else
         {
             // ignoring record type 'record'
@@ -885,9 +943,128 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
         in.getline(line, 81);
     }
 
-    CreateBondsFromModel_Fast(model);
+    CreateBondsFromModel(model);
 }
 
+// ****************************************************************************
+//  Method:  avtProteinDataBankFileFormat::CreateBondsFromModel
+//
+//  Purpose:
+//    Create the bonds using a distance method.
+//    It's disabled right now, but this is also where we would
+//    add the bonds from the CONECT records.
+//
+//  Arguments:
+//    model      the model index
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+// ****************************************************************************
+void
+avtProteinDataBankFileFormat::CreateBondsFromModel(int model)
+{
+    CreateBondsFromModel_Fast(model);
+    
+#if 0 // to generate bonds from CONECT records, re-enable this
+
+    // NOTE: this needs to be updated to create bonds
+    // as line segments instead of as a 4-comp cell array
+    // before it will work.
+    for (int i=0; i<connect.size(); i++)
+    {
+        const ConnectRecord &c = connect[i];
+        int a = c.a - 1; // ASSUME 1-origin atom sequence numbers
+
+        int q = 0;
+        for (int q=0; q < 4 && c.b[q] != -1; q++)
+        {
+            int b = c.b[q] - 1; // ASSUME 1-origin atom sequence numbers
+            for (int p=0; p<4; p++)
+            {
+                if (bonds[p][a] == b)
+                {
+                    break;
+                }
+
+                if (bonds[p][a] == -1)
+                {
+                    bonds[p][a] = b;
+                    break;
+                }
+            }
+        }
+    }
+#endif
+}
+
+// ****************************************************************************
+//  Method:  static Scan* functions
+//
+//  Purpose:
+//    Fast functions to get the characters in a line by position.
+//
+//  Arguments:
+//    line       input
+//    len        lengths of input line
+//    start      index of first character to extract
+//    end        index of last character to extract
+//    val        where to store the result
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+// ****************************************************************************
+static inline void
+ScanString(const char *line, int len, int start, int end, char *val)
+{
+    int i;
+    int first = start - 1;
+    for (i=first; i<end && i<len; i++)
+    {
+        val[i - first] = line[i];
+    }
+    val[i - first] = '\0';
+}
+
+static char tmpbuff[1024];
+
+static inline void
+ScanInt(const char *line, int len, int start, int end, int *val)
+{
+    int i;
+    int first = start - 1;
+    for (i=first; i<end && i<len; i++)
+    {
+        tmpbuff[i - first] = line[i];
+    }
+    tmpbuff[i - first] = '\0';
+    *val = atoi(tmpbuff);
+}
+
+static inline bool
+ScanChar(const char *line, int len, int start, char *val)
+{
+    if (len < start)
+        *val = '\0';
+    else
+        *val = tmpbuff[start-1];
+}
+
+static inline bool
+ScanFloat(const char *line, int len, int start, int end, float *val)
+{
+    int i;
+    int first = start - 1;
+    for (i=first; i<end && i<len; i++)
+    {
+        tmpbuff[i - first] = line[i];
+    }
+    tmpbuff[i - first] = '\0';
+
+    //sscanf(tmpbuff, "%f", val);
+    *val = atof(tmpbuff);
+}
 
 // ****************************************************************************
 //  Constructor:  Atom::Atom
@@ -902,33 +1079,32 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
 //    Brad Whitlock, Fri Jun 2 13:15:47 PST 2006
 //    Added Jeremy's fix for yet another style of ATOM line.
 //
+//    Jeremy Meredith, Mon Aug 28 17:58:02 EDT 2006
+//    Changed the scanning to (a) match the PDB spec document more 
+//    effectively, (b) be faster, and (c) handle some missing elements
+//    (short lines) better.
+//
 // ****************************************************************************
 Atom::Atom(const char *line)
 {
     char record[7];
-    sscanf(line,
-           "%6c%5d%*1c%4c%c%3c%*1c%1c%4d%c%*3c%8f%8f%8f%6f%6f%*6c%4c%2c%2c",
-           record,
-           &serial,
-           name,
-           &altloc,
-           resname,
-           &chainid,
-           &resseq,
-           &icode,
-           &x,
-           &y,
-           &z,
-           &occupancy,
-           &tempfactor,
-           segid,
-           element,
-           charge);
-    name[4] = '\0';
-    resname[3] = '\0';
-    segid[4] = '\0';
-    element[2] = '\0';
-    charge[3] = '\0';
+    int len = strlen(line);
+    ScanString(line, len,  1,  6,  record);
+    ScanInt   (line, len,  7, 11, &serial);
+    ScanString(line, len, 13, 16,  name);
+    ScanChar  (line, len, 17,     &altloc);
+    ScanString(line, len, 18, 20,  resname);
+    ScanChar  (line, len, 22,     &chainid);
+    ScanInt   (line, len, 23, 26, &resseq);
+    ScanChar  (line, len, 27,     &icode);
+    ScanFloat (line, len, 31, 38, &x);
+    ScanFloat (line, len, 39, 46, &y);
+    ScanFloat (line, len, 47, 54, &z);
+    ScanFloat (line, len, 55, 60, &occupancy);
+    ScanFloat (line, len, 61, 66, &tempfactor);
+    ScanString(line, len, 73, 76,  segid);
+    ScanString(line, len, 77, 78,  element);
+    ScanString(line, len, 79, 80,  charge);
 
     // Left-justify element names
     if (element[0] == ' ')
@@ -959,10 +1135,19 @@ Atom::Atom(const char *line)
             element[1] = line[13];
         }
 
-        if((atomicnumber = ElementNameToAtomicNumber(element)) < 0)
+        atomicnumber = ElementNameToAtomicNumber(element);
+        if (atomicnumber < 0 &&
+            element[1] != '\0')
+        {
+            element[1] = '\0';
+            atomicnumber = ElementNameToAtomicNumber(element);
+        }
+
+        if (atomicnumber < 0)
         {
             char msg[2000];
-            SNPRINTF(msg, 2000, "Unknown element name in line: %s", line);
+            SNPRINTF(msg, 2000, "Unknown element name <%s> in line: %s",
+                     element, line);
             EXCEPTION1(VisItException, msg);
         }
     }
@@ -986,7 +1171,6 @@ Atom::Atom(const char *line)
     if((residuenumber = ResiduenameToNumber(resname)) < 0)
     {
         residuenumber = 0;
-        debug4 << "Unknown residue name in line: " << line << endl;
     }
 
     backbone = false;
@@ -1031,3 +1215,55 @@ void Atom::Print(ostream &out)
         << " charge   ="<<charge<<endl;
 }
 
+
+// ****************************************************************************
+//  Constructor:  ConnectRecord::ConnectRecord
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+// ****************************************************************************
+ConnectRecord::ConnectRecord(const char *origline)
+{
+    // We need to prevent this from trying to
+    // skip over whitespace, as the last three
+    // of these fields are optional, but there
+    // may be more stuff later on the line.  This
+    // probably means sscanf is not the best way
+    // to accomplish this.
+    char line[81];
+    strcpy(line, origline);
+    line[31] = '\0';
+
+    char record[7];
+    int n;
+    b[0] = -1;
+    b[1] = -1;
+    b[2] = -1;
+    b[3] = -1;
+    n = sscanf(line, "%6c%5d%5d%5d%5d%5d",
+               record,
+               &a,
+               &b[0], &b[1], &b[2], &b[3]);
+}
+
+// ****************************************************************************
+//  Method:  ConnectRecord::Print
+//
+//  Purpose:
+//    Print the connect record contets.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+// ****************************************************************************
+void
+ConnectRecord::Print(ostream &out)
+{
+    out << "Connect Record:\n"
+        << "a  = "<<a<<endl
+        << "b1 = "<<b[0]<<endl
+        << "b2 = "<<b[1]<<endl
+        << "b3 = "<<b[2]<<endl
+        << "b4 = "<<b[3]<<endl;
+}

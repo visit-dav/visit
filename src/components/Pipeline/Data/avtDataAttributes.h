@@ -203,6 +203,9 @@ class     PlotInfoAttributes;
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added Set/Get/Read/Write PlotInfoAtts. 
 //
+//    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
+//    Added nodesAreCritical.  Added unitCellVectors.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -414,6 +417,16 @@ class PIPELINE_API avtDataAttributes
     void                     SetMeshCoordType(avtMeshCoordType t)
                                    { meshCoordType = t; };
 
+    bool                     NodesAreCritical(void) const
+                                   { return nodesAreCritical; };
+    void                     SetNodesAreCritical(bool v)
+                                   { nodesAreCritical = v; };
+
+    const float             *GetUnitCellVectors(void) const
+                                   { return unitCellVectors; }
+    void                     SetUnitCellVectors(const float *v)
+                             { for (int i=0;i<9;i++) unitCellVectors[i]=v[i]; }
+
     const PlotInfoAttributes *GetPlotInfoAtts(void) const
                                    { return plotInfoAtts; };
     void                     SetPlotInfoAtts(const PlotInfoAttributes *);
@@ -444,6 +457,8 @@ class PIPELINE_API avtDataAttributes
     bool                     canUseOrigZones;
     bool                     origElementsRequiredForPick;
     avtMeshCoordType         meshCoordType;
+    bool                     nodesAreCritical;
+    float                    unitCellVectors[9];
 
     avtExtents              *trueSpatial;
     avtExtents              *cumulativeTrueSpatial;

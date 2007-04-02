@@ -56,12 +56,18 @@ using std::string;
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added forceReadAllCyclesAndTimes
+//
+//    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//    Added ability to force using a specific plugin when reading
+//    the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
-GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sib",&metaData)
+GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sibs",&metaData)
 {
     timeState = 0;
     forceReadAllCyclesAndTimes = false;
+    forcedFileType="";
 }
 
 // ****************************************************************************
@@ -124,19 +130,27 @@ GetMetaDataRPC::TypeName() const
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added forceReadAllCyclesAndTimes
+//
+//    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//    Added ability to force using a specific plugin when reading
+//    the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
-GetMetaDataRPC::operator()(const string &f, int ts, bool force)
+GetMetaDataRPC::operator()(const string &f, int ts, bool force,
+                           const string &fft)
 {
     debug3 << "Executing GetMetaData RPC on file " << f.c_str()
            << ", timestate=" << ts
            << ", forceReadAllCyclesAndTimes = " << force
+           << ", forcedFileType = " << fft
            << endl;;
 
     SetFile(f);
     SetTimeState(ts);
     SetForceReadAllCyclesAndTimes(force);
+    SetForcedFileType(fft);
 
     // Try to execute the RPC.
     Execute();
@@ -162,11 +176,16 @@ GetMetaDataRPC::operator()(const string &f, int ts, bool force)
 // Creation:   September  1, 2000
 //
 // Modifications:
-//   Brad Whitlock, Tue May 13 15:25:11 PST 2003
-//   I added timeState.
+//    Brad Whitlock, Tue May 13 15:25:11 PST 2003
+//    I added timeState.
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added forceReadAllCyclesAndTimes
+//
+//    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//    Added ability to force using a specific plugin when reading
+//    the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
 void
@@ -175,6 +194,7 @@ GetMetaDataRPC::SelectAll()
     Select(0, (void*)&file);
     Select(1, (void*)&timeState);
     Select(2, (void*)&forceReadAllCyclesAndTimes);
+    Select(3, (void*)&forcedFileType);
 }
 
 // ****************************************************************************
@@ -236,6 +256,26 @@ GetMetaDataRPC::SetForceReadAllCyclesAndTimes(bool force)
 }
 
 // ****************************************************************************
+// Method: GetMetaDataRPC::SetForcedFileType
+//
+// Purpose: 
+//   This sets the file type to force using for opening the file.
+//
+// Programmer: Jeremy Meredith
+// Creation:   August  9, 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+GetMetaDataRPC::SetForcedFileType(const std::string &f)
+{
+    forcedFileType = f;
+    Select(3, (void*)&forcedFileType);
+}
+
+// ****************************************************************************
 // Method: GetMetaDataRPC::GetFile
 //
 // Purpose: 
@@ -289,3 +329,24 @@ GetMetaDataRPC::GetForceReadAllCyclesAndTimes() const
 {
     return forceReadAllCyclesAndTimes;
 }
+
+
+// ****************************************************************************
+// Method: GetMetaDataRPC::GetForcedFileType
+//
+// Purpose: 
+//   This gets the file type we are forced to use to open the file.
+//
+// Programmer: Jeremy Meredith
+// Creation:   August  9, 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+string
+GetMetaDataRPC::GetForcedFileType() const
+{
+    return forcedFileType;
+}
+

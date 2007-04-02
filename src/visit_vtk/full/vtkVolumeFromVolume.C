@@ -66,10 +66,13 @@ using std::vector;
 //    shapes were put in a vector.  This way we won't have to update baseline
 //    images.
 //
+//    Jeremy Meredith, Tue Aug 29 15:47:28 EDT 2006
+//    Added lines and vertices.
+//
 // ****************************************************************************
 
 vtkVolumeFromVolume::vtkVolumeFromVolume(int nPts, int ptSizeGuess)
-    : vtkDataSetFromVolume(nPts, ptSizeGuess), nshapes(6)
+    : vtkDataSetFromVolume(nPts, ptSizeGuess), nshapes(8)
 {
     shapes[0] = &tets;
     shapes[1] = &pyramids;
@@ -77,6 +80,8 @@ vtkVolumeFromVolume::vtkVolumeFromVolume(int nPts, int ptSizeGuess)
     shapes[3] = &hexes;
     shapes[4] = &quads;
     shapes[5] = &tris;
+    shapes[6] = &lines;
+    shapes[7] = &vertices;
 }
 
 vtkVolumeFromVolume::CentroidPointList::CentroidPointList()
@@ -534,6 +539,85 @@ vtkVolumeFromVolume::TriList::AddTri(int cellId, int v1,int v2,int v3)
     list[currentList][idx+1] = v1;
     list[currentList][idx+2] = v2;
     list[currentList][idx+3] = v3;
+    currentShape++;
+}
+
+
+vtkVolumeFromVolume::LineList::LineList()
+    : vtkVolumeFromVolume::ShapeList(2)
+{
+}
+ 
+
+vtkVolumeFromVolume::LineList::~LineList()
+{
+}
+ 
+void
+vtkVolumeFromVolume::LineList::AddLine(int cellId, int v1,int v2)
+{
+    if (currentShape >= shapesPerList)
+    {
+        if ((currentList+1) >= listSize)
+        {
+            int **tmpList = new int*[2*listSize];
+            for (int i = 0 ; i < listSize ; i++)
+            {
+                tmpList[i] = list[i];
+            }
+            listSize *= 2;
+            delete [] list;
+            list = tmpList;
+        }
+ 
+        currentList++;
+        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        currentShape = 0;
+    }
+ 
+    int idx = (shapeSize+1)*currentShape;
+    list[currentList][idx+0] = cellId;
+    list[currentList][idx+1] = v1;
+    list[currentList][idx+2] = v2;
+    currentShape++;
+}
+
+
+vtkVolumeFromVolume::VertexList::VertexList()
+    : vtkVolumeFromVolume::ShapeList(1)
+{
+}
+ 
+
+vtkVolumeFromVolume::VertexList::~VertexList()
+{
+}
+ 
+void
+vtkVolumeFromVolume::VertexList::AddVertex(int cellId, int v1)
+{
+    if (currentShape >= shapesPerList)
+    {
+        if ((currentList+1) >= listSize)
+        {
+            int **tmpList = new int*[2*listSize];
+            for (int i = 0 ; i < listSize ; i++)
+            {
+                tmpList[i] = list[i];
+            }
+            listSize *= 2;
+            delete [] list;
+            list = tmpList;
+        }
+ 
+        currentList++;
+        list[currentList] = new int[(shapeSize+1)*shapesPerList];
+        currentShape = 0;
+    }
+ 
+    int idx = (shapeSize+1)*currentShape;
+    list[currentList][idx+0] = cellId;
+    list[currentList][idx+1] = v1;
     currentShape++;
 }
 

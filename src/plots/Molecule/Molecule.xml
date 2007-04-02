@@ -7,6 +7,7 @@
       avtOpenGLAtomTexturer.C
       avtMesaAtomTexturer.C
       avtMoleculeFilter.C
+      glew.C
     </Files>
     <Files components="E">
       avtMoleculeRenderer.C
@@ -15,6 +16,7 @@
       avtOpenGLAtomTexturer.C
       avtMesaAtomTexturer.C
       avtMoleculeFilter.C
+      glew.C
     </Files>
     <Attribute name="MoleculeAttributes" purpose="This class contains the plot attributes for the molecule plot." persistent="true" codefile="MoleculeAttributes.code">
       <Enum name="AtomRenderingMode">

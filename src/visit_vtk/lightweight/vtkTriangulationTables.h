@@ -69,5 +69,6 @@ extern VISIT_VTK_LIGHT_API int voxQuadFaces[6][4];
 extern VISIT_VTK_LIGHT_API int triVerticesFromEdges[3][2];
 extern VISIT_VTK_LIGHT_API int quadVerticesFromEdges[4][2];
 extern VISIT_VTK_LIGHT_API int pixelVerticesFromEdges[4][2];
+extern VISIT_VTK_LIGHT_API int lineVerticesFromEdges[1][2];
 
 #endif

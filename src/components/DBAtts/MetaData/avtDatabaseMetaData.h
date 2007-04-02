@@ -72,6 +72,9 @@ class avtSimulationInformation;
 //    Kathleen Bonnell, Fri Feb  3 10:23:36 PST 2006 
 //    Added meshCoordType.
 //
+//    Jeremy Meredith, Fri Aug 25 17:16:38 EDT 2006
+//    Added nodesAreCritical and unitCellVectors.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMeshMetaData : public AttributeSubject
 {
@@ -115,6 +118,8 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     bool          validVariable;
     LoadBalanceScheme loadBalanceScheme;
     avtMeshCoordType meshCoordType;
+    bool          nodesAreCritical;
+    float         unitCellVectors[9];
 
 public:
     avtMeshMetaData();
@@ -138,6 +143,9 @@ public:
 //    Hank Childs, Mon Feb 14 14:11:29 PST 2005
 //    Added originalName.
 //
+//    Jeremy Meredith, Tue Aug 22 15:21:30 EDT 2006
+//    Added support for scalars representing enumerations.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtScalarMetaData : public AttributeSubject
 {
@@ -156,6 +164,11 @@ struct DBATTS_API avtScalarMetaData : public AttributeSubject
 
     bool          hasUnits;
     std::string   units;
+
+    bool          isEnumeration;
+    stringVector  enumNames;
+    intVector     enumValues;
+
 public:
     avtScalarMetaData();
     avtScalarMetaData(std::string, std::string, avtCentering);

@@ -952,9 +952,13 @@ InitializeAtomicPropertyMaps()
     // PrintColorTablesFor_avtColorTables();
 }
 
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:04:10 EDT 2006
+//    Sped up by skipping the map.
+//
 int ElementNameToAtomicNumber(const char *element)
 {
-    char name[3];
+    static char name[3];
     name[0] = element[0];
     name[1] = element[1];
     name[2] = '\0';
@@ -969,16 +973,285 @@ int ElementNameToAtomicNumber(const char *element)
     if(name[1] >= 'A' && name[1] <= 'Z')
         name[1] += ('a' - 'A');
 
-    // Look up the value without accidentally inserting bad values
-    // into the map.
-    std::map<std::string, int>::const_iterator it = 
-        elementname_to_atomicnumber.find(name);
+    switch (name[0])
+    {
+    case 'A':
+        {
+            switch (name[1])
+            {
+            case 'g': return 47;
+            case 'l': return 13;
+            case 'r': return 18;
+            case 's': return 33;
+            case 't': return 85;
+            case 'u': return 79;
+            }
+        }
 
-    return (it != elementname_to_atomicnumber.end()) ? it->second : -1;
+    case 'B':
+        {
+            switch (name[1])
+            {
+            case '\0': return 5;
+            case 'a': return 56;
+            case 'e': return 4;
+            case 'i': return 83;
+            case 'r': return 35;
+            }
+        }
+
+    case 'C':
+        {
+            switch (name[1])
+            {
+            case '\0': return 6;
+            case 'a': return 20;
+            case 'd': return 48;
+            case 'e': return 58;
+            case 'l': return 17;
+            case 'o': return 27;
+            case 'r': return 24;
+            case 's': return 55;
+            case 'u': return 29;
+            }
+        }
+
+    case 'D':
+        {
+            switch (name[1])
+            {
+            case 'y': return 66;
+            }
+        }
+
+    case 'E':
+        {
+            switch (name[1])
+            {
+            case 'r': return 68;
+            case 'u': return 63;
+            }
+        }
+
+    case 'F':
+        {
+            switch (name[1])
+            {
+            case '\0': return 9;
+            case 'e': return 26;
+            }
+        }
+
+    case 'G':
+        {
+            switch (name[1])
+            {
+            case 'a': return 31;
+            case 'd': return 64;
+            case 'e': return 32;
+            }
+        }
+
+    case 'H':
+        {
+            switch (name[1])
+            {
+            case '\0': return 1;
+            case 'e': return 2;
+            case 'f': return 72;
+            case 'g': return 80;
+            case 'o': return 67;
+            }
+        }
+
+    case 'I':
+        {
+            switch (name[1])
+            {
+            case '\0': return 53;
+            case 'n': return 49;
+            case 'r': return 77;
+            }
+        }
+
+    case 'K':
+        {
+            switch (name[1])
+            {
+            case '\0': return 19;
+            case 'r': return 36;
+            }
+        }
+
+    case 'L':
+        {
+            switch (name[1])
+            {
+            case 'a': return 57;
+            case 'i': return 3;
+            case 'u': return 71;
+            }
+        }
+
+    case 'M':
+        {
+            switch (name[1])
+            {
+            case 'g': return 12;
+            case 'n': return 25;
+            case 'o': return 42;
+            }
+        }
+
+    case 'N':
+        {
+            switch (name[1])
+            {
+            case '\0': return 7;
+            case 'a': return 11;
+            case 'b': return 41;
+            case 'd': return 60;
+            case 'e': return 10;
+            case 'i': return 28;
+            }
+        }
+
+    case 'O':
+        {
+            switch (name[1])
+            {
+            case '\0': return 8;
+            case 's': return 76;
+            }
+        }
+
+    case 'P':
+        {
+            switch (name[1])
+            {
+            case '\0': return 15;
+            case 'b': return 82;
+            case 'd': return 46;
+            case 'm': return 61;
+            case 'o': return 84;
+            case 'r': return 59;
+            case 't': return 78;
+            }
+        }
+
+    case 'R':
+        {
+            switch (name[1])
+            {
+            case 'b': return 37;
+            case 'e': return 75;
+            case 'h': return 45;
+            case 'u': return 44;
+            }
+        }
+
+    case 'S':
+        {
+            switch (name[1])
+            {
+            case '\0': return 16;
+            case 'b': return 51;
+            case 'c': return 21;
+            case 'e': return 34;
+            case 'i': return 14;
+            case 'm': return 62;
+            case 'n': return 50;
+            case 'r': return 38;
+            }
+        }
+
+    case 'T':
+        {
+            switch (name[1])
+            {
+            case 'a': return 73;
+            case 'b': return 65;
+            case 'c': return 43;
+            case 'e': return 52;
+            case 'h': return 90;
+            case 'i': return 22;
+            case 'l': return 81;
+            case 'm': return 69;
+            }
+        }
+
+    case 'U':
+        {
+            switch (name[1])
+            {
+            case '\0': return 92;
+            }
+        }
+
+    case 'V':
+        {
+            switch (name[1])
+            {
+            case '\0': return 23;
+            }
+        }
+
+    case 'W':
+        {
+            switch (name[1])
+            {
+            case '\0': return 74;
+            }
+        }
+
+    case 'X':
+        {
+            switch (name[1])
+            {
+            case 'e': return 54;
+            }
+        }
+
+    case 'Y':
+        {
+            switch (name[1])
+            {
+            case '\0': return 39;
+            case 'b': return 70;
+            }
+        }
+
+    case 'Z':
+        {
+            switch (name[1])
+            {
+            case 'n': return 30;
+            case 'r': return 40;
+            }
+        }
+    }
+    return -1;
 }
 
+
+//  Modifications:
+//    Jeremy Meredith, Mon Aug 28 18:04:10 EDT 2006
+//    Sped up by caching the last lookup, as lookups tend to occur in groups.
+//
 int ResiduenameToNumber(const char *name)
 {
+    // Try a cache since these numbers are often
+    // looked up in groups.
+    static char lastname[10] = "";
+    static char lastnumber   = -1;
+    if (strcmp(name, lastname) == 0)
+    {
+        return lastnumber;
+    }
+
+    // Nope -- cache the name for next time.
+    snprintf(lastname,10,"%s",name);
+
     InitializeAtomicPropertyMaps();
 
     // Advance past leading spaces.
@@ -987,7 +1260,12 @@ int ResiduenameToNumber(const char *name)
 
     std::map<std::string, int>::const_iterator it = 
         residuename_to_number.find(name2);
-    return (it != residuename_to_number.end()) ? it->second : -1;
+    int retval = (it != residuename_to_number.end()) ? it->second : -1;
+
+    // Cache the result for next time
+    lastnumber = retval;
+
+    return retval;
 }
 
 const char *NumberToResiduename(int num)

@@ -69,6 +69,9 @@ class     avtSIL;
 //    Jeremy Meredith, Wed Aug 24 10:34:13 PDT 2005
 //    Added origin for the groups.
 //
+//    Jeremy Meredith, Tue Aug 29 16:52:36 EDT 2006
+//    Added enumerated scalar subset support.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSILGenerator
@@ -99,6 +102,8 @@ class DATABASE_API avtSILGenerator
                                            const std::string &,
                                            const std::vector<std::string> &,
                                            const std::vector<std::string> &);
+    void                AddEnumScalars(avtSIL *, int,
+                                       const avtScalarMetaData *);
     void                CreateCustomSIL(avtDatabaseMetaData *, avtSIL *);
 };
 

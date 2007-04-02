@@ -138,6 +138,9 @@ using     std::sort;
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added plotInfoAtts. 
 //
+//    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
+//    Added nodesAreCritical.  Added unitCellVectors.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -192,6 +195,14 @@ avtDataAttributes::avtDataAttributes()
     canUseOrigZones = true;
     origElementsRequiredForPick = false;
     meshCoordType = AVT_XY;
+    nodesAreCritical = false;
+    for (int i=0; i<3; i++)
+    {
+        for (int j=0; j<3; j++)
+        {
+            unitCellVectors[i*3+j] = (i==j) ? 1.0 : 0.0;
+        }
+    }
     plotInfoAtts = NULL;
 }
 
@@ -379,6 +390,9 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added plotInfoAtts. 
+//
+//    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
+//    Added nodesAreCritical.  Added unitCellVectors.
 //
 // ****************************************************************************
 
@@ -639,6 +653,24 @@ avtDataAttributes::Print(ostream &out)
         out << "The mesh coord tyep is ZR " << endl;
         break; 
     }
+
+    if (nodesAreCritical)
+    {
+        out << "This mesh is primarily a cell-based mesh." << endl;
+    }
+    else
+    {
+        out << "This mesh is primarily a point-based mesh." << endl;
+    }
+
+    for (i=0; i<3; i++)
+    {
+        out << "Unit cell vector #"<<i<<" is "
+            << unitCellVectors[i*3+0] << " "
+            << unitCellVectors[i*3+1] << " "
+            << unitCellVectors[i*3+2] << endl;
+    }
+
     out << "PlotInfoAttributes: ";
     if (plotInfoAtts == NULL)
         out << "Not Set";
@@ -746,6 +778,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added plotInfoAtts. 
 //
+//    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
+//    Added nodesAreCritical.  Added unitCellVectors.
+//
 // ****************************************************************************
 
 void
@@ -831,6 +866,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     canUseOrigZones = di.canUseOrigZones;
     origElementsRequiredForPick = di.origElementsRequiredForPick;
     meshCoordType = di.meshCoordType;
+    nodesAreCritical = di.nodesAreCritical;
+    for (int j=0; j<9; j++)
+        unitCellVectors[j] = di.unitCellVectors[j];
     SetPlotInfoAtts(di.plotInfoAtts);
 }
 
@@ -937,6 +975,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added plotInfoAtts. 
+//
+//    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
+//    Added nodesAreCritical.  Added unitCellVectors.
 //
 // ****************************************************************************
 
@@ -1077,6 +1118,11 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
         EXCEPTION2(InvalidMergeException, meshCoordType, da.meshCoordType);
     }
 
+    if (nodesAreCritical != da.nodesAreCritical)
+    {
+        EXCEPTION2(InvalidMergeException, nodesAreCritical, da.nodesAreCritical);
+    }
+
     if (GetContainsGhostZones() == AVT_MAYBE_GHOSTS)
     {
         if (da.GetContainsGhostZones() == AVT_HAS_GHOSTS)
@@ -1143,6 +1189,8 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     canUseOrigZones &= da.canUseOrigZones;
     origElementsRequiredForPick |= da.origElementsRequiredForPick;
     SetPlotInfoAtts(da.plotInfoAtts);
+
+    // there's no good answer for unitCellVectors
 }
 
 
@@ -2154,6 +2202,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added plotInfoAtts. 
 //
+//    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
+//    Added nodesAreCritical.  Added unitCellVectors.
+//
 // ****************************************************************************
 
 void
@@ -2162,7 +2213,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i, j;
 
-    int numVals = 25 + 5*variables.size();
+    int numVals = 26 + 5*variables.size();
     int *vals = new int[numVals];
     vals[0] = topologicalDimension;
     vals[1] = spatialDimension;
@@ -2187,15 +2238,16 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[20] = canUseOrigZones;
     vals[21] = origElementsRequiredForPick;
     vals[22] = meshCoordType;
-    vals[23] = activeVariable;
-    vals[24] = variables.size();
+    vals[23] = (nodesAreCritical ? 1 : 0);
+    vals[24] = activeVariable;
+    vals[25] = variables.size();
     for (i = 0 ; i < variables.size() ; i++)
     {
-        vals[25+5*i]   = variables[i].dimension;
-        vals[25+5*i+1] = variables[i].centering;
-        vals[25+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
-        vals[25+5*i+3] = variables[i].vartype;
-        vals[25+5*i+4] = variables[i].subnames.size();
+        vals[26+5*i]   = variables[i].dimension;
+        vals[26+5*i+1] = variables[i].centering;
+        vals[26+5*i+2] = (variables[i].treatAsASCII ? 1 : 0);
+        vals[26+5*i+3] = variables[i].vartype;
+        vals[26+5*i+4] = variables[i].subnames.size();
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2270,6 +2322,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
     wrtr->WriteInt(str, zLabel.size());
     str.Append((char *) zLabel.c_str(), zLabel.size(),
                   avtDataObjectString::DATA_OBJECT_STRING_SHOULD_MAKE_COPY);
+
+    for (i = 0; i < 9 ; i++)
+        wrtr->WriteDouble(str, unitCellVectors[i]);
 
     wrtr->WriteInt(str, selectionsApplied.size());
     for (i = 0; i < selectionsApplied.size(); i++)
@@ -2388,6 +2443,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added plotInfoAtts. 
 //
+//    Jeremy Meredith, Mon Aug 28 16:46:29 EDT 2006
+//    Added nodesAreCritical.  Added unitCellVectors.
+//
 // ****************************************************************************
 
 int
@@ -2489,6 +2547,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     meshCoordType = (avtMeshCoordType)tmp;
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    nodesAreCritical = (tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -2672,6 +2734,13 @@ avtDataAttributes::Read(char *input)
     zLabel = zl;
     size += labelSize;
     input += labelSize;
+
+    for (i = 0; i < 9 ; i++)
+    {
+        memcpy(&dtmp, input, sizeof(double));
+        input += sizeof(double); size += sizeof(double);
+        unitCellVectors[i] = dtmp;
+    }
 
     int selectionsSize;
     memcpy(&selectionsSize, input, sizeof(int));

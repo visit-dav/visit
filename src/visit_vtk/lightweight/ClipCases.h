@@ -55,6 +55,9 @@
 //    Jeremy Meredith, Wed Jun 23 15:39:58 PDT 2004
 //    Added voxel and pixel cases.  Not output shapes, though.
 //
+//    Jeremy Meredith, Tue Aug 29 13:52:33 EDT 2006
+//    Added line segments and vertexes.
+//
 
 // Points of original cell (up to 8, for the hex)
 // Note: we assume P0 is zero in several places.
@@ -97,7 +100,9 @@
 #define ST_HEX 103
 #define ST_TRI 104
 #define ST_QUA 105
-#define ST_PNT 106
+#define ST_VTX 106
+#define ST_LIN 107
+#define ST_PNT 108
 
 // Colors
 #define COLOR0  120
@@ -144,5 +149,15 @@ extern VISIT_VTK_LIGHT_API int numClipCasesTri;
 extern VISIT_VTK_LIGHT_API int numClipShapesTri[8];
 extern VISIT_VTK_LIGHT_API int startClipShapesTri[8];
 extern VISIT_VTK_LIGHT_API unsigned char clipShapesTri[];
+
+extern VISIT_VTK_LIGHT_API int numClipCasesLin;
+extern VISIT_VTK_LIGHT_API int numClipShapesLin[4];
+extern VISIT_VTK_LIGHT_API int startClipShapesLin[4];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesLin[];
+
+extern VISIT_VTK_LIGHT_API int numClipCasesVtx;
+extern VISIT_VTK_LIGHT_API int numClipShapesVtx[2];
+extern VISIT_VTK_LIGHT_API int startClipShapesVtx[2];
+extern VISIT_VTK_LIGHT_API unsigned char clipShapesVtx[];
 
 #endif

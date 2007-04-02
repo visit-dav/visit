@@ -151,6 +151,10 @@ class     DBPluginInfoAttributes;
 //    Hank Childs, Mon May 23 13:35:56 PDT 2005
 //    Added ability to get DB plugin info.
 //
+//    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//    Added ability to force using a specific plugin when reading
+//    the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -209,7 +213,8 @@ public:
     const FileList            *GetFileList(const std::string &filter, bool,
                                            bool=true);
     const avtDatabaseMetaData *GetMetaData(const std::string &, int=0,
-                                   bool forceReadAllCyclesTimes = false);
+                                   bool forceReadAllCyclesTimes = false,
+                                   const std::string &forcedFileType = "");
     const SILAttributes       *GetSIL(const std::string &, int=0);
     std::string                ExpandPath(const std::string &);
     void                       CloseDatabase();

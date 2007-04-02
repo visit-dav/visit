@@ -52,6 +52,7 @@
 #include <vtkCSGGrid.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
+#include <vtkEnumThreshold.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
@@ -735,6 +736,9 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Hank Childs, Mon Mar 28 15:14:39 PST 2005
 //    Add some more timing information.
 //
+//    Jeremy Meredith, Mon Aug 28 16:43:10 EDT 2006
+//    Added support for enumerated scalar selections.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -766,6 +770,23 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     boolVector selectionsApplied;
     TRY
     {
+        int i;
+
+        //
+        // Add secondary variables from enumeration selections
+        //
+        int enumCount = trav.GetEnumerationCount();
+        for (i = 0 ; i < enumCount ; i++)
+        {
+            bool needSelection;
+            vector<bool> selection;
+            string varname;
+            needSelection = trav.GetEnumeration(i, selection, varname);
+            if (needSelection)
+                spec->AddSecondaryVariable(varname.c_str());
+        }
+
+
         //
         // This is the primary routine that reads things in from disk.
         //
@@ -777,7 +798,6 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         //
         avtDatasetVerifier verifier;
         vtkDataSet **ds_list = new vtkDataSet*[nDomains];
-        int i;
         for (i = 0 ; i < nDomains ; i++)
         {
             ds_list[i] = datasetCollection.GetDataset(i, 0);
@@ -805,6 +825,22 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         {
             shouldDoMatSelect = shouldDoMatSelect || 
                                 datasetCollection.needsMatSelect[i];
+        }
+
+        //
+        // Do enumeration selection if appropriate
+        //
+        avtDatabaseMetaData *md = GetMetaData(timeStep);
+        for (i = 0 ; i < enumCount ; i++)
+        {
+            bool needSelection;
+            vector<bool> selection;
+            string varname;
+            needSelection = trav.GetEnumeration(i, selection, varname);
+            if (needSelection)
+            {
+                EnumScalarSelect(datasetCollection, selection, md, varname);
+            }
         }
     }
     CATCH2(VisItException, e)
@@ -4707,6 +4743,73 @@ avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
         return NULL;
     }
 }
+
+
+// ****************************************************************************
+//  Method:  avtGenericDatabase::EnumScalarSelect
+//
+//  Purpose:
+//    Remove parts of the datasets based on their values in an
+//    enumerated scalar.
+//
+//  Arguments:
+//      dsc         The dataset collection.  This will be modified.
+//      selection   The 
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 28, 2006
+//
+// ****************************************************************************
+void
+avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
+                                     const boolVector &selection,
+                                     const avtDatabaseMetaData *md,
+                                     const string &varname)
+{
+    const avtScalarMetaData *smd = md->GetScalar(varname);
+    int nDomains = dsc.GetNDomains();
+    for (int i = 0 ; i < nDomains ; i++)
+    {
+        int m = 0; // Using 0 assumes that the file format does not do matsel. 
+        vtkDataSet *ds = dsc.GetDataset(i, m);
+        if (!ds)
+            continue;
+
+        vtkEnumThreshold *enumThreshold = vtkEnumThreshold::New();
+
+        if (ds->GetPointData()->GetArray(varname.c_str()) != NULL)
+        {
+            enumThreshold->SetInputArrayToProcess(0, 0, 0,
+                     vtkDataObject::FIELD_ASSOCIATION_POINTS, varname.c_str());
+        }
+        else if (ds->GetCellData()->GetArray(varname.c_str()) != NULL)
+        {
+            enumThreshold->SetInputArrayToProcess(0, 0, 0,
+                     vtkDataObject::FIELD_ASSOCIATION_CELLS, varname.c_str());
+        }
+        else
+        {
+            ds->Register(NULL);
+            enumThreshold->Delete();
+            char errMsg[1024];
+            sprintf(errMsg, "Data for variable \"%s\" is not available.",
+                    varname.c_str());
+            EXCEPTION1(VisItException, errMsg);
+        }
+
+        enumThreshold->SetEnumerationValues(smd->enumValues);
+        enumThreshold->SetEnumerationSelection(selection);
+        enumThreshold->SetInput(ds);
+        vtkDataSet *outds = enumThreshold->GetOutput();
+        enumThreshold->Update();
+
+        dsc.SetDataset(i, m, outds);
+
+        outds->Register(NULL);
+        enumThreshold->Delete();
+    }
+}
+
 
 // ****************************************************************************
 //  Method: avtGenericDatabase::SpeciesSelect

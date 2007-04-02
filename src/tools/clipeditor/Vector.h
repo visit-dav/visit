@@ -38,7 +38,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-class ostream;
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class:  Vector

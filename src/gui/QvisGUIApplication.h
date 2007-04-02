@@ -312,6 +312,9 @@ class SplashScreen;
 //    Brad Whitlock, Tue Jul 25 12:31:39 PDT 2006
 //    Added support for -geometry.
 //
+//   Jeremy Meredith, Mon Aug 28 17:28:42 EDT 2006
+//   Added File Open window.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -419,6 +422,7 @@ private slots:
 
     // Slots to show windows.
     void showFileSelectionWindow();
+    void showFileOpenWindow();
     void showFileInformationWindow();
     void showHostProfilesWindow();
     void showSaveWindow();

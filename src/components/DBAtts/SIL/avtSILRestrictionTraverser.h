@@ -64,6 +64,9 @@
 //    Kathleen Bonnell, Tue Jun  1 17:00:17 PDT 2004
 //    Added method 'UsesAllMaterials'.
 //
+//    Jeremy Meredith, Mon Aug 28 16:19:48 EDT 2006
+//    Added support for scalar enumerations.
+//
 // ****************************************************************************
 
 class DBATTS_API avtSILRestrictionTraverser
@@ -86,6 +89,9 @@ class DBATTS_API avtSILRestrictionTraverser
     bool                       GetSpecies(std::vector<bool> &);
     bool                       UsesAllMaterials(void);
 
+    int                        GetEnumerationCount();
+    bool                       GetEnumeration(int, std::vector<bool> &,
+                                              std::string&);
 
   protected:
     avtSILRestriction_p        silr;

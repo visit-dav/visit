@@ -42,11 +42,12 @@
 #ifndef AVT_ProteinDataBank_FILE_FORMAT_H
 #define AVT_ProteinDataBank_FILE_FORMAT_H
 
-#include <avtMTSDFileFormat.h>
+#include <avtSTSDFileFormat.h>
 
 #include <vector>
 #include <map>
 #include <string>
+#include <utility>
 
 class DBOptionsAttributes;
 
@@ -87,6 +88,16 @@ struct Atom
     void Print(ostream &out);
 };
 
+
+struct ConnectRecord
+{
+    int a;
+    int b[4];
+
+    ConnectRecord(const char *line);
+    void Print(ostream &out);
+};
+
 // ****************************************************************************
 //  Class: avtProteinDataBankFileFormat
 //
@@ -100,55 +111,45 @@ struct Atom
 //    Brad Whitlock, Thu Mar 23 11:45:32 PDT 2006
 //    Added support for PDB title information.
 //
+//    Jeremy Meredith, Mon Aug 28 17:42:26 EDT 2006
+//    Changed to a STSD file format; models are now exposed through 
+//    directories, and times require multiple grouped files.
+//    Changed molecular data model so that bonds are line elements, not
+//    a 4-component array.
+//
 // ****************************************************************************
 
-class avtProteinDataBankFileFormat : public avtMTSDFileFormat
+class avtProteinDataBankFileFormat : public avtSTSDFileFormat
 {
   public:
                        avtProteinDataBankFileFormat(const char *, DBOptionsAttributes *);
     virtual           ~avtProteinDataBankFileFormat() {;};
 
-    //
-    // This is used to return unconventional data -- ranging from material
-    // information to information about block connectivity.
-    //
-    // virtual void      *GetAuxiliaryData(const char *var, const char *type,
-    //                                     int timestep, void *args, 
-    //                                     DestructorFunction &);
-    //
-
-    //
-    // If you know the times and cycle numbers, overload this function.
-    // Otherwise, VisIt will make up some reasonable ones for you.
-    //
-    // virtual void        GetCycles(std::vector<int> &);
-    // virtual void        GetTimes(std::vector<double> &);
-    //
-
-    virtual int            GetNTimesteps(void);
-
     virtual const char    *GetType(void)   { return "ProteinDataBank"; };
     virtual void           FreeUpResources(void); 
 
-    virtual vtkDataSet    *GetMesh(int, const char *);
-    virtual vtkDataArray  *GetVar(int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, const char *);
+    virtual vtkDataSet    *GetMesh(const char *);
+    virtual vtkDataArray  *GetVar(const char *);
+    virtual vtkDataArray  *GetVectorVar(const char *);
 
   protected:
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
     ifstream in;
 
     bool metadata_read;
     int  nmodels;
-    std::vector< std::vector<Atom> > allatoms;
-    std::vector<int>                 bonds[4];
+    std::vector< std::vector<Atom> >    allatoms;
+    std::vector< std::pair<int, int> >  bonds;
+
+    std::vector<ConnectRecord>       connect;
 
     std::string filename;
     std::string dbTitle;
     void OpenFileAtBeginning();
     void ReadAllMetaData();
     void ReadAtomsForModel(int);
+    void CreateBondsFromModel(int);
     void CreateBondsFromModel_Slow(int);
     void CreateBondsFromModel_Fast(int);
 };

@@ -46,7 +46,7 @@
 #define MATRIX_H
 
 class Vector;
-class ostream;
+#include <visitstream.h>
 
 // ****************************************************************************
 //  Class:  Matrix

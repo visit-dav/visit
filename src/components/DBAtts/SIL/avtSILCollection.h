@@ -65,7 +65,8 @@ typedef enum
     SIL_MATERIAL,      /* 5 */
     SIL_BOUNDARY,      /* 6 */
     SIL_SPECIES,       /* 7 */
-    SIL_USERD          /* 8 */
+    SIL_ENUMERATION,   /* 8 */
+    SIL_USERD          /* 9 */
 } SILCategoryRole;
 
 

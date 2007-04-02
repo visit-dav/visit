@@ -614,6 +614,9 @@ avtVTKFileFormat::FreeUpResources(void)
 //    Added support for MeshCoordType (int in FieldData of dataset,
 //    0 == XY, 1 == RZ, 2 == ZR).
 //
+//    Jeremy Meredith, Mon Aug 28 17:40:47 EDT 2006
+//    Added support for unit cell vectors.
+//
 // ****************************************************************************
 
 void
@@ -699,35 +702,44 @@ avtVTKFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
     }
  
-    if (dataset->GetFieldData()->GetArray("MeshCoordType") == NULL)
+    avtMeshMetaData *mesh = new avtMeshMetaData;
+    mesh->name = MESHNAME;
+    mesh->meshType = type;
+    mesh->spatialDimension = spat;
+    mesh->topologicalDimension = topo;
+    mesh->numBlocks = 1;
+    mesh->blockOrigin = 0;
+    mesh->SetExtents(bounds);
+    if (dataset->GetFieldData()->GetArray("MeshCoordType") != NULL)
     {
-        AddMeshToMetaData(md, MESHNAME, type, bounds, 1, 0, spat, topo);
-    }
-    else 
-    {
-        avtMeshCoordType mct =(avtMeshCoordType)
-         int(dataset->GetFieldData()->GetArray("MeshCoordType")->GetComponent(0, 0));
-        avtMeshMetaData *mesh = new avtMeshMetaData;
-        mesh->name = MESHNAME;
-        mesh->meshType = type;
-        mesh->spatialDimension = spat;
-        mesh->topologicalDimension = topo;
-        mesh->numBlocks = 1;
-        mesh->blockOrigin = 0;
-        mesh->SetExtents(bounds);
+        avtMeshCoordType mct = (avtMeshCoordType)
+            int(dataset->GetFieldData()->GetArray("MeshCoordType")->
+                                                        GetComponent(0, 0));
         mesh->meshCoordType = mct;
         if (mct == AVT_RZ)
         {
-             mesh->xLabel = "Z-Axis";
-             mesh->yLabel = "R-Axis";
+            mesh->xLabel = "Z-Axis";
+            mesh->yLabel = "R-Axis";
         }
         else if (mct == AVT_ZR)
         {
-             mesh->xLabel = "R-Axis";
-             mesh->yLabel = "Z-Axis";
+            mesh->xLabel = "R-Axis";
+            mesh->yLabel = "Z-Axis";
         }
-        md->Add(mesh); 
     }
+    if (dataset->GetFieldData()->GetArray("UnitCellVectors"))
+    {
+        vtkDataArray *ucv = dataset->GetFieldData()->
+                                               GetArray("UnitCellVectors");
+        for (int j=0; j<3; j++)
+        {
+            for (int k=0; k<3; k++)
+            {
+                mesh->unitCellVectors[j*3+k] = ucv->GetComponent(j*3+k,0);
+            }
+        }
+    }
+    md->Add(mesh); 
 
     int nvars = 0;
 

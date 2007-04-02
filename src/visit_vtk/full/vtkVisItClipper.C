@@ -63,14 +63,35 @@
 vtkCxxRevisionMacro(vtkVisItClipper, "$Revision: 1.00 $");
 vtkStandardNewMacro(vtkVisItClipper);
 
+// ****************************************************************************
+//  Constructor:  vtkVisItClipper::vtkVisItClipper
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 11, 2003
+//
+//  Modifications:
+//    Jeremy Meredith, Tue Aug 29 13:38:08 EDT 2006
+//    Added support for leaving cells whole.
+//
+// ****************************************************************************
 vtkVisItClipper::vtkVisItClipper()
 {
     CellList = NULL;
     CellListSize = 0;
     insideOut = false;
     clipFunction = NULL;
+    removeWholeCells = false;
 }
 
+// ****************************************************************************
+//  Destructor:  vtkVisItClipper::~vtkVisItClipper
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 11, 2003
+//
+//  Modifications:
+//
+// ****************************************************************************
 vtkVisItClipper::~vtkVisItClipper()
 {
 }
@@ -131,6 +152,27 @@ vtkVisItClipper::SetInsideOut(bool io)
 {
     insideOut = io;
 }
+
+// ****************************************************************************
+//  Method:  vtkVisItClipper::SetRemoveWholeCells
+//
+//  Purpose:
+//    Tell the clipper if you want it to treat cells as atomic, and
+//    simply remove any cell not entirely within the region.
+//
+//  Arguments:
+//    lcw        the new setting
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 29, 2006
+//
+// ****************************************************************************
+void
+vtkVisItClipper::SetRemoveWholeCells(bool rwc)
+{
+    removeWholeCells = rwc;
+}
+
 
 // ****************************************************************************
 //  Method:  vtkVisItClipper::Execute
@@ -217,6 +259,12 @@ vtkVisItClipper::Execute()
 //    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
 //    Added call to SetUpClipFunction. 
 //
+//    Jeremy Meredith, Tue Aug 29 16:20:25 EDT 2006
+//    Added support for "atomic" cells that must be removed
+//    entirely if they cannot be left whole.
+//    Added support for line and vertex output shapes (though
+//    structured grids shouldn't be outputting any, of course).
+//
 // ****************************************************************************
 
 void
@@ -286,6 +334,10 @@ vtkVisItClipper::StructuredGridExecute(void)
             if (j > 0)
                 lookup_case *= 2;
         }
+
+        if (removeWholeCells && lookup_case != 0)
+            lookup_case = ((1 << nCellPts) - 1);
+
         unsigned char *splitCase;
         int            numOutput;
         int            interpIDs[4];
@@ -331,6 +383,14 @@ vtkVisItClipper::StructuredGridExecute(void)
                     break;
                   case ST_TRI:
                     npts = 3;
+                    color = *splitCase++;
+                    break;
+                  case ST_LIN:
+                    npts = 2;
+                    color = *splitCase++;
+                    break;
+                  case ST_VTX:
+                    npts = 1;
                     color = *splitCase++;
                     break;
                   case ST_PNT:
@@ -428,6 +488,12 @@ vtkVisItClipper::StructuredGridExecute(void)
                   case ST_TRI:
                     vfv.AddTri(cellId, shape[0], shape[1], shape[2]);
                     break;
+                  case ST_LIN:
+                    vfv.AddLine(cellId, shape[0], shape[1]);
+                    break;
+                  case ST_VTX:
+                    vfv.AddVertex(cellId, shape[0]);
+                    break;
                   case ST_PNT:
                     interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
                     break;
@@ -477,6 +543,12 @@ vtkVisItClipper::StructuredGridExecute(void)
 //
 //    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
 //    Added call to SetUpClipFunction. 
+//
+//    Jeremy Meredith, Tue Aug 29 16:20:25 EDT 2006
+//    Added support for "atomic" cells that must be removed
+//    entirely if they cannot be left whole.
+//    Added support for line and vertex output shapes (though
+//    rectilinear grids shouldn't be outputting any, of course).
 //
 // ****************************************************************************
 
@@ -548,6 +620,10 @@ void vtkVisItClipper::RectilinearGridExecute(void)
             if (j > 0)
                 lookup_case *= 2;
         }
+
+        if (removeWholeCells && lookup_case != 0)
+            lookup_case = ((1 << nCellPts) - 1);
+
         unsigned char *splitCase;
         int            numOutput;
         int            interpIDs[4];
@@ -593,6 +669,14 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                     break;
                   case ST_TRI:
                     npts = 3;
+                    color = *splitCase++;
+                    break;
+                  case ST_LIN:
+                    npts = 2;
+                    color = *splitCase++;
+                    break;
+                  case ST_VTX:
+                    npts = 1;
                     color = *splitCase++;
                     break;
                   case ST_PNT:
@@ -690,6 +774,12 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                   case ST_TRI:
                     vfv.AddTri(cellId, shape[0], shape[1], shape[2]);
                     break;
+                  case ST_LIN:
+                    vfv.AddLine(cellId, shape[0], shape[1]);
+                    break;
+                  case ST_VTX:
+                    vfv.AddVertex(cellId, shape[0]);
+                    break;
                   case ST_PNT:
                     interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
                     break;
@@ -738,6 +828,11 @@ void vtkVisItClipper::RectilinearGridExecute(void)
 //
 //    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
 //    Added call to SetUpClipFunction. 
+//
+//    Jeremy Meredith, Tue Aug 29 16:20:25 EDT 2006
+//    Added support for polydata types (line and vertex).
+//    Added support for "atomic" cells that must be removed
+//    entirely if they cannot be left whole.
 //
 // ****************************************************************************
 void vtkVisItClipper::UnstructuredGridExecute(void)
@@ -795,6 +890,8 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
           case VTK_TRIANGLE:
           case VTK_QUAD:
           case VTK_PIXEL:
+          case VTK_LINE:
+          case VTK_VERTEX:
             canClip = true;
             break;
 
@@ -827,6 +924,9 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                 if (j > 0)
                     lookup_case *= 2;
             }
+
+            if (removeWholeCells && lookup_case != 0)
+                lookup_case = ((1 << npts) - 1);
 
             int             startIndex = 0;
             unsigned char  *splitCase = NULL;
@@ -884,6 +984,18 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                 numOutput  = numClipShapesPix[lookup_case];
                 vertices_from_edges = pixelVerticesFromEdges;
                 break;
+              case VTK_LINE:
+                startIndex = startClipShapesLin[lookup_case];
+                splitCase  = &clipShapesLin[startIndex];
+                numOutput  = numClipShapesLin[lookup_case];
+                vertices_from_edges = lineVerticesFromEdges;
+                break;
+              case VTK_VERTEX:
+                startIndex = startClipShapesVtx[lookup_case];
+                splitCase  = &clipShapesVtx[startIndex];
+                numOutput  = numClipShapesVtx[lookup_case];
+                vertices_from_edges = NULL;
+                break;
             }
 
             int            interpIDs[4];
@@ -918,6 +1030,14 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                         break;
                       case ST_TRI:
                         npts = 3;
+                        color = *splitCase++;
+                        break;
+                      case ST_LIN:
+                        npts = 2;
+                        color = *splitCase++;
+                        break;
+                      case ST_VTX:
+                        npts = 1;
                         color = *splitCase++;
                         break;
                       case ST_PNT:
@@ -1008,6 +1128,12 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
                         break;
                       case ST_TRI:
                         vfv.AddTri(cellId, shape[0], shape[1], shape[2]);
+                        break;
+                      case ST_LIN:
+                        vfv.AddLine(cellId, shape[0], shape[1]);
+                        break;
+                      case ST_VTX:
+                        vfv.AddVertex(cellId, shape[0]);
                         break;
                       case ST_PNT:
                         interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);
@@ -1077,6 +1203,11 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
 //    Kathleen Bonnell, Tue Sep  6 08:45:16 PDT 2005
 //    Added call to SetUpClipFunction. 
 //
+//    Jeremy Meredith, Tue Aug 29 16:20:25 EDT 2006
+//    Added support for polydata types (line and vertex).
+//    Added support for "atomic" cells that must be removed
+//    entirely if they cannot be left whole.
+//
 // ****************************************************************************
 void vtkVisItClipper::PolyDataExecute(void)
 {
@@ -1131,6 +1262,8 @@ void vtkVisItClipper::PolyDataExecute(void)
           case VTK_HEXAHEDRON:
           case VTK_TRIANGLE:
           case VTK_QUAD:
+          case VTK_LINE:
+          case VTK_VERTEX:
             canClip = true;
             break;
 
@@ -1163,6 +1296,9 @@ void vtkVisItClipper::PolyDataExecute(void)
                 if (j > 0)
                     lookup_case *= 2;
             }
+
+            if (removeWholeCells && lookup_case != 0)
+                lookup_case = ((1 << npts) - 1);
 
             int             startIndex = 0;
             unsigned char  *splitCase = NULL;
@@ -1208,6 +1344,18 @@ void vtkVisItClipper::PolyDataExecute(void)
                 numOutput  = numClipShapesQua[lookup_case];
                 vertices_from_edges = quadVerticesFromEdges;
                 break;
+              case VTK_LINE:
+                startIndex = startClipShapesLin[lookup_case];
+                splitCase  = &clipShapesLin[startIndex];
+                numOutput  = numClipShapesLin[lookup_case];
+                vertices_from_edges = lineVerticesFromEdges;
+                break;
+              case VTK_VERTEX:
+                startIndex = startClipShapesVtx[lookup_case];
+                splitCase  = &clipShapesVtx[startIndex];
+                numOutput  = numClipShapesVtx[lookup_case];
+                vertices_from_edges = NULL;
+                break;
             }
 
             int            interpIDs[4];
@@ -1242,6 +1390,14 @@ void vtkVisItClipper::PolyDataExecute(void)
                         break;
                       case ST_TRI:
                         npts = 3;
+                        color = *splitCase++;
+                        break;
+                      case ST_LIN:
+                        npts = 2;
+                        color = *splitCase++;
+                        break;
+                      case ST_VTX:
+                        npts = 1;
                         color = *splitCase++;
                         break;
                       case ST_PNT:
@@ -1332,6 +1488,12 @@ void vtkVisItClipper::PolyDataExecute(void)
                         break;
                       case ST_TRI:
                         vfv.AddTri(cellId, shape[0], shape[1], shape[2]);
+                        break;
+                      case ST_LIN:
+                        vfv.AddLine(cellId, shape[0], shape[1]);
+                        break;
+                      case ST_VTX:
+                        vfv.AddVertex(cellId, shape[0]);
                         break;
                       case ST_PNT:
                         interpIDs[interpID] = vfv.AddCentroidPoint(npts, shape);

@@ -62,6 +62,11 @@
 //
 //   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //   Added forceReadAllCyclesAndTimes  
+//
+//   Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//   Added ability to force using a specific plugin when reading
+//   the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API GetMetaDataRPC : public BlockingRPC
@@ -74,18 +79,21 @@ public:
 
     // Invokation method
     const avtDatabaseMetaData *operator()(const std::string&, int timeState=0,
-                                          bool forceReadAllCyclesAndTimes=false);
+                                          bool forceReadAllCyclesAndTimes=false,
+                                          const std::string &forcedFileType="");
 
     // Property setting methods
     void SetFile(const std::string&);
     void SetTimeState(int ts);
     void SetForceReadAllCyclesAndTimes(bool force);
+    void SetForcedFileType(const std::string&);
 
 
     // Property getting methods
     std::string GetFile() const;
     int GetTimeState() const;
     bool GetForceReadAllCyclesAndTimes() const;
+    std::string GetForcedFileType() const;
 
     // Property selection methods
     virtual void SelectAll();
@@ -94,6 +102,7 @@ private:
     std::string          file;
     int                  timeState;
     bool                 forceReadAllCyclesAndTimes;
+    std::string          forcedFileType;
 };
 
 

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+  <Plugin name="VASP" type="database" label="VASP" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+    <Extensions>
+      vasp
+      VASP
+    </Extensions>
+    <Files components="M">
+      avtVASPFileFormat.C
+      avtOUTCARFileFormat.C
+      avtCHGCARFileFormat.C
+    </Files>
+    <Files components="E">
+      avtVASPFileFormat.C
+      avtOUTCARFileFormat.C
+      avtCHGCARFileFormat.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

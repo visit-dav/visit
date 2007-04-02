@@ -624,11 +624,17 @@ MDServerConnection::GetPluginErrors()
 //
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added use of forceReadAllCyclesAndTimes in call to GetDatabase
+//
+//   Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//   Added ability to force using a specific plugin when reading
+//   the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
 void
 MDServerConnection::ReadMetaData(std::string file, int timeState,
-    bool forceReadAllCyclesAndTimes)
+                                 bool forceReadAllCyclesAndTimes,
+                                 std::string forcedFileType)
 {
     currentMetaData = NULL;
 
@@ -636,12 +642,14 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     debug2 << "Read the Metadata for " << file.c_str()
            << ", timeState=" << ts
            << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
+           << ", forcedFileType=" << forcedFileType
            << endl;
 
     //
     // Try and read the database. This could throw an exception.
     //
-    avtDatabase *db = GetDatabase(file, ts, forceReadAllCyclesAndTimes);
+    avtDatabase *db = GetDatabase(file, ts, forceReadAllCyclesAndTimes,
+                                  forcedFileType);
     if (db != NULL)
     {
         currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes);
@@ -2544,11 +2552,19 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added bool arg forceReadAllCyclesAndTimes
+//
+//    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//    Added ability to force using a specific plugin when reading
+//    the metadata from a file (if it causes the file to be opened).
+//    Also, make sure we successfully opened the file the last time
+//    before we skip the part where we re-try to open it again.
+//
 // ****************************************************************************
 
 avtDatabase *
 MDServerConnection::GetDatabase(string file, int timeState,
-    bool forceReadAllCyclesAndTimes)
+                                bool forceReadAllCyclesAndTimes,
+                                string forcedFileType)
 {
     //
     // Make sure that the plugins are loaded.
@@ -2560,7 +2576,8 @@ MDServerConnection::GetDatabase(string file, int timeState,
     //
     file = ExpandPath(file);
 
-    if (file != currentDatabaseName ||
+    if (currentDatabase == NULL ||
+        file != currentDatabaseName ||
         (timeState != currentDatabaseTimeState && currentDatabaseHasInvariantMD))
     {
         string timerMessage(string("Time to open ") + file);
@@ -2568,7 +2585,8 @@ MDServerConnection::GetDatabase(string file, int timeState,
         debug2 << "MDServerConnection::GetDatabase: Need to get a new database"
                << ". file=" << file.c_str()
                << ", timeState=" << timeState
-               << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes << endl;
+               << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
+               << ", forcedFileType=" << forcedFileType << endl;
 
         if (currentDatabase != NULL)
         {
@@ -2672,13 +2690,17 @@ MDServerConnection::GetDatabase(string file, int timeState,
         }
         else if (FileHasVisItExtension(file))
         {
-            currentDatabase = avtDatabaseFactory::VisitFile(fn, timeState, NULL,
-                                                            forceReadAllCyclesAndTimes);
+            currentDatabase =
+                avtDatabaseFactory::VisitFile(fn, timeState,
+                                              forcedFileType=="" ? NULL : forcedFileType.c_str(),
+                                              forceReadAllCyclesAndTimes);
         }
         else
         {
-            currentDatabase = avtDatabaseFactory::FileList(&fn, 1, timeState, NULL,
-                                                           forceReadAllCyclesAndTimes);
+            currentDatabase =
+                avtDatabaseFactory::FileList(&fn, 1, timeState,
+                                             forcedFileType=="" ? NULL : forcedFileType.c_str(),
+                                             forceReadAllCyclesAndTimes);
         }
 
         visitTimer->StopTimer(timeid, timerMessage);

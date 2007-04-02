@@ -304,6 +304,9 @@ SubsetViewerPluginInfo::ResetPlotAtts(AttributeSubject *atts,
 //    Brad Whitlock, Fri Mar 26 15:22:11 PST 2004
 //    I made it use passed in metadata.
 //
+//    Jeremy Meredith, Fri Aug 25 16:59:42 EDT 2006
+//    Support enumerated scalar type subsets.
+//
 // ****************************************************************************
 
 void
@@ -326,6 +329,7 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     string vn(varName);
 
     const avtMaterialMetaData *mat = NULL;
+    const avtScalarMetaData *smd = NULL;
 
     string meshName = nonConstmd->MeshForVar(varName);
     avtMeshMetaData *mesh = 
@@ -395,6 +399,21 @@ SubsetViewerPluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
           {
               for(pos = mat->materialNames.begin();
                   pos != mat->materialNames.end(); ++pos)
+              {
+                  sv.push_back(*pos);
+              }
+          }
+          break;
+
+      case AVT_ENUMSCALAR_SUBSET :
+          debug5 << "Variable for subset plot is an enumerated Scalar."<<endl; 
+          subsetAtts->SetSubsetType(SubsetAttributes::EnumScalar);
+          defaultAtts->SetSubsetType(SubsetAttributes::EnumScalar);
+          smd = md->GetScalar(vn);
+          if (smd != NULL)
+          {
+              for(pos = smd->enumNames.begin();
+                  pos != smd->enumNames.end(); ++pos)
               {
                   sv.push_back(*pos);
               }

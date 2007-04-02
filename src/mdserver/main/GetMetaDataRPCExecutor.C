@@ -117,6 +117,11 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //
 //   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //   Added call to GetForceReadAllCyclesAndTimes
+//
+//   Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//   Added ability to force using a specific plugin when reading
+//   the metadata from a file (if it causes the file to be opened).
+//
 // ****************************************************************************
 
 void
@@ -124,14 +129,17 @@ GetMetaDataRPCExecutor::Update(Subject *s)
 {
     GetMetaDataRPC *rpc = (GetMetaDataRPC *)s;
 
-    debug2 << "GetMetaDataRPCExecutor::Update - file="<<rpc->GetFile().c_str()<<"\n";
+    debug2 << "GetMetaDataRPCExecutor::Update - file="
+           << rpc->GetFile().c_str() << " type="
+           << rpc->GetForcedFileType() << "\n";
     debug2.flush();
 
     TRY
     {
         // Either send a successful reply or send an error.
         parent->ReadMetaData(rpc->GetFile(), rpc->GetTimeState(),
-                             rpc->GetForceReadAllCyclesAndTimes());
+                             rpc->GetForceReadAllCyclesAndTimes(),
+                             rpc->GetForcedFileType());
 
         debug5 << "MetaData=" << endl;
         if(debug5_real)
