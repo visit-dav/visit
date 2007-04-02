@@ -240,7 +240,7 @@ QvisParallelAxisPlotWizard::CreateAxisVariablePage(QFrame **f,
     QvisVariableButton *var = new QvisVariableButton(false, false, true,
         QvisVariableButton::Scalars, frame);
     var->setMinimumWidth(fontMetrics().boundingRect("really_really_long_var_name").width());
-    var->setText(QString(leftAxisVarName));
+    var->setText(QString(leftAxisVarName.c_str()));
     connect(var, SIGNAL(activated(const QString &)), this,
             SLOT(choseAxisVariable(const QString &)));
     pageVLayout->addWidget(varlabel);

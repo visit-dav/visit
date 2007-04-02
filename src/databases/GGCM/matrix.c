@@ -56,7 +56,7 @@ float ***m_alloc(unsigned int x, unsigned int y, unsigned int z)
     int *meta;
 
     int i, j;
-    meta = malloc((sizeof(unsigned int)*3) + (x*sizeof(float**)));
+    meta = (int*)malloc((sizeof(unsigned int)*3) + (x*sizeof(float**)));
     /* encode the array size into the beginning of the returned memory block */
     meta[0] = x;
     meta[1] = y;

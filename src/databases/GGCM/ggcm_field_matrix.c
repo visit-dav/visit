@@ -10,7 +10,7 @@
 float *ggcm_field(MHDdata * data, int nx, int ny, int nz,
                   char * const field_name)
 {
-    float *ret = malloc(sizeof(float) * (nx*ny*nz));
+    float *ret = (float*)malloc(sizeof(float) * (nx*ny*nz));
     MHDdata *dat = data;
 #if 0
     int cnt=0;
@@ -33,7 +33,7 @@ float *ggcm_field(MHDdata * data, int nx, int ny, int nz,
     return ret;
 }
 
-float ***ggcm_field_matrix(MHDdata * const data, int nx, int ny, int nz,
+float ***ggcm_field_matrix(const MHDdata * data, int nx, int ny, int nz,
                            char field_name[128])
 {
     float ***fmat = m_alloc(nx, ny, nz);

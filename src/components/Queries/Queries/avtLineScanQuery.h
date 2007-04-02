@@ -96,7 +96,7 @@ class QUERY_API avtLineScanQuery : public avtDatasetQuery
     const double             *lines;  //Set only during Execute.  Stores data for use by base classes.
 
     virtual void              PreExecute(void);
-    virtual void              Execute(vtkDataSet *, int);
+    virtual void              Execute(vtkDataSet *, const int);
 
     int                       GetCellsForPoint(int ptId, vtkPolyData *pd, 
                                                vtkIntArray *lineids,int lineid,

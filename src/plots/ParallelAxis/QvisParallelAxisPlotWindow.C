@@ -6,7 +6,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include <qhbuttongroup.h>
 #include <qvbuttongroup.h>

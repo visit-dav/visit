@@ -1042,7 +1042,7 @@ ScanInt(const char *line, int len, int start, int end, int *val)
     *val = atoi(tmpbuff);
 }
 
-static inline bool
+static inline void
 ScanChar(const char *line, int len, int start, char *val)
 {
     if (len < start)
@@ -1051,7 +1051,7 @@ ScanChar(const char *line, int len, int start, char *val)
         *val = tmpbuff[start-1];
 }
 
-static inline bool
+static inline void
 ScanFloat(const char *line, int len, int start, int end, float *val)
 {
     int i;

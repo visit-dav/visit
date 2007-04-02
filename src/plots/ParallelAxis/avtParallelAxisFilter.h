@@ -5,7 +5,6 @@
 #ifndef AVT_PARALLEL_AXIS_FILTER_H
 #define AVT_PARALLEL_AXIS_FILTER_H
 
-#include <filters_exports.h>
 
 #include <ParallelAxisAttributes.h>
 #include <avtDataTreeStreamer.h>
@@ -86,9 +85,13 @@ class vtkPoints;
 //      Added code from a more general "parallel coordinate plot" package
 //      developed earlier, to remove dependency on that package.
 //
+//      Kathleen Bonnell, Wed Oct 18 10:59:46 PDT 2006 
+//      Removed unnecessary FILTER_EXPORTS specification so that filter will
+//      build on Windows.
+//      
 // ****************************************************************************
 
-class AVTFILTERS_API avtParallelAxisFilter : public avtDataTreeStreamer
+class avtParallelAxisFilter : public avtDataTreeStreamer
 {
 public:
                                 avtParallelAxisFilter(
