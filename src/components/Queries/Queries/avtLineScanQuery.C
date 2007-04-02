@@ -44,10 +44,12 @@
 #include <stdio.h>
 #include <math.h>
 
+#include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCleanPolyData.h>
 #include <vtkExecutive.h>
 #include <vtkIdList.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 
 #include <avtCallback.h>
@@ -305,6 +307,213 @@ avtLineScanQuery::WalkChain1(vtkPolyData *pd, int ptId, int cellId,
 
 
 // ****************************************************************************
+//  Function: MergeSegmentPoints
+//
+//  Purpose:
+//      Finds points that lie are the same line segment that are some
+//      epsilon apart and merges them to be one point. 
+//
+//  Arguments:
+//      input       The input poly data to merge.
+//      varname     The name of the variable that says which line scan a
+//                  segment comes from.
+//      tolerance   The tolerance to use when merging.
+// 
+//  Returns:  A new vtkPolyData.  The calling function must free this.
+//
+//  Note:    This could not be accomplished by using vtkCleanPolyData,
+//           since it has no functionality for differing line segment.
+//           By way of example, assume that two distinct scan lines have
+//           a line segment that ends (and begins) near point P.  Explicitly,
+//           line scan 1 has line segment A, which has an endpoint near 
+//           point P, and line segment B which also has an endpoint near point
+//           P.  Similarly, line scan 2 has line segments C and D which also
+//           have endpoints near point P.  So: the points from C and D should
+//           be merged.  And the points from A and B should be merged.  But
+//           the merged point A and B should *not* be merged with the merged
+//           point from C and D.  If they are, then the results change in
+//           parallel, because, with a different number of processors, line
+//           scan 1 and 2 may be on different processors.  And the merged 
+//           point may pull each segment off the path of the original line
+//           scan slightly, changing the answer.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 19, 2006
+//
+// ****************************************************************************
+
+typedef struct
+{
+    int lineId;
+    int ptId;
+    double radSquared;
+}  IdPoint;
+
+static int
+IdPointSorter(const void *arg1, const void *arg2)
+{
+    const IdPoint *r1 = (const IdPoint *) arg1;
+    const IdPoint *r2 = (const IdPoint *) arg2;
+
+    if (r1->lineId > r2->lineId)
+        return 1;
+    else if (r1->lineId < r2->lineId)
+        return -1;
+
+    if (r1->radSquared > r2->radSquared)
+        return 1;
+    else if (r1->radSquared < r2->radSquared)
+        return -1;
+
+    return 0;
+}
+
+
+vtkPolyData *
+MergeSegmentPoints(vtkPolyData *input, const char *varname, double tolerance)
+{
+    int   i, j;
+
+    vtkIntArray *line_id = (vtkIntArray *) 
+                                        input->GetCellData()->GetArray(varname);
+    if (line_id == NULL)
+    {
+        if (input->GetNumberOfCells() == 0)
+        {
+            input->Register(NULL);
+            return NULL;
+        }
+
+        EXCEPTION0(ImproperUseException);
+    }
+
+    int ncells = input->GetNumberOfCells();
+    int npts = input->GetNumberOfPoints();
+    int *newPtId = new int[npts];
+    int numNewPts = 0;
+
+    //
+    // Determine which points can be merged.  Here's the game plan.  We can
+    // only merge points if they have the same line id and they are within
+    // "tolerance" of each other.  We will construct a big array to qsort.
+    // An entry in the array will be of the form (lineID, X, Y, Z).  The 
+    // sorting returned by qsort will sort first by lineID.  Then it will
+    // sort the rest of the entries by distance to the origin.  
+    //
+    // After this sort is made, we can pick off the repeats pretty easily.
+    // We check to see if the lineID is the same.  If so, we check all of
+    // the point nearby in the array.  The only points that can be nearby
+    // are those that have similar distance to the origin.  Of course, some
+    // points will be in dramatically different locations, but we can eliminate
+    // those quickly.  When we find a match, we update newPtId.  The code at
+    // the bottom of this method will construct the new vtkPolyData.
+    //
+    // Note: this code assumes that the number of points is exactly twice
+    // the number of cells and that each cell has two unique endpoints 
+    // (i.e., the endpoints are not shared).
+    //
+    if (npts != 2*ncells) 
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    IdPoint *idPoints = new IdPoint[npts];
+    vtkPoints *inPts = input->GetPoints();
+    for (i = 0 ; i < npts ; i++)
+    {
+        idPoints[i].lineId = line_id->GetValue(i/2); // See assumption above
+        idPoints[i].ptId = i;
+        double pt[3];
+        inPts->GetPoint(i, pt);
+        idPoints[i].radSquared = (pt[0]*pt[0] + pt[1]*pt[1] + pt[2]*pt[2]);
+    }
+    qsort(idPoints, npts, sizeof(IdPoint), IdPointSorter);
+
+    double tolSqrd = tolerance*tolerance;
+    for (i = 0 ; i < npts ; i++)
+    {
+        bool foundMatch = false;
+        int  match = -1;
+        double ptI[3];
+        inPts->GetPoint(idPoints[i].ptId, ptI);
+        for (j = i-1 ; j >= 0 ; j--)
+        {
+            if (idPoints[i].lineId != idPoints[j].lineId)
+                break;
+
+            // We can bound their distance apart by using the triangle
+            // inequality.
+            double distApart = idPoints[i].radSquared - idPoints[j].radSquared;
+            if (distApart > tolSqrd)
+                // This point and point J are too close to the origin
+                // to be a match.  True for all points less than J as well.
+                break;
+
+            double ptJ[3];
+            inPts->GetPoint(idPoints[j].ptId, ptJ);
+            double diff[3];
+            diff[0] = ptI[0]-ptJ[0];
+            diff[1] = ptI[1]-ptJ[1];
+            diff[2] = ptI[2]-ptJ[2];
+            if (fabs(diff[0]) > tolerance)
+                continue;
+            if (fabs(diff[1]) > tolerance)
+                continue;
+            if (fabs(diff[2]) > tolerance)
+                continue;
+
+            double dist = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2];
+            if (dist < tolSqrd)
+            {
+                foundMatch = true;
+                match = idPoints[j].ptId;
+                break;
+            }
+        }
+
+        if (foundMatch)
+            newPtId[idPoints[i].ptId] = newPtId[idPoints[j].ptId];
+        else
+            newPtId[idPoints[i].ptId] = numNewPts++;
+    }
+  
+    //
+    // Construct a new vtkPolyData using the newPtId list.
+    //
+    vtkPolyData *rv = vtkPolyData::New();
+    rv->GetFieldData()->ShallowCopy(input->GetFieldData());
+    vtkPointData *outPD = rv->GetPointData();
+    vtkPointData *inPD  = input->GetPointData();
+    outPD->CopyAllocate(inPD, numNewPts);
+    vtkPoints *outPts = vtkPoints::New();
+    outPts->SetDataType(inPts->GetDataType());
+    outPts->SetNumberOfPoints(numNewPts);
+    for (i = 0 ; i < npts ; i++)
+    {
+        outPD->CopyData(inPD, i, newPtId[i]);
+        outPts->SetPoint(newPtId[i], inPts->GetPoint(i));
+    }
+    rv->SetPoints(outPts);
+    outPts->Delete();
+    
+    rv->GetCellData()->ShallowCopy(input->GetCellData());
+    rv->Allocate(ncells*(2+1));
+    for (i = 0 ; i < ncells ; i++)
+    {
+        vtkCell *cell = input->GetCell(i);
+        int id1 = cell->GetPointId(0);
+        id1 = newPtId[id1];
+        int id2 = cell->GetPointId(1);
+        id2 = newPtId[id2];
+        vtkIdType line[2] = { id1, id2 };
+        rv->InsertNextCell(VTK_LINE, 2, line);
+    }
+
+    delete [] newPtId;
+    return rv;
+}
+
+
+// ****************************************************************************
 //  Method: avtLineScanQuery::Execute
 //
 //  Purpose:
@@ -330,17 +539,13 @@ avtLineScanQuery::Execute(vtkDataSet *ds, const int chunk)
     UpdateProgress(extraMsg*currentNode, totalProg);
 
     vtkPolyData *pd = (vtkPolyData *) ds;
-    vtkCleanPolyData *cpd = vtkCleanPolyData::New();
-    cpd->SetToleranceIsAbsolute(0);
-    cpd->SetTolerance(1e-7);
-    cpd->SetInput(pd);
-    vtkPolyData *output = cpd->GetOutput();
-    output->Update();
+    vtkPolyData *cleaned = MergeSegmentPoints(pd, "avtLineID", 1e-7);
+
     UpdateProgress(extraMsg*currentNode+extraMsg/3, totalProg);
 
-    ExecuteLineScan(output);
+    ExecuteLineScan(cleaned);
 
-    cpd->Delete();
+    cleaned->Delete();
 }
 
 
