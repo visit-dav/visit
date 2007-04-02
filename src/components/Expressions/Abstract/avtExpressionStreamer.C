@@ -115,6 +115,9 @@ avtExpressionStreamer::~avtExpressionStreamer()
 //    Check to see if the variable already exists.  If so, no need to 
 //    re-execute.
 //
+//    Hank Childs, Thu Jul 28 09:06:00 PDT 2005
+//    Fix UMR that can occur with array variables.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -228,7 +231,7 @@ avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
                 continue;
             }
             float *val = dat->GetTuple(i);
-            float value; 
+            float value = 0;
             if (nvars == 1)
             {
                 value = *val;
@@ -242,6 +245,7 @@ avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
                 // This function is found in avtCommonDataFunctions.
                 value = MajorEigenvalue(val);    
             }
+            // else ... array variable
 
             if (value < exts[0])
             {

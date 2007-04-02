@@ -367,6 +367,9 @@ avtSimilarityTransformFilter::PerformRestriction(
 //    Set the topological dimension to be higher so that we know we need
 //    to apply the facelist filter.  Also transform the extents.
 //    
+//    Hank Childs, Thu Jul 28 09:07:31 PDT 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void
@@ -410,6 +413,7 @@ avtSimilarityTransformFilter::RefashionDataObjectInfo(void)
                     newTrueSpatial->Set(extents);
                     *(outAtts.GetTrueSpatialExtents()) = *newTrueSpatial;
                     outAtts.GetTrueSpatialExtents()->Transform(t);
+                    delete newTrueSpatial;
                 }
 
                 if (inAtts.GetCumulativeTrueSpatialExtents()->HasExtents())
@@ -421,6 +425,7 @@ avtSimilarityTransformFilter::RefashionDataObjectInfo(void)
                     *(outAtts.GetCumulativeTrueSpatialExtents()) = 
                                                      *newCumulativeTrueSpatial;
                     outAtts.GetCumulativeTrueSpatialExtents()->Transform(t);
+                    delete newCumulativeTrueSpatial;
                 }
 
                 if (inAtts.GetEffectiveSpatialExtents()->HasExtents())
@@ -432,6 +437,7 @@ avtSimilarityTransformFilter::RefashionDataObjectInfo(void)
                     *(outAtts.GetEffectiveSpatialExtents()) 
                                                         = *newEffectiveSpatial;
                     outAtts.GetEffectiveSpatialExtents()->Transform(t);
+                    delete newEffectiveSpatial;
                 }
 
                 if (inAtts.GetCurrentSpatialExtents()->HasExtents())
@@ -442,6 +448,7 @@ avtSimilarityTransformFilter::RefashionDataObjectInfo(void)
                     newCurrentSpatial->Set(extents);
                     *(outAtts.GetCurrentSpatialExtents()) = *newCurrentSpatial;
                     outAtts.GetCurrentSpatialExtents()->Transform(t);
+                    delete newCurrentSpatial;
                 }
             }
         }
