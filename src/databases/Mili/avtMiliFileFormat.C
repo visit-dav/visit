@@ -55,6 +55,7 @@ extern "C" {
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
 #include <vtkDataArray.h>
+#include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkFloatArray.h>
 
@@ -78,7 +79,10 @@ using std::vector;
 using std::string;
 using std::ifstream;
 
-const char *free_nodes_str = "_free_nodes";
+static const char *free_nodes_str = "free_nodes";
+static const char *no_free_nodes_str = "no_free_nodes";
+static const int free_nodes_strlen = strlen(free_nodes_str);
+static const int no_free_nodes_strlen = strlen(no_free_nodes_str);
 
 #define Warn(msg)          IssueWarning(msg, __LINE__)
 
@@ -538,6 +542,10 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 //    Added code to deal with case where nodal positions are time invariant.
 //    They are not stored as "results" but instead part of the mesh read
 //    in the ReadMesh() call.
+//
+//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
+//    Added a "no_free_nodes" mesh by ghost labeling sanded nodes. Added
+//    the logic to label sanded nodes here.
 // ****************************************************************************
 
 vtkDataSet *
@@ -635,7 +643,6 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
         }
         else
         {
-
             fpts = new float[amt];
             read_results(dbid[dom], ts+1, subrec, 1, &nodpos_str, vsize, amt, fpts);
 
@@ -654,6 +661,47 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
             }
             rv->SetPoints(pts);
             pts->Delete();
+
+            //
+            // Ghost out nodes that belong to zones that are "sanded"
+            // Start by assuming all nodes are N/A and then remove the
+            // N/A ghost node type for all those nodes that belong to
+            // zones that are NOT sanded.
+            //
+            vtkFloatArray *sand_arr = (vtkFloatArray *) GetVar(ts, dom, "sand");
+            if (sand_arr && strstr(mesh, no_free_nodes_str))
+            {
+                float *sand_vals = (float*) sand_arr->GetVoidPointer(0);
+
+                vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+                ghost_nodes->SetName("avtGhostNodes");
+                ghost_nodes->SetNumberOfTuples(nnodes[dom][mesh_id]);
+                unsigned char *gnp = ghost_nodes->GetPointer(0);
+                for (i = 0 ; i < nnodes[dom][mesh_id]; i++)
+                {
+                    gnp[i] = 0;
+                    avtGhostData::AddGhostNodeType(gnp[i],
+                        NODE_NOT_APPLICABLE_TO_PROBLEM);
+                }
+                for (int cell = 0; cell < ncells[dom][mesh_id]; cell++)
+                {
+                    if (sand_vals[cell] > 0.5) // element status is "good"
+                    {
+                        vtkIdType npts = 0, *pts = 0;
+                        rv->GetCellPoints(cell, npts, pts);
+                        if (npts && pts)
+                        {
+                            for (int node = 0; node < npts; node++)
+                                avtGhostData::RemoveGhostNodeType(gnp[pts[node]],
+                                    NODE_NOT_APPLICABLE_TO_PROBLEM);
+                        }
+                    }
+                }
+
+                sand_arr->Delete();
+                rv->GetPointData()->AddArray(ghost_nodes);
+                ghost_nodes->Delete();
+            }
         }
     }
     else
@@ -681,10 +729,10 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     // If VisIt really asked for the free nodes mesh, compute that now,
     // otherwise, just return the mesh
     //
-    if (strstr(mesh, free_nodes_str) == 0)
+    if (strstr(mesh, no_free_nodes_str) ||
+       !strstr(mesh, free_nodes_str))
     {
-        if (fpts)
-            delete [] fpts;
+        if (fpts) delete [] fpts;
         return rv;
     }
 
@@ -803,6 +851,9 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Added logic to deal with free nodes mesh variables
 //
+//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
+//    Changed names of free_node variables from 'xxx_free_nodes' to
+//    'free_nodes/xxx' to put them in a submenu in GUI.
 // ****************************************************************************
 
 int
@@ -811,8 +862,9 @@ avtMiliFileFormat::GetVariableIndex(const char *varname)
     string tmpname = varname;
     char *p = strstr(varname, free_nodes_str);
 
-    if (p != 0)
-        tmpname = string(varname, 0, p-varname);
+    if (p)
+        tmpname = string(varname, free_nodes_strlen+1,
+                                  strlen(varname) - (free_nodes_strlen+1));
 
     for (int i = 0 ; i < vars.size() ; i++)
     {
@@ -840,6 +892,9 @@ avtMiliFileFormat::GetVariableIndex(const char *varname)
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Added logic to deal with free nodes mesh variables
 //
+//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
+//    Changed names of free_node variables from 'xxx_free_nodes' to
+//    'free_nodes/xxx' to put them in a submenu in GUI.
 // ****************************************************************************
 
 int
@@ -848,8 +903,9 @@ avtMiliFileFormat::GetVariableIndex(const char *varname, int mesh_id)
     string tmpname = varname;
     char *p = strstr(varname, free_nodes_str);
 
-    if (p != 0)
-        tmpname = string(varname, 0, p-varname);
+    if (p)
+        tmpname = string(varname, free_nodes_strlen+1,
+                                  strlen(varname) - (free_nodes_strlen+1));
 
     for (int i = 0 ; i < vars.size() ; i++)
     {
@@ -1519,6 +1575,10 @@ avtMiliFileFormat::RestrictVarToFreeNodes(vtkFloatArray *src, int ts) const
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Added code to deal with param array variables
 //    Added code to deal with variables defined on the free nodes mesh
+//
+//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
+//    Added "no_free_nodes" variants of variables. Changed names of
+//    free_node variables from 'xxx_free_nodes' to 'free_nodes/xxx'
 // ****************************************************************************
 
 vtkDataArray *
@@ -1530,11 +1590,20 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
         ValidateVariables(dom);
 
     bool isParamArray = strncmp(name, "params/", 7) == 0; 
-    char *isFreeNodesVar = strstr(name, free_nodes_str);
-
     string usename = name;
-    if (isFreeNodesVar)
-        usename = string(name, 0, isFreeNodesVar-name);
+    bool isFreeNodesVar = false;
+    if (strstr(name, no_free_nodes_str))
+    {
+        usename = string(name, no_free_nodes_strlen+1,
+                               strlen(name) - (no_free_nodes_strlen+1));
+        isFreeNodesVar = false;
+    }
+    else if (strstr(name, free_nodes_str))
+    {
+        usename = string(name, free_nodes_strlen+1,
+                               strlen(name) - (free_nodes_strlen+1));
+        isFreeNodesVar = true;
+    }
 
     string vname;
     int meshid = 0;
@@ -1630,7 +1699,7 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
                 GetSizeInfoForGroup(sub_records[dom][i].class_name, start,
                                     csize, dom);
 
-                char *tmp = (char *) name;  // Bypass const
+                char *tmp = (char *) usename.c_str();  // Bypass const
                 
                 // Simple read in: one block 
                 if (sub_records[dom][i].qty_blocks == 1)
@@ -1707,6 +1776,10 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 //
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Added code to deal with variables defined on the free nodes mesh
+//
+//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
+//    Added "no_free_nodes" variants of variables. Changed names of
+//    free_node variables from 'xxx_free_nodes' to 'free_nodes/xxx'
 // ****************************************************************************
 
 vtkDataArray *
@@ -1717,11 +1790,20 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
     if (!validateVars[dom])
         ValidateVariables(dom);
 
-    char *isFreeNodesVar = strstr(name, free_nodes_str);
-
     string usename = name;
-    if (isFreeNodesVar)
-        usename = string(name, 0, isFreeNodesVar-name);
+    bool isFreeNodesVar = false;
+    if (strstr(name, no_free_nodes_str))
+    {
+        usename = string(name, no_free_nodes_strlen+1,
+                               strlen(name) - (no_free_nodes_strlen+1));
+        isFreeNodesVar = false;
+    }
+    else if (strstr(name, free_nodes_str))
+    {
+        usename = string(name, free_nodes_strlen+1,
+                               strlen(name) - (free_nodes_strlen+1));
+        isFreeNodesVar = true;
+    }
 
     string vname;
     int meshid = 0;
@@ -1795,7 +1877,7 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
                 GetSizeInfoForGroup(sub_records[dom][i].class_name, start, 
                                     csize, dom);
 
-                char *tmp = (char *) name;  // Bypass const
+                char *tmp = (char *) usename.c_str();  // Bypass const
 
                 // Simple read in: one block 
                 if (sub_records[dom][i].qty_blocks == 1)
@@ -1978,6 +2060,17 @@ avtMiliFileFormat::GetNTimesteps()
 //
 //    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
 //    Added code to add free nodes mesh and variables
+//
+//    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
+//    Added "no_free_nodes" variants of meshes, material and variables.
+//    Changed names of free_node variables from 'xxx_free_nodes' to
+//    'free_nodes/xxx'. Populated any node-centered expressions for both
+//    original and free_node variants and zone-centered expressions for
+//    both original and no_free_node variants. Changed cellOrigin to 1
+//    to address off-by-one errors during pick. Bob Corey says that so far,
+//    all clients that write mili data are Fortran clients. They expect to
+//    get node/zone numbers from pick starting from '1'. 
+//    
 // ****************************************************************************
 
 void
@@ -1993,13 +2086,15 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         char matname[32];
         sprintf(meshname, "mesh%d", i + 1);
         sprintf(matname, "materials%d", i + 1);
-        const string fnmeshname = string(meshname) + string(free_nodes_str);
+        const string fnmeshname = string(meshname) + "_" + string(free_nodes_str);
+        const string nofnmeshname = string(meshname) + "_" + string(no_free_nodes_str);
+        const string nofnmatname = string(matname) + "_" + string(no_free_nodes_str);
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = meshname;
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
         mesh->numBlocks = ndomains;
         mesh->blockOrigin = 0;
-        mesh->cellOrigin = 0;
+        mesh->cellOrigin = 123; // Bob Corey says all mili writers so far are Fortran
         mesh->spatialDimension = dims;
         mesh->topologicalDimension = dims;
         mesh->blockTitle = "processors";
@@ -2016,9 +2111,11 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             mnames[j] = str;
         }
         AddMaterialToMetaData(md, matname, meshname, nmaterials[i], mnames);
+        AddMaterialToMetaData(md, nofnmatname, nofnmeshname, nmaterials[i], mnames);
 
         //
-        // Add the free-nodes mesh if variable "sand" is defined on this mesh
+        // Add the free-nodes and no-free-nodes meshes
+        // if variable "sand" is defined on this mesh
         //
         has_fn_mesh.push_back(false);
         for (j = 0 ; j < vars.size() ; j++)
@@ -2030,13 +2127,27 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
                 fnmesh->meshType = AVT_POINT_MESH;
                 fnmesh->numBlocks = ndomains;
                 fnmesh->blockOrigin = 0;
-                fnmesh->cellOrigin = 0;
+                fnmesh->cellOrigin = 123; // All mili writers so far are Fortran
                 fnmesh->spatialDimension = dims;
                 fnmesh->topologicalDimension = 0;
                 fnmesh->blockTitle = "processors";
                 fnmesh->blockPieceName = "processor";
                 fnmesh->hasSpatialExtents = false;
                 md->Add(fnmesh);
+
+                avtMeshMetaData *nofnmesh = new avtMeshMetaData;
+                nofnmesh->name = nofnmeshname; 
+                nofnmesh->meshType = AVT_UNSTRUCTURED_MESH;
+                nofnmesh->numBlocks = ndomains;
+                nofnmesh->blockOrigin = 0;
+                nofnmesh->cellOrigin = 123; // All mili writers so far are Fortran
+                nofnmesh->spatialDimension = dims;
+                nofnmesh->topologicalDimension = dims;
+                nofnmesh->blockTitle = "processors";
+                nofnmesh->blockPieceName = "processor";
+                nofnmesh->hasSpatialExtents = false;
+                md->Add(nofnmesh);
+
                 has_fn_mesh[i] = true;
             }
         }
@@ -2046,7 +2157,8 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     {
         char meshname[32];
         sprintf(meshname, "mesh%d", var_mesh_associations[i] + 1);
-        const string fnmeshname = string(meshname) + string(free_nodes_str);
+        const string fnmeshname = string(meshname) + "_" + string(free_nodes_str);
+        const string nofnmeshname = string(meshname) + "_" + string(no_free_nodes_str);
 
         //
         // Don't list the node position variable.
@@ -2096,7 +2208,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
         bool do_fn_mesh_too = has_fn_mesh[var_mesh_associations[i]] && 
                               (centering[i] == AVT_NODECENT);
-        string fnvname = *vname + string(free_nodes_str);
+        bool do_nofn_mesh_too = has_fn_mesh[var_mesh_associations[i]];
+        string fnvname = string(free_nodes_str) + "/" + *vname;
+        string nofnvname = string(no_free_nodes_str) + "/" + *vname;
         
         switch (vartype[i])
         {
@@ -2104,11 +2218,15 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             AddScalarVarToMetaData(md, *vname, meshname, centering[i]);
             if (do_fn_mesh_too)
                 AddScalarVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i]);
+            if (do_nofn_mesh_too)
+                AddScalarVarToMetaData(md, nofnvname, nofnmeshname.c_str(), centering[i]);
             break;
           case AVT_VECTOR_VAR:
             AddVectorVarToMetaData(md, *vname, meshname, centering[i], dims);
             if (do_fn_mesh_too)
                 AddVectorVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i], dims);
+            if (do_nofn_mesh_too)
+                AddVectorVarToMetaData(md, nofnvname, nofnmeshname.c_str(), centering[i], dims);
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
             AddSymmetricTensorVarToMetaData(md, *vname, meshname, centering[i],
@@ -2116,11 +2234,16 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             if (do_fn_mesh_too)
                 AddSymmetricTensorVarToMetaData(md, fnvname, fnmeshname.c_str(),
                                                 centering[i], dims);
+            if (do_nofn_mesh_too)
+                AddSymmetricTensorVarToMetaData(md, nofnvname, nofnmeshname.c_str(),
+                                                centering[i], dims);
             break;
           case AVT_TENSOR_VAR:
             AddTensorVarToMetaData(md, *vname, meshname, centering[i], dims);
             if (do_fn_mesh_too)
                 AddTensorVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i], dims);
+            if (do_nofn_mesh_too)
+                AddTensorVarToMetaData(md, nofnvname, nofnmeshname.c_str(), centering[i], dims);
             break;
           default:
             break;
@@ -2132,103 +2255,118 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     //
     OpenDB(0);
 
+    vector<string> dirs;
+    dirs.push_back("");
+    dirs.push_back(string(no_free_nodes_str) + "/");
+
+    vector<string> ndirs;
+    ndirs.push_back("");
+    ndirs.push_back(string(free_nodes_str) + "/");
+
+    vector<string> nsuff; 
+    nsuff.push_back("");
+    nsuff.push_back("_" + string(free_nodes_str));
+
     TRY
     {
         // This call throw an exception if stress does not exist.
         GetVariableIndex("stress");
 
-        Expression pressure_expr;
-        pressure_expr.SetName("derived/pressure");
-        pressure_expr.SetDefinition("-trace(stress)/3");
-        pressure_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&pressure_expr);
+        for (i = 0; i < dirs.size(); i++)
+        {
+            Expression pressure_expr;
+            pressure_expr.SetName("derived/"+dirs[i]+"pressure");
+            pressure_expr.SetDefinition("-trace(<"+dirs[i]+"stress>)/3");
+            pressure_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&pressure_expr);
 
-        Expression stressx_expr;
-        stressx_expr.SetName("derived/stress/x");
-        stressx_expr.SetDefinition("stress[0][0]");
-        stressx_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&stressx_expr);
+            Expression stressx_expr;
+            stressx_expr.SetName("derived/"+dirs[i]+"stress/x");
+            stressx_expr.SetDefinition("<"+dirs[i]+"stress>[0][0]");
+            stressx_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&stressx_expr);
 
-        Expression stressy_expr;
-        stressy_expr.SetName("derived/stress/y");
-        stressy_expr.SetDefinition("stress[1][1]");
-        stressy_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&stressy_expr);
+            Expression stressy_expr;
+            stressy_expr.SetName("derived/"+dirs[i]+"stress/y");
+            stressy_expr.SetDefinition("<"+dirs[i]+"stress>[1][1]");
+            stressy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&stressy_expr);
 
-        Expression stressz_expr;
-        stressz_expr.SetName("derived/stress/z");
-        stressz_expr.SetDefinition("stress[2][2]");
-        stressz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&stressz_expr);
+            Expression stressz_expr;
+            stressz_expr.SetName("derived/"+dirs[i]+"stress/z");
+            stressz_expr.SetDefinition("<"+dirs[i]+"stress>[2][2]");
+            stressz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&stressz_expr);
 
-        Expression stressxy_expr;
-        stressxy_expr.SetName("derived/stress/xy");
-        stressxy_expr.SetDefinition("stress[0][1]");
-        stressxy_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&stressxy_expr);
+            Expression stressxy_expr;
+            stressxy_expr.SetName("derived/"+dirs[i]+"stress/xy");
+            stressxy_expr.SetDefinition("<"+dirs[i]+"stress>[0][1]");
+            stressxy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&stressxy_expr);
 
-        Expression stressxz_expr;
-        stressxz_expr.SetName("derived/stress/xz");
-        stressxz_expr.SetDefinition("stress[0][2]");
-        stressxz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&stressxz_expr);
+            Expression stressxz_expr;
+            stressxz_expr.SetName("derived/"+dirs[i]+"stress/xz");
+            stressxz_expr.SetDefinition("<"+dirs[i]+"stress>[0][2]");
+            stressxz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&stressxz_expr);
 
-        Expression stressyz_expr;
-        stressyz_expr.SetName("derived/stress/yz");
-        stressyz_expr.SetDefinition("stress[1][2]");
-        stressyz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&stressyz_expr);
+            Expression stressyz_expr;
+            stressyz_expr.SetName("derived/"+dirs[i]+"stress/yz");
+            stressyz_expr.SetDefinition("<"+dirs[i]+"stress>[1][2]");
+            stressyz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&stressyz_expr);
 
-        Expression seff_expr;
-        seff_expr.SetName("derived/eff_stress");
-        seff_expr.SetDefinition("effective_tensor(stress)");
-        seff_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&seff_expr);
+            Expression seff_expr;
+            seff_expr.SetName("derived/"+dirs[i]+"eff_stress");
+            seff_expr.SetDefinition("effective_tensor(<"+dirs[i]+"stress>)");
+            seff_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&seff_expr);
 
-        Expression p_dev_stress1_expr;
-        p_dev_stress1_expr.SetName("derived/prin_dev_stress/1");
-        p_dev_stress1_expr.SetDefinition(
-                                     "principal_deviatoric_tensor(stress)[0]");
-        p_dev_stress1_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&p_dev_stress1_expr);
+            Expression p_dev_stress1_expr;
+            p_dev_stress1_expr.SetName("derived/"+dirs[i]+"prin_dev_stress/1");
+            p_dev_stress1_expr.SetDefinition(
+                                         "principal_deviatoric_tensor(<"+dirs[i]+"stress>)[0]");
+            p_dev_stress1_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&p_dev_stress1_expr);
 
-        Expression p_dev_stress2_expr;
-        p_dev_stress2_expr.SetName("derived/prin_dev_stress/2");
-        p_dev_stress2_expr.SetDefinition(
-                                     "principal_deviatoric_tensor(stress)[1]");
-        p_dev_stress2_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&p_dev_stress2_expr);
+            Expression p_dev_stress2_expr;
+            p_dev_stress2_expr.SetName("derived/"+dirs[i]+"prin_dev_stress/2");
+            p_dev_stress2_expr.SetDefinition(
+                                         "principal_deviatoric_tensor(<"+dirs[i]+"stress>)[1]");
+            p_dev_stress2_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&p_dev_stress2_expr);
 
-        Expression p_dev_stress3_expr;
-        p_dev_stress3_expr.SetName("derived/prin_dev_stress/3");
-        p_dev_stress3_expr.SetDefinition(
-                                     "principal_deviatoric_tensor(stress)[2]");
-        p_dev_stress3_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&p_dev_stress3_expr);
+            Expression p_dev_stress3_expr;
+            p_dev_stress3_expr.SetName("derived/"+dirs[i]+"prin_dev_stress/3");
+            p_dev_stress3_expr.SetDefinition(
+                                         "principal_deviatoric_tensor(<"+dirs[i]+"stress>)[2]");
+            p_dev_stress3_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&p_dev_stress3_expr);
 
-        Expression maxshr_expr;
-        maxshr_expr.SetName("derived/max_shear_stress");
-        maxshr_expr.SetDefinition("tensor_maximum_shear(stress)");
-        maxshr_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&maxshr_expr);
+            Expression maxshr_expr;
+            maxshr_expr.SetName("derived/"+dirs[i]+"max_shear_stress");
+            maxshr_expr.SetDefinition("tensor_maximum_shear(<"+dirs[i]+"stress>)");
+            maxshr_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&maxshr_expr);
 
-        Expression prin_stress1_expr;
-        prin_stress1_expr.SetName("derived/prin_stress/1");
-        prin_stress1_expr.SetDefinition("principal_tensor(stress)[0]");
-        prin_stress1_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&prin_stress1_expr);
+            Expression prin_stress1_expr;
+            prin_stress1_expr.SetName("derived/"+dirs[i]+"prin_stress/1");
+            prin_stress1_expr.SetDefinition("principal_tensor(<"+dirs[i]+"stress>)[0]");
+            prin_stress1_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&prin_stress1_expr);
 
-        Expression prin_stress2_expr;
-        prin_stress2_expr.SetName("derived/prin_stress/2");
-        prin_stress2_expr.SetDefinition("principal_tensor(stress)[1]");
-        prin_stress2_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&prin_stress2_expr);
+            Expression prin_stress2_expr;
+            prin_stress2_expr.SetName("derived/"+dirs[i]+"prin_stress/2");
+            prin_stress2_expr.SetDefinition("principal_tensor(<"+dirs[i]+"stress>)[1]");
+            prin_stress2_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&prin_stress2_expr);
 
-        Expression prin_stress3_expr;
-        prin_stress3_expr.SetName("derived/prin_stress/3");
-        prin_stress3_expr.SetDefinition("principal_tensor(stress)[2]");
-        prin_stress3_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&prin_stress3_expr);
+            Expression prin_stress3_expr;
+            prin_stress3_expr.SetName("derived/"+dirs[i]+"prin_stress/3");
+            prin_stress3_expr.SetDefinition("principal_tensor(<"+dirs[i]+"stress>)[2]");
+            prin_stress3_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&prin_stress3_expr);
+        }
     }
     CATCH(InvalidVariableException)
     {
@@ -2240,92 +2378,95 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // This call throw an exception if strain does not exist.
         GetVariableIndex("strain");
 
-        Expression strainx_expr;
-        strainx_expr.SetName("derived/strain/x");
-        strainx_expr.SetDefinition("strain[0][0]");
-        strainx_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&strainx_expr);
+        for (i = 0; i < dirs.size(); i++)
+        {
+            Expression strainx_expr;
+            strainx_expr.SetName("derived/"+dirs[i]+"strain/x");
+            strainx_expr.SetDefinition("<"+dirs[i]+"strain>[0][0]");
+            strainx_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&strainx_expr);
 
-        Expression strainy_expr;
-        strainy_expr.SetName("derived/strain/y");
-        strainy_expr.SetDefinition("strain[1][1]");
-        strainy_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&strainy_expr);
+            Expression strainy_expr;
+            strainy_expr.SetName("derived/"+dirs[i]+"strain/y");
+            strainy_expr.SetDefinition("<"+dirs[i]+"strain>[1][1]");
+            strainy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&strainy_expr);
 
-        Expression strainz_expr;
-        strainz_expr.SetName("derived/strain/z");
-        strainz_expr.SetDefinition("strain[2][2]");
-        strainz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&strainz_expr);
+            Expression strainz_expr;
+            strainz_expr.SetName("derived/"+dirs[i]+"strain/z");
+            strainz_expr.SetDefinition("<"+dirs[i]+"strain>[2][2]");
+            strainz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&strainz_expr);
 
-        Expression strainxy_expr;
-        strainxy_expr.SetName("derived/strain/xy");
-        strainxy_expr.SetDefinition("strain[0][1]");
-        strainxy_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&strainxy_expr);
+            Expression strainxy_expr;
+            strainxy_expr.SetName("derived/"+dirs[i]+"strain/xy");
+            strainxy_expr.SetDefinition("<"+dirs[i]+"strain>[0][1]");
+            strainxy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&strainxy_expr);
 
-        Expression strainxz_expr;
-        strainxz_expr.SetName("derived/strain/xz");
-        strainxz_expr.SetDefinition("strain[0][2]");
-        strainxz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&strainxz_expr);
+            Expression strainxz_expr;
+            strainxz_expr.SetName("derived/"+dirs[i]+"strain/xz");
+            strainxz_expr.SetDefinition("<"+dirs[i]+"strain>[0][2]");
+            strainxz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&strainxz_expr);
 
-        Expression strainyz_expr;
-        strainyz_expr.SetName("derived/strain/yz");
-        strainyz_expr.SetDefinition("strain[1][2]");
-        strainyz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&strainyz_expr);
+            Expression strainyz_expr;
+            strainyz_expr.SetName("derived/"+dirs[i]+"strain/yz");
+            strainyz_expr.SetDefinition("<"+dirs[i]+"strain>[1][2]");
+            strainyz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&strainyz_expr);
 
-        Expression seff_expr;
-        seff_expr.SetName("derived/eff_strain");
-        seff_expr.SetDefinition("effective_tensor(strain)");
-        seff_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&seff_expr);
+            Expression seff_expr;
+            seff_expr.SetName("derived/"+dirs[i]+"eff_strain");
+            seff_expr.SetDefinition("effective_tensor(<"+dirs[i]+"strain>)");
+            seff_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&seff_expr);
 
-        Expression p_dev_strain1_expr;
-        p_dev_strain1_expr.SetName("derived/prin_dev_strain/1");
-        p_dev_strain1_expr.SetDefinition(
-                                     "principal_deviatoric_tensor(strain)[0]");
-        p_dev_strain1_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&p_dev_strain1_expr);
+            Expression p_dev_strain1_expr;
+            p_dev_strain1_expr.SetName("derived/"+dirs[i]+"prin_dev_strain/1");
+            p_dev_strain1_expr.SetDefinition(
+                                         "principal_deviatoric_tensor(<"+dirs[i]+"strain>)[0]");
+            p_dev_strain1_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&p_dev_strain1_expr);
 
-        Expression p_dev_strain2_expr;
-        p_dev_strain2_expr.SetName("derived/prin_dev_strain/2");
-        p_dev_strain2_expr.SetDefinition(
-                                     "principal_deviatoric_tensor(strain)[1]");
-        p_dev_strain2_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&p_dev_strain2_expr);
+            Expression p_dev_strain2_expr;
+            p_dev_strain2_expr.SetName("derived/"+dirs[i]+"prin_dev_strain/2");
+            p_dev_strain2_expr.SetDefinition(
+                                         "principal_deviatoric_tensor(<"+dirs[i]+"strain>)[1]");
+            p_dev_strain2_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&p_dev_strain2_expr);
 
-        Expression p_dev_strain3_expr;
-        p_dev_strain3_expr.SetName("derived/prin_dev_strain/3");
-        p_dev_strain3_expr.SetDefinition(
-                                     "principal_deviatoric_tensor(strain)[2]");
-        p_dev_strain3_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&p_dev_strain3_expr);
+            Expression p_dev_strain3_expr;
+            p_dev_strain3_expr.SetName("derived/"+dirs[i]+"prin_dev_strain/3");
+            p_dev_strain3_expr.SetDefinition(
+                                         "principal_deviatoric_tensor(<"+dirs[i]+"strain>)[2]");
+            p_dev_strain3_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&p_dev_strain3_expr);
 
-        Expression maxshr_expr;
-        maxshr_expr.SetName("derived/max_shear_strain");
-        maxshr_expr.SetDefinition("tensor_maximum_shear(strain)");
-        maxshr_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&maxshr_expr);
+            Expression maxshr_expr;
+            maxshr_expr.SetName("derived/"+dirs[i]+"max_shear_strain");
+            maxshr_expr.SetDefinition("tensor_maximum_shear(<"+dirs[i]+"strain>)");
+            maxshr_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&maxshr_expr);
 
-        Expression prin_strain1_expr;
-        prin_strain1_expr.SetName("derived/prin_strain/1");
-        prin_strain1_expr.SetDefinition("principal_tensor(strain)[0]");
-        prin_strain1_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&prin_strain1_expr);
+            Expression prin_strain1_expr;
+            prin_strain1_expr.SetName("derived/"+dirs[i]+"prin_strain/1");
+            prin_strain1_expr.SetDefinition("principal_tensor(<"+dirs[i]+"strain>)[0]");
+            prin_strain1_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&prin_strain1_expr);
 
-        Expression prin_strain2_expr;
-        prin_strain2_expr.SetName("derived/prin_strain/2");
-        prin_strain2_expr.SetDefinition("principal_tensor(strain)[1]");
-        prin_strain2_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&prin_strain2_expr);
+            Expression prin_strain2_expr;
+            prin_strain2_expr.SetName("derived/"+dirs[i]+"prin_strain/2");
+            prin_strain2_expr.SetDefinition("principal_tensor(<"+dirs[i]+"strain>)[1]");
+            prin_strain2_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&prin_strain2_expr);
 
-        Expression prin_strain3_expr;
-        prin_strain3_expr.SetName("derived/prin_strain/3");
-        prin_strain3_expr.SetDefinition("principal_tensor(strain)[2]");
-        prin_strain3_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&prin_strain3_expr);
+            Expression prin_strain3_expr;
+            prin_strain3_expr.SetName("derived/"+dirs[i]+"prin_strain/3");
+            prin_strain3_expr.SetDefinition("principal_tensor(<"+dirs[i]+"strain>)[2]");
+            prin_strain3_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&prin_strain3_expr);
+        }
     }
     CATCH(InvalidVariableException)
     {
@@ -2337,29 +2478,32 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // This call throw an exception if nodvel does not exist.
         GetVariableIndex("nodvel");
 
-        Expression velx_expr;
-        velx_expr.SetName("derived/velocity/x");
-        velx_expr.SetDefinition("nodvel[0]");
-        velx_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&velx_expr);
+        for (i = 0; i < ndirs.size(); i++)
+        {
+            Expression velx_expr;
+            velx_expr.SetName("derived/"+ndirs[i]+"velocity/x");
+            velx_expr.SetDefinition("<"+ndirs[i]+"nodvel>[0]");
+            velx_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&velx_expr);
 
-        Expression vely_expr;
-        vely_expr.SetName("derived/velocity/y");
-        vely_expr.SetDefinition("nodvel[1]");
-        vely_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&vely_expr);
+            Expression vely_expr;
+            vely_expr.SetName("derived/"+ndirs[i]+"velocity/y");
+            vely_expr.SetDefinition("<"+ndirs[i]+"nodvel>[1]");
+            vely_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&vely_expr);
 
-        Expression velz_expr;
-        velz_expr.SetName("derived/velocity/z");
-        velz_expr.SetDefinition("nodvel[2]");
-        velz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&velz_expr);
+            Expression velz_expr;
+            velz_expr.SetName("derived/"+ndirs[i]+"velocity/z");
+            velz_expr.SetDefinition("<"+ndirs[i]+"nodvel>[2]");
+            velz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&velz_expr);
 
-        Expression velmag_expr;
-        velmag_expr.SetName("derived/velocity/mag");
-        velmag_expr.SetDefinition("magnitude(nodvel)");
-        velmag_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&velmag_expr);
+            Expression velmag_expr;
+            velmag_expr.SetName("derived/"+ndirs[i]+"velocity/mag");
+            velmag_expr.SetDefinition("magnitude(<"+ndirs[i]+"nodvel>)");
+            velmag_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&velmag_expr);
+        }
     }
     CATCH(InvalidVariableException)
     {
@@ -2371,29 +2515,32 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // This call throw an exception if nodacc does not exist.
         GetVariableIndex("nodacc");
 
-        Expression accx_expr;
-        accx_expr.SetName("derived/acceleration/x");
-        accx_expr.SetDefinition("nodacc[0]");
-        accx_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&accx_expr);
+        for (i = 0; i < ndirs.size(); i++)
+        {
+            Expression accx_expr;
+            accx_expr.SetName("derived/"+ndirs[i]+"acceleration/x");
+            accx_expr.SetDefinition("<"+ndirs[i]+"nodacc>[0]");
+            accx_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&accx_expr);
 
-        Expression accy_expr;
-        accy_expr.SetName("derived/acceleration/y");
-        accy_expr.SetDefinition("nodacc[1]");
-        accy_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&accy_expr);
+            Expression accy_expr;
+            accy_expr.SetName("derived/"+ndirs[i]+"acceleration/y");
+            accy_expr.SetDefinition("<"+ndirs[i]+"nodacc>[1]");
+            accy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&accy_expr);
 
-        Expression accz_expr;
-        accz_expr.SetName("derived/acceleration/z");
-        accz_expr.SetDefinition("nodacc[2]");
-        accz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&accz_expr);
+            Expression accz_expr;
+            accz_expr.SetName("derived/"+ndirs[i]+"acceleration/z");
+            accz_expr.SetDefinition("<"+ndirs[i]+"nodacc>[2]");
+            accz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&accz_expr);
 
-        Expression accmag_expr;
-        accmag_expr.SetName("derived/acceleration/mag");
-        accmag_expr.SetDefinition("magnitude(nodacc)");
-        accmag_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&accmag_expr);
+            Expression accmag_expr;
+            accmag_expr.SetName("derived/"+ndirs[i]+"acceleration/mag");
+            accmag_expr.SetDefinition("magnitude(<"+ndirs[i]+"nodacc>)");
+            accmag_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&accmag_expr);
+        }
     }
     CATCH(InvalidVariableException)
     {
@@ -2405,29 +2552,32 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         // This call throw an exception if noddisp does not exist.
         GetVariableIndex("noddisp");
 
-        Expression dispx_expr;
-        dispx_expr.SetName("derived/displacement/x");
-        dispx_expr.SetDefinition("noddisp[0]");
-        dispx_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&dispx_expr);
+        for (i = 0; i < ndirs.size(); i++)
+        {
+            Expression dispx_expr;
+            dispx_expr.SetName("derived/"+ndirs[i]+"displacement/x");
+            dispx_expr.SetDefinition("<"+ndirs[i]+"noddisp>[0]");
+            dispx_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&dispx_expr);
 
-        Expression dispy_expr;
-        dispy_expr.SetName("derived/displacement/y");
-        dispy_expr.SetDefinition("noddisp[1]");
-        dispy_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&dispy_expr);
+            Expression dispy_expr;
+            dispy_expr.SetName("derived/"+ndirs[i]+"displacement/y");
+            dispy_expr.SetDefinition("<"+ndirs[i]+"noddisp>[1]");
+            dispy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&dispy_expr);
 
-        Expression dispz_expr;
-        dispz_expr.SetName("derived/displacement/z");
-        dispz_expr.SetDefinition("noddisp[2]");
-        dispz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&dispz_expr);
+            Expression dispz_expr;
+            dispz_expr.SetName("derived/"+ndirs[i]+"displacement/z");
+            dispz_expr.SetDefinition("<"+ndirs[i]+"noddisp>[2]");
+            dispz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&dispz_expr);
 
-        Expression dispmag_expr;
-        dispmag_expr.SetName("derived/displacement/mag");
-        dispmag_expr.SetDefinition("magnitude(noddisp)");
-        dispmag_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&dispmag_expr);
+            Expression dispmag_expr;
+            dispmag_expr.SetName("derived/"+ndirs[i]+"displacement/mag");
+            dispmag_expr.SetDefinition("magnitude(<"+ndirs[i]+"noddisp>)");
+            dispmag_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&dispmag_expr);
+        }
     }
     CATCH(InvalidVariableException)
     {
@@ -2436,56 +2586,62 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 
     if (nmeshes == 1)
     {
-        Expression posx_expr;
-        posx_expr.SetName("derived/nodpos/x");
-        posx_expr.SetDefinition("coord(mesh1)[0]");
-        posx_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&posx_expr);
+        for (i = 0; i < ndirs.size(); i++)
+        {
+            Expression posx_expr;
+            posx_expr.SetName("derived/"+ndirs[i]+"nodpos/x");
+            posx_expr.SetDefinition("coord(mesh1"+nsuff[i]+")[0]");
+            posx_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&posx_expr);
 
-        Expression posy_expr;
-        posy_expr.SetName("derived/nodpos/y");
-        posy_expr.SetDefinition("coord(mesh1)[1]");
-        posy_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&posy_expr);
+            Expression posy_expr;
+            posy_expr.SetName("derived/"+ndirs[i]+"nodpos/y");
+            posy_expr.SetDefinition("coord(mesh1"+nsuff[i]+")[1]");
+            posy_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&posy_expr);
 
-        Expression posz_expr;
-        posz_expr.SetName("derived/nodpos/z");
-        posz_expr.SetDefinition("coord(mesh1)[2]");
-        posz_expr.SetType(Expression::ScalarMeshVar);
-        md->AddExpression(&posz_expr);
+            Expression posz_expr;
+            posz_expr.SetName("derived/"+ndirs[i]+"nodpos/z");
+            posz_expr.SetDefinition("coord(mesh1"+nsuff[i]+")[2]");
+            posz_expr.SetType(Expression::ScalarMeshVar);
+            md->AddExpression(&posz_expr);
+        }
     }
     else
     {
         for (i = 0; i < nmeshes; ++i)
         {
-            char meshname[32];
-            char expr_name[128];
-            char defn_name[128];
-            sprintf(meshname, "mesh%d", i + 1);
+            for (int j = 0; j < ndirs.size(); j++)
+            {
+                char meshname[32];
+                char expr_name[128];
+                char defn_name[128];
+                sprintf(meshname, "mesh%d", i + 1);
 
-            Expression posx_expr;
-            sprintf(expr_name, "derived/nodpos/%s/x", meshname);
-            sprintf(defn_name, "coord(%s)[0]", meshname);
-            posx_expr.SetName(expr_name);
-            posx_expr.SetDefinition(defn_name);
-            posx_expr.SetType(Expression::ScalarMeshVar);
-            md->AddExpression(&posx_expr);
-    
-            sprintf(expr_name, "derived/nodpos/%s/y", meshname);
-            sprintf(defn_name, "coord(%s)[1]", meshname);
-            Expression posy_expr;
-            posy_expr.SetName(expr_name);
-            posy_expr.SetDefinition(defn_name);
-            posy_expr.SetType(Expression::ScalarMeshVar);
-            md->AddExpression(&posy_expr);
-    
-            sprintf(expr_name, "derived/nodpos/%s/z", meshname);
-            sprintf(defn_name, "coord(%s)[2]", meshname);
-            Expression posz_expr;
-            posz_expr.SetName(expr_name);
-            posz_expr.SetDefinition(defn_name);
-            posz_expr.SetType(Expression::ScalarMeshVar);
-            md->AddExpression(&posz_expr);
+                Expression posx_expr;
+                sprintf(expr_name, "derived/%snodpos/%s/x", ndirs[i].c_str(), meshname);
+                sprintf(defn_name, "coord(%s%s)[0]", meshname, nsuff[j].c_str());
+                posx_expr.SetName(expr_name);
+                posx_expr.SetDefinition(defn_name);
+                posx_expr.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&posx_expr);
+        
+                sprintf(expr_name, "derived/%snodpos/%s/y", ndirs[i].c_str(), meshname);
+                sprintf(defn_name, "coord(%s%s)[1]", meshname, nsuff[j].c_str());
+                Expression posy_expr;
+                posy_expr.SetName(expr_name);
+                posy_expr.SetDefinition(defn_name);
+                posy_expr.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&posy_expr);
+        
+                sprintf(expr_name, "derived/%snodpos/%s/z", ndirs[i].c_str(), meshname);
+                sprintf(defn_name, "coord(%s%s)[2]", meshname, nsuff[j].c_str());
+                Expression posz_expr;
+                posz_expr.SetName(expr_name);
+                posz_expr.SetDefinition(defn_name);
+                posz_expr.SetType(Expression::ScalarMeshVar);
+                md->AddExpression(&posz_expr);
+            }
         }
     }
 
@@ -2543,7 +2699,7 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
     //
     char *check;
     int mesh_id = (int) strtol(var + strlen("materials"), &check, 10);
-    if (check != NULL && check[0] != '\0')
+    if (check != NULL && check[0] != '\0' && !strstr(check, no_free_nodes_str))
     {
         EXCEPTION1(InvalidVariableException, var)
     }

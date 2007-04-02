@@ -255,7 +255,8 @@ General_src= \
   General/avtSurfaceNormalExpression.C \
   General/avtVariableSkewFilter.C \
   General/avtVectorComposeFilter.C \
-  General/avtVectorDecomposeFilter.C
+  General/avtVectorDecomposeFilter.C \
+  General/avtZoneTypeFilter.C
 
 ImageProcessing_src= \
   ImageProcessing/avtAbelInversionExpression.C \

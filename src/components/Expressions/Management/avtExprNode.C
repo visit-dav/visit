@@ -120,6 +120,7 @@
 #include <avtTestNotEqualToFilter.h>
 #include <avtNeighborEvaluatorFilter.h>
 #include <avtDataIdFilter.h>
+#include <avtZoneTypeFilter.h>
 #include <avtExpressionComponentMacro.h>
 #include <avtAbelInversionExpression.h>
 #include <avtConservativeSmoothingExpression.h>
@@ -564,6 +565,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtSpecMFFilter();
     else if (functionName == "nmats")
         f = new avtNMatsFilter();
+    else if (functionName == "zonetype")
+        f = new avtZoneTypeFilter();
     else if (functionName == "localized_compactness")
         f = new avtLocalizedCompactnessExpression();
     else if (functionName == "recenter")

@@ -412,6 +412,9 @@ avtExternallyRenderedImagesActor::GetVisibility(void)
 //  Programmer: Mark C. Miller
 //  Creation:   February 4, 2003
 //
+//  Modifications:
+//    Mark C. Miller, Wed Nov 15 23:04:02 PST 2006
+//    Removed call to SetVisibility to zero
 // ****************************************************************************
 
 bool
@@ -419,7 +422,6 @@ avtExternallyRenderedImagesActor::DisableExternalRenderRequests(void)
 {
    bool oldMode = makeExternalRenderRequests;
    makeExternalRenderRequests = false;
-   SetVisibility(false);
    return oldMode; 
 }
 
@@ -438,6 +440,9 @@ avtExternallyRenderedImagesActor::DisableExternalRenderRequests(void)
 //  Programmer: Mark C. Miller
 //  Creation:   February 4, 2003
 //
+//  Modifications:
+//    Mark C. Miller, Wed Nov 15 23:04:02 PST 2006
+//    Removed call to SetVisibility to one 
 // ****************************************************************************
 
 bool
@@ -445,7 +450,6 @@ avtExternallyRenderedImagesActor::EnableExternalRenderRequests(void)
 {
    bool oldMode = makeExternalRenderRequests;
    makeExternalRenderRequests = true;
-   SetVisibility(true);
    return oldMode;
 }
 
