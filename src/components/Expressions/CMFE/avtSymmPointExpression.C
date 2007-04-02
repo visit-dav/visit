@@ -43,6 +43,9 @@
 
 #include <stdio.h>
 
+#include <Expression.h>
+#include <ParsingExprList.h>
+
 
 // ****************************************************************************
 //  Method: avtSymmPointExpression constructor
@@ -82,18 +85,26 @@ avtSymmPointExpression::~avtSymmPointExpression()
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jan  8 10:31:22 PST 2007
+//    Do not assume that the expression created is a scalar.
+//
 // ****************************************************************************
 
 void
-avtSymmPointExpression::GetMacro(std::vector<std::string> &args, std::string &ne,
-                             Expression::ExprType &type)
+avtSymmPointExpression::GetMacro(std::vector<std::string> &args, 
+                                 std::string &ne, Expression::ExprType &type)
 {
     char new_expr[1024];
     sprintf(new_expr, "%s - eval_point(%s, %s, %s)",
                  args[0].c_str(), args[0].c_str(), args[0].c_str(),
                  args[1].c_str());
     ne = new_expr;
-    type = Expression::ScalarMeshVar;
+    avtVarType et = DetermineVariableType(args[0]);
+    type = ParsingExprList::GetExpressionTypeFromAVT(et);
+    if (type == Expression::Unknown)
+        type = Expression::ScalarMeshVar;
 }
 
 

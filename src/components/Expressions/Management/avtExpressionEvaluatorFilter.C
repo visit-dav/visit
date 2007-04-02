@@ -53,6 +53,7 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtTypes.h>
 
+#include <ParsingExprList.h>
 #include <PickAttributes.h>
 #include <PickVarInfo.h>
 
@@ -223,6 +224,10 @@ avtExpressionEvaluatorFilter::Execute(void)
 //    Kathleen Bonnell, Wed Aug  2 17:54:47 PDT 2006
 //    Support CurveMeshVar expressions. 
 //
+//    Hank Childs, Mon Jan  8 10:57:33 PST 2007
+//    Use the ParsingExprList method to map AVT variable types to expression
+//    types.  (We essentially had two versions of the same routine.)
+//
 // ****************************************************************************
 
 void
@@ -241,31 +246,8 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
         if (et == Expression::Mesh || et == Expression::Material ||
             et == Expression::Species || et == Expression::Unknown)
             continue;
-        avtVarType et_as_avt = AVT_UNKNOWN_TYPE;
-        switch (et)
-        {
-          case Expression::ScalarMeshVar:
-            et_as_avt = AVT_SCALAR_VAR;
-            break;
-          case Expression::VectorMeshVar:
-            et_as_avt = AVT_VECTOR_VAR;
-            break;
-          case Expression::TensorMeshVar:
-            et_as_avt = AVT_TENSOR_VAR;
-            break;
-          case Expression::SymmetricTensorMeshVar:
-            et_as_avt = AVT_SYMMETRIC_TENSOR_VAR;
-            break;
-          case Expression::ArrayMeshVar:
-            et_as_avt = AVT_ARRAY_VAR;
-            break;
-          case Expression::CurveMeshVar:
-            et_as_avt = AVT_CURVE;
-            break;
-          default:
-            // Handled in logic below.
-            break;
-        }
+        avtVarType et_as_avt = ParsingExprList::GetAVTType(et);
+
         // consider a ScalarVar to be equivalent to a Curve Expression.
         if (vt != et_as_avt &&
            (!(vt == AVT_SCALAR_VAR && et_as_avt == AVT_CURVE)))

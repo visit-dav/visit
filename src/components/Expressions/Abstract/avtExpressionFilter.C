@@ -51,10 +51,11 @@
 #include <vtkPointDataToCellData.h>
 #include <vtkUnsignedCharArray.h>
 
+#include <avtExprNode.h>
 #include <avtExtents.h>
 #include <avtCommonDataFunctions.h>
 
-#include <avtExprNode.h>
+#include <ParsingExprList.h>
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -626,5 +627,52 @@ avtExpressionFilter::ExamineSpecification(avtPipelineSpecification_p spec)
     avtDatasetToDatasetFilter::ExamineSpecification(spec);
     currentTimeState = spec->GetDataSpecification()->GetTimestep();
 } 
+
+
+// ****************************************************************************
+//  Method: avtExpressionFilter::DetermineVariableType
+//
+//  Purpose:
+//      Determines the variable type of some existing variable in the input.
+//      Note that this is different that "GetVariableType", which declares
+//      what the variable type of the output will be.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 8, 2007
+//
+// ****************************************************************************
+
+avtVarType
+avtExpressionFilter::DetermineVariableType(std::string &varname)
+{
+    //
+    // See if the variable already exists in our input.
+    //
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    int nvars = atts.GetNumberOfVariables();
+    for (int i = 0 ; i < nvars ; i++)
+    {
+        const std::string &atts_varname = atts.GetVariableName(i);
+        if (atts_varname == varname)
+            return atts.GetVariableType(atts_varname.c_str());
+    }
+
+    // 
+    // If it doesn't exist in the input, it should be an expression.
+    // Check the expression parsing list.  
+    // Note: due to the way that the pipeline is constructed by the EEF, 
+    // I'm not sure if this case will ever occur.
+    //
+    Expression *exp = ParsingExprList::GetExpression(varname.c_str());
+    if (exp != NULL)
+        return ParsingExprList::GetAVTType(exp->GetType());
+
+    //
+    // It's not in the input and it's not an expression.  Give up.
+    //
+    debug1 << "Could not determine the type of variable " << varname 
+           << ".  This may cause problems downstream." << endl;
+    return AVT_UNKNOWN_TYPE;
+}
 
 

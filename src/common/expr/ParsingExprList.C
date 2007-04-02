@@ -235,6 +235,69 @@ ParsingExprList::GetAVTType(const Expression::ExprType type)
     return retval;
 }
 
+
+// ****************************************************************************
+// Method: ParsingExprList::GetExpressionTypeFromAVT
+//
+// Purpose: 
+//   Returns the expression type for the AVT variable type.
+//
+// Arguments:
+//   type : The AVT variable type
+//
+// Returns:    The expression type or UNKNOWN if the type cannot be determined.
+//
+// Note:       
+//
+// Programmer: Hank Childs
+// Creation:   January 8, 2007
+//
+// ****************************************************************************
+
+Expression::ExprType
+ParsingExprList::GetExpressionTypeFromAVT(avtVarType type)
+{
+    Expression::ExprType retval = Expression::Unknown;
+
+    // Check to see if the variable is an expression.
+    switch (type)
+    {
+      case AVT_SCALAR_VAR:
+        retval = Expression::ScalarMeshVar;
+        break;
+      case AVT_VECTOR_VAR:
+        retval = Expression::VectorMeshVar;
+        break;
+      case AVT_TENSOR_VAR:
+        retval =  Expression::TensorMeshVar;
+        break;
+      case AVT_SYMMETRIC_TENSOR_VAR:
+        retval =  Expression::SymmetricTensorMeshVar;
+        break;
+      case AVT_ARRAY_VAR:
+        retval =  Expression::ArrayMeshVar;
+        break;
+      case AVT_CURVE:
+        retval =  Expression::CurveMeshVar;
+        break;
+      case AVT_MESH:
+        retval =  Expression::Mesh;
+        break;
+      case AVT_MATERIAL:
+        retval =  Expression::Material;
+        break;
+      case AVT_MATSPECIES:
+        retval =  Expression::Species;
+        break;
+      case AVT_UNKNOWN_TYPE:
+      default:
+        retval =  Expression::Unknown;
+    }
+
+    return retval;
+}
+
+
 // ****************************************************************************
 // Method: ParsingExprList::GetExpression
 //
