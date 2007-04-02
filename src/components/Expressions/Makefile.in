@@ -116,7 +116,10 @@
 #
 #   Brad Whitlock, Fri Nov 18 15:45:58 PST 2005
 #   Added avtDistanceToBestFitLineFilter.
-# 
+#
+#   Brad Whitlock, Wed Nov 23 10:36:57 PDT 2005
+#   Added more libs for Mac linking.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -272,9 +275,9 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libexpressions
-COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk
-SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS) $(X_LIBS) @LIBS@
-PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
+COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lvisit_vtk -llightweight_visit_vtk -lavtview
+SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -ldatabase_ser -lmir_ser $(VTK_LIBS) $(X_LIBS) @LIBS@
+PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -ldatabase_par -lmir_par $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@
 
 ##
 ## Standard targets...

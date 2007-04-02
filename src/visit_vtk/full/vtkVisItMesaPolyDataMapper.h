@@ -101,17 +101,12 @@ protected:
   // Description:
   // Contains the sphere texture that we use when the point texturing mode
   // is set to TEXTURE_USING_POINTSPRITES.
-  unsigned char SphereTexture[SPHERE_TEX_H][SPHERE_TEX_W][4];
-
-  // Description:
-  // Contains mask texture for point edges. Used with PointTextureMethod
-  // equal to TEXTURE_USING_POINTSPRITES.
-  unsigned char SphereMaskTexture[SPHERE_TEX_H][SPHERE_TEX_W];
+  unsigned char SphereTexture[SPHERE_TEX_H][SPHERE_TEX_W][2];
 
   // Description:
   // Contains the names of the textures. Used with PointTextureMethod
   // equal to TEXTURE_USING_POINTSPRITES.
-  unsigned int  TextureNames[2];
+  unsigned int  TextureName;
 
   // Description:
   // Contains the GL state for alpha testing and blending so we can restore
@@ -142,6 +137,10 @@ protected:
 
   vtkRenderWindow *RenderWindow;   // RenderWindow used for the previous render
 private:
+  // Description:
+  // True if the point sprite extension is supported.
+  bool PointSpriteSupported;
+
   vtkVisItMesaPolyDataMapper(const vtkVisItMesaPolyDataMapper&);  // Not implemented.
   void operator=(const vtkVisItMesaPolyDataMapper&);  // Not implemented.
 };

@@ -1,7 +1,45 @@
 <?xml version="1.0"?>
-  <Plugin name="PDB" label="PDB" type="database" dbtype="MTSD" version="1.0">
-    <Extensions> pdb r0000 </Extensions>
-    <CXXFLAGS> $(PDB_FLAGS) </CXXFLAGS>
-    <LIBS>     $(PDB_LIBS)  </LIBS>
-    <Files components="E,M">avtPDBFileFormat.C MaterialEncoder.C PDBFileObject.C PDBReader.C PF3DFileFormat.C PP_ZFileReader.C PP_Z_STSD_FileFormat.C PP_Z_MTSD_FileFormat.C LEOSFileReader.C LEOSFileFormat.C bow.C fwav.C gzlib.C</Files>
+  <Plugin name="PDB" type="database" label="PDB" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(PDB_FLAGS)
+    </CXXFLAGS>
+    <LIBS>
+      $(PDB_LIBS)
+    </LIBS>
+    <Extensions>
+      pdb
+      r0000
+    </Extensions>
+    <Files components="M">
+      avtPDBFileFormat.C
+      MaterialEncoder.C
+      PDBFileObject.C
+      PDBReader.C
+      PF3DFileFormat.C
+      PP_ZFileReader.C
+      PP_Z_STSD_FileFormat.C
+      PP_Z_MTSD_FileFormat.C
+      LEOSFileReader.C
+      LEOSFileFormat.C
+      bow.C
+      fwav.C
+      gzlib.C
+    </Files>
+    <Files components="E">
+      avtPDBFileFormat.C
+      MaterialEncoder.C
+      PDBFileObject.C
+      PDBReader.C
+      PF3DFileFormat.C
+      PP_ZFileReader.C
+      PP_Z_STSD_FileFormat.C
+      PP_Z_MTSD_FileFormat.C
+      LEOSFileReader.C
+      LEOSFileFormat.C
+      bow.C
+      fwav.C
+      gzlib.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true">
+    </Attribute>
   </Plugin>

@@ -32,7 +32,7 @@ class vtkVisItXMLDataElement;
 class vtkVisItInputStream;
 class vtkVisItDataCompressor;
 
-class VTK_IO_EXPORT vtkVisItXMLDataParser : public vtkVisItXMLParser
+class vtkVisItXMLDataParser : public vtkVisItXMLParser
 {
 public:
   vtkTypeRevisionMacro(vtkVisItXMLDataParser,vtkVisItXMLParser);

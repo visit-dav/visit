@@ -394,10 +394,10 @@ LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
     if (mmd && mmd->loadBalanceScheme != LOAD_BALANCE_UNKNOWN)
     {
         debug1 << "Default load balance scheme \""
-               << LoadBalanceSchemeToString(scheme) << "\""
+               << LoadBalanceSchemeToString(scheme).c_str() << "\""
                << " being overridden in favor of \""
-               << LoadBalanceSchemeToString(mmd->loadBalanceScheme) << "\""
-               << " for mesh \"" << meshName << "\"" << endl;
+               << LoadBalanceSchemeToString(mmd->loadBalanceScheme).c_str() << "\""
+               << " for mesh \"" << meshName.c_str() << "\"" << endl;
         return mmd->loadBalanceScheme;
     }
 

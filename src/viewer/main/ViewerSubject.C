@@ -2051,7 +2051,10 @@ ViewerSubject::GetOperatorFactory() const
 //
 //    Brad Whitlock, Wed May 4 11:30:29 PDT 2005
 //    Added clientArguments, which get passed to any clients that the viewer
-//    reverese launches.
+//    reverse launches.
+//
+//    Hank Childs, Tue Dec  6 11:52:38 PST 2005
+//    Make sure to tell AVT that we are doing software rendering with -nowin.
 //
 // ****************************************************************************
 
@@ -2253,6 +2256,7 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
         else if (strcmp(argv2[i], "-nowin") == 0)
         {
             InitVTK::ForceMesa();
+            avtCallback::SetSoftwareRendering(true);
             ViewerWindow::SetNoWinMode(true);
             ViewerRemoteProcessChooser::SetNoWinMode(true);
             avtCallback::SetNowinMode(true);

@@ -34,6 +34,10 @@ using std::deque;
 using std::map;
 using std::vector;
 
+#ifdef _WIN32
+#define M_PI 3.14159265358979323846
+#endif
+
 
 static
 double ComputeRelativeTol(double absTol,
@@ -153,35 +157,35 @@ vtkCSGGrid::Box::EvalFuncState(vtkImplicitFunction *func, double tol)
 
 // internal type used only for implementation
 typedef enum {
-    BOOLEAN,
-    CONE,
-    CYLINDER,
-    PLANE,
-    MULTIPLANE,
-    QUADRIC,
-    SPHERE,
-    UNKNOWN_IMPLICIT
+    FUNC_BOOLEAN,
+    FUNC_CONE,
+    FUNC_CYLINDER,
+    FUNC_PLANE,
+    FUNC_MULTIFUNC_PLANE,
+    FUNC_QUADRIC,
+    FUNC_SPHERE,
+    FUNC_UNKNOWN_IMPLICIT
 } ImplicitFuncType;
 
 static ImplicitFuncType GetImplicitFuncType(const vtkObject *obj)
 {
     const char *className = obj->GetClassName();
     if      (strcmp(className, "vtkImplicitBoolean") == 0)
-        return BOOLEAN;
+        return FUNC_BOOLEAN;
     else if (strcmp(className, "vtkCone") == 0)
-        return CONE;
+        return FUNC_CONE;
     else if (strcmp(className, "vtkCylinder") == 0)
-        return CYLINDER;
+        return FUNC_CYLINDER;
     else if (strcmp(className, "vtkPlane") == 0)
-        return PLANE;
+        return FUNC_PLANE;
     else if (strcmp(className, "vtkPlanes") == 0)
-        return MULTIPLANE;
+        return FUNC_MULTIFUNC_PLANE;
     else if (strcmp(className, "vtkQuadric") == 0)
-        return QUADRIC;
+        return FUNC_QUADRIC;
     else if (strcmp(className, "vtkSphere") == 0)
-        return SPHERE;
+        return FUNC_SPHERE;
     else
-        return UNKNOWN_IMPLICIT; 
+        return FUNC_UNKNOWN_IMPLICIT; 
 }
 
 //----------------------------------------------------------------------------
@@ -234,7 +238,6 @@ void vtkCSGGrid::Initialize()
 void vtkCSGGrid::CopyStructure(vtkDataSet *ds)
 {
   vtkCSGGrid *csgGrid=(vtkCSGGrid *)ds;
-  int i;
   this->Initialize();
 
   this->SetBoundaries(csgGrid->GetBoundaries());
@@ -391,7 +394,7 @@ static unsigned long GetActualMemorySizeOfImplicitFunc(vtkImplicitFunction *func
 
     switch (GetImplicitFuncType(func))
     {
-        case BOOLEAN:
+        case FUNC_BOOLEAN:
         {
             vtkImplicitBoolean *boolFunc = vtkImplicitBoolean::SafeDownCast(func);
             vtkImplicitFunctionCollection *funcs = boolFunc->GetFunction();
@@ -403,12 +406,12 @@ static unsigned long GetActualMemorySizeOfImplicitFunc(vtkImplicitFunction *func
             size += GetActualMemorySizeOfImplicitFunc(rightFunc);
             break;
         }
-        case CONE:     size += sizeof(vtkCone);     break;
-        case CYLINDER: size += sizeof(vtkCylinder); break;
-        case PLANE:    size += sizeof(vtkPlane);    break;
-        case SPHERE:   size += sizeof(vtkSphere);   break;
-        case QUADRIC:  size += sizeof(vtkQuadric);  break;
-        case MULTIPLANE:
+        case FUNC_CONE:     size += sizeof(vtkCone);     break;
+        case FUNC_CYLINDER: size += sizeof(vtkCylinder); break;
+        case FUNC_PLANE:    size += sizeof(vtkPlane);    break;
+        case FUNC_SPHERE:   size += sizeof(vtkSphere);   break;
+        case FUNC_QUADRIC:  size += sizeof(vtkQuadric);  break;
+        case FUNC_MULTIFUNC_PLANE:
         {
             vtkPlanes *planes = vtkPlanes::SafeDownCast(func);
             size += planes->GetPoints()->GetActualMemorySize();
@@ -416,7 +419,7 @@ static unsigned long GetActualMemorySizeOfImplicitFunc(vtkImplicitFunction *func
             size += planes->GetNumberOfPlanes() * sizeof(vtkPlane);
             break;
         }
-        case UNKNOWN_IMPLICIT:
+        case FUNC_UNKNOWN_IMPLICIT:
         default:       size += 0; break;
     }
     return size;
@@ -548,28 +551,28 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
         func = GetBoundaryFunc(i);
         switch (GetImplicitFuncType(func))
         {
-            case CYLINDER:
+            case FUNC_CYLINDER:
             {
                 os << ", is a cylinder" << endl;
                 vtkCylinder *cylinder = vtkCylinder::SafeDownCast(func);
                   cylinder->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
-            case PLANE:
+            case FUNC_PLANE:
             {
                 os << ", is a plane" << endl;
                 vtkPlane *plane = vtkPlane::SafeDownCast(func);
                   plane->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
-            case SPHERE:
+            case FUNC_SPHERE:
             {
                 os << ", is a sphere" << endl;
                 vtkSphere *sphere = vtkSphere::SafeDownCast(func);
                   sphere->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
-            case QUADRIC:
+            case FUNC_QUADRIC:
             {
                 os << ", is a quadric" << endl;
                 vtkQuadric *quadric = vtkQuadric::SafeDownCast(func);
@@ -591,7 +594,7 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
         func = GetRegionFunc(i);
         switch (GetImplicitFuncType(func))
         {
-            case BOOLEAN:
+            case FUNC_BOOLEAN:
             {
                 vtkImplicitBoolean *boolFunc = vtkImplicitBoolean::SafeDownCast(func);
                 vtkImplicitFunctionCollection *funcs = boolFunc->GetFunction();
@@ -604,21 +607,21 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
                 {
                     switch (GetImplicitFuncType(rightFunc))
                     {
-                        case CYLINDER:
+                        case FUNC_CYLINDER:
                         {
                             os << ", is the OUTER of a cylinder" << endl;
                             vtkCylinder *cylinder = vtkCylinder::SafeDownCast(rightFunc);
                               cylinder->PrintSelf(os, indent2.GetNextIndent());
                             break;
                         }
-                        case SPHERE:
+                        case FUNC_SPHERE:
                         {
                             os << ", is the OUTER of a sphere" << endl;
                             vtkSphere *sphere = vtkSphere::SafeDownCast(rightFunc);
                               sphere->PrintSelf(os, indent2.GetNextIndent());
                             break;
                         }
-                        case QUADRIC:
+                        case FUNC_QUADRIC:
                         {
                             os << ", is the OUTER of a quadric" << endl;
                             vtkQuadric *quadric = vtkQuadric::SafeDownCast(rightFunc);
@@ -644,28 +647,28 @@ void vtkCSGGrid::PrintSelf(ostream& os, vtkIndent indent)
                 }
                 break;
             }
-            case CYLINDER:
+            case FUNC_CYLINDER:
             {
                 os << ", is the INNER of a cylinder" << endl;
                 vtkCylinder *cylinder = vtkCylinder::SafeDownCast(func);
                   cylinder->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
-            case PLANE:
+            case FUNC_PLANE:
             {
                 os << ", is the INNER of a plane" << endl;
                 vtkPlane *plane = vtkPlane::SafeDownCast(func);
                   plane->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
-            case SPHERE:
+            case FUNC_SPHERE:
             {
                 os << ", is the INNER of a sphere" << endl;
                 vtkSphere *sphere = vtkSphere::SafeDownCast(func);
                   sphere->PrintSelf(os, indent2.GetNextIndent());
                 break;
             }
-            case QUADRIC:
+            case FUNC_QUADRIC:
             {
                 os << ", is the INNER of a quadric" << endl;
                 vtkQuadric *quadric = vtkQuadric::SafeDownCast(func);
@@ -839,7 +842,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
     bool doBoolDiff = false;
     switch (GetImplicitFuncType(bnd))
     {
-        case SPHERE:
+        case FUNC_SPHERE:
         {
             //
             // Copy the sphere boundary
@@ -855,7 +858,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
             newRegion = sphereReg;
             break;
         }
-        case PLANE:
+        case FUNC_PLANE:
         {
             //
             // Copy the plane boundary
@@ -881,7 +884,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
             newRegion = planeReg;
             break;
         }
-        case CYLINDER:
+        case FUNC_CYLINDER:
         {
             //
             // Copy the cylinder boundary
@@ -898,7 +901,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType bndId, RegionOp op)
             break;
         }
 
-        case QUADRIC:
+        case FUNC_QUADRIC:
         {
             //
             //
@@ -985,7 +988,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
 
     switch (GetImplicitFuncType(oldReg))
     {
-        case SPHERE:
+        case FUNC_SPHERE:
         {
             vtkSphere *oldSphere = vtkSphere::SafeDownCast(oldReg);
             vtkSphere *newSphere = vtkSphere::New();
@@ -995,7 +998,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
             newRegion = newSphere;
             break;
         }
-        case PLANE:
+        case FUNC_PLANE:
         {
             vtkPlane *oldPlane = vtkPlane::SafeDownCast(oldReg);
             vtkPlane *newPlane = vtkPlane::New();
@@ -1005,7 +1008,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
             newRegion = newPlane;
             break;
         }
-        case CYLINDER: 
+        case FUNC_CYLINDER: 
         {
             vtkCylinder *oldCylinder = vtkCylinder::SafeDownCast(oldReg);
             vtkCylinder *newCylinder = vtkCylinder::New();
@@ -1015,7 +1018,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
             newRegion = newCylinder;
             break;
         }
-        case BOOLEAN:
+        case FUNC_BOOLEAN:
         {
             vtkImplicitBoolean *oldBool = vtkImplicitBoolean::SafeDownCast(oldReg);
             vtkImplicitBoolean *newBool = vtkImplicitBoolean::New();
@@ -1028,7 +1031,7 @@ vtkIdType vtkCSGGrid::AddRegion(vtkIdType regId, const double *coeffs)
             newRegion = newBool;
             break;
         }
-        case QUADRIC:
+        case FUNC_QUADRIC:
         {
             vtkQuadric *oldQuadric = vtkQuadric::SafeDownCast(oldReg);
             vtkQuadric *newQuadric = vtkQuadric::New();
@@ -1228,7 +1231,7 @@ vtkCSGGrid::MakeMeshZone(const Box *theBox,
         else
             z = theBox->z1; 
 
-        int nodeId, mapId = nodemap[x][y][z];
+        int mapId = nodemap[x][y][z];
         if (mapId == 0)
         {
             points->InsertNextPoint(x,y,z);
@@ -1344,7 +1347,7 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
             }
             else if (boxState == Box::GT_ZERO)
             {
-                vector<int>::iterator ii;
+                std::vector<int>::iterator ii;
                 for (ii = idref.begin(); ii != idref.end(); ii++)
                 {
                     if (*ii == i)
@@ -1366,10 +1369,11 @@ vtkUnstructuredGrid *vtkCSGGrid::DiscretizeSpace(
                //
                int j;
                int numX = 0, numY = 0, numZ = 0;
-               Box::FuncState newState;
                vector<Box*> newBoxes, newXBoxes, newYBoxes, newZBoxes;
 
 #if 0
+               Box::FuncState newState;
+
                //
                // Try subdividing in X first 
                //

@@ -87,6 +87,9 @@
 #    Brad Whitlock, Tue Sep 6 11:23:04 PDT 2005
 #    Added support for GDAL.
 #
+#    Brad Whitlock, Mon Dec 5 12:06:20 PDT 2005
+#    Added support for ExodusII on MacOS X.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -118,7 +121,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libosmesa libmesagl \
-     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@
+     libqt pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)
@@ -229,6 +232,10 @@ create_cgns_link:
 create_gdal_link:
 	$(RM) libgdal.@SHLIB_LIBEXT@
 	ln -s @GDAL_LIB@ .
+
+create_exodus_link:
+	$(RM) libexoIIv2.@SHLIB_LIBEXT@
+	ln -s @EXODUS_LIB@ .
 
 clean distclean:
 	$(RM) \

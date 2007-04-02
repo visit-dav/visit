@@ -23,7 +23,7 @@ WindowAttributes              avtCallback::windowAtts;
 LightList                     avtCallback::lightList;
 
 bool                          avtCallback::nowinMode = false;
-bool                          avtCallback::swRendering = true;
+bool                          avtCallback::swRendering = false;
 
 UpdatePlotAttributesCallback  avtCallback::updatePlotAttributesCallback = NULL;
 void                         *avtCallback::updatePlotAttributesCallbackArgs 

@@ -172,6 +172,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Thu Nov 17 16:36:17 PST 2005
 //   I added methods to move and resize windows.
 //
+//   Brad Whitlock, Tue Nov 29 12:13:41 PDT 2005
+//   I added mesh management attributes.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -235,6 +238,7 @@ public class ViewerProxy implements SimpleObserver
         clientInformation = new ClientInformation();
         clientInformationList = new ClientInformationList();
         movieAtts = new MovieAttributes();
+        meshManagementAtts = new MeshManagementAttributes();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -361,6 +365,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(interactorAtts);
             xfer.Add(processAtts);
             xfer.Add(movieAtts);
+            xfer.Add(meshManagementAtts);
 
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
@@ -1636,6 +1641,7 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetIntArg1(w);
         rpc.SetIntArg2(h);
         rpc.Notify();
+        return synchronous ? Synchronize() : true;
     }
 
     public boolean MoveWindow(int win, int x, int y)
@@ -1645,9 +1651,10 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetIntArg1(x);
         rpc.SetIntArg2(y);
         rpc.Notify();
+        return synchronous ? Synchronize() : true;
     }
 
-    public void MoveAndResizeWindow(int win, int x, int y, int w, int h)
+    public boolean MoveAndResizeWindow(int win, int x, int y, int w, int h)
     {
         rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_MOVEANDRESIZEWINDOWRPC);
         rpc.SetWindowId(win);
@@ -1656,6 +1663,7 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetIntArg3(w);
         rpc.SetWindowLayout(h);
         rpc.Notify();
+        return synchronous ? Synchronize() : true;
     }
 
     public synchronized boolean Synchronize()
@@ -1736,6 +1744,7 @@ public class ViewerProxy implements SimpleObserver
     public ClientInformation GetClientInformation() { return clientInformation; }
     public final ClientInformationList GetClientInformationList() { return clientInformationList; }
     public MovieAttributes GetMovieAttributes() { return movieAtts; }
+    public MeshManagementAttributes GetMeshManagementAttributes() { return meshManagementAtts; }
 
     public int GetPlotIndex(String plotName)
     {
@@ -1910,4 +1919,5 @@ public class ViewerProxy implements SimpleObserver
     private ClientInformation        clientInformation;
     private ClientInformationList    clientInformationList;
     private MovieAttributes          movieAtts;
+    private MeshManagementAttributes meshManagementAtts;
 }

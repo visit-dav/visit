@@ -380,7 +380,8 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     int numPts = in_ds->GetNumberOfPoints();
     float lbound = atts.GetLbound();
     float ubound = atts.GetUbound();
-    for (int i = 0 ; i < numPts ; i++)
+    int i;
+    for (i = 0 ; i < numPts ; i++)
     {
         float val = var->GetTuple1(i);
         if (val >= lbound && val <= ubound)
@@ -402,7 +403,7 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
 
     int newId = 0;
     vtkIdType onevertex[1];
-    for (int i = 0 ; i < numPts ; i++)
+    for (i = 0 ; i < numPts ; i++)
     {
         float val = var->GetTuple1(i);
         if (val >= lbound && val <= ubound)

@@ -4,11 +4,6 @@
 
 #include "avtOpenGL3DTextureVolumeRenderer.h"
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-#include <GL/gl.h>
-
 #include <visit-config.h>
 
 #include <vtkDataArray.h>
@@ -27,6 +22,19 @@
 #include <DebugStream.h>
 
 #include <float.h>
+
+#ifndef VTK_IMPLEMENT_MESA_CXX
+  #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
+    #include <OpenGL/gl.h>
+  #else
+    #if defined(_WIN32)
+       #include <windows.h>
+    #endif
+    #include <GL/gl.h>
+  #endif
+#else
+  #include <GL/gl.h>
+#endif
 
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))

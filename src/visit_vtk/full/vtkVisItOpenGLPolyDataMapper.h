@@ -42,6 +42,9 @@ class vtkOpenGLRenderer;
 //    Brad Whitlock, Thu Aug 25 14:44:00 PST 2005
 //    I added support for texturing points.
 //
+//    Brad Whitlock, Tue Dec 6 13:35:41 PST 2005
+//    I changed it to a 1-pass texturing method.
+//
 // ****************************************************************************
 
 class VISIT_VTK_API vtkVisItOpenGLPolyDataMapper : public vtkPolyDataMapper
@@ -102,17 +105,12 @@ protected:
   // Description:
   // Contains the sphere texture that we use when the point texturing mode
   // is set to TEXTURE_USING_POINTSPRITES.
-  unsigned char SphereTexture[SPHERE_TEX_H][SPHERE_TEX_W][4];
+  unsigned char SphereTexture[SPHERE_TEX_H][SPHERE_TEX_W][2];
 
   // Description:
-  // Contains mask texture for point edges. Used with PointTextureMethod
+  // Contains the name of the texture. Used with PointTextureMethod
   // equal to TEXTURE_USING_POINTSPRITES.
-  unsigned char SphereMaskTexture[SPHERE_TEX_H][SPHERE_TEX_W];
-
-  // Description:
-  // Contains the names of the textures. Used with PointTextureMethod
-  // equal to TEXTURE_USING_POINTSPRITES.
-  unsigned int  TextureNames[2];
+  unsigned int  TextureName;
 
   // Description:
   // Contains the GL state for alpha testing and blending so we can restore
@@ -141,6 +139,11 @@ protected:
   // equal to TEXTURE_USING_POINTSPRITES.
   void MakeTextures();
 private:
+  // Description:
+  // -1 if uninitialized, 0 if not supported, 1 if the point sprite
+  // extension is supported.
+  int PointSpriteSupported;
+
   vtkVisItOpenGLPolyDataMapper(const vtkVisItOpenGLPolyDataMapper&);  // Not implemented.
   void operator=(const vtkVisItOpenGLPolyDataMapper&);  // Not implemented.
 };

@@ -24,6 +24,10 @@
 #include <float.h>
 #include <bow.h>
 
+#if !defined(_WIN32)
+#include <sys/stat.h>
+#endif
+
 // This header file is last because it includes "scstd.h" (indirectly
 // through "pdb.h"), which defines min and max, which conflict with
 // "limits.h" on tru64 and aix systems.  On tru64 systems the conflict
@@ -66,6 +70,62 @@ print_array(ostream &os, const char *name, const T *data, int nElems,
                 os << endl;
             first = true;
             ct = 0;
+        }
+    }
+    os << "}" << endl;
+}
+
+template <class T>
+void
+print_multi_dim_array(ostream &os, const char *name, const T *data, int ndims,
+    const int *dims, bool doCommas)
+{
+    os << name << "[" << dims[0] << "][" << dims[1] << "][" << dims[2] << "] = {";
+    int ct = 0;
+    if(ndims == 1)
+    {
+        for(int i = 0; i < dims[0]; ++i)
+        {
+            os << data[i];
+            if(doCommas && i < dims[0]-1)
+                os << ", ";
+        }
+    }
+    else if(ndims == 2)
+    {
+        os << endl;
+        const T *ptr = data;
+        for(int i = 0; i < dims[1]; ++i)
+        {
+            os << "{";
+            for(int j = 0; j < dims[0]; ++j)
+            {
+                os << *ptr++;
+                if(doCommas && j < dims[0]-1)
+                    os << ", ";
+            }
+            os << "},\n";
+        }
+    }
+    else if(ndims == 3)
+    {
+        os << endl;
+        const T *ptr = data;
+        for(int i = 0; i < dims[2]; ++i)
+        {
+            os << "{";
+            for(int j = 0; j < dims[1]; ++j)
+            {
+                os << "{";
+                for(int k = 0; k < dims[0]; ++k)
+                {
+                    os << *ptr++;
+                    if(doCommas && k < dims[0]-1)
+                         os << ", ";
+                }
+                os << "},\n";
+            }
+            os << "},\n";
         }
     }
     os << "}" << endl;
@@ -544,6 +604,72 @@ PF3DFileFormat::GetType()
 }
 
 // ****************************************************************************
+// Method: PF3DFileFormat::CanAccessFile
+//
+// Purpose: 
+//   Determines whether we can access the specified file.
+//
+// Arguments:
+//   filename : The name of the file that we want to access.
+//
+// Returns:    True if the file can be accessed; False otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 30 16:38:28 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+PF3DFileFormat::CanAccessFile(const std::string &filename) const
+{
+#if defined(_WIN32)
+    // For now.
+    return true;
+#else
+    // Get the userId and the groups for that user so we can check the
+    // file permissions.
+    gid_t gids[100];
+    uid_t uid = getuid();
+    int   ngids = getgroups(100, gids);
+
+    // Get information about the file.
+    struct stat s;
+    stat(filename.c_str(), &s);
+
+    bool isdir = S_ISDIR(s.st_mode);
+    bool canaccess = false;
+    bool isuser  = (s.st_uid == uid);
+    bool isgroup = false;
+    for (int i=0; i<ngids && !isgroup; i++)
+        if (s.st_gid == gids[i])
+            isgroup=true;
+    
+    if (isdir)
+    {
+        if ((s.st_mode & S_IROTH) && (s.st_mode & S_IXOTH))
+            canaccess=true;
+        else if (isuser && (s.st_mode & S_IRUSR) && (s.st_mode & S_IXUSR))
+            canaccess=true;
+        else if (isgroup && (s.st_mode & S_IRGRP) && (s.st_mode & S_IXGRP))
+            canaccess=true;
+    }
+    else
+    {
+        if (s.st_mode & S_IROTH)
+            canaccess=true;
+        else if (isuser && (s.st_mode & S_IRUSR))
+            canaccess=true;
+        else if (isgroup && (s.st_mode & S_IRGRP))
+            canaccess=true;
+    }
+
+    return canaccess;
+#endif
+}
+
+// ****************************************************************************
 // Method: PF3DFileFormat::FilenameForDomain
 //
 // Purpose: 
@@ -562,12 +688,17 @@ PF3DFileFormat::GetType()
 // Creation:   Fri Jul 9 16:29:15 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 30 16:37:05 PST 2005
+//   I made it try multiple filenames in the event that the first filename
+//   that it tries is not a valid file.
+//
 // ****************************************************************************
 
 std::string
 PF3DFileFormat::FilenameForDomain(int realDomain)
 {
+    const char *mName = "PF3DFileFormat::FilenameForDomain: ";
+    
     std::string prefix, middle, f(filenames[0]);
 
     // Find the directory prefix based on the path of the first master file.
@@ -576,7 +707,11 @@ PF3DFileFormat::FilenameForDomain(int realDomain)
     {
         prefix = f.substr(0, index - 4);
     }
-//    debug4 << "prefix = " << prefix << endl;
+    debug4 << mName << "visnam_path = "
+           << master.Get_visname_for_domain(realDomain, 0) << endl;
+    debug4 << mName << "visnam_file = "
+           << master.Get_visname_for_domain(realDomain, 1) << endl;
+    debug4 << mName << "prefix = " << prefix << endl;
 
     // Look for "/viz/" in the visnam string for the specified domain and use
     // anything to the right of it.
@@ -586,16 +721,51 @@ PF3DFileFormat::FilenameForDomain(int realDomain)
     f = std::string(master.Get_visname_for_domain(realDomain, 0));
     index = f.rfind(vizStr);
     if(index != std::string::npos)
-    {
         middle = f.substr(index, f.size() - index);
+    if(middle.size() > 1)
+    {
+        if(middle[0] != SLASH_CHAR)
+            middle = std::string(SLASH_STRING) + middle;
+        if(middle[middle.size()-1] != SLASH_CHAR)
+            middle += SLASH_STRING;
     }
-//    debug4 << "middle = " << middle << endl;
+    debug4 << mName << "middle = " << middle.c_str() << endl;
 
     // Concatenate the pieces of the filename to get the final filename.
-    std::string filename(prefix + middle + 
-        master.Get_visname_for_domain(realDomain, 1));
+    std::string filename(prefix);
+    filename += middle;
+    filename += master.Get_visname_for_domain(realDomain, 1);
 
-//    debug4 << "FilenameForDomain(" << dom << ") = " << filename.c_str() << endl;
+    // See if the file exists.
+    if(CanAccessFile(filename))
+    {
+        debug4 << mName << "Domain " << realDomain << "'s filename = "
+               << filename.c_str() << endl;
+        return filename;
+    }
+    else
+    {
+        debug4 << mName << "Domain " << realDomain << "'s filename is not: "
+               << filename.c_str() << " because we cannot access that file."
+               << endl;
+    }
+
+    // We can't access the filename that uses the path to the master file.
+    // Try using the path stored in the master file.
+    filename = std::string(master.Get_visname_for_domain(realDomain, 0)) +
+               std::string(master.Get_visname_for_domain(realDomain, 1));
+    if(CanAccessFile(filename))
+    {
+        debug4 << mName << "Domain " << realDomain << "'s filename = "
+               << filename.c_str() << endl;
+        return filename;
+    }
+    else
+    {
+        debug4 << mName << "Domain " << realDomain << "'s filename is not: "
+               << filename.c_str() << " because we cannot access that file."
+               << endl;
+    }
 
     return filename;
 }
@@ -748,6 +918,8 @@ PF3DFileFormat::FreeUpResources()
 // Creation:   Thu Jul 1 15:56:19 PST 2004
 //
 // Modifications:
+//   Brad Whitlock, Mon Dec 5 10:18:53 PDT 2005
+//   Added mdserver-specific coding to check if variables are valid.
 //
 // ****************************************************************************
 
@@ -792,6 +964,10 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if(glob_nams.size() == int_nams.size() &&
        glob_nams.size() == glob_units.size())
     {
+#ifdef MDSERVER
+        PDBFileObject *domainPDB = GetDomainFileObject(0);
+#endif
+
         for(int i = 0; i < glob_nams.size(); ++i)
         {
             avtScalarMetaData *smd = new avtScalarMetaData(
@@ -803,6 +979,22 @@ PF3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 smd->hasUnits = true;
                 smd->units = glob_units[i];
             }
+
+#ifdef MDSERVER
+            if(domainPDB != 0)
+            {
+                TypeEnum varType = NO_TYPE;
+                int varTotalElements = 0;
+                int *vardims = 0, varndims = 0;
+                smd->validVariable = false;
+                if(domainPDB->SymbolExists(int_nams[i].c_str(), &varType,
+                     &varTotalElements, &vardims, &varndims))
+                {
+                    smd->validVariable = varndims == 3;
+                }
+            }
+#endif
+
 #if 0
             //
             // Set the variable's data extents. Note that these extrema
@@ -907,45 +1099,17 @@ PF3DFileFormat::SetUpDomainConnectivity()
 // Creation:   Thu Jul 8 10:57:48 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 2 13:52:41 PST 2005
+//   I made it general so we can support different variables.
+//
 // ****************************************************************************
 
 void
 PF3DFileFormat::GetVarMinMaxArrays(const std::string &name,
     const double **minvals, const double **maxvals)
 {
-    *minvals = *maxvals = 0;
-
-    if(name == "rho")
-    {
-        *minvals = master.Get_rhomin_vz();
-        *maxvals = master.Get_rhomax_vz();
-    }
-    else if(name == "e0")
-    {
-        *minvals = master.Get_e0min_vz();
-        *maxvals = master.Get_e0max_vz();
-    }
-    else if(name == "e1")
-    {
-        *minvals = master.Get_e1min_vz();
-        *maxvals = master.Get_e1max_vz();
-    }
-    else if(name == "deniaw")
-    {
-        *minvals = master.Get_iawmin_vz();
-        *maxvals = master.Get_iawmax_vz();
-    }
-    else if(name == "e2")
-    {
-        *minvals = master.Get_e2min_vz();
-        *maxvals = master.Get_e2max_vz();
-    }
-    else if(name == "denepw")
-    {
-        *minvals = master.Get_epwmin_vz();
-        *maxvals = master.Get_epwmax_vz();
-    }
+    *minvals = master.GetMinArray(name);
+    *maxvals = master.GetMaxArray(name);
 }
 
 // ****************************************************************************
@@ -1478,7 +1642,10 @@ PF3DFileFormat::GetBOFKey(int realDomain, const char *varName) const
 // Creation:   Mon Jul 12 14:41:16 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 1 14:52:15 PST 2005
+//   I added code to serve up 3D char arrays as floats. I've also disabled
+//   BOF caching with the CACHE_BOF macro.
+//
 // ****************************************************************************
 
 PF3DFileFormat::BOF *
@@ -1502,7 +1669,7 @@ PF3DFileFormat::GetBOF(int realDomain, const char *varName)
     }
     else
     {
-        debug4 << mName << "Must read data" << endl;
+        debug4 << mName << "Must read data for " << varName << endl;
 
         //
         // Get the file object for the realDomain.
@@ -1526,81 +1693,168 @@ PF3DFileFormat::GetBOF(int realDomain, const char *varName)
                                          &dataType, &nTotalElements,
                                          &dims, &nDims, 0);
 
+            debug4 << mName << "data dims = {";
+            for(int i = 0; i < nDims; ++i)
+                debug4 << dims[i] << ", ";
+            debug4 << "}\n";
+
             if(data != 0)
             {
                 if(dataType == CHARARRAY_TYPE)
-                {      
-                    bowglobal bg;   // Session record for bow to use.
-                    bowinfo   binf; // Information record from bow buffer.
-
-                    // Start bow session using custom memory routines.
-                    bg = bowglobal_create(my_bow_alloc, my_bow_free, 0);
-
-                    // Get the information for the brick of wavelets.
-                    binf = bow_getbowinfo(bg, (char*)data);
-                    if(binf == 0)
+                {
+                    if(nDims == 1)
                     {
-                        debug4 << mName << "bow_getbowinfo returned 0!"
-                               << endl;
-                    }
-                    else
-                    {
-#ifdef DEBUG_PRINT
-                        debug4 << mName << binf;
-#endif
+                        bowglobal bg;   // Session record for bow to use.
+                        bowinfo   binf; // Information record from bow buffer.
 
-                        //
-                        // Decompress the brick of wavelets back into a
-                        // brick of floats.
-                        //
-                        float *bof = bow2bof(bg, (char *)data, 0);
+                        // Start bow session using custom memory routines.
+                        bg = bowglobal_create(my_bow_alloc, my_bow_free, 0);
 
-                        if(bof != 0)
+                        // Get the information for the brick of wavelets.
+                        binf = bow_getbowinfo(bg, (char*)data);
+                        if(binf == 0)
                         {
-                            // Create a BOF object to contain the BOF.
-                            retval = new BOF;
-                            retval->size[0] = binf->xs[0];
-                            retval->size[1] = binf->ys[0];
-                            retval->size[2] = binf->zs[0];
-                            retval->data = bof;
-
-                            // If the variable needs to have exp() applied,
-                            // do that now.
-                            if(apply_exp[varIndex] > 0)
-                            {
-                                debug4 << mName << "Applying exp()" << endl;
-                                float *fptr = bof;
-                                int nvals = retval->size[0] *
-                                    retval->size[1] * retval->size[2];
-#ifdef DEBUG_PRINT
-                                float datamin = FLT_MAX, datamax = -FLT_MAX;
-#endif
-                                for(int i = 0; i < nvals; ++i)
-                                {
-                                    fptr[i] = exp(fptr[i]);
-#ifdef DEBUG_PRINT
-                                    datamin = (datamin < fptr[i]) ? datamin : fptr[i];
-                                    datamax = (datamax > fptr[i]) ? datamax : fptr[i];
-#endif
-                                }
-#ifdef DEBUG_PRINT
-                                debug4 << "BOF " << realDomain << "'s minmax=["
-                                       << datamin << ", " << datamax << "]"
-                                       << endl;
-#endif
-                            }
-
-                            // Store the BOF in the cache.
-                            void_ref_ptr vr2 = void_ref_ptr(retval,
-                                BOF::Destruct);
-                            cache->CacheVoidRef(key.c_str(), BOF_KEY, timestep,
-                                realDomain, vr2);
+                            debug4 << mName << "bow_getbowinfo returned 0!"
+                                   << endl;
                         }
                         else
                         {
-                            debug4 << mName << "BOF == 0!" << endl;
+                            debug4 << mName << "Getting BOW from data"
+                                   << endl;
+#ifdef DEBUG_PRINT
+                            debug4 << mName << binf;
+#endif
+    
+                            //
+                            // Decompress the brick of wavelets back into a
+                            // brick of floats.
+                            //
+                            float *bof = bow2bof(bg, (char *)data, 0);
+
+                            if(bof != 0)
+                            {
+                                // Create a BOF object to contain the BOF.
+                                retval = new BOF;
+                                retval->size[0] = binf->xs[0];
+                                retval->size[1] = binf->ys[0];
+                                retval->size[2] = binf->zs[0];
+                                retval->data = bof;
+
+                                // If the variable needs to have exp() applied,
+                                // do that now.
+                                if(apply_exp[varIndex] > 0)
+                                {
+                                    debug4 << mName << "Applying exp()" << endl;
+                                    float *fptr = bof;
+                                    int nvals = retval->size[0] *
+                                        retval->size[1] * retval->size[2];
+#ifdef DEBUG_PRINT
+                                    float datamin = FLT_MAX, datamax = -FLT_MAX;
+#endif
+                                    for(int i = 0; i < nvals; ++i)
+                                    {
+                                        fptr[i] = exp(fptr[i]);
+#ifdef DEBUG_PRINT
+                                        datamin = (datamin < fptr[i]) ? datamin : fptr[i];
+                                        datamax = (datamax > fptr[i]) ? datamax : fptr[i];
+#endif
+                                    }
+#ifdef DEBUG_PRINT
+                                    debug4 << "BOF " << realDomain << "'s minmax=["
+                                           << datamin << ", " << datamax << "]"
+                                           << endl;
+#endif
+                                }
+
+#ifdef CACHE_BOF
+                                // Store the BOF in the cache.
+                                void_ref_ptr vr2 = void_ref_ptr(retval,
+                                    BOF::Destruct);
+                                cache->CacheVoidRef(key.c_str(), BOF_KEY, timestep,
+                                    realDomain, vr2);
+#endif
+                            }
+                            else
+                            {
+                                debug4 << mName << "BOF == 0!" << endl;
+                            }
                         }
                     }
+                    else if(nDims == 3)
+                    {
+                        long N = dims[0] * dims[1] * dims[2];
+                        float *fptr = new float[N];
+                        char *cptr = (char *)data;
+
+                        retval = new BOF;
+                        retval->size[0] = dims[0];
+                        retval->size[1] = dims[1];
+                        retval->size[2] = dims[2];
+                        retval->data = fptr;
+
+                        double vmax = 1.;
+                        std::string varMax(varName);
+                        varMax += "max";
+                        if(strstr(int_nams[varIndex].c_str(), "byt") != 0 &&
+                           domainPDB->GetDouble(varMax.c_str(), &vmax))
+                        {
+                             debug4 << mName << "Converting byte-scaled data to float" << endl;
+
+                             // Copy the data into the float array while reconstituting it.
+                             for(long n = 0; n < N; ++n)
+                             {
+                                float cval = float(*cptr++) / 255.f;
+                                *fptr++ = cval * cval * vmax;
+                             }
+                        }
+                        else
+                        {
+                            debug4 << mName << "Converting char data to float" << endl;
+
+                            // Copy the data into a float array.
+                            for(long n = 0; n < N; ++n)
+                                *fptr++ = float(*cptr++);
+                        }
+
+#ifdef CACHE_BOF
+                        // Store the BOF in the cache.
+                        void_ref_ptr vr2 = void_ref_ptr(retval,
+                            BOF::Destruct);
+                        cache->CacheVoidRef(key.c_str(), BOF_KEY, timestep,
+                            realDomain, vr2);
+#endif
+                    }
+                    else
+                    {
+                        debug4 << mName << "Unsupported array shape. nDims="
+                               << nDims << endl;
+                    }
+                }
+                else if(dataType == FLOATARRAY_TYPE && nDims == 3)
+                {
+                    debug4 << mName << "Using float data directly." << endl;
+                    retval = new BOF;
+                    retval->size[0] = dims[0];
+                    retval->size[1] = dims[1];
+                    retval->size[2] = dims[2];
+                    retval->data = (float *)data;
+
+                    // Make the BOF own the float data.
+                    data = 0;
+                    dataType = NO_TYPE;
+
+#ifdef CACHE_BOF
+                    // Store the BOF in the cache.
+                    void_ref_ptr vr2 = void_ref_ptr(retval,
+                        BOF::Destruct);
+                    cache->CacheVoidRef(key.c_str(), BOF_KEY, timestep,
+                        realDomain, vr2);
+#endif
+                }
+                else
+                {
+                    debug4 << "The data was read but it is not a supported "
+                           << "type (" << int(dataType) << ")" << endl;
                 }
 
                 // Free the data that was read from the PDB file.
@@ -1745,14 +1999,17 @@ PF3DFileFormat::GetVar(int dom, const char *varName)
 
         // It all succeeded so set the return value.
         scalars = fscalars;
+
+#ifndef CACHE_BOF
+        // Delete the BOF.
+        delete bof;
+#endif
     }
 
     return scalars;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-const int PF3DFileFormat::MasterInformation::visnam_size = 46;
 
 // ****************************************************************************
 // Method: PF3DFileFormat::MasterInformation::MasterInformation
@@ -1764,13 +2021,14 @@ const int PF3DFileFormat::MasterInformation::visnam_size = 46;
 // Creation:   Mon Jul 12 14:32:36 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 30 16:05:37 PST 2005
+//   I added the members vector.
+//
 // ****************************************************************************
 
-PF3DFileFormat::MasterInformation::MasterInformation()
+PF3DFileFormat::MasterInformation::MasterInformation() : members()
 {
     nDomains = 0;
-    buffer = 0;
 }
 
 // ****************************************************************************
@@ -1783,16 +2041,15 @@ PF3DFileFormat::MasterInformation::MasterInformation()
 // Creation:   Mon Jul 12 14:32:53 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 2 11:30:00 PDT 2005
+//   Added deletion of members.
+//
 // ****************************************************************************
 
 PF3DFileFormat::MasterInformation::~MasterInformation()
 {
-    if(buffer != 0)
-    {
-        long *ptr = (long *)buffer;
-        delete [] ptr;
-    }
+    for(int i = 0; i < members.size(); ++i)
+        delete members[i];
 }
 
 // ****************************************************************************
@@ -1833,7 +2090,9 @@ PF3DFileFormat::MasterInformation::GetNDomains() const
 // Creation:   Mon Jul 12 14:33:39 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 2 11:30:16 PDT 2005
+//   Rewrote for dynamic master file structure.
+//
 // ****************************************************************************
 
 bool
@@ -1844,27 +2103,238 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
 
     if(pdb->GetInteger("mp_size", &nDomains))
     {
-        if(buffer == 0)
+        //
+        // Stage 1: Get the history structure.
+        //
+        char s_type[100];
+#ifdef HAVE_PDB_PROPER
+        syment *s = PD_query_entry(pdb->filePointer(), "__@history", NULL);
+        if(s == NULL)
         {
-            int bufferSize = CalculateBufferSize();
-            // Allocate the memory as longs so it is word aligned.
-            int nLongs = bufferSize / sizeof(long) +
-                (((bufferSize % sizeof(long)) > 0) ? 1 : 0);
-            buffer = (void *) new long[nLongs];
+            debug4 << mName << "Can't query __@history" << endl;
+            return false;
         }
 
-        // Read the master structure.
+        strcpy(s_type, s->type);
+        defstr *ds = PD_inquire_type(pdb->filePointer(), s_type);
+#else
+        // Use the name that we know it to be since Silo's PDB does not seem to
+        // have any of the PDB query functions.
+        strcpy(s_type, "__");
+#endif
+        defstr *ds = PD_inquire_type(pdb->filePointer(), s_type);
+        if(ds == NULL)
+        {
+            debug4 << mName << "Can't get type information for " << s_type << endl;
+            return false;
+        }
+        int bufferSize = 0;
+        for(s_memdes *m = ds->members; m != NULL; m = m->next)
+        {
+            if(m->next == NULL)
+            {
+                int mSize = 1;
+                for(s_dimdes *dimdes = m->dimensions;
+                    dimdes != 0;
+                    dimdes = dimdes->next)
+                {
+                    mSize *= (dimdes->index_max - dimdes->index_min + 1);
+                }
+
+                if(strcmp(m->base_type, "char") == 0)
+                    bufferSize = m->member_offs + mSize * sizeof(char);
+                else if(strcmp(m->base_type, "short") == 0)
+                    bufferSize = m->member_offs + mSize * sizeof(short);
+                else if(strcmp(m->base_type, "int") == 0 ||
+                        strcmp(m->base_type, "integer") == 0)
+                    bufferSize = m->member_offs + mSize * sizeof(int);
+                else if(strcmp(m->base_type, "long") == 0)
+                    bufferSize = m->member_offs + mSize * sizeof(long);
+                else if(strcmp(m->base_type, "float") == 0)
+                    bufferSize = m->member_offs + mSize * sizeof(float);
+                else if(strcmp(m->base_type, "double") == 0)
+                    bufferSize = m->member_offs + mSize * sizeof(double);
+                else
+                    debug4 << mName << "Unknown type! " << m->base_type << endl;
+
+                // Add maximum amount for struct alignment. This does not
+                // affect how the bytes are read; only how the buffer is
+                // sized. We are guaranteed to over-allocate by a little
+                // to ensure that the bytes that are converted on read do
+                // not go off the end of the array.
+                bufferSize += 8;
+            }
+        }
+        debug4 << mName << "Calculated a buffer size of: " << bufferSize
+               << " bytes" << endl;
+
+        //
+        // Stage 2: Allocate the memory for the history structure and read it.
+        //
+        // 
+        int nLongs = bufferSize / sizeof(long) +
+            (((bufferSize % sizeof(long)) > 0) ? 1 : 0);
+        void *buffer = (void *) new long[nLongs];
         retval = (PD_read(pdb->filePointer(), "__@history", buffer) == TRUE);
 
+        //
+        // Stage 3: Convert the data from the history structure into items
+        //          in the members vector.
+        //
         if(!retval)
         {
             debug4 << mName << " Could not read __@history."
                    << PDBLIB_ERRORSTRING << endl;
         }
+        else 
+        {
+            // Now iterate through the fields in the __@history variable type
+            // And populate the member data. We'll just promote everything
+            // that's not char to double and long. This will make some access
+            // methods easier to write later.
+            char *mptr = (char *)buffer;
+            for(s_memdes *m = ds->members; m != NULL; m = m->next)
+            {
+                MemberData *member = new MemberData;
+                member->name = m->name;
+                
+                debug4 << mName
+                       << "name=" << m->name << ", "
+                       << "type=" << m->type << ", "
+                       << "base_type=" << m->base_type << ", "
+                       << "member_offs=" << m->member_offs << ", "
+                       << "number=" << m->number
+                       << endl;
+
+                // Save off the number of dimensions.
+                int mSize = 1;
+                if(m->dimensions == 0)
+                    member->dims[member->ndims++] = 1;
+                else
+                {
+                    for(s_dimdes *dimdes = m->dimensions;
+                        dimdes != 0;
+                        dimdes = dimdes->next)
+                    {
+                        int thisms = (dimdes->index_max - dimdes->index_min + 1);
+                        mSize *= thisms;
+                        if(member->ndims < 3)
+                            member->dims[member->ndims++] = thisms;
+                    }
+                }
+
+                //
+                // Save off the data in the member and do conversions.
+                //
+                if(strcmp(m->base_type, "char") == 0)
+                {
+                    char *cptr = new char[mSize];
+                    memcpy(cptr, mptr, mSize);
+                    member->dataType = CHARARRAY_TYPE;
+                    member->data = (void *)cptr;
+
+                    mptr += mSize * sizeof(char);
+                }
+                else if(strcmp(m->base_type, "short") == 0)
+                {
+                    // Advance offset if necessary.
+                    for(; ((unsigned long)(mptr)) % pdb->filePointer()->
+                        align->short_alignment != 0; ++mptr);
+
+                    short *src = (short *)mptr;
+                    long *dest = new long[mSize];
+
+                    member->dataType = LONGARRAY_TYPE;
+                    member->data = (void *)dest;
+                    for(int i = 0; i < mSize; ++i)
+                        *dest++ = long(*src++);
+
+                    mptr += mSize * sizeof(short);
+                }
+                else if(strcmp(m->base_type, "integer") == 0 ||
+                        strcmp(m->base_type, "int") == 0)
+                {
+                    // Advance offset if necessary.
+                    for(; ((unsigned long)(mptr)) % pdb->filePointer()->
+                        align->int_alignment != 0; ++mptr);
+
+                    int *src = (int *)mptr;
+                    long *dest = new long[mSize];
+
+                    member->dataType = LONGARRAY_TYPE;
+                    member->data = (void *)dest;
+                    for(int i = 0; i < mSize; ++i)
+                        *dest++ = long(*src++);
+
+                    mptr += mSize * sizeof(int);
+                }
+                else if(strcmp(m->base_type, "long") == 0)
+                {
+                    // Advance offset if necessary.
+                    for(; ((unsigned long)(mptr)) % pdb->filePointer()->
+                        align->long_alignment != 0; ++mptr);
+
+                    long *src = (long *)mptr;
+                    long *dest = new long[mSize];
+
+                    member->dataType = LONGARRAY_TYPE;
+                    member->data = (void *)dest;
+                    for(int i = 0; i < mSize; ++i)
+                        *dest++ = *src++;
+
+                    mptr += mSize * sizeof(long);
+                }
+                else if(strcmp(m->base_type, "float") == 0)
+                {
+                    // Advance offset if necessary.
+                    for(; ((unsigned long)(mptr)) % pdb->filePointer()->
+                        align->float_alignment != 0; ++mptr);
+
+                    float *src = (float *)mptr;
+                    double *dest = new double[mSize];
+
+                    member->dataType = DOUBLEARRAY_TYPE;
+                    member->data = (void *)dest;
+                    for(int i = 0; i < mSize; ++i)
+                        *dest++ = double(*src++);
+
+                    mptr += mSize * sizeof(float);
+                }
+                else if(strcmp(m->base_type, "double") == 0)
+                {
+                    // Advance offset if necessary.
+                    for(; ((unsigned long)(mptr)) % pdb->filePointer()->
+                        align->double_alignment != 0; ++mptr);
+
+                    double *src = (double *)mptr;
+                    double *dest = new double[mSize];
+
+                    member->dataType = DOUBLEARRAY_TYPE;
+                    member->data = (void *)dest;
+                    for(int i = 0; i < mSize; ++i)
+                        *dest++ = *src++;
+
+                    mptr += mSize * sizeof(double);
+                }
+                else
+                {
+                    debug4 << mName << "Unknown type: " << m->base_type << endl;
+                    mptr += mSize;
+                }
+
+                // Now that we've populated the member, add it to the list of members.
+                members.push_back(member);
+            }
+
 #ifdef DEBUG_PRINT
-        else if(debug4_real)
-            operator << (debug4_real);
-#endif
+            if(debug4_real)
+                operator << (debug4_real);
+#endif            
+        }
+
+        // Free the buffer
+        long *lptr = (long *)buffer;
+        delete [] lptr;
     }
     else
     {
@@ -1875,195 +2345,36 @@ PF3DFileFormat::MasterInformation::Read(PDBFileObject *pdb)
 }
 
 // ****************************************************************************
-// Method: PF3DFileFormat::MasterInformation::CalculateBufferSize
+// Method: PF3DFileFormat::MasterInformation::FindMember
 //
 // Purpose: 
-//   Returns the buffer size needed to hold a master structure with N domains.
+//   Finds the struct member with the given name.
 //
-// Returns:    The number of bytes in the master struct.
+// Arguments:
+//   name : The name of the member to find.
+//
+// Returns:    A pointer to the member data.
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon Jul 12 14:35:25 PST 2004
+// Creation:   Fri Dec 2 13:29:59 PST 2005
 //
 // Modifications:
 //   
 // ****************************************************************************
 
-int
-PF3DFileFormat::MasterInformation::CalculateBufferSize()
+const PF3DFileFormat::MasterInformation::MemberData *
+PF3DFileFormat::MasterInformation::FindMember(const std::string &name) const
 {
-    int sum = 0;
-    sum += sizeof(History);
-    sum += (sizeof(double) * nDomains);    // rhomin_vz[64];
-    sum += (sizeof(double) * nDomains);    // rhomax_vz[64];
-    sum += (sizeof(double) * nDomains);    // e0min_vz[64];
-    sum += (sizeof(double) * nDomains);    // e0max_vz[64];
-    sum += (sizeof(long) * nDomains * 6);  // domloc[64][6];
-    sum += (sizeof(double) * nDomains * 6);// xyzloc[64][6];
-    sum += (sizeof(char) * nDomains * 2 * visnam_size); // visnams[64][2][46];
-    sum += (sizeof(double) * nDomains);    // e1min_vz[64];
-    sum += (sizeof(double) * nDomains);    // e1max_vz[64];
-    sum += (sizeof(double) * nDomains);    // iawmin_vz[64];
-    sum += (sizeof(double) * nDomains);    // iawmax_vz[64];
-    sum += (sizeof(double) * nDomains);    // e2min_vz[64];
-    sum += (sizeof(double) * nDomains);    // e2max_vz[64];
-    sum += (sizeof(double) * nDomains);    // epwmin_vz[64];
-    sum += (sizeof(double) * nDomains);    // epwmax_vz[64];
-    return sum;
-}
+    for(int i = 0; i < members.size(); ++i)
+    {
+        if(name == members[i]->name)
+            return members[i];
+    }
 
-//
-// Methods to return values and pointers to the various arrays in the master.
-//
+    debug4 << "PF3DFileFormat::MasterInformation::FindMember: No member called: "
+           << name.c_str() << endl;
 
-double
-PF3DFileFormat::MasterInformation::Get_time() const
-{
-    History *hptr = (History *)buffer;
-    return hptr->time;
-}
-
-int   
-PF3DFileFormat::MasterInformation::Get_ivzsave() const
-{
-    History *hptr = (History *)buffer;
-    return hptr->ivzsave;
-}
-
-float 
-PF3DFileFormat::MasterInformation::Get_tnowps() const
-{
-    History *hptr = (History *)buffer;
-    return hptr->tnowps;
-}
-
-long  
-PF3DFileFormat::MasterInformation::Get_ncyc() const
-{
-    History *hptr = (History *)buffer;
-    return hptr->ncyc;
-}
-
-float 
-PF3DFileFormat::MasterInformation::Get_dt() const
-{
-    History *hptr = (History *)buffer;
-    return hptr->dt;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_rhomin_vz() const
-{
-    char *cptr = (char *)buffer;
-    cptr += sizeof(History);
-    return (const double *)cptr;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_rhomax_vz() const
-{
-    const double *rhomax_vz = Get_rhomin_vz() + nDomains;
-    return rhomax_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_e0min_vz() const
-{
-    const double *e0min_vz = Get_rhomax_vz() + nDomains;
-    return e0min_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_e0max_vz() const
-{
-    const double *e0max_vz = Get_e0min_vz() + nDomains;
-    return e0max_vz;
-}
-
-const long *
-PF3DFileFormat::MasterInformation::Get_domloc() const
-{
-    const double *domloc = Get_e0max_vz() + nDomains;
-    return (const long *)domloc;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_xyzloc() const
-{
-    const long *xyzloc = Get_domloc() + (nDomains * 6);
-    return (const double *)xyzloc;
-}
-
-const char *
-PF3DFileFormat::MasterInformation::Get_visnams() const
-{
-    const double *visnams = Get_xyzloc() + (nDomains * 6);
-    return (const char *)visnams;
-}
-
-const char *
-PF3DFileFormat::MasterInformation::Get_visname_for_domain(int dom, int comp) const
-{
-    const char *visnam_base = Get_visnams();
-    const char *visnames_for_domain = visnam_base + (2 * visnam_size) * dom;
-    visnames_for_domain += (comp > 0) ? visnam_size : 0;
-    return visnames_for_domain;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_e1min_vz() const
-{
-    const char *e1min_vz = Get_visnams() + (nDomains * 2 * visnam_size);
-    return (const double *)e1min_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_e1max_vz() const
-{
-    const double *e1min_vz = Get_e1min_vz() + nDomains;
-    return (const double *)e1min_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_iawmin_vz() const
-{
-    const double *iawmin_vz = Get_e1max_vz() + nDomains;
-    return (const double *)iawmin_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_iawmax_vz() const
-{
-    const double *iawmax_vz = Get_iawmin_vz() + nDomains;
-    return (const double *)iawmax_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_e2min_vz() const
-{
-    const double *e2min_vz = Get_iawmax_vz() + nDomains;
-    return (const double *)e2min_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_e2max_vz() const
-{
-    const double *e2max_vz = Get_e2min_vz() + nDomains;
-    return (const double *)e2max_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_epwmin_vz() const
-{
-    const double *epwmin_vz = Get_e2max_vz() + nDomains;
-    return (const double *)epwmin_vz;
-}
-
-const double *
-PF3DFileFormat::MasterInformation::Get_epwmax_vz() const
-{
-    const double *epwmax_vz = Get_epwmin_vz() + nDomains;
-    return (const double *)epwmax_vz;
+    return 0;
 }
 
 // ****************************************************************************
@@ -2079,37 +2390,171 @@ PF3DFileFormat::MasterInformation::Get_epwmax_vz() const
 // Creation:   Mon Jul 12 14:36:37 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 2 13:31:12 PST 2005
+//   I rewrote the method to work with the more general structure.
+//
 // ****************************************************************************
 
 ostream &
 PF3DFileFormat::MasterInformation::operator << (ostream &os)
 {
 #ifdef DEBUG_PRINT
-    os << "time = " << Get_time() << endl;
-    os << "ivzsave = " << Get_ivzsave() << endl;
-    os << "tnowps = " << Get_tnowps() << endl;
-    os << "ncyc = " << Get_ncyc() << endl;
-    os << "dt = " << Get_dt() << endl;
-
-    print_array(os, "rhomin_vz", Get_rhomin_vz(), nDomains);
-    print_array(os, "rhomax_vz", Get_rhomax_vz(), nDomains);
-    print_array(os, "e0min_vz", Get_e0min_vz(), nDomains);
-    print_array(os, "e0max_vz", Get_e0max_vz(), nDomains);
-    print_array(os, "domloc", Get_domloc(), 6 * nDomains, 6);
-    print_array(os, "xyzloc", Get_xyzloc(), 6 * nDomains, 6);
-    print_array(os, "visnams", Get_visnams(),
-        visnam_size * nDomains, visnam_size, false);
-    print_array(os, "e1min_vz", Get_e1min_vz(), nDomains);
-    print_array(os, "e1max_vz", Get_e1max_vz(), nDomains);
-    print_array(os, "iawmin_vz", Get_iawmin_vz(), nDomains);
-    print_array(os, "iawmax_vz", Get_iawmax_vz(), nDomains);
-    print_array(os, "e2min_vz", Get_e2min_vz(), nDomains);
-    print_array(os, "e2max_vz", Get_e2max_vz(), nDomains);
-    print_array(os, "epwmin_vz", Get_epwmin_vz(), nDomains);
-    print_array(os, "epwmax_vz", Get_epwmax_vz(), nDomains);
+    for(int i = 0; i < members.size(); ++i)
+        members[i]->Print(os);
 #endif
+
     return os;
+}
+
+//
+// Methods to return values and pointers to the various arrays in the master.
+//
+
+double
+PF3DFileFormat::MasterInformation::Get_tnowps() const
+{
+    double val = 0.f;
+    const MemberData *m = FindMember("tnowps");
+    if(m != 0)
+        val = *((double *)(m->data));
+
+    return val;
+}
+
+const long *
+PF3DFileFormat::MasterInformation::Get_domloc() const
+{
+    const long *val = 0;
+    const MemberData *m = FindMember("domloc");
+    if(m != 0)
+        val = (const long *)(m->data);
+
+    return val;
+}
+
+const double *
+PF3DFileFormat::MasterInformation::Get_xyzloc() const
+{
+    const double *val = 0;
+    const MemberData *m = FindMember("xyzloc");
+    if(m != 0)
+        val = (const double *)(m->data);
+
+    return val;
+}
+
+const char *
+PF3DFileFormat::MasterInformation::Get_visnams() const
+{
+    const char *val = 0;
+    const MemberData *m = FindMember("viz_nams");
+    if(m == 0)
+        m = FindMember("visnams");
+
+    if(m != 0)
+        val = (const char *)(m->data);
+
+    return val;
+}
+
+const char *
+PF3DFileFormat::MasterInformation::Get_visname_for_domain(int dom, int comp) const
+{
+    const MemberData *m = FindMember("viz_nams");
+    if(m == 0)
+        m = FindMember("visnams");
+
+    const char *visnames_for_domain = 0;
+    if(m != 0)
+    {
+        const char *visnam_base = (const char *)m->data;
+        int visnam_size = m->dims[0];
+
+        visnames_for_domain = visnam_base + (2 * visnam_size) * dom;
+        visnames_for_domain += (comp > 0) ? visnam_size : 0;
+    }
+
+    return visnames_for_domain;
+}
+
+const double *
+PF3DFileFormat::MasterInformation::GetMinArray(const std::string &varName) const
+{
+    const double *val = 0;
+    std::string minName(varName);
+    minName += "min_vz";
+    const MemberData *m = FindMember(minName);
+    if(m != 0)
+        val = (const double *)(m->data);
+
+    return val;
+}
+
+const double *
+PF3DFileFormat::MasterInformation::GetMaxArray(const std::string &varName) const
+{
+    const double *val = 0;
+    std::string maxName(varName);
+    maxName += "max_vz";
+    const MemberData *m = FindMember(maxName);
+    if(m != 0)
+        val = (const double *)(m->data);
+
+    return val;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+PF3DFileFormat::MasterInformation::MemberData::MemberData() : name()
+{
+    dataType = NO_TYPE;
+    ndims = 0;
+    dims[0] = 0;
+    dims[1] = 0;
+    dims[2] = 0;
+    data = 0;
+}
+
+PF3DFileFormat::MasterInformation::MemberData::~MemberData()
+{
+    if(data != 0)
+        free_void_mem(data, dataType);
+}
+
+// ****************************************************************************
+// Method: PF3DFileFormat::MasterInformation::MemberData::Print
+//
+// Purpose: 
+//   Prints the MemberData.
+//
+// Arguments:
+//   os : The stream to which we want to print.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 2 13:50:31 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+PF3DFileFormat::MasterInformation::MemberData::Print(ostream &os) const
+{
+    if(dataType == CHARARRAY_TYPE)
+    {
+        const char *ptr = (const char *)data;
+        print_multi_dim_array(os, name.c_str(), ptr, ndims, dims, false);
+    }
+    else if(dataType == LONGARRAY_TYPE)
+    {
+        const long *ptr = (const long *)data;
+        print_multi_dim_array(os, name.c_str(), ptr, ndims, dims, true);
+    }
+    else if(dataType == DOUBLEARRAY_TYPE)
+    {
+        const double *ptr = (const double *)data;
+        print_multi_dim_array(os, name.c_str(), ptr, ndims, dims, true);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2172,6 +2617,7 @@ PF3DFileFormat::BOF::BOF(const BOF &obj)
 
 PF3DFileFormat::BOF::~BOF()
 {
+    debug4 << "Deleting BOF " << (void*)this << endl;
     delete [] data;
 }
 
