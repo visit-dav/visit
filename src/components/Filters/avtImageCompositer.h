@@ -34,6 +34,9 @@
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Hank Childs, Sun Dec  4 17:07:52 PST 2005
+//    Added description method.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtImageCompositer : public avtImageToImageFilter
@@ -41,6 +44,10 @@ class AVTFILTERS_API avtImageCompositer : public avtImageToImageFilter
    public:
                               avtImageCompositer();
       virtual                ~avtImageCompositer();
+
+      virtual const char     *GetType(void) { return "avtImageCompositer"; };
+      virtual const char     *GetDescription(void)
+                                   { return "Compositing images."; };
 
       void                    SetOutputImageSize(const int numRows,
                                                  const int numCols);

@@ -1240,6 +1240,10 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //
 //    Mark C. Miller, Thu Nov  3 16:59:41 PST 2005
 //    Added compression controls
+//
+//    Hank Childs, Sun Dec  4 16:51:20 PST 2005
+//    Allow SR mode to give progress during rendering.
+//
 // ****************************************************************************
 template<>
 void
@@ -1254,10 +1258,14 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
        debug2 << rpc->GetIDs()[i] << ", ";
     debug2 << endl;
 
-    avtDataObjectSource::RegisterProgressCallback(NULL, NULL);
-    LoadBalancer::RegisterProgressCallback(NULL, NULL);
+    avtDataObjectSource::RegisterProgressCallback(
+                             Engine::EngineUpdateProgressCallback, (void*)rpc);
     avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
-    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, (void*)rpc);
+    LoadBalancer::RegisterProgressCallback(NULL, NULL);
+    NetworkManager::RegisterInitializeProgressCallback(
+                        Engine::EngineInitializeProgressCallback, (void*)rpc);
+    NetworkManager::RegisterProgressCallback(
+                           Engine::EngineUpdateProgressCallback, (void*)rpc);
     TRY 
     {
         // do the render
@@ -1285,6 +1293,8 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
     avtTerminatingSource::RegisterInitializeProgressCallback(
                                Engine::EngineInitializeProgressCallback, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
+    NetworkManager::RegisterInitializeProgressCallback(NULL, NULL);
+    NetworkManager::RegisterProgressCallback(NULL, NULL);
 }
 
 // ****************************************************************************

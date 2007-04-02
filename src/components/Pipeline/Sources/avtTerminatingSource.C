@@ -185,23 +185,20 @@ avtTerminatingSource::GetSpeciesAuxiliaryData(const char *type, void *args,
 //    Hank Childs, Tue Sep 30 16:33:37 PDT 2003
 //    Reset all of the validity fields, not just error occurred.
 //
+//    Hank Childs, Sun Dec  4 17:45:14 PST 2005
+//    No longer issue progress.  All this does is clobber useful progress
+//    reports.
+//
 // ****************************************************************************
 
 bool
 avtTerminatingSource::Update(avtPipelineSpecification_p spec)
 {
     if (!ArtificialPipeline())
-    {
-        UpdateProgress(0, 0, "avtTerminatingSource", "Retrieving data.");
-    }
-    if (!ArtificialPipeline())
         GetOutput()->GetInfo().GetValidity().Reset();
     avtDataSpecification_p data = BalanceLoad(spec);
     bool rv = FetchData(data);
-    if (!ArtificialPipeline())
-    {
-        UpdateProgress(1, 0, "avtTerminatingSource", "Retrieving data.");
-    }
+
     return rv;
 }
 

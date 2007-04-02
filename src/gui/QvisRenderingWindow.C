@@ -1017,6 +1017,9 @@ QvisRenderingWindow::renderNotifyToggled(bool val)
 //   Changed scalable rendering controls to use activation mode and auto
 //   threshold
 //
+//   Hank Childs, Sun Dec  4 18:41:39 PST 2005
+//   Automatically update the shadow toggle ['5596].
+//
 // ****************************************************************************
 
 void
@@ -1028,11 +1031,13 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
         scalrenGeometryLabel->setEnabled(1);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Auto);
         scalrenAutoThresholdChanged(scalrenAutoThreshold->value());
+        shadowToggle->setEnabled(false);
     }
     else if (val == 1)
     {
         scalrenAutoThreshold->setEnabled(0);
         scalrenGeometryLabel->setEnabled(0);
+        shadowToggle->setEnabled(true);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Always);
     }
     else
@@ -1040,6 +1045,7 @@ QvisRenderingWindow::scalrenActivationModeChanged(int val)
         scalrenAutoThreshold->setEnabled(0);
         scalrenGeometryLabel->setEnabled(0);
         renderAtts->SetScalableActivationMode(RenderingAttributes::Never);
+        shadowToggle->setEnabled(false);
     }
     SetUpdate(false);
     Apply();

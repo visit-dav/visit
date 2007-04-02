@@ -41,6 +41,9 @@ class   avtRayFunction;
 //    Moved inlined destructor definition to .C file because certain compilers
 //    have problems with them.
 //
+//    Hank Childs, Sun Dec  4 18:00:55 PST 2005
+//    Add method that estimates number of stages.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
@@ -54,6 +57,8 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     virtual void          ReleaseData(void);
 
     void                  SetView(const avtViewInfo &);
+
+    static int            GetNumberOfStages(int, int, int);
 
     void                  InsertOpaqueImage(avtImage_p);
 
@@ -83,6 +88,7 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     virtual void          Execute(void);
     virtual avtPipelineSpecification_p
                           PerformRestriction(avtPipelineSpecification_p);
+    static int            GetNumberOfDivisions(int, int, int);
 };
 
 

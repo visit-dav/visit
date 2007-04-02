@@ -397,6 +397,26 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
 
 
 // ****************************************************************************
+//  Method: avtVolumeFilter::GetNumberOfStages
+//
+//  Purpose:
+//      Determines the number of stages based on the window size and number
+//      of samples.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 4, 2005
+//
+// ****************************************************************************
+
+int
+avtVolumeFilter::GetNumberOfStages(const WindowAttributes &a)
+{
+    return avtRayTracer::GetNumberOfStages(a.GetSize()[0], a.GetSize()[1],
+                                           atts.GetSamplesPerRay());
+}
+
+
+// ****************************************************************************
 //  Function: CreateViewInfoFromViewAttributes
 //
 //  Purpose:

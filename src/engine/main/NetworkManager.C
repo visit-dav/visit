@@ -1,3 +1,7 @@
+// ************************************************************************* //
+//                              NetworkManager.C                             //
+// ************************************************************************* //
+
 #include <snprintf.h>
 #include <AttributeSubject.h>
 #include <NetworkManager.h>
@@ -75,11 +79,24 @@
 #include <map>
 using std::set;
 
+//
+// Static functions.
+//
 static double RenderBalance(int numTrianglesIHave);
 static void   DumpImage(avtDataObject_p, const char *fmt, bool allprocs=true);
 static void   DumpImage(avtImage_p, const char *fmt, bool allprocs=true);
 static ref_ptr<avtDatabase> GetDatabase(void *, const std::string &,
                                         int, const char *);
+
+//
+// Static data members of the NetworkManager class.
+//
+InitializeProgressCallback NetworkManager::initializeProgressCallback = NULL;
+void                      *NetworkManager::initializeProgressCallbackArgs=NULL;
+ProgressCallback           NetworkManager::progressCallback = NULL;
+void                      *NetworkManager::progressCallbackArgs = NULL;
+
+
 
 // ****************************************************************************
 //  Method: NetworkManager default constructor
@@ -1730,6 +1747,10 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //
 //    Mark C. Miller, Wed Jun  8 11:03:31 PDT 2005
 //    Added code to deal with opaque mesh plots correctly.
+//
+//    Hank Childs, Sun Dec  4 16:58:32 PST 2005
+//    Added progress to scalable renderings.
+//
 // ****************************************************************************
 avtDataObjectWriter_p
 NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
@@ -1965,6 +1986,15 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 two_pass_mode = UnifyMaximumValue(two_pass_mode);
             }
 #endif
+            int nstages = 3;  // Rendering + Two for Compositing
+            nstages += (doShadows ? 2 : 0);
+            nstages += (two_pass_mode ? 1 : 0);
+            for (int ss = 0 ; ss < imageBasedPlots.size() ; ss++)
+            {
+                nstages += imageBasedPlots[ss]
+                       ->GetNumberOfStagesForImageBasedPlot(windowAttributes);
+            }
+            initializeProgressCallback(initializeProgressCallbackArgs,nstages);
 
             // render the image and capture it. Relies upon explicit render
             int t3 = visitTimer->StartTimer();
@@ -1977,11 +2007,17 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             // FIRST PASS - Opaque only
             // ************************************************************
 
+            progressCallback(progressCallbackArgs, "NetworkManager",
+                              "Render geometry", 0, 1);
             avtImage_p theImage;
             if (two_pass_mode)
                 theImage=viswin->ScreenCapture(viewportedMode,true,true,false);
             else
                 theImage=viswin->ScreenCapture(viewportedMode,true);
+            progressCallback(progressCallbackArgs, "NetworkManager",
+                              "Render geometry", 1, 1);
+            progressCallback(progressCallbackArgs, "NetworkManager",
+                              "Compositing", 0, 1);
             
             visitTimer->StopTimer(t3, "Screen capture for SR");
 
@@ -2040,6 +2076,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             if (dumpRenders)
                 DumpImage(compositedImageAsDataObject,
                           "after_OpaqueComposite", two_pass_mode);
+            progressCallback(progressCallbackArgs, "NetworkManager",
+                              "Compositing", 1, 1);
 
 
             // ************************************************************
@@ -2048,6 +2086,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
             if (two_pass_mode)
             {
+                progressCallback(progressCallbackArgs, "NetworkManager",
+                                 "Transparent rendering", 0, 1);
                 int t1 = visitTimer->StartTimer();
 
                 //
@@ -2088,6 +2128,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 imageCompositer2.Execute();
                 compositedImageAsDataObject = imageCompositer2.GetOutput();
                 visitTimer->StopTimer(t2, "tiled image compositor execute");
+                progressCallback(progressCallbackArgs, "NetworkManager",
+                                 "Transparent rendering", 1, 1);
             }
 
             //
@@ -2095,6 +2137,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             //
             if (doShadows)
             {
+                progressCallback(progressCallbackArgs, "NetworkManager",
+                                 "Creating shadows", 0, 1);
                 avtView3D cur_view = viswin->GetView3D();
 
                 //
@@ -2160,14 +2204,20 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                     if (PAR_Rank() == 0)
 #endif
                     {
+                        progressCallback(progressCallbackArgs, "NetworkManager",
+                              "Synch'ing up shadows", 0, 1);
                         avtSoftwareShader::AddShadows(lightImage, 
                                                       compositedImage,
                                                       light_view,
                                                       cur_view,
                                                       strength);
+                        progressCallback(progressCallbackArgs, "NetworkManager",
+                              "Synch'ing up shadows", 1, 1);
                     }
                     delete wic;
                 }
+                progressCallback(progressCallbackArgs, "NetworkManager",
+                                 "Creating shadows", 1, 1);
             }
 
             //
@@ -3577,6 +3627,47 @@ NetworkManager::NewVisWindow(int winID)
 
     viswinMap[winID].viswin->DisableUpdates();
 }
+
+// ****************************************************************************
+//  Method: NetworkManager::RegisterInitializeProgressCallback
+//
+//  Purpose:
+//      Registers a callback that allows the network manager to initialize
+//      its progress.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 4, 2005
+//
+// ****************************************************************************
+
+void
+NetworkManager::RegisterInitializeProgressCallback(
+                                     InitializeProgressCallback pc, void *args)
+{
+    initializeProgressCallback     = pc;
+    initializeProgressCallbackArgs = args;
+}
+
+
+// ****************************************************************************
+//  Method: NetworkManager::RegisterProgressCallback
+//
+//  Purpose:
+//      Registers a callback that allows the network manager to indicate
+//      its progress.
+//
+//  Programmer: Hank Childs
+//  Creation:   December 4, 2005
+//
+// ****************************************************************************
+
+void
+NetworkManager::RegisterProgressCallback(ProgressCallback pc, void *args)
+{
+    progressCallback     = pc;
+    progressCallbackArgs = args;
+}
+
 
 // ****************************************************************************
 //  Function:  DumpImage
