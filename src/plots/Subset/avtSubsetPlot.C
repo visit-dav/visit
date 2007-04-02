@@ -458,6 +458,10 @@ avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 //    Jeremy Meredith, Thu Jun 12 10:03:53 PDT 2003
 //    Reverted back to old version now that we have an unfilled boundary.
 //
+//    Hank Childs, Thu Jan 26 11:38:15 PST 2006
+//    No longer do face consolidation with feature edges because ghost nodes
+//    can screw it up.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -467,6 +471,8 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
 
     if (!atts.GetWireframe())
     {
+        gzfl->SetForceFaceConsolidation(true);
+        fl->SetForceFaceConsolidation(true);
         if ((type == SubsetAttributes::Domain ||
               type == SubsetAttributes::Group)
             && atts.GetDrawInternal())
@@ -525,6 +531,8 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
     }
     else
     {
+        gzfl->SetForceFaceConsolidation(false);
+        fl->SetForceFaceConsolidation(false);
         if (type==SubsetAttributes::Domain || type==SubsetAttributes::Group)
         {
             // We're doing a wireframe domain subset plot:

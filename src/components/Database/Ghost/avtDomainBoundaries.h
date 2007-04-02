@@ -48,6 +48,9 @@ class avtMaterial;
 //    Hank Childs, Mon Jun 27 16:28:22 PDT 2005
 //    Added virtual method ResetCachedMembers.
 //
+//    Hank Childs, Thu Jan 26 10:04:34 PST 2006
+//    Add virtual method "CreatesRobustGhostNodes".
+//
 // ****************************************************************************
 
 class DATABASE_API avtDomainBoundaries
@@ -80,6 +83,8 @@ class DATABASE_API avtDomainBoundaries
     virtual void                      CreateGhostNodes(vector<int>   domainNum,
                                                vector<vtkDataSet*>   meshes,
                                                vector<int> &)  =0;
+    virtual bool                      CreatesRobustGhostNodes(void) 
+                                                              { return true; };
     virtual bool                      RequiresCommunication(avtGhostDataType) = 0;
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
                                                vector<vtkDataSet*> meshes)  =0;

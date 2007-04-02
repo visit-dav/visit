@@ -129,6 +129,9 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    Jeremy Meredith, Tue Mar 22 08:42:14 PST 2005
 //    Added a new parsed message ('6090).
 //
+//    Hank Childs, Thu Jan 26 09:55:31 PST 2006
+//    Add support for "Enter PASSCODE:". ('6946)
+//
 // ****************************************************************************
 
 void
@@ -167,7 +170,10 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
             write(fd, "yes\n", 4);
             pbuf = buffer;
         }
-        else if (strstr(buffer, "assword"))
+        else if (strstr(buffer, "assword") ||
+                 strstr(buffer, "ASSWORD") ||
+                 strstr(buffer, "asscode") ||
+                 strstr(buffer, "ASSCODE"))
         {
             // Password needed. Prompt for it and write it to the FD.
             const char *passwd = instance->getPassword(username, host);

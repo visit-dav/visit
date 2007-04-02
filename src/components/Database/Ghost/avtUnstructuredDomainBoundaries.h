@@ -47,6 +47,9 @@ class avtMaterial;
 //    Hank Childs, Sun Feb 27 12:12:03 PST 2005
 //    Added RequiresCommunication.  Also added argument to CreateGhostNodes.
 //
+//    Hank Childs, Thu Jan 26 10:04:34 PST 2006
+//    Add virtual method "CreatesRobustGhostNodes".
+//
 // ****************************************************************************
 
 class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
@@ -92,6 +95,8 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
     virtual void                      CreateGhostNodes(vector<int>   domainNum,
                                                vector<vtkDataSet*> meshes,
                                                vector<int> &allDomains);
+    virtual bool                      CreatesRobustGhostNodes(void) 
+                                                             { return false; };
 
     virtual bool                      RequiresCommunication(avtGhostDataType);
     virtual bool                      ConfirmMesh(vector<int>      domainNum,
