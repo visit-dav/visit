@@ -113,6 +113,9 @@ QvisPseudocolorPlotWindow::~QvisPseudocolorPlotWindow()
 //   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
 //   Replace individual point-size related widgets with QvisPointControl 
 //
+//   Brad Whitlock, Wed Jul 20 14:27:00 PST 2005
+//   Added pointSizePixelsChanged slot.
+//
 // ****************************************************************************
 
 void
@@ -229,6 +232,8 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
     pointControl = new QvisPointControl(central, "pointControl");
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
+            this, SLOT(pointSizePixelsChanged(int)));
     connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
             this, SLOT(pointSizeVarChanged(const QString &)));
     connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
@@ -475,6 +480,11 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
             pointControl->SetPointSizeVar(temp);
             pointControl->blockSignals(false);
             break;
+        case 17: // pointSizePixels
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizePixels(pcAtts->GetPointSizePixels());
+            pointControl->blockSignals(false);
+            break;
         }
     } // end for
 }
@@ -498,6 +508,9 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 //
 //   Kathleen Bonnell, Fri Nov 12 11:25:23 PST 2004 
 //   Replace pointSizeLineEdit and pointSizeVarLineEdit with pointControl. 
+//
+//   Brad Whitlock, Wed Jul 20 14:25:04 PST 2005
+//   Added PointSizePixels.
 //
 // ****************************************************************************
 
@@ -572,6 +585,7 @@ QvisPseudocolorPlotWindow::GetCurrentValues(int which_widget)
     if(doAll)
     {
         pcAtts->SetPointSize(pointControl->GetPointSize());
+        pcAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
         pcAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
     }
 }
@@ -854,6 +868,25 @@ QvisPseudocolorPlotWindow::pointSizeChanged(double size)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisPseudocolorPlotWindow::pointSizePixelsChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and presses the Enter key.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:25:58 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisPseudocolorPlotWindow::pointSizePixelsChanged(int size)
+{
+    pcAtts->SetPointSizePixels(size); 
+    Apply();
+}
 
 // ****************************************************************************
 // Method: QvisPseudocolorPlotWindow::pointSizeVarChanged

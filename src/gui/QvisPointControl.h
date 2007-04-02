@@ -25,6 +25,10 @@ class QvisVariableButton;
 //   Brad Whitlock, Thu Dec 9 17:01:35 PST 2004
 //   I replaced the line edit for the variable with a variable button.
 //
+//   Brad Whitlock, Wed Jul 20 13:44:39 PST 2005
+//   Added a control for setting the point size in terms of pixels for
+//   when we render the points as points.
+//
 // ****************************************************************************
 
 class GUI_API QvisPointControl : public QWidget
@@ -36,17 +40,20 @@ public:
     ~QvisPointControl();
 
     void SetPointSize(double);
+    void SetPointSizePixels(int);
     void SetPointSizeVarChecked(bool);
     void SetPointSizeVar(QString &);
     void SetPointType(int);
 
     double   GetPointSize();
+    int      GetPointSizePixels();
     bool     GetPointSizeVarChecked() const;
     QString  &GetPointSizeVar();
     int      GetPointType() const;
 
 signals:
     void pointSizeChanged(double);
+    void pointSizePixelsChanged(int);
     void pointSizeVarToggled(bool val);
     void pointSizeVarChanged(const QString &);
     void pointTypeChanged(int);
@@ -58,13 +65,19 @@ private slots:
     void typeButtonChanged(int);
 
 private:
+    void UpdateSizeText();
+    void UpdatePointType();
+    bool ProcessSizeText(int pointType);
+
     QLabel                 *sizeLabel;
     QLineEdit              *sizeLineEdit;
     QCheckBox              *sizeVarToggle;
     QvisVariableButton     *sizeVarButton;
     QButtonGroup           *typeButtons;
 
+    int                     lastGoodPointType;
     double                  lastGoodSize;
+    int                     lastGoodSizePixels;
     QString                 lastGoodVar;
 };
 

@@ -422,7 +422,7 @@ QvisScatterPlotWindow::CreateWindowContents()
     connect(pointSize, SIGNAL(returnPressed()),
             this, SLOT(pointSizeProcessText()));
     aLayout->addWidget(pointSize, 0, 1);
-    QLabel *pointSizeLabel = new QLabel(pointSize, "Point size",
+    pointSizeLabel = new QLabel(pointSize, "Point size",
         appearanceGroup, "pointSizeLabel");
     aLayout->addWidget(pointSizeLabel, 0, 0);
 
@@ -506,7 +506,9 @@ QvisScatterPlotWindow::CreateWindowContents()
 // Creation:   Fri Nov 19 14:32:22 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 20 15:30:52 PST 2005
+//   I added pointSizePixels.
+//
 // ****************************************************************************
 
 void
@@ -515,6 +517,7 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
     QString temp;
     bool rolesChanged = false;
     bool varsChanged = false;
+    bool updatePointSize = false;
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -725,29 +728,32 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             var4SkewFactor->setText(temp);
             break;
         case 31: //pointSize
-            temp.sprintf("%g", atts->GetPointSize());
-            pointSize->setText(temp);
+            updatePointSize = true;
             break;
-        case 32: //pointType
+        case 32: //pointSizePixels
+            updatePointSize = true;
+            break;
+        case 33: //pointType
             pointType->blockSignals(true);
             pointType->setCurrentItem(atts->GetPointType());
             pointType->blockSignals(false);
+            updatePointSize = true;
             break;
-        case 33: //scaleCube
+        case 34: //scaleCube
             scaleCube->blockSignals(true);
             scaleCube->setChecked(atts->GetScaleCube());
             scaleCube->blockSignals(false);
             break;
-        case 34: //colorTableName
+        case 35: //colorTableName
             colorTableName->setColorTable(atts->GetColorTableName().c_str());
             break;
-        case 35: //singleColor
+        case 36: //singleColor
             tempcolor = QColor(atts->GetSingleColor().Red(),
                                atts->GetSingleColor().Green(),
                                atts->GetSingleColor().Blue());
             singleColor->setButtonColor(tempcolor);
             break;
-        case 36: //foregroundFlag
+        case 37: //foregroundFlag
             if(singleColorLabel->isEnabled() == atts->GetForegroundFlag())
             {
                 singleColorLabel->setEnabled(!atts->GetForegroundFlag());
@@ -757,11 +763,27 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             foregroundFlag->setChecked(atts->GetForegroundFlag());
             foregroundFlag->blockSignals(false);
             break;
-        case 37: //legendFlag
+        case 38: //legendFlag
             legendFlag->blockSignals(true);
             legendFlag->setChecked(atts->GetLegendFlag());
             legendFlag->blockSignals(false);
             break;
+        }
+    }
+
+    if(updatePointSize)
+    {
+        if(atts->GetPointType() != ScatterAttributes::Point)
+        {
+            temp.sprintf("%g", atts->GetPointSize());
+            pointSize->setText(temp);
+            pointSizeLabel->setText("Point size");
+        }
+        else
+        {
+            temp.sprintf("%d", atts->GetPointSizePixels());
+            pointSize->setText(temp);
+            pointSizeLabel->setText("Point size (pixels)");
         }
     }
 
@@ -836,7 +858,9 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
 // Creation:   Fri Nov 19 14:32:22 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jul 20 15:27:52 PST 2005
+//   I made the point size be read differently based on its type.
+//
 // ****************************************************************************
 
 void
@@ -1198,19 +1222,39 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     {
         temp = pointSize->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
-        if(okay)
+        if(atts->GetPointType() == ScatterAttributes::Point)
         {
-            double val = temp.toDouble(&okay);
-            atts->SetPointSize(val);
-        }
+            if(okay)
+            {
+                int val = temp.toInt(&okay);
+                atts->SetPointSizePixels(val);
+            }
 
-        if(!okay)
+            if(!okay)
+            {
+                msg.sprintf("The value of pointSizePixels was invalid. "
+                    "Resetting to the last good value of %d.",
+                    atts->GetPointSizePixels());
+                Message(msg);
+                atts->SetPointSizePixels(atts->GetPointSizePixels());
+            }
+        }
+        else
         {
-            msg.sprintf("The value of pointSize was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetPointSize());
-            Message(msg);
-            atts->SetPointSize(atts->GetPointSize());
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetPointSize(val);
+            }
+
+            if(!okay)
+            {
+                msg.sprintf("The value of pointSize was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetPointSize());
+                Message(msg);
+                atts->SetPointSize(atts->GetPointSize());
+            }
         }
     }
 
@@ -1680,14 +1724,34 @@ QvisScatterPlotWindow::pointSizeProcessText()
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisScatterPlotWindow::pointTypeChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the point type widget
+//   is clicked.
+//
+// Arguments:
+//   val : The new point type.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 15:24:09 PST 2005
+//
+// Modifications:
+//   Brad Whitlock, Wed Jul 20 15:24:47 PST 2005
+//   I changed the method so we get the current values for the point size
+//   before changing the point type. We also update the window since changing
+//   the point type will change the point size widgets.
+//
+// ****************************************************************************
 
 void
 QvisScatterPlotWindow::pointTypeChanged(int val)
 {
     if(val != atts->GetPointType())
     {
+        GetCurrentValues(31);
         atts->SetPointType(ScatterAttributes::PointType(val));
-        SetUpdate(false);
         Apply();
     }
 }

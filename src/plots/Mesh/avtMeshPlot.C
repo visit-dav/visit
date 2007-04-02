@@ -305,6 +305,10 @@ avtMeshPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
 //    Updated glyphMapper methods calls with new names. 
 //
+//    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
+//    I made the pointSize in the atts be used for to set the point size for
+//    points, which is not the same as what's used for Box, Axis, Icosahedra.
+//
 // ****************************************************************************
 
 void
@@ -361,6 +365,7 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
         glyphMapper->DataScalingOff();
     }
     glyphMapper->SetGlyphType((int)atts.GetPointType());
+    SetPointGlyphSize();
 }
 
 
@@ -826,11 +831,15 @@ avtMeshPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003 
 //    Set AntialiasedRenderOrder.
 //
+//    Brad Whitlock, Thu Jul 21 15:27:40 PST 2005
+//    Added SetPointGlyphSize.
+//
 // ****************************************************************************
 
 void
 avtMeshPlot::CustomizeBehavior(void)
 {
+    SetPointGlyphSize();
     renderer->SetProperty(property);
 
     behavior->SetLegend(varLegendRefPtr);
@@ -1124,4 +1133,25 @@ avtMeshPlot::ShouldRenderOpaque(void)
             break;
     }
     return shouldBeOn;
+}
+
+// ****************************************************************************
+// Method: avtMeshPlot::SetPointGlyphSize
+//
+// Purpose: 
+//   Sets the point glyph size into the mapper.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 21 15:24:25 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtMeshPlot::SetPointGlyphSize()
+{
+    // Size used for points when using a point glyph.
+    if(atts.GetPointType() == MeshAttributes::Point)
+        glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }

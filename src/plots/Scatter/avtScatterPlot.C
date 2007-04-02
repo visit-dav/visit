@@ -346,6 +346,9 @@ avtScatterPlot::GetColorInformation(std::string &colorString,
 // Creation:   Tue Dec 14 13:56:29 PST 2004
 //
 // Modifications:
+//    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
+//    I made the pointSize in the atts be used for to set the point size for
+//    points, which is not the same as what's used for Box, Axis, Icosahedra.
 //   
 // ****************************************************************************
 
@@ -407,6 +410,7 @@ avtScatterPlot::SetAtts(const AttributeGroup *a)
 
     SetScaling(mode, skew);
     SetLimitsMode();
+    SetPointGlyphSize();
 }
 
 
@@ -631,6 +635,8 @@ avtScatterPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Creation:   Tue Nov 2 22:10:12 PST 2004
 //
 //  Modifications:
+//    Brad Whitlock, Thu Jul 21 16:28:00 PST 2005
+//    Added code to set the point glyph size.
 //
 // ****************************************************************************
 
@@ -638,6 +644,7 @@ void
 avtScatterPlot::CustomizeBehavior(void)
 {
     SetLimitsMode();
+    SetPointGlyphSize();
 
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.5);
@@ -702,6 +709,27 @@ avtScatterPlot::SetForegroundColor(const double *fg)
        glyphMapper->ColorBySingleColor(fgColor);
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: avtScatterPlot::SetPointGlyphSize
+//
+// Purpose: 
+//   Sets the point glyph size into the mapper.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 21 15:24:25 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtScatterPlot::SetPointGlyphSize()
+{
+    // Size used for points when using a point glyph.
+    if(atts.GetPointType() == ScatterAttributes::Point)
+        glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 
 // ****************************************************************************

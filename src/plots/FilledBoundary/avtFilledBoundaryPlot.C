@@ -180,6 +180,10 @@ avtFilledBoundaryPlot::Create()
 //    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
 //    Incorporate point controls (point size, point type, point size var). 
 //
+//    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
+//    I made the pointSize in the atts be used for to set the point size for
+//    points, which is not the same as what's used for Box, Axis, Icosahedra.
+//
 // ****************************************************************************
 
 void
@@ -218,6 +222,7 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
         levelsMapper->DataScalingOff();
     }
     levelsMapper->SetGlyphType((int)atts.GetPointType());
+    SetPointGlyphSize();
 }
 
 // ****************************************************************************
@@ -532,6 +537,9 @@ avtFilledBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Mon Sep 29 13:07:50 PDT 2003
 //    Set AntialiasedRenderOrder dependent upon wireframe mode.
 //
+//    Brad Whitlock, Thu Jul 21 15:36:35 PST 2005
+//    Set the point glyph size.
+//
 // ****************************************************************************
 
 void
@@ -539,6 +547,7 @@ avtFilledBoundaryPlot::CustomizeBehavior(void)
 {
     SortLabels();
     SetColors();
+    SetPointGlyphSize();
     levelsLegend->SetLookupTable(avtLUT->GetLookupTable());
 
     behavior->SetLegend(levLegendRefPtr);
@@ -552,6 +561,27 @@ avtFilledBoundaryPlot::CustomizeBehavior(void)
         behavior->SetShiftFactor(0.);
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
     }
+}
+
+// ****************************************************************************
+// Method: avtFilledBoundaryPlot::SetPointGlyphSize
+//
+// Purpose: 
+//   Sets the point glyph size into the mapper.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 21 15:24:25 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtFilledBoundaryPlot::SetPointGlyphSize()
+{
+    // Size used for points when using a point glyph.
+    if(atts.GetPointType() == FilledBoundaryAttributes::Point)
+        levelsMapper->SetPointSize(atts.GetPointSizePixels());
 }
 
 // ****************************************************************************

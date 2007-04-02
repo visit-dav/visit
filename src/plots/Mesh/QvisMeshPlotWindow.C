@@ -106,6 +106,9 @@ QvisMeshPlotWindow::~QvisMeshPlotWindow()
 //   Kathleen Bonnell, Fri Nov 12 10:51:59 PST 2004 
 //   Replaced point-related control widgets with QvisPointControl. 
 //
+//   Brad Whitlock, Wed Jul 20 14:27:00 PST 2005
+//   Added pointSizePixelsChanged slot.
+//
 // ****************************************************************************
 
 void
@@ -215,6 +218,8 @@ QvisMeshPlotWindow::CreateWindowContents()
     pointControl = new QvisPointControl(central, "pointControl");
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
+            this, SLOT(pointSizePixelsChanged(int)));
     connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
             this, SLOT(pointSizeVarChanged(const QString &)));
     connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
@@ -314,6 +319,9 @@ QvisMeshPlotWindow::CreateWindowContents()
 //
 //   Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
 //   Fixed SGI compiler error with string conversion to QString
+//
+//   Brad Whitlock, Wed Jul 20 15:01:21 PST 2005
+//   Added pointSizePixels.
 //
 // ****************************************************************************
 
@@ -490,6 +498,11 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             showInternalToggle->setChecked(meshAtts->GetShowInternal());
             showInternalToggle->blockSignals(false);
             break;
+        case 17: // pointSizePixels
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizePixels(meshAtts->GetPointSizePixels());
+            pointControl->blockSignals(false);
+            break;
         }
     } // end for
 }
@@ -548,6 +561,7 @@ QvisMeshPlotWindow::GetCurrentValues(int which_widget)
     if(doAll)
     {
         meshAtts->SetPointSize(pointControl->GetPointSize());
+        meshAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
         meshAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
     }
 }
@@ -1008,6 +1022,25 @@ QvisMeshPlotWindow::pointSizeChanged(double size)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisMeshPlotWindow::pointSizePixelsChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and presses the Enter key.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:25:58 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisMeshPlotWindow::pointSizePixelsChanged(int size)
+{
+    meshAtts->SetPointSizePixels(size); 
+    Apply();
+}
 
 // ****************************************************************************
 // Method: QvisMeshPlotWindow::pointSizeVarToggled

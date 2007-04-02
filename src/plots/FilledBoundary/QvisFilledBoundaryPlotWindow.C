@@ -293,6 +293,8 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     pointControl = new QvisPointControl(central, "pointControl");
     connect(pointControl, SIGNAL(pointSizeChanged(double)),
             this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
+            this, SLOT(pointSizePixelsChanged(int)));
     connect(pointControl, SIGNAL(pointSizeVarChanged(const QString &)),
             this, SLOT(pointSizeVarChanged(const QString &)));
     connect(pointControl, SIGNAL(pointSizeVarToggled(bool)),
@@ -387,6 +389,9 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
 //
 //    Mark C. Miller, Mon Dec  6 13:30:51 PST 2004
 //    Fixed SGI compiler error with string conversion to QString
+//
+//    Brad Whitlock, Wed Jul 20 17:42:45 PST 2005
+//    Added pointSizePixels.
 //
 // ****************************************************************************
 
@@ -513,6 +518,11 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
             pointControl->blockSignals(true);
             temp = QString(boundaryAtts->GetPointSizeVar().c_str());
             pointControl->SetPointSizeVar(temp);
+            pointControl->blockSignals(false);
+            break;
+        case 20: // pointSizePixels
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizePixels(boundaryAtts->GetPointSizePixels());
             pointControl->blockSignals(false);
             break;
         }
@@ -1383,6 +1393,8 @@ QvisFilledBoundaryPlotWindow::mixedColorChanged(const QColor &color)
 // Creation:   November 10, 2004 
 //
 // Modifications:
+//   Brad Whitlock, Wed Jul 20 17:44:59 PST 2005
+//   Added SetPointSizePixels.
 //
 // ****************************************************************************
 
@@ -1395,6 +1407,7 @@ QvisFilledBoundaryPlotWindow::GetCurrentValues(int which_widget)
     if(doAll)
     {
         boundaryAtts->SetPointSize(pointControl->GetPointSize());
+        boundaryAtts->SetPointSizePixels(pointControl->GetPointSizePixels());
         boundaryAtts->SetPointSizeVar(pointControl->GetPointSizeVar().latin1());
     }
 }
@@ -1492,4 +1505,24 @@ QvisFilledBoundaryPlotWindow::pointSizeChanged(double d)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisFilledBoundaryPlotWindow::pointSizePixelsChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user changes the
+//   point size text and presses the Enter key.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 20 14:25:58 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisFilledBoundaryPlotWindow::pointSizePixelsChanged(int size)
+{
+    boundaryAtts->SetPointSizePixels(size); 
+    Apply();
+}
 

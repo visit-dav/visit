@@ -22,6 +22,9 @@
 //  Creation:   November 12, 2004 
 //
 //  Modifications:
+//    Brad Whitlock, Fri Jul 22 11:21:47 PDT 2005
+//    Added an override for the SetGlyphType method that lets us switch
+//    mapper inputs when we enter of leave point glyphing mode.
 //
 // ****************************************************************************
 
@@ -33,6 +36,7 @@ class PLOTTER_API  avtLevelsPointGlyphMapper : virtual public avtLevelsMapper,
     virtual                   ~avtLevelsPointGlyphMapper();
 
     virtual void               ScaleByVar(const std::string &);
+    void                       SetGlyphType(const int type);
 
   protected:
     virtual void               CustomizeMappers(void);

@@ -78,6 +78,9 @@
       <Field name="pointSizeVar" label="Point size by var" type="variablename" vartypes="0100000000">
         default
       </Field>
+      <Field name="pointSizePixels" label="Point size pixels" type="int">
+        1
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="Print" user="true" member="true">

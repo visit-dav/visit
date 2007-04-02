@@ -285,4 +285,72 @@ avtVariablePointGlyphMapper::ScaleByVar(const string &sname)
     }
     DataScalingOn(scalingVarName, scalingVarDim);
 }
- 
+
+// ****************************************************************************
+// Method: avtVariablePointGlyphMapper::SetGlyphType
+//
+// Purpose: 
+//   This method sets the point glyph type.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       This method overrides avtPointGlypher::SetGlyphType and allows
+//             us to change the mapper's input if we're switching to and fro
+//             between point glyphing mode. We do the switch because we don't
+//             want to expend any effort in a glyph filter or a normals filter
+//             if we're just drawing points so we set the mapper's input to
+//             the point dataset directly. If we're switching out of points
+//             mode then we have to add the glyph and normals filters to make
+//             sure that the points get glyphed appropriately.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jul 22 11:17:08 PDT 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariablePointGlyphMapper::SetGlyphType(const int type)
+{
+    if (type < 0 || type > 3) 
+        return; 
+
+    if (glyphType != type)
+    {
+        // If we're going into point glyphing mode or out of point
+        // glyphing mode then change the mapper's input accordingly.
+        // We do this switch so we don't have to glyph points but we
+        // can still switch from points to glyphs and vice versa.
+        if(nMappers > 0 && (glyphType == 3 || type == 3))
+        {
+            avtDataObject_p input = GetInput();
+            if (*input != NULL)
+            {
+                int tmp = glyphType;
+                glyphType = type;
+                avtDataTree_p tree = GetInputDataTree();
+                vtkDataSet **children = tree->GetAllLeaves(nMappers);
+                for (int i = 0; i < nMappers; i++)
+                {
+                    if (mappers[i] != NULL)
+                    {
+                        mappers[i]->SetInput(InsertFilters(children[i], i));
+                    }
+                }
+                // this was allocated in GetAllLeaves, need to free it now
+                delete [] children;
+
+                PrepareExtents();
+                CustomizeMappers();
+
+                glyphType = tmp;
+            }
+        }
+
+        avtPointGlypher::SetGlyphType(type);
+    }
+}
+

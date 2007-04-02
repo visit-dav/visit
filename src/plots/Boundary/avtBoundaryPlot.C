@@ -164,6 +164,10 @@ avtBoundaryPlot::Create()
 //    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004 
 //    Incorporate point controls (pointSize, pointType, pointSizeVar).
 //
+//    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
+//    I made the pointSize in the atts be used for to set the point size for
+//    points, which is not the same as what's used for Box, Axis, Icosahedra.
+//
 // ****************************************************************************
 
 void
@@ -205,6 +209,7 @@ avtBoundaryPlot::SetAtts(const AttributeGroup *a)
         levelsMapper->DataScalingOff();
     }
     levelsMapper->SetGlyphType((int)atts.GetPointType());
+    SetPointGlyphSize();
 }
 
 
@@ -430,6 +435,8 @@ avtBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Mon Sep 29 13:15:20 PDT 2003
 //    Set AntialisedRenderOrder dependent upon wireframe mode.
 //
+//    Brad Whitlock, Thu Jul 21 15:34:01 PST 2005
+//    Set point glyph size.
 // ****************************************************************************
 
 void
@@ -437,6 +444,7 @@ avtBoundaryPlot::CustomizeBehavior(void)
 {
     SortLabels();
     SetColors();
+    SetPointGlyphSize();
     levelsLegend->SetLookupTable(avtLUT->GetLookupTable());
 
     behavior->SetLegend(levLegendRefPtr);
@@ -451,6 +459,27 @@ avtBoundaryPlot::CustomizeBehavior(void)
         behavior->SetShiftFactor(0.);
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
     }
+}
+
+// ****************************************************************************
+// Method: avtBoundaryPlot::SetPointGlyphSize
+//
+// Purpose: 
+//   Sets the point glyph size into the mapper.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jul 21 15:24:25 PST 2005
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtBoundaryPlot::SetPointGlyphSize()
+{
+    // Size used for points when using a point glyph.
+    if(atts.GetPointType() == BoundaryAttributes::Point)
+        levelsMapper->SetPointSize(atts.GetPointSizePixels());
 }
 
 // ****************************************************************************
