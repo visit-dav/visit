@@ -533,6 +533,10 @@ VisWinRendering::EnableUpdates(void)
 //    Added args to Start/Stop timer to force acquisition of timing information
 //    even if timings were not enabled on the command-line.
 //    Added 3 most recent rendering times to set of times returned
+//
+//    Hank Childs, Wed Mar  1 10:05:25 PST 2006
+//    Look for exceptions that occurred during a Render.
+//
 // ****************************************************************************
 
 void
@@ -546,7 +550,15 @@ VisWinRendering::Render()
     if (realized)
     {
         if (mediator.UpdatesEnabled() && !avtCallback::GetNowinMode())
+        {
+            avtCallback::ClearRenderingExceptions();
             GetRenderWindow()->Render();
+            std::string errorMsg = avtCallback::GetRenderingException();
+            if (errorMsg != "")
+            {
+                EXCEPTION1(VisItException, errorMsg.c_str());
+            }
+        }
         else
         {
             needsUpdate = true;
@@ -796,6 +808,9 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    this to work even if we are doing two-pass rendering with OpenGL
 //    (which isn't supported right now anyway).
 //
+//    Hank Childs, Wed Mar  1 11:26:15 PST 2006
+//    Add some exception handling.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -869,6 +884,7 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo,
     //
     // Make sure that the window is up-to-date.
     //
+    avtCallback::ClearRenderingExceptions();
     if (second_pass)
     {
         // We can't erase the rgb/z data we just worked
@@ -882,6 +898,11 @@ VisWinRendering::ScreenCapture(bool doViewportOnly, bool doCanvasZBufferToo,
         // Okay, this is either the first pass or the only pass, 
         // so we better darn well allow erasing before drawing.
         renWin->Render();
+    }
+    std::string errorMsg = avtCallback::GetRenderingException();
+    if (errorMsg != "")
+    {
+        EXCEPTION1(VisItException, errorMsg.c_str());
     }
 
     //

@@ -6,7 +6,12 @@
 
 #include <vtkObjectFactory.h>
 #include <vtkRenderer.h>
+
 #include <ColorAttribute.h>
+
+#include <avtCallback.h>
+
+#include <VisItException.h>
 
 
 // ****************************************************************************
@@ -350,6 +355,12 @@ vtkUserDefinedMapperBridge::SetRenderer(avtCustomRenderer_p r)
 //  Programmer: Hank Childs
 //  Creation:   March 26, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Mar  1 09:59:45 PST 2006
+//    Added some exception handling.  Not a good idea to let an exception
+//    be thrown up through VTK's GL code.
+//
 // ****************************************************************************
 
 void 
@@ -368,7 +379,21 @@ vtkUserDefinedMapperBridge::Render(vtkRenderer *r, vtkActor *)
     //
     vtkDataSet *input = this->GetInput();
     ren->SetVTKRenderer(r);
-    ren->Execute(input);
+    TRY
+    {
+        ren->Execute(input);
+    }
+    CATCH2(VisItException, ve)
+    {
+        //
+        // We do not want to throw an exception here.  This call has a bunch
+        // of VTK/GL code above it and throwing an exception will leave it
+        // in a very bad state.  So, log the exception in avtCallback and let
+        // the VisWindow look for it after the render is finished.
+        //
+        avtCallback::SetRenderingException(ve.Message());
+    }
+    ENDTRY
 }
 
 

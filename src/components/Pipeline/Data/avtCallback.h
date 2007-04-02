@@ -56,6 +56,9 @@ typedef   ref_ptr<avtDatabase> (*GetDatabaseCallback)(void *,
 //    Hank Childs, Sat Dec  3 20:27:16 PST 2005
 //    Added swRendering.
 //
+//    Hank Childs, Tue Feb 28 14:12:16 PST 2006
+//    Added rendering exceptions.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCallback
@@ -95,6 +98,15 @@ class PIPELINE_API avtCallback
     static ref_ptr<avtDatabase>  GetDatabase(const std::string &, int,
                                              const char *);
 
+    static void                  ClearRenderingExceptions(void)
+                                       { haveRenderingException = false; };
+    static void                  SetRenderingException(const std::string &s)
+                                       { haveRenderingException = true;
+                                         renderingExceptionMessage = s; };
+    static std::string           GetRenderingException(void)
+                                       { return (haveRenderingException
+                                         ? renderingExceptionMessage : ""); };
+
   protected:
     static WarningCallback       warningCallback;
     static void                 *warningCallbackArgs;
@@ -114,6 +126,9 @@ class PIPELINE_API avtCallback
 
     static GetDatabaseCallback   getDatabaseCallback;
     static void                 *getDatabaseCallbackArgs;
+
+    static bool                  haveRenderingException;
+    static std::string           renderingExceptionMessage;
 };
 
 
