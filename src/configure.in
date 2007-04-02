@@ -591,6 +591,9 @@ dnl
 dnl    Mark C. Miller, Mon Dec 12 20:53:03 PST 2005
 dnl    Moved -lbz2 to BZIP2_LIBS config/make variable
 dnl
+dnl    Brad Whitlock, Fri Dec 16 17:03:10 PST 2005
+dnl    Improved glTexImage3D detection on MacOS X.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -833,7 +836,11 @@ AC_SUBST(GL_LIBS)
 oldlibs="$LIBS"
 LIBS="$LIBS $GL_LIBS"
 AC_MSG_CHECKING(for glTexImage3D in OpenGL)
-AC_TRY_LINK([#include <GL/gl.h>],
+AC_TRY_LINK([#ifdef __APPLE__
+#include <OpenGL/gl.h>
+#else
+#include <GL/gl.h>
+#endif],
 	    [glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, 0,0,0,
                           0, GL_RGBA, GL_UNSIGNED_BYTE, 0);],
             
