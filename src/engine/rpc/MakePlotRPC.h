@@ -62,6 +62,8 @@ class ENGINE_RPC_API PreparePlotRPC : public BlockingRPC
     PreparePlotRPC();
     ~PreparePlotRPC();
 
+    const std::string TypeName() const { return "PreparePlotRPC";};
+
     void SetMakePlotRPC(MakePlotRPC*);
     MakePlotRPC *GetMakePlotRPC();
 
@@ -114,6 +116,8 @@ class ENGINE_RPC_API MakePlotRPC : public BlockingRPC
   public:
     MakePlotRPC();
     virtual ~MakePlotRPC();
+
+    const std::string TypeName() const { return "MakePlotRPC";};
 
     int operator()(const std::string&, const AttributeSubject*,
                    const std::vector<double> &, int);

@@ -57,6 +57,8 @@ public:
     UseNetworkRPC();
     virtual ~UseNetworkRPC();
 
+    const std::string TypeName() const { return "UseNetworkRPC";};
+
     // Invokation method
     void operator()(int);
 

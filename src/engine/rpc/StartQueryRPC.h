@@ -59,6 +59,8 @@ class ENGINE_RPC_API StartQueryRPC : public BlockingRPC
     StartQueryRPC();
     virtual ~StartQueryRPC();
 
+    const std::string TypeName() const { return "StartQueryRPC";};
+
     // Invokation method
     void operator()(const bool, const int);
 

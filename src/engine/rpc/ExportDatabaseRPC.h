@@ -59,6 +59,8 @@ class ENGINE_RPC_API ExportDatabaseRPC : public BlockingRPC
     ExportDatabaseRPC();
     virtual ~ExportDatabaseRPC();
 
+    const std::string TypeName() const { return "ExportDatabaseRPC";};
+
     // Invocation method
     void operator()(const int, const ExportDBAttributes *);
 

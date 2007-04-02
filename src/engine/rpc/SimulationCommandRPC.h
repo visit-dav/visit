@@ -60,6 +60,8 @@ class ENGINE_RPC_API SimulationCommandRPC : public BlockingRPC
     SimulationCommandRPC();
     virtual ~SimulationCommandRPC();
 
+    const std::string TypeName() const { return "SimulationCommandRPC";};
+
     // Invokation methods
     /*
     void operator()(const std::string &command);
