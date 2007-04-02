@@ -372,10 +372,14 @@ avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
 //  Programmer: Kathleen Bonnell
 //  Creation:   June 2, 2004 
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDatAttributes arg.
+//
 // ****************************************************************************
 
 void
-avtNodePickQuery::Preparation()
+avtNodePickQuery::Preparation(const avtDataAttributes &)
 {
     //
     // Transform the point that will be used in locating the node. 

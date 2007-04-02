@@ -13,6 +13,7 @@
 #include <QueryOverTimeAttributes.h>
 #include <SILRestrictionAttributes.h>
 
+class vtkPolyData;
 
 // ****************************************************************************
 //  Class: avtQueryOverTimeFilter
@@ -36,6 +37,9 @@
 //    ExecutionSuccessful (required by new inheritance).  Added qRes, times
 //    (used to be stored by avtDataSetQuery::PerformQueryInTime).  Added
 //    sucess and finalOutputCreated.
+//
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added CreatePolys method, and members useTimeForXAxis, nResultsToStore. 
 //
 // ****************************************************************************
 
@@ -61,6 +65,9 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
     bool                  success;
     bool                  finalOutputCreated;
 
+    bool                  useTimeForXAxis;
+    int                   nResultsToStore;
+
     virtual void          Execute(void);
     virtual void          RefashionDataObjectInfo(void);
 
@@ -68,6 +75,8 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
 
     virtual void          CreateFinalOutput(void);
     virtual bool          ExecutionSuccessful(void) { return success; } ;
+    vtkPolyData          *CreatePolys(const doubleVector &, 
+                                      const doubleVector &);
 };
 
 

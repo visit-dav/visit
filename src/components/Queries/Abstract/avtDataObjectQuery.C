@@ -279,3 +279,38 @@ avtDataObjectQuery::SetSILRestriction(const avtSILRestriction_p silr)
 {
     querySILR = new avtSILRestriction(silr);
 }
+
+
+// ****************************************************************************
+//  Method: avtDataObjectQuery::GetTimeCurveSpecs
+//
+//  Purpose:
+//    Sets some flags used by QueryOverTime.
+//    Defined here so derived types don't have to.  The default type
+//    of time curve is a Single curve using Time for the X-axis. 
+//
+//  Arguments:
+//    timeForX   Is time used for the x-axis in the time curve?
+//    nRes       The number of results to use in creation of the time curve.
+//
+//  Notes:
+//    If timeForX is true, then nRes should be 1 unless multiple curves
+//    are desired (not yet implemented by QOT).
+//
+//    If timeForX is false, then nRes should be 2^n where n is the number 
+//    of curves desired. Odd-indexed results will be used for X-axis, 
+//    even-indexed results will be used for Y Axis.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    January 3, 2005 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataObjectQuery::GetTimeCurveSpecs(bool &timeForX, int &nRes)
+{
+    timeForX = true; 
+    nRes = 1; 
+}

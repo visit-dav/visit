@@ -11,6 +11,9 @@
 #include <avtQueryOverTimeFilter.h>
 
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
 
@@ -23,11 +26,6 @@
 #include <DebugStream.h>
 
 using std::string;
-//
-// Function Prototypes
-//
-
-vtkPolyData     *CreatePolys(const doubleVector &, const doubleVector &);
 
 
 
@@ -44,6 +42,9 @@ vtkPolyData     *CreatePolys(const doubleVector &, const doubleVector &);
 //    Kathleen Bonnell, Thu Jan  6 11:16:40 PST 2005
 //    Add call to SetTimeLoop.  Initialize finalOutputCreated.
 //
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Initialize useTimeforXAxis and nResultsToStore. 
+//
 // ****************************************************************************
 
 avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
@@ -51,6 +52,8 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
     atts = *(QueryOverTimeAttributes*)a;
     SetTimeLoop(atts.GetStartTime(), atts.GetEndTime(), atts.GetStride());
     finalOutputCreated = false;
+    useTimeForXAxis = true;
+    nResultsToStore = 1;
 }
 
 
@@ -115,6 +118,10 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //    Test for error condition upstream, capture and store query results
 //    and times.   Moved IssueWarning callbacks to CreateFinalOutput.
 //
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Added call to query.GetTimeCurveSpecs.  Only retrive time value
+//    if it will be used for the X-axis.  Store the correct number of results.
+//
 // ****************************************************************************
 
 void
@@ -153,6 +160,7 @@ avtQueryOverTimeFilter::Execute(void)
     avtDataObjectQuery *query = avtQueryFactory::Instance()->
         CreateQuery(&qatts);
 
+    query->GetTimeCurveSpecs(useTimeForXAxis, nResultsToStore);
     query->SetTimeVarying(true);
     query->SetInput(GetInput());
     query->SetSILRestriction(currentSILR);
@@ -161,9 +169,12 @@ avtQueryOverTimeFilter::Execute(void)
     // HokeyHack ... we want only 1 curve, so limit the
     // query to 1 variable to avoid unnecessary processing.
     //
-    stringVector useThisVar;
-    useThisVar.push_back(qatts.GetVariables()[0]);
-    qatts.SetVariables(useThisVar);
+    if (nResultsToStore==1)
+    {
+        stringVector useThisVar;
+        useThisVar.push_back(qatts.GetVariables()[0]);
+        qatts.SetVariables(useThisVar);
+    }
     //
     // End HokeyHack. 
     //
@@ -198,26 +209,26 @@ avtQueryOverTimeFilter::Execute(void)
     //
     // Store the necessary time value 
     //
-    double tval;  
-    switch(atts.GetTimeType()) 
+    if (useTimeForXAxis)
     {
+        double tval;  
+        switch(atts.GetTimeType()) 
+        {
         case QueryOverTimeAttributes::Cycle:
-           tval = (double) GetInput()->GetInfo().GetAttributes().GetCycle();
-           break;
+            tval = (double) GetInput()->GetInfo().GetAttributes().GetCycle();
+            break;
         case QueryOverTimeAttributes::DTime: 
-           tval = GetInput()->GetInfo().GetAttributes().GetTime();
-           break;
+            tval = GetInput()->GetInfo().GetAttributes().GetTime();
+            break;
         case QueryOverTimeAttributes::Timestep: 
         default: // timestep
-               tval = (double)currentTime;
-           break;
+            tval = (double)currentTime;
+            break;
+        }
+        times.push_back(tval);
     }
-    times.push_back(tval);
-
-    //
-    // Store the query results ... currently only one result.
-    //
-    qRes.push_back(results[0]);
+    for (int i = 0; i < nResultsToStore; i++)
+        qRes.push_back(results[i]);
 }
 
 
@@ -234,6 +245,9 @@ avtQueryOverTimeFilter::Execute(void)
 //    Kathleen Bonnell, Thu Jan  6 11:21:44 PST 2005
 //    Moved setting of  dataAttributes from PostExecute to here.
 //
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Use different labels/units if Time not used for X-Axis. 
+//
 // ****************************************************************************
 
 void
@@ -248,26 +262,36 @@ avtQueryOverTimeFilter::RefashionDataObjectInfo(void)
     {
         outAtts.GetTrueSpatialExtents()->Clear();
         outAtts.GetEffectiveSpatialExtents()->Clear();
-        outAtts.SetXLabel("Time");
-        outAtts.SetYLabel(atts.GetQueryAtts().GetName());
-        // later, can use cycles or dtime
-        if (atts.GetTimeType() == QueryOverTimeAttributes::Cycle)
+        if (useTimeForXAxis)
         {
-            outAtts.SetXUnits("cycle");
-        }
-        else if (atts.GetTimeType() == QueryOverTimeAttributes::DTime)
-        {
-            outAtts.SetXUnits("time");
-        }
-        else if (atts.GetTimeType() == QueryOverTimeAttributes::Timestep)
-        {
-            outAtts.SetXUnits("timestep");
+            outAtts.SetXLabel("Time");
+            outAtts.SetYLabel(atts.GetQueryAtts().GetName());
+            if (atts.GetTimeType() == QueryOverTimeAttributes::Cycle)
+            {
+                outAtts.SetXUnits("cycle");
+            }
+            else if (atts.GetTimeType() == QueryOverTimeAttributes::DTime)
+            {
+                outAtts.SetXUnits("time");
+            }
+            else if (atts.GetTimeType() == QueryOverTimeAttributes::Timestep)
+            {
+                outAtts.SetXUnits("timestep");
+            }
+            else 
+            {
+                outAtts.SetXUnits("");
+            }
         }
         else 
         {
-            outAtts.SetXUnits("");
+            string xl = atts.GetQueryAtts().GetVariables()[0] + "(t)";
+            string yl = atts.GetQueryAtts().GetVariables()[1] + "(t)";
+            outAtts.SetXLabel(xl);
+            outAtts.SetYLabel(yl);
+            outAtts.SetXUnits(atts.GetQueryAtts().GetXUnits());
+            outAtts.SetYUnits(atts.GetQueryAtts().GetYUnits());
         }
-        outAtts.SetYUnits("");
 
         double bounds[6];
         avtDataset_p ds = GetTypedOutput();
@@ -307,6 +331,8 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //  Creation:   January 3, 2005 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Time not always used for X-Axis. 
 //
 // ****************************************************************************
 
@@ -321,7 +347,7 @@ avtQueryOverTimeFilter::CreateFinalOutput()
         SetOutputDataTree(dummy);
         return;
     }
-    if (qRes.size() != times.size())
+    if (useTimeForXAxis && qRes.size() != times.size())
     {
         debug4 << "QueryOverTime ERROR, number of results (" 
                << qRes.size() << ") does not equal number "
@@ -330,6 +356,16 @@ avtQueryOverTimeFilter::CreateFinalOutput()
             "\nQueryOverTime error, number of results does not equal "
             "number of timestates.  Curve being created may be missing "
             "some values.  Please contact a VisIt developer."); 
+    }
+    else if (qRes.size() % 2 != 0)
+    {
+        debug4 << "QueryOverTime ERROR, number of results (" 
+               << qRes.size() << ") is not a multiple of 2 and "
+               << "therefore cannot generate x,y pairs." << endl;
+        avtCallback::IssueWarning(
+            "\nQueryOverTime error, number of results is not multiple "
+            "of 2. Curve being created may be missing some values. "
+            " Please contact a VisIt developer."); 
     }
     if (skippedTimes.size() != 0)
     {
@@ -368,11 +404,14 @@ avtQueryOverTimeFilter::CreateFinalOutput()
 //  Creation:     March 15, 2004 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Made this a member method. Time not always used for x-axis.
 //
 // ****************************************************************************
 
 vtkPolyData *
-CreatePolys(const doubleVector &x, const doubleVector &y)
+avtQueryOverTimeFilter::CreatePolys(const doubleVector &times, 
+                                    const doubleVector &res)
 {
     vtkPolyData *pd = vtkPolyData::New();
 
@@ -384,14 +423,39 @@ CreatePolys(const doubleVector &x, const doubleVector &y)
     pd->SetVerts(verts);
     verts->Delete();
 
-    int nPts = (x.size() <= y.size() ? x.size() : y.size());
+    int nPts = 0;
+    if (useTimeForXAxis && nResultsToStore == 1)
+    {
+       // Single curve with time for x axis.  NORMAL case.
+       // Most queries currently use this option. 
+       nPts = (times.size() <= res.size() ? times.size() : res.size());
+    }
+    else if (!useTimeForXAxis && nResultsToStore == 2)
+    {
+       // Single curve, res[odd] = x, res[even] = y.
+       nPts = res.size() / 2;
+    }
+    else if (useTimeForXAxis && nResultsToStore > 1)
+    {
+       // Create multiple curves with time as x-axis
+       // NOT IMPLEMENTED YET, need to create multiple
+       // vtkPolyData objects, but pipeline for the Curve
+       // plot not yet set up correctly.
+    }
+    else if (!useTimeForXAxis && nResultsToStore > 2)
+    {
+       // multiple curves, res[odd] = x, res[even] = y.
+    }
+
     points->SetNumberOfPoints(nPts);
     verts->InsertNextCell(nPts);
     for (int i = 0; i < nPts; i++)
     {
-        points->SetPoint(i, x[i], y[i], 0);
+        if (useTimeForXAxis)
+            points->SetPoint(i, times[i], res[i], 0);
+        else 
+            points->SetPoint(i, res[i*2], res[i*2+1], 0);
         verts->InsertCellPoint(i);
     }
-
     return pd;
 }

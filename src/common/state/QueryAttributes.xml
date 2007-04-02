@@ -59,6 +59,10 @@
     <Field name="useGlobalId" label="useGlobalId" type="bool">
       false
     </Field>
+    <Field name="xUnits" label="xUnits" type="string">
+    </Field>
+    <Field name="yUnits" label="yUnits" type="string">
+    </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
     <Function name="PrintSelf" user="true" member="true">

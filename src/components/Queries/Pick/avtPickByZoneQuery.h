@@ -1,5 +1,5 @@
 // ************************************************************************* //
-//                            avtPickByZoneQuery.h                                 //
+//                        avtPickByZoneQuery.h                               //
 // ************************************************************************* //
 
 #ifndef AVT_PICKBYZONE_QUERY_H
@@ -20,6 +20,8 @@
 //  Creation:   November 15, 2002 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Added avtDataAttributes arg to Preparation.
 //    
 // ****************************************************************************
 
@@ -38,7 +40,7 @@ class QUERY_API avtPickByZoneQuery : public avtPickQuery
   protected:
 
     virtual void                    Execute(vtkDataSet *, const int);
-    virtual void                    Preparation(void);
+    virtual void                    Preparation(const avtDataAttributes &);
 };
 
 

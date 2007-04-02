@@ -167,6 +167,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Jeremy Meredith, Thu Sep 15 16:37:24 PDT 2005
 //   Added machinefile and useVisItScriptForEnv.
 //
+//   Kathleen Bonnell, Thu Nov 10 16:58:34 PST 2005 
+//   Added "qsub" launcher.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -304,6 +307,7 @@ QvisHostProfileWindow::CreateWindowContents()
     launchMethod->insertItem("yod");
     launchMethod->insertItem("dmpirun");
     launchMethod->insertItem("bsub");
+    launchMethod->insertItem("qsub");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox("Parallel launch method",

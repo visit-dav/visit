@@ -49,6 +49,11 @@
 #   Jeremy Meredith, Thu Aug 18 17:13:02 PDT 2005
 #   Split cell reconstructor into a recursive and an isovolume version.
 #
+#   Jeremy Meredith, Thu Nov 10 14:55:30 PST 2005
+#   Removed automatic dependencies for mat3d_tet stuff.  It was getting
+#   triggered accidentally on occasion and trying to rebuild read-only files
+#   in the VOB.  It never changes anymore anyway.....
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -102,7 +107,7 @@ clean:
 .NO_CONFIG_REC:  mat3d_tet.h mat3d_tet.C Tet/mat3d_tet.h Tet/mat3d_tet.C
 .NO_WINK_IN:  mat3d_tet.h mat3d_tet.C Tet/mat3d_tet.h Tet/mat3d_tet.C
 .NO_DO_FOR_SIBLING: mat3d_tet.h mat3d_tet.C Tet/mat3d_tet.h Tet/mat3d_tet.C
-mat3d_tet Tet/mat3d_tet.h Tet/mat3d_tet.C:  Tet/mat3d_tables.C
+mat3d_tet:
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) Tet/mat3d_tables.C -o mat3d_tables
 	rm -f Tet/mat3d_tet.h Tet/mat3d_tet.C
 	./mat3d_tables

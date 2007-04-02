@@ -23,6 +23,11 @@
       TimeRelated
       VariableRelated
     </Enum>
+    <Enum name="QueryMode">
+      QueryOnly
+      QueryAndTime
+      TimeOnly
+    </Enum>
     <Field name="names" label="names" type="stringVector">
     </Field>
     <Field name="types" label="types" type="intVector">
@@ -35,7 +40,9 @@
     </Field>
     <Field name="winType" label="winType" type="intVector" internal="true">
     </Field>
-    <Field name="timeQuery" label="timeQuery" type="intVector">
+    <Field name="queryMode" label="queryMode" type="intVector">
+    </Field>
+    <Field name="numVars" label="numVars" type="intVector">
     </Field>
     <Function name="AddQuery" user="true" member="true">
     </Function>
@@ -48,5 +55,9 @@
     <Function name="TimeQueryAvailable" user="true" member="true">
     </Function>
     <Function name="GetWindowType" user="true" member="true">
+    </Function>
+    <Function name="NumberOfVarsForQuery" user="true" member="true">
+    </Function>
+    <Function name="RegularQueryAvailable" user="true" member="true">
     </Function>
   </Attribute>

@@ -388,13 +388,16 @@ QvisQueryWindow::UpdateTimeQueryButton()
 //   according to the displayMode specified by user.  All individual lists
 //   are now sorted.
 //
+//   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//   Reflect changes in queryList -- timeQuery is now queryMode. 
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::UpdateQueryList()
 {
     const stringVector &names = queries->GetNames();
-    const intVector &times = queries->GetTimeQuery();
+    const intVector &mode = queries->GetQueryMode();
     const intVector &groups = queries->GetGroups();
 
     // Add the arguments to the query list.
@@ -411,7 +414,7 @@ QvisQueryWindow::UpdateQueryList()
             queryList->insertItem(QString(names[i].c_str()));
         }
         else if (displayMode->currentText() == "All queries-over-time" &&
-                 times[i])
+                 mode[i] != QueryList::QueryOnly)
         {
             queryList->insertItem(QString(names[i].c_str()));
         }
@@ -550,13 +553,17 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kathleen Bonnell, Mon May  9 13:27:49 PDT 2005 
 //   Removed 'Samples' from 'DoublePoint' (lineout) query.
 //
+//   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//   Reflect changes in queryList -- timeQuery is now queryMode. 
+//   Allow 'Query' button to not be shown for QueryMde == TimeOnly.
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
 {
     const intVector &winType = queries->GetWinType();
-    const intVector &timeQuery = queries->GetTimeQuery();
+    const intVector &queryMode = queries->GetQueryMode();
     const stringVector &names = queries->GetNames();
 
     int index = -1;
@@ -580,7 +587,8 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         bool showDataOptions = false;
         bool showGlobal = false;
         QueryList::WindowType winT = (QueryList::WindowType)winType[index];
-        bool showTime = (bool)timeQuery[index];
+        bool showTime = queryMode[index] != QueryList::QueryOnly;
+        bool showQuery = queryMode[index] != QueryList::TimeOnly;
       
         labels[0]->setText("Variables");
         textFields[0]->setText("default");
@@ -706,6 +714,11 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             timeQueryButton->show();
         else 
             timeQueryButton->hide();
+
+        if (showQuery)
+            queryButton->show();
+        else 
+            queryButton->hide();
     }
 }
 
