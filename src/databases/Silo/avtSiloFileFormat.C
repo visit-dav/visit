@@ -936,6 +936,9 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
 //    Added group origin to mesh metadata constructor.
 //
+//    Mark C. Miller, Mon Sep 26 14:05:52 PDT 2005
+//    Added code to query for AlphabetizeVariables
+//
 // ****************************************************************************
 
 void
@@ -1089,6 +1092,14 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     char  *searchpath_str = NULL;
     if (strcmp(dirname, "/") == 0)
     {
+        if (DBInqVarExists(dbfile, "AlphabetizeVariables"))
+        {
+            int alphaFlag;
+            DBReadVar(dbfile, "AlphabetizeVariables", &alphaFlag);
+            if (alphaFlag == 0)
+                md->SetMustAlphabetizeVariables(false);
+        }
+
         if (DBInqVarExists(dbfile, "_disjoint_elements"))
         {
             hasDisjointElements = true;
