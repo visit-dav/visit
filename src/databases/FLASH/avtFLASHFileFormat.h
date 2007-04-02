@@ -7,6 +7,8 @@
 
 #include <avtSTMDFileFormat.h>
 
+#include <map>
+#include <string>
 #include <vector>
 
 #include <hdf5.h>
@@ -20,6 +22,10 @@
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   August 23, 2005
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
+//    Added particle support.
 //
 // ****************************************************************************
 
@@ -56,6 +62,7 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     void ReadRefinementLevels();
     void ReadUnknownNames();
     void DetermineGlobalLogicalExtentsForAllBlocks();
+    void ReadParticleAttributes();
 
   protected:
     struct SimParams
@@ -84,20 +91,24 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     };
 
   protected:
-    std::string              filename;
-    int                      dimension;
-    int                      numBlocks;
-    int                      numLevels;
-    hid_t                    fileId;
-    SimParams                simParams;
-    std::vector<Block>       blocks;
-    int                      numChildrenPerBlock;
-    int                      numNeighborsPerBlock;
-    int                      block_ndims[3];
-    int                      block_zdims[3];
-    double                   minSpatialExtents[3];
-    double                   maxSpatialExtents[3];
-    std::vector<std::string> varNames;
+    std::string               filename;
+    int                       dimension;
+    int                       numBlocks;
+    int                       numLevels;
+    int                       numParticles;
+    hid_t                     fileId;
+    SimParams                 simParams;
+    std::vector<Block>        blocks;
+    int                       numChildrenPerBlock;
+    int                       numNeighborsPerBlock;
+    int                       block_ndims[3];
+    int                       block_zdims[3];
+    double                    minSpatialExtents[3];
+    double                    maxSpatialExtents[3];
+    std::vector<std::string>  varNames;
+    std::vector<std::string>  particleVarNames;
+    std::vector<hid_t>        particleVarTypes;
+    std::map<std::string,int> particleOriginalIndexMap;
 };
 
 

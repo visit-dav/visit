@@ -8916,7 +8916,7 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
 //    Removed use of 'std::'. 
 //    
 //    Jeremy Meredith, Wed Aug 24 12:51:09 PDT 2005
-//    Reused blockOrigin for group origin.
+//    Added group origin.
 //
 // ****************************************************************************
 
@@ -8943,7 +8943,7 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
     if (mmd->numGroups > 0 && dom < mmd->groupIds.size())
     {
          sprintf(temp, "%s %d " , mmd->groupPieceName.c_str(), 
-                 mmd->groupIds[dom] + mmd->blockOrigin);
+                 mmd->groupIds[dom] + mmd->groupOrigin);
          meshInfo += temp;
          rv = true;
     }

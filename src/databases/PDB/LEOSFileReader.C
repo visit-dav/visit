@@ -511,6 +511,9 @@ LEOSFileReader::BuildVarInfoMap()
 //    removed a trick that was being used to get the units into the axis
 //    labels.
 //
+//    Jeremy Meredith, Thu Aug 25 11:35:32 PDT 2005
+//    Added group origin to mesh metadata constructor.
+//
 // ****************************************************************************
 
 bool 
@@ -596,8 +599,9 @@ LEOSFileReader::AddVariableAndMesh(avtDatabaseMetaData *md, const char *matDirNa
     if (varInfo.ndims == 2)
     {
         // add the mesh
-        avtMeshMetaData *mmd = new avtMeshMetaData(mdMeshName, 1, 0, 0, varInfo.ndims,
-                                       varInfo.ndims, AVT_RECTILINEAR_MESH);
+        avtMeshMetaData *mmd = new avtMeshMetaData(mdMeshName, 1, 0, 0, 0,
+                                                   varInfo.ndims,varInfo.ndims,
+                                                   AVT_RECTILINEAR_MESH);
 
         // we use a trick and include the axis lables in the units
         mmd->xLabel = varInfo.xName;

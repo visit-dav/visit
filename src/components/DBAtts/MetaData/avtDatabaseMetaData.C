@@ -101,16 +101,20 @@ VariableNamesEqual(const std::string &v1, const std::string &v2)
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Thu Aug 25 09:42:22 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData()
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbs")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsi")
 {
     blockTitle = "domains";
     blockPieceName = "domain";
     numBlocks = 1;
     blockOrigin = 0;
     cellOrigin = 0;
+    groupOrigin = 0;
     numGroups = 0;
     spatialDimension = 3;
     topologicalDimension = 3;
@@ -183,17 +187,22 @@ avtMeshMetaData::avtMeshMetaData()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Thu Aug 25 09:42:33 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
-                                 int bo, int co,int sd, int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbs")
+                                 int bo, int co, int go, int sd, int td,
+                                 avtMeshType mt)
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsi")
 {
     name                 = s;
     originalName         = name;
     numBlocks            = nb;
     blockOrigin          = bo;
     cellOrigin           = co;
+    groupOrigin          = go;
     topologicalDimension = td;
     spatialDimension     = sd;
     meshType             = mt;
@@ -268,17 +277,21 @@ avtMeshMetaData::avtMeshMetaData(const float *extents, std::string s, int nb,
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Thu Aug 25 09:42:37 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
-avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
-                                 int td, avtMeshType mt)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbs")
+avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int go,
+                                 int sd, int td, avtMeshType mt)
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsi")
 {
     name                 = s;
     originalName         = name;
     numBlocks            = nb;
     blockOrigin          = bo;
     cellOrigin           = co;
+    groupOrigin          = go;
     topologicalDimension = td;
     spatialDimension     = sd;
     meshType             = mt;
@@ -356,16 +369,20 @@ avtMeshMetaData::avtMeshMetaData(std::string s, int nb, int bo, int co, int sd,
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Thu Aug 25 09:42:38 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 avtMeshMetaData::avtMeshMetaData(const avtMeshMetaData &rhs)
-    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbs")
+    : AttributeSubject("sssiiiiiibFFs*ii*ssbssssssibbbbbsi")
 {
     name                     = rhs.name;
     originalName             = rhs.originalName;
     numBlocks                = rhs.numBlocks;
     blockOrigin              = rhs.blockOrigin;
     cellOrigin               = rhs.cellOrigin;
+    groupOrigin              = rhs.groupOrigin;
     spatialDimension         = rhs.spatialDimension;
     topologicalDimension     = rhs.topologicalDimension;
     meshType                 = rhs.meshType;
@@ -465,6 +482,9 @@ avtMeshMetaData::~avtMeshMetaData()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Thu Aug 25 09:42:42 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 const avtMeshMetaData &
@@ -475,6 +495,7 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
     numBlocks                = rhs.numBlocks;
     blockOrigin              = rhs.blockOrigin;
     cellOrigin               = rhs.cellOrigin;
+    groupOrigin              = rhs.groupOrigin;
     spatialDimension         = rhs.spatialDimension;
     topologicalDimension     = rhs.topologicalDimension;
     meshType                 = rhs.meshType;
@@ -556,6 +577,9 @@ avtMeshMetaData::operator=(const avtMeshMetaData &rhs)
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Thu Aug 25 09:42:45 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 void
@@ -592,6 +616,7 @@ avtMeshMetaData::SelectAll()
     Select(28, (void*)&validVariable);
     Select(29, (void*)&containsGlobalZoneIds);
     Select(30, (void*)&originalName);
+    Select(31, (void*)&groupOrigin);
 }
 
 
@@ -687,6 +712,9 @@ avtMeshMetaData::SetExtents(const float *extents)
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Jeremy Meredith, Thu Aug 25 09:42:47 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 void
@@ -706,6 +734,8 @@ avtMeshMetaData::Print(ostream &out, int indent) const
     Indent(out, indent);
     out << "Cell origin = " << cellOrigin 
         << " (origin within one block of the cells)." << endl;
+    Indent(out, indent);
+    out << "Group origin = " << groupOrigin << endl;
     Indent(out, indent);
     out << "Title for domain hierarchy is " << blockTitle.c_str() << endl;
     Indent(out, indent);

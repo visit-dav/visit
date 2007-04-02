@@ -43,8 +43,8 @@ static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 //    Hank Childs, Fri Aug  1 21:38:52 PDT 2003
 //    Add support for curves.
 //
-//    Jeremy Meredith, Wed Aug 24 10:39:57 PDT 2005
-//    Use block origin for group origin as well.
+//    Jeremy Meredith, August 25, 2005
+//    Added group origin.
 //
 // ****************************************************************************
 
@@ -92,7 +92,7 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
                        mesh->blockNames);
             if (mesh->numGroups > 0)
             {
-                AddGroups(sil, topIndex, mesh->numGroups, mesh->blockOrigin,
+                AddGroups(sil, topIndex, mesh->numGroups, mesh->groupOrigin,
                           domainList, mesh->groupIds, mesh->groupTitle,
                           mesh->groupPieceName, mesh->blockTitle);
             }

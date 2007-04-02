@@ -273,6 +273,8 @@ avtADAPTFileFormat::GetMeshFile()
 // Creation:   Tue Aug 16 10:47:31 PDT 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug 25 12:55:29 PDT 2005
+//    Added group origin to mesh metadata constructor.
 //   
 // ****************************************************************************
 
@@ -305,7 +307,7 @@ avtADAPTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     std::string meshName("main");
     avtMeshMetaData *mmd = new avtMeshMetaData(meshName, 
-                            1, 1, 1, 3, 3, AVT_CURVILINEAR_MESH);
+                            1, 1, 1, 0, 3, 3, AVT_CURVILINEAR_MESH);
     // Get the units for the main mesh from the grid file.
     std::string xUnits, xLabel, yUnits, yLabel;
     GetMeshFile()->ReadStringAttribute("x", "units", xUnits);
@@ -435,7 +437,7 @@ avtADAPTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if(addedMain2d)
         {
             mmd = new avtMeshMetaData("main2d",
-                1, 1, 1, 2, 2, AVT_RECTILINEAR_MESH);
+                1, 1, 1, 0, 2, 2, AVT_RECTILINEAR_MESH);
             mmd->xUnits = xUnits;
             mmd->xLabel = xLabel;
             mmd->yUnits = yUnits;

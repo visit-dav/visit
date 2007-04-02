@@ -326,6 +326,8 @@ avtLODIParticleFileFormat::GetTimes(doubleVector &t)
 // Creation:   Mon Aug 15 18:09:03 PST 2005
 //
 // Modifications:
+//    Jeremy Meredith, Thu Aug 25 12:55:29 PDT 2005
+//    Added group origin to mesh metadata constructor.
 //   
 // ****************************************************************************
 
@@ -356,7 +358,7 @@ avtLODIParticleFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Add a point mesh for the particles
     //
-    avtMeshMetaData *mmd = new avtMeshMetaData("particles", 1, 0, 1, 3, 0,
+    avtMeshMetaData *mmd = new avtMeshMetaData("particles", 1, 0, 1, 0, 3, 0,
         AVT_POINT_MESH);
     // Read the mesh units
     std::string meshUnits;

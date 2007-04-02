@@ -10,6 +10,8 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkCellType.h>
+
 #include <float.h>
 
 #include <avtDatabase.h>
@@ -27,6 +29,30 @@
 using     std::vector;
 using     std::string;
 
+
+// ****************************************************************************
+//  Function:  GetNiceParticleName
+//
+//  Purpose:
+//    Nicely group particle names into a subdirectory.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2005
+//
+// ****************************************************************************
+static string GetNiceParticleName(const string &varname)
+{
+    string nicename = varname;
+    if (nicename.length() > 9 && nicename.substr(0,9) == "particle_")
+    {
+        nicename = string("Particles/") + nicename.substr(9);
+    }
+    else
+    {
+        nicename = string("Particles/") + nicename;
+    }
+    return nicename;
+}
 
 // ****************************************************************************
 //  Method: avtFLASH constructor
@@ -59,6 +85,10 @@ avtFLASHFileFormat::avtFLASHFileFormat(const char *cfilename)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 23, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
+//    Added particle support.
+//
 // ****************************************************************************
 
 void
@@ -71,6 +101,9 @@ avtFLASHFileFormat::FreeUpResources(void)
     }
     blocks.clear();
     varNames.clear();
+    particleVarNames.clear();
+    particleVarTypes.clear();
+    particleOriginalIndexMap.clear();
 }
 
 
@@ -84,6 +117,10 @@ avtFLASHFileFormat::FreeUpResources(void)
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   August 23, 2005
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
+//    Added particle support.
 //
 // ****************************************************************************
 
@@ -103,6 +140,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->topologicalDimension = dimension;
     mesh->spatialDimension = dimension;
     mesh->blockOrigin = 1;
+    mesh->groupOrigin = 1;
 
     mesh->hasSpatialExtents = true;
     mesh->minSpatialExtents[0] = minSpatialExtents[0];
@@ -112,8 +150,7 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->minSpatialExtents[2] = minSpatialExtents[2];
     mesh->maxSpatialExtents[2] = maxSpatialExtents[2];
 
-
-    // spoof a group/domain mesh
+    // spoof a group/domain mesh for the AMR hierarchy
     mesh->numBlocks = numBlocks;
     mesh->blockTitle = "Blocks";
     mesh->blockPieceName = "block";
@@ -141,6 +178,33 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddScalarVarToMetaData(md, varNames[v], "mesh", AVT_ZONECENT);
     }
 
+    // particles
+    if (numParticles > 0)
+    {
+        // particle mesh
+        avtMeshMetaData *pmesh = new avtMeshMetaData;
+        pmesh->name = "particles";
+        pmesh->originalName = "particles";
+
+        pmesh->meshType = AVT_POINT_MESH;
+        pmesh->topologicalDimension = 0;
+        pmesh->spatialDimension = dimension;
+        pmesh->cellOrigin = 1;
+        pmesh->hasSpatialExtents = false;
+        pmesh->numBlocks = 1;
+        pmesh->numGroups = 0;
+        md->Add(pmesh);
+
+        // particle variables
+        for (int pv = 0 ; pv < particleVarNames.size(); pv++)
+        {
+            AddScalarVarToMetaData(md,
+                                   GetNiceParticleName(particleVarNames[pv]),
+                                   "particles", AVT_NODECENT);
+        }
+
+    }
+
     // Populate cycle and time
     md->SetCycle(timestep, simParams.nsteps);
     md->SetTime(timestep, simParams.time);
@@ -166,6 +230,10 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   August 23, 2005
+//
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
+//    Added particle support.
 //
 // ****************************************************************************
 
@@ -211,6 +279,71 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 
         return rGrid;
     }
+    else if (string(meshname) == "particles")
+    {
+        hid_t pointId = H5Dopen(fileId, "particle tracers");
+
+        vtkPoints *points  = vtkPoints::New();
+        points->SetNumberOfPoints(numParticles);
+        float *pts = (float *) points->GetVoidPointer(0);
+        int i;
+
+        hid_t xtype = H5Tcreate(H5T_COMPOUND, sizeof(double));
+        hid_t ytype = H5Tcreate(H5T_COMPOUND, sizeof(double));
+        hid_t ztype = H5Tcreate(H5T_COMPOUND, sizeof(double));
+        H5Tinsert(xtype, "particle_x", 0, H5T_NATIVE_DOUBLE);
+        H5Tinsert(ytype, "particle_y", 0, H5T_NATIVE_DOUBLE);
+        H5Tinsert(ztype, "particle_z", 0, H5T_NATIVE_DOUBLE);
+
+        double *ddata = new double[numParticles];
+
+        if (dimension >= 1)
+        {
+            H5Dread(pointId, xtype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            for (i=0; i<numParticles; i++)
+                pts[i*3+0] = float(ddata[i]);
+        }
+
+        if (dimension >= 2)
+        {
+            H5Dread(pointId, ytype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            for (i=0; i<numParticles; i++)
+                pts[i*3+1] = float(ddata[i]);
+        }
+
+        if (dimension >= 3)
+        {
+            H5Dread(pointId, ztype, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
+            for (i=0; i<numParticles; i++)
+                pts[i*3+2] = float(ddata[i]);
+        }
+
+        // fill in zeros
+        for (int d=dimension; d<3; d++)
+        {
+            for (i=0; i<numParticles; i++)
+                pts[i*3 + d] = 0;
+        }
+
+        H5Tclose(xtype);
+        H5Tclose(ytype);
+        H5Tclose(ztype);
+        H5Dclose(pointId);
+
+        vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
+        ugrid->SetPoints(points);
+        ugrid->Allocate(numParticles);
+        vtkIdType onevertex;
+        for(i = 0; i < numParticles; ++i)
+        {
+            onevertex = i;
+            ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex);
+        }
+
+        points->Delete();
+
+        return ugrid;
+    }
 
     return NULL;
 }
@@ -237,131 +370,193 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 23, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
+//    Added particle support.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtFLASHFileFormat::GetVar(int domain, const char *varname)
 {
-    // find the variable (if it exists)
-    hid_t varId = H5Dopen(fileId, varname);
-    if (varId < 0)
+    ReadAllMetaData();
+
+    if (particleOriginalIndexMap.count(varname))
     {
-        EXCEPTION1(InvalidVariableException, varname);
-    }
+        //
+        // It's a particle variable
+        //
+        int    index = particleOriginalIndexMap[varname];
+        string varname = particleVarNames[index];
+        hid_t  vartype = particleVarTypes[index];
 
-    hid_t spaceId = H5Dget_space(varId);
+        hid_t pointId = H5Dopen(fileId, "particle tracers");
 
-    hsize_t dims[4];
-    hsize_t ndims = H5Sget_simple_extent_dims(spaceId, dims, NULL);
+        vtkFloatArray * fa = vtkFloatArray::New();
+        fa->SetNumberOfTuples(numParticles);
+        float *data = fa->GetPointer(0);
 
-    if (ndims != 4)
-    {
-        EXCEPTION1(InvalidVariableException, varname);
-    }
+        if (vartype == H5T_NATIVE_DOUBLE)
+        {
+            hid_t h5type = H5Tcreate(H5T_COMPOUND, sizeof(double));
+            H5Tinsert(h5type, varname.c_str(), 0, H5T_NATIVE_DOUBLE);
 
-    int ntuples = dims[1]*dims[2]*dims[3];  //dims[0]==numBlocks
+            double *ddata = new double[numParticles];
+            H5Dread(pointId, h5type, H5S_ALL,H5S_ALL,H5P_DEFAULT, ddata);
 
-    //
-    // Set up a data space to read the right domain
-    //
-    hssize_t start[5];
-    hsize_t stride[5], count[5];
-    
-    start[0]  = domain;
-    start[1]  = 0;
-    start[2]  = 0;
-    start[3]  = 0;
-    
-    stride[0] = 1;
-    stride[1] = 1;
-    stride[2] = 1;
-    stride[3] = 1;
-    
-    count[0]  = 1;
-    count[1]  = dims[1];
-    count[2]  = dims[2];
-    count[3]  = dims[3];
-    
-    hid_t dataspace = H5Screate_simple(4, dims, NULL);
-    H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, stride, count, NULL);
+            for (int i=0; i<numParticles; i++)
+                data[i] = ddata[i];
 
-    start[0]  = 0;
-    start[1]  = 0;
-    start[2]  = 0;
-    start[3]  = 0;
-    
-    stride[0] = 1;
-    stride[1] = 1;
-    stride[2] = 1;
-    stride[3] = 1;
-    
-    count[0]  = 1;
-    count[1]  = dims[1];
-    count[2]  = dims[2];
-    count[3]  = dims[3];
-    
-    hid_t memspace = H5Screate_simple(4, dims, NULL);
-    H5Sselect_hyperslab(memspace, H5S_SELECT_SET, start, stride, count, NULL);
+            H5Tclose(h5type);
+        }
+        else if (vartype == H5T_NATIVE_INT)
+        {
+            hid_t h5type = H5Tcreate(H5T_COMPOUND, sizeof(int));
+            H5Tinsert(h5type, varname.c_str(), 0, H5T_NATIVE_INT);
 
-    vtkFloatArray * fa = vtkFloatArray::New();
-    fa->SetNumberOfTuples(ntuples);
-    float *data = fa->GetPointer(0);
+            int *idata = new int[numParticles];
+            H5Dread(pointId, h5type, H5S_ALL,H5S_ALL,H5P_DEFAULT, idata);
 
-    double *d_data;
-    int  *i_data;
-    unsigned int *ui_data;
-    int i;
+            for (int i=0; i<numParticles; i++)
+                data[i] = idata[i];
 
-    hid_t raw_data_type = H5Dget_type(varId);
-    hid_t data_type = H5Tget_native_type(raw_data_type, H5T_DIR_ASCEND);
-    if (H5Tequal(data_type, H5T_NATIVE_FLOAT)>0)
-    {
-        H5Dread(varId, data_type,memspace,dataspace,H5P_DEFAULT, data);
-    }
-    else if (H5Tequal(data_type, H5T_NATIVE_DOUBLE)>0)
-    {
-        d_data = new double[ntuples];
-        H5Dread(varId, data_type,memspace,dataspace,H5P_DEFAULT, d_data);
-        for (i = 0 ; i < ntuples ; i++)
-            data[i] = d_data[i];
-        delete[] d_data;
-    }
-    else if (H5Tequal(data_type, H5T_NATIVE_INT))
-    {
-        i_data = new int[ntuples];
-        H5Dread(varId, data_type,memspace,dataspace,H5P_DEFAULT, i_data);
-        for (i = 0 ; i < ntuples ; i++)
-            data[i] = i_data[i];
-        delete[] i_data;
-    }
-    else if (H5Tequal(data_type, H5T_NATIVE_UINT))
-    {
-        ui_data = new unsigned int[ntuples];
-        H5Dread(varId, data_type,memspace,dataspace,H5P_DEFAULT, ui_data);
-        for (i = 0 ; i < ntuples ; i++)
-            data[i] = ui_data[i];
-        delete[] ui_data;
+            H5Tclose(h5type);
+        }
+        else
+        {
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+
+        H5Dclose(pointId);
+
+        return fa;
     }
     else
     {
-        // ERROR: UKNOWN TYPE
-        EXCEPTION1(InvalidVariableException, varname);
+        //
+        // It's a grid variable
+        //
+
+        hid_t varId = H5Dopen(fileId, varname);
+        if (varId < 0)
+        {
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+
+        hid_t spaceId = H5Dget_space(varId);
+
+        hsize_t dims[4];
+        hsize_t ndims = H5Sget_simple_extent_dims(spaceId, dims, NULL);
+
+        if (ndims != 4)
+        {
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+
+        int ntuples = dims[1]*dims[2]*dims[3];  //dims[0]==numBlocks
+
+        //
+        // Set up a data space to read the right domain
+        //
+        hssize_t start[5];
+        hsize_t stride[5], count[5];
+    
+        start[0]  = domain;
+        start[1]  = 0;
+        start[2]  = 0;
+        start[3]  = 0;
+    
+        stride[0] = 1;
+        stride[1] = 1;
+        stride[2] = 1;
+        stride[3] = 1;
+    
+        count[0]  = 1;
+        count[1]  = dims[1];
+        count[2]  = dims[2];
+        count[3]  = dims[3];
+    
+        hid_t dataspace = H5Screate_simple(4, dims, NULL);
+        H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, stride, count, NULL);
+
+        start[0]  = 0;
+        start[1]  = 0;
+        start[2]  = 0;
+        start[3]  = 0;
+    
+        stride[0] = 1;
+        stride[1] = 1;
+        stride[2] = 1;
+        stride[3] = 1;
+    
+        count[0]  = 1;
+        count[1]  = dims[1];
+        count[2]  = dims[2];
+        count[3]  = dims[3];
+    
+        hid_t memspace = H5Screate_simple(4, dims, NULL);
+        H5Sselect_hyperslab(memspace, H5S_SELECT_SET, start, stride, count, NULL);
+
+        vtkFloatArray * fa = vtkFloatArray::New();
+        fa->SetNumberOfTuples(ntuples);
+        float *data = fa->GetPointer(0);
+
+        double *d_data;
+        int  *i_data;
+        unsigned int *ui_data;
+        int i;
+
+        hid_t raw_data_type = H5Dget_type(varId);
+        hid_t data_type = H5Tget_native_type(raw_data_type, H5T_DIR_ASCEND);
+        if (H5Tequal(data_type, H5T_NATIVE_FLOAT)>0)
+        {
+            H5Dread(varId, data_type,memspace,dataspace,H5P_DEFAULT, data);
+        }
+        else if (H5Tequal(data_type, H5T_NATIVE_DOUBLE)>0)
+        {
+            d_data = new double[ntuples];
+            H5Dread(varId, data_type,memspace,dataspace,H5P_DEFAULT, d_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = d_data[i];
+            delete[] d_data;
+        }
+        else if (H5Tequal(data_type, H5T_NATIVE_INT))
+        {
+            i_data = new int[ntuples];
+            H5Dread(varId, data_type,memspace,dataspace,H5P_DEFAULT, i_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = i_data[i];
+            delete[] i_data;
+        }
+        else if (H5Tequal(data_type, H5T_NATIVE_UINT))
+        {
+            ui_data = new unsigned int[ntuples];
+            H5Dread(varId, data_type,memspace,dataspace,H5P_DEFAULT, ui_data);
+            for (i = 0 ; i < ntuples ; i++)
+                data[i] = ui_data[i];
+            delete[] ui_data;
+        }
+        else
+        {
+            // ERROR: UKNOWN TYPE
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+
+        // Done with hyperslab
+        H5Sclose(dataspace);
+
+        // Done with the space
+        H5Sclose(spaceId);
+
+        // Done with the type
+        H5Tclose(data_type);
+        H5Tclose(raw_data_type);
+
+        // Done with the variable; don't leak it
+        H5Dclose(varId);
+
+        return fa;
     }
-
-    // Done with hyperslab
-    H5Sclose(dataspace);
-
-    // Done with the space
-    H5Sclose(spaceId);
-
-    // Done with the type
-    H5Tclose(data_type);
-    H5Tclose(raw_data_type);
-
-    // Done with the variable; don't leak it
-    H5Dclose(varId);
-
-    return fa;
 }
 
 
@@ -403,6 +598,10 @@ avtFLASHFileFormat::GetVectorVar(int domain, const char *varname)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 24, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Aug 25 15:07:36 PDT 2005
+//    Added particle support.
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::ReadAllMetaData()
@@ -424,6 +623,7 @@ avtFLASHFileFormat::ReadAllMetaData()
     ReadSimulationParameters();
     ReadUnknownNames();
     DetermineGlobalLogicalExtentsForAllBlocks();
+    ReadParticleAttributes();
 }
 
 
@@ -831,6 +1031,89 @@ void avtFLASHFileFormat::ReadUnknownNames()
     // Done with the variable; don't leak it
     H5Dclose(unknownsId);
 }
+
+// ****************************************************************************
+//  Method:  avtFLASHFileFormat::ReadParticleAttributes
+//
+//  Purpose:
+//    Read the particle attributes, like number of particles and
+//    variable names.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 25, 2005
+//
+// ****************************************************************************
+void
+avtFLASHFileFormat::ReadParticleAttributes()
+{
+    // temporarily disable error reporting
+    H5E_auto_t  old_errorfunc;
+    void       *old_clientdata;
+    H5Eget_auto(&old_errorfunc, &old_clientdata);
+    H5Eset_auto(NULL, NULL);
+
+    // find the particle variable (if it exists)
+    hid_t pointId = H5Dopen(fileId, "particle tracers");
+
+    // turn back on error reporting
+    H5Eset_auto(old_errorfunc, old_clientdata);
+
+    // Doesn't exist?  No problem -- we just don't have any particles
+    if (pointId < 0)
+    {
+        numParticles = 0;
+        return;
+    }
+
+    hid_t pointSpaceId = H5Dget_space(pointId);
+
+    hsize_t p_dims[0];
+    hsize_t p_ndims =  H5Sget_simple_extent_dims(pointSpaceId, p_dims, NULL);
+    if (p_ndims != 1)
+    {
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    numParticles = p_dims[0];
+
+    hid_t point_raw_type = H5Dget_type(pointId);
+    int numMembers = H5Tget_nmembers(point_raw_type);
+    for (int i=0; i<numMembers; i++)
+    {
+        char  *member_name = H5Tget_member_name(point_raw_type, i);
+        string nice_name = GetNiceParticleName(member_name);
+        hid_t  member_raw_type = H5Tget_member_type(point_raw_type, i);
+        hid_t  member_type = H5Tget_native_type(member_raw_type, H5T_DIR_ASCEND);
+        int    index = particleVarTypes.size();
+        if (H5Tequal(member_type, H5T_NATIVE_DOUBLE)>0)
+        {
+            particleVarTypes.push_back(H5T_NATIVE_DOUBLE);
+            particleVarNames.push_back(member_name);
+            particleOriginalIndexMap[nice_name] = index;
+        }
+        else if (H5Tequal(member_type, H5T_NATIVE_INT)>0)
+        {
+            particleVarTypes.push_back(H5T_NATIVE_INT);
+            particleVarNames.push_back(member_name);
+            particleOriginalIndexMap[nice_name] = index;
+        }
+        else
+        {
+            // only support double and int for now
+        }
+
+        H5Tclose(member_type);
+        H5Tclose(member_raw_type);
+    }
+
+    H5Tclose(point_raw_type);
+    H5Sclose(pointSpaceId);
+    H5Dclose(pointId);
+}
+
 
 // ****************************************************************************
 //  Method:  avtFLASHFileFormat::DetermineGlobalLogicalExtentsForAllBlocks

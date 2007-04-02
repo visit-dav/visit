@@ -316,6 +316,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Fri Aug  5 16:32:56 PDT 2005
 //    Set the variable type, as well as the array subnames.
 //
+//    Jeremy Meredith, Thu Aug 25 11:06:06 PDT 2005
+//    Added group origin.
+//
 // ****************************************************************************
 
 void
@@ -340,6 +343,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     {
         atts.SetCellOrigin(mmd->cellOrigin);
         atts.SetBlockOrigin(mmd->blockOrigin);
+        atts.SetGroupOrigin(mmd->groupOrigin);
         atts.SetTopologicalDimension(mmd->topologicalDimension);
         atts.SetSpatialDimension(mmd->spatialDimension);
         atts.SetMeshname(mesh);

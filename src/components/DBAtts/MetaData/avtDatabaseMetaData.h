@@ -26,6 +26,9 @@ class avtSimulationInformation;
 //    Hank Childs, Mon Feb 14 14:11:29 PST 2005
 //    Added originalName.
 //
+//    Jeremy Meredith, Thu Aug 25 09:28:10 PDT 2005
+//    Added origin for groups.
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtMeshMetaData : public AttributeSubject
 {
@@ -35,6 +38,7 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
     std::string   blockPieceName;
     int           numBlocks;
     int           blockOrigin;  // The origin for blocks/domains.
+    int           groupOrigin;  // The origin for groups.
     int           cellOrigin;   // The origin for cells within a block.
 
     int           numGroups;
@@ -69,9 +73,9 @@ struct DBATTS_API avtMeshMetaData : public AttributeSubject
 
 public:
     avtMeshMetaData();
-    avtMeshMetaData(const float *, std::string, int, int, int, int, int,
+    avtMeshMetaData(const float *, std::string, int, int, int, int, int, int,
                     avtMeshType);
-    avtMeshMetaData(std::string, int, int, int, int, int, avtMeshType);
+    avtMeshMetaData(std::string, int, int, int, int, int, int, avtMeshType);
     avtMeshMetaData(const avtMeshMetaData&);
     virtual ~avtMeshMetaData();
     const avtMeshMetaData &operator=(const avtMeshMetaData&);
