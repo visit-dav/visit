@@ -59,6 +59,8 @@
 #include <vtkRibbonFilter.h>
 
 #include <math.h>
+#include <avtDatasetExaminer.h>
+#include <avtExtents.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>
@@ -74,6 +76,9 @@
 //  Modifications:
 //    Brad Whitlock, Wed Dec 22 12:42:30 PDT 2004
 //    I added coloringMethod and support for ribbons.
+//
+//    Hank Childs, Sat Mar  3 09:52:01 PST 2007
+//    Initialized useWholeBox.
 //
 // ****************************************************************************
 
@@ -102,6 +107,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     sphereRadius = 1.;
     INIT_POINT(boxExtents, 0., 1., 0.);
     INIT_POINT(boxExtents+3, 1., 0., 1.);
+    useWholeBox = false;
 
     // Set all of the filters to 0.
     streamline = 0;
@@ -546,6 +552,9 @@ avtStreamlineFilter::ReleaseData(void)
 //    Hank Childs, Fri Feb 23 09:22:20 PST 2007
 //    Fix memory leaks.
 //
+//    Hank Childs, Sat Mar  3 11:16:26 PST 2007
+//    Add support for getting the extents of the color variable later.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -717,6 +726,8 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     streamline->SetInput(inDS);
     streamline->Update();
     vtkPolyData *streams = streamline->GetOutput();
+    if (coloringMethod == STREAMLINE_COLOR_SPEED)
+        streams->GetPointData()->GetScalars()->SetName("colorVar");
 
     if(doRibbons)
     {
@@ -743,6 +754,7 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             debug4 << "Computing vorticity magnitude." << endl;
             int n = vorticity->GetNumberOfTuples();
             vtkFloatArray *vortMag = vtkFloatArray::New();
+            vortMag->SetName("colorVar");
             vortMag->SetNumberOfComponents(1);
             vortMag->SetNumberOfTuples(n);
             float *vm = (float *)vortMag->GetVoidPointer(0);
@@ -991,6 +1003,65 @@ avtStreamlineFilter::AddStartSphere(vtkPolyData *tubeData, float val, double pt[
     return sphereData;
 }
 
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::PreExecute
+//
+//  Purpose:
+//      Get the current spatial extents if necessary.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 3, 2007
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::PreExecute(void)
+{
+    avtStreamer::PreExecute();
+
+    // If we have a box source and we are using the whole box, then plug
+    // the current spatial extents into the box extents.
+    if (sourceType == STREAMLINE_SOURCE_BOX && useWholeBox)
+    {
+        avtDataset_p input = GetTypedInput();
+        avtDatasetExaminer::GetSpatialExtents(input, boxExtents);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtStreamlineFilter::PostExecute
+//
+//  Purpose:
+//      Gets the variable extents and sets them.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 3, 2007
+//
+// ****************************************************************************
+
+void
+avtStreamlineFilter::PostExecute(void)
+{
+    avtStreamer::PostExecute();
+
+    if (coloringMethod == STREAMLINE_COLOR_VORTICITY ||
+        coloringMethod == STREAMLINE_COLOR_SPEED)
+    {
+        double range[2];
+        avtDataset_p ds = GetTypedOutput();
+        avtDatasetExaminer::GetDataExtents(ds, range, "colorVar");
+
+        avtExtents *e;
+        e = GetOutput()->GetInfo().GetAttributes().GetCumulativeTrueDataExtents();
+        e->Merge(range);
+        e = GetOutput()->GetInfo().GetAttributes().GetCumulativeCurrentDataExtents();
+        e->Merge(range);
+    }
+}
+
+
 // ****************************************************************************
 //  Method: avtStreamlineFilter::RefashionDataObjectInfo
 //
@@ -1002,19 +1073,31 @@ avtStreamlineFilter::AddStartSphere(vtkPolyData *tubeData, float val, double pt[
 //  Creation:   Fri Oct 4 15:22:57 PST 2002
 //
 //  Modifications:
+//
 //    Brad Whitlock, Mon Jan 3 13:31:11 PST 2005
 //    Set the flag that prevents normals from being generated if we're
 //    displaying the streamlines as lines.
+//
+//    Hank Childs, Sat Mar  3 11:02:33 PST 2007
+//    Make sure we have a valid active variable before setting its dimension.
 //
 // ****************************************************************************
 
 void
 avtStreamlineFilter::RefashionDataObjectInfo(void)
 {
-    //IF YOU SEE FUNNY THINGS WITH EXTENTS, ETC, YOU CAN CHANGE THAT HERE.
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     if(displayMethod == STREAMLINE_DISPLAY_LINES)
         GetOutput()->GetInfo().GetValidity().SetNormalsAreInappropriate(true);
-    GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
-    GetOutput()->GetInfo().GetAttributes().SetVariableDimension(1);
+    avtDataAttributes &atts = GetOutput()->GetInfo().GetAttributes();
+    atts.SetTopologicalDimension(1);
+    if (! atts.ValidVariable("colorVar"))
+    {
+        atts.AddVariable("colorVar");
+        atts.SetActiveVariable("colorVar");
+        atts.SetVariableDimension(1);
+        atts.SetCentering(AVT_NODECENT);
+    }
 }
+
+

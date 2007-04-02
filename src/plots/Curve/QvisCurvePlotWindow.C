@@ -406,6 +406,10 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Tue Dec 23 13:27:22 PST 2003
 //   Added pointSize.  Removed do-nothing code.
 //   
+//   Hank Childs, Sat Mar  3 10:33:59 PST 2007
+//   Do explicit checking for symbolDensity, since spin boxes don't call
+//   the "valueChanged" signal unless you press "Enter".
+//
 // ****************************************************************************
 
 void
@@ -434,6 +438,10 @@ QvisCurvePlotWindow::GetCurrentValues(int which_widget)
             atts->SetPointSize(atts->GetPointSize());
         }
     }
+
+    if (which_widget == 11 || doAll)
+        if (symbolDensity->value() != atts->GetSymbolDensity())
+            atts->SetSymbolDensity(symbolDensity->value());
 }
 
 

@@ -14,6 +14,9 @@ Definition:
 //    Brad Whitlock, Wed Dec 22 12:57:53 PDT 2004
 //    I added code to support the point tool.
 //
+//    Hank Childs, Sat Mar  3 09:00:12 PST 2007
+//    Disable useWholeBox if we are copying box extents.
+//
 // ****************************************************************************
 
 bool
@@ -75,13 +78,13 @@ StreamlineAttributes::CopyAttributes(const AttributeGroup *atts)
         {
             const BoxExtents *box = (const BoxExtents *)atts;
             SetBoxExtents(box->GetExtents());
+            SetUseWholeBox(false);
             retval = true;
         }
     }
 
     return retval;
 }
-
 
 Function: CreateCompatible
 Declaration: AttributeSubject *CreateCompatible(const std::string &tname) const
@@ -154,7 +157,6 @@ StreamlineAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
-
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const StreamlineAttributes &) const;
 Definition:
@@ -174,6 +176,9 @@ Definition:
 //    Brad Whitlock, Wed Dec 22 12:52:45 PDT 2004
 //    I made the coloring method matter when comparing streamline attributes
 //    and I added support for ribbons.
+//
+//    Hank Childs, Sat Mar  3 09:00:12 PST 2007
+//    Add support for useWholeBox.
 //
 // ****************************************************************************
 
@@ -213,6 +218,8 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     bool boxSourceDiffers = (sourceType == SpecifiedBox) &&
         (POINT_DIFFERS(boxExtents, obj.boxExtents) ||
          POINT_DIFFERS(boxExtents+3, obj.boxExtents+3));
+    if (useWholeBox != obj.useWholeBox)
+        boxSourceDiffers = true;
 
     // Other things need to be true before we start paying attention to
     // point density.
@@ -237,3 +244,4 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
            densityMatters ||
            radiusMatters;
 }
+

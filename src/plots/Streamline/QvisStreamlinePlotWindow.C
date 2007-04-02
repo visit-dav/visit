@@ -112,6 +112,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Brad Whitlock, Wed Dec 22 13:05:04 PST 2004
 //   I added support for coloring by vorticity.
 //
+//   Hank Childs, Sat Mar  3 09:11:44 PST 2007
+//   Added useWholeBox.
+//
 // ****************************************************************************
 
 void
@@ -171,7 +174,7 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     topSourceLayout->addStretch(5);
     QVBoxLayout *svLayout = new QVBoxLayout(pageSource, 10, 2);
     svLayout->addSpacing(10);
-    QGridLayout *sLayout = new QGridLayout(svLayout, 14, 2);
+    QGridLayout *sLayout = new QGridLayout(svLayout, 16, 2);
 //    sLayout->setMargin(10);
     sLayout->setSpacing(5);
 
@@ -243,24 +246,30 @@ QvisStreamlinePlotWindow::CreateWindowContents()
     sLayout->addWidget(sphereRadius, 11,1);
 
     // Create the widgets that specify a box source
+    useWholeBox = new QCheckBox("Whole data set", 
+                                pageSource, "useWholeBox");
+    connect(useWholeBox, SIGNAL(toggled(bool)),
+            this, SLOT(useWholeBoxChanged(bool)));
+    sLayout->addWidget(useWholeBox, 12, 0);
+
     boxExtents[0] = new QLineEdit(pageSource, "boxExtents[0]");
     connect(boxExtents[0], SIGNAL(returnPressed()),
             this, SLOT(boxExtentsProcessText()));
     boxExtentsLabel[0] = new QLabel(boxExtents[0], "X Extents", pageSource, "boxExtentsLabel[0]");
-    sLayout->addWidget(boxExtentsLabel[0], 11, 0);
-    sLayout->addWidget(boxExtents[0], 11, 1);
+    sLayout->addWidget(boxExtentsLabel[0], 13, 0);
+    sLayout->addWidget(boxExtents[0], 13, 1);
     boxExtents[1] = new QLineEdit(pageSource, "boxExtents[1]");
     connect(boxExtents[1], SIGNAL(returnPressed()),
             this, SLOT(boxExtentsProcessText()));
     boxExtentsLabel[1] = new QLabel(boxExtents[1], "Y Extents", pageSource, "boxExtentsLabel[1]");
-    sLayout->addWidget(boxExtentsLabel[1], 12, 0);
-    sLayout->addWidget(boxExtents[1], 12, 1);
+    sLayout->addWidget(boxExtentsLabel[1], 14, 0);
+    sLayout->addWidget(boxExtents[1], 14, 1);
     boxExtents[2] = new QLineEdit(pageSource, "boxExtents[2]");
     connect(boxExtents[2], SIGNAL(returnPressed()),
             this, SLOT(boxExtentsProcessText()));
     boxExtentsLabel[2] = new QLabel(boxExtents[2], "Z Extents", pageSource, "boxExtentsLabel[2]");
-    sLayout->addWidget(boxExtentsLabel[2], 13, 0);
-    sLayout->addWidget(boxExtents[2], 13, 1);
+    sLayout->addWidget(boxExtentsLabel[2], 15, 0);
+    sLayout->addWidget(boxExtents[2], 15, 1);
 
     //
     // Create appearance-related widgets.
@@ -403,6 +412,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //   Brad Whitlock, Wed Dec 22 13:10:59 PST 2004
 //   I added support for coloring by vorticity and for showing ribbons.
 //
+//   Hank Childs, Sat Mar  3 09:11:44 PST 2007
+//   Added support for useWholeBox.
+//
 // ****************************************************************************
 
 void
@@ -494,12 +506,35 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
                 streamAtts->GetBoxExtents()[5]);
             boxExtents[2]->setText(temp);
             break;
-        case 13: // pointDensity
+        case 13: // useWholeBox
+            useWholeBox->blockSignals(true);
+            useWholeBox->setChecked(streamAtts->GetUseWholeBox());
+            if (streamAtts->GetUseWholeBox())
+            {
+                boxExtents[0]->setEnabled(false);
+                boxExtents[1]->setEnabled(false);
+                boxExtents[2]->setEnabled(false);
+                boxExtentsLabel[0]->setEnabled(false);
+                boxExtentsLabel[1]->setEnabled(false);
+                boxExtentsLabel[2]->setEnabled(false);
+            }
+            else
+            {
+                boxExtents[0]->setEnabled(true);
+                boxExtents[1]->setEnabled(true);
+                boxExtents[2]->setEnabled(true);
+                boxExtentsLabel[0]->setEnabled(true);
+                boxExtentsLabel[1]->setEnabled(true);
+                boxExtentsLabel[2]->setEnabled(true);
+            }
+            useWholeBox->blockSignals(false);
+            break;
+        case 14: // pointDensity
             pointDensity->blockSignals(true);
             pointDensity->setValue(streamAtts->GetPointDensity());
             pointDensity->blockSignals(false);
             break;
-        case 14: // displayMethod
+        case 15: // displayMethod
             { // new scope
             bool showLines = streamAtts->GetDisplayMethod() == 
                 StreamlineAttributes::Lines;
@@ -518,21 +553,21 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             displayMethod->blockSignals(false);
             }
             break;
-        case 15: // showStart
+        case 16: // showStart
             showStart->blockSignals(true);
             showStart->setChecked(streamAtts->GetShowStart());
             showStart->blockSignals(false);
             break;
-        case 16: // radius
+        case 17: // radius
             temp.setNum(streamAtts->GetRadius());
             radius->setText(temp);
             break;
-        case 17: // lineWidth
+        case 18: // lineWidth
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(streamAtts->GetLineWidth());
             lineWidth->blockSignals(false);
             break;
-        case 18: // coloringMethod
+        case 19: // coloringMethod
             {// New scope
             bool needCT = streamAtts->GetColoringMethod() != StreamlineAttributes::Solid;
             colorTableName->setEnabled(needCT);
@@ -545,21 +580,21 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             coloringMethod->blockSignals(false);
             }
             break;
-        case 19: // colorTableName
+        case 20: // colorTableName
             colorTableName->setColorTable(streamAtts->GetColorTableName().c_str());
             break;
-        case 20: // singleColor
+        case 21: // singleColor
             tempcolor = QColor(streamAtts->GetSingleColor().Red(),
                                streamAtts->GetSingleColor().Green(),
                                streamAtts->GetSingleColor().Blue());
             singleColor->setButtonColor(tempcolor);
             break;
-        case 21: // legendFlag
+        case 22: // legendFlag
             legendFlag->blockSignals(true);
             legendFlag->setChecked(streamAtts->GetLegendFlag());
             legendFlag->blockSignals(false);
             break;
-        case 22: // lightingFlag
+        case 23: // lightingFlag
             lightingFlag->blockSignals(true);
             lightingFlag->setChecked(streamAtts->GetLightingFlag());
             lightingFlag->blockSignals(false);
@@ -579,6 +614,10 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
 //
 // Modifications:
 //   
+//   Hank Childs, Sat Mar  3 09:11:44 PST 2007
+//   Hide/show useWholeBox.  Also enable/disable pointDensity if source type
+//   is point.
+//
 // ****************************************************************************
 
 void
@@ -600,11 +639,13 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
         sourceAtts->setTitle("Point");
         pointSource->show();
         pointSourceLabel->show();
+        pointDensity->setEnabled(false);
     }
     else
     {
         pointSource->hide();
         pointSourceLabel->hide();
+        pointDensity->setEnabled(true);
     }
 
     //
@@ -692,7 +733,12 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
     // Update the box widgets
     //
     if(useBox)
+    {
         sourceAtts->setTitle("Box");
+        useWholeBox->show();
+    }
+    else
+        useWholeBox->hide();
     for(int i = 0; i < 3; ++i)
     {
         boxExtents[i]->setEnabled(useBox);
@@ -701,6 +747,11 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
         {
             boxExtents[i]->show();
             boxExtentsLabel[i]->show();
+            if (streamAtts->GetUseWholeBox())
+            {
+                boxExtents[i]->setEnabled(false);
+                boxExtentsLabel[i]->setEnabled(false);
+            }
         }
         else
         {
@@ -723,6 +774,11 @@ QvisStreamlinePlotWindow::UpdateSourceAttributes()
 // Modifications:
 //   Brad Whitlock, Wed Dec 22 14:47:44 PST 2004
 //   Changed tubeRadius to radius.
+//
+//   Hank Childs, Sat Mar  3 09:11:44 PST 2007
+//   Added support for useWholeBox and changed numbers.  Also fix a bug where
+//   the point density is not getting updated correctly if you don't click
+//   return.
 //
 // ****************************************************************************
 
@@ -1004,8 +1060,17 @@ QvisStreamlinePlotWindow::GetCurrentValues(int which_widget)
             streamAtts->SetBoxExtents(d);
     }
 
+    // pointDensity
+    if (which_widget == 14 || doAll)
+    {
+        // This can only be an integer, so no error checking is needed.
+        int val = pointDensity->value();
+        if (val >= 1)
+            streamAtts->SetPointDensity(val);
+    }
+
     // Do radius
-    if(which_widget == 16 || doAll)
+    if(which_widget == 17 || doAll)
     {
         temp = radius->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1236,6 +1301,14 @@ QvisStreamlinePlotWindow::radiusProcessText()
     GetCurrentValues(16);
     Apply();
 }
+
+void
+QvisStreamlinePlotWindow::useWholeBoxChanged(bool val)
+{
+    streamAtts->SetUseWholeBox(val);
+    Apply();
+}
+
 
 void
 QvisStreamlinePlotWindow::boxExtentsProcessText()
