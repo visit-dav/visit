@@ -110,18 +110,23 @@ vtkDataSetFromVolume::PointList::GetTotalNumberOfPoints(void) const
 }
 
 
+//
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  Initialized new entries.
+//
 int
 vtkDataSetFromVolume::PointList::AddPoint(int pt0, int pt1, float percent)
 {
     if (currentPoint >= pointsPerList)
     {
-        if (currentList >= listSize+1)
+        if ((currentList+1) >= listSize)
         {
             PointEntry **tmpList = new PointEntry*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
+
             listSize *= 2;
             delete [] list;
             list = tmpList;

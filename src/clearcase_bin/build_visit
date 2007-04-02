@@ -72,6 +72,9 @@
 #     Brad Whitlock, Fri Dec 15 11:51:40 PDT 2006
 #     Added support for Python 2.5.
 #
+#     Hank Childs, Sun Mar  4 11:14:54 PST 2007
+#     Add support for parallelization.  Also misc bug fixes.
+#
 # *****************************************************************************
 
 
@@ -107,12 +110,16 @@ fi
 #
 export DO_HDF5="no"    # "yes" or "no"
 export DO_SILO="yes"   # "yes" or "no"
-parallel="no"
+parallel="no"          # "yes" or "no"
+PAR_INCLUDE=""
+PAR_LIBS=""
+#PAR_INCLUDE="-I/usr/lib/mpi/gcc/mvapich-gen2/include"
+#PAR_LIBS="-L/usr/lib/mpi/gcc/mvapich-gen2/lib -Wl,-rpath=/usr/lib/mpi/gcc/mvapich-gen2/lib/shared -lmpich -libverbs -lpthread -lsysfs -ldl"
 
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
-export VISIT_FILE="visit060918.tar"
+export VISIT_FILE="visit070304.tar"
 
 export VTK_FILE="vtk-5.0.0b.tar"
 export VTK_VERSION="5.0.0b"
@@ -132,6 +139,8 @@ export QT_VERSION="3.3.2"
 
 export SILO_FILE="silo060605.sh"
 export SILO_VERSION="4.5.1"
+
+export HDF5_FILE="hdf5-1.6.5.tar"
 
 
 # *************************************************************************** #
@@ -228,6 +237,33 @@ function check_files
     if [[ "$HAVE_SILO_ALREADY" = "NO" && "$HAVE_SILO_TARBALL" = "NO" ]] ; then
        echo "Unable to build VisIt.  Silo is not available."
        rv=1
+    fi
+
+    #
+    # VisIt source code
+    #
+    if [[ ! -f ${VISIT_FILE} && ! -f ${VISIT_FILE}.gz ]] ; then
+       echo "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
+       rv=1
+    fi
+
+    #
+    # Parallelization
+    #
+    if [[ "$parallel" == "yes" ]] ; then
+       # The script pretty much assumes that you *must* have some flags 
+       # and libs to do a parallel build.  If that is *not* true, 
+       # i.e. mpi.h is in your include path, then, congratulations, 
+       # you are working on a better configured system than I have 
+       # ever encountered.
+       if [[ "$PAR_INCLUDE" == "" ]] ; then
+           echo "You must set up the PAR_INCLUDE to get VisIt to build in parallel."
+           rv=1
+       fi
+       if [[ "$PAR_LIBS" == "" ]] ; then
+           echo "You must set up the PAR_LIBS to get VisIt to build in parallel."
+           rv=1
+       fi
     fi
 
     if [[ $rv != 0 ]] ; then
@@ -338,10 +374,12 @@ function build_qt
     # Check to see if we are going to have to issue a "-thread" flag.
     #
     THREAD=""
-    HAS_THREAD=$(./configure -help | grep threaded)
+    HAS_THREAD=$(./configure -platform ${QT_PLATFORM} -shared -qt-libpng -help | grep threaded)
     if [[ "$HAS_THREAD" != "" ]] ; then
        THREAD="-thread"
        echo "Adding threading option"
+    else
+       echo "Not adding threading"
     fi
 
     #
@@ -737,6 +775,18 @@ function build_visit
     fi
 
     #
+    # Set up environment variables for the configure step.
+    #
+    PARFLAGS=""
+    CXXFLAGS="$CPP_OPT_FLAGS"
+    if [[ "$parallel" == "yes" ]] ; then
+       PARFLAGS="--enable-parallel"
+       CXXFLAGS="$CPP_OPT_FLAGS $PAR_INCLUDE"
+    fi
+    
+    QTDIR=""
+
+    #
     # Set up the config-site file, which gives configure the information it
     # needs about the third party libraries.
     #
@@ -745,22 +795,19 @@ function build_visit
     cd config-site
     echo VISITHOME=$VISITDIR > `hostname`.conf
     sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
-    cd ..
-
-    #
-    # Set up environment variables for the configure step.
-    #
-    PARFLAGS=""
-    if [[ "$parallel" = "yes" ]] ; then
-       PARFLAGS="--enable-parallel"
+    echo "CC=\"$C_COMPILER\"" >> `hostname`.conf
+    echo "CXX=\"$CPP_COMPILER\"" >> `hostname`.conf
+    echo "CFLAGS=\"$C_OPT_FLAGS\"" >> `hostname`.conf
+    echo "CXXFLAGS=\"$CXXFLAGS\"" >> `hostname`.conf
+    if [[ "$parallel" == "yes" ]] ; then
+        echo "MPI_LIBS=\"$PAR_LIBS\"" >> `hostname`.conf
     fi
-    
-    QTDIR=""
+    cd ..
 
     #
     # Call configure
     # 
-    env CC="$C_COMPILER" CXX="$CPP_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CPP_OPT_FLAGS" ./configure ${PARFLAGS}
+    ./configure ${PARFLAGS}
     if [[ $? != 0 ]] ; then
        echo "VisIt configure failed.  Giving up"
        return 1
@@ -785,8 +832,6 @@ function build_visit
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
 
-export THIRD_PARTY_LOCATION="./visit"
-export ARCH="Linux"  # You can change this to say RHEL, SuSE, Fedora, etc.
 export VISITARCH=${ARCH}_${C_COMPILER}
 if [[ "$CPP_COMPILER" == "g++" ]] ; then
    VERSION=$(g++ -v 2>&1 | grep version | cut -d' ' -f3)
@@ -810,7 +855,6 @@ if [[ ! -d $THIRD_PARTY_LOCATION ]] ; then
    fi
 fi
 
-
 START_DIR=$PWD
 cd $THIRD_PARTY_LOCATION
 if [[ $? != 0 ]] ; then
@@ -827,7 +871,7 @@ cd $START_DIR
 #
 check_files
 if [[ $? != 0 ]] ; then
-   echo "Stopping build because third party libraries aren't available."
+   echo "Stopping build because necessary files aren't available."
    exit 1
 fi
 
@@ -868,7 +912,7 @@ cd $START_DIR
 if [[ -d $VISITDIR/mesa/$MESA_VERSION/$VISITARCH ]] ; then
    echo "Skipping Mesa build.  Mesa is already installed."
 else
-   echo "Building Mesa"
+   echo "Building Mesa (~2 minutes)"
    build_mesa >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Mesa.  Bailing out."
@@ -886,7 +930,7 @@ cd $START_DIR
 if [[ -d $VISITDIR/qt/$QT_VERSION/$VISITARCH ]] ; then
    echo "Skipping Qt build.  Qt is already installed."
 else
-   echo "Building Qt"
+   echo "Building Qt (~10 minutes)"
    build_qt >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Qt.  Bailing out."
@@ -904,7 +948,7 @@ cd $START_DIR
 if [[ -d $VISITDIR/vtk/$VTK_VERSION/$VISITARCH ]] ; then
    echo "Skipping VTK build.  VTK is already installed."
 else
-   echo "Building VTK"
+   echo "Building VTK (~20 minutes)"
    build_vtk >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install VTK.  Bailing out."
@@ -922,7 +966,7 @@ cd $START_DIR
 if [[ -d $VISITDIR/python/$VISITARCH ]] ; then
    echo "Skipping Python build.  Python is already installed."
 else
-   echo "Building Python"
+   echo "Building Python (~3 minutes)"
    build_python >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Python.  Bailing out."
@@ -940,7 +984,7 @@ cd $START_DIR
 if [[ -d $VISITDIR/silo/${SILO_VERSION}/$VISITARCH ]] ; then
    echo "Skipping Silo build.  Silo is already installed."
 else
-   echo "Building Silo"
+   echo "Building Silo (~2 minutes)"
    build_silo >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Silo.  Bailing out."
@@ -955,7 +999,7 @@ fi
 # Build the actual VisIt code
 #
 cd $START_DIR
-echo "Building VisIt"
+echo "Building VisIt (~50 minutes)"
 build_visit >> build_visit_log 2>&1
 if [[ $? != 0 ]] ; then
    echo "Unable to build or install VisIt.  Bailing out."

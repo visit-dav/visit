@@ -66,7 +66,7 @@ vtkSurfaceFromVolume::TriangleList::TriangleList()
     currentTriangle = 0;
 }
  
- 
+
 vtkSurfaceFromVolume::TriangleList::~TriangleList()
 {
     for (int i = 0 ; i < listSize ; i++)
@@ -118,6 +118,9 @@ vtkSurfaceFromVolume::TriangleList::GetTotalNumberOfTriangles(void) const
 //    Hank Childs, Thu Oct 21 15:32:07 PDT 2004
 //    Fix bug when we get low on memory.
 //
+//    Sean Ahern, Mon Mar  5 15:44:05 EST 2007
+//    Fixed test for resizing list.  Initialized new entries.
+//
 // ****************************************************************************
 
 void
@@ -130,9 +133,10 @@ vtkSurfaceFromVolume::TriangleList::AddTriangle(int cellId, int v1, int v2,
         {
             int **tmpList = new int*[2*listSize];
             for (int i = 0 ; i < listSize ; i++)
-            {
                 tmpList[i] = list[i];
-            }
+            for (int i = listSize ; i < listSize*2 ; i++)
+                tmpList[i] = NULL;
+
             listSize *= 2;
             delete [] list;
             list = tmpList;

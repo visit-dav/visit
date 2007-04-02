@@ -16,6 +16,11 @@
 # Programmer: Mark C. Miller
 # Creation:   February 28, 2007
 #
+# Modifications:
+#
+#   Mark C. Miller, Tue Mar  6 09:12:07 PST 2007
+#   Fixed errors when plugin wasn't specified
+#
 # ----------------------------------------------------------------------------
 #
 
@@ -310,6 +315,15 @@ if test $optError -eq 0 && test -z "$action"; then
     echo "************************************************"
 fi
 
+if test $optError -eq 0 && test -z "$pluginName"; then
+    optError=1
+    echo "********************"
+    echo "********************"
+    echo "No plugin specified."
+    echo "********************"
+    echo "********************"
+fi
+
 if test "$optError" = "1"; then
     echo "Usage:  $0 <options> [dirs]"
     echo "Available options:"
@@ -412,8 +426,9 @@ if test $action = pack; then
     #
     # Email tarball to recipients if specified
     #
-    for em in $emailRecipients; do
-        cat > mutt.msg <<-EOF
+    if test -f $pluginName.tar.gz; then
+        for em in $emailRecipients; do
+            cat > mutt.msg <<-EOF
 The attached tarball is a VisIt plugin. This update is being
 furnished to you to address the following problem...
 
@@ -432,15 +447,16 @@ For versions of VisIt older than 1.6...
 cd into the directory and follow the instructions in
 the README file there.
 EOF
-         if test "$execEmail" = "unknown"; then
-             mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
-         else
-             mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
-         fi
-         tarballsToRemove="$tarballsToRemove $pluginName.tar.gz"
-	 sleep 3
-         rm -f mutt.msg
-    done
+             if test "$execEmail" = "unknown"; then
+                 mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
+             else
+                 mutt -c $execEmail -s "Updated $pluginName plugin" -a $pluginName.tar.gz $em < mutt.msg
+             fi
+             tarballsToRemove="$tarballsToRemove $pluginName.tar.gz"
+	     sleep 3
+             rm -f mutt.msg
+        done
+    fi
 
     #
     # Delete tarball if we have no reason not to
