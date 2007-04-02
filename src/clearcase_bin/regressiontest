@@ -356,7 +356,6 @@ esac
 skipList="scalable,parallel:tests/databases/boxlib.py \
           scalable,parallel:tests/hybrid/locus.py \
           parallel:tests/hybrid/locus.py \
-          serial:tests/hybrid/locus.py \
           scalable,parallel:tests/rendering/saveformats.py \
           dlb:tests/databases/global_node_ids.py \
           dlb:tests/queries/pick.py \
@@ -365,11 +364,9 @@ skipList="scalable,parallel:tests/databases/boxlib.py \
 	  optimized:tests/queries/database.py \
 	  optimized:tests/plots/label.py \
 	  parallel:tests/operators/defer_expr.py \
-	  serial:tests/operators/defer_expr.py \
 	  scalable,parallel:tests/operators/defer_expr.py \
 	  optimized:tests/operators/defer_expr.py \
           scalable,parallel:tests/queries/bestfitline.py \
-          serial:tests/databases/ProteinDataBank.py \
           parallel:tests/databases/ProteinDataBank.py \
           scalable,parallel:tests/databases/ProteinDataBank.py \
 	  scalable,parallel:tests/operators/transform.py" 
@@ -434,6 +431,7 @@ ipcs -s | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -s 1> /dev/null 2>&1
 ipcs -q | grep visit | cut -d' ' -f2 | xargs -n 1 ipcrm -q 1> /dev/null 2>&1
 
 # copy the data dir for use in optimized testing
+rm -rf /gscratch/visit_test/data
 cp -R data /gscratch/visit_test/. 1> /dev/null 2>&1
 chmod -R g+rX /gscratch/visit_test/data 1> /dev/null 2>&1
 
