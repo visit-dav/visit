@@ -97,6 +97,9 @@
 #    Jeremy Meredith, Wed Aug 31 16:48:05 PDT 2005
 #    I added xml2plugin.
 #
+#    Brad Whitlock, Tue Mar 7 13:47:00 PST 2006
+#    I added the ability to choose a bank other than bdivp.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -105,6 +108,7 @@ set append = true
 set beta = false
 set private = false
 set config = prompt
+set bank = prompt
 set logging = false
 set group_ownership = none
 set dir_permission = 755
@@ -145,6 +149,11 @@ while ($option_found == true)
          shift
          shift
          breaksw
+      case -b:
+         set bank = $2
+         shift
+         shift
+         breaksw
       case -l:
          set logging = true
          shift
@@ -156,8 +165,8 @@ while ($option_found == true)
 end
 
 if ($#argv != 3) then
-   echo "Usage: visit-install [-c open | closed] [-g group] [-gw] [-l] [-r]"
-   echo "                     [-beta | -private] version platform directory"
+   echo "Usage: visit-install [-c open | closed] [-g group] [-b bank] [-gw] [-l]"
+   echo "                     [-r] [-beta | -private] version platform directory"
    exit (1)
 endif
 
@@ -197,6 +206,39 @@ end
 if ($config != none && $config != open && $config != closed) then
    echo "Illegal configuration option, choices are none, open and closed."
    exit (1)
+endif
+
+if ($bank == prompt) then
+    # Determine whether the user needs a bank in order to install.
+    set yn = ""
+    while ("$yn" == "")
+        echo "Do you need to use a bank when submitting parallel jobs to a"
+        echo "batch system? (y/n):"
+        set yn = `echo $< | tr "[A-Z]" "[a-z]"`
+        if ("$yn" != "y" && "$yn" != "n") then
+            set yn = ""
+        endif
+    end
+
+    # If a bank is required then prompt for it.
+    if ("$yn" == "y") then
+        while ($bank == prompt)
+           echo ""
+           echo "Type the name of a bank for VisIt to use when launching its"
+           echo "parallel compute engine in a batch system:"
+
+           set bank = $<
+           if ("$bank" == "") then
+               echo "YOU MUST ENTER A BANK NAME!"
+               set bank = prompt
+           else
+               echo "You chose bank: $bank"
+           endif
+        end
+    else
+        # No bank was required. Use the default of bdivp.
+        set bank = "bdivp"
+    endif
 endif
 
 set version = $1;
@@ -289,14 +331,17 @@ cd ../../..
 cp distribution/visit/data/* $dir/data
 
 #
-# Set the link for the configuration file.
+# Use the appropriate configuration file, setting the bank to the right value.
 #
 rm -f $dir/$version+/.visit/config
 if ($config == open) then
-   ln -s visit-config-open $dir/$version+/.visit/config
+   ln -s visit-config-open  $dir/$version+/.visit/config_template
 else if ($config == closed) then
-   ln -s visit-config-closed $dir/$version+/.visit/config
+   ln -s visit-config-closed $dir/$version+/.visit/config_template
 endif
+sed -e "s/bdivp/$bank/" $dir/$version+/.visit/config_template > $dir/$version+/.visit/config
+chgrp $group_ownership $dir/$version+/.visit/config
+chmod 664 $dir/$version+/.visit/config
 
 #
 # If we're on MacOS X, then we want to create some small scripts that

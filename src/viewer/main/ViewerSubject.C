@@ -1636,26 +1636,51 @@ ViewerSubject::LaunchEngineOnStartup()
 // Creation:   Wed Jul 2 12:24:07 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Mar 7 12:16:39 PDT 2006
+//   I changed this method so that it no longer calls SetFromNode since that
+//   method now contains some code to validate a session file before allowing
+//   it to be imported. Since settings are incomplete session files at best,
+//   the validation code was indicating the session file had errors and VisIt
+//   did not allow the objects to initialize themselves. We call them here
+//   directly so they can initialize themselves without the session file
+//   validation code.
+//
 // ****************************************************************************
 
 void
 ViewerSubject::DelayedProcessSettings()
 {
+    const char *mName = "ViewerSubject::DelayedProcessSettings: ";
     if(localSettings != 0)
     {
         // Get the VisIt node.
         DataNode *visitRoot = localSettings->GetNode("VisIt");
         if(visitRoot == 0)
+        {
+            debug1 << mName << "Can't read VisIt node." << endl;
             return;
- 
+        }
+
         // Get the viewer node.
         DataNode *viewerNode = visitRoot->GetNode("VIEWER");
         if(viewerNode == 0)
+        {
+            debug1 << mName << "Can't read VisIt node." << endl;
             return;
+        }
 
-        // Try and set up everything from within the event loop.
-        SetFromNode(viewerNode);
+        // Get the ViewerSubject node
+        DataNode *searchNode = viewerNode->GetNode("ViewerSubject");
+        if(searchNode == 0)
+        {
+            debug1 << mName << "Can't read ViewerSubject node." << endl;
+            return;
+        }
+
+        // Let the important objects read their settings.
+        ViewerFileServer::Instance()->SetFromNode(searchNode);
+        ViewerWindowManager::Instance()->SetFromNode(searchNode);
+        ViewerQueryManager::Instance()->SetFromNode(searchNode);
 
         delete localSettings;  localSettings = 0;
     }
@@ -2723,6 +2748,9 @@ ViewerSubject::CreateNode(DataNode *parentNode, bool detailed)
 //
 // Arguments:
 //   parentNode : The DataNode object to use to set the state.
+//
+// Notes:
+//   This method is only called when VisIt is reading session files.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jun 30 12:36:00 PDT 2003

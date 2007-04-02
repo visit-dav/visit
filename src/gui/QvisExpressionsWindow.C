@@ -59,6 +59,9 @@
 //    Hank Childs, Tue Feb 14 14:06:20 PST 2006
 //    Added ijk_gradient.
 //
+//    Hank Childs, Sun Mar  5 16:03:38 PST 2006
+//    Added time.
+//
 // ****************************************************************************
 struct ExprNameList
 {
@@ -214,6 +217,7 @@ const char *expr_misc[] = {
     "surface_normal",
     "   point_surface_normal",
     "   cell_surface_normal",
+    "time",
     NULL
 };
 

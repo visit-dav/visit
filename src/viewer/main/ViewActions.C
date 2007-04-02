@@ -1214,6 +1214,8 @@ ChooseCenterOfRotationAction::FinishCB(void *data, bool success,
 // Creation:   Wed Jan 7 10:17:59 PDT 2004
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Mar  7 08:38:29 PST 2006
+//   Handle SR mode.
 //   
 // ****************************************************************************
 
@@ -1221,30 +1223,47 @@ void
 ChooseCenterOfRotationAction::FinishExecute(bool success,
     const PickAttributes *p)
 {
-     // Restore the old interaction mode.
-     window->SetInteractionMode(oldMode);
+    // Restore the old interaction mode.
+    window->SetInteractionMode(oldMode);
 
-     if(success)
-     {
-         // Tell the client about the new center of rotation.
-         char msg[500];
-         SNPRINTF(msg, 500, "The new center of rotation is: <%g, %g, %g>.",
-                  p->GetPickPoint()[0],
-                  p->GetPickPoint()[1],
-                  p->GetPickPoint()[2]);
-         Message(msg);
+    float pt[3];
+    if(success)
+    {
+        pt[0] = p->GetPickPoint()[0];
+        pt[1] = p->GetPickPoint()[1];
+        pt[2] = p->GetPickPoint()[2];
+    }
+    else if (window->GetScalableRendering())
+    {
+        PickAttributes pa;
+        success = window->GetPickAttributesForScreenPoint(p->GetPickPoint()[0],
+                                                p->GetPickPoint()[1],
+                                                pa);
+        if (success)
+        {
+            pt[0] = pa.GetPickPoint()[0];
+            pt[1] = pa.GetPickPoint()[1];
+            pt[2] = pa.GetPickPoint()[2];
+        }
+    }
 
-         // Set the new center of rotation.
-         windowMgr->SetCenterOfRotation(window->GetWindowId(),
-                                        p->GetPickPoint()[0],
-                                        p->GetPickPoint()[1],
-                                        p->GetPickPoint()[2]);
-     }
-     else
-     {
-         Warning("VisIt could not set the center of rotation. "
-                 "You might not have clicked on a plot.");
-     }
+    if (success)
+    {
+        // Tell the client about the new center of rotation.
+        char msg[500];
+        SNPRINTF(msg, 500, "The new center of rotation is: <%g, %g, %g>.",
+                      pt[0], pt[1], pt[2]);
+        Message(msg);
+
+        // Set the new center of rotation.
+        windowMgr->SetCenterOfRotation(window->GetWindowId(),
+                                       pt[0], pt[1], pt[2]);
+    }
+    else 
+    {
+        Warning("VisIt could not set the center of rotation. "
+                "You might not have clicked on a plot.");
+    }
 
      //
      // Now since we've updated the interaction mode, we have to update

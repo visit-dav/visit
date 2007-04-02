@@ -93,6 +93,7 @@
 #include <avtSymmTransformExpression.h>
 #include <avtEvalPlaneExpression.h>
 #include <avtSymmPlaneExpression.h>
+#include <avtTimeExpression.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -438,6 +439,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //      Hank Childs, Sat Feb 18 10:24:30 PST 2006
 //      Added apply_ddf.
 //
+//      Hank Childs, Sun Mar  5 16:01:34 PST 2006
+//      Added time.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -669,6 +673,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f = new avtEvalPlaneExpression;
     else if (functionName == "symm_plane")
         f = new avtSymmPlaneExpression;
+    else if (functionName == "time")
+        f = new avtTimeExpression;
     else if (functionName == "surface_normal" || 
              functionName == "point_surface_normal")
     {

@@ -61,6 +61,11 @@ Pick::Pick(VisWindowInteractorProxy &v) : VisitInteractor(v)
 //    not yet completed (can cause hang).  Added logic to cache picks and
 //    handle them.
 //
+//    Kathleen Bonnell, Mon Mar  6 14:44:19 PST 2006 
+//    Moved execution of the actual pick to EndLeftButtonAction. As pick
+//    can reset InteractionMode, and it isn't good for that to happen 
+//    in-between a Start and End action.
+//
 // ****************************************************************************
 
 void
@@ -68,16 +73,8 @@ Pick::StartLeftButtonAction()
 {
     int x, y;
     Interactor->GetEventPosition(x, y);
-    if (!picking && !handlingCache)
-    {
-        DoPick(x, y);
-        HandlePickCache();
-    }
-    else
-    {
-        pickCache.push(x);
-        pickCache.push(y);
-    }
+    pickCache.push(x);
+    pickCache.push(y);
 }
 
 
@@ -138,4 +135,27 @@ Pick::HandlePickCache()
     }
     handlingCache = false;
 }
+
+
+// ****************************************************************************
+//  Method: Pick::EndLeftButtonAction
+//
+//  Purpose:
+//    Handles the left button being released, meaning it is time to perform
+//    the pick.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 6, 2006 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+Pick::EndLeftButtonAction()
+{
+    if (!picking && !handlingCache)
+        HandlePickCache();
+}
+
 

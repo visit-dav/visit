@@ -2,6 +2,7 @@ Constant: DEFAULT_FULL_FRAME_AUTO_THRESHOLD
 Declaration: static const double DEFAULT_FULL_FRAME_AUTO_THRESHOLD;
 Definition: const double View2DAttributes::DEFAULT_FULL_FRAME_AUTO_THRESHOLD = 100.0;
 
+
 Function: GetUseFullFrame
 Declaration: bool GetUseFullFrame(const double *limits=0) const;
 Definition:
@@ -78,3 +79,4 @@ View2DAttributes::SetUseFullFrame(bool ff)
     else
         fullFrameActivationMode = Off;
 }
+

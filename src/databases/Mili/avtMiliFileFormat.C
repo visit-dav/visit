@@ -1256,6 +1256,9 @@ avtMiliFileFormat::ReadMesh(int dom)
 //    Added code to deal with param-array variables
 //    Added memset call to zero-out Subrecord struct
 //
+//    Mark C. Miller, Mon Mar  6 14:25:49 PST 2006
+//    Added call to cleanse subrec at end of loop to fix a memory leak
+//
 // ****************************************************************************
 
 void
@@ -1341,6 +1344,7 @@ avtMiliFileFormat::ValidateVariables(int dom)
 
                  mc_cleanse_st_variable(&sv);
             }
+            mc_cleanse_subrec(&sr);
         }
     }
 

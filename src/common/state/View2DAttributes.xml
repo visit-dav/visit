@@ -18,7 +18,7 @@
       0.900000
     </Field>
     <Field name="fullFrameActivationMode" label="fullFrameActivationMode" type="enum" subtype="TriStateMode">
-      Off
+      Auto
     </Field>
     <Field name="fullFrameAutoThreshold" label="fullFrameAutoThreshold" type="double">
       100.000000

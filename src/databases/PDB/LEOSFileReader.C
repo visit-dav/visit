@@ -959,6 +959,10 @@ LEOSFileReader::ReadVariableInfo(const char *matDirName,
 //   previous code would match "40" with "L140" and wind up reading data from
 //   wrong directory
 //
+//   Mark C. Miller, Tue Mar  7 14:20:13 PST 2006
+//   Made the match for directory name use '==' operator and made it look for
+//   directories first prepended with "L" and then without.
+//
 // ****************************************************************************
 
 bool 
@@ -1005,18 +1009,24 @@ LEOSFileReader::ParseContentsAndPopulateMetaData(avtDatabaseMetaData *md,
             return false;
 
         string matDirName = RemoveSpaces(dirDigits);
-        matDirName = "L" + matDirName;
 
         // the matDirName doesn't contain the full directory name, so try to find it
-        // in the topDirs list
+        // in the topDirs list. Some eos files have a preceding "L" in the dir name
+        // and some do not.
         bool foundDir = false;
-        for (i = 0; i < numTopDirs; i++)
+        for (int pass = 0; pass < 2; pass++)
         {
-           if (string(topDirs[i]).rfind(matDirName) != string::npos)
-           {
-               foundDir = true;
-               break;
-           }
+            string searchDirName = (pass == 0 ? "L" : "") + matDirName;
+            for (i = 0; i < numTopDirs; i++)
+            {
+               if (string(topDirs[i]) == searchDirName)
+               {
+                   foundDir = true;
+                   break;
+               }
+            }
+            if (foundDir)
+                break;
         }
         if (!foundDir)
             return false;

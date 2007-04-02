@@ -1515,6 +1515,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Added error check for attempts to save curve formats from windows
 //    in SR mode
 //
+//    Mark C. Miller, Tue Mar  7 10:31:34 PST 2006
+//    Made it set LastRealFileName to something bogus in case of error
+//
 // ****************************************************************************
 
 void
@@ -1680,46 +1683,57 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
     avtDataObject_p dob = NULL;
     avtDataObject_p dob2 = NULL;
+    bool savedWindow = true;
     if (saveWindowClientAtts->CurrentFormatIsImageFormat())
     {
         avtImage_p image = NULL;
         avtImage_p image2 = NULL;
 
-        if (saveWindowClientAtts->GetSaveTiled())
+        TRY
         {
-            // Create a tiled image for the left eye.
-            image = CreateTiledImage(saveWindowClientAtts->GetWidth(),
-                                     saveWindowClientAtts->GetHeight(),
-                                     true);
-            // Create a tiled image for the right eye.
-            if (saveWindowClientAtts->GetStereo())
+            if (saveWindowClientAtts->GetSaveTiled())
             {
-                image2 = CreateTiledImage(saveWindowClientAtts->GetWidth(),
+                // Create a tiled image for the left eye.
+                image = CreateTiledImage(saveWindowClientAtts->GetWidth(),
+                                         saveWindowClientAtts->GetHeight(),
+                                         true);
+                // Create a tiled image for the right eye.
+                if (saveWindowClientAtts->GetStereo())
+                {
+                    image2 = CreateTiledImage(saveWindowClientAtts->GetWidth(),
+                                              saveWindowClientAtts->GetHeight(),
+                                              false);
+                }
+            }
+            else 
+            {
+                // Create the left eye.
+                image = CreateSingleImage(windowIndex,
+                                          saveWindowClientAtts->GetWidth(),
                                           saveWindowClientAtts->GetHeight(),
-                                          false);
-            }
-        }
-        else 
-        {
-            // Create the left eye.
-            image = CreateSingleImage(windowIndex,
-                                      saveWindowClientAtts->GetWidth(),
-                                      saveWindowClientAtts->GetHeight(),
-                                      saveWindowClientAtts->GetScreenCapture(),
-                                      true);
+                                          saveWindowClientAtts->GetScreenCapture(),
+                                          true);
 
-            // Create the right eye.
-            if (saveWindowClientAtts->GetStereo())
-            {
-                image2 = CreateSingleImage(windowIndex,
-                                           saveWindowClientAtts->GetWidth(),
-                                           saveWindowClientAtts->GetHeight(),
-                                           saveWindowClientAtts->GetScreenCapture(),
-                                           false);
+                // Create the right eye.
+                if (saveWindowClientAtts->GetStereo())
+                {
+                    image2 = CreateSingleImage(windowIndex,
+                                               saveWindowClientAtts->GetWidth(),
+                                               saveWindowClientAtts->GetHeight(),
+                                               saveWindowClientAtts->GetScreenCapture(),
+                                               false);
+                }
             }
+            CopyTo(dob, image);
+            CopyTo(dob2, image2);
         }
-        CopyTo(dob, image);
-        CopyTo(dob2, image2);
+        CATCH2(VisItException, ve)
+        {
+            Warning(ve.Message().c_str());
+            ClearStatus();
+            savedWindow = false;
+        }
+        ENDTRY
     }
     else
     {
@@ -1752,7 +1766,6 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
 
     // Save the window.
-    bool savedWindow = true;
     if (*dob != NULL)
     {
         TRY
@@ -1814,19 +1827,18 @@ ViewerWindowManager::SaveWindow(int windowIndex)
         SNPRINTF(message, 1000, "Saved %s", filename);
         Status(message);
         Message(message);
+        saveWindowClientAtts->SetLastRealFilename(filename);
     }
     else
     {
         SNPRINTF(message, 1000, "Could not save window");
         Status(message);
         Message(message);
-    }
 
-    if (filename != NULL)
-    {
-        saveWindowClientAtts->SetLastRealFilename(filename);
-        saveWindowClientAtts->Notify();
+        // specify an impossible filename to have saved
+        saveWindowClientAtts->SetLastRealFilename("/dev/null/SaveWindow_Error.txt");
     }
+    saveWindowClientAtts->Notify();
 
     // Delete the filename memory.
     if (filename != NULL)
@@ -1862,6 +1874,10 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    Enabled non-screen-capture based mode as well as width and height
 //    arguments
 //
+//    Mark C. Miller, Tue Mar  7 19:43:56 PST 2006
+//    Added code to refuse to save and warn user if non-screen-capture saves
+//    are attempted with animation caching turned on.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1882,9 +1898,18 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
             retval = windows[index]->ScreenCapture();
         else
         {
-            avtDataObject_p extImage;
-            windows[index]->ExternalRenderManual(extImage, width, height);
-            CopyTo(retval, extImage);
+            if (windows[index]->GetAnimationAttributes()->GetPipelineCachingMode())
+            {
+                Warning("Currently, you cannot use non-screen-capture mode saves "
+                    "when you have animation caching turned on. Either turn off "
+                    "animation caching or use screen capture to save your windows.");
+            }
+            else
+            {
+                avtDataObject_p extImage;
+                windows[index]->ExternalRenderManual(extImage, width, height);
+                CopyTo(retval, extImage);
+            }
         }
 
         if (!leftEye)

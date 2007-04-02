@@ -1826,6 +1826,9 @@ QvisFileSelectionWindow::setEnabled(bool val)
 //   I improved the code so it will now tell the viewer to check all different
 //   virtual databases for new states.
 //
+//   Brad Whitlock, Tue Mar 7 10:12:47 PDT 2006
+//   I made it emit a signal.
+//
 // ****************************************************************************
 
 void
@@ -1900,6 +1903,9 @@ QvisFileSelectionWindow::okClicked()
             }
         }
     }
+
+    // Tell VisIt that the selected files list changed.
+    emit selectedFilesChanged();
 }
 
 // ****************************************************************************

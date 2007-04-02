@@ -132,6 +132,9 @@
 #   Hank Childs, Sat Feb 18 10:25:59 PST 2006
 #   Added ApplyDDF.
 #
+#   Hank Childs, Sun Mar  5 16:00:07 PST 2006
+#   Added avtTimeExpression.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -224,7 +227,8 @@ Management_src= \
   Management/avtConstantCreatorFilter.C \
   Management/avtExprNode.C \
   Management/avtExprNodeFactory.C \
-  Management/ExprPipelineState.C 
+  Management/ExprPipelineState.C \
+  Management/avtTimeExpression.C 
 
 Math_src= \
   Math/avtAbsValFilter.C \

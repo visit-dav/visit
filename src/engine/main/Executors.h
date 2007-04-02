@@ -559,6 +559,10 @@ RPCExecutor<UpdatePlotAttsRPC>::Execute(UpdatePlotAttsRPC *rpc)
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added window id to pick rpc
+//
+//    Kathleen Bonnell, Tue Mar  7 08:27:25 PST 2006 
+//    Added call to PickForIntersection.
+//
 // ****************************************************************************
 template<>
 void
@@ -575,7 +579,10 @@ RPCExecutor<PickRPC>::Execute(PickRPC *rpc)
         LoadBalancer::RegisterProgressCallback(NULL, NULL);
         avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
         avtDataObjectQuery::RegisterInitializeProgressCallback(NULL, NULL);
-        netmgr->Pick(rpc->GetNetId(), rpc->GetWinId(), rpc->GetPickAtts());
+        if (rpc->GetNetId() >= 0)
+            netmgr->Pick(rpc->GetNetId(), rpc->GetWinId(), rpc->GetPickAtts());
+        else
+            netmgr->PickForIntersection(rpc->GetWinId(), rpc->GetPickAtts());
         rpc->SendReply(rpc->GetPickAtts());
     }
     CATCH2(VisItException, e)
@@ -1256,6 +1263,10 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
 //    Hank Childs, Sat Jan 28 11:40:35 PST 2006
 //    Added OutputAllTimings.
 //
+//    Hank Childs, Tue Mar  7 15:13:33 PST 2006
+//    Register one more callback, which can lead to an exception if we don't
+//    do this, when a warning is issued during SR.
+//
 // ****************************************************************************
 template<>
 void
@@ -1274,6 +1285,8 @@ RPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
                              Engine::EngineUpdateProgressCallback, (void*)rpc);
     avtTerminatingSource::RegisterInitializeProgressCallback(NULL, NULL);
     LoadBalancer::RegisterProgressCallback(NULL, NULL);
+    avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback,
+                                         (void*)rpc);
     NetworkManager::RegisterInitializeProgressCallback(
                         Engine::EngineInitializeProgressCallback, (void*)rpc);
     NetworkManager::RegisterProgressCallback(

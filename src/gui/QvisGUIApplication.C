@@ -5,6 +5,7 @@
 #include <visit-config.h> // To get the version number
 #include <qcolor.h>
 #include <qcursor.h>
+#include <qdir.h>
 #include <qfiledialog.h>
 #include <qlabel.h>
 #include <qmessagebox.h>
@@ -2181,8 +2182,12 @@ QvisGUIApplication::CreateMainWindow()
 //   Brad Whitlock, Wed Apr 20 17:37:07 PST 2005
 //   Added command window.
 //
-//    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Added mesh management attributes window
+//   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
+//   Added mesh management attributes window.
+//
+//   Brad Whitlock, Tue Mar 7 10:17:30 PDT 2006
+//   Hooked up the selected files window to UpdateSavedConfigFile.
+//
 // ****************************************************************************
 
 void
@@ -2193,7 +2198,9 @@ QvisGUIApplication::SetupWindows()
 
      // Create the file selection window because it contains the callbacks
      // that update the GUI when we interact with mdservers.
-     GetWindowPointer(WINDOW_FILE_SELECTION);
+     QvisWindowBase *filesel = GetWindowPointer(WINDOW_FILE_SELECTION);
+     connect(filesel, SIGNAL(selectedFilesChanged()),
+             this, SLOT(UpdateSavedConfigFile()));
 
      outputWin = (QvisOutputWindow *)GetWindowPointer(WINDOW_OUTPUT);
      outputWin->CreateEntireWindow();
@@ -3253,6 +3260,98 @@ QvisGUIApplication::SaveSessionFile(const QString &fileName)
     WriteConfigFile(sessionName.latin1());
 
     return retval;
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::UpdateSavedConfigFile
+//
+// Purpose: 
+//   This is a Qt slot function that we use to read in the current settings
+//   and save out an updated "recent path list" to the settings. This should
+//   help users find navigate their directories easier without having to save
+//   settings.
+//
+// Note:       This is currently only called when the Selected Files window
+//             is dismissed with a click but we could change it so that the 
+//             settings are instead saved every N minutes if we ever stick
+//             any other automatically saved settings into this file.
+//
+//             Also note that this routine only saves the GUI's config.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 7 10:08:19 PDT 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::UpdateSavedConfigFile()
+{
+    const char *mName = "QvisGUIApplication::WriteUpdatedConfigFile: ";
+    int  timeid = visitTimer->StartTimer();
+    char *configFile = GetDefaultConfigFile(VISIT_GUI_CONFIG_FILE);
+
+    // Read the current settings
+    DataNode *root = ReadConfigFile(configFile);
+    if(root == 0)
+    {
+        debug1 << mName << "Could not read " << configFile
+               << " so all settings will be saved so we can update "
+                  "the file list in the settings next time." << endl;
+
+        // We could not read the config file so let's do a full save settings.
+        WriteConfigFile(configFile);
+    }
+    else
+    {
+        DataNode *visitRoot = root->GetNode("VisIt");
+        if(visitRoot != 0)
+        {
+            DataNode *guiNode = visitRoot->GetNode("GUI");
+            if(guiNode != 0)
+            {
+                // Find the FileServerList node and remove it.
+                guiNode->RemoveNode("FileServerList");
+
+                // Add an updated FileServerList node.
+                fileServer->CreateNode(guiNode, true, true);
+
+                // Save the config file into a new file temporarily.
+                int len = strlen(configFile) + 4 + 1;
+                char *tmpname = new char[len];
+                SNPRINTF(tmpname, len, "%s.bak", configFile);
+                if((fp = fopen(tmpname, "wt")) != 0)
+                {
+                    fprintf(fp, "<?xml version=\"1.0\"?>\n");
+                    WriteObject(visitRoot);
+
+                    // close the file
+                    fclose(fp);
+                    fp = 0;
+
+                    // The temporary file has been written. Move it to
+                    // the right filename.
+                    QDir().remove(configFile);
+                    QDir().rename(tmpname, configFile);
+
+                    debug1 << mName << "Updated settings in " << configFile << endl;
+                }
+                else
+                    debug1 << mName << "Could not write " << configFile << endl;
+                delete [] tmpname;
+            }
+            else
+                debug1 << mName << "Could not find GUI node." << endl;
+        }
+        else
+            debug1 << mName << "Could not find VisIt node." << endl;
+
+        delete root;
+    }
+
+    delete [] configFile;
+    visitTimer->StopTimer(timeid, "Saving updated config file");
 }
 
 // ****************************************************************************

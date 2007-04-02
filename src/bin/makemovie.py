@@ -373,6 +373,10 @@ class EngineAttributesParser(XMLParser):
 # Date:       Fri Jun 24 10:03:23 PDT 2005
 #
 # Modifications:
+#   Brad Whitlock, Tue Mar 7 15:55:40 PST 2006
+#   I made it use a new windowImageSize field that contains the size of the
+#   OpenGL part of the window instead of the windowSize, which is the size of
+#   the whole window including the decorations and toolbar.
 #
 ###############################################################################
 
@@ -426,7 +430,7 @@ class WindowSizeParser(XMLParser):
                         self.activeWindow = 0
                 except ValueError:
                     return
-            elif name == "windowSize" and type == "intArray":
+            elif name == "windowImageSize" and type == "intArray":
                 length = self.dataAtts["length"]
                 if length == "2":
                     fragments = string.split(data, " ")

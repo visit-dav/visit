@@ -3964,3 +3964,76 @@ GetDDFCallbackBridge(void *arg, const char *name)
 }
 
 
+// ****************************************************************************
+//  Method:  Network::PickForIntersection
+//
+//  Purpose:  Finds the intersection point in the data, that was
+//            'picked'.
+//
+//  Arguments:
+//    winId      The window Id to use.
+//    pa         PickAttributes to set/get info about the pick.
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    March 2, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
+{
+    // the network ids are stored in Incident Elements
+    intVector ids = pa->GetIncidentElements();
+    intVector validIds;
+    bool needRender = false;
+    for (int i = 0; i < ids.size(); i++)
+    {
+        if (ids[i] >= networkCache.size())
+        {
+            debug1 << "Internal error:  asked to use network ID (" 
+                   << ids[i] << ") >= " << "num saved networks (" 
+                   << networkCache.size() << ")" << endl;
+            continue;
+        }
+
+        if (networkCache[ids[i]] == NULL)
+        {
+            debug1 << "Asked to pick on a network that has "
+                   << "already been cleared." << endl;
+            continue;
+        }
+
+        if (ids[i] != networkCache[ids[i]]->GetNetID())
+        {
+             debug1 << "Internal error: network at position[" << ids[i] << "] "
+                    << "does not have same id (" 
+                    << networkCache[ids[i]]->GetNetID() << ")" << endl;
+             continue;
+        }
+        validIds.push_back(ids[i]);
+        needRender = networkCache[ids[i]]->ActorIsNull();
+    }
+    if (validIds.size() == 0)
+    {
+        return;
+    }
+
+    if (needRender)
+    {
+        Render(validIds, false, 0, winId);
+    }
+    int x, y; 
+    double isect[3];
+    x = (int)pa->GetRayPoint1()[0];
+    y = (int)pa->GetRayPoint1()[1];
+    VisWindow *viswin = viswinMap[winId].viswin;
+    if (viswin->FindIntersection(x, y, isect))
+    {
+        float pp[3] = {isect[0], isect[1], isect[2] };
+        pa->SetPickPoint(pp);
+        pa->SetFulfilled(true);
+    }
+}
+
