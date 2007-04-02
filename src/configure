@@ -17606,10 +17606,6 @@ COMMON_FILES="common/Makefile
               common/utility/Makefile"
 
 TOOLS_FILES="tools/Makefile
-             tools/DataManualExamples/Makefile
-             tools/DataManualExamples/CreatingCompatible/Makefile
-             tools/DataManualExamples/CreatingCompatibleAdvanced/Makefile
-             tools/DataManualExamples/Simulations/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
              tools/clipeditor/Makefile
