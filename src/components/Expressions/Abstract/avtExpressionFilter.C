@@ -160,7 +160,7 @@ avtExpressionFilter::PreExecute(void)
 //  Method: avtExpressionFilter::PostExecute
 //
 //  Purpose:
-//      Gins up some default extents so that the cumulative ones will work.
+//      Sets the active variable and maintains the extents.
 //
 //  Arguments:
 //      in_ds      The input dataset.
@@ -180,6 +180,9 @@ avtExpressionFilter::PreExecute(void)
 //    Call avtDatasetToDatasetFilter's PostExecute, since that is now the base 
 //    class.
 //
+//    Hank Childs, Tue Aug 30 13:30:28 PDT 2005
+//    Update the extents in the data attributes.
+//
 // ****************************************************************************
 
 void
@@ -188,6 +191,99 @@ avtExpressionFilter::PostExecute(void)
     // Make our derived variable be the active variable.
     avtDatasetToDatasetFilter::PostExecute();
     OutputSetActiveVariable(outputVariableName);
+
+    UpdateExtents(GetDataTree());
+}
+
+
+// ****************************************************************************
+//  Method: avtExpressionFilter::UpdateExtents
+//
+//  Purpose:
+//      Establishes the cumulative extents.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2005
+//
+// ****************************************************************************
+
+void
+avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
+{
+    if (*tree == NULL)
+        return;
+
+    int nc = tree->GetNChildren();
+    if (nc <= 0 && tree->HasData())
+    {
+        vtkDataSet *ds = tree->GetDataRepresentation().GetDataVTK();
+        bool isPoint = true;
+        vtkDataArray *dat = ds->GetPointData()->GetArray(outputVariableName);
+        if (dat == NULL)
+        {
+            dat = ds->GetCellData()->GetArray(outputVariableName);
+            isPoint = false;
+        }
+        if (dat == NULL)
+        {
+            debug1 << "VERY STRANGE.  We have been asked to update the "
+                   << "extents for variable \"" << outputVariableName
+                   << "\", but the variable could not be located." << endl;
+            return;
+        }
+
+        int nvars = dat->GetNumberOfComponents();
+        if (nvars <= 3 || nvars == 9)
+        {
+            double exts[6];
+            unsigned char *ghosts = NULL;
+            if (!isPoint)
+            {
+                vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
+                                  ds->GetCellData()->GetArray("avtGhostZones");
+                if (g != NULL)
+                {
+                    ghosts = g->GetPointer(0);
+                }
+            }
+            int ntuples = dat->GetNumberOfTuples();
+            exts[0] = +FLT_MAX;
+            exts[1] = -FLT_MAX;
+            for (int i = 0 ; i < ntuples ; i++)
+            {
+                if (ghosts != NULL && ghosts[i] > 0)
+                {
+                    continue;
+                }
+                float *val = dat->GetTuple(i);
+                float value = 0;
+                if (nvars == 1)
+                    value = *val;
+                else if (nvars == 3)
+                    value = val[0]*val[0] + val[1] * val[1] + val[2] *val[2];
+                else if (nvars == 9)
+                    // This function is found in avtCommonDataFunctions.
+                    value = MajorEigenvalue(val);
+                // else ... array variable
+    
+                if (value < exts[0])
+                    exts[0] = value;
+                if (value > exts[1])
+                    exts[1] = value;
+            }
+            if (nvars == 3)
+            {
+                exts[0] = sqrt(exts[0]);
+                exts[1] = sqrt(exts[1]);
+            }
+            GetOutput()->GetInfo().GetAttributes().
+                 GetCumulativeTrueDataExtents(outputVariableName)->Merge(exts);
+        }
+    }
+    else if (nc > 0)
+        for (int i = 0 ; i < nc ; i++)
+            if (tree->ChildIsPresent(i))
+                UpdateExtents(tree->GetChild(i));
 }
 
 
@@ -214,16 +310,41 @@ avtExpressionFilter::PostExecute(void)
 //    Hank Childs, Thu May 19 13:43:47 PDT 2005
 //    Do not assume output variable name has been already set.
 //
+//    Hank Childs, Mon Aug 29 14:45:40 PDT 2005
+//    Moved most of the method to SetExpressionAtts.
+//
 // ****************************************************************************
  
 void
 avtExpressionFilter::RefashionDataObjectInfo(void)
 {
-    if (outputVariableName == NULL)
-        return;
-
     avtDataAttributes &inputAtts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+
+    SetExpressionAttributes(inputAtts, outAtts);
+}
+
+
+// ****************************************************************************
+//  Method: avtExpressionFilter::SetExpressionAttributes
+//
+//  Purpose:
+//      Sets the attributes of the expression.  This is separated from 
+//      RefashionDataObjectInfo, since the CMFE infrastructure also uses this
+//      method for setting the info, and it uses "inputAtts" from the alternate
+//      database.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 29, 2005
+//
+// ****************************************************************************
+
+void
+avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
+                                             avtDataAttributes &outAtts)
+{
+    if (outputVariableName == NULL)
+        return;
 
     if (!outAtts.ValidVariable(outputVariableName))
     {

@@ -65,3 +65,17 @@ InvalidMergeException::InvalidMergeException()
 }
 
 
+// ****************************************************************************
+//  Method: InvalidMergeException constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   August 29, 2005
+//
+// ****************************************************************************
+
+InvalidMergeException::InvalidMergeException(const char *m)
+{
+    msg = m;
+}
+
+

@@ -108,15 +108,19 @@
 #   Hank Childs, Mon Aug 15 14:51:30 PDT 2005
 #   Added ImageProcessing directory.
 #
+#   Hank Childs, Fri Aug 26 07:32:58 PDT 2005
+#   Added CMFE directory.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Abstract Conditional Derivations General ImageProcessing Management \
-        Math MeshQuality 
-SRC=$(Abstract_src) $(Conditional_src) $(Derivations_src) $(General_src) \
-    $(ImageProcessing_src) $(Management_src) $(Math_src) $(MeshQuality_src) 
+SUBDIRS=Abstract CMFE Conditional Derivations General ImageProcessing \
+        Management Math MeshQuality 
+SRC=$(Abstract_src) $(CMFE_src) $(Conditional_src) $(Derivations_src) \
+    $(General_src) $(ImageProcessing_src) $(Management_src) $(Math_src) \
+    $(MeshQuality_src) 
 
 Abstract_src= \
   Abstract/avtBinaryMathFilter.C \
@@ -139,6 +143,10 @@ Conditional_src= \
   Conditional/avtTestLessThanFilter.C \
   Conditional/avtTestLessThanOrEqualToFilter.C \
   Conditional/avtTestNotEqualToFilter.C
+
+CMFE_src= \
+  CMFE/avtCMFEExpression.C \
+  CMFE/avtConnCMFEExpression.C
 
 Derivations_src=\
   Derivations/avtEffectiveTensorFilter.C \

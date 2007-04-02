@@ -566,10 +566,14 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    Kathleen Bonnell, Thu Aug  4 15:47:59 PDT 2005 
 //    Added more conditions -- CanUseOrigZones and OrigNodesRequiredForPick.
 //
+//    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005 
+//    Removed 'needNodes' from topodim == 0 portion of test. 
+//
 // ****************************************************************************
 
 bool
-avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones)
+avtBehavior::RequiresReExecuteForQuery(const bool needInvT, 
+                                       const bool needZones)
 {
     bool retval = false;
     if (GetInfo().GetValidity().GetIsThisDynamic())
@@ -583,11 +587,15 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT, const bool needZones
         bool nodesAvailable = info.GetAttributes().GetContainsOriginalNodes();
         bool keptNodeZone = info.GetAttributes().GetKeepNodeZoneArrays();
         bool canUseZones = info.GetAttributes().CanUseOrigZones();
-        bool needNodes = info.GetAttributes().OrigNodesRequiredForPick();
+
         if (needZones)
+        {
             retval = (!keptNodeZone || (canUseZones && !zonesAvailable));
+        }
         else
-            retval = (!keptNodeZone || (needNodes && !nodesAvailable ));
+        {
+            retval = (!keptNodeZone || !nodesAvailable);
+        }
     }
     else if (info.GetValidity().GetPointsWereTransformed())
     {

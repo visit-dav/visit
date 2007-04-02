@@ -19,6 +19,7 @@
 #include <vtkVisItUtility.h>
 
 #include <avtExpressionEvaluatorFilter.h>
+#include <avtCommonDataFunctions.h>
 #include <avtMatrix.h>
 #include <avtParallel.h>
 #include <avtTerminatingSource.h>
@@ -29,6 +30,7 @@
 #include <PickVarInfo.h>
 
 using     std::string;
+
 
 
 // ****************************************************************************
@@ -697,6 +699,9 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds)
 //    Brad Whitlock, Mon Apr 4 16:47:06 PST 2005
 //    Added support for label data.
 //
+//    Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
+//    Compute MajorEigenvalue for tensors. 
+//
 // ****************************************************************************
 
 void
@@ -804,12 +809,15 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
                     {
                         vals.push_back(temp[i]);
                         // assume its a vector, get its mag.
-                        if (nComponents > 1 && !labelData)
+                        if (nComponents > 1 &&  nComponents < 9 && !labelData)
                             mag += (temp[i] * temp[i]);
                     }     
                     if (nComponents > 1 && !labelData)
                     {
-                        mag = sqrt(mag);
+                        if (nComponents < 9) 
+                           mag = sqrt(mag);
+                        else 
+                           mag = MajorEigenvalue(temp);
                         vals.push_back(mag); 
                     }         
                 } // for all incidentElements
@@ -1575,3 +1583,4 @@ avtPickQuery::SetRealIds(vtkDataSet *ds)
     pickAtts.SetRealElementNumber(foundEl);
     pickAtts.SetRealIncidentElements(incEls);
 }
+

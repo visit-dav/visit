@@ -9,7 +9,7 @@
 #include <vtkLookupTable.h>
 #include <vtkProperty.h>
 #include <vtkPolyData.h>
-#include <vtkTensorGlyph.h>
+#include <vtkVisItTensorGlyph.h>
 #include <vtkVisItPolyDataNormals.h>
 
 #include <avtExtents.h>
@@ -179,6 +179,10 @@ avtTensorGlyphMapper::CustomizeMappers(void)
 //    Hank Childs, Wed May  5 14:19:54 PDT 2004
 //    Added poly data normals.
 //
+//    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005 
+//    Use VisIt version of TensorGlyph, so that original cell and node
+//    arrays can be copied through. 
+//
 // ****************************************************************************
 
 void
@@ -208,7 +212,7 @@ avtTensorGlyphMapper::SetUpFilters(int nDoms)
     }
 
     nTensorFilters     = nDoms;
-    tensorFilter       = new vtkTensorGlyph*[nTensorFilters];
+    tensorFilter       = new vtkVisItTensorGlyph*[nTensorFilters];
     normalsFilter      = new vtkVisItPolyDataNormals*[nTensorFilters];
     for (int i = 0 ; i < nTensorFilters ; i++)
     {
@@ -242,6 +246,10 @@ avtTensorGlyphMapper::SetUpFilters(int nDoms)
 //    Jeremy Meredith, Tue Jun  1 11:24:29 PDT 2004
 //    Only do the normals if in 3-space.
 //
+//    Kathleen Bonnell, Tue Aug 30 15:11:01 PDT 2005 
+//    Use VisIt version of TensorGlyph, so that original cell and node
+//    arrays can be copied through. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -258,7 +266,7 @@ avtTensorGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
         // We don't have to initialize the filter now, since it will be done
         // in customize mappers later.
         //
-        tensorFilter[dom] = vtkTensorGlyph::New();
+        tensorFilter[dom] = vtkVisItTensorGlyph::New();
     }
     if (normalsFilter[dom] == NULL)
     {

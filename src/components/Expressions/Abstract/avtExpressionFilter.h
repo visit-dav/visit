@@ -54,6 +54,9 @@ class     ExprPipelineState;
 //    Hank Childs, Fri Aug  5 16:40:12 PDT 2005
 //    Added GetVariableType.
 //
+//    Hank Childs, Mon Aug 29 14:44:20 PDT 2005
+//    Added SetExpressionAtts.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -81,6 +84,8 @@ class EXPRESSION_API avtExpressionFilter : virtual public
     virtual void             PreExecute(void);
     virtual void             PostExecute(void);
     virtual void             RefashionDataObjectInfo(void);
+    void                     SetExpressionAttributes(const avtDataAttributes &,
+                                                     avtDataAttributes &);
     virtual avtPipelineSpecification_p
                              PerformRestriction(avtPipelineSpecification_p);
     virtual void             ExamineSpecification(avtPipelineSpecification_p);
@@ -89,6 +94,7 @@ class EXPRESSION_API avtExpressionFilter : virtual public
     virtual avtVarType       GetVariableType() { return AVT_UNKNOWN_TYPE; };
 
     vtkDataArray            *Recenter(vtkDataSet*, vtkDataArray*,avtCentering);
+    void                     UpdateExtents(avtDataTree_p);
 };
 
 

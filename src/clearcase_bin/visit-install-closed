@@ -476,9 +476,9 @@ fi
 #
 if [ $test = no ]
 then
-   scp -P 22 visit-install sc1:
-   scp -P 22 lc sc1:lc_install
-   ssh -p 22 sc1 "chmod 750 lc_install;./lc_install"
+   scp visit-install sc1:
+   scp lc sc1:lc_install
+   ssh sc1 "chmod 750 lc_install;./lc_install"
 fi
 
 #

@@ -209,6 +209,9 @@ avtMinMaxQuery::PreExecute()
 //    Kathleen Bonnell, Wed Apr 27 08:29:52 PDT 2005 
 //    Modified ghost tests to account for ghost nodes. 
 //
+//    Hank Childs, Tue Aug 30 15:24:00 PDT 2005
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 void 
@@ -224,7 +227,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     vtkUnsignedCharArray *ghostNodes = 
            (vtkUnsignedCharArray*)ds->GetPointData()->GetArray("avtGhostNodes");
     vtkDataArray *data = NULL;
-    bool shouldDeleteData = false;
+    vtkPoints *pts = NULL;
     string var = queryAtts.GetVariables()[0];
     int varType = queryAtts.GetVarTypes()[0];
     int ts = queryAtts.GetTimeStep();
@@ -248,8 +251,8 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     }
     else if (varType == QueryAttributes::Curve) 
     {
-        data = vtkVisItUtility::GetPoints(ds)->GetData();
-        shouldDeleteData = true;
+        pts = vtkVisItUtility::GetPoints(ds);
+        data = pts->GetData();
         nodeCentered = true;
         elementName = "node";
     }
@@ -258,8 +261,8 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
         //
         //  This allows Lineouts to be queried for minMax.
         //
-        data = vtkVisItUtility::GetPoints(ds)->GetData();
-        shouldDeleteData = true;
+        pts = vtkVisItUtility::GetPoints(ds);
+        data = pts->GetData();
         nodeCentered = true;
         elementName = "node";
         scalarCurve = true;
@@ -500,8 +503,8 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
             FinalizeZoneCoord(ds, origCells, maxInfo2, zonesPreserved);
     }
 
-    if (shouldDeleteData)
-        data->Delete();
+    if (pts != NULL)
+        pts->Delete();
 }
 
 

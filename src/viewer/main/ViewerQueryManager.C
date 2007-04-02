@@ -1715,6 +1715,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Wed Aug 10 16:46:17 PDT 2005 
 //    For StartPick, added test for changed active plots.
 //
+//    Kathleen Bonnell, Tue Aug 30 15:20:40 PDT 2005 
+//    For StartPick, don't set needZone to 'true' if a nodal-var Tensor or
+//    Vector is plotted.   Do GlyphPickf or Tensor plots.
+//
 // ****************************************************************************
 
 bool
@@ -1738,6 +1742,10 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         preparingPick = true;
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
         ViewerPlotList *plist = win->GetPlotList();
+        intVector plotIds;
+        plist->GetActivePlotIDs(plotIds);
+        ViewerPlot *plot = plist->GetPlot(plotIds[0]);
+ 
         int pickType = pickAtts->GetPickType();
     
         bool needZones = (pickType == PickAttributes::Zone ||
@@ -1745,6 +1753,13 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         bool needInvTrans = (pickType == PickAttributes::Node ||
                              pickType == PickAttributes::Zone);
 
+        if ((strcmp(plot->GetPlotName(), "Vector") == 0) ||
+            (strcmp(plot->GetPlotName(), "Tensor") == 0)) 
+        {
+            if ( plot->GetVariableCentering() == AVT_NODECENT)
+                needZones = false;
+        }
+   
         plist->StartPick(needZones, needInvTrans);
         initialPick = false;
         preparingPick = false;
@@ -1883,6 +1898,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 
         bool doGlyphPick = 
                   (strcmp(plot->GetPlotName(), "Vector") == 0) ||
+                  (strcmp(plot->GetPlotName(), "Tensor") == 0) ||
                   ((plot->GetMeshType() == AVT_POINT_MESH) &&
                    (strcmp(plot->GetPlotName(), "Label") != 0));
 

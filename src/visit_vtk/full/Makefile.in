@@ -245,6 +245,9 @@
 #    Brad Whitlock, Fri Aug 26 10:26:12 PDT 2005
 #    Added vtkVisItDataSetMapper.
 #
+#    Kathleen Bonnell, Tue Aug 30 15:20:40 PDT 2005 
+#    Added vtkVisItTensorGlyph.
+#
 ##############################################################################
 
 ##
@@ -306,6 +309,7 @@ SRC=InitVTK.C \
     vtkVisItSTLWriter.C \
     vtkVisItScalarTree.C \
     vtkVisItStreamLine.C \
+    vtkVisItTensorGlyph.C \
     vtkVisItTIFFWriter.C \
     vtkVolumeFromVolume.C
 

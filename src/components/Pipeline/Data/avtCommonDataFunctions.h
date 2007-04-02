@@ -85,6 +85,7 @@ PIPELINE_API void CConvertUnstructuredGridToPolyData(avtDataRepresentation &,
 
 PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *);
 PIPELINE_API double MajorEigenvalue(float *);
+PIPELINE_API double MajorEigenvalue(double *);
 
 
 typedef struct

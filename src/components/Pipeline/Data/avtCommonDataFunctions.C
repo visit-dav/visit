@@ -1897,6 +1897,15 @@ CGetNumberOfRealZones(avtDataRepresentation &data, void *sum, bool &)
 double
 MajorEigenvalue(float *vals)
 {
+    double dv[9];
+    for (int i = 0; i < 9; i++)
+        dv[i] = vals[i];
+    return MajorEigenvalue(dv);
+}
+
+double
+MajorEigenvalue(double *vals)
+{
     double *input[3];
     double row1[3];
     double row2[3];
