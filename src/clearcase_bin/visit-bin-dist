@@ -223,6 +223,11 @@
 #    Brad Whitlock, Fri Feb 3 08:30:30 PDT 2006
 #    I added Qt's qui library to the distribution.
 #
+#    Eric Brugger, Mon Feb  6 10:52:03 PST 2006
+#    Make some corrections for libqui.  Split some commands to overcome line
+#    length restrictions on old Irix systems.  Add links for libqt.a and
+#    libqui.a.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -765,7 +770,7 @@ endif
 # Copy the VisIt libraries to the distribution.
 #
 echo "Copying libraries to the distribution..."
-cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libpython` $libdir
+cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libqui | grep -v libpython` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
 
@@ -779,14 +784,20 @@ if ("$os" != "darwin") then
     ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion.$minorVersion
     ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion
     ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT
+    if (-e $VisItDir/lib/libqt.a) then
+        ln -s $QtLibName $libdir/libqt.a
+    endif
 endif
 cp $VisItDir/lib/$QUILibName $libdir/$QUILibName
-set majorVersion = `echo $QUILibName | awk '{printf substr($1, 10, 1)}'`
-set minorVersion = `echo $QUILibName | awk '{printf substr($1, 12, 1)}'`
+set majorVersion = `echo $QUILibName | awk '{printf substr($1, 11, 1)}'`
+set minorVersion = `echo $QUILibName | awk '{printf substr($1, 13, 1)}'`
 if ("$os" != "darwin") then
     ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT.$majorVersion.$minorVersion
     ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT.$majorVersion
     ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT
+    if (-e $VisItDir/lib/libqui.a) then
+        ln -s $QtLibName $libdir/libqui.a
+    endif
 endif
 
 #
@@ -851,9 +862,12 @@ endif
 # Copy the plugins to the distribution.
 #
 echo "Copying plugins to the distribution..."
-cp $VisItDir/plugins/plots/*.$SHLIB_SOEXT       $plugindir/plots
-cp $VisItDir/plugins/operators/*.$SHLIB_SOEXT   $plugindir/operators
-cp $VisItDir/plugins/databases/*.$SHLIB_SOEXT   $plugindir/databases
+cp $VisItDir/plugins/plots/*.$SHLIB_SOEXT         $plugindir/plots
+cp $VisItDir/plugins/operators/libE*.$SHLIB_SOEXT $plugindir/operators
+cp $VisItDir/plugins/operators/libG*.$SHLIB_SOEXT $plugindir/operators
+cp $VisItDir/plugins/operators/libI*.$SHLIB_SOEXT $plugindir/operators
+cp $VisItDir/plugins/operators/libS*.$SHLIB_SOEXT $plugindir/operators
+cp $VisItDir/plugins/databases/*.$SHLIB_SOEXT     $plugindir/databases
 
 #
 # Copy includes

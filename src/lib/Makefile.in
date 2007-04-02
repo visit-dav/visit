@@ -93,6 +93,9 @@
 #    Eric Brugger, Tue Jan 24 08:42:55 PST 2006
 #    I added links to qui.
 #
+#    Eric Brugger, Mon Feb  6 12:58:57 PST 2006
+#    I added links to libqt.a and libqui.a.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -197,14 +200,22 @@ libosmesa:
 
 libqt:
 	if test -n "@QT_LIB@"; then              \
-	    $(RM) $(LIBQT)*                 ;   \
-	    ln -s @QT_LIB@/$(LIBQT)* .   ;   \
+	    $(RM) $(LIBQT)*                 ;    \
+	    ln -s @QT_LIB@/$(LIBQT)* .   ;       \
+            if test -n "@QT_LIB@/libqt.a"; then  \
+                $(RM) libqt.a ;                  \
+                ln -s @QT_LIB@/libqt.a . ;       \
+            fi                                   \
 	fi
 
 libqui:
-	if test -n "@QT_LIB@"; then           \
-	    $(RM) $(LIBQUI)*              ;   \
-	    ln -s @QT_LIB@/$(LIBQUI)* .   ;   \
+	if test -n "@QT_LIB@"; then              \
+	    $(RM) $(LIBQUI)*              ;      \
+	    ln -s @QT_LIB@/$(LIBQUI)* .   ;      \
+            if test -n "@QT_LIB@/libqui.a"; then \
+                $(RM) libqui.a ;                 \
+                ln -s @QT_LIB@/libqui.a . ;      \
+            fi                                   \
 	fi
 
 pythondir:

@@ -113,6 +113,7 @@ void
 LightList::SetDefaultEnabledStates()
 {
     light0.SetEnabledFlag(true);
+    light0.SetEnabledFlagCanBeToggled(false);
     light1.SetEnabledFlag(false);
     light2.SetEnabledFlag(false);
     light3.SetEnabledFlag(false);

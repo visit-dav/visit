@@ -122,6 +122,10 @@ using std::vector;
 //    Hank Childs, Tue May 24 09:54:36 PDT 2005
 //    Added new argument to constructor for hasoptions.
 //
+//    Kathleen Bonnell, Mon Feb  6 16:23:30 PST 2006 
+//    Allow assignment operator and 'SetProperty' methods from codefile to 
+//    replace default generated methods. 
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1897,6 +1901,12 @@ class AttsGeneratorAttribute
     }
     void WriteSourceAssignmentOperator(ostream &c)
     {
+        if (HasFunction("operator ="))
+        {
+            PrintFunction(c, "operator =");
+            c << endl;
+            return;
+        }
         // Write the method comment.
         QString purposeString("Assignment operator for the ");
         purposeString += (name + " class.");
@@ -2455,7 +2465,17 @@ class AttsGeneratorAttribute
         c << "// Set property methods" << endl;
         c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
         for (i=0; i<fields.size(); i++)
-            fields[i]->WriteSourceSetFunction(c, name);
+        {
+            if (!HasFunction("Set"+fields[i]->Name))
+            {
+                fields[i]->WriteSourceSetFunction(c, name);
+            }
+            else
+            {
+                PrintFunction(c, "Set"+fields[i]->Name);
+                c << endl;
+            }
+        }
 
         // Write out all the get methods
         c << "///////////////////////////////////////////////////////////////////////////////" << endl;

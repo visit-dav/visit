@@ -251,15 +251,27 @@ QvisLightingWindow::UpdateWindow(bool)
 {
     // Make all enabled lights have a light icon.
     activeLightComboBox->blockSignals(true);
+    if (activeLight == 0)
+    {
+        lightEnabledCheckBox->setEnabled(false);
+    }
+    else
+    {
+        lightEnabledCheckBox->setEnabled(true);
+    }
     for(int i = 0; i < activeLightComboBox->count(); ++i)
     {
         bool enabled = lights->GetLight(i).GetEnabledFlag();
         QString num;
         num.sprintf("%d", i + 1);
         if(enabled)
+        {
             activeLightComboBox->changeItem(*onLightIcon, num, i);
+        }
         else
+        {
             activeLightComboBox->changeItem(*offLightIcon, num, i);
+        }
     }
     activeLightComboBox->blockSignals(false);
 
@@ -320,19 +332,14 @@ QvisLightingWindow::UpdateWindow(bool)
 //   Kathleen Bonnell, Tue Dec 28 16:20:47 PST 2004
 //   Cast args for QColor constructor to int to prevent comiler warnings.
 //   
+//   Kathleen Bonnell, Mon Feb  6 16:58:40 PST 2006 
+//   Removed unnecessary code that counted 'numEnabled' as it was not used. 
+//   
 // ****************************************************************************
 
 void
 QvisLightingWindow::UpdateLightWidget()
 {
-    int numEnabled = 0;
-    for(int i = 0; i < lights->NumLights(); ++i)
-    {
-        const LightAttributes &light = lights->GetLight(i);
-        if(light.GetEnabledFlag())
-            ++numEnabled;
-    }
-
     // Update the light displayed in the light widget.
     if(mode == 1)
     {
@@ -342,6 +349,7 @@ QvisLightingWindow::UpdateLightWidget()
         for(int i = 0; i < lights->NumLights(); ++i)
         {
             const LightAttributes &light = lights->GetLight(i);
+           
             if(light.GetEnabledFlag())
             {
                 QColor c2((int)(light.GetColor().Red() * light.GetBrightness()),
