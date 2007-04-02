@@ -286,6 +286,8 @@ int GetNumDomains()
 //    Akira Haddox, Fri Jul 25 10:49:57 PDT 2003
 //    Added variable dimensionality.
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added logic to look for data in "param arrays"
 // ***************************************************************************
 
 void ReadDomain(int dom, MiliInfo &mi)
@@ -477,6 +479,56 @@ void ReadDomain(int dom, MiliInfo &mi)
                     else
                         mi.varDimension[mesh_id].push_back(sv.vec_size);
                 }
+            }
+        }
+
+        //
+        // Mili 1.09 defines some "param arrays" that may be read as mesh
+        // variables. However, the interface to access them isn't as complete
+        // as the interface for state vars. We don't know which mesh they
+        // go with and we don't know their centering. Here, we use apriori
+        // knowledge to specify centering and we just associate them
+        // with every mesh.
+        //
+        static vector<int> paramVarTypes;
+        static vector<string> paramVarNames;
+        if (mesh_id == 0)
+        {
+            //
+            // Ok, deal with known named "param arrays"
+            //
+            vector<string> knownpas;
+            knownpas.push_back("Nodal Mass");
+            knownpas.push_back("Nodal Volume");
+            for (i = 0; i < knownpas.size(); i++)
+            {
+                //
+                // Alas, Mili doesn't permit us to simply query for existence
+                // of a param array. We need to actually attempt to read it and
+                // if successful we will have done problem-sized I/O
+                //
+                void *values;
+                if (mc_read_param_array(dbid, (char*) knownpas[i].c_str(), &values) == OK)
+                {
+                    free(values);
+                    string paVarName = "params/" + knownpas[i];
+                    paramVarNames.push_back(paVarName);
+                    if (strstr(knownpas[i].c_str(), "Nodal") != 0)
+                        paramVarTypes.push_back(AVT_NODECENT);
+                    else
+                        paramVarTypes.push_back(AVT_ZONECENT);
+                }
+            }
+        }
+
+        if (paramVarNames.size() > 0)
+        {
+            for (i = 0; i < paramVarNames.size(); i++)
+            {
+                mi.varNames[mesh_id].push_back(paramVarNames[i]);
+                mi.varCentering[mesh_id].push_back(paramVarTypes[i]);
+                mi.varType[mesh_id].push_back(AVT_SCALAR_VAR);
+                mi.varDimension[mesh_id].push_back(1);
             }
         }
     }

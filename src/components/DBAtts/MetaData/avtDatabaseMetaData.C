@@ -4802,6 +4802,9 @@ avtDatabaseMetaData::SetFormatCanDoDomainDecomposition(bool can)
 //    Added code to make sure num blocks is 1 if
 //    formatCanDoDomainDecomposition is true
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added code to assure topological dimension is zero if its a point
+//    mesh. VisIt has subtle problems with pipeline if it is not.
 //
 // ****************************************************************************
 
@@ -4814,8 +4817,17 @@ avtDatabaseMetaData::Add(avtMeshMetaData *mmd)
             "other than a single block in formats that do their own domain "
             "decomposition.");
     }
-
-    meshes.push_back(mmd);
+    if (mmd->meshType == AVT_POINT_MESH && mmd->topologicalDimension != 0)
+    {
+        // we shouldn't modify the caller's object, so make a copy
+        avtMeshMetaData tmpmmd(*mmd);
+        tmpmmd.topologicalDimension = 0;
+        meshes.push_back(&tmpmmd);
+    }
+    else
+    {
+        meshes.push_back(mmd);
+    }
 }
 
 

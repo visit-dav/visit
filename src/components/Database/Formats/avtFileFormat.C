@@ -261,6 +261,10 @@ avtFileFormat::SetCache(avtVariableCache *c)
 //    Hank Childs, Sun Jun 16 19:55:52 PDT 200
 //    Initialized cell origin.
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added code to assure topo is zero if its a point mesh. VisIt has
+//    subtle problems in the pipeline if it is not.
+//
 // ****************************************************************************
 
 void
@@ -268,6 +272,8 @@ avtFileFormat::AddMeshToMetaData(avtDatabaseMetaData *md, string name,
                                  avtMeshType type, const float *extents,
                                  int blocks, int origin, int spatial, int topo)
 {
+    if (type == AVT_POINT_MESH)
+        topo = 0;
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = name;
     mesh->meshType = type;

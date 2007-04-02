@@ -16,6 +16,7 @@ extern "C" {
 
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
+#include <vtkDataArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkFloatArray.h>
 
@@ -32,10 +33,13 @@ extern "C" {
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
+#include <UnexpectedValueException.h>
 
 using std::vector;
 using std::string;
 using std::ifstream;
+
+const char *free_nodes_str = "_free_nodes";
 
 // ****************************************************************************
 //  Constructor:  avtMiliFileFormat::avtMiliFileFormat
@@ -63,6 +67,8 @@ using std::ifstream;
 //    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
 //    Add support for more data types (float, double, char, int, etc).
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added initialization of structures having to do with free nodes mesh
 // ****************************************************************************
 
 avtMiliFileFormat::avtMiliFileFormat(const char *fname)
@@ -226,6 +232,10 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
     }
     else
        fampath = NULL; 
+
+    free_nodes = 0;
+    num_free_nodes = 0;
+    free_nodes_ts = -1;
 }
 
 
@@ -245,6 +255,8 @@ avtMiliFileFormat::avtMiliFileFormat(const char *fname)
 //    Hank Childs, Tue Jul 27 10:40:44 PDT 2004
 //    Sucked in code from FreeUpResources.
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Free structures having to do with free nodes mesh
 // ****************************************************************************
 
 avtMiliFileFormat::~avtMiliFileFormat()
@@ -286,6 +298,14 @@ avtMiliFileFormat::~avtMiliFileFormat()
     delete [] famroot;
     if (fampath)
         delete [] fampath;
+
+    if (free_nodes)
+    {
+        delete [] free_nodes;
+        free_nodes = 0;
+        num_free_nodes = 0;
+        free_nodes_ts = -1;
+    }
 }
 
 
@@ -299,6 +319,11 @@ avtMiliFileFormat::~avtMiliFileFormat()
 //  Programmer: Hank Childs
 //  Creation:   July 20, 2004
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added logic to read "param arrays" via a different Mili API call. Note
+//    that param arrays are always alloc'd by Mili
 // ****************************************************************************
 
 static void
@@ -307,29 +332,49 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 {
     int  i;
 
+    bool isParamArray = strncmp(*name, "params/", 7) == 0;
+
     void *buff_to_read_into = NULL;
-    switch (vtype)
+    if (!isParamArray)
     {
-      case M_STRING:
-        buff_to_read_into = new char[amount];
-        break;
-      case M_FLOAT:
-      case M_FLOAT4:
-        buff_to_read_into = buff;
-        break;
-      case M_FLOAT8:
-        buff_to_read_into = new double[amount];
-        break;
-      case M_INT:
-      case M_INT4:
-        buff_to_read_into = new int[amount];
-        break;
-      case M_INT8:
-        buff_to_read_into = new long[amount];
-        break;
+        switch (vtype)
+        {
+          case M_STRING:
+            buff_to_read_into = new char[amount];
+            break;
+          case M_FLOAT:
+          case M_FLOAT4:
+            buff_to_read_into = buff;
+            break;
+          case M_FLOAT8:
+            buff_to_read_into = new double[amount];
+            break;
+          case M_INT:
+          case M_INT4:
+            buff_to_read_into = new int[amount];
+            break;
+          case M_INT8:
+            buff_to_read_into = new long[amount];
+            break;
+        }
     }
 
-    int rval = mc_read_results(dbid, ts, sr, rank, name, buff_to_read_into);
+    int rval;
+    if (isParamArray)
+    {
+        char tmpName[256];
+        strcpy(tmpName, &(*name)[7]);
+        rval = mc_read_param_array(dbid, tmpName, &buff_to_read_into);
+        if (rval == OK && (vtype == M_FLOAT || vtype == M_FLOAT4))
+        {
+            float *pflt = (float *) buff_to_read_into;
+            for (i = 0 ; i < amount ; i++)
+                buff[i] = (float)(pflt[i]);
+        }
+    }
+    else
+        rval = mc_read_results(dbid, ts, sr, rank, name, buff_to_read_into);
+
     if (rval != OK)
     {
         EXCEPTION1(InvalidVariableException, name[0]);
@@ -370,6 +415,9 @@ read_results(Famid &dbid, int ts, int sr, int rank,
          delete [] l_tmp;
          break;
     }
+
+    if (isParamArray)
+        free(buff_to_read_into);
 }
 
 
@@ -403,11 +451,16 @@ read_results(Famid &dbid, int ts, int sr, int rank,
 //    Hank Childs, Fri Aug 27 17:12:50 PDT 2004
 //    Rename ghost data array.
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added logic to read the "free nodes" mesh, too. Removed huge block of
+//    unused #ifdef'd code having to do with ghost zones.
 // ****************************************************************************
 
 vtkDataSet *
 avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 {
+    int i;
+
     debug5 << "Reading in " << mesh << " for domain/ts : " << dom << ',' << ts
            << endl;
 
@@ -430,15 +483,13 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     //
     // Do a checked conversion to integer.
     //
-    char *check;
+    char *check = 0;
     mesh_id = (int) strtol(mesh + 4, &check, 10);
-    if (check != NULL && check[0] != '\0')
+    if (mesh_id == 0 || check == mesh + 4)
     {
         EXCEPTION1(InvalidVariableException, mesh)
     }
     --mesh_id;
-    
-    char *nodpos_str = "nodpos";
 
     //
     // The connectivity does not change over time, so use the one we have
@@ -450,11 +501,13 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     //
     // The node positions are stored in 'nodpos'.
     //
+    char *nodpos_str = "nodpos";
+
     int nodpos = GetVariableIndex(nodpos_str, mesh_id);
 
     int subrec = -1;
     int vsize = M_FLOAT;
-    for (int i = 0 ; i < vars_valid[dom][nodpos].size() ; i++)
+    for (i = 0 ; i < vars_valid[dom][nodpos].size() ; i++)
     {
         if (vars_valid[dom][nodpos][i])
         {
@@ -475,7 +528,7 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(nnodes[dom][mesh_id]);
     float *vpts = (float *) pts->GetVoidPointer(0);
-    float *tmp = fpts;
+    float *tmp = fpts; 
     for (int pt = 0 ; pt < nnodes[dom][mesh_id] ; pt++)
     {
         *(vpts++) = *(tmp++);
@@ -488,133 +541,115 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 
     rv->SetPoints(pts);
     pts->Delete();
+
+    //
+    // If VisIt really asked for the free nodes mesh, compute that now,
+    // otherwise, just return the mesh
+    //
+    if (strstr(mesh, free_nodes_str) == 0)
+    {
+        delete [] fpts;
+        return rv;
+    }
+
+    //
+    // Element status' are stored in the "sand" variable 
+    //
+    vtkFloatArray *sand_arr = (vtkFloatArray *) GetVar(ts, dom, "sand");
+    if (sand_arr->GetNumberOfTuples() != ncells[dom][mesh_id])
+    {
+        EXCEPTION2(UnexpectedValueException, sand_arr->GetNumberOfTuples(),
+                                             ncells[dom][mesh_id]);
+    }
+    float *sand_vals = (float*) sand_arr->GetVoidPointer(0);
+
+    const unsigned char MESH = 'm';
+    const unsigned char FREE = 'f';
+    unsigned char *ns = new unsigned char[nnodes[dom][mesh_id]];
+    memset(ns, FREE, nnodes[dom][mesh_id]);
+
+    //
+    // Populate nodal status array based on element status'
+    //
+    int cell, node;
+    int num_free = nnodes[dom][mesh_id];
+    for (cell = 0; cell < ncells[dom][mesh_id]; cell++)
+    {
+        if (sand_vals[cell] > 0.5) // element status is "good"
+        {
+            vtkIdType npts = 0, *pts = 0;
+            rv->GetCellPoints(cell, npts, pts);
+            if (npts && pts)
+            {
+                for (node = 0; node < npts; node++)
+                {
+                    int nid = pts[node];
+                    if (ns[nid] != MESH)
+                    {
+                        ns[nid] = MESH;
+                        num_free--;
+                    }
+                }
+            }
+        }
+    }
+    sand_arr->Delete();
+
+
+    vtkPoints *freepts = vtkPoints::New();
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    if (num_free > 0)
+    {
+        //
+        // cache the list of nodes that are the free nodes
+        //
+        if (free_nodes)
+            delete [] free_nodes;
+        free_nodes = new int[num_free];
+        num_free_nodes = num_free;
+        free_nodes_ts = ts;
+
+        freepts->SetNumberOfPoints(num_free);
+        float *fptr_dst = (float *) freepts->GetVoidPointer(0);
+        float *fptr_src = fpts; 
+        int fnode = 0;
+        for (node = 0; node < nnodes[dom][mesh_id]; node++)
+        {
+            if (ns[node] == FREE)
+            {
+                free_nodes[fnode/3] = node;
+                fptr_dst[fnode++] = fptr_src[3*node+0];
+                fptr_dst[fnode++] = fptr_src[3*node+1];
+                fptr_dst[fnode++] = fptr_src[3*node+2];
+            }
+        }
+
+        ugrid->SetPoints(freepts);
+        ugrid->Allocate(num_free);
+        vtkIdType onevertex[1];
+        for (node = 0; node < num_free; node++)
+        {
+            onevertex[0] = node;
+            ugrid->InsertNextCell(VTK_VERTEX, 1, onevertex);
+        }
+        freepts->Delete();
+    }
+    else
+    {
+        if (free_nodes)
+            delete [] free_nodes;
+        free_nodes = 0; 
+        num_free_nodes = 0;
+        free_nodes_ts = ts;
+        freepts->SetNumberOfPoints(0);
+        ugrid->SetPoints(freepts);
+        freepts->Delete();
+    }
+    delete [] ns;
     delete [] fpts;
+    rv->Delete();
 
-    //
-    // This code for ghost levels from sand variables has been commented
-    // out, since they conflict with the real ghost zones that we can
-    // generate.
-    //
-#if 0
-    //
-    // Add in the ghost levels (from sand variables), if it has any.
-    //
-   
-    int v_index = -1;
-    const char *name = "sand";
-    
-    TRY
-    {
-        v_index = GetVariableIndex(name, mesh_id);
-    }
-    CATCH(InvalidVariableException)
-    {
-        v_index = -1;
-    }
-    ENDTRY
-
-    if (v_index >= 0)
-    {
-        bool someValid = false;
-        vtkFloatArray *sandLevels = vtkFloatArray::New();
-        sandLevels->SetNumberOfTuples(ncells[dom][mesh_id]);
-        float *p = (float *) sandLevels->GetVoidPointer(0);
-        int i;
-        for (i = 0 ; i < ncells[dom][mesh_id] ; i++)
-            p[i] = 1.;
-        for (i = 0 ; i < vars_valid[dom][v_index].size() ; i++)
-        {
-            if (vars_valid[dom][v_index][i])
-            {
-                int start = 0;
-                int csize = 0;
-                GetSizeInfoForGroup(sub_records[dom][i].class_name, start, 
-                                    csize, dom);
-                char *tmp = (char *) name;  // Bypass const
-
-                // Simple read in: one block 
-                if (sub_records[dom][i].qty_blocks == 1)
-                {
-                    // Adjust start
-                    start += (sub_records[dom][i].mo_blocks[0] - 1);
-                
-                    int rval = mc_read_results(dbid[dom], ts+1,
-                                 sub_record_ids[dom][i],
-                                 1, &tmp, p + start);
-                    if (rval != OK)
-                    {
-                        EXCEPTION1(InvalidVariableException, name);
-                    }
-                }
-                else
-                {
-                    int nBlocks = sub_records[dom][i].qty_blocks;
-                    int *blocks = sub_records[dom][i].mo_blocks;
-
-                    int pSize = 0;
-                    int b;
-                    for (b = 0; b < nBlocks; ++b)
-                        pSize += blocks[b * 2 + 1] - blocks[b * 2] + 1;
-
-                    float *arr = new float[pSize];
-
-                    int rval = mc_read_results(dbid[dom], ts + 1,
-                                    sub_record_ids[dom][i],
-                                    1, &tmp, arr);
-
-                    if (rval != OK)
-                    {
-                        delete [] arr;
-                        EXCEPTION1(InvalidVariableException, name);
-                    }
-                    
-
-                    float *ptr = arr;
-                    // Fill up the blocks into the array.
-                    for (b = 0; b < nBlocks; ++b)
-                    {
-                        int c;
-                        for (c = blocks[b * 2] - 1; c <= blocks[b * 2 + 1] - 1;
-                                                    ++c)
-                            p[c + start] = *(ptr++);
-                    }
-                    
-                    delete [] arr;
-                }
-            }
-        }        
-      
-        vtkUnsignedCharArray *ghostLevels = vtkUnsignedCharArray::New(); 
-        ghostLevels->SetNumberOfTuples(ncells[dom][mesh_id]);
-        unsigned char *ptr = (unsigned char *)ghostLevels->GetVoidPointer(0);
-        for (i = 0; i < ncells[dom][mesh_id]; ++i)
-        {
-            // If the sand value is 0, we want to drop it as a ghost zone.
-            if (p[i] < 0.5)
-            {
-                avtGhostData::AddGhostZoneType(ptr[i], 
-                                               ZONE_NOT_APPLICABLE_TO_PROBLEM);
-                ptr[i] = 1;
-                someValid = true;
-            }
-            else
-            {
-                ptr[i] = 0;
-            }
-        }
-
-        if (someValid)
-        {
-            ghostLevels->SetName("avtGhostZones");
-            rv->GetCellData()->AddArray(ghostLevels);
-        }
-        sandLevels->Delete();
-        ghostLevels->Delete();
-        rv->SetUpdateGhostLevel(0);
-    } 
-#endif
-
-    return rv;
+    return ugrid;
 }
 
 
@@ -627,14 +662,25 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
 //  Programmer: Hank Childs
 //  Creation:   April 16, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added logic to deal with free nodes mesh variables
+//
 // ****************************************************************************
 
 int
 avtMiliFileFormat::GetVariableIndex(const char *varname)
 {
+    string tmpname = varname;
+    char *p = strstr(varname, free_nodes_str);
+
+    if (p != 0)
+        tmpname = string(varname, 0, p-varname);
+
     for (int i = 0 ; i < vars.size() ; i++)
     {
-        if (vars[i] == varname)
+        if (vars[i] == tmpname)
         {
             return i;
         }
@@ -653,14 +699,25 @@ avtMiliFileFormat::GetVariableIndex(const char *varname)
 //  Programmer: Akira Haddox
 //  Creation:   May 23, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added logic to deal with free nodes mesh variables
+//
 // ****************************************************************************
 
 int
 avtMiliFileFormat::GetVariableIndex(const char *varname, int mesh_id)
 {
+    string tmpname = varname;
+    char *p = strstr(varname, free_nodes_str);
+
+    if (p != 0)
+        tmpname = string(varname, 0, p-varname);
+
     for (int i = 0 ; i < vars.size() ; i++)
     {
-        if (vars[i] == varname && var_mesh_associations[i] == mesh_id)
+        if (vars[i] == tmpname && var_mesh_associations[i] == mesh_id)
         {
             return i;
         }
@@ -1061,6 +1118,10 @@ avtMiliFileFormat::ReadMesh(int dom)
 //    Initialize sv with memset to remove free of invalid pointer when
 //    mc_cleanse_st_variable is called.
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added code to deal with param-array variables
+//    Added memset call to zero-out Subrecord struct
+//
 // ****************************************************************************
 
 void
@@ -1084,6 +1145,7 @@ avtMiliFileFormat::ValidateVariables(int dom)
         for (int j = 0 ; j < substates ; j++)
         {
             Subrecord sr;
+            memset(&sr, 0, sizeof(sr));
             rval = mc_get_subrec_def(dbid[dom], i, j, &sr);
         
             //
@@ -1111,7 +1173,8 @@ avtMiliFileFormat::ValidateVariables(int dom)
             //
             for (int vv = 0 ; vv < vars.size() ; vv++)
             {
-                vars_valid[dom][vv].push_back(false);
+                bool pushVal = strncmp(vars[vv].c_str(), "params/", 7) == 0;
+                vars_valid[dom][vv].push_back(pushVal);
                 var_size[dom][vv].push_back(M_FLOAT);
             }
             int index = sub_records[dom].size() - 1;
@@ -1120,7 +1183,6 @@ avtMiliFileFormat::ValidateVariables(int dom)
             {
                  State_variable sv;
                  memset(&sv, 0, sizeof(sv));
-
                  mc_get_svar_def(dbid[dom], sr.svar_names[k], &sv);
 
                  int sameAsVar = -1;
@@ -1217,6 +1279,36 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
     return mat;
 }
 
+
+// ****************************************************************************
+//  Method:  avtMiliFileFormat::RestrictVarToFreeNodes
+//
+//  Purpose: Restrict a given variable to the free nodes mesh
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    July 18, 2005
+//
+// ****************************************************************************
+vtkFloatArray *
+avtMiliFileFormat::RestrictVarToFreeNodes(vtkFloatArray *src, int ts) const
+{
+    if (free_nodes_ts != ts)
+    {
+        EXCEPTION2(UnexpectedValueException, ts, free_nodes_ts);
+    }
+
+    int ncomps = src->GetNumberOfComponents();
+    vtkFloatArray *dst = vtkFloatArray::New();
+    dst->SetNumberOfComponents(ncomps);
+    dst->SetNumberOfTuples(num_free_nodes);
+    float *dstp = (float *) dst->GetVoidPointer(0);
+    float *srcp = (float *) src->GetVoidPointer(0);
+    for (int i = 0; i < num_free_nodes; i++)
+        for (int j = 0; j < ncomps; j++)
+            dstp[i*ncomps+j] = srcp[free_nodes[i]*ncomps+j];
+    return dst;
+}
+
                 
 // ****************************************************************************
 //  Method:  avtMiliFileFormat::GetVar
@@ -1241,6 +1333,9 @@ avtMiliFileFormat::ConstructMaterials(vector< vector<int *> > &mat_list,
 //    Hank Childs, Tue Jul 20 15:53:30 PDT 2004
 //    Add support for more data types (float, double, char, int, etc).
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added code to deal with param array variables
+//    Added code to deal with variables defined on the free nodes mesh
 // ****************************************************************************
 
 vtkDataArray *
@@ -1251,23 +1346,31 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
     if (!validateVars[dom])
         ValidateVariables(dom);
 
+    bool isParamArray = strncmp(name, "params/", 7) == 0; 
+    char *isFreeNodesVar = strstr(name, free_nodes_str);
+
+    string usename = name;
+    if (isFreeNodesVar)
+        usename = string(name, 0, isFreeNodesVar-name);
+
     string vname;
     int meshid = 0;
     if (nmeshes == 1)
-        vname = name;
+        vname = usename;
     else
-        DecodeMultiMeshVarname(name, vname, meshid);
+        DecodeMultiMeshVarname(usename, vname, meshid);
     
-    vtkFloatArray *rv = vtkFloatArray::New();
-
     int v_index = GetVariableIndex(vname.c_str(), meshid);
     int mesh_id = var_mesh_associations[v_index];
 
+    vtkFloatArray *rv = 0;
+
     if (centering[v_index] == AVT_NODECENT)
     {
+        int i;
         int nvars = 0;
         int sr_valid = -1;
-        for (int i = 0 ; i < vars_valid[dom][v_index].size() ; i++)
+        for (i = 0 ; i < vars_valid[dom][v_index].size() ; i++)
         {
             if (vars_valid[dom][v_index][i])
             {
@@ -1275,21 +1378,60 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
                 nvars++;
             }
         }
-        if (nvars != 1)
+        if (!isParamArray && nvars != 1)
         {
             EXCEPTION1(InvalidVariableException, name);
         }
         int vsize = var_size[dom][v_index][sr_valid];
 
-        int amt = nnodes[dom][mesh_id];
-        rv->SetNumberOfTuples(amt);
-        float *p = (float *) rv->GetVoidPointer(0);
-        char *tmp = (char *) name;  // Bypass const
-        read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid], 1,
-                        &tmp, vsize, amt, p);
+        // Since data in param arrays is constant over all time,
+        // we just cache it here in the plugin. Lets look in the
+        // cache *before* we try to read it (again).
+        if (isParamArray)
+        {
+            rv = (vtkFloatArray*) cache->GetVTKObject(usename.c_str(),
+                     avtVariableCache::SCALARS_NAME, -1, dom, "none");
+        }
+
+        if (rv == 0)
+        {
+            int amt = nnodes[dom][mesh_id];
+            rv = vtkFloatArray::New();
+            rv->SetNumberOfTuples(amt);
+            float *p = (float *) rv->GetVoidPointer(0);
+            char *tmp = (char *) usename.c_str();  // Bypass const
+            read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid], 1,
+                            &tmp, vsize, amt, p);
+
+            //
+            // We explicitly cache param arrays at ts=-1
+            //
+            if (isParamArray)
+            {
+                cache->CacheVTKObject(usename.c_str(), avtVariableCache::SCALARS_NAME,
+                                  -1, dom, "none", rv);
+            }
+        }
+        else
+        {
+            // The reference count will be decremented by the generic database,
+            // because it will assume it owns it.
+            rv->Register(NULL);
+        }
+
+        //
+        // Restrict variables on free nodes to the free nodes mesh
+        //
+        if (isFreeNodesVar)
+        {
+            vtkFloatArray *newrv = RestrictVarToFreeNodes(rv, ts);
+            rv->Delete();
+            rv = newrv;
+        }
     }
     else
     {
+        rv = vtkFloatArray::New();
         rv->SetNumberOfTuples(ncells[dom][mesh_id]);
         float *p = (float *) rv->GetVoidPointer(0);
         int i;
@@ -1380,6 +1522,8 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 //    Hank Childs, Tue Jul 27 12:42:12 PDT 2004
 //    Fix problem with reading in double nodal vectors.
 //
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added code to deal with variables defined on the free nodes mesh
 // ****************************************************************************
 
 vtkDataArray *
@@ -1390,12 +1534,18 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
     if (!validateVars[dom])
         ValidateVariables(dom);
 
+    char *isFreeNodesVar = strstr(name, free_nodes_str);
+
+    string usename = name;
+    if (isFreeNodesVar)
+        usename = string(name, 0, isFreeNodesVar-name);
+
     string vname;
     int meshid = 0;
     if (nmeshes == 1)
-        vname = name;
+        vname = usename;
     else
-        DecodeMultiMeshVarname(name, vname, meshid);
+        DecodeMultiMeshVarname(usename, vname, meshid);
     
     int v_index = GetVariableIndex(vname.c_str(), meshid);
     int mesh_id = var_mesh_associations[v_index];
@@ -1430,9 +1580,19 @@ avtMiliFileFormat::GetVectorVar(int ts, int dom, const char *name)
         int amt = nnodes[dom][mesh_id];
         rv->SetNumberOfTuples(amt);
         float *ptr = (float *) rv->GetVoidPointer(0);
-        char *tmp = (char *) name;  // Bypass const
+        char *tmp = (char *) usename.c_str();  // Bypass const
         read_results(dbid[dom], ts+1, sub_record_ids[dom][sr_valid], 1,
                         &tmp, vsize, amt*vdim, ptr);
+
+        //
+        // Restrict variables on free nodes to the free nodes mesh
+        //
+        if (isFreeNodesVar)
+        {
+            vtkFloatArray *newrv = RestrictVarToFreeNodes(rv, ts);
+            rv->Delete();
+            rv = newrv;
+        }
     }
     else
     {
@@ -1632,6 +1792,9 @@ avtMiliFileFormat::GetNTimesteps()
 //
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to satisfy new interface
+//
+//    Mark C. Miller, Mon Jul 18 13:41:13 PDT 2005
+//    Added code to add free nodes mesh and variables
 // ****************************************************************************
 
 void
@@ -1639,12 +1802,15 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     int timeState)
 {
     int i;
+
+    vector<bool> has_fn_mesh;
     for (i = 0; i < nmeshes; ++i)
     {
         char meshname[32];
         char matname[32];
         sprintf(meshname, "mesh%d", i + 1);
         sprintf(matname, "materials%d", i + 1);
+        const string fnmeshname = string(meshname) + string(free_nodes_str);
         avtMeshMetaData *mesh = new avtMeshMetaData;
         mesh->name = meshname;
         mesh->meshType = AVT_UNSTRUCTURED_MESH;
@@ -1667,12 +1833,37 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             mnames[j] = str;
         }
         AddMaterialToMetaData(md, matname, meshname, nmaterials[i], mnames);
+
+        //
+        // Add the free-nodes mesh if variable "sand" is defined on this mesh
+        //
+        has_fn_mesh.push_back(false);
+        for (j = 0 ; j < vars.size() ; j++)
+        {
+            if (vars[j] == "sand" && var_mesh_associations[j] == i)
+            {
+                avtMeshMetaData *fnmesh = new avtMeshMetaData;
+                fnmesh->name = fnmeshname; 
+                fnmesh->meshType = AVT_POINT_MESH;
+                fnmesh->numBlocks = ndomains;
+                fnmesh->blockOrigin = 0;
+                fnmesh->cellOrigin = 0;
+                fnmesh->spatialDimension = dims;
+                fnmesh->topologicalDimension = 0;
+                fnmesh->blockTitle = "processors";
+                fnmesh->blockPieceName = "processor";
+                fnmesh->hasSpatialExtents = false;
+                md->Add(fnmesh);
+                has_fn_mesh[i] = true;
+            }
+        }
     }
 
     for (i = 0 ; i < vars.size() ; i++)
     {
         char meshname[32];
         sprintf(meshname, "mesh%d", var_mesh_associations[i] + 1);
+        const string fnmeshname = string(meshname) + string(free_nodes_str);
 
         //
         // Don't list the node position variable.
@@ -1719,21 +1910,34 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
             mvnStr = multiVname;
             vname = &mvnStr;
         }
+
+        bool do_fn_mesh_too = has_fn_mesh[var_mesh_associations[i]] && 
+                              (centering[i] == AVT_NODECENT);
+        string fnvname = *vname + string(free_nodes_str);
         
         switch (vartype[i])
         {
           case AVT_SCALAR_VAR:
             AddScalarVarToMetaData(md, *vname, meshname, centering[i]);
+            if (do_fn_mesh_too)
+                AddScalarVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i]);
             break;
           case AVT_VECTOR_VAR:
             AddVectorVarToMetaData(md, *vname, meshname, centering[i], dims);
+            if (do_fn_mesh_too)
+                AddVectorVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i], dims);
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
             AddSymmetricTensorVarToMetaData(md, *vname, meshname, centering[i],
                                             dims);
+            if (do_fn_mesh_too)
+                AddSymmetricTensorVarToMetaData(md, fnvname, fnmeshname.c_str(),
+                                                centering[i], dims);
             break;
           case AVT_TENSOR_VAR:
             AddTensorVarToMetaData(md, *vname, meshname, centering[i], dims);
+            if (do_fn_mesh_too)
+                AddTensorVarToMetaData(md, fnvname, fnmeshname.c_str(), centering[i], dims);
             break;
           default:
             break;
@@ -2190,14 +2394,11 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
 //
 //    Hank Childs, Tue Jul 27 10:18:26 PDT 2004
 //    Moved the code to free up resources to the destructor.
-//
 // ****************************************************************************
 
 void
 avtMiliFileFormat::FreeUpResources()
 {
-    // Do not free anything up, since we are a multi-timestep format and
-    // we need the information for the next timestep...
 }
 
 
@@ -2446,4 +2647,13 @@ avtMiliFileFormat::ParseDynaPart()
 
     cache->CacheVoidRef("any_mesh", AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
                         -1, -1, vr);
+}
+
+bool
+avtMiliFileFormat::CanCacheVariable(const char *varname)
+{
+    if (strncmp(varname, "params/", 7) == 0)
+        return false;
+    else
+        return true;
 }
