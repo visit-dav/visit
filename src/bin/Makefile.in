@@ -74,7 +74,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-DISTRIB= install-sh visit makemovie.py
+DISTRIB= install-sh visit makemovie.py mkgrdbl
 NOT_DISTRIB= run_doxygen
 
 all: mocprogram

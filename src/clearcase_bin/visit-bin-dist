@@ -259,6 +259,9 @@
 #    modified the script to only create the platform directory for the
 #    platform that the distribution includes instead of all the platforms.
 #
+#    Mark C. Miller, Thu Jan 25 20:15:18 PST 2007
+#    Added mkgrdbl to the distribution.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -687,6 +690,9 @@ cp $VisItDir/bin/frontendlauncher  distribution/visit/bin/
 
 # copy xml2plugin
 cp $VisItDir/bin/xml2plugin        distribution/visit/bin/
+
+# copy mkgrdbl
+cp $VisItDir/bin/mkgrdbl        distribution/visit/bin/
 
 # Copy the version-specific visit script
 cp $VisItDir/bin/internallauncher $verdir/bin/
