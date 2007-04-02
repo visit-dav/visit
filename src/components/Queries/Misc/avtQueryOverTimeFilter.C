@@ -47,12 +47,13 @@
 #include <avtQueryFactory.h>
 #include <avtQueryOverTimeFilter.h>
 
-#include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
 #include <avtDatasetExaminer.h>
@@ -374,6 +375,9 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //    Kathleen Bonnell, Mon Dec 19 08:01:21 PST 2005
 //    Don't issue warning about 'multiples of 2' unless nResultsToStore > 1. 
 //
+//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
+//    Curves now represented as 1D RectilinearGrid.
+//
 // ****************************************************************************
 
 void
@@ -422,23 +426,23 @@ avtQueryOverTimeFilter::CreateFinalOutput()
         avtCallback::IssueWarning(osm.str());
     }
 
-    vtkPolyData *outpolys = CreatePolys(times, qRes);
-    avtDataTree_p tree = new avtDataTree(outpolys, 0);
-    outpolys->Delete();
+    vtkRectilinearGrid *outgrid = CreateRGrid(times, qRes);
+    avtDataTree_p tree = new avtDataTree(outgrid, 0);
+    outgrid->Delete();
     SetOutputDataTree(tree);
     finalOutputCreated = true;
 }
 
 
 // ****************************************************************************
-//  Method: CreatePolys
+//  Method: CreateRGrid
 //
 //  Purpose:
-//    Creates a polydata dataset that consists of points and vertices.
+//    Creates a 1D Rectilinear dataset with point data scalars.
 //
 //  Arguments:
 //    x           The values to use for x-coordinates. 
-//    y           The values to use for y-coordinates. 
+//    y           The values to use for point data scalars.
 //
 //  Programmer:   Kathleen Bonnell
 //  Creation:     March 15, 2004 
@@ -447,22 +451,15 @@ avtQueryOverTimeFilter::CreateFinalOutput()
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Made this a member method. Time not always used for x-axis.
 //
+//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
+//    Renamed from CreatePolys to CreateRGrid. 
+//
 // ****************************************************************************
 
-vtkPolyData *
-avtQueryOverTimeFilter::CreatePolys(const doubleVector &times, 
+vtkRectilinearGrid *
+avtQueryOverTimeFilter::CreateRGrid(const doubleVector &times, 
                                     const doubleVector &res)
 {
-    vtkPolyData *pd = vtkPolyData::New();
-
-    vtkPoints *points = vtkPoints::New();
-    pd->SetPoints(points);
-    points->Delete();
-
-    vtkCellArray *verts = vtkCellArray::New();
-    pd->SetVerts(verts);
-    verts->Delete();
-
     int nPts = 0;
     if (useTimeForXAxis && nResultsToStore == 1)
     {
@@ -487,15 +484,34 @@ avtQueryOverTimeFilter::CreatePolys(const doubleVector &times,
        // multiple curves, res[odd] = x, res[even] = y.
     }
 
-    points->SetNumberOfPoints(nPts);
-    verts->InsertNextCell(nPts);
+    vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(nPts);
+
+    if (nPts == 0)
+        return rgrid;
+
+    vtkDataArray *xc = rgrid->GetXCoordinates();
+    vtkFloatArray *sc = vtkFloatArray::New();
+
+    sc->SetNumberOfComponents(1);
+    sc->SetNumberOfTuples(nPts);
+
+    rgrid->GetPointData()->SetScalars(sc);
+    rgrid->SetDimensions(nPts, 1 , 1);
+
+    sc->Delete();
+
     for (int i = 0; i < nPts; i++)
     {
         if (useTimeForXAxis)
-            points->SetPoint(i, times[i], res[i], 0);
+        {
+            xc->SetTuple1(i, times[i]);
+            sc->SetTuple1(i, res[i]);
+        }
         else 
-            points->SetPoint(i, res[i*2], res[i*2+1], 0);
-        verts->InsertCellPoint(i);
+        {
+            xc->SetTuple1(i, res[i*2]);
+            sc->SetTuple1(i, res[i*2+1]);
+        }
     }
-    return pd;
+    return rgrid;
 }

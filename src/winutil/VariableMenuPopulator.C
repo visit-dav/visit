@@ -533,6 +533,9 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
 //   Hank Childs, Thu Jul 21 12:54:01 PDT 2005
 //   Add arrays.
 //
+//   Kathleen Bonnell, Wed Aug 2 18:06:58 PDT 2006 
+//   Add Curve expressions.
+//
 // ****************************************************************************
 
 void
@@ -565,6 +568,9 @@ VariableMenuPopulator::AddExpression(const Expression &expr)
         break;
     case Expression::ArrayMeshVar:
         m = &arrayVars;
+        break;
+    case Expression::CurveMeshVar:
+        m = &curveVars;
         break;
     default:
         break;

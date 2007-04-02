@@ -394,6 +394,9 @@ protected:
 //    Hank Childs, Mon Feb 14 14:11:29 PST 2005
 //    Added originalName.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and Data Extents. 
+//
 //----------------------------------------------------------------------------
 struct DBATTS_API avtCurveMetaData : public AttributeSubject
 {
@@ -403,14 +406,26 @@ struct DBATTS_API avtCurveMetaData : public AttributeSubject
     std::string                          xLabel;
     std::string                          yUnits;
     std::string                          yLabel;
+
+    avtCentering                         centering;
+
     bool                                 validVariable;
+
+    bool                                 hasDataExtents;
+    double                               minDataExtents;
+    double                               maxDataExtents;
+
+
 public:
     avtCurveMetaData();
     avtCurveMetaData(std::string);
+    avtCurveMetaData(std::string, double, double);
     avtCurveMetaData(const avtCurveMetaData&);
     virtual ~avtCurveMetaData();
     const avtCurveMetaData &operator=(const avtCurveMetaData&);
     virtual void SelectAll();
+    void SetExtents(const double *);
+    void UnsetExtents() { hasDataExtents = false; };
     void Print(ostream &, int = 0) const;
 };
 

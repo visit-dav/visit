@@ -188,6 +188,9 @@ ParsingExprList::Update(Subject *)
 //      Hank Childs, Tue Jul 19 13:39:12 PDT 2005
 //      Added array expression.
 //
+//      Kathleen Bonnell, Wed Aug  2 17:20:11 PDT 2006 
+//      Added curve expression.
+//
 // ****************************************************************************
 avtVarType
 ParsingExprList::GetAVTType(const Expression::ExprType type)
@@ -211,6 +214,9 @@ ParsingExprList::GetAVTType(const Expression::ExprType type)
         break;
     case Expression::ArrayMeshVar:
         retval = AVT_ARRAY_VAR;
+        break;
+    case Expression::CurveMeshVar:
+        retval = AVT_CURVE;
         break;
     case Expression::Mesh:
         retval = AVT_MESH;

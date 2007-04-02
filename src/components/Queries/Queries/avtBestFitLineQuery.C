@@ -45,6 +45,7 @@
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
 #include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
 
 #include <avtCallback.h>
@@ -230,25 +231,55 @@ avtBestFitLineQuery::PostExecute(void)
 //  Creation:   Wed Nov 16 14:38:19 PST 2005
 //
 //  Modifications:
+//    Kathleen Bonnell, Mon Jul 31 08:19:38 PDT 2006
+//    Support 1D RectilinearGrids (new representation of curves).
 //
 // ****************************************************************************
 
 void
 avtBestFitLineQuery::Execute(vtkDataSet *ds, const int dom)
 {
-    vtkIdType npts = ds->GetNumberOfPoints();
-
-    sums[N_SUM] += double(npts);
-    for(vtkIdType i = 0; i < npts; ++i)
+    bool rgrid1D = false;
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
-        double fptr[3];
-        ds->GetPoint(i, fptr);
+        rgrid1D = (((vtkRectilinearGrid*)ds)->GetDimensions()[1] <= 1);
+    }
+    if (!rgrid1D)
+    {
+        vtkIdType npts = ds->GetNumberOfPoints();
 
-        sums[X_SUM] += double(fptr[0]);
-        sums[Y_SUM] += double(fptr[1]);
-        sums[XY_SUM] += double(fptr[0] * fptr[1]);
-        sums[X2_SUM] += double(fptr[0] * fptr[0]);
-        sums[Y2_SUM] += double(fptr[1] * fptr[1]);
+        sums[N_SUM] += double(npts);
+        for(vtkIdType i = 0; i < npts; ++i)
+        {
+            double fptr[3];
+            ds->GetPoint(i, fptr);
+
+            sums[X_SUM] += double(fptr[0]);
+            sums[Y_SUM] += double(fptr[1]);
+            sums[XY_SUM] += double(fptr[0] * fptr[1]);
+            sums[X2_SUM] += double(fptr[0] * fptr[0]);
+            sums[Y2_SUM] += double(fptr[1] * fptr[1]);
+        }
+    }
+    else
+    {
+        vtkDataArray *xc = ((vtkRectilinearGrid*)ds)->GetXCoordinates();
+        vtkDataArray *yc = ((vtkRectilinearGrid*)ds)->GetPointData()->GetScalars();
+      
+        int npts = xc->GetNumberOfTuples();
+
+        sums[N_SUM] += double(npts);
+        for(vtkIdType i = 0; i < npts; ++i)
+        {
+            double x = xc->GetTuple1(i);
+            double y = yc->GetTuple1(i);
+
+            sums[X_SUM] += double(x);
+            sums[Y_SUM] += double(y);
+            sums[XY_SUM] += double(x*y); 
+            sums[X2_SUM] += double(x*x); 
+            sums[Y2_SUM] += double(y*y); 
+        }
     }
 }
 

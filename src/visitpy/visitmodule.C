@@ -2449,6 +2449,9 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
 //    Hank Childs, Thu Jul 21 14:26:03 PDT 2005
 //    Added DefineArrayExpression.
 //
+//    Kathleen Bonnell, Tue Aug  1 09:13:45 PDT 2006 
+//    Added DefineCurveExpression.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2473,6 +2476,12 @@ STATIC PyObject *
 visit_DefineArrayExpression(PyObject *self, PyObject *args)
 {
     return ExpressionDefinitionHelper(args, "DefineArrayExpression", Expression::ArrayMeshVar);
+}
+
+STATIC PyObject *
+visit_DefineCurveExpression(PyObject *self, PyObject *args)
+{
+    return ExpressionDefinitionHelper(args, "DefineCurveExpression", Expression::CurveMeshVar);
 }
 
 STATIC PyObject *
@@ -10770,6 +10779,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006 
 //   Added GetOutputArray.
 //
+//   Kathleen Bonnell, Tue Aug  1 09:13:45 PDT 2006 
+//   Added DefineCurveExpression.
+//
 // ****************************************************************************
 
 static void
@@ -10836,6 +10848,8 @@ AddDefaultMethods()
     AddMethod("CreateDatabaseCorrelation", visit_CreateDatabaseCorrelation,
                                           visit_CreateDatabaseCorrelation_doc);
     AddMethod("DefineArrayExpression", visit_DefineArrayExpression,
+                                               visit_DefineExpression_doc);
+    AddMethod("DefineCurveExpression", visit_DefineCurveExpression,
                                                visit_DefineExpression_doc);
     AddMethod("DefineMeshExpression", visit_DefineMeshExpression,
                                                visit_DefineExpression_doc);

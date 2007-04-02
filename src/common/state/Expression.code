@@ -13,16 +13,32 @@ Definition:
 //
 //    Hank Childs, Tue Jul 19 13:25:53 PDT 2005
 //    Changed it to 9 for Array expressions.
+// 
+//    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
+//    Changed it to 10 for Curve expressions.
+// 
 // ****************************************************************************
 const int
 Expression::GetNumTypes()
 {
-    return 9;
+    return 10;
 }
 
 Function: GetTypeString
 Declaration: static const char * GetTypeString(const Expression::ExprType t);
 Definition:
+// ****************************************************************************
+//  Method:  Expression::GetTypeString
+//
+//  Programmer:  ?
+//  Creation:    ?
+//
+//  Modifications:
+//    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
+//    Added CurveMeshVar. 
+// 
+// ****************************************************************************
+
 const char *
 Expression::GetTypeString(const Expression::ExprType t)
 {
@@ -38,6 +54,8 @@ Expression::GetTypeString(const Expression::ExprType t)
         return "Symmetric Tensor Mesh Variable";
     case ArrayMeshVar:
         return "Array Mesh Variable";
+    case CurveMeshVar:
+        return "Curve Mesh Variable";
     case Mesh:
         return "Mesh";
     case Material:
@@ -52,6 +70,18 @@ Expression::GetTypeString(const Expression::ExprType t)
 Function: GetTypeId
 Declaration: static const Expression::ExprType GetTypeId(const std::string s);
 Definition:
+// ****************************************************************************
+//  Method:  Expression::GetTypeId
+//
+//  Programmer:  ?
+//  Creation:    ?
+//
+//  Modifications:
+//    Kathlen Bonnell, Tue Aug  1 08:26:14 PDT 2006 
+//    Added CurveMeshVar. 
+// 
+// ****************************************************************************
+
 const Expression::ExprType
 Expression::GetTypeId(const std::string s)
 {
@@ -65,6 +95,8 @@ Expression::GetTypeId(const std::string s)
         return SymmetricTensorMeshVar;
     else if (s == "Array Mesh Variable")
         return ArrayMeshVar;
+    else if (s == "Curve Mesh Variable")
+        return CurveMeshVar;
     else if (s == "Mesh")
         return Mesh;
     else if (s == "Material")

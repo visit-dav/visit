@@ -3165,14 +3165,19 @@ avtSpeciesMetaData::Print(ostream &out, int indent) const
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
 // ****************************************************************************
 
 avtCurveMetaData::avtCurveMetaData()
-    : AttributeSubject("sssssbs")
+    : AttributeSubject("ssssssibbdd")
 {
     xLabel        = "X-Axis";
     yLabel        = "Y-Axis";
     validVariable = true;
+    centering     = AVT_NODECENT;
+    hasDataExtents = false;
 }
 
 
@@ -3192,16 +3197,51 @@ avtCurveMetaData::avtCurveMetaData()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
 // ****************************************************************************
 
 avtCurveMetaData::avtCurveMetaData(std::string n)
-    : AttributeSubject("sssssbs")
+    : AttributeSubject("ssssssibbdd")
 {
     name          = n;
     originalName  = name;
     xLabel        = "X-Axis";
     yLabel        = "Y-Axis";
     validVariable = true;
+    centering     = AVT_NODECENT;
+    hasDataExtents = false;
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMetaData constructor
+//
+//  Arguments:
+//      n       The name of the curve
+//      minE    The minimum data extents
+//      maxE    The maximum data extents
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtCurveMetaData::avtCurveMetaData(std::string n, double minE, double maxE)
+    : AttributeSubject("ssssssibbdd")
+{
+    name          = n;
+    originalName  = name;
+    xLabel        = "X-Axis";
+    yLabel        = "Y-Axis";
+    validVariable = true;
+    centering     = AVT_NODECENT;
+    hasDataExtents = true;
+    minDataExtents = minE;
+    maxDataExtents = maxE;
 }
 
 
@@ -3221,18 +3261,25 @@ avtCurveMetaData::avtCurveMetaData(std::string n)
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
 // ****************************************************************************
 
 avtCurveMetaData::avtCurveMetaData(const avtCurveMetaData &rhs)
-    : AttributeSubject("sssssbs")
+    : AttributeSubject("ssssssibbdd")
 {
-    name          = rhs.name;
-    originalName  = rhs.originalName;
-    xUnits        = rhs.xUnits;
-    xLabel        = rhs.xLabel;
-    yUnits        = rhs.yUnits;
-    yLabel        = rhs.yLabel;
-    validVariable = rhs.validVariable;
+    name           = rhs.name;
+    originalName   = rhs.originalName;
+    xUnits         = rhs.xUnits;
+    xLabel         = rhs.xLabel;
+    yUnits         = rhs.yUnits;
+    yLabel         = rhs.yLabel;
+    validVariable  = rhs.validVariable;
+    centering      = rhs.centering;
+    hasDataExtents = rhs.hasDataExtents;
+    minDataExtents = rhs.minDataExtents;
+    maxDataExtents = rhs.maxDataExtents;
 }
 
 
@@ -3265,18 +3312,25 @@ avtCurveMetaData::~avtCurveMetaData()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
 // ****************************************************************************
 
 const avtCurveMetaData &
 avtCurveMetaData::operator=(const avtCurveMetaData &rhs)
 {
-    name          = rhs.name;
-    originalName  = rhs.originalName;
-    xUnits        = rhs.xUnits;
-    xLabel        = rhs.xLabel;
-    yUnits        = rhs.yUnits;
-    yLabel        = rhs.yLabel;
-    validVariable = rhs.validVariable;
+    name           = rhs.name;
+    originalName   = rhs.originalName;
+    xUnits         = rhs.xUnits;
+    xLabel         = rhs.xLabel;
+    yUnits         = rhs.yUnits;
+    yLabel         = rhs.yLabel;
+    validVariable  = rhs.validVariable;
+    centering      = rhs.centering;
+    hasDataExtents = rhs.hasDataExtents;
+    minDataExtents = rhs.minDataExtents;
+    maxDataExtents = rhs.maxDataExtents;
 
     return *this;
 }
@@ -3295,20 +3349,58 @@ avtCurveMetaData::operator=(const avtCurveMetaData &rhs)
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
 // ****************************************************************************
 
 void
 avtCurveMetaData::SelectAll()
 {
-    Select(0, (void*)&name);
-    Select(1, (void*)&xUnits);
-    Select(2, (void*)&xLabel);
-    Select(3, (void*)&yUnits);
-    Select(4, (void*)&yLabel);
-    Select(5, (void*)&validVariable);
-    Select(6, (void*)&originalName);
+    Select( 0, (void*)&name);
+    Select( 1, (void*)&originalName);
+    Select( 2, (void*)&xUnits);
+    Select( 3, (void*)&xLabel);
+    Select( 4, (void*)&yUnits);
+    Select( 5, (void*)&yLabel);
+    Select( 6, (void*)&centering);
+    Select( 7, (void*)&validVariable);
+    Select( 8, (void*)&hasDataExtents);
+    Select( 9, (void*)&minDataExtents);
+    Select(10, (void*)&maxDataExtents);
 }
 
+
+// ****************************************************************************
+//  Method: avtCurveMetaData::SetExtents
+//
+//  Purpose:
+//      Sets the extents of the curve variable.
+//
+//  Arguments:
+//      extents     Extents as <min value, max value>.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   August 1, 2006
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMetaData::SetExtents(const double *extents)
+{
+    if (extents == NULL)
+    {
+        hasDataExtents = false;
+    }
+    else
+    {
+        hasDataExtents = true;
+        minDataExtents = extents[0];
+        maxDataExtents = extents[1];
+    }
+}
 
 // ****************************************************************************
 //  Method: avtCurveMetaData::Print
@@ -3330,6 +3422,9 @@ avtCurveMetaData::SelectAll()
 //    Hank Childs, Mon Feb 14 14:16:49 PST 2005
 //    Added original name.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added centering and DataExtents. 
+//
 // ****************************************************************************
 
 void
@@ -3348,11 +3443,41 @@ avtCurveMetaData::Print(ostream &out, int indent) const
 
     Indent(out, indent);
     out << "Labels = x:" << xLabel.c_str() << ", y:" << yLabel.c_str() << endl;
+
+    Indent(out, indent);
+    out << "Centering = ";
+    switch (centering)
+    {
+      case AVT_NODECENT:
+        out << "node centered.";
+        break;
+
+      case AVT_ZONECENT:
+        out << "zone centered.";
+        break;
+
+      case AVT_UNKNOWN_CENT:
+      default:
+        out << "unknowing centering.";
+        break;
+    }
+    out << endl;
     
     if (!validVariable)
     {
         Indent(out, indent);
         out << "THIS IS NOT A VALID VARIABLE." << endl;
+    }
+    if (hasDataExtents)
+    {
+        Indent(out, indent);
+        out << "Extents are: (" << minDataExtents << ", "
+            << maxDataExtents << ")" << endl;
+    }
+    else
+    {
+        Indent(out, indent);
+        out << "The extents are not set." << endl;
     }
 }
 
@@ -6244,6 +6369,9 @@ avtDatabaseMetaData::GetSpeciesOnMesh(std::string mesh) const
 //    Hank Childs, Tue Jul 19 13:25:53 PDT 2005
 //    Added arrays.
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Added CurveMeshVar.
+//
 // ****************************************************************************
 
 void
@@ -6520,6 +6648,9 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
                 break;
               case Expression::ArrayMeshVar:
                 vartype = "array";
+                break;
+              case Expression::CurveMeshVar:
+                vartype = "curve";
                 break;
               case Expression::Material:
                 vartype = "material";

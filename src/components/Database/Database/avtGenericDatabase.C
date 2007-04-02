@@ -3454,6 +3454,9 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //    Replaced data type args with data specification 
 //    Added CSG Mesh Discretization
 //
+//    Kathleen Bonnell, Thu Aug  3 08:42:33 PDT 2006 
+//    Add PointData Scalars to a curve mesh. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -3714,6 +3717,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
     }
     rv->GetFieldData()->ShallowCopy(mesh->GetFieldData());
+
+    if (GetMetaData(ts)->DetermineVarType(meshname) == AVT_CURVE)
+        rv->GetPointData()->SetScalars(mesh->GetPointData()->GetScalars());
 
     return rv;
 }

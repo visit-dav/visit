@@ -44,6 +44,8 @@
 #include <float.h>
 #include <vtkCell.h>
 #include <vtkCellData.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkGenericCell.h>
 #include <vtkHexahedron.h>
 #include <vtkIntArray.h>
@@ -52,6 +54,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkVisItPointLocator.h>
+#include <vtkDataSetWriter.h>
 
 
 // ****************************************************************************
@@ -930,3 +933,77 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
 }
 
 
+// ****************************************************************************
+//  Function: WriteDataSet
+//
+//  Purpose:
+//     Writes out a vtk dataset.
+//
+//  Arguments:
+//      ds      The dataset to write.
+//      fname   The name of the output file.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 12, 2006
+//
+// ****************************************************************************
+
+void
+vtkVisItUtility::WriteDataSet(vtkDataSet *ds, char *fname)
+{
+    vtkDataSetWriter *writer = vtkDataSetWriter::New();
+    writer->SetInput(ds);
+    writer->SetFileName(fname);
+    writer->SetFileTypeToASCII();
+    writer->Write();
+    writer->Delete();
+}
+
+
+// ****************************************************************************
+//  Function: Create1DRGrid
+//
+//  Purpose:
+//    Creates a 1-dimensional vtkRectilinearGrid.
+//
+//  Arguments:
+//    nXCoords  The number of X coordinates in the grid.
+//    type      The data type for the coordinate arrays. 
+//
+//  Returns:
+//    A 1-dimenional vtkRectilinearGrid
+// 
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 12, 2006
+//
+// ****************************************************************************
+
+vtkRectilinearGrid * 
+vtkVisItUtility::Create1DRGrid(int nXCoords, int type)
+{
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+    rgrid->SetDimensions(nXCoords, 1, 1);
+    vtkDataArray *yz = NULL;
+    vtkDataArray *xc = NULL;
+    if (type == VTK_FLOAT)
+    {
+        xc = vtkFloatArray::New();
+        yz = vtkFloatArray::New();
+    }
+    else 
+    {
+        xc = vtkDoubleArray::New();
+        yz = vtkDoubleArray::New();
+    }
+    yz->SetNumberOfComponents(1);
+    yz->SetNumberOfTuples(1);
+    yz->SetTuple1(0, 0.);
+    xc->SetNumberOfComponents(1);
+    xc->SetNumberOfTuples(nXCoords);
+    rgrid->SetXCoordinates(xc); 
+    rgrid->SetYCoordinates(yz); 
+    rgrid->SetZCoordinates(yz); 
+    xc->Delete(); 
+    yz->Delete(); 
+    return rgrid;
+}

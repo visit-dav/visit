@@ -50,7 +50,7 @@
 class vtkDataSet;
 class vtkIdList;
 class vtkPoints;
-class vtkPolyData;
+class vtkRectilinearGrid;
 
 
 // ****************************************************************************
@@ -79,6 +79,9 @@ class vtkPolyData;
 //    Kathleen Bonnell, Wed Oct 20 17:35:10 PDT 2004 
 //    Added arg to CreatePolys, added method CreatePolysFromOriginalCells, 
 //    added var useOriginalCells. 
+//
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
+//    Curves represented as 1D RectilinearGrids instead of PolyData.
 //
 // ****************************************************************************
 
@@ -112,9 +115,9 @@ class avtLineoutFilter : public avtPluginStreamer
     bool                      useOriginalCells;
     vtkDataSet               *Sampling(vtkDataSet *, int);
     vtkDataSet               *NoSampling(vtkDataSet *, int);
-    vtkPolyData              *CreatePolys(vtkDataSet *, double *, double *,
+    vtkRectilinearGrid       *CreateRGrid(vtkDataSet *, double *, double *,
                                           vtkPoints *, vtkIdList *);
-    vtkPolyData              *CreatePolysFromOrigCells(vtkDataSet *, double *, 
+    vtkRectilinearGrid       *CreateRGridFromOrigCells(vtkDataSet *, double *, 
                                           double *, vtkPoints *, vtkIdList *);
 };
 

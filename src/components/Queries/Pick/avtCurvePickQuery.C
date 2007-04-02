@@ -41,11 +41,16 @@
 
 #include <avtCurvePickQuery.h>
 
+#include <vtkCellArray.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
+#include <vtkPointData.h>
 #include <vtkPoints.h>
 #include <vtkPointLocator.h>
+#include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
 #include <avtTerminatingSource.h>
+#include <avtCurveConstructorFilter.h>
 
 
 #include <float.h>
@@ -146,14 +151,57 @@ avtCurvePickQuery::PostExecute(void)
 //    Hank Childs, Thu Mar 10 10:30:35 PST 2005
 //    Fix memory leak.
 //    
+//    Kathleen Bonnell, Mon Jul 31 11:39:05 PDT 2006 
+//    Turn 1D RectilinarGrid into PolyData to perform the pick. 
+//    
 // ****************************************************************************
 
 void
-avtCurvePickQuery::Execute(vtkDataSet *ds, const int dom)
+avtCurvePickQuery::Execute(vtkDataSet *inDS, const int dom)
 {
-    if (ds == NULL)
+    if (inDS == NULL)
     {
         return;
+    }
+
+    vtkDataSet *ds = inDS;
+    if (inDS->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkDataArray *xc = vtkRectilinearGrid::SafeDownCast(ds)->
+                           GetXCoordinates();
+        vtkDataArray *sc = ds->GetPointData()->GetScalars();
+
+        int nPts = xc->GetNumberOfTuples();
+
+        vtkPoints *pts = vtkPoints::New();
+        pts->SetDataType(xc->GetDataType());
+        pts->SetNumberOfPoints(nPts);
+
+        vtkCellArray *verts = vtkCellArray::New();
+        vtkCellArray *lines = vtkCellArray::New();
+        verts->Allocate(nPts);
+        lines->Allocate(nPts-1);
+        vtkIdType ptIds[2];
+        for (int i = 0; i < nPts; i++)
+        {
+             pts->SetPoint(i, xc->GetTuple1(i), sc->GetTuple1(i), 0.); 
+             ptIds[0] = i; 
+             verts->InsertNextCell(1, ptIds);
+             if (i < nPts-1)
+             {
+                 ptIds[1] = i+1; 
+                 lines->InsertNextCell(2, ptIds);
+             }
+        }
+
+        ds = vtkPolyData::New();
+        ((vtkPolyData*)ds)->SetPoints(pts);
+        ((vtkPolyData*)ds)->SetVerts(verts);
+        ((vtkPolyData*)ds)->SetLines(lines);
+
+        pts->Delete();
+        verts->Delete();
+        lines->Delete();
     }
 
     avtDataSpecification_p dspec = 
@@ -164,6 +212,7 @@ avtCurvePickQuery::Execute(vtkDataSet *ds, const int dom)
     double pt2[3] = { 0., 0., 0.};
 
     int pointId = pickAtts.GetElementNumber();
+
     if (pointId == -1)
     {
         pointId = FindClosestPoint(ds);
@@ -189,6 +238,10 @@ avtCurvePickQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetDimension(2);
         pickAtts.SetFulfilled(true);
         foundDomain = dom; 
+    }
+    if (inDS->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        ds->Delete();
     }
 }
 
@@ -273,5 +326,3 @@ avtCurvePickQuery::FindClosestPoint(vtkDataSet *ds)
     pointLocator->Delete();
     return foundPoint;
 }
-
-

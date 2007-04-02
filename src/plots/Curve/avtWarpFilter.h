@@ -36,62 +36,48 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             vtkVisItUtility.h                             //
+//                             avtWarpFilter.h                               //
 // ************************************************************************* //
 
-#ifndef VTK_VISIT_UTILITY_H
-#define VTK_VISIT_UTILITY_H
+#ifndef AVT_WARP_FILTER_H
+#define AVT_WARP_FILTER_H
 
-#include <visit_vtk_light_exports.h>
-#include <vtkType.h>
 
-class vtkCell;
-class vtkDataSet;
-class vtkPoints;
-class vtkRectilinearGrid;
+#include <avtStreamer.h>
+
+
 
 // ****************************************************************************
+//  Class: avtWarpFilter
+//
+//  Purpose:
+//    A filter that 'warps' (elevates) a dataset by the point scalars.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 12, 2006 
+//
 //  Modifications:
 //
-//    Hank Childs, Sat Mar 18 14:16:09 PST 2006
-//    Added function CellContainsPoint.
-//
 // ****************************************************************************
 
-namespace vtkVisItUtility
+class avtWarpFilter : public avtStreamer
 {
-    VISIT_VTK_LIGHT_API vtkPoints  *GetPoints(vtkDataSet *);
-    VISIT_VTK_LIGHT_API void        GetLogicalIndices(vtkDataSet *, const bool, 
-                                                const int, int [3], 
-                                                const bool = false,
-                                                const bool = true);
-    VISIT_VTK_LIGHT_API int         CalculateRealID(const int, const bool, 
-                                              vtkDataSet *ds);
-    VISIT_VTK_LIGHT_API int         ComputeStructuredCoordinates(
-                                              vtkRectilinearGrid *, 
-                                              double x[3], int ijk[3]);
-    VISIT_VTK_LIGHT_API int         FindCell(vtkDataSet *, double pt[3]);
-    VISIT_VTK_LIGHT_API void        GetDimensions(vtkDataSet *, int[3]);
-    VISIT_VTK_LIGHT_API int         NodeGhostIdFromNonGhost(vtkDataSet *ds,
-                                        const int);
-    VISIT_VTK_LIGHT_API int         ZoneGhostIdFromNonGhost(vtkDataSet *ds,
-                                        const int);
-    VISIT_VTK_LIGHT_API int         CalculateGhostIdFromNonGhost(
-                                        vtkDataSet *ds,
-                                        const int cellId, 
-                                        const bool forCell);
-    VISIT_VTK_LIGHT_API int         GetLocalElementForGlobal(
-                                        vtkDataSet *ds,
-                                        const int elementId, 
-                                        const bool forCell);
+  public:
+                              avtWarpFilter();
+    virtual                  ~avtWarpFilter();
 
-    VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, double center[3]);
-    VISIT_VTK_LIGHT_API bool       ContainsMixedGhostZoneTypes(vtkDataSet *);
-    VISIT_VTK_LIGHT_API bool       CellContainsPoint(vtkCell *, const double *);
-    VISIT_VTK_LIGHT_API void       WriteDataSet(vtkDataSet*, char *);
-    VISIT_VTK_LIGHT_API vtkRectilinearGrid *Create1DRGrid(int nXCoords,
-                                                          int type = VTK_FLOAT); 
-}
+    virtual const char       *GetType(void)   { return "avtWarpFilter"; };
+    virtual const char       *GetDescription(void)
+                                  { return "Warping dataset"; };
+
+  protected:
+    virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void              PostExecute(void);
+    virtual void              RefashionDataObjectInfo(void);
+    virtual avtPipelineSpecification_p
+                              PerformRestriction(avtPipelineSpecification_p);
+};
+
 
 #endif
 
