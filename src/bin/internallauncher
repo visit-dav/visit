@@ -101,6 +101,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Tue Sep 27 16:49:03 PDT 2005
 #    Added -machinefile to options for engineargs.
 #
+#    Jeremy Meredith, Thu Sep 29 11:11:35 PDT 2005
+#    Made the "-setupenv" flag force the full path name to the visit script.
+#
 ###############################################################################
 
 
@@ -995,7 +998,7 @@ if ($visit_sets_up_environment and
     $exe_name eq "engine_par")
 {
     @visitcmd = ();
-    push @visitcmd, "visit", "-engine", "-par", "-quiet";
+    push @visitcmd, "$visitlauncher", "-engine", "-par", "-quiet";
     push @visitcmd, "-v", $ver if $ver ne "";
     push @visitcmd, @visitargs;
 }
