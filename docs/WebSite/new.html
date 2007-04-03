@@ -3,7 +3,7 @@
 <HEAD>
 <TITLE>VisIt What's New</TITLE>
 <meta http-equiv="content-type" content="text/html;charset=ISO-8859-1">
-<meta name="LLNLRandR" content="UCRL-WEB-226964">
+<meta name="LLNLRandR" content="UCRL-WEB-222686">
 <meta name="distribution" content="global">
 <meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
 <meta name="language" content="English">
@@ -226,6 +226,7 @@ function MM_initTimelines() { //v4.0
 <h1>What's New</h1>
 <p>This page provides information about what's new with VisIt, including general news about the tool as well as new features that have been recently added.</p>
 <ol>
+  <li><a href="#April2007">April, 2007</a></li>
   <li><a href="#December2006">December, 2006</a></li>
   <li><a href="#September2006">September, 2006</a></li>
   <li><a href="#June2006">June, 2006</a></li>
@@ -234,14 +235,85 @@ function MM_initTimelines() { //v4.0
   <li><a href="#Dec2005">December, 2005</a></li>
   <li><a href="#Oct2005">October, 2005</a></li>
 </ol>
-<h1><a name="December2006"></a>December, 2006 - VisIt 1.5.5 released</h1>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 1.5.5, which can be <a href="download.html">downloaded from this site</a>, includes a few new features and includes several bug-fixes.</p>
-<h2>1. The Save movie wizard has been redesigned to support movie templates.</h2>
-<p>Movie templates allow you to set up visualizations, add special effects, and save the results in a template that can be used later to make movies with similar data. The <B>Save movie wizard</B> looks much as it has in earlier versions of VisIt in the simple case but if you choose to make a movie based on movie templates then there are many new options available. When using a movie template, you can use an existing template or you can record a new template. When using an existing movie template, you can pick from among the available system-wide and user-recorded movie templates. Once you select a movie template, the movie wizard allows you to fill in values for the various movie template parameters on a series of custom wizard pages. After filling in the custom pages, the wizard proceeds to the movie format page and on through the rest of the standard movie wizard pages. Before creating a movie template from scratch, you must first set up your plots in VisIt's visualization windows. When you create a new template, VisIt lets you arrange viewports and map the sequences of animation frames from your visualization windows to the viewports. In addition, you can add special sequences such as transitions, rotations, and compositing effects to enhance your movie. You can save the new movie as a movie template and continue making the movie using the standard wizard pages.</p>
-<h2>2. The rendering of nodal data is much more accurate.</h2>
-<p>VisIt now renders nodal data much more accurately by interpolating data values instead of interpolating color values across a cell. This change to VisIt's renderer ensures that only colors that appear in a color table are ever used in plots such as the Pseudocolor plot.</p>
-<h2>3. The Macintosh version now supports both Intel and PowerPC based Macs.</h2>
-<p>The Macintosh version contains executables for both the Intel and PowerPC processors and automatically selects between the two at runtime.</p>
+<h1><a name="April2007"></a>April, 2007 - VisIt 1.6 released </h1>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 1.6, which can be <a href="download.html">downloaded from this site</a>, includes many new features and includes several important bug-fixes.</p>
+<h2>1. VisIt uses less memory. </h2>
+<p>VisIt is now more proactive about deleting intermediate copies of datasets. Consequently, VisIt's memory footprint while processing data has been drastically reduced.</p>
+<h2>2. VisIt better supports  rectilinear and curvilinear meshes.</h2>
+<p>VisIt's treatment of rectilinear and curvilinear meshes has been substantially improved so rendering them is faster and uses far less memory. 
+Specific improvements include:</li>
+
+<ul>
+<li>Direct rendering of 2D rectilinear and curvilinear meshes</li>
+<li>Facelists of 3D structured meshes produce 6 2D structured meshes</li>
+<li>Orthogonal slices of 3D rectilinear meshes produce 2D rectilinear meshes</li>
+</ul>
+<h2>3. Examine data directly using the new Spreadsheet plot.</h2>
+<p>VisIt now includes a Spreadsheet plot. The Spreadsheet plot allows users to select a single domain and "plot" its scalar data in a custom Spreadsheet window provided by the plot. The Spreadsheet window is tied to the plot that created it so you can have N Spreadsheet windows open to look at different domains or variables. The Spreadsheet window shows tabs that each contain a table for a slice through the data (1 table for 2D). It is possible to quickly step through the tabs to see different logical slices of the dataset. The slice is also depicted in the visualization window and the slice moves as you change slices in the Spreadsheet window. The Spreadsheet window contains controls for formatting the precision of the text output, coloring the displayed text using a color table, and switching the slice axis used to display the data. In addition, there are features such as min,max buttons to highlight the cells in the spreadsheet that contain the min,max values. Each Spreadsheet window contains its own menu, which provides options for selecting cells, saving selected cells to a text file, copying selected cells to the clipboard, and summing or averaging selected cells.<br><br><a href="screens3.html#spreadsheet" title="Spreadsheet" target="_self"><img src="media/spreadsheet_windD_S.jpg" width="330" height="296" class="links" border="0"></a></p>
+<h2>4. The ParallelAxis plot now shows context in addition to subselected lines.</h2>
+<p>The ParallelAxis plot has a new <em>Context</em> rendering mode that condenses groups of lines into bands colored by the number of lines in each band. The helps to highlight the overall behavior of multivariate data because it highlights trends in line clustering using color. The individual lines between each axis can still be displayed and are useful when restricted (using the Extents tool) and drawn over the context. The ParallelAxis plot's attributes window has been completely redesigned in order to make adding axes and reordering them more intuitive.<br><br><a href="screens3.html#parallelAxis" target="_self"><img src="media/parallelAxisD_S.jpg" border="0"></a></p>
+<h2>5. Set properties for plot legends.</h2>
+<p>It is now possible to set properties for VisIt's plot legends. Most plots create legends. For  plots that create legends, a legend annotation object is also now created. The legend annotation object appears in the list of annotation objects in the Annotation window's Object's tab. When you select a legend annotation object in the Objects tab, the window will change to show the legend properties that can be set, including:
+    <ul>
+    <li>Whether VisIt positions the legend automatically</li>
+    <li>Position</li>
+    <li>The format string used to display numbers, allowing you to control the number of significant digits</li>
+    <li>Font</li>
+    <li>Font size</li>
+    <li>Font style (bold, italic)</li>
+    <li>Font color</li>
+    <li>Scale the legend to make it larger or smaller</li>
+    <li>Turn off parts of the legend</li>
+    <li>Draw an optional bounding box under the legend to distinguish it from plots</li>
+    </ul>
+</p>	
+<h2>6. Improved Python interface.</h2>
+<p>This version of VisIt includes a much improved Python interface. You can use your favorite Python interpreter to build a VisIt module that can be included in scripts via "import visit". VisIt's Python interface also includes a new <em>GetMetaData</em> function that can be used to return a metadata object for a file. The metadata object can be used to steer sophisticated Python scripts that need to know the names and types of meshes and variables contained in a scientific database. Many Python bindings for plot attribute objects have been regenerated so they expose embedded objects. In the case of the Volume plot, this means that you can now use Python to directly design color tables and gaussian opacities for the volume transfer function. Finally, VisIt has been upgraded so it uses Python 2.5.
+<h2>7. Detect connected components. </h2>
+<p>VisIt provides several new expressions and queries for detecting connected components within a mesh. For more information on using connected components, contact <a href="mailto:visit-help@llnl.gov">visit-help@llnl.gov</a>.</p>	
+<h2>8. New database reader plugins are available. </h2>
+<p>Many database reader plugins were enhanced in this release of VisIt and two completely new database reader plug-ins were added. For more information about the reader enhancements, please read the VisIt 1.6 Release notes when you install VisIt and run it for the first time. The database reader plugins added in this release are: </p>	
+<table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
+  <tbody>
+    <tr NOSAVE>
+      <td width="15%" NOSAVE bgcolor="#9999CC" class="Section">File format </td>
+      <td width="65%" NOSAVE bgcolor="#9999CC" class="Section">Description</td>
+      <td width="20%" NOSAVE bgcolor="#9999CC" class="Section">URL</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">Miranda</td>
+      <td bgcolor="#CCCCFF">Raw output format for LLNL's Miranda simulation code. </td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+	<tr>
+      <td bgcolor="#CCCCFF">TSTT</td>
+      <td bgcolor="#CCCCFF">VisIt's TSTT (Tera-Scale Tools and Technologies) reader is one implementation
+of the <a href="http://www.tstt-scidac.org/" title="TSTT" target="_blank">TSTT interface</a>  for representing mesh
+and geometric data. The interface is experimental and is being actively
+developed and refined by a follow-on SciDAC project called ITAPS
+(Interoperable Technologies for Advanced Petascale Simulations). The interface
+is designed to be used 'in-situ' and so there is no well defined, persistent
+file format. VisIt's TSTT reader is currently designed around the
+<a href="http://cubit.sandia.gov/MOAB/" title="MOAB" target="_blank">MOAB implementation</a> of the TSTT interface.
+Presently, it reads unstructured, single-block meshes consisting of any
+combination of the finite element zoo of element types along with zone-
+and node-centered fields implemented as TSTT 'tags'.</td>
+      <td bgcolor="#CCCCFF"><a href="http://www.tstt-scidac.org/" title="TSTT" target="_blank">TSTT interface</a></td>
+    </tr>
+  </tbody>
+</table>
+</p>
+<h2>9. Updated Gallery page. </h2>
+<p>VisIt users have contributed some new images to the <a href="gallery.html" title="Gallery" target="_blank">VisIt Gallery page</a>. The VisIt team would like to thank all who contributed images and please keep them coming! We like to see what our users have done with VisIt and we will happily add your image to the VisIt Gallery page. We are especially excited that VisIt was used to visualize some recent results for the <a href="http://flash.uchicago.edu/website/home/" title="FLASH" target="_blank">ASC FLASH Center</a>.<br><br> <a href="gallery.html" class="links"><img src="media/gallery/thumb_gallery_32.jpg" width="150" height="150" border="0"></a></p>
+<p class="small">[<a href="#top">Top</a>]</p>
+<h1><a name="December2006"></a>December, 2006 - VisIt 1.5.5 released </h1>
+<h2>1. The Save movie wizard has been enhanced.</h2>
+<p>VisIt's <strong>Save movie wizard</strong> has been redesigned to support movie templates. Movie templates allow you to set up visualizations, add special effects, and save the results in a template that can be used later to make movies with similar data. The <strong>Save movie wizard</strong> looks much as it has in earlier versions of VisIt in the simple case but if you choose to make a movie based on movie templates then there are many new options available. For example, you can choose among templates that have been supplied with VisIt or you can create your own movie templates. When you create a new template, VisIt lets you create viewports and map the sequences of animation frames from your visualization windows to those viewports. In addition, you can add special sequences such as transitions, rotations, and compositing effects to enhance your movie. Finally, you can save the new movie as a movie template and continue making the movie using the standard wizard pages.</p>
+<h2>2. Rendering enhancements.</h2>
+<p>This version of VisIt includes some important rendering enhancements and  more rendering enhancements are due in VisIt 1.6. The first rendering enhancement allows VisIt to use 1D texturing to color plots of node-centered scalar values. This change allows VisIt to interpolate data values across a cell instead of interpolating colors. This improved approach ensures that more color detail is included in cells where there exists a high gradient. Another rendering enhancement was made to VisIt's Curve plot so it can optionally draw line segments made of symbols in addition to using its former line-based drawing method. Finally, VisIt's plots using OpenGL extensions have been modified to use the <a href="http://glew.sourceforge.net/" title="GLEW" target="_blank">GLEW (GL Extension Wrangler)</a> library so they can access OpenGL extensions in the most platform-independent manner. </p>
+<h2>3. The simulation interface has been enhanced.</h2>
+<p>The simulation interface for VisIt, which allows simulations to act as VisIt compute engines has been enhanced so simulations can now accept processed data back from VisIt. This new capability allows simulations to provide data to VisIt, have VisIt process that data and give it back to the simulation for further processing. Furthermore, the simulation can publish the modified data so VisIt can further process it. This capability allows VisIt to couple with simulations to produce multi-pass or iterative work-flows. In addition to enhancing the simulation interface to accept data back from VisIt, it has been enhanced so simulation values can be tracked and plotted over time in a strip chart view in the <strong>Simulation window</strong>. </p>
+<p class="small">[<a href="#top">Top</a>]</p>
 <h1><a name="September2006"></a>September, 2006 - VisIt 1.5.4 released </h1>
 <h2>1. The <a href="manuals.html"><I>Getting Data Into VisIt</I></a> manual is now available.</h2>
 <p>The new manual explains in detail how to get your data into VisIt using three main approaches: 
@@ -251,7 +323,7 @@ function MM_initTimelines() { //v4.0
   <li>Using VisIt's libsim library to instrument a simulation code so VisIt can directly access data from its memory without the need to write files.</li>
 </ul>
 <h2>2. New database reader plugins are available. </h2>
-<p>This release of VisIt includes seven completely new database reader plug-ins, adding to VisIt's long list of supported file formats. For a complete list of supported database reader plugins, as of VisIt 1.5, refer to the VisIt <a href="1.5/VisItUsersManual1.5.pdf">User's Manual</a>. Thank you to our collaborators for contributing some of these database reader plug-ins to the VisIt project. The database reader plugins added in this release are: </p>
+<p>This release of VisIt includes seven completely new database reader plug-ins, adding to VisIt's long list of supported file formats. For a complete list of supported database reader plugins, as of VisIt 1.5, refer to the VisIt <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf">User's Manual</a>. Thank you to our collaborators for contributing some of these database reader plug-ins to the VisIt project. The database reader plugins added in this release are: </p>
 <table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
@@ -309,7 +381,7 @@ to produce characteristic functions describing a data set's shape. VisIt's expre
 <p>The new Replicate operator can be used to replicate datasets along any or all of three direction vectors, making it easy to repeat periodic data such as molecules that make up a crystal. It is possible to specify the direction vectors in a file format's mesh metadata and it is also possible to override those direction vectors in the <B>Replicate Operator attributes window</B>. The window also allows you to control how many copies of the data will be created along each of the three dimension vectors.</p>
 <h2>5. VisIt allows you to pick a database reader plug-in using the new &quot;Open File&quot; menu option.</h2>
 <p>VisIt's <B>File menu</B> now contains an <B>Open file</B> option that allows you to select and open a file to visualize. In addition, the new <B>Open file</B> option allows you to select which database reader plug-in should be used to open the file, which makes VisIt less dependent on file extensions for selecting an appropriate database reader plug-in. The ability to specify which database reader plug-in should be used to open a file is particularly useful for files created by codes that do use file extensions. With the addition of the <B>Open file</B> option in the <B>File menu</B>, it is now feasible to hide the <B>File panel</B> all of the time using the <B>Preferences window</B>. </p>
-<p>&nbsp;</p>
+<p class="small">[<a href="#top">Top</a>]</p>
 <h1><a name="June2006"></a>June, 2006 - VisIt 1.5.3 released </h1>
 <h2>1. VisIt is now released under the BSD license</h2>
 <p>VisIt's license has been changed from the University of California copyright to the BSD license to more easily allow collaborators to freely use and modify VisIt's source code. The full text of the new license can be found on the <a href="license.html" title="FAQ" target="_blank">VisIt license</a> page. </p>
@@ -351,7 +423,7 @@ to produce characteristic functions describing a data set's shape. VisIt's expre
 <h1>&nbsp;</h1>
 <h1><a name="Apr2006"></a>April, 2006 - VisIt 1.5.2 released</h1>
 <p>VisIt 1.5.2 was primarily a bug-fix release and resolved over 50 important issues. </p>
-<p>&nbsp;</p>
+<p class="small">[<a href="#top">Top</a>]</p>
 <h1><a name="Feb2006"></a>February, 2006 - VisIt 1.5.1 released</h1>
 <h2>1. New database reader plugins  are available. </h2>
 <p>The database reader plugins added in this release are: </p>
@@ -381,7 +453,7 @@ to produce characteristic functions describing a data set's shape. VisIt's expre
 <p>VisIt 1.5.1 has an improved Python interface (CLI) that can record commands coming from any VisIt client into executable Python code that can be used as macros. VisIt's <B>Command</B> <B>window</B> has been enhanced so that it contains controls that allow you to record macros. During macro recording, all actions taken in the GUI (or any other VisIt client) are logged in the CLI. Once you have finished macro recording, the macro  is returned to the <B>Command</B> <B>window</B> in VisIt's GUI where you can edit and replay the macro. You can even save the macro  for future VisIt sessions as part of your VisIt settings.</p>
 <h2>4. VisIt can support hardware-accelerated, parallel, off-screen rendering</h2>
 <p>VisIt has long supported a rendering mode that we call scalable rendering. In scalable rendering, graphics primitives are drawn using an off-screen software renderer on each parallel processor before intermediate images are composited into the final image that VisIt's viewer displays. VisIt 1.5.1 now supports <em>hardware-accelerated</em> off-screen rendering during scalable rendering for clusters whose  compute nodes have graphics hardware. This enhancement sets the stage for future advances in hardware compositing, which will provide a completely hardware-accelerated parallel rendering solution. The most visible piece of the current enhancement is a change to the <strong>Host profiles window</strong>. The <strong>Host profiles window</strong> features a new <strong>Hardware Acceleration tab</strong>, containing controls for setting up the hardware-acceleration environment. </p>
-<p>&nbsp;</p>
+<p class="small">[<a href="#top">Top</a>]</p>
 <h1><a name="Dec2005"></a>December, 2005 - VisIt 1.5 released</h1>
 <h2>1. New database reader plugins </h2>
 <p>VisIt 1.5 has several new database reader plugins, including: <a href="http://www.ansys.com" target="_blank">ANSYS</a>, <a href="http://www.cgns.org" target="_blank">CGNS</a>, <a href="http://flash.uchicago.edu/website/home/" target="_blank">FLASH</a>, <a href="http://www.gdal.org" target="_blank">GDAL</a>, and <a href="http://www.unidata.ucar.edu/software/netcdf/" target="_blank">NETCDF</a>.</p>
@@ -408,11 +480,11 @@ to produce characteristic functions describing a data set's shape. VisIt's expre
     | <a href="manuals.html">Manuals</a> | What's New | <a href="sitemap.html">Index</a></span></p>
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #BeginDate format:Am1 -->December 18, 2006<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->April 3, 2007<!-- #EndDate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
-      <td height="18" background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-226964, 
+      <td height="18" background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-222686, 
         <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
         and legal notice</a></span></td>
       <td width="5">&nbsp;</td>

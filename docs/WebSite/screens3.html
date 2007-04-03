@@ -245,23 +245,29 @@ function MM_initTimelines() { //v4.0
     <tr>
       <td width="20%" bgcolor="#CCCCFF"><a href="screens.html#contour3d">Contour 3D</a></td>
       <td bgcolor="#CCCCFF"><a href="screens2.html#onion_peel">Onion-peel</a></td>
-      <td width="20%" bgcolor="#CCCCFF"><a href="#position">Positioning tools</a></td>
+      <td width="20%" bgcolor="#CCCCFF"><a href="#queries">Queries</a></td>
       <td width="20%" bgcolor="#CCCCFF"><a href="screens4.html#help">Help</a></td>
     </tr>
     <tr>
       <td width="20%" bgcolor="#CCCCFF"><a href="screens.html#volume">Volume plot</a></td>
       <td bgcolor="#CCCCFF"><a href="screens2.html#threshold">Threshold</a></td>
-      <td>&nbsp;</td>
+      <td bgcolor="#CCCCFF"><a href="#spreadsheet">Spreadsheet plot</a></td>
       <td width="20%" bgcolor="#CCCCFF"><a href="screens4.html#volume_plot">Volume plot attributes</a></td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF"><a href="screens.html#vector">Vector plot</a></td>
       <td bgcolor="#FFFFFF">&nbsp;</td>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
+      <td bgcolor="#CCCCFF"><a href="#parallelAxis">ParallelAxis plot and Threshold</a></td>
+      <td bgcolor="#CCCCFF"><a href="screens4.html#moviewizard">Save movie wizard</a></td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF"><a href="screens.html#boundary">Subset plot</a></td>
+      <td bgcolor="#FFFFFF">&nbsp;</td>
+      <td bgcolor="#CCCCFF"><a href="#position">Positioning tools</a></td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF"><a href="screens.html#molecule">Molecule plot</a></td>
       <td bgcolor="#FFFFFF">&nbsp;</td>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
@@ -276,7 +282,7 @@ function MM_initTimelines() { //v4.0
         <p><a name="line-out" id="line-out"></a><a href="media/line-out_S.jpg"><img src="media/line-outD_S.jpg" alt="lineout" width="300" height="291" border="0"></a></p>
     </div></td>
     <td width="38%" height="340"><div align="center"> <a href="media/curves_S.gif"><img src="media/curveD_S.gif" alt="lineout curves" width="300" height="301" border="0"></a></div></td>
-    <td width="25%" height="340" valign="middle">The <strong>line-out</strong> creates curves of field values as a function of distance along the line. The first image shows the scalar field and the lines through the data used to create the curves. The second image shows the resulting curves.</td>
+    <td width="31%" height="340" valign="middle">The <strong>line-out</strong> creates curves of field values as a function of distance along the line. The first image shows the scalar field and the lines through the data used to create the curves. The second image shows the resulting curves.</td>
   </tr>
   <tr valign="top">
     <td colspan="3"><a href="#top" class="top">[top] </a>
@@ -290,17 +296,53 @@ function MM_initTimelines() { //v4.0
             <br>
     </td>
   </tr>
+    <tr>
+    <td colspan="3" valign="bottom"><a href="#top" class="top">[top] </a>
+        <hr>
+    </td>
+  </tr>
+  <tr>
+    <td height="340" valign="top"><div align="center"> <a name="queries" id="queries"></a> <img src="media/query_S.jpg" alt="query" width="300" height="302" border="0"> </div></td>
+    <td height="340" valign="top"><div align="center"> <img src="media/query_window.gif" alt="query window" width="310" height="346" border="0"></div></td>
+    <td valign="middle">VisIt allows you to gather quantitative information from a scientific dataset through <strong>queries</strong>. A query is a type of calculation that can return values from a dataset or values that are calculated using data from the dataset. Some queries can even be executed for all of the time states in a scientific dataset to yield a Curve plot of the query's behavior over time. <br>
+            <br>
+    </td>
+  </tr>
+    <tr>
+    <td colspan="3" valign="bottom"><a href="#top" class="top">[top] </a>
+        <hr>
+    </td>
+  </tr>
+  <tr>
+    <td height="340" valign="top"><div align="center"> <a name="spreadsheet" id="spreadsheet"></a> <a href="media/spreadsheet_S.jpg"><img src="media/spreadsheetD_S.jpg" alt="spreadsheet" width="404" height="300" border="0"></a> </div></td>
+    <td height="340" valign="top"><div align="center"> <a href="media/spreadsheet_wind_S.jpg"><img src="media/spreadsheet_windD_S.jpg" alt="spreadsheet window" width="330" height="296" border="0"></a></div></td>
+    <td valign="middle">In addition to its many visualization capabilities, VisIt provides a <strong>Spreadsheet plot</strong> for direct examination of a scientific dataset. The Spreadsheet plot displays data in table format and allows users to slice through 3D data interactively. The visualization window displays a tracer surface showing the source of the data displayed in the table. The spreadsheet appearance can be changed by setting the numeric precision or by coloring the numbers according to a color table. <br>
+            <br>
+    </td>
+  </tr>
+    <tr>
+    <td colspan="3" valign="bottom"><a href="#top" class="top">[top] </a>
+        <hr>
+    </td>
+  </tr>
+  <tr>
+    <td height="340" colspan="2" valign="top"><div align="center"> <a name="parallelAxis" id="parallelAxis"></a><a href="media/parallelAxis_S.jpg" target="_blank" class="links"><img src="media/parallelAxisD_S.jpg" alt="parallelAxis" width="600" height="359" border="0"></a> </div>      <div align="center"> </div></td>
+    <td valign="middle"><p>Explore multivariate data using VisIt's <strong>ParallelAxis plot</strong> and locate trends and interactions between variables. The ParallelAxis plot can be used with the <em>Extents tool</em> to highlight regions of interest along each variable axis, in effect restricting the data to only the pieces that fit within the defined ranges on each axis. The Extents tool can be used in conjunction with  the Threshold operator to show only the pieces of the scientific dataset that match the selected regions in the ParallelAxis plot.<br>
+            <br>
+    </p>
+    </td>
+  </tr>
   <tr>
     <td colspan="3" valign="bottom"><a href="#top" class="top">[top] </a>
         <hr>
     </td>
   </tr>
   <tr valign="top">
-    <td height="280" width="32%"><div align="center">
+    <td height="280" width="37%"><div align="center">
         <p><a name="position" id="position"></a><a href="media/plane_S.jpg"><img src="media/planeD_S.jpg" alt="plane tool" width="220" height="200" border="0"></a></p>
     </div></td>
-    <td height="280" width="37%"><div align="center"> <a href="media/sphere_S.jpg"><img src="media/sphereD_S.jpg" alt="rectangular clip" width="220" height="218" border="0"></a></div></td>
-    <td height="280" valign="middle" width="31%">VisIt contains tools to interactively <strong>position geometric shapes</strong> used by the operators. The first image shows the <strong>plane</strong> tool, used to interactively position a plane. The second image shows the <strong>sphere</strong> tool, used to interactively position a sphere.</td>
+    <td height="280" width="38%"><div align="center"> <a href="media/sphere_S.jpg"><img src="media/sphereD_S.jpg" alt="rectangular clip" width="220" height="218" border="0"></a></div></td>
+    <td height="280" valign="middle" width="31%">VisIt contains tools to interactively <strong>position geometric shapes</strong> used by the operators. The first image shows the <strong>plane</strong> tool, used to interactively position a plane. The second image shows the <strong>sphere</strong> tool, used to interactively position a sphere. VisIt also includes a <strong>box</strong> tool, a <strong>line</strong> tool, a <strong>point</strong> tool, and an <strong>extents</strong> tool. </td>
   </tr>
   <tr valign="top">
     <td colspan="3"><a href="#top" class="top">[top] </a>
@@ -317,7 +359,7 @@ function MM_initTimelines() { //v4.0
   <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | Screen Shots | <a href="gallery.html" class="links">Gallery</a> |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #BeginDate format:Am1 -->October 25, 2005<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->April 2, 2007<!-- #EndDate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
