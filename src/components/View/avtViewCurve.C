@@ -340,6 +340,9 @@ avtViewCurve::GetScaleFactor(int *size)
 //  Modifications:
 //    Eric Brugger, Wed Aug 20 09:42:38 PDT 2003
 //    I renamed this method.  I replaced window with domain and range.
+//
+//    Kathleen Bonnell, Tue Apr  3 14:28:18 PDT 2007 
+//    Added domainScale and rangeScale. 
 //   
 // ****************************************************************************
 
@@ -354,6 +357,8 @@ avtViewCurve::SetFromViewCurveAttributes(const ViewCurveAttributes *viewAtts)
     domain[1] = viewAtts->GetDomainCoords()[1];
     range[0]  = viewAtts->GetRangeCoords()[0];
     range[1]  = viewAtts->GetRangeCoords()[1];
+    domainScale = (ScaleMode)viewAtts->GetDomainScale();
+    rangeScale  = (ScaleMode)viewAtts->GetRangeScale();
 }
 
 // ****************************************************************************

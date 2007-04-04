@@ -2429,6 +2429,12 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Brad Whitlock, Fri Mar 23 16:02:01 PST 2007
 //    Don't pass a plot name to NewPlot() and it will get the default name.
 //
+//    Kathleen Bonnell, Tue Apr  3 17:19:28 PDT 2007 
+//    Set the scaling mode for a new plot.
+//
+//    Kathleen Bonnell, Wed Apr  4 10:08:27 PDT 2007 
+//    Ensure that the current ScaleMode is retrieved before setting it.
+//
 // ****************************************************************************
 
 int
@@ -2475,6 +2481,12 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     {
         newPlot->SetFromNode(attributesNode);
     }
+
+    //
+    // Set the scaling mode.
+    //
+    window->GetScaleMode(xScaleMode, yScaleMode);
+    newPlot->SetScaleMode(xScaleMode, yScaleMode);
 
     //
     // Add the new plot to the plot list.
@@ -8424,7 +8436,9 @@ ViewerPlotList::AlternateDisplayChangedPlotAttributes(ViewerPlot *plot)
 // Creation:   March 6, 2007
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Wed Apr  4 08:14:35 PDT 2007
+//   Set the scale mode for all plots, not just active non-hidden ones.
+//  
 // ****************************************************************************
 
 void 
@@ -8434,10 +8448,7 @@ ViewerPlotList::SetScaleMode(ScaleMode ds, ScaleMode rs)
     yScaleMode = rs;
     for (int i = 0; i < nPlots; ++i)
     {
-        if (plots[i].active && !plots[i].hidden)
-        {
-            plots[i].plot->SetScaleMode(ds, rs);
-        }
+        plots[i].plot->SetScaleMode(ds, rs);
     }
 }
 

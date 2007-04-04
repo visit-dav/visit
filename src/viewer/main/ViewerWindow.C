@@ -8825,22 +8825,29 @@ ViewerWindow::GlyphPick(const double pt1[3], const double pt2[3],
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::SetScaleMode
+//  Method: ViewerWindow::SetScaleMode
 //
-// Purpose: 
+//  Purpose: Set the scale modes for plots and udpates the window.
 //
-// Arguments:
+//  Arguments:
+//    ds        The domain scale mode.
+//    rs        The range scale mode.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   March 6, 2007
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 6, 2007
 //
-// Modifications:
+//  Modifications:
+//    Kathleen Bonnell, Tue Apr  3 17:19:28 PDT 2007
+//    Added early termination for non-curve windows.
 //
 // ****************************************************************************
 
 void
 ViewerWindow::SetScaleMode(ScaleMode ds, ScaleMode rs)
 {
+    if (windowMode != WINMODE_CURVE)
+        return;
+
     bool updatesEnabled = UpdatesEnabled();
 
     // remove all plot's actors from the VisWindow
@@ -8862,3 +8869,27 @@ ViewerWindow::SetScaleMode(ScaleMode ds, ScaleMode rs)
         WINDOWINFO_WINDOWFLAGS, windowId);
 }
 
+// ****************************************************************************
+//  Method: ViewerWindow::GetScaleMode
+//
+//  Purpose: 
+//    Retrieves the scaling mode from the curve view.
+//
+//  Arguments:
+//    ds        A place to store the domain scale.
+//    rs        A place to store the range scale.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   March 6, 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::GetScaleMode(ScaleMode &ds, ScaleMode &rs)
+{
+    const avtViewCurve &viewCurve = visWindow->GetViewCurve();
+    ds = viewCurve.domainScale;
+    rs = viewCurve.rangeScale;
+}

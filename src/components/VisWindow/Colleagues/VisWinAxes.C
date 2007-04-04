@@ -1549,7 +1549,9 @@ VisWinAxes::SetYUnits(const string &units, bool userSet)
 // Creation:   March 29, 2007 
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Wed Apr  4 17:04:54 PDT 2007
+//   Modified to handle situations where scientific notation is required.
+// 
 // ****************************************************************************
 
 void
@@ -1569,30 +1571,35 @@ VisWinAxes::AdjustLabelFormatForLogScale(
     {    
         double minx = pow(10., min_x);
         double maxx = pow(10., max_x);
-        int curPowX = LabelExponent(minx, maxx);
-        if (curPowX != 0)
-        {
-            minx /= pow(10., curPowX);
-            maxx /= pow(10., curPowX);
-        }
         int xAxisDigits = Digits(minx, maxx);
         char  format[16];
-        SNPRINTF(format, 16, "%%.%df", xAxisDigits);
+
+        int ipow_minx = (floor(floor(min_x)/3.))*3;
+        int ipow_maxx = (floor(floor(max_x)/3.))*3;
+        int curPowX = ipow_minx < ipow_maxx ? ipow_minx : ipow_maxx;
+
+        if (curPowX < -4)
+            SNPRINTF(format, 16, "%%.%de", xAxisDigits);
+        else 
+            SNPRINTF(format, 16, "%%.%df", xAxisDigits);
         xAxis->SetLabelFormat(format);
     }
     if (viewCurve.rangeScale == LOG)
     {    
-        double miny = pow(10., min_y);
-        double maxy = pow(10., max_y);
-        int curPowY = LabelExponent(miny, maxy);
-        if (curPowY != 0)
-        {
-            miny /= pow(10., curPowY);
-            maxy /= pow(10., curPowY);
-        }
-        int yAxisDigits = Digits(miny, maxy);
+        double minx = pow(10., min_x);
+        double maxx = pow(10., max_x);
+        int xAxisDigits = Digits(minx, maxx);
         char  format[16];
-        SNPRINTF(format, 16, "%%.%df", yAxisDigits);
-        yAxis->SetLabelFormat(format);
+
+        int ipow_minx = (floor(floor(min_x)/3.))*3;
+        int ipow_maxx = (floor(floor(max_x)/3.))*3;
+        int curPowX = ipow_minx < ipow_maxx ? ipow_minx : ipow_maxx;
+
+        if (curPowX < -4)
+            SNPRINTF(format, 16, "%%.%de", xAxisDigits);
+        else 
+            SNPRINTF(format, 16, "%%.%df", xAxisDigits);
+        xAxis->SetLabelFormat(format);
     }
 }
+

@@ -676,7 +676,7 @@ VisWinFrame::UpdateView(void)
     {
         const avtViewCurve viewCurve = vw->GetViewCurve();
         topBorder->SetLogScale((int)(viewCurve.domainScale == LOG));
-        bottomBorder->SetLogScale((int)(viewCurve.rangeScale == LOG));
+        bottomBorder->SetLogScale((int)(viewCurve.domainScale == LOG));
         rightBorder->SetLogScale((int)(viewCurve.rangeScale == LOG));
         leftBorder->SetLogScale((int)(viewCurve.rangeScale == LOG));
     }

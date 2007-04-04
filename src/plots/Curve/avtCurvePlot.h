@@ -79,6 +79,9 @@ class     vtkProperty;
 //    Kathleen Bonnell, Wed Jul 12 08:30:04 PDT 2006 
 //    Added warp filter. 
 //    
+//    Kathleen Bonnell, Tue Apr  3 17:17:33 PDT 2007 
+//    Added CanDoCurveViewScaling. 
+//    
 // ****************************************************************************
 
 
@@ -97,6 +100,8 @@ class avtCurvePlot : public avtLineDataPlot
     void                        SetLineWidth(int);
     void                        SetLineStyle(int);
 
+    virtual bool                CanDoCurveViewScaling(void) 
+                                    { return true; };
   protected:
     CurveAttributes                atts;
 

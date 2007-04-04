@@ -217,6 +217,10 @@ class     WindowAttributes;
 //    To facilitate log-views, added avtMeshLogFilter, SetScaleMode, 
 //    xScaleMode, yScaleMode, havePerformedLogX, havePerformedLogY.
 //
+//    Kathleen Bonnell,  Tue Apr  3 16:06:54 PDT 2007
+//    Added bool return to SetScaleMode. Added virtual method
+//    CanDoCurveViewScaling.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -281,9 +285,12 @@ class PLOTTER_API avtPlot
     float                      GetCellCountMultiplierForSRThreshold() const;
     const PlotInfoAttributes  *GetPlotInfoAtts(); 
 
-    void                      SetScaleMode(ScaleMode, ScaleMode);
+    bool                      SetScaleMode(ScaleMode, ScaleMode);
     void                      GetScaleMode(ScaleMode &ds, ScaleMode &rs)
                                 {ds = xScaleMode, rs = yScaleMode; }
+
+    virtual bool               CanDoCurveViewScaling(void) { return false; } 
+
   protected:
     bool                       needsRecalculation;
     int                        index;

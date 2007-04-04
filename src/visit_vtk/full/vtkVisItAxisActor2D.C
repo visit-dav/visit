@@ -643,13 +643,15 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         {
         val = pow(10., val);
         }
-
-      if ((fabs(val) < 0.01) &&
-          (fabs(outRange[1]-outRange[0]) > 1))
+      else
         {
-        // We just happened to fall at something near zero and the range is
-        // large, so set it to zero to avoid ugliness.
-        val = 0.;  
+        if ((fabs(val) < 0.01) &&
+            (fabs(outRange[1]-outRange[0]) > 1))
+          {
+          // We just happened to fall at something near zero and the range is
+          // large, so set it to zero to avoid ugliness.
+          val = 0.;  
+          }
         }
 
       SNPRINTF(string,64,this->LabelFormat, val*this->MajorTickLabelScale);
@@ -1209,10 +1211,12 @@ vtkVisItAxisActor2D::GetMTime()
 }
 
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // Mehod:    vtkVisItAxisActor2D::ComputeLogTicks 
 //
 // Purpose:  Compute tick spacings for log scaling. 
+//
+// Notes:    This method is borrowed from ULTRA.
 //
 // Arguments:
 //   inRange       The input range (log-scaled).
@@ -1227,8 +1231,12 @@ vtkVisItAxisActor2D::GetMTime()
 // Creation:    March 22, 2007 
 // 
 // Modifications:
+//   Kathleen Bonnell, Wed Apr  4 17:14:08 PDT 2007
+//   Fix a computation of 'n': was using a min, should have been a max.
+//   Handle cases where major-start label value is exactly 0 -- which 
+//   can cause problems.
 //
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 void 
 vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
@@ -1266,36 +1274,35 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     lv1 = floor(lv1);
     lv2 = floor(lv2 + 0.01); 
     }
-  double sp = log10(dlv);
-  double sp2 = trunc(log10(dlv));
-  if (sp2 < 0.1)
-      sp2 = 0.1; 
-  double va = sp2*trunc(lv1/sp2);
-  double vb = sp2*trunc(lv2/sp2);
+  double sp = trunc(log10(dlv));
+  if (sp < 0.1)
+      sp = 0.1; 
+  double va = sp*trunc(lv1/sp);
+  double vb = sp*trunc(lv2/sp);
   if (v1 < v2)
     {
     if (va < lv1 - TOLERANCE)
       {
-      va += sp2;
+      va += sp;
       }
     if (vb > lv2 + TOLERANCE)
       {
-      vb -= sp2;
+      vb -= sp;
       }
     }
   else 
     {
     if (va > lv1 + TOLERANCE)
       {
-      va -= sp2;
+      va -= sp;
       }
     if (vb < lv2 - TOLERANCE)
       {
-      vb += sp2;
+      vb += sp;
       }
     }
   dlv = fabs(va-vb);
-  int n = (int)( 1.0 + dlv/sp2 + EPSILON);
+  int n = (int)( 1.0 + dlv/sp + EPSILON);
   va = pow(10., va);
   vb = pow(10., vb);
   double *dx = new double[n];
@@ -1345,9 +1352,8 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
         }
       }
     }
-/* exponentiate the spacings and remove anybody outside the range
- * also MAJOR and LABEL ticks go on only on the decades
- */
+
+  // exponentiate the spacings and remove anybody outside the range
   if (na > 2)
     {
     double v1d = 0.9999*v1;
@@ -1382,10 +1388,12 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
   else
     va = dx[0];
 
+  if (va == 0) // cannot use va for Major Tick comps.
+    n = 0;
+
   delete dx;
 
-  n = (int)(n < (2.0 + EPSILON) ? n : 2.0 + EPSILON);
-
+  n = (int)(n < (2.0 + EPSILON) ? 2 : n);
 
   lv1 = sortedRange[0];
   lv2 = sortedRange[1];
@@ -1394,10 +1402,18 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
   doubleVector minorValue;
   double v, decadeStart, decadeEnd, decadeRange;
 
-
   // major tick values
-  labelValue.push_back(va);
-  majorValue.push_back(log10(va));
+  if (va != 0.)
+    {
+    labelValue.push_back(va);
+    majorValue.push_back(log10(va));
+    }
+  else
+    {
+    labelValue.push_back(0.1); // use a minimum Decade
+    majorValue.push_back(-1);
+    }
+
   for (i = 1; i < n; i++)
     {
     labelValue.push_back(labelValue[i-1]*10.);
