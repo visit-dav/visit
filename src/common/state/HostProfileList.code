@@ -559,6 +559,11 @@ Definition:
 //   I modified the routine to remove old host profiles for several old
 //   LLNL machines that no longer exist.
 //
+//   Eric Brugger, Thu Apr  5 10:38:02 PDT 2007
+//   I modified the routine to set the profile arguments for um, uv, up, and
+//   purple to "-dir /usr/gapps/visit" if the profile name was serial and
+//   "-dir /usr/gapps/visit -objectmode 64" otherwise.
+//
 // ****************************************************************************
 void
 HostProfileList::ProcessOldVersions(DataNode *parentNode,
@@ -586,7 +591,7 @@ HostProfileList::ProcessOldVersions(DataNode *parentNode,
         {
             //
             // If the host name is um or uv and the partition is 0, change
-            // it to pdebug.
+            // it to pdebug and change the arguments.
             //
             if (hostNode->AsString() == "um.llnl.gov" ||
                 hostNode->AsString() == "uv.llnl.gov")
@@ -598,6 +603,20 @@ HostProfileList::ProcessOldVersions(DataNode *parentNode,
                      {
                          partNode->SetString("pdebug");
                      }
+                }
+                DataNode *nameNode = children[i]->GetNode("profileName");
+                DataNode *argsNode = children[i]->GetNode("arguments");
+                if (nameNode != 0 && argsNode != 0)
+                {
+                    stringVector newArgs;
+                    newArgs.push_back("-dir");
+                    newArgs.push_back("/usr/gapps/visit");
+                    if (nameNode->AsString() != "serial")
+                    {
+                        newArgs.push_back("-objectmode");
+                        newArgs.push_back("64");
+                    }
+                    argsNode->SetStringVector(newArgs);
                 }
             }
             //
@@ -612,6 +631,27 @@ HostProfileList::ProcessOldVersions(DataNode *parentNode,
                      hostNode->AsString() == "white.llnl.gov")
             {
                 searchNode->RemoveNode(children[i]);
+            }
+            //
+            // Change the arguments in the up and purple profiles.
+            //
+            else if (hostNode->AsString() == "up.llnl.gov" ||
+                     hostNode->AsString() == "purple.llnl.gov")
+            {
+                DataNode *nameNode = children[i]->GetNode("profileName");
+                DataNode *argsNode = children[i]->GetNode("arguments");
+                if (nameNode != 0 && argsNode != 0)
+                {
+                    stringVector newArgs;
+                    newArgs.push_back("-dir");
+                    newArgs.push_back("/usr/gapps/visit");
+                    if (nameNode->AsString() != "serial")
+                    {
+                        newArgs.push_back("-objectmode");
+                        newArgs.push_back("64");
+                    }
+                    argsNode->SetStringVector(newArgs);
+                }
             }
         }
     }

@@ -24,10 +24,8 @@ user=`whoami`
 # Parse the execute line, providing default values for error checking.
 #
 crier=true
-hitit=true
 sunset=true
 sc=true
-ice=true
 purple=true
 lilac=true
 gauss=true
@@ -46,10 +44,8 @@ do
    case $1 in
       -none)
          crier=false
-         hitit=false
          sunset=false
          sc=false
-         ice=false
          purple=false
          lilac=false
          gauss=false
@@ -62,14 +58,6 @@ do
          ;;
       +crier)
          crier=true
-         shift
-         ;;
-      -hitit)
-         hitit=false
-         shift
-         ;;
-      +hitit)
-         hitit=true
          shift
          ;;
       -sunset)
@@ -86,14 +74,6 @@ do
          ;;
       +sc)
          sc=true
-         shift
-         ;;
-      -ice)
-         ice=false
-         shift
-         ;;
-      +ice)
-         ice=true
          shift
          ;;
       -purple)
@@ -207,43 +187,6 @@ then
 fi
 
 #
-# Install on hitit.
-#
-rm -f hitit
-cat <<EOF > hitit
-#!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_redhat7 /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                            > resultlog 2>&1
-echo "        install of visit on hitit"           >> resultlog 2>&1
-echo "       ---------------------------"          >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.hitit
-EOF
-
-if [ $hitit = true ]
-then
-   if [ $test = no ]
-   then
-      scp -P 22 hitit:/gscratch/$user/hitit/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_redhat7.tar.gz
-      scp visit$ver2.linux_redhat7.tar.gz sunset:
-      scp visit-install sunset:
-      scp hitit sunset:hitit_install
-      ssh sunset "chmod 750 hitit_install;./hitit_install"
-   fi
-fi
-
-#
 # Install on sunset.
 #
 rm -f sunset
@@ -318,49 +261,13 @@ then
 fi
 
 #
-# Install on ice.
-#
-rm -f ice
-cat <<EOF > ice
-#!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                            > resultlog 2>&1
-echo "        install of visit on ice"             >> resultlog 2>&1
-echo "       -------------------------"            >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/ibm-aix-pwr/bin        >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mv resultlog resultlog.ice
-EOF
-
-if [ $ice = true ]
-then
-   if [ $test = no ]
-   then
-      scp ice:/p/gi1/$user/ice/visitbuild/visit$ver2.aix.tar.gz .
-      scp visit$ver2.aix.tar.gz lilac3:
-      scp visit-install lilac3:
-      scp ice lilac3:ice_install
-      ssh lilac3 "chmod 750 ice_install;./ice_install"
-   fi
-fi
-
-#
 # Install on purple.
 #
 rm -f purple
 cat <<EOF > purple
 #!/bin/sh
-./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver aix64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on purple"          >> resultlog 2>&1
@@ -368,14 +275,27 @@ echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/bin  >> resultlog 2>&1
+echo "              32 bit version"                >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/ibm-aix-pwr/bin  >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64-xlc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "              64 bit version"                >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64/bin  >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mv resultlog resultlog.purple
 EOF
 
@@ -383,8 +303,10 @@ if [ $purple = true ]
 then
    if [ $test = no ]
    then
-      scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix64-xlc.tar.gz .
-      scp visit$ver2.aix64-xlc.tar.gz lilac3:
+      scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix.tar.gz .
+      scp purple:/p/gscratch3/$user/purple/visitbuild/visit$ver2.aix64.tar.gz .
+      scp visit$ver2.aix.tar.gz lilac3:
+      scp visit$ver2.aix64.tar.gz lilac3:
       scp visit-install lilac3:
       scp purple lilac3:purple_install
       ssh lilac3 "chmod 750 purple_install;./purple_install"
@@ -507,5 +429,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f crier hitit sunset sc ice purple lilac gauss hopi
+   rm -f crier sunset sc purple lilac gauss hopi
 fi

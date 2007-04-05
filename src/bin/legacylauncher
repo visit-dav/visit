@@ -356,6 +356,11 @@ $0 = shift @ARGV;
 #
 #    Mark C. Miller, Tue Nov 22 09:42:57 PST 2005
 #    Removed refs to sl_io subdirectory
+#
+#    Thomas R. Treadway, Wed Apr  4 18:02:52 PDT 2007
+#    Treat the platformDir like all of the others, allowing darwin-ppc,
+#    darwin-i386, [or darwin (universal) directory].
+#
 ###############################################################################
 
 
@@ -928,7 +933,19 @@ for ($os) {
         last;
     };
     /darwin/ && do {
-        $archdir = "darwin-ppc";
+        chomp( $mach    = `uname -m` );
+        if ($mach =~ /i386/) {
+            push @supportedarchs, "darwin-i386";
+        }
+        elsif ($mach =~ /x86_64/) {
+            push @supportedarchs, "darwin-x86_64";
+        }
+        elsif ($mach =~ /ppc/) {
+            push @supportedarchs, "darwin-ppc";
+        }
+        elsif ($mach =~ /ppc_64/) {
+            push @supportedarchs, "darwin-ppc_64";
+        }
         $launch = "mpirun" if ($procs_set && $launch eq "");
         last;
     };
@@ -1155,7 +1172,7 @@ $ENV{LD_LIBRARY_PATH}    = "$ENV{LD_LIBRARY_PATH}:/usr/local/lib";
 # Set up some environment flags that let VisIt run on Darwin.
 if($os eq "darwin")
 {
-    $ENV{DYLD_LIBRARY_PATH}   = "$visitlibdir:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_LIBRARY_PATH}";
+    $ENV{DYLD_LIBRARY_PATH}   = "$visitlibdir:$ENV{HOME}/.visit/$archdir/plugins:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_LIBRARY_PATH}";
 }
 
 # Set up plugin search paths in the correct order

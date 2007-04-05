@@ -62,6 +62,9 @@
 #    Brad Whitlock, Mon Nov 1 15:14:23 PST 2004
 #    Fixed for MacOS X.
 #
+#    Thomas R. Treadway, Tue Mar 27 12:01:30 PDT 2007
+#    Added Mesa libraries.
+#
 ##############################################################################
 
 ##
@@ -83,8 +86,8 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libparallel_visit_vtk
 LIBS=-lmisc -lvisit_vtk -llightweight_visit_vtk -lavtexceptions 
-SERLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
-PARLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
+SERLIBS=$(LIBS) @VTK_LIBS@ @MESA_LIBS@ $(X_LIBS)
+PARLIBS=$(LIBS) @VTK_LIBS@ @MESA_LIBS@ $(X_LIBS)
 
 ##
 ## Standard targets...

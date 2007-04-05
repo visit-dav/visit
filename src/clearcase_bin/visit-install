@@ -127,6 +127,10 @@
 #    Added code to delete the link bin/convert in case it is there
 #    from a previous installation.
 #
+#    Thomas R. Treadway, Wed Apr  4 10:22:37 PDT 2007
+#    Treat the platformDir like all of the others, allowing darwin-ppc,
+#    darwin-i386, or darwin (universal) directory.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -378,20 +382,16 @@ endif
 cd distribution/visit/$version
 
 # Determine the platform
-if("$os" == "darwin") then
-    set platformDir = "darwin"
-else
-    set findgui = `find . -name gui`
-    set platformBin = `echo "$findgui" | sed -e "s/gui//"`
-    set savepwd = `pwd`
-    cd $platformBin/..
-    set platformPath = `pwd`
-    cd $savepwd
-    set platformDir = ""
-    foreach f (`echo $platformPath | tr "/" " "`)
-        set platformDir = $f
-    end
-endif
+set findcli = `find . -name cli`
+set platformBin = `echo "$findcli" | sed -e "s/cli//"`
+set savepwd = `pwd`
+cd $platformBin/..
+set platformPath = `pwd`
+cd $savepwd
+set platformDir = ""
+foreach f (`echo $platformPath | tr "/" " "`)
+   set platformDir = $f
+end
 # Copy the files
 find . -print | cpio -pmud "$dir"/$version+
 cd ../../..

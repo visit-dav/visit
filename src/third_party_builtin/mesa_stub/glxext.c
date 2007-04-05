@@ -157,6 +157,14 @@ Bool mglXReleaseBuffersMESA ( Display *dpy, GLXDrawable draw )
 Bool mglXSet3DfxModeMESA ( int x )
 {}
 
+#if defined(__STDC_VERSION__)
+#if __STDC_VERSION__ >= 199901L
+/* Include ISO C99 integer types for OML_sync_control; need a better test */
+#include <inttypes.h>
+
+#ifndef GLX_OML_sync_control
+#define GLX_OML_sync_control 1
+#ifdef GLX_GLXEXT_PROTOTYPES
 Bool mglXGetSyncValuesOML ( Display *dpy, GLXDrawable draw,
                             int64_t *x, int64_t *y, int64_t *z )
 {}
@@ -177,3 +185,8 @@ Bool mglXWaitForMscOML ( Display *dpy, GLXDrawable draw,
 Bool mglXWaitForSbcOML ( Display *dpy, GLXDrawable draw,
                          int64_t x, int64_t *y, int64_t *z, int64_t *a )
 {}
+#endif /* GLX_GLXEXT_PROTOTYPES */
+#endif
+
+#endif /* C99 version test */
+#endif /* STDC test */

@@ -2202,7 +2202,11 @@ avtParallelAxisFilter::DrawContext()
                 float alpha = float(binnedAxisCounts[axis][a*nparts+b]) /
                               float(maxcount);
 
+#if defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 2) || (__GNUC__ == 3 && __GNUC_MINOR__ == 2 && __GNUC_PATCHLEVEL__ == 0))
+                alpha = pow(alpha,1./gamma);
+#else
                 alpha = powf(alpha,1.f/gamma);
+#endif
 
                 int c = int(float(PCP_CTX_BRIGHTNESS_LEVELS-1) * alpha);
 

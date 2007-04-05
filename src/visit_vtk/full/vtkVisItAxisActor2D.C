@@ -87,6 +87,9 @@ vtkStandardNewMacro(vtkVisItAxisActor2D);
 //    Kathleen Bonnell, March 22, 2007 
 //    Added LogScale.
 //
+//    Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
+//    Added LogLabelFormat.
+//
 // **********************************************************************
 vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 {
@@ -126,6 +129,8 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->FontFamily = VTK_ARIAL;
   this->LabelFormat = new char[8]; 
   SNPRINTF(this->LabelFormat,8, "%s","%-#6.3f");
+  this->LogLabelFormat = new char[8]; 
+  SNPRINTF(this->LogLabelFormat,8, "%s","%-#6.3f");
 
   this->TitleMapper = vtkTextMapper::New();
   this->TitleActor = vtkActor2D::New();
@@ -175,6 +180,11 @@ vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
     {
     delete [] this->LabelFormat;
     this->LabelFormat = NULL;
+    }
+  if (this->LogLabelFormat) 
+    {
+    delete [] this->LogLabelFormat;
+    this->LogLabelFormat = NULL;
     }
  
   if (this->TitleMapper)
@@ -319,6 +329,9 @@ void vtkVisItAxisActor2D::ReleaseGraphicsResources(vtkWindow *win)
 //   Kathleen Bonnell, March 22, 2007 
 //   Added LogScale.
 //
+//    Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
+//    Added LogLabelFormat.
+//
 // ********************************************************************
 void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 {
@@ -349,6 +362,7 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Italic: " << (this->Italic ? "On\n" : "Off\n");
   os << indent << "Shadow: " << (this->Shadow ? "On\n" : "Off\n");
   os << indent << "Label Format: " << this->LabelFormat << "\n";
+  os << indent << "Log Label Format: " << this->LogLabelFormat << "\n";
   os << indent << "Label Font Height: " << this->LabelFontHeight << "\n";
   os << indent << "Title Font Height: " << this->TitleFontHeight << "\n";
   os << indent << "Tick Length: " << this->TickLength << "\n";
@@ -424,6 +438,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Kathleen Bonnell, Thu Mar 29 09:54:04 PDT 2007
 //   More support for log scaling, use minor ticks for labels if there will
 //   be no major ticks.
+//
+//    Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
+//    Added LogLabelFormat.
 //
 // ****************************************************************************
 
@@ -639,11 +656,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 
       val = proportion[i]*(outRange[1]-outRange[0]) + outRange[0];
 
-      if (this->LogScale)
-        {
-        val = pow(10., val);
-        }
-      else
+      if (!this->LogScale)
         {
         if ((fabs(val) < 0.01) &&
             (fabs(outRange[1]-outRange[0]) > 1))
@@ -653,8 +666,15 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
           val = 0.;  
           }
         }
+      else
+        {
+        val = pow(10., val);
+        }
 
-      SNPRINTF(string,64,this->LabelFormat, val*this->MajorTickLabelScale);
+      if (!this->LogScale)
+        SNPRINTF(string,64,this->LabelFormat, val*this->MajorTickLabelScale);
+      else 
+        SNPRINTF(string,64,this->LogLabelFormat, val*this->MajorTickLabelScale);
 
       this->LabelMappers[labelCount]->SetInput(string);
       if (fabs(val) < 0.01)
@@ -1121,6 +1141,9 @@ double vtkVisItAxisActor2D::ComputeStringOffset(double width, double height,
 //   Eric Brugger, Tue Nov 25 11:44:40 PST 2003
 //   Added the ability to specify the axis orientation angle.
 //
+//    Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
+//    Added LogLabelFormat.
+//
 // ********************************************************************
 
 void vtkVisItAxisActor2D::ShallowCopy(vtkProp *prop)
@@ -1135,6 +1158,7 @@ void vtkVisItAxisActor2D::ShallowCopy(vtkProp *prop)
     this->SetRange(a->GetRange());
     this->SetNumberOfLabels(a->GetNumberOfLabels());
     this->SetLabelFormat(a->GetLabelFormat());
+    this->SetLogLabelFormat(a->GetLogLabelFormat());
     this->SetAdjustLabels(a->GetAdjustLabels());
     this->SetTitle(a->GetTitle());
     this->SetBold(a->GetBold());

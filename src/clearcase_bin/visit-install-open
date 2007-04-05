@@ -55,10 +55,7 @@ esac
 hoth=true
 sunspot=true
 quad=true
-berg=true
 up=true
-pengra=true
-pengra_icc=true
 thunder=true
 prism=true
 yana=true
@@ -80,10 +77,7 @@ do
          hoth=false
          sunspot=false
          quad=false
-         berg=false
          up=false
-         pengra=false
-         pengra_icc=false
          thunder=false
          prism=false
          yana=false
@@ -115,36 +109,12 @@ do
          quad=true
          shift
          ;;
-      -berg)
-         berg=false
-         shift
-         ;;
-      +berg)
-         berg=true
-         shift
-         ;;
       -up)
          up=false
          shift
          ;;
       +up)
          up=true
-         shift
-         ;;
-      -pengra)
-         pengra=false
-         shift
-         ;;
-      +pengra)
-         pengra=true
-         shift
-         ;;
-      -pengra_icc)
-         pengra_icc=false
-         shift
-         ;;
-      +pengra_icc)
-         pengra_icc=true
          shift
          ;;
       -thunder)
@@ -336,17 +306,21 @@ then
 fi
 
 #
-# Install on berg.
+# Install on up.
 #
-rm -f berg
-cat <<EOF > berg
+rm -f up
+cat <<EOF > up
 #!/bin/sh
 ./visit-install -private -c open -g visit -b bdivp -gw -l $ver aix /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver aix64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
-echo "        install of visit on berg"            > resultlog 2>&1
-echo "       --------------------------"           >> resultlog 2>&1
+echo ""                                            > resultlog 2>&1
+echo "        install of visit on up"              >> resultlog 2>&1
+echo "       ------------------------"             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "            32 bit version"                  >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 ls -l /usr/gapps/visit/$ver/ibm-aix-pwr/bin        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -356,43 +330,17 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/p
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $berg = true ]
-then
-   if [ $test = no ]
-   then
-      scp berg:/g/g17/$user/berg/visitbuild/visit$ver2.aix.tar.gz .
-      scp visit$ver2.aix.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp berg pengra2:berg_install
-      ssh pengra2 "chmod 750 berg_install;./berg_install"
-   fi
-fi
-
-#
-# Install on up.
-#
-rm -f up
-cat <<EOF > up
-#!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver aix64-xlc /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo ""                                            > resultlog 2>&1
-echo "        install of visit on up"              >> resultlog 2>&1
-echo "       ------------------------"             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo "            64 bit version"                  >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/bin  >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64/bin      >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/ibm-aix-pwr64-xlc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64-xlc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail $emailName < resultlog
 EOF
 
@@ -400,83 +348,13 @@ if [ $up = true ]
 then
    if [ $test = no ]
    then
-      scp up:/p/gup1/$user/up/visitbuild/visit$ver2.aix64-xlc.tar.gz .
-      scp visit$ver2.aix64-xlc.tar.gz pengra2:
+      scp up:/p/gup1/$user/up/visitbuild/visit$ver2.aix.tar.gz .
+      scp up:/p/gup1/$user/up/visitbuild/visit$ver2.aix64.tar.gz .
+      scp visit$ver2.aix.tar.gz pengra2:
+      scp visit$ver2.aix64.tar.gz pengra2:
       scp visit-install pengra2:
       scp up pengra2:up_install
       ssh pengra2 "chmod 750 up_install;./up_install"
-   fi
-fi
-
-#
-# Install on pengra.
-#
-rm -f pengra
-cat <<EOF > pengra
-#!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on pengra"          > resultlog 2>&1
-echo "       ----------------------------"         >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $pengra = true ]
-then
-   if [ $test = no ]
-   then
-      scp pengra1:/usr/tmp/$user/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
-      scp visit$ver2.linux_chaos.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp pengra pengra2:pengra_install
-      ssh pengra2 "chmod 750 pengra_install;./pengra_install"
-   fi
-fi
-
-#
-# Install an icc version on pengra.
-#
-rm -f pengra_icc
-cat <<EOF > pengra_icc
-#!/bin/sh
-./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux_chaos_icc /usr/gapps/visit > installlog 2>&1
-rm -f resultlog
-echo "        install of visit on pengra_icc"      > resultlog 2>&1
-echo "       --------------------------------"     >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-df -k /usr/gapps/visit                             >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-intel-icc/bin    >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-icc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-icc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel-icc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                            >> resultlog 2>&1
-echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-intel-icc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel-icc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $pengra_icc = true ]
-then
-   if [ $test = no ]
-   then
-      scp pengra2:/usr/tmp/$user/pengra/visitbuild/visit$ver2.linux-icc.tar.gz visit$ver2.linux_chaos_icc.tar.gz
-      scp visit$ver2.linux_chaos_icc.tar.gz pengra2:
-      scp visit-install pengra2:
-      scp pengra_icc pengra2:pengra_icc_install
-      ssh pengra2 "chmod 750 pengra_icc_install;./pengra_icc_install"
    fi
 fi
 
@@ -665,5 +543,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana xchem davinci
+   rm -f hoth sunspot quad up thunder prism yana xchem davinci
 fi

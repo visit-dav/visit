@@ -126,6 +126,9 @@ public:
   vtkSetStringMacro(LabelFormat);
   vtkGetStringMacro(LabelFormat);
 
+  vtkSetStringMacro(LogLabelFormat);
+  vtkGetStringMacro(LogLabelFormat);
+
   // Description:
   // Set/Get the flag that controls whether the labels are
   // adjusted for "nice" numerical values to make it easier to read 
@@ -337,6 +340,7 @@ protected:
   double  Range[2];
   int    NumberOfLabels;
   char   *LabelFormat;
+  char   *LogLabelFormat;
   int    NumberOfLabelsBuilt;
   int    AdjustLabels;
   double MajorTickLabelScale;

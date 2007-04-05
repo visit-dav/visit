@@ -1552,6 +1552,10 @@ VisWinAxes::SetYUnits(const string &units, bool userSet)
 //   Kathleen Bonnell, Wed Apr  4 17:04:54 PDT 2007
 //   Modified to handle situations where scientific notation is required.
 // 
+//   Kathleen Bonnell, Thu Apr  5 15:03:40 PDT 2007 
+//   Fix setting of y-axis info, also changed to use new LogLabelFormat so 
+//   that the switching between Log-Linear the labels have the right format. 
+//
 // ****************************************************************************
 
 void
@@ -1582,24 +1586,24 @@ VisWinAxes::AdjustLabelFormatForLogScale(
             SNPRINTF(format, 16, "%%.%de", xAxisDigits);
         else 
             SNPRINTF(format, 16, "%%.%df", xAxisDigits);
-        xAxis->SetLabelFormat(format);
+        xAxis->SetLogLabelFormat(format);
     }
     if (viewCurve.rangeScale == LOG)
     {    
-        double minx = pow(10., min_x);
-        double maxx = pow(10., max_x);
-        int xAxisDigits = Digits(minx, maxx);
+        double miny = pow(10., min_y);
+        double maxy = pow(10., max_y);
+        int yAxisDigits = Digits(miny, maxy);
         char  format[16];
 
-        int ipow_minx = (floor(floor(min_x)/3.))*3;
-        int ipow_maxx = (floor(floor(max_x)/3.))*3;
-        int curPowX = ipow_minx < ipow_maxx ? ipow_minx : ipow_maxx;
+        int ipow_miny = (floor(floor(min_y)/3.))*3;
+        int ipow_maxy = (floor(floor(max_y)/3.))*3;
+        int curPowY = ipow_miny < ipow_maxy ? ipow_miny : ipow_maxy;
 
-        if (curPowX < -4)
-            SNPRINTF(format, 16, "%%.%de", xAxisDigits);
+        if (curPowY < -4)
+            SNPRINTF(format, 16, "%%.%de", yAxisDigits);
         else 
-            SNPRINTF(format, 16, "%%.%df", xAxisDigits);
-        xAxis->SetLabelFormat(format);
+            SNPRINTF(format, 16, "%%.%df", yAxisDigits);
+        yAxis->SetLogLabelFormat(format);
     }
 }
 

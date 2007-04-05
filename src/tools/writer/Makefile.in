@@ -60,6 +60,9 @@
 #    Hank Childs, Thu Jun  8 14:14:58 PDT 2006
 #    Fix typo where CXX flags were being used for C flags.
 #
+#    Thomas R. Treadway, Thu Apr  5 16:02:56 PDT 2007
+#    Corrected paths.
+#
 ##############################################################################
 ##
 ## Programs and options...
@@ -85,11 +88,11 @@ LIBNAME=$(LIB).@SHLIB_SOEXT@
 ##
 ## Override the certain variables with values from configure.
 ##
-LDFLAGS=-L../lib @PY_LDFLAGS@ @LDFLAGS@
+LDFLAGS=-L../../lib @PY_LDFLAGS@ @LDFLAGS@
 LIBS=@LIBS@ -lviewerproxy -lviewerrpc -lcomm -lmisc -lstate -lutility \
      -lplugin -ldbatts -lavtexceptions -lexpr -lparser @PY_LIB@
-CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
-CFLAGS=@CFLAGS@ @PY_CXXFLAGS@ -I. -I../include/visit
+CXXFLAGS=@CXXFLAGS@ @PY_CXXFLAGS@ -I. -I../../include/visit
+CFLAGS=@CFLAGS@ @PY_CXXFLAGS@ -I. -I../../include/visit
 
 
 ##
@@ -100,7 +103,7 @@ all:  message $(LIBSHARED)
 	mv $(LIBSHARED) ../../exe/$(LIBNAME)
 
 clean:
-	$(RM) $(LIBSTATIC) $(LIBSHARED) ../exe/$(LIBNAME) $(CLI)
+	$(RM) $(LIBSTATIC) $(LIBSHARED) ../../exe/$(LIBNAME) $(CLI)
 	$(RM) $(OBJ)
 
 message:

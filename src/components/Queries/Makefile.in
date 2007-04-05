@@ -186,6 +186,9 @@
 #   Cyrus Harrison, Fri Mar  2 09:06:07 PST 2007
 #   Added connected components summary query.
 #
+#   Thomas R. Treadway, Tue Mar 27 12:52:26 PDT 2007
+#   Added $(MESA_LIBS)  
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -290,8 +293,8 @@ CPPFLAGS=@COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libquery
-SERLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) -lavtddf_ser
-PARLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) -lavtddf_par
+SERLIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) -lavtddf_ser
+PARLIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS) -lavtddf_par
 COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lexpr -lparser -lutility -lplugin -lavtview -lvisit_vtk -llightweight_visit_vtk
 SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser -lavtfilters_ser -lexpressions_ser -ldatabase_ser -lmir_ser $(SERLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS) @LIBS@
 PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par -lavtfilters_par -lexpressions_par -ldatabase_par -lmir_par $(PARLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS) @LIBS@ @SHLIB_MPI_LIBS@

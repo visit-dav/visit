@@ -152,6 +152,9 @@
 #    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 #    Added $(GLEW_LIBS)  
 #
+#    Thomas R. Treadway, Tue Mar 27 12:24:37 PDT 2007
+#    Added $(MESA_LIBS)  
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -196,7 +199,7 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libdatabase
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS)
 COMMONLIBS=-ldbatts -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING)
 SERLIBS=$(COMMONLIBS) -lmir_ser -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
 PARLIBS=$(COMMONLIBS) -lmir_par -lpipeline_par -lavtmath_par $(VTK_LIBS) @SHLIB_MPI_LIBS@

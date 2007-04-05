@@ -2827,7 +2827,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     // make a hidden mesh (one that shouldn't be displayed in the GUI
     DBAddOption(optlist, DBOPT_HIDE_FROM_GUI, &one) ;
     if (DBPutMultimesh(dbfile, "mesh1_hidden", nblocks,
-                       meshnamesdup, meshtypes, optlist) == -1)
+                       meshnames, meshtypes, optlist) == -1)
     {
         fprintf(stderr, "Error creating hidden multi mesh\n");
         DBFreeOptlist(optlist);

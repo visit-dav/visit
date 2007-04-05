@@ -189,6 +189,12 @@
 #    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 #    Added $(GLEW_LIBS)  
 #
+#    Thomas R. Treadway, Tue Mar 27 13:20:43 PDT 2007
+#    Added $(MESA_LIBS)
+#
+#    Thomas R. Treadway, Thu Apr  5 16:07:06 PDT 2007
+#    Removed vtk_libs and $(MESA_LIBS)
+#
 ##############################################################################
 
 ##
@@ -199,7 +205,7 @@
 
 # Libraries to use in prebinding. Some library has indirectly required the
 # use of visit_vtk. Not good. And the list grows
-PREBIND_LIBS=$(GLEW_LIBS) -lvisit_vtk
+PREBIND_LIBS=$(GLEW_LIBS)
 
 LIBS= \
     -lexpr \
@@ -218,7 +224,7 @@ LIBS= \
     -lutility \
     -llightweight_visit_vtk \
     @VTK_LIGHTWEIGHT_LIBS@ \
-    @PREBIND_LIBS@ \
+    $(PREBIND_LIBS) \
     $(BZIP2_LIBS) \
     @LIBS@ \
     @PTHREAD_LIB@
