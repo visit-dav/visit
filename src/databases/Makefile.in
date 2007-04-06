@@ -245,6 +245,9 @@
 #   Dave Bremer, Thu Feb 22 12:03:34 PST 2007
 #   Added Miranda RAW reader
 #
+#   Sean Ahern, Fri Apr  6 09:00:55 PDT 2007
+#   Added the S3D reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -261,7 +264,7 @@ GDAL=GDAL
 HDF4=Cosmos Enzo ZeusMP
 HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC
 MILI=Mili
-NETCDF=NETCDF
+NETCDF=NETCDF S3D
 PDB=KullLite PDB
 TSTT=TSTT
 VISUS=ViSUS

@@ -665,6 +665,13 @@ dnl    Eric Brugger, Tue Mar 27 12:01:37 PDT 2007
 dnl    Added --enable-viewer-mesa-stub, which controls if the viewer uses
 dnl    the mesa library or the mesa stub library.
 dnl
+dnl    Eric Brugger, Fri Apr  6 08:53:18 PDT 2007
+dnl    Added NETCDF_CXX_LIB, which contains the netcdf c++ library, for
+dnl    use with the S3D database plugin.
+dnl
+dnl    Thomas R. Treadway, Fri Apr  6 13:18:53 PDT 2007
+dnl    Filled in PREBIND_LIBS (for mdserver linking).
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2258,6 +2265,7 @@ AC_MSG_CHECKING(for netCDF)
 NETCDF=""
 NETCDF_INCLUDE=""
 NETCDF_LIB=""
+NETCDF_CXX_LIB=""
 AC_ARG_WITH(netcdf,
 	    [  --with-netcdf=INC-DIR,LIB-DIR     Location of netCDF header and library],
            netcdf_specified="yes",
@@ -2272,6 +2280,7 @@ if test "$netcdf_specified" = "yes"; then
    if test "$withval" != "no"; then
       NETCDF_INCLUDE="-I`echo $withval |cut -f1 -d,`"
       NETCDF_LIB="`echo $withval |cut -f2 -d, -s`/libnetcdf.$NETCDF_LIBEXT"
+      NETCDF_CXX_LIB="`echo $withval |cut -f2 -d, -s`/libnetcdf_c++.$NETCDF_LIBEXT"
    fi
 else
    if test "$DEFAULT_NETCDF_INCLUDE" != "" ; then
@@ -2279,6 +2288,7 @@ else
    fi
    if test "$DEFAULT_NETCDF_LIB" != "" ; then
       NETCDF_LIB="$DEFAULT_NETCDF_LIB/libnetcdf.$NETCDF_LIBEXT $NETCDF_LIB"
+      NETCDF_CXX_LIB="$DEFAULT_NETCDF_LIB/libnetcdf_c++.$NETCDF_LIBEXT $NETCDF_CXX_LIB"
    fi
 fi
 if test "$NETCDF_LIB" != "" ; then
@@ -2296,6 +2306,7 @@ fi
 AC_SUBST(NETCDF)
 AC_SUBST(NETCDF_INCLUDE)
 AC_SUBST(NETCDF_LIB)
+AC_SUBST(NETCDF_CXX_LIB)
 
 #
 # Look for CGNS
@@ -2946,7 +2957,7 @@ case $SHORT_UNAME in
     SHLIB_ESERLIBS="$""(ESERLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_ser.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
     SHLIB_EPARLIBS="$""(EPARLIBS) -Wl,-install_name,@executable_path/../plugins/$""(PLUGINDIR)/libE$""(PLUGINNAME)_par.dylib,-compatibility_version,$COMPATIBILITY_VERSION,-current_version,$COMPATIBILITY_VERSION"
 
-    PREBIND_LIBS="$""(PREBIND_LIBS)"
+    PREBIND_LIBS="$""(PREBIND_LIBS) $""(GLEW_LIBS) $""(MESA_LIBS) -lvisit_vtk"
     ;;
 esac
 # Set up the defaults

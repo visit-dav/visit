@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+  <Plugin name="S3D" type="database" label="S3D combustion code restart files" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(NETCDF_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(NETCDF_CXX_LIB)
+      $(NETCDF_LIB)
+    </LIBS>
+    <Extensions>
+      s3d
+    </Extensions>
+    <Files components="M">
+      avtS3DFileFormat.C
+    </Files>
+    <Files components="E">
+      avtS3DFileFormat.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
