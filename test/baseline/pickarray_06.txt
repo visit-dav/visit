@@ -1,0 +1,39 @@
+
+D:  globe.silo  timestep 0
+mesh1 
+Point: <-2.202752, -4.305379, 8.590231>
+Zone:  493
+Incident Nodes:  760  761  752  751  814  815  806  805  
+u:  <nodal> 
+    (760) = -2.5
+    (761) = -4.75528
+    (752) = -3.96274
+    (751) = -2.08333
+    (814) = -2.93893
+    (815) = -5.59017
+    (806) = -4.65847
+    (805) = -2.44911
+
+arr3:  <zonal> = (-0.921542,0,0) mag = 0.921542
+
+
+Pick could not retrieve the requested information, possibly due to a bad expression in its variables list. Please check the requested variables list and try again.
+
+E:  globe_temp.vtk  timestep 0
+mesh 
+Point: <-2.202752, -4.305379, 8.590231>
+Zone:  493
+Incident Nodes:  760  761  752  751  814  815  806  805  
+u:  <nodal> 
+    (760) = -2.5
+    (761) = -4.75528
+    (752) = -3.96274
+    (751) = -2.08333
+    (814) = -2.93893
+    (815) = -5.59017
+    (806) = -4.65847
+    (805) = -2.44911
+
+arr3:  <zonal> 
+(-0.921542, 0)
+

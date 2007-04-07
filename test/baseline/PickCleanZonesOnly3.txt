@@ -1,0 +1,10 @@
+
+C:  ucd3d.silo  timestep 0
+ucdmesh3d 
+Point: <3.000000, 2.000000, 19.000000>
+Zone:  1817
+Incident Nodes:  2295  2289  2415  2421  2294  2288  2414  2420  
+mat1:  
+    1 = 0.9
+    4 = 0.1
+

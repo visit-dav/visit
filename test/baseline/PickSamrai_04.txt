@@ -1,0 +1,70 @@
+
+Testing clipped SAMRAI (3D):
+
+A:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch0 
+Point: <5.224817, 5.722284, 0.000000>
+Zone:  65
+Incident Nodes:  70  71  83  84  239  240  252  253  
+
+B:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch0 
+Point: <5.224817, 5.722284, 0.000000>
+Zone:  65
+Incident Nodes:  70  71  83  84  239  240  252  253  
+Primitive Var _number_0:  <zonal> = 10
+
+
+C:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch0 
+Point: <5.224817, 5.722284, 0.000000>
+Zone:  65
+Incident Nodes:  70  71  83  84  239  240  252  253  
+
+D:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.224817, 5.722284, 2.090909>
+Zone:  818
+Incident Nodes:  901  902  920  921  1262  1263  1281  1282  
+Primitive Var _number_0:  <zonal> = 10
+
+
+E:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch0 
+Point: <5.000000, 5.000000, 0.000000>
+Node:  70
+Incident Zones:  64  52  65  53  
+
+F:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch0 
+Point: <5.000000, 5.000000, 0.000000>
+Node:  70
+Incident Zones:  64  52  65  53  
+Primitive Var _number_0:  <zonal> 
+    (64) = 10
+    (52) = 10
+    (65) = 10
+    (53) = 10
+
+
+G:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch0 
+Point: <5.000000, 5.000000, 0.000000>
+Node:  70
+Incident Zones:  64  52  65  53  
+
+H:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.000000, 5.000000, 2.000000>
+Node:  882
+Incident Zones:  799  781  457  475  800  782  458  476  
+Primitive Var _number_0:  <zonal> 
+    (799) = 10
+    (781) = 10
+    (457) = 10
+    (475) = 10
+    (800) = 10
+    (782) = 10
+    (458) = 10
+    (476) = 10
+

@@ -1,0 +1,6 @@
+Correlation01 has 20 states
+activeSource = "localhost:/data_vobs/VisIt/data/dbA00.pdb"
+activeTimeSlider = 0
+timeSliders = ("Correlation01", "localhost:/data_vobs/VisIt/data/dbA00.pdb")
+timeSliderCurrentStates = (17, 8)
+animationMode = 2

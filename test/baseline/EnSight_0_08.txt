@@ -1,0 +1,9 @@
+Time values:
+The time is 0.0260356.
+The time is 0.0501342.
+The time is 0.075049.
+The time is 0.100329.
+The time is 0.12537.
+The time is 0.150093.
+The time is 0.175198.
+The time is 0.200242.

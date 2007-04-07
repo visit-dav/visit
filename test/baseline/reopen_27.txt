@@ -1,0 +1,6 @@
+ has 1 states
+activeSource = "notset"
+activeTimeSlider = -1
+timeSliders = ()
+timeSliderCurrentStates = ()
+animationMode = 2

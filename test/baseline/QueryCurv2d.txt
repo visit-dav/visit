@@ -1,0 +1,34 @@
+Total cross sectional area (XSA): 4.092101
+Total rotated (x=0) volume (VOL): 44.121187
+
+Distance to boundary WRT dA / XSA = 0.345476
+Distance to boundary WRT dA / VOL = 0.032042
+Distance to boundary WRT dV / XSA = 3.601311
+Distance to boundary WRT dV / VOL = 0.334010
+Distance to origin   WRT dA       = 9.822501
+
+NOTE -- additional calculations are available if
+        a density plot is selected for this query.
+
+Eulerian for domain 0 is 1
+
+
+u -- Min = -1.000000 (node 946 at coord <-0.444246, 4.226718>)
+u -- Max = 1.000000 (node 931 at coord <4.226718, 0.444246>)
+
+
+The total RevolvedVolume is 449.133889 cm^3
+The total Surface Area is 27.109456 cm^2
+The actual number of nodes is 1271.
+The actual number of zones is 988.
+The number of ghost zones is 212.
+
+MinMax Actual:
+vel -- Min = 1.000000 (node 270 at coord <-1.739740, 1.932177>)
+vel -- Max = 1.000000 (node 1151 at coord <4.362180, 1.942167>)
+
+
+MinMax Original:
+vel -- Min = 1.000000 (node 270 at coord <-1.739740, 1.932177>)
+vel -- Max = 1.000000 (node 1151 at coord <4.362180, 1.942167>)
+

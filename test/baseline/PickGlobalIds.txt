@@ -1,0 +1,192 @@
+
+A:  global_node.silo  timestep 0
+mesh domain 61 
+Point: <0.168137, 0.866025, 1.000000>
+Zone:  3250
+Incident Nodes:  3690  3691  3707  3706  3946  3947  3963  3962  
+dist:  <nodal> 
+    (3690) = 0.683537
+    (3691) = 0.675566
+    (3707) = 0.684349
+    (3706) = 0.692219
+    (3946) = 0.695422
+    (3947) = 0.687588
+    (3963) = 0.69622
+    (3962) = 0.703957
+
+
+B:  global_node.silo  timestep 0
+mesh domain 61 
+Point: <0.168137, 0.866025, 1.000000>
+Zone:  237394 (global)
+Incident Nodes: (global)  244938  244939  245003  245002  249034  249035  249099  249098  
+dist:  <nodal> 
+    (244938) = 0.683537
+    (244939) = 0.675566
+    (245003) = 0.684349
+    (245002) = 0.692219
+    (249034) = 0.695422
+    (249035) = 0.687588
+    (249099) = 0.69622
+    (249098) = 0.703957
+
+
+C:  global_node.silo  timestep 0
+mesh domain 55 
+Point: <0.716667, 0.266667, 1.000000>
+Node:  3869
+Incident Zones:  3162  3163  3177  3178  
+dist:  <nodal> = 0.592781
+
+
+D:  global_node.silo  timestep 0
+mesh domain 55 
+Point: <0.716667, 0.266667, 1.000000>
+Node:  246827 (global)
+Incident Zones: (global)  235158  235159  235221  235222  
+dist:  <nodal> = 0.592781
+
+
+E:  global_node.silo  timestep 0
+mesh domain 59 
+Point: <0.622008, 0.558564, 1.000000>
+Zone:  3202
+Incident Nodes:  3639  3640  3656  3655  3895  3896  3912  3911  
+dist:  <nodal> 
+    (3639) = 0.499722
+    (3640) = 0.503874
+    (3656) = 0.5058
+    (3655) = 0.501664
+    (3895) = 0.51586
+    (3896) = 0.519882
+    (3912) = 0.521749
+    (3911) = 0.517741
+
+
+F:  global_node.silo  timestep 0
+mesh domain 59 
+Point: <0.616667, 0.566667, 1.000000>
+Node:  3911
+Incident Zones:  3201  3202  3216  3217  
+dist:  <nodal> = 0.517741
+
+
+G:  global_node.silo  timestep 0
+mesh domain 59 
+Point: <0.622008, 0.558564, 1.000000>
+Zone:  236287 (global)
+Incident Nodes: (global)  243813  243814  243878  243877  247909  247910  247974  247973  
+dist:  <nodal> 
+    (243813) = 0.499722
+    (243814) = 0.503874
+    (243878) = 0.5058
+    (243877) = 0.501664
+    (247909) = 0.51586
+    (247910) = 0.519882
+    (247974) = 0.521749
+    (247973) = 0.517741
+
+
+H:  global_node.silo  timestep 0
+mesh domain 59 
+Point: <0.616667, 0.566667, 1.000000>
+Node:  247973 (global)
+Incident Zones: (global)  236286  236287  236349  236350  
+dist:  <nodal> = 0.517741
+
+
+I:  global_node.silo  timestep 0
+mesh domain 15 
+Point: <0.625000, 0.858333, 0.008333>
+Zone:  3250 (global)
+Incident Nodes: (global)  3301  3302  3366  3365  7397  7398  7462  7461  
+dist:  <nodal> 
+    (3301) = 0.621378
+    (3302) = 0.624722
+    (3366) = 0.63421
+    (3365) = 0.630916
+    (7397) = 0.608048
+    (7398) = 0.611465
+    (7462) = 0.621155
+    (7461) = 0.617792
+
+
+J:  global_node.silo  timestep 0
+mesh domain 61 
+Point: <0.175000, 0.858333, 0.991667>
+Zone:  237394 (global)
+Incident Nodes: (global)  244938  244939  245003  245002  249034  249035  249099  249098  
+dist:  <nodal> 
+    (244938) = 0.683537
+    (244939) = 0.675566
+    (245003) = 0.684349
+    (245002) = 0.692219
+    (249034) = 0.695422
+    (249035) = 0.687588
+    (249099) = 0.69622
+    (249098) = 0.703957
+
+
+K:  global_node.silo  timestep 0
+mesh domain 14 
+Point: <0.483333, 1.000000, 0.000000>
+Node:  3869 (global)
+Incident Zones: (global)  3745  3746  
+dist:  <nodal> = 0.707303
+
+
+L:  global_node.silo  timestep 0
+mesh domain 55 
+Point: <0.716667, 0.266667, 1.000000>
+Node:  246827 (global)
+Incident Zones: (global)  235158  235159  235221  235222  
+dist:  <nodal> = 0.592781
+
+
+M:  global_node.silo  timestep 0
+mesh domain 59 
+Point: <0.658333, 0.725000, 0.991667>
+Zone:  236919 (global)
+Incident Nodes: (global)  244455  244456  244520  244519  248551  248552  248616  248615  
+dist:  <nodal> 
+    (244455) = 0.550505
+    (244456) = 0.555278
+    (244520) = 0.561991
+    (244519) = 0.557275
+    (248551) = 0.565194
+    (248552) = 0.569844
+    (248616) = 0.576387
+    (248615) = 0.571791
+
+
+N:  global_node.silo  timestep 0
+mesh domain 59 
+Point: <0.650000, 0.716667, 0.983333>
+Node:  244455 (global)
+Incident Zones: (global)  232886  232887  232949  232950  236855  236856  236918  236919  
+dist:  <nodal> = 0.550505
+
+
+O:  global_node.silo  timestep 0
+mesh domain 59 
+Point: <0.658333, 0.725000, 0.991667>
+Zone:  236919 (global)
+Incident Nodes: (global)  244455  244456  244520  244519  248551  248552  248616  248615  
+p:  <zonal> = 319.05
+
+
+P:  global_node.silo  timestep 0
+mesh domain 59 
+Point: <0.650000, 0.716667, 0.983333>
+Node:  244455 (global)
+Incident Zones: (global)  232886  232887  232949  232950  236855  236856  236918  236919  
+p:  <zonal> 
+    (232886) = 283.6
+    (232887) = 319.05
+    (232949) = 283.6
+    (232950) = 319.05
+    (236855) = 283.6
+    (236856) = 319.05
+    (236918) = 283.6
+    (236919) = 319.05
+

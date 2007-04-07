@@ -1,0 +1,10 @@
+Using scalable rendering on frame 0: true
+Using scalable rendering on frame 1: true
+Using scalable rendering on frame 2: true
+Using scalable rendering on frame 3: true
+Using scalable rendering on frame 4: true
+Using scalable rendering on frame 5: true
+Using scalable rendering on frame 6: true
+Using scalable rendering on frame 7: true
+Using scalable rendering on frame 8: true
+Using scalable rendering on frame 9: true

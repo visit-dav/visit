@@ -1,0 +1,2 @@
+Pseudocolor:  ()
+viewer: The expression failed because The curvature expression can only be calculated on surfaces.  VisIt tries to evaluate expressions as soon as they are read from a database.  For curvature, the expression is typically desired after some operators have been applied.  You can defer the evaluation of the curvature expression using the DeferExpression operator. The defer expression operator is available through the plugin manager located under the Options menu

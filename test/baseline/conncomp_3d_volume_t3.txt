@@ -1,0 +1,2 @@
+Found 1 connected component
+Component 0 Volume = (7.435271)

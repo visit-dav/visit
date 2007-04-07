@@ -1,0 +1,2 @@
+Pseudocolor:  (ImproperUseException)
+viewer: The pipeline object is being used improperly: After parsing, expression has no real variables.

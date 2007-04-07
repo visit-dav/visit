@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# use this tool to re-basline purify test results
+# run it in the test directory with a current purify_baseline_updates.tar.gz file
+# present. This tool will add baselines for any new tests, update baselines for
+# existing tests that are indeed different and remove baslines for existing
+# tests. By default, if no basline exists for a test, runtest will assume
+# the ZERO baseline file.
+
+baseCheckedOut=0
+ckout_base_dir () {
+   if test $baseCheckedOut -ne 1; then
+       /usr/atria/bin/cleartool co -c 're-baselining purify results' baseline
+   fi
+   baseCheckedOut=1
+}
+
+if test -e purify_baseline_updates.tar.gz; then
+    files=`gunzip < purify_baseline_updates.tar.gz | tar xvf -`
+    for f in $files; do
+        basef=`basename $f`
+	if test -e baseline/$basef; then
+            if test -n "`diff $f baseline/$basef`"; then
+	        if test -n "`grep -v 0 $f`"; then
+                    echo "re-baselining $basef..."
+	            echo "*******************************************"
+	            cat $f
+	            echo "*******************************************"
+                    /usr/atria/bin/cleartool co -c 're-baselining' baseline/$basef
+	            cp $f baseline/$basef
+		else
+		    ckout_base_dir
+	            echo "################################################"
+                    echo "re-baselining $basef to the ZERO file. Good Job!"
+	            echo "################################################"
+		    /usr/atria/bin/cleartool rmname baseline/$basef
+	        fi
+	    else
+	        echo "---------------------------------------------------"
+	        echo "Skipping $basef because it is identical to baseline"
+	        echo "---------------------------------------------------"
+            fi
+        else
+            if test -n "`grep -v 0 $f`"; then
+	        echo "++++++++++++++++++++++++++"
+                echo "Adding baseline for $basef"
+	        echo "++++++++++++++++++++++++++"
+                ckout_base_dir
+                cp $f baseline/$basef
+                /usr/atria/bin/cleartool mkelem -c 'adding new purify baseline' baseline/$basef
+	    else
+	        echo "#############################################"
+                echo "New test $basef uses ZERO baseline. Good Job!"
+	        echo "#############################################"
+	    fi
+	fi
+    done
+else
+   echo "no purify_baseline_updates.tar.gz file to update from"
+   exit 1
+fi

@@ -1,0 +1,17 @@
+activeSource = "localhost:/data_vobs/VisIt/data/wave.visit"
+activeTimeSlider = 0
+timeSliders = ("Correlation01", "localhost:/data_vobs/VisIt/data/wave.visit")
+timeSliderCurrentStates = (36, 36)
+animationMode = 2
+interactionMode = 0
+boundingBoxNavigate = 1
+spin = 0
+fullFrame = 0
+perspective = 1
+lockView = 0
+lockTools = 0
+lockTime = 1
+viewExtentsType = 0
+viewDimension = 3
+viewKeyframes = ()
+cameraViewMode = 0

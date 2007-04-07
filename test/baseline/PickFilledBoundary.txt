@@ -1,0 +1,178 @@
+
+A:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.395530, 2.898330, 7.582197>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+B:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.324296, 2.898330, 7.961974>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+C:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.439367, 2.898330, 7.389556>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+D:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.422928, 2.898330, 7.516148>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+E:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.390051, 2.898330, 7.730805>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+F:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.428408, 2.898330, 7.972982>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+G:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.324296, 2.898330, 7.829877>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+H:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.401010, 2.898330, 7.362036>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+I:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.329775, 2.898330, 7.395060>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+J:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.379092, 2.898330, 7.604213>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+K:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.379092, 2.898330, 7.835381>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+L:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.450326, 2.898330, 7.989494>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+M:  multi_ucd3d.silo  timestep 0
+mesh1 domain 17 
+Point: <2.319811, 2.942667, 7.666666>
+Zone:  320
+Incident Nodes:  386  373  542  555  385  372  541  554  
+mat1:  
+    1 = 0.05
+    2 = 0.95
+
+
+N:  globe.silo  timestep 0
+mesh1 
+Point: <6.622222, 0.000000, 2.711111>
+Zone:  679
+Incident Nodes:  1077  1078  1069  1068  51  52  43  42  
+
+O:  globe.silo  timestep 0
+mesh1 
+Point: <6.340380, 0.000000, 2.060110>
+Node:  43
+Incident Zones:  640  659  660  679  740  759  760  779  
+
+P:  globe.silo  timestep 0
+mesh1 
+Point: <6.622222, 0.000000, 2.711111>
+Zone:  679
+Incident Nodes:  1077  1078  1069  1068  51  52  43  42  
+
+Q:  globe.silo  timestep 0
+mesh1 
+Point: <6.340380, 0.000000, 2.060110>
+Node:  43
+Incident Zones:  640  659  660  679  740  759  760  779  
+
+R:  globe.silo  timestep 0
+mesh1 
+Point: <6.622222, 0.000000, 2.711111>
+Zone:  679
+Incident Nodes:  1077  1078  1069  1068  51  52  43  42  
+mat1:  4 
+
+
+S:  globe.silo  timestep 0
+mesh1 
+Point: <6.340380, 0.000000, 2.060110>
+Node:  43
+Incident Zones:  640  659  660  679  740  759  760  779  
+mat1:  
+    (640)  4 
+    (659)  4 
+    (660)  4 
+    (679)  4 
+    (740)  4 
+    (759)  4 
+    (760)  4 
+    (779)  4 
+

@@ -1,0 +1,104 @@
+
+A:  rect2d.silo  timestep 0
+quadmesh2d 
+Point: <0.527778, 0.527778>
+Zone:  465
+Incident Nodes:  480  481  511  512  
+d:  <zonal> = 0.0235702
+
+
+B:  rect2d.silo  timestep 0
+quadmesh2d 
+Point: <0.533333, 0.533333>
+Node:  512
+Incident Zones:  495  465  496  466  
+d:  <zonal> 
+    (495) = 0.0527046
+    (465) = 0.0235702
+    (496) = 0.0707107
+    (466) = 0.0527046
+
+
+C:  rect2d.silo  timestep 0
+quadmesh2d 
+Point: <0.527778, 0.527778>
+Zone:  465
+Incident Nodes:  480  481  511  512  
+
+D:  rect2d.silo  timestep 0
+quadmesh2d 
+Point: <0.533333, 0.533333>
+Node:  512
+Incident Zones:  495  465  496  466  
+
+E:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.715556, 0.500000, 0.822222>
+Zone:  29421
+Incident Nodes:  31145  31146  31176  31177  32416  32417  32447  32448  
+d:  <zonal> = 0.383899
+
+
+F:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.648889, 0.500000, 0.097778>
+Zone:  3019
+Incident Nodes:  3181  3182  3212  3213  4452  4453  4483  4484  
+d:  <zonal> = 0.443021
+
+
+G:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.700000, 0.500000, 0.833333>
+Node:  32416
+Incident Zones:  30620  30590  29390  29420  30621  30591  29391  29421  
+d:  <zonal> 
+    (30620) = 0.395307
+    (30590) = 0.395307
+    (29390) = 0.366122
+    (29420) = 0.366122
+    (30621) = 0.411826
+    (30591) = 0.411826
+    (29391) = 0.383899
+    (29421) = 0.383899
+
+
+H:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.633333, 0.500000, 0.100000>
+Node:  4452
+Incident Zones:  4218  4188  2988  3018  4219  4189  2989  3019  
+d:  <zonal> 
+    (4218) = 0.400889
+    (4188) = 0.400889
+    (2988) = 0.432872
+    (3018) = 0.432872
+    (4219) = 0.411826
+    (4189) = 0.411826
+    (2989) = 0.443021
+    (3019) = 0.443021
+
+
+I:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.715556, 0.500000, 0.822222>
+Zone:  29391
+Incident Nodes:  31114  31115  31145  31146  32385  32386  32416  32417  
+
+J:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.648889, 0.500000, 0.097778>
+Zone:  2989
+Incident Nodes:  3150  3151  3181  3182  4421  4422  4452  4453  
+
+K:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.700000, 0.500000, 0.833333>
+Node:  32416
+Incident Zones:  30620  30590  29390  29420  30621  30591  29391  29421  
+
+L:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.633333, 0.500000, 0.100000>
+Node:  4452
+Incident Zones:  4218  4188  2988  3018  4219  4189  2989  3019  

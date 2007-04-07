@@ -1,0 +1,2 @@
+Pseudocolor:  (ExpressionException)
+viewer: The file "bad_file.silo" does not exist.

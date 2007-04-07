@@ -1,0 +1,6 @@
+ABC_Cycle has 30 states
+activeSource = "localhost:/data_vobs/VisIt/data/dbC00.pdb"
+activeTimeSlider = 0
+timeSliders = ("ABC_Cycle", "ABC_Index", "ABC_Stretch", "ABC_Time", "localhost:/data_vobs/VisIt/data/dbA00.pdb", "localhost:/data_vobs/VisIt/data/dbB00.pdb", "localhost:/data_vobs/VisIt/data/dbC00.pdb")
+timeSliderCurrentStates = (15, 29, 29, 41, 9, 5, 15)
+animationMode = 2

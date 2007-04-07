@@ -1,0 +1,2 @@
+Pseudocolor:  ()
+viewer: The expression failed because The plane has a degenerate normal.

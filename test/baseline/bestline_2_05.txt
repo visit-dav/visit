@@ -1,0 +1,1 @@
+The best fit line is: Y = 1.00005X + 0.000256067 with a correlation coefficient of: 0.962636

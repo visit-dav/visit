@@ -1,0 +1,1235 @@
+#!/bin/sh
+
+# ----------------------------------------------------------------------------
+#       Run the VisIt test suite
+#
+#  Each .py file in the tests directory contains tags indicating the class(es)
+#  of tests the file belongs to. Additionally, each test can be run in one
+#  of several modes. Classes are used to select WHICH tests to run. Modes are
+#  used to decide HOW to run those tests.
+#
+#  CLASSES are identified in two places; in the test .py files
+#  to identify which tests support belong to which classes and on the
+#  command line to run-test to select which classes of tests to run.
+#
+#  MODES is used to control global modes in which tests are performed. The
+#  current list of supported modes is "serial","parallel" and
+#  "scalable". The runtest script accepts a
+#  "-m(odes)" argument which identifies the mode(s) in which tests should be
+#  performed. It is a comma separated list of modes. Note that it does
+#  not make sense to pass a list of modes to runtest with mutually exclusive
+#  modes. For example, it would not make sense to pass "serial,parallel".
+#  To run both modes, runtest would have to be executed twice.
+#
+#  Finally, note that regardless
+#  of the mode of a test, the resultant image SHOULD be identical to its
+#  associated baseline. If we ever add a mode to do testing using hardware
+#  rendering, this may not be the case due to minor differences in how the
+#  hardware and software may render.
+#
+#  CLASSES is simple and arbitrary selection mechanism for selecting classes
+#  of tests to run. Each test identifies in a comment block in the .py file
+#  for the test the classes that it is. Then, the -classes argument to runtest
+#  will find and run only those tests in the specified list of classes. The
+#  initial list of classes is "nightly"
+#
+#  Finally, if you runtest as you always have, it will behave as it always
+#  has. That is, it will execute all tests sequentially with no attempt at
+#  scalable rendering or parallel.
+#
+#  Programmer: Jeremy Meredith
+#  Date:       April 17, 2002
+#
+#  Modifications:
+#    Jeremy Meredith, Thu Jul 18 23:50:04 PDT 2002
+#    Moved tests into categorized subdirectories.  Made successful test
+#    cases output as such without needing the -verbose flag.
+#    Set the display to elysium for now, until full -nowin mode works.
+#
+#    Jeremy Meredith, Fri Jul 19 16:16:15 PDT 2002
+#    Allowed specific files to be passed on the commandline.
+#    Made the main page be links to subpages, one per test file.
+#    Added a return code for small differences.
+#
+#    Jeremy Meredith, Thu Aug 29 15:11:01 PDT 2002
+#    Added copying of log file to html directory.  Reversed order of 
+#    past results.
+#
+#    Jeremy Meredith, Thu Nov 14 13:34:51 PST 2002
+#    Added code to make sure permissions were set up correctly.
+#
+#    Jeremy Meredith, Fri Nov 15 12:54:51 PST 2002
+#    Added a "summary" file.  Allowed running without the PIL library.
+#
+#    Jeremy Meredith, Mon Apr 14 09:57:21 PDT 2003
+#    Propagate -verbose to the CLI.
+#
+#    Jeremy Meredith, Mon Jun  9 17:52:25 PDT 2003
+#    Added "." to the python path.  This lets us pick up modules
+#    from the test directory.
+#
+#    Mark C. Miller, 02Jul03
+#    Added modes and classes functionality. Classes allows you to select
+#    tests by class and modes allows you to select global operating modes.
+#    Initial implementation supports "Scalable_Rendering" and "Parallel"
+#
+#    Jeremy Meredith, Mon Aug 18 15:19:23 PDT 2003
+#    Added timings.
+#
+#    Mark C. Miller, 18Dec03
+#    Removed use of modes as a selection criteria for tests.
+#    Updated documentation in pre-amble to this shell script.
+#
+#    Mark C. Miller, 15Jan04
+#    Modified html output to support multi-mode testing
+#    Added a -skip command line option to specify a list of modes/tests to skip
+#    Added a -limit command line option to specify per-test elapsed time limit
+#
+#    Mark C. Miller, Sat Jan 31 22:58:37 PST 2004
+#    Added -dbg flag for debugging.  Modified 'post' functionality to
+#    do highlighting for previous test history.
+#
+#    Jeremy Meredith, Mon Feb  2 12:40:57 PST 2004
+#    Removed my display from the script.  Nowin mode is fully functional.
+#
+#    Mark C. Miller, Tue Mar  2 17:06:46 PST 2004
+#    Added -i and -e command-line switches
+#
+#    Brad Whitlock, Tue Mar 30 09:37:24 PDT 2004
+#    I added code to finish off the HTML page for a crashed test so we can
+#    see how far it got before crashing. I also changed the HTML generation
+#    here so tests that are skipped don't have links to HTML pages that did
+#    not get generated due to a skipped test.
+#
+#    Mark C. Miller, Tue Mar 30 08:37:26 PST 2004
+#    Added -dump option. Made most variables that represent CL arguments
+#    be string valued and either empty string or specific value
+#
+#    Brad Whitlock, Tue Mar 30 17:13:26 PST 2004
+#    Added -notrackmem option to turn off the nre memory usage tracking
+#    features.
+#
+#    Brad Whitlock, Thu Apr 8 15:56:19 PST 2004
+#    Added better support for deleting a lot of files.
+#
+#    Jeremy Meredith, Wed Apr 28 10:51:54 PDT 2004
+#    Added check to make sure timings existed before trying to use them.
+#
+#    Jeremy Meredith, Thu Aug 12 10:17:57 PDT 2004
+#    Added runtime in seconds to test case output.
+#
+#    Mark C. Miller, Mon Nov 22 17:42:22 PST 2004
+#    Added -nonowin option
+#
+#    Mark C. Miller, Mon Nov 29 18:52:41 PST 2004
+#    Changed how interactive and noPIL options are handled
+#
+#    Hank Childs, Thu Mar  3 09:22:05 PST 2005
+#    Added dynamic load balancing (dlb) mode.
+#
+#    Mark C. Miller, Mon Mar 21 19:01:04 PST 2005
+#    Made message about rebuilding test data conditional on verbose setting
+#
+#    Jeremy Meredith, Fri Apr  1 10:16:28 PST 2005
+#    Made the non-purify post-to-host be sunburn instead of localhost.
+#
+#    Jeremy Meredith, Fri Apr  8 10:49:19 PDT 2005
+#    Added -e to some echo commands.  Apparently this needs to be explicitly
+#    set on linux (i.e. -E is the default) instead of the old behavior we
+#    are used to from the suns.
+#
+#    Mark C. Miller, Thu Apr 21 09:37:41 PDT 2005
+#    Changed much of how purify runs work. Now, purify is dealt with like
+#    other modes. There is no longer a -purify option. Also, eliminated
+#    purify baseline errorcounts and much of the html output for it
+#    Added code to setup for a purify run.
+#
+#    Brad Whitlock, Tue Apr 26 10:54:51 PDT 2005
+#    I changed the test for dlb so it does not get executed when it should
+#    not be executed.
+#
+#    Mark C. Miller, Wed May 11 08:11:27 PDT 2005
+#    Added args for minor/major error threshold. Added "Passed" message
+#    for case when pass has non-zero error but is below threshold
+#
+#    Jeremy Meredith, Tue Jun  7 11:01:24 PDT 2005
+#    Added a "-lessverbose", or "-lv", flag that prints normal status
+#    without all the progress messages.
+#
+#    Hank Childs, Wed Aug 24 16:49:49 PDT 2005
+#    Add support for test specific config files.
+#
+#    Jeremy Meredith, Wed Sep  7 12:05:23 PDT 2005
+#    Enhanced grep for finding runtimes for mode-specific tests.
+#
+#    Mark C. Miller, Mon Jan 23 16:11:59 PST 2006
+#    Made it so gzip'd purify results can be viewed from netscape even
+#    if you don't "post" the results to the website
+#
+#    Mark C. Miller, Wed Aug 16 15:48:21 PDT 2006
+#    Added logic to save off core files to cores dir
+#
+#    Mark C. Miller, Tue Sep  5 12:06:58 PDT 2006
+#    Added code to quiet output from re-makes of data and purify targets
+#    Added copy of runtimes.txt to visit's public_html dir
+#
+#    Mark C. Miller, Mon Nov 20 22:47:10 PST 2006
+#    In regenerating the top-level index.html file, made find commands faster
+#    by maxing the depth at 1 and grep commands faster by stopping after
+#    first match.
+#
+#    Mark C. Miller, Tue Nov 28 23:13:08 PST 2006
+#    Changed CL args for controlling error threshold. Changed text of 
+#    some HTML from "Minor" and "Major" to "Acceptable" and "Unacceptable"
+#    Removed DiffUsingCkSum stuff. Improved logic to use 'diffState' for
+#    indicating state of difference result.
+#
+#    Mark C. Miller, Tue Nov 28 23:50:15 PST 2006
+#    Changed maxdiff to meddiff
+#
+#    Mark C. Miller, Wed Nov 29 08:19:52 PST 2006 
+#    Changed meddiff to avgdiff
+#
+#    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
+#    Added -vargs option to support all CL args that are merely passed onto
+#    visit as opposed to being interpreted here (or in Testing.py). This
+#    resulted in removing -dump, -dbg options. Also added ability for
+#    individual tests to set env. variables.
+#
+#    Mark C. Miller, Mon Mar 19 19:24:02 PDT 2007
+#    Backgrounded the actual VisIt test jobs that get run. Added limitTest 
+#    shell script to limit the amount of time any test runs. Needed to
+#    re-direct output in the main loop in a bit of a funky way.
+#
+#    Mark C. Miller, Tue Mar 20 09:48:03 PDT 2007
+#    Removed re-direction at end of 'for t in $testcases' loop. That was
+#    causing the whole loop to get executed in a subshell. Removed use
+#    of 'kill -9' on the limitTest script (see comment there). Set default
+#    timeout to be 5 minutes (300 seconds). Removed artificially low
+#    120 second time out used to confirm limitTest was working.
+#
+#    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
+#    Removed backgrounding of 'interactive' runs as well as limiting the time
+#    for them to run. Removed setting of PYTHONPATH var to include
+#    /usr/gapps/visit/python+/sunos_57/python2.1
+# ----------------------------------------------------------------------------
+
+cleanTmpFiles () {
+    rm -f *.curve 1>/dev/null 2>&1
+    rm -f *.env 1>/dev/null 2>&1
+    rm -f *.ult 1>/dev/null 2>&1
+    rm -f core* 1>/dev/null 2>&1
+    rm -f *_purify.txt 1>/dev/null 2>&1
+}
+
+#
+#  process command line
+#
+testpyfile="Testing.py"
+opterror=0
+quiet=0
+post=0
+verbose=""
+classes=""
+modes=""
+useDate=""
+doFiltering=0
+width=300
+height=300
+testcases=""
+timeLimit="-timeout 300"
+notrackMem=""
+skipList=""
+exepath="../bin/visit"
+interactive=""
+noPIL=""
+nowin="-nowin"
+dlb=""
+pixdiff="-pixdiff=0"
+avgdiff="-avgdiff=0"
+otherArgs=""
+for options
+do
+   case $1 in
+      "")
+         # handle empty argument
+         ;;
+      -r|-runonly)
+         noPIL="-noPIL"
+         shift
+         ;;
+      -q|-quiet)
+         quiet=1
+         shift
+         ;;
+      -p|-post)
+         post=1
+         shift
+         ;;
+      -v|-verbose)
+	 verbose="-verbose"
+         shift
+         ;;
+      -lv|-lessverbose)
+         verbose=" "
+         shift
+         ;;
+      -w|-width)
+         if test -z "$2"; then
+             echo "Expected an argument for $1"
+             opterror=1
+         else
+             width=$2
+             shift 2
+         fi
+         ;;
+      -h|-height)
+         if test -z "$2"; then
+             echo "Expected an argument for $1"
+             opterror=1
+         else
+             height=$2
+             shift 2
+         fi
+         ;;
+      -m|-modes)
+         if test -z "$2"; then
+             echo "Expected a comma separated list of modes for $1"
+             opterror=1
+         else
+             modes=$2
+             shift 2
+         fi 
+         ;;
+      -c|-classes)
+         if test -z "$2"; then
+             echo "Expected a comma separated list of classes for $1"
+             opterror=1
+	 else
+	     doFiltering=1
+             classes=$2
+             shift 2
+	 fi 
+         ;;
+      -l|-limit)
+         if test -z "$2"; then
+             echo "Expected an argument for $1"
+             opterror=1
+	 else
+	     timeLimit="-timeout $2"
+             shift 2
+	 fi
+	 ;;
+      -d|-date)
+         if test -z "$2"; then
+             echo "Expected a date string for $1"
+             opterror=1
+	 else
+	     useDate=$2
+             shift 2
+	 fi
+	 ;;
+      -s|-skip)
+         if test -z "$2"; then
+             echo "Expected a quoted string of tests to skip for $1"
+             opterror=1
+	 else
+	     skipList=$2
+             shift 2
+	 fi
+	 ;;
+      -e|-executable)
+         if test -z "$2"; then
+             echo "Expected a quoted string of path to executable for $1"
+             opterror=1
+	 else
+	     exepath=$2
+             shift 2
+	 fi
+	 ;;
+      -i|-interactive)
+         interactive="-interactive"
+         shift
+         ;;
+      -pixdiff)
+         if test -z "$2"; then
+             echo "Expected an argument for $1"
+             opterror=1
+	 else
+	     pixdiff="-pixdiff=$2"
+             shift 2
+	 fi
+	 ;;
+      -avgdiff)
+         if test -z "$2"; then
+             echo "Expected an argument for $1"
+             opterror=1
+	 else
+	     avgdiff="-avgdiff=$2"
+             shift 2
+	 fi
+	 ;;
+      -notrackmem)
+         notrackMem="-notrackmem"
+	 shift
+	 ;;
+      -nonowin)
+         nowin=""
+	 shift
+	 ;;
+      -help)
+         opterror=1
+         shift
+         ;;
+      -vargs)
+         if test -z "$2"; then
+             echo "Expected quoted string of args for $1"
+             opterror=1
+	 else
+             otherArgs=$2
+             shift 2
+	 fi
+	 ;;
+      -*)
+         echo "Unknown option $1"
+         opterror=1
+         shift
+         ;;
+      *)
+         testcases="$testcases $1"
+         shift
+         ;;
+   esac
+done
+
+if test "$opterror" = "1"; then
+    echo "Usage:  $0 <options> [testcases]"
+    echo "Available options:"
+    echo "        -help                        display this help message"
+    echo "        -r  | -runonly                no image differencing (no PIL)"
+    echo "        -p  | -post                   post results to web"
+    echo "        -q  | -quiet                  no text output at all"
+    echo "        -lv | -lessverbose            extra text output without the progress messages"
+    echo "        -v  | -verbose                extra text output"
+    echo "        -w  | -width     <width>      set image width"
+    echo "        -h  | -height    <height>     set image height"
+    echo "        -m  | -modes     <mode>       specify mode in which to run tests"
+    echo "                                      [choose from 'parallel','serial','scalable','dlb',"
+    echo "                                       'hdf5','purify', and combinations such as 'scalable,parallel']"
+    echo "        -c  | -classes   <class1>,... list of classes"
+    echo "                                      [choose from 'nightly']"
+    echo "        -d  | -date <YYYY-MM-DD-XMHHMM> set date to use for dir copies for post"
+    echo "                                      (requires -p too)"
+    echo "        -l  | -limit     <seconds>    set maximum elapsed run-time for each test"
+    echo "        -s  | -skip      <seconds>    specify space separated list of <mode:path-to-test>"
+    echo "                                      test cases to skip"
+    echo "        -e  | -executable             specify executable version of visit to run" 
+    echo "                                      For example, use \"-e '/usr/gapps/visit/bin/visit -v 1.2.7'\"" 
+    echo "        -i  | -interactive            don't redirect test .py file into visit. Just bring"
+    echo "                                      up CLI and let user Source() the .py file explicitly." 
+    echo "        -pixdiff                      Allowed % of pixels different [default = 0%]" 
+    echo "        -avgdiff                      If pixdiff exceeded, allowed mean grayscale diff [default = 0]" 
+    echo "        -notrackmem                  Turn off memory usage tracking while tests run." 
+    echo "        -nonowin                     Don't put '-nowin' on the command lines to visit." 
+    echo "        -vargs                       Arguments to pass directly to VisIt (surround them \" or ')"
+    exit 1
+fi
+
+#
+# its an error to specify -d option without also -p
+#
+if test -n "$useDate" && test $post -eq 0; then
+   echo "-d option valid only with -p option"
+   exit 1
+fi
+
+#
+# set default mode if none specified
+#
+if test -z "$modes"; then
+   modes="serial"
+elif test -n "`echo $modes | grep dlb`"; then
+   dlb="-allowdynamic"
+fi
+
+#
+# Set the flag if this involves a purify run
+#
+purify=0
+if test -n "`echo $modes | grep purify`"; then
+   purify=1
+fi
+
+#
+# set default class if none specified
+#
+if [ -z "$classes" ]; then
+   classes="nightly"
+fi
+
+#
+# build list of tests cases based upon desired classes
+#
+if test -z "$testcases"; then
+    candidateTests=tests/*/*.py
+    grepClasses=`echo $classes | sed -e 's/,/|/g'`
+    for test in $candidateTests; do
+       hasClass=`grep '^#  CLASSES: ' $test | egrep -e \($grepClasses\)`
+       if test -n "$hasClass"; then
+	  testcases="$testcases $test"
+       fi
+    done
+fi
+
+#
+# if class filtering is being used, list the tests that will run
+#
+if test $doFiltering -eq 1; then
+    echo "Will run the following tests..."
+    for t in $testcases; do
+	echo "    $t"
+    done
+fi
+
+#
+# if we're interactive or running in NON-nowin mode,
+# the window will have window-manager
+# decorations. So, adjust for that here
+#
+if test "$interactive" = "-interactive" -o "$nowin" = ""; then
+    width=`expr $width + 12`
+    height=`expr $height + 28`
+fi
+
+geometry="$width""x""$height+32+32"
+curdate=`date +%Y-%m-%d-%p%I%M`
+
+#
+#  set up python environment
+#
+export PYTHONPATH
+export LD_LIBRARY_PATH
+PYTHONPATH=.
+LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+
+#
+#  create data files if needed
+#
+if test ! -f ../data/globe.silo; then
+    if test -z "`echo $modes | grep hdf5`"; then
+        if test $quiet -eq 0; then
+            echo ""
+            echo "Rebuilding test data (PDB format) based on the fact that ../data/globe.silo doesn't exist."
+            echo ""
+	fi
+        (cd ../data && make test 1>/dev/null 2>&1)
+    else
+        if test $quiet -eq 0; then
+            echo ""
+            echo "Rebuilding test data (HDF5 format) based on the fact that ../data/globe.silo doesn't exist."
+            echo ""
+	fi
+        (cd ../data && make testh5 1>/dev/null 2>&1)
+    fi
+else
+    if test -z "`echo $modes | grep hdf5`"; then
+        if test -z "`head -n 1 ../data/globe.silo | grep PDB`"; then
+            if test $quiet -eq 0; then
+                echo ""
+                echo "Rebuilding test data (PDB format) based on the fact that ../data/globe.silo is wrong format."
+                echo ""
+	    fi
+            (cd ../data && make test 1>/dev/null 2>&1)
+	fi
+    else
+        if test -z "`head -n 1 ../data/globe.silo | grep HDF`"; then
+            if test $quiet -eq 0; then
+                echo ""
+                echo "Rebuilding test data (HDF5 format) based on the fact that ../data/globe.silo is wrong format."
+                echo ""
+	    fi
+            (cd ../data && make testh5 1>/dev/null 2>&1)
+	fi
+    fi
+fi
+if test $? -ne 0 && test $quiet -eq 0; then
+    echo "***************************"
+    echo "***************************"
+    echo "***************************"
+    echo "Rebuilding test data failed"
+    echo "***************************"
+    echo "***************************"
+    echo "***************************"
+    exit 1
+fi
+
+#
+# Do some initial work for a purify run
+#
+if test $purify -eq 1; then
+
+    #
+    # Setup purify environment 
+    #
+    if test -e /usr/local/rational/purifyplus_setup.sh; then
+        source /usr/local/rational/purifyplus_setup.sh
+#	if test $? -ne 0; then
+#	    echo "Error sourcing /usr/local/rational/purifyplus_setup.sh"
+#	    exit 1
+#	fi
+    else
+        echo "Unable to source requisite purify setup"
+        exit 1
+    fi
+
+    #
+    # Check for tell-tale signs that purify won't work 
+    #
+    if test -n "`uname -r | grep ELsmp`" && test -z "`which purify | grep FixPack`"; then
+       echo "You do not appear to have Purify configured correctly for Enterprise Linux"
+       echo "'FixPack' is not in the pathname returned by 'which purify'"
+       exit 1
+    fi
+    if test -z "`strings ../engine/main/Engine.o | grep DEBUG_MEMORY_LEAKS`" && test $quiet -eq 0; then
+        echo "#################################################################"
+        echo "#################################################################"
+        echo "I will re-build engine with -DDEBUG_MEMORY_LEAKS for a purify run"
+        echo "#################################################################"
+        echo "#################################################################"
+    fi
+    if test -n "$verbose"; then
+        if test -z "`grep ^CXXFLAGS ../include/make-variables | grep ' -g'`" && test $quiet -eq 0; then
+            echo "#########################################################"
+            echo "#########################################################"
+	    echo "Warning: Purify results aren't very useful without having"
+	    echo "compiled with debugging (-g) turned on"
+            echo "#########################################################"
+            echo "#########################################################"
+        fi
+        if test -z "`grep ^CXXFLAGS ../include/make-variables | grep ' -DDEBUG_MEMORY_LEAKS'`" && test $quiet -eq 0; then
+            echo "#########################################################"
+            echo "#########################################################"
+	    echo "Warning: You should really re-configure and re-build with" 
+	    echo "CXXFLAGS='-g -DDEBUG_MEMORY_LEAKS'"
+            echo "#########################################################"
+            echo "#########################################################"
+        fi
+    fi
+
+    #
+    # Run 'make purify' for selected components
+    #
+    #compNames="engine/main viewer/main mdserver/main visitpy"
+    compNames="engine/main mdserver/main"
+    #compNames="engine/main viewer/main mdserver/main"
+    for comp in $compNames; do
+        numCXXFLAGSLines=`grep ^CXXFLAGS= ../$comp/Makefile | wc -l`
+        lastCXXFLAGSLine=`grep ^CXXFLAGS= ../$comp/Makefile | paste -s | cut -f $numCXXFLAGSLines`
+        lastCXXFLAGS=`echo $lastCXXFLAGSLine | cut -d'=' -f 2`
+        newCXXFLAGS=
+        if test $comp = "engine/main"; then
+            newCXXFLAGS="-g -DDEBUG_MEMORY_LEAKS"
+        else
+            newCXXFLAGS="-g"
+        fi
+        for flag in $lastCXXFLAGS; do
+            if test ! $flag = "-g"; then
+                newCXXFLAGS="$newCXXFLAGS $flag"
+            fi
+        done
+        (cd ../$comp ; env LD_LIBRARY_PATH=/data_vobs/VisIt/lib CXXFLAGS="$newCXXFLAGS" clearmake -e purify 1>/dev/null 2>&1)
+    done
+fi
+
+#
+#  clear output from old runs, and start the log and index.html files
+#  note: zsh will balk and fail to execute rm command if any *.blah-blah
+#  in the arg list matches nothing.
+#
+cleanTmpFiles
+rm -f log summary 1>/dev/null 2>&1
+rm -f *.log 1>/dev/null 2>&1
+rm -f *.timings 1>/dev/null 2>&1
+find html    -type f | xargs -n 100 rm -f
+find current -type f | xargs -n 100 rm -f
+find diff    -type f | xargs -n 100 rm -f
+
+touch log summary
+touch html/index.html
+now=`date`
+
+echo "<html><head><title>VisIt Regression Results ( $modes ) - $now</title></head>" >> html/index.html
+echo "<body bgcolor=\"#a0a0f0\">"                                    >> html/index.html
+echo "<H1>Results of VisIt Regression Test ( $modes ) - $now</H1>"   >> html/index.html
+echo "<table border>"                                                >> html/index.html
+echo " <tr>"                                                         >> html/index.html
+echo "  <td><b><i>Category</b></i></td>"                             >> html/index.html
+echo "  <td><b><i>Test File</b></i></td>"                            >> html/index.html
+echo "  <td><b><i>Status</b></i></td>"                               >> html/index.html
+echo "  <td><b><i>Runtime (sec)</b></i></td>"                        >> html/index.html
+if test $purify -eq 1; then
+    echo "  <td><b><i>Purify Summary</b></i></td>"                        >> html/index.html
+fi
+echo " </tr>"                                                        >> html/index.html
+echo ""                                                              >> html/index.html
+
+#
+#  loop over all tests, running them
+#
+anyerror=0
+skippedATest=0
+
+prevcategory=""
+for t in $testcases; do
+    dir=`dirname $t`
+    category=`basename $dir`
+    name=`basename $t`
+    runtime=infinite
+    base=`echo $name | cut -d. -f1`
+    limitSeconds=`echo $timeLimt | cut -d' ' -f2`
+
+    export VISIT_TEST_CATEGORY
+    export VISIT_TEST_NAME
+    export VISIT_TEST_MODES
+    export VISIT_TEST_INTERACTIVE
+    VISIT_TEST_CATEGORY=$category
+    VISIT_TEST_NAME=$name
+    VISIT_TEST_MODES=$modes
+
+    # check if this test is in the current skip list
+    skipIt=false
+    for skipTest in $skipList; do
+	skipMode=`echo $skipTest | cut -d':' -f1`
+	skipFile=`echo $skipTest | cut -d':' -f2`
+	if test "$modes" = "$skipMode" && test "$t" = "$skipFile"; then
+	   skipIt=true;
+	   break;
+	fi
+    done
+
+    # handle specialized env. for this test
+    rm -f $name.env
+    cat $t | grep '^# *ENV:' | cut -d':' -f2 > $name.env
+
+    purifyoptions=""
+    if test $purify -eq 1; then
+       purifyoptions="-chain-length=64 -output-limit=0 -log-file=./%v_%p_purify.txt -add-suppression-files=\"./approved_suppressions ./known_suppressions\""
+       rm -f *_purify.txt 2>/dev/null
+    fi
+
+    configoptions="-noconfig"
+    if test -f $dir/$base.config; then
+        configoptions="-config $PWD/$dir/$base.config"
+    fi
+
+    # run the test or skip it depending on 'skipIt'
+    if test "$skipIt" = "true"; then
+	skippedATest=1
+	runtime=skipped
+        if test -n "$verbose"; then
+            echo "WARNING: test $t is in the skipList. It is being skipped"
+	fi
+	# indicate the test was skipped
+	error=116
+    else
+        testProcId=0
+	starttime=`date +%s`
+        if test "$interactive" = "-interactive"; then
+            env PURIFYOPTIONS="$purifyoptions" `cat $name.env` $exepath $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile
+	else
+            if test -n "$verbose"; then
+                env PURIFYOPTIONS="$purifyoptions" `cat $name.env` $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t &
+	        testProcId=$!
+	    else
+                env PURIFYOPTIONS="$purifyoptions" `cat $name.env` $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t 2> /dev/null &
+	        testProcId=$!
+            fi
+        fi
+	limitProcId=0
+	if test $testProcId -ne 0; then
+ 	    ./limitTest $limitSeconds 15 $testProcId &
+	    limitProcId=$!
+	fi
+	wait $testProcId 1>/dev/null 2>&1
+        error=$?
+	if test $error -eq 137; then
+	    error=118
+	fi
+	#
+	# This kill command introduces some problems and is NOT
+	# really necessary. limitTest will automatically exit
+	# if the process it is watching completes. The kill
+	# command itself results in an error message getting 
+	# sent to stderr and there appears to be no way to
+	# get rid of it, except by re-directing output of this
+	# whole 'for t in $testcases' loop. However, that causes
+	# the loop to get executed in a subshell and so is bad
+	# for other reasons.
+	# if test $limitProcId -ne 0; then
+	#     kill -9 $limitProcId 1>/dev/null 2>&1
+	# fi
+	endtime=`date +%s`
+	runtime=`expr $endtime - $starttime`
+    fi
+
+    # Make the timings
+    touch html/${category}_${base}_timings.html
+    echo "<html><head><title>Timings for $category/$name</title>" >> html/${category}_${base}_timings.html
+    echo "<body bgcolor=\"#a0a0f0\"><h1>Timings for $category/$name</h1>" >> html/${category}_${base}_timings.html
+    timingsFiles=`ls *.timings 2>/dev/null`
+    if test -n "$timingsFiles"; then
+        for timing in *.timings; do
+            echo "<p><a href=\"${category}_${base}_${timing}\">$timing</a></p>" >> html/${category}_${base}_timings.html
+            mv $timing html/${category}_${base}_${timing}
+        done
+    fi
+    echo "</body></html>" >> html/${category}_${base}_timings.html
+
+    if test "$prevcategory" != "$category"; then
+        echo " <tr><td><i>$category</></i></td></tr>" >> html/index.html
+	echo "" >> summary
+	echo "--- category $category ---" >> summary
+    fi
+    prevcategory=$category
+
+    echo " <tr>" >> html/index.html
+    echo "  <td></td>" >> html/index.html
+    if test "$error" = "116"; then
+        # The test was skipped. Don't make a link
+        echo "  <td align=center>$name</td>" >> html/index.html
+    else
+        echo "  <td align=center><a href=${category}_${base}.html>$name</a></td>" >> html/index.html
+    fi
+
+    #
+    # See if any core files were produced. If so, set error appropriately
+    # (error is return result from viewer and other components may have cored)
+    # Move core files to core dir.
+    #
+    if test -d cores; then
+        coreFileNames=`ls -1d *core* | grep -v -x cores`
+        if test "$coreFileNames" != ""; then
+	    modesnm="`echo $modes | sed s/,/_/`"
+	    unki=0
+	    for fname in $coreFileNames; do
+	        fileType=`file $fname | cut -d':' -f2 | grep core`
+	        if test "$fileType" != ""; then
+                    error=1 
+	            coreName=`echo $fileType | cut -d',' -f4 | cut -d' ' -f3 | sed s/\'//g`
+		    cp ../exe/$coreName cores/.
+	            mv $fname cores/core.${coreName}_${category}_${base}_${modesnm}
+	        else
+	            mv $fname cores/${fname}.unknown.${unki}
+		    unki=`expr $unki + 1`
+	        fi
+	    done
+        fi
+    fi
+
+    #
+    # Do something with the error result:
+    # When we start running purify tests in the vob where baseline images are
+    # accessible, then we can remove the if conditionals here that are for
+    # purify. Currently, the coloring of test results is obscuring the data
+    # we're really after, which is purify errors
+    #
+    if test $purify -eq 1 && test "$error" = "111"; then
+	echo -e "    $name:\tcompleted" >> summary
+        echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Purify completed test file: $t"
+        fi
+    elif test $purify -eq 1 && test "$error" = "112"; then
+	echo -e "    $name:\tcompleted" >> summary
+        echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Purify completed test file: $t"
+        fi
+    elif test $purify -eq 1 && test "$error" = "113"; then
+	echo -e "    $name:\tcompleted" >> summary
+        echo -e "  <td align=center bgcolor=\"#ffcccc\"><b><i>Purify Run</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Purify completed test file: $t"
+        fi
+    elif test "$error" = "111"; then
+	echo -e "    $name:\tsucceeded" >> summary
+        echo -e "  <td align=center bgcolor=\"#00ff00\"><b><i>Succeeded</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Passed with zero differences in test file: $t"
+        fi
+    elif test "$error" = "112"; then
+	echo -e "    $name:\tsucceeded, acceptable differences" >> summary
+        anyerror=1
+        echo -e "  <td align=center bgcolor=\"#00ff00\"><b><i>Acceptable</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Acceptable differences found in test file: $t"
+        fi
+    elif test "$error" = "113"; then
+	echo -e "    $name:\tfailed, unacceptable differences" >> summary
+        anyerror=1
+        echo -e "  <td align=center bgcolor=\"#ff8f00\"><b><i>Unacceptable</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Unacceptable differences found in test file: $t"
+        fi
+    elif test "$error" = "114"; then
+	echo -e "    $name:\tunknown result; no PIL" >> summary
+        anyerror=1
+        echo -e "  <td align=center bgcolor=\"#ffffff\"><b><i>Unknown</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Unknown if any differences found in test file: $t"
+        fi
+    elif test "$error" = "115"; then
+        echo -e "    $name:\tkilled after $timeLimit seconds" >> summary
+        anyerror=1
+        echo -e "  <td align=center bgcolor=\"#880000\"><b><i>Killed</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Killed after $timeLimit seconds when running test file: $t"
+        fi
+    elif test "$error" = "116"; then
+        echo -e "    $name:\tskipped" >> summary
+        #anyerror=1 we don't indicate a skip as an error
+        echo -e "  <td align=center bgcolor=\"#0000ff\"><b><i>Skipped</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Skipped test file: $t"
+        fi
+    elif test "$error" = "118"; then
+        echo -e "    $name:\tkilled after $limitSeconds seconds" >> summary
+        anyerror=1
+        echo -e "  <td align=center bgcolor=\"#880000\"><b><i>Killed</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Killed after $limitSeconds seconds when running test file: $t"
+        fi
+    else
+	echo -e "    $name:\tfailed, VisIt crashed" >> summary
+        anyerror=1
+        echo -e "  <td align=center bgcolor=\"#ff0000\"><b><i>Failed - VisIt Crashed</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Crash when running test file: $t"
+        fi
+        # Since VisIt crashed, the test page must not have been completed. Complete it here.
+        echo -e " <tr><td colspan=6 align=center bgcolor=\"#ff0000\"><font color=\"#ffffff\"><b>Test crashed!</b></font></td></tr></table></body></html>" >> html/${category}_${base}.html
+    fi
+
+    #
+    # Examine runtime and see if it exceeded a threshold relative to baseline
+    #
+    if test "$runtime" != "skipped" && test -e baseline/runtimes.txt; then
+	baseruntime=`egrep "^$modes:tests/$category/$name" "baseline/runtimes.txt" | grep -v skipped$ | cut -d' ' -f2`
+	if test -n "$baseruntime" && test $baseruntime -gt 0; then
+	    rtdiff=`expr $baseruntime - $runtime`
+	    prtdiff=`expr 100 \* $rtdiff / $baseruntime`
+	    if test $prtdiff -lt -50; then
+                echo "<td bgcolor=\"#ff0000\">$runtime</td>" >> html/index.html
+	    elif test $prtdiff -gt 50; then
+                echo "<td bgcolor=\"#00ff00\">$runtime</td>" >> html/index.html
+	    else
+                echo "<td>$runtime</td>" >> html/index.html
+	    fi
+	else
+            echo "<td>$runtime</td>" >> html/index.html
+	fi
+    else
+        echo "<td>$runtime</td>" >> html/index.html
+    fi
+    echo "$modes:tests/$category/$name $runtime" >> current/runtimes.txt
+
+    #
+    #
+    # digest purify output, generate html and compute diffs with baseline counts
+    #
+    #
+    if test $purify -eq 1; then
+
+       echo "<td><table border>" >> html/index.html
+
+       errorCodes="ABR ABW BRK BSR BSW FMM FMR FMW FNH FUM MSE PAR PMR SBR SBW UMR SOF"
+       leakCodes="MLK PLK"
+
+       purifyfiles=`ls *_purify.txt 2>/dev/null`
+       for purefile in $purifyfiles; do
+
+	  #
+	  # wait until we're sure purify is done producing this file
+	  # or until we've waited 5 minutes and file size has not changed 
+	  #
+	  doneWaitingForPurify=0
+	  numWaitsForPurify=0
+	  purefileSize=`stat -t $purefile | cut -d' ' -f2`
+	  while test $doneWaitingForPurify -eq 0 && test $numWaitsForPurify -lt 360; do
+	      if test -n "`grep 'Program exited with status' $purefile`"; then
+	          doneWaitingForPurify=1
+	      elif test -n "`grep 'Purify output truncated after' $purefile`"; then
+	          doneWaitingForPurify=1
+	      else
+	          newpurefileSize=`stat -t $purefile | cut -d' ' -f2`
+	          if test $newpurefileSize -le $purefileSize; then
+	             numWaitsForPurify=`expr $numWaitsForPurify + 1`
+	          else
+	             numWaitsForPurify=0
+		     purefileSize=$newpurefileSize
+	          fi
+	      fi
+              if test -n "$verbose"; then
+	          echo "$numWaitsForPurify: Waiting for Purify to finish writing \"$purefile\" [$purefileSize bytes]"
+	      fi
+	      sleep 1
+	  done
+
+          progname=`echo $purefile | cut -d'_' -f1`
+	  purifyoutfile=${category}_${base}_${progname}_purify.txt
+	  mv $purefile current/$purifyoutfile
+
+	  echo "<tr>" >> html/index.html
+          tmpcurdate=$curdate
+	  modesdir=""
+          if test -n "$useDate"; then
+              tmpcurdate=$useDate
+              modesdir="`echo $modes | sed s/,/_/`/"
+          fi
+	  if test $numWaitsForPurify -ge 360; then
+	      if test "$post" = "1"; then
+                  echo "<td bgcolor=\"#ff0000\"><a href=file:/home/visit/public_html/${tmpcurdate}/${modesdir}${category}_${base}_${progname}_purify.txt.gz>$progname (DNF)</a></td>" >> html/index.html
+	      else
+	          currentwd=`pwd`
+                  echo "<td bgcolor=\"#ff0000\"><a href=file:${currentwd}/html/${category}_${base}_${progname}_purify.txt.gz>$progname (DNF)</a></td>" >> html/index.html
+	      fi
+	  else
+	      if test "$post" = "1"; then
+                  echo "<td><a href=file:/home/visit/public_html/${tmpcurdate}/${modesdir}${category}_${base}_${progname}_purify.txt.gz>$progname</a></td>" >> html/index.html
+	      else
+	          currentwd=`pwd`
+                  echo "<td bgcolor=\"#ff0000\"><a href=file:${currentwd}/html/${category}_${base}_${progname}_purify.txt.gz>$progname (DNF)</a></td>" >> html/index.html
+	      fi
+	  fi
+
+	  #
+          # scan purify file for errors and leaks 
+	  #
+	  hadPurifyErrors=0
+          for code in $errorCodes; do
+	      curcount=`grep ^$code current/$purifyoutfile | wc -l`
+	      if test $curcount -gt 0; then
+		 echo "      <td bgcolor=\"#ff0000\">${code}:${curcount}</td>" >> html/index.html 
+		 hadPurifyErrors=1
+	      fi
+          done
+          for code in $leakCodes; do
+	      curcount=`grep ^$code current/$purifyoutfile | wc -l`
+	      counts=`grep ^$code current/$purifyoutfile | cut -d' ' -f1,2 | sed s/$code:/+/`
+	      curtot=`expr 0 $counts`
+	      if test $curtot -gt 0; then
+		 echo "      <td bgcolor=\"#ff0000\">${code}:${curtot}</td>" >> html/index.html 
+		 hadPurifyErrors=1
+	      fi
+          done
+
+	  # copy this purify data to the html directory
+	  if test $hadPurifyErrors -ne 0; then
+	      gzip -f current/$purifyoutfile
+	      cp current/${purifyoutfile}.gz html/.
+	      anyerror=1
+	      # hack to add the word 'Failed' to purify results so that code
+	      # below will report it correctly when re-building the top-level html
+	      echo "<!-- This Purify Test Failed -->" >> html/index.html
+	  elif test "`grep suppress known_suppressions | wc -l`" -eq 0; then
+	      # fake runtest script into thinking we've skipped a
+	      # test so that it reports PASSED w/SKIPS instead of PASSED
+	      skippedATest=1
+	  fi
+
+	  echo "</tr>" >> html/index.html
+
+       done # if test $purify -eq 1; then
+
+       echo "</table></td>" >> html/index.html
+
+    fi
+
+    echo " </tr>" >> html/index.html
+
+#
+# The redirection and grep after 'done' here is required to
+# silence the output generated by the 'kill -9 $limitTestPid'
+# way way above this point. However, it was discovered that
+# the redirection construct causes the for loop to get executed
+# in a subshell and is NOT the desired behavior.
+#
+#done 2>&1 | grep -v Killed
+done
+
+#
+#  report the end result
+#
+if test "$quiet" = "0"; then
+    if test "$anyerror" = "1"; then
+        echo ""
+        echo "Log file:"
+        echo "---------"
+        cat log
+    else
+        echo "No errors reported.  Congratulations!"
+    fi
+fi
+
+#
+#  close the index.html file
+#
+echo "</table>"   >> html/index.html
+echo "</html>"    >> html/index.html
+
+#
+#  copy the files to the visit public html directory
+#
+if test "$post" = "1"; then
+    scpverbose=""
+    if test "$verbose" = ""; then
+        scpverbose="-q"
+    fi
+
+    # override curdate if -d option specified
+    modesdir=`echo $modes | sed s/,/_/`
+    if test -n "$useDate"; then
+       curdate=$useDate
+    fi
+
+    # make the new root index.html
+    rm -f index.html
+    echo "<html><head><title>VisIt Regression Results</title></head><body bgcolor=\"#a0a0f0\">" > index.html
+    echo "<H1>Results of VisIt Regression Tests</H1>" >> index.html
+    echo "<H2>Current Results</H2>" >> index.html
+    echo "<table border>" >> index.html
+    echo "<tr>" >> index.html
+    echo "   <td><b>Mode</b></td>" >> index.html
+    echo "   <td><b>Result</b></td>" >> index.html
+    echo "   <td><b>Timestamp</b></td>" >> index.html
+    echo "</tr>" >> index.html
+
+    # copy any existing lines for current loop of test modes
+    # from old root index.html new root index.html
+    curdatebase=`echo $curdate | cut -d'-' -f1-3`
+    has_prev_results=`grep "^<tr><td align=center><b><a href=\"$curdatebase" /home/visit/public_html/index.html 2> /dev/null`
+    grep "^<tr><td align=center><b><a href=\"$curdatebase" /home/visit/public_html/index.html >> index.html
+
+    # tack on line for current run's results
+    if test "$anyerror" = "1"; then
+	echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#ff0000"><b>FAILED</b></td><td align=center><i>$now</i></td></tr>" >> index.html
+    else
+        if test "$skippedATest" = "0"; then
+	    echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#00ff00"><b>PASSED</b></td><td align=center><i>$now</i></td></tr>" >> index.html
+	else
+	    echo "<tr><td align=center><b><a href=\"$curdate/$modesdir\">$modes</a></b></td><td align=center bgcolor="#0000ff"><b>PASSED w/SKIPS</b></td><td align=center><i>$now</i></td></tr>" >> index.html
+	fi
+    fi
+
+    echo "</table>" >> index.html
+    echo "<H2>Past Results</H2>" >> index.html
+    
+    # tack on all previous test results
+    prevtests=`ls -1td /home/visit/public_html/*-*-*-* 2> /dev/null`
+    if test "$prevtests" = ""; then
+        echo "None" >> index.html
+    else
+        echo "<table border>" >> index.html
+        echo "<tr>" >> index.html
+        echo "   <td><b>Timestamp</b></td>" >> index.html
+        echo "   <td align=center colspan=3><b>Modes</b></td>" >> index.html
+        echo "</tr>" >> index.html
+        for d in $prevtests; do
+            dir=`basename $d`
+
+            # skip this dir if its the one we're in the middle of populating
+            if test "$dir" = "$curdate"; then
+                continue
+            fi
+
+	    if test -f $d/index.html; then
+                # if its an old style test dir, assume serial
+		oldMode=`grep -m 1 'Results of VisIt Regression Test' $d/index.html | cut -d'(' -f2 | cut -d')' -f1`
+		if test -z "$oldMode"; then
+		    oldMode="serial"
+		fi
+		hasFailed=`grep -m 1 Failed $d/index.html`
+		if test "$hasFailed" = ""; then
+		    hasFailed=`grep -m 1 Unacceptable $d/index.html`
+		fi
+		if test "$hasFailed" = ""; then
+                    echo "<tr><td>$dir</td><td bgcolor="#00ff00"><b><a href=\"$dir\">$oldMode</a></b></td></tr>" >> index.html
+		else
+                    echo "<tr><td>$dir</td><td bgcolor="#ff0000"><b><a href=\"$dir\">$oldMode</a></b></td></tr>" >> index.html
+		fi
+	    else
+                # create a link for each mode that was tested
+	        modedirs=`find $d -type d -maxdepth 1 -print`
+	        if test ! "$modedirs" = "$d"; then
+		    echo "<tr>" >> index.html
+		    echo "<td>$dir</td>" >> index.html
+		    for mdir in $modedirs; do
+			bmdir=`basename $mdir`
+			if test "$bmdir" = "$dir"; then
+			    continue
+			fi
+		        hasFailed=`grep -m 1 Failed /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+		        if test "$hasFailed" = ""; then
+		            hasFailed=`grep -m 1 Unacceptable /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+		        fi
+		        hasSkips=`grep -m 1 Skipped /home/visit/public_html/$dir/$bmdir/index.html 2>/dev/null`
+		        if test "$hasFailed" = ""; then
+			    if test "$hasSkips" = ""; then
+                                echo "<td bgcolor="#00ff00"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
+			    else
+                                echo "<td bgcolor="#0000ff"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
+			    fi
+			else
+                            echo "<td bgcolor="#ff0000"><b><a href=\"$dir/$bmdir\">$bmdir</a></b></td>" >> index.html
+			fi
+		    done
+		    echo "</tr>" >> index.html
+	        fi
+	    fi
+        done
+        echo "</table>" >> index.html
+    fi
+    echo "</html>" >> index.html
+
+    # Hack for purify runs
+    postToHost="sunburn"
+    if test $purify -eq 1; then
+        postToHost="sunburn"
+	rm -f html/*.jpg
+    fi
+
+    ssh visit@${postToHost} -x "rm -f public_html/index.html"
+    scp $scpverbose index.html visit@${postToHost}:public_html
+
+    # only attempt to remove a pre-existing dir for $curdate if we don't
+    # already have results in it referenced from root index.html 
+    if test -z "$has_prev_results"; then
+        ssh visit@${postToHost} -x "rm -rf public_html/$curdate"
+    fi
+
+    if test ! -d /home/visit/public_html/$curdate; then
+        ssh visit@${postToHost} -x "mkdir public_html/$curdate"
+    fi
+    ssh visit@${postToHost} -x "rm -f public_html/current"
+    ssh visit@${postToHost} -x "ln -s /home/visit/public_html/$curdate public_html/current"
+    scp -r $scpverbose html  visit@${postToHost}:public_html/$curdate/$modesdir
+    if test "`ls cores`" != ""; then
+        scp -r $scpverbose cores visit@${postToHost}:public_html/$curdate/$modesdir/.
+    fi
+    scp $scpverbose log     visit@${postToHost}:public_html/$curdate/$modesdir
+    scp $scpverbose summary visit@${postToHost}:public_html/$curdate/$modesdir
+    scp $scpverbose current/runtimes.txt visit@${postToHost}:public_html/$curdate/$modesdir
+    ssh visit@${postToHost} -x "chmod go+rX public_html/index.html"
+    ssh visit@${postToHost} -x "chmod -R go+rX public_html/$curdate"
+
+fi
+
+#
+# Cleanup temporary files
+#
+cleanTmpFiles
+
+#
+#  exit with the right exit status
+#
+exit $anyerror

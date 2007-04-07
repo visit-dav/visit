@@ -1,0 +1,10 @@
+
+A:  ucd3d.silo  timestep 0
+ucdmesh3d 
+Point: <-3.500000, 0.010000, 10.100000>
+Zone:  1097
+Incident Nodes:  1383  1377  1503  1509  1382  1376  1502  1508  
+mat1:  
+    1 = 0.5
+    4 = 0.5
+
