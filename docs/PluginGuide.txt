@@ -1,0 +1,188 @@
+This is a simple text file for recording various bits of information
+that ought to be included in the Plugin Developers Guide when it is
+written. No effort has been made to organization this information.
+It is merely a place to record items for later use.
+
+
+VisIt guarentees parallel, collective calling semantics to only a 
+few of the methods in the plugin interface. These are...
+   the plugin's constructor
+   the plugin's destructor
+   PopulateDatabaseMetaData
+   ActivateTimestep
+   <is this list complete>
+Collective parallel communication calls can be safely made within
+these routines and ONLY these routines.
+
+
+The plugin developer should be weary of the fact that the database
+plugin code is not called only by the VisIt engine. It is called
+by the MDserver and sometimes the GUI. For these reasons, the
+developer should take care not to embed costly work that ONLY the
+engine needs to do in methods that other components may call.
+An example is doing more work than the bare minimum necessary to
+satisfy a PopulateDatabaseMetaData call. The MDserver will call
+this method. However, if there is any work done in addition to
+that necessary to satisfy the query, the MDserver is then doing
+useless work. As a convenience, the following method can be
+called from within a plugin to detect conditions in which
+ONLY metadata need be processed.
+
+if (!avtDatabase::OnlyServeUpMetaData())
+    foo();
+
+There is an important policy issue that needs to be spelled out here.
+I a plugin permitted to maintain knowledge of work done on previous
+calls to avoid re-doing work on future calls. This comes
+up in the context of OnlyServeUpMetaData(). Suppose a plugin implements
+PopulateDatabaseMetaData like so...
+
+   if (gotMD)
+       return;
+
+   funcA();
+
+   if (OnlyServeUpMetaData())
+       funcB();
+
+   gotMD = true;
+   
+The results returned from this implementation DO NOT VARY 
+from the first call even if OnlyServeUpMetaData is varied. The plugin
+does all the work it thinks it needed to and will never do it again.
+I think this can lead to problems. I think it would be much better
+if VisIt was smart enough to NOT ask a plugin to do work and that
+a plugin ALWAYS does work when VisIt asks it to.
+
+It would be useful to have a table which includes the avtFileFormatInterface
+calls and which components can make those calls.
+
+Where possible, third-party libraries should be statically
+linked into a plugin.
+
+Although GetMaterial appears in the avtFileFormat interface,
+VisIt does not obtain Material information from a plugin via this
+method. It uses
+the GetAuxiliaryData mechanism. So, simply writing a GetMaterial()
+method does not satisfy VisIt's interface for material functionality.
+You also have to include a GetAuxiliaryData method that implements
+the query for a type of AUXILIARY_DATA_MATERIAL.
+
+When working with multi-domain data and materials it is important
+to keep in mind that the 'nmats' and 'matnos' arguments in the avtMaterial
+constructor (and, if you include the optional material names as 
+the matnames argument) for any avtMaterial object returned to 
+VisIt must include the global count of materials and material numbers.
+It cannot be specific to the domain that is being processed.
+
+Some helpful material constructors have been added so that plugin
+developers do NOT have to get into the nitty-gritty details of 
+AVT's (and Silo's) material data structures. If you look in 
+compononents/Pipeline/Data/avtMaterial.h, there a couple of new ways
+to construct a material. One uses sparse volume fraction arrays where
+we literally have a volume fraction for EVERY material at EVERY
+zone, many of which are zeros. The other uses lists of zones containing
+a given material cleanly and partially and the volume fractions for
+the partial zones.
+
+Visit developes that also develop plugins, should be sensitive to the
+fact that as they
+develope a db plugin, they can inadvertently break that plugin
+for older versions of VisIt if they wind up also developing classes
+internal to VisIt that the plugin then uses. A particularly simple
+way to introduce this problem is to implement a new exception.
+Once the new exception is used in the plugin, the plugin is broken
+for all previous versions of VisIt.
+
+What about extents served up by the DATA_EXTENTS and SPATIAL_EXTENTS
+auxiliary data queries? Should they include data in ghost zones or not?
+Currently, VisIt assumes the extents served up here include contributions
+from data in ghost zones.
+
+Note that one must take care that the DomainBoundary objects (e.g.
+avtRectilinearDomainBoundary/avtCurvilinearDomainBoundary) that a plugin
+serves up must match the types of meshes they are associated with.
+If a GetMesh call to the plugin returns a vtkStructuredGrid object,
+then the cooresponding DomainBoundary object that should be served
+up is an avtCurvilinearDomainBoundary and not an avtRectilinearDomainBoundary
+
+In serving up mesh and variable names, be forewarned that the
+parentheses characters, '(' and ')', have special meaning to VisIt. These
+permit one to specify Compound variables. Likewise, the '/' character
+is used to create variable groupings which will appear as sub-menus 
+in the GUI. Finally, since the expression window interprets characters
+like '*', '+', '-', etc. as arithmetic operations, there may be
+problems with permitting these chracters in variable names.
+
+There are four basic types of plugins;
+which are Single Timestep, Single Domain (STSD),
+Single Timestep, Multiple Domain (STMD),
+Multiple Timestep, Single Domain (MTSD), and
+Multiple Timestep, Multiple Domain (MTMD). VisIt constructs
+an abstraction for its databases in which every database
+is seen as being able to support requests for various pieces
+of mesh (called domains) at various timesteps. The general
+request for data from VisIt to a database looks someting like
+GetData(int domainNumber, int timeStep)
+The four basic plugin types are used to distinguish which piece,
+VisIt or the plugin, is responsible for selecting one of
+many domains and/or timesteps. For example, an STSD plugin
+supports the notion of only a single timestep and a single
+domain. It will only ever recieve requests from VisIt of
+the form GetData(0,0). Note that this DOES NOT IMPLY that
+one cannot read time-varying or multiple domain data
+through an STSD plugin. It means that that any given
+instance of the plugin object need only be concerned with
+being able to read one domain at one moment in time. The
+database abstractions in VisIt ABOVE the plugin will
+create multiple instances of the plugin for dealing with
+selecting one of many timesteps and/or domains. 
+Generally speaking, the type of plugin is determined by
+the kind of support for multiple timesteps and/or multiple
+domain mesh the file-format the plugin is designed to read
+has. For example, the Silo file format (the default VisIt
+format), supports multiple timesteps and multiple domains
+in a single file implying it should be an MTMD plugin.
+Nonetheless, the Silo plugin in VisIt is actually an STMD
+format because most codes that write silo files write
+different timesteps to different files, thereby making
+the common case an STMD case.
+
+When actively developing a plugin, whenever you change the
+plugin's .h file, it is best to do a 'make clean' so that
+all dependent objects pickup the changes to the .h file
+
+
+The following is more of a note to developers of visit proper...
+The interface between VisIt and a plugin is NOT wholly defined
+by the file format interfaces. There is an important object
+that is passed between VisIt and the plugins which effects
+VisIt's behavior; avtDatabaseMetaData and all of its sub-parts.
+This leads to an important question when extending
+avtDatabaseMetaData to support something new in VisIt. Do you
+   a) have a plugin directly manipulate contents of an
+      avtDatabaseMetaData object via methods on that object
+or
+   b) have avtGenericDatabase probe a plugin through the
+      format interface and learn relevant information from
+      the plugin through that interface and have it turn
+      around and manipulate avtDatabaseMetaData as appropriate
+
+For example, when adding the idea that a database can have
+time-varying metadata, you could have a plugin simply call
+a method on the avtDatabaseMetaData object passed into
+PopulateDatabaseMetaData or you could define a new function
+in the file format interface that avtGenericDatabase calls
+to ask the plugin "do you have time varying metadata" and
+then turn around and set the contents of avtDatabaseMetaData.
+
+The main difference between the two approaches is whether
+new methods are introduced to the file format interface which
+avtGenericDatabase calls. This seems more appropriate to me
+because the file format interface is supposed define what 
+a plugin should do.
+
+A plugin should return NULL for EXTENTS queries even if
+the variable queried is not known by the plugin (as it
+might be from an expression). So, don't throw invalid
+variable exceptions for DATA EXTENTS queries
