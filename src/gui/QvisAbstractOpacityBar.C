@@ -56,6 +56,11 @@
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//
+//    Gunther Weber, Fri Apr  6 16:04:52 PDT 2007
+//    Initialize backgroundColorControlPoints.
+//
 // ****************************************************************************
 
 QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent, const char *name)
@@ -66,6 +71,7 @@ QvisAbstractOpacityBar::QvisAbstractOpacityBar(QWidget *parent, const char *name
     setMinimumHeight(50);
     setMinimumWidth(128);
     pix = new QPixmap;
+    backgroundColorControlPoints = 0;
 }
 
 // ****************************************************************************
@@ -89,6 +95,25 @@ QvisAbstractOpacityBar::~QvisAbstractOpacityBar()
     pix = 0;
 }
 
+// ****************************************************************************
+//  Method:  QvisAbstractOpacityBar::SetBackgroundColorControlPoints(const ColorControlPointList *ccp)
+//
+//  Purpose: Set color control points for color transfer function backdrop
+//    
+//
+//  Programmer:  Gunther H. Weber
+//  Creation:    April 5, 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void QvisAbstractOpacityBar::SetBackgroundColorControlPoints(const ColorControlPointList *ccp)
+{
+    backgroundColorControlPoints = ccp;
+    paintToPixmap(contentsRect().width(), contentsRect().height());
+    update();
+}
 
 // ****************************************************************************
 //  Method:  QvisAbstractOpacityBar::val2x

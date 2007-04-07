@@ -46,6 +46,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <ColorControlPointList.h>
+
 // ****************************************************************************
 //  Method:  QvisScribbleOpacityBar::QvisScribbleOpacityBar
 //
@@ -108,6 +110,12 @@ QvisScribbleOpacityBar::~QvisScribbleOpacityBar()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//
+//     Gunther H. Weber, April 6, 2007
+//     Added possibility of having a "color table" background instead of solid
+//     black background.
+//
 // ****************************************************************************
 void
 QvisScribbleOpacityBar::paintToPixmap(int w, int h)
@@ -133,10 +141,25 @@ QvisScribbleOpacityBar::paintToPixmap(int w, int h)
         nvalues = nvalues2;
     }
 
+    QRgb *bgCols = new QRgb[w];
+    if (backgroundColorControlPoints)
+    {
+        unsigned char *cols = new unsigned char[w*3];
+        backgroundColorControlPoints->GetColors(cols, w);
+        for (int i=0; i < w; ++i)
+            bgCols[i] = QColor(cols[i*3+0], cols[i*3+1], cols[i*3+2]).rgb();
+        delete[] cols;
+    }
+    else 
+    {
+        QColor black(0,   0,   0 );
+        QRgb cb = black.rgb();
+        for (int i=0; i < w; ++i) 
+            bgCols[i] = cb;
+    }
+
     QColor white(255, 255, 255 );
-    QColor black(0,   0,   0 );
     QRgb cw = white.rgb();
-    QRgb cb = black.rgb();
     for (int x = 0; x < w; x++)
     {
         float yval = values[x];
@@ -146,9 +169,10 @@ QvisScribbleOpacityBar::paintToPixmap(int w, int h)
             if (yval2 < yval)
                 img.setPixel(x,y, cw); 
             else
-                img.setPixel(x,y, cb);
+                img.setPixel(x,y, bgCols[x]);
        }
     }
+    delete[] bgCols;
 
     if (!pix || 
         pix->height() != w ||
@@ -281,15 +305,29 @@ QvisScribbleOpacityBar::setValues(int x1, int y1, int x2, int y2)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//
+//     Gunther H. Weber, April 6, 2007
+//     Added possibility of having a "color table" background instead of solid
+//     black background.
+//
 // ****************************************************************************
 void
 QvisScribbleOpacityBar::setValue(float xval, float yval)
 {
     QPainter p(pix);
     QColor white(255, 255, 255 );
-    QColor black(0,   0,   0 );
+
     int h = contentsRect().height();
     int x = int(xval * float(nvalues-1));
+    QColor backgroundColor(0, 0, 0 );
+    if (backgroundColorControlPoints) 
+    {
+        unsigned char *cols = new unsigned char[nvalues*3];
+        backgroundColorControlPoints->GetColors(cols, nvalues);
+        backgroundColor.setRgb(cols[x*3+0], cols[x*3+1],cols[x*3+2]);
+        delete[] cols;
+    }
     values[x] = yval;
     for (int i = 0; i < h; i++)
     {
@@ -297,7 +335,7 @@ QvisScribbleOpacityBar::setValue(float xval, float yval)
         if (yval2 < yval)
             p.setPen(white);
         else
-            p.setPen(black);
+            p.setPen(backgroundColor);
         p.drawPoint(x,i);
     }
 }
@@ -422,6 +460,35 @@ QvisScribbleOpacityBar::makeLinearRamp()
     // Emit a signal indicating that the values changed.
     emit opacitiesChanged();
 }
+
+// ****************************************************************************
+// Method: QvisScribbleOpacityBar::makeInverseLinearRamp
+//
+// Purpose: 
+//   This is a Qt slot function that sets the alpha values to be an inverse
+//   linear ramp.
+//
+// Programmer: Gunther H. Weber (based on makeLinearRamp() by Brad Whitlock)
+// Creation:   Thu Apr  5 15:59:05 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisScribbleOpacityBar::makeInverseLinearRamp()
+{
+    // Make a ramp.
+    for(int i = 0; i < nvalues; ++i)
+        values[i] = float(nvalues - i - 1) * float(1. / nvalues);
+
+    paintToPixmap(contentsRect().width(), contentsRect().height());
+    update();
+
+    // Emit a signal indicating that the values changed.
+    emit opacitiesChanged();
+}
+
 
 // ****************************************************************************
 // Method: QvisScribbleOpacityBar::makeTotallyOne

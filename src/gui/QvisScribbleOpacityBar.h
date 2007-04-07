@@ -55,6 +55,9 @@ class QPixmap;
 //     Brad Whitlock, Fri Apr 6 12:22:25 PDT 2001
 //     Added some new slots to set some default opacity ramps.
 //
+//     Gunther Weber, Fri Apr  6 16:20:55 PDT 2007
+//     Add support for an inverse linear ramp.
+//
 // ****************************************************************************
 
 class GUI_API QvisScribbleOpacityBar : public QvisAbstractOpacityBar
@@ -72,6 +75,7 @@ signals:
 public slots:
     void makeTotallyZero();
     void makeLinearRamp();
+    void makeInverseLinearRamp();
     void makeTotallyOne();
     void smoothCurve();
 

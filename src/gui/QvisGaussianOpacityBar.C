@@ -46,6 +46,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <ColorControlPointList.h>
+
 // ****************************************************************************
 //  Method:  QvisGaussianOpacityBar::QvisGaussianOpacityBar
 //
@@ -231,6 +233,12 @@ QvisGaussianOpacityBar::drawControlPoints()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2001
 //
+//  Modifications:
+//
+//     Gunther H. Weber, April 6, 2007
+//     Added possibility of having a "color table" background instead of solid
+//     black background.
+//
 // ****************************************************************************
 void
 QvisGaussianOpacityBar::paintToPixmap(int w,int h)
@@ -238,10 +246,25 @@ QvisGaussianOpacityBar::paintToPixmap(int w,int h)
     QImage img(w,h, 32);
     float *values = getRawOpacities(w);
 
+    QRgb *bgCols = new QRgb[w];
+    if (backgroundColorControlPoints) 
+    {
+        unsigned char *cols = new unsigned char[w*3];
+        backgroundColorControlPoints->GetColors(cols, w);
+        for (int i=0; i < w; ++i) 
+            bgCols[i] = QColor(cols[i*3+0], cols[i*3+1], cols[i*3+2]).rgb();
+        delete[] cols;
+    }
+    else 
+    {
+        QColor black(0,   0,   0 );
+        QRgb cb = black.rgb();
+        for (int i=0; i < w; ++i) 
+            bgCols[i] = cb;
+    }
+
     QColor white(255, 255, 255 );
-    QColor black(0,   0,   0 );
     QRgb cw = white.rgb();
-    QRgb cb = black.rgb();
     float dy = 1.0/float(h-1);
     for (int x = 0; x < w; x++)
     {
@@ -256,11 +279,12 @@ QvisGaussianOpacityBar::paintToPixmap(int w,int h)
             }
             else
             {
-                img.setPixel(x,y, cb);
+                img.setPixel(x,y, bgCols[x]);
             }
        }
     }
     delete[] values;
+    delete[] bgCols;
 
     pix->convertFromImage(img);
     drawControlPoints();
