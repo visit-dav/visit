@@ -1,0 +1,1 @@
+../../components/Queries/Abstract/avtCurveComparisonQuery.h

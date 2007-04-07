@@ -1,0 +1,1 @@
+../../components/VisWindow/Colleagues/VisWinQuery.h

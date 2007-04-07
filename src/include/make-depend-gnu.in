@@ -1,0 +1,51 @@
+##							-*- makefile -*-
+## Automatic dependencies...  We keep a list of dependencies in `.depend'
+## for each of the source files on which it depends.  When one of the source
+## files is modified we remove its record from .depend and regenerate the
+## dependencies, tacking them onto the end of .depend.  By including the
+## .depend file into the makefile, we're telling make that the makefile
+## depends on the dependency list in the .depend file.
+##
+## This is as fast as the `.d' method described in the GNU make manual
+## for automatic dependencies, but has the added advantage that all
+## dependencies are stored in one place.  The advantage over the
+## `makedepend' program is that only those files that are out of date
+## have dependency information rebuilt, and the Makefile is not modified.
+##
+## Modifications:
+##    Jeremy Meredith, Thu May  9 11:58:51 PDT 2002
+##    1) Made it work with .C, not .c files
+##    2) Made it work correctly with subdirectories, e.g. "dir/file.C"
+##
+##    Jeremy Meredith, Wed Mar 28 09:39:27 PDT 2007
+##    Made it work better in parallel.
+##
+.PRECIOUS: .depend
+dep depend: .depend
+
+.depend: $(SRC)
+	@touch .depend
+	@for dep in $? dummy; do \
+	   if [ $$dep != "dummy" ]; then \
+	      obj=`echo $$dep | sed 's/\.C/.o/'` ;\
+	      echo Building dependencies for $$obj ;\
+	      sed "\|^$$obj|,\|[^\\]$$|d" <$@ > $@- && mv $@- $@ ;\
+	      dir=`dirname $$obj`;\
+	      if [ $$dir != "." ]; then \
+	          printf "$$dir/" >> $@;\
+              fi;\
+	      $(CXX) -M -MG -MT $$obj $(CXXFLAGS) $(CPPFLAGS) $$dep >>$@;\
+	   fi;\
+	   if [ $$dep != "dummy" ]; then \
+	      obj=`echo $$dep | sed 's/\.C/_par.o/'` ;\
+	      echo Building dependencies for $$obj ;\
+	      sed "\|^$$obj|,\|[^\\]$$|d" <$@ > $@- && mv $@- $@ ;\
+	      dir=`dirname $$obj`;\
+	      if [ $$dir != "." ]; then \
+	          printf "$$dir/" >> $@;\
+              fi;\
+	      $(CXX) -M -MG -MT $$obj -DPARALLEL $(CXXFLAGS) $(CPPFLAGS) $$dep  >>$@;\
+	   fi;\
+	done
+
+-include .depend

@@ -1,0 +1,1 @@
+../../components/Queries/Pick/avtPickByZoneQuery.h

@@ -1,0 +1,46 @@
+all: message
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+
+clean:
+	-$(RM) $(LIB)
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+	-$(RM) $(CLEAN_FILES)
+
+## Same as `clean' and then remove Emacs backup files, .depend files,
+## core dumps, Makefiles, and any files listed in DISTCLEAN_FILES.  Then
+## go to the temporary include directory and remove those copies of the
+## public header files.
+##
+## The Makefile line is separate from the *~, .depend and core line
+## because some rm's won't get to Makefile if there are no backup files,
+## .depend files, or core files.
+##
+## The DISTCLEAN_FILES variable is something that only exists in some
+## Makefiles.  It is used to specify additional files that need to be
+## removed when doing a distclean.  Since distclean is used to get rid of
+## anything that can be automatically generated, the files that are in
+## DISTCLEAN_FILES are things that are generated through *.in files by
+## configure.
+##
+distclean: clean
+	if test -n "$(SUBDIRS)"; then \
+		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
+		for dir in $$rev; do (cd $$dir && $(MAKE) $@); done \
+	fi
+	-$(RM) $(DISTCLEAN_FILES) *~ .depend core
+	-$(RM) Makefile
+
+depend:
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+
+checkdep:
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+
+install: install_dirs
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+
+install_lib: install_dirs
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+
+install_bin: install_dirs
+	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done

@@ -1,0 +1,195 @@
+##							-*- makefile -*-
+## The following targets come from `include/targets'
+##
+install: install_lib install_bin
+
+##
+## Targets `install_lib' and `install_bin' are specified here with
+## no dependencies and no commands so that they don't have to be
+## defined in every Makefile.in.
+##
+install_lib:
+
+install_bin:
+
+##
+## Same as `clean' and then remove Emacs backup files, .depend files,
+## core dumps, Makefiles, and any files listed in DISTCLEAN_FILES.  Then
+## go to the temporary include directory and remove those copies of the
+## public header files.
+##
+## The Makefile line is separate from the *~, .depend and core line
+## because some rm's won't get to Makefile if there are no backup files,
+## .depend files, or core files.
+##
+## The DISTCLEAN_FILES variable is something that only exists in some
+## Makefiles.  It is used to specify additional files that need to be
+## removed when doing a distclean.  Since distclean is used to get rid of
+## anything that can be automatically generated, the files that are in
+## DISTCLEAN_FILES are things that are generated through *.in files by
+## configure.
+##
+distclean: clean
+	-$(RM) $(DISTCLEAN_FILES) *~ .depend core
+	-$(RM) Makefile
+
+##
+## Suffixes
+##
+## Cyrus Harrison, Fri Mar  9 08:38:51 PST 2007
+## Added engine specific targets: "_eng.o", "_par_eng.o"
+## 
+
+.SUFFIXES: .C _eng.o _mds.o _par.o _ogl.o _mesa.o _par_eng.o _par_ogl.o _par_mesa.o _moc.C
+
+##
+## We separate C compiler flags from C preprocessor flags and most
+## make's don't have the correct implicit rules, so we redefine them
+## here.  If you don't like seeing the `ar' and `rm' commands when
+## you run make, just add a `@' to the beginning of the line.
+##
+.c.a:
+	false
+
+##
+## We separate C++ compiler flags from C preprocessor flags and most
+## make's don't have the correct implicit rules, so we redefine them
+## here.  If you don't like seeing the `ar' and `rm' commands when
+## you run make, just add a `@' to the beginning of the line.
+##
+## Jeremy Meredith, Wed Jul  7 16:13:53 PDT 2004
+## Removed the "_ser.o" build line because it was inefficient.
+## Added a "_mds.o" build line to reduce the number of libraries
+## needed by the mdserver by using preprocessor wrappers in plugins.
+##
+## 
+## Cyrus Harrison, Fri Mar  9 08:38:37 PST 2007
+## Added engine specific targets: "_eng.o", "_par_eng.o"
+## 
+
+
+.C.a:
+	false
+
+.c.o:
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+.c_mds.o:
+	$(CC) $(CFLAGS) $(CPPFLAGS) -DMDSERVER -c $< -o $@
+
+.c_par.o:
+	$(CC) $(CFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
+
+# There cannot be a tab before the OS_RULE line.  The rule contains its own
+# tab character.
+.C.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
+@OS_RULE@
+
+.C_eng.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DENGINE -c $< -o $@
+@OS_RULE@
+
+.C_mds.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DMDSERVER -c $< -o $@
+@OS_RULE@
+
+.C_par.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
+@OS_RULE@
+
+.C_ogl.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
+@OS_RULE@
+
+.C_mesa.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(MESA_INCLUDE) -c $< -o $@
+@OS_RULE@
+
+.C_par_eng.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -DENGINE @PARALLEL_CPPFLAGS@ -c $< -o $@
+@OS_RULE@
+
+.C_par_ogl.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ -c $< -o $@
+@OS_RULE@
+
+.C_par_mesa.o:
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $(MESA_INCLUDE) -c $< -o $@
+@OS_RULE@
+
+.f.o:
+	$(F77) $(F77FLAGS) -c $<
+
+
+## Jeremy Meredith, Fri May 11 13:51:37 PDT 2001
+## Create GUI, Viewer and Engine shared libraries.  This is for plugins.
+## 
+## Brad Whitlock, Tue Jul 24 9:42:23 PDT 2001
+## Added a target for building scripting plugins.
+##
+## Jeremy Meredith, Fri Sep 28 13:23:59 PDT 2001
+## Added IDSO.
+##
+## Hank Childs, Tue May 21 16:18:10 PDT 2002
+## Put LDFLAGS in front of the obj files, since g++ won't get to them in time
+## otherwise.
+##
+## Jeremy Meredith, Fri Jun 14 12:09:38 PDT 2002
+## Added PY_LIB to the scripting plugins since it is a static library.
+##
+## Jeremy Meredith, Thu Jul 18 13:12:23 PDT 2002
+## Removed PY_LIB.  It was causing some very strange problems.  Instead
+## libpython2.1 will just be a .so instead of a .a, and distributed with
+## the runtime libraries.
+##
+## Jeremy Meredith, Thu Aug 22 13:22:28 PDT 2002
+## Added MDServer target.  Added libraries which can be forcibly linked
+## against the shared library target.
+##
+## Brad Whitlock, Mon Apr 26 14:41:46 PST 2004
+## I added a postprocessing step that in the default case evaluates to
+## sleep 1. On MacOS X, the post processing step is used to update the
+## address file used to determine the segment offset.
+##
+## Brad Whitlock, Fri Feb 23 17:31:25 PST 2007
+## Added VIEWERMOCOBJ
+##
+$(IDSO) noidso: $(IOBJ)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(IOBJ) @SHLIB_ILIBS@
+	@SHLIB_POSTPROCESS_ILIBS@
+
+$(GDSO) nogdso: $(GOBJ) $(MOCOBJ)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(GOBJ) $(MOCOBJ) $(SHLIB_FORCED) @SHLIB_GLIBS@
+	@SHLIB_POSTPROCESS_GLIBS@
+
+$(MDSO) nomdso: $(MOBJ)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(MOBJ) $(SHLIB_FORCED) @SHLIB_MLIBS@
+	@SHLIB_POSTPROCESS_MLIBS@
+
+$(SDSO) nosdso: $(SOBJ)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(CXXFLAGS) $(SOBJ) @SHLIB_SLIBS@
+	@SHLIB_POSTPROCESS_SLIBS@
+
+$(VDSO) novdso: $(VOBJ) $(VIEWERMOCOBJ)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(VOBJ) $(VIEWERMOCOBJ) $(SHLIB_FORCED) @SHLIB_VLIBS@
+	@SHLIB_POSTPROCESS_VLIBS@
+
+$(ESERDSO) noedso_ser: $(ESEROBJ)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(ESEROBJ) $(SHLIB_FORCED) @SHLIB_ESERLIBS@
+	@SHLIB_POSTPROCESS_ESERLIBS@
+
+$(EPARDSO) noedso_par: $(EPAROBJ)
+	@SHLIB_CREATEPROG@ $@ $(LDFLAGS) $(EPAROBJ) $(SHLIB_FORCED) @SHLIB_MPI_LIBS@ @SHLIB_EPARLIBS@ 
+	@SHLIB_POSTPROCESS_EPARLIBS@
+
+## Brad Whitlock, Wed Aug 14 16:26:55 PST 2002
+## I added the Java target.
+java:
+	$(JAVAC) $(JAVAFLAGS) $(JAVAPLUGINFLAGS) $(JAVASRC)
+
+## ------------------------------------------------------------------
+## Maintaining source dependencies... either GNU, generic, or none...
+## ------------------------------------------------------------------
+
+@SOURCE_DEPENDENCIES@

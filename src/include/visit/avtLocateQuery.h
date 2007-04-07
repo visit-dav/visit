@@ -1,0 +1,1 @@
+../../components/Queries/Pick/avtLocateQuery.h
