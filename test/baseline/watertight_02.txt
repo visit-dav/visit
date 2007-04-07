@@ -1,0 +1,6 @@
+The surface is not watertight.  To identify the regions that are not watertight, perform the following steps:
+	1) Define the expression: "external_node(meshname)"
+	2) If some set of operations have been performed on the mesh, then you will need to turn on the DeferExpression 
+	operator under Options->Plugin Manager and then apply this operator with the external node expression to your plot.
+	3) Change the variable you are plotting by to the external nodes expression.  This will show where the 
+	non-watertight nodes are located.

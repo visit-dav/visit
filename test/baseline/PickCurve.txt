@@ -1,0 +1,32 @@
+
+A:  curve.visit  timestep 72
+Point: <0.020202, 0.057582>
+
+
+B:  curve.visit  timestep 72
+Point: <0.020202, 0.057582>
+
+
+C:  curve.visit  timestep 72
+Point: <0.080808, 0.216082>
+
+
+D:  curve.visit  timestep 72
+Point: <0.666667, 0.646465>
+
+
+E:  curve.visit  timestep 72
+Point: <0.282828, 0.590070>
+
+
+F:  curve.visit  timestep 72
+Point: <0.858586, 0.353211>
+
+
+G:  curve.visit  timestep 72
+Point: <0.676768, 0.636373>
+
+
+H:  curve.visit  timestep 72
+Point: <0.232323, 0.518834>
+

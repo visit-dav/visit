@@ -1,0 +1,543 @@
+#                         Copyright (c) 2000 - 2007
+#                 The Regents of the University of California
+#            Produced at the Lawrence Livermore National Laboratory
+#            Written by Sean Ahern, Kathleen Bonnell, Eric Brugger,
+#           Hank Childs, Jeremy Meredith, Mark Miller, Brad Whitlock
+#                              UCRL-CODE-220908
+#                            All rights reserved.
+#
+# This file is part of VisIt. For details, see http://www.llnl.gov/visit/.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided  that the following conditions are met:
+#
+# - Redistributions of  source code  must retain  the above  copyright notice,
+#   this list of conditions and the disclaimer below.
+# - Redistributions in binary form must  reproduce the above copyright notice,
+#   this  list of  conditions  and  the  disclaimer  (as noted below)  in  the
+#   documentation and/or materials provided with the distribution.
+# - Neither the name of the  UC/LLNL nor the names of  its contributors may be
+#   used to endorse  or promote products  derived from  this software  without
+#   specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE  COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES,  INCLUDING, BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES  OF MERCHANTABILITY AND FITNESS FOR  A PARTICULAR PURPOSE
+# ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF
+# CALIFORNIA, THE U.S. DEPARTMENT OF ENERGY  OR CONTRIBUTORS BE LIABLE FOR ANY
+# DIRECT, INDIRECT,  INCIDENTAL, SPECIAL, EXEMPLARY, OR  CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF  LIABILITY, WHETHER IN CONTRACT, STRICT  LIABILITY, OR TORT
+# (INCLUDING  NEGLIGENCE OR  OTHERWISE) ARISING IN ANY  WAY OUT OF  THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Additional BSD Notice
+#
+# 1. This notice is required  to be provided under our  contract with the U.S.
+#    Department of Energy  (DOE). This work was produced  at the University of
+#    California,  Lawrence Livermore National  Laboratory  under Contract  No.
+#    W-7405-ENG-48 with the DOE.
+#
+# 2. Neither the  United States Government  nor the  University of  California
+#    nor any of their  employees, makes  any warranty, express  or implied, or
+#    assumes any liability  or responsibility for the  accuracy, completeness,
+#    or  usefulness  of  any  information,   apparatus,  product,  or  process
+#    disclosed, or represents that its  use would not infringe privately-owned
+#    rights.
+#
+# 3. Also, reference herein  to any specific commercial  products, process, or
+#    services by trade  name, trademark,  manufacturer  or otherwise  does not
+#    necessarily  constitute  or imply  its  endorsement,  recommendation,  or
+#    favoring by the United States Government or the University of California.
+#    The views and  opinions of authors  expressed herein  do not  necessarily
+#    state or reflect those of the  United States Government or the University
+#    of  California,  and  shall  not  be  used  for  advertising  or  product
+#    endorsement purposes.
+#
+# Modifications:
+#
+#   Hank Childs, Tue May  7 16:43:37 PDT 2002
+#   Added specmix and wave.
+#
+#   Brad Whitlock, Fri Jun 21 13:35:15 PST 2002
+#   Added noise and tire.
+#
+#   Eric Brugger, Fri Jul 19 14:44:33 PDT 2002
+#   Added sid97.
+#
+#   Hank Childs, Wed Nov 13 15:59:46 PST 2002
+#   Added bigsil.
+#
+#   Hank Childs, Wed Jan 15 09:39:31 PST 2003
+#   Added curve_builder.
+#
+#   Kathleen Bonnell, Wed Sep  3 13:30:41 PDT 2003 
+#   Added noise2d.
+#
+#   Brad Whitlock, Thu Sep 25 08:49:21 PDT 2003
+#   Added pdbdatabase.C so we have a representative PDB database.
+#
+#   Mark C. Miller, Tue Nov 11 18:07:58 PST 2003
+#   Added targets for binary data file uncompression
+#   Added samrai data file
+#
+#   Eric Brugger, Wed Nov 19 16:32:00 PST 2003
+#   I created a NOT_DISTRIB line with samrai_test_data so that it would
+#   not be added to the distribution since it is a directory created
+#   from a gzipped tar file.
+#
+#   Eric Brugger, Thu Nov 20 14:21:08 PST 2003
+#   I modified the clean target to also remove data files.
+#
+#   Brad Whitlock, Fri Dec 5 08:25:06 PDT 2003
+#   Added ANALYZE data file.
+#
+#   Eric Brugger, Wed Dec 31 09:39:54 PST 2003
+#   I added samrai_ale2d_data.
+#
+#   Mark C. Miller, Wed Jan  7 15:18:06 PST 2004
+#   I consolidated data from samrai_ale2d_data with samrai_test_data
+#
+#   Eric Brugger, Fri Feb  6 09:35:50 PST 2004
+#   I added samrai_test_data and ANALYZE_test_data to NOT_DISTRIB.
+#
+#   Brad Whitlock, Sun Feb 1 02:24:15 PDT 2004
+#   I added correlationtest.C
+#
+#   Mark C. Miller, Fri Feb 27 00:00:00 PST 2004
+#   Added ../include and ../include/visit to CPPFLAGS to support building
+#   pdb stuff with PDB lite
+#
+#   Mark C. Miller, Mon Mar  8 20:18:06 PST 2004
+#   Added code to build a multi-part multi_ucd3d.silo file using
+#   visit -convert
+#
+#   Brad Whitlock, Tue Mar 23 14:53:48 PST 2004
+#   I added -I. to the include path.
+#
+#   Brad Whitlock, Tue Mar 30 09:06:02 PDT 2004
+#   I added PDB_EXEC so we can successfully execute all PDB tests.
+#
+#   Hank Childs, Wed Aug 25 16:55:41 PDT 2004
+#   Added degen_meshes.C
+#
+#   Hank Childs, Fri Aug 27 09:27:07 PDT 2004
+#   Do not build degen_meshes by default, since there are LD_LIB_PATH issues.
+#
+#   Hank Childs, Tue Oct  5 09:24:05 PDT 2004
+#   Add global_node.C
+#
+#   Mark C. Miller, Mon Nov 29 18:52:41 PST 2004
+#   Moved larger files to NOT_DISTRIB. Added test for existence of to sid97
+#   before executing it.
+#
+#   Mark C. Miller, Wed Dec  8 18:35:03 PST 2004
+#   Removed sid97 from NOT_DISTRIB as it was causing problems for compile
+#   in data dir. Added old silo test data
+#
+#   Jeremy Meredith, Fri Dec 10 14:14:18 PST 2004
+#   Added support for version-specific visit scripts and the ability to
+#   launch tools without passing them as an argument to the visit script.
+#
+#   Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
+#   Changed invokation of convert
+#
+#   Mark C. Miller, Fri Feb 11 10:21:40 PST 2005
+#   Added testh5 target
+#
+#   Jeremy Meredith, Tue Feb 22 19:01:42 PST 2005
+#   Renamed convert to visitconvert because it is more unique.
+#
+#   Jeremy Meredith, Fri Mar  4 13:28:20 PST 2005
+#   Added ghost zone creation test data set.
+#
+#   Mark C. Miller, Mon Mar 21 18:47:40 PST 2005
+#   Included ghost.C in SRC, added it to HDF5 output too
+#
+#   Brad Whitlock, Mon Mar 28 10:59:45 PDT 2005
+#   Added shapefile data.
+#
+#   Hank Childs, Wed Mar 30 11:32:02 PST 2005
+#   Add Mili, Boxlib, and Exodus files.
+#
+#   Brad Whitlock, Fri Apr 1 14:54:39 PST 2005
+#   I zipped up the tecplot files.
+#
+#   Mark C. Miller, Wed May 11 08:11:27 PDT 2005
+#   Added quad_disk.C
+#
+#   Jeremy Meredith, Tue Jun  7 10:07:44 PDT 2005
+#   Added emptydomains.C
+#
+#   Hank Childs, Tue Jun 14 16:38:01 PDT 2005
+#   Added KullLite test data.
+#
+#   Brad Whitlock, Thu Jul 7 18:32:56 PST 2005
+#   Added NASTRAN and ANSYS test data.
+#
+#   Brad Whitlock, Wed Jul 20 17:31:18 PST 2005
+#   Added galaxy.C
+#
+#   Brad Whitlock, Fri Jul 29 17:46:00 PST 2005
+#   Added PATRAN test data.
+#
+#   Hank Childs, Fri Aug  5 10:17:52 PDT 2005
+#   Add distribution_curves.
+#
+#   Mark C. Miller, Wed Aug 17 10:47:33 PDT 2005
+#   Added visus test data
+#
+#   Brad Whitlock, Tue Aug 23 16:33:56 PST 2005
+#   Added netcdf test data.
+#
+#   Brad Whitlock, Fri Sep 2 13:48:07 PST 2005
+#   Added CGNS test data.
+#
+#   Brad Whitlock, Thu Sep 8 16:31:41 PST 2005
+#   Added GDAL test data.
+#
+#   Kathleen Bonnell, Fri Sep 23 10:29:14 PDT 2005
+#   Added vtk-xml test data.
+#
+#   Hank Childs, Wed Sep 28 08:53:22 PDT 2005
+#   Added Dune test data.
+#
+#   Brad Whitlock, Mon Oct 3 13:59:12 PST 2005
+#   Added lowfrac.C
+#
+#   Mark C. Miller, Thu Nov 10 14:31:50 PST 2005
+#   Added overlink test data
+#
+#   Eric Brugger, Fri Nov 18 10:22:08 PST 2005
+#   I added the pthread and x libraries to any link line that included vtk.
+#
+#   Mark C. Miller, Tue Feb  7 11:16:18 PST 2006
+#   Prepended '-' to all subshell invokations so that if they fail, other
+#   make won't exit
+#
+#   Kathleen Bonnell, Wed Feb  8 15:45:28 PST 2006 
+#   Added vtk_cylindrical_test_data, renamed boxlib_2D_test_data.tar.bz2 to
+#   boxlib_2D_test_data.tar.bz2, renamed vtk_xml_test_data.tar.bz2  to 
+#   vtk_xml_test_data.tar.gz (since it's not binary data), made the xml data
+#   'live' in a subdirectory for cleanup purposes.  Added a few items to
+#   clean target.
+#
+#   Brad Whitlock, Thu Mar 16 17:32:25 PST 2006
+#   Added a file to create BOV data.
+#
+#   Brad Whitlock, Tue Mar 28 15:38:21 PST 2006
+#   Added ProteinDataBank test data.
+#
+#   Brad Whitlock, Tue Jun 27 10:25:47 PDT 2006
+#   Added EnSight test data.
+#
+#   Brad Whitlock, Thu Jul 20 14:05:04 PST 2006
+#   Added FITS test data.
+#
+#   Brad Whitlock, Tue Jul 25 09:23:49 PDT 2006
+#   Added fullframe.C
+#
+#   Mark C. Miller, Tue Sep  5 10:17:20 PDT 2006
+#   Added bov.C and fullframe.C to SRC and clean target
+#
+#   Eric Brugger, Wed Sep  6 10:58:48 PDT 2006
+#   Added GGCM test data.
+#
+#   Hank Childs, Fri Sep  8 14:16:41 PDT 2006
+#   Added Fluent and OpenFOAM test data.
+#
+#   Brad Whitlock, Mon Sep 25 14:11:43 PST 2006
+#   Added Chombo test data.
+#
+#   Eric Brugger, Wed Oct 18 12:21:43 PDT 2006
+#   Added Enzo test data.
+#
+#   Mark C. Miller, Tue Nov 28 23:13:08 PST 2006
+#   Changed clean target to remove specific .visit files not *.visit
+#
+#   Mark C. Miller, Fri Dec  1 15:08:16 PST 2006
+#   Added csg test data binary files
+#
+#   Dave Bremer, Tue Feb 13 18:01:29 PST 2007
+#   Added raw miranda test data
+#
+#   Mark C. Miller, Tue Mar  6 10:34:25 PST 2007
+#   Made NOT_DISTRIB target use filename pattern matching to reduce chances
+#   someone will 'forget' to include a large binary file there. Also
+#   added some flash data.
+#
+#   Eric Brugger, Thu Mar 22 10:33:51 PDT 2007
+#   Added MESA_LIBS and GL_LIBS since they are no longer included in VTK_LIBS.
+#
+##############################################################################
+
+##
+## Programs and options...
+##
+@SET_MAKE@
+@VARIABLES@
+
+NOT_DISTRIB=near_planar.vtk *_test_data *.tar.bz2 *.tar.gz *.tar.bz \
+            miranda_raw
+
+##
+## Optional programs.
+##
+PDBSRC=pdbdatabase.C correlationtest.C pdbdatabase_link.C
+PDBOBJ=$(PDBSRC:.C=.o)
+PDB=./pdbdatabase ./correlationtest
+PDBEXEC=./pdbdatabase; ./correlationtest
+
+##
+## Optional compressed binary data files (w/o extensions)
+##
+BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
+       pixie_test_data old_silo_data shapefile_test_data mili_test_data \
+       boxlib_test_data exodus_test_data tecplot_test_data \
+       KullLite_test_data NASTRAN_test_data ANSYS_test_data PATRAN_test_data \
+       visus_test_data netcdf_test_data CGNS_test_data GDAL_test_data \
+       vtk_xml_test_data dune_test_data overlink_test_data \
+       vtk_cylindrical_test_data ProteinDataBank_test_data \
+       Fluent_test_data OpenFOAM_test_data EnSight_test_data \
+       FITS_test_data GGCM_test_data Chombo_test_data Enzo_test_data \
+       csg_test_data miranda_raw FLASH_test_data TSTT_test_data
+
+##
+## Libraries and includes...
+##
+LIBS=$(SILO_LIB) @LIBS@
+MATH_LIBS_ONLY=@LIBS@
+LDFLAGS=@LDFLAGS@
+CXXFLAGS=@CXXFLAGS@
+CPPFLAGS=@CPPFLAGS@ -I. -I../include -I../include/visit @SILO_INCLUDE@ @PDB_FLAGS@ @VTK_INCLUDES@
+
+##
+## Files...
+##
+SRC=bigsil.C curve_builder.C distribution_curves.C ghost.C global_node.C \
+    globe.C multi_test.C noise.C noise2d.C specmix.C testall.C tire.C wave.C \
+    degen_meshes.C quad_disk.C emptydomains.C galaxy.C csg.C lowfrac.C \
+    bov.C largefile.C one_quad.C fullframe.C $(PDBSRC)
+
+OBJ=$(SRC:.C=.o)
+
+##
+## Standard targets...
+##
+all: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe @PDB@ $(BINSRC)
+
+test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe @PDB@ $(BINSRC)
+	./bigsil
+	./curve_builder
+	./global_node
+	./globe
+	./multi_test
+	-@if test -x ../exe/visitconvert_ser; then \
+	    ../bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo ; \
+	fi
+	./noise
+	./noise2d
+	./specmix
+	./testall
+	./tire
+	./wave
+	./sid97
+	./ghost
+	./quad_disk
+	./emptydomains
+	./galaxy
+	./distribution_curves
+	./csg
+	./lowfrac
+	./bov
+	./one_quad
+	./fullframe
+	-@if test -e /home/visit/data/sesame.pdb; then \
+	    ln -sf /home/visit/data/sesame.pdb . ;\
+	else \
+	    echo "" > SESAME_NOT_FOUND ;\
+	    ln -sf SESAME_NOT_FOUND sesame.pdb ;\
+	fi
+	@PDB_EXEC@
+
+testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./specmix ./sid97 ./testall ./tire ./wave ./emptydomains ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe
+	-@if test -n "`echo $(SILO_LIB) | grep libhdf5.a`"; then \
+	   echo "***********************************" ;\
+	   echo "***********************************" ;\
+	   echo "Building Silo Data With HDF5 Driver" ;\
+	   echo "***********************************" ;\
+	   echo "***********************************" ;\
+	   ./bigsil -driver DB_HDF5;\
+	   ./global_node -driver DB_HDF5;\
+	   ./globe -driver DB_HDF5;\
+	   ./multi_test -driver DB_HDF5;\
+	   if test -x ../exe/visitconvert_ser; then \
+	      ../bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo;\
+	   fi;\
+	   ./noise -driver DB_HDF5;\
+	   ./noise2d -driver DB_HDF5;\
+	   ./specmix -driver DB_HDF5;\
+	   ./testall -driver DB_HDF5;\
+	   ./tire -driver DB_HDF5;\
+	   ./wave -driver DB_HDF5;\
+	   ./sid97 -driver DB_HDF5;\
+	   ./ghost -driver DB_HDF5;\
+	   ./quad_disk -driver DB_HDF5;\
+	   ./emptydomains -driver DB_HDF5;\
+	   ./galaxy -driver DB_HDF5;\
+	   ./csg -driver DB_HDF5;\
+           ./lowfrac -driver DB_HDF5;\
+	   ./one_quad -driver DB_HDF5; \
+	   ./fullframe -driver DB_HDF5; \
+	else \
+	   echo "HDF5 driver for Silo not available in this configuration" ;\
+	   exit 1;\
+	fi
+
+install: install_bin
+
+clean:
+	$(RM) $(OBJ) ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./csg ./lowfrac ./distribution_curves ./bov ./largefile ./one_quad ./fullframe @PDB@
+	$(RM) *.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra sid97.o
+	$(RM) curve.visit wave*.visit
+	$(RM) -r $(BINSRC)
+
+##
+## Other targets...
+##
+./bigsil: bigsil.o
+	$(CXX) -o $@ bigsil.o $(LDFLAGS) $(LIBS)
+
+./curve_builder: curve_builder.o
+	$(CXX) -o $@ curve_builder.o $(LDFLAGS) $(MATH_LIBS_ONLY)
+
+./degen_meshes: degen_meshes.o
+	$(CXX) -o $@ degen_meshes.o $(LDFLAGS) $(VTK_LIBS) $(MESA_LIBS) $(GL_LIBS) @PTHREAD_LIB@ @X_LIBS@
+
+./distribution_curves: distribution_curves.o
+	$(CXX) -o $@ distribution_curves.o $(LDFLAGS) $(MATH_LIBS_ONLY)
+
+./ghost: ghost.o
+	$(CXX) -o $@ ghost.o $(LDFLAGS) $(LIBS)
+
+./global_node: global_node.o
+	$(CXX) -o $@ global_node.o $(LDFLAGS) $(LIBS)
+
+./globe: globe.o
+	$(CXX) -o $@ globe.o $(LDFLAGS) $(LIBS)
+
+./multi_test: multi_test.o
+	$(CXX) -o $@ multi_test.o $(LDFLAGS) $(LIBS)
+
+./noise: noise.o
+	$(CXX) -o $@ noise.o $(LDFLAGS) $(LIBS)
+
+./noise2d: noise2d.o
+	$(CXX) -o $@ noise2d.o $(LDFLAGS) $(LIBS)
+
+./bov: bov.o
+	$(CXX) -o $@ bov.o $(LDFLAGS) $(LIBS)
+
+./sid97: sid97.o
+	$(CXX) -o $@ sid97.o $(LDFLAGS) $(LIBS)
+
+./specmix: specmix.o
+	$(CXX) -o $@ specmix.o $(LDFLAGS) $(LIBS)
+
+./testall: testall.o
+	$(CXX) -o $@ testall.o $(LDFLAGS) $(LIBS)
+
+./tire: tire.o
+	$(CXX) -o $@ tire.o $(LDFLAGS) $(LIBS)
+
+./wave: wave.o
+	$(CXX) -o $@ wave.o $(LDFLAGS) $(LIBS)
+
+./quad_disk: quad_disk.o
+	$(CXX) -o $@ quad_disk.o $(LDFLAGS) $(LIBS)
+
+./emptydomains: emptydomains.o
+	$(CXX) -o $@ emptydomains.o $(LDFLAGS) $(LIBS)
+
+./galaxy: galaxy.o
+	$(CXX) -o $@ galaxy.o $(LDFLAGS) $(LIBS)
+
+./pdbdatabase: $(PDBOBJ)
+	$(CXX) -I../include/visit -o $@ pdbdatabase.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
+
+./correlationtest: $(PDBOBJ)
+	$(CXX) -o $@ correlationtest.o $(LDFLAGS) $(LIBS) @PDB_LIBS@ pdbdatabase_link.o
+
+./csg:  csg.o
+	$(CXX) -o $@ csg.o $(LDFLAGS) $(LIBS)
+
+./lowfrac: lowfrac.o
+	$(CXX) -o $@ lowfrac.o $(LDFLAGS) $(LIBS)
+
+./largefile: largefile.o
+	$(CXX) -o $@ largefile.o $(LDFLAGS) $(LIBS)
+
+./one_quad: one_quad.o
+	$(CXX) -o $@ one_quad.o $(LDFLAGS) $(LIBS)
+
+./fullframe: fullframe.o
+	$(CXX) -o $@ fullframe.o $(LDFLAGS) $(LIBS)
+
+install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe
+	$(INSTALL) ./bigsil $(bindir)
+	$(INSTALL) ./distribution_curves $(bindir)
+	$(INSTALL) ./degen_meshes $(bindir)
+	$(INSTALL) ./global_node $(bindir)
+	$(INSTALL) ./globe $(bindir)
+	$(INSTALL) ./multi_test $(bindir)
+	$(INSTALL) ./noise $(bindir)
+	$(INSTALL) ./noise2d $(bindir)
+	$(INSTALL) ./sid97 $(bindir)
+	$(INSTALL) ./specmix $(bindir)
+	$(INSTALL) ./testall $(bindir)
+	$(INSTALL) ./tire $(bindir)
+	$(INSTALL) ./wave $(bindir)
+	$(INSTALL) ./quad_disk $(bindir)
+	$(INSTALL) ./emptydomains $(bindir)
+	$(INSTALL) ./galaxy $(bindir)
+	$(INSTALL) ./csg $(bindir)
+	$(INSTALL) ./lowfrac $(bindir)
+	$(INSTALL) ./largefile $(bindir)
+	$(INSTALL) ./one_quad $(bindir)
+	$(INSTALL) ./fullframe $(bindir)
+
+#
+# Inference rules for compressed binary data files
+#
+.SUFFIXES: .tar.gz .tar.bz .tar.bz2 .gz .bz .bz2
+
+.tar.bz2:
+	bunzip2 < $@.tar.bz2 | tar xvf -
+	touch $@
+
+.tar.bz:
+	bunzip < $@.tar.bz | tar xvf -
+	touch $@
+
+.tar.gz:
+	gunzip < $@.tar.gz | tar xvf -
+	touch $@
+
+.bz2:
+	bunzip2 < $@.bz2 > $@
+	touch $@
+
+.bz:
+	bunzip < $@.bz > $@
+	touch $@
+
+.gz:
+	gunzip < $@.gz > $@
+	touch $@
+
+##
+## Automatic dependency stuff
+##
+@TARGETS@
+@LIBTARGETS@

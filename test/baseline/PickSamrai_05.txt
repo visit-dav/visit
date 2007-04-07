@@ -1,0 +1,130 @@
+
+Testing front:
+
+A:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch4 
+Point: <0.803403, 0.553261>
+Zone:  95
+Incident Nodes:  106  107  115  116  
+
+B:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch4 
+Point: <0.803403, 0.553261>
+Zone:  95
+Incident Nodes:  106  107  115  116  
+
+C:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch4 
+Point: <0.803403, 0.553261>
+Zone:  95
+Incident Nodes:  106  107  115  116  
+Distance to front:  <nodal> 
+    (106) = 0.320268
+    (107) = 0.351518
+    (115) = 0.357787
+    (116) = 0.389037
+
+
+D:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch4 
+Point: <0.803403, 0.553261>
+Zone:  95
+Incident Nodes:  106  107  115  116  
+Distance to front:  <nodal> 
+    (106) = 0.320268
+    (107) = 0.351518
+    (115) = 0.357787
+    (116) = 0.389037
+
+
+E:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch4 
+Point: <0.781250, 0.562500>
+Node:  115
+Incident Zones:  94  95  
+
+F:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch4 
+Point: <0.781250, 0.562500>
+Node:  115
+Incident Zones:  94  95  
+
+G:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch4 
+Point: <0.781250, 0.562500>
+Node:  115
+Incident Zones:  94  95  
+Distance to front:  <nodal> = 0.357787
+
+
+H:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch4 
+Point: <0.781250, 0.562500>
+Node:  115
+Incident Zones:  94  95  
+Distance to front:  <nodal> = 0.357787
+
+
+I:  summary.samrai  timestep 0
+amr_mesh level 0 patch level0,patch0 
+Point: <0.803403, 0.569949>
+Zone:  156
+Incident Nodes:  165  166  182  183  
+
+J:  summary.samrai  timestep 0
+amr_mesh level 0 patch level0,patch0 
+Point: <0.803403, 0.569949>
+Zone:  156
+Incident Nodes:  165  166  182  183  
+
+K:  summary.samrai  timestep 0
+amr_mesh level 0 patch level0,patch0 
+Point: <0.803403, 0.569949>
+Zone:  156
+Incident Nodes:  165  166  182  183  
+Distance to front:  <nodal> 
+    (165) = 0.326537
+    (166) = 0.389037
+    (182) = 0.391421
+    (183) = 0.453921
+
+
+L:  summary.samrai  timestep 0
+amr_mesh level 0 patch level0,patch0 
+Point: <0.803403, 0.569949>
+Zone:  156
+Incident Nodes:  165  166  182  183  
+Distance to front:  <nodal> 
+    (165) = 0.326537
+    (166) = 0.389037
+    (182) = 0.391421
+    (183) = 0.453921
+
+
+M:  summary.samrai  timestep 0
+amr_mesh level 0 patch level0,patch0 
+Point: <0.812500, 0.562500>
+Node:  166
+Incident Zones:  156  157  141  
+
+N:  summary.samrai  timestep 0
+amr_mesh level 0 patch level0,patch0 
+Point: <0.812500, 0.562500>
+Node:  166
+Incident Zones:  156  157  141  
+
+O:  summary.samrai  timestep 0
+amr_mesh level 0 patch level0,patch0 
+Point: <0.812500, 0.562500>
+Node:  166
+Incident Zones:  156  157  141  
+Distance to front:  <nodal> = 0.389037
+
+
+P:  summary.samrai  timestep 0
+amr_mesh level 0 patch level0,patch0 
+Point: <0.812500, 0.562500>
+Node:  166
+Incident Zones:  156  157  141  
+Distance to front:  <nodal> = 0.389037
+

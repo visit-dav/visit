@@ -1,0 +1,2 @@
+The total RevolvedSurfaceArea is 19.547689 cm^2
+This query was calculated by finding the external line segments of the data set and then calculating the surface area of these line segments when revolved into 3D.

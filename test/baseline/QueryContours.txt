@@ -1,0 +1,49 @@
+For 10 contours of noise.silo (hardyglobal)
+The total Surface Area is 6659.878252 parsec^2
+
+MinMax Actual:
+hardyglobal -- Min = 1.531371 (node 9677 at coord <1.020408, 7.551021, -8.962650>)
+hardyglobal -- Max = 5.453824 (node 6213 at coord <-4.693878, -0.204082, -9.103607>)
+
+
+MinMax Original:
+hardyglobal -- Min = 1.095543 (node 105026 at coord <0.612245, -10.000000, 7.142858>)
+hardyglobal -- Max = 5.889652 (node 83943 at coord <7.551021, 1.428572, 3.469387>)
+
+
+The original number of nodes is 125000.
+The actual number of nodes is 62182.
+The original number of zones is 117649.
+The actual number of zones is 120763.
+
+For 4 contours of noise.silo (hardyglobal)
+The total Surface Area is 2988.529559 parsec^2
+
+MinMax Actual:
+hardyglobal -- Min = 2.054365 (node 3858 at coord <-6.734694, 1.020408, -9.710516>)
+hardyglobal -- Max = 4.930830 (node 6163 at coord <-4.693878, -0.612245, -9.310832>)
+
+
+MinMax Original:
+hardyglobal -- Min = 1.095543 (node 105026 at coord <0.612245, -10.000000, 7.142858>)
+hardyglobal -- Max = 5.889652 (node 83943 at coord <7.551021, 1.428572, 3.469387>)
+
+
+The original number of nodes is 125000.
+The actual number of nodes is 27905.
+The original number of zones is 117649.
+The actual number of zones is 54195.
+
+For 10 contours of rect3d.silo (d)
+The total Surface Area is 12.751493 cm^2
+The original number of nodes is 39401.
+The actual number of nodes is 22732.
+The original number of zones is 36000.
+The actual number of zones is 43520.
+
+For 4 contours of rect3d.silo (d)
+The total Surface Area is 5.872144 cm^2
+The original number of nodes is 39401.
+The actual number of nodes is 10604.
+The original number of zones is 36000.
+The actual number of zones is 20192.

@@ -1,0 +1,588 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">1.2.3</Field>
+    <Object name="VIEWER">
+        <Object name="DEFAULT_VALUES">
+            <Object name="GlobalAttributes">
+                <Field name="applyOperator" type="bool">false</Field>
+                <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
+            </Object>
+            <Object name="HostProfileList">
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">blue.llnl.gov</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue???.pacific.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel pdebug</Field>
+                    <Field name="host" type="string">blue.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">4</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">blue,pdebug</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue???.pacific.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel pbatch</Field>
+                    <Field name="host" type="string">blue.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">4</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">blue,pbatch</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">blue.pacific.llnl.gov blue???.pacific.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">frost.llnl.gov</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost???.pacific.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel pdebug</Field>
+                    <Field name="host" type="string">frost.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">frost,pdebug</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost???.pacific.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel pbatch</Field>
+                    <Field name="host" type="string">frost.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">32</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">frost,pbatch</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">frost.pacific.llnl.gov frost???.pacific.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">gps15.llnl.gov gps16.llnl.gov</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="hostAliases" type="string">gps??.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel</Field>
+                    <Field name="host" type="string">gps15.llnl.gov gps16.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">2</Field>
+                    <Field name="numNodes" type="int">0</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">dmpirun</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">gps??.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">riptide.llnl.gov</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="hostAliases" type="string">riptide</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel</Field>
+                    <Field name="host" type="string">riptide.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">4</Field>
+                    <Field name="numNodes" type="int">0</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">riptide</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">snow.llnl.gov</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="hostAliases" type="string">snow.llnl.gov snow??.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel pbatch</Field>
+                    <Field name="host" type="string">snow.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">16</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">snow,pbatch</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="timeLimitSet" type="bool">true</Field>
+                    <Field name="timeLimit" type="string">30m</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">psub</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">snow.llnl.gov snow??.llnl.gov</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">pengra.llnl.gov</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="hostAliases" type="string">pengra?.llnl.gov pengra??.llnl.gov pengra? pengra?? pengra???</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel interactive pdebug</Field>
+                    <Field name="host" type="string">pengra.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">2</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">pdebug</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">prun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">pengra?.llnl.gov pengra??.llnl.gov pengra? pengra?? pengra???</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel batch pbatch</Field>
+                    <Field name="host" type="string">pengra.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">4</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">pdebug</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">psub/prun</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">pengra?.llnl.gov pengra??.llnl.gov pengra? pengra?? pengra???</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">serial</Field>
+                    <Field name="host" type="string">pvc.llnl.gov</Field>
+                    <Field name="active" type="bool">true</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc# pvc## pvc###</Field>
+                </Object>
+                <Object name="HostProfile">
+                    <Field name="profileName" type="string">parallel pbatch</Field>
+                    <Field name="host" type="string">pvc.llnl.gov</Field>
+                    <Field name="numProcessors" type="int">4</Field>
+                    <Field name="numNodesSet" type="bool">true</Field>
+                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="partitionSet" type="bool">true</Field>
+                    <Field name="partition" type="string">pbatch</Field>
+                    <Field name="bankSet" type="bool">true</Field>
+                    <Field name="bank" type="string">bdivp</Field>
+                    <Field name="launchMethodSet" type="bool">true</Field>
+                    <Field name="launchMethod" type="string">psub/prun</Field>
+                    <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
+                    <Field name="parallel" type="bool">true</Field>
+                    <Field name="hostAliases" type="string">pvc#.llnl.gov pvc##.llnl.gov pvc# pvc## pvc###</Field>
+                </Object>
+                <Field name="activeProfile" type="int">1</Field>
+            </Object>
+            <Object name="ColorTableAttributes">
+                <Field name="activeContinuous" type="string">hot</Field>
+                <Field name="activeDiscrete" type="string">levels</Field>
+                <Object name="table00">
+                    <Field name="ctName" type="string">caleblack</Field>
+                    <Field name="controlPts" type="floatVector">0 0 0 0 0.17 0 0 255 0.34 0 255 255 0.5 0 255 0 0.67 255 255 0 0.84 255 0 0 1 255 0 255 </Field>
+                </Object>
+                <Object name="table01">
+                    <Field name="ctName" type="string">calewhite</Field>
+                    <Field name="controlPts" type="floatVector">0 255 255 255 0.17 0 0 255 0.34 0 255 255 0.5 0 255 0 0.67 255 255 0 0.84 255 0 0 1 255 0 255 </Field>
+                </Object>
+                <Object name="table02">
+                    <Field name="ctName" type="string">contoured</Field>
+                    <Field name="equal" type="bool">true</Field>
+                    <Field name="smooth" type="bool">false</Field>
+                    <Field name="controlPts" type="floatVector">0 0 0 255 0.333 0 255 0 0.666 255 255 0 1 255 0 0 </Field>
+                </Object>
+                <Object name="table03">
+                    <Field name="ctName" type="string">gray</Field>
+                    <Field name="controlPts" type="floatVector">0 0 0 0 1 255 255 255 </Field>
+                </Object>
+                <Object name="table04">
+                    <Field name="ctName" type="string">hot</Field>
+                    <Field name="controlPts" type="floatVector">0 0 0 255 0.25 0 255 255 0.5 0 255 0 0.75 255 255 0 1 255 0 0 </Field>
+                </Object>
+                <Object name="table05">
+                    <Field name="ctName" type="string">levels</Field>
+                    <Field name="equal" type="bool">true</Field>
+                    <Field name="smooth" type="bool">false</Field>
+                    <Field name="discrete" type="bool">true</Field>
+                    <Field name="controlPts" type="floatVector">0 255 0 0 0.03 0 255 0 0.07 0 0 255 0.1 0 255 255 0.14 255 0 255 0.17 255 255 0 0.21 255 135 0 0.24 255 0 135 0.28 168 168 168 0.31 255 68 68 0.34 99 255 99 0.38 99 99 255 0.41 40 165 165 0.45 255 99 255 0.48 255 255 99 0.52 255 170 99 0.55 170 79 255 0.59 150 0 0 0.62 0 150 0 0.66 0 0 150 0.69 0 109 109 0.72 150 0 150 0.76 150 150 0 0.79 150 84 0 0.83 160 0 79 0.86 255 104 28 0.9 0 170 81 0.93 68 255 124 0.97 0 130 255 1 130 0 255 </Field>
+                </Object>
+                <Object name="table06">
+                    <Field name="ctName" type="string">rainbow</Field>
+                    <Field name="controlPts" type="floatVector">0 255 0 255 0.2 0 0 255 0.4 0 255 255 0.6 0 255 0 0.8 255 255 0 1 255 0 0 </Field>
+                </Object>
+                <Object name="table07">
+                    <Field name="ctName" type="string">xray</Field>
+                    <Field name="controlPts" type="floatVector">0 255 255 255 1 0 0 0 </Field>
+                </Object>
+                <Field name="Ntables" type="int">8</Field>
+            </Object>
+            <Object name="ExpressionList">
+                <Object name="Expression">
+                    <Field name="name" type="string">vel</Field>
+                    <Field name="definition" type="string">{u,v,w}</Field>
+                    <Field name="type" type="string">VectorMeshVar</Field>
+                    <Field name="fromDB" type="bool">true</Field>
+                    <Field name="dbName" type="string"></Field>
+                </Object>
+                <Object name="Expression">
+                    <Field name="name" type="string">speed</Field>
+                    <Field name="definition" type="string">sqrt(u*u+v*v+w*w)</Field>
+                    <Field name="fromDB" type="bool">true</Field>
+                    <Field name="dbName" type="string"></Field>
+                </Object>
+            </Object>
+            <Object name="AnimationAttributes">
+                <Field name="pipelineCachingMode" type="bool">true</Field>
+            </Object>
+            <Object name="AnnotationAttributes">
+                <Object name="backgroundColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="foregroundColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="gradientColor1">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 255 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="gradientColor2">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="ViewCurveAttributes">
+                <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
+            </Object>
+            <Object name="View2DAttributes">
+                <Field name="windowCoords" type="doubleArray" length="4">0 1 0 1 </Field>
+                <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
+            </Object>
+            <Object name="View3DAttributes">
+                <Field name="viewNormal" type="doubleArray" length="3">-0.58 -0.68 0.43 </Field>
+                <Field name="focus" type="doubleArray" length="3">-2.03202 0.108448 0.5 </Field>
+                <Field name="viewUp" type="doubleArray" length="3">-0.25 6 0.7 </Field>
+                <Field name="parallelScale" type="double">0.513428</Field>
+                <Field name="nearPlane" type="double">-1.02686</Field>
+                <Field name="farPlane" type="double">1.02686</Field>
+            </Object>
+            <Object name="ViewerWindowManagerAttributes">
+                <Object name="ActionConfigurations">
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Mode</Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Tools</Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Window</Field>
+                        <Field name="actions" type="stringVector">"SetActiveWindowRPC" "AddWindowRPC" "CloneWindowRPC" "DeleteWindowRPC" "SetWindowLayoutRPC" "ToggleSpinModeRPC" "ToggleBoundingBoxModeRPC" "InvertBackgroundRPC" </Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">View</Field>
+                        <Field name="actions" type="stringVector">"TogglePerspectiveViewRPC" "ToggleLockViewModeRPC" "ResetViewRPC" "RecenterViewRPC" "UndoViewRPC" "SaveViewRPC" "ToggleFullFrameRPC" </Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Animation</Field>
+                        <Field name="actions" type="stringVector">"AnimationPreviousFrameRPC" "AnimationReversePlayRPC" "AnimationStopRPC" "AnimationPlayRPC" "AnimationNextFrameRPC" </Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Operators</Field>
+                        <Field name="actions" type="stringVector">"AddOperatorRPC" "RemoveLastOperatorRPC" "RemoveAllOperatorsRPC" </Field>
+                        <Field name="visible" type="bool">false</Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Plots</Field>
+                        <Field name="actions" type="stringVector">"AddPlotRPC" "DrawPlotsRPC" "HideActivePlotsRPC" "DeleteActivePlotsRPC" </Field>
+                        <Field name="visible" type="bool">false</Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Clear</Field>
+                        <Field name="actions" type="stringVector">"ClearWindowRPC" "ClearAllWindowsRPC" "ClearPickPointsRPC" "ClearRefLinesRPC" </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="WindowInformation">
+                <Field name="viewExtentsType" type="int">1</Field>
+            </Object>
+            <Object name="BoundaryAttributes">
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="ContourAttributes">
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="CurveAttributes">
+                <Object name="color">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="FilledBoundaryAttributes">
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="HistogramAttributes">
+                <Object name="color">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="MeshAttributes">
+                <Object name="meshColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="opaqueColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="PseudocolorAttributes">
+                <Field name="pointSize" type="double">1</Field>
+            </Object>
+            <Object name="SubsetAttributes">
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="SurfaceAttributes">
+                <Object name="surfaceColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="wireframeColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="TensorAttributes">
+                <Object name="tensorColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="VectorAttributes">
+                <Object name="vectorColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="SliceAttributes">
+                <Field name="originIntercept" type="double">0</Field>
+                <Field name="normal" type="doubleArray" length="3">0 -1 0 </Field>
+                <Field name="axisType" type="string">YAxis</Field>
+                <Field name="project2d" type="bool">true</Field>
+            </Object>
+            <Object name="PluginManagerAttributes">
+                <Field name="name" type="stringVector">"Streamline" "Boundary" "Contour" "Curve" "FilledBoundary" "Mesh" "Pseudocolor" "Subset" "Surface" "Vector" "Volume" "Box" "Clip" "Cone" "IndexSelect" "Isosurface" "Lineout" "OnionPeel" "Reflect" "Slice" "SphereSlice" "Threshold" "Transform" "Histogram" "ThreeSlice" "Tensor" </Field>
+                <Field name="type" type="stringVector">"plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "plot" "operator" "plot" </Field>
+                <Field name="version" type="stringVector">"1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.1" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" </Field>
+                <Field name="id" type="stringVector">"Streamline_1.0" "Boundary_1.0" "Contour_1.0" "Curve_1.0" "FilledBoundary_1.0" "Mesh_1.0" "Pseudocolor_1.0" "Subset_1.0" "Surface_1.0" "Vector_1.0" "Volume_1.1" "Box_1.0" "Clip_1.0" "Cone_1.0" "IndexSelect_1.0" "Isosurface_1.0" "Lineout_1.0" "OnionPeel_1.0" "Reflect_1.0" "Slice_1.0" "SphereSlice_1.0" "Threshold_1.0" "Transform_1.0" "Histogram_1.0" "ThreeSlice_1.0" "Tensor_1.0" </Field>
+                <Field name="enabled" type="intVector">0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 </Field>
+            </Object>
+        </Object>
+        <Object name="ViewerSubject">
+            <Object name="ViewerWindowManager">
+                <Field name="activeWindow" type="int">0</Field>
+                <Field name="lineoutWindow" type="int">-1</Field>
+                <Object name="Windows">
+                    <Object name="ViewerWindow">
+                        <Field name="windowSize" type="intArray" length="2">1126 1126 </Field>
+                        <Field name="windowLocation" type="intArray" length="2">408 0 </Field>
+                        <Field name="cameraView" type="bool">false</Field>
+                        <Field name="maintainView" type="bool">false</Field>
+                        <Field name="viewIsLocked" type="bool">false</Field>
+                        <Field name="viewExtentsType" type="string">AVT_ACTUAL_EXTENTS</Field>
+                        <Field name="timeLocked" type="bool">false</Field>
+                        <Field name="toolsLocked" type="bool">false</Field>
+                        <Field name="fullFrame" type="bool">false</Field>
+                        <Field name="interactionMode" type="string">NAVIGATE</Field>
+                        <Object name="AnnotationAttributes">
+                            <Object name="backgroundColor">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                                </Object>
+                            </Object>
+                            <Object name="foregroundColor">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                </Object>
+                            </Object>
+                            <Object name="gradientColor1">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">0 0 255 255 </Field>
+                                </Object>
+                            </Object>
+                            <Object name="gradientColor2">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                </Object>
+                            </Object>
+                        </Object>
+                        <Field name="scalableRendering" type="bool">false</Field>
+                        <Field name="scalableThreshold" type="int">2147483647</Field>
+                        <Field name="notifyForEachRender" type="bool">false</Field>
+                        <Field name="surfaceRepresentation" type="int">0</Field>
+                        <Field name="immediateModeRendering" type="bool">false</Field>
+                        <Field name="stereoRendering" type="bool">false</Field>
+                        <Field name="stereoType" type="int">2</Field>
+                        <Field name="antialiasing" type="bool">false</Field>
+                        <Object name="ViewCurveAttributes">
+                            <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
+                        </Object>
+                        <Object name="View2DAttributes">
+                            <Field name="windowCoords" type="doubleArray" length="4">0 1 0 1 </Field>
+                            <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
+                        </Object>
+                        <Object name="View3DAttributes">
+                            <Field name="viewNormal" type="doubleArray" length="3">-0.58 -0.68 0.43 </Field>
+                            <Field name="focus" type="doubleArray" length="3">-2.03202 0.108448 0.5 </Field>
+                            <Field name="viewUp" type="doubleArray" length="3">-0.25 6 0.7 </Field>
+                            <Field name="parallelScale" type="double">0.513428</Field>
+                            <Field name="nearPlane" type="double">-1.02686</Field>
+                            <Field name="farPlane" type="double">1.02686</Field>
+                        </Object>
+                        <Object name="ViewerAnimation">
+                            <Field name="nFrames" type="int">1</Field>
+                            <Field name="curFrame" type="int">0</Field>
+                            <Field name="pipelineCaching" type="bool">true</Field>
+                            <Field name="playbackMode" type="string">Looping</Field>
+                            <Object name="ViewerPlotList">
+                                <Field name="hostDatabaseName" type="string">localhost:../data/curv3d.silo</Field>
+                                <Field name="hostName" type="string">localhost</Field>
+                                <Field name="databaseName" type="string">../data/curv3d.silo</Field>
+                                <Field name="nPlots" type="int">1</Field>
+                                <Field name="keyframeMode" type="bool">false</Field>
+                                <Object name="plot00">
+                                    <Field name="pluginID" type="string">Pseudocolor_1.0</Field>
+                                    <Field name="hostName" type="string">localhost</Field>
+                                    <Field name="databaseName" type="string">../data/curv3d.silo</Field>
+                                    <Field name="variableName" type="string">d</Field>
+                                    <Field name="beginFrame" type="int">0</Field>
+                                    <Field name="endFrame" type="int">0</Field>
+                                    <Field name="active" type="bool">true</Field>
+                                    <Field name="hidden" type="bool">false</Field>
+                                    <Field name="realized" type="bool">true</Field>
+                                    <Object name="CompactSILRestrictionAttributes">
+                                        <Field name="useSet" type="unsignedCharVector">2 2 2 2 </Field>
+                                        <Field name="topSet" type="int">0</Field>
+                                    </Object>
+                                    <Object name="ViewerPlot">
+                                        <Field name="spatialExtentsType" type="string">AVT_ACTUAL_EXTENTS</Field>
+                                        <Field name="bgColor" type="doubleArray" length="3">1 1 1 </Field>
+                                        <Field name="fgColor" type="doubleArray" length="3">0 0 0 </Field>
+                                        <Field name="expandedFlag" type="bool">false</Field>
+                                        <Object name="PseudocolorAttributes">
+                                            <Field name="pointSize" type="double">1</Field>
+                                        </Object>
+                                        <Object name="Operators">
+                                            <Field name="activeOperatorIndex" type="int">0</Field>
+                                            <Object name="operator00">
+                                                <Field name="operatorType" type="string">OnionPeel_1.0</Field>
+                                                <Object name="ViewerOperator">
+                                                    <Object name="OnionPeelAttributes">
+                                                        <Field name="index" type="intVector">0 </Field>
+                                                    </Object>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                        <Object name="plotKeyframes">
+                                            <Object name="AttributeSubjectMap">
+                                                <Field name="indices" type="intVector">0 </Field>
+                                                <Object name="attributes">
+                                                    <Object name="PseudocolorAttributes">
+                                                        <Field name="pointSize" type="double">1</Field>
+                                                    </Object>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                        <Object name="databaseKeyframes">
+                                            <Object name="AttributeSubjectMap">
+                                                <Field name="indices" type="intVector">0 </Field>
+                                                <Object name="attributes">
+                                                    <Object name="DatabaseAttributes">
+                                                    </Object>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                    </Object>
+                                </Object>
+                            </Object>
+                        </Object>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="ViewerQueryManager">
+                <Field name="baseDesignator" type="char">A</Field>
+                <Field name="cycleDesignator" type="bool">false</Field>
+                <Field name="colorIndex" type="int">0</Field>
+            </Object>
+        </Object>
+    </Object>
+</Object>

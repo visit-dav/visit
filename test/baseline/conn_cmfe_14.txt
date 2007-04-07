@@ -1,0 +1,2 @@
+Pseudocolor:  (ExpressionException)
+viewer: The databases cannot be compared because they have a different number of points for domain 0.  The point counts are 20042 and 18898.  It appears that you have removed some materials.  Databases cannot be compared in this manner when materials have been removed (and the simulation is Eulerian).

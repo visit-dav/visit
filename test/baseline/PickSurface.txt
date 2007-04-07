@@ -1,0 +1,312 @@
+
+A:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: (in transformed space) 
+       <0.454920, 0.735502, 0.263848>
+Zone:  26983
+Incident Nodes:  28564  28565  28595  28596  29835  29836  29866  29867  
+d:  <zonal> = 0.255257
+
+
+B:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.466667, 0.500000, 0.733333>
+Node:  28596
+Incident Zones:  27013  26983  25783  25813  27014  26984  25784  25814  
+d:  <zonal> 
+    (27013) = 0.255257
+    (26983) = 0.255257
+    (25783) = 0.222712
+    (25813) = 0.222712
+    (27014) = 0.250867
+    (26984) = 0.250867
+    (25784) = 0.217666
+    (25814) = 0.217666
+
+
+C:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: (in transformed space) 
+       <0.714404, 0.811647, 0.433333>
+Zone:  29391
+Incident Nodes:  31114  31115  31145  31146  32385  32386  32416  32417  
+d:  <zonal> = 0.383899
+
+
+D:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.733333, 0.500000, 0.800000>
+Node:  31146
+Incident Zones:  29421  29391  28191  28221  29422  29392  28192  28222  
+d:  <zonal> 
+    (29421) = 0.383899
+    (29391) = 0.383899
+    (28191) = 0.356901
+    (28221) = 0.356901
+    (29422) = 0.403651
+    (29392) = 0.403651
+    (28192) = 0.378066
+    (28222) = 0.378066
+
+
+E:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: (in transformed space) 
+       <0.494850, 0.656489, 0.162047>
+Zone:  23384
+Incident Nodes:  24752  24753  24783  24784  26023  26024  26054  26055  
+d:  <zonal> = 0.15144
+
+
+F:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.500000, 0.500000, 0.666667>
+Node:  26055
+Incident Zones:  24614  24584  23384  23414  24615  24585  23385  23415  
+d:  <zonal> 
+    (24614) = 0.184513
+    (24584) = 0.184513
+    (23384) = 0.15144
+    (23414) = 0.15144
+    (24615) = 0.184513
+    (24585) = 0.184513
+    (23385) = 0.15144
+    (23415) = 0.15144
+
+
+G:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: (in transformed space) 
+       <0.087001, 0.851113, 0.634607>
+Zone:  30572
+Incident Nodes:  32366  32367  32397  32398  33637  33638  33668  33669  
+d:  <zonal> = 0.544304
+
+
+H:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.100000, 0.500000, 0.866667>
+Node:  33669
+Incident Zones:  31802  31772  30572  30602  31803  31773  30573  30603  
+d:  <zonal> 
+    (31802) = 0.566314
+    (31772) = 0.566314
+    (30572) = 0.544304
+    (30602) = 0.544304
+    (31803) = 0.542259
+    (31773) = 0.542259
+    (30573) = 0.519231
+    (30603) = 0.519231
+
+
+I:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: (in transformed space) 
+       <0.444309, 0.941465, 0.515478>
+Zone:  34183
+Incident Nodes:  36190  36191  36221  36222  37461  37462  37492  37493  
+d:  <zonal> = 0.452942
+
+
+J:  rect3d.silo  timestep 0
+quadmesh3d 
+Point: <0.433333, 0.500000, 0.933333>
+Node:  36221
+Incident Zones:  34212  34182  32982  33012  34213  34183  32983  33013  
+d:  <zonal> 
+    (34212) = 0.457822
+    (34182) = 0.457822
+    (32982) = 0.425102
+    (33012) = 0.425102
+    (34213) = 0.452942
+    (34183) = 0.452942
+    (32983) = 0.419842
+    (33013) = 0.419842
+
+
+K:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <-2.101084, 3.566848>
+Zone:  860
+Incident Nodes:  888  889  920  919  
+p:  <zonal> = 0.242018
+
+
+L:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <-2.087500, 3.615656>
+Node:  919
+Incident Zones:  889  859  890  860  
+p:  <zonal> 
+    (889) = 0.237709
+    (859) = 0.242018
+    (890) = 0.237709
+    (860) = 0.242018
+
+
+M:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <1.153615, 1.968047>
+Zone:  99
+Incident Nodes:  102  103  134  133  
+p:  <zonal> = 0.442576
+
+
+N:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <1.150000, 1.991858>
+Node:  134
+Incident Zones:  129  99  130  100  
+p:  <zonal> 
+    (129) = 0.428376
+    (99) = 0.442576
+    (130) = 0.428376
+    (100) = 0.442576
+
+
+O:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <-0.942236, 1.896392>
+Zone:  49
+Incident Nodes:  50  51  82  81  
+p:  <zonal> = 0.474
+
+
+P:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <-0.874484, 1.964123>
+Node:  81
+Incident Zones:  78  48  79  49  
+p:  <zonal> 
+    (78) = 0.457749
+    (48) = 0.474
+    (79) = 0.457749
+    (49) = 0.474
+
+
+Q:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <0.249813, 3.224246>
+Zone:  494
+Incident Nodes:  510  511  542  541  
+p:  <zonal> = 0.309295
+
+
+R:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <0.334491, 3.182470>
+Node:  510
+Incident Zones:  493  463  494  464  
+p:  <zonal> 
+    (493) = 0.309295
+    (463) = 0.316629
+    (494) = 0.309295
+    (464) = 0.316629
+
+
+S:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <1.971888, 2.394670>
+Zone:  428
+Incident Nodes:  442  443  474  473  
+p:  <zonal> = 0.324321
+
+
+T:  curv2d.silo  timestep 0
+curvmesh2d 
+Point: <2.091033, 2.322328>
+Node:  473
+Incident Zones:  457  427  458  428  
+p:  <zonal> 
+    (457) = 0.316629
+    (427) = 0.324321
+    (458) = 0.316629
+    (428) = 0.324321
+
+
+The next three results should be the same.
+
+U:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <2.697451, 2.795078>
+Zone:  3
+Incident Nodes:  12  11  4  
+d:  <nodal> 
+    (12) = 2
+    (11) = 0.707107
+    (4) = 2
+
+
+V:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <2.833333, 2.833333>
+Zone:  3
+Incident Nodes:  12  11  4  
+d:  <nodal> 
+    (12) = 2
+    (11) = 0.707107
+    (4) = 2
+
+
+W:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <2.749170, 2.797530>
+Zone:  3
+Incident Nodes:  12  11  4  
+d:  <nodal> 
+    (12) = 2
+    (11) = 0.707107
+    (4) = 2
+
+
+The next three results should be the same.
+
+X:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <2.500000, 2.500000>
+Node:  11
+Incident Zones:  3  6  7  11  
+d:  <nodal> = 0.707107
+
+
+Y:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <2.500000, 2.500000>
+Node:  11
+Incident Zones:  3  6  7  11  
+d:  <nodal> = 0.707107
+
+
+Z:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <2.500000, 2.500000>
+Node:  11
+Incident Zones:  3  6  7  11  
+d:  <nodal> = 0.707107
+
+
+The next three results should be the same.
+
+a:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <4.000000, 2.000000>
+Node:  4
+Incident Zones:  1  3  6  
+d:  <nodal> = 2
+
+
+b:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <4.000000, 2.000000>
+Node:  4
+Incident Zones:  1  3  6  
+d:  <nodal> = 2
+
+
+c:  ucd2d.silo  timestep 0
+ucdmesh2d 
+Point: <4.000000, 2.000000>
+Node:  4
+Incident Zones:  1  3  6  
+d:  <nodal> = 2
+

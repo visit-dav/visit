@@ -1,0 +1,40 @@
+
+A:  globe.silo  timestep 0
+mesh1 
+Point: <-0.468061, -0.088868, -1.483857>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+
+
+B:  globe.silo  timestep 0
+mesh1 
+Point: <-0.447555, -0.072027, -1.412534>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+
+
+C:  globe.silo  timestep 0
+mesh1 
+Point: <-0.318815, -0.054378, -1.007694>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+
+
+D:  globe.silo  timestep 0
+mesh1 
+Point: <-0.500057, -0.017579, -1.547581>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+
+
+E:  globe.silo  timestep 0
+mesh1 
+Point: <-0.498085, -0.080379, -1.585757>
+Zone:  30
+Incident Nodes:  2  0  561  615  
+mat1:  1 
+

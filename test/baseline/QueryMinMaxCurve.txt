@@ -1,0 +1,41 @@
+
+For entire curve at frame 0:
+parabolic -- Min = 0.000000 (node 0 at coord <0.000000>)
+parabolic -- Max = 0.000000 (node 0 at coord <0.000000>)
+
+For entire curve at frame 27:
+parabolic -- Min = 0.000000 (node 0 at coord <0.000000>)
+parabolic -- Max = 0.272699 (node 49 at coord <0.494949>)
+
+For entire curve at frame 56:
+parabolic -- Min = 0.000000 (node 0 at coord <0.000000>)
+parabolic -- Max = 0.565599 (node 49 at coord <0.494949>)
+
+For entire curve at frame 73:
+parabolic -- Min = 0.000000 (node 0 at coord <0.000000>)
+parabolic -- Max = 0.737299 (node 49 at coord <0.494949>)
+
+For entire curve at frame 91:
+parabolic -- Min = 0.000000 (node 0 at coord <0.000000>)
+parabolic -- Max = 0.919098 (node 49 at coord <0.494949>)
+
+For clipped curve at frame 0:
+parabolic -- Min = 0.000000 (node 49 at coord <0.500000>)
+parabolic -- Max = 0.000000 (node 49 at coord <0.500000>)
+
+For clipped curve at frame 27:
+parabolic -- Min = 0.000000 (node 99 at coord <1.000000>)
+parabolic -- Max = 0.272699 (node 49 at coord <0.500000>)
+
+For clipped curve at frame 56:
+parabolic -- Min = 0.000000 (node 99 at coord <1.000000>)
+parabolic -- Max = 0.565599 (node 49 at coord <0.500000>)
+
+For clipped curve at frame 73:
+parabolic -- Min = 0.000000 (node 99 at coord <1.000000>)
+parabolic -- Max = 0.737299 (node 49 at coord <0.500000>)
+
+For clipped curve at frame 91:
+parabolic -- Min = 0.000000 (node 99 at coord <1.000000>)
+parabolic -- Max = 0.919098 (node 49 at coord <0.500000>)
+

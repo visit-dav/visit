@@ -1,0 +1,37 @@
+Eulerian for domain 1 is 1
+Eulerian for domain 2 is 1
+Eulerian for domain 3 is 1
+Eulerian for domain 4 is 1
+Eulerian for domain 5 is 1
+Eulerian for domain 6 is 1
+Eulerian for domain 7 is 1
+Eulerian for domain 8 is 1
+Eulerian for domain 9 is 1
+Eulerian for domain 10 is 1
+Eulerian for domain 11 is 1
+Eulerian for domain 12 is 1
+Eulerian for domain 13 is 1
+Eulerian for domain 14 is 0
+Eulerian for domain 15 is 1
+Eulerian for domain 16 is 1
+Eulerian for domain 17 is 1
+Eulerian for domain 18 is 1
+Eulerian for domain 19 is 1
+Eulerian for domain 20 is 1
+Eulerian for domain 21 is 1
+Eulerian for domain 22 is 1
+Eulerian for domain 23 is 1
+Eulerian for domain 24 is 1
+Eulerian for domain 25 is 1
+Eulerian for domain 26 is 1
+Eulerian for domain 27 is 1
+
+
+dist -- Min = 0.041239 (node 219 in domain 14 at coord <0.476190, 0.476190, 0.476190>)
+dist -- Max = 0.866025 (node 0 in domain 1 at coord <0.000000, 0.000000, 0.000000>)
+
+
+The total Surface Area is 6.000000
+The total Volume is 1.000000
+The actual number of nodes is 13824.
+The actual number of zones is 9261.

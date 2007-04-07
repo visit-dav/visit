@@ -1,0 +1,8 @@
+activeSource = "localhost:/data_vobs/VisIt/data/globe.silo"
+activeTimeSlider = 0
+timeSliders = ("Keyframe animation")
+timeSliderCurrentStates = (0)
+animationMode = 2
+enabled = 1
+nFrames = 10
+nFramesWasUserSet = 1

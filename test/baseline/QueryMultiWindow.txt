@@ -1,0 +1,75 @@
+Window 1 queries:
+
+pressure -- Min = 0.028868 (node 100 at coord <10.000000, 0.028868, 0.000000>)
+pressure -- Max = 1.000000 (node 42 at coord <4.200000, 1.000000, 0.000000>)
+
+The total Surface Area is 118.677560
+The total Volume is 25.000000
+
+A:  wave0310.silo  timestep 31
+quadmesh 
+Point: <7.250000, 0.122125, 2.500000>
+Zone:  7072
+Incident Nodes:  7849  7850  7951  7950  8960  8961  9062  9061  
+pressure:  <nodal> 
+    (7849) = 0.1
+    (7850) = 0.0942507
+    (7951) = 0.0942507
+    (7950) = 0.1
+    (8960) = 0.1
+    (8961) = 0.0942507
+    (9062) = 0.0942507
+    (9061) = 0.1
+
+
+
+B:  wave0310.silo  timestep 31
+quadmesh 
+Point: <5.800000, 0.280899, 3.333333>
+Node:  11168
+Incident Zones:  10057  9057  10058  9058  
+pressure:  <nodal> = 0.280899
+
+
+The total pressure is 4824.532913
+The total pressure is 6.842715
+The original number of nodes is 17776.
+The original number of zones is 15000.
+
+Window 2 queries:
+
+v -- Min = -0.125538 (node 100 at coord <10.000000, 0.609756, 0.000000>)
+v -- Max = -0.000321 (node 0 at coord <0.000000, 0.008501, 0.000000>)
+
+The total Surface Area is 115.829969
+The total Volume is 25.000000
+
+C:  wave0640.silo  timestep 64
+quadmesh 
+Point: <7.250000, 0.098552, 2.500000>
+Zone:  7072
+Incident Nodes:  7849  7850  7951  7950  8960  8961  9062  9061  
+v:  <nodal> 
+    (7849) = -0.0079846
+    (7850) = -0.00863259
+    (7951) = -0.00863259
+    (7950) = -0.0079846
+    (8960) = -0.0079846
+    (8961) = -0.00863259
+    (9062) = -0.00863259
+    (9061) = -0.0079846
+
+
+
+D:  wave0640.silo  timestep 64
+quadmesh 
+Point: <5.800000, 0.038462, 3.333333>
+Node:  11168
+Incident Zones:  10057  9057  10058  9058  
+v:  <nodal> = -0.0031358
+
+
+The total v is -244.512538
+The total v is -0.331587
+The original number of nodes is 17776.
+The original number of zones is 15000.

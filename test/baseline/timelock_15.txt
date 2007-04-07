@@ -1,0 +1,17 @@
+activeSource = "localhost:/data_vobs/VisIt/data/dbA00.pdb"
+activeTimeSlider = 0
+timeSliders = ("localhost:/data_vobs/VisIt/data/dbA00.pdb")
+timeSliderCurrentStates = (0)
+animationMode = 2
+interactionMode = 0
+boundingBoxNavigate = 1
+spin = 0
+fullFrame = 0
+perspective = 1
+lockView = 0
+lockTools = 0
+lockTime = 0
+viewExtentsType = 0
+viewDimension = 3
+viewKeyframes = ()
+cameraViewMode = 0

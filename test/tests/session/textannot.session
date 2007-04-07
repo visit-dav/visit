@@ -1,0 +1,613 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">1.2.5</Field>
+    <Object name="VIEWER">
+        <Object name="DEFAULT_VALUES">
+            <Object name="GlobalAttributes">
+                <Field name="autoUpdateFlag" type="bool">true</Field>
+                <Field name="applyOperator" type="bool">false</Field>
+                <Field name="makeDefaultConfirm" type="bool">false</Field>
+                <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
+            </Object>
+            <Object name="ColorTableAttributes">
+                <Field name="activeContinuous" type="string">hot</Field>
+                <Field name="activeDiscrete" type="string">levels</Field>
+                <Object name="table00">
+                    <Field name="ctName" type="string">caleblack</Field>
+                    <Field name="controlPts" type="floatVector">0 0 0 0 0.17 0 0 255 0.34 0 255 255 0.5 0 255 0 0.67 255 255 0 0.84 255 0 0 1 255 0 255 </Field>
+                </Object>
+                <Object name="table01">
+                    <Field name="ctName" type="string">calewhite</Field>
+                    <Field name="controlPts" type="floatVector">0 255 255 255 0.17 0 0 255 0.34 0 255 255 0.5 0 255 0 0.67 255 255 0 0.84 255 0 0 1 255 0 255 </Field>
+                </Object>
+                <Object name="table02">
+                    <Field name="ctName" type="string">contoured</Field>
+                    <Field name="equal" type="bool">true</Field>
+                    <Field name="smooth" type="bool">false</Field>
+                    <Field name="controlPts" type="floatVector">0 0 0 255 0.333 0 255 0 0.666 255 255 0 1 255 0 0 </Field>
+                </Object>
+                <Object name="table03">
+                    <Field name="ctName" type="string">gray</Field>
+                    <Field name="controlPts" type="floatVector">0 0 0 0 1 255 255 255 </Field>
+                </Object>
+                <Object name="table04">
+                    <Field name="ctName" type="string">hot</Field>
+                    <Field name="controlPts" type="floatVector">0 0 0 255 0.25 0 255 255 0.5 0 255 0 0.75 255 255 0 1 255 0 0 </Field>
+                </Object>
+                <Object name="table05">
+                    <Field name="ctName" type="string">levels</Field>
+                    <Field name="equal" type="bool">true</Field>
+                    <Field name="smooth" type="bool">false</Field>
+                    <Field name="discrete" type="bool">true</Field>
+                    <Field name="controlPts" type="floatVector">0 255 0 0 0.03 0 255 0 0.07 0 0 255 0.1 0 255 255 0.14 255 0 255 0.17 255 255 0 0.21 255 135 0 0.24 255 0 135 0.28 168 168 168 0.31 255 68 68 0.34 99 255 99 0.38 99 99 255 0.41 40 165 165 0.45 255 99 255 0.48 255 255 99 0.52 255 170 99 0.55 170 79 255 0.59 150 0 0 0.62 0 150 0 0.66 0 0 150 0.69 0 109 109 0.72 150 0 150 0.76 150 150 0 0.79 150 84 0 0.83 160 0 79 0.86 255 104 28 0.9 0 170 81 0.93 68 255 124 0.97 0 130 255 1 130 0 255 </Field>
+                </Object>
+                <Object name="table06">
+                    <Field name="ctName" type="string">rainbow</Field>
+                    <Field name="controlPts" type="floatVector">0 255 0 255 0.2 0 0 255 0.4 0 255 255 0.6 0 255 0 0.8 255 255 0 1 255 0 0 </Field>
+                </Object>
+                <Object name="table07">
+                    <Field name="ctName" type="string">xray</Field>
+                    <Field name="controlPts" type="floatVector">0 255 255 255 1 0 0 0 </Field>
+                </Object>
+                <Field name="Ntables" type="int">8</Field>
+            </Object>
+            <Object name="AnimationAttributes">
+                <Field name="pipelineCachingMode" type="bool">true</Field>
+                <Field name="playbackMode" type="string">PlayOnce</Field>
+            </Object>
+            <Object name="AnnotationAttributes">
+                <Field name="yAxisTitle2D" type="bool">false</Field>
+                <Field name="xMajorTickMinimum2D" type="double">-10</Field>
+                <Field name="xMajorTickMaximum2D" type="double">10</Field>
+                <Field name="yMajorTickMaximum2D" type="double">30</Field>
+                <Field name="xMajorTickSpacing2D" type="double">2</Field>
+                <Field name="yMajorTickSpacing2D" type="double">3</Field>
+                <Field name="xMinorTickSpacing2D" type="double">0.25</Field>
+                <Field name="yMinorTickSpacing2D" type="double">0.25</Field>
+                <Field name="xLabelFontHeight2D" type="double">0.015</Field>
+                <Field name="yLabelFontHeight2D" type="double">0.015</Field>
+                <Field name="userInfoFlag" type="bool">false</Field>
+                <Field name="axesFlag" type="bool">false</Field>
+                <Object name="backgroundColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="foregroundColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="gradientColor1">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 255 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="gradientColor2">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Field name="backgroundMode" type="string">Gradient</Field>
+            </Object>
+            <Object name="ViewCurveAttributes">
+                <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
+            </Object>
+            <Object name="View2DAttributes">
+                <Field name="windowCoords" type="doubleArray" length="4">-10 10 0 30 </Field>
+                <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
+            </Object>
+            <Object name="View3DAttributes">
+                <Field name="parallelScale" type="double">0.5</Field>
+                <Field name="nearPlane" type="double">-0.5</Field>
+                <Field name="farPlane" type="double">0.5</Field>
+            </Object>
+            <Object name="ViewerWindowManagerAttributes">
+                <Object name="ActionConfigurations">
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Mode</Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Tools</Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Window</Field>
+                        <Field name="actions" type="stringVector">"SetActiveWindowRPC" "AddWindowRPC" "CloneWindowRPC" "DeleteWindowRPC" "SetWindowLayoutRPC" "ToggleSpinModeRPC" "ToggleBoundingBoxModeRPC" "InvertBackgroundRPC" </Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">View</Field>
+                        <Field name="actions" type="stringVector">"TogglePerspectiveViewRPC" "ToggleLockViewModeRPC" "ResetViewRPC" "RecenterViewRPC" "UndoViewRPC" "SaveViewRPC" "ToggleFullFrameRPC" </Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Animation</Field>
+                        <Field name="actions" type="stringVector">"AnimationPreviousFrameRPC" "AnimationReversePlayRPC" "AnimationStopRPC" "AnimationPlayRPC" "AnimationNextFrameRPC" </Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Operators</Field>
+                        <Field name="actions" type="stringVector">"AddOperatorRPC" "RemoveLastOperatorRPC" "RemoveAllOperatorsRPC" </Field>
+                        <Field name="visible" type="bool">false</Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Plots</Field>
+                        <Field name="actions" type="stringVector">"AddPlotRPC" "DrawPlotsRPC" "HideActivePlotsRPC" "DeleteActivePlotsRPC" </Field>
+                        <Field name="visible" type="bool">false</Field>
+                    </Object>
+                    <Object name="ActionGroupDescription">
+                        <Field name="name" type="string">Clear</Field>
+                        <Field name="actions" type="stringVector">"ClearWindowRPC" "ClearAllWindowsRPC" "ClearPickPointsRPC" "ClearRefLinesRPC" </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="WindowInformation">
+                <Field name="boundingBoxNavigate" type="bool">false</Field>
+            </Object>
+            <Object name="RenderingAttributes">
+                <Object name="specularColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="BoundaryAttributes">
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="ContourAttributes">
+                <Object name="defaultPalette">
+                    <Object name="ColorControlPointList">
+                        <Field name="compactColors" type="unsignedCharVector">255 153 204 255 244 204 153 255 255 255 153 255 204 255 204 255 204 255 255 255 153 204 255 255 255 135 0 255 255 0 135 255 168 168 168 255 255 68 68 255 99 255 99 255 99 99 255 255 40 165 165 255 255 99 255 255 255 255 99 255 255 170 99 255 170 79 255 255 150 0 0 255 0 150 0 255 0 0 150 255 0 109 109 255 150 0 150 255 150 150 0 255 150 84 0 255 160 0 79 255 255 104 28 255 0 170 81 255 68 255 124 255 0 130 255 255 130 0 255 255 255 0 0 255 0 255 0 255 0 0 255 255 0 255 255 255 255 0 255 255 255 255 0 255 255 135 0 255 255 0 135 255 168 168 168 255 255 68 68 255 </Field>
+                        <Field name="compactPositions" type="floatVector">0 0.025641 0.0512821 0.0769231 0.102564 0.128205 0.153846 0.179487 0.205128 0.230769 0.25641 0.282051 0.307692 0.333333 0.358974 0.384615 0.410256 0.435897 0.461538 0.487179 0.512821 0.538462 0.564103 0.589744 0.615385 0.641026 0.666667 0.692308 0.717949 0.74359 0.769231 0.794872 0.820513 0.846154 0.871795 0.897436 0.923077 0.948718 0.974359 1 </Field>
+                        <Field name="smoothingFlag" type="bool">false</Field>
+                        <Field name="equalSpacingFlag" type="bool">true</Field>
+                        <Field name="discreteFlag" type="bool">true</Field>
+                    </Object>
+                </Object>
+                <Field name="colorTableName" type="string">contoured</Field>
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Field name="contourNLevels" type="int">4</Field>
+                <Field name="contourValue" type="doubleVector">1 2 3 4 5 6 </Field>
+                <Field name="contourMethod" type="string">Value</Field>
+            </Object>
+            <Object name="CurveAttributes">
+                <Object name="color">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="FilledBoundaryAttributes">
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="multiColor">
+                    <Object name="ColorAttributeList">
+                        <Object name="ColorAttribute">
+                            <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                        </Object>
+                        <Object name="ColorAttribute">
+                            <Field name="color" type="unsignedCharArray" length="4">0 255 0 255 </Field>
+                        </Object>
+                    </Object>
+                </Object>
+                <Field name="boundaryNames" type="stringVector">"1" "2" </Field>
+                <Field name="boundaryType" type="string">Material</Field>
+            </Object>
+            <Object name="HistogramAttributes">
+                <Object name="color">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="MeshAttributes">
+                <Object name="meshColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">153 204 255 255 </Field>
+                    </Object>
+                </Object>
+                <Field name="opaqueMode" type="string">Off</Field>
+                <Object name="opaqueColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">204 153 255 255 </Field>
+                    </Object>
+                </Object>
+                <Field name="backgroundFlag" type="bool">false</Field>
+                <Field name="foregroundFlag" type="bool">false</Field>
+            </Object>
+            <Object name="StreamlineAttributes">
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="SubsetAttributes">
+                <Object name="singleColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="multiColor">
+                    <Object name="ColorAttributeList">
+                        <Object name="ColorAttribute">
+                            <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                        </Object>
+                        <Object name="ColorAttribute">
+                            <Field name="color" type="unsignedCharArray" length="4">0 255 0 255 </Field>
+                        </Object>
+                        <Object name="ColorAttribute">
+                            <Field name="color" type="unsignedCharArray" length="4">0 0 255 255 </Field>
+                        </Object>
+                        <Object name="ColorAttribute">
+                            <Field name="color" type="unsignedCharArray" length="4">0 255 255 255 </Field>
+                        </Object>
+                    </Object>
+                </Object>
+                <Field name="subsetNames" type="stringVector">"1" "2" "3" "4" </Field>
+                <Field name="subsetType" type="string">Material</Field>
+            </Object>
+            <Object name="SurfaceAttributes">
+                <Object name="surfaceColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+                <Object name="wireframeColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="TensorAttributes">
+                <Object name="tensorColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="VectorAttributes">
+                <Object name="vectorColor">
+                    <Object name="ColorAttribute">
+                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="VolumeAttributes">
+                <Object name="colorControlPoints">
+                    <Object name="ColorControlPointList">
+                        <Object name="ColorControlPoint">
+                            <Field name="colors" type="unsignedCharArray" length="4">0 0 255 0 </Field>
+                        </Object>
+                        <Object name="ColorControlPoint">
+                            <Field name="colors" type="unsignedCharArray" length="4">0 255 255 0 </Field>
+                            <Field name="position" type="float">0.175926</Field>
+                        </Object>
+                        <Object name="ColorControlPoint">
+                            <Field name="colors" type="unsignedCharArray" length="4">0 255 0 0 </Field>
+                            <Field name="position" type="float">0.450549</Field>
+                        </Object>
+                        <Object name="ColorControlPoint">
+                            <Field name="colors" type="unsignedCharArray" length="4">255 255 0 0 </Field>
+                            <Field name="position" type="float">0.587963</Field>
+                        </Object>
+                        <Object name="ColorControlPoint">
+                            <Field name="colors" type="unsignedCharArray" length="4">255 0 0 0 </Field>
+                            <Field name="position" type="float">1</Field>
+                        </Object>
+                    </Object>
+                </Object>
+                <Field name="opacityAttenuation" type="float">0.47451</Field>
+                <Field name="resampleTarget" type="int">300000</Field>
+                <Field name="freeformOpacity" type="unsignedCharArray" length="256">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 5 23 41 64 76 87 102 117 131 146 155 175 187 211 234 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 </Field>
+                <Field name="rendererType" type="string">Texture3D</Field>
+            </Object>
+            <Object name="SliceAttributes">
+                <Field name="originIntercept" type="double">2.38034e-304</Field>
+                <Field name="originPercent" type="double">6.48695e-305</Field>
+                <Field name="normal" type="doubleArray" length="3">0 -1 0 </Field>
+                <Field name="axisType" type="string">YAxis</Field>
+                <Field name="project2d" type="bool">true</Field>
+            </Object>
+            <Object name="AppearanceAttributes">
+                <Field name="style" type="string">windows</Field>
+            </Object>
+            <Object name="PluginManagerAttributes">
+                <Field name="name" type="stringVector">"Boundary" "Contour" "Curve" "FilledBoundary" "Histogram" "Mesh" "Pseudocolor" "Streamline" "Subset" "Surface" "Vector" "Volume" "Box" "Clip" "Cone" "IndexSelect" "Isosurface" "Lineout" "OnionPeel" "Reflect" "Slice" "SphereSlice" "ThreeSlice" "Threshold" "Transform" "Tensor" "Cylinder" </Field>
+                <Field name="type" type="stringVector">"plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "plot" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "operator" "plot" "operator" </Field>
+                <Field name="version" type="stringVector">"1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.1" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" "1.0" </Field>
+                <Field name="id" type="stringVector">"Boundary_1.0" "Contour_1.0" "Curve_1.0" "FilledBoundary_1.0" "Histogram_1.0" "Mesh_1.0" "Pseudocolor_1.0" "Streamline_1.0" "Subset_1.0" "Surface_1.0" "Vector_1.0" "Volume_1.1" "Box_1.0" "Clip_1.0" "Cone_1.0" "IndexSelect_1.0" "Isosurface_1.0" "Lineout_1.0" "OnionPeel_1.0" "Reflect_1.0" "Slice_1.0" "SphereSlice_1.0" "ThreeSlice_1.0" "Threshold_1.0" "Transform_1.0" "Tensor_1.0" "Cylinder_1.0" </Field>
+                <Field name="enabled" type="intVector">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 </Field>
+            </Object>
+        </Object>
+        <Object name="ViewerSubject">
+            <Object name="ViewerWindowManager">
+                <Field name="activeWindow" type="int">0</Field>
+                <Field name="lineoutWindow" type="int">-1</Field>
+                <Object name="Windows">
+                    <Object name="ViewerWindow">
+                        <Field name="windowSize" type="intArray" length="2">1126 1126 </Field>
+                        <Field name="windowLocation" type="intArray" length="2">412 20 </Field>
+                        <Field name="cameraView" type="bool">false</Field>
+                        <Field name="maintainView" type="bool">false</Field>
+                        <Field name="viewIsLocked" type="bool">false</Field>
+                        <Field name="viewExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
+                        <Field name="timeLocked" type="bool">false</Field>
+                        <Field name="toolsLocked" type="bool">false</Field>
+                        <Field name="interactionMode" type="string">NAVIGATE</Field>
+                        <Object name="AnnotationAttributes">
+                            <Field name="yAxisTitle2D" type="bool">false</Field>
+                            <Field name="xMajorTickMinimum2D" type="double">-10</Field>
+                            <Field name="xMajorTickMaximum2D" type="double">10</Field>
+                            <Field name="yMajorTickMaximum2D" type="double">30</Field>
+                            <Field name="xMajorTickSpacing2D" type="double">2</Field>
+                            <Field name="yMajorTickSpacing2D" type="double">3</Field>
+                            <Field name="xMinorTickSpacing2D" type="double">0.25</Field>
+                            <Field name="yMinorTickSpacing2D" type="double">0.25</Field>
+                            <Field name="xLabelFontHeight2D" type="double">0.015</Field>
+                            <Field name="yLabelFontHeight2D" type="double">0.015</Field>
+                            <Field name="userInfoFlag" type="bool">false</Field>
+                            <Field name="axesFlag" type="bool">false</Field>
+                            <Object name="backgroundColor">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                                </Object>
+                            </Object>
+                            <Object name="foregroundColor">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                </Object>
+                            </Object>
+                            <Object name="gradientColor1">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">0 0 255 255 </Field>
+                                </Object>
+                            </Object>
+                            <Object name="gradientColor2">
+                                <Object name="ColorAttribute">
+                                    <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                </Object>
+                            </Object>
+                        </Object>
+                        <Field name="scalableRendering" type="bool">false</Field>
+                        <Field name="scalableThreshold" type="int">2000000</Field>
+                        <Field name="notifyForEachRender" type="bool">false</Field>
+                        <Field name="surfaceRepresentation" type="int">0</Field>
+                        <Field name="immediateModeRendering" type="bool">false</Field>
+                        <Field name="stereoRendering" type="bool">false</Field>
+                        <Field name="stereoType" type="int">2</Field>
+                        <Field name="antialiasing" type="bool">false</Field>
+                        <Field name="specularFlag" type="bool">false</Field>
+                        <Field name="specularCoeff" type="float">0.6</Field>
+                        <Field name="specularPower" type="float">10</Field>
+                        <Object name="ColorAttribute">
+                            <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                        </Object>
+                        <Object name="ViewCurveAttributes">
+                            <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
+                        </Object>
+                        <Object name="View2DAttributes">
+                            <Field name="windowCoords" type="doubleArray" length="4">-10 10 0 30 </Field>
+                            <Field name="viewportCoords" type="doubleArray" length="4">0.2 0.95 0.15 0.95 </Field>
+                        </Object>
+                        <Object name="View3DAttributes">
+                            <Field name="parallelScale" type="double">0.5</Field>
+                            <Field name="nearPlane" type="double">-0.5</Field>
+                            <Field name="farPlane" type="double">0.5</Field>
+                        </Object>
+                        <Object name="AnnotationObjectList">
+                            <Object name="AnnotationObject">
+                                <Field name="objectType" type="string">TimeSlider</Field>
+                                <Field name="visible" type="bool">true</Field>
+                                <Field name="position" type="floatArray" length="3">0.25 0.01 0 </Field>
+                                <Field name="position2" type="floatArray" length="3">0.5 0.08 0 </Field>
+                                <Object name="textColor">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 255 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="useForegroundForTextColor" type="bool">false</Field>
+                                <Object name="color1">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Object name="color2">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">255 255 0 153 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="text" type="stringVector">"The time is: $time" "%g"</Field>
+                                <Field name="intAttribute1" type="int">3</Field>
+                            </Object>
+                            <Object name="AnnotationObject">
+                                <Field name="visible" type="bool">true</Field>
+                                <Field name="position" type="floatArray" length="3">0.35 0.95 0 </Field>
+                                <Field name="position2" type="floatArray" length="3">0.3 0.3 0 </Field>
+                                <Object name="textColor">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Object name="color1">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Object name="color2">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="text" type="stringVector">"Unclassified" </Field>
+                                <Field name="fontBold" type="bool">true</Field>
+                            </Object>
+                            <Object name="AnnotationObject">
+                                <Field name="visible" type="bool">true</Field>
+                                <Field name="position" type="floatArray" length="3">0.5 0.8 0 </Field>
+                                <Field name="position2" type="floatArray" length="3">0.41 0.41 0 </Field>
+                                <Object name="textColor">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">255 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="useForegroundForTextColor" type="bool">false</Field>
+                                <Object name="color1">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Object name="color2">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="text" type="stringVector">"The quick brown fox..." </Field>
+                            </Object>
+                            <Object name="AnnotationObject">
+                                <Field name="visible" type="bool">true</Field>
+                                <Field name="position" type="floatArray" length="3">0.5 0.75 0 </Field>
+                                <Field name="position2" type="floatArray" length="3">0.41 0.41 0 </Field>
+                                <Object name="textColor">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">255 0 255 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="useForegroundForTextColor" type="bool">false</Field>
+                                <Object name="color1">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Object name="color2">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="text" type="stringVector">"The quick brown fox..." </Field>
+                                <Field name="fontFamily" type="string">Courier</Field>
+                            </Object>
+                            <Object name="AnnotationObject">
+                                <Field name="visible" type="bool">true</Field>
+                                <Field name="active" type="bool">true</Field>
+                                <Field name="position" type="floatArray" length="3">0.5 0.7 0 </Field>
+                                <Field name="position2" type="floatArray" length="3">0.41 0.41 0 </Field>
+                                <Object name="textColor">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">255 204 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="useForegroundForTextColor" type="bool">false</Field>
+                                <Object name="color1">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Object name="color2">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="text" type="stringVector">"The quick brown fox..." </Field>
+                                <Field name="fontFamily" type="string">Times</Field>
+                            </Object>
+                            <Object name="AnnotationObject">
+                                <Field name="visible" type="bool">true</Field>
+                                <Field name="position" type="floatArray" length="3">0.28 0.47 0 </Field>
+                                <Field name="position2" type="floatArray" length="3">0.41 0.41 0 </Field>
+                                <Object name="textColor">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">255 255 255 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="useForegroundForTextColor" type="bool">false</Field>
+                                <Object name="color1">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Object name="color2">
+                                    <Object name="ColorAttribute">
+                                        <Field name="color" type="unsignedCharArray" length="4">0 0 0 255 </Field>
+                                    </Object>
+                                </Object>
+                                <Field name="text" type="stringVector">"Shadow" </Field>
+                                <Field name="fontBold" type="bool">true</Field>
+                                <Field name="fontItalic" type="bool">true</Field>
+                                <Field name="fontShadow" type="bool">true</Field>
+                            </Object>
+                        </Object>
+                        <Object name="ViewerAnimation">
+                            <Field name="nFrames" type="int">23</Field>
+                            <Field name="curFrame" type="int">0</Field>
+                            <Field name="pipelineCaching" type="bool">true</Field>
+                            <Field name="playbackMode" type="string">PlayOnce</Field>
+                            <Object name="ViewerPlotList">
+                                <Field name="hostDatabaseName" type="string">localhost:../data/allinone00.pdb</Field>
+                                <Field name="hostName" type="string">localhost</Field>
+                                <Field name="databaseName" type="string">../data/allinone00.pdb</Field>
+                                <Field name="nPlots" type="int">1</Field>
+                                <Field name="keyframeMode" type="bool">false</Field>
+                                <Object name="plot00">
+                                    <Field name="pluginID" type="string">Pseudocolor_1.0</Field>
+                                    <Field name="hostName" type="string">localhost</Field>
+                                    <Field name="databaseName" type="string">../data/allinone00.pdb</Field>
+                                    <Field name="variableName" type="string">mesh/a</Field>
+                                    <Field name="beginFrame" type="int">0</Field>
+                                    <Field name="endFrame" type="int">22</Field>
+                                    <Field name="active" type="bool">true</Field>
+                                    <Field name="hidden" type="bool">false</Field>
+                                    <Field name="realized" type="bool">true</Field>
+                                    <Object name="CompactSILRestrictionAttributes">
+                                        <Field name="useSet" type="unsignedCharVector">0 2 2 2 2 2 0 0 0 0 0 </Field>
+                                        <Field name="topSet" type="int">1</Field>
+                                    </Object>
+                                    <Object name="ViewerPlot">
+                                        <Field name="spatialExtentsType" type="string">AVT_ORIGINAL_EXTENTS</Field>
+                                        <Field name="bgColor" type="doubleArray" length="3">1 1 1 </Field>
+                                        <Field name="fgColor" type="doubleArray" length="3">0 0 0 </Field>
+                                        <Field name="expandedFlag" type="bool">false</Field>
+                                        <Object name="plotKeyframes">
+                                            <Object name="AttributeSubjectMap">
+                                                <Field name="indices" type="intVector">0 </Field>
+                                                <Object name="attributes">
+                                                    <Object name="PseudocolorAttributes">
+                                                    </Object>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                        <Object name="databaseKeyframes">
+                                            <Object name="AttributeSubjectMap">
+                                                <Field name="indices" type="intVector">0 22 </Field>
+                                                <Object name="attributes">
+                                                    <Object name="DatabaseAttributes">
+                                                    </Object>
+                                                    <Object name="DatabaseAttributes">
+                                                        <Field name="state" type="int">22</Field>
+                                                    </Object>
+                                                </Object>
+                                            </Object>
+                                        </Object>
+                                    </Object>
+                                </Object>
+                            </Object>
+                        </Object>
+                    </Object>
+                </Object>
+            </Object>
+            <Object name="ViewerQueryManager">
+                <Field name="baseDesignator" type="char">A</Field>
+                <Field name="cycleDesignator" type="bool">false</Field>
+                <Field name="colorIndex" type="int">0</Field>
+            </Object>
+        </Object>
+    </Object>
+</Object>

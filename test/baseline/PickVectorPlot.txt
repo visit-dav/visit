@@ -1,0 +1,128 @@
+
+A:  globe.silo  timestep 0
+mesh1 
+Point: <5.590170, 7.694210, -3.090170>
+Node:  225
+Incident Zones:  882  883  982  983  
+vel:  <nodal> = (7.69421,-5.59017,0) mag = 9.51057
+
+
+B:  globe.silo  timestep 0
+mesh1 
+Point: <4.755280, 6.545080, 5.877850>
+Node:  222
+Incident Zones:  582  583  682  683  
+vel:  <nodal> = (6.54508,-4.75528,0) mag = 8.09016
+
+
+C:  globe.silo  timestep 0
+mesh1 
+Point: <-2.083330, -6.411840, 4.898210>
+Node:  807
+Incident Zones:  573  574  593  594  673  674  693  694  
+vel:  <nodal> = (-6.41184,2.08333,0) mag = 6.74181
+
+
+D:  globe.silo  timestep 0
+mesh1 
+Point: <-2.449110, -7.537570, -2.575140>
+Node:  810
+Incident Zones:  873  874  893  894  973  974  993  994  
+vel:  <nodal> = (-7.53757,2.44911,0) mag = 7.92547
+
+
+E:  globe.silo  timestep 0
+mesh1 
+Point: <-8.090170, 5.877850, 0.000000>
+Node:  494
+Incident Zones:  787  788  887  888  
+vel:  <nodal> = (5.87785,8.09017,0) mag = 10
+
+
+F:  globe.silo  timestep 0
+mesh1 
+Point: <3.918570, -5.393450, 0.000049>
+Node:  962
+Incident Zones:  756  757  776  777  856  857  876  877  
+vel:  <nodal> = (-5.39345,-3.91857,0) mag = 6.66667
+
+
+G:  globe.silo  timestep 0
+mesh1 
+Point: <-7.869590, -1.246421, 4.110343>
+Zone:  690
+Incident Nodes:  600  601  592  591  654  655  646  645  
+disp:  <zonal> = (-3.93479,0,0) mag = 3.93479
+
+
+H:  globe.silo  timestep 0
+mesh1 
+Point: <3.585274, 3.585274, -2.615673>
+Zone:  942
+Incident Nodes:  153  154  145  144  207  208  199  198  
+disp:  <zonal> = (1.79264,0,0) mag = 1.79264
+
+
+I:  globe.silo  timestep 0
+mesh1 
+Point: <-7.137416, -1.130455, -1.158791>
+Zone:  870
+Incident Nodes:  593  594  585  584  647  648  639  638  
+disp:  <zonal> = (-3.56871,0,0) mag = 3.56871
+
+
+J:  globe.silo  timestep 0
+mesh1 
+Point: <-6.438756, -1.019799, -3.363008>
+Zone:  970
+Incident Nodes:  594  595  586  585  648  649  640  639  
+disp:  <zonal> = (-3.21938,0,0) mag = 3.21938
+
+
+K:  globe.silo  timestep 0
+mesh1 
+Point: <4.009756, 0.635084, -8.067005>
+Zone:  1180
+Incident Nodes:  65  66  57  56  119  120  111  110  
+disp:  <zonal> = (2.00488,0,0) mag = 2.00488
+
+
+L:  globe.silo  timestep 0
+mesh1 
+Point: <-2.551661, 0.404143, 5.133548>
+Zone:  449
+Incident Nodes:  526  527  518  517  580  581  572  571  
+disp:  <zonal> = (-1.27583,0,0) mag = 1.27583
+
+
+M:  globe.silo  timestep 0
+mesh1 
+Point: <2.500000, 1.816360, -9.510570>
+Node:  174
+Incident Zones:  221  222  1181  1182  
+polarVector:  <nodal> = (10,0.62832,2.82743) mag = 10.411
+
+
+N:  globe.silo  timestep 0
+mesh1 
+Point: <2.377640, -3.272540, 2.938930>
+Node:  951
+Incident Zones:  536  537  556  557  636  637  656  657  
+polarVector:  <nodal> = (5,-0.942478,0.942477) mag = 5.1746
+
+
+O:  globe.silo  timestep 0
+mesh1 
+Point: <-0.795763, 2.449110, -7.925470>
+Node:  381
+Incident Zones:  205  206  225  226  1165  1166  1185  1186  
+xyzVector:  <nodal> = (-0.795763,2.44911,-7.92547) mag = 8.33333
+
+
+P:  globe.silo  timestep 0
+mesh1 
+Point: <-0.000000, 0.000000, 8.333330>
+Node:  9
+Incident Zones:  100  101  102  103  104  105  106  107  108  109  110  111  112  113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128  129  130  131  132  133  134  135  136  137  138  139  
+xyzVector:  <nodal> = (-3.53601e-33,5.11837e-31,8.33333) mag = 8.33333
+

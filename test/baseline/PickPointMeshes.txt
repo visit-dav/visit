@@ -1,0 +1,144 @@
+
+A:  noise.silo  timestep 0
+PointMesh 
+Point: <-4.751978, 8.340882, 9.568718>
+Node:  62
+Incident Zones:  62  
+PointVar:  <nodal> = 2.66047
+
+
+B:  noise.silo  timestep 0
+PointMesh 
+Point: <8.565028, 5.320127, -4.208409>
+Node:  83
+Incident Zones:  83  
+PointVar:  <nodal> = 5.9183
+
+
+C:  noise.silo  timestep 0
+PointMesh 
+Point: <-1.437862, -9.243738, 1.966529>
+Node:  84
+Incident Zones:  84  
+PointVar:  <nodal> = 1.07798
+
+
+D:  noise.silo  timestep 0
+PointMesh 
+Point: <-4.751978, 8.340882, 9.568718>
+Node:  62
+Incident Zones:  62  
+
+E:  noise.silo  timestep 0
+PointMesh 
+Point: <8.565028, 5.320127, -4.208409>
+Node:  83
+Incident Zones:  83  
+
+F:  noise.silo  timestep 0
+PointMesh 
+Point: <-1.437862, -9.243738, 1.966529>
+Node:  84
+Incident Zones:  84  
+
+G:  noise.silo  timestep 0
+PointMesh 
+Point: <-4.751978, 8.340882, 9.568718>
+Node:  62
+Incident Zones:  62  
+
+H:  noise.silo  timestep 0
+PointMesh 
+Point: <8.565028, 5.320127, -4.208409>
+Node:  83
+Incident Zones:  83  
+
+I:  noise.silo  timestep 0
+PointMesh 
+Point: <-1.437862, -9.243738, 1.966529>
+Node:  84
+Incident Zones:  84  
+
+J:  multi_point2d.silo  timestep 0
+mesh1 domain 5 
+Point: <-1.618033, 1.175572>
+Node:  0
+Incident Zones:  0  
+d:  <nodal> = 2
+
+p:  <nodal> = 0.499975
+
+u:  <nodal> = -1
+
+v:  <nodal> = 0
+
+
+K:  multi_point2d.silo  timestep 0
+mesh1 domain 4 
+Point: <-1.528241, 2.103445>
+Node:  51
+Incident Zones:  51  
+d:  <nodal> = 2.6
+
+p:  <nodal> = 0.384601
+
+u:  <nodal> = -0.620354
+
+v:  <nodal> = 0.784322
+
+
+L:  multi_point2d.silo  timestep 0
+mesh1 domain 3 
+Point: <-0.493790, 2.323101>
+Node:  35
+Incident Zones:  35  
+d:  <nodal> = 2.375
+
+p:  <nodal> = 0.421035
+
+u:  <nodal> = -0.383952
+
+v:  <nodal> = 0.923353
+
+
+M:  multi_point2d.silo  timestep 0
+mesh1 domain 5 
+Point: <-1.618033, 1.175572>
+Node:  0
+Incident Zones:  0  
+d:  <nodal> = 2
+
+p:  <nodal> = 0.499975
+
+u:  <nodal> = -1
+
+v:  <nodal> = 0
+
+
+N:  multi_point2d.silo  timestep 0
+mesh1 domain 4 
+Point: <-1.528241, 2.103445>
+Node:  51
+Incident Zones:  51  
+d:  <nodal> = 2.6
+
+p:  <nodal> = 0.384601
+
+u:  <nodal> = -0.620354
+
+v:  <nodal> = 0.784322
+
+
+O:  multi_point2d.silo  timestep 0
+mesh1 domain 3 
+Point: <-0.493790, 2.323101>
+Node:  35
+Incident Zones:  35  
+d:  <nodal> = 2.375
+
+p:  <nodal> = 0.421035
+
+u:  <nodal> = -0.383952
+
+v:  <nodal> = 0.923353
+

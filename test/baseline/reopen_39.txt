@@ -1,0 +1,1 @@
+VisIt was *NOT* able to reopen reopen_globe.silo!

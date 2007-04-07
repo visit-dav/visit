@@ -1,0 +1,234 @@
+
+Testing clipped sliced SAMRAI:
+
+A:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.748043, 7.821070, 4.000000>
+Zone:  1863
+Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
+
+B:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.748043, 7.821070, 4.000000>
+Zone:  1863
+Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
+Primitive Var _number_0:  <zonal> = 80
+
+
+C:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.748043, 7.821070, 4.000000>
+Zone:  1863
+Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
+
+D:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.748043, 7.821070, 4.000000>
+Zone:  1863
+Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
+Primitive Var _number_0:  <zonal> = 80
+
+
+E:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <6.000000, 8.000000, 4.000000>
+Node:  2442
+Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
+
+F:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <6.000000, 8.000000, 4.000000>
+Node:  2442
+Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
+Primitive Var _number_0:  <zonal> 
+    (2205) = 10
+    (2187) = 80
+    (1863) = 80
+    (1881) = 10
+    (2206) = 10
+    (2188) = 80
+    (1864) = 10
+    (1882) = 10
+
+
+G:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <6.000000, 8.000000, 4.000000>
+Node:  2442
+Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
+
+H:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <6.000000, 8.000000, 4.000000>
+Node:  2442
+Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
+Primitive Var _number_0:  <zonal> 
+    (2205) = 10
+    (2187) = 80
+    (1863) = 80
+    (1881) = 10
+    (2206) = 10
+    (2188) = 80
+    (1864) = 10
+    (1882) = 10
+
+
+I:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.500000, 7.500000, 4.000000>
+Node:  2422
+Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
+
+J:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.500000, 7.500000, 4.000000>
+Node:  2422
+Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
+Primitive Var _number_0:  <zonal> 
+    (2186) = 80
+    (2168) = 80
+    (1844) = 80
+    (1862) = 80
+    (2187) = 80
+    (2169) = 80
+    (1845) = 80
+    (1863) = 80
+
+
+K:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.500000, 7.500000, 4.000000>
+Node:  2422
+Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
+
+L:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.500000, 7.500000, 4.000000>
+Node:  2422
+Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
+Primitive Var _number_0:  <zonal> 
+    (2186) = 80
+    (2168) = 80
+    (1844) = 80
+    (1862) = 80
+    (2187) = 80
+    (2169) = 80
+    (1845) = 80
+    (1863) = 80
+
+
+M:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.750000, 7.750000, 3.750000>
+Zone:  1863
+Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
+
+N:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.750000, 7.750000, 3.750000>
+Zone:  1863
+Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
+Primitive Var _number_0:  <zonal> = 80
+
+
+O:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.750000, 7.750000, 3.750000>
+Zone:  1863
+Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
+
+P:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.750000, 7.750000, 3.750000>
+Zone:  1863
+Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
+Primitive Var _number_0:  <zonal> = 80
+
+
+Q:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <6.000000, 8.000000, 4.000000>
+Node:  2442
+Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
+
+R:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <6.000000, 8.000000, 4.000000>
+Node:  2442
+Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
+Primitive Var _number_0:  <zonal> 
+    (2205) = 10
+    (2187) = 80
+    (1863) = 80
+    (1881) = 10
+    (2206) = 10
+    (2188) = 80
+    (1864) = 10
+    (1882) = 10
+
+
+S:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <6.000000, 8.000000, 4.000000>
+Node:  2442
+Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
+
+T:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <6.000000, 8.000000, 4.000000>
+Node:  2442
+Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
+Primitive Var _number_0:  <zonal> 
+    (2205) = 10
+    (2187) = 80
+    (1863) = 80
+    (1881) = 10
+    (2206) = 10
+    (2188) = 80
+    (1864) = 10
+    (1882) = 10
+
+
+U:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.500000, 7.500000, 4.000000>
+Node:  2422
+Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
+
+V:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.500000, 7.500000, 4.000000>
+Node:  2422
+Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
+Primitive Var _number_0:  <zonal> 
+    (2186) = 80
+    (2168) = 80
+    (1844) = 80
+    (1862) = 80
+    (2187) = 80
+    (2169) = 80
+    (1845) = 80
+    (1863) = 80
+
+
+W:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.500000, 7.500000, 4.000000>
+Node:  2422
+Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
+
+X:  summary.samrai  timestep 0
+amr_mesh level 2 patch level2,patch0 
+Point: <5.500000, 7.500000, 4.000000>
+Node:  2422
+Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
+Primitive Var _number_0:  <zonal> 
+    (2186) = 80
+    (2168) = 80
+    (1844) = 80
+    (1862) = 80
+    (2187) = 80
+    (2169) = 80
+    (1845) = 80
+    (1863) = 80
+

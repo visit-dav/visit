@@ -1,0 +1,48 @@
+#!/bin/sh
+
+echo "Files changed since ckecksum file was last updated..."
+newFiles=`find . -newer cksums.txt \( -name '*.tif' -o -name '*.txt' \) -print`
+
+rm -f newFiles.txt
+for file in $newFiles
+do
+    echo "   $file"
+    file=`echo $file | cut -d'.' -f2,3`
+    ext=`echo $file | cut -d'.' -f2`
+    base=.`echo $file | cut -d'.' -f1`
+    if test "$ext" = "tif" ; then
+	echo $base.rgb >> newFiles.txt
+    elif test "$ext" = "txt" ; then
+	echo $base.txt >> newFiles.txt
+    fi
+done
+
+if test ! -f newFiles.txt ; then
+   echo "No files have changed"
+   exit 0
+fi
+
+/usr/xpg4/bin/grep -v -f newFiles.txt cksums.txt > newcksums.txt
+rm -f newFiles.txt
+
+cleartool co -c 'updating' cksums.txt
+mv newcksums.txt cksums.txt
+
+for file in $newFiles
+do
+    echo "Processing $file"
+    file=`echo $file | cut -d'.' -f2,3`
+    ext=`echo $file | cut -d'.' -f2`
+    base=.`echo $file | cut -d'.' -f1`
+    if test "$ext" = "tif" ; then
+        convert $base.tif $base.rgb
+        cksum $base.rgb >> cksums.txt
+        rm -f $base.rgb
+    elif test "$ext" = "txt" ; then
+        cksum $base.txt >> cksums.txt
+    fi
+done
+
+echo "About to update checksum file..."
+
+cleartool ci -c 'updating' cksums.txt

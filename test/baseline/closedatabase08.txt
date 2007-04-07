@@ -1,0 +1,16 @@
+The database ../data/curv3d.silo was closed.
+sources = ("localhost:/data_vobs/VisIt/data/globe.silo", "localhost:/data_vobs/VisIt/data/wave.visit")
+windows = (1, 2)
+activeWindow = 1
+iconifiedFlag = 0
+autoUpdateFlag = 0
+replacePlots = 0
+applyOperator = 1
+executing = 0
+windowLayout = 1
+makeDefaultConfirm = 1
+cloneWindowOnFirstRef = 0
+maintainView = 0
+maintainData = 0
+automaticallyAddOperator = 0
+tryHarderCyclesTimes = 0
