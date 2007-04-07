@@ -1,0 +1,53 @@
+
+1) setenv REL_VER 1.3.3
+   setenv PREV_REL_VER 1.3.2
+
+2) setenv VIEW_NAME eric
+
+3) Create label VISIT_$(REL_VER)
+   comment "Release $REL_VER of VisIt."
+
+4) Create label VISIT_$(REL_VER)RC
+   comment "Release candidate for VisIt $(REL_VER)."
+
+5) Lock the main line.
+
+6) ct setview visit_$(VIEW_NAME)_rc$(PREV_REL_VER)
+
+7) Unlock branch Release_$(PREV_REL_VER)
+
+8) On the previous rc view "Attach in subtree..." /data_vobs/VisIt
+   using VISIT_$(PREV_REL_VER) replacing any existing labels of type
+
+9) ct setview visit_eric_main
+
+10) Merge Release_$(PREV_REL_VER) into the mainline.
+
+11) Lock branch Release_$(PREV_REL_VER)
+
+12) Lock label VISIT_$(PREV_REL_VER)
+
+13) On the  mainline view "Attach in subtree..." /data_vobs/VisIt
+    using VISIT_$(REL_VER)RC replacing any existing labels of type
+
+14) Lock the VISIT_$(REL_VER)RC label
+
+15) Unlock the mainline
+
+16) mkrcdev $(REL_VER) rc$(REL_VER)
+    comment "Release candidate for $(REL_VER)."
+
+17) mkrcdev $(REL_VER) release_$(REL_VER)_"date" rcdev$(REL_VER)
+    comment "Update for release $(REL_VER)."
+
+18) ssh sunspot -l visit
+
+19) ct setview visit_VOBowner_main
+
+20) ct rmview -tag visit_VOBowner_rc
+
+21) mkrcdev $(REL_VER) rc
+ 
+22) exit
+
+23) exit

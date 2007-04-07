@@ -1,0 +1,61 @@
+.menu {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; line-height: 24px; font-weight: bold; color: #333366}
+a {
+	text-decoration: underline;
+	color: #333366;
+}
+.body_text {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10px; color: #000000}
+a:hover {  text-decoration: underline}
+h1 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 24px;
+	font-style: normal;
+	font-weight: bold;
+	color: #333366;
+	margin-right: 10px;
+	margin-left: 10px;
+}
+ul {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; list-style-type: square; line-height: 20px}
+.Section { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10px; font-weight: bold; text-transform: uppercase; color: #FFFFFF}
+h2 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+	color: #333366;
+	margin-right: 10px;
+	margin-left: 10px;
+}
+h3 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: bold;
+	color: #333366;
+	margin-right: 10px;
+	margin-left: 10px;
+}
+.author {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 10px; font-style: italic; font-weight: bold; text-align: right}
+body {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	margin: 0px;
+	font-size: 12px;
+}
+a {  font-weight: normal; font-style: normal; line-height: normal; font-variant: normal; text-transform: none}
+p {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	margin-right: 10px;
+	margin-left: 10px;
+	line-height: 18px;
+}
+table {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	line-height: 18px;
+}
+td {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+}
+.small {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 9px}
+li {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; line-height: 20px}
+ol {  font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; line-height: 20px}
+th { font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 12px; ; font-weight: bold}

@@ -1,0 +1,106 @@
+                          User's Manual Maintenance Notes
+                      Brad Whitlock, Wed Jun 16 09:41:53 PDT 2004
+                      ===========================================
+
+	It is important to follow certain practices when updating the User's
+manual so that it continues to have a uniform style. These notes list a few
+rules of thumb that I've stuck to when I created the User's Manual and when
+I've updated it. Please try to follow the same rules of thumb because I know
+where you live.
+
+FrameMaker
+===========
+	I used FrameMaker (type maker at the command prompt) to write the User's
+Manual. I used the version of maker on hyper. I think it is version 5. The suns
+have version 7 and it issues lots of version warnings about our documents that
+I don't want to have to worry about so *please* use the version on hyper. It is
+pretty quick and responsive if you set your display back to your desktop.
+
+Working on the User Manual
+===========================
+	Each chapter of the VisIt User's Manual is stored as its own FrameMaker file but there is an overarching "book" file called: VisIt.book that you should open when you want to do work on the manual. When you open VisIt.book, FrameMaker opens a small window that contains the list of all of the chapter files that are in the book. To open a particular chapter, just double-click on its filename in the list of chapters.
+	It is good practice to check out all of the chapter FrameMaker files before starting to edit them because eventually you will have to generate/update the book. There are also Clearcase triggers that prevent multiple people from editing the User's Manual on different branches because FrameMaker files can't be merged from two or more sources. If you ever find that you want to edit a file that you know no one is editing but clearcase won't allow it, the file probably has the SingleBranchName attribute set to prevent multiple users from editing the file. If you want to remove that file attribute so you can edit a particular file, type: cleartool rmattr SingleBranchName file@@ where "file" is the name of the file that you want to check out. Be very careful about removing SingleBranchName because multiple developers should *NOT* update the same files at the same time.
+	When you add content to a chapter in the middle of the document, you might cause the page numbers to update in the chapter that you edited. The process of generate/update on the book updates the page numbers in all chapter documents and regenerates the table of contents and index. To generate/update the User's Manual, select File->Generate/Update... from the Book window's main menu to open the Generate/Update window. The Generate/Update window contains controls that allow you to not generate the table of contents and index but you should typically just click the Update button so those documents are regenerated. You might see some consistency messages about colors in the appendices but if FrameMaker opens such a warning message window, click the "Skip" toggle button because those warnings are not particularly important. Once you've generated/updated the files in the User's Manual, save the updated files by choosing File->Save in the book window's main menu.
+
+Writing style
+==============
+	When I first wrote the manual, I used a lot of passive voice. Lisa
+Roberts urged me to change the style to a more active voice and the manual was
+more interesting to read.
+
+Example:
+
+Passive: The color table can be changed by selecting a new color table from the
+         menu.
+
+More active: You can change color tables by selecting a new color table from the
+             menu.
+
+	The manual is closer to the second example which emphasizes
+"you can do ..." so keep that in mind when you document new features.    
+
+Text
+=====
+	Most of the text uses the "Body" paragraph font unless it's a section
+heading or figure number, etc. If you're naming an object that is the proper
+name of a GUI widget or window, select the name and make it use the "GUIText"
+character style so you make it bold the right way. To do this, select the text that you want to highlight by dragging on it with the mouse and then right-click on it so you can access the Characters menu option where you can find the "GUIText" character style. If you refer to another chapter name in the document, make sure to highlight the name of the chapter using the "Chapter #" character style.
+
+Markers
+========
+	I've used markers throughout the manual for such things as chapter
+titles and index entries. A chapter title uses the Header/Footer 1 marker to
+indicate the start of a chapter. This marker is used to set the chapter name at
+the top of each page in the chapter. I used Header/Footer 2 for top level items
+in a chapter (e.g. 1.0, 2.0, ...) because this marker is used to set the topic 
+of interest in the footer at the bottom of each page in the chapter. Finally, 
+for important things that I'd like to appear in the Index, I used the Index 
+marker.
+	To create a marker, select the text that you want to mark and open the 
+Marker window located in Frame's Special menu. The selected text will be in the
+Marker window but you can edit the marker text to be whatever you want. Select 
+the appropriate marker type and click the New marker button. If you're changing
+an existing marker, the button will have "Edit marker" in it.
+
+
+Images
+=======
+	All images should be gif. I captured all of the images in the manual
+using xv on my Linux box (dagobah.llnl.gov), which runs the KDE desktop. My 
+screen is 1920x1200 so please use that resolution when you capture the main 
+window or any of the images featuring the entire vis window. To ensure that 
+all VisIt images are the same style when we need to update them, also be sure 
+to use the Windows GUI style and the default VisIt gray GUI background color 
+with a black foreground color. You should also run with the -noconfig option 
+so that screen captures reflect the default settings for VisIt's windows.
+	I used xv's Grab feature to capture whole windows and I used its
+delayed AutoGrab to capture the window when I needed to first select menus. When
+using autograb, choose a delay of about 3-5 seconds depending on the VisIt menu
+that you're trying to capture. For cascading menus, I captured one menu at a
+time and put them together in the gimp. If you find it necessary to composite 
+images in the gimp, be sure to change the image mode to indexed before you save
+it out. Do not use color dithering because it will produce unwanted dots in the
+light white and gray areas of the final image. Remember to save gif images.
+	When I imported images into Frame, I first created an anchored frame box
+by opening the Anchored frame window from the Special menu and clicking the New
+frame button. This inserts an empty frame into the window. I usually tried to
+make the frame run into the paragraph, which is an option that you can set in
+the anchored frame window. Also, be sure to click the small "right-triangle"
+button in the upper right corner of the Frame text editor window to activate a
+drawing palette window. The window contains controls for drawing arrows and 
+changing modes between typing, and drawing.
+	To import an image into Frame, choose the Import option from the File 
+menu and select a file that you want to open. All images should be in the 
+appropriate chapter subdirectory in the images directory. Once you select an 
+image file (be sure to import by reference), you have to choose the dpi. For 
+GUI windows, I almost always use 150dpi. For plots and other images of the vis 
+window, I used 300 dpi. After you select the dpi, Frame imports the image and 
+you can move it around in the anchored frame. Put a text box into the frame 
+using the controls in the drawing palette window. When you type into the text 
+box, make sure you use the "Figure" text style so that after you type the figure title, you can add a cross-reference marker there so you can reference it from the body paragraph.
+	To add a cross reference marker for the figure, select the figure text and then open the Marker window and create a marker of type: cross-reference. Once you'vr created the marker, go back into the text paragraph that references the figure and select the text that you want to replace with a cross-reference. Once the text is highlighted, open the Cross-reference window by selecting Special->Cross-Reference from the document window's main menu. Select paragraphs for the Source type and click on the figure source type. When you do that, your list of figures should appear in the window's Paragraphs list. Click on the figure that you want to reference, select "Figure Number" for the Format and click the Replace button.
+
+
+Finding unresolved cross-references
+====================================
+	Sometimes FrameMaker will complain that a chapter contains unresolved cross-references if you've made a mistake at some point. Finding and fixing the unresolved cross-references is easy if you know how. Here's how: open the Find window by clicking on Edit->Find/Change... in the document window's main menu. Once the Find/Change window appears, select "Unresolved Cross-References" from the Find combo box and click the Find button. If there are unresolved cross references, clicking the Find button will find the first one and highlight it in the document window. If you find an unresolved cross-reference, open the cross-references window by selecting Special->Cross-Reference from the document window's main menu. Usually when there is an unresolved cross-reference, you referenced the wrong marker type when you created the figure cross-reference. Use the cross-reference window to select the correct figure paragraph marker and click the Replace button. Repeat the process until there are no more unresolved cross-references.

@@ -1,0 +1,357 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML><!-- InstanceBegin template="/Templates/Temp_doc.dwt" codeOutsideHTMLIsLocked="false" -->
+<HEAD>
+<!-- InstanceBeginEditable name="doctitle" -->
+<TITLE>About VisIt</TITLE>
+<!-- InstanceEndEditable --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<!-- ImageReady Preload Script (template1.psd) -->
+<SCRIPT TYPE="text/javascript">
+<!--
+
+
+<!--
+
+function newImage(arg) {
+	if (document.images) {
+		rslt = new Image();
+		rslt.src = arg;
+		return rslt;
+	}
+}
+
+function changeImages() {
+	if (document.images && (preloadFlag == true)) {
+		for (var i=0; i<changeImages.arguments.length; i+=2) {
+			document[changeImages.arguments[i]].src = changeImages.arguments[i+1];
+		}
+	}
+}
+
+var preloadFlag = false;
+function preloadImages() {
+	if (document.images) {
+		template1_home_over = newImage("media/template1_home-over.jpg");
+		template1_dload_over = newImage("media/template1_dload-over.jpg");
+		template1_dload_over006 = newImage("media/template1_dload-over-06.jpg");
+		template1_doc_over = newImage("media/template1_doc-over.jpg");
+		template1_contact_over = newImage("media/template1_contact-over.jpg");
+		preloadFlag = true;
+	}
+}
+
+// -->
+
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_findObj(n, d) { //v4.01
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && d.getElementById) x=d.getElementById(n); return x;
+}
+//-->
+</SCRIPT>
+<!-- End Preload Script -->
+<link href="VisIt.css" rel="stylesheet" type="text/css">
+<script language="JavaScript" type="text/JavaScript">
+<!--
+function MM_reloadPage(init) {  //reloads the window if Nav4 resized
+  if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
+    document.MM_pgW=innerWidth; document.MM_pgH=innerHeight; onresize=MM_reloadPage; }}
+  else if (innerWidth!=document.MM_pgW || innerHeight!=document.MM_pgH) location.reload();
+}
+MM_reloadPage(true);
+
+function MM_showHideLayers() { //v6.0
+  var i,p,v,obj,args=MM_showHideLayers.arguments;
+  for (i=0; i<(args.length-2); i+=3) if ((obj=MM_findObj(args[i]))!=null) { v=args[i+2];
+    if (obj.style) { obj=obj.style; v=(v=='show')?'visible':(v=='hide')?'hidden':v; }
+    obj.visibility=v; }
+}
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+}
+
+function MM_timelineGoto(tmLnName, fNew, numGotos) { //v2.0
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+  var i,j,tmLn,props,keyFrm,sprite,numKeyFr,firstKeyFr,lastKeyFr,propNum,theObj;
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+  tmLn = document.MM_Time[tmLnName];
+  if (numGotos != null)
+    if (tmLn.gotoCount == null) tmLn.gotoCount = 1;
+    else if (tmLn.gotoCount++ >= numGotos) {tmLn.gotoCount=0; return}
+  jmpFwd = (fNew > tmLn.curFrame);
+  for (i = 0; i < tmLn.length; i++) {
+    sprite = (jmpFwd)? tmLn[i] : tmLn[(tmLn.length-1)-i]; //count bkwds if jumping back
+    if (sprite.charAt(0) == "s") {
+      numKeyFr = sprite.keyFrames.length;
+      firstKeyFr = sprite.keyFrames[0];
+      lastKeyFr = sprite.keyFrames[numKeyFr - 1];
+      if ((jmpFwd && fNew<firstKeyFr) || (!jmpFwd && lastKeyFr<fNew)) continue; //skip if untouchd
+      for (keyFrm=1; keyFrm<numKeyFr && fNew>=sprite.keyFrames[keyFrm]; keyFrm++);
+      for (j=0; j<sprite.values.length; j++) {
+        props = sprite.values[j];
+        if (numKeyFr == props.length) propNum = keyFrm-1 //keyframes only
+        else propNum = Math.min(Math.max(0,fNew-firstKeyFr),props.length-1); //or keep in legal range
+        if (sprite.obj != null) {
+          if (props.prop2 == null) sprite.obj[props.prop] = props[propNum];
+          else        sprite.obj[props.prop2][props.prop] = props[propNum];
+      } }
+    } else if (sprite.charAt(0)=='b' && fNew == sprite.frame) eval(sprite.value);
+  }
+  tmLn.curFrame = fNew;
+  if (tmLn.ID == 0) eval('MM_timelinePlay(tmLnName)');
+}
+
+function MM_timelinePlay(tmLnName, myID) { //v1.2
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+  var i,j,tmLn,props,keyFrm,sprite,numKeyFr,firstKeyFr,propNum,theObj,firstTime=false;
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+  tmLn = document.MM_Time[tmLnName];
+  if (myID == null) { myID = ++tmLn.ID; firstTime=true;}//if new call, incr ID
+  if (myID == tmLn.ID) { //if Im newest
+    setTimeout('MM_timelinePlay("'+tmLnName+'",'+myID+')',tmLn.delay);
+    fNew = ++tmLn.curFrame;
+    for (i=0; i<tmLn.length; i++) {
+      sprite = tmLn[i];
+      if (sprite.charAt(0) == 's') {
+        if (sprite.obj) {
+          numKeyFr = sprite.keyFrames.length; firstKeyFr = sprite.keyFrames[0];
+          if (fNew >= firstKeyFr && fNew <= sprite.keyFrames[numKeyFr-1]) {//in range
+            keyFrm=1;
+            for (j=0; j<sprite.values.length; j++) {
+              props = sprite.values[j]; 
+              if (numKeyFr != props.length) {
+                if (props.prop2 == null) sprite.obj[props.prop] = props[fNew-firstKeyFr];
+                else        sprite.obj[props.prop2][props.prop] = props[fNew-firstKeyFr];
+              } else {
+                while (keyFrm<numKeyFr && fNew>=sprite.keyFrames[keyFrm]) keyFrm++;
+                if (firstTime || fNew==sprite.keyFrames[keyFrm-1]) {
+                  if (props.prop2 == null) sprite.obj[props.prop] = props[keyFrm-1];
+                  else        sprite.obj[props.prop2][props.prop] = props[keyFrm-1];
+        } } } } }
+      } else if (sprite.charAt(0)=='b' && fNew == sprite.frame) eval(sprite.value);
+      if (fNew > tmLn.lastFrame) tmLn.ID = 0;
+  } }
+}
+
+function MM_timelineStop(tmLnName) { //v1.2
+  //Copyright 1997, 2000 Macromedia, Inc. All rights reserved.
+  if (document.MM_Time == null) MM_initTimelines(); //if *very* 1st time
+  if (tmLnName == null)  //stop all
+    for (var i=0; i<document.MM_Time.length; i++) document.MM_Time[i].ID = null;
+  else document.MM_Time[tmLnName].ID = null; //stop one
+}
+
+function MM_initTimelines() { //v4.0
+    //MM_initTimelines() Copyright 1997 Macromedia, Inc. All rights reserved.
+    var ns = navigator.appName == "Netscape";
+    var ns4 = (ns && parseInt(navigator.appVersion) == 4);
+    var ns5 = (ns && parseInt(navigator.appVersion) > 4);
+    document.MM_Time = new Array(1);
+    document.MM_Time[0] = new Array(1);
+    document.MM_Time["submenu"] = document.MM_Time[0];
+    document.MM_Time[0].MM_Name = "submenu";
+    document.MM_Time[0].fps = 5;
+    document.MM_Time[0][0] = new String("behavior");
+    document.MM_Time[0][0].frame = 15;
+    document.MM_Time[0][0].value = "MM_showHideLayers('doc','','hide','dload','','hide')";
+    document.MM_Time[0].lastFrame = 15;
+    for (i=0; i<document.MM_Time.length; i++) {
+        document.MM_Time[i].ID = null;
+        document.MM_Time[i].curFrame = 0;
+        document.MM_Time[i].delay = 1000/document.MM_Time[i].fps;
+    }
+}
+//-->
+</script>
+<!-- InstanceBeginEditable name="head" --><!-- InstanceEndEditable -->
+</HEAD>
+<BODY BGCOLOR=#FFFFFF LEFTMARGIN=0 TOPMARGIN=0 MARGINWIDTH=0 MARGINHEIGHT=0 ONLOAD="preloadImages();MM_preloadImages('media_template/indexT_o.jpg','media_template/homeT_o.jpg','media_template/newT_o.jpg','media_template/contactT_o.jpg','media_template/dloadT_o.jpg')">
+<!-- ImageReady Slices (template1.psd) -->
+<TABLE WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=0>
+  <TR> 
+    <TD ROWSPAN=2> <A HREF="home.html"
+				ONMOUSEOVER="MM_swapImage('homeT','','Templates/media_template/homeT_o.jpg',1);MM_showHideLayers('doc','','hide','dload','','hide')"
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG SRC="Templates/media_template/homeT.jpg" ALT="Home" NAME="homeT" WIDTH=166 HEIGHT=92 BORDER=0></A></TD>
+    <TD ROWSPAN=2> <A HREF="download.html"
+				ONMOUSEOVER="MM_showHideLayers('doc','','hide','dload','','show');MM_timelineStop();MM_swapImage('dloadT','','Templates/media_template/dloadT_o.jpg',1)"
+				ONMOUSEOUT="MM_timelinePlay('submenu');MM_timelineGoto('submenu','1');MM_swapImgRestore()"> 
+      <IMG SRC="Templates/media_template/dloadT.jpg" ALT="Downloads" NAME="dloadT" WIDTH=131 HEIGHT=92 BORDER=0></A></TD>
+    <TD ROWSPAN=2> <A HREF="#"
+				ONMOUSEOVER="MM_showHideLayers('doc','','show','dload','','hide');MM_timelineStop()"
+				ONMOUSEOUT="MM_timelineGoto('submenu','1');MM_timelinePlay('submenu')"> 
+      <IMG SRC="Templates/media_template/docT_here.jpg" ALT="Documentation" NAME="docT" WIDTH=129 HEIGHT=92 BORDER=0></A></TD>
+    <TD ROWSPAN=2> <A HREF="new.html"
+				ONMOUSEOVER="MM_showHideLayers('doc','','hide','dload','','hide');MM_swapImage('newT','','Templates/media_template/newT_o.jpg',1)" onMouseOut="MM_swapImgRestore()"> 
+      <IMG SRC="Templates/media_template/newT.jpg" ALT="What's New" NAME="newT" WIDTH=320 HEIGHT=92 BORDER=0></A></TD>
+    <TD COLSPAN=2> <IMG SRC="Templates/media_template/logoT.jpg" WIDTH=265 HEIGHT=66 ALT=""></TD>
+    <TD width="100%" ROWSPAN=2 background="Templates/media_template/sideT.jpg">&nbsp; </TD>
+  </TR>
+  <TR> 
+    <TD> <A HREF="sitemap.html"
+				ONMOUSEOVER="MM_swapImage('indexT','','Templates/media_template/indexT_o.jpg',1)"
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="indexT" SRC="Templates/media_template/indexT.jpg" WIDTH=76 HEIGHT=26 BORDER=0 ALT="Index"></A></TD>
+    <TD> <A HREF="mailto:visit-help@llnl.gov"
+				ONMOUSEOVER="MM_swapImage('contactT','','Templates/media_template/contactT_o.jpg',1)"
+				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="contactT" SRC="Templates/media_template/contactT.jpg" WIDTH=189 HEIGHT=26 BORDER=0 ALT="Contact"></A></TD>
+  </TR>
+</TABLE>
+<!-- End ImageReady Slices -->
+<!-- InstanceBeginEditable name="body" -->
+<h1>About VisIt</h1>
+<p>VisIt is a <b>free</b> interactive parallel visualization and graphical analysis tool for viewing scientific data on Unix and PC platforms. Users can quickly generate visualizations from their data, animate them through time, manipulate them, and save the resulting images for presentations. VisIt contains a rich set of visualization features so that you can view your data in a variety of ways. It can be used to visualize scalar and vector fields defined on two- and three-dimensional (2D and 3D) structured and unstructured meshes. VisIt was designed to handle very large data set sizes in the terascale range and yet can also handle small data sets in the kilobyte range. See the <a href="#features">table</a> below for more details about the tool&#146;s features.</p>
+<h2><a name="history"></a>History</h2>
+<p>VisIt was developed by the Department of Energy (DOE) Advanced Simulation and Computing Initiative (ASCI) to visualize and analyze the results of terascale simulations. It was developed as a framework for adding custom capabilities and rapidly deploying new visualization technologies. After an initial prototype effort, work on VisIt began in the summer of 2000, and the initial version of VisIt was released in the fall of 2002. Although the primary driving force behind the development of VisIt was for visualizing terascale data, it is also well suited for visualizing data from typical simulations on desktop systems. Because of its applicability beyond visualizing terascale data, we are making VisIt freely available.</p>
+<h2><a name="features"></a>Key Features</h2>
+<table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
+  <tbody>
+    <tr valign="top">
+      <th width="20%" bgcolor="#9999CC" ><font color="#FFFFFF">Feature</font></th>
+      <th width="80%" bgcolor="#9999CC" ><font color="#FFFFFF">Description/Example</font></th>
+    </tr>
+    <tr valign="top">
+      <td width="20%" bgcolor="#CCCCFF"><p> Has rich feature set for scalar, vector, and tensor field visualization</p></td>
+      <td width="40%" bgcolor="#CCCCFF" ><p>VisIt&#146;s visualization capabilities are primarily grouped into two categories: </p>
+          <ul>
+            <li><b><a href="screens.html">Plots</a></b> are used to visualize data and include boundary, contour, curve, label, mesh, pseudocolor, scatter, streamline, subset, surface, tensor, vector, and volume. See <a href="screens.html">plotting screen shots</a>.</li>
+            <li><b><a href="screens2.html">Operators</a></b> consist of operations that can be performed on the data prior to visualization. Some examples include slice, index select, iso-surface, onion peel, reflect, threshold, and part selection. See <a href="screens2.html">operator screen shots</a>.</li>
+          </ul>
+          <p> VisIt handles 2D and 3D data equally well. VisIt also has the ability to animate data, allowing users to see the time evolution of their data. See table of <a href="vis_features.html">visualization features</a>.</p></td>
+    </tr>
+    <tr valign="top">
+      <td width="20%" bgcolor="#CCCCFF" ><p>Provides qualitative and quantitative visualization and analysis</p></td>
+      <td width="20%" bgcolor="#CCCCFF" ><p>VisIt is also a powerful analysis tool. It provides support for derived fields, which allow new fields to be calculated using existing fields. For example, if a dataset contains a velocity field, it is possible to define a new field that is the velocity magnitude. VisIt&#146;s quantitative analysis tools include:</p>
+          <ul>
+            <li> <a href="screens3.html">Line-out</a>, which allows you to create curves from higher dimensional datasets by interactively defining lines using the mouse. </li>
+            <li><a href="screens3.html">Pick and query</a>, which allows you to query the dataset by clicking on images. </li>
+          </ul>
+          <p>VisIt also supports a generalized query interface, which allows you to query derived quantities such as volume or surface area. See <a href="screens3.html">data exploration screen shots</a>.</p></td>
+    </tr>
+    <tr valign="top">
+      <td width="20%" bgcolor="#CCCCFF" ><p>Supports multiple mesh types</p></td>
+      <td width="20%" bgcolor="#CCCCFF" ><p>VisIt provides support for a wide range of computational meshes, including two- and three-dimensional point, rectilinear, curvilinear, and unstructured meshes. In addition, VisIt supports structured AMR meshes. <b> </b>See screenshots of <a href="screens3.html">2D</a> and <a href="screens.html">3D</a> images produced by VisIt.</p></td>
+    </tr>
+    <tr valign="top">
+      <td width="20%" bgcolor="#CCCCFF" ><p>Powerful, full-featured graphical user interface (GUI)</p></td>
+      <td width="20%" bgcolor="#CCCCFF" ><p>VisIt&#146;s graphical user interface (see <a href="screens4.html">screen shots</a>) allows novice users to quickly get started visualizing their data, as well as allowing power users access to advanced features. VisIt automatically creates time-based animations from data sets that contain multiple time steps. In addition, it also has a keyframe animation capability that allows users to create sophisticated animations. VisIt's on-line help system contains a hyperlinked version of the <a href="#">User&#146;s Manual</a>. VisIt allows users to pan, zoom, and rotate objects interactively using the mouse. It also gives users the ability to interactively size and position geometric objects such as planes and spheres.</p></td>
+    </tr>
+    <tr valign="top">
+      <td bgcolor="#CCCCFF" ><p>Parallel and distributed architecture for visualizing terascale data sets</p></td>
+      <td bgcolor="#CCCCFF" ><p>VisIt employs a distributed and parallel architecture in order to handle extremely large data sets interactively. VisIt&#146;s rendering and data processing capabilities are split into viewer and engine components that may be distributed across multiple machines:</p>
+          <ul>
+            <li>Viewer&#151;Responsible for rendering and is typically run on a local desktop or visualization server so that it can leverage the extremely powerful graphics cards that have been developed in the last few years. </li>
+            <li>Engine&#151;Responsible for the bulk of the data processing and input/output (I/O) <b> </b>and is typically run on a remote machine where the data is located. This eliminates the need move the data and makes high-end compute and I/O resources available to it. The engine can be run serially on a single processor or in parallel on thousands of processors.</li>
+        </ul></td>
+    </tr>
+    <tr valign="top">
+      <td bgcolor="#CCCCFF" ><p>Interfaces with C++, Python, and Java</p></td>
+      <td bgcolor="#CCCCFF" ><p>VisIt also supports C++, Python and Java interfaces. The C++ and Java interfaces make it possible to provide alternate user interfaces for VisIt or allow existing C++ or Java applications to add visualization support. The Python scripting interface gives users the ability to batch process data using a powerful scripting language. This feature can be used to create extremely sophisticated animations or implement regression suites. It also allows simulation systems that use Python as a back-plane to easily integrate visualization capabilities into their systems. </p></td>
+    </tr>
+    <tr valign="top">
+      <td bgcolor="#CCCCFF" ><p>Extensible with dynamically loaded plug-ins</p></td>
+      <td bgcolor="#CCCCFF" ><p>VisIt achieves extensibility through the use of dynamically loaded plugins. All of VisIt&#146;s plots, operators, and database readers are implemented as plugins and are loaded at run-time from the plugin directory. New plugins can be added simply by installing them in this directory. VisIt comes with a graphical plugin creation tool, which greatly simplifies the process of creating new plugins. The user describes the properties of the plugin and then the tool generates most of the code necessary to implement the plugin. For example, in the case of an operator, the plugin creation tool creates the code necessary for the graphical user interface attribute window; the C++, Python, and Java interfaces; and the code necessary to interface to VisIt. The only code you need to write is the C++ code that actually performs the operation.</p></td>
+    </tr>
+    <tr valign="top">
+      <td bgcolor="#CCCCFF" ><p>Multi-platform support</p></td>
+      <td bgcolor="#CCCCFF" ><p>VisIt operates on UNIX (Irix, Tru64, AIX, Linux, Solaris), MacOS X (10.3, 10.4), and Windows platforms. Software for these platforms can be <a href="download.html">downloaded</a>.</p></td>
+    </tr>
+    <tr valign="top">
+      <td bgcolor="#CCCCFF" ><p>Open Source </p></td>
+      <td bgcolor="#CCCCFF" ><p>VisIt's source code is open source and freely available under the <a href="license.html" title="VisIt BSD license" target="_blank">BSD license</a>, allowing programmers to read, redistribute, and modify the source code. </p></td>
+    </tr>
+    <tr valign="top">
+      <td bgcolor="#CCCCFF" ><p>Customer support </p></td>
+      <td bgcolor="#CCCCFF" ><p>VisIt developers offer responsive customer support. VisIt users can send e-mail questions to <a href="mailto:visit-help@llnl.gov">visit-help@llnl.gov</a> and a VisIt developer will promptly provide assistance or answer questions. For LLNL VisIt users, a customer support phone line is available. Dial <strong>42-VIS</strong> to talk to a VisIt developer Monday through Friday 8-12, 1-5 PST.</p></td>
+    </tr>
+  </tbody>
+</table>
+<p>&nbsp;</p>
+<!-- InstanceEndEditable -->
+<div align="center"> 
+  <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | About VisIt | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
+  <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
+    <span class="body_text">Updated: 
+    <!-- #BeginDate format:Am1 -->June 22, 2006<!-- #EndDate -->
+    </span></p>
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
+    <tr> 
+      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-222686, 
+        <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
+        and legal notice</a></span></td>
+      <td width="5">&nbsp;</td>
+    </tr>
+  </table>
+</div>
+<!--Begin layers -->
+<div id="doc" style="position:absolute; left:297px; top:68px; width:184px; height:27px; z-index:1; visibility: hidden;"> 
+  <table border="0" cellspacing="3">
+    <tr valign="middle" bgcolor="#999999"> 
+      <td width="127" height="20"> 
+        <div align="center" class="menu"><a href="about.html"><font color="#FFFFFF">Overview</font></a></div>
+      </td>
+	</tr>
+	<tr valign="middle" bgcolor="#999999"> 
+      <td width="127" height="20"> 
+        <div align="center"><span class="menu"><a href="screens.html"><font color="#FFFFFF">Screen 
+          Shots</font></a></span><strong><a href="#source"><font color="#333366"> 
+          </font></a></strong></div>
+      </td>
+	</tr>
+	<tr valign="middle" bgcolor="#999999"> 
+	  <td width="127" height="20"> 
+        <div align="center"><span class="menu"><a href="gallery.html"><font color="#FFFFFF">Gallery
+		  </font></a></span><strong><a href="#source"><font color="#333366"> 
+          </font></a></strong></div>
+      </td>
+	</tr>
+	<tr valign="middle" bgcolor="#999999"> 
+      <td width="127" height="20"> 
+        <div align="center" class="menu"><a href="FAQ.html"><font color="#FFFFFF">FAQs</font></a></div>
+      </td>
+	</tr>
+    <tr valign="middle" bgcolor="#999999"> 
+      <td width="127" height="20"> 
+        <div align="center" class="menu"><a href="manuals.html"><font color="#FFFFFF"> 
+          Manuals</font></a></div>
+      </td>
+    </tr>
+  </table>
+</div>
+<div id="dload" style="position:absolute; left:167px; top:68px; width:173px; height:27px; z-index:1; visibility: hidden;"> 
+  <table border="0" cellspacing="3">
+    <tr valign="middle" bgcolor="#999999"> 
+      <td width="127" height="20"> 
+        <div align="center" class="menu"><a href="executables.html"><font color="#FFFFFF">Executables</font></a></div></td>
+	</tr>
+	<tr valign="middle" bgcolor="#999999"> 
+      <td width="127" height="20"> 
+        <div align="center" class="menu"><a href="source.html"><font color="#FFFFFF">Source 
+          Codes</font></a></div>
+      </td>
+	</tr>
+	<tr valign="middle" bgcolor="#999999"> 
+      <td width="127" height="20"> 
+        <div align="center" class="menu"><a href="manuals.html"><font color="#FFFFFF">Manuals</font></a></div>
+      </td>
+    </tr>
+	<tr valign="middle" bgcolor="#999999"> 
+      <td width="127" height="20"> 
+        <div align="center" class="menu"><a href="datafiles.html"><font color="#FFFFFF">Data Files</font></a></div>
+      </td>
+    </tr>
+  </table>
+</div>
+</BODY>
+<!-- InstanceEnd --></HTML>
