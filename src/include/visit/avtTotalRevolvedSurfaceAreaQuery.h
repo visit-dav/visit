@@ -1,0 +1,1 @@
+../../components/Queries/Queries/avtTotalRevolvedSurfaceAreaQuery.h

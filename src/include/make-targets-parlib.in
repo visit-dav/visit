@@ -1,0 +1,33 @@
+##							-*- makefile -*-
+##
+##  Jeremy Meredith, Mon May 14 12:05:01 PDT 2001
+##  If $(LIB) is defined, then write a rule which build a shared library
+##  from object files created in this directory.
+##
+##  Jeremy Meredith, Fri Mar  8 11:30:05 PST 2002
+##  Added support for libraries build from multiple dirs
+##
+##  Hank Childs, Tue May 21 16:18:10 PDT 2002
+##  Put LDFLAGS in front of the obj files, since g++ won't get to them in time
+##  otherwise.
+##
+##  Brad Whitlock, Thu Apr 22 15:29:03 PST 2004
+##  I made it use SHLIB_SERLIBS and SHLIB_PARLIBS to fix an error on MacOS X.
+##  
+##  Jeremy Meredith, Wed Jul  7 12:10:12 PDT 2004
+##  I changed _ser.o to simply be .o.
+##
+
+$(SUBDIRS:=_obj) nosubdirs:
+	$(MAKE)  $($(@:_obj=_src):.C=.o)
+	if [ -n "@PARALLEL@" ]; then $(MAKE) $($(@:_obj=_src):.C=_par.o); fi
+
+## We need different ones for the serial and parallel versions.
+
+$(LIBSHAREDSER) nolibsharedser: $(SEROBJ)
+	@SHLIB_CREATEPROG@ $(LIBSHAREDTEMPSER) $(LDFLAGS) $(SEROBJ) @SHLIB_SERLIBS@
+	@SHLIB_POSTPROCESS_SER@
+
+$(LIBSHAREDPAR) nolibsharedpar: $(PAROBJ)
+	@SHLIB_CREATEPROG@ $(LIBSHAREDTEMPPAR) $(LDFLAGS) $(PAROBJ) @SHLIB_MPI_LIBS@ @SHLIB_PARLIBS@
+	@SHLIB_POSTPROCESS_PAR@

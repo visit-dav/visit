@@ -1,0 +1,1 @@
+../../components/Pipeline/Sources/avtTerminatingImageSource.h
