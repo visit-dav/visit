@@ -171,6 +171,9 @@ $0 = shift @ARGV;
 #    Modified the script to not dump core files if running a parallel
 #    engine using either psub or qsub.
 #
+#    Thomas R. Treadway, Tue Apr 10 11:46:50 PDT 2007
+#    Replacing "uname -m" with "uname -p" for darwin.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -840,14 +843,14 @@ for ($os) {
         }
         else
         {
-            chomp( $mach    = `uname -m` );
+            chomp( $mach    = `uname -p` );
             if ($mach =~ /i386/) {
                 push @supportedarchs, "darwin-i386";
             }
             elsif ($mach =~ /x86_64/) {
                 push @supportedarchs, "darwin-x86_64";
             }   
-            elsif ($mach =~ /ppc/) {
+            elsif ($mach =~ /powerpc/) {
                 push @supportedarchs, "darwin-ppc";
             }   
             elsif ($mach =~ /ppc_64/) {

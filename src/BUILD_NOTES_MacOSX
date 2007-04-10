@@ -1,5 +1,5 @@
                          Building VisIt on MacOS X
-                  ======================================
+                         =========================
 
    This document describes how to build VisIt on MacOS X under at least 10.4.x 
 on Intel and 10.3.9 on PPC. Building a universal binary MacOS X, while similar,
@@ -941,15 +941,26 @@ tar zxf netcdf.tar.gz
 cd netcdf-3.6.0-p1
 cd src
 
+# The exodusII library uses the netcdf library for low-level data storage.
+# The netcdf library must be modified slightly in order to handle the
+# exodusII datamodel. 
+
+vi libsrc/netcdf.h
+# Modify the following defines:
+
+#define NC_MAX_DIMS     65536    /* max dimensions per file */
+#define NC_MAX_VARS     524288   /* max variables per file */
+#define NC_MAX_VAR_DIMS 8        /* max per variable dimensions */
+
 # Have to run configure to create head files on both PPC and Intel machines
-./configure \
---prefix=$VISITPATH/netcdf/3.6.0 AR=libtool ARFLAGS="-static -o \
+./configure --enable-largefile --prefix=$VISITPATH/netcdf/3.6.0 \
 "CFLAGS="-O2 -fno-common" CXXFLAGS="-O2 -fno-common"
 
-# Build the library by hand on PPC
+# Build the C library 
 cd libsrc
 
-gcc -c -O2 -fno-common attr.c dim.c error.c libvers.c nc.c ncio.c \
+gcc -c -O2 -fno-common -DVERSION=`cat ../VERSION` libvers.c
+gcc -c -O2 -fno-common attr.c dim.c error.c nc.c ncio.c \
 ncx.c putget.c string.c v1hpg.c v2i.c var.c
 # Create dynamic library.
 gcc -dynamiclib -o ../libnetcdf.dylib attr.o dim.o error.o libvers.o nc.o \
@@ -958,6 +969,14 @@ ncio.o ncx.o putget.o string.o v1hpg.o v2i.o var.o \
 -install_name,@executable_path/../lib/libnetcdf.dylib,\
 -compatibility_version,3.6,-current_version,3.6.0
 
+# Build the C library 
+cd ../cxx
+g++ -c -O2 -fno-common -I../libsrc -I.   netcdf.cpp
+g++ -c -O2 -fno-common -I../libsrc -I.   ncvalues.cpp
+g++ -dynamiclib -o ../libnetcdf_c++.dylib netcdf.o ncvalues.o \
+-L.. -lnetcdf -Wl,-headerpad_max_install_names,\
+-install_name,@executable_path/../lib/libnetcdf_c++.dylib,\
+-compatibility_version,3.6,-current_version,3.6.0
 cd ..
 # Install header files.
 mkdir $VISITPATH/netcdf
@@ -969,6 +988,7 @@ cp cxx/netcdfcpp.h $VISITPATH/netcdf/3.6.0/include
 cp libsrc/netcdf.h $VISITPATH/netcdf/3.6.0/include
 
 cp libnetcdf.dylib $VISITPATH/netcdf/3.6.0/lib
+cp libnetcdf_c++.dylib $VISITPATH/netcdf/3.6.0/lib
 cd ../..
 
 
@@ -1052,38 +1072,7 @@ and read via C, C++, or Fortran library routines which comprise the Application
 Programming Interface. (exodusII is based on netcdf). I needed to do a machine
 merge in order to get a universal binary.
 
-The EXODUS II library depends on the customized NetCDF library, so you will need to
-build it first.  When you build NetCDF, you can either modify the source
-files as described in the README file that comes with EXODUS, or you can
-use the NetCDF sources that we have already modified.
-
-tar zxf netcdf-3.6.0-exodusii.tar.gz
-cd netcdf-3.6.0-exodusii/src
-
-mkdir $VISITPATH/exodus
-mkdir $VISITPATH/exodus/4.46
-mkdir $VISITPATH/exodus/4.46/{inc,lib}
-
-# Unpack Exodus II source
-tar zxf exodusii-4.46.tar.gz
-cd exodusii-4.46/cbind/src
-
-./configure --prefix=$VISITPATH/exodus/4.46 FC="" \
-CFLAGS="-O2 -fno-common" CXXFLAGS="-O2 -fno-common"
-#
-# Install it under the exodus directory.
-#
-cd libsrc
-
-libtool -o libnetcdf.dylib -dynamic libnetcdf.a -lSystem -twolevel_namespace \
--undefined dynamic_lookup -headerpad_max_install_names \
--install_name @executable_path/../lib/libnetcdf.dylib \
--compatibility_version 3.6 -current_version 3.6.0
-
-cp netcdf.h $VISITPATH/exodus/4.46/inc
-cp libnetcdf.dylib $VISITPATH/exodus/4.46/lib
-
-cd ../../..
+The EXODUS II library depends on the customized NetCDF library, from above.
 
 #
 # Build and install the exodus libraries.
@@ -1092,8 +1081,8 @@ tar zxf exodusii-4.46.tar.gz
 cd exodusii-4.46/cbind/src
 
 # Build the Exodus II source (note that it requires NetCDF)
-export NETCDFLIB=$VISITPATH/exodus/4.46/lib
-export NETCDFINC=$VISITPATH/exodus/4.46/inc
+export NETCDFLIB=$VISITPATH/netcdf/3.6.0/lib
+export NETCDFINC=$VISITPATH/netcdf/3.6.0/include
 gcc -O2 -fno-common -I../include -I$NETCDFINC -c *.c
 
 # Build a universal dynamic library
@@ -1103,8 +1092,13 @@ gcc -dynamiclib -o libexoIIv2c.dylib *.o -Wl,-headerpad_max_install_names,\
 -L$NETCDFLIB -lnetcdf
 
 # Install Exodus
+mkdir $VISITPATH/exodus
+mkdir $VISITPATH/exodus/4.46
+mkdir $VISITPATH/exodus/4.46/{inc,lib}
 cp libexoIIv2c.dylib $VISITPATH/exodus/4.46/lib
 cp ../include/*.h $VISITPATH/exodus/4.46/inc
+ln -s $VISITPATH/netcdf/3.6.0/include/netcdf.h \
+$VISITPATH/exodus/4.46/inc/netcdf.h
 cd ../../..
 
 ===============================================================================

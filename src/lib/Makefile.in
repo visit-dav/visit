@@ -139,6 +139,9 @@
 #    Eric Brugger, Fri Apr  6 14:07:02 PDT 2007
 #    Removed links for libvtkexoIIc and libvtkNetCDF.
 #
+#    Thomas R. Treadway, Tue Apr 10 11:53:31 PDT 2007
+#    Adding NetCDF_c++ library.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -315,6 +318,8 @@ create_cfitsio_link:
 create_netcdf_link:
 	$(RM) libnetcdf.@SHLIB_LIBEXT@
 	ln -s @NETCDF_LIB@ .
+	$(RM) libnetcdf_c++.@SHLIB_LIBEXT@
+	ln -s @NETCDF_CXX_LIB@ .
 
 create_cgns_link:
 	$(RM) libcgns.@SHLIB_LIBEXT@
@@ -358,8 +363,8 @@ clean distclean:
 	$(LIBSILO) \
 	python \
 	lib@PYVERSION@.@SHLIB_LIBEXT@ \
-	libqt.a \
-	libqui.a
+	$(LIBQT) \
+	$(LIBQUI)
 
 install:
 install_bin:
