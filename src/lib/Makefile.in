@@ -142,6 +142,10 @@
 #    Thomas R. Treadway, Tue Apr 10 11:53:31 PDT 2007
 #    Adding NetCDF_c++ library.
 #
+#    Mark C. Miller, Wed Apr 11 18:21:24 PDT 2007
+#    Removed references LIBVTKNETCDF and LIBVTKEXOIIC in clean target.
+#    Removed 'distclean' as alias for clean target.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -333,7 +337,7 @@ create_exodus_link:
 	$(RM) libexoIIv2c.@SHLIB_LIBEXT@
 	ln -s @EXODUS_LIB@ .
 
-clean distclean:
+clean:
 	$(RM) \
 	$(LIBMESAGL) \
 	$(LIBGLU) \
@@ -353,8 +357,6 @@ clean distclean:
 	$(LIBVTKFTGL)* \
 	$(LIBVTKZLIB)* \
 	$(LIBVTKSYS)* \
-	$(LIBVTKEXOIIC)* \
-	$(LIBVTKNETCDF)* \
 	$(LIBVTKMPEG2ENCODE)* \
 	$(LIBPYTHON) \
 	$(LIBVTKEXPAT)* \
@@ -375,7 +377,7 @@ install_dirs:
 .NO_WINK_IN: $(LIBVTKCOMMON) $(LIBVTKDICOM) $(LIBVTKFILTERING) \
    $(LIBVTKGRAPHICS) $(LIBVTKHYBRID) $(LIBVTKIO) $(LIBVTKIMAGING) \
    $(LIBVTKRENDERING) $(LIBVTKZLIB) $(LIBVTKPNG) $(LIBVTKJPEG) $(LIBVTKEXPAT) \
-   $(LIBVTKTIFF) $(LIBVTKFREETYPE) $(LIBVTKFTGL) $(LIBVTKSYS) $(LIBVTKEXOIIC) \
-   $(LIBVTKNETCDF) $(LIBVTKMPEG2ENCODE) $(LIBOSMESA) $(LIBMESAGL) $(LIBGLU) \
+   $(LIBVTKTIFF) $(LIBVTKFREETYPE) $(LIBVTKFTGL) $(LIBVTKSYS) \
+   $(LIBVTKMPEG2ENCODE) $(LIBOSMESA) $(LIBMESAGL) $(LIBGLU) \
    $(LIBQT) $(LIBQUI) $(LIBPYTHON) $(LIBSILO)
 

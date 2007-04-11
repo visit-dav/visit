@@ -155,7 +155,7 @@ public:
     void ShowPreviousVariable();
     void ShowNextVariable();
     std::string &GetShownVariable();
-    ThresholdAttributes::ZonePortion ThresholdAttributes::GetZonePortion() const;
+    int GetZonePortion() const;
     double GetLowerBound() const;
     double GetUpperBound() const;
     const stringVector &GetListedVariables() const;

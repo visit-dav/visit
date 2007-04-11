@@ -1439,13 +1439,13 @@ ThresholdAttributes::GetShownVariable()
     return listedVarNames[shownVarPosition];
 }
 
-ThresholdAttributes::ZonePortion
+int
 ThresholdAttributes::GetZonePortion() const
 {
     if (zonePortions.size() == 0)
-        return ThresholdAttributes::PartOfZone;
+        return (int)ThresholdAttributes::PartOfZone;
 
-    return (ZonePortion)zonePortions[shownVarPosition];
+    return zonePortions[shownVarPosition];
 }
 
 double

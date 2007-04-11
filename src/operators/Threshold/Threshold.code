@@ -674,15 +674,15 @@ ThresholdAttributes::GetShownVariable()
 
 
 Function: GetZonePortion
-Declaration: ThresholdAttributes::ZonePortion ThresholdAttributes::GetZonePortion() const;
+Declaration: int GetZonePortion() const;
 Definition:
-ThresholdAttributes::ZonePortion
+int
 ThresholdAttributes::GetZonePortion() const
 {
     if (zonePortions.size() == 0)
-        return ThresholdAttributes::PartOfZone;
+        return (int)ThresholdAttributes::PartOfZone;
 
-    return (ZonePortion)zonePortions[shownVarPosition];
+    return zonePortions[shownVarPosition];
 }
 
 
