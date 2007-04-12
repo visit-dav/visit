@@ -215,55 +215,58 @@ function MM_initTimelines() { //v4.0
 <table width="100%" border="0">
   <tr>
     <td>&nbsp;&nbsp;1. <a href="#1">Contact information</a> </td>
-    <td>&nbsp;&nbsp;14. <a href="#14">Setting your user name to connect to a remote machine</a> </td>
-  </tr>
-  <tr>
-    <td>&nbsp;&nbsp;2. <a href="#2">Supported platforms</a> </td>
     <td>&nbsp;&nbsp;15. <a href="#15">Distributed mode on a MacOS X computer</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;3. <a href="#3">Optimal hardware/software</a> </td>
+    <td>&nbsp;&nbsp;2. <a href="#2">Supported platforms</a> </td>
     <td>&nbsp;&nbsp;16. <a href="#16">Building VisIt on a Windows computer</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;4. <a href="#4">Stereo rendering</a> </td>
+    <td>&nbsp;&nbsp;3. <a href="#3">Optimal hardware/software</a> </td>
     <td>&nbsp;&nbsp;17. <a href="#17">Installing VisIt on a MacOS X computer</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;5. <a href="#5">VisIt won't run on Linux</a> </td>
+    <td>&nbsp;&nbsp;4. <a href="#4">Stereo rendering</a> </td>
     <td>&nbsp;&nbsp;18. <a href="#18">Hanging at 12% on Windows computers</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;6. <a href="#6">Slow performance on Linux</a> </td>
+    <td>&nbsp;&nbsp;5. <a href="#5">VisIt won't run on Linux</a> </td>
     <td>&nbsp;&nbsp;19. <a href="#19">Getting the Plugin Developer's Guide</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;7. <a href="#7">Slow performance Using SSH</a> </td>
+    <td>&nbsp;&nbsp;6. <a href="#6">Slow performance on Linux</a> </td>
     <td>&nbsp;&nbsp;20. <a href="#20">Writing a plugin for VisIt</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;8. <a href="#8">No output in visualization window</a> </td>
+    <td>&nbsp;&nbsp;7. <a href="#7">Slow performance Using SSH</a> </td>
     <td>&nbsp;&nbsp;21. <a href="#21">When new versions of VisIt are released</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;9. <a href="#9">Accessing data on remote machine</a></td>
+    <td>&nbsp;&nbsp;8. <a href="#8">No output in visualization window</a> </td>
     <td>&nbsp;&nbsp;22. <a href="#22">What is new in the latest version of VisIt</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;10. <a href="#10">Running VisIt in parallel </a></td>
+    <td>&nbsp;&nbsp;9. <a href="#9">Accessing data on remote machine</a></td>
     <td>&nbsp;&nbsp;23. <a href="#23">Compilers that can be used to build VisIt</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;11. <a href="#11">Supported data file formats</a> </td>
+    <td>&nbsp;&nbsp;10. <a href="#10">Running VisIt in parallel </a></td>
     <td>&nbsp;&nbsp;24. <a href="#24">Joining the mailing list for VisIt users</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;12. <a href="#12">Getting your data into VisIt</a></td>
+    <td>&nbsp;&nbsp;11. <a href="#11">Supported data file formats</a> </td>
     <td>&nbsp;&nbsp;25. <a href="#25">VisIt's licensing agreement</a></td>
+  </tr>
+  <tr>
+    <td>&nbsp;&nbsp;12. <a href="#12">Getting your data into VisIt</a></td>
+    <td>&nbsp;&nbsp;26. <a href="#26">Cannot connect to remote computer</a></td>
   </tr>
     <tr>
     <td>&nbsp;&nbsp;13. <a href="#13">Making a movie of your data</a> </td>
-    <td>&nbsp;&nbsp;26. <a href="#26">Cannot connect to remote computer</a></td>
+    <td>&nbsp;&nbsp;27. <a href="#27">Slow performance with ATI cards on Linux</a> </td>
+  </tr>
+  <tr>
+    <td>&nbsp;&nbsp;14. <a href="#14">Setting your user name to connect to a remote machine</a> </td>
   </tr>
 </table>
 <p>&nbsp;</p>
@@ -730,6 +733,8 @@ contact your system administrator.</p>
     information about how you are trying to connect. Be sure to
     include the VisIt version and platform on which you are
   running in your e-mail. </p>
+<h2><a name="27"></a><a name="license"></a>27. Why is VisIt running slowly on my Linux system with an ATI graphics card?</h2>
+<p> The default rendering performance of VisIt running on some ATI cards on Linux systems has been found to approximate that of software rendering. One solution we have found to this problem is to switch the rendering mode to always use display lists, which restores the rendering performance to what you would expect from hardware accelerated rendering. To change the rendering mode to use display lists, change the <strong>Use display lists</strong> mode to <strong>Always</strong> on the <strong>Rendering options window</strong> and press the <strong>Apply</strong> button. The <strong>Rendering options window</strong> can be brought up by selecting <strong>Rendering...</strong> from the <strong>Options</strong> pull down menu at the top of the main control panel. To make the change permanent, press the <strong>Dismiss</strong> button and save the settings by selecting <strong>Save Settings</strong> from the <strong>Options</strong> pull down menu. </p>
 <p>&nbsp;</p>
 <!-- InstanceEndEditable -->
 <div align="center"> 
