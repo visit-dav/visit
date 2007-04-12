@@ -61,7 +61,7 @@ class vtkRectilinearGrid;
 class vtkStructuredGrid;
 class vtkUnstructuredGrid;
 
-struct avtMeshMetaData;
+class avtMeshMetaData;
 
 
 // ****************************************************************************

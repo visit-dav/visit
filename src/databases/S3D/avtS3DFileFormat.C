@@ -61,8 +61,11 @@
 
 #include <DebugStream.h>
 
+#ifndef WIN32
 #include <libgen.h> // Used for POSIX basename and dirname
+#endif
 
+#include <snprintf.h>
 #define S3D_PLUGIN_VERSION 1.1
 
 using     std::string;
@@ -141,7 +144,7 @@ avtS3DFileFormat::OpenLogFile(void)
     int len = strlen(copy);
     char *logFilename = new char[len+32];
     copy[len-4] = '\0';
-    snprintf(logFilename, len+32, "%s.savefile.log", copy);
+    SNPRINTF(logFilename, len+32, "%s.savefile.log", copy);
 
     debug4 << "avtS3DFileFormat::OpenLogFile: logFilename " << logFilename << endl;
     ifstream timefile(logFilename);
@@ -289,10 +292,10 @@ avtS3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     char *pathcopy = strdup(mainFilename);
     char *dir = dirname(pathcopy);
     char timestepDir[256];
-    snprintf(timestepDir,256,"%1.3E",fileTimes[timeState]);
+    SNPRINTF(timestepDir,256,"%1.3E",fileTimes[timeState]);
     debug4 << "Timestep directory is <" << timestepDir <<  ">" << endl;
     char path[256];
-    snprintf(path,256,"%s/%s/field.00000",dir,timestepDir);
+    SNPRINTF(path,256,"%s/%s/field.00000",dir,timestepDir);
     debug4 << "avtS3DFileFormat::PopulateDatabaseMetaData: Full path to data file is " << path << endl;
 
     NcError err(NcError::verbose_nonfatal);
@@ -621,7 +624,7 @@ avtS3DFileFormat::GetVar(int timeState, int domain, const char *varname)
     char *pathcopy = strdup(mainFilename);
     char *dir = dirname(pathcopy);
     char timestepDir[256];
-    snprintf(timestepDir,256,"%1.3E",fileTimes[timeState]);
+    SNPRINTF(timestepDir,256,"%1.3E",fileTimes[timeState]);
     debug4 << "Timestep directory is <" << timestepDir <<  ">" << endl;
     
     // Figure out how big this piece is.
@@ -629,7 +632,7 @@ avtS3DFileFormat::GetVar(int timeState, int domain, const char *varname)
 
     // Open up the NetCDF file.
     char path[256];
-    snprintf(path,256,"%s/%s/field.%05d",dir,timestepDir,domain);
+    SNPRINTF(path,256,"%s/%s/field.%05d",dir,timestepDir,domain);
     debug5 << "avtS3DFileFormat::GetVar: Full path to data file is " << path << endl;
     int handle;
 

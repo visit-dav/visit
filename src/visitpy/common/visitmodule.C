@@ -10091,7 +10091,7 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
 
              // Erase it from the viewer too.
              AnnotationObjectList *aol = GetViewerState()->GetAnnotationObjectList();
-             int needToDelete = false;
+             bool needToDelete = false;
              debug1 << "Setting annotation objects' active flag:" << endl;
              for(int i = 0; i < aol->GetNumAnnotations(); ++i)
              {

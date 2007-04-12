@@ -199,7 +199,7 @@ void fwav_destroy(fwav fw)
 
 void fwav_atran(fwav fw,float *v)
 {
-    int dx,dy,dz,i;
+    int dx,dy,dz;
     float *b1,*td;
 
     fw->v=v;
@@ -230,7 +230,7 @@ void fwav_stran(fwav fw,float *v)
 
 void fwav_atran_x(fwav fw,float *ba0,int dx,int dy,int dz)
 {
-    int j,dx2,x,y,z;
+    int j,dx2,y,z;
     float a0,a1,a2,v0,v1;
     float *ba,*bu,*bv,td0,td1;
 
@@ -256,7 +256,7 @@ void fwav_atran_x(fwav fw,float *ba0,int dx,int dy,int dz)
 
 void fwav_atran_y(fwav fw,float *b0,int dx,int dy,int dz)
 {
-    int j,dy2,x,y,z;
+    int j,dy2,y,z;
     float *ba0,*ba1,*ba2,*bb,v1,td0,td1;
 
     td0=fw->td0; td1=fw->td1;
@@ -285,7 +285,7 @@ void fwav_atran_y(fwav fw,float *b0,int dx,int dy,int dz)
 
 void fwav_atran_z(fwav fw,float *b0,int dx,int dy,int dz)
 {
-    int j,dz2,x,y,z,dd,d;
+    int j,dz2,y,z,dd,d;
     float *ba0,*ba1,*ba2,*bb,v1,td0,td1;
 
     td0=fw->td0; td1=fw->td1;
@@ -330,8 +330,8 @@ void fwav_stran_xyz(fwav fw,float *b1,int dx,int dy,int dz)
 
 void fwav_stran_x(fwav fw,float *b1,int dx,int dy,int dz)
 {
-    int j,dx2,dxv,x,y,z,d;
-    float a0,a1,a2,v0,v1;
+    int j,dx2,dxv,y,z,d;
+    float a0,a2,v0,v1;
     float *ba,*bu,*bv;
 
     dx2=HALF(dx); d=dz*dy*dx2; dxv=dx>>1;
@@ -365,7 +365,7 @@ void fwav_stran_x(fwav fw,float *b1,int dx,int dy,int dz)
 
 void fwav_stran_y(fwav fw,float *b1,int dx,int dy,int dz)
 {
-    int j,dy2,x,y,z,d,dyv,y2;
+    int j,dy2,y,z,d,dyv,y2;
     float *ba0,*ba1,*ba2,*bb;
 
     dy2=HALF(dy); d=dx*dy2*dz; dyv=dy>>1;
@@ -394,7 +394,7 @@ void fwav_stran_y(fwav fw,float *b1,int dx,int dy,int dz)
 
 void fwav_stran_z(fwav fw,float *b1,int dx,int dy,int dz)
 {
-    int j,dz2,x,y,z,dd,d,dzv,z2;
+    int j,dz2,y,z,dd,d,dzv,z2;
     float *ba0,*ba1,*ba2,*bb;
 
     dz2=HALF(dz); dd=dx*dy; d=dx*dy*dz2; dzv=dz>>1;

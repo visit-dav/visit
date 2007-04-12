@@ -35,8 +35,8 @@
 *
 *****************************************************************************/
 
-#ifndef GENERATE_ATTS_H
-#define GENERATE_ATTS_H
+#ifndef GENERATE_PYTHON_H
+#define GENERATE_PYTHON_H
 
 #include <vector>
 #include <algorithm>

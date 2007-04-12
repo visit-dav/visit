@@ -1173,7 +1173,7 @@ avtBoxlib2DFileFormat::GetVectorVar(int patch, const char *var_name)
     // only need one offset.
     const int * offset = fab[0]->box().loVect();
     IntVect pos;
-    int x, y, z;
+    int x, y;
     for (y = 0; y < dims[1]; ++y)
     {
         pos[1] = y + offset[1] + yorigin;
@@ -1327,14 +1327,12 @@ avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (varCentering[v] == AVT_UNKNOWN_CENT)
             continue;
 
-        char var_name[1024];
         AddScalarVarToMetaData(md, varNames[v], mesh_name, 
                                (avtCentering)varCentering[v]);
     }
 
     for (v = 0; v < nVectors; ++v)
     {
-        char var_name[1024];
         AddVectorVarToMetaData(md, vectorNames[v], mesh_name,
                              (avtCentering)vectorCentering[v], dimension);
     }
@@ -1382,7 +1380,6 @@ avtBoxlib2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 void
 avtBoxlib2DFileFormat::CalculateDomainNesting(void)
 {
-    int i;
     int level;
 
     //

@@ -3247,7 +3247,6 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
           size_t counts[]={1, ntuples};
           ptrdiff_t stride[]={1,1};
           float *vals = new float[ntuples];
-          int var_id;
 
           status = nc_get_vars_float(ncid,VarID,
                                      starts, counts, stride, vals);
@@ -3275,7 +3274,6 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
           size_t counts[]={1, dimSizes[VarDimIDs[1]], dimSizes[VarDimIDs[2]]};
           ptrdiff_t stride[]={1,1,1};
           float *vals = new float[ntuples];
-          int var_id;
     
           status = nc_get_vars_float(ncid,VarID,
                                      starts, counts, stride, vals);
@@ -4589,7 +4587,7 @@ avtFVCOMReader::SVAN(double S4, double T4, double P4)
 
   // Declare storage variable here!
   double SIG,SR,RR1,RR2,RR3,V350P,DK;
-  double A4,B4,C4,D4,E4,AA1,BB1,AW,BW,KK,K0,KW,K35,SVA;
+  double A4,B4,C4,D4,E4,AA1,BB1,AW,BW,K0,KW,K35,SVA;
   double GAM,PK,DVAN,DR35P, SVAN;
     
   // Return variable:

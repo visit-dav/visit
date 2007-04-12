@@ -727,7 +727,7 @@ avtVistaDiabloFileFormat::GetMesh(int domain, const char *meshname)
     const double *coords0 = coords[0];
     const double *coords1 = coords[1];
     const double *coords2 = coords[2];
-    for (int i = 0 ; i < numNodes; i++)
+    for (i = 0 ; i < numNodes; i++)
     {
         *tmp++ = *coords0++;
         *tmp++ = *coords1++;

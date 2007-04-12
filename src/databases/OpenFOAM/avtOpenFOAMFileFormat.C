@@ -1364,7 +1364,6 @@ void avtOpenFOAMFileFormat::PopulatePolyMeshDirArrays()
   debug5<<"Create list of points/faces file directories."<<endl;
   std::ostringstream path;
   std::stringstream timeStep;
-  int numSolvers;
   bool facesFound;
   bool pointsFound;
   bool polyMeshFound;
@@ -1906,7 +1905,6 @@ vtkFloatArray * avtOpenFOAMFileFormat::GetBoundaryVariableAtTimestep(
     //or others without "value" entry
     else
       {
-      double value1;
       int cellId;
       data->SetNumberOfValues(NFaces);
       for(int i = 0; i < NFaces; i++)
@@ -2023,7 +2021,6 @@ vtkFloatArray * avtOpenFOAMFileFormat::GetBoundaryVariableAtTimestep(
     //or others without "value" entry
     else
     {
-        double value1;
         int cellId;
         data->SetNumberOfComponents(3);
         for(int i = 0; i < NFaces; i++)
@@ -2145,7 +2142,7 @@ vtkUnstructuredGrid * avtOpenFOAMFileFormat::GetBoundaryMesh(int timeState, int 
   tokenizer>>StartFace;
 
   //Create the mesh
-  int i, j, k;
+  int j, k;
   vtkTriangle * triangle;
   vtkQuad * quad;
   vtkPolygon * polygon;

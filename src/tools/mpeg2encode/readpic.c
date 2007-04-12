@@ -148,6 +148,53 @@ unsigned char *frame[];
   fclose(fd);
 }
 
+
+/* pbm_getc() and pbm_getint() are essentially taken from
+ * PBMPLUS (C) Jef Poskanzer
+ * but without error/EOF checking
+ */
+char pbm_getc(file)
+FILE* file;
+{
+  char ch;
+
+  ch = getc(file);
+
+  if (ch=='#')
+  {
+    do
+    {
+      ch = getc(file);
+    }
+    while (ch!='\n' && ch!='\r');
+  }
+
+  return ch;
+}
+
+int pbm_getint(file)
+FILE* file;
+{
+  char ch;
+  int i;
+
+  do
+  {
+    ch = pbm_getc(file);
+  }
+  while (ch==' ' || ch=='\t' || ch=='\n' || ch=='\r');
+
+  i = 0;
+  do
+  {
+    i = i*10 + ch-'0';
+    ch = pbm_getc(file);
+  }
+  while (ch>='0' && ch<='9');
+
+  return i;
+}
+
 static void read_ppm(fname,frame)
 char *fname;
 unsigned char *frame[];
@@ -447,48 +494,3 @@ unsigned char *src, *dst;
   }
 }
 
-/* pbm_getc() and pbm_getint() are essentially taken from
- * PBMPLUS (C) Jef Poskanzer
- * but without error/EOF checking
- */
-char pbm_getc(file)
-FILE* file;
-{
-  char ch;
-
-  ch = getc(file);
-
-  if (ch=='#')
-  {
-    do
-    {
-      ch = getc(file);
-    }
-    while (ch!='\n' && ch!='\r');
-  }
-
-  return ch;
-}
-
-int pbm_getint(file)
-FILE* file;
-{
-  char ch;
-  int i;
-
-  do
-  {
-    ch = pbm_getc(file);
-  }
-  while (ch==' ' || ch=='\t' || ch=='\n' || ch=='\r');
-
-  i = 0;
-  do
-  {
-    i = i*10 + ch-'0';
-    ch = pbm_getc(file);
-  }
-  while (ch>='0' && ch<='9');
-
-  return i;
-}

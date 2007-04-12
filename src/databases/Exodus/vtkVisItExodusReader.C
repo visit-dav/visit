@@ -1580,7 +1580,6 @@ void vtkVisItExodusReader::GenerateExtraArrays(vtkUnstructuredGrid *output)
   int count, id;
   int blockId;
   int i, j, numBlockElem;
-  int offset;
   
   // Node Id
   if (this->GenerateNodeIdArray)

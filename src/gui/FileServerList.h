@@ -47,6 +47,8 @@
 #include <ConnectCallback.h>
 #include <MDServerProxy.h>
 #include <QualifiedFilename.h>
+#include <avtSIL.h>
+
 
 using std::string;
 using std::map;
@@ -54,7 +56,6 @@ using std::vector;
 
 // Forward declarations.
 class avtDatabaseMetaData;
-class avtSIL;
 class MessageAttributes;
 
 // ****************************************************************************

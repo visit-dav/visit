@@ -45,7 +45,7 @@
 #include "XMLParserUtil.h"
 #include "CodeFile.h"
 
-#if defined(_WIN32) && defined(USING_MSVC6)
+#if defined(_WIN32) 
 // Turn off warnings about inheritance via dominance.
 #pragma warning(disable:4250)
 #endif

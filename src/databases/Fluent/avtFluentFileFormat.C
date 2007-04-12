@@ -2335,7 +2335,7 @@ void avtFluentFileFormat::GetNodesSinglePrecision()
   int start = CaseBuffer.find('(', 1);
   int end = CaseBuffer.find(')',1);
   string info = CaseBuffer.substr(start+1,end-start-1 );
-  int zoneId, firstIndex, lastIndex, type, nd;
+  int zoneId, firstIndex, lastIndex, type;
   sscanf(info.c_str(), "%x %x %x %d", &zoneId, &firstIndex, &lastIndex, &type);
 
   int dstart = CaseBuffer.find('(', 7);
@@ -2380,7 +2380,7 @@ void avtFluentFileFormat::GetNodesDoublePrecision()
   int start = CaseBuffer.find('(', 1);
   int end = CaseBuffer.find(')',1);
   string info = CaseBuffer.substr(start+1,end-start-1 );
-  int zoneId, firstIndex, lastIndex, type, nd;
+  int zoneId, firstIndex, lastIndex, type;
   sscanf(info.c_str(), "%x %x %x %d", &zoneId, &firstIndex, &lastIndex, &type);
 
   int dstart = CaseBuffer.find('(', 7);
@@ -2509,7 +2509,7 @@ void avtFluentFileFormat::GetFacesAscii()
     int start = CaseBuffer.find('(', 1);
     int end = CaseBuffer.find(')',1);
     string info = CaseBuffer.substr(start+1,end-start-1 );
-    int zoneId, firstIndex, lastIndex, bcType, faceType;
+    int zoneId, firstIndex, lastIndex, bcType;
     sscanf(info.c_str(), "%x %x %x %x", &zoneId, &firstIndex, &lastIndex, &bcType);
 
     Faces.resize(lastIndex);

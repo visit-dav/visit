@@ -213,7 +213,7 @@ avtFITSFileFormat::Initialize(avtDatabaseMetaData *md)
             {
                 debug4 << mName << "HDU " << hdu << " contains an image" << endl;
                 int status2 = 0;
-                char value[FLEN_VALUE], comment[FLEN_COMMENT];
+                char value[FLEN_VALUE];
                 std::string objname, bunit, xlabel, ylabel, zlabel;
 
                 // Try and get the key value for BUNIT
@@ -757,9 +757,9 @@ avtFITSFileFormat::GetVectorVar(const char *varname)
         }
         long nelements = 1, n_xy_elements = 1;
         int i;
-        for(int i = 0; i < mit->second.size(); ++i)
+        for(i = 0; i < mit->second.size(); ++i)
             nelements *= mit->second[i];
-        for(int i = 0; i < mit->second.size()-1; ++i)
+        for(i = 0; i < mit->second.size()-1; ++i)
             n_xy_elements *= mit->second[i];
         debug4 << mName << "Number of elements: " << nelements << endl;
         debug4 << mName << "Number of XY elements: " << n_xy_elements << endl;
@@ -794,7 +794,7 @@ avtFITSFileFormat::GetVectorVar(const char *varname)
         float *r = pixels;
         float *g = pixels + n_xy_elements;
         float *b = pixels + n_xy_elements*2;
-        for(int i = 0; i < n_xy_elements; ++i)
+        for(i = 0; i < n_xy_elements; ++i)
         {
             *rgba++ = *r++;
             *rgba++ = *g++;

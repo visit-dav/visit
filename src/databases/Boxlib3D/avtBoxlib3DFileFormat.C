@@ -1444,14 +1444,12 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         if (varCentering[v] == AVT_UNKNOWN_CENT)
             continue;
 
-        char var_name[1024];
         AddScalarVarToMetaData(md, varNames[v], mesh_name, 
                                (avtCentering)varCentering[v]);
     }
 
     for (v = 0; v < nVectors; ++v)
     {
-        char var_name[1024];
         AddVectorVarToMetaData(md, vectorNames[v], mesh_name,
                              (avtCentering)vectorCentering[v], dimension);
     }
@@ -1510,7 +1508,6 @@ avtBoxlib3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 void
 avtBoxlib3DFileFormat::CalculateDomainNesting(void)
 {
-    int i;
     int level;
 
     //
