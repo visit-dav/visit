@@ -46,7 +46,7 @@ shell prompt.
     =======  =======  ===========            ====================
     Mesa     6.5.2    3-D Graphics Library   http://www.mesa3d.org/
     Python   2.5      Scripting Language     http://www.python.org
-    Qt       3.3.7    GUI Toolkit            http://www.trolltech.com
+    Qt       3.3.8    GUI Toolkit            http://www.trolltech.com
     VTK      5.0.0c   Visualization Toolkit  http://www.vtk.org
                       ftp://ftp.llnl.gov/pub/visit/3rd_party/vtk-5.0.0c.tar.gz
     cmake    2.4.5    Make file generation   http://www.cmake.org
@@ -326,15 +326,8 @@ Qt-4.x version promises to support universal builds, until then you'll
 need to build twice then lipo to combine the two build.
 
 # Unzip the Qt source
-tar zxf qt-mac-free-3.3.7.tar.gz
-cd qt-mac-free-3.3.7
-
-# Build a ppc binary of Qt 3.3.7
-# enable Qmake for ppc cross compile
-vi mkspecs/macx-g++/qmake.conf
-# change the following values
-#QMAKE_CFLAGS = -pipe -fno-common
-#QMAKE_LFLAGS = -headerpad_max_install_names
+tar zxf qt-mac-free-3.3.8.tar.gz
+cd qt-mac-free-3.3.8
 
 #
 export QTDIR=$(pwd)
@@ -347,7 +340,8 @@ make install
 
 # Change the dynamic install names
 cd lib
-cp libqt-mt.3.3.7.dylib libqt.dylib
+rm libqt.dylib
+cp libqt-mt.3.3.8.dylib libqt.dylib
 install_name_tool -id @executable_path/../lib/libqt.dylib libqt.dylib
 rm libqui.dylib
 cp libqui.1.0.0.dylib libqui.dylib

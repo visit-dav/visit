@@ -92,13 +92,17 @@ typedef QValueVector<VisItPointD> Points;
 //
 // Modifications:
 //    Shelly Prevost, Wed Mar 21 16:35:30 PDT 2007.
-//    Added Zoom In and out and focue ( center ) to controls
+//    Added Zoom In and out and focus ( center ) to controls
 //
+//    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
+//    added Font variable to update font size as zoom changes. Also added variable
+//    zoomOutLimit for zoom checks.
 // ****************************************************************************
 class QTimerEvent;
 class QScrollView;
+class QFont;
 class VisItSimStripChart : public QWidget
-{
+{                                                          
     Q_OBJECT
     
 public:
@@ -113,6 +117,7 @@ public:
     void    zoomOut();
     void    zoomIn();
     void    focus(QScrollView *sc);
+    int     setFontSize();
        
 protected:
     void    paintEvent( QPaintEvent * );
@@ -141,5 +146,8 @@ private:
     bool    outOfBandLimitsEnabled;
     float   zoom;
     bool    center;
+    float   zoomOutLimit;
+    QFont   *gridFont;
+    int     pointSize;
 };
 

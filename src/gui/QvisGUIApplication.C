@@ -71,6 +71,7 @@
 #include <qstyle.h>
 #endif
 
+#include <qmenubar.h>
 #include <qtimer.h>
 #include <QvisGUIApplication.h>
 
@@ -665,7 +666,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
         int x, y, w, h;
         ReadSavedMainWindowGeometry(localSettings, wh_set, w, h, 
             xy_set, x, y);
- 
         if(wh_set)
         {
             savedGUIGeometry = true;
@@ -2119,6 +2119,9 @@ QvisGUIApplication::SetOrientation(int orientation)
 //   Brad Whitlock, Thu Apr 18 13:10:20 PST 2002
 //   Don't subtract the preshift on MS Windows.
 //
+//   Thomas R. Treadway, Fri Apr 13 14:04:21 PDT 2007
+//   Offset window by 20 pixels, due to MenuBar when on a Mac.
+//
 // ****************************************************************************
 
 void
@@ -2166,6 +2169,13 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
     mainWin->setMinimumWidth(w);
     mainWin->setMaximumHeight(h);
     mainWin->setMinimumHeight(h);
+#endif
+// GUI need to be offset 20 pixels from the MenuBar, only on i386?
+#if defined(Q_WS_MACX)
+    if (y == 0) {
+       y = 20;
+       if (orientation < 2) h = h - y;
+    }
 #endif
     debug1 << mName << "Resizing main window to: " << w << "x" << h << endl;
     mainWin->resize(w, h);

@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2006, The Regents of the University of California
+* Copyright (c) 2000 - 2007, The Regents of the University of California
 * Produced at the Lawrence Livermore National Laboratory
 * All rights reserved.
 *
@@ -39,6 +39,7 @@
 #include <qtimer.h>
 #include <math.h>
 #include <qpen.h>
+#include <qfont.h>
 
 // ****************************************************************************
 // Method: VisItSimStripChart::VisItSimStripChart
@@ -56,7 +57,9 @@
 // Creation:   Friday Oct. 27, 2006
 //
 // Modifications:
-//  
+//    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
+//    added pointSize to update font size. Also added a variable for
+//    zoomOutLimit to prevent to small of zooms.
 //   
 // ****************************************************************************
 
@@ -73,8 +76,8 @@ VisItSimStripChart::VisItSimStripChart( QWidget *parent, const char *name, int w
     QPainter paint( this );
     maxPoint = 1.0;
     minPoint =-1.0;
-    minData = 0.0;
-    maxData = 0.0;
+    minData = HUGE_VAL;
+    maxData = -HUGE_VAL;
     resize(winX,winY);
     // set the timeshift offset to start at the right side of the 
     // window.
@@ -86,6 +89,11 @@ VisItSimStripChart::VisItSimStripChart( QWidget *parent, const char *name, int w
     // Used to scale up and down the y axis in the strip chart
     zoom =1.0;
     center = FALSE;
+    // controls maximum amount you can zoom out.
+    zoomOutLimit = 0.001;
+    pointSize = 14;
+    gridFont = new QFont("Helvetica",pointSize);
+    setFont(*gridFont);
 }
 
 // ****************************************************************************
@@ -124,7 +132,9 @@ VisItSimStripChart::~VisItSimStripChart()
 // Modifications:
 //   Shelly Prevost, Thu Mar 22 11:26:46 PDT 2007
 //   Added zoom and focus controls. 
-//   
+//
+//   Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
+//   added setPointSize call to update font size. 
 // ****************************************************************************
 
 
@@ -135,6 +145,7 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
     float w = width();
     QPen penLimits;
     QPainter paint( this );
+    gridFont->setPointSize(pointSize);
     paint.scale(1.0,zoom);
     if ( center )
     {
@@ -224,14 +235,17 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
 //
 // Modifications:
 //    Shelly Prevost, Wed Mar 21 16:35:30 PDT 2007.
-//    Added support for smaller grids. 
-//   
+//    Added support for smaller grids.    
+//
+//    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
+//    added gridRes variable and dynamic grid resolution base on zoom
 // ****************************************************************************
 
 void VisItSimStripChart::paintGrid(QPainter *paint)
 {
     float w = width();
     float h = height();
+    float gridRes = 15.0*zoom;
     float range = maxPoint -minPoint;
     delta = 10.0;
     vdelta = (h/range);
@@ -242,25 +256,24 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
     {   
         // draw verticle lines
         paint->setPen( darkGray ); // set pen color
-        paint->drawLine( QPoint(int(i+timeShift),int(0)), QPoint(i+timeShift,int(h) )); // draw line
+        paint->drawLine( QPoint(int(i+timeShift),int(0)), QPoint(i+timeShift,int(h*5.0) )); // draw line
     }    
 
-    for ( float i=-range; i<=range*2.0; i+=range/10.0 ) 
+    for ( float i=-range; i<=range*5.0; i+=range/gridRes)
     {// draw horizontal lines
         paint->setPen( black ); // set pen color
-        paint->drawLine( QPoint(int(0),int(i*vdelta)), QPoint(int(w),int(i*vdelta))); // draw line
-        //qDebug("i  %f,i_screen Cord  %f, maxPoint %f, maxPoint-i %f\n",i,i*vdelta,maxPoint,maxPoint-i); 
-        paint->drawText( int(0),int(h-(i*vdelta )), QString::number(i+minPoint));
-        paint->drawText( int(w-25),int(h-(i*vdelta)), QString::number(i+minPoint));
+        paint->drawLine( QPoint(int(0),int(h-(i*vdelta))), QPoint(int(w),int(h-(i*vdelta)))); // draw line
+        paint->drawText( int(0),   int(h-(i*vdelta)), QString::number(i+minPoint));
+        paint->drawText( int(w-80),int(h-(i*vdelta)),QString::number(i+minPoint));
         paint->drawText( timeShift,int(h-(i*vdelta)), QString::number(i+minPoint));
         for ( int t=int(0); t<int(last*delta); t+=int(delta)) 
         {
             // draw verticle tick lines
             paint->setPen( darkGray ); // set pen color
-            paint->drawLine( QPoint(t+timeShift,int(-delta+i*vdelta)), QPoint(t+timeShift,int(delta+i*vdelta ))); // draw line
+            paint->drawLine( QPoint(t+timeShift,int(h-(-delta+i*vdelta))), QPoint(t+timeShift,int(h-(delta+i*vdelta )))); // draw line
         }
     }    
-    setCaption( "VisIt Strip Chart");
+    setCaption( "Strip Chart");
 
 }
 
@@ -516,13 +529,42 @@ void VisItSimStripChart::setEnable( bool enable )
 //    Shelly Prevost  Tue Mar 27 16:15:47 PDT 2007
 //    Limited zoom level to greater than zero.
 //
+//    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
+//    added setFont function to update font size. Also added constant for
+//    zoomOutLimit check.
 //
 // ****************************************************************************
 
 void VisItSimStripChart::zoomIn()
 {
     zoom += 0.25;
-    if (zoom <= 0 ) zoom = 0.1;
+    if(zoom > 3.0 )  zoom =3.0;
+    if (zoom <= zoomOutLimit) zoom = zoomOutLimit;
+    setFontSize();
+}
+
+// ****************************************************************************
+// Method: VisItSimStripChart::setFontSize
+//
+// Purpose:
+//   This function is used to keep the font large enough to be readable at all
+//   zoom settings.
+//
+// Arguments:
+//
+// Programmer: Shelly Prevost
+// Creation:   Fri Apr 13 14:03:03 PDT 2007
+//
+//
+// ****************************************************************************
+
+int VisItSimStripChart::setFontSize()
+{
+    if ( zoom <= 0.35)  pointSize = 20;
+    if ( zoom  > 0.35)  pointSize = 16;
+    if ( zoom  > 0.5 )  pointSize = 14;
+    if ( zoom  > 1.0 )  pointSize = 10;
+    if ( zoom  > 1.25)  pointSize = 6;
 }
 
 // ****************************************************************************
@@ -540,12 +582,18 @@ void VisItSimStripChart::zoomIn()
 //    Shelly Prevost  Tue Mar 27 16:15:47 PDT 2007
 //    Limited zoom level to greater than zero
 //
+//    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
+//    added setFont function to update font size. Also added constant for
+//    zoomOutLimit check.
 // ****************************************************************************
 
 void VisItSimStripChart::zoomOut()
 {
-    zoom -= 0.25;
-    if (zoom <= 0 ) zoom = 0.1;
+    if (zoom > 0.5) zoom = zoom -= 0.25;
+    else  zoom = zoom/2.0;
+    if (zoom <= zoomOutLimit ) zoom = zoomOutLimit;
+    setFontSize();
+
 }
 
 // ****************************************************************************
