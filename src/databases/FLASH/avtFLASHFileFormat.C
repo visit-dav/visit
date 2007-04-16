@@ -357,6 +357,9 @@ avtFLASHFileFormat::FreeUpResources(void)
 //    Hank Childs, Wed Jan 11 09:40:17 PST 2006
 //    Change mesh type to AMR.
 //
+//    Randy HUDSON, Tue, Apr 3, 2007
+//    Added support for Morton curve.
+//
 // ****************************************************************************
 
 void
@@ -457,6 +460,30 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     }
 
+    // Morton curve
+    if (numBlocks > 0)
+    {
+        avtMeshMetaData *mesh = new avtMeshMetaData;
+        mesh->name = "morton";
+        mesh->originalName = "morton";
+
+        mesh->meshType = AVT_UNSTRUCTURED_MESH;
+        mesh->topologicalDimension = 1;    //    It's a curve
+        mesh->spatialDimension = dimension;
+        mesh->blockOrigin = 1;
+        mesh->groupOrigin = 1;
+
+        mesh->hasSpatialExtents = true;
+        mesh->minSpatialExtents[0] = minSpatialExtents[0];
+        mesh->maxSpatialExtents[0] = maxSpatialExtents[0];
+        mesh->minSpatialExtents[1] = minSpatialExtents[1];
+        mesh->maxSpatialExtents[1] = maxSpatialExtents[1];
+        mesh->minSpatialExtents[2] = minSpatialExtents[2];
+        mesh->maxSpatialExtents[2] = maxSpatialExtents[2];
+
+        md->Add(mesh);
+    }
+
     // Populate cycle and time
     md->SetCycle(timestep, simParams.nsteps);
     md->SetTime(timestep, simParams.time);
@@ -496,6 +523,9 @@ avtFLASHFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //
 //    Kathleen Bonnell, Thu Jul 20 11:22:13 PDT 2006
 //    Added support for FLASH3 formats.
+//
+//    Randy HUDSON, Tue, Apr 3, 2007
+//    Added support for Morton curve.
 //
 // ****************************************************************************
 
@@ -761,8 +791,106 @@ avtFLASHFileFormat::GetMesh(int domain, const char *meshname)
 
         return pd;
     }
+    else if (string(meshname) == "morton")
+    {
+        return GetMortonCurve();
+    }
 
     return NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtFLASHFileFormat::GetMortonCurve
+//
+//  Purpose:
+//      Build and return the Morton space-filling curve as a vtkPolyData object.
+//
+//  Programmer: Randy HUDSON
+//  Creation:   April 3, 2007
+//
+// ****************************************************************************
+
+vtkPolyData *
+avtFLASHFileFormat::GetMortonCurve()
+{
+    vtkPolyData *pdata = vtkPolyData::New();
+    vtkPoints *points = vtkPoints::New();
+    vtkCellArray *lines = vtkCellArray::New();
+    int i, j;
+
+#if 0
+    //
+    // One cell for entire polyline may cause the twisting of the polytube
+    // Read centers of leaf blocks and insert into point object
+    //
+    for (i=0, j=0; i<numBlocks; i++)
+    {
+        if (blocks[i].nodetype == LEAF_NODE)
+        {
+            points->InsertPoint(j, blocks[i].coords[0], blocks[i].coords[1], blocks[i].coords[2]);
+            j++;
+        }
+    }
+    lines->InsertNextCell(j);
+    for (i=0; i<j; i++)
+        lines->InsertCellPoint(i);
+#elif 0
+    //
+    // One cell per line segment, but still common end points
+    // Read centers of leaf blocks and insert into point object
+    //
+    for (i=0, j=0; i<numBlocks; i++)
+    {
+        if (blocks[i].nodetype == LEAF_NODE)
+        {
+            points->InsertPoint(j, blocks[i].coords[0], blocks[i].coords[1], blocks[i].coords[2]);
+            j++;
+        }
+    }
+    for (i=0; i<(j-1); i++)
+    {
+        // Each cell is a (2-point) line
+        lines->InsertNextCell(2);
+        lines->InsertCellPoint(i);
+        lines->InsertCellPoint(i+1);
+    }
+#else
+    //
+    // One cell per line segment, and unique end points (ones that coincide
+    // are duplicated in vtkPoints)
+    // Read centers of leaf blocks and insert into point object
+    //
+    for (i=0, j=0; i<numBlocks; i++)
+    {
+        if (blocks[i].nodetype == LEAF_NODE)
+        {
+            points->InsertPoint(j, blocks[i].coords[0], blocks[i].coords[1], blocks[i].coords[2]);
+            j++;
+            if (j!=1)
+            {
+                //
+                // Interior points are duplicated so neighboring segments
+                // don't share them
+                //
+                points->InsertPoint(j, blocks[i].coords[0], blocks[i].coords[1], blocks[i].coords[2]);
+                j++;
+            }
+        }
+    }
+    for (i=0; i<(j-2); i+=2)
+    {
+        // Each cell is a (2-point) line; ignore duplicate of last point
+        lines->InsertNextCell(2);
+        lines->InsertCellPoint(i);
+        lines->InsertCellPoint(i+1);
+    }
+#endif
+
+    pdata->SetPoints(points);
+    pdata->SetLines(lines);
+    
+    return pdata;
 }
 
 
@@ -1039,6 +1167,10 @@ avtFLASHFileFormat::GetVectorVar(int domain, const char *varname)
 //    Jeremy Meredith, Tue Sep 27 14:24:45 PDT 2005
 //    Added support for files containing only particles, and no grids.
 //
+//    Randy HUDSON, Wed, Apr 4, 2007
+//    Added call to ReadNodeTypes.
+//    Added call to ReadCoordinates.
+//
 // ****************************************************************************
 void
 avtFLASHFileFormat::ReadAllMetaData()
@@ -1079,7 +1211,131 @@ avtFLASHFileFormat::ReadAllMetaData()
         ReadSimulationParameters(fileId);
         ReadUnknownNames();
         DetermineGlobalLogicalExtentsForAllBlocks();
+        ReadNodeTypes();
+        ReadCoordinates();
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtFLASHFileFormat::ReadCoordinates
+//
+//  Purpose:
+//      Read coordinates of centers of blocks.
+//
+//  Programmer: Randy HUDSON
+//  Creation:   April 4, 2007
+//
+// ****************************************************************************
+void avtFLASHFileFormat::ReadCoordinates()
+{
+    //
+    // Read the coordinates description for the blocks
+    //
+    hid_t coordinatesId = H5Dopen(fileId, "coordinates");
+    if (coordinatesId < 0)
+    {
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    hid_t coordinatesSpaceId = H5Dget_space(coordinatesId);
+    
+    hsize_t coordinates_dims[2];
+    hsize_t coordinates_ndims = H5Sget_simple_extent_dims(coordinatesSpaceId,
+                                                         coordinates_dims,NULL);
+
+    if (coordinates_ndims != 2 ||
+        coordinates_dims[0] != numBlocks ||
+        coordinates_dims[1] != dimension)
+     {
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+    double *coordinates_array = new double[numBlocks * dimension];
+    H5Dread(coordinatesId, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, coordinates_array);
+
+    for (int b=0; b<numBlocks; b++)
+    {
+         double *coords = &coordinates_array[dimension*b];
+         blocks[b].coords[0] = coords[0];
+         blocks[b].coords[1] = coords[1];
+         blocks[b].coords[2] = coords[2];
+    }
+
+    // Done with the space
+    H5Sclose(coordinatesSpaceId);
+
+    // Done with the variable; don't leak it
+    H5Dclose(coordinatesId);
+
+    // Delete the raw array
+    delete[] coordinates_array;
+}
+
+
+// ****************************************************************************
+//  Method: avtFLASHFileFormat::ReadNodeTypes
+//
+//  Purpose:
+//      Read node types of blocks and count the leaf blocks ( of node type '1')
+//
+//  Programmer: Randy HUDSON
+//  Creation:   April 4, 2007
+//
+// ****************************************************************************
+
+void avtFLASHFileFormat::ReadNodeTypes()
+{
+    //
+    // Read the node type description for the blocks
+    //
+    hid_t nodetypeId = H5Dopen(fileId, "node type");
+    if (nodetypeId < 0)
+    {
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    hid_t nodetypeSpaceId = H5Dget_space(nodetypeId);
+    
+    hsize_t nodetype_dims[1];
+    hsize_t nodetype_ndims = H5Sget_simple_extent_dims(nodetypeSpaceId,
+                                                         nodetype_dims,NULL);
+
+    if (nodetype_ndims != 1 || nodetype_dims[0] != numBlocks)
+    {
+        EXCEPTION1(InvalidFilesException, filename.c_str());
+    }
+
+    hid_t nodetype_raw_data_type = H5Dget_type(nodetypeId);
+    hid_t nodetype_data_type = H5Tget_native_type(nodetype_raw_data_type,
+                                                    H5T_DIR_ASCEND);
+    
+    int *nodetype_array = new int[numBlocks];
+    H5Dread(nodetypeId, nodetype_data_type, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+            nodetype_array);
+
+     numLeafBlocks = 0;
+    for (int b=0; b<numBlocks; b++)
+    {
+        int ntype = nodetype_array[b];
+        blocks[b].nodetype = ntype;
+        if (ntype == LEAF_NODE)
+        {
+            numLeafBlocks++;
+        }
+    }
+
+    // Done with the type
+    H5Tclose(nodetype_data_type);
+    H5Tclose(nodetype_raw_data_type);
+
+    // Done with the space
+    H5Sclose(nodetypeSpaceId);
+
+    // Done with the variable; don't leak it
+    H5Dclose(nodetypeId);
+
+    // Delete the raw array
+    delete[] nodetype_array;
 }
 
 

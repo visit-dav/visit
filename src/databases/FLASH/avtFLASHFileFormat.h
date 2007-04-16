@@ -50,6 +50,7 @@
 
 #include <hdf5.h>
 
+#include <vtkPolyData.h>
 
 // ****************************************************************************
 //  Class: avtFLASHFileFormat
@@ -79,6 +80,9 @@
 //
 //    Mark C. Miller, Tue Mar  6 23:41:33 PST 2007
 //    Removed simParamsHaveBeenRead; Added bool to ReadSimulationParameters
+//
+//    Randy HUDSON, Tue, Apr 3, 2007
+//    Added support for Morton curve
 //
 // ****************************************************************************
 
@@ -132,6 +136,10 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     void InitializeHDF5();
     void FinalizeHDF5();
 
+    vtkPolyData* GetMortonCurve();
+    void ReadNodeTypes();
+    void ReadCoordinates();
+
   protected:
     struct SimParams
     {
@@ -149,6 +157,8 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     {
         int ID;
         int level;
+        int nodetype;
+        double coords[3];
         int parentID;
         int childrenIDs[8];
         int neighborIDs[6];
@@ -179,6 +189,8 @@ class avtFLASHFileFormat : public avtSTMDFileFormat
     int                       dimension;
     int                       numBlocks;
     int                       numLevels;
+    static const int          LEAF_NODE = 1;
+    int                       numLeafBlocks;
     int                       numParticles;
     int                       fileFormatVersion;
     std::string               particleHDFVarName;

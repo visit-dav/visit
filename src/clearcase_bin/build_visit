@@ -36,13 +36,16 @@
 #       This script assumes you have downloaded the VisIt source code and 
 #       the necessary third party libraries and that they are placed in the
 #       current directory.  If it does not locate these libraries, it will
-#       fail immediately.
+#       try to download them.
 #       You must have:
-#          Qt		qt-x11-free-3.3.2.tar.gz
-#          Mesa		Mesa-5.0-mangled.tar
+#          Qt		qt-x11-free-3.3.2.tar.gz (Linus) 
+#                    or qt-mac-free-3.3.8.tar.gz (Mac)
+#          Mesa         Mesa-5.0-mangled.tar.gz
+#                    or MesaLib-6.5.2.tar.gz (Mac)
 #          Python	Python-2.5.tgz
-#          VTK		vtk-5.0.0b.tar
+#          VTK		vtk-5.0.0c.tar
 #          CMake	cmake-2.2.3.tar
+#               	cmake-2.4.5.tar (Mac)
 #          Silo		silo060605.sh          
 #
 #   Layout:
@@ -75,6 +78,14 @@
 #     Hank Childs, Sun Mar  4 11:14:54 PST 2007
 #     Add support for parallelization.  Also misc bug fixes.
 #
+#     Brad Whitlock, Fri Apr 6 14:09:00 PST 2007
+#     Added support for downloading missing source files and for graphical
+#     progress dialogs and menus for making choices about parallel, etc.
+#
+#     Thomas R. Treadway, Mon Apr 16 09:01:29 PDT 2007
+#     Added Gunther H. Weber changes for MacOS X support.
+#     Tuned for building under both i386 and ppc.
+#
 # *****************************************************************************
 
 
@@ -86,23 +97,38 @@
 # etc.  Note that this script is really only known to work with gcc.          #
 # *************************************************************************** #
 
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin
+# Determine architecture
+if [[ `uname` =  "Darwin" ]]; then
+   export ARCH="Darwin"
+   export MACBUILD="Yes"
+   export SO_EXT="dylib"
+   export MACOSX_DEPLOYMENT_TARGET=10.3
+else
+   export ARCH="Linux" # You can change this to say RHEL, SuSE, Fedora, etc.
+   export MACBUILD="No";
+   export SO_EXT="so"
+fi
 export THIRD_PARTY_LOCATION="./visit"
-export ARCH="Linux"  # You can change this to say RHEL, SuSE, Fedora, etc.
 export C_COMPILER="gcc"
 export CPP_COMPILER="g++"
 export C_OPT_FLAGS="-O2"
 export CPP_OPT_FLAGS="-O2"
 
-export QT_PLATFORM="linux-g++"
-if [[ "$(uname -m)" == "x86_64" ]] ; then
-   C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
-   CPP_OPT_FLAGS="$CPP_OPT_FLAGS -m64 -fPIC"
-   QT_PLATFORM="linux-g++-64"
-fi
-if [[ "$(uname -m)" == "ia64" ]] ; then
-   C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
-   CPP_OPT_FLAGS="$CPP_OPT_FLAGS -fPIC"
-   QT_PLATFORM="linux-g++-64"
+if [[ $MACBUILD == "No"  ]]; then
+   export QT_PLATFORM="linux-g++"
+   if [[ "$(uname -m)" == "x86_64" ]] ; then
+      C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
+      CPP_OPT_FLAGS="$CPP_OPT_FLAGS -m64 -fPIC"
+      QT_PLATFORM="linux-g++-64"
+   fi
+   if [[ "$(uname -m)" == "ia64" ]] ; then
+      C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
+      CPP_OPT_FLAGS="$CPP_OPT_FLAGS -fPIC"
+      QT_PLATFORM="linux-g++-64"
+   fi
+else
+   export QT_PLATFORM="macx-g++"
 fi
 
 #
@@ -119,29 +145,131 @@ PAR_LIBS=""
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
-export VISIT_FILE="visit070304.tar"
+export VISIT_FILE="visit070330.tar"
+export VISIT_VERSION="1.6"
 
-export VTK_FILE="vtk-5.0.0b.tar"
-export VTK_VERSION="5.0.0b"
-export CMAKE_FILE="cmake-2.2.3.tar"
-export CMAKE_VERSION="2.2.3"
+export VTK_FILE="vtk-5.0.0c.tar"
+export VTK_VERSION="5.0.0c"
+export CMAKE_FILE="cmake-2.4.5.tar"
+export CMAKE_VERSION="2.4.5"
 
-export MESA_FILE="Mesa-5.0-mangled.tar"
-export MESA_VERSION="5.0"
-export MESA_DIR="Mesa-5.0"  # The directory contained in the tarball
-export MESA_TARGET="linux"
+if [[ $MACBUILD == "No" ]]; then
+   export MESA_FILE="Mesa-5.0-mangled.tar"
+   export MESA_VERSION="5.0"
+   export MESA_DIR="Mesa-5.0"  # The directory contained in the tarball
+   export MESA_TARGET="linux"
+else
+   export MESA_FILE="MesaLib-6.5.2.tar"
+   export MESA_VERSION="6.5.2"
+   export MESA_DIR="Mesa-6.5.2"  # The directory contained in the tarball
+   export MESA_TARGET="darwin"
+fi
 
-export PYTHON_FILE="Python-2.5.tgz"
-export PYTHON_VERSION="2.5"
+# The old Python version at LLNL does not work on Mac, we need a newer version
+#export PYTHON_FILE_SUFFIX="tar.gz" # This is for the old version. Remove this later
+export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. Uncomment this later
+export PYTHON_VERSION="2.5"       # We're up to 2.5 now. Change this back later.
+export PYTHON_COMPATIBILITY_VERSION="2.5" # Need this for the dylib build
+export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
 
-export QT_FILE="qt-x11-free-3.3.2.tar"
-export QT_VERSION="3.3.2"
+if [[ $MACBUILD == "No" ]]; then
+   export QT_FILE="qt-x11-free-3.3.2.tar"
+   export QT_VERSION="3.3.2"
+else
+   export QT_FILE="qt-mac-free-3.3.8.tar"
+   export QT_VERSION="3.3.8"
+fi
 
 export SILO_FILE="silo060605.sh"
 export SILO_VERSION="4.5.1"
+export SILO_COMPATIBILITY_VERSION="4.5"
 
 export HDF5_FILE="hdf5-1.6.5.tar"
 
+# Dialog-related variables.
+DLG="dialog"
+DLG_BACKTITLE="VisIt $VISIT_VERSION Build Process"
+DLG_HEIGHT="5"
+DLG_WIDTH="60"
+DLG_WIDTH_WIDE="80"
+GRAPHICAL="yes"
+
+# *************************************************************************** #
+# Function: download_file                                                     #
+#                                                                             #
+# Purpose: Downloads a file using wget and show a dialog screen.              #
+#                                                                             #
+# Programmer: Brad Whitlock,                                                  #
+# Date: Thu Apr 5 14:38:36 PST 2007                                           #
+#                                                                             #
+# *************************************************************************** #
+
+function download_file
+{
+    # Print a dialog screen
+    if [[ "$GRAPHICAL" == "yes" ]] ; then
+        $DLG --backtitle "$DLG_BACKTITLE" --infobox "Downloading $2 . . ." $DLG_HEIGHT $DLG_WIDTH
+    else
+        echo "Downloading $2 . . ." 
+    fi
+
+    # Try and download the file.
+    if [[ "$1" == "" ]] ; then
+        if [[ $MACBUILD == "No" ]]; then
+            wget -o /dev/null "http://www.llnl.gov/visit/$2" 
+        else
+            # MaxOS X comes with curl
+            curl -sfo $2 "http://www.llnl.gov/visit/$2"
+        fi
+    else
+        if [[ $MACBUILD == "No" ]]; then
+            wget -o /dev/null "http://www.llnl.gov/visit/$1/$2" 
+        else
+            curl -sfo $2 "http://www.llnl.gov/visit/$1/$2"
+        fi
+    fi
+    if [[ -e $2 ]] ; then
+        return 1
+    fi
+    return 0
+}
+
+# *************************************************************************** #
+# Function: download_3rdparty                                                 #
+#                                                                             #
+# Purpose: Downloads a 3rd party file using wget and show a dialog screen.    #
+#                                                                             #
+# Programmer: Brad Whitlock,                                                  #
+# Date: Thu Apr 5 14:38:36 PST 2007                                           #
+#                                                                             #
+# *************************************************************************** #
+
+function download_3rdparty
+{
+    download_file "3rd_party" $1
+    if [[ $? == 0 ]] ; then
+        return 0
+    fi
+    return 1
+}
+
+# *************************************************************************** #
+# Function: info_box                                                          #
+#                                                                             #
+# Purpose: Show an information box with a message.                            #
+#                                                                             #
+# Programmer: Brad Whitlock,                                                  #
+# Date: Thu Apr 5 14:38:36 PST 2007                                           #
+#                                                                             #
+# *************************************************************************** #
+
+function info_box
+{
+    if [[ "$GRAPHICAL" == "yes" ]] ; then
+        $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT $DLG_WIDTH
+    fi
+    return 0
+}
 
 # *************************************************************************** #
 #                         Function 1, check_files                             #
@@ -153,6 +281,28 @@ export HDF5_FILE="hdf5-1.6.5.tar"
 function check_files
 {
     rv=0
+
+    # Show a screen
+    if [[ "$GRAPHICAL" == "yes" ]] ; then
+        $DLG --backtitle "$DLG_BACKTITLE" --infobox "Checking for files . . ." $DLG_HEIGHT $DLG_WIDTH
+    fi
+
+    #
+    # Check for CMake
+    #
+    HAVE_CMAKE_TARBALL="NO"
+    if [[ -f $CMAKE_FILE || -f ${CMAKE_FILE}.gz ]] ; then
+        HAVE_CMAKE_TARBALL="YES"
+    fi
+    
+    if [[ "$HAVE_CMAKE_TARBALL" = "NO" ]] ; then
+        download_3rdparty ${CMAKE_FILE}.gz
+        if [[ $? == 0 ]] ; then
+            echo "Unable to build VisIt.  CMAKE is not available."
+            rv=1
+        fi
+    fi  
+
     #
     # VTK
     #
@@ -162,14 +312,15 @@ function check_files
        HAVE_VTK_ALREADY="YES"
     fi
     if [[ -f $VTK_FILE || -f ${VTK_FILE}.gz ]] ; then
-       if [[ -f $CMAKE_FILE || -f ${CMAKE_FILE}.gz ]] ; then
-           HAVE_VTK_TARBALL="YES"
-       fi
+        HAVE_VTK_TARBALL="YES"
     fi
     
     if [[ "$HAVE_VTK_ALREADY" = "NO" && "$HAVE_VTK_TARBALL" = "NO" ]] ; then
-       echo "Unable to build VisIt.  VTK is not available."
-       rv=1
+        download_3rdparty ${VTK_FILE}.gz
+        if [[ $? == 0 ]] ; then
+            echo "Unable to build VisIt.  VTK is not available."
+            rv=1
+        fi
     fi
     
     #
@@ -185,8 +336,11 @@ function check_files
     fi
     
     if [[ "$HAVE_MESA_ALREADY" = "NO" && "$HAVE_MESA_TARBALL" = "NO" ]] ; then
-       echo "Unable to build VisIt.  Mesa is not available."
-       rv=1
+        download_3rdparty ${MESA_FILE}.gz
+        if [[ $? == 0 ]] ; then
+            echo "Unable to build VisIt.  Mesa is not available."
+            rv=1
+        fi
     fi
     
     #
@@ -201,8 +355,11 @@ function check_files
        HAVE_QT_TARBALL="YES"
     fi
     if [[ "$HAVE_QT_ALREADY" = "NO" && "$HAVE_QT_TARBALL" = "NO" ]] ; then
-       echo "Unable to build VisIt.  Qt is not available."
-       rv=1
+        download_3rdparty ${QT_FILE}.gz
+        if [[ $? == 0 ]] ; then
+            echo "Unable to build VisIt.  Qt is not available."
+            rv=1
+        fi
     fi
     
     #
@@ -218,8 +375,11 @@ function check_files
     fi
     
     if [[ "$HAVE_PYTHON_ALREADY" = "NO" && "$HAVE_PYTHON_TARBALL" = "NO" ]] ; then
-       echo "Unable to build VisIt.  Python is not available."
-       rv=1
+        download_3rdparty ${PYTHON_FILE}
+        if [[ $? == 0 ]] ; then
+            echo "Unable to build VisIt.  Python is not available."
+            rv=1
+        fi
     fi
     
     #
@@ -230,40 +390,27 @@ function check_files
     if [[ -d $VISITDIR/silo/$SILO_VERSION/$VISITARCH ]] ; then
        HAVE_SILO_ALREADY="YES"
     fi
-    if [[ -f $SILO_FILE || -f ${SILO_FILE}.gz ]] ; then
+    if [[ -f $SILO_FILE ]] ; then
        HAVE_SILO_TARBALL="YES"
     fi
 
     if [[ "$HAVE_SILO_ALREADY" = "NO" && "$HAVE_SILO_TARBALL" = "NO" ]] ; then
-       echo "Unable to build VisIt.  Silo is not available."
-       rv=1
+        download_3rdparty $SILO_FILE
+        if [[ $? == 0 ]] ; then
+            echo "Unable to build VisIt.  Silo is not available."
+            rv=1
+        fi
     fi
 
     #
     # VisIt source code
     #
     if [[ ! -f ${VISIT_FILE} && ! -f ${VISIT_FILE}.gz ]] ; then
-       echo "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
-       rv=1
-    fi
-
-    #
-    # Parallelization
-    #
-    if [[ "$parallel" == "yes" ]] ; then
-       # The script pretty much assumes that you *must* have some flags 
-       # and libs to do a parallel build.  If that is *not* true, 
-       # i.e. mpi.h is in your include path, then, congratulations, 
-       # you are working on a better configured system than I have 
-       # ever encountered.
-       if [[ "$PAR_INCLUDE" == "" ]] ; then
-           echo "You must set up the PAR_INCLUDE to get VisIt to build in parallel."
+        download_file "${VISIT_VERSION}" "$VISIT_FILE.gz"
+        if [[ $? == 0 ]] ; then
+           echo "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}.gz."
            rv=1
-       fi
-       if [[ "$PAR_LIBS" == "" ]] ; then
-           echo "You must set up the PAR_LIBS to get VisIt to build in parallel."
-           rv=1
-       fi
+        fi
     fi
 
     if [[ $rv != 0 ]] ; then
@@ -273,9 +420,133 @@ function check_files
     return 0
 }
 
+# *************************************************************************** #
+#                         Function 2, check_parallel_options                  #
+# --------------------------------------------------------------------------- #
+# This function will check to make sure that parallel options have been setup #
+# if we're going to build a parallel version of VisIt.                        #
+# *************************************************************************** #
+
+function check_parallel_options
+{
+    # Ask whether the user wants to build parallel.
+    if [[ "$GRAPHICAL" == "yes" ]] ; then
+        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+        "Would you like to build VisIt with support for an MPI parallel compute engine?" 7 $DLG_WIDTH
+        if [[ $? == 1 ]] ; then
+            parallel="no"
+        else
+            parallel="yes"
+        fi
+    fi
+
+    #
+    # Parallelization
+    #
+    if [[ "$parallel" == "yes" ]] ; then
+        #
+        # Check the environment that mpicc would set up as a first stab.
+        #
+        MPICC_CPPFLAGS=""
+        MPICC_LDFLAGS=""
+        args=`mpicc -show`
+        index=0
+        foundL=0
+        for arg in $args; do
+            if [[ $index == 1 || $index > 1 ]] ; then
+                pos=`echo "$arg" | awk '{ printf "%d", index($1,"-L"); }'`
+                if [[ "$pos" != "0" ]] ; then
+                    foundL=1
+                fi
+
+                if [[ $foundL == 1 ]] ; then
+                    MPICC_LDFLAGS="$MPICC_LDFLAGS$arg "
+                else
+                    MPICC_CPPFLAGS="$MPICC_CPPFLAGS$arg "
+                fi
+            fi
+            index=$(($index+1))
+        done
+
+        if [[ "$GRAPHICAL" == "yes" ]] ; then
+            if [[ "$PAR_INCLUDE" == "" ]] ; then
+                PAR_CPPFLAGS=$MPICC_CPPFLAGS
+            else
+                PAR_CPPFLAGS=$PAR_INCLUDE
+            fi
+            if [[ "$PAR_LIBS" == "" ]] ; then
+                PAR_LDFLAGS=$MPICC_LDFLAGS
+            else
+                PAR_LDFLAGS=$PAR_LIBS
+            fi
+
+            if [[ "$PAR_CPPFLAGS" == "" ]] ; then
+                echo "We have no guesses as to where MPI might reside. Look for it..."
+                if [[ -e /usr/include/mpi.h ]] ; then
+                    PAR_CPPFLAGS="-I/usr/include"
+                    PAR_LDFLAGS="-L/usr/lib -lmpi"
+                fi
+            fi
+
+            # We have suggestions from the user or mpicc as to where mpi might be
+            # located. See what the user thinks of the options.
+            tryagain=1
+            while [[ $tryagain == 1 ]]; do
+                $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+                   "The CPPFLAGS for MPI are:\n\n$PAR_CPPFLAGS\n\nDo these look right?" 15 $DLG_WIDTH
+                if [[ $? == 1 ]] ; then
+                    tryagain=1
+                    PAR_CPPFLAGS=`$DLG --backtitle "$DLG_BACKTITLE" --no-cancel --inputbox \
+                    "Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 2>&1`
+                else
+                    tryagain=0
+                fi
+            done
+
+            PAR_INCLUDE=$PAR_CPPFLAGS
+
+            # We have suggestions from the user or mpicc as to where mpi might be
+            # located. See what the user thinks of the options.
+            tryagain=1
+            while [[ $tryagain == 1 ]]; do
+                $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+                   "The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH
+                if [[ $? == 1 ]] ; then
+                    tryagain=1
+                    PAR_LDFLAGS=`$DLG --backtitle "$DLG_BACKTITLE" --no-cancel --inputbox \
+                    "Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS" 2>&1`
+                else
+                    tryagain=0
+                fi
+            done
+
+            PAR_LIBS=$PAR_LDFLAGS
+        fi
+
+        # The script pretty much assumes that you *must* have some flags 
+        # and libs to do a parallel build.  If that is *not* true, 
+        # i.e. mpi.h is in your include path, then, congratulations, 
+        # you are working on a better configured system than I have 
+        # ever encountered.
+        if [[ "$PAR_INCLUDE" == "" ]] ; then
+            echo "You must set up the PAR_INCLUDE to get VisIt to build in parallel."
+            rv=1
+        fi
+        if [[ "$PAR_LIBS" == "" ]] ; then
+            echo "You must set up the PAR_LIBS to get VisIt to build in parallel."
+            rv=1
+        fi
+    fi
+
+    if [[ $rv != 0 ]] ; then
+       return 1
+    fi
+
+    return 0
+}
 
 # *************************************************************************** #
-#                          Function 2, build_mesa                             #
+#                          Function 3, build_mesa                             #
 # *************************************************************************** #
 
 function build_mesa
@@ -284,29 +555,171 @@ function build_mesa
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${MESA_FILE}.gz ]] ; then
-       gunzip ${MESA_FILE}.gz
-       if [[ $? != 0 ]] ; then
-          echo "Unable to unzip ${MESA_FILE}.gz.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-
-    #
-    # Untar the file.
-    #
-    tar xf ${MESA_FILE}
+       info_box "Unzipping ${MESA_FILE}.gz . . ." >&3
+    tar zxf ${MESA_FILE}.gz
     if [[ $? != 0 ]] ; then
        echo "Unable to untar $MESA_FILE.  Corrupted file or out of space on device?"
        return 1
     fi
+    fi
     
     
+    #
+    # Patching mesa.
+    #
+    if [[ $MACBUILD == "Yes" ]]; then
+        info_box "Patching Mesa . . ." >&3
+        patch -p0 <<\EOF
+diff -p -r Mesa-6.5.2.orig/configs/darwin Mesa-6.5.2/configs/darwin
+*** Mesa-6.5.2.orig/configs/darwin	Wed Jul 12 19:43:20 2006
+--- Mesa-6.5.2/configs/darwin	Tue Apr 10 14:13:17 2007
+*************** CONFIG_NAME = darwin
+*** 7,29 ****
+  # Compiler and flags
+  CC = cc
+  CXX = cc
+! CFLAGS = -I/usr/X11R6/include -O3 -fPIC -fno-common -ffast-math -funroll-loops -fexpensive-optimizations -no-cpp-precomp -dynamic -Ddarwin
+! CXXFLAGS = -I/usr/X11R6/include -O3 -fPIC -fno-common -ffast-math -funroll-loops -fexpensive-optimizations -no-cpp-precomp -dynamic -Ddarwin
+  
+  # Library names (actual file names)
+! GL_LIB_NAME = libGL.dylib
+  GLU_LIB_NAME = libGLU.dylib
+  GLUT_LIB_NAME = libglut.dylib
+  GLW_LIB_NAME = libGLw.dylib
+  OSMESA_LIB_NAME = libOSMesa.dylib
+  
+! GL_LIB_DEPS = -L/usr/X11R6/lib -lX11 -lXext -lm -lpthread
+! OSMESA_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lGL
+! GLU_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lGL
+  GLUT_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lGL -lGLU -L/usr/X11R6/lib -lX11 -lXmu -lXi -lXext
+  GLW_LIB_DEPS = -L/usr/X11R6/lib -lX11 -lXt $(TOP)/lib/GL.dylib
+  APP_LIB_DEPS = -L$(TOP)/lib -l$(GLUT_LIB) -l$(GLU_LIB) -l$(GL_LIB) -L/usr/X11R6/lib -lX11 -lXmu -lXt -lXi -lm
+  
+  # omit glw lib for now:
+! SRC_DIRS = mesa glu glut/glx
+! 
+--- 7,28 ----
+  # Compiler and flags
+  CC = cc
+  CXX = cc
+! CFLAGS = -O3 -fPIC -fno-common -ffast-math -funroll-loops -fexpensive-optimizations -no-cpp-precomp -dynamic -Ddarwin -DUSE_MGL_NAMESPACE
+! CXXFLAGS = -O3 -fPIC -fno-common -ffast-math -funroll-loops -fexpensive-optimizations -no-cpp-precomp -dynamic -Ddarwin -DUSE_MGL_NAMESPACE
+  
+  # Library names (actual file names)
+! GL_LIB_NAME = libMesaGL.dylib
+  GLU_LIB_NAME = libGLU.dylib
+  GLUT_LIB_NAME = libglut.dylib
+  GLW_LIB_NAME = libGLw.dylib
+  OSMESA_LIB_NAME = libOSMesa.dylib
+  
+! GL_LIB_DEPS = -lm -lpthread
+! OSMESA_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lMesaGL
+! GLU_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lMesaGL
+  GLUT_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lGL -lGLU -L/usr/X11R6/lib -lX11 -lXmu -lXi -lXext
+  GLW_LIB_DEPS = -L/usr/X11R6/lib -lX11 -lXt $(TOP)/lib/GL.dylib
+  APP_LIB_DEPS = -L$(TOP)/lib -l$(GLUT_LIB) -l$(GLU_LIB) -l$(GL_LIB) -L/usr/X11R6/lib -lX11 -lXmu -lXt -lXi -lm
+  
+  # omit glw lib for now:
+! SRC_DIRS = mesa glu
+diff -p -r Mesa-6.5.2.orig/configs/default Mesa-6.5.2/configs/default
+*** Mesa-6.5.2.orig/configs/default	Sun Oct 22 10:20:22 2006
+--- Mesa-6.5.2/configs/default	Tue Apr 10 14:05:20 2007
+*************** PYTHON2 = python
+*** 34,40 ****
+  PYTHON_FLAGS = -t -O -O
+  
+  # Library names (base name)
+! GL_LIB = GL
+  GLU_LIB = GLU
+  GLUT_LIB = glut
+  GLW_LIB = GLw
+--- 34,40 ----
+  PYTHON_FLAGS = -t -O -O
+  
+  # Library names (base name)
+! GL_LIB = MesaGL
+  GLU_LIB = GLU
+  GLUT_LIB = glut
+  GLW_LIB = GLw
+*************** GLW_SOURCES = GLwDrawA.c
+*** 59,65 ****
+  
+  # Directories to build
+  LIB_DIR = lib
+! SRC_DIRS = mesa glu glut/glx glw
+  GLU_DIRS = sgi
+  DRIVER_DIRS = x11 osmesa
+  # Which subdirs under $(TOP)/progs/ to enter:
+--- 59,65 ----
+  
+  # Directories to build
+  LIB_DIR = lib
+! SRC_DIRS = mesa glu
+  GLU_DIRS = sgi
+  DRIVER_DIRS = x11 osmesa
+  # Which subdirs under $(TOP)/progs/ to enter:
+diff -p -r Mesa-6.5.2.orig/configs/linux Mesa-6.5.2/configs/linux
+*** Mesa-6.5.2.orig/configs/linux	Thu Sep 28 18:23:11 2006
+--- Mesa-6.5.2/configs/linux	Tue Apr 10 14:08:14 2007
+*************** PIC_FLAGS  = -fPIC
+*** 17,23 ****
+  ARCH_FLAGS ?=
+  
+  DEFINES = -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE \
+! 	-D_BSD_SOURCE -D_GNU_SOURCE \
+  	-DPTHREADS -DUSE_XSHM -DHAVE_POSIX_MEMALIGN
+  
+  X11_INCLUDES = -I/usr/X11R6/include
+--- 17,23 ----
+  ARCH_FLAGS ?=
+  
+  DEFINES = -D_POSIX_SOURCE -D_POSIX_C_SOURCE=199309L -D_SVID_SOURCE \
+! 	-D_BSD_SOURCE -D_GNU_SOURCE -DUSE_MGL_NAMESPACE \
+  	-DPTHREADS -DUSE_XSHM -DHAVE_POSIX_MEMALIGN
+  
+  X11_INCLUDES = -I/usr/X11R6/include
+diff -p -r Mesa-6.5.2.orig/src/mesa/sources Mesa-6.5.2/src/mesa/sources
+*** Mesa-6.5.2.orig/src/mesa/sources	Tue Oct 17 10:00:22 2006
+--- Mesa-6.5.2/src/mesa/sources	Tue Apr 10 11:56:37 2007
+*************** SPARC_API =			\
+*** 265,280 ****
+  COMMON_DRIVER_SOURCES =			\
+  	drivers/common/driverfuncs.c
+  
+! X11_DRIVER_SOURCES =		\
+! 	drivers/x11/glxapi.c	\
+! 	drivers/x11/fakeglx.c	\
+! 	drivers/x11/xfonts.c	\
+! 	drivers/x11/xm_api.c	\
+! 	drivers/x11/xm_buffer.c	\
+! 	drivers/x11/xm_dd.c	\
+! 	drivers/x11/xm_line.c	\
+! 	drivers/x11/xm_span.c	\
+! 	drivers/x11/xm_tri.c
+  
+  OSMESA_DRIVER_SOURCES = \
+  	drivers/osmesa/osmesa.c
+--- 265,271 ----
+  COMMON_DRIVER_SOURCES =			\
+  	drivers/common/driverfuncs.c
+  
+! X11_DRIVER_SOURCES =
+  
+  OSMESA_DRIVER_SOURCES = \
+  	drivers/osmesa/osmesa.c
+EOF
+        if [[ $? != 0 ]] ; then
+            echo "Unable to patch Mesa. Wrong version?"
+            return 1
+        fi
+    fi
+
     #
     # Build Mesa.
     #
+    info_box "Building Mesa . . . (~2 minutes)" >&3
     cd ${MESA_DIR}
-    echo "Invoking command to build Mangled Mesa"
+    echo "Invoking command to build Mesa"
     make $MESA_TARGET
     if [[ $? != 0 ]] ; then
        echo "Mesa build failed.  Giving up"
@@ -317,6 +730,7 @@ function build_mesa
     #
     # Install into the VisIt third party location.
     #
+    info_box "Installing Mesa . . ." >&3
     echo "Installing Mesa"
     mkdir $VISITDIR/mesa
     mkdir $VISITDIR/mesa/${MESA_VERSION}
@@ -324,7 +738,14 @@ function build_mesa
     mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/{include,lib}
     mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL
     cp include/GL/*.h $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL
-    cp lib/*.so $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib
+    for file in libMesaGL libOSMesa libGLU; do  cp lib/${file}.$SO_EXT $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib; done
+    if [[ $MACBUILD == "Yes" ]]; then
+        install_name_tool -id @executable_path/../lib/libMesaGL.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGL.dylib
+        install_name_tool -id @executable_path/../lib/libOSMesa.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib
+        install_name_tool -change libMesaGL.1.dylib @executable_path/../lib/libMesaGL.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib
+        install_name_tool -id @executable_path/../lib/libGLU.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib
+        install_name_tool -change libMesaGL.1.dylib @executable_path/../lib/libMesaGL.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib
+    fi
     echo "Done with Mesa"
 
     return 0
@@ -332,32 +753,21 @@ function build_mesa
 
 
 # *************************************************************************** #
-#                          Function 3, build_qt                               #
+#                          Function 4, build_qt                               #
 # *************************************************************************** #
 
 function build_qt
 {
-    echo "Beginning build of Qt"
-
     #
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${QT_FILE}.gz ]] ; then
-       gunzip ${QT_FILE}.gz
-       if [[ $? != 0 ]] ; then
-          echo "Unable to unzip ${QT_FILE}.gz.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Untar the file.
-    #
-    echo "About to do an untar"
-    tar xf ${QT_FILE}
+       info_box "Unzipping ${QT_FILE}.gz . . ." >&3
+    tar zxf ${QT_FILE}.gz
     if [[ $? != 0 ]] ; then
        echo "Unable to untar $QT_FILE.  Corrupted file or out of space on device?"
        return 1
+    fi
     fi
     echo "Done with untar"
 
@@ -414,6 +824,7 @@ function build_qt
     #
     # Call configure
     #
+    info_box "Configuring Qt: ./configure -platform ${QT_PLATFORM} -shared -qt-libpng $THREAD" >&3
     echo "yes" | ./configure -platform ${QT_PLATFORM} -shared -qt-libpng $THREAD
     if [[ $? != 0 ]] ; then
        echo "Qt configure failed.  Giving up"
@@ -437,6 +848,7 @@ function build_qt
     #
     # Build Qt.  Issue only the targets that we need.
     #
+    info_box "Building Qt . . . (~10 minutes)" >&3
     make symlinks src-qmake src-moc sub-src
     if [[ $? != 0 ]] ; then
        echo "Qt build failed.  Giving up"
@@ -453,6 +865,7 @@ function build_qt
     #
     # Install into the VisIt third party location.
     #
+    info_box "Installing Qt" >&3
     echo "Installing Qt"
     echo "Installing to directory $VISITDIR/qt"
     mkdir $VISITDIR/qt
@@ -464,13 +877,18 @@ function build_qt
     cd include; cp *.h $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include
     cp private/*.h $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private
     cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib
+    if [[ $MACBUILD == "Yes" ]]; then
+        install_name_tool -id @executable_path/../lib/libqt.dylib $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqt.dylib
+        install_name_tool -id @executable_path/../lib/libqui.dylib $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib
+        install_name_tool -change libqt.3.dylib @executable_path/../lib/libqt.dylib $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib
+    fi
     cd ../..
     echo "Done with Qt"
 }
 
 
 # *************************************************************************** #
-#                          Function 4, build_cmake                            #
+#                          Function 5, build_cmake                            #
 # *************************************************************************** #
 
 function build_cmake
@@ -479,25 +897,18 @@ function build_cmake
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${CMAKE_FILE}.gz ]] ; then
-       gunzip ${CMAKE_FILE}.gz
-       if [[ $? != 0 ]] ; then
-          echo "Unable to unzip ${CMAKE_FILE}.gz.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Untar the file.
-    #
-    tar xf ${CMAKE_FILE}
+       info_box "Unzipping ${CMAKE_FILE}.gz . . ." >&3
+    tar zxf ${CMAKE_FILE}.gz
     if [[ $? != 0 ]] ; then
        echo "Unable to untar $CMAKE_FILE.  Corrupted file or out of space on device?"
        return 1
+    fi
     fi
 
     #
     # Issue "bootstrap", which takes the place of configure for CMake.
     #
+    info_box "Bootstrapping CMake . . ." >&3
     CMAKE_DIR=${CMAKE_FILE%.tar}
     cd ${CMAKE_DIR}
     env CXXFLAGS="" CFLAGS="" ./bootstrap
@@ -509,6 +920,7 @@ function build_cmake
     #
     # Build the CMake program.
     #
+    info_box "Building CMake . . ." >&3
     make
     if [[ $? != 0 ]] ; then
        echo "Cannot build cmake, giving up."
@@ -521,7 +933,7 @@ function build_cmake
 
 
 # *************************************************************************** #
-#                            Function 5, build_vtk                            #
+#                            Function 6, build_vtk                            #
 # *************************************************************************** #
 
 function build_vtk
@@ -540,25 +952,230 @@ function build_vtk
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${VTK_FILE}.gz ]] ; then
-       gunzip ${VTK_FILE}.gz
+       info_box "Unzipping ${VTK_FILE}.gz . . ." >&3
+    tar zxf ${VTK_FILE}.gz
+    if [[ $? != 0 ]] ; then
+       echo "Unable to untar $VTK_FILE.  Corrupted file or out of space on device?"
+       return 1
+    fi
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Apply patches
+        #
+        info_box "Patching VTK . . ." >&3
+        patch -p0 << \EOF
+diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
+*** VTK.orig/CMakeLists.txt	Fri Mar  9 09:42:18 2007
+--- VTK/CMakeLists.txt	Tue Apr 10 15:33:22 2007
+*************** IF(VTK_USE_RENDERING)
+*** 196,202 ****
+    SET(VTK_KITS ${VTK_KITS} RENDERING)
+    SET(VTK_KITS ${VTK_KITS} VOLUMERENDERING)
+    SET(VTK_KITS ${VTK_KITS} HYBRID)
+!   SET(VTK_KITS ${VTK_KITS} WIDGETS)
+  ENDIF(VTK_USE_RENDERING)
+  IF(VTK_USE_PARALLEL)
+    SET(VTK_KITS ${VTK_KITS} PARALLEL)
+--- 196,202 ----
+    SET(VTK_KITS ${VTK_KITS} RENDERING)
+    SET(VTK_KITS ${VTK_KITS} VOLUMERENDERING)
+    SET(VTK_KITS ${VTK_KITS} HYBRID)
+! #  SET(VTK_KITS ${VTK_KITS} WIDGETS)
+  ENDIF(VTK_USE_RENDERING)
+  IF(VTK_USE_PARALLEL)
+    SET(VTK_KITS ${VTK_KITS} PARALLEL)
+*************** ELSE(CMAKE_COMPILER_IS_GNUCXX)
+*** 302,312 ****
+  ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+  
+  IF(APPLE)
+!   SET(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS} -Wl,-flat_namespace,-U,_environ")
+!   SET(CMAKE_SHARED_MODULE_CREATE_C_FLAGS "${CMAKE_SHARED_MODULE_CREATE_C_FLAGS} -Wl,-flat_namespace,-U,_environ")
+    IF(CMAKE_COMPILER_IS_GNUCXX)
+!     SET(VTK_REQUIRED_C_FLAGS "${VTK_REQUIRED_C_FLAGS} -no-cpp-precomp")
+!     SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -no-cpp-precomp")
+      IF(VTK_USE_CARBON)
+        SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fpascal-strings")
+      ENDIF(VTK_USE_CARBON)
+--- 302,312 ----
+  ENDIF(CMAKE_COMPILER_IS_GNUCXX)
+  
+  IF(APPLE)
+!   SET(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS} -Wl,-twolevel_namespace,-headerpad_max_install_names")
+!   SET(CMAKE_SHARED_MODULE_CREATE_C_FLAGS "${CMAKE_SHARED_MODULE_CREATE_C_FLAGS} -Wl,-twolevel_namespace,-headerpad_max_install_names")
+    IF(CMAKE_COMPILER_IS_GNUCXX)
+!     SET(VTK_REQUIRED_C_FLAGS "${VTK_REQUIRED_C_FLAGS} -no-cpp-precomp,-fno-common")
+!     SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -no-cpp-precomp,-fno-common")
+      IF(VTK_USE_CARBON)
+        SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fpascal-strings")
+      ENDIF(VTK_USE_CARBON)
+*************** IF(VTK_USE_RENDERING)
+*** 844,850 ****
+    SUBDIRS(Rendering)
+    SUBDIRS(VolumeRendering)
+    SUBDIRS(Hybrid)
+!   SUBDIRS(Widgets)
+  ENDIF(VTK_USE_RENDERING)
+  IF(VTK_USE_PARALLEL)
+    SUBDIRS(Parallel)
+--- 844,850 ----
+    SUBDIRS(Rendering)
+    SUBDIRS(VolumeRendering)
+    SUBDIRS(Hybrid)
+! #  SUBDIRS(Widgets)
+  ENDIF(VTK_USE_RENDERING)
+  IF(VTK_USE_PARALLEL)
+    SUBDIRS(Parallel)
+*************** IF(BUILD_TESTING)
+*** 875,881 ****
+      SUBDIRS(Rendering/Testing)
+      SUBDIRS(VolumeRendering/Testing)
+      SUBDIRS(Hybrid/Testing)
+!     SUBDIRS(Widgets/Testing)
+    ENDIF(VTK_USE_RENDERING)
+    IF(VTK_USE_PARALLEL)
+      SUBDIRS(Parallel/Testing)
+--- 875,881 ----
+      SUBDIRS(Rendering/Testing)
+      SUBDIRS(VolumeRendering/Testing)
+      SUBDIRS(Hybrid/Testing)
+! #    SUBDIRS(Widgets/Testing)
+    ENDIF(VTK_USE_RENDERING)
+    IF(VTK_USE_PARALLEL)
+      SUBDIRS(Parallel/Testing)
+*************** IF(NOT VTK_INSTALL_NO_DEVELOPMENT)
+*** 1355,1361 ****
+      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkRenderingInstantiator)
+      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkVolumeRenderingInstantiator)
+      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkHybridInstantiator)
+!     INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkWidgetsInstantiator)
+    ENDIF(VTK_USE_RENDERING)
+    IF(VTK_USE_PARALLEL)
+      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkParallelInstantiator)
+--- 1355,1361 ----
+      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkRenderingInstantiator)
+      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkVolumeRenderingInstantiator)
+      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkHybridInstantiator)
+! #    INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkWidgetsInstantiator)
+    ENDIF(VTK_USE_RENDERING)
+    IF(VTK_USE_PARALLEL)
+      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkParallelInstantiator)
+diff -rp VTK.orig/Rendering/CMakeLists.txt VTK/Rendering/CMakeLists.txt
+*** VTK.orig/Rendering/CMakeLists.txt	Tue Jun  6 12:30:44 2006
+--- VTK/Rendering/CMakeLists.txt	Tue Apr 10 15:28:17 2007
+*************** IF (VTK_USE_MANGLED_MESA)
+*** 333,339 ****
+                   vtkMesaRenderWindow.cxx
+                   vtkMesaRenderer.cxx
+                   vtkMesaTexture.cxx
+-                  vtkXMesaRenderWindow.cxx
+                  )
+      SET(KitOpenGL_SRCS ${KitOpenGL_SRCS}
+        vtkMesaFreeTypeTextMapper.cxx
+--- 333,338 ----
+diff -rp VTK.orig/Rendering/vtkGraphicsFactory.cxx VTK/Rendering/vtkGraphicsFactory.cxx
+*** VTK.orig/Rendering/vtkGraphicsFactory.cxx	Mon Aug 29 12:01:18 2005
+--- VTK/Rendering/vtkGraphicsFactory.cxx	Tue Apr 10 15:28:17 2007
+***************
+*** 68,75 ****
+--- 68,77 ----
+  #include "vtkMesaPolyDataMapper.h"
+  #include "vtkMesaRenderer.h"
+  #include "vtkMesaTexture.h"
++ #if !defined(__APPLE__)
+  #include "vtkXMesaRenderWindow.h"
+  #endif
++ #endif
+  
+  #include "vtkCriticalSection.h"
+  
+diff -rp VTK.orig/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactory.cxx
+*** VTK.orig/Rendering/vtkImagingFactory.cxx	Fri Nov 14 12:43:37 2003
+--- VTK/Rendering/vtkImagingFactory.cxx	Tue Apr 10 15:28:17 2007
+*************** vtkObject* vtkImagingFactory::CreateInst
+*** 184,197 ****
+--- 184,215 ----
+      {
+      if(strcmp(vtkclassname, "vtkTextMapper") == 0)
+        {
++ #if defined(VTK_USE_MANGLED_MESA)
++       if ( vtkImagingFactory::UseMesaClasses )
++         {
++         return vtkMesaFreeTypeTextMapper::New();
++         }
++ #endif
+        return vtkOpenGLFreeTypeTextMapper::New();
+        }
+      if(strcmp(vtkclassname, "vtkImageMapper") == 0)
+        {
++ #if defined(VTK_USE_MANGLED_MESA)
++       if ( vtkImagingFactory::UseMesaClasses )
++         {
++         return vtkMesaImageMapper::New();
++         }
++ #endif
+        return vtkOpenGLImageMapper::New();
+        }
+      if(strcmp(vtkclassname, "vtkPolyDataMapper2D") == 0)
+        {
++ #if defined(VTK_USE_MANGLED_MESA)
++       if ( vtkImagingFactory::UseMesaClasses )
++         {
++         return vtkMesaPolyDataMapper2D::New();
++         }
++ #endif
+        return vtkOpenGLPolyDataMapper2D::New();
+        }
+      }
+diff -rp VTK.orig/Rendering/vtkMesaRenderWindow.cxx VTK/Rendering/vtkMesaRenderWindow.cxx
+*** VTK.orig/Rendering/vtkMesaRenderWindow.cxx	Fri Nov 14 12:43:37 2003
+--- VTK/Rendering/vtkMesaRenderWindow.cxx	Tue Apr 10 15:28:17 2007
+***************
+*** 18,24 ****
+  #include "MangleMesaInclude/gl.h"
+  
+  #include "vtkOpenGLRenderWindow.h"
+! #include "vtkXMesaRenderWindow.h"
+  
+  // Make sure vtkMesaRenderWindow is a copy of vtkOpenGLRenderWindow
+  // with vtkOpenGLRenderWindow replaced with vtkMesaRenderWindow
+--- 18,24 ----
+  #include "MangleMesaInclude/gl.h"
+  
+  #include "vtkOpenGLRenderWindow.h"
+! #include "vtkMesaRenderWindow.h"
+  
+  // Make sure vtkMesaRenderWindow is a copy of vtkOpenGLRenderWindow
+  // with vtkOpenGLRenderWindow replaced with vtkMesaRenderWindow
+diff -rp VTK.orig/Utilities/ftgl/CMakeLists.txt VTK/Utilities/ftgl/CMakeLists.txt
+*** VTK.orig/Utilities/ftgl/CMakeLists.txt	Thu May 25 10:08:25 2006
+--- VTK/Utilities/ftgl/CMakeLists.txt	Tue Apr 10 15:28:17 2007
+*************** IF(NOT OPENGL_FOUND)
+*** 133,138 ****
+--- 133,142 ----
+    ENDIF (OPENGL_INCLUDE_PATH)
+  ENDIF(NOT OPENGL_FOUND)
+  SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${OPENGL_gl_LIBRARY}")
++ IF (FTGL_SUPPORT_MANGLE_MESA)
++   SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${MANGLED_MESA_LIBRARY}")
++ ENDIF (FTGL_SUPPORT_MANGLE_MESA)
++ 
+  
+  #
+  # We obviously need FreeType
+EOF
        if [[ $? != 0 ]] ; then
-          echo "Unable to unzip ${VTK_FILE}.gz.  Corrupted file or out of space on device?"
+          echo "Unable to patch VTK. Wrong version?"
           return 1
        fi
     fi
 
     #
-    # Untar the file.
-    #
-    tar xf ${VTK_FILE}
-    if [[ $? != 0 ]] ; then
-       echo "Unable to untar $VTK_FILE.  Corrupted file or out of space on device?"
-       return 1
-    fi
-
-    #
     # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
     #
+    info_box "Executing CMake on VTK" >&3
     cd VTK
     CMAKE_DIR=../${CMAKE_FILE%.tar}/bin/
     ${CMAKE_DIR}/cmake \
@@ -570,7 +1187,10 @@ function build_vtk
      -DCMAKE_CXX_FLAGS:STRING=${CPP_OPT_FLAGS}\
      -DCMAKE_CXX_COMPILER:STRING=${CPP_COMPILER}\
      -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
-     -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\  -DMANGLED_MESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\  -DMANGLED_MESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.so\  -DMANGLED_OSMESA_INCLUDE:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\  -DMANGLED_OSMESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.so\
+     -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+     -DMANGLED_MESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\
+     -DMANGLED_MESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}\  -DMANGLED_OSMESA_INCLUDE:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\
+     -DMANGLED_OSMESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}\
      .
 
     if [[ $? != 0 ]] ; then
@@ -581,10 +1201,55 @@ function build_vtk
     #
     # Now build VTK.
     #
+    info_box "Building VTK . . . (~20 minutes)" >&3
     make
     if [[ $? != 0 ]] ; then
        echo "VTK did not build correctly.  Giving up."
        return 1
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        # fix the internal name with in the libraries
+        #
+        # first change the libraries name and identification by executing the following
+        # bourne shell script
+        cd bin
+        for i in libvtkCommon libvtkDICOMParser libvtkFiltering \
+        libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
+        libvtkImaging libvtkMPEG2Encode libvtkNetCDF libvtkRendering \
+        libvtkVolumeRendering libvtkWidgets libvtkexoIIc libvtkexpat \
+        libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
+        libvtktiff libvtkzlib
+        do 
+          rm $i.dylib
+          cp $i.5.0.0.dylib $i.dylib
+          install_name_tool -id @executable_path/../lib/$i.dylib $i.dylib
+        done
+     
+        #
+        # Next change the dependent libraries names and paths
+        for i in libvtkCommon libvtkDICOMParser libvtkFiltering \
+        libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
+        libvtkImaging libvtkMPEG2Encode libvtkNetCDF libvtkRendering \
+        libvtkVolumeRendering libvtkWidgets libvtkexoIIc libvtkexpat \
+        libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
+        libvtktiff libvtkzlib 
+        do
+          for j in libvtkCommon libvtkDICOMParser libvtkFiltering \
+          libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
+          libvtkImaging libvtkMPEG2Encode libvtkNetCDF libvtkRendering \
+          libvtkVolumeRendering libvtkWidgets libvtkexoIIc libvtkexpat \
+          libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
+          libvtktiff libvtkzlib
+          do
+            # One of those is not necessary, but just to play safe ...
+###         install_name_tool -change `pwd`/$j.dylib.5.0 @executable_path/../lib/$j.dylib \
+            $i.dylib
+            install_name_tool -change $j.5.0.dylib \
+            @executable_path/../lib/$j.dylib $i.dylib
+          done
+        done
+        cd ..
     fi
 
     #
@@ -596,6 +1261,7 @@ function build_vtk
     export BAD_MESA=$PWD
     cd ..
 
+    info_box "Installing VTK . . ." >&3
     echo "Installing VTK"
     mkdir $VISITDIR/vtk
     mkdir $VISITDIR/vtk/${VTK_VERSION}
@@ -621,7 +1287,12 @@ function build_vtk
     cp VolumeRendering/*.h              $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering
     cp MangleMesaInclude/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude
     cp vtkstd/*                         $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd
-    cp -d bin/*.so*                     $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib
+    if [[ $MACBUILD == "No" ]]; then
+        cp -d bin/*.so*                 $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib
+    else
+        # MacOS does not understand the "-d" option, so install libraries like Qt
+        cd bin; find . -name \*dylib\* -print | cpio -pvmud $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib; cd ..
+    fi
     
     #
     # The MangleMesa headers have absolute paths.  Correct these headers now for
@@ -640,7 +1311,7 @@ function build_vtk
 
 
 # *************************************************************************** #
-#                         Function 6, build_python                            #
+#                         Function 7, build_python                            #
 # *************************************************************************** #
 
 function build_python
@@ -648,6 +1319,7 @@ function build_python
     #
     # Untar the file.
     #
+    info_box "Extracting Python source . . ." >&3
     tar zxf ${PYTHON_FILE}
     if [[ $? != 0 ]] ; then
        echo "Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
@@ -657,10 +1329,15 @@ function build_python
     #
     # Call configure
     #
-    PYTHON_DIR=${PYTHON_FILE%.tgz}
+    info_box "Configuring Python . . ." >&3
+    PYTHON_DIR=${PYTHON_FILE%.$PYTHON_FILE_SUFFIX}
     cd ${PYTHON_DIR}
-    echo "Invoking command to build Python: env OPT=\"$C_OPT_FLAGS\" CXX=\"$CPP_COMPILER\" CC=\"$C_COMPILER\" ./configure --prefix=$VISITDIR/python/$VISITARCH"
-    env OPT="$C_OPT_FLAGS" CXX="$CPP_COMPILER" CC="$C_COMPILER" ./configure --prefix=$VISITDIR/python/$VISITARCH
+    PYTHON_OPT="$C_OPT_FLAGS"
+    if [[ $MACBUILD == "Yes" ]]; then
+        PYTHON_OPT+=" -fno-common -fPIC"
+    fi
+    echo "Invoking command to build Python: env OPT=\"$PTHON_OPT\" CXX=\"$CPP_COMPILER\" CC=\"$C_COMPILER\" ./configure --prefix=$VISITDIR/python/$VISITARCH"
+    env OPT="$PYTHON_OPT" CXX="$CPP_COMPILER" CC="$C_COMPILER" ./configure --prefix=$VISITDIR/python/$VISITARCH
     if [[ $? != 0 ]] ; then
        echo "Python configure failed.  Giving up"
        return 1
@@ -669,11 +1346,13 @@ function build_python
     #
     # Build Python.
     #
+    info_box "Building Python . . . (~3 minutes)" >&3
     make
     if [[ $? != 0 ]] ; then
        echo "Python build failed.  Giving up"
        return 1
     fi
+    info_box "Installing Python . . ." >&3
     make install
     if [[ $? != 0 ]] ; then
        echo "Python build (make install) failed.  Giving up"
@@ -683,21 +1362,39 @@ function build_python
     #
     # Create a shared library and copy that to the third party install location
     #
+    info_box "Creating Python shared library" >&3
     echo "Creating shared library"
-    mkdir tmpdir
-    cd tmpdir
-    ar -x ../libpython$PYTHON_VERSION.a
-    $C_COMPILER $C_OPT_FLAGS -shared -o ../libpython$PYTHON_VERSION.so *.o
-    cd ..
-    rm -rf tmpdir
-    cp libpython$PYTHON_VERSION.so $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
+    if [[ $MACBUILD == "No" ]]; then
+        mkdir tmpdir
+        cd tmpdir
+        ar -x ../libpython$PYTHON_VERSION.a
+        $C_COMPILER $C_OPT_FLAGS -shared -o ../libpython$PYTHON_VERSION.so *.o
+        cd ..
+        rm -rf tmpdir
+        cp libpython$PYTHON_VERSION.so $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
+    else
+        echo "char **environ=0;" > environhack.c
+        gcc -c environhack.c -fno-common
+        mkdir tmp
+        cd tmp
+        ar x ../libpython${PYTHON_VERSION}.a
+        gcc -o ../libpython${PYTHON_VERSION}.dylib -dynamiclib \
+        ../environhack.o *.o -lSystem -lSystemStubs \
+        -framework Carbon -Wl,-twolevel_namespace \
+        -Wl,-undefined,dynamic_lookup,-headerpad_max_install_names \
+        -Wl,-install_name,@executable_path/../lib/libpython2.5.dylib \
+        -Wl,-compatibility_version,${PYTHON_COMPATIBILITY_VERSION} \
+        -Wl,-current_version,${PYTHON_VERSION}
+        cd ..
+        cp libpython$PYTHON_VERSION.dylib $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
+    fi
     cd ..
     echo "Done with Python"
 }
 
 
 # *************************************************************************** #
-#                            Function 7, build_silo                           #
+#                            Function 8, build_silo                           #
 # *************************************************************************** #
 
 function build_silo
@@ -705,6 +1402,7 @@ function build_silo
     #
     # Run the shell script that effectively "untars" Silo.
     #
+    info_box "Extracting Silo sources" >&3
     sh ${SILO_FILE}
     if [[ $? != 0 ]] ; then
        echo "Unable to run Silo script.  Corrupted file or out of space on device?"   return 1
@@ -713,18 +1411,28 @@ function build_silo
     #
     # Call configure
     #
+    info_box "Configuring Silo . . ." >&3
     SILO_DIR=${SILO_FILE%.sh}
     cd ${SILO_DIR}
     echo "Invoking command to configure Silo"
-    env CXX="$CPP_COMPILER" CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CPP_OPT_FLAGS" ./configure --without-readline --without-hdf5 --without-exodus
-    if [[ $? != 0 ]] ; then
-       echo "Silo configure failed.  Giving up"
-       return 1
+    if [[ $MACBUILD == "No" ]]; then
+        env CXX="$CPP_COMPILER" CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CPP_OPT_FLAGS" ./configure --without-readline --without-hdf5 --without-exodus
+        if [[ $? != 0 ]] ; then
+           echo "Silo configure failed.  Giving up"
+           return 1
+        fi
+    else
+        env CXX="$CPP_COMPILER" CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS -fno-common" CXXFLAGS="$CPP_OPT_FLAGS -fno-common" ./configure --without-readline --without-hdf5 --without-exodus --disable-sdx --without-python --disable-browser
+        if [[ $? != 0 ]] ; then
+           echo "Silo configure failed.  Giving up"
+           return 1
+        fi
     fi
 
     #
     # Build Silo
     #
+    info_box "Building Silo . . . (~2 minutes)" >&3
     echo "Building Silo"
     make
     if [[ $? != 0 ]] ; then
@@ -732,9 +1440,17 @@ function build_silo
        return 1
     fi
 
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Make dynamic executable
+        #
+        gcc -dynamiclib -o libsilo.dylib silo/*/*.o -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,${SILO_COMPATIBILITY_VERSION},-current_version,${SILO_VERSION}
+    fi
+
     #
     # Install into the VisIt third party location.
     #
+    info_box "Installing Silo . . ." >&3
     echo "Installing Silo"
     mkdir $VISITDIR/silo
     mkdir $VISITDIR/silo/${SILO_VERSION}
@@ -742,14 +1458,18 @@ function build_silo
     mkdir $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/{include,lib}
     cp silo/silo/silo.{h,inc}   $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
     cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
-    cp lib/libsilo.a            $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
+    if [[ $MACBUILD == "No" ]]; then
+        cp lib/libsilo.a        $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
+    else
+        cp libsilo.dylib        $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
+    fi
     cd ..
     echo "Done with Silo"
 }
 
 
 # *************************************************************************** #
-#                          Function 8, build_visit                            #
+#                          Function 9, build_visit                            #
 # *************************************************************************** #
 
 function build_visit
@@ -758,20 +1478,12 @@ function build_visit
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${VISIT_FILE}.gz ]] ; then
-       gunzip ${VISIT_FILE}.gz
-       if [[ $? != 0 ]] ; then
-          echo "Unable to unzip ${VISIT_FILE}.gz.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    fi
-
-    #
-    # Untar the file.
-    #
-    tar xf ${VISIT_FILE}
+       info_box "Unzipping ${VISIT_FILE}.gz . . ." >&3
+    tar zxf ${VISIT_FILE}.gz
     if [[ $? != 0 ]] ; then
        echo "Unable to untar $VISIT_FILE.  Corrupted file or out of space on device?"
        return 1
+    fi
     fi
 
     #
@@ -790,11 +1502,14 @@ function build_visit
     # Set up the config-site file, which gives configure the information it
     # needs about the third party libraries.
     #
+    info_box "Creating `hostname`.conf" >&3
     VISIT_DIR=${VISIT_FILE%.tar}
     cd ${VISIT_DIR}
     cd config-site
     echo VISITHOME=$VISITDIR > `hostname`.conf
-    sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
+    sed -e "s/ARCH/$VISITARCH/" -e "s/MESA_VERSION/$MESA_VERSION/" \
+        -e "s/VTK_VERSION/$VTK_VERSION/" -e "s/QT_VERSION/$QT_VERSION/" \
+        -e "s/PYTHON_VERSION/$PYTHON_VERSION/" AutobuildTemplate.conf >> `hostname`.conf
     echo "CC=\"$C_COMPILER\"" >> `hostname`.conf
     echo "CXX=\"$CPP_COMPILER\"" >> `hostname`.conf
     echo "CFLAGS=\"$C_OPT_FLAGS\"" >> `hostname`.conf
@@ -807,6 +1522,7 @@ function build_visit
     #
     # Call configure
     # 
+    info_box "Configuring VisIt . . ." >&3
     ./configure ${PARFLAGS}
     if [[ $? != 0 ]] ; then
        echo "VisIt configure failed.  Giving up"
@@ -816,6 +1532,7 @@ function build_visit
     #
     # Build VisIt
     #
+    info_box "Building VisIt . . . (~50 minutes)" >&3
     make
     if [[ $? != 0 ]] ; then
        echo "VisIt build failed.  Giving up"
@@ -831,6 +1548,25 @@ function build_visit
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
+
+# Show a splashscreen. This routine also determines if we have "dialog" or "whiptail",
+# which we use to show dialogs. If we do not have either then proceed in non-graphical
+# mode.
+if [[ "$GRAPHICAL" == "yes" ]] ; then
+    GRAPHICAL="no" # This will be set back to "yes" if we find dialog or whiptail
+    for DLG in dialog whiptail; do
+        $DLG --backtitle "$DLG_BACKTITLE" --msgbox \
+"Welcome to the VisIt $VISIT_VERSION build process.\n\nThis program will build VisIt and its required "\
+"3rd party sources, downloading any missing source packages before building. The 3rd "\
+"party libraries are built and installed before VisIt is built so please be patient. "\
+"Note that you can build a parallel version of VisIt by specifying the location of "\
+"your MPI installation when prompted." 0 0
+        if [[ $? != 127 ]] ; then
+             GRAPHICAL="yes";
+             break;
+        fi
+    done
+fi
 
 export VISITARCH=${ARCH}_${C_COMPILER}
 if [[ "$CPP_COMPILER" == "g++" ]] ; then
@@ -875,23 +1611,49 @@ if [[ $? != 0 ]] ; then
    exit 1
 fi
 
+#
+# See if the user wants to build a parallel version.
+#
+check_parallel_options
+if [[ $? != 0 ]] ; then
+   echo "Stopping build because necessary parallel options are not set."
+   exit 1
+fi
 
 #
 # Later we will build Qt.  We are going to bypass their licensing agreement,
 # so echo it here.
 #
-echo "During this build process, this script will build Qt.  When Qt is "
-echo "built, this script confirms that you accept their license."
-echo "So please type \"yes\" to accept (in advance) their license "
-echo "offer for the Qt/X11 Free Edition, licensed under the Q Public License"
-echo "(QPL) or the GNU General Public License (GPL)"
-read RESPONSE
-while [[ "$RESPONSE" != "yes" ]] ; do
-   echo "Please type \"yes\" to accept their license offer for the "
-   echo "Qt/X11 Free Edition, licensed under the Q Public License (QPL) "
-   echo "or the GNU General Public License (GPL)"
-   read RESPONSE
-done
+if [[ "$GRAPHICAL" == "yes" ]] ; then
+    $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+    "During the build process, this script will build Qt.  When Qt is "\
+"built, this script confirms that you accept their license. "\
+"So please choose \"Yes\" to accept (in advance) their license "\
+"offer for the Qt/X11 Free Edition, licensed under the Q Public License"\
+"(QPL) or the GNU General Public License (GPL)" 12 $DLG_WIDTH
+    if [[ $? == 1 ]] ; then
+        choice=`$DLG --backtitle "$DLG_BACKTITLE" --radiolist \
+    "You chose not to accept Qt's license. VisIt requires Qt. What would you like to do?" \
+    12 60 5 1 "Accept Qt's license" on 2 "Quit VisIt's build process" off 2>&1`
+        if [[ $? == 1 || "$choice" == "2" ]] ; then
+            echo "You declined the Qt license and stopped building VisIt."
+            exit 1
+        fi
+    fi
+else
+    echo "During this build process, this script will build Qt.  When Qt is "
+    echo "built, this script confirms that you accept their license."
+    echo "So please type \"yes\" to accept (in advance) their license "
+    echo "offer for the Qt/X11 Free Edition, licensed under the Q Public License"
+    echo "(QPL) or the GNU General Public License (GPL)"
+    read RESPONSE
+    while [[ "$RESPONSE" != "yes" ]] ; do
+       echo "Please type \"yes\" to accept their license offer for the "
+       echo "Qt/X11 Free Edition, licensed under the Q Public License (QPL) "
+       echo "or the GNU General Public License (GPL)"
+       read RESPONSE
+    done
+fi
 
 
 #
@@ -913,7 +1675,7 @@ if [[ -d $VISITDIR/mesa/$MESA_VERSION/$VISITARCH ]] ; then
    echo "Skipping Mesa build.  Mesa is already installed."
 else
    echo "Building Mesa (~2 minutes)"
-   build_mesa >> build_visit_log 2>&1
+   build_mesa 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Mesa.  Bailing out."
       echo "More information about the failed build can be found in \"build_visit_log\""
@@ -931,7 +1693,7 @@ if [[ -d $VISITDIR/qt/$QT_VERSION/$VISITARCH ]] ; then
    echo "Skipping Qt build.  Qt is already installed."
 else
    echo "Building Qt (~10 minutes)"
-   build_qt >> build_visit_log 2>&1
+   build_qt 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Qt.  Bailing out."
       echo "More information about the failed build can be found in \"build_visit_log\""
@@ -949,7 +1711,7 @@ if [[ -d $VISITDIR/vtk/$VTK_VERSION/$VISITARCH ]] ; then
    echo "Skipping VTK build.  VTK is already installed."
 else
    echo "Building VTK (~20 minutes)"
-   build_vtk >> build_visit_log 2>&1
+   build_vtk 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install VTK.  Bailing out."
       echo "More information about the failed build can be found in \"build_visit_log\""
@@ -967,7 +1729,7 @@ if [[ -d $VISITDIR/python/$VISITARCH ]] ; then
    echo "Skipping Python build.  Python is already installed."
 else
    echo "Building Python (~3 minutes)"
-   build_python >> build_visit_log 2>&1
+   build_python 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Python.  Bailing out."
       echo "More information about the failed build can be found in \"build_visit_log\""
@@ -985,7 +1747,7 @@ if [[ -d $VISITDIR/silo/${SILO_VERSION}/$VISITARCH ]] ; then
    echo "Skipping Silo build.  Silo is already installed."
 else
    echo "Building Silo (~2 minutes)"
-   build_silo >> build_visit_log 2>&1
+   build_silo 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Silo.  Bailing out."
       echo "More information about the failed build can be found in \"build_visit_log\""
@@ -1000,7 +1762,7 @@ fi
 #
 cd $START_DIR
 echo "Building VisIt (~50 minutes)"
-build_visit >> build_visit_log 2>&1
+build_visit 3>&1 >> build_visit_log 2>&1
 if [[ $? != 0 ]] ; then
    echo "Unable to build or install VisIt.  Bailing out."
    echo "More information about the failed build can be found in \"build_visit_log\""
@@ -1013,4 +1775,5 @@ echo "directory and invoking \"visit\"."
 echo "If you run into problems, contact visit-help@llnl.gov"
 
 exit 0
+
 

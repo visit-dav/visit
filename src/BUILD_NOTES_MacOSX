@@ -758,10 +758,17 @@ make install
 # Now that Python is built, we need to modify the install_name.
 echo "char **environ=0;" > environhack.c
 gcc -c environhack.c -fno-common
-libtool -o libpython2.5.dylib -dynamic environhack.o libpython2.5.a \
--lSystem -lSystemStubs -framework Carbon -headerpad_max_install_names \
--install_name @executable_path/../lib/libpython2.5.dylib \
--compatibility_version 2.5 -current_version 2.5
+mkdir tmp
+cd tmp
+ar x ../libpython2.5.a
+gcc -o ../libpython2.5.dylib -dynamiclib \
+../environhack.o *.o -lSystem -lSystemStubs \
+-framework Carbon -Wl,-twolevel_namespace \
+-Wl,-undefined,dynamic_lookup,-headerpad_max_install_names \
+-Wl,-install_name,@executable_path/../lib/libpython2.5.dylib \
+-Wl,-compatibility_version,2.5 \
+-Wl,-current_version,2.5
+cd ..
 cp libpython2.5.dylib $VISITPATH/python/lib/python2.5/config/libpython2.5.dylib
 cd ..
 
