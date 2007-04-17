@@ -101,11 +101,27 @@ vtkDataSet *vtkVisItDataSetMapper::GetInput()
   return this->Superclass::GetInputAsDataSet();
 }
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Sun Apr  1 11:21:14 PDT 2007
+//    Tell rgrid and sgrid mappers to release graphics resources.
+//
+// ****************************************************************************
+
 void vtkVisItDataSetMapper::ReleaseGraphicsResources( vtkWindow *renWin )
 {
   if (this->PolyDataMapper)
     {
     this->PolyDataMapper->ReleaseGraphicsResources( renWin );
+    }
+  if ( this->RectilinearGridMapper )
+    {
+    this->RectilinearGridMapper->ReleaseGraphicsResources( renWin );
+    }
+  if ( this->StructuredGridMapper )
+    {
+    this->StructuredGridMapper->ReleaseGraphicsResources( renWin );
     }
 }
 
@@ -302,6 +318,12 @@ int vtkVisItDataSetMapper::FillInputPortInformation(
 }
 
 //----------------------------------------------------------------------------
+// Modifications:
+//
+//   Hank Childs, Sun Apr  1 11:21:14 PDT 2007
+//   Fix memory leak! ... added mappers to garbage collector.
+//
+// ****************************************************************************
 void vtkVisItDataSetMapper::ReportReferences(vtkGarbageCollector* collector)
 {
   this->Superclass::ReportReferences(collector);
@@ -311,6 +333,10 @@ void vtkVisItDataSetMapper::ReportReferences(vtkGarbageCollector* collector)
                             "GeometryExtractor");
   vtkGarbageCollectorReport(collector, this->PolyDataMapper,
                             "PolyDataMapper");
+  vtkGarbageCollectorReport(collector, this->RectilinearGridMapper,
+                            "RectilinearGridMapper");
+  vtkGarbageCollectorReport(collector, this->StructuredGridMapper,
+                            "StructuredGridMapper");
 }
 
 // ****************************************************************************
