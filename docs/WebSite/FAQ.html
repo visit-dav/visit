@@ -274,12 +274,15 @@ function MM_initTimelines() { //v4.0
   The following operating systems are supported:</p>
 <ul>
   <li> Windows 2000, XP </li>
-  <li> Linux 2.4</li>
-  <li> MacOS X 10.3 and 10.4 </li>
+  <li> Linux (x86, x86_64, Itanium, Altix) </li>
+  <li> MacOS X 10.3 and 10.4 (PowerPC and Intel) </li>
   <li> SunOS 5.7</li>
   <li> IRIX 6.5, IRIX64 6.5</li>
-  <li> Tru64 V5.1</li>
   <li> AIX 5.1</li>
+</ul>
+<p>VisIt is known to work on other platforms as well but no binary distributions for these platforms are available due to machine retirements at LLNL.</p>
+<ul>
+  <li> Tru64 V5.1</li>
 </ul>
 <h2> <a name="3"></a>3. What is the optimal hardware and software combination for running VisIt?</h2>
 <p> VisIt should perform well on just about any Linux or Windows system as long as you follow these guidelines:</p>
@@ -329,12 +332,12 @@ function MM_initTimelines() { //v4.0
 <h2><a name="8"></a>8. I run VisIt and everything looks okay except no output is ever displayed in the visualization window. What is wrong?</h2>
 <p> This problem has arisen on Sun Blade and Linux systems and usually means that the X Server on your desktop machine does not have OpenGL support. To determine if this is the problem, type <font color="999999"> <strong>xdpyinfo</strong> </font> on a window local to your desktop. Near the top of the resulting output is a section describing the server extensions on your system. On a Sun Blade system, you should see one named GLX. On Linux systems you should see extensions named <font color="999999"> <strong>GLX</strong></font>, <font color="999999"><strong>NV-GLX</strong></font>, and <font color="999999"><strong>NVIDIA-GLX</strong> </font>. If these extensions are missing, your system administrator will have to install them for you.</p>
 <h2> <a name="9"></a>9. How do I access data on a remote machine?</h2>
-<p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <font color="999999"> <strong>Host</strong> </font> field in the <font color="999999"> <strong>File Selection</strong> </font> window in the VisIt graphical user interface and include <font color="999999"> <strong>visit</strong> </font> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="1.5/VisItUsersManual1.5.pdf"> <em>VisIt Users Manual</em></a><em>.</em></p>
+<p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <font color="999999"> <strong>Host</strong> </font> field in the <font color="999999"> <strong>File Selection</strong> </font> window in the VisIt graphical user interface and include <font color="999999"> <strong>visit</strong> </font> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf"> <em>VisIt Users Manual</em></a><em>.</em></p>
 <h2> <a name="10"></a>10. How do I run VisIt in parallel?</h2>
-<p> VisIt is a distributed, component-based, visualization tool. The engine component, which performs file input and output as well as the data processing operations, can be run in serial or parallel. In order to run the engine in parallel, you must set up a host profile that specifies how the engine is launched in parallel. For more information, read the Host Profiles portion of the Remote Visualization section in the <a href="1.5/VisItUsersManual1.5.pdf"><em>VisIt Users Manual</em></a><em>.</em></p>
+<p> VisIt is a distributed, component-based, visualization tool. The engine component, which performs file input and output as well as the data processing operations, can be run in serial or parallel. In order to run the engine in parallel, you must set up a host profile that specifies how the engine is launched in parallel. For more information, read the Host Profiles portion of the Remote Visualization section in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf"><em>VisIt Users Manual</em></a><em>.</em></p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="11"></a>11. What data file formats can VisIt read?</h2>
-<p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="1.5/VisItUsersManual1.5.pdf">VisIt User's Manual</a>. You can also look at the <a href="new.html">What's New page</a> for more supported file formats. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in.</p>
+<p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf">VisIt User's Manual</a>. You can also look at the <a href="new.html">What's New page</a> for more supported file formats. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.5.4/GettingDataIntoVisIt1.5.4.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
 <table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
@@ -354,7 +357,7 @@ function MM_initTimelines() { //v4.0
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">BOV (brick of values)</td>
-      <td bgcolor="#CCCCFF">BOV data are stored in two files. The first file is binary and it contains all of the data for an implied rectilinear grid stored as a brick of floats, doubles, etc. The second file is an ASCII header file that indicates the size of the data in the brick file as well as other attributes such as whether the brick is compressed.</td>
+      <td bgcolor="#CCCCFF">BOV data are stored in two files. The first file is binary and it contains all of the data for an implied rectilinear grid stored as a brick of floats, doubles, etc. The second file is an ASCII header file that indicates the size of the data in the brick file as well as other attributes such as whether the brick is compressed. The contents of the ASCII header are described in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.5.4/GettingDataIntoVisIt1.5.4.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual.</td>
       <td bgcolor="#CCCCFF">&nbsp;</td>
     </tr>
     <tr>
@@ -367,6 +370,16 @@ function MM_initTimelines() { //v4.0
       <td bgcolor="#CCCCFF">The CFD General Notation System (CGNS) consists of a collection of conventions, and software implementing those conventions, for the storage and retrieval of CFD (computational fluid dynamics) data. </td>
       <td bgcolor="#CCCCFF"><p><a href="http://www.cgns.org">CGNS home page </a></p>
           <p><a href="http://www.grc.nasa.gov/WWW/cgns/user/userguide.pdf">Download CGNS User's Guide</a></p></td>
+    </tr>
+	<tr>
+      <td bgcolor="#CCCCFF">Chombo</td>
+      <td bgcolor="#CCCCFF">This database reader plugin reads files from the Chombo package, which provides a set of tools for implementing finite difference methods for the solution of partial differential equations on block-structured adaptively refined rectangular grids.</td>
+      <td bgcolor="#CCCCFF"><a href="http://seesar.lbl.gov/anag/chombo/" target="_blank">Chombo home page</a></td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">CTRL</td>
+      <td bgcolor="#CCCCFF">CTRL files are the control files for TB-LMTO software, which uses the linear muffin-tin orbital (LMTO) method.</td>
+      <td bgcolor="#CCCCFF"><a href="http://www.fkf.mpg.de/andersen/LMTODOC/LMTODOC.html" title="TB-LMTO-ASA program" target="_blank">STUTTGART TB-LMTO program</a></td>
     </tr>
     <tr>
       <td width="15%" bgcolor="#CCCCFF">Curve2D</td>
@@ -408,6 +421,11 @@ function MM_initTimelines() { //v4.0
       <td bgcolor="#CCCCFF">An unstructured grid, finite-volume, three-dimensional (3D) primitive equations ocean model that has been developed for the study of coastal oceanic and estuarine circulation.</td>
       <td bgcolor="#CCCCFF"><a href="http://fvcom.smast.umassd.edu/" title="FVCOM home page" target="_blank">FVCOM home page </a></td>
     </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">GGCM</td>
+      <td bgcolor="#CCCCFF">The centerpiece of the NSF/GEM, program is the development of a Geospace General Circulation Model (GGCM), to be used as a research tool as well as a prototype for space weather forecasting models. </td>
+      <td bgcolor="#CCCCFF"><a href="http://openggcm.sr.unh.edu/wiki/index.php/Main_Page" title="Open GGCM home page" target="_blank">Open Geospace General Circulation Model</a></td>
+    </tr>
 	<tr>
       <td bgcolor="#CCCCFF">GIS</td>
       <td bgcolor="#CCCCFF">VisIt can read in several popular Geographic Information System (GIS) file formats using the <a href="http://www.gdal.org">GDAL library</a>. The content stored in GIS file formats varies widely but can include elevation maps, census data, vector data such as roads and streams, etc. Some of the supported file formats are DEM, ArcGrid, ESRI Shapefile. </td>
@@ -420,13 +438,24 @@ function MM_initTimelines() { //v4.0
       <td bgcolor="#CCCCFF">&nbsp;</td>
     </tr>
     <tr>
+      <td bgcolor="#CCCCFF">MFIX</td>
+      <td bgcolor="#CCCCFF">MFIX (<B>M</B>ultiphase <B>F</B>low with <B>I</B>nterphase e<B>X</B>changes) is a general-purpose computer code developed at the <a href="http://www.netl.doe.gov/" title="NETL" target="_blank">National Energy Technology Laboratory</a> (NETL) for describing the hydrodynamics, heat transfer and chemical reactions in fluid-solids systems.</td>
+      <td bgcolor="#CCCCFF"><a href="http://www.mfix.org/" title="MFIX home page" target="_blank">MFIX home page</a></td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">MM5</td>
+      <td bgcolor="#CCCCFF">MM5 is a limited-area, nonhydrostatic, terrain-following sigma-coordinate model designed to simulate or predict mesoscale atmospheric circulation.</td>
+      <td bgcolor="#CCCCFF"><a href="http://www.mmm.ucar.edu/mm5/" title="MM5 Community Model Homepage" target="_blank">MM5 Community Model home page</a></td>
+    </tr>
+    <tr>
       <td bgcolor="#CCCCFF">NASTRAN</td>
       <td bgcolor="#CCCCFF">NASTRAN Bulk data file format is an ASCII format that describes unstructured meshes. </td>
       <td bgcolor="#CCCCFF"><a href="http://www.mscsoftware.com/products/products_detail.cfm?PI=7">NASTRAN home page</a></td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">NetCDF</td>
-      <td bgcolor="#CCCCFF">NetCDF (network Common Data Form) is an interface for array-oriented data access and a library that provides an implementation of the interface. The netCDF library also defines a machine-independent format for representing scientific data. Together, the interface, library, and format support the creation, access, and sharing of scientific data.</td>
+      <td bgcolor="#CCCCFF"><p>NetCDF (network Common Data Form) is an interface for array-oriented data access and a library that provides an implementation of the interface. The netCDF library also defines a machine-independent format for representing scientific data. Together, the interface, library, and format support the creation, access, and sharing of scientific data.</p>
+      <p>VisIt's NetCDF reader plugin supports conventions for the ADAPT, Lodi, and FVCOM simulation codes. If your NetCDF files were not generated with those codes then VisIt's basic NetCDF reader will attempt to expose all 1D, 2D, 3D arrays as variables that VisIt can plot. The basic reader does not permit you to specify coordinates for your mesh nor does it allow more than one time step in a file. If your file's variables are disabled in VisIt's plot menus then you may need to extend VisIt's NetCDF reader to support your code's conventions. </p></td>
       <td bgcolor="#CCCCFF"><p><a href="http://www.unidata.ucar.edu/software/netcdf/">NETCDF home page</a></p>
           <p><a href="http://www.unidata.ucar.edu/software/netcdf/guide.txn_toc.html">NETCDF User's Guide</a></p>
       </td>
@@ -447,6 +476,17 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
       <td bgcolor="#CCCCFF">Visualization application with accompanying file format developed at NASA Ames.</td>
       <td bgcolor="#CCCCFF"><a href="http://www.nas.nasa.gov/cgi-bin/software/start">Download PLOT3D</a></td>
     </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">Point3D</td>
+      <td bgcolor="#CCCCFF"><p>Point3D is a simple ASCII text format for 3D particles that have 1 scalar variable. Point3D is not a widely used format but it can be useful for scripts or simple particle simulations that want an easy way to get particle data into VisIt. The file format consists of a comment line that includes the names of the coordinates and the variable name. The variable name is used in VisIt's plot menus. After the comment line, each subsequent line contains the (x,y,z) coordinates and variable value for a point. If you have more than 1 scalar variable to plot on your particles then consider using Silo or Xmdv file formats. </p>
+      <p><em>Example file:</em><br>
+      # x y z variablename<br>
+      0 0 0 10<br>
+      1 2 3 20<br>
+      2 4 6 30</p>
+      </td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
 	<tr>
       <td bgcolor="#CCCCFF">Protein Databank </td>
       <td bgcolor="#CCCCFF">Protein Databank (PDB) files  contain molecular data describing the structures of biological macromolecules. </td>
@@ -460,9 +500,9 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
     <tr>
       <td bgcolor="#CCCCFF">Silo</td>
       <td bgcolor="#CCCCFF">LLNL data file format for storing rectilinear, curvilinear, unstructured, or point meshes in 2D and 3D. Scalar, vector, and material data can be defined on meshes. Data can be broken up into different files (multi-block) to increase parallel performance.</td>
-      <td bgcolor="#CCCCFF"><a href="3rd_party/silo060605.sh">Download Silo source code</a> <br>
+      <td bgcolor="#CCCCFF"><a href="ftp://ftp.llnl.gov/pub/meshtv/meshtv4.3.1/silo020506.sh">Download Silo source code</a> <br>
           <br>
-        <a href="http://www.llnl.gov/bdiv/meshtv/manuals/silo.pdf">Download Silo documentation</a></td>
+        Download Silo documentation [<a href="http://www.llnl.gov/bdiv/meshtv/manuals/silo.pdf">PDF</a>] [<a href="ftp://ftp.llnl.gov/pub/meshtv/meshtv4.3.1/silo.ps.gz">Postscript</a>] </td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">Spheral</td>
@@ -476,8 +516,28 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">TecPlot</td>
-      <td bgcolor="#CCCCFF">TecPlot is another popular visualization tool. VisIt can read the ASCII version of the TecPlot file format. </td>
+      <td bgcolor="#CCCCFF">TecPlot is another popular visualization tool. VisIt can read the ASCII version of the TecPlot file format, though VisIt's reader does not handle all forms of the ASCII Tecplot file format. </td>
       <td bgcolor="#CCCCFF"><a href="http://www.tecplot.com/">TecPlot home page</a></td>
+    </tr>
+	<tr>
+      <td bgcolor="#CCCCFF">TSTT</td>
+      <td bgcolor="#CCCCFF">VisIt's TSTT (Tera-Scale Tools and Technologies) reader is one implementation
+of the <a href="http://www.tstt-scidac.org/" title="TSTT" target="_blank">TSTT interface</a>  for representing mesh
+and geometric data. The interface is experimental and is being actively
+developed and refined by a follow-on SciDAC project called ITAPS
+(Interoperable Technologies for Advanced Petascale Simulations). The interface
+is designed to be used 'in-situ' and so there is no well defined, persistent
+file format. VisIt's TSTT reader is currently designed around the
+<a href="http://cubit.sandia.gov/MOAB/" title="MOAB" target="_blank">MOAB implementation</a> of the TSTT interface.
+Presently, it reads unstructured, single-block meshes consisting of any
+combination of the finite element zoo of element types along with zone-
+and node-centered fields implemented as TSTT 'tags'.</td>
+      <td bgcolor="#CCCCFF"><a href="http://www.tstt-scidac.org/" title="TSTT" target="_blank">TSTT interface</a></td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">VASP</td>
+      <td bgcolor="#CCCCFF">VAMP/VASP is a package for performing ab-initio quantum-mechanical molecular dynamics (MD) using pseudopotentials and a plane wave basis set.</td>
+      <td bgcolor="#CCCCFF"><a href="http://cms.mpi.univie.ac.at/vasp/" title="VASP Group" target="_blank">VASP Group</a></td>
     </tr>
 	<tr>
       <td bgcolor="#CCCCFF">Vis5D</td>
@@ -509,7 +569,7 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
 </table>
 <p class="small">[<a href="#top">Top</a>]</p>
 <h2><a name="12"></a>12. How do I get my data into VisIt?</h2>
-<p> VisIt can read in a variety of data file formats due to its database reader plug-ins. If you want VisIt to read your data there are three approaches that you can take. First, you could convert your data files into a format that VisIt understands. If you do not want to double your stored data or if you have not yet created your data, you could change your application to write out  data in a format that VisIt understands. Finally, you could write your own database reader plug-in for VisIt so that VisIt can read data from your file format. The approach that you take depends on your situation, the type of data, and what language was used to write your application. If you want to use a versatile file format that VisIt already understands and you are programming in C, C++, or Fortran, then we recommend using <a href="http://www.llnl.gov/bdiv/meshtv/manuals/silo.pdf">Silo</a>. You could also use <a href="http://www.grc.nasa.gov/WWW/cgns/user/userguide.pdf">CGNS</a> or <a href="http://www.unidata.ucar.edu/software/netcdf/guide.txn_toc.html">NetCDF</a>, depending on how your data is represented. If your application is not written in any of those languages, we recommend writing out <a href="http://www.kitware.com/vtk/index.html">VTK</a> files since they are simple enough to write without lots of complicated programming. If you don't want to convert data files or alter your code to write out a format that VisIt already reads, then you might consider writing your own database reader plug-in for VisIt. For more information on how to write your own database reader plug-in, send e-mail to <a href="mailto:visit-help@llnl.gov">visit-help@llnl.gov</a>.</p>
+<p> VisIt can read in a variety of data file formats due to its database reader plug-ins. If you want VisIt to read your data there are three approaches that you can take. These approaches are all described in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.5.4/GettingDataIntoVisIt1.5.4.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. First, you could convert your data files into a format that VisIt understands. If you do not want to double your stored data or if you have not yet created your data, you could change your application to write out  data in a format that VisIt understands. Finally, you could write your own database reader plug-in for VisIt so that VisIt can read data from your file format. The approach that you take depends on your situation, the type of data, and what language was used to write your application. If you want to use a versatile file format that VisIt already understands and you are programming in C, C++, or Fortran, then we recommend using <a href="http://www.llnl.gov/bdiv/meshtv/manuals/silo.pdf">Silo</a>. You could also use <a href="http://www.grc.nasa.gov/WWW/cgns/user/userguide.pdf">CGNS</a> or <a href="http://www.unidata.ucar.edu/software/netcdf/guide.txn_toc.html">NetCDF</a>, depending on how your data is represented. If your application is not written in any of those languages, we recommend writing out <a href="http://www.kitware.com/vtk/index.html">VTK</a> files since they are simple enough to write without lots of complicated programming. If you don't want to convert data files or alter your code to write out a format that VisIt already reads, then you might consider writing your own database reader plug-in for VisIt. For more information on how to write your own database reader plug-in, send e-mail to <a href="mailto:visit-help@llnl.gov">visit-help@llnl.gov</a>.</p>
 <h2><a name="13"></a>13. How do I make a movie of my data?</h2>
 <p> There are a two ways to save a movie in VisIt and the one you use depends on the complexity of the movie that you want to make. The easiest way to save a movie in VisIt is to set up your plots just how you want them to look and then use the Save movie wizard in VisIt's GUI. If you prefer to use VisIt's batch movie making utility, you can set up your plots as usual and save a session file by selecting <strong><font color="#999999">Save session</font></strong> from the <strong><font color="#999999">File</font></strong> menu. A session file contains the information that VisIt needs to recreate the image on your screen. For the purposes of this example, assume that you saved a session file called movie.session. To make a movie of it, open a command line shell and type:</p>
 <blockquote>
@@ -522,15 +582,15 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
 </blockquote>
 <p> VisIt's <a href="manuals.html">Python Interface Manual</a> documents all of the functions in the VisIt Python extension and includes examples of how to do common plotting and movie-making operations. If you need more examples of how to write Python scripts for VisIt, download the VisIt source code distribution and look for Python scripts in the <em>visitpy/examples</em> directory. If the two current ways of making movies sound too difficult, don't worry. We plan to enhance VisIt in the next few versions so it is easier to make movies.</p>
 <h2><a name="14"></a>14. How do I connect to a remote computer when I have a different user name on that computer?</h2>
-<p> It is fairly common for your user name on a desktop computer to differ from your user name on a remote computer. To successfully connect to a remote computer, you must provide a valid user name for the computer to which you want to connect. You will have to create a host profile for the remote computer so VisIt knows your user name on that computer. Open the Host profiles window by clicking Host profiles in the Options menu. Create a new host profile for the remote computer and be sure to enter your correct user name for that remote computer. For more information on creating host profiles, read the Distributed Mode portion of the Remote Visualization section in the <a href="1.5/VisItUsersManual1.5.pdf"><em>VisIt Users Manual</em></a><em>.</em></p>
+<p> It is fairly common for your user name on a desktop computer to differ from your user name on a remote computer. To successfully connect to a remote computer, you must provide a valid user name for the computer to which you want to connect. You will have to create a host profile for the remote computer so VisIt knows your user name on that computer. Open the Host profiles window by clicking Host profiles in the Options menu. Create a new host profile for the remote computer and be sure to enter your correct user name for that remote computer. For more information on creating host profiles, read the Distributed Mode portion of the Remote Visualization section in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf"><em>VisIt Users Manual</em></a><em>.</em></p>
 <p> [<a href="#top">Top</a>]</p>
 <h2> <a name="15"></a>15. Why does distributed mode not work on my MacOS X computer?</h2>
 <p> VisIt can run all of its components locally, or it can run some of them on remote computers. When the compute engine and metadata server are run on a remote computer, VisIt is said to be running in distributed mode. When VisIt runs in distributed mode, it attempts to launch some of its components on remote computers, and those programs then talk to VisIt via socket communication. Assuming that you have an account on the remote computer and VisIt is installed there, you should be able to run in distributed mode. If you have everything set up properly and distributed mode still does not work, you should check your firewall settings. MacOS X has an integrated firewall program that disallows remote programs from making inbound connections to programs running on your Mac. You either need to disable your firewall or change its settings so ports 5600 through 5605 (VisIt's ports) are not blocked. Once you change your firewall settings, VisIt components running on remote computers will be able to connect back to the Mac and distributed mode will work.</p>
 <h2><a name="16"></a>16. How do I build VisIt on my Windows computer?</h2>
-<p> You need three things in order to build VisIt on a Windows computer. First of all, you must have Microsoft Visual C++ 6.0 or Microsoft Visual Studio .Net 2003. Compilers from other vendors might work to build the VisIt source code but the VisIt source distribution for Windows only provides project files for the two afore-mentioned compilers. The second thing you need in order to build VisIt on Windows is the Qt library, which is available at <a href="http://www.trolltech.com/download/qt/evaluate.html?cid=3">Trolltech's Web site</a>. You must build Qt before you attempt to build VisIt. The last thing you need in order to build VisIt on Windows is the <a href="source.html">VisIt source distribution for Windows</a>.</p>
+<p> You need three things in order to build VisIt on a Windows computer. First of all, you must have  Microsoft Visual Studio .Net 2003. Compilers from other vendors might work to build the VisIt source code but the VisIt source distribution for Windows only provides project files for the two afore-mentioned compilers. The second thing you need in order to build VisIt on Windows is the Qt library, which is available at <a href="http://www.trolltech.com/download/qt/evaluate.html?cid=3">Trolltech's Web site</a>. VisIt currently requires a Qt 3.x version such as Qt 3.3.7. You must build Qt before you attempt to build VisIt. The last thing you need in order to build VisIt on Windows is the <a href="source.html">VisIt source distribution for Windows</a>.</p>
 <p> The VisIt source distribution for Windows contains all of VisIt's source code and prebuilt versions of most of VisIt's support libraries so it is not required that you download and build all of those libraries unless you want to customize them. Download and install the source distribution for Windows and read the BUILD_NOTES.txt file in the VisIt development directory for more information on building VisIt for Windows.</p>
 <h2><a name="17"></a>17. I have trouble installing VisIt on my MacOS X computer. Why?</h2>
-<p> You need to download two files to successfully download VisIt on any UNIX computer, including MacOS X. On MacOS X in particular, some Web browsers can corrupt the VisIt binary distribution, which is the file that you download that ends in <em>&quot;.tar.gz&quot;</em>. Be sure that your web browser downloaded the binary distribution properly by checking the <a href="1.5.5/visit_md5_checksums" target="_blank">checksums</a>. You may also have to manually change the visit-install script so that it has execute permission. Once you've completed those steps, the most common cause of errors during installation on MacOS X is the visit-install script's inability to gracefully handle installation paths that contain spaces. Many of the MacOS X installation paths such as /Applications can have a volume label prepended to them. Volume labels often contain spaces. If you are having trouble installing VisIt on MacOS X, the easiest way to make sure that the installation succeeds is to install to your home directory. Assuming that you have correctly downloaded to the two requisite files, you can usually follow these steps to install VisIt.</p>
+<p> You need to download two files to successfully download VisIt on any UNIX computer, including MacOS X. On MacOS X in particular, some Web browsers can corrupt the VisIt binary distribution, which is the file that you download that ends in <em>&quot;.tar.gz&quot;</em>. Be sure that your web browser downloaded the binary distribution properly by checking the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.4.5/visit_md5_checksums" target="_blank">checksums</a>. You may also have to manually change the visit-install script so that it has execute permission. Once you've completed those steps, the most common cause of errors during installation on MacOS X is the visit-install script's inability to gracefully handle installation paths that contain spaces. Many of the MacOS X installation paths such as /Applications can have a volume label prepended to them. Volume labels often contain spaces. If you are having trouble installing VisIt on MacOS X, the easiest way to make sure that the installation succeeds is to install to your home directory. Assuming that you have correctly downloaded to the two requisite files, you can usually follow these steps to install VisIt.</p>
 <ol>
   <li>cd ~</li>
   <li>chmod 700 visit-install</li>
@@ -544,45 +604,37 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
 <p>The Plugin Developer's Guide must cover many topics related to VisIt development so it is still being written and has not been released. Thank you for your patience. In the meantime, please send e-mail to <a href="mailto:visit-help@llnl.gov">visit-help@llnl.gov</a> if you have questions about developing new plugins for VisIt. VisIt developers will work with you to get you started writing plugins for VisIt. </p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="20"></a>20. How do I start writing a plugin for VisIt?</h2>
-<p>Since the Plugin Developer's Guide has not been completed, the best way to begin writing a plugin is to send e-mail describing the plugin that you plan to write to <a href="mailto:visit-help@llnl.gov">visit-help@llnl.gov</a>. The VisIt developers will be able to tell you the general steps that are involved and also suggest where to look for code that you can copy from existing plugins.</p>
+<p>VisIt customers most commonly want to know how to write a database reader plugin. The process for writing a new database reader plugin is described in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.5.4/GettingDataIntoVisIt1.5.4.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. Other plugin types will eventually be documented in the Plugin Developer's Guide. Since that guide has not been completed, the best way to begin writing a new plot or operator plugin is to send e-mail describing the plugin that you plan to write to <a href="mailto:visit-help@llnl.gov">visit-help@llnl.gov</a>. The VisIt developers will be able to tell you the general steps that are involved and also suggest where to look for code that you can copy from existing plugins.</p>
 <p>Plugins are generally meant to be written using the shared libraries and header files that are provided in the binary installations of VisIt. This means that you don't have to build all of VisIt in order to start developing your plugin. However, this assumes that you are going to use compilers that are compatible with the ones used to build VisIt. If you use compilers that generate code that is not compatible with the compilers used to generate a VisIt binary distribution then you will have to build VisIt. Building VisIt on the Windows platform currently requires that you use the Microsoft Visual Studio .Net 2003 compiler if you plan to build only your plugin and not all of VisIt since the import libraries distributed with the Windows version of VisIt are built using that compiler. Building a plugin begins with the step of creating an XML file. All VisIt plugins whether they are plot, operator, or database plugins begin with an XML file that describes the plugin's attributes. Have a look at the source code for other VisIt plot, operator, or database plugins to see how the XML files are used in practice.</p>
 <p>There are two popular methods for starting a plugin. You can copy the files from another plugin, rename, and gradually adapt them to your needs or you can begin from scratch. If you begin from scratch, you will want to run VisIt's XMLEdit program, which loads, edits, and saves XML files for VisIt plugins. XMLEdit is used to set up the required attributes of a plugin such as its type and name. XMLEdit is also used to set up more advanced attributes such as the file extensions associated with a database plugin or the plot attributes required for a plot plugin. It can be helpful to look at the XML files from existing VisIt plugins to get an idea of how the XML files are used. </p>
 <p>Once you have created an XML file for your plugin, run <em>xml2plugin -clobber myxmlfile.xml</em> to generate the plugin skeleton, any automatically generated code, and Makefile or project files needed to build your plugin. Once you've generated your plugin for the first time, check the directory in which you're keeping your plugin sources and XML file. There should be several new files. Most are boilerplate but pay special attention to the files that begin with &quot;avt&quot; since those are the files to which you generally must add your plugin code.</p>
 <h2><a name="21"></a>21. How often is a new version of VisIt released?</h2>
-<p>The VisIt development team usually releases a new version of VisIt every 4-8 weeks. Each VisIt release contains on average 60 enhancements or bug-fixes, improving the functionality and the quality of the tool. Check the VisIt Web site often for updates. You can also join the VisIt User's mailing list if you want to know when VisIt is updated. Finally, you can use the &quot;VisIt update&quot; feature in VisIt's help menu to automatically determine if an update for your platform is available. &quot;VisIt update&quot; can in many cases even download and install the new version of VisIt. </p>
+<p>The VisIt development team usually releases a new version of VisIt every 2-3 months. Each VisIt release contains on average 60 enhancements or bug-fixes, improving the functionality and the quality of the tool. Check the VisIt Web site often for updates. You can also join the VisIt User's mailing list if you want to know when VisIt is updated. You can also subscribe to the VisIt project on <a href="http://freshmeat.net/projects/visit/" title="Freshmeat" target="_blank">Freshmeat.net</a> if you want to be informed when a new version of VisIt becomes available. Finally, you can use the &quot;VisIt update&quot; feature in VisIt's help menu to automatically determine if an update for your platform is available. &quot;VisIt update&quot; can in many cases even download and install the new version of VisIt. </p>
 <h2><a name="22"></a>22. What's new in the latest version of VisIt?</h2>
 <p>Each version of VisIt contains on average 60 enhancements or bug-fixes. The first time that you run a new version of VisIt, the release notes for that version will be prominently displayed in the Help window. The release notes describe the enhancements and bug-fixes made in each version of the tool. After you have read the release notes for the new version of VisIt, they will not be automatically displayed again but you can view them at any time using VisIt's <strong>Help window</strong>. </p>
 <h2><a name="23"></a>23. Which compilers can be used to build VisIt? </h2>
 <p>The following compilers can be used to build VisIt on the listed platforms. </p>
-<table width="80%" border="0" align="center" cellpadding="5" cellspacing="1">
+<table width="50%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
-      <td width="25%" NOSAVE bgcolor="#9999CC" class="Section">Platform </td>
+      <td width="15%" NOSAVE bgcolor="#9999CC" class="Section">Platform </td>
       <td width="65%" NOSAVE bgcolor="#9999CC" class="Section">Compiler</td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">AIX 5.1</td>
-      <td bgcolor="#CCCCFF">xlC</td>
+      <td bgcolor="#CCCCFF">g++ 3.1, xlC </td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">IRIX64 6.5</td>
-      <td bgcolor="#CCCCFF">MIPSpro 7.41</td>
+      <td bgcolor="#CCCCFF">MIPSpro 7.3.1.2m and MIPSpro 7.4</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">RedHat Linux 3 (x86)</td>
-      <td bgcolor="#CCCCFF">g++ 3.2.3</td>
-    </tr>
-    <tr>
-      <td bgcolor="#CCCCFF">RedHat Linux 4 (x86, ia64)</td>
-      <td bgcolor="#CCCCFF">g++ 3.2.3 or icc 9.1</td>
-    </tr>
-    <tr>
-      <td bgcolor="#CCCCFF">RedHat Linux 4 (x86_64)</td>
-      <td bgcolor="#CCCCFF">g++ 3.4.4</td>
+      <td bgcolor="#CCCCFF">RedHat Linux 7.1/7.2</td>
+      <td bgcolor="#CCCCFF">g++ 2.96 or g++ 3.2.3</td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">Solaris 7</td>
-      <td bgcolor="#CCCCFF">g++ 3.2</td>
+      <td bgcolor="#CCCCFF">g++ 2.95.2 or g++ 3.2</td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">Tru64 5.1</td>
@@ -593,31 +645,31 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
       <td bgcolor="#CCCCFF">Microsoft Visual Studio 6.0 with service pack 5, Microsoft Visual Studio .Net 2003</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">MacOS X 10.4 </td>
-      <td bgcolor="#CCCCFF">g++ 4.0.1</td>
+      <td bgcolor="#CCCCFF">MacOS X 10.3 </td>
+      <td bgcolor="#CCCCFF">g++ 3.3 <em>(g++ 4.0 has not been tried)</em> </td>
     </tr>
   </tbody>
 </table>
 <p>The following compilers will <strong>NOT</strong> work with VisIt. They will either not compile VisIt or will generate bad code.</p>
-<table width="80%" border="0" align="center" cellpadding="5" cellspacing="1">
+<table width="50%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
-      <td width="25%" NOSAVE bgcolor="#9999CC" class="Section">Platform </td>
+      <td width="15%" NOSAVE bgcolor="#9999CC" class="Section">Platform </td>
       <td width="65%" NOSAVE bgcolor="#9999CC" class="Section">Compiler</td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">AIX 5.1</td>
-      <td bgcolor="#CCCCFF">g++ all versions</td>
+      <td bgcolor="#CCCCFF">g++ 3.2.3 - g++ 3.3.3 </td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">All</td>
-      <td bgcolor="#CCCCFF">g++ earlier than 3.2</td>
+      <td bgcolor="#CCCCFF">RedHat Linux 7.1/7.2</td>
+      <td bgcolor="#CCCCFF">g++ 3.3 - g++ 3.3.3</td>
     </tr>
   </tbody>
 </table>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="24"></a>24. Is there a mailing list for VisIt users? </h2>
-<p>Yes. There is a mailing list for VisIt users. The VisIt development team uses the list to announce new versions of VisIt and To join the list, send an e-mail message to <strong>majordomo@lists.llnl.gov</strong> with no subject line and a message body containing: <strong>subscribe visit-users email-address</strong>. Be sure to substitute your actual e-mail address for <strong>email-address</strong>.</p>
+<p>Yes. There is a mailing list for VisIt users. The VisIt development team uses the list to announce new versions of VisIt and To join the list, send an e-mail message to <strong>majordomo@lists.llnl.gov</strong> with no subject line and a message body containing: <strong>subscribe visit-users email-address</strong>. Be sure to substitute your actual e-mail address for <strong>email-address</strong>. The list is for the VisIt development team to make announcements to the VisIt user community. </p>
 <p>If you ever want to remove your e-mail address from the list, send an e-mail message to <strong>majordomo@lists.llnl.gov</strong> with no subject line and a message body containing: <strong>unsubscribe visit-users email-address</strong>. </p>
 <h2><a name="25"></a><a name="license"></a>25. Which license does VisIt use?</h2>
 <p>VisIt is released under the BSD license, which you can view on <a href="license.html" title="VisIt's BSD license" target="_blank">VisIt's license</a> page. </p>
@@ -684,11 +736,11 @@ contact your system administrator.</p>
   <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> | FAQs | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #BeginDate format:Am1 -->September 8, 2006<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->April 2, 2007<!-- #EndDate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
-      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-224679, 
+      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-222686, 
         <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
         and legal notice</a></span></td>
       <td width="5">&nbsp;</td>
