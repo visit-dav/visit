@@ -278,6 +278,9 @@
 #    cross compiles and builds.
 #    Added more checks to removed the "cp: No match." conditions.
 #
+#    Thomas R. Treadway, Tue Apr 10 11:30:28 PDT 2007
+#    Replaced "uname -m" with "uname -p" for darwin.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -640,7 +643,7 @@ if ("$ArchGiven" == "FALSE") then
       echo "Found a MacOS X version of visit"
       set archBins = `file $VisItDir/lib/$QtLibName | head -n 1`
       if (`echo "$archBins" | grep "universal"` == "") then
-         set arch = `/usr/bin/uname -m`
+         set arch = `/usr/bin/uname -p`
          switch ($arch)
             case i386:
             case i486:
@@ -653,7 +656,7 @@ if ("$ArchGiven" == "FALSE") then
                set osver = darwin-x86_64
                set visitbindir = darwin-x86_64
                breaksw
-            case ppc:
+            case powerpc:
                set osver = darwin-ppc
                set visitbindir = darwin-ppc
                breaksw
