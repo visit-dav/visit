@@ -162,6 +162,9 @@ QvisSimulationWindow::~QvisSimulationWindow()
 //
 //   Shelly Prevost Tue Nov 28 17:01:58 PST 2006
 //   I added the strip chart widget to the main simulatioin window.
+//
+//   Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
+//   added splitter to help with widow space issues.
 // ****************************************************************************
 
 void
@@ -272,37 +275,39 @@ QvisSimulationWindow::CreateWindowContents()
     connect(cmdButtons[CUSTOM_BUTTON],SIGNAL(clicked()),this,SLOT(showCommandWindow()));
    
     topLayout->addSpacing(10);
-    
-        // Create the status message widgets.
+
+    // create splitter to hold Stip chart widgets and message widgets
+    QSplitter *s2 = new QSplitter (central);
+    s2->setOrientation(QSplitter::Vertical);
+    s2->show();
+
+    // Create the status message widgets.
     QLabel *messageLabel = new QLabel(central,"MessageViewerLabel");
     messageLabel->setText("Message Viewer");
     topLayout->addWidget(messageLabel);
 
-    QTextEdit *messageViewer = new QTextEdit(central, MESSAGE_WIDGET_NAME);
+    QTextEdit *messageViewer = new QTextEdit(s2, MESSAGE_WIDGET_NAME);
+    s2->setResizeMode(messageViewer,QSplitter::Auto);
     messageViewer->setReadOnly( true );
     messageViewer->setMaximumHeight( 100 );
     topLayout->addWidget(messageViewer);
-    // create the strip chart widgets
-//    QSplitter *s = new QSplitter ( QSplitter::Horizontal, central, "StipChart");
-     
-    //topLayout->addWidget(stripChartTitleLabel);
-
-    stripChart = new VisItSimStripChart(central,STRIP_CHART_WIDGET_NAME,3000,1000);
-    sc = new QScrollView(central,"StipChartScrollWindow");
-    sc->setCaption( "VisIt Strip Chart");
+ 
+    stripChart = new VisItSimStripChart(central,STRIP_CHART_WIDGET_NAME,4000,1000);
+    sc = new QScrollView(s2,"StipChartScrollWindow");
+    s2->setResizeMode(sc,QSplitter::Auto);
+    sc->setCaption( "VisIt Strip Chart");                                     
     sc->addChild(stripChart);
     topLayout->addWidget(sc);
     sc->show();
 
     topLayout->addSpacing(10);
     // create the strip chart widgets
-     // Create the group box and generic buttons.
-    QGroupBox *stripChartGroup = new QGroupBox(central, "StripChartGroup");
+    // Create the group box and generic buttons.
+    QGroupBox *stripChartGroup = new QGroupBox(s2, "StripChartGroup");
+    s2->setResizeMode(stripChartGroup,QSplitter::Auto);
     stripChartGroup->setTitle("Strip Chart");
-//    QSplitter *s2 = new QSplitter ( QSplitter::Horizontal, stripChartGroup, "StipChart");
-//    s2->setMinimumHeight( 250  );
 
-    chartLayout =  new QGridLayout(stripChartGroup);
+    chartLayout =  new QGridLayout(stripChartGroup);              
     chartLayout->setMargin(20);
     chartLayout->setSpacing(10);
  
@@ -344,7 +349,7 @@ QvisSimulationWindow::CreateWindowContents()
     chartLayout->addMultiCellWidget(enableStripChartLimits,2,2,0,1);
 
     // zoom and focus buttons
-        // Create the group box and generic buttons.
+    // Create the group box and generic buttons.
     QGridLayout *zoomLayout = new QGridLayout(stripChartGroup, 1, 3);
     plusButton = new QPushButton("Zoom In",stripChartGroup);
     plusButton->setEnabled(true);
@@ -360,9 +365,8 @@ QvisSimulationWindow::CreateWindowContents()
     zoomLayout->addWidget(focusButton,0,1);
     chartLayout->addLayout(zoomLayout,2,3);
 
-
     stripChartGroup->adjustSize();
-    topLayout->addWidget(stripChartGroup);
+    topLayout->addWidget(s2);
     sc->horizontalScrollBar()->setValue(sc->horizontalScrollBar()->maxValue());
     sc->updateContents();
 }

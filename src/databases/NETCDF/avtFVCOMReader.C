@@ -2943,7 +2943,7 @@ avtFVCOMReader::GetVar(int timestate, const char *Variable, avtVariableCache *ca
       int namelength;
       namelength = strlen(Variable);
       size_t tmplen=namelength-9;
-      std::string vnm = strvarname.substr(tmplen, 9);
+      std::string vnm = strvarname.substr(9, tmplen);
 
       debug4 << mName << "Variable: "<< vnm << endl;
       vtkDataArray *tmp =  GetVar(timestate,vnm.c_str(), cache);
