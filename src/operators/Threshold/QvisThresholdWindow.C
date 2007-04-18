@@ -348,7 +348,7 @@ QvisThresholdWindow::UpdateWindow(bool doAll)
                 break;
 
             case 3:  // zonePortions
-                zonePortion->setButton((int)atts->GetZonePortion());
+                zonePortion->setButton(atts->GetZonePortion());
                 
                 zonePortion->setEnabled(enableZonePortion);
                 zonePortionLabel->setEnabled(enableZonePortion);
@@ -528,12 +528,9 @@ QvisThresholdWindow::outputMeshTypeChanged(int buttonID)
 void
 QvisThresholdWindow::zonePortionChanged(int buttonID)
 {
-    ThresholdAttributes::ZonePortion newZonePortion =
-        ThresholdAttributes::ZonePortion(buttonID);
-
-    if (newZonePortion != atts->GetZonePortion())
+    if (buttonID != atts->GetZonePortion())
     {
-        atts->ChangeZonePortion(newZonePortion);
+        atts->ChangeZonePortion(buttonID);
         Apply();
     }
 }
@@ -641,7 +638,7 @@ QvisThresholdWindow::UpdateShownFields()
     
     shownVariable->setText(QString(shownVarName.c_str()));
 
-    zonePortion->setButton((int)atts->GetZonePortion());
+    zonePortion->setButton(atts->GetZonePortion());
 
     zonePortion->setEnabled(enableZonePortion);
     zonePortionLabel->setEnabled(enableZonePortion);
