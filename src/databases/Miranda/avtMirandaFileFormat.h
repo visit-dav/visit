@@ -116,7 +116,7 @@ class avtMirandaFileFormat : public avtMTMDFileFormat
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     virtual void           DomainToIJK(int domain, int &i, int &j, int &k);
 
-    static  void           SkipToEndOfLine( ifstream &f );
+    static  void           SkipToEndOfLine( ifstream &f, bool bCheckForBadTokens = true );
     static  double         GetFortranDouble( ifstream &f );
 };
 

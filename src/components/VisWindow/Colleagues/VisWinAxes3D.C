@@ -395,21 +395,19 @@ VisWinAxes3D::SetBounds(double bounds[6])
         double fudgeY;
         double fudgeZ;
 
-        if (boundsChanged)
+       //
+       // Add a fudge-factor to prevent axes from being obscured by plots
+       // that fill their full extents.
+       //
+       // if the limits are initialized to +- DBL_MAX then doing math
+       // with them will cause an excepton so check them first.
+       if ( bounds[1] == -DBL_MAX  && bounds[0] ==  DBL_MAX ||
+            bounds[3] == -DBL_MAX  && bounds[2] ==  DBL_MAX ||
+            bounds[5] == -DBL_MAX  && bounds[4] ==  DBL_MAX)
        {
-            //
-            // Add a fudge-factor to prevent axes from being obscured by plots
-            // that fill their full extents.
-            //
-            // if the limits are not initialized then doing math
-            // with them will cause an error so check them first.
-            if ( bounds[0] == DBL_MAX  || bounds[2] ==  DBL_MAX || bounds[4] == DBL_MAX ||
-                 bounds[1] == -DBL_MAX || bounds[3] == -DBL_MAX || bounds[5] == -DBL_MAX   )
-            {
-              fudgeX = 0.001;
-              fudgeY = 0.001;
-              fudgeZ = 0.001;
-            }
+         fudgeX = 0.001;
+         fudgeY = 0.001;
+         fudgeZ = 0.001;
         }
         else
         {
