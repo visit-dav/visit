@@ -49,6 +49,7 @@ class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QvisColorTableButton;
 class QRadioButton;
 class QSlider;
 class QVBoxLayout;
@@ -106,6 +107,10 @@ class QvisVariableButton;
 //    Hank Childs, Mon Sep 11 11:46:01 PDT 2006
 //    Created data members for previously untracked radio buttons.
 //
+//    Gunther Weber, Fri Apr  6 16:31:06 PDT 2007
+//    Added data members for showing color spectrum in the opacity
+//    editor and also for an inverse linear ramp.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -139,6 +144,7 @@ private slots:
     void popupColorSelect(int index);
     void selectedColor(const QColor &color);
     void interactionModeChanged(int index);
+    void showColorsInAlphaWidgetToggled(bool);
     void attenuationChanged(int opacity);
     void legendToggled(bool val);
     void lightingToggled(bool val);
@@ -165,10 +171,12 @@ private slots:
     void num3DSlicesProcessText();
     void processSkewText();
     void scaleClicked(int scale);
+    void colorTableClicked(bool useDefault, const QString &ctName);
 private:
     int                      plotType;
     VolumeAttributes         *volumeAtts;
     int                      colorCycle;
+    bool                     showColorsInAlphaWidget;
 
     // Widgets and layouts.
     QGroupBox                *colorWidgetGroup;
@@ -186,14 +194,17 @@ private:
     QCheckBox                *opacityMaxToggle;
     QLineEdit                *opacityMax;
     QGroupBox                *opacityWidgetGroup;
+    QCheckBox                *showColorsInAlphaWidgetToggle;
     QButtonGroup             *modeButtonGroup;
     QvisGaussianOpacityBar   *alphaWidget;
     QvisScribbleOpacityBar   *scribbleAlphaWidget;
     QPushButton              *addPointButton;
     QPushButton              *rmPointButton;
     QPushButton              *alignPointButton;
+    QvisColorTableButton     *colorTableButton;
     QPushButton              *zeroButton;
     QPushButton              *rampButton;
+    QPushButton              *inverseRampButton;
     QPushButton              *oneButton;
     QPushButton              *smoothButton;
     QvisOpacitySlider        *attenuationSlider;

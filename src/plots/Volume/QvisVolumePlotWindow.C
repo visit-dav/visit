@@ -57,6 +57,7 @@
 #include <QvisGaussianOpacityBar.h>
 #include <QvisScribbleOpacityBar.h>
 #include <QvisVariableButton.h>
+#include <QvisColorTableButton.h>
 #include <QNarrowLineEdit.h>
 
 #include <VolumeAttributes.h>
@@ -64,6 +65,8 @@
 #include <GaussianControlPoint.h>
 #include <ViewerProxy.h>
 #include <ImproperUseException.h>
+
+#include <ColorTableAttributes.h>
 
 // XPM data for pixmaps.
 static const char * black_xpm[] = {
@@ -115,6 +118,31 @@ static const char * ramp_xpm[] = {
 "..++++++++++++++++++++++++++++++++++++++",
 "++++++++++++++++++++++++++++++++++++++++"};
 
+static const char * inverse_ramp_xpm[] = {
+"40 20 2 1",
+".    c #000000",
+"+    c #FFFFFF",
+"........................................",
+"++......................................",
+"++++....................................",
+"++++++..................................",
+"++++++++................................",
+"++++++++++..............................",
+"++++++++++++............................",
+"++++++++++++++..........................",
+"++++++++++++++++........................",
+"++++++++++++++++++......................",
+"++++++++++++++++++++....................",
+"++++++++++++++++++++++..................",
+"++++++++++++++++++++++++................",
+"++++++++++++++++++++++++++..............",
+"++++++++++++++++++++++++++++............",
+"++++++++++++++++++++++++++++++..........",
+"++++++++++++++++++++++++++++++++........",
+"++++++++++++++++++++++++++++++++++......",
+"++++++++++++++++++++++++++++++++++++....",
+"++++++++++++++++++++++++++++++++++++++.."};
+
 static const char * white_xpm[] = {
 "40 20 1 1",
 "+    c #FFFFFF",
@@ -158,6 +186,9 @@ static const char * white_xpm[] = {
 //   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
 //   Initialized scalingButtons.
 //
+//   Gunther Weber, Fri Apr  6 16:33:19 PDT 2007
+//   Initialize showColorInAlphaWidget.
+//
 // ****************************************************************************
 
 QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
@@ -169,6 +200,7 @@ QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
     volumeAtts = volumeAtts_;
 
     colorCycle = 1;
+    showColorsInAlphaWidget = false;
 
     // Initialize parentless widgets.
     modeButtonGroup = 0;
@@ -254,6 +286,18 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Brad Whitlock, Fri Mar 30 15:50:25 PST 2007
 //   Changed the layouts so they do not have so much extra space.
 //
+//   Gunther H. Weber, Thu Apr  5 16:37:36 PDT 2007
+//   I added an import button for color tables and a checkbox indicating,
+//   whether the colors of the color map should be shown as background
+//   for the alpha widget. I also moved the "Skew factor" line edit to
+//   the same line as the "Scale selection" radio buttons. Added stretch
+//   between min and max lineedits for color and opacity. Added button for
+//   inverse ramp opacity function.
+//
+//   Hank Childs, Sat Apr  7 12:00:10 PDT 2007
+//   Merged Gunther's changes on 1.6RC into Brad's changes on mainline.
+//   Undoubtedly, Hank's merge is the cause of any and all problems.
+//
 // ****************************************************************************
 
 void
@@ -293,6 +337,12 @@ QvisVolumePlotWindow::CreateWindowContents()
     connect(alignPointButton, SIGNAL(clicked()),
             this, SLOT(alignControlPoints()));
     seLayout->addWidget(alignPointButton);
+
+    colorTableButton = new QvisColorTableButton(colorWidgetGroup, "colorTableButton");
+    connect(colorTableButton, SIGNAL(selectedColorTable(bool, const QString &)),
+            this, SLOT(colorTableClicked(bool, const QString &)));
+    seLayout->addWidget(colorTableButton);
+
     seLayout->addSpacing(5);
     seLayout->addStretch(20);
 
@@ -371,11 +421,11 @@ QvisVolumePlotWindow::CreateWindowContents()
     skewLineEdit->setMaximumWidth(maxWidth);
     connect(skewLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processSkewText())); 
-    skewLabel = new QLabel(skewLineEdit, "Skew factor  ", 
+    skewLabel = new QLabel(skewLineEdit, "Skew factor ", 
                            colorWidgetGroup, "skewFactor");
     skewLabel->setAlignment(AlignLeft | AlignVCenter);
-    colorScaleLayout->addWidget(skewLabel, 2, 0);
-    colorScaleLayout->addWidget(skewLineEdit, 2, 1);
+    colorScaleLayout->addWidget(skewLabel, 2, 2);
+    colorScaleLayout->addWidget(skewLineEdit, 2, 3);
  
     // Add the group box that will contain the opacity-related widgets.
     opacityWidgetGroup = new QGroupBox(central, "opacityWidgetGroup");
@@ -387,6 +437,12 @@ QvisVolumePlotWindow::CreateWindowContents()
 
     // Create the buttons that control what mode the opacity widget it in.
     QHBoxLayout *opLayout = new QHBoxLayout(innerOpacityLayout);
+    showColorsInAlphaWidgetToggle = new QCheckBox("Show Colors", opacityWidgetGroup, "showColorsToggle");
+    showColorsInAlphaWidgetToggle->setChecked(showColorsInAlphaWidget);
+    connect(showColorsInAlphaWidgetToggle, SIGNAL(toggled(bool)),
+            this, SLOT(showColorsInAlphaWidgetToggled(bool)));
+    opLayout->addWidget(showColorsInAlphaWidgetToggle);
+    opLayout->addSpacing(10);
     opLayout->addStretch(100);
     opLayout->setSpacing(5);
     QLabel *interactionModeLabel = new QLabel("Interaction mode",
@@ -425,6 +481,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     // Create some style pixmaps
     QPixmap blackPixmap(black_xpm);
     QPixmap rampPixmap(ramp_xpm);
+    QPixmap inverseRampPixmap(inverse_ramp_xpm);
     QPixmap whitePixmap(white_xpm);
 
     QHBoxLayout *abLayout = new QHBoxLayout(innerOpacityLayout);
@@ -439,6 +496,11 @@ QvisVolumePlotWindow::CreateWindowContents()
     rampButton->setPixmap(rampPixmap);
     connect(rampButton, SIGNAL(clicked()), scribbleAlphaWidget, SLOT(makeLinearRamp()));
     abLayout->addWidget(rampButton);
+
+    inverseRampButton = new QPushButton(opacityWidgetGroup, "inverseRampButton");
+    inverseRampButton->setPixmap(inverseRampPixmap);
+    connect(inverseRampButton, SIGNAL(clicked()), scribbleAlphaWidget, SLOT(makeInverseLinearRamp()));
+    abLayout->addWidget(inverseRampButton);
 
     oneButton = new QPushButton(opacityWidgetGroup, "oneButton");
     oneButton->setPixmap(whitePixmap);
@@ -488,6 +550,8 @@ QvisVolumePlotWindow::CreateWindowContents()
     connect(opacityMin, SIGNAL(returnPressed()),
             this, SLOT(opacityMinProcessText()));
     opacityMinMaxLayout->addWidget(opacityMin);
+
+    opacityMinMaxLayout->addStretch(10);
 
     // Create the opacity max widgets.
     opacityMaxToggle = new QCheckBox("Max", opacityWidgetGroup,
@@ -656,6 +720,9 @@ QvisVolumePlotWindow::CreateWindowContents()
 //   Hank Childs, Mon Sep 11 10:34:32 PDT 2006
 //   I added the RayCastingIntegration option.
 //
+//   Gunther H. Weber, Fri Apr  6 11:44:12 PDT 2007
+//   Disable lighting toggle for RayCasting
+//
 // ****************************************************************************
 
 void
@@ -809,7 +876,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             {
                 colorWidgetGroup->setEnabled(true);
                 opacityWidgetGroup->setEnabled(true);
-                lightingToggle->setEnabled(true);
+                lightingToggle->setEnabled(false);
                 centeredDiffButton->setEnabled(true);
                 sobelButton->setEnabled(true);
                 rendererTypesComboBox->setCurrentItem(2);
@@ -968,6 +1035,11 @@ QvisVolumePlotWindow::UpdateColorControlPoints()
     spectrumBar->blockSignals(false);
     spectrumBar->setSuppressUpdates(false);
     spectrumBar->update();
+
+    if (showColorsInAlphaWidget) {
+        alphaWidget->SetBackgroundColorControlPoints(&cpts);
+        scribbleAlphaWidget->SetBackgroundColorControlPoints(&cpts);
+    }
 }
 
 // ****************************************************************************
@@ -1726,6 +1798,38 @@ QvisVolumePlotWindow::interactionModeChanged(int index)
 }
 
 // ****************************************************************************
+// Method: QvisVolumePlotWindow::showColorsInAlphaWidgetToggled
+//
+// Purpose: 
+//   This is a Qt slot function that toggles whether the color map is shown
+//   as background of the opacity widget.
+//
+// Arguments:
+//   show: Flag indicating, whether colors should be shown
+//
+// Programmer: Gunther H. Weber
+// Creation:   Thu Apr  5 16:34:57 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::showColorsInAlphaWidgetToggled(bool show)
+{
+    showColorsInAlphaWidget = show;
+    if (show) {
+        const ColorControlPointList &cpts = volumeAtts->GetColorControlPoints();
+        alphaWidget->SetBackgroundColorControlPoints(&cpts);
+        scribbleAlphaWidget->SetBackgroundColorControlPoints(&cpts);
+    }
+    else {
+        alphaWidget->SetBackgroundColorControlPoints(0);
+        scribbleAlphaWidget->SetBackgroundColorControlPoints(0);
+    }
+}
+
+// ****************************************************************************
 // Method: QvisVolumePlotWindow::attenuationChanged
 //
 // Purpose: 
@@ -2370,6 +2474,31 @@ QvisVolumePlotWindow::scaleClicked(int scale)
     }
 }
 
+// ****************************************************************************
+// Method: QvisVolumePlotWindow::colorTableClicked
+//
+// Purpose: 
+//   This is a Qt slot function that imports the desired color table as color
+//   component of the transfer function in the volume plot attributes.
+//
+// Arguments:
+//   useDefault : Whether or not to use the default color table.
+//   ctName     : The name of the color table to use.
+//
+//  Programmer:  Gunther H. Weber 
+//  Creation:    April 5, 2007
+//
+// ****************************************************************************
+
+void
+QvisVolumePlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
+{
+    ColorTableAttributes *cta = GetViewerState()->GetColorTableAttributes();
+    const ColorControlPointList *ccp = cta->GetColorControlPoints(ctName);
+    if (ccp) volumeAtts->SetColorControlPoints(*ccp);
+    UpdateColorControlPoints();
+    Apply();
+}
 
 // ****************************************************************************
 //  Method:  QvisVolumePlotWindow::processSkewText
