@@ -139,6 +139,13 @@ setenv VISITARCH tru64_5_gcc_3.3.3
 
 Now build each of the dependent libraries followed by VisIt.
 
+If you are building on AIX you should set the object mode to specify if you
+are building a 32 or a 64 bit executable.  You should always build a 32 bit
+version and then you may also optionally build a 64 bit version.  To set the
+object mode issue one of the following two commands.
+
+setenv OBJECT_MODE 32
+setenv OBJECT_MODE 64
 
 Mesa
 =====
@@ -236,7 +243,7 @@ env CXXFLAGS=""  CFLAGS="" ./bootstrap
 # (ccmake) either with the curses header or library.  (Mainly with AIX).
 # To prevent CMake from attempting to build ccmake, open CMakeCache.txt
 # and set CURSES_LIBRARY:FILEPATH=   to ""
-make
+gmake
 
 #
 # Build VTK
@@ -253,17 +260,13 @@ cd VTK
 #
 ../cmake-2.2.3/bin/cmake .
 #
-# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS, VTK_USE_MANGLED_MESA, and
-# VTK_USE_ANSI_STDLIB on (Note that some platforms will have a definition
-# for VTK_USE_ANSI_STDLIB and some will not). Turn BUILD_TESTING off.
+# Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS and VTK_USE_MANGLED_MESA on.
+# Turn BUILD_TESTING off.
 #
 # If you want to change the compilers you should modify CMAKE_CXX_COMPILER
 # and CMAKE_C_COMPILER.  If you want to change the compiler flags you should
 # modify CMAKE_C_FLAGS and CMAKE_CXX_FLAGS.  You might want to specify "-O2"
-# as a compiler flag to build an optimized version.  If you want to specify
-# the location of the OpenGL library you should modify OPENGL_gl_LIBRARY and
-# OPENGL_glu_LIBRARY (/usr/shlib/libGL.so and /usr/shlib/libGLU.so on tru64
-# systems.)
+# as a compiler flag to build an optimized version.
 #
 # On irix systems you will need to specify "-LANG:std" for the compiler and
 # linker flags.  If you are building a 64 bit version you will also need
@@ -361,8 +364,7 @@ cd VTK
 #  Again, this change has only been found to be necessary for Altix systems 
 #  gcc 3.3.3.
 #
-
-make
+gmake
 
 #
 # Install it in the visit directory under the vtk directory.
@@ -392,9 +394,9 @@ cp VolumeRendering/*.h              $VISITDIR/vtk/5.0.0c/$VISITARCH/VolumeRender
 cp MangleMesaInclude/*.h            $VISITDIR/vtk/5.0.0c/$VISITARCH/MangleMesaInclude
 cp vtkstd/*                         $VISITDIR/vtk/5.0.0c/$VISITARCH/vtkstd
 cp -d bin/*.so*                     $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
-# For IRIX, solaris
+# For aix, IRIX, solaris
 # cp -R bin/*.so* $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
-# For true64, 
+# For true64
 # cp bin/*.so $VISITDIR/vtk/5.0.0c/$VISITARCH/lib
 cd ..
 
@@ -1205,9 +1207,9 @@ More information about building VisIt follows after that.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit061218.tar.gz
-tar xf visit061218.tar
-cd visit061218/config-site
+gunzip visit070330.tar.gz
+tar xf visit070330.tar
+cd visit070330/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -1225,14 +1227,15 @@ clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
 #
-clearcase_bin/visit-install 1.5.5 aix $VISITDIR
-clearcase_bin/visit-install 1.5.5 darwin $VISITDIR
-clearcase_bin/visit-install 1.5.5 irix6 $VISITDIR
-clearcase_bin/visit-install 1.5.5 linux $VISITDIR
-clearcase_bin/visit-install 1.5.5 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.5.5 linux-x86_64 $VISITDIR
-clearcase_bin/visit-install 1.5.5 osf1 $VISITDIR
-clearcase_bin/visit-install 1.5.5 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.6 aix $VISITDIR
+clearcase_bin/visit-install 1.6 aix64 $VISITDIR
+clearcase_bin/visit-install 1.6 darwin $VISITDIR
+clearcase_bin/visit-install 1.6 irix6 $VISITDIR
+clearcase_bin/visit-install 1.6 linux $VISITDIR
+clearcase_bin/visit-install 1.6 linux-ia64 $VISITDIR
+clearcase_bin/visit-install 1.6 linux-x86_64 $VISITDIR
+clearcase_bin/visit-install 1.6 osf1 $VISITDIR
+clearcase_bin/visit-install 1.6 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

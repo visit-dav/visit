@@ -270,6 +270,14 @@
 #    Deleted the vtk exodus and netcdf libraries from the list of required
 #    vtk libraries.
 #
+#    Thomas R. Treadway, Wed Apr  4 12:40:20 PDT 2007
+#    Modified Mac (Darwin) procession to created darwin, darwin-i386,
+#    darwin-x86_64, darwin-ppc, darwin-ppc_64, depending on the machine
+#    architecture, or if a universal binary (as determined by qt library).
+#    Added argument "arch" for setting "osver" and "visitbindir" to allow 
+#    cross compiles and builds.
+#    Added more checks to removed the "cp: No match." conditions.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -284,6 +292,7 @@ set CompilerGiven = "FALSE"
 set compiler = ""
 set SwitchGiven = "FALSE"
 set switch = ""
+set ArchGiven = "FALSE"
 set Strip = "TRUE"
 set Make = "make"
 set Help = "FALSE"
@@ -363,6 +372,13 @@ while ($#argv >= 1)
                set SwitchGiven = TRUE
                breaksw
 
+      case -arch:
+               shift
+               set osver = $1
+               set visitbindir = $1
+               set ArchGiven = TRUE
+               breaksw
+
       default:
                echo " "
                echo ">>>>>>>>>>  Illegal option $1  <<<<<<<<<<"
@@ -377,7 +393,7 @@ if ($Help == TRUE) then
    echo "                      [-md <visit_dir>] [-nd] [-nmesa]"
    echo "                      [-npython] [-nqt] [-nstrip] [-nvtk]"
    echo "                      [-os <operating_system>] [-compiler <compiler>]"
-   echo "                      [-switch <switch>]"
+   echo "                      [-switch <switch>] [-arch <architecture>]"
    echo ""
    echo "       -c             Compress the resultant package."
    echo "       -g             Gzip the resultant package.  (default)"
@@ -391,6 +407,7 @@ if ($Help == TRUE) then
    echo "       -nstrip        Do not strip the execubles and libraries."
    echo "       -nvtk          No VTK libraries."
    echo "       -os os         Operating system."
+   echo "       -arch architecture Force architecture package."
    echo "       -compiler cc   Compiler."
    echo "       -switch switch Switch type."
    exit (1)
@@ -531,7 +548,8 @@ endif
 #
 # Determine the os version string and hardware os string.
 #
-switch ($os)
+if ("$ArchGiven" == "FALSE") then
+  switch ($os)
    case hp-ux:
       echo "Found an HP-UX version of visit"
       set osver = hp
@@ -620,11 +638,38 @@ switch ($os)
 
    case darwin:
       echo "Found a MacOS X version of visit"
-      set visitbindir = darwin-ppc
-      set osver = "darwin"
-      breaksw
-endsw
+      set archBins = `file $VisItDir/lib/$QtLibName | head -n 1`
+      if (`echo "$archBins" | grep "universal"` == "") then
+         set arch = `/usr/bin/uname -m`
+         switch ($arch)
+            case i386:
+            case i486:
+            case i586:
+            case i686:
+               set osver = darwin-i386
+               set visitbindir = darwin-i386
+               breaksw
+            case x86_64:
+               set osver = darwin-x86_64
+               set visitbindir = darwin-x86_64
+               breaksw
+            case ppc:
+               set osver = darwin-ppc
+               set visitbindir = darwin-ppc
+               breaksw
+            case ppc_64:
+               set osver = darwin-ppc_64
+               set visitbindir = darwin-ppc_64
+               breaksw
 
+         endsw
+      else
+         set osver = darwin
+         set visitbindir = darwin
+      endif
+      breaksw
+  endsw
+endif
 #
 # Set a bunch of paths used later in the script.
 #
@@ -746,11 +791,6 @@ cp $VisItDir/bin/makemovie.py  $bindir
 cp $VisItDir/bin/makemoviemain.py  $bindir
 # copy surfcomp
 cp $VisItDir/exe/surfcomp      $bindir
-# Copy MacOS X address computation script and address file.
-cp $VisItDir/bin/linkedit.py   $bindir
-if(-e $VisItDir/address.txt) then
-   cp $VisItDir/address.txt distribution/visit/$Version/$visitbindir/
-endif
 # Copy the movie templates
 cp $VisItDir/bin/movietemplates/*.mt  $bindir/movietemplates
 cp $VisItDir/bin/movietemplates/*.ui  $bindir/movietemplates
@@ -887,11 +927,17 @@ cp $VisItDir/lib/python/lib/$pyver/*.txt                $libdir/python/lib/$pyve
 cp $VisItDir/lib/python/lib/$pyver/*.py                 $libdir/python/lib/$pyver
 cp $VisItDir/lib/python/lib/$pyver/*.pyc                $libdir/python/lib/$pyver
 cp $VisItDir/lib/python/lib/$pyver/*.pyo                $libdir/python/lib/$pyver
-cp $VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT       $libdir/python/lib/$pyver
+if(-e "$VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT") then
+  cp $VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT     $libdir/python/lib/$pyver
+endif
 cp $VisItDir/lib/python/lib/$pyver/config/*             $libdir/python/lib/$pyver/config
 cp $VisItDir/lib/python/lib/$pyver/lib-dynload/*        $libdir/python/lib/$pyver/lib-dynload
-cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL.*  $libdir/python/lib/$pyver/site-packages
-cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL/*  $libdir/python/lib/$pyver/site-packages/PIL
+if(-e "$VisItDir/lib/python/lib/$pyver/site-packages/PIL.*") then
+  cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL.* $libdir/python/lib/$pyver/site-packages
+endif
+if(-e "$VisItDir/lib/python/lib/$pyver/site-packages/PIL/*") then
+  cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL/*  $libdir/python/lib/$pyver/site-packages/PIL
+endif
 cp $VisItDir/lib/python/lib/$pyver/xml/*.{py,pyc,pyo}         $libdir/python/lib/$pyver/xml
 cp $VisItDir/lib/python/lib/$pyver/xml/dom/*.{py,pyc,pyo}     $libdir/python/lib/$pyver/xml/dom
 cp $VisItDir/lib/python/lib/$pyver/xml/parsers/*.{py,pyc,pyo} $libdir/python/lib/$pyver/xml/parsers
@@ -924,7 +970,10 @@ endif
 #
 if("$os" == "darwin") then
     cp $VisItDir/lib/libmili.$SHLIB_SOEXT $libdir
-    cp $VisItDir/lib/libgahl.$SHLIB_SOEXT $libdir
+# not needed in mili build
+    if(-e $VisItDir/lib/libgahl.$SHLIB_SOEXT) then
+      cp $VisItDir/lib/libgahl.$SHLIB_SOEXT $libdir
+    endif
     cp $VisItDir/lib/libhdf5.$SHLIB_SOEXT $libdir
 endif
 
@@ -972,42 +1021,76 @@ cp $VisItDir/include/visit/[A-M]*.h             $incdir/visit
 cp $VisItDir/include/visit/[N-Q]*.h             $incdir/visit
 cp $VisItDir/include/visit/[R-Z]*.h             $incdir/visit
 cp $VisItDir/include/visit/a[a-uw-zA-Z]*.h      $incdir/visit
-cp $VisItDir/include/visit/av[a-su-zA-Z]*.h     $incdir/visit
+if(-e "$VisItDir/include/visit/av[a-su-zA-Z]*.h") then
+  cp $VisItDir/include/visit/av[a-su-zA-Z]*.h   $incdir/visit
+endif
 cp $VisItDir/include/visit/avt[a-z]*.h          $incdir/visit
 cp $VisItDir/include/visit/avt[A-M]*.h          $incdir/visit
 cp $VisItDir/include/visit/avt[N-Z]*.h          $incdir/visit
 cp $VisItDir/include/visit/[b-z]*.h             $incdir/visit
 cp $VisItDir/include/mesa/GL/*.h                $incdir/mesa/GL
 cp $VisItDir/include/vtk/*.h                    $incdir/vtk
-cp $VisItDir/include/vtk/*.txx                  $incdir/vtk
-cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.h   $incdir/visit
-cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.txx $incdir/visit
-cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.h  $incdir/visit
-cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.txx $incdir/visit
-cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.h $incdir/vtk/Common
-cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.txx $incdir/vtk/Common
+if(-e "$VisItDir/include/vtk/*.txx") then
+  cp $VisItDir/include/vtk/*.txx                $incdir/vtk
+endif
+if(-e "$VisItDir/include/vtk/Common/[a-uw-zA-Z]*.h") then
+  cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.h   $incdir/visit
+endif
+if(-e "$VisItDir/include/vtk/Common/[a-uw-zA-Z]*.txx") then
+  cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.txx $incdir/visit
+endif
+if(-e "$VisItDir/include/vtk/Common/v[a-su-zA-Z]*.h") then
+  cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.h  $incdir/visit
+endif
+if(-e "$VisItDir/include/vtk/Common/v[a-su-zA-Z]*.txx") then
+  cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.txx $incdir/visit
+endif
+if(-e "$VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.h") then
+  cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.h $incdir/vtk/Common
+endif
+if(-e "$VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.txx") then
+  cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.txx $incdir/vtk/Common
+endif
 cp $VisItDir/include/vtk/Common/vtk[a-zA-J]*.h   $incdir/vtk/Common
 cp $VisItDir/include/vtk/Common/vtk[a-zA-J]*.txx $incdir/vtk/Common
-cp $VisItDir/include/vtk/Common/vtk[K-Z]*.h      $incdir/vtk/Common
-cp $VisItDir/include/vtk/Common/vtk[K-Z]*.txx    $incdir/vtk/Common
+cp $VisItDir/include/vtk/Common/vtk[K-Z_]*.h      $incdir/vtk/Common
+if(-e "$VisItDir/include/vtk/Common/vtk[K-Z]*.txx") then
+  cp $VisItDir/include/vtk/Common/vtk[K-Z]*.txx $incdir/vtk/Common
+endif
 cp $VisItDir/include/vtk/Filtering/*.h          $incdir/vtk/Filtering
 cp $VisItDir/include/vtk/Filtering/*.txx        $incdir/vtk/Filtering
 cp $VisItDir/include/vtk/GenericFiltering/*.h   $incdir/vtk/GenericFiltering
-cp $VisItDir/include/vtk/GenericFiltering/*.txx $incdir/vtk/GenericFiltering
+if(-e "$VisItDir/include/vtk/GenericFiltering/*.txx") then
+  cp $VisItDir/include/vtk/GenericFiltering/*.txx $incdir/vtk/GenericFiltering
+endif
 cp $VisItDir/include/vtk/Graphics/*.h           $incdir/vtk/Graphics
-cp $VisItDir/include/vtk/Graphics/*.txx         $incdir/vtk/Graphics
+if(-e "$VisItDir/include/vtk/Graphics/*.txx") then
+  cp $VisItDir/include/vtk/Graphics/*.txx       $incdir/vtk/Graphics
+endif
 cp $VisItDir/include/vtk/Hybrid/*.h             $incdir/vtk/Hybrid
-cp $VisItDir/include/vtk/Hybrid/*.txx           $incdir/vtk/Hybrid
+if(-e "$VisItDir/include/vtk/Hybrid/*.txx") then
+  cp $VisItDir/include/vtk/Hybrid/*.txx         $incdir/vtk/Hybrid
+endif
 cp $VisItDir/include/vtk/IO/*.h                 $incdir/vtk/IO
-cp $VisItDir/include/vtk/IO/*.txx               $incdir/vtk/IO
+if(-e "$VisItDir/include/vtk/IO/*.txx") then
+  cp $VisItDir/include/vtk/IO/*.txx             $incdir/vtk/IO
+endif
 cp $VisItDir/include/vtk/Imaging/*.h            $incdir/vtk/Imaging
-cp $VisItDir/include/vtk/Imaging/*.txx          $incdir/vtk/Imaging
+if(-e "$VisItDir/include/vtk/Imaging/*.txx") then
+  cp $VisItDir/include/vtk/Imaging/*.txx        $incdir/vtk/Imaging
+endif
 cp $VisItDir/include/vtk/MangleMesaInclude/*.h  $incdir/vtk/MangleMesaInclude
-cp $VisItDir/include/vtk/MangleMesaInclude/*.txx $incdir/vtk/MangleMesaInclude
+if(-e "$VisItDir/include/vtk/MangleMesaInclude/*.txx") then
+  cp $VisItDir/include/vtk/MangleMesaInclude/*.txx $incdir/vtk/MangleMesaInclude
+endif
 cp $VisItDir/include/vtk/Rendering/*.h          $incdir/vtk/Rendering
-cp $VisItDir/include/vtk/Rendering/*.txx        $incdir/vtk/Rendering
+if(-e "$VisItDir/include/vtk/Rendering/*.txx") then
+  cp $VisItDir/include/vtk/Rendering/*.txx      $incdir/vtk/Rendering
+endif
 cp $VisItDir/include/vtk/Utilities/*.h          $incdir/vtk/Utilities
-cp $VisItDir/include/vtk/Utilities/*.txx        $incdir/vtk/Utilities
+if(-e "$VisItDir/include/vtk/Utilities/*.txx") then
+  cp $VisItDir/include/vtk/Utilities/*.txx      $incdir/vtk/Utilities
+endif
 cp $VisItDir/include/vtk/Utilities/vtkexpat/*.h $incdir/vtk/Utilities/vtkexpat
 cp $VisItDir/include/vtk/Utilities/vtktiff/*.h  $incdir/vtk/Utilities/vtktiff
 cp $VisItDir/include/vtk/Utilities/vtkzlib/*.h  $incdir/vtk/Utilities/vtkzlib
@@ -1030,14 +1113,24 @@ cp $VisItDir/include/qt/private/*.h             $incdir/qt/private
 if (-e $VisItDir/help) then
    echo "Copying help files to the distribution..."
    cp $VisItDir/help/[a-gi-z]*.html    $helpdir
-   cp $VisItDir/help/h[a-df-z]*.html   $helpdir
-   cp $VisItDir/help/he[a-km-z]*.html  $helpdir
-   cp $VisItDir/help/hel[a-oq-z]*.html $helpdir
-   cp $VisItDir/help/help[a-z]*.html   $helpdir
+   if(-e "$VisItDir/help/h[a-df-z]*.html") then
+     cp $VisItDir/help/h[a-df-z]*.html $helpdir
+   endif
+   if(-e "$VisItDir/help/he[a-km-z]*.html") then
+     cp $VisItDir/help/he[a-km-z]*.html $helpdir
+   endif
+   if(-e "$VisItDir/help/hel[a-oq-z]*.html") then
+     cp $VisItDir/help/hel[a-oq-z]*.html $helpdir
+   endif
+   if(-e "$VisItDir/help/help[a-z]*.html") then
+     cp $VisItDir/help/help[a-z]*.html $helpdir
+   endif
    cp $VisItDir/help/help0[01]*.html   $helpdir
    cp $VisItDir/help/help0[23]*.html   $helpdir
    cp $VisItDir/help/help0[45]*.html   $helpdir
-   cp $VisItDir/help/help0[67]*.html   $helpdir
+   if(-e "$VisItDir/help/help0[67]*.html") then
+     cp $VisItDir/help/help0[67]*.html $helpdir
+   endif
    if (-e $VisItDir/help/visit.helpml) then
       cp $VisItDir/help/visit.helpml $helpdir
    endif

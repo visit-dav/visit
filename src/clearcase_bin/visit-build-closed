@@ -19,11 +19,9 @@ user=`whoami`
 #
 # Parse the execute line, providing default values for error checking.
 #
-hitit=true
 crier=true
 sunset=true
 sc=true
-ice=true
 purple=true
 lilac=true
 gauss=true
@@ -40,23 +38,13 @@ for abc
 do
    case $1 in
       -none)
-         hitit=false
          crier=false
          sunset=false
          sc=false
-         ice=false
          purple=false
          lilac=false
          gauss=false
          hopi=false
-         shift
-         ;;
-      -hitit)
-         hitit=false
-         shift
-         ;;
-      +hitit)
-         hitit=true
          shift
          ;;
       -crier)
@@ -81,14 +69,6 @@ do
          ;;
       +sc)
          sc=true
-         shift
-         ;;
-      -ice)
-         ice=false
-         shift
-         ;;
-      +ice)
-         ice=true
          shift
          ;;
       -purple)
@@ -147,62 +127,6 @@ if [ ! -f $distfile ]
 then
    echo "Distribution file doesn't exist."
    exit
-fi
-
-#
-# Build on hitit.
-#
-rm -f hitit
-cat <<EOF > hitit
-#!/bin/sh
-if test ! -e /gscratch/$user ; then
-   mkdir /gscratch/$user
-fi
-if test ! -e /gscratch/$user/hitit ; then
-   mkdir /gscratch/$user/hitit
-fi
-rm -rf /gscratch/$user/hitit/visitbuild
-mkdir /gscratch/$user/hitit/visitbuild
-mv hitit_$dist.tar.gz /gscratch/$user/hitit/visitbuild/$dist.tar.gz
-cd /gscratch/$user/hitit/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib
-export LD_LIBRARY_PATH
-env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
-cp /usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib/libgcc_s.so.1 lib
-cp /usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib/libstdc++.so.5 lib
-cd databases/Fluent
-sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
-cd ../..
-make -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on hitit"        > resultlog 2>&1
-echo "       -------------------------"       >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
- 
-if [ $hitit = true ]
-then
-   if [ $test = no ]
-   then
-      scp -P 22 hitit hitit:hitit_buildit
-      scp -P 22 $dist.tar.gz hitit:hitit_$dist.tar.gz
-      ssh -p 22 hitit "chmod 750 hitit_buildit;./hitit_buildit" &
-   fi
 fi
 
 #
@@ -363,56 +287,6 @@ then
 fi
 
 #
-# Build on ice, both serial and parallel versions.
-#
-rm -f ice
-cat <<EOF > ice
-#!/bin/sh
-PATH=/usr/local/bin:\$PATH
-if test ! -d /p/gi1/$user ; then
-   mkdir /p/gi1/$user
-fi
-if test ! -d /p/gi1/$user/ice ; then
-   mkdir /p/gi1/$user/ice
-fi
-rm -rf /p/gi1/$user/ice/visitbuild
-mkdir /p/gi1/$user/ice/visitbuild
-mv ice_$dist.tar.gz /p/gi1/$user/ice/visitbuild/$dist.tar.gz
-cd /p/gi1/$user/ice/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-cp /usr/gapps/visit/bz2/bzlib.h include
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-gmake -j 6 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
-mv visit\$ver2.aix.tar.gz ..
-cd ..
-echo "        build of visit on ice"          > resultlog 2>&1
-echo "       -----------------------"         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-EOF
-
-if [ $ice = true ]
-then
-   if [ $test = no ]
-   then
-      scp ice ice:ice_buildit
-      scp $dist.tar.gz ice:ice_$dist.tar.gz
-      ssh ice "chmod 750 ice_buildit;./ice_buildit" &
-   fi
-fi
-
-#
 # Build on purple, both serial and parallel versions.
 #
 rm -f purple
@@ -430,18 +304,41 @@ mkdir /p/gscratch3/$user/purple/visitbuild
 mv purple_$dist.tar.gz /p/gscratch3/$user/purple/visitbuild/$dist.tar.gz
 cd /p/gscratch3/$user/purple/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
+mv $dist ${dist}_32
+cd ${dist}_32
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
+OBJECT_MODE=32
+export OBJECT_MODE
+env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/purple1441_32.conf >> ../buildlog 2>&1
+gmake -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
+mv visit\$ver2.aix.tar.gz ..
+cd ..
+gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
+cd $dist
+OBJECT_MODE=64
+export OBJECT_MODE
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -compiler xlc -make gmake >> ../buildlog 2>&1
-mv visit\$ver2.aix64-xlc.tar.gz ..
+clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
+mv visit\$ver2.aix64.tar.gz ..
 cd ..
 echo "        build of visit on purple"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "            32 bit build"               >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls ${dist}_32/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls ${dist}_32/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls ${dist}_32/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls ${dist}_32/plugins/databases/libI* | sed "s/${dist}_32\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "            64 bit build"               >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
 echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
@@ -616,5 +513,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hitit crier sunset sc ice purple lilac gauss hopi
+   rm -f crier sunset sc purple lilac gauss hopi
 fi

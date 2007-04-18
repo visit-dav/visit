@@ -50,10 +50,7 @@ esac
 hoth=true
 sunspot=true
 quad=true
-berg=true
 up=true
-pengra=true
-pengra_icc=true
 thunder=true
 prism=true
 yana=true
@@ -74,10 +71,7 @@ do
          hoth=false
          sunspot=false
          quad=false
-         berg=false
          up=false
-         pengra=false
-         pengra_icc=false
          thunder=false
          prism=false
          yana=false
@@ -109,36 +103,12 @@ do
          quad=true
          shift
          ;;
-      -berg)
-         berg=false
-         shift
-         ;;
-      +berg)
-         berg=true
-         shift
-         ;;
       -up)
          up=false
          shift
          ;;
       +up)
          up=true
-         shift
-         ;;
-      -pengra)
-         pengra=false
-         shift
-         ;;
-      +pengra)
-         pengra=true
-         shift
-         ;;
-      -pengra_icc)
-         pengra_icc=false
-         shift
-         ;;
-      +pengra_icc)
-         pengra_icc=true
          shift
          ;;
       -thunder)
@@ -227,7 +197,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure --enable-parallel --enable-viewer-mesa-stub --enable-visitmodule >> ../buildlog 2>&1
 make -j 4 >> ../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
 mv visit\$ver2.linux.tar.gz ..
@@ -361,62 +331,12 @@ then
 fi
 
 #
-# Build on berg, both serial and parallel versions.
-#
-rm -f berg
-cat <<EOF > berg
-#!/bin/sh
-if test ! -e /g/g17/$user ; then
-   mkdir /g/g17/$user
-fi
-if test ! -e /g/g17/$user/berg ; then
-   mkdir /g/g17/$user/berg
-fi
-rm -rf /g/g17/$user/berg/visitbuild
-mkdir /g/g17/$user/berg/visitbuild
-mv berg_$dist.tar.gz /g/g17/$user/berg/visitbuild/$dist.tar.gz
-cd /g/g17/$user/berg/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-gmake -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
-mv visit\$ver2.aix.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on berg"         > resultlog 2>&1
-echo "       ------------------------"        >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $berg = true ]
-then
-   if [ $test = no ]
-   then
-      scp berg berg:berg_buildit
-      scp $dist.tar.gz berg:berg_$dist.tar.gz
-      ssh berg "chmod 750 berg_buildit;./berg_buildit" &
-   fi
-fi
-
-#
 # Build on up, both serial and parallel versions.
 #
 rm -f up
 cat <<EOF > up
 #!/bin/sh
-PATH=/usr/local/bin:$PATH
+PATH=/usr/local/bin:\$PATH
 if test ! -d /p/gup1/$user ; then
    mkdir /p/gup1/$user
 fi
@@ -428,18 +348,41 @@ mkdir /p/gup1/$user/up/visitbuild
 mv up_$dist.tar.gz /p/gup1/$user/up/visitbuild/$dist.tar.gz
 cd /p/gup1/$user/up/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
+mv $dist ${dist}_32
+cd ${dist}_32
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
+OBJECT_MODE=32
+export OBJECT_MODE
+env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/up041_32.conf >> ../buildlog 2>&1
+gmake -j 4 >> ../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
+mv visit\$ver2.aix.tar.gz ..
+cd ..
+gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
+cd $dist
+OBJECT_MODE=64
+export OBJECT_MODE
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
 gmake -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -compiler xlc -make gmake >> ../buildlog 2>&1
-mv visit\$ver2.aix64-xlc.tar.gz ..
+clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
+mv visit\$ver2.aix64.tar.gz ..
 cd ..
 echo "        build of visit on up"           > resultlog 2>&1
 echo "       ----------------------"          >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "            32 bit build"               >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls ${dist}_32/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls ${dist}_32/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls ${dist}_32/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls ${dist}_32/plugins/databases/libI* | sed "s/${dist}_32\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "            64 bit build"               >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
 echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
@@ -457,106 +400,6 @@ then
       scp up up:up_buildit
       scp $dist.tar.gz up:up_$dist.tar.gz
       ssh up "chmod 750 up_buildit;./up_buildit" &
-   fi
-fi
-
-#
-# Build on pengra.
-#
-rm -f pengra
-cat <<EOF > pengra
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/pengra ; then
-   mkdir /usr/tmp/$user/pengra
-fi
-rm -rf /usr/tmp/$user/pengra/visitbuild
-mkdir /usr/tmp/$user/pengra/visitbuild
-mv pengra_$dist.tar.gz /usr/tmp/$user/pengra/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/pengra/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
-make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on pengra"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $pengra = true ]
-then
-   if [ $test = no ]
-   then
-      scp pengra pengra1:pengra_buildit
-      scp $dist.tar.gz pengra1:pengra_$dist.tar.gz
-      ssh pengra1 "chmod 750 pengra_buildit;./pengra_buildit" &
-   fi
-fi
-
-#
-# Build an icc version on pengra.
-#
-rm -f pengra_icc
-cat <<EOF > pengra_icc
-#!/bin/sh
-if test ! -d /usr/tmp/$user ; then
-   mkdir /usr/tmp/$user
-fi
-if test ! -d /usr/tmp/$user/pengra ; then
-   mkdir /usr/tmp/$user/pengra
-fi
-rm -rf /usr/tmp/$user/pengra/visitbuild
-mkdir /usr/tmp/$user/pengra/visitbuild
-mv pengra_icc_$dist.tar.gz /usr/tmp/$user/pengra/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/pengra/visitbuild
-gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
-ver=\`cat VERSION\`
-ver2=\`echo \$ver | tr "." "_"\`
-env CC=icc CXX=icpc CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../buildlog 2>&1
-make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -compiler icc >> ../buildlog 2>&1
-mv visit\$ver2.linux-icc.tar.gz ..
-cd ..
-rm -f resultlog
-echo "        build of visit on pengra_icc"   > resultlog 2>&1
-echo "       ------------------------------"  >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-ls -l                                         >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
-echo ""                                       >> resultlog 2>&1
-echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
-EOF
-
-if [ $pengra_icc = true ]
-then
-   if [ $test = no ]
-   then
-      scp pengra_icc pengra2:pengra_icc_buildit
-      scp $dist.tar.gz pengra2:pengra_icc_$dist.tar.gz
-      ssh pengra2 "chmod 750 pengra_icc_buildit;./pengra_icc_buildit" &
    fi
 fi
 
@@ -822,5 +665,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad berg up pengra pengra_icc thunder prism yana xchem davinci
+   rm -f hoth sunspot quad up thunder prism yana xchem davinci
 fi

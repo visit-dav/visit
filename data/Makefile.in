@@ -270,6 +270,9 @@
 #   Eric Brugger, Thu Mar 22 10:33:51 PDT 2007
 #   Added MESA_LIBS and GL_LIBS since they are no longer included in VTK_LIBS.
 #
+#   Thomas R. Treadway, Tue Mar 27 15:23:50 PDT 2007
+#   corrected synrax error
+#
 ##############################################################################
 
 ##
@@ -387,7 +390,7 @@ testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./
 	   ./emptydomains -driver DB_HDF5;\
 	   ./galaxy -driver DB_HDF5;\
 	   ./csg -driver DB_HDF5;\
-           ./lowfrac -driver DB_HDF5;\
+	   ./lowfrac -driver DB_HDF5;\
 	   ./one_quad -driver DB_HDF5; \
 	   ./fullframe -driver DB_HDF5; \
 	else \

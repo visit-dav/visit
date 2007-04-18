@@ -41,6 +41,7 @@
 
 #include <avtMirandaFileFormat.h>
 
+#include <inttypes.h>
 #include <string>
 #ifdef _WIN32
 #include <direct.h> /* for _getcwd */

@@ -62,6 +62,9 @@
 #    Jeremy Meredith, Fri Jul 12 14:37:24 PDT 2002
 #    Unified include directories.
 #
+#    Thomas R. Treadway, Tue Mar 27 13:16:25 PDT 2007
+#    Added $(MESA_LIBS)
+#
 ##############################################################################
 
 ##
@@ -81,8 +84,9 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=.o)
 LIB=libprep
-SERLIBS=-lpipeline_ser -lavtexceptions -lmisc -lstate -lutility @VTK_LIBS@ $(X_LIBS)
-PARLIBS=-lpipeline_par -lavtexceptions -lmisc -lstate -lutility @VTK_LIBS@ $(X_LIBS) @SHLIB_MPI_LIBS@
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS)
+SERLIBS=-lpipeline_ser -lavtexceptions -lmisc -lstate -lutility @VTK_LIBS@ $(X_LIBS) $(LIBS_FOR_MACOSX_PREBINDING)
+PARLIBS=-lpipeline_par -lavtexceptions -lmisc -lstate -lutility @VTK_LIBS@ $(X_LIBS) @SHLIB_MPI_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING)
 
 ##
 ## Standard targets...

@@ -39,6 +39,7 @@
 //                         avtMeshLogFilter.C                                //
 // ************************************************************************* // 
 
+#include <math.h>
 
 #include <avtMeshLogFilter.h>
 #include <vtkFloatArray.h>
@@ -226,7 +227,11 @@ avtMeshLogFilter::ScaleVal(double &v, bool invLog)
 void
 avtMeshLogFilter::ScaleVal_log(float &v)
 {
+#if defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 2) || (__GNUC__ == 3 && __GNUC_MINOR__ == 2 && __GNUC_PATCHLEVEL__ == 0))
+    v = log10(fabs(v) + SMALL);
+#else
     v = log10(fabsf(v) + SMALL);
+#endif
 }
 
 void
@@ -238,7 +243,11 @@ avtMeshLogFilter::ScaleVal_log(double &v)
 void
 avtMeshLogFilter::ScaleVal_invlog(float &v)
 {
+#if defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 2) || (__GNUC__ == 3 && __GNUC_MINOR__ == 2 && __GNUC_PATCHLEVEL__ == 0))
+    v = pow(10., v);
+#else
     v = powf(10.f, v);
+#endif
 }
 
 void

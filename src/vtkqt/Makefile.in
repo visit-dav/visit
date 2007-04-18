@@ -95,6 +95,10 @@
 #    Eric Brugger, Mon Jul 26 15:38:44 PDT 2004
 #    I added -I../include/visit to pick up visitstream.h.
 #
+#    Thomas R. Treadway, Tue Mar 27 11:25:23 PDT 2007
+#    Added Mesa libraries to link, they were being  referenced from
+#    the libvtkRendering, libvtkftgl, libvtkHybrid, etc.
+#
 ##############################################################################
 
 ##
@@ -120,7 +124,7 @@ MOCOBJ=$(MOCSRC:.C=.o)
 
 OBJ=$(SRC:.C=.o) $(MOCOBJ)
 LIB=libvtkqt
-LIBS=@QT_LDFLAGS@ @QT_LIBS@ @VTK_LIBS@ $(X_LIBS)
+LIBS=@QT_LDFLAGS@ @QT_LIBS@ @VTK_LIBS@ @MESA_LIBS@ $(X_LIBS)
 
 ##
 ## Standard targets...

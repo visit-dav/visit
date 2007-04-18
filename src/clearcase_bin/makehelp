@@ -128,7 +128,7 @@ end
 # If we're doing more than converting then run mif2help.
 if ("$MIFOnly" == "FALSE") then
     # If the tool is built then proceed.
-    if(-e mif2help) then
+    if(-e $helpPath/mif2help) then
         # Create a list of MIF files to pass to mif2help.
         set mifargs = " "
         foreach input ($inputFiles)
@@ -137,7 +137,7 @@ if ("$MIFOnly" == "FALSE") then
             set mifargs = "$tmpvar"
         end
 
-        mif2help $mifargs
+        $helpPath/mif2help $mifargs
     else
         echo "The mif2help tool failed to build."
     endif

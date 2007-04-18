@@ -70,5 +70,14 @@ GLboolean OSMesaGetColorBuffer( OSMesaContext c, GLint *width, GLint *height,
                                 GLint *format, void **buffer )
 {}
 
+/*
+ * Return pointer to the named function.
+ * New in Mesa 4.1
+ * Return OSMESAproc in 6.3.    
+ */
+#if (OSMESA_MAJOR_VERSION > 6) || ((OSMESA_MAJOR_VERSION == 6) && (OSMESA_MINOR_VERSION > 2)) 
+OSMESAproc OSMesaGetProcAddress( const char *funcName )
+#else
 void *OSMesaGetProcAddress( const char *funcName )
+#endif
 {}

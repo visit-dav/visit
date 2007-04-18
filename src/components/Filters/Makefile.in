@@ -101,6 +101,9 @@
 #    Kathleen Bonnell, Thu Mar 22 15:18:02 PDT 2007 
 #    Added avtMeshLogFilter.
 #
+#    Thomas R. Treadway, Tue Mar 27 12:18:12 PDT 2007
+#    Added Mesa libraries.
+#
 ##############################################################################
 
 ##
@@ -155,7 +158,7 @@ CPPFLAGS=-I../../include @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtfilters
-LIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS)
 COMMONLIBS=-ldbatts -lstate -lcomm -lmisc -lavtexceptions -lexpr -lparser -lutility -lavtview -lvisit_vtk -llightweight_visit_vtk $(LIBS_FOR_MACOSX_PREBINDING)
 SERLIBS=$(COMMONLIBS) -lpipeline_ser -lavtmath_ser $(VTK_LIBS)
 PARLIBS=$(COMMONLIBS) -lpipeline_par -lavtmath_par $(VTK_LIBS)

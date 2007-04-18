@@ -63,6 +63,9 @@
 #    Added more libraries to the link line to make prelinking possible on
 #    MacOS X systems.
 #
+#    Thomas R. Treadway, Tue Mar 27 12:09:41 PDT 2007
+#    Added Mesa libraries.
+#
 ##############################################################################
 
 ##
@@ -81,7 +84,7 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 
 OBJ=$(SRC:.C=.o)
 LIB=libavtview
-LIBS=-lavtexceptions -lstate -lmisc -lcomm -lutility -lvisit_vtk -llightweight_visit_vtk $(VTK_LIBS)
+LIBS=-lavtexceptions -lstate -lmisc -lcomm -lutility -lvisit_vtk -llightweight_visit_vtk $(VTK_LIBS) $(MESA_LIBS)
 
 ##
 ## Standard targets...
