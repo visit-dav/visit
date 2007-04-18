@@ -416,6 +416,9 @@ class ViewerToolbar;
 //    Brad Whitlock, Mon Mar 26 14:49:15 PST 2007
 //    Added argument to CopyAnnotationObjectList.
 //
+//    Kathleen Bonnell, Wed Apr  4 10:08:27 PDT 2007 
+//    Added GetScaleMode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -654,6 +657,7 @@ public:
                    int &dom, int &elNum, bool &forCell);
 
     void SetScaleMode(ScaleMode ds, ScaleMode rs);
+    void GetScaleMode(ScaleMode &ds, ScaleMode &rs);
 
 private:
     void RecenterViewCurve(const double *limits);

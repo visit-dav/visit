@@ -5364,6 +5364,8 @@ ViewerPlot::AlternateDisplayAllowClientUpdates() const
 // Creation:   March 6, 2007
 //
 // Modifications:
+//   Kathlen Bonnell, Tue Apr  3 17:17:33 PDT 2007
+//   Don't re-execute unnecessarily.
 //   
 // ****************************************************************************
 
@@ -5372,20 +5374,26 @@ ViewerPlot::SetScaleMode(ScaleMode ds, ScaleMode rs)
 {
     xScaleMode = ds;
     yScaleMode = rs;
+
+    bool doUpdate = false;
     for(int i = 0; i < cacheSize; ++i)
     {
         if (*plotList[i] != 0)
-            plotList[i]->SetScaleMode(ds, rs);
+        {
+            doUpdate = plotList[i]->SetScaleMode(ds, rs);
+        }
     }
+    if (doUpdate)
+    {
+        avtDataObjectReader_p reader = GetReader(); 
+        avtActor_p actor = plotList[cacheIndex]->Execute(reader);
 
-    avtDataObjectReader_p reader = GetReader(); 
-    avtActor_p actor = plotList[cacheIndex]->Execute(reader);
+        this->SetActor(actor);
+        actor->SetTypeName(GetPlotTypeName());
+        actor->SetActorName(GetPlotName().c_str());
 
-    this->SetActor(actor);
-    actor->SetTypeName(GetPlotTypeName());
-    actor->SetActorName(GetPlotName().c_str());
-
-    // Indicate that this plot has no error.
-    this->errorFlag = false;
+        // Indicate that this plot has no error.
+        this->errorFlag = false;
+    }
 }
 

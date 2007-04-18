@@ -113,7 +113,7 @@ avtActor::~avtActor()
 
     if(actorName != NULL)
     {
-        delete actorName;
+        delete [] actorName;
         actorName = NULL;
     }
 }

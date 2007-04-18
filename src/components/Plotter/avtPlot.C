@@ -1210,12 +1210,19 @@ avtPlot::SetCurrentExtents(avtDataObject_p curDS)
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 6, 2007 
+// 
+//  Modifications:
+//    Kathleen Bonnell, Tue Apr  3 16:06:54 PDT 2007
+//    Made execution dependent upon this plot allowing curve view scaling.
 //
 // ****************************************************************************
 
 avtDataObject_p
 avtPlot::SetScaleMode(avtDataObject_p curDS)
 {
+    if (!CanDoCurveViewScaling())
+        return curDS;
+
     if (!havePerformedLogX && !havePerformedLogY && 
         xScaleMode == LINEAR && yScaleMode == LINEAR)
     {
@@ -1279,7 +1286,6 @@ avtPlot::SetScaleMode(avtDataObject_p curDS)
     logMeshFilter->SetYScaleMode(useYScaleMode);
     logMeshFilter->SetUseInvLogX(useInvLogX);
     logMeshFilter->SetUseInvLogY(useInvLogY);
-    logMeshFilter->SetYScaleMode(useYScaleMode);
     rv = logMeshFilter->GetOutput();
     havePerformedLogX = (xScaleMode == LOG);
     havePerformedLogY = (yScaleMode == LOG);
@@ -1465,13 +1471,21 @@ avtPlot::GetPlotInfoAtts()
 //  Creation:   March 6, 2007 
 //
 //  Modifications:
+//    Kathleen Bonnell, Tue Apr  3 16:06:54 PDT 2007
+//    Don't set scale modes if this plot doesn't support curve view scaling.
 //
 // ****************************************************************************
 
-void
+bool
 avtPlot::SetScaleMode(ScaleMode ds, ScaleMode rs)
 {
-    xScaleMode = ds;
-    yScaleMode = rs;
+    bool retval = false;
+    if (CanDoCurveViewScaling())
+    {
+        xScaleMode = ds;
+        yScaleMode = rs;
+        retval = true;
+    }
+    return retval;
 }
 

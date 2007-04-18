@@ -749,6 +749,9 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
 //   as we do when reading the mesh dims to remove trailing 1's.  Also,
 //   print to debug4 the valid dimensions array instead of the raw one.
 //
+//   Jeremy Meredith, Wed Apr  4 14:01:40 EDT 2007
+//   Adjusted to account for an occasional "4-dimensional" mesh.
+//
 // ****************************************************************************
 
 #ifdef PARALLEL
@@ -761,11 +764,11 @@ avtBasicNETCDFFileFormat::GetMesh(const char *var)
             debug4 << "Allocated a " << \
                     #VTKTYPE \
                    << " of " << nElems << " elements" << endl; \
-            int rdimStarts[3], rdimCounts[3];\
-            for (int kk = 0; kk < 3; kk++)\
+            int rdimStarts[4]={0,0,0,0}, rdimCounts[4]={1,1,1,1};\
+            for (int kk = 0; kk < nValidDims; kk++)\
             {\
-                rdimStarts[kk] = dimStarts[ndims-kk-1];\
-                rdimCounts[kk] = dimCounts[ndims-kk-1];\
+                rdimStarts[ndims-kk-1] = dimStarts[kk];\
+                rdimCounts[ndims-kk-1] = dimCounts[kk];\
             }\
             if(fileObject->ReadVariableInto(var, t, rdimStarts, rdimCounts,\
                                             arr->GetVoidPointer(0)))\
