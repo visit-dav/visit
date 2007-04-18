@@ -167,6 +167,10 @@ $0 = shift @ARGV;
 #    Treat the platformDir like all of the others, allowing darwin-ppc,
 #    darwin-i386, [or darwin (universal) directory].
 #
+#    Eric Brugger, Fri Apr  6 13:54:55 PDT 2007
+#    Modified the script to not dump core files if running a parallel
+#    engine using either psub or qsub.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1301,10 +1305,12 @@ if ($procs_set or ($parallel and $parlaunch_set))
         if (grep(/csh/, "$ENV{SHELL}"))
         {
             $libpathcmd="setenv LIBPATH $ENV{LIBPATH} ; setenv LD_LIBRARY_PATH $ENV{LIBPATH}";
+            $limitcmd="limit coredumpsize 0";
         }
         else
         {
             $libpathcmd="LIBPATH=$ENV{LIBPATH} ; export LIBPATH ; LD_LIBRARY_PATH=$ENV{LIBPATH} ; export LD_LIBRARY_PATH";
+            $limitcmd="ulimit -c 0";
         }
         if ($security_key_set) { push @visitcmd, "-key", $security_key; }
         push @visitcmd, @post_args;
@@ -1330,7 +1336,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, "-b",  $bank  if $bank_set;
         push @parcmd, "-tM", $time  if $time_set;
         push @parcmd, "-expedite"   if $expedite_engine;
-        push @parcmd, "-i", "cd $cwd ; $libpathcmd ; ".
+        push @parcmd, "-i", "cd $cwd ; $limitcmd ; $libpathcmd ; ".
                             " $sublauncher $sublauncherargs @visitcmd";
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
@@ -1382,6 +1388,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @visitcmd, @post_args;
 
             $cdcmd     = "cd $cwd\n";
+            $limitcmd  = "limit coredumpsize 0\n";
             $libcmd    = "setenv LIBPATH $ENV{LIBPATH}\n";
             $ldlibcmd  = "setenv LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH}\n";
             $plugincmd = "setenv VISITPLUGINDIR $ENV{VISITPLUGINDIR}\n";
@@ -1402,6 +1409,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
             print TFILE "#!/bin/tcsh\n";
             print TFILE $cdcmd;
+            print TFILE $limitcmd;
             print TFILE $libcmd;
             print TFILE $ldlibcmd;
             print TFILE $plugincmd;
@@ -1423,6 +1431,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             @printcmd = @parcmd;
             push @parcmd, $tfilename;
             push @printcmd, $cdcmd;
+            push @printcmd, $limitcmd;
             push @printcmd, $libcmd; 
             push @printcmd, $ldlibcmd; 
             push @printcmd, $plugincmd; 

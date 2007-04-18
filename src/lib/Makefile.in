@@ -136,6 +136,9 @@
 #    Thomas R. Treadway, Mon Mar 26 16:35:27 PDT 2007
 #    Appears libGLU was added to the release.
 #
+#    Eric Brugger, Fri Apr  6 14:07:02 PDT 2007
+#    Removed links for libvtkexoIIc and libvtkNetCDF.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -158,8 +161,6 @@ LIBVTKTIFF=libvtktiff.@SHLIB_LIBEXT@
 LIBVTKFREETYPE=libvtkfreetype.@SHLIB_LIBEXT@
 LIBVTKFTGL=libvtkftgl.@SHLIB_LIBEXT@
 LIBVTKSYS=libvtksys.@SHLIB_LIBEXT@
-LIBVTKEXOIIC=libvtkexoIIc.@SHLIB_LIBEXT@
-LIBVTKNETCDF=libvtkNetCDF.@SHLIB_LIBEXT@
 LIBVTKMPEG2ENCODE=libvtkMPEG2Encode.@SHLIB_LIBEXT@
 LIBMESAGL=libMesaGL.@SHLIB_LIBEXT@
 LIBGLU=libGLU.@SHLIB_LIBEXT@
@@ -172,8 +173,8 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 # with the make on AIX systems.
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
-     libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys libvtkexoIIc \
-     libvtknetcdf libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ @CREATE_CFITSIO_LINK@
+     libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys \
+     libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ @CREATE_CFITSIO_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)*
@@ -238,14 +239,6 @@ libvtkftgl:
 libvtksys:
 	$(RM) $(LIBVTKSYS)*
 	ln -s @VTK_DIR@/lib/$(LIBVTKSYS)*  .
-
-libvtkexoIIc:
-	$(RM) $(LIBVTKEXOIIC)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKEXOIIC)*  .
-
-libvtknetcdf:
-	$(RM) $(LIBVTKNETCDF)*
-	ln -s @VTK_DIR@/lib/$(LIBVTKNETCDF)*  .
 
 libvtkmpeg2encode:
 	$(RM) $(LIBVTKMPEG2ENCODE)*

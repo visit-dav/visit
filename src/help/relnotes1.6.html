@@ -15,7 +15,7 @@
 enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Features added in version 1.6</font></b></p>
 <ul>
-<li>VisIt's is now more proactive about deleting intermediate copies of datasets. Consequently, VisIt's memory footprint while processing data has been drastically reduced.</li>
+<li>VisIt is now more proactive about deleting intermediate copies of datasets. Consequently, VisIt's memory footprint while processing data has been drastically reduced.</li>
 <li>VisIt's treatment of rectilinear and curvilinear meshes has been substantially improved so rendering them is faster and uses far less memory. 
 Specific improvements include:</li>
 <p><ul>
@@ -78,7 +78,7 @@ variables or arrays which represent energy groups.</li>
 <li>VisIt's NETCDF database reader better handles meshes with extra dimensions of 1 and no longer allocates too much memory in those situations.</li>
 <li>Performance and memory usage in VisIt's FVCOM database reader have been 
 improved.</li>
-<li>When 3D texturing is not available, the Volume plot should issue a warning.</li>
+<li>When 3D texturing is not available, the Volume plot now issues a warning.</li>
 <li>VisIt now uses Python 2.5.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.6</font></b></p>
@@ -104,7 +104,7 @@ improved.</li>
 <li>The <i>Point mesh</i> option in VisIt's Threshold operator ignores subset selection.</li>
 <li>Malformed color tables can terminate VisIt and the Windowing system in the MacOS X / PPC version of VisIt.</li>
 <li>VisIt's Point3D database reader does not release memory when requested to do so and this results in an out of memory condition that eventually causes the compute engine to exit.</li>
-<li>VisIt's VisSUS database reader does not work on 64-bit AIX computers.</li>
+<li>VisIt's ViSUS database reader does not work on 64-bit AIX computers.</li>
 <li>Complex expressions involving constants and multiple other variables of different 
 variable-centering can confuse VisIt and lead to incorrect results for the Isovolume operator.</li>
 <li>Drawing a transparent plot after having plotted a Histogram plot causes the transparent plot to appear flat.</li>

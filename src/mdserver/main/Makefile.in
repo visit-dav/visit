@@ -195,6 +195,10 @@
 #    Thomas R. Treadway, Thu Apr  5 16:07:06 PDT 2007
 #    Removed vtk_libs and $(MESA_LIBS)
 #
+#    Eric Brugger, Fri Apr  6 10:11:56 PDT 2007
+#    Changed $(PREBIND_LIBS) to @PREBIND_LIBS@ in the LIBS list.  Corrected
+#    a comment.
+#
 ##############################################################################
 
 ##
@@ -202,10 +206,6 @@
 ##
 @SET_MAKE@
 @VARIABLES@
-
-# Libraries to use in prebinding. Some library has indirectly required the
-# use of visit_vtk. Not good. And the list grows
-PREBIND_LIBS=$(GLEW_LIBS)
 
 LIBS= \
     -lexpr \
@@ -224,7 +224,7 @@ LIBS= \
     -lutility \
     -llightweight_visit_vtk \
     @VTK_LIGHTWEIGHT_LIBS@ \
-    $(PREBIND_LIBS) \
+    @PREBIND_LIBS@ \
     $(BZIP2_LIBS) \
     @LIBS@ \
     @PTHREAD_LIB@
