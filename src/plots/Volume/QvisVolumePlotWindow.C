@@ -251,6 +251,9 @@ QvisVolumePlotWindow::~QvisVolumePlotWindow()
 //   Hank Childs, Thu Sep 14 09:44:50 PDT 2006
 //   I qualified the integration mode to include "grey scale".
 //
+//   Brad Whitlock, Fri Mar 30 15:50:25 PST 2007
+//   Changed the layouts so they do not have so much extra space.
+//
 // ****************************************************************************
 
 void
@@ -291,7 +294,7 @@ QvisVolumePlotWindow::CreateWindowContents()
             this, SLOT(alignControlPoints()));
     seLayout->addWidget(alignPointButton);
     seLayout->addSpacing(5);
-    seLayout->addStretch(10);
+    seLayout->addStretch(20);
 
     smoothCheckBox = new QCheckBox("Smooth", colorWidgetGroup, "smoothCheckbox");
     smoothCheckBox->setChecked(true);
@@ -303,7 +306,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     connect(equalCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(equalSpacingToggled(bool)));
     seLayout->addWidget(equalCheckBox);
-    topLayout->addSpacing(5);
+    topLayout->addSpacing(10);
 
     // Add the spectrum bar to the window.
     connect(spectrumBar, SIGNAL(selectColor(int)),
@@ -313,44 +316,40 @@ QvisVolumePlotWindow::CreateWindowContents()
     innerColorLayout->addSpacing(10);
 
     // Create the color min widgets.
-    QHBoxLayout *colorMinMaxLayout = new QHBoxLayout(innerColorLayout);
-    colorMinMaxLayout->setSpacing(5);
-    colorMinMaxLayout->setMargin(5);
+    QGridLayout *colorScaleLayout = new QGridLayout(innerColorLayout, 3, 4);
+    innerColorLayout->addSpacing(5);
+    colorScaleLayout->setSpacing(5);
     colorMinToggle = new QCheckBox("Min", colorWidgetGroup,
                                    "colorMinToggle");
     connect(colorMinToggle, SIGNAL(toggled(bool)),
             this, SLOT(colorMinToggled(bool)));
-    colorMinMaxLayout->addWidget(colorMinToggle);
+    colorScaleLayout->addWidget(colorMinToggle, 0, 0);
     colorMin = new QLineEdit(colorWidgetGroup, "colorMin");
     colorMin->setMaximumWidth(maxWidth);
     colorMin->setEnabled(volumeAtts->GetUseColorVarMin());
     connect(colorMin, SIGNAL(returnPressed()),
             this, SLOT(colorMinProcessText()));
-    colorMinMaxLayout->addWidget(colorMin);
+    colorScaleLayout->addWidget(colorMin, 0, 1);
 
     // Create the color max widgets.
     colorMaxToggle = new QCheckBox("Max", colorWidgetGroup,
                                    "colorMaxToggle");
     connect(colorMaxToggle, SIGNAL(toggled(bool)),
             this, SLOT(colorMaxToggled(bool)));
-    colorMinMaxLayout->addWidget(colorMaxToggle);
+    colorScaleLayout->addWidget(colorMaxToggle, 0, 2);
 
     colorMax = new QLineEdit(colorWidgetGroup, "colorMax");
     colorMax->setMaximumWidth(maxWidth);
     colorMax->setEnabled(volumeAtts->GetUseColorVarMax());
     connect(colorMax, SIGNAL(returnPressed()),
             this, SLOT(colorMaxProcessText()));
-    colorMinMaxLayout->addWidget(colorMax);
+    colorScaleLayout->addWidget(colorMax, 0, 3);
 
     //
     // Create the scale radio buttons
     //
-    QHBoxLayout *scaleLayout = new QHBoxLayout(innerColorLayout);
-    scaleLayout->setSpacing(5);
-    scaleLayout->setMargin(5);
     QLabel *scaleLabel = new QLabel("Scale", colorWidgetGroup, "scaleLabel");
-    scaleLabel->setAlignment(AlignHCenter | AlignVCenter);
-    scaleLayout->addWidget(scaleLabel);
+    colorScaleLayout->addWidget(scaleLabel, 1, 0);
 
     // Create the scaling button group 
     scalingButtons = new QButtonGroup(0, "scaleRadioGroup" );
@@ -359,17 +358,13 @@ QvisVolumePlotWindow::CreateWindowContents()
     QRadioButton *rb = new QRadioButton("Linear", colorWidgetGroup);
     rb->setChecked( TRUE );
     scalingButtons->insert(rb, 0);
-    scaleLayout->addWidget(rb);
+    colorScaleLayout->addWidget(rb, 1, 1);
     rb = new QRadioButton("Log10", colorWidgetGroup);
     scalingButtons->insert(rb, 1);
-    scaleLayout->addWidget(rb);
+    colorScaleLayout->addWidget(rb, 1, 2);
     rb = new QRadioButton("Skew", colorWidgetGroup);
     scalingButtons->insert(rb, 2);
-    scaleLayout->addWidget(rb);
-
-    QHBoxLayout *skewLayout = new QHBoxLayout(innerColorLayout);
-    skewLayout->setSpacing(5);
-    skewLayout->setMargin(5);
+    colorScaleLayout->addWidget(rb, 1, 3);
 
     // Create the skew factor line edit    
     skewLineEdit = new QNarrowLineEdit(colorWidgetGroup, "skewLineEdit");
@@ -379,8 +374,8 @@ QvisVolumePlotWindow::CreateWindowContents()
     skewLabel = new QLabel(skewLineEdit, "Skew factor  ", 
                            colorWidgetGroup, "skewFactor");
     skewLabel->setAlignment(AlignLeft | AlignVCenter);
-    skewLayout->addWidget(skewLabel);
-    skewLayout->addWidget(skewLineEdit);
+    colorScaleLayout->addWidget(skewLabel, 2, 0);
+    colorScaleLayout->addWidget(skewLineEdit, 2, 1);
  
     // Add the group box that will contain the opacity-related widgets.
     opacityWidgetGroup = new QGroupBox(central, "opacityWidgetGroup");
@@ -509,7 +504,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     opacityMinMaxLayout->addWidget(opacityMax);
 
     // Create the resample target value
-    QGridLayout *rendererOptionsLayout = new QGridLayout(topLayout, 7,3, 10, "rendererOptionsLayout");
+    QGridLayout *rendererOptionsLayout = new QGridLayout(topLayout, 7,3, 5, "rendererOptionsLayout");
     resampleTarget = new QLineEdit(central, "resampleTarget");
     connect(resampleTarget, SIGNAL(returnPressed()),
             this, SLOT(resampleTargetProcessText()));

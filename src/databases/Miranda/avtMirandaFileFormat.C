@@ -195,7 +195,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
             for (ii = 0 ; ii < nMats ; ii++)
             {
                 f >> aMatNames[ii];
-                SkipToEndOfLine( f );
+                SkipToEndOfLine( f, false );
             }
         }
         else if (STREQUAL("timesteps:", tag.c_str())==0)
@@ -333,7 +333,7 @@ avtMirandaFileFormat::avtMirandaFileFormat(const char *filename, DBOptionsAttrib
 // ****************************************************************************
 
 void 
-avtMirandaFileFormat::SkipToEndOfLine( ifstream &f )
+avtMirandaFileFormat::SkipToEndOfLine( ifstream &f, bool bCheckForBadTokens )
 {
     char buf[512];
     f.getline(buf, 512);
@@ -344,17 +344,20 @@ avtMirandaFileFormat::SkipToEndOfLine( ifstream &f )
         EXCEPTION1(InvalidDBTypeException, "Error parsing file." );
     }
 
-    int ii;
-    for (ii = 0 ; ii < len ; ii++)
+    if (bCheckForBadTokens)
     {
-        if (buf[ii] == '#')
+        int ii;
+        for (ii = 0 ; ii < len ; ii++)
         {
-            //The rest of the line is comments.  We're done
-            break;
-        }
-        if ((buf[ii] != ' ') && (buf[ii] != '\t') && (buf[ii] != '\n'))
-        {
-            EXCEPTION1(InvalidDBTypeException, "Error parsing file." );
+            if (buf[ii] == '#')
+            {
+                //The rest of the line is comments.  We're done
+                break;
+            }
+            if ((buf[ii] != ' ') && (buf[ii] != '\t') && (buf[ii] != '\n'))
+            {
+                EXCEPTION1(InvalidDBTypeException, "Error parsing file." );
+            }
         }
     }
 }

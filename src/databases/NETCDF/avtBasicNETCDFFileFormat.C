@@ -585,6 +585,8 @@ avtBasicNETCDFFileFormat::ReturnValidDimensions(const intVector &dims, int valid
         dimStarts[i] = 0;
         dimCounts[i] = 1;
     }
+
+    return true;
 }
 
 // ****************************************************************************

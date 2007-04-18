@@ -255,6 +255,10 @@ static void ConvertToType(oT *obuf, const iT* ibuf, int n)
 //    Mark C. Miller, Wed Sep 13 09:06:07 PDT 2006
 //    Moved here from avtGenericDatabase.C
 //
+//    Kathleen Bonnell, Tue Apr  3 07:56:18 PDT 2007
+//    Only print array's name if it is not null, the data arrays for vtkPoints
+//    generally don't have names.
+//
 // ****************************************************************************
 
 static vtkDataArray * 
@@ -275,9 +279,10 @@ ConvertDataArrayToFloat(vtkDataArray *oldArr)
         float *newBuf = (float*) newArr->GetVoidPointer(0);
         void *oldBuf = oldArr->GetVoidPointer(0);
 
-        debug5 << "avtTransformManager: Converting vktDataArray, "
-               << "\"" << oldArr->GetName() << "\", "
-               << "with " << numTuples << " tuples and "
+        debug5 << "avtTransformManager: Converting vktDataArray, ";
+        if (oldArr->GetName() != NULL)
+               debug5 << "\"" << oldArr->GetName() << "\", ";
+        debug5 << "with " << numTuples << " tuples and "
                << numComponents << " components from type \""
                << DataArrayTypeName(oldArr) << "\" to \"float\"" << endl;
 
