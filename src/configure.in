@@ -672,6 +672,11 @@ dnl
 dnl    Thomas R. Treadway, Fri Apr  6 13:18:53 PDT 2007
 dnl    Filled in PREBIND_LIBS (for mdserver linking).
 dnl
+dnl    Hank Childs, Sat Apr  7 18:31:21 PDT 2007
+dnl    Adaptively find data directory.  Its location is dependent on whether
+dnl    you are in ClearCase or Subversion.  And for Subversion, it might not
+dnl    be available at all.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3332,7 +3337,14 @@ PLOT_FILES="plots/Makefile"
 OPERATOR_FILES="operators/Makefile"
 DATABASE_FILES="databases/Makefile"
 
-DATA_FILES="data/Makefile"
+DATA_FILES=""
+if test -f ../data/Makefile.in ; then
+   DATA_FILES="../data/Makefile"
+fi
+if test -f data/Makefile.in ; then
+   DATA_FILES="data/Makefile"
+fi
+
 SIMULATION_PROTOTYPE_FILES="sim/Makefile
                             sim/examples/Makefile
                             sim/lib/Makefile"
