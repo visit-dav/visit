@@ -462,7 +462,7 @@ class MakefileGeneratorPlugin
 #else
             out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(BZIP2_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
-            out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser" << endl;
+            out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions -ldbatts -lplugin -lexpr -lparser" << endl;
 #endif
             out << "ILIBS=" << endl;
@@ -636,7 +636,7 @@ class MakefileGeneratorPlugin
 #else
             out << "ELIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(BZIP2_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
-            out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser" << endl;
+            out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions -lplugin -ldbatts -lparser -lexpr" << endl;
 #endif
             out << "ILIBS=" << endl;

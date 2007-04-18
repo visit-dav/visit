@@ -69,6 +69,9 @@ class DBOptionsAttributes;
 //    Added nblocks to OpenFile and save it so we don't have to 
 //    trust the meta data.
 //
+//    Kathleen Bonnell, Mon Apr 16 11:38:34 PDT 2007 
+//    Add varCentering.
+//
 // ****************************************************************************
 
 class
@@ -84,6 +87,7 @@ avtXmdvWriter : virtual public avtDatabaseWriter
     vector<string> scalars;
     vector<string> vectors;
     bool           varsAreNodal;
+    avtCentering   varCentering;
     bool           writeOutCoordinates;
     int            nblocks;
 
