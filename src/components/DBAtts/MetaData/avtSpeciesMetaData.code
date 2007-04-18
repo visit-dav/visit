@@ -1,5 +1,5 @@
 Function: avtSpeciesMetaData2
-Declaration: avtSpeciesMetaData::avtSpeciesMetaData(const std::string &n, const std::string &meshn, const std::string &matn, int nummat, const intVector &ns, const std::vector<stringVector> &sn);
+Declaration: avtSpeciesMetaData(const std::string &n, const std::string &meshn, const std::string &matn, int nummat, const intVector &ns, const std::vector<stringVector> &sn);
 Definition:
 // ****************************************************************************
 //  Method: avtSpeciesMetaData constructor

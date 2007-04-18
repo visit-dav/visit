@@ -676,7 +676,7 @@ avtChomboFileFormat::InitializeReader(void)
 void
 avtChomboFileFormat::CalculateDomainNesting(void)
 {
-    int i, j;
+    int j;
     int level;
 
     //

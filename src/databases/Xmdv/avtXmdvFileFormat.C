@@ -331,8 +331,6 @@ avtXmdvFileFormat::GetVectorVar(const char *varname)
     if (strcmp(varname, "all_vars") != 0)
         EXCEPTION1(InvalidVariableException, varname);
 
-    int i;
-
     if (!readInData)
         if (!ReadXmdvFile(true))
             EXCEPTION1(InvalidFilesException, filename);

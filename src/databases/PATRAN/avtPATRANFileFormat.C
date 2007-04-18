@@ -555,8 +555,7 @@ avtPATRANFileFormat::ReadFile(const char *name, int nLines)
           ID, // Identification number. "0" means not applicable.
           IV, // Additional ID. "0" means not applicable.
           KC, // Number of data cards after the header.
-          N1, // Supplemental integer values.
-          N2, N3, N4, N5;
+          N1; // Supplemental integer values.
 
     int readingFile = visitTimer->StartTimer();
     for(int lineIndex = 0; !ifile.eof(); ++lineIndex)

@@ -2494,7 +2494,7 @@ void
 QvisVolumePlotWindow::colorTableClicked(bool useDefault, const QString &ctName)
 {
     ColorTableAttributes *cta = GetViewerState()->GetColorTableAttributes();
-    const ColorControlPointList *ccp = cta->GetColorControlPoints(ctName);
+    const ColorControlPointList *ccp = cta->GetColorControlPoints(ctName.ascii());
     if (ccp) volumeAtts->SetColorControlPoints(*ccp);
     UpdateColorControlPoints();
     Apply();

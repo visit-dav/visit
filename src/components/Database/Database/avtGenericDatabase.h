@@ -58,7 +58,7 @@
 #include <MIR.h>
 
 struct    avtDatasetCollection;
-struct    avtMatSpeciesMetaData;
+class     avtMatSpeciesMetaData;
 class     avtDomainBoundaries;
 class     avtFileFormatInterface;
 class     avtMixedVariable;

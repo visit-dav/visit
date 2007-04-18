@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PyavtSILCollectionMetaData_StartUp(avtSILCollectionMetaData *subj, void *data);
 void VISITPY_API           PyavtSILCollectionMetaData_CloseDown();
-PyMethodDef * VISITPY_API  PyavtSILCollectionMetaData_GetMethodTable(int *nMethods);
+VISITPY_API PyMethodDef *   PyavtSILCollectionMetaData_GetMethodTable(int *nMethods);
 bool VISITPY_API           PyavtSILCollectionMetaData_Check(PyObject *obj);
-avtSILCollectionMetaData * VISITPY_API PyavtSILCollectionMetaData_FromPyObject(PyObject *obj);
-PyObject * VISITPY_API     PyavtSILCollectionMetaData_New();
-PyObject * VISITPY_API     PyavtSILCollectionMetaData_Wrap(const avtSILCollectionMetaData *attr);
+VISITPY_API avtSILCollectionMetaData *  PyavtSILCollectionMetaData_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyavtSILCollectionMetaData_New();
+VISITPY_API PyObject *      PyavtSILCollectionMetaData_Wrap(const avtSILCollectionMetaData *attr);
 void VISITPY_API           PyavtSILCollectionMetaData_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PyavtSILCollectionMetaData_SetDefaults(const avtSILCollectionMetaData *atts);
 std::string VISITPY_API    PyavtSILCollectionMetaData_GetLogString();

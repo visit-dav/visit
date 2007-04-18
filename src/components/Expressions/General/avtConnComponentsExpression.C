@@ -1354,8 +1354,11 @@ avtConnComponentsExpression::BoundarySet::Finalize()
     // cleanup old itrees if they exist 
     if(itrees.size() > 0)
     {
-        if(itrees[i] != NULL)
-            delete itrees[i];
+        for (i = 0; i < itrees.size(); i++)
+        {
+            if(itrees[i] != NULL)
+                delete itrees[i];
+        }
     }
     itrees.clear();
 

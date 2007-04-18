@@ -982,7 +982,6 @@ avtPixieFileFormat::CreateCurvilinearMesh(int timestate, const VarInfo &info,
     // Try and read the coordinate fields.
     //
     float *coords[3] = {0,0,0};
-    int coordDims[3];
     if(ReadCoordinateFields(timestate, info, coords, hyperslabDims, nVarDims))
     {
         //

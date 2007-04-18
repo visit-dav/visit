@@ -188,7 +188,7 @@ int bof2bow(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
     int x0,int y0,int z0,float *vtab,float v0,float v1,float q,
     char **rbow,int *rbowsize)
 {
-    int i,j,k,n,ibig[256],*ip,bigcnt,s,nti,ntimax,ntab[40],ii,kio,ksio;
+    int i,j,k,n,ibig[256],bigcnt,s,nti,ntimax,ntab[40],ii,kio;
     short *vshrt;
     float td,thresh[40],a,f,fbig[256],*vtab1,vmaxtab[40],vmax;
     char *outbuf,*buf;
@@ -346,10 +346,10 @@ int bof2bow(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
 float *bow2bof(bowglobal bg,char *bow,int bowi)
 {
     int size,offset,notran,ti,bi,vi,xs,ys,zs,x0,y0,z0;
-    int i,j,k,n,bigcnt,ibig[256],ii,kio,ksio,*ip,ks;
+    int i,j,k,n,bigcnt,ibig[256],kio;
     int ntab[40],nti,ntimax,s;
     short *vshrt;
-    float v0,v1,*vtab,a,fbig[256],*fp,vmaxtab[40],vmax,f;
+    float v0,v1,*vtab,a,fbig[256],vmaxtab[40],vmax;
     unsigned char *ub;
     bowinfo binf;
 
@@ -489,8 +489,8 @@ float *bow2bof(bowglobal bg,char *bow,int bowi)
 bowinfo bow_getbowinfo(bowglobal bg,char *bow)
 {
     int i,n,ti,bi,vi,xs,ys,zs,x0,y0,z0,iscat,nb,size,offset,notran;
-    int ii,kio,ksio,*ip,ks;
-    float v0,v1,f;
+    int kio,ksio;
+    float v0,v1;
     bowinfo binf;
     unsigned char *ub;
 
@@ -551,8 +551,8 @@ void bow_freebowinfo(bowglobal bg,bowinfo binf)
 char *bow_cat(bowglobal bg,int numbow,char **bowtab)
 {
     int bowi,nbow,size,k,ks,js,ii,kio,ksio;
-    int i,b,n,nb,ti,bi,vi,xs,ys,zs,x0,y0,z0,*ip;
-    float v0,v1,f,*fp;
+    int b,n,nb,ti,bi,vi,xs,ys,zs,x0,y0,z0;
+    float v0,v1,f;
     char *bow,*buf;
     unsigned char *ub;
 
@@ -652,7 +652,8 @@ int bow_test(bowglobal bg,int ti,int bi,int vi,int xs,int ys,int zs,
         bow_freebowinfo(bg,binf);
         return -1;
     }
-    f1=0.0;
+    f1=0.0f;
+    fsum = 0.0f;
     for (i=0;i<n;i++)
         { f=vsum[i]-vcop[i]; if (f<0.0) f= -f; fsum+=f; if (f>f1) f1=f; }
     fsum/=(float)n;
@@ -735,7 +736,7 @@ static void find_tmpdir(char *tmpdir)
 
 static char *fioX_read(bowglobal bg,char *pathsrc)
 {
-    int id,n,m;
+    int id,n;
     static struct stat st_store;
     static struct stat *st = &st_store;
     char *buf;

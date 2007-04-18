@@ -134,7 +134,7 @@ private:
 
   vtkTriangle *triangle;
   vtkQuad *quad;
-  bool TestCoPlanar;
+  int TestCoPlanar;
 };
 
 #endif

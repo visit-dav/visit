@@ -39,11 +39,11 @@ WindowInformation::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("viewExtentsType")) != 0)
         SetViewExtentsType(node->AsInt());
     if((node = searchNode->GetNode("lockView")) != 0)
-        SetLockView(node->AsInt());
+        SetLockView(node->AsBool());
     if((node = searchNode->GetNode("lockTime")) != 0)
-        SetLockTime(node->AsInt());
+        SetLockTime(node->AsBool());
     if((node = searchNode->GetNode("lockTools")) != 0)
-        SetLockTools(node->AsInt());
+        SetLockTools(node->AsBool());
     if((node = searchNode->GetNode("fullFrame")) != 0)
         SetFullFrame(node->AsBool());
 }
@@ -143,4 +143,3 @@ WindowInformation::CreateNode(DataNode *parentNode, bool completeSave, bool forc
 
     return (addToParent || forceAdd);
 }
-

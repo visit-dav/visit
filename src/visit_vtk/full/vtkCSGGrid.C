@@ -416,6 +416,7 @@ vtkCSGGrid::EvalBoxStateOfRegion(const Box *const curBox, int zoneId,
         default:
             break;
     }
+    return 0;
 }
 
 //----------------------------------------------------------------------------

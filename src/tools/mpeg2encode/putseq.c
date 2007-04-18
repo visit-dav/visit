@@ -37,7 +37,6 @@ void putseq()
   /* this routine assumes (N % M) == 0 */
   int i, j, k, f, f0, n, np, nb, sxf, syf, sxb, syb;
   int ipflag;
-  FILE *fd;
   char name[256];
   unsigned char *neworg[3], *newref[3];
   static char ipb[5] = {' ','I','P','B','D'};

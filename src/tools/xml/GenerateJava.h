@@ -1290,7 +1290,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     {
         QString s = attType;
         QString plural("");
-        if(Name.right(1) != 's')
+        if(Name.right(1) != "s")
             plural = "s";
 
         // Write the Add method.

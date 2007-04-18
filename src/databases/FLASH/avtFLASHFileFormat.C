@@ -2185,7 +2185,7 @@ avtFLASHFileFormat::ReadParticleAttributes_FLASH3()
     { 
         string name = snames.substr(i*24, 24);
         int sp = name.find_first_of(' ');
-        if (sp < 24);
+        if (sp < 24)
             name = name.substr(0, sp);
         string nice_name = GetNiceParticleName(name);
         particleVarTypes.push_back(H5T_NATIVE_DOUBLE);

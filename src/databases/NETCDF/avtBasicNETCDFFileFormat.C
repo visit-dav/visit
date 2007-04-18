@@ -374,7 +374,7 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 std::string meshName("mesh");
                 intVector meshDims;
                 int j, elems = 1;
-                for(int j = varndims-1; j >= 0; --j)
+                for(j = varndims-1; j >= 0; --j)
                 {
                     int d = dimSizes[vardims[j]];
                     elems *= d;
@@ -393,7 +393,7 @@ avtBasicNETCDFFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 {
                     // Come up with the mesh name that we'll use for this
                     // variable.
-                    for(int j = 0; j < meshDims.size(); ++j)
+                    for(j = 0; j < meshDims.size(); ++j)
                     {
                         if(j != 0)
                             SNPRINTF(tmp, 100, "x%d", meshDims[j]);

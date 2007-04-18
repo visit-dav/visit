@@ -223,8 +223,8 @@ ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) :
     nKeyframesWasUserSet = false;
     nKeyframes = 1;
     pipelineCaching = false;
-    xScaleMode == LINEAR;
-    yScaleMode == LINEAR;
+    xScaleMode = LINEAR;
+    yScaleMode = LINEAR;
 }
 
 // ****************************************************************************
