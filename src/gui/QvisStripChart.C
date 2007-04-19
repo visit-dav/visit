@@ -558,7 +558,7 @@ void VisItSimStripChart::zoomIn()
 //
 // ****************************************************************************
 
-int VisItSimStripChart::setFontSize()
+void VisItSimStripChart::setFontSize()
 {
     if ( zoom <= 0.35)  pointSize = 20;
     if ( zoom  > 0.35)  pointSize = 16;
