@@ -17,13 +17,13 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
 <li>VisIt is now more proactive about deleting intermediate copies of datasets. Consequently, VisIt's memory footprint while processing data has been drastically reduced.</li>
 <li>VisIt's treatment of rectilinear and curvilinear meshes has been substantially improved so rendering them is faster and uses far less memory. 
-Specific improvements include:</li>
-<p><ul>
-<li>Direct rendering of 2D rectilinear and curvilinear meshes</li>
-<li>Facelists of 3D structured meshes produce 6 2D structured meshes</li>
-<li>Orthogonal slices of 3D rectilinear meshes produce 2D rectilinear meshes</li>
-</ul></p>
-</ul><ul>
+Specific improvements include:
+    <ul type="circle">
+    <li>Direct rendering of 2D rectilinear and curvilinear meshes</li>
+    <li>Facelists of 3D structured meshes produce 6 2D structured meshes</li>
+    <li>Orthogonal slices of 3D rectilinear meshes produce 2D rectilinear meshes</li>
+    </ul>
+</li>
 <li>VisIt now includes a Spreadsheet plot. The Spreadsheet plot allows users to select a single domain and "plot" its scalar data in a custom Spreadsheet window provided by the plot. The Spreadsheet window is tied to the plot that created it so you can have N Spreadsheet windows open to look at different domains or variables. The Spreadsheet window shows tabs that each contain a table for a slice through the data (1 table for 2D). It is possible to quickly step through the tabs to see different logical slices of the dataset. The slice is also depicted in the visualization window and the slice moves as you change slices in the Spreadsheet window. The Spreadsheet window contains controls for formatting the precision of the text output, coloring the displayed text using a color table, and switching the slice axis used to display the data. In addition, there are features such as min,max buttons to highlight the cells in the spreadsheet that contain the min,max values. Each Spreadsheet window contains its own menu, which provides options for selecting cells, saving selected cells to a text file, copying selected cells to the clipboard, and summing or averaging selected cells.
 </li>
 <li>The ParallelAxis plot has a new <i>Context</i> rendering mode that condenses groups of lines into bands colored by the number of lines in each band. The helps to highlight the overall behavior of  multivariate data because it highlights trends in line clustering using color. The individual lines between each axis can still be displayed and are useful when 
@@ -33,8 +33,7 @@ restricted (using the Extents tool) and drawn over the context. The ParallelAxis
 <li>VisIt's viewer component no longer links against Mesa so it avoids symbol conflicts with some Mesa-based Linux graphics drivers. Since symbol conflicts related to Mesa are no longer possible, this class of failures should be eliminated.</li>
 <li>Curve plots can now be scaled logarithmically.</li>
 <li>It is now possible to set properties for VisIt's plot legends. Most plots create legends. For  plots that create legends, a legend annotation object is also now created. The legend annotation object appears in the list of annotation objects in the Annotation window's Object's tab. When you select a legend annotation object in the Objects tab, the window will change to show the legend properties that can be set, including:
-    <p>
-    <ul>
+    <ul type="circle">
     <li>Whether VisIt positions the legend automatically</li>
     <li>Position</li>
     <li>The format string used to display numbers, allowing you to control the number of significant digits</li>
@@ -46,9 +45,7 @@ restricted (using the Extents tool) and drawn over the context. The ParallelAxis
     <li>Turn off parts of the legend</li>
     <li>Draw an optional bounding box under the legend to distinguish it from plots</li>
     </ul>
-    </p>
 </li>
-</ul><ul>
 <li>VisIt's CLI now provides a <i>GetMetaData</i> function that allows the user to obtain a meta-data object that allows for database introspection. For example, the new meta-data object can be used to create menus for a Python-based user interface or it could be used to compare multiple databases.</li>
 <li>VisIt's libsim library, which allows simulations to be used as VisIt compute engines, now provides a 
 function called <i>VisItUpdatePlots()</i> to force VisIt to update its plots of simulation data.</li>

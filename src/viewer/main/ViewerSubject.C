@@ -513,12 +513,6 @@ ViewerSubject::Connect(int *argc, char ***argv)
     // deleted in the destructor.
     //delete [] argv2;
 
-#ifdef Q_WS_MACX
-    // Prevent the viewer from having anything in its menubar.
-    extern void qt_mac_set_no_native_menubar(bool);
-    qt_mac_set_no_native_menubar(true);
-#endif
-
     //
     // Set up the Xfer object.
     //

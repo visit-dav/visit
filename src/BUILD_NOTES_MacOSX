@@ -42,35 +42,35 @@ instructions have been designed so that you can cut and paste most of the
 commands needed to build the libraries and VisIt from this file into your
 shell prompt.
 
-    Library  Version  Description            For More Information
-    =======  =======  ===========            ====================
-    Mesa     6.5.2    3-D Graphics Library   http://www.mesa3d.org/
-    Python   2.5      Scripting Language     http://www.python.org
-    Qt       3.3.8    GUI Toolkit            http://www.trolltech.com
-    VTK      5.0.0c   Visualization Toolkit  http://www.vtk.org
+    Library  Version  Description           For More Information
+    =======  =======  ===========           ====================
+    Mesa     6.5.2    3-D Graphics Library  http://www.mesa3d.org/
+    Python   2.5      Scripting Language    http://www.python.org
+    Qt       3.3.8    GUI Toolkit           http://www.trolltech.com
+    VTK      5.0.0c   Visualization Toolkit http://www.vtk.org
                       ftp://ftp.llnl.gov/pub/visit/3rd_party/vtk-5.0.0c.tar.gz
-    cmake    2.4.5    Make file generation   http://www.cmake.org
+    cmake    2.4.5    Make file generation  http://www.cmake.org
     Silo     4.5.1    File I/O library       
                             ftp://ftp.llnl.gov/pub/visit/3rd_party/silo060605.sh
     
-    Optional Version  Description            For More Information
-    ======== =======  ===========            ====================
-    Boxlib   ???      An AMR I/O library     ???
+    Optional Version  Description           For More Information
+    ======== =======  ===========           ====================
+    Boxlib   ???      An AMR I/O library    ???
     CFITSIO  3006     File I/O library       
                              http://heasarc.gsfc.nasa.gov/docs/heasarc/fits.html
-    CGNS     2.4.3    File I/O library       http://www.cgns.org    
-    ExodusII 4.46     File I/O library       http://www.sourceforge.net/projects/
-    GDAL     1.3.2    GIS reader library     http://www.gdal.org
-    HDF4     2.4.1    I/O library            http://hdf.ncsa.uiuc.edu/hdf4.html
-    HDF5     1.6.5    I/O library            http://hdf.ncsa.uiuc.edu/HDF5/    
-    Mili     1.09     I/O library            (none)    
+    CGNS     2.4.3    File I/O library      http://www.cgns.org    
+    ExodusII 4.46     File I/O library      http://www.sourceforge.net/projects/
+    GDAL     1.3.2    GIS reader library    http://www.gdal.org
+    HDF4     2.4.1    I/O library           http://hdf.ncsa.uiuc.edu/hdf4.html
+    HDF5     1.6.5    I/O library           http://hdf.ncsa.uiuc.edu/HDF5/    
+    Mili     1.09     I/O library           (none)    
     netCDF   3.6.0    File I/O library       
                                     http://www.unidata.ucar.edu/packages/netcdf/
     
 The public version of VisIt has been built with the above listed versions
 of the libraries, so it is known to work properly with those versions.  For
 all the packages except VTK and Qt, you can probably use newer versions of the
-packages and VisIt should work properly. For VTK, you must use the 5.0.0b
+packages and VisIt should work properly. For VTK, you must use the 5.0.0c
 distribution provided on the VisIt Web site, because extensions/fixes have been
 added to the VTK-5.x library. The version of Qt used to build VisIt on MacOS X
 must be greater than or equal to 3.3.6 to support gcc-4.x and Intel Mac. For 
@@ -492,50 +492,58 @@ mangled mesa support on MacOS X without some modifications to its source code
 and build system. Follow each of the next instructions before building VTK to
 ensure that you produce VTK libraries that meet VisIt's needs.
 
-1. Edit CMakeLists.txt. Look for the 2 lines containing: 
+vi CMakeLists.txt
+# Look for the 2 lines containing: 
    -flat_namespace,-U,_environ
-   and replace with: 
+# and replace with: 
    -twolevel_namespace,-headerpad_max_install_names
-   On the 2 lines containing:
+# On the 2 lines containing:
    -no-cpp-precomp 
-   add: 
+# add: 
    -fno-common
 
-   Add a # to references to Widget library, search and change the 4 following lines:
+# Add a "#" to references to Widget library, search and change the 4 following
+# lines:
    # SET(VTK_KITS ${VTK_KITS} WIDGETS)
    # SUBDIRS(Widgets)
    #   SUBDIRS(Widgets/Testing)
    #   INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkWidgetsInstantiator)
 
-2. Edit Utilities/ftgl/CMakeLists.txt and look for:
-   SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${OPENGL_gl_LIBRARY}"). Add the following
-   code after the above string:
+vi Utilities/ftgl/CMakeLists.txt
+# look for:
+   SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${OPENGL_gl_LIBRARY}")
+# Add the following code after the above string:
 
 IF (FTGL_SUPPORT_MANGLE_MESA)
  SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${MANGLED_MESA_LIBRARY}")
 ENDIF (FTGL_SUPPORT_MANGLE_MESA)
 
-3. Edit Rendering/CMakeLists.txt and remove the line that contains
+vi Rendering/CMakeLists.txt
+# remove the line that contains:
    vtkXMesaRenderWindow.cxx.
 
-4. Open Rendering/vtkGraphicsFactory.cxx and wrap the
-   #include "vtkXMesaRenderWindow.h" with:
-#if !defined(__APPLE__)
-#include "vtkXMesaRenderWindow.h"
-#endif
-   to prevent that header from being included.
+vi Open Rendering/vtkGraphicsFactory.cxx
+# wrap the
+   #include "vtkXMesaRenderWindow.h"
+# with:
+   #if !defined(__APPLE__)
+   #include "vtkXMesaRenderWindow.h"
+   #endif
+# to prevent that header from being included.
 
-5. Open Rendering/vtkMesaRenderWindow.cxx and change
-   #include "vtkXMesaRenderWindow.h" to:
-#if !defined(__APPLE__)
-#include "vtkXMesaRenderWindow.h"
-#else
-#include "vtkMesaRenderWindow.h"
-#endif
+vi Rendering/vtkMesaRenderWindow.cxx
+# change:
+   #include "vtkXMesaRenderWindow.h"
+# to:
+   #if !defined(__APPLE__)
+   #include "vtkXMesaRenderWindow.h"
+   #else
+   #include "vtkMesaRenderWindow.h"
+   #endif
 
-6. The vtkImagingFactory class does not support creation of Mesa objects under
-   Carbon. Find the code in Rendering/vtkImagingFactory.cxx that looks like
-   this:
+vi Rendering/vtkImagingFactory.cxx
+# The vtkImagingFactory class does not support creation of Mesa objects under
+# Carbon. Find the code that looks like this:
 
 #ifdef VTK_USE_CARBON
   if (!strcmp("CarbonOpenGL",rl))
@@ -555,8 +563,8 @@ ENDIF (FTGL_SUPPORT_MANGLE_MESA)
     }
 #endif
 
-   Modify that code so it includes the code to create Mesa objects when VTK has
-   been instructed to use Mesa. The modified code will look like this:   
+# Modify that code so it includes the code to create Mesa objects when VTK has
+# been instructed to use Mesa. The modified code will look like this:   
 
 #ifdef VTK_USE_CARBON
   if (!strcmp("CarbonOpenGL",rl))
@@ -695,8 +703,10 @@ cd ..
 # Install VTK in the visit directory under the vtk directory.
 #
 mkdir $VISITPATH/vtk
-mkdir $VISITPATH/vtk/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging}
-mkdir $VISITPATH/vtk/{Rendering,MangleMesaInclude,Utilities,VolumeRendering,lib}
+mkdir $VISITPATH/vtk/{Common,Filtering,GenericFiltering}
+mkdir $VISITPATH/vtk/{Graphics,Hybrid,IO,Imaging}
+mkdir $VISITPATH/vtk/{Rendering,MangleMesaInclude,Utilities}
+mkdir $VISITPATH/vtk/{VolumeRendering,lib}
 mkdir $VISITPATH/vtk/{vtkstd,Utilities/vtktiff,Utilities/vtkexpat}
 mkdir $VISITPATH/vtk/{Utilities/vtkzlib,Utilities/vtkjpeg}
 cp vtkConfigure.h                 $VISITPATH/vtk
@@ -744,7 +754,7 @@ or installing Python, read the README file in the Python distribution for more
 information.
 Python currently can't be built as a 4-way universal binary, because it
 depends on the Carbon framework, which is currently 32-bit, a 2-way build
-appears to have problems also.
+appears to supported now.
 
 tar zxf Python-2.5.tgz
 cd Python-2.5
@@ -784,8 +794,8 @@ should be built with support for HDF5 when possible. If you don't want to build
 HDF5, you can skip this section but you will have to take care that you do not
 attempt to build Silo with support for HDF5. HDF5 uses configure to
 determine endianness and configure doesn't support cross-compiling. Therefore
-HDF5 meeded to be built on both an Intel machine and a PPC machine. These resulting 
-libraries are then merged together to get a universal binary.
+HDF5 meeded to be built on both an Intel machine and a PPC machine. These 
+resulting libraries are then merged together to get a universal binary.
 
 tar zxf hdf5-1.6.5.tar.gz
 cd hdf5-1.6.5
@@ -1014,15 +1024,17 @@ env CFLAGS="-O2 -fno-common" ./configure --prefix=$VISITPATH/cgns/2.4
 make
 
 # Install headers, etc.
-mkdir /Users/treadway/src/visit-1.6/visit/cgns
-mkdir /Users/treadway/src/visit-1.6/visit/cgns/2.4
-mkdir /Users/treadway/src/visit-1.6/visit/cgns/2.4/{include,lib}
+mkdir $VISITPATH/cgns
+mkdir $VISITPATH/cgns/2.4
+mkdir $VISITPATH/cgns/include
+mkdir $VISITPATH/cgns/lib
 
 make install
 
 # Create dynamic library
 libtool -o libcgns.dylib -dynamic DARWIN/libcgns.a -lSystem -lSystemStubs \
--headerpad_max_install_names -install_name @executable_path/../lib/libcgns.dylib \
+-headerpad_max_install_names \
+-install_name @executable_path/../lib/libcgns.dylib \
 -compatibility_version 2.4 -current_version 2.4
 
 cp libcgns.dylib $VISITPATH/cgns/2.4/lib
@@ -1042,10 +1054,10 @@ tar zxf gdal-1.3.2.tar.gz
 cd gdal-1.3.2
 
 # Configure GDAL
-./configure --prefix=$VISITPATH/gdal/1.3.2 --with-gif=internal \
---with-png=internal --with-jpeg=internal --with-libz=internal \
---with-netcdf=no --without-jasper --without-python \
-CFLAGS="-O2 -fno-common" CXXFLAGS="-O2 -fno-common"
+./configure --prefix=$VISITPATH/gdal/1.3.2 --with-tiff=internal \ 
+--with-gif=internal --with-png=internal --with-jpeg=internal \
+--with-libz=internal --with-netcdf=no --without-jasper --without-python \
+CFLAGS="-O2 -fno-common" CXXFLAGS="-O2 -fno-common" F77=""
 
 make
 
@@ -1054,12 +1066,11 @@ make install
 
 # Prepare dynamic library
 cp .libs/libgdal.1.10.0.dylib libgdal.dylib
-
 install_name_tool -id @executable_path/../lib/libgdal.dylib libgdal.dylib
 
 # 
-rm $VISITPATH/gdal/1.3.2/liblibgdal.dylib
-cp libgdal.dylib $VISITPATH/gdal/1.3.2/liblibgdal.dylib
+rm $VISITPATH/gdal/1.3.2/lib/libgdal.dylib
+cp libgdal.dylib $VISITPATH/gdal/1.3.2/lib/libgdal.dylib
 cd ..
 
 ===============================================================================
@@ -1308,15 +1319,15 @@ More information about building VisIt follows after that.
 #
 # Unzipping VisIt's source code distribution
 #
-tar zxf visit061218.tar.gz
-cd visit061218
+tar zxf visit070330.tar.gz
+cd visit070330
 
 #
 # HDF5 and Silo
 #
 If you built the Silo library with support for HDF5 using the instructions in
-this document then create a symbolic link to it from the Silo directory so VisIt's
-configure script will find it..
+this document then create a symbolic link to it from the Silo directory so 
+VisIt's configure script will find it..
 
 ln -s $VISITPATH/hdf5/lib/libhdf5.dylib $VISITPATH/silo/lib/libhdf5.dylib
 
@@ -1375,6 +1386,6 @@ make
 clearcase_bin/visit-bin-dist
 
 # install, and create a .dmg
-clearcase_bin/visit-install -dmg 1.5.5 darwin INSTALL_DIR_PATH
+clearcase_bin/visit-install -dmg 1.6 darwin INSTALL_DIR_PATH
 
 If you have any problems send e-mail to visit-help@llnl.gov.
