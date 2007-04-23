@@ -150,6 +150,10 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Brad Whitlock, Thu Jul 14 13:50:15 PST 2005
 //   Prevented "..." button max width from being set on MacOS X.
 //
+//   Jeremy Meredith, Thu Apr  5 17:25:40 EDT 2007
+//   Added the ".pov" (POVRay) file type.
+//   Added button to force a merge of parallel geometry.
+//
 // ****************************************************************************
 
 void
@@ -207,6 +211,7 @@ QvisSaveWindow::CreateWindowContents()
     fileFormatComboBox->insertItem("obj");
     fileFormatComboBox->insertItem("png");
     fileFormatComboBox->insertItem("postscript");
+    fileFormatComboBox->insertItem("pov");
     fileFormatComboBox->insertItem("ppm");
     fileFormatComboBox->insertItem("rgb");
     fileFormatComboBox->insertItem("stl");
@@ -315,6 +320,12 @@ QvisSaveWindow::CreateWindowContents()
             this, SLOT(stereoToggled(bool)));
     toggleLayout->addWidget(stereoCheckBox, 1, 1);
 
+    // The stereo toggle.
+    forceMergeCheckBox = new QCheckBox("Force parallel merge", central, "forceMergeCheckBox");
+    connect(forceMergeCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(forceMergeToggled(bool)));
+    toggleLayout->addWidget(forceMergeCheckBox, 1, 2);
+
     // The save button.
     QHBoxLayout *saveButtonLayout = new QHBoxLayout(topLayout);
     saveButtonLayout->setSpacing(5);
@@ -368,6 +379,9 @@ QvisSaveWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Jul 30 15:29:52 PST 2004
 //   Added support for an output directory.
+//
+//   Jeremy Meredith, Thu Apr  5 17:25:40 EDT 2007
+//   Added button to force a merge of parallel geometry.
 //
 // ****************************************************************************
 
@@ -436,11 +450,13 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             {
                 stereoCheckBox->setEnabled(true);
                 screenCaptureCheckBox->setEnabled(true);
+                forceMergeCheckBox->setEnabled(false);
             }
             else
             {
                 stereoCheckBox->setEnabled(false);
                 screenCaptureCheckBox->setEnabled(false);
+                forceMergeCheckBox->setEnabled(true);
             }
             break;
         case 5: // maintain aspect
@@ -493,6 +509,11 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             compressionTypeComboBox->blockSignals(true);
             compressionTypeComboBox->setCurrentItem(saveWindowAtts->GetCompression());
             compressionTypeComboBox->blockSignals(false);
+            break;
+        case 16: // forceMerge
+            forceMergeCheckBox->blockSignals(true);
+            forceMergeCheckBox->setChecked(saveWindowAtts->GetForceMerge());
+            forceMergeCheckBox->blockSignals(false);
             break;
         }
     } // end for
@@ -1089,6 +1110,30 @@ QvisSaveWindow::screenCaptureToggled(bool val)
 
 void
 QvisSaveWindow::saveTiledToggled(bool val)
+{
+    saveWindowAtts->SetSaveTiled(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSaveWindow::forceMergeToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not it should attempt to merge parallel domains before saving.
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Jeremy Meredith
+// Creation:   April  5, 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::forceMergeToggled(bool val)
 {
     saveWindowAtts->SetSaveTiled(val);
     Apply();

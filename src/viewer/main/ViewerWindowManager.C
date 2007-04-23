@@ -1595,6 +1595,12 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Mark C. Miller, Tue Mar  7 10:31:34 PST 2006
 //    Made it set LastRealFileName to something bogus in case of error
 //
+//    Jeremy Meredith, Thu Apr  5 17:28:39 EDT 2007
+//    Only try to merge the parallel domains if the user has requested it.
+//    Merging two different plots (like a pseudcolor and mesh plot)
+//    can cause it to drop data arrays, and many file types correctly
+//    save multiple chunk data sets anyway.
+//
 // ****************************************************************************
 
 void
@@ -1825,8 +1831,11 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             return;
         }
 
-        if (*ds != NULL)
-            ds->Compact();
+        if (saveWindowClientAtts->GetForceMerge())
+        {
+            if (*ds != NULL)
+                ds->Compact();
+        }
         CopyTo(dob, ds);
     }
 

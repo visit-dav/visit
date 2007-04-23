@@ -111,6 +111,9 @@ avtFileWriter::~avtFileWriter()
 //    Jeremy Meredith, Sat Apr 12 15:09:28 PDT 2003
 //    Added the Ultra file format.
 //
+//    Jeremy Meredith, Thu Apr  5 17:23:37 EDT 2007
+//    Added POVRay data file format.
+//
 // ****************************************************************************
 
 void
@@ -145,6 +148,11 @@ avtFileWriter::SetFormat(int f)
     {
         imgFormat = POSTSCRIPT;
         isImage = true;
+    }
+    else if (f == SaveWindowAttributes::POVRAY)
+    {
+        dsFormat = POVRAY;
+        isImage = false;
     }
     else if (f == SaveWindowAttributes::PPM)
     {

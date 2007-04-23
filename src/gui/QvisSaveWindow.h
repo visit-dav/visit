@@ -81,6 +81,9 @@ class SaveWindowAttributes;
 //   Kathleen Bonnell, Wed Dec 15 08:20:11 PST 2004 
 //   Added slot 'saveButtonClicked'. 
 //
+//   Jeremy Meredith, Thu Apr  5 17:23:37 EDT 2007
+//   Added button to force a merge of parallel geometry.
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -117,6 +120,7 @@ protected slots:
     void saveWindow();
     void selectOutputDirectory();
     void saveButtonClicked();
+    void forceMergeToggled(bool);
 private:
     QCheckBox           *outputToCurrentDirectoryCheckBox;
     QLabel              *outputDirectoryLabel;
@@ -138,6 +142,7 @@ private:
     QLineEdit           *heightLineEdit;
     QCheckBox           *screenCaptureCheckBox;
     QCheckBox           *saveTiledCheckBox;
+    QCheckBox           *forceMergeCheckBox;
     SaveWindowAttributes  *saveWindowAtts;
 };
 

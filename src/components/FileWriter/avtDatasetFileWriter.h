@@ -57,7 +57,8 @@ typedef enum
     OBJ,                  /* 1 */
     STL,                  /* 2 */
     VTK,                  /* 3 */
-    ULTRA                 /* 4 */
+    ULTRA,                /* 4 */
+    POVRAY                /* 5 */
 } DatasetFileFormat;
 
 
@@ -85,6 +86,9 @@ typedef enum
 //    Brad Whitlock, Mon Mar 6 17:35:28 PST 2006
 //    I made it reset nFilesWritten if the nase changes.
 //
+//    Jeremy Meredith, Mon Apr 23 13:54:01 EDT 2007
+//    Added POVRay output file format.
+//
 // ****************************************************************************
 
 class AVTFILEWRITER_API avtDatasetFileWriter : public avtOriginatingDatasetSink
@@ -106,6 +110,12 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtOriginatingDatasetSink
     void               WriteSTLFile(const char *, bool);
 
     void               WriteCurveFile(const char *);
+
+    void               WritePOVRayFamily(const char *);
+    int                WritePOVRayTree(avtDataTree_p, int, const char *,
+                                       double*, double*);
+    void               WritePOVRayFile(vtkDataSet*, const char *, int,
+                                       double*, double*);
 
     void               WriteVTKFamily(const char *, bool);
     int                WriteVTKTree(avtDataTree_p, int, const char *, bool);

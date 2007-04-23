@@ -488,6 +488,9 @@ avtOpenGLMoleculeRenderer::DrawAtomsAsSpheres(vtkPolyData *data,
 //    vertex cells.  This means we cannot look at cell data when looking
 //    for atom arrays.  Also, account for model number directory prefix.
 //
+//    Jeremy Meredith, Wed Apr 18 10:23:53 EDT 2007
+//    Don't shorten bonds if we're not drawing the atoms.
+//
 // ****************************************************************************
 
 void
@@ -644,28 +647,31 @@ avtOpenGLMoleculeRenderer::DrawBonds(vtkPolyData *data,
                     element_number = MAX_ELEMENT_NUMBER-1;
 
 #ifdef SHORTEN_BONDS
-                // Determine radius
-                float atom_radius = atts.GetRadiusFixed();
-                if (element && sbar)
-                    atom_radius = atomic_radius[element_number] * radiusscale;
-                else if (element && sbcr)
-                    atom_radius = covalent_radius[element_number] * radiusscale;
-                else if (radiusvar && sbv)
-                    atom_radius = radiusvar[i] * radiusscale;
-
-                const float fudge = 0.9;
-
-                if (half == 0)
+                if (atts.GetDrawAtomsAs() != MoleculeAttributes::NoAtoms)
                 {
-                    pt_a[0] += atom_radius * dpt[0] * fudge;
-                    pt_a[1] += atom_radius * dpt[1] * fudge;
-                    pt_a[2] += atom_radius * dpt[2] * fudge;
-                }
-                else
-                {
-                    pt_b[0] -= atom_radius * dpt[0] * fudge;
-                    pt_b[1] -= atom_radius * dpt[1] * fudge;
-                    pt_b[2] -= atom_radius * dpt[2] * fudge;
+                    // Determine radius
+                    float atom_radius = atts.GetRadiusFixed();
+                    if (element && sbar)
+                        atom_radius = atomic_radius[element_number] * radiusscale;
+                    else if (element && sbcr)
+                        atom_radius = covalent_radius[element_number] * radiusscale;
+                    else if (radiusvar && sbv)
+                        atom_radius = radiusvar[i] * radiusscale;
+
+                    const float fudge = 0.9;
+
+                    if (half == 0)
+                    {
+                        pt_a[0] += atom_radius * dpt[0] * fudge;
+                        pt_a[1] += atom_radius * dpt[1] * fudge;
+                        pt_a[2] += atom_radius * dpt[2] * fudge;
+                    }
+                    else
+                    {
+                        pt_b[0] -= atom_radius * dpt[0] * fudge;
+                        pt_b[1] -= atom_radius * dpt[1] * fudge;
+                        pt_b[2] -= atom_radius * dpt[2] * fudge;
+                    }
                 }
 #endif
 

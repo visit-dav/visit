@@ -68,6 +68,9 @@ struct Atom
 //    Jeremy Meredith, Fri Feb 23 15:22:37 EST 2007
 //    Added support for seeking directly to preset timesteps.
 //
+//    Jeremy Meredith, Fri Apr 20 15:01:36 EDT 2007
+//    Added support for magnetization fields.
+//
 // ****************************************************************************
 
 class avtOUTCARFileFormat : public avtMTSDFileFormat
@@ -105,6 +108,8 @@ class avtOUTCARFileFormat : public avtMTSDFileFormat
     int natoms;
 
     std::vector<istream::pos_type>   file_positions;
+    bool has_magnetization;
+    std::vector<float>               mags,magp,magd,magtot;
 
     std::vector<float>               free_energy;
     std::vector< std::vector<Atom> > allatoms;

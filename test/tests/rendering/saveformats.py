@@ -8,6 +8,12 @@
 #  Programmer: Mark C. Miller 
 #  Date:       September 20, 2005 
 #
+#  Modifications:
+#    Jeremy Meredith, Mon Apr 23 14:07:35 EDT 2007
+#    Don't create a mesh plot when we're saving geometry formats, since
+#    the new behavior is to separate plots into different files (as they
+#    typically have different variables and geometry types).
+#
 # ----------------------------------------------------------------------------
 swa=SaveWindowAttributes()
 swa.family = 0
@@ -122,7 +128,6 @@ TestSection("Geometry Formats")
 DeleteAllPlots()
 CloseDatabase("../data/multi_rect2d.silo")
 OpenDatabase("../data/globe.silo")
-AddPlot("Mesh", "mesh1")
 AddPlot("Pseudocolor", "dx")
 DrawPlots()
 for f in GFormats:
