@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtTruecolorFilter.C                              //
+//                              avtTruecolorFilter.C                         //
 // ************************************************************************* //
 
 #include <avtTruecolorFilter.h>
@@ -101,7 +101,20 @@ avtTruecolorFilter::~avtTruecolorFilter()
 //     Hank Childs, Fri May 20 14:52:21 PDT 2005
 //     Add support for nodal colors.
 //
+//     Brad Whitlock, Mon Apr 23 16:35:43 PST 2007
+//     Convert data arrays to 4 component tuples if they are not already
+//     4-component.
+//
 // ****************************************************************************
+
+inline unsigned char 
+DoubleToColor(const double c)
+{
+    int ic = (int)c;
+    if(ic < 0) ic = 0;
+    if(ic > 255) ic = 255;
+    return (unsigned char)ic;
+}
 
 vtkDataSet *
 avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
@@ -125,11 +138,68 @@ avtTruecolorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
             return inDS;
         isZonal = false;
     }
-    if (vecdata->GetNumberOfComponents() != 4)
-        return inDS;
 
     vtkUnsignedCharArray *color_array = vtkUnsignedCharArray::New();
-    color_array->DeepCopy(vecdata);
+    if(vecdata->GetNumberOfComponents() != 4)
+    {
+        // Convert N components to 4 uchar components.
+        color_array->SetNumberOfComponents(4);
+        color_array->SetNumberOfTuples(vecdata->GetNumberOfTuples());
+        unsigned char *pixels = (unsigned char *)color_array->GetVoidPointer(0);
+        if(vecdata->GetNumberOfComponents() == 1)
+        {
+            for(vtkIdType id = 0; id < vecdata->GetNumberOfTuples(); ++id)
+            {
+                pixels[0] = DoubleToColor(vecdata->GetTuple1(id));
+                pixels[1] = 0;
+                pixels[2] = 0;
+                pixels[3] = 255;
+                pixels += 4;
+            }
+        }
+        else if(vecdata->GetNumberOfComponents() == 2)
+        {
+            for(vtkIdType id = 0; id < vecdata->GetNumberOfTuples(); ++id)
+            {
+                const double *src = vecdata->GetTuple2(id);
+                pixels[0] = DoubleToColor(src[0]);
+                pixels[1] = DoubleToColor(src[1]);
+                pixels[2] = 0;
+                pixels[3] = 255;
+                pixels += 4;
+            }
+        }
+        if(vecdata->GetNumberOfComponents() == 3)
+        {
+            for(vtkIdType id = 0; id < vecdata->GetNumberOfTuples(); ++id)
+            {
+                const double *src = vecdata->GetTuple3(id);
+                pixels[0] = DoubleToColor(src[0]);
+                pixels[1] = DoubleToColor(src[1]);
+                pixels[2] = DoubleToColor(src[2]);
+                pixels[3] = 255;
+                pixels += 4;
+            }
+        }
+        else
+        {
+            // More than 4 components.
+            double *tmp = new double[vecdata->GetNumberOfComponents()];
+            for(vtkIdType id = 0; id < vecdata->GetNumberOfTuples(); ++id)
+            {
+                // Get all components in the tuple.
+                vecdata->GetTuple(id, tmp);
+                // Use the first 4 components in the tuple.
+                color_array->SetTuple(id, tmp);
+            }
+            delete [] tmp;
+        }
+    }
+    else
+    {
+        // 4 components. Take a shortcut.
+        color_array->DeepCopy(vecdata);
+    }
 
     // Add scalar array to the output dataset and make it active
     color_array->SetName("ucharColors");

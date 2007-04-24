@@ -89,28 +89,6 @@ ThresholdAttributes::CopyAttributes(const AttributeGroup *atts)
 }
 
 
-Function: SetListedVariables
-Declaration: void SetListedVariables(const stringVector &listedVarNames_);
-Definition:
-void
-ThresholdAttributes::SetListedVariables(const stringVector &listedVarNames_)
-{
-    listedVarNames = listedVarNames_;
-    Select(1, (void *)&listedVarNames);
-}
-
-
-Function: SetShownVariablePosition
-Declaration: void SetShownVariablePosition(int shownVarPosition_);
-Definition:
-void
-ThresholdAttributes::SetShownVariablePosition(int shownVarPosition_)
-{
-    shownVarPosition = shownVarPosition_;
-    Select(2, (void *)&shownVarPosition);
-}
-
-
 Function: SupplyMissingDefaultsIfAppropriate
 Declaration: void SupplyMissingDefaultsIfAppropriate();
 Definition:
@@ -196,6 +174,9 @@ Definition:
 //   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //   Now accommodates an empty list of threshold variables.
 //
+//   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
+//   Rewritten to support new Threshold GUI; no more shown variable.
+//
 // ****************************************************************************
 
 bool
@@ -210,9 +191,6 @@ ThresholdAttributes::AttributesAreConsistent() const
         return false;
     }
     
-    if ((shownVarPosition >= varListSize) && (varListSize > 0))
-        return false;
-        
     return true;
 }
 
@@ -306,6 +284,9 @@ Definition:
 //   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
 //   Deletes default variable from threshold variable list if not scalar.
 //
+//   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
+//   Rewritten to support new Threshold GUI; no more "shown variable".
+//
 // ****************************************************************************
 
 void
@@ -341,382 +322,19 @@ ThresholdAttributes::SwitchDefaultToTrueVariableNameIfScalar()
             }
             else
             {
-                DeleteVariable(defaultVarName);
+                listedVarNames.erase(listedVarNames.begin() + varPosition);
+                zonePortions.erase(zonePortions.begin() + varPosition);
+                lowerBounds.erase(lowerBounds.begin() + varPosition);
+                upperBounds.erase(upperBounds.begin() + varPosition);
+        
+                Select(1, (void *)&listedVarNames);
+                Select(2, (void *)&zonePortions);
+                Select(3, (void *)&lowerBounds);
+                Select(4, (void *)&upperBounds);
+
                 changedTheList = true;
             }
         }
     }
     while (changedTheList);
-}
-
-Function: ChangeZonePortion
-Declaration: void ChangeZonePortion(ZonePortion newZonePortion_);
-Definition:
-void
-ThresholdAttributes::ChangeZonePortion(ZonePortion newZonePortion_)
-{
-    if (shownVarPosition < zonePortions.size())
-    {
-        zonePortions[shownVarPosition] = (int)newZonePortion_;
-        Select(3, (void *)&zonePortions);
-    }
-}
-
-
-Function: ChangeZonePortion
-Declaration: void ChangeZonePortion(int newZonePortion_);
-Definition:
-void
-ThresholdAttributes::ChangeZonePortion(int newZonePortion_)
-{
-    if (shownVarPosition < zonePortions.size())
-    {
-        zonePortions[shownVarPosition] = newZonePortion_;
-        Select(3, (void *)&zonePortions);
-    }
-}
-
-
-Function: ChangeLowerBound
-Declaration: void ChangeLowerBound(double newLowerBound_);
-Definition:
-void
-ThresholdAttributes::ChangeLowerBound(double newLowerBound_)
-{
-    if (shownVarPosition < lowerBounds.size())
-    {
-        lowerBounds[shownVarPosition] = newLowerBound_;
-        Select(4, (void *)&lowerBounds);
-    }
-}
-
-
-Function: ChangeUpperBound
-Declaration: void ChangeUpperBound(double newUpperBound_);
-Definition:
-void
-ThresholdAttributes::ChangeUpperBound(double newUpperBound_)
-{
-    if (shownVarPosition < upperBounds.size())
-    {
-        upperBounds[shownVarPosition] = newUpperBound_;
-        Select(5, (void *)&upperBounds);
-    }
-}
-
-
-Function: InsertVariable
-Declaration: void InsertVariable(const std::string &variable_);
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::InsertVariable
-//
-// Purpose: Insert a newly selected variable in the list of active threshold
-//          variable names.  All other attributes of the new variable are
-//          initialized to default values.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
-//   Now accommodates an empty list of threshold variables.
-//
-//   Mark Blair, Tue Oct  3 13:19:11 PDT 2006
-//   If variable to be inserted is default variable, uses true variable name.
-//
-// ****************************************************************************
-
-void
-ThresholdAttributes::InsertVariable(const std::string &variable_)
-{
-    int varPosition;
-    std::string listedVarName;
-
-    for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
-    {
-        if ((listedVarName = listedVarNames[varPosition]) == variable_) return;
-
-        if (listedVarName == std::string("default"))
-        {
-            if (variable_ == defaultVarName)
-            {
-                if (defaultVarIsScalar)
-                {
-                    listedVarNames[varPosition] = defaultVarName;
-                    Select(1, (void *)&listedVarNames);
-                }
-                else    // Should never happen, but . . .
-                {
-                    DeleteVariable(std::string("default"));
-                }
-                
-                return;
-            }
-        }
-    }
-
-    shownVarPosition = listedVarNames.size(); // Will be correct new position.
-
-    listedVarNames.push_back(variable_);
-    zonePortions.push_back((int)PartOfZone);
-    lowerBounds.push_back(-1e+37);
-    upperBounds.push_back(+1e+37);
-
-    Select(1, (void *)&listedVarNames);
-    Select(2, (void *)&shownVarPosition);
-    Select(3, (void *)&zonePortions);
-    Select(4, (void *)&lowerBounds);
-    Select(5, (void *)&upperBounds);
-}
-
-
-Function: DeleteVariable
-Declaration: void DeleteVariable(const std::string &variable_);
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::DeleteVariable
-//
-// Purpose: Delete a variable from the list of active threshold variable names.
-//          Corresponding entries in the other lists of variable attributes
-//          are also deleted.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
-//   Now accommodates an empty list of threshold variables.
-//
-// ****************************************************************************
-
-void
-ThresholdAttributes::DeleteVariable(const std::string &variable_)
-{
-    if (listedVarNames.size() == 0) return;
-
-    int varPosition, newListSize;
-    std::string listedVarName;
-
-    for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
-    {
-        if ((listedVarName = listedVarNames[varPosition]) == variable_) break;
-
-        if (listedVarName == std::string("default"))
-        {
-            if (variable_ == defaultVarName) break;
-        }
-    }
-
-    if (varPosition < listedVarNames.size())
-    {
-        listedVarNames.erase(listedVarNames.begin() + varPosition);
-        zonePortions.erase(zonePortions.begin() + varPosition);
-        lowerBounds.erase(lowerBounds.begin() + varPosition);
-        upperBounds.erase(upperBounds.begin() + varPosition);
-        
-        if ((newListSize = listedVarNames.size()) == 0)
-            shownVarPosition = 0;
-        else if (varPosition <= shownVarPosition)
-            shownVarPosition = (shownVarPosition + newListSize - 1) % newListSize;
-
-        Select(1, (void *)&listedVarNames);
-        Select(2, (void *)&shownVarPosition);
-        Select(3, (void *)&zonePortions);
-        Select(4, (void *)&lowerBounds);
-        Select(5, (void *)&upperBounds);
-    }
-}
-
-
-Function: SwapVariable
-Declaration: void SwapVariable(const std::string &variable_);
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::SwapVariable
-//
-// Purpose: Swap one variable for another in the list of active threshold
-//          variable names.  All other attributes of the variable swapped in are
-//          initialized to default values.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
-//   Now accommodates an empty list of threshold variables.
-//
-// ****************************************************************************
-
-void
-ThresholdAttributes::SwapVariable(const std::string &variable_)
-{
-    if (listedVarNames.size() == 0)
-    {
-        InsertVariable(variable_);
-        return;
-    }
-    
-    int varPosition;
-    std::string listedVarName;
-
-    for (varPosition = 0; varPosition < listedVarNames.size(); varPosition++)
-    {
-        if ((listedVarName = listedVarNames[varPosition]) == variable_) return;
-
-        if (listedVarName == std::string("default"))
-        {
-            if (variable_ == defaultVarName)
-            {
-                InsertVariable(variable_);
-                return;
-            }
-        }
-    }
-
-    std::string shownVarName = listedVarNames[shownVarPosition];
-
-    InsertVariable(variable_);
-    DeleteVariable(shownVarName);
-}
-
-
-Function: ShowPreviousVariable
-Declaration: void ShowPreviousVariable();
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::ShowPreviousVariable
-//
-// Purpose: Sets list index of the active threshold variable to be shown (or
-//          whatever other purpose the caller may have in mind) to point to
-//          the preceding (circularly) variable in the list.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
-//   Now accommodates an empty list of threshold variables.
-//
-// ****************************************************************************
-
-void
-ThresholdAttributes::ShowPreviousVariable()
-{
-    if (listedVarNames.size() < 2) return;
-
-    shownVarPosition =
-        (shownVarPosition + listedVarNames.size() - 1) % listedVarNames.size();
-    Select(2, (void *)&shownVarPosition);
-}
-
-
-Function: ShowNextVariable
-Declaration: void ShowNextVariable();
-Definition:
-// ****************************************************************************
-// Method: ThresholdAttributes::ShowNextVariable
-//
-// Purpose: Sets list index of the active threshold variable to be shown (or
-//          whatever other purpose the caller may have in mind) to point to
-//          the next (circularly) variable in the list.
-//
-// Programmer: Mark Blair
-// Creation:   Tue Mar  7 13:25:00 PST 2006
-//
-// Modifications:
-//   
-//   Mark Blair, Tue Aug  8 17:47:00 PDT 2006
-//   Now accommodates an empty list of threshold variables.
-//
-// ****************************************************************************
-
-void
-ThresholdAttributes::ShowNextVariable()
-{
-    if (listedVarNames.size() < 2) return;
-
-    shownVarPosition = (shownVarPosition + 1) % listedVarNames.size();
-    Select(2, (void *)&shownVarPosition);
-}
-
-
-Function: GetShownVariable
-Declaration: const std::string &GetShownVariable() const;
-Definition:
-const std::string &
-ThresholdAttributes::GetShownVariable() const
-{
-    static std::string noVarsInList = std::string("(no variables in list)");
-
-    if (listedVarNames.size() == 0) return noVarsInList;
-
-    return listedVarNames[shownVarPosition];
-}
-
-
-Function: GetShownVariable
-Declaration: std::string &GetShownVariable();
-Definition:
-std::string &
-ThresholdAttributes::GetShownVariable()
-{
-    static std::string noVarsInList = std::string("(no variables in list)");
-
-    if (listedVarNames.size() == 0) return noVarsInList;
-
-    return listedVarNames[shownVarPosition];
-}
-
-
-Function: GetZonePortion
-Declaration: int GetZonePortion() const;
-Definition:
-int
-ThresholdAttributes::GetZonePortion() const
-{
-    if (zonePortions.size() == 0)
-        return (int)ThresholdAttributes::PartOfZone;
-
-    return zonePortions[shownVarPosition];
-}
-
-
-Function: GetLowerBound
-Declaration: double GetLowerBound() const;
-Definition:
-double
-ThresholdAttributes::GetLowerBound() const
-{
-    if (lowerBounds.size() == 0)
-        return -1e+37;
-
-    return lowerBounds[shownVarPosition];
-}
-
-
-Function: GetUpperBound
-Declaration: double GetUpperBound() const;
-Definition:
-double
-ThresholdAttributes::GetUpperBound() const
-{
-    if (upperBounds.size() == 0)
-        return +1e+37;
-
-    return upperBounds[shownVarPosition];
-}
-
-
-Function: GetListedVariables
-Declaration: const stringVector &GetListedVariables() const;
-Definition:
-const stringVector &
-ThresholdAttributes::GetListedVariables() const
-{
-    return listedVarNames;
 }
