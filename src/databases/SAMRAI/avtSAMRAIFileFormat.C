@@ -70,6 +70,7 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 
+#include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
 #include <avtGhostData.h>
 #include <avtIntervalTree.h>
@@ -2226,6 +2227,10 @@ avtSAMRAIFileFormat::GetTime()
 //    Hank Childs, Wed Jan 11 09:36:13 PST 2006
 //    Change rectilinear mesh type to AMR mesh type.
 //
+//    Mark C. Miller, Wed Apr 25 15:58:58 PDT 2007
+//    Added md-specific code to NOT include default plot for a mesh with
+//    only 1 level. Added warning for this as well.
+//
 // ****************************************************************************
 
 void
@@ -2321,20 +2326,40 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
 
         //
-        // add default plot
+        // add default plot (but only if we actually have 'levels'
         //
-        avtDefaultPlotMetaData *plot = new avtDefaultPlotMetaData("Subset_1.0", "levels");
-        char attribute[250];
-        sprintf(attribute,"%d NULL ViewerPlot", INTERNAL_NODE);
-        plot->AddAttribute(attribute);
-        sprintf(attribute,"%d ViewerPlot SubsetAttributes", INTERNAL_NODE);
-        plot->AddAttribute(attribute);
-        sprintf(attribute,"%d SubsetAttributes lineWidth 1", INT_NODE);
-        plot->AddAttribute(attribute);
-        sprintf(attribute,"%d SubsetAttributes wireframe true", BOOL_NODE);
-        plot->AddAttribute(attribute);
-        md->Add(plot);
-        
+        if (num_levels > 1)
+        {
+            avtDefaultPlotMetaData *plot = new avtDefaultPlotMetaData("Subset_1.0", "levels");
+            char attribute[250];
+            sprintf(attribute,"%d NULL ViewerPlot", INTERNAL_NODE);
+            plot->AddAttribute(attribute);
+            sprintf(attribute,"%d ViewerPlot SubsetAttributes", INTERNAL_NODE);
+            plot->AddAttribute(attribute);
+            sprintf(attribute,"%d SubsetAttributes lineWidth 1", INT_NODE);
+            plot->AddAttribute(attribute);
+            sprintf(attribute,"%d SubsetAttributes wireframe true", BOOL_NODE);
+            plot->AddAttribute(attribute);
+            md->Add(plot);
+        }
+#ifdef MDSERVER
+        else
+        {
+            char msg[512];
+            static bool haveIssuedWarning = false;
+            SNPRINTF(msg, sizeof(msg), "Ordinarily, VisIt displays a wireframe, subset "
+                "plot of 'levels' automatically upon opening a SAMRAI file. However, such "
+                "a plot is not applicable in the case that there is only one level. So, "
+                "the normal subset plot is not being displayed.");
+            if (!haveIssuedWarning)
+            {
+                haveIssuedWarning = true;
+                if (!avtCallback::IssueWarning(msg))
+                    cerr << msg << endl;
+            }
+        }
+#endif
+
         //
         // add scalar and vector variables
         //
