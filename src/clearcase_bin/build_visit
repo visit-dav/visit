@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/ksh 
 # *****************************************************************************
 #   Script: build_visit
 #
@@ -8,10 +8,11 @@
 #       been built and, if so, use those pre-built libraries.
 #
 #   Warning:
-#       This script is only expected to work for Linux systems.  If you need
-#       to build VisIt for another platform, you should consult the
-#       BUILD_NOTES that come with the VisIt source.  That document contains
-#       instructions on how to build VisIt and its third party libraries.
+#       This script is only expected to work for Linux, and Darwin systems.
+#       If you need to build VisIt for another platform, you should consult
+#       the BUILD_NOTES that come with the VisIt source.  That document
+#       contains instructions on how to build VisIt and its third party
+#       libraries.
 #
 #   This script has been tested and is known to work with the following OS/
 #   compiler combinations:
@@ -24,6 +25,8 @@
 #       CHAOS,	ia64, 		GCC 3.4.5	thunder.llnl.gov
 #       SuSE,   x86_64,		GCC 4.0.2	antares.lbl.gov
 #       SuSE,   x86_64,		GCC 4.1.0	octagon.lbl.gov
+#       MacOSX  i386,		GCC 4.0.1	tread.llnl.gov
+#       MacOSX  ppc,		GCC 4.0.1	snailbait.llnl.gov
 #
 #   It is believed that this script will also work with other Linux variations.
 #   Please send feedback to visit-help@llnl.gov if you run into problems 
@@ -43,21 +46,46 @@
 #          Mesa         Mesa-5.0-mangled.tar.gz
 #                    or MesaLib-6.5.2.tar.gz (Mac)
 #          Python	Python-2.5.tgz
-#          VTK		vtk-5.0.0c.tar
-#          CMake	cmake-2.2.3.tar
-#               	cmake-2.4.5.tar (Mac)
+#          VTK		vtk-5.0.0c.tar.gz
+#          CMake	cmake-2.2.3.tar.gz
+#               	cmake-2.4.5.tar.gz (Mac)
 #          Silo		silo060605.sh          
+#
+#        The following optional libraries need to be in the current directory
+#        to be built. You must explicitly select which option library to
+#        build, either through run string options or the dialog gui. If
+#        the tarballs don't exist they will not be built or downloaded
+#           Library  Version  Source Tarball Name    Command Option
+#           Boxlib   2.5      boxlib.tar.gz          -b
+#           CFITSIO  3006     cfitsio3006.tar.gz     -f
+#           CGNS     2.4.3    cgnslib_2.4-3.tar.gz   -c
+#           ExodusII 4.46     exodusii-4.46.tar.gz   -e
+#           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g
+#           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
+#           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
+#           Mili     1.09     mili.tar.gz            -m
+#           NetCDF   3.6.0    netcdf.tar.gz          -n
 #
 #   Layout:
 #     Section 1:                    setting up inputs/environment variables
 #     Function 1, check_files:      ensures input files are available
-#     Function 2, build_mesa:       build mangled Mesa
-#     Function 3, build_qt:         build Qt
-#     Function 4, build_cmake:      build CMake (like configure, for VTK)
-#     Function 5, build_vtk:        build VTK
-#     Function 6, build_python:     build Python
-#     Function 7, build_silo:       build Silo
-#     Function 8, build_visit:      build the VisIt source code
+#     Function 2, check_parallel:   parallel build information
+#     Function 3, build_mesa:       build mangled Mesa
+#     Function 4, build_qt:         build Qt
+#     Function 5, build_cmake:      build CMake (like configure, for VTK)
+#     Function 6, build_vtk:        build VTK
+#     Function 7, build_python:     build Python
+#     Function 8.1, build_hdf5:     build HDF5
+#     Function 8.2, build_mili:     build Mili
+#     Function 8.3, build_hdf4:     build HDF4
+#     Function 8.4, build_netcdf:   build NetCDF
+#     Function 8.5, build_cgns:     build CGNS
+#     Function 8.6, build_gdal:     build GDAL
+#     Function 8.7, build_exodus:   build Exodus
+#     Function 8.8, build_boxlib:   build Boxlib
+#     Function 8.9, build_cfitsio:  build CFITSIO
+#     Function 8, build_silo:       build Silo
+#     Function 9, build_visit:      build the VisIt source code
 #     Section 2:                    oversees build process (calls Functions 1-8)
 #
 #   Programmer: Hank Childs (with large portions borrowed from BUILD_NOTES,
@@ -86,6 +114,12 @@
 #     Added Gunther H. Weber changes for MacOS X support.
 #     Tuned for building under both i386 and ppc.
 #
+#     Thomas R. Treadway, Wed Apr 25 13:22:57 PDT 2007
+#     Added optional 3rd-party build information
+#     New argument options, dialog checklist
+#     Reordered logic to better support more architectures
+#     Went back to the HDF4.2r1.tar.gz release ffor the Mac.
+#
 # *****************************************************************************
 
 
@@ -97,7 +131,8 @@
 # etc.  Note that this script is really only known to work with gcc.          #
 # *************************************************************************** #
 
-export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/X11R6/bin
+export VISIT_FILE="visit070330.tar"
+export VISIT_VERSION="1.6"
 # Determine architecture
 if [[ `uname` =  "Darwin" ]]; then
    export ARCH="Darwin"
@@ -111,31 +146,39 @@ else
 fi
 export THIRD_PARTY_LOCATION="./visit"
 export C_COMPILER="gcc"
-export CPP_COMPILER="g++"
+export CXX_COMPILER="g++"
 export C_OPT_FLAGS="-O2"
-export CPP_OPT_FLAGS="-O2"
+export CXX_OPT_FLAGS="-O2"
 
-if [[ $MACBUILD == "No"  ]]; then
+if [[ $MACBUILD == "Yes"  ]]; then
+   export QT_PLATFORM="macx-g++"
+else
    export QT_PLATFORM="linux-g++"
    if [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
-      CPP_OPT_FLAGS="$CPP_OPT_FLAGS -m64 -fPIC"
+      CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
       QT_PLATFORM="linux-g++-64"
    fi
    if [[ "$(uname -m)" == "ia64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
-      CPP_OPT_FLAGS="$CPP_OPT_FLAGS -fPIC"
+      CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fPIC"
       QT_PLATFORM="linux-g++-64"
    fi
-else
-   export QT_PLATFORM="macx-g++"
 fi
 
 #
 # OPTIONS
 #
-export DO_HDF5="no"    # "yes" or "no"
 export DO_SILO="yes"   # "yes" or "no"
+export DO_BOXLIB="no"
+export DO_FITS="no"
+export DO_CGNS="no"
+export DO_EXODUS="no"
+export DO_GDAL="no"
+export DO_HDF4="no"
+export DO_HDF5="no"
+export DO_MILI="no"
+export DO_NETCDF="no"
 parallel="no"          # "yes" or "no"
 PAR_INCLUDE=""
 PAR_LIBS=""
@@ -145,24 +188,24 @@ PAR_LIBS=""
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
-export VISIT_FILE="visit070330.tar"
-export VISIT_VERSION="1.6"
 
 export VTK_FILE="vtk-5.0.0c.tar"
 export VTK_VERSION="5.0.0c"
-export CMAKE_FILE="cmake-2.4.5.tar"
-export CMAKE_VERSION="2.4.5"
 
-if [[ $MACBUILD == "No" ]]; then
-   export MESA_FILE="Mesa-5.0-mangled.tar"
-   export MESA_VERSION="5.0"
-   export MESA_DIR="Mesa-5.0"  # The directory contained in the tarball
-   export MESA_TARGET="linux"
-else
+if [[ $MACBUILD == "Yes" ]]; then
+   export CMAKE_FILE="cmake-2.4.5.tar"
+   export CMAKE_VERSION="2.4.5"
    export MESA_FILE="MesaLib-6.5.2.tar"
    export MESA_VERSION="6.5.2"
    export MESA_DIR="Mesa-6.5.2"  # The directory contained in the tarball
    export MESA_TARGET="darwin"
+else
+   export CMAKE_FILE="cmake-2.2.3.tar"
+   export CMAKE_VERSION="2.2.3"
+   export MESA_FILE="Mesa-5.0-mangled.tar"
+   export MESA_VERSION="5.0"
+   export MESA_DIR="Mesa-5.0"  # The directory contained in the tarball
+   export MESA_TARGET="linux"
 fi
 
 # The old Python version at LLNL does not work on Mac, we need a newer version
@@ -172,12 +215,12 @@ export PYTHON_VERSION="2.5"       # We're up to 2.5 now. Change this back later.
 export PYTHON_COMPATIBILITY_VERSION="2.5" # Need this for the dylib build
 export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
 
-if [[ $MACBUILD == "No" ]]; then
-   export QT_FILE="qt-x11-free-3.3.2.tar"
-   export QT_VERSION="3.3.2"
-else
+if [[ $MACBUILD == "Yes" ]]; then
    export QT_FILE="qt-mac-free-3.3.8.tar"
    export QT_VERSION="3.3.8"
+else
+   export QT_FILE="qt-x11-free-3.3.2.tar"
+   export QT_VERSION="3.3.2"
 fi
 
 export SILO_FILE="silo060605.sh"
@@ -185,6 +228,40 @@ export SILO_VERSION="4.5.1"
 export SILO_COMPATIBILITY_VERSION="4.5"
 
 export HDF5_FILE="hdf5-1.6.5.tar"
+export HDF5_VERSION="1.6.5"
+export HDF5_COMPATIBILITY_VERSION="1.6"
+
+export HDF4_FILE="HDF4.2r1.tar"
+export HDF4_VERSION="4.2.1"
+export HDF4_COMPATIBILITY_VERSION="4.0"
+
+export MILI_FILE="mili.tar"
+export MILI_VERSION="1.10.0"
+export MILI_COMPATIBILITY_VERSION="1.0"
+
+export NETCDF_FILE="netcdf.tar"
+export NETCDF_VERSION="3.6.0"
+export NETCDF_COMPATIBILITY_VERSION="3.6"
+
+export CGNS_FILE="cgnslib_2.4-3.tar"
+export CGNS_VERSION="2.4"
+export CGNS_COMPATIBILITY_VERSION="2.4"
+
+export GDAL_FILE="gdal-1.3.2.tar"
+export GDAL_VERSION="1.3.2"
+export GDAL_COMPATIBILITY_VERSION="1.3"
+
+export EXODUS_FILE="exodusii-4.46.tar"
+export EXODUS_VERSION="4.46"
+export EXODUS_COMPATIBILITY_VERSION="4.0"
+
+export BOXLIB_FILE="boxlib.tar"
+export BOXLIB_VERSION="2.5"
+export BOXLIB_COMPATIBILITY_VERSION="2.0"
+
+export CFITSIO_FILE="cfitsio3006.tar"
+export CFITSIO_VERSION="3.006"
+export CFITSIO_COMPATIBILITY_VERSION="3.0"
 
 # Dialog-related variables.
 DLG="dialog"
@@ -208,7 +285,8 @@ function download_file
 {
     # Print a dialog screen
     if [[ "$GRAPHICAL" == "yes" ]] ; then
-        $DLG --backtitle "$DLG_BACKTITLE" --infobox "Downloading $2 . . ." $DLG_HEIGHT $DLG_WIDTH
+        $DLG --backtitle "$DLG_BACKTITLE" --infobox \
+"Downloading $2 . . ." $DLG_HEIGHT $DLG_WIDTH
     else
         echo "Downloading $2 . . ." 
     fi
@@ -284,7 +362,8 @@ function check_files
 
     # Show a screen
     if [[ "$GRAPHICAL" == "yes" ]] ; then
-        $DLG --backtitle "$DLG_BACKTITLE" --infobox "Checking for files . . ." $DLG_HEIGHT $DLG_WIDTH
+        $DLG --backtitle "$DLG_BACKTITLE" --infobox \
+"Checking for files . . ." $DLG_HEIGHT $DLG_WIDTH
     fi
 
     #
@@ -374,7 +453,8 @@ function check_files
        HAVE_PYTHON_TARBALL="YES"
     fi
     
-    if [[ "$HAVE_PYTHON_ALREADY" = "NO" && "$HAVE_PYTHON_TARBALL" = "NO" ]] ; then
+    if [[ "$HAVE_PYTHON_ALREADY" = "NO" && "$HAVE_PYTHON_TARBALL" = "NO" ]]
+    then
         download_3rdparty ${PYTHON_FILE}
         if [[ $? == 0 ]] ; then
             echo "Unable to build VisIt.  Python is not available."
@@ -408,7 +488,8 @@ function check_files
     if [[ ! -f ${VISIT_FILE} && ! -f ${VISIT_FILE}.gz ]] ; then
         download_file "${VISIT_VERSION}" "$VISIT_FILE.gz"
         if [[ $? == 0 ]] ; then
-           echo "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}.gz."
+           echo \
+"Unable to build VisIt.  Can't find source code: ${VISIT_FILE}.gz."
            rv=1
         fi
     fi
@@ -416,29 +497,230 @@ function check_files
     if [[ $rv != 0 ]] ; then
        return 1
     fi
+    check_3rdparty
+    return 0
+}
+# *************************************************************************** #
+#                         Function 1.1, check_3rdparty                        #
+# --------------------------------------------------------------------------- #
+# This function will check to make sure that all of the necessary 3rd party   #
+# source files actually exist.                                                #
+# *************************************************************************** #
 
+function check_3rdparty
+{
+    #
+    # Boxlib
+    #
+    if [[ "$DO_BOXLIB" == "yes" ]] ; then
+        HAVE_BOXLIB_ALREADY="NO"
+        HAVE_BOXLIB_TARBALL="NO"
+        if [[ -d $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH ]] ; then
+           HAVE_BOXLIB_ALREADY="YES"
+        fi
+        if [[ -f $BOXLIB_FILE || -f ${BOXLIB_FILE}.gz ]] ; then
+           HAVE_BOXLIB_TARBALL="YES"
+        fi
+        if [[ "$HAVE_BOXLIB_ALREADY" = "NO" && \
+              "$HAVE_BOXLIB_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${BOXLIB_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build Boxlib.  Boxlib sources not found."
+                DO_BOXLIB="no"
+            fi
+        fi
+    fi
+    #
+    # CFITSIO
+    #
+    if [[ "$DO_CFITSIO" == "yes" ]] ; then
+        HAVE_CFITSIO_ALREADY="NO"
+        HAVE_CFITSIO_TARBALL="NO"
+        if [[ -d $VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH ]] ; then
+           HAVE_CFITSIO_ALREADY="YES"
+        fi
+        if [[ -f $CFITSIO_FILE || -f ${CFITSIO_FILE}.gz ]] ; then
+           HAVE_CFITSIO_TARBALL="YES"
+        fi
+        if [[ "$HAVE_CFITSIO_ALREADY" = "NO" && \
+              "$HAVE_CFITSIO_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${CFITSIO_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build CFITSIO.  CFITSIO sources not found."
+                DO_CFITSIO="no"
+            fi
+        fi
+    fi
+    #
+    # CGNS
+    #
+    if [[ "$DO_CGNS" == "yes" ]] ; then
+        HAVE_CGNS_ALREADY="NO"
+        HAVE_CGNS_TARBALL="NO"
+        if [[ -d $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH ]] ; then
+           HAVE_CGNS_ALREADY="YES"
+        fi
+        if [[ -f $CGNS_FILE || -f ${CGNS_FILE}.gz ]] ; then
+           HAVE_CGNS_TARBALL="YES"
+        fi
+        if [[ "$HAVE_CGNS_ALREADY" = "NO" && \
+              "$HAVE_CGNS_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${CGNS_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build CGNS.  CGNS sources not found."
+                DO_CGNS="no"
+            fi
+        fi
+    fi
+    #
+    # ExodusII
+    #
+    if [[ "$DO_EXODUS" == "yes" ]] ; then
+        HAVE_EXODUS_ALREADY="NO"
+        HAVE_EXODUS_TARBALL="NO"
+        if [[ -d $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH ]] ; then
+           HAVE_EXODUS_ALREADY="YES"
+        fi
+        if [[ -f $EXODUS_FILE || -f ${EXODUS_FILE}.gz ]] ; then
+           HAVE_EXODUS_TARBALL="YES"
+        fi
+        if [[ "$HAVE_EXODUS_ALREADY" = "NO" && \
+              "$HAVE_EXODUS_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${EXODUS_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build ExodusII.  ExodusII sources not found."
+                DO_EXODUS="no"
+            fi
+        fi
+    fi
+    #
+    # GDAL
+    #
+    if [[ "$DO_GDAL" == "yes" ]] ; then
+        HAVE_GDAL_ALREADY="NO"
+        HAVE_GDAL_TARBALL="NO"
+        if [[ -d $VISITDIR/gdal/$GDAL_VERSION/$VISITARCH ]] ; then
+           HAVE_GDAL_ALREADY="YES"
+        fi
+        if [[ -f $GDAL_FILE || -f ${GDAL_FILE}.gz ]] ; then
+           HAVE_GDAL_TARBALL="YES"
+        fi
+        if [[ "$HAVE_GDAL_ALREADY" = "NO" && \
+              "$HAVE_GDAL_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${GDAL_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build GDAL.  GDAL sources not found."
+                DO_GDAL="no"
+            fi
+        fi
+    fi
+    #
+    # HDF4
+    #
+    if [[ "$DO_HDF4" == "yes" ]] ; then
+        HAVE_HDF4_ALREADY="NO"
+        HAVE_HDF4_TARBALL="NO"
+        if [[ -d $VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH ]] ; then
+           HAVE_HDF4_ALREADY="YES"
+        fi
+        if [[ -f $HDF4_FILE || -f ${HDF4_FILE}.gz ]] ; then
+           HAVE_HDF4_TARBALL="YES"
+        fi
+        if [[ "$HAVE_HDF4_ALREADY" = "NO" && \
+              "$HAVE_HDF4_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${HDF4_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build HDF4.  HDF4 sources not found."
+                DO_HDF4="no"
+            fi
+        fi
+    fi
+    #
+    # HDF5
+    #
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        HAVE_HDF5_ALREADY="NO"
+        HAVE_HDF5_TARBALL="NO"
+        if [[ -d $VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH ]] ; then
+           HAVE_HDF5_ALREADY="YES"
+        fi
+        if [[ -f $HDF5_FILE || -f ${HDF5_FILE}.gz ]] ; then
+           HAVE_HDF5_TARBALL="YES"
+        fi
+        if [[ "$HAVE_HDF5_ALREADY" = "NO" && \
+              "$HAVE_HDF5_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${HDF5_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build HDF5.  HDF5 sources not found."
+                DO_HDF5="no"
+            fi
+        fi
+    fi
+    #
+    # Mili
+    #
+    if [[ "$DO_MILI" == "yes" ]] ; then
+        HAVE_MILI_ALREADY="NO"
+        HAVE_MILI_TARBALL="NO"
+        if [[ -d $VISITDIR/mili/$MILI_VERSION/$VISITARCH ]] ; then
+           HAVE_MILI_ALREADY="YES"
+        fi
+        if [[ -f $MILI_FILE || -f ${MILI_FILE}.gz ]] ; then
+           HAVE_MILI_TARBALL="YES"
+        fi
+        if [[ "$HAVE_MILI_ALREADY" = "NO" && \
+              "$HAVE_MILI_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${MILI_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build Mili.  Mili sources not found."
+                DO_MILI="no"
+            fi
+        fi
+    fi
+    #
+    # NetCDF
+    #
+    if [[ "$DO_NETCDF" == "yes" ]] ; then
+        HAVE_NETCDF_ALREADY="NO"
+        HAVE_NETCDF_TARBALL="NO"
+        if [[ -d $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH ]] ; then
+           HAVE_NETCDF_ALREADY="YES"
+        fi
+        if [[ -f $NETCDF_FILE || -f ${NETCDF_FILE}.gz ]] ; then
+           HAVE_NETCDF_TARBALL="YES"
+        fi
+        if [[ "$HAVE_NETCDF_ALREADY" = "NO" && \
+              "$HAVE_NETCDF_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${NETCDF_FILE}.gz
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build NetCDF.  NetCDF sources not found."
+                DO_NETCDF="no"
+            fi
+        fi
+    fi
+    #
     return 0
 }
 
 # *************************************************************************** #
-#                         Function 2, check_parallel_options                  #
+#                         Function 2, check_parallel                          #
 # --------------------------------------------------------------------------- #
 # This function will check to make sure that parallel options have been setup #
 # if we're going to build a parallel version of VisIt.                        #
 # *************************************************************************** #
 
-function check_parallel_options
+function check_parallel
 {
     # Ask whether the user wants to build parallel.
-    if [[ "$GRAPHICAL" == "yes" ]] ; then
-        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-        "Would you like to build VisIt with support for an MPI parallel compute engine?" 7 $DLG_WIDTH
-        if [[ $? == 1 ]] ; then
-            parallel="no"
-        else
-            parallel="yes"
-        fi
-    fi
+#    if [[ "$GRAPHICAL" == "yes" ]] ; then
+#        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+#"Would you like to build VisIt with support for an MPI parallel compute engine?" 7 $DLG_WIDTH
+#        if [[ $? == 1 ]] ; then
+#            parallel="no"
+#        else
+#            parallel="yes"
+#        fi
+#    fi
 
     #
     # Parallelization
@@ -481,23 +763,26 @@ function check_parallel_options
             fi
 
             if [[ "$PAR_CPPFLAGS" == "" ]] ; then
-                echo "We have no guesses as to where MPI might reside. Look for it..."
+                echo \
+"We have no guesses as to where MPI might reside. Look for it..."
                 if [[ -e /usr/include/mpi.h ]] ; then
                     PAR_CPPFLAGS="-I/usr/include"
                     PAR_LDFLAGS="-L/usr/lib -lmpi"
                 fi
             fi
 
-            # We have suggestions from the user or mpicc as to where mpi might be
-            # located. See what the user thinks of the options.
+            # We have suggestions from the user or mpicc as to where mpi might
+            # be located. See what the user thinks of the options.
             tryagain=1
             while [[ $tryagain == 1 ]]; do
                 $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-                   "The CPPFLAGS for MPI are:\n\n$PAR_CPPFLAGS\n\nDo these look right?" 15 $DLG_WIDTH
+"The CPPFLAGS for MPI are:\n\n$PAR_CPPFLAGS\n\nDo these look right?" \
+                15 $DLG_WIDTH
                 if [[ $? == 1 ]] ; then
                     tryagain=1
-                    PAR_CPPFLAGS=`$DLG --backtitle "$DLG_BACKTITLE" --no-cancel --inputbox \
-                    "Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 2>&1`
+                    PAR_CPPFLAGS=`$DLG --backtitle "$DLG_BACKTITLE" \
+                    --no-cancel --inputbox \
+"Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 2>&1`
                 else
                     tryagain=0
                 fi
@@ -505,16 +790,17 @@ function check_parallel_options
 
             PAR_INCLUDE=$PAR_CPPFLAGS
 
-            # We have suggestions from the user or mpicc as to where mpi might be
-            # located. See what the user thinks of the options.
+            # We have suggestions from the user or mpicc as to where mpi might
+            # be located. See what the user thinks of the options.
             tryagain=1
             while [[ $tryagain == 1 ]]; do
                 $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-                   "The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH
+"The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH
                 if [[ $? == 1 ]] ; then
                     tryagain=1
-                    PAR_LDFLAGS=`$DLG --backtitle "$DLG_BACKTITLE" --no-cancel --inputbox \
-                    "Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS" 2>&1`
+                    PAR_LDFLAGS=`$DLG --backtitle "$DLG_BACKTITLE" \
+                    --no-cancel --inputbox \
+"Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS" 2>&1`
                 else
                     tryagain=0
                 fi
@@ -555,12 +841,19 @@ function build_mesa
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${MESA_FILE}.gz ]] ; then
-       info_box "Unzipping ${MESA_FILE}.gz . . ." >&3
-    tar zxf ${MESA_FILE}.gz
-    if [[ $? != 0 ]] ; then
-       echo "Unable to untar $MESA_FILE.  Corrupted file or out of space on device?"
-       return 1
-    fi
+       info_box "Unzipping/untarring ${MESA_FILE}.gz . . ." >&3
+       tar zxf ${MESA_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo "Unable to untar $MESA_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${MESA_FILE} ]] ; then
+       info_box "Untarring ${MESA_FILE} . . ." >&3
+       tar xf ${MESA_FILE}
+       if [[ $? != 0 ]] ; then
+          echo "Unable to untar $MESA_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
     fi
     
     
@@ -738,13 +1031,24 @@ EOF
     mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/{include,lib}
     mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL
     cp include/GL/*.h $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL
-    for file in libMesaGL libOSMesa libGLU; do  cp lib/${file}.$SO_EXT $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib; done
+    for file in libMesaGL libOSMesa libGLU
+    do  
+       cp lib/${file}.$SO_EXT $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib
+    done
     if [[ $MACBUILD == "Yes" ]]; then
-        install_name_tool -id @executable_path/../lib/libMesaGL.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGL.dylib
-        install_name_tool -id @executable_path/../lib/libOSMesa.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib
-        install_name_tool -change libMesaGL.1.dylib @executable_path/../lib/libMesaGL.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib
-        install_name_tool -id @executable_path/../lib/libGLU.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib
-        install_name_tool -change libMesaGL.1.dylib @executable_path/../lib/libMesaGL.dylib $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib
+        install_name_tool -id @executable_path/../lib/libMesaGL.dylib \
+        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGL.dylib
+        install_name_tool -id @executable_path/../lib/libOSMesa.dylib \
+        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib
+        install_name_tool \
+        -change libMesaGL.1.dylib @executable_path/../lib/libMesaGL.dylib \
+        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib
+        install_name_tool \
+        -id @executable_path/../lib/libGLU.dylib \
+        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib
+        install_name_tool \
+        -change libMesaGL.1.dylib @executable_path/../lib/libMesaGL.dylib \
+        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib
     fi
     echo "Done with Mesa"
 
@@ -762,12 +1066,21 @@ function build_qt
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${QT_FILE}.gz ]] ; then
-       info_box "Unzipping ${QT_FILE}.gz . . ." >&3
-    tar zxf ${QT_FILE}.gz
-    if [[ $? != 0 ]] ; then
-       echo "Unable to untar $QT_FILE.  Corrupted file or out of space on device?"
-       return 1
-    fi
+       info_box "Unzipping/Untarring ${QT_FILE}.gz . . ." >&3
+       tar zxf ${QT_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $QT_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${QT_FILE} ]] ; then
+       info_box "Untarring ${QT_FILE} . . ." >&3
+       tar xf ${QT_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $QT_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
     fi
     echo "Done with untar"
 
@@ -784,7 +1097,8 @@ function build_qt
     # Check to see if we are going to have to issue a "-thread" flag.
     #
     THREAD=""
-    HAS_THREAD=$(./configure -platform ${QT_PLATFORM} -shared -qt-libpng -help | grep threaded)
+    HAS_THREAD=$(./configure -platform ${QT_PLATFORM} \
+-shared -qt-libpng -help | grep threaded)
     if [[ "$HAS_THREAD" != "" ]] ; then
        THREAD="-thread"
        echo "Adding threading option"
@@ -801,15 +1115,18 @@ function build_qt
     if [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
        # By placing in environment variable, it removes extraneously whitespace,
        # making "cut" command easier to form.
-       QT_X11DIR_TMP=$(cat mkspecs/${QT_PLATFORM}/qmake.conf | grep QMAKE_LIBDIR_X11)
+       QT_X11DIR_TMP=$(cat mkspecs/${QT_PLATFORM}/qmake.conf | \
+       grep QMAKE_LIBDIR_X11)
        QT_X11DIR=$(echo $QT_X11DIR_TMP | cut -d' ' -f3)
        if [[ ! -d $QT_X11DIR ]] ; then
           if [[ -d "/usr/X11R6/lib" ]] ; then
              echo "Replacing Qt's X11 dir ($QT_X11DIR) with /usr/X11R6/lib"
              # Convert all '/' to "\/" for later sed'ding
              SED_STR1=$(echo $QT_X11DIR | sed 's/\//\\\//g')
-             cat mkspecs/${QT_PLATFORM}/qmake.conf | sed 's/'${SED_STR1}'/\/usr\/X11R6\/lib/g' > tmp.conf
-             mv -f mkspecs/${QT_PLATFORM}/qmake.conf mkspecs/${QT_PLATFORM}/qmake.conf.orig
+             cat mkspecs/${QT_PLATFORM}/qmake.conf | \
+             sed 's/'${SED_STR1}'/\/usr\/X11R6\/lib/g' > tmp.conf
+             mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
+             mkspecs/${QT_PLATFORM}/qmake.conf.orig
              mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
           fi
        fi
@@ -817,14 +1134,16 @@ function build_qt
 
     if [[ "$HAS_THREAD" != "" ]] ; then
        cat mkspecs/${QT_PLATFORM}/qmake.conf | sed 's/qt-mt/qt/g' > tmp.conf
-       mv -f mkspecs/${QT_PLATFORM}/qmake.conf mkspecs/${QT_PLATFORM}/qmake.conf.orig2
+       mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
+       mkspecs/${QT_PLATFORM}/qmake.conf.orig2
        mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
     fi
 
     #
     # Call configure
     #
-    info_box "Configuring Qt: ./configure -platform ${QT_PLATFORM} -shared -qt-libpng $THREAD" >&3
+    info_box "Configuring Qt: ./configure -platform ${QT_PLATFORM} \
+-shared -qt-libpng $THREAD" >&3
     echo "yes" | ./configure -platform ${QT_PLATFORM} -shared -qt-libpng $THREAD
     if [[ $? != 0 ]] ; then
        echo "Qt configure failed.  Giving up"
@@ -873,14 +1192,20 @@ function build_qt
     mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH
     mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH/{bin,include,lib}
     mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private 
-    cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin
+    cp bin/{designer,findtr,moc,qt20fix,qtrename140} \
+    $VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin
     cd include; cp *.h $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include
     cp private/*.h $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private
-    cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib
+    cd ../lib;find . -print | \
+    cpio -pvmud $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib
     if [[ $MACBUILD == "Yes" ]]; then
-        install_name_tool -id @executable_path/../lib/libqt.dylib $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqt.dylib
-        install_name_tool -id @executable_path/../lib/libqui.dylib $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib
-        install_name_tool -change libqt.3.dylib @executable_path/../lib/libqt.dylib $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib
+        install_name_tool -id @executable_path/../lib/libqt.dylib \
+        $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqt.dylib
+        install_name_tool -id @executable_path/../lib/libqui.dylib \
+        $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib
+        install_name_tool \
+        -change libqt.3.dylib @executable_path/../lib/libqt.dylib \
+        $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib
     fi
     cd ../..
     echo "Done with Qt"
@@ -897,12 +1222,21 @@ function build_cmake
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${CMAKE_FILE}.gz ]] ; then
-       info_box "Unzipping ${CMAKE_FILE}.gz . . ." >&3
-    tar zxf ${CMAKE_FILE}.gz
-    if [[ $? != 0 ]] ; then
-       echo "Unable to untar $CMAKE_FILE.  Corrupted file or out of space on device?"
-       return 1
-    fi
+       info_box "Unzipping/Tarring ${CMAKE_FILE}.gz . . ." >&3
+       tar zxf ${CMAKE_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $CMAKE_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${CMAKE_FILE} ]] ; then
+       info_box "Tarring ${CMAKE_FILE} . . ." >&3
+       tar xf ${CMAKE_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $CMAKE_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
     fi
 
     #
@@ -952,12 +1286,21 @@ function build_vtk
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${VTK_FILE}.gz ]] ; then
-       info_box "Unzipping ${VTK_FILE}.gz . . ." >&3
-    tar zxf ${VTK_FILE}.gz
-    if [[ $? != 0 ]] ; then
-       echo "Unable to untar $VTK_FILE.  Corrupted file or out of space on device?"
-       return 1
-    fi
+       info_box "Unzipping/Untarring ${VTK_FILE}.gz . . ." >&3
+       tar zxf ${VTK_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $VTK_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${VTK_FILE} ]] ; then
+       info_box "Untarring ${VTK_FILE} . . ." >&3
+       tar xf ${VTK_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $VTK_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
     fi
 
     if [[ $MACBUILD == "Yes" ]]; then
@@ -967,25 +1310,18 @@ function build_vtk
         info_box "Patching VTK . . ." >&3
         patch -p0 << \EOF
 diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
-*** VTK.orig/CMakeLists.txt	Fri Mar  9 09:42:18 2007
---- VTK/CMakeLists.txt	Tue Apr 10 15:33:22 2007
+*** VTK.orig/CMakeLists.txt     Mon Mar 26 14:28:51 2007
+--- VTK/CMakeLists.txt  Wed Apr 25 15:41:25 2007
 *************** IF(VTK_USE_RENDERING)
 *** 196,202 ****
     SET(VTK_KITS ${VTK_KITS} RENDERING)
     SET(VTK_KITS ${VTK_KITS} VOLUMERENDERING)
     SET(VTK_KITS ${VTK_KITS} HYBRID)
-!   SET(VTK_KITS ${VTK_KITS} WIDGETS)
+-   SET(VTK_KITS ${VTK_KITS} WIDGETS)
   ENDIF(VTK_USE_RENDERING)
   IF(VTK_USE_PARALLEL)
     SET(VTK_KITS ${VTK_KITS} PARALLEL)
---- 196,202 ----
-    SET(VTK_KITS ${VTK_KITS} RENDERING)
-    SET(VTK_KITS ${VTK_KITS} VOLUMERENDERING)
-    SET(VTK_KITS ${VTK_KITS} HYBRID)
-! #  SET(VTK_KITS ${VTK_KITS} WIDGETS)
-  ENDIF(VTK_USE_RENDERING)
-  IF(VTK_USE_PARALLEL)
-    SET(VTK_KITS ${VTK_KITS} PARALLEL)
+--- 196,201 ----
 *************** ELSE(CMAKE_COMPILER_IS_GNUCXX)
 *** 302,312 ****
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
@@ -999,104 +1335,44 @@ diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
       IF(VTK_USE_CARBON)
         SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fpascal-strings")
       ENDIF(VTK_USE_CARBON)
---- 302,312 ----
+--- 301,311 ----
   ENDIF(CMAKE_COMPILER_IS_GNUCXX)
   
   IF(APPLE)
 !   SET(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS} -Wl,-twolevel_namespace,-headerpad_max_install_names")
 !   SET(CMAKE_SHARED_MODULE_CREATE_C_FLAGS "${CMAKE_SHARED_MODULE_CREATE_C_FLAGS} -Wl,-twolevel_namespace,-headerpad_max_install_names")
     IF(CMAKE_COMPILER_IS_GNUCXX)
-!     SET(VTK_REQUIRED_C_FLAGS "${VTK_REQUIRED_C_FLAGS} -no-cpp-precomp,-fno-common")
-!     SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -no-cpp-precomp,-fno-common")
+!     SET(VTK_REQUIRED_C_FLAGS "${VTK_REQUIRED_C_FLAGS} -fno-common")
+!     SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fno-common")
       IF(VTK_USE_CARBON)
         SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fpascal-strings")
       ENDIF(VTK_USE_CARBON)
-*************** IF(VTK_USE_RENDERING)
-*** 844,850 ****
-    SUBDIRS(Rendering)
-    SUBDIRS(VolumeRendering)
-    SUBDIRS(Hybrid)
-!   SUBDIRS(Widgets)
-  ENDIF(VTK_USE_RENDERING)
-  IF(VTK_USE_PARALLEL)
-    SUBDIRS(Parallel)
---- 844,850 ----
-    SUBDIRS(Rendering)
-    SUBDIRS(VolumeRendering)
-    SUBDIRS(Hybrid)
-! #  SUBDIRS(Widgets)
-  ENDIF(VTK_USE_RENDERING)
-  IF(VTK_USE_PARALLEL)
-    SUBDIRS(Parallel)
 *************** IF(BUILD_TESTING)
-*** 875,881 ****
+*** 874,880 ****
       SUBDIRS(Rendering/Testing)
       SUBDIRS(VolumeRendering/Testing)
       SUBDIRS(Hybrid/Testing)
-!     SUBDIRS(Widgets/Testing)
+-     SUBDIRS(Widgets/Testing)
     ENDIF(VTK_USE_RENDERING)
     IF(VTK_USE_PARALLEL)
       SUBDIRS(Parallel/Testing)
---- 875,881 ----
-      SUBDIRS(Rendering/Testing)
-      SUBDIRS(VolumeRendering/Testing)
-      SUBDIRS(Hybrid/Testing)
-! #    SUBDIRS(Widgets/Testing)
-    ENDIF(VTK_USE_RENDERING)
-    IF(VTK_USE_PARALLEL)
-      SUBDIRS(Parallel/Testing)
+--- 873,878 ----
 *************** IF(NOT VTK_INSTALL_NO_DEVELOPMENT)
-*** 1355,1361 ****
+*** 1354,1360 ****
       INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkRenderingInstantiator)
       INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkVolumeRenderingInstantiator)
       INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkHybridInstantiator)
-!     INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkWidgetsInstantiator)
+-     INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkWidgetsInstantiator)
     ENDIF(VTK_USE_RENDERING)
     IF(VTK_USE_PARALLEL)
       INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkParallelInstantiator)
---- 1355,1361 ----
-      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkRenderingInstantiator)
-      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkVolumeRenderingInstantiator)
-      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkHybridInstantiator)
-! #    INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkWidgetsInstantiator)
-    ENDIF(VTK_USE_RENDERING)
-    IF(VTK_USE_PARALLEL)
-      INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h vtkParallelInstantiator)
-diff -rp VTK.orig/Rendering/CMakeLists.txt VTK/Rendering/CMakeLists.txt
-*** VTK.orig/Rendering/CMakeLists.txt	Tue Jun  6 12:30:44 2006
---- VTK/Rendering/CMakeLists.txt	Tue Apr 10 15:28:17 2007
-*************** IF (VTK_USE_MANGLED_MESA)
-*** 333,339 ****
-                   vtkMesaRenderWindow.cxx
-                   vtkMesaRenderer.cxx
-                   vtkMesaTexture.cxx
--                  vtkXMesaRenderWindow.cxx
-                  )
-      SET(KitOpenGL_SRCS ${KitOpenGL_SRCS}
-        vtkMesaFreeTypeTextMapper.cxx
---- 333,338 ----
-diff -rp VTK.orig/Rendering/vtkGraphicsFactory.cxx VTK/Rendering/vtkGraphicsFactory.cxx
-*** VTK.orig/Rendering/vtkGraphicsFactory.cxx	Mon Aug 29 12:01:18 2005
---- VTK/Rendering/vtkGraphicsFactory.cxx	Tue Apr 10 15:28:17 2007
-***************
-*** 68,75 ****
---- 68,77 ----
-  #include "vtkMesaPolyDataMapper.h"
-  #include "vtkMesaRenderer.h"
-  #include "vtkMesaTexture.h"
-+ #if !defined(__APPLE__)
-  #include "vtkXMesaRenderWindow.h"
-  #endif
-+ #endif
-  
-  #include "vtkCriticalSection.h"
-  
+--- 1352,1357 ----
 diff -rp VTK.orig/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactory.cxx
-*** VTK.orig/Rendering/vtkImagingFactory.cxx	Fri Nov 14 12:43:37 2003
---- VTK/Rendering/vtkImagingFactory.cxx	Tue Apr 10 15:28:17 2007
+*** VTK.orig/Rendering/vtkImagingFactory.cxx    Mon Mar 26 13:25:40 2007
+--- VTK/Rendering/vtkImagingFactory.cxx Wed Apr 25 15:56:01 2007
 *************** vtkObject* vtkImagingFactory::CreateInst
-*** 184,197 ****
---- 184,215 ----
+*** 202,215 ****
+--- 202,233 ----
       {
       if(strcmp(vtkclassname, "vtkTextMapper") == 0)
         {
@@ -1129,39 +1405,31 @@ diff -rp VTK.orig/Rendering/vtkImagingFactory.cxx VTK/Rendering/vtkImagingFactor
         return vtkOpenGLPolyDataMapper2D::New();
         }
       }
-diff -rp VTK.orig/Rendering/vtkMesaRenderWindow.cxx VTK/Rendering/vtkMesaRenderWindow.cxx
-*** VTK.orig/Rendering/vtkMesaRenderWindow.cxx	Fri Nov 14 12:43:37 2003
---- VTK/Rendering/vtkMesaRenderWindow.cxx	Tue Apr 10 15:28:17 2007
-***************
-*** 18,24 ****
-  #include "MangleMesaInclude/gl.h"
-  
-  #include "vtkOpenGLRenderWindow.h"
-! #include "vtkXMesaRenderWindow.h"
-  
-  // Make sure vtkMesaRenderWindow is a copy of vtkOpenGLRenderWindow
-  // with vtkOpenGLRenderWindow replaced with vtkMesaRenderWindow
---- 18,24 ----
-  #include "MangleMesaInclude/gl.h"
-  
-  #include "vtkOpenGLRenderWindow.h"
-! #include "vtkMesaRenderWindow.h"
-  
-  // Make sure vtkMesaRenderWindow is a copy of vtkOpenGLRenderWindow
-  // with vtkOpenGLRenderWindow replaced with vtkMesaRenderWindow
 diff -rp VTK.orig/Utilities/ftgl/CMakeLists.txt VTK/Utilities/ftgl/CMakeLists.txt
-*** VTK.orig/Utilities/ftgl/CMakeLists.txt	Thu May 25 10:08:25 2006
---- VTK/Utilities/ftgl/CMakeLists.txt	Tue Apr 10 15:28:17 2007
+*** VTK.orig/Utilities/ftgl/CMakeLists.txt      Mon Mar 26 13:26:34 2007
+--- VTK/Utilities/ftgl/CMakeLists.txt   Wed Apr 25 15:46:53 2007
 *************** IF(NOT OPENGL_FOUND)
-*** 133,138 ****
---- 133,142 ----
-    ENDIF (OPENGL_INCLUDE_PATH)
+*** 134,144 ****
   ENDIF(NOT OPENGL_FOUND)
   SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${OPENGL_gl_LIBRARY}")
-+ IF (FTGL_SUPPORT_MANGLE_MESA)
-+   SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${MANGLED_MESA_LIBRARY}")
-+ ENDIF (FTGL_SUPPORT_MANGLE_MESA)
-+ 
+  
+! IF(WIN32)
+    IF (FTGL_SUPPORT_MANGLE_MESA)
+      SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${MANGLED_MESA_LIBRARY}")
+    ENDIF (FTGL_SUPPORT_MANGLE_MESA)
+! ENDIF(WIN32)
+  
+  #
+  # We obviously need FreeType
+--- 134,144 ----
+  ENDIF(NOT OPENGL_FOUND)
+  SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${OPENGL_gl_LIBRARY}")
+  
+! IF(APPLE OR WIN32)
+    IF (FTGL_SUPPORT_MANGLE_MESA)
+      SET (VTKFTGL_LIBS "${VTKFTGL_LIBS};${MANGLED_MESA_LIBRARY}")
+    ENDIF (FTGL_SUPPORT_MANGLE_MESA)
+! ENDIF(APPLE OR WIN32)
   
   #
   # We obviously need FreeType
@@ -1184,10 +1452,11 @@ EOF
      -DUSE_ANSI_STD_LIB:BOOL=ON\
      -DVTK_USE_MANGLED_MESA:BOOL=ON\
      -DVTK_USE_HYBRID:BOOL=ON\
-     -DCMAKE_CXX_FLAGS:STRING=${CPP_OPT_FLAGS}\
-     -DCMAKE_CXX_COMPILER:STRING=${CPP_COMPILER}\
+     -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
+     -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
      -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
      -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+     -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
      -DMANGLED_MESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\
      -DMANGLED_MESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}\  -DMANGLED_OSMESA_INCLUDE:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\
      -DMANGLED_OSMESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}\
@@ -1211,8 +1480,8 @@ EOF
     if [[ $MACBUILD == "Yes" ]]; then
         # fix the internal name with in the libraries
         #
-        # first change the libraries name and identification by executing the following
-        # bourne shell script
+        # first change the libraries name and identification by executing the
+        # following bourne shell script
         cd bin
         for i in libvtkCommon libvtkDICOMParser libvtkFiltering \
         libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
@@ -1243,10 +1512,8 @@ EOF
           libvtktiff libvtkzlib
           do
             # One of those is not necessary, but just to play safe ...
-###         install_name_tool -change `pwd`/$j.dylib.5.0 @executable_path/../lib/$j.dylib \
-            $i.dylib
-            install_name_tool -change $j.5.0.dylib \
-            @executable_path/../lib/$j.dylib $i.dylib
+            install_name_tool \
+            -change $j.5.0.dylib @executable_path/../lib/$j.dylib $i.dylib
           done
         done
         cd ..
@@ -1266,32 +1533,54 @@ EOF
     mkdir $VISITDIR/vtk
     mkdir $VISITDIR/vtk/${VTK_VERSION}
     mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{Common,Filtering,GenericFiltering,Graphics,Hybrid,IO,Imaging,MangleMesaInclude,Rendering,Utilities,VolumeRendering,lib,vtkstd,Utilities/vtktiff,Utilities/vtkexpat,Utilities/vtkzlib}
-    cp vtkConfigure.h                   $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
-    cp vtkToolkits.h                    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
-    cp vtk*Instantiator.h               $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
-    cp Common/*.h                       $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common
-    cp Common/*.txx                     $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common
-    cp Filtering/*.h                    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering
-    cp Filtering/*.txx                  $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering
-    cp GenericFiltering/*.h             $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/GenericFiltering
-    cp Graphics/*.h                     $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Graphics
-    cp Hybrid/*.h                       $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Hybrid
-    cp IO/*.h                           $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/IO
-    cp Imaging/*.h                      $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Imaging
-    cp Rendering/*.h                    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Rendering
-    cp Utilities/*.h                    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities
-    cp Utilities/vtktiff/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff
-    cp Utilities/vtkexpat/*.h           $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat
-    cp Utilities/vtkzlib/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib
-    cp VolumeRendering/*.h              $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering
-    cp MangleMesaInclude/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude
-    cp vtkstd/*                         $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd
-    if [[ $MACBUILD == "No" ]]; then
-        cp -d bin/*.so*                 $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{Common,Filtering}
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{GenericFiltering,Graphics}
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{Hybrid,IO,Imaging}
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{MangleMesaInclude,Rendering}
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{Utilities,VolumeRendering}
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{lib,vtkstd}
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib
+    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg
+    cp vtkConfigure.h         $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
+    cp vtkToolkits.h          $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
+    cp vtk*Instantiator.h     $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
+    cp Common/*.h             $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common
+    cp Common/*.txx           $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common
+    cp Filtering/*.h          $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering
+    cp Filtering/*.txx        $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering
+    cp GenericFiltering/*.h   \
+    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/GenericFiltering
+    cp Graphics/*.h           $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Graphics
+    cp Hybrid/*.h             $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Hybrid
+    cp IO/*.h                 $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/IO
+    cp Imaging/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Imaging
+    cp Rendering/*.h          $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Rendering
+    cp Utilities/*.h          $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities
+    cp Utilities/vtktiff/*.h  \
+    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff
+    cp Utilities/vtkexpat/*.h \
+    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat
+    cp Utilities/vtkzlib/*.h  \
+    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib
+    cp Utilities/vtkjpeg/*.h  \
+    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg
+    cp VolumeRendering/*.h    \
+    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering
+    cp MangleMesaInclude/*.h  \
+    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude
+    cp vtkstd/*               $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd
+    if [[ $MACBUILD == "Yes" ]]; then
+        # MacOS doesn't understand the "-d" option, so install libraries like Qt
+        # BECAUSE IT'S NOT POSIX
+        cd bin; find . -name \*dylib\* -print | \
+        cpio -pvmud $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib
+        ln -s $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libvtkjpeg.dylib \
+        $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libjpeg.dylib
+        cd ..
     else
-        # MacOS does not understand the "-d" option, so install libraries like Qt
-        cd bin; find . -name \*dylib\* -print | cpio -pvmud $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib; cd ..
+        cp -d bin/*.so*       $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib
     fi
     
     #
@@ -1301,7 +1590,8 @@ EOF
     cd $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude 
     SED_STR1=$(echo $BAD_MESA | sed 's/\//\\\//g')  
     # Converts all '/' to "\/" for later sed'ding 
-    SED_STR2=$(echo $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude | sed 's/\//\\\//g')
+    SED_STR2=$(echo $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude |\
+    sed 's/\//\\\//g')
     for i in *.h ; do
        cat $i | sed 's/'${SED_STR1}'/'${SED_STR2}'/g' > tmp.h
        mv -f tmp.h $i
@@ -1322,7 +1612,8 @@ function build_python
     info_box "Extracting Python source . . ." >&3
     tar zxf ${PYTHON_FILE}
     if [[ $? != 0 ]] ; then
-       echo "Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
+       echo \
+"Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
        return 1
     fi
 
@@ -1336,8 +1627,12 @@ function build_python
     if [[ $MACBUILD == "Yes" ]]; then
         PYTHON_OPT+=" -fno-common -fPIC"
     fi
-    echo "Invoking command to build Python: env OPT=\"$PTHON_OPT\" CXX=\"$CPP_COMPILER\" CC=\"$C_COMPILER\" ./configure --prefix=$VISITDIR/python/$VISITARCH"
-    env OPT="$PYTHON_OPT" CXX="$CPP_COMPILER" CC="$C_COMPILER" ./configure --prefix=$VISITDIR/python/$VISITARCH
+    echo \
+"Invoking command to build Python: ./configure OPT=\"$PTHON_OPT\" \
+CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
+--prefix=$VISITDIR/python/$VISITARCH"
+    ./configure OPT="$PYTHON_OPT" CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    --prefix=$VISITDIR/python/$VISITARCH
     if [[ $? != 0 ]] ; then
        echo "Python configure failed.  Giving up"
        return 1
@@ -1364,19 +1659,11 @@ function build_python
     #
     info_box "Creating Python shared library" >&3
     echo "Creating shared library"
-    if [[ $MACBUILD == "No" ]]; then
-        mkdir tmpdir
-        cd tmpdir
-        ar -x ../libpython$PYTHON_VERSION.a
-        $C_COMPILER $C_OPT_FLAGS -shared -o ../libpython$PYTHON_VERSION.so *.o
-        cd ..
-        rm -rf tmpdir
-        cp libpython$PYTHON_VERSION.so $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
-    else
+    if [[ $MACBUILD == "Yes" ]]; then
         echo "char **environ=0;" > environhack.c
         gcc -c environhack.c -fno-common
-        mkdir tmp
-        cd tmp
+        mkdir tmpdir
+        cd tmpdir
         ar x ../libpython${PYTHON_VERSION}.a
         gcc -o ../libpython${PYTHON_VERSION}.dylib -dynamiclib \
         ../environhack.o *.o -lSystem -lSystemStubs \
@@ -1385,8 +1672,23 @@ function build_python
         -Wl,-install_name,@executable_path/../lib/libpython2.5.dylib \
         -Wl,-compatibility_version,${PYTHON_COMPATIBILITY_VERSION} \
         -Wl,-current_version,${PYTHON_VERSION}
+        if [[ $? != 0 ]] ; then
+           echo "Python dynamic library build failed.  Giving up"
+           return 1
+        fi
         cd ..
-        cp libpython$PYTHON_VERSION.dylib $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
+        rm -rf tmpdir
+        cp libpython$PYTHON_VERSION.dylib \
+        $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
+    else
+        mkdir tmpdir
+        cd tmpdir
+        ar -x ../libpython$PYTHON_VERSION.a
+        $C_COMPILER $C_OPT_FLAGS -shared -o ../libpython$PYTHON_VERSION.so *.o
+        cd ..
+        rm -rf tmpdir
+        cp libpython$PYTHON_VERSION.so \
+        $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
     fi
     cd ..
     echo "Done with Python"
@@ -1405,7 +1707,9 @@ function build_silo
     info_box "Extracting Silo sources" >&3
     sh ${SILO_FILE}
     if [[ $? != 0 ]] ; then
-       echo "Unable to run Silo script.  Corrupted file or out of space on device?"   return 1
+       echo \
+"Unable to run Silo script.  Corrupted file or out of space on device?"
+       return 1
     fi
 
     #
@@ -1415,14 +1719,27 @@ function build_silo
     SILO_DIR=${SILO_FILE%.sh}
     cd ${SILO_DIR}
     echo "Invoking command to configure Silo"
-    if [[ $MACBUILD == "No" ]]; then
-        env CXX="$CPP_COMPILER" CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CPP_OPT_FLAGS" ./configure --without-readline --without-hdf5 --without-exodus
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+       export HDF5INCLUDE=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include
+       export HDF5LIB=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib
+       WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
+    else
+       WITHHDF5ARG="--without-hdf5"
+    fi
+    if [[ $MACBUILD == "Yes" ]]; then
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        CXXFLAGS="$CXX_OPT_FLAGS -fno-common" --without-readline \
+        "$WITHHDF5ARG" --without-exodus --disable-sdx \
+        --without-python --disable-browser
         if [[ $? != 0 ]] ; then
-           echo "Silo configure failed.  Giving up"
+           echo "Silo configure --with-hdf5 failed.  Giving up"
            return 1
         fi
     else
-        env CXX="$CPP_COMPILER" CC="$C_COMPILER" CFLAGS="$C_OPT_FLAGS -fno-common" CXXFLAGS="$CPP_OPT_FLAGS -fno-common" ./configure --without-readline --without-hdf5 --without-exodus --disable-sdx --without-python --disable-browser
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --without-readline "$WITHHDF5ARG" --without-exodus
         if [[ $? != 0 ]] ; then
            echo "Silo configure failed.  Giving up"
            return 1
@@ -1444,7 +1761,15 @@ function build_silo
         #
         # Make dynamic executable
         #
-        gcc -dynamiclib -o libsilo.dylib silo/*/*.o -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,-install_name,@executable_path/../lib/libsilo.dylib,-compatibility_version,${SILO_COMPATIBILITY_VERSION},-current_version,${SILO_VERSION}
+        gcc -dynamiclib -o libsilo.dylib silo/*/*.o \
+        -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+        -Wl,-install_name,@executable_path/../lib/libsilo.dylib \
+        -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
+        -Wl,-current_version,${SILO_VERSION}
+        if [[ $? != 0 ]] ; then
+           echo "Silo dynamic library build failed.  Giving up"
+           return 1
+        fi
     fi
 
     #
@@ -1456,15 +1781,2248 @@ function build_silo
     mkdir $VISITDIR/silo/${SILO_VERSION}
     mkdir $VISITDIR/silo/${SILO_VERSION}/$VISITARCH
     mkdir $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/{include,lib}
-    cp silo/silo/silo.{h,inc}   $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
-    cp silo/sdx/sdx.{h,inc}     $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
-    if [[ $MACBUILD == "No" ]]; then
-        cp lib/libsilo.a        $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
+    cp silo/silo/silo.h $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
+    cp silo/silo/silo.inc $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
+    cp silo/sdx/sdx.h $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
+    cp silo/sdx/sdx.inc $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
+    if [[ $MACBUILD == "Yes" ]]; then
+        cp libsilo.dylib      $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
     else
-        cp libsilo.dylib        $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
+        cp lib/libsilo.a      $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
     fi
-    cd ..
+    cd $START_DIR
     echo "Done with Silo"
+}
+
+
+# *************************************************************************** #
+#                          Function 8.1, build_hdf5                            #
+# *************************************************************************** #
+
+function build_hdf5
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${HDF5_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${HDF5_FILE}.gz . . ." >&3
+       tar zxf ${HDF5_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $HDF5_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${HDF5_FILE} ]] ; then
+       info_box "Tarring ${HDF5_FILE} . . ." >&3
+       tar xf ${HDF5_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $HDF5_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring HDF5 . . ." >&3
+    HDF5_DIR=${HDF5_FILE%.tar}
+    cd ${HDF5_DIR}
+    echo "Invoking command to configure HDF5"
+    if [[ $MACBUILD == "Yes" ]]; then
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        LDFLAGS="-Wl,-headerpad_max_install_names" \
+        --prefix=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "HDF5 configure failed.  Giving up"
+           return 1
+        fi
+    else
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "HDF5 configure failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    #
+    # Build HDF5
+    #
+    info_box "Building HDF5 . . . (~2 minutes)" >&3
+    echo "Building HDF5"
+    make
+    if [[ $? != 0 ]] ; then
+       echo "HDF5 build failed.  Giving up"
+       return 1
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing HDF5 . . ." >&3
+    echo "Installing HDF5"
+    make install
+    if [[ $? != 0 ]] ; then
+       echo "HDF5 install failed.  Giving up"
+       return 1
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Make dynamic executable
+        #
+        info_box "Creating dynamic libraries for HDF5 . . ." >&3
+        echo "Creating dynamic libraries for HDF5"
+        libtool -o libhdf5.dylib -dynamic src/.libs/libhdf5.a -lSystem -lz \
+        -twolevel_namespace -undefined dynamic_lookup \
+        -headerpad_max_install_names \
+        -install_name @executable_path/../lib/libhdf5.dylib \
+        -compatibility_version $HDF5_COMPATIBILITY_VERSION \
+        -current_version $HDF5_VERSION
+        if [[ $? != 0 ]] ; then
+           echo "HDF5 dynamic library build failed.  Giving up"
+           return 1
+        fi
+
+        cp libhdf5.dylib $VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib
+
+    fi
+
+    cd $START_DIR
+    echo "Done with HDF5"
+}
+
+
+# *************************************************************************** #
+#                          Function 8.2, build_mili                            #
+# *************************************************************************** #
+
+function build_mili
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${MILI_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${MILI_FILE}.gz . . ." >&3
+       tar zxf ${MILI_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $MILI_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${MILI_FILE} ]] ; then
+       info_box "Tarring ${MILI_FILE} . . ." >&3
+       tar xf ${MILI_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $MILI_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Apply patches
+        #
+        info_box "Patching Mili . . ." >&3
+        patch -p0 << \EOF
+diff -rp mili.orig/src/mili_internal.h mili/src/mili_internal.h
+*** mili.orig/src/mili_internal.h       Thu Oct 12 14:31:40 2006
+--- mili/src/mili_internal.h    Thu Mar 22 16:39:39 2007
+***************
+*** 54,59 ****
+--- 54,60 ----
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <dirent.h>
++ #include <sys/types.h>
+  #include "list.h"
+  #include "misc.h"
+  #include "mili.h"
+EOF
+       if [[ $? != 0 ]] ; then
+          echo "Unable to patch Mili. Wrong version?"
+          return 1
+       fi
+    fi
+
+    info_box "Configuring Mili . . ." >&3
+    MILI_DIR=${MILI_FILE%.tar}
+    cd ${MILI_DIR}
+
+    echo "Invoking command to configure Mili"
+    if [[ $MACBUILD == "Yes" ]]; then
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        LDFLAGS="-Wl,-headerpad_max_install_names" \
+        --prefix=$VISITDIR/mili/$MILI_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "Mili configure failed.  Giving up"
+           return 1
+        fi
+    else
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix=$VISITDIR/mili/$MILI_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "Mili configure failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    #
+    # Build Mili
+    #
+    info_box "Building Mili . . . (~2 minutes)" >&3
+    echo "Building Mili"
+    if [[ $MACBUILD == "Yes" ]]; then
+       cd MILI-Darwin-*/src
+
+       gcc -O2 -fno-common -D_LARGEFILE64_SOURCE -c mili.c direc.c param.c \
+       io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
+       sarray.c gahl.c util.c partition.c ti.c tidirc.c
+       if [[ $? != 0 ]] ; then
+          echo "Mili build failed.  Giving up"
+          return 1
+       fi
+    else
+       make
+       if [[ $? != 0 ]] ; then
+          echo "Mili build failed.  Giving up"
+          return 1
+       fi
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing Mili . . ." >&3
+    echo "Installing Mili"
+    if [[ $MACBUILD == "Yes" ]]; then
+       gcc -dynamiclib -o libmili.dylib *.o \
+       -Wl,-headerpad_max_install_names \
+       -Wl,-install_name,@executable_path/../lib/libmili.dylib \
+       -Wl,-compatibility_version,$MILI_COMPATIBILITY_VERSION \
+       -Wl,-current_version,$MILI_VERSION
+       if [[ $? != 0 ]] ; then
+          echo "Mili dynamic library build failed.  Giving up"
+          return 1
+       fi
+
+       mkdir $VISITDIR/mili
+       mkdir $VISITDIR/mili/$MILI_VERSION
+       mkdir $VISITDIR/mili/$MILI_VERSION/$VISITARCH
+       cp mili.h $VISITDIR/mili/$MILI_VERSION/$VISITARCH
+       cp mili_enum.h $VISITDIR/mili/$MILI_VERSION/$VISITARCH
+       cp libmili.dylib $VISITDIR/mili/$MILI_VERSION/$VISITARCH
+       cd ../..
+    else
+       make install
+       if [[ $? != 0 ]] ; then
+          echo "Mili install failed.  Giving up"
+          return 1
+       fi
+    fi
+
+    cd $START_DIR
+    echo "Done with Mili"
+}
+
+
+# *************************************************************************** #
+#                          Function 8.3, build_hdf4                            #
+# *************************************************************************** #
+
+function build_hdf4
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${HDF4_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${HDF4_FILE}.gz . . ." >&3
+       tar zxf ${HDF4_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $HDF4_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${HDF4_FILE} ]] ; then
+       info_box "Tarring ${HDF4_FILE} . . ." >&3
+       tar xf ${HDF4_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $HDF4_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Apply patches
+        #
+        info_box "Patching HDF4 . . ." >&3
+        patch -p0 << \EOF
+*** HDF4.2r1.orig/configure	Tue Feb  8 10:29:27 2005
+--- HDF4.2r1/configure	Thu Apr 26 13:30:56 2007
+*************** done
+*** 5656,5711 ****
+  
+  echo "$as_me:$LINENO: checking for jpeg_start_decompress in -ljpeg" >&5
+  echo $ECHO_N "checking for jpeg_start_decompress in -ljpeg... $ECHO_C" >&6
+! if test "${ac_cv_lib_jpeg_jpeg_start_decompress+set}" = set; then
+!   echo $ECHO_N "(cached) $ECHO_C" >&6
+! else
+!   ac_check_lib_save_LIBS=$LIBS
+! LIBS="-ljpeg  $LIBS"
+! cat >conftest.$ac_ext <<_ACEOF
+! #line $LINENO "configure"
+! /* confdefs.h.  */
+! _ACEOF
+! cat confdefs.h >>conftest.$ac_ext
+! cat >>conftest.$ac_ext <<_ACEOF
+! /* end confdefs.h.  */
+! 
+! /* Override any gcc2 internal prototype to avoid an error.  */
+! #ifdef __cplusplus
+! extern "C"
+! #endif
+! /* We use char because int might match the return type of a gcc2
+!    builtin and then its argument prototype would still apply.  */
+! char jpeg_start_decompress ();
+! int
+! main ()
+! {
+! jpeg_start_decompress ();
+!   ;
+!   return 0;
+! }
+! _ACEOF
+! rm -f conftest.$ac_objext conftest$ac_exeext
+! if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+!   (eval $ac_link) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); } &&
+!          { ac_try='test -s conftest$ac_exeext'
+!   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+!   (eval $ac_try) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); }; }; then
+!   ac_cv_lib_jpeg_jpeg_start_decompress=yes
+! else
+!   echo "$as_me: failed program was:" >&5
+! sed 's/^/| /' conftest.$ac_ext >&5
+! 
+! ac_cv_lib_jpeg_jpeg_start_decompress=no
+! fi
+! rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+! LIBS=$ac_check_lib_save_LIBS
+! fi
+  echo "$as_me:$LINENO: result: $ac_cv_lib_jpeg_jpeg_start_decompress" >&5
+  echo "${ECHO_T}$ac_cv_lib_jpeg_jpeg_start_decompress" >&6
+  if test $ac_cv_lib_jpeg_jpeg_start_decompress = yes; then
+--- 5656,5712 ----
+  
+  echo "$as_me:$LINENO: checking for jpeg_start_decompress in -ljpeg" >&5
+  echo $ECHO_N "checking for jpeg_start_decompress in -ljpeg... $ECHO_C" >&6
+! #if test "${ac_cv_lib_jpeg_jpeg_start_decompress+set}" = set; then
+! #  echo $ECHO_N "(cached) $ECHO_C" >&6
+! #else
+! #  ac_check_lib_save_LIBS=$LIBS
+! #LIBS="-ljpeg  $LIBS"
+! #cat >conftest.$ac_ext <<_ACEOF
+! ##line $LINENO "configure"
+! #/* confdefs.h.  */
+! #_ACEOF
+! #cat confdefs.h >>conftest.$ac_ext
+! #cat >>conftest.$ac_ext <<_ACEOF
+! #/* end confdefs.h.  */
+! #
+! #/* Override any gcc2 internal prototype to avoid an error.  */
+! ##ifdef __cplusplus
+! #extern "C"
+! ##endif
+! #/* We use char because int might match the return type of a gcc2
+! #   builtin and then its argument prototype would still apply.  */
+! #char jpeg_start_decompress ();
+! #int
+! #main ()
+! #{
+! #jpeg_start_decompress ();
+! #  ;
+! #  return 0;
+! #}
+! #_ACEOF
+! #rm -f conftest.$ac_objext conftest$ac_exeext
+! #if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+! #  (eval $ac_link) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); } &&
+! #         { ac_try='test -s conftest$ac_exeext'
+! #  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+! #  (eval $ac_try) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); }; }; then
+! #  ac_cv_lib_jpeg_jpeg_start_decompress=yes
+! #else
+! #  echo "$as_me: failed program was:" >&5
+! #sed 's/^/| /' conftest.$ac_ext >&5
+! #
+! #ac_cv_lib_jpeg_jpeg_start_decompress=no
+! #fi
+! #rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
+! #LIBS=$ac_check_lib_save_LIBS
+! #fi
+! ac_cv_lib_jpeg_jpeg_start_decompress=yes
+  echo "$as_me:$LINENO: result: $ac_cv_lib_jpeg_jpeg_start_decompress" >&5
+  echo "${ECHO_T}$ac_cv_lib_jpeg_jpeg_start_decompress" >&6
+  if test $ac_cv_lib_jpeg_jpeg_start_decompress = yes; then
+*************** echo "${ECHO_T}$ac_cv_type_intp" >&6
+*** 6874,7183 ****
+  
+  echo "$as_me:$LINENO: checking size of int*" >&5
+  echo $ECHO_N "checking size of int*... $ECHO_C" >&6
+! if test "${ac_cv_sizeof_intp+set}" = set; then
+!   echo $ECHO_N "(cached) $ECHO_C" >&6
+! else
+!   if test "$ac_cv_type_intp" = yes; then
+!   # The cast to unsigned long works around a bug in the HP C Compiler
+!   # version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+!   # declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+!   # This bug is HP SR number 8606223364.
+!   if test "$cross_compiling" = yes; then
+!   # Depending upon the size, compute the lo and hi bounds.
+! cat >conftest.$ac_ext <<_ACEOF
+! #line $LINENO "configure"
+! /* confdefs.h.  */
+! _ACEOF
+! cat confdefs.h >>conftest.$ac_ext
+! cat >>conftest.$ac_ext <<_ACEOF
+! /* end confdefs.h.  */
+! $ac_includes_default
+! int
+! main ()
+! {
+! static int test_array [1 - 2 * !(((long) (sizeof (int*))) >= 0)];
+! test_array [0] = 0
+! 
+!   ;
+!   return 0;
+! }
+! _ACEOF
+! rm -f conftest.$ac_objext
+! if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+!   (eval $ac_compile) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); } &&
+!          { ac_try='test -s conftest.$ac_objext'
+!   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+!   (eval $ac_try) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); }; }; then
+!   ac_lo=0 ac_mid=0
+!   while :; do
+!     cat >conftest.$ac_ext <<_ACEOF
+! #line $LINENO "configure"
+! /* confdefs.h.  */
+! _ACEOF
+! cat confdefs.h >>conftest.$ac_ext
+! cat >>conftest.$ac_ext <<_ACEOF
+! /* end confdefs.h.  */
+! $ac_includes_default
+! int
+! main ()
+! {
+! static int test_array [1 - 2 * !(((long) (sizeof (int*))) <= $ac_mid)];
+! test_array [0] = 0
+! 
+!   ;
+!   return 0;
+! }
+! _ACEOF
+! rm -f conftest.$ac_objext
+! if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+!   (eval $ac_compile) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); } &&
+!          { ac_try='test -s conftest.$ac_objext'
+!   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+!   (eval $ac_try) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); }; }; then
+!   ac_hi=$ac_mid; break
+! else
+!   echo "$as_me: failed program was:" >&5
+! sed 's/^/| /' conftest.$ac_ext >&5
+! 
+! ac_lo=`expr $ac_mid + 1`
+!                     if test $ac_lo -le $ac_mid; then
+!                       ac_lo= ac_hi=
+!                       break
+!                     fi
+!                     ac_mid=`expr 2 '*' $ac_mid + 1`
+! fi
+! rm -f conftest.$ac_objext conftest.$ac_ext
+!   done
+! else
+!   echo "$as_me: failed program was:" >&5
+! sed 's/^/| /' conftest.$ac_ext >&5
+! 
+! cat >conftest.$ac_ext <<_ACEOF
+! #line $LINENO "configure"
+! /* confdefs.h.  */
+! _ACEOF
+! cat confdefs.h >>conftest.$ac_ext
+! cat >>conftest.$ac_ext <<_ACEOF
+! /* end confdefs.h.  */
+! $ac_includes_default
+! int
+! main ()
+! {
+! static int test_array [1 - 2 * !(((long) (sizeof (int*))) < 0)];
+! test_array [0] = 0
+! 
+!   ;
+!   return 0;
+! }
+! _ACEOF
+! rm -f conftest.$ac_objext
+! if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+!   (eval $ac_compile) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); } &&
+!          { ac_try='test -s conftest.$ac_objext'
+!   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+!   (eval $ac_try) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); }; }; then
+!   ac_hi=-1 ac_mid=-1
+!   while :; do
+!     cat >conftest.$ac_ext <<_ACEOF
+! #line $LINENO "configure"
+! /* confdefs.h.  */
+! _ACEOF
+! cat confdefs.h >>conftest.$ac_ext
+! cat >>conftest.$ac_ext <<_ACEOF
+! /* end confdefs.h.  */
+! $ac_includes_default
+! int
+! main ()
+! {
+! static int test_array [1 - 2 * !(((long) (sizeof (int*))) >= $ac_mid)];
+! test_array [0] = 0
+! 
+!   ;
+!   return 0;
+! }
+! _ACEOF
+! rm -f conftest.$ac_objext
+! if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+!   (eval $ac_compile) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); } &&
+!          { ac_try='test -s conftest.$ac_objext'
+!   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+!   (eval $ac_try) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); }; }; then
+!   ac_lo=$ac_mid; break
+! else
+!   echo "$as_me: failed program was:" >&5
+! sed 's/^/| /' conftest.$ac_ext >&5
+! 
+! ac_hi=`expr '(' $ac_mid ')' - 1`
+!                        if test $ac_mid -le $ac_hi; then
+!                          ac_lo= ac_hi=
+!                          break
+!                        fi
+!                        ac_mid=`expr 2 '*' $ac_mid`
+! fi
+! rm -f conftest.$ac_objext conftest.$ac_ext
+!   done
+! else
+!   echo "$as_me: failed program was:" >&5
+! sed 's/^/| /' conftest.$ac_ext >&5
+! 
+! ac_lo= ac_hi=
+! fi
+! rm -f conftest.$ac_objext conftest.$ac_ext
+! fi
+! rm -f conftest.$ac_objext conftest.$ac_ext
+! # Binary search between lo and hi bounds.
+! while test "x$ac_lo" != "x$ac_hi"; do
+!   ac_mid=`expr '(' $ac_hi - $ac_lo ')' / 2 + $ac_lo`
+!   cat >conftest.$ac_ext <<_ACEOF
+! #line $LINENO "configure"
+! /* confdefs.h.  */
+! _ACEOF
+! cat confdefs.h >>conftest.$ac_ext
+! cat >>conftest.$ac_ext <<_ACEOF
+! /* end confdefs.h.  */
+! $ac_includes_default
+! int
+! main ()
+! {
+! static int test_array [1 - 2 * !(((long) (sizeof (int*))) <= $ac_mid)];
+! test_array [0] = 0
+! 
+!   ;
+!   return 0;
+! }
+! _ACEOF
+! rm -f conftest.$ac_objext
+! if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+!   (eval $ac_compile) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); } &&
+!          { ac_try='test -s conftest.$ac_objext'
+!   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+!   (eval $ac_try) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); }; }; then
+!   ac_hi=$ac_mid
+! else
+!   echo "$as_me: failed program was:" >&5
+! sed 's/^/| /' conftest.$ac_ext >&5
+! 
+! ac_lo=`expr '(' $ac_mid ')' + 1`
+! fi
+! rm -f conftest.$ac_objext conftest.$ac_ext
+! done
+! case $ac_lo in
+! ?*) ac_cv_sizeof_intp=$ac_lo;;
+! '') { { echo "$as_me:$LINENO: error: cannot compute sizeof (int*), 77
+! See \`config.log' for more details." >&5
+! echo "$as_me: error: cannot compute sizeof (int*), 77
+! See \`config.log' for more details." >&2;}
+!    { (exit 1); exit 1; }; } ;;
+! esac
+! else
+!   if test "$cross_compiling" = yes; then
+!   { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
+! See \`config.log' for more details." >&5
+! echo "$as_me: error: cannot run test program while cross compiling
+! See \`config.log' for more details." >&2;}
+!    { (exit 1); exit 1; }; }
+! else
+!   cat >conftest.$ac_ext <<_ACEOF
+! #line $LINENO "configure"
+! /* confdefs.h.  */
+! _ACEOF
+! cat confdefs.h >>conftest.$ac_ext
+! cat >>conftest.$ac_ext <<_ACEOF
+! /* end confdefs.h.  */
+! $ac_includes_default
+! long longval () { return (long) (sizeof (int*)); }
+! unsigned long ulongval () { return (long) (sizeof (int*)); }
+! #include <stdio.h>
+! #include <stdlib.h>
+! int
+! main ()
+! {
+! 
+!   FILE *f = fopen ("conftest.val", "w");
+!   if (! f)
+!     exit (1);
+!   if (((long) (sizeof (int*))) < 0)
+!     {
+!       long i = longval ();
+!       if (i != ((long) (sizeof (int*))))
+! 	exit (1);
+!       fprintf (f, "%ld\n", i);
+!     }
+!   else
+!     {
+!       unsigned long i = ulongval ();
+!       if (i != ((long) (sizeof (int*))))
+! 	exit (1);
+!       fprintf (f, "%lu\n", i);
+!     }
+!   exit (ferror (f) || fclose (f) != 0);
+! 
+!   ;
+!   return 0;
+! }
+! _ACEOF
+! rm -f conftest$ac_exeext
+! if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+!   (eval $ac_link) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+!   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+!   (eval $ac_try) 2>&5
+!   ac_status=$?
+!   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+!   (exit $ac_status); }; }; then
+!   ac_cv_sizeof_intp=`cat conftest.val`
+! else
+!   echo "$as_me: program exited with status $ac_status" >&5
+! echo "$as_me: failed program was:" >&5
+! sed 's/^/| /' conftest.$ac_ext >&5
+! 
+! ( exit $ac_status )
+! { { echo "$as_me:$LINENO: error: cannot compute sizeof (int*), 77
+! See \`config.log' for more details." >&5
+! echo "$as_me: error: cannot compute sizeof (int*), 77
+! See \`config.log' for more details." >&2;}
+!    { (exit 1); exit 1; }; }
+! fi
+! rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+! fi
+! fi
+! rm -f conftest.val
+! else
+!   ac_cv_sizeof_intp=0
+! fi
+! fi
+  echo "$as_me:$LINENO: result: $ac_cv_sizeof_intp" >&5
+  echo "${ECHO_T}$ac_cv_sizeof_intp" >&6
+  cat >>confdefs.h <<_ACEOF
+--- 6875,7185 ----
+  
+  echo "$as_me:$LINENO: checking size of int*" >&5
+  echo $ECHO_N "checking size of int*... $ECHO_C" >&6
+! #if test "${ac_cv_sizeof_intp+set}" = set; then
+! #  echo $ECHO_N "(cached) $ECHO_C" >&6
+! #else
+! #  if test "$ac_cv_type_intp" = yes; then
+! #  # The cast to unsigned long works around a bug in the HP C Compiler
+! #  # version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+! #  # declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+! #  # This bug is HP SR number 8606223364.
+! #  if test "$cross_compiling" = yes; then
+! #  # Depending upon the size, compute the lo and hi bounds.
+! #cat >conftest.$ac_ext <<_ACEOF
+! ##line $LINENO "configure"
+! #/* confdefs.h.  */
+! #_ACEOF
+! #cat confdefs.h >>conftest.$ac_ext
+! #cat >>conftest.$ac_ext <<_ACEOF
+! #/* end confdefs.h.  */
+! #$ac_includes_default
+! #int
+! #main ()
+! #{
+! #static int test_array [1 - 2 * !(((long) (sizeof (int*))) >= 0)];
+! #test_array [0] = 0
+! #
+! #  ;
+! #  return 0;
+! #}
+! #_ACEOF
+! #rm -f conftest.$ac_objext
+! #if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+! #  (eval $ac_compile) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); } &&
+! #         { ac_try='test -s conftest.$ac_objext'
+! #  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+! #  (eval $ac_try) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); }; }; then
+! #  ac_lo=0 ac_mid=0
+! #  while :; do
+! #    cat >conftest.$ac_ext <<_ACEOF
+! ##line $LINENO "configure"
+! #/* confdefs.h.  */
+! #_ACEOF
+! #cat confdefs.h >>conftest.$ac_ext
+! #cat >>conftest.$ac_ext <<_ACEOF
+! #/* end confdefs.h.  */
+! #$ac_includes_default
+! #int
+! #main ()
+! #{
+! #static int test_array [1 - 2 * !(((long) (sizeof (int*))) <= $ac_mid)];
+! #test_array [0] = 0
+! #
+! #  ;
+! #  return 0;
+! #}
+! #_ACEOF
+! #rm -f conftest.$ac_objext
+! #if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+! #  (eval $ac_compile) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); } &&
+! #         { ac_try='test -s conftest.$ac_objext'
+! #  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+! #  (eval $ac_try) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); }; }; then
+! #  ac_hi=$ac_mid; break
+! #else
+! #  echo "$as_me: failed program was:" >&5
+! #sed 's/^/| /' conftest.$ac_ext >&5
+! #
+! #ac_lo=`expr $ac_mid + 1`
+! #                    if test $ac_lo -le $ac_mid; then
+! #                      ac_lo= ac_hi=
+! #                      break
+! #                    fi
+! #                    ac_mid=`expr 2 '*' $ac_mid + 1`
+! #fi
+! #rm -f conftest.$ac_objext conftest.$ac_ext
+! #  done
+! #else
+! #  echo "$as_me: failed program was:" >&5
+! #sed 's/^/| /' conftest.$ac_ext >&5
+! #
+! #cat >conftest.$ac_ext <<_ACEOF
+! ##line $LINENO "configure"
+! #/* confdefs.h.  */
+! #_ACEOF
+! #cat confdefs.h >>conftest.$ac_ext
+! #cat >>conftest.$ac_ext <<_ACEOF
+! #/* end confdefs.h.  */
+! #$ac_includes_default
+! #int
+! #main ()
+! #{
+! #static int test_array [1 - 2 * !(((long) (sizeof (int*))) < 0)];
+! #test_array [0] = 0
+! #
+! #  ;
+! #  return 0;
+! #}
+! #_ACEOF
+! #rm -f conftest.$ac_objext
+! #if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+! #  (eval $ac_compile) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); } &&
+! #         { ac_try='test -s conftest.$ac_objext'
+! #  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+! #  (eval $ac_try) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); }; }; then
+! #  ac_hi=-1 ac_mid=-1
+! #  while :; do
+! #    cat >conftest.$ac_ext <<_ACEOF
+! ##line $LINENO "configure"
+! #/* confdefs.h.  */
+! #_ACEOF
+! #cat confdefs.h >>conftest.$ac_ext
+! #cat >>conftest.$ac_ext <<_ACEOF
+! #/* end confdefs.h.  */
+! #$ac_includes_default
+! #int
+! #main ()
+! #{
+! #static int test_array [1 - 2 * !(((long) (sizeof (int*))) >= $ac_mid)];
+! #test_array [0] = 0
+! #
+! #  ;
+! #  return 0;
+! #}
+! #_ACEOF
+! #rm -f conftest.$ac_objext
+! #if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+! #  (eval $ac_compile) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); } &&
+! #         { ac_try='test -s conftest.$ac_objext'
+! #  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+! #  (eval $ac_try) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); }; }; then
+! #  ac_lo=$ac_mid; break
+! #else
+! #  echo "$as_me: failed program was:" >&5
+! #sed 's/^/| /' conftest.$ac_ext >&5
+! #
+! #ac_hi=`expr '(' $ac_mid ')' - 1`
+! #                       if test $ac_mid -le $ac_hi; then
+! #                         ac_lo= ac_hi=
+! #                         break
+! #                       fi
+! #                       ac_mid=`expr 2 '*' $ac_mid`
+! #fi
+! #rm -f conftest.$ac_objext conftest.$ac_ext
+! #  done
+! #else
+! #  echo "$as_me: failed program was:" >&5
+! #sed 's/^/| /' conftest.$ac_ext >&5
+! #
+! #ac_lo= ac_hi=
+! #fi
+! #rm -f conftest.$ac_objext conftest.$ac_ext
+! #fi
+! #rm -f conftest.$ac_objext conftest.$ac_ext
+! ## Binary search between lo and hi bounds.
+! #while test "x$ac_lo" != "x$ac_hi"; do
+! #  ac_mid=`expr '(' $ac_hi - $ac_lo ')' / 2 + $ac_lo`
+! #  cat >conftest.$ac_ext <<_ACEOF
+! ##line $LINENO "configure"
+! #/* confdefs.h.  */
+! #_ACEOF
+! #cat confdefs.h >>conftest.$ac_ext
+! #cat >>conftest.$ac_ext <<_ACEOF
+! #/* end confdefs.h.  */
+! #$ac_includes_default
+! #int
+! #main ()
+! #{
+! #static int test_array [1 - 2 * !(((long) (sizeof (int*))) <= $ac_mid)];
+! #test_array [0] = 0
+! #
+! #  ;
+! #  return 0;
+! #}
+! #_ACEOF
+! #rm -f conftest.$ac_objext
+! #if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+! #  (eval $ac_compile) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); } &&
+! #         { ac_try='test -s conftest.$ac_objext'
+! #  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+! #  (eval $ac_try) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); }; }; then
+! #  ac_hi=$ac_mid
+! #else
+! #  echo "$as_me: failed program was:" >&5
+! #sed 's/^/| /' conftest.$ac_ext >&5
+! #
+! #ac_lo=`expr '(' $ac_mid ')' + 1`
+! #fi
+! #rm -f conftest.$ac_objext conftest.$ac_ext
+! #done
+! #case $ac_lo in
+! #?*) ac_cv_sizeof_intp=$ac_lo;;
+! #'') { { echo "$as_me:$LINENO: error: cannot compute sizeof (int*), 77
+! #See \`config.log' for more details." >&5
+! #echo "$as_me: error: cannot compute sizeof (int*), 77
+! #See \`config.log' for more details." >&2;}
+! #   { (exit 1); exit 1; }; } ;;
+! #esac
+! #else
+! #  if test "$cross_compiling" = yes; then
+! #  { { echo "$as_me:$LINENO: error: cannot run test program while cross compiling
+! #See \`config.log' for more details." >&5
+! #echo "$as_me: error: cannot run test program while cross compiling
+! #See \`config.log' for more details." >&2;}
+! #   { (exit 1); exit 1; }; }
+! #else
+! #  cat >conftest.$ac_ext <<_ACEOF
+! ##line $LINENO "configure"
+! #/* confdefs.h.  */
+! #_ACEOF
+! #cat confdefs.h >>conftest.$ac_ext
+! #cat >>conftest.$ac_ext <<_ACEOF
+! #/* end confdefs.h.  */
+! #$ac_includes_default
+! #long longval () { return (long) (sizeof (int*)); }
+! #unsigned long ulongval () { return (long) (sizeof (int*)); }
+! ##include <stdio.h>
+! ##include <stdlib.h>
+! #int
+! #main ()
+! #{
+! #
+! #  FILE *f = fopen ("conftest.val", "w");
+! #  if (! f)
+! #    exit (1);
+! #  if (((long) (sizeof (int*))) < 0)
+! #    {
+! #      long i = longval ();
+! #      if (i != ((long) (sizeof (int*))))
+! #	exit (1);
+! #      fprintf (f, "%ld\n", i);
+! #    }
+! #  else
+! #    {
+! #      unsigned long i = ulongval ();
+! #      if (i != ((long) (sizeof (int*))))
+! #	exit (1);
+! #      fprintf (f, "%lu\n", i);
+! #    }
+! #  exit (ferror (f) || fclose (f) != 0);
+! #
+! #  ;
+! #  return 0;
+! #}
+! #_ACEOF
+! #rm -f conftest$ac_exeext
+! #if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+! #  (eval $ac_link) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+! #  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+! #  (eval $ac_try) 2>&5
+! #  ac_status=$?
+! #  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+! #  (exit $ac_status); }; }; then
+! #  ac_cv_sizeof_intp=`cat conftest.val`
+! #else
+! #  echo "$as_me: program exited with status $ac_status" >&5
+! #echo "$as_me: failed program was:" >&5
+! #sed 's/^/| /' conftest.$ac_ext >&5
+! #
+! #( exit $ac_status )
+! #{ { echo "$as_me:$LINENO: error: cannot compute sizeof (int*), 77
+! #See \`config.log' for more details." >&5
+! #echo "$as_me: error: cannot compute sizeof (int*), 77
+! #See \`config.log' for more details." >&2;}
+! #   { (exit 1); exit 1; }; }
+! #fi
+! #rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+! #fi
+! #fi
+! #rm -f conftest.val
+! #else
+! #  ac_cv_sizeof_intp=0
+! #fi
+! #fi
+! ac_cv_sizeof_intp=4
+  echo "$as_me:$LINENO: result: $ac_cv_sizeof_intp" >&5
+  echo "${ECHO_T}$ac_cv_sizeof_intp" >&6
+  cat >>confdefs.h <<_ACEOF
+*** HDF4.2r1.orig/hdf/src/hdfi.h	Mon Jan 24 19:36:44 2005
+--- HDF4.2r1/hdf/src/hdfi.h	Thu Apr 26 13:39:53 2007
+***************
+*** 10,16 ****
+   *                                                                          *
+   ****************************************************************************/
+  
+! /* $Id: hdfi.h,v 1.156 2005/01/25 03:36:44 epourmal Exp $ */
+  
+  #ifndef HDFI_H
+  #define HDFI_H
+--- 10,16 ----
+   *                                                                          *
+   ****************************************************************************/
+  
+! /* $Id: hdfi.h 4798 2006-12-06 20:51:13Z epourmal $ */
+  
+  #ifndef HDFI_H
+  #define HDFI_H
+***************
+*** 62,67 ****
+--- 62,68 ----
+  #define     DFMT_MIPSEL         0x4441
+  #define     DFMT_PC             0x4441
+  #define     DFMT_APPLE          0x1111
++ #define     DFMT_APPLE_INTEL    0x4441
+  #define     DFMT_MAC            0x1111
+  #define     DFMT_SUN386         0x4441
+  #define     DFMT_NEXT           0x1111
+*************** typedef int               hdf_pint_t;   
+*** 607,612 ****
+--- 608,626 ----
+  
+  #endif /* CRAYMPP */
+  
++ /* CRAY XT3
++  * Note from RedStorm helpdesk,
++  * When I compile a C code with the '-v' option, it indicates that the compile
++  * is done with the macros __QK_USER__ and __LIBCATAMOUNT__ defined.  In
++  * addition, there are other macros like __x86_64__ defined as well, to
++  * indicate processor type.  __QK_USER__ might be a good check for Catamount,
++  * and __x86_64__ might be good for Opteron node.  You might try something
++  * like the following in a header file:
++  */
++ #if ((defined(__QK_USER__)) && (defined(__x86_64__)))
++ #define __CRAY_XT3__
++ #endif
++ 
+  #if defined(VMS) || defined(vms)
+  
+  #ifdef GOT_MACHINE
+*************** Please check your Makefile.
+*** 736,742 ****
+  #include <sys/types.h>
+  #include <sys/file.h>               /* for unbuffered i/o stuff */
+  #include <sys/stat.h>
+! #define DF_MT   DFMT_APPLE 
+  typedef void            VOID;
+  typedef void            *VOIDP;
+  typedef char            *_fcd;
+--- 750,764 ----
+  #include <sys/types.h>
+  #include <sys/file.h>               /* for unbuffered i/o stuff */
+  #include <sys/stat.h>
+! #ifdef __i386
+! #ifndef INTEL86
+! #define INTEL86   /* we need this Intel define or bad things happen later */
+! #endif /* INTEL86 */
+! #define DF_MT   DFMT_APPLE_INTEL
+! #else
+! #define DF_MT   DFMT_APPLE
+! #endif /* __i386 */
+! 
+  typedef void            VOID;
+  typedef void            *VOIDP;
+  typedef char            *_fcd;
+*************** void exit(int status);
+*** 886,892 ****
+  #endif /*MAC*/
+  
+  /* Metrowerks Mac compiler defines some PC stuff so need to exclude this on the Mac */
+! #if !(defined(macintosh) || defined(MAC))
+  
+  #if defined _M_ALPHA || defined _M_IX86 || defined INTEL86 || defined M_I86 || defined M_I386 || defined DOS386 || defined __i386 || defined UNIX386 || defined i386
+  #ifndef INTEL86
+--- 908,914 ----
+  #endif /*MAC*/
+  
+  /* Metrowerks Mac compiler defines some PC stuff so need to exclude this on the Mac */
+! #if !(defined(macintosh) || defined(MAC) || defined (__APPLE__))
+  
+  #if defined _M_ALPHA || defined _M_IX86 || defined INTEL86 || defined M_I86 || defined M_I386 || defined DOS386 || defined __i386 || defined UNIX386 || defined i386
+  #ifndef INTEL86
+EOF
+       if [[ $? != 0 ]] ; then
+          echo "Unable to patch HDF4. Wrong version?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring HDF4 . . ." >&3
+    HDF4_DIR=${HDF4_FILE%.tar}
+    cd ${HDF4_DIR}
+    echo "Invoking command to configure HDF4"
+    MAKEOPS=""
+    if [[ $MACBUILD == "Yes" ]]; then
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        CPPFLAGS="-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities \
+        -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg" \
+        LDFLAGS="-Wl,-headerpad_max_install_names" \
+        --prefix=$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH \
+        --with-jpeg=$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH \
+        --with-szlib=no --disable-fortran --disable-dependency-tracking
+        if [[ $? != 0 ]] ; then
+           echo "HDF4 configure failed.  Giving up"
+           return 1
+        fi
+        MAKEOPS="-i"
+    else
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" LIBS="-lm" --disable-fortran \
+        --prefix=$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "HDF4 configure failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    #
+    # Build HDF4
+    #
+    info_box "Building HDF4 . . . (~2 minutes)" >&3
+    echo "Building HDF4"
+    make $MAKEOPS
+    if [[ $? != 0 ]] ; then
+       echo "HDF4 build failed.  Giving up"
+       return 1
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing HDF4 . . ." >&3
+    echo "Installing HDF4"
+    make $MAKEOPS install 
+    if [[ $? != 0 ]] ; then
+       echo "HDF4 install failed.  Giving up"
+       return 1
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Make dynamic executable
+        #
+        info_box "Creating dynamic libraries for HDF4 . . ." >&3
+        echo "Creating dynamic libraries for HDF4"
+        # Relink libdf.
+        gcc -dynamiclib -o libdf.dylib hdf/src/*.o \
+        -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+        -Wl,-install_name,@executable_path/../lib/libdf.dylib \
+        -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
+        -Wl,-current_version,$HDF4_VERSION \
+        -L$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib -lvtkjpeg -lz
+        if [[ $? != 0 ]] ; then
+           echo \
+"HDF4 dynamic library build failed for libdf.dylib.  Giving up"
+           return 1
+        fi
+        cp libdf.dylib $VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib
+
+        # Relink libmfhdf.
+        gcc -dynamiclib -o libmfhdf.dylib mfhdf/libsrc/*.o \
+        -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+        -Wl,-install_name,@executable_path/../lib/libmfhdf.dylib \
+        -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
+        -Wl,-current_version,$HDF4_VERSION \
+        -L$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib \
+        -L$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib \
+        -lvtkjpeg -ldf -lz
+        if [[ $? != 0 ]] ; then
+           echo \
+"HDF4 dynamic library build failed for libmfhdf.dylib.  Giving up"
+           return 1
+        fi
+        cp libmfhdf.dylib $VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib
+    fi
+
+    cd $START_DIR
+    echo "Done with HDF4"
+}
+
+
+# *************************************************************************** #
+#                         Function 8.4, build_netcdf                          #
+# *************************************************************************** #
+
+function build_netcdf
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${NETCDF_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${NETCDF_FILE}.gz . . ." >&3
+       tar zxf ${NETCDF_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $NETCDF_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${NETCDF_FILE} ]] ; then
+       info_box "Tarring ${NETCDF_FILE} . . ." >&3
+       tar xf ${NETCDF_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $NETCDF_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Apply patches
+        #
+        info_box "Patching NetCDF . . ." >&3
+        patch -p0 << \EOF
+*** netcdf-3.6.0-p1.orig/src/libsrc/netcdf.h	Tue Sep 14 06:41:22 2004
+--- netcdf-3.6.0-p1/src/libsrc/netcdf.h	Thu Apr 26 14:14:41 2007
+*************** typedef enum {
+*** 130,140 ****
+   * applications and utilities.  However, nothing is statically allocated to
+   * these sizes internally.
+   */
+! #define NC_MAX_DIMS	512	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	4096	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	4096	 /* max variables per file */
+  #define NC_MAX_NAME	128	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	NC_MAX_DIMS /* max per variable dimensions */
+  
+  
+  /*
+--- 130,140 ----
+   * applications and utilities.  However, nothing is statically allocated to
+   * these sizes internally.
+   */
+! #define NC_MAX_DIMS	65536	 /* max dimensions per file */
+  #define NC_MAX_ATTRS	4096	 /* max global or per variable attributes */
+! #define NC_MAX_VARS	524288	 /* max variables per file */
+  #define NC_MAX_NAME	128	 /* max length of a name */
+! #define NC_MAX_VAR_DIMS	8 	 /* max per variable dimensions */
+  
+  
+  /*
+EOF
+       if [[ $? != 0 ]] ; then
+          echo "Unable to patch NetCDF. Wrong version?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring NetCDF . . ." >&3
+    cd netcdf-3.6.0-p1/src
+    echo "Invoking command to configure NetCDF"
+    if [[ $MACBUILD == "Yes" ]]; then
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        CXXFLAGS="$C_OPT_FLAGS -fno-common" \
+        FC="" --enable-largefile \
+        --prefix=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "NetCDF configure failed.  Giving up"
+           return 1
+        fi
+    else
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "NetCDF configure failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    #
+    # Build NetCDF
+    #
+    info_box "Building NetCDF . . . (~2 minutes)" >&3
+    echo "Building NetCDF"
+    if [[ $MACBUILD == "Yes" ]]; then
+        cd libsrc
+        gcc -c -O2 -fno-common -DVERSION=`cat ../VERSION` libvers.c
+        gcc -c -O2 -fno-common attr.c dim.c error.c nc.c ncio.c \
+        ncx.c putget.c string.c v1hpg.c v2i.c var.c
+        gcc -dynamiclib -o ../libnetcdf.dylib *.o \
+        -Wl,-headerpad_max_install_names \
+        -Wl,-install_name,@executable_path/../lib/libnetcdf.dylib \
+        -Wl,-compatibility_version,$NETCDF_COMPATIBILITY_VERSION \
+        -Wl,-current_version,$NETCDF_VERSION
+        if [[ $? != 0 ]] ; then
+           echo "NetCDF dynamic library build failed.  Giving up"
+           return 1
+        fi
+        cd ../cxx
+        g++ -c -O2 -fno-common -I../libsrc -I.   netcdf.cpp
+        g++ -c -O2 -fno-common -I../libsrc -I.   ncvalues.cpp
+        g++ -dynamiclib -o ../libnetcdf_c++.dylib netcdf.o ncvalues.o \
+        -L.. -lnetcdf -Wl,-headerpad_max_install_names \
+        -Wl,-install_name,@executable_path/../lib/libnetcdf_c++.dylib \
+        -Wl,-compatibility_version,$NETCDF_COMPATIBILITY_VERSION \
+        -Wl,-current_version,$NETCDF_VERSION
+        if [[ $? != 0 ]] ; then
+           echo "NetCDF dynamic library build failed.  Giving up"
+           return 1
+        fi
+        cd ..
+    else
+        make
+        if [[ $? != 0 ]] ; then
+           echo "NetCDF build failed.  Giving up"
+           return 1
+        fi
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing NetCDF . . ." >&3
+    echo "Installing NetCDF"
+    mkdir $VISITDIR/netcdf
+    mkdir $VISITDIR/netcdf/$NETCDF_VERSION
+    mkdir $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH
+    mkdir $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
+    mkdir $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib
+    if [[ $MACBUILD == "Yes" ]]; then
+        cp cxx/ncvalues.h $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
+        cp cxx/netcdf.hh $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
+        cp cxx/netcdfcpp.h $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
+        cp libsrc/netcdf.h $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
+
+        cp libnetcdf.dylib $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib
+        cp libnetcdf_c++.dylib $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib
+    else
+        make install
+        if [[ $? != 0 ]] ; then
+           echo "NetCDF install failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    cd $START_DIR
+    echo "Done with NetCDF"
+}
+
+
+# *************************************************************************** #
+#                         Function 8.5, build_cgns                            #
+# *************************************************************************** #
+
+function build_cgns
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${CGNS_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${CGNS_FILE}.gz . . ." >&3
+       tar zxf ${CGNS_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $CGNS_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${CGNS_FILE} ]] ; then
+       info_box "Tarring ${CGNS_FILE} . . ." >&3
+       tar xf ${CGNS_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $CGNS_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring CGNS . . ." >&3
+    CGNS_DIR=${CGNS_FILE%-3.tar}
+    cd ${CGNS_DIR}
+    echo "Invoking command to configure CGNS"
+    if [[ $MACBUILD == "Yes" ]]; then
+        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        CXXFLAGS="$C_OPT_FLAGS -fno-common" \
+        ./configure --prefix=$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "CGNS configure failed.  Giving up"
+           return 1
+        fi
+    else
+        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        ./configure --prefix=$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "CGNS configure failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    #
+    # Build CGNS
+    #
+    info_box "Building CGNS . . . (~2 minutes)" >&3
+    echo "Building CGNS"
+    make
+    if [[ $? != 0 ]] ; then
+       echo "CGNS build failed.  Giving up"
+       return 1
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing CGNS . . ." >&3
+    echo "Installing CGNS"
+    mkdir $VISITDIR/cgns
+    mkdir $VISITDIR/cgns/$CGNS_VERSION
+    mkdir $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH
+    mkdir $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/include
+    mkdir $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib
+    make install
+    if [[ $? != 0 ]] ; then
+       echo "CGNS install failed.  Giving up"
+       return 1
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Make dynamic executable
+        #
+        info_box "Creating dynamic libraries for CGNS . . ." >&3
+        echo "Creating dynamic libraries for CGNS"
+        libtool -o libcgns.dylib -dynamic DARWIN/libcgns.a -lSystem \
+        -lSystemStubs -headerpad_max_install_names \
+        -twolevel_namespace -undefined dynamic_lookup \
+        -install_name @executable_path/../lib/libcgns.dylib \
+        -compatibility_version $CGNS_COMPATIBILITY_VERSION \
+        -current_version $CGNS_VERSION
+
+        cp libcgns.dylib $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib
+    fi
+
+    cd $START_DIR
+    echo "Done with CGNS"
+}
+
+
+# *************************************************************************** #
+#                         Function 8.6, build_gdal                            #
+# *************************************************************************** #
+
+function build_gdal
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${GDAL_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${GDAL_FILE}.gz . . ." >&3
+       tar zxf ${GDAL_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $GDAL_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${GDAL_FILE} ]] ; then
+       info_box "Tarring ${GDAL_FILE} . . ." >&3
+       tar xf ${GDAL_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $GDAL_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring GDAL . . ." >&3
+    GDAL_DIR=${GDAL_FILE%.tar}
+    cd ${GDAL_DIR}
+    echo "Invoking command to configure GDAL"
+    if [[ $MACBUILD == "Yes" ]]; then
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        CXXFLAGS="$C_OPT_FLAGS -fno-common" F77="" \
+        --prefix=$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH \
+        --with-libtiff=internal --with-gif=internal \
+        --with-png=internal --with-jpeg=internal \
+        --with-libz=internal --with-netcdf=no \
+        --without-jasper --without-python
+        if [[ $? != 0 ]] ; then
+           echo "GDAL configure failed.  Giving up"
+           return 1
+        fi
+    else
+        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix=$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH \
+        --with-libtiff=internal --with-gif=internal \
+        --with-png=internal --with-jpeg=internal \
+        --with-libz=internal --with-netcdf=no \
+        --without-jasper --without-python
+        if [[ $? != 0 ]] ; then
+           echo "GDAL configure failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    #
+    # Build GDAL
+    #
+    info_box "Building GDAL . . . (~4 minutes)" >&3
+    echo "Building GDAL"
+    make
+    if [[ $? != 0 ]] ; then
+       echo "GDAL build failed.  Giving up"
+       return 1
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing GDAL . . ." >&3
+    echo "Installing GDAL"
+    make install
+    if [[ $? != 0 ]] ; then
+       echo "GDAL install failed.  Giving up"
+       return 1
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Make dynamic executable
+        #
+        info_box "Fixing install_name of dynamic libraries for GDAL . . ." >&3
+        echo "Fixing install_name of dynamic libraries for GDAL"
+        cp .libs/libgdal.1.10.0.dylib libgdal.dylib
+        install_name_tool -id @executable_path/../lib/libgdal.dylib \
+        libgdal.dylib
+
+        rm $VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.dylib
+        cp libgdal.dylib \
+        $VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.dylib
+    fi
+
+    cd $START_DIR
+    echo "Done with GDAL"
+}
+
+
+# *************************************************************************** #
+#                         Function 8.7, build_exodus                          #
+# *************************************************************************** #
+
+function build_exodus
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${EXODUS_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${EXODUS_FILE}.gz . . ." >&3
+       tar zxf ${EXODUS_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $EXODUS_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${EXODUS_FILE} ]] ; then
+       info_box "Tarring ${EXODUS_FILE} . . ." >&3
+       tar xf ${EXODUS_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $EXODUS_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    EXODUS_DIR=${EXODUS_FILE%.tar}
+    cd ${EXODUS_DIR}
+    #
+    # Build Exodus
+    #
+    info_box "Building Exodus . . . (~2 minutes)" >&3
+    echo "Building Exodus"
+    if [[ $MACBUILD == "Yes" ]]; then
+       cd cbind/src
+       export NETCDFLIB=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib
+       export NETCDFINC=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
+       gcc -O2 -fno-common -I../include -I$NETCDFINC -c *.c
+       if [[ $? != 0 ]] ; then
+          echo "Exodus build failed.  Giving up"
+          return 1
+       fi
+    else
+       make -f Makefile.standalone \
+       CCOPTIONS="-I$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
+       if [[ $? != 0 ]] ; then
+          echo "Exodus build failed.  Giving up"
+          return 1
+       fi
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing Exodus . . ." >&3
+    echo "Installing Exodus"
+    mkdir $VISITDIR/exodus
+    mkdir $VISITDIR/exodus/$EXODUS_VERSION
+    mkdir $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH
+    mkdir $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc
+    mkdir $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Make dynamic executable
+        #
+        info_box "Creating dynamic libraries for Exodus . . ." >&3
+        echo "Creating dynamic libraries for Exodus"
+        gcc -dynamiclib -o libexoIIv2c.dylib *.o \
+        -Wl,-headerpad_max_install_names \
+        -Wl,-install_name,@executable_path/../lib/libexoIIv2c.dylib \
+        -Wl,-compatibility_version,4.0,-current_version,4.46 \
+        -L$NETCDFLIB -lnetcdf
+        if [[ $? != 0 ]] ; then
+           echo "Creation of dynamic library failed.  Giving up"
+           return 1
+        fi
+        cp libexoIIv2c.dylib $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib
+        cp ../include/*.h $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc
+        ln -s  $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h \
+        $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h
+        cd ../..
+    else
+        cp cbind/include/exodusII.h \
+        $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc
+        cp cbind/include/exodusII_ext.h \
+        $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc
+        ln -s  $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h \
+        $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h
+        cp libexoIIv2c.a $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib
+        if [[ $? != 0 ]] ; then
+           echo "Exodus install failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    cd $START_DIR
+    echo "Done with Exodus"
+}
+
+
+# *************************************************************************** #
+#                         Function 8.8, build_boxlib                          #
+# *************************************************************************** #
+
+function build_boxlib
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${BOXLIB_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${BOXLIB_FILE}.gz . . ." >&3
+       tar zxf ${BOXLIB_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $BOXLIB_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${BOXLIB_FILE} ]] ; then
+       info_box "Tarring ${BOXLIB_FILE} . . ." >&3
+       tar xf ${BOXLIB_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $BOXLIB_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Apply patches
+        #
+        info_box "Patching Boxlib 3D . . ." >&3
+        patch -p0 << \EOF
+diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
+*** CCSEApps.orig/BoxLib/GNUmakefile	Sun Jul 22 21:32:20 2001
+--- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:08:13 2007
+*************** PBOXLIB_HOME = ..
+*** 7,19 ****
+  TOP = $(PBOXLIB_HOME)
+  
+  PRECISION = DOUBLE
+! DEBUG     = TRUE
+  DIM       = 3
+! COMP      = KCC
+! USE_MPI   = TRUE
+  #NAMESPACE = TRUE
+  NAMESPACE = FALSE
+  
+  #
+  # The base name of the library we're building.
+  #
+--- 7,21 ----
+  TOP = $(PBOXLIB_HOME)
+  
+  PRECISION = DOUBLE
+! DEBUG     = FALSE
+  DIM       = 3
+! COMP      = 
+! USE_MPI   = FALSE
+  #NAMESPACE = TRUE
+  NAMESPACE = FALSE
+  
++ CXXFLAGS += -fno-common
++ CCFLAGS += -fno-common
+  #
+  # The base name of the library we're building.
+  #
+diff -rp CCSEApps.orig/BoxLib/BaseFab.cpp CCSEApps/BoxLib/BaseFab.cpp
+*** CCSEApps.orig/BoxLib/BaseFab.cpp	Wed Mar 19 10:11:09 2003
+--- CCSEApps/BoxLib/BaseFab.cpp	Fri Apr 27 15:09:29 2007
+***************
+*** 28,34 ****
+  #include <BArena.H>
+  #include <CArena.H>
+  #include <Thread.H>
+! #include <SPECIALIZE_F.H>
+  
+  int BoxLib::BF_init::m_cnt = 0;
+  
+--- 28,34 ----
+  #include <BArena.H>
+  #include <CArena.H>
+  #include <Thread.H>
+! //#include <SPECIALIZE_F.H>
+  
+  int BoxLib::BF_init::m_cnt = 0;
+  
+*************** BaseFab<Real>::performCopy (const BaseFa
+*** 98,105 ****
+  
+      BL_PROFILE("template<> BaseFab<Real>::performCopy()");
+  
+!     if (destbox == domain && srcbox == src.box())
+!     {
+          Real*       data_dst = dataPtr(destcomp);
+          const Real* data_src = src.dataPtr(srccomp);
+  
+--- 98,105 ----
+  
+      BL_PROFILE("template<> BaseFab<Real>::performCopy()");
+  
+! //    if (destbox == domain && srcbox == src.box())
+! //    {
+          Real*       data_dst = dataPtr(destcomp);
+          const Real* data_src = src.dataPtr(srccomp);
+  
+*************** BaseFab<Real>::performCopy (const BaseFa
+*** 107,138 ****
+          {
+              *data_dst++ = *data_src++;
+          }
+!     }
+!     else
+!     {
+!         const int* destboxlo  = destbox.loVect();
+!         const int* destboxhi  = destbox.hiVect();
+!         const int* _th_plo    = loVect();
+!         const int* _th_phi    = hiVect();
+!         const int* _x_lo      = srcbox.loVect();
+!         const int* _x_hi      = srcbox.hiVect(); 
+!         const int* _x_plo     = src.loVect();
+!         const int* _x_phi     = src.hiVect();
+!         Real*       _th_p     = dataPtr(destcomp);
+!         const Real* _x_p      = src.dataPtr(srccomp);
+! 
+!         FORT_FASTCOPY(_th_p,
+!                       ARLIM(_th_plo),
+!                       ARLIM(_th_phi),
+!                       D_DECL(destboxlo[0],destboxlo[1],destboxlo[2]),
+!                       D_DECL(destboxhi[0],destboxhi[1],destboxhi[2]),
+!                       _x_p,
+!                       ARLIM(_x_plo),
+!                       ARLIM(_x_phi),
+!                       D_DECL(_x_lo[0],_x_lo[1],_x_lo[2]),
+!                       D_DECL(_x_hi[0],_x_hi[1],_x_hi[2]),
+!                       numcomp);
+!     }
+  }
+  
+  template<>
+--- 107,138 ----
+          {
+              *data_dst++ = *data_src++;
+          }
+! //    }
+! //    else
+! //    {
+! //        const int* destboxlo  = destbox.loVect();
+! //        const int* destboxhi  = destbox.hiVect();
+! //        const int* _th_plo    = loVect();
+! //        const int* _th_phi    = hiVect();
+! //        const int* _x_lo      = srcbox.loVect();
+! //        const int* _x_hi      = srcbox.hiVect(); 
+! //        const int* _x_plo     = src.loVect();
+! //        const int* _x_phi     = src.hiVect();
+! //        Real*       _th_p     = dataPtr(destcomp);
+! //        const Real* _x_p      = src.dataPtr(srccomp);
+! //
+! //        FORT_FASTCOPY(_th_p,
+! //                      ARLIM(_th_plo),
+! //                      ARLIM(_th_phi),
+! //                      D_DECL(destboxlo[0],destboxlo[1],destboxlo[2]),
+! //                      D_DECL(destboxhi[0],destboxhi[1],destboxhi[2]),
+! //                      _x_p,
+! //                      ARLIM(_x_plo),
+! //                      ARLIM(_x_phi),
+! //                      D_DECL(_x_lo[0],_x_lo[1],_x_lo[2]),
+! //                      D_DECL(_x_hi[0],_x_hi[1],_x_hi[2]),
+! //                      numcomp);
+! //    }
+  }
+  
+  template<>
+*************** BaseFab<Real>::performSetVal (Real      
+*** 145,175 ****
+      BL_ASSERT(domain.contains(bx));
+      BL_ASSERT(ns >= 0 && ns + num <= nvar);
+  
+!     if (bx == domain)
+!     {
+          Real* data = &dptr[ns*numpts];
+  
+          for (long i = 0, N = num*numpts; i < N; i++)
+          {
+              *data++ = val;
+          }
+!     }
+!     else
+!     {
+!         const int* _box_lo = bx.loVect();            
+!         const int* _box_hi = bx.hiVect();            
+!         const int* _th_plo = loVect();                           
+!         const int* _th_phi = hiVect();
+! 
+!         Real* _th_p = dataPtr(ns);
+! 
+!         FORT_FASTSETVAL(&val,
+!                         _box_lo,
+!                         _box_hi,
+!                         _th_p,
+!                         ARLIM(_th_plo),
+!                         ARLIM(_th_phi),
+!                         num);
+!     }
+  }
+  #endif
+--- 145,175 ----
+      BL_ASSERT(domain.contains(bx));
+      BL_ASSERT(ns >= 0 && ns + num <= nvar);
+  
+! //    if (bx == domain)
+! //    {
+          Real* data = &dptr[ns*numpts];
+  
+          for (long i = 0, N = num*numpts; i < N; i++)
+          {
+              *data++ = val;
+          }
+! //    }
+! //    else
+! //    {
+! //        const int* _box_lo = bx.loVect();            
+! //        const int* _box_hi = bx.hiVect();            
+! //        const int* _th_plo = loVect();                           
+! //        const int* _th_phi = hiVect();
+! 
+! //        Real* _th_p = dataPtr(ns);
+! 
+! //        FORT_FASTSETVAL(&val,
+! //                        _box_lo,
+! //                        _box_hi,
+! //                        _th_p,
+! //                        ARLIM(_th_plo),
+! //                        ARLIM(_th_phi),
+! //                        num);
+! //    }
+  }
+  #endif
+diff -rp CCSEApps.orig/BoxLib/FPC.cpp CCSEApps/BoxLib/FPC.cpp
+*** CCSEApps.orig/BoxLib/FPC.cpp	Wed Jan 11 11:13:06 2006
+--- CCSEApps/BoxLib/FPC.cpp	Fri Apr 27 15:06:49 2007
+*************** FPC::NativeLongDescriptor ()
+*** 64,70 ****
+  #endif
+  
+  #if defined(__sgi) || \
+!     defined(__sun) || \
+      defined(_AIX)  || \
+      defined(_CRAYT3E)  || \
+      defined(__hpux)
+--- 64,70 ----
+  #endif
+  
+  #if defined(__sgi) || \
+!     defined(__sun) || defined(__ppc__) || defined(__ppc64__) || \
+      defined(_AIX)  || \
+      defined(_CRAYT3E)  || \
+      defined(__hpux)
+*************** FPC::NativeRealDescriptor ()
+*** 91,97 ****
+  #endif
+  
+  #if defined(__sgi) || \
+!     defined(__sun) || \
+      defined(_AIX)  || \
+      defined(_CRAYT3E)  || \
+      defined(__hpux)
+--- 91,97 ----
+  #endif
+  
+  #if defined(__sgi) || \
+!     defined(__sun) || defined(__ppc__) || defined(__ppc64__) || \
+      defined(_AIX)  || \
+      defined(_CRAYT3E)  || \
+      defined(__hpux)
+*************** FPC::Ieee64NormalRealDescriptor ()
+*** 137,143 ****
+        defined(_CRAY1)     || \
+        defined(_CRAYT3E)   || \
+        defined(__sgi)      || \
+!       defined(__sun)      || \
+        defined(__i486__)   || \
+        defined(i386)       || \
+        defined(__i386__)   || \
+--- 137,143 ----
+        defined(_CRAY1)     || \
+        defined(_CRAYT3E)   || \
+        defined(__sgi)      || \
+!       defined(__sun)      || defined(__ppc__) || defined(__ppc64__) || \
+        defined(__i486__)   || \
+        defined(i386)       || \
+        defined(__i386__)   || \
+diff -rp CCSEApps.orig/BoxLib/Make.package CCSEApps/BoxLib/Make.package
+*** CCSEApps.orig/BoxLib/Make.package	Thu Nov 14 10:43:29 2002
+--- CCSEApps/BoxLib/Make.package	Fri Apr 27 15:11:01 2007
+*************** T_headers += ccse-mpi.H
+*** 91,99 ****
+  # Fortran interface routines.
+  #
+  
+! f$(BOXLIB_BASE)_sources += BLutil_F.f
+! f$(BOXLIB_BASE)_sources += BLParmParse_F.f
+! f$(BOXLIB_BASE)_sources += BLBoxLib_F.f
+  
+! F$(BOXLIB_BASE)_sources += SPECIALIZE_$(DIM)D.F
+! F$(BOXLIB_BASE)_headers += SPECIALIZE_F.H
+--- 91,99 ----
+  # Fortran interface routines.
+  #
+  
+! #f$(BOXLIB_BASE)_sources += BLutil_F.f
+! #f$(BOXLIB_BASE)_sources += BLParmParse_F.f
+! #f$(BOXLIB_BASE)_sources += BLBoxLib_F.f
+  
+! #F$(BOXLIB_BASE)_sources += SPECIALIZE_$(DIM)D.F
+! #F$(BOXLIB_BASE)_headers += SPECIALIZE_F.H
+EOF
+       if [[ $? != 0 ]] ; then
+          echo "Unable to patch Boxlib 3D. Wrong version?"
+          return 1
+       fi
+    fi
+
+    #
+    cd CCSEApps/Boxlib
+    #
+    # Build Boxlib 3D
+    #
+    info_box "Building Boxlib 3D. . . (~2 minutes)" >&3
+    echo "Building Boxlib 3D"
+    if [[ $MACBUILD == "Yes" ]]; then
+       cp ../mk/Make.FreeBSD ../mk/Make.Darwin
+       make -f GNUmakefile
+       if [[ $? != 0 ]] ; then
+          echo "Boxlib build failed.  Giving up"
+          return 1
+       fi
+    else
+       make -f GNUmakefile 
+       if [[ $? != 0 ]] ; then
+          echo "Boxlib build failed.  Giving up"
+          return 1
+       fi
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing Boxlib 3D. . ." >&3
+    echo "Installing Boxlib 3D"
+    mkdir $VISITDIR/boxlib
+    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION
+    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH
+    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include
+    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib
+    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D
+    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D
+    if [[ $MACBUILD == "Yes" ]]; then
+       libtool -o libbox3D.dylib -dynamic libbox3d.Darwin.CC.f77.a \
+       -lSystem -twolevel_namespace -undefined dynamic_lookup \
+       -headerpad_max_install_names \
+       -install_name @executable_path/../lib/libbox3D.dylib \
+       -compatibility_version $BOXLIB_COMPATIBILITY_VERSION \
+       -current_version $BOXLIB_VERSION
+       if [[ $? != 0 ]] ; then
+          echo "Creation of dynamic 3D Boxlib library failed.  Giving up"
+          return 1
+       fi
+       cp libbox3D.dylib $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/
+       tar cf Boxlib3D.h.tar *.H
+    else
+       cp libbox3d*.a $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/libbox3D.a
+       tar cf Boxlib3D.h.tar *.H
+       if [[ $? != 0 ]] ; then
+          echo "Boxlib install failed.  Giving up"
+          return 1
+       fi
+    fi
+    make clean
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Apply patches
+        #
+        info_box "Patching Boxlib 2D . . ." >&3
+        cd $START_DIR
+        patch -p0 << \EOF
+diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
+*** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
+--- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
+*************** TOP = $(PBOXLIB_HOME)
+*** 8,14 ****
+  
+  PRECISION = DOUBLE
+  DEBUG     = FALSE
+! DIM       = 3
+  COMP      = 
+  USE_MPI   = FALSE
+  #NAMESPACE = TRUE
+--- 8,14 ----
+  
+  PRECISION = DOUBLE
+  DEBUG     = FALSE
+! DIM       = 2
+  COMP      = 
+  USE_MPI   = FALSE
+  #NAMESPACE = TRUE
+EOF
+       if [[ $? != 0 ]] ; then
+          echo "Unable to patch Boxlib 2D. Wrong version?"
+          return 1
+       fi
+       cd CCSEApps/Boxlib
+    fi
+    #
+    # Build Boxlib 2D
+    #
+    info_box "Building Boxlib 2D. . . (~2 minutes)" >&3
+    echo "Building Boxlib 2D"
+    if [[ $MACBUILD == "Yes" ]]; then
+       cp ../mk/Make.FreeBSD ../mk/Make.Darwin
+       make -f GNUmakefile
+       if [[ $? != 0 ]] ; then
+          echo "Boxlib build failed.  Giving up"
+          return 1
+       fi
+    else
+       make -f GNUmakefile 
+       if [[ $? != 0 ]] ; then
+          echo "Boxlib build failed.  Giving up"
+          return 1
+       fi
+    fi
+    info_box "Installing Boxlib 2D. . ." >&3
+    echo "Installing Boxlib 2D"
+    if [[ $MACBUILD == "Yes" ]]; then
+       libtool -o libbox2D.dylib -dynamic libbox2d.Darwin.CC.f77.a \
+       -lSystem -twolevel_namespace -undefined dynamic_lookup \
+       -headerpad_max_install_names \
+       -install_name @executable_path/../lib/libbox2D.dylib \
+       -compatibility_version $BOXLIB_COMPATIBILITY_VERSION \
+       -current_version $BOXLIB_VERSION
+       if [[ $? != 0 ]] ; then
+          echo "Creation of dynamic 2D Boxlib library failed.  Giving up"
+          return 1
+       fi
+       cp libbox2D.dylib $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/
+       tar cf Boxlib2D.h.tar *.H
+    else
+       cp libbox2d*.a $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/libbox2D.a
+       tar cf Boxlib2D.h.tar *.H
+       if [[ $? != 0 ]] ; then
+          echo "Boxlib install failed.  Giving up"
+          return 1
+       fi
+    fi
+
+    info_box "Installing Boxlib includes. . ." >&3
+    echo "Installing Boxlib includes"
+    cp Boxlib2D.h.tar $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D
+    cp Boxlib3D.h.tar $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D
+    cd $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D
+    tar xf Boxlib2D.h.tar
+    cd $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D
+    tar xf Boxlib3D.h.tar
+
+    cd $START_DIR
+    echo "Done with Boxlib"
+}
+
+
+# *************************************************************************** #
+#                         Function 8.9, build_cfitsio                         #
+# *************************************************************************** #
+
+function build_cfitsio
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${CFITSIO_FILE}.gz ]] ; then
+       info_box "Unzipping/Tarring ${CFITSIO_FILE}.gz . . ." >&3
+       tar zxf ${CFITSIO_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $CFITSIO_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${CFITSIO_FILE} ]] ; then
+       info_box "Tarring ${CFITSIO_FILE} . . ." >&3
+       tar xf ${CFITSIO_FILE}
+       if [[ $? != 0 ]] ; then
+          echo 
+"Unable to untar $CFITSIO_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring CFITSIO . . ." >&3
+    cd cfitsio
+    echo "Invoking command to configure CFITSIO"
+    if [[ $MACBUILD == "Yes" ]]; then
+        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        CXXFLAGS="$C_OPT_FLAGS -fno-common" \
+        ./configure \
+        --prefix=$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "CFITSIO configure failed.  Giving up"
+           return 1
+        fi
+    else
+        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        ./configure \
+        --prefix=$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH
+        if [[ $? != 0 ]] ; then
+           echo "CFITSIO configure failed.  Giving up"
+           return 1
+        fi
+    fi
+
+    #
+    # Build CFITSIO
+    #
+    info_box "Building CFITSIO . . . (~2 minutes)" >&3
+    echo "Building CFITSIO"
+    make
+    if [[ $? != 0 ]] ; then
+       echo "CFITSIO build failed.  Giving up"
+       return 1
+    fi
+
+    if [[ $MACBUILD == "Yes" ]]; then
+        #
+        # Make dynamic executable
+        #
+        info_box "Creating dynamic libraries for CFITSIO . . ." >&3
+        echo "Creating dynamic libraries for CFITSIO"
+        libtool -o libcfitsio.dylib -dynamic libcfitsio.a -lSystem \
+        -twolevel_namespace -undefined dynamic_lookup \
+        -headerpad_max_install_names \
+        -install_name @executable_path/../lib/libcfitsio.dylib \
+        -compatibility_version $CFITSIO_COMPATIBILITY_VERSION \
+        -current_version $CFITSIO_VERSION
+        if [[ $? != 0 ]] ; then
+           echo "Creating dynamic CFITSIO library failed.  Giving up"
+           return 1
+        fi
+#       cp libcfitsio.dylib $VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing CFITSIO . . ." >&3
+    echo "Installing CFITSIO"
+    mkdir $VISITDIR/cfitsio
+    mkdir $VISITDIR/cfitsio/$CFITSIO_VERSION
+    mkdir $VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH
+    make install
+    if [[ $? != 0 ]] ; then
+       echo "CFITSIO install failed.  Giving up"
+       return 1
+    fi
+
+    cd $START_DIR
+    echo "Done with CFITSIO"
 }
 
 
@@ -1478,22 +4036,31 @@ function build_visit
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${VISIT_FILE}.gz ]] ; then
-       info_box "Unzipping ${VISIT_FILE}.gz . . ." >&3
-    tar zxf ${VISIT_FILE}.gz
-    if [[ $? != 0 ]] ; then
-       echo "Unable to untar $VISIT_FILE.  Corrupted file or out of space on device?"
-       return 1
-    fi
+       info_box "Unzipping/untarring ${VISIT_FILE}.gz . . ." >&3
+       tar zxf ${VISIT_FILE}.gz
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $VISIT_FILE.gz  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${VISIT_FILE} ]] ; then
+       info_box "Unzipping ${VISIT_FILE} . . ." >&3
+       tar xf ${VISIT_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $VISIT_FILE.  Corrupted file or out of space on device?"
+          return 1
+       fi
     fi
 
     #
     # Set up environment variables for the configure step.
     #
     PARFLAGS=""
-    CXXFLAGS="$CPP_OPT_FLAGS"
+    CXXFLAGS="$CXX_OPT_FLAGS"
     if [[ "$parallel" == "yes" ]] ; then
        PARFLAGS="--enable-parallel"
-       CXXFLAGS="$CPP_OPT_FLAGS $PAR_INCLUDE"
+       CXXFLAGS="$CXX_OPT_FLAGS $PAR_INCLUDE"
     fi
     
     QTDIR=""
@@ -1509,13 +4076,64 @@ function build_visit
     echo VISITHOME=$VISITDIR > `hostname`.conf
     sed -e "s/ARCH/$VISITARCH/" -e "s/MESA_VERSION/$MESA_VERSION/" \
         -e "s/VTK_VERSION/$VTK_VERSION/" -e "s/QT_VERSION/$QT_VERSION/" \
-        -e "s/PYTHON_VERSION/$PYTHON_VERSION/" AutobuildTemplate.conf >> `hostname`.conf
+        -e "s/PYTHON_VERSION/$PYTHON_VERSION/" AutobuildTemplate.conf \
+        >> `hostname`.conf
     echo "CC=\"$C_COMPILER\"" >> `hostname`.conf
-    echo "CXX=\"$CPP_COMPILER\"" >> `hostname`.conf
+    echo "CXX=\"$CXX_COMPILER\"" >> `hostname`.conf
     echo "CFLAGS=\"$C_OPT_FLAGS\"" >> `hostname`.conf
     echo "CXXFLAGS=\"$CXXFLAGS\"" >> `hostname`.conf
     if [[ "$parallel" == "yes" ]] ; then
         echo "MPI_LIBS=\"$PAR_LIBS\"" >> `hostname`.conf
+    fi
+    if [[ "$DO_BOXLIB" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_BOXLIB/DEFAULT_BOXLIB/" \
+           -e "s/BOXLIB_VERSION/$BOXLIB_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_FITS" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_CFITSIO/DEFAULT_CFITSIO/" \
+           -e "s/CFITSIO_VERSION/$CFITSIO_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_CGNS" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_CGNS/DEFAULT_CGNS/" \
+           -e "s/CGNS_VERSION/$CGNS_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_EXODUS" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_EXODUS/DEFAULT_EXODUS/" \
+           -e "s/EXODUS_VERSION/$EXODUS_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_GDAL" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_GDAL/DEFAULT_GDAL/" \
+           -e "s/GDAL_VERSION/$GDAL_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_HDF4" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_HDF4/DEFAULT_HDF4/" \
+           -e "s/HDF4_VERSION/$HDF4_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_HDF5/DEFAULT_HDF5/" \
+           -e "s/HDF5_VERSION/$HDF5_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_MILI" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##MILI_DIR/MILI_DIR/" \
+           -e "s/MILI_VERSION/$MILI_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_NETCDF" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_NETCDF/DEFAULT_NETCDF/" \
+           -e "s/NETCDF_VERSION/$NETCDF_VERSION/" tmpfile >> `hostname`.conf
+    fi
+    if [[ "$DO_SILO" == "yes" ]] ; then
+       mv `hostname`.conf tmpfile
+       sed -e "s/##DEFAULT_SILO/DEFAULT_SILO/" \
+           -e "s/SILO_VERSION/$SILO_VERSION/" tmpfile >> `hostname`.conf
     fi
     cd ..
 
@@ -1541,6 +4159,26 @@ function build_visit
     print "All indications are that VisIt successfully built."
 }
 
+usage () {
+  printf "Usage: %s [-45bcdefghmnx] [-t opt] [-v opt]\n" $0
+  printf "\n"
+  printf "%s\n" "-4     Build HDF4"
+  printf "%s\n" "-5     Build HDF5"
+  printf "%s\n" "-b     Build Boxlib"
+  printf "%s\n" "-c     Build CGNS"
+  printf "%s\n" "-d     Turn on -g, debugging flag"
+  printf "%s\n" "-e     Build Exodus"
+  printf "%s\n" "-f     Build CFITSIO"
+  printf "%s\n" "-g     Build GDAL"
+  printf "%s\n" "-h     display this message"
+  printf "%s\n" "-m     Build Mili"
+  printf "%s\n" "-n     Build NetCDF"
+  printf "%s\n" "-p     Enable parallel build"
+  printf "%s\n" "-s opt The THIRD_PARTY_LOCATION path [./visit]"
+  printf "%s\n" "-t opt The VISIT_FILE name [visit070330.tar]"
+  printf "%s\n" "-v opt The VISIT_VERSION value [1.6]"
+  printf "%s\n" "-x     Turn on SHELL debugging"
+}
 
 # *************************************************************************** #
 #                       Section 2, building VisIt                             #
@@ -1549,27 +4187,140 @@ function build_visit
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
 
-# Show a splashscreen. This routine also determines if we have "dialog" or "whiptail",
-# which we use to show dialogs. If we do not have either then proceed in non-graphical
-# mode.
-if [[ "$GRAPHICAL" == "yes" ]] ; then
-    GRAPHICAL="no" # This will be set back to "yes" if we find dialog or whiptail
-    for DLG in dialog whiptail; do
-        $DLG --backtitle "$DLG_BACKTITLE" --msgbox \
-"Welcome to the VisIt $VISIT_VERSION build process.\n\nThis program will build VisIt and its required "\
-"3rd party sources, downloading any missing source packages before building. The 3rd "\
-"party libraries are built and installed before VisIt is built so please be patient. "\
-"Note that you can build a parallel version of VisIt by specifying the location of "\
-"your MPI installation when prompted." 0 0
-        if [[ $? != 127 ]] ; then
-             GRAPHICAL="yes";
-             break;
-        fi
-    done
-fi
+while getopts :45bcdefghmnps:t:v:xBCDEFGHMNPS:T:V:X ARG
+do
+    argcur=$ARG
+    case $ARG in
+      4) DO_HDF4="yes";;
+      5) DO_HDF5="yes";;
+      b|B) DO_BOXLIB="yes";;
+      c|C) DO_CGNS="yes";;
+      d|D) C_OPT_FLAGS="$C_OPT_FLAGS -g"
+           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g";;
+      e|E) DO_EXODUS="yes";;
+      f|F) DO_FITS="yes";;
+      g|G) DO_GDAL="yes";;
+      h|H) usage; exit 2;;
+      m|M) DO_MILI="yes";;
+      n|N) DO_NETCDF="yes";;
+      p|P) parallel="yes";;
+      s|S) THIRD_PARTY_LOCATION=$OPTARG;;
+      t|T) VISIT_FILE=$OPTARG;;
+      v|V) VISIT_VERSION=$OPTARG;;
+      x|X) set -vx;;
+      :) echo "$0: \"$argcur\" requires a value"; exit 2;;
+      \?) echo "$0: INVALID option \"$argcur\" at $OPTIND"; exit 2;;
+    esac
+done
+# Show a splashscreen. This routine also determines if we have "dialog"
+# or "whiptail", which we use to show dialogs. If we do not have either
+# then proceed in non-graphical mode.
+#
+##if [[ "$GRAPHICAL" == "yes" ]] ; then
+##    GRAPHICAL="no" # This will be set back to "yes" if we find dialog
+##    for DLG in dialog whiptail; do
+##        $DLG --backtitle "$DLG_BACKTITLE" --msgbox \
+##"Welcome to the VisIt $VISIT_VERSION build process.\n\n"\
+##"This program will build VisIt and its required "\
+##"3rd party sources, downloading any missing source packages "\
+##"before building. The 3rd party libraries are built and "\
+##"installed before VisIt is built so please be patient. "\
+##"Note that you can build a parallel version of VisIt by "\
+##"specifying the location of your MPI installation when prompted." 0 0
+##        if [[ $? != 127 ]] ; then
+##             GRAPHICAL="yes";
+##             break;
+##        fi
+##    done
+##fi
 
+if [[ "$GRAPHICAL" == "yes" ]] ; then
+    GRAPHICAL="no" # This will be set back to "yes" if we find dialog
+    for DLG in dialog whiptail; do
+    $DLG --backtitle "$DLG_BACKTITLE" \
+    --title "Build options and 3rd party libraries" \
+    --colors --single-quoted \
+    --checklist \
+"Welcome to the VisIt $VISIT_VERSION build process.\n\n"\
+"This program will build VisIt and its required "\
+"3rd party sources, downloading any missing source packages "\
+"before building. The required and optional 3rd party libraries "\
+"are built and installed before VisIt is built so please be patient. "\
+"Note that you can build a parallel version of VisIt by "\
+"specifying the location of your MPI installation when prompted.\n"\
+"Select the build options and optional 3rd party libraries "\
+"to be built and installed" 30 $DLG_WIDTH 10 \
+           "Boxlib"   "2.5    \Zbb\Znoxlib.tar.gz"         $DO_BOXLIB \
+           "CFITSIO"  "3006   c\Zbf\Znitsio3006.tar.gz"    $DO_FITS \
+           "CGNS"     "2.4.3  \Zbc\Zngnslib_2.4-3.tar.gz"  $DO_CGNS \
+           "ExodusII" "4.46   \Zbe\Znxodusii-4.46.tar.gz"  $DO_EXODUS \
+           "GDAL"     "1.3.2  \Zbg\Zndal-1.3.2.tar.gz"     $DO_GDAL \
+           "HDF4"     "2.4.1  HDF\Zb4\Zn.2r1.tar.gz"       $DO_HDF4 \
+           "HDF5"     "1.6.5  hdf\Zb5\Zn-1.6.5.tar.gz"     $DO_HDF5 \
+           "Mili"     "1.09   \Zbm\Znili.tar.gz"           $DO_MILI \
+           "NetCDF"   "3.6.0  \Zbn\Znetcdf.tar.gz"         $DO_NETCDF \
+           "parallel" "enable \Zbp\Znarallel"             $parallel 2> tmp$$
+    retval=$?
+
+    choice="$(cat tmp$$)"
+    echo $choice
+    case $retval in
+      0)
+        DO_BOXLIB="no"
+        DO_FITS="no"
+        DO_CGNS="no"
+        DO_EXODUS="no"
+        DO_GDAL="no"
+        DO_HDF4="no"
+        DO_HDF5="no"
+        DO_MILI="no"
+        DO_NETCDF="no"
+        parallel="no"
+        for OPTION in $choice
+        do
+            echo $OPTION
+            case $OPTION in
+              Boxlib)
+                 DO_BOXLIB="yes";;
+              CFITSIO)
+                 DO_FITS="yes";;
+              CGNS)
+                 DO_CGNS="yes";;
+              ExodusII)
+                 DO_EXODUS="yes";;
+              GDAL)
+                 DO_GDAL="yes";;
+              HDF4)
+                 DO_HDF4="yes";;
+              HDF5)
+                 DO_HDF5="yes";;
+              Mili)
+                 DO_MILI="yes";;
+              NetCDF)
+                 DO_NETCDF="yes";;
+              parallel)
+                 parallel="yes";;
+            esac
+        done
+        GRAPHICAL="yes"
+        break
+        ;;
+      1)
+        echo "Cancel pressed."
+        GRAPHICAL="yes"
+        break;;
+      255)
+        echo "ESC pressed.";;
+      *)
+        echo "Unexpected return code: $retval";;
+    esac
+  done
+fi
+if [[ -e "tmp$$" ]] ; then
+    rm tmp$$
+fi
 export VISITARCH=${ARCH}_${C_COMPILER}
-if [[ "$CPP_COMPILER" == "g++" ]] ; then
+if [[ "$CXX_COMPILER" == "g++" ]] ; then
    VERSION=$(g++ -v 2>&1 | grep version | cut -d' ' -f3)
    if [[ ${#VERSION} == 5 ]] ; then
       VISITARCH=${VISITARCH}-${VERSION}
@@ -1614,7 +4365,7 @@ fi
 #
 # See if the user wants to build a parallel version.
 #
-check_parallel_options
+check_parallel
 if [[ $? != 0 ]] ; then
    echo "Stopping build because necessary parallel options are not set."
    exit 1
@@ -1633,7 +4384,8 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
 "(QPL) or the GNU General Public License (GPL)" 12 $DLG_WIDTH
     if [[ $? == 1 ]] ; then
         choice=`$DLG --backtitle "$DLG_BACKTITLE" --radiolist \
-    "You chose not to accept Qt's license. VisIt requires Qt. What would you like to do?" \
+"You chose not to accept Qt's license. VisIt requires Qt. '\
+"What would you like to do?" \
     12 60 5 1 "Accept Qt's license" on 2 "Quit VisIt's build process" off 2>&1`
         if [[ $? == 1 || "$choice" == "2" ]] ; then
             echo "You declined the Qt license and stopped building VisIt."
@@ -1644,8 +4396,8 @@ else
     echo "During this build process, this script will build Qt.  When Qt is "
     echo "built, this script confirms that you accept their license."
     echo "So please type \"yes\" to accept (in advance) their license "
-    echo "offer for the Qt/X11 Free Edition, licensed under the Q Public License"
-    echo "(QPL) or the GNU General Public License (GPL)"
+    echo "offer for the Qt/X11 Free Edition, licensed under the Q Public "
+    echo "License (QPL) or the GNU General Public License (GPL)"
     read RESPONSE
     while [[ "$RESPONSE" != "yes" ]] ; do
        echo "Please type \"yes\" to accept their license offer for the "
@@ -1678,7 +4430,8 @@ else
    build_mesa 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Mesa.  Bailing out."
-      echo "More information about the failed build can be found in \"build_visit_log\""
+      echo 
+"More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
    echo "Done building Mesa"
@@ -1696,7 +4449,8 @@ else
    build_qt 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Qt.  Bailing out."
-      echo "More information about the failed build can be found in \"build_visit_log\""
+      echo 
+"More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
    echo "Done building Qt"
@@ -1714,7 +4468,8 @@ else
    build_vtk 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install VTK.  Bailing out."
-      echo "More information about the failed build can be found in \"build_visit_log\""
+      echo 
+"More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
    echo "Done building VTK"
@@ -1732,12 +4487,157 @@ else
    build_python 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Python.  Bailing out."
-      echo "More information about the failed build can be found in \"build_visit_log\""
+      echo 
+"More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
    echo "Done building Python"
 fi
 
+if [[ "$DO_HDF5" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH ]] ; then
+      echo "Skipping HDF5 build.  HDF5 is already installed."
+   else
+      echo "Building HDF5 (~2 minutes)"
+      build_hdf5 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install HDF5.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building HDF5"
+   fi
+fi
+if [[ "$DO_MILI" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/mili ]] ; then
+      echo "Skipping Mili build.  Mili is already installed."
+   else
+      echo "Building Mili (~2 minutes)"
+      build_mili 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install Mili.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building Mili"
+   fi
+fi
+if [[ "$DO_HDF4" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH ]] ; then
+      echo "Skipping HDF4 build.  HDF4 is already installed."
+   else
+      echo "Building HDF4 (~2 minutes)"
+      build_hdf4 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install HDF4.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building HDF4"
+   fi
+fi
+if [[ "$DO_NETCDF" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH ]] ; then
+      echo "Skipping NetCDF build.  NetCDF is already installed."
+   else
+      echo "Building NetCDF (~2 minutes)"
+      build_netcdf 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install NetCDF.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building NetCDF"
+   fi
+fi
+if [[ "$DO_CGNS" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH ]] ; then
+      echo "Skipping CGNS build.  CGNS is already installed."
+   else
+      echo "Building CGNS (~2 minutes)"
+      build_cgns 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install CGNS.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building CGNS"
+   fi
+fi
+if [[ "$DO_GDAL" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH ]] ; then
+      echo "Skipping GDAL build.  GDAL is already installed."
+   else
+      echo "Building GDAL (~2 minutes)"
+      build_gdal 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install GDAL.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building GDAL"
+   fi
+fi
+if [[ "$DO_EXODUS" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH ]] ; then
+      echo "Skipping EXODUS build.  EXODUS is already installed."
+   else
+      echo "Building EXODUS (~2 minutes)"
+      build_exodus 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install EXODUS.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building EXODUS"
+   fi
+fi
+if [[ "$DO_BOXLIB" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/boxlib/${BOXLIB_VERSION}/$VISITARCH ]] ; then
+      echo "Skipping Boxlib build.  Boxlib is already installed."
+   else
+      echo "Building Boxlib (~2 minutes)"
+      build_boxlib 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install Boxlib.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building Boxlib"
+   fi
+fi
+if [[ "$DO_FITS" == "yes" ]] ; then
+   cd $START_DIR
+   if [[ -d $VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH ]] ; then
+      echo "Skipping CFITSIO build.  CFITSIO is already installed."
+   else
+      echo "Building CFITSIO (~2 minutes)"
+      build_cfitsio 3>&1 >> build_visit_log 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install CFITSIO.  Bailing out."
+         echo 
+"More information about the failed build can be found in \"build_visit_log\""
+         exit 1
+      fi
+      echo "Done building CFITSIO"
+   fi
+fi
 
 #
 # Build Silo
@@ -1750,7 +4650,8 @@ else
    build_silo 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Silo.  Bailing out."
-      echo "More information about the failed build can be found in \"build_visit_log\""
+      echo 
+"More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
    echo "Done building Silo"
@@ -1765,7 +4666,8 @@ echo "Building VisIt (~50 minutes)"
 build_visit 3>&1 >> build_visit_log 2>&1
 if [[ $? != 0 ]] ; then
    echo "Unable to build or install VisIt.  Bailing out."
-   echo "More information about the failed build can be found in \"build_visit_log\""
+   echo 
+"More information about the failed build can be found in \"build_visit_log\""
    exit 1
 fi
 echo "Done building VisIt"
