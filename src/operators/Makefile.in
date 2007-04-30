@@ -207,6 +207,9 @@
 #    Jeremy Meredith, Wed Jul 26 17:31:24 EDT 2006
 #    Added CreateBonds and Replicate operators.
 #
+#    Cyrus Harrison, Thu Apr 26 10:20:55 PDT 2007
+#    Added ZoneDump Operator
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -221,7 +224,7 @@ REQUIRED=Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder Decimate \
          DeferExpression Displace Elevate ExternalSurface IndexSelect \
          InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
          PDF Project Reflect Replicate Resample Revolve Slice Smooth \
-         SphereSlice ThreeSlice Threshold Transform Tube
+         SphereSlice ThreeSlice Threshold Transform Tube ZoneDump
 
 SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)
