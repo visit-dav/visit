@@ -212,6 +212,11 @@ avtDatabaseWriter::Write(const std::string &filename,
 //    Hank Childs, Wed Mar 28 10:29:36 PDT 2007
 //    Add support for "default".
 //
+//    Kathleen Bonnell, Wed May  2 09:25:16 PDT 2007 
+//    Allow expression when there is more than 1 mesh -- if either the
+//    chosen var is the active var, or it's a mesh_quality expression
+//    defined on the active Mesh.  Change how meshname is determined.
+//
 // ****************************************************************************
 
 void
@@ -231,6 +236,8 @@ avtDatabaseWriter::Write(const std::string &filename,
 
     if (allVars || varlist.size() > 0)
     {
+        avtDataAttributes &atts = dob->GetInfo().GetAttributes();
+        std::string activeMeshName = atts.GetMeshname(); 
         //
         // We will need a pipeline specification to force an update. Get that 
         // here.
@@ -242,22 +249,25 @@ avtDatabaseWriter::Write(const std::string &filename,
         else
             spec = src->GetGeneralPipelineSpecification();
         avtDataSpecification_p ds = spec->GetDataSpecification();
-        std::string meshname;
+        std::string meshname; 
         if (md->GetNumMeshes() > 0)
-            meshname = md->GetMesh(0)->name;
+        {
+            if (!activeMeshName.empty())
+                meshname = activeMeshName;
+            else
+                meshname = md->GetMesh(0)->name;
+        }
         else if (md->GetNumCurves() > 0)
             meshname = md->GetCurve(0)->name;
         else
             EXCEPTION1(ImproperUseException,
                        "No meshes or curves appear to exist");
-    
-        //
-        // We want to process all of the variables in the dataset, so dummy up
-        // the data specification to include every variable in the dataset that
-        // pertains to mesh 0.
-        //
+
         if (varlist.size() > 0)
         {
+            //
+            // Only process the variables that the user has requested. 
+            //
             for (j = 0 ; j < varlist.size() ; j++)
             {
                 if (varlist[j] == "default")
@@ -275,20 +285,45 @@ avtDatabaseWriter::Write(const std::string &filename,
                     if (vmd->name == varlist[j])
                        vectorList.push_back(vmd->name);
                 }
-                if (md->GetNumMeshes() == 1 && !shouldNeverDoExpressions)
+                if (!shouldNeverDoExpressions)
                 {
                     ParsingExprList *pel = ParsingExprList::Instance();
                     ExpressionList *el = pel->GetList();
+                    int index = 0;
                     for (i = 0 ; i < el->GetNumExpressions() ; i++)
                     {
                         const Expression &expr = el->GetExpressions(i);
                         if (expr.GetName() == varlist[j])
                         {
-                            Expression::ExprType type = expr.GetType();
-                            if (type == Expression::ScalarMeshVar)
-                                scalarList.push_back(varlist[j]);
-                            else if (type == Expression::VectorMeshVar)
-                                vectorList.push_back(varlist[j]);
+                            bool canAdd = false;
+                            if (md->GetNumMeshes() == 1)
+                            {
+                                // only one mesh, so can safely assume that
+                                // the expression is defined on this mesh
+                                canAdd = true;
+                            }
+                            else if (varlist.size() == 1 &&
+                                    atts.GetVariableName() == varlist[j])
+                            {
+                                // expression is the active var, so must be 
+                                // defined on the active mesh
+                                canAdd = true;
+                            }
+                            else if ((index = varlist[j].find("mesh_quality") != std::string::npos) &&
+                                (varlist[j].find(meshname, index+12) != std::string::npos))
+                            {
+                                // expression is mesh_quality expression
+                                // defined on the active mesh
+                                canAdd = true;
+                            }
+                            if (canAdd)
+                            {
+                                Expression::ExprType type = expr.GetType();
+                                if (type == Expression::ScalarMeshVar)
+                                    scalarList.push_back(varlist[j]);
+                                else if (type == Expression::VectorMeshVar)
+                                    vectorList.push_back(varlist[j]);
+                            }
                         }
                     }
                 }
@@ -297,6 +332,11 @@ avtDatabaseWriter::Write(const std::string &filename,
         }
         else
         {
+            //
+            // We want to process all of the variables in the dataset, so dummy
+            // up the data specification to include every variable in the 
+            // dataset that pertains to the active mesh 
+            //
             for (i = 0 ; i < md->GetNumScalars() ; i++)
             {
                 const avtScalarMetaData *smd = md->GetScalar(i);
@@ -316,32 +356,53 @@ avtDatabaseWriter::Write(const std::string &filename,
                 }
             }
     
-            //
-            // We only want the expressions that correspond to the mesh we are
-            // operating on.  If there is more than one mesh, then we don't 
-            // really know, so don't add expressions.
-            //
-            if (md->GetNumMeshes() == 1 && !shouldNeverDoExpressions)
+            if (!shouldNeverDoExpressions)
             {
+                int index = 0;
                 for (i = 0 ; i < md->GetNumberOfExpressions() ; i++)
                 {
                     const Expression *expr = md->GetExpression(i);
                     if (expr->GetAutoExpression())
                         continue;
-                    Expression::ExprType type = expr->GetType();
                     bool shouldAdd = false;
-                    if (type == Expression::ScalarMeshVar)
+                    bool canAdd = false;
+                    string varname = expr->GetName();
+                    //
+                    // We only want the expressions that correspond to the 
+                    // mesh we are operating on.  If there is more than one 
+                    // mesh, we don't really know unless the meshname is
+                    // encoded in the varname, as with mesh_quality 
+                    // expressions. So test for that condition.
+                    //
+                    if (md->GetNumMeshes() == 1)
                     {
-                        shouldAdd = true;
-                        scalarList.push_back(expr->GetName());
+                        // only 1 mesh so can safely assume this
+                        // expression is defined on this mesh
+                        canAdd = true;
                     }
-                    else if (type == Expression::VectorMeshVar)
+                    else if (index = varname.find("mesh_quality") != std::string::npos &&
+                             varname.find(meshname, index+12) != std::string::npos)
                     {
-                        shouldAdd = true;
-                        vectorList.push_back(expr->GetName());
+                        // mesh_quality expression  
+                        // defined on the active mesh
+                        canAdd = true;
+                    }
+                    if (canAdd)
+                    {
+                        Expression::ExprType type = expr->GetType();
+                        if (type == Expression::ScalarMeshVar)
+                        {
+                            shouldAdd = true;
+                            scalarList.push_back(varname);
+                        }
+                        else if (type == Expression::VectorMeshVar)
+                        {
+                            shouldAdd = true;
+                            vectorList.push_back(varname);
+                        }
                     }
                     if (shouldAdd)
-                        ds->AddSecondaryVariable(expr->GetName().c_str());
+                        ds->AddSecondaryVariable(varname.c_str());
                 }
             }
         }
