@@ -58,6 +58,7 @@
 #include <vtkGenericCell.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridRelevantPointsFilter.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -1497,6 +1498,10 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValue(const float *pt, float *val)
 //    Use the vtkVisItUtility method to see if a cell contains a point
 //    (it's faster).
 //
+//    Hank Childs, Fri May  4 15:23:44 PDT 2007
+//    Ignore ghost zones, since they do not always have correct info, 
+//    especially with nodal variables.
+//
 // ****************************************************************************
 
 bool
@@ -1517,6 +1522,14 @@ avtPosCMFEAlgorithm::FastLookupGrouping::GetValueUsingList(vector<int> &list,
     {
         int mesh = map_to_ds[list[j]];
         int index = list[j] - ds_start[mesh];
+        if (meshes[mesh]->GetCellData()->GetArray("avtGhostZones") != NULL)
+        {
+            vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *)
+                        meshes[mesh]->GetCellData()->GetArray("avtGhostZones");
+            if (arr->GetValue(index) != 0)
+                continue;
+        }
+
         vtkCell *cell = meshes[mesh]->GetCell(index);
         bool inCell = vtkVisItUtility::CellContainsPoint(cell, non_const_pt);
         if (!inCell)
