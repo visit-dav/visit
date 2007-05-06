@@ -515,6 +515,10 @@ avtVariableMapper::GetVarRange(double &rmin, double &rmax)
 //    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002 
 //    Only use lighting for surface representations.
 //
+//    Hank Childs, Sun May  6 09:52:06 PDT 2007
+//    This method was being called multiple times and trampling previous 
+//    ambient settings.  Add some awareness of that mode.
+//
 // ****************************************************************************
 
 void
@@ -537,8 +541,19 @@ avtVariableMapper::TurnLightingOn(void)
             vtkProperty *prop = actors[i]->GetProperty();
             if (prop->GetRepresentation() == VTK_SURFACE)
             {
-                prop->SetAmbient(0.0);
-                prop->SetDiffuse(1.0);
+                // This method can get called multiple times.  If there are multiple
+                // lights, then blindly calling SetAmbient to 0.0 may turn off an
+                // ambient light that augments a normal light.  So only set the 
+                // default lighting attributes if we know we are in "unlit" mode,
+                // which would mean diffuse would be not 1.0.
+                if (prop->GetDiffuse() == 1.0)
+                    ; // no-op, since lighting is already on and we don't want to 
+                      // kill ambient lights, as per above.
+                else if (prop->GetDiffuse() != 1.0)
+                {
+                    prop->SetAmbient(0.0);
+                    prop->SetDiffuse(1.0);
+                }
             }
             else 
             {
