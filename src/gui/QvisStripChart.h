@@ -117,7 +117,7 @@ public:
     void    zoomOut();
     void    zoomIn();
     void    focus(QScrollView *sc);
-    int     setFontSize();
+    void    setFontSize();
        
 protected:
     void    paintEvent( QPaintEvent * );
