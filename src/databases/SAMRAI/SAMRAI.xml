@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="SAMRAI" type="database" label="SAMRAI" version="1.0" dbtype="STMD">
+  <Plugin name="SAMRAI" type="database" label="SAMRAI" version="1.0" mdspecificcode="true" dbtype="STMD">
     <Extensions> samrai </Extensions>
     <CXXFLAGS> $(HDF5_INCLUDE) </CXXFLAGS>
     <LIBS>     $(HDF5_LIB) $(ZLIB_LIB) </LIBS>
