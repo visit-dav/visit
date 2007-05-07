@@ -213,6 +213,8 @@ const char *expr_trig[] = {
 };
 
 const char *expr_vector[] = {
+    "color",
+    "color4",
     "cross",
     "dot",
     "magnitude",
@@ -1024,6 +1026,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Hank Childs, Sat Mar 17 15:33:54 PDT 2007
 //    Fix problem with specmf.
 //
+//    Brad Whitlock, Mon Apr 23 17:35:13 PST 2007
+//    Added color expression.
+//
 // ****************************************************************************
 
 void
@@ -1098,6 +1103,16 @@ QvisExpressionsWindow::insertFunction(int id)
     {
         definitionEdit->insert("(<var-LHS>, <var-RHS>)");
         doParens = false;
+    }
+    else if(str == "color4")
+    {
+        definitionEdit->insert("(<var1>, <var2>, <var3>, <var4>)");
+        doParens = false;      
+    }
+    else if(str == "color")
+    {
+        definitionEdit->insert("(<var1>, <var2>, <var3>)");
+        doParens = false;      
     }
 
     if (doParens)

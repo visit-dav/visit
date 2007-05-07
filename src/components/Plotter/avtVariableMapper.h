@@ -101,6 +101,11 @@ class vtkLookupTable;
 //    Brad Whitlock, Mon Sep 18 11:26:26 PDT 2006
 //    Added SetColorTexturingFlag.
 //
+//    Brad Whitlock, Tue Apr 24 15:59:01 PST 2007
+//    Added SetColorTexturingFlagAllowed to disable color texturing from
+//    ever taking place if this mapper is being used for a plot should not
+//    ever use color texturing.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtVariableMapper : public avtMapper
@@ -129,6 +134,7 @@ class PLOTTER_API  avtVariableMapper : public avtMapper
     void                       SetPointSize(double);
 
     virtual void               SetColorTexturingFlag(bool);
+    void                       SetColorTexturingFlagAllowed(bool);
 
   protected:
     double                     min, max;
@@ -139,6 +145,7 @@ class PLOTTER_API  avtVariableMapper : public avtMapper
     double                     opacity;
     int                        limitsMode;
     bool                       colorTexturingFlag;
+    bool                       colorTexturingFlagAllowed;
     vtkLookupTable            *lut;
 
     virtual void               CustomizeMappers(void);

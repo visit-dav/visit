@@ -128,6 +128,9 @@ avtThresholdFilter::Create()
 //    Mark Blair, Tue Mar 13 19:51:29 PDT 2007
 //    Now forces attribute consistency if attributes are inconsistent.
 //
+//    Mark Blair, Tue Apr 17 16:24:42 PDT 2007
+//    Rewritten to support new Threshold GUI; no more "shown variable".
+//
 // ****************************************************************************
 
 void
@@ -137,28 +140,28 @@ avtThresholdFilter::SetAtts(const AttributeGroup *a)
     
     atts.SupplyMissingDefaultsIfAppropriate();
     
-    // if (!atts.AttributesAreConsistent()) return;
-    
     if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
     
     activeVarName = std::string("<unused>");
     
-    std::string shownVariable = atts.GetShownVariable();
-    std::string defaultVariable = atts.GetDefaultVarName();
-    
-    if (shownVariable == std::string("default"))
-        shownVariable = defaultVariable;
-    
-    if (shownVariable != std::string("(no variables in list)"))
+    stringVector curVarNames = atts.GetListedVarNames();
+
+    if (curVarNames.size() > 0)
     {
-        if (shownVariable != defaultVariable)
+        std::string defaultVariable = atts.GetDefaultVarName();
+        std::string firstVarInList = curVarNames[0];
+        
+        if (firstVarInList == std::string("default"))
+            firstVarInList = defaultVariable;
+
+        if (firstVarInList != defaultVariable)
         {
-            activeVarName = shownVariable;
+            activeVarName = firstVarInList;
             SetActiveVariable(activeVarName.c_str());
         }
         else if (atts.GetDefaultVarIsScalar())
         {
-            activeVarName = shownVariable;
+            activeVarName = firstVarInList;
             SetActiveVariable(activeVarName.c_str());
         }
     }
@@ -180,48 +183,6 @@ bool
 avtThresholdFilter::Equivalent(const AttributeGroup *a)
 {
     return (atts == *(ThresholdAttributes*)a);
-}
-
-
-// ****************************************************************************
-//  Function: UpdateNeighborCells
-//
-//  Purpose: Updates cells that are neighbors to a point with a value.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 19, 2005
-//
-// ****************************************************************************
-
-static void UpdateNeighborCells(int pt, const int *pt_dims,
-           avtStructuredMeshChunker::ZoneDesignation d,
-           std::vector<avtStructuredMeshChunker::ZoneDesignation> &designation)
-{
-    int I = pt % pt_dims[0];
-    int J = (pt / pt_dims[0]) % pt_dims[1];
-    int K = pt / (pt_dims[0]*pt_dims[1]);
-
-    for (int i = 0 ; i < 8 ; i++)
-    {
-        int sI = I - (i & 1 ? 1 : 0);
-        int sJ = J - (i & 2 ? 1 : 0);
-        int sK = K - (i & 4 ? 1 : 0);
-        if (sI < 0)
-            continue;
-        if (sI >= (pt_dims[0]-1))
-            continue;
-        if (sJ < 0)
-            continue;
-        if (sJ >= (pt_dims[1]-1))
-            continue;
-        if (sK < 0)
-            continue;
-        if (sK >= (pt_dims[2]-1))
-            continue;
-
-        int cell = sK*(pt_dims[0]-1)*(pt_dims[1]-1) + sJ*(pt_dims[0]-1) + sI;
-        designation[cell] = d;
-    }
 }
 
 
@@ -295,6 +256,9 @@ static void UpdateNeighborCells(int pt, const int *pt_dims,
 //    Mark Blair, Tue Mar 13 19:51:29 PDT 2007
 //    Now forces attribute consistency if attributes are inconsistent.
 //
+//    Mark Blair, Tue Apr 17 16:24:42 PDT 2007
+//    Rewritten to support new Threshold GUI; no more "shown variable".
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -303,19 +267,9 @@ avtThresholdFilter::ProcessOneChunk(
 {
     atts.SupplyMissingDefaultsIfAppropriate();
 
-/*
-    if (!atts.AttributesAreConsistent())
-    {
-        debug1 << "Threshold operator attributes are inconsistent." << endl;
-
-        in_ds->Register(NULL);
-        return in_ds;
-    }
-*/
-    
     if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
     
-    if (atts.GetShownVariable() == std::string("(no variables in list)"))
+    if (atts.GetListedVarNames().size() == 0)
     {
         in_ds->Register(NULL);
         return in_ds;
@@ -339,7 +293,7 @@ avtThresholdFilter::ProcessOneChunk(
 
     vtkDataSet *curOutDataSet = in_ds;
 
-    const stringVector curVariables    = atts.GetListedVariables();
+    const stringVector curVariables    = atts.GetListedVarNames();
     const intVector    curZonePortions = atts.GetZonePortions();
     const doubleVector curLowerBounds  = atts.GetLowerBounds();
     const doubleVector curUpperBounds  = atts.GetUpperBounds();
@@ -424,128 +378,6 @@ avtThresholdFilter::ProcessOneChunk(
 
 
 // ****************************************************************************
-//  Method: avtThresholdFilter::GetAssignments
-//
-//  Purpose: Gets the assignments for each zone.
-//
-//  Programmer: Hank Childs
-//  Creation:   March 27, 2005
-//
-//  Modifications:
-//
-//    Mark Blair, Tue Mar  7 13:25:00 PST 2006
-//    Reworked to support multi-variable thresholding.
-//
-// ****************************************************************************
-
-void
-avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
-    std::vector<avtStructuredMeshChunker::ZoneDesignation> &d)
-{
-    const stringVector curVariables    = atts.GetListedVariables();
-    const intVector    curZonePortions = atts.GetZonePortions();
-    const doubleVector curLowerBounds  = atts.GetLowerBounds();
-    const doubleVector curUpperBounds  = atts.GetUpperBounds();
-
-    int zoneCount = in_ds->GetNumberOfCells();
-    int pointCount = in_ds->GetNumberOfPoints();
-    int curVarNum, zoneNum, pointNum;
-
-    bool varIsPointData;
-    const char *curVarName;
-    vtkDataArray *dataArray;
-    float *varValues;
-    double lowerBound, upperBound, varValue;
-    char errMsg[1024];
-
-    std::vector<avtStructuredMeshChunker::ZoneDesignation> curVarZDs(zoneCount);
-
-    for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
-        d[zoneNum] = avtStructuredMeshChunker::RETAIN;
-
-    for (curVarNum = 0; curVarNum < curVariables.size(); curVarNum++)
-    {
-        curVarName = curVariables[curVarNum].c_str();
-
-        if ((dataArray = in_ds->GetPointData()->GetArray(curVarName)) != NULL)
-        {
-            varIsPointData = true;
-        }
-        else if ((dataArray = in_ds->GetCellData()->GetArray(curVarName)) != NULL)
-        {
-            varIsPointData = false;
-        }
-        else
-        {
-            sprintf (errMsg,
-                "Data for variable \"%s\" is not currently available.",
-                curVarName);
-            EXCEPTION1(VisItException, errMsg);
-        }
-
-        varValues = (float *)dataArray->GetVoidPointer(0);
-
-        lowerBound = curLowerBounds[curVarNum];
-        upperBound = curUpperBounds[curVarNum];
-
-        if (varIsPointData)
-        {
-            if (curZonePortions[curVarNum] == ThresholdAttributes::PartOfZone)
-            {
-                for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
-                    curVarZDs[zoneNum] = avtStructuredMeshChunker::DISCARD;
-
-                for (pointNum = 0; pointNum < pointCount; pointNum++)
-                {
-                    varValue = (double)varValues[pointNum];
-
-                    if ((varValue >= lowerBound) && (varValue <= upperBound))
-                    {
-                        UpdateNeighborCells(pointNum, dims,
-                        avtStructuredMeshChunker::RETAIN, curVarZDs);
-                    }
-                }
-            }
-            else
-            {
-                for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
-                    curVarZDs[zoneNum] = avtStructuredMeshChunker::RETAIN;
-
-                for (pointNum = 0; pointNum < pointCount; pointNum++)
-                {
-                    varValue = (double)varValues[pointNum];
-
-                    if ((varValue < lowerBound) || (varValue > upperBound))
-                    {
-                        UpdateNeighborCells(pointNum, dims,
-                        avtStructuredMeshChunker::DISCARD, curVarZDs);
-                    }
-                }
-            }
-        }
-        else
-        {
-            for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
-            {
-                varValue = (double)varValues[zoneNum];
-
-                if ((varValue >= lowerBound) && (varValue <= upperBound))
-                    curVarZDs[zoneNum] = avtStructuredMeshChunker::RETAIN;
-                else
-                    curVarZDs[zoneNum] = avtStructuredMeshChunker::DISCARD;
-            }
-        }
-
-        for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
-        {
-            if (curVarZDs[zoneNum] == avtStructuredMeshChunker::DISCARD)
-                d[zoneNum] = avtStructuredMeshChunker::DISCARD;
-        }
-    }
-}
-
-
-// ****************************************************************************
 //  Method: avtThresholdFilter::ThresholdToPointMesh
 //
 //  Purpose:
@@ -567,7 +399,7 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 vtkDataSet *
 avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
 {
-    const stringVector curVariables = atts.GetListedVariables();
+    const stringVector curVariables = atts.GetListedVarNames();
     int curVarCount = curVariables.size();
     int curVarNum;
     vtkDataArray *dataArray;
@@ -667,6 +499,170 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
 
     idList->Delete();
     return outputMesh;
+}
+
+
+// ****************************************************************************
+//  Function: UpdateNeighborCells
+//
+//  Purpose: Updates cells that are neighbors to a point with a value.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 19, 2005
+//
+// ****************************************************************************
+
+static void UpdateNeighborCells(int pt, const int *pt_dims,
+           avtStructuredMeshChunker::ZoneDesignation d,
+           std::vector<avtStructuredMeshChunker::ZoneDesignation> &designation)
+{
+    int I = pt % pt_dims[0];
+    int J = (pt / pt_dims[0]) % pt_dims[1];
+    int K = pt / (pt_dims[0]*pt_dims[1]);
+
+    for (int i = 0 ; i < 8 ; i++)
+    {
+        int sI = I - (i & 1 ? 1 : 0);
+        int sJ = J - (i & 2 ? 1 : 0);
+        int sK = K - (i & 4 ? 1 : 0);
+        if (sI < 0)
+            continue;
+        if (sI >= (pt_dims[0]-1))
+            continue;
+        if (sJ < 0)
+            continue;
+        if (sJ >= (pt_dims[1]-1))
+            continue;
+        if (sK < 0)
+            continue;
+        if (sK >= (pt_dims[2]-1))
+            continue;
+
+        int cell = sK*(pt_dims[0]-1)*(pt_dims[1]-1) + sJ*(pt_dims[0]-1) + sI;
+        designation[cell] = d;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtThresholdFilter::GetAssignments
+//
+//  Purpose: Gets the assignments for each zone.
+//
+//  Programmer: Hank Childs
+//  Creation:   March 27, 2005
+//
+//  Modifications:
+//
+//    Mark Blair, Tue Mar  7 13:25:00 PST 2006
+//    Reworked to support multi-variable thresholding.
+//
+// ****************************************************************************
+
+void
+avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
+    std::vector<avtStructuredMeshChunker::ZoneDesignation> &d)
+{
+    const stringVector curVariables    = atts.GetListedVarNames();
+    const intVector    curZonePortions = atts.GetZonePortions();
+    const doubleVector curLowerBounds  = atts.GetLowerBounds();
+    const doubleVector curUpperBounds  = atts.GetUpperBounds();
+
+    int zoneCount = in_ds->GetNumberOfCells();
+    int pointCount = in_ds->GetNumberOfPoints();
+    int curVarNum, zoneNum, pointNum;
+
+    bool varIsPointData;
+    const char *curVarName;
+    vtkDataArray *dataArray;
+    float *varValues;
+    double lowerBound, upperBound, varValue;
+    char errMsg[1024];
+
+    std::vector<avtStructuredMeshChunker::ZoneDesignation> curVarZDs(zoneCount);
+
+    for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
+        d[zoneNum] = avtStructuredMeshChunker::RETAIN;
+
+    for (curVarNum = 0; curVarNum < curVariables.size(); curVarNum++)
+    {
+        curVarName = curVariables[curVarNum].c_str();
+
+        if ((dataArray = in_ds->GetPointData()->GetArray(curVarName)) != NULL)
+        {
+            varIsPointData = true;
+        }
+        else if ((dataArray = in_ds->GetCellData()->GetArray(curVarName)) != NULL)
+        {
+            varIsPointData = false;
+        }
+        else
+        {
+            sprintf (errMsg,
+                "Data for variable \"%s\" is not currently available.",
+                curVarName);
+            EXCEPTION1(VisItException, errMsg);
+        }
+
+        varValues = (float *)dataArray->GetVoidPointer(0);
+
+        lowerBound = curLowerBounds[curVarNum];
+        upperBound = curUpperBounds[curVarNum];
+
+        if (varIsPointData)
+        {
+            if (curZonePortions[curVarNum] == ThresholdAttributes::PartOfZone)
+            {
+                for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
+                    curVarZDs[zoneNum] = avtStructuredMeshChunker::DISCARD;
+
+                for (pointNum = 0; pointNum < pointCount; pointNum++)
+                {
+                    varValue = (double)varValues[pointNum];
+
+                    if ((varValue >= lowerBound) && (varValue <= upperBound))
+                    {
+                        UpdateNeighborCells(pointNum, dims,
+                        avtStructuredMeshChunker::RETAIN, curVarZDs);
+                    }
+                }
+            }
+            else
+            {
+                for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
+                    curVarZDs[zoneNum] = avtStructuredMeshChunker::RETAIN;
+
+                for (pointNum = 0; pointNum < pointCount; pointNum++)
+                {
+                    varValue = (double)varValues[pointNum];
+
+                    if ((varValue < lowerBound) || (varValue > upperBound))
+                    {
+                        UpdateNeighborCells(pointNum, dims,
+                        avtStructuredMeshChunker::DISCARD, curVarZDs);
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
+            {
+                varValue = (double)varValues[zoneNum];
+
+                if ((varValue >= lowerBound) && (varValue <= upperBound))
+                    curVarZDs[zoneNum] = avtStructuredMeshChunker::RETAIN;
+                else
+                    curVarZDs[zoneNum] = avtStructuredMeshChunker::DISCARD;
+            }
+        }
+
+        for (zoneNum = 0; zoneNum < zoneCount; zoneNum++)
+        {
+            if (curVarZDs[zoneNum] == avtStructuredMeshChunker::DISCARD)
+                d[zoneNum] = avtStructuredMeshChunker::DISCARD;
+        }
+    }
 }
 
 
@@ -803,15 +799,15 @@ avtThresholdFilter::PreExecute(void)
 //    Mark Blair, Tue Mar 13 19:51:29 PDT 2007
 //    Now forces attribute consistency if attributes are inconsistent.
 //
+//    Mark Blair, Tue Apr 17 16:24:42 PDT 2007
+//    Rewritten to support new Threshold GUI; no more "shown variable".
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
     atts.SupplyMissingDefaultsIfAppropriate();
-    
-    // if (!atts.AttributesAreConsistent())
-    //     return in_spec;
     
     if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
 
@@ -825,15 +821,14 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 
     atts.SwitchDefaultToTrueVariableNameIfScalar();
     
-    if (atts.GetShownVariable() == std::string("(no variables in list)"))
-        return in_spec;
+    if (atts.GetListedVarNames().size() == 0) return in_spec;
 
     avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
 
     const char *curListedVar;
     const std::vector<CharStrRef> curSecondaryVars =
         outSpec->GetDataSpecification()->GetSecondaryVariables();
-    const stringVector curListedVars = atts.GetListedVariables();
+    const stringVector curListedVars = atts.GetListedVarNames();
     int listedVarNum, secVarNum;
 
     for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)

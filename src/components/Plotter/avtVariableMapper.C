@@ -85,6 +85,9 @@
 //    Brad Whitlock, Mon Sep 18 11:28:35 PDT 2006
 //    Added colorTexturingFlag.
 //
+//    Brad Whitlock, Tue Apr 24 16:01:09 PST 2007
+//    Added colorTexturingFlagAllowed.
+//
 // ****************************************************************************
 
 avtVariableMapper::avtVariableMapper()
@@ -97,6 +100,7 @@ avtVariableMapper::avtVariableMapper()
     lineStyle = SOLID; 
     limitsMode = 0;  // use original data extents
     colorTexturingFlag = true;
+    colorTexturingFlagAllowed = true;
 }
 
 
@@ -921,6 +925,31 @@ avtVariableMapper::GetLighting()
 }
 
 // ****************************************************************************
+// Method: avtVariableMapper::SetColorTexturingFlagAllowed
+//
+// Purpose: 
+//   Sets whether we're allowed to change the color texturing flag.
+//
+// Arguments:
+//   val : True if we can use color texturing and we're allowed to change the
+//         flag for color texturing.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Apr 24 16:01:51 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableMapper::SetColorTexturingFlagAllowed(bool val)
+{
+    colorTexturingFlagAllowed = val;
+    if(!val)
+        colorTexturingFlag = false;
+}
+
+// ****************************************************************************
 // Method: avtVariableMapper::SetColorTexturingFlag
 //
 // Purpose: 
@@ -933,13 +962,15 @@ avtVariableMapper::GetLighting()
 // Creation:   Mon Sep 18 11:32:24 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Apr 24 16:02:43 PST 2007
+//   Return if setting the color texturing flag is not allowed.
+//
 // ****************************************************************************
 
 void
 avtVariableMapper::SetColorTexturingFlag(bool val)
 {
-    if (mappers == NULL)
+    if (mappers == NULL || !colorTexturingFlagAllowed)
         return;
 
     colorTexturingFlag = val;

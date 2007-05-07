@@ -52,12 +52,17 @@
 //  Programmer: Chris Wojtan
 //  Creation:   Monday, June 15 2004
 //
+//  Modifications:
+//    Brad Whitlock, Tue Apr 24 16:05:14 PST 2007
+//    Call SetColorTexturingFlagAllowed method on the mapper.
+//
 // ****************************************************************************
 
 avtTruecolorPlot::avtTruecolorPlot()
 {
     TruecolorFilter = new avtTruecolorFilter();
     myMapper   = new avtVariableMapper();
+    myMapper->SetColorTexturingFlagAllowed(false);
 }
 
 

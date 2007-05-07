@@ -195,6 +195,9 @@
 #   Thomas R. Treadway, Tue Mar 27 12:52:26 PDT 2007
 #   Added $(MESA_LIBS)  
 #
+#   Brad Whitlock, Mon Apr 23 17:29:50 PST 2007
+#   Added avtColorComposeFilter.C
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -261,6 +264,7 @@ General_src= \
   General/avtArrayComposeFilter.C \
   General/avtArrayComposeWithBinsFilter.C \
   General/avtArrayDecomposeFilter.C \
+  General/avtColorComposeFilter.C \
   General/avtConnComponentsExpression.C \
   General/avtCurlFilter.C \
   General/avtDataIdFilter.C \

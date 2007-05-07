@@ -46,6 +46,7 @@
 #include <avtBinaryDivideFilter.h>
 #include <avtBinaryPowerFilter.h>
 #include <avtCeilingFilter.h>
+#include <avtColorComposeFilter.h>
 #include <avtFloorFilter.h>
 #include <avtModuloFilter.h>
 #include <avtRoundFilter.h>
@@ -440,7 +441,10 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 // 
 //    Cyrus Harrison, Wed Feb 21 09:37:38 PST 2007
 //    Added conn_components  
-// 
+//
+//    Brad Whitlock, Mon Apr 23 17:32:14 PST 2007
+//    Added color.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -820,6 +824,11 @@ avtFunctionExpr::CreateFilters(string functionName)
         mm->SetDoMinimum(false);
         return mm;
     }
+    if (functionName == "color")
+        return new avtColorComposeFilter(3);
+    if (functionName == "color4")
+        return new avtColorComposeFilter(4);
+
     return NULL;
 }
 

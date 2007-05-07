@@ -241,7 +241,6 @@ AddOperator("Threshold")
 ThresholdAtts = ThresholdAttributes()
 ThresholdAtts.outputMeshType = 1
 ThresholdAtts.listedVarNames = ("u")
-ThresholdAtts.shownVarPosition = 0
 ThresholdAtts.zonePortions = (1)
 ThresholdAtts.lowerBounds = (0)
 ThresholdAtts.upperBounds = (1e+37)

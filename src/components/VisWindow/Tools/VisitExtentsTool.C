@@ -4348,31 +4348,25 @@ int VisitExtentsTool::AxisClosestToTipOfArrow(double arrowTipX)
 //
 //  Modifications:
 //
+//     Mark Blair, Mon Apr 23 18:53:27 PDT 2007
+//     Simplified format conventions.  Now also consistent with Threshold op.
+//
 // *****************************************************************************
 
 void VisitExtentsTool::MakeAxisTitleText(
     char titleText[], const std::string &axisTitle, int maxTitleChars)
 {
     int rawTitleLen;
-    char *secondPart;
     char rawTitle[121];
     
     strncpy(rawTitle, axisTitle.c_str(), 120);
     
     if ((rawTitleLen = strlen(rawTitle)) <= maxTitleChars)
-    {
         strcpy(titleText, rawTitle);
-    }
     else
     {
-        if ((secondPart = strrchr(rawTitle, '/')) == NULL)
-            secondPart = &rawTitle[rawTitleLen-3];
-        else if (strlen(secondPart) > 4)
-            secondPart[4] = '0';
-            
-        rawTitle[maxTitleChars-strlen(secondPart)-2] = '\0';
-        
-        sprintf(titleText, "%s..%s", rawTitle, secondPart);
+        rawTitle[maxTitleChars-3] = '\0';
+        sprintf(titleText,"%s..%s", rawTitle, &rawTitle[rawTitleLen-2]);
     }
 }
 

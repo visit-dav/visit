@@ -41,17 +41,9 @@
 #include <QvisOperatorWindow.h>
 #include <ThresholdAttributes.h>
 
+class QTable;
 class QLabel;
-class QCheckBox;
-class QLineEdit;
-class QSpinBox;
-class QVBox;
 class QButtonGroup;
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
 class QvisVariableButton;
 
 // ****************************************************************************
@@ -94,6 +86,9 @@ class QvisVariableButton;
 //   then reopens GUI, or if user moves an arrowhead in Extents tool of a second
 //   vis window tool-locked to the Threshold operator's vis window.  Too bad.
 //
+//   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
+//   Rewritten to support new Threshold GUI.
+//
 // ****************************************************************************
 
 class QvisThresholdWindow : public QvisOperatorWindow
@@ -114,46 +109,27 @@ protected:
     virtual void        GetCurrentValues(int which_widget);
 
 private slots:
-    void                apply();
+    void                variableAddedToList(const QString &variableToAdd);
+    void                selectedVariableDeleted();
     void                outputMeshTypeChanged(int buttonID);
-    void                zonePortionChanged(int buttonID);
-    void                lowerBoundChanged();
-    void                upperBoundChanged();
-    void                prevVarClicked();
-    void                nextVarClicked();
-    void                variableAdded(const QString &variableToAdd);
-    void                variableDeleted(const QString &variableToDelete);
-    void                variableSwapped(const QString &variableToSwapIn);
+    void                apply();
 
 private:
-    void                UpdateShownFields();
-
-/* No longer used --- see update comment above for 9/21/06
-    void                RestoreAppropriateUnappliedAttributes();
-*/
-
-    QButtonGroup        *outputMeshType;
-    QButtonGroup        *zonePortion;
-    QLabel              *zonePortionLabel;
-    QLineEdit           *lowerBound;
-    QLabel              *lowerBoundLabel;
-    QLineEdit           *upperBound;
-    QLabel              *upperBoundLabel;
-    QLabel              *shownVariable;
-    QPushButton         *showPrevVariable;
-    QPushButton         *showNextVariable;
-    QvisVariableButton  *addVariable;
-    QvisVariableButton  *deleteVariable;
-    QvisVariableButton  *swapVariable;
-
-    const QBitmap       *leftArrowBitmap;
-    const QBitmap       *rightArrowBitmap;
+    void                PopulateThresholdVariablesList();
+    void                AddNewRowToVariablesList(const QString &listVarName);
+    void                MakeDisplayableVariableNameText(char displayVarText[],
+                            const std::string &variableName, int maxDisplayChars);
 
     ThresholdAttributes *atts;
 
-/* No longer used --- see update comment above for 9/21/06
-    ThresholdAttributes *guiVarAtts;
+    QTable              *threshVarsList;
+/* debug 041907
+    QvisVariableButton  *addVarToList;
+    QPushButton         *deleteSelectedVar;
 */
+    QButtonGroup        *outputMeshType;
+    
+    stringVector        guiFullVarNames;
 };
 
 #endif
