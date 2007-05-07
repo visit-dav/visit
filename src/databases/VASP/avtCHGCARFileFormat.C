@@ -141,6 +141,10 @@ avtCHGCARFileFormat::FreeUpResources(void)
 //    here (though this can be disabled by removing the #define at the
 //    top of the file for now).
 //
+//    Jeremy Meredith, Fri Apr 20 14:59:53 EDT 2007
+//    Added a special case where axis-aligned unit cell vectors
+//    construct a *true* rectilinear grid, not a transformed one.
+//
 // ****************************************************************************
 
 void
@@ -153,25 +157,28 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                                3, 3,
                                                AVT_RECTILINEAR_MESH);
 
-    for (i=0; i<9; i++)
+    for (int i=0; i<9; i++)
     {
        mmd->unitCellVectors[i] = unitCell[i/3][i%3];
     }
 
 #ifdef ALLOW_TRANSFORMED_RECTILINEAR_GRIDS
-    for (i=0; i<4; i++)
+    if (!is_rectilinear)
     {
-        for (j=0; j<4; j++)
+        for (i=0; i<4; i++)
         {
-            if (i<3 && j<3)
-                mmd->rectilinearGridTransform[i*4+j] = unitCell[j][i];
-            else if (i==j)
-                mmd->rectilinearGridTransform[i*4+j] = 1.0;
-            else
-                mmd->rectilinearGridTransform[i*4+j] = 0.0;
+            for (j=0; j<4; j++)
+            {
+                if (i<3 && j<3)
+                    mmd->rectilinearGridTransform[i*4+j] = unitCell[j][i];
+                else if (i==j)
+                    mmd->rectilinearGridTransform[i*4+j] = 1.0;
+                else
+                    mmd->rectilinearGridTransform[i*4+j] = 0.0;
+            }
         }
+        mmd->rectilinearGridHasTransform = true;
     }
-    mmd->rectilinearGridHasTransform = true;
 
     double extents[6] = { DBL_MAX,-DBL_MAX,DBL_MAX,-DBL_MAX,DBL_MAX,-DBL_MAX };
     for (i=0; i<=1; i++)
@@ -225,6 +232,10 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    grid (i.e. fractional lattice coordinates) instead of cartesian
 //    coordinates in a curvilinear grid.
 //
+//    Jeremy Meredith, Fri Apr 20 14:59:53 EDT 2007
+//    Added a special case where axis-aligned unit cell vectors
+//    construct a *true* rectilinear grid, not a transformed one.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -246,7 +257,15 @@ avtCHGCARFileFormat::GetMesh(const char *meshname)
 
         for (int j = 0 ; j < meshdims[i] ; j++)
         {
-            coords[i]->SetComponent(j, 0, float(j) / float(origdims[i]) );
+            if (is_rectilinear)
+            {
+                coords[i]->SetComponent(j, 0,
+                       unitCell[i][i] * float(j) / float(origdims[i]) );
+            }
+            else
+            {
+                coords[i]->SetComponent(j, 0, float(j) / float(origdims[i]) );
+            }
         }
     }
     rgrid->SetDimensions(meshdims);
@@ -429,6 +448,11 @@ avtCHGCARFileFormat::ReadValues()
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Apr 20 14:59:53 EDT 2007
+//    Added a special case where axis-aligned unit cell vectors
+//    construct a *true* rectilinear grid, not a transformed one.
+//
 // ****************************************************************************
 void
 avtCHGCARFileFormat::ReadAllMetaData()
@@ -447,6 +471,20 @@ avtCHGCARFileFormat::ReadAllMetaData()
     in >> lat[0][0] >> lat[0][1] >> lat[0][2];
     in >> lat[1][0] >> lat[1][1] >> lat[1][2];
     in >> lat[2][0] >> lat[2][1] >> lat[2][2];
+
+    if (lat[0][1]==0 &&
+        lat[0][2]==0 &&
+        lat[1][0]==0 &&
+        lat[1][2]==0 &&
+        lat[2][0]==0 &&
+        lat[2][1]==0)
+    {
+        is_rectilinear = true;
+    }
+    else
+    {
+        is_rectilinear = false;
+    }
 
     for (int i=0; i<3; i++)
         for (int j=0; j<3; j++)

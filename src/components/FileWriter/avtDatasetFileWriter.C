@@ -57,6 +57,11 @@
 #include <vtkVisItSTLWriter.h>
 #include <vtkTriangleFilter.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkGeometryFilter.h>
+#include <avtColorTables.h>
+#include <ColorTableAttributes.h>
+#include <ColorControlPointList.h>
+#include <ColorControlPoint.h>
 
 #include <avtCommonDataFunctions.h>
 
@@ -65,11 +70,13 @@
 #include <NoCurveException.h>
 #include <NoInputException.h>
 
+#include <float.h>
 
 // This array contains strings that correspond to the file types that are 
 // enumerated in the DatasetFileFormat enum.
 const char *avtDatasetFileWriter::extensions[] = { ".curve", ".obj",
-                                                   ".stl", ".vtk", ".ultra" };
+                                                   ".stl", ".vtk", ".ultra",
+                                                   ".pov"};
 
 static void SortLineSegments(vtkPolyData *, std::vector< std::vector<int> > &);
 static void TakeOffPolyLine(int *, int, std::vector< std::vector<int> > &);
@@ -147,6 +154,9 @@ avtDatasetFileWriter::~avtDatasetFileWriter()
 //    Removed the Curve format and had the curve format write ULTRA files
 //    instead.  Renamed ULTRA to curve internally.
 //
+//    Jeremy Meredith, Thu Apr  5 17:23:37 EDT 2007
+//    Added POVRay file type.
+//
 // ****************************************************************************
 
 void
@@ -160,6 +170,9 @@ avtDatasetFileWriter::Write(DatasetFileFormat format, const char *filename,
         break;
       case OBJ:
         WriteOBJFamily(filename);
+        break;
+      case POVRAY:
+        WritePOVRayFamily(filename);
         break;
       case STL:
         WriteSTLFile(filename, binary);
@@ -1052,6 +1065,905 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
     }
 
     ls.push_back(pl);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetFileWriter::WritePOVRayFamily
+//
+//  Purpose:
+//      Writes out the input as a POV-Ray family of files.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   April  5, 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
+{
+    avtDataTree_p dt = GetInputDataTree();
+
+    //
+    // Re-construct the basename.
+    //
+    char *basename = new char[strlen(filename)+1];
+    int badExt = strlen(extensions[(int) POVRAY]);
+    strncpy(basename, filename, strlen(filename)-badExt);
+    basename[strlen(filename)-badExt] = '\0';
+
+    //
+    // It's easiest and safest to collect data and spatial extents
+    // manually, especially for spatial since POVRay and VisIt are
+    // of opposite handedness.
+    //
+    double spatialExtents[6] = {DBL_MAX,-DBL_MAX,
+                                DBL_MAX,-DBL_MAX,
+                                DBL_MAX,-DBL_MAX};
+    double dataExtents[2] = {DBL_MAX, -DBL_MAX};
+
+    //
+    // Write out the VTK datasets as their own files.
+    //
+    int nChunks = WritePOVRayTree(dt, 0, basename, spatialExtents,dataExtents);
+
+    //
+    // Fix up data extents; if we don't have any then
+    // we need fake values.  Similarly, we need to avoid
+    // max being equal to min.
+    //
+    if (dataExtents[0] == DBL_MAX && dataExtents[1] == -DBL_MAX)
+    {
+        dataExtents[0] = dataExtents[1] = 0;
+    }
+
+    const float epsilon = 1e-6;
+    if (fabs(dataExtents[0] - dataExtents[1]) < epsilon)
+    {
+        dataExtents[1] = dataExtents[0] + 1;
+    }
+
+    //
+    // And make a .inc file with the current visit colortables
+    //
+    ofstream ctfile("colortables.inc");
+    const ColorTableAttributes *colortables =
+        avtColorTables::Instance()->GetColorTables();
+    int num = colortables->GetNumColorTables();
+    for (int i=0; i<num; i++)
+    {
+        char num[100];
+        ctfile << "#declare "
+               << "ct_" << colortables->GetNames()[i]
+               << " = color_map {" << endl;
+        const ColorControlPointList &ct = colortables->GetColorTables(i);
+        for (int j=0; j<ct.GetNumControlPoints(); j++)
+        {
+            const ColorControlPoint &pt = ct.GetControlPoints(j);
+            sprintf(num, "%0.3f", pt.GetPosition());
+            ctfile << "  [" << num << " color rgb<";
+            sprintf(num, "%0.4f", float(pt.GetColors()[0])/255.);
+            ctfile << num << " ";
+            sprintf(num, "%0.4f", float(pt.GetColors()[1])/255.);
+            ctfile << num << " ";
+            sprintf(num, "%0.4f", float(pt.GetColors()[2])/255.);
+            ctfile << num << ">]" << endl;
+        }
+        ctfile << "};" << endl;
+        ctfile << endl;
+    }
+    ctfile.close();
+
+    //
+    // And make a .pov file with initial values for the user to play with
+    //
+    char masterfilename[1024];
+    sprintf(masterfilename, "%s.pov", basename);
+    ofstream masterfile(masterfilename);
+    masterfile << "#include \"colortables.inc\"" << endl;
+    masterfile << "#include \"math.inc\"" << endl;
+    masterfile << "#include \"transforms.inc\"" << endl;
+    masterfile << endl;
+    masterfile << "// Keep it fast for now" << endl;
+    masterfile << "global_settings {" << endl;
+    masterfile << "    max_trace_level 10" << endl;
+    masterfile << "    adc_bailout 1/128." << endl;
+    masterfile << "}" << endl;
+    masterfile << endl;
+    masterfile << "// Sizes for glyph objects" << endl;
+    masterfile << "#declare VertFixedSize = 0.3; // absolute scale" << endl;
+    masterfile << "#declare VertScaleSize = 0.0; // scale by value" << endl;
+    masterfile << "#declare LineWidth     = 0.1; // absolute scale only" << endl;
+    masterfile << "#declare VecFixedSize  = 1.0; // absolute scale" << endl;
+    masterfile << "#declare VecScaleSize  = 0.0; // scale by value" << endl;
+    masterfile << endl;
+    masterfile << "// Glyph objects (normalized to unit-1 size)" << endl;
+    masterfile << "#declare VertGlyph = object { sphere {<0,0,0>,1} };" << endl;
+    masterfile << "#declare VecGlyph = object { union { object { cylinder {<0,0,0>,<0,.5,0>,.1} } object { cone {<0,.5,0>,.3,<0,1,0>,0} } } };" << endl;
+    masterfile << endl;
+    masterfile << "// Default pigments for geometries without scalar values" << endl;
+    masterfile << "#declare VertPigment = pigment { rgb<.6,0,0> };" << endl;
+    masterfile << "#declare LinePigment = pigment { rgb<.6,.6,.6> };" << endl;
+    masterfile << "#declare PolyPigment = pigment { rgb<0,.4,.8> };" << endl;
+    masterfile << "#declare VecPigment  = pigment { rgb<.4,.3,.8> };" << endl;
+    masterfile << endl;
+    masterfile << "// To force single pigment for the geometries, set these to 1" << endl;
+    masterfile << "#declare ConstantVertColor = 0;" << endl;
+    masterfile << "#declare ConstantLineColor = 0;" << endl;
+    masterfile << "#declare ConstantPolyColor = 0;" << endl;
+    masterfile << "#declare ConstantVecColor  = 0;" << endl;
+    masterfile << endl;
+    masterfile << "// Finishes for each type of geometry" << endl;
+    masterfile << "#declare VertFinish = finish {ambient .3 reflection .0 diffuse .8 specular 0.2 roughness 0.1};" << endl;
+    masterfile << "#declare LineFinish = finish {ambient .3 reflection .0 diffuse .8 specular 0.2 roughness 0.1};" << endl;
+    masterfile << "#declare PolyFinish = finish {ambient .3 reflection .0 diffuse .8 specular 0.2 roughness 0.1};" << endl;
+    masterfile << "#declare VecFinish  = finish {ambient .3 reflection .0 diffuse .8 specular 0.2 roughness 0.1};" << endl;
+    masterfile << endl;
+    masterfile << "// Clamp values for scalar quantities, and a default linear map to [0,1]" << endl;
+    masterfile << "#macro ScalarNormalize(value)" << endl;
+    masterfile << "  (clip(value,min_scalar_value,max_scalar_value)-min_scalar_value)/(max_scalar_value-min_scalar_value)" << endl;
+    masterfile << "#end" << endl;
+    masterfile << "#declare min_scalar_value = " << dataExtents[0] << ";" << endl;
+    masterfile << "#declare max_scalar_value = " << dataExtents[1] << ";" << endl;
+    masterfile << "//note: min/max = 1/108 for elements and 0/108 for residues\n";
+    masterfile << endl;
+    masterfile << "// Extents and sizes of spatial geometries" << endl;
+    masterfile << "#declare xmin = " << spatialExtents[0] << ";" << endl;
+    masterfile << "#declare xmax = " << spatialExtents[1] << ";" << endl;
+    masterfile << "#declare ymin = " << spatialExtents[2] << ";" << endl;
+    masterfile << "#declare ymax = " << spatialExtents[3] << ";" << endl;
+    masterfile << "#declare zmin = " << spatialExtents[4] << ";" << endl;
+    masterfile << "#declare zmax = " << spatialExtents[5] << ";" << endl;
+    masterfile << "#declare xsize = (xmax - xmin);" << endl;
+    masterfile << "#declare ysize = (ymax - ymin);" << endl;
+    masterfile << "#declare zsize = (zmax - zmin);" << endl;
+    masterfile << "#declare xcenter = (xmin + xmax) / 2.;" << endl;
+    masterfile << "#declare ycenter = (ymin + ymax) / 2.;" << endl;
+    masterfile << "#declare zcenter = (zmin + zmax) / 2.;" << endl;
+    masterfile << "#declare ds_size = sqrt(xsize*xsize + ysize*ysize + zsize*zsize);" << endl;
+    masterfile << endl;
+    masterfile << "// Set up the color table default" << endl;
+    masterfile << "#declare colortable = ct_hot;" << endl;
+    masterfile << endl;
+    masterfile << "// Set some variables to make camera/light source positioning easier" << endl;
+    masterfile << "#declare aspect       = 4/3;" << endl;
+    masterfile << "#declare scene_origin = <xcenter,ycenter,zcenter>;" << endl;
+    masterfile << "#declare camera_pos   = scene_origin - z*ds_size*1.5;" << endl;
+    masterfile << "#declare camera_up    = y;" << endl;
+    masterfile << endl;
+    masterfile << "// Set the camera/aspect from the given parameters" << endl;
+    masterfile << "camera {" << endl;
+    masterfile << "    location camera_pos" << endl;
+    masterfile << "    right    x*aspect" << endl;
+    masterfile << "    look_at  scene_origin" << endl;
+    masterfile << "    sky      camera_up" << endl;
+    masterfile << "    angle    40" << endl;
+    masterfile << "}" << endl;
+    masterfile << "" << endl;
+    masterfile << "// Set the light source near the camera" << endl;
+    masterfile << "light_source {" << endl;
+    masterfile << "    camera_pos color 1" << endl;
+    masterfile << "}" << endl;
+    masterfile << endl;
+    masterfile << "// Include the declarations for all chunk geometries" << endl;
+    masterfile << endl;
+    masterfile << "//" << endl;
+    masterfile << "// NOTE: To change the colortable, scalar clamps, pigments, " << endl;
+    masterfile << "//       finishes, etc. for different chunks, just redeclare" << endl;
+    masterfile << "//       them in between the appropriate include files here." << endl;
+    masterfile << "//" << endl;
+    masterfile << endl;
+    for (int i = 0 ; i < nChunks ; i++)
+    {
+        char name[1024];
+        sprintf(name, "%s.%04d.inc", basename, i);
+        masterfile << "#include \"" << name << "\"" << endl;
+    }
+    masterfile << endl;
+    masterfile << "// Instantiate all chunk geometries" << endl;
+    for (int i = 0 ; i < nChunks ; i++)
+    {
+        char idxstr[1024];
+        sprintf(idxstr, "%04d", i);
+        masterfile << "#if (nverts"<<idxstr<<" > 0) object { vertex_geometry"<<idxstr<<" }  #end" << endl;
+        masterfile << "#if (nvecs"<<idxstr<<"  > 0) object { vector_geometry"<<idxstr<<" }  #end" << endl;
+        masterfile << "#if (nlines"<<idxstr<<" > 0) object { line_geometry"<<idxstr<<"   }  #end" << endl;
+        masterfile << "#if (ntris"<<idxstr<<"  > 0) object { poly_geometry"<<idxstr<<"   }  #end" << endl;
+
+        masterfile << endl;
+    }
+    masterfile.close();
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetFileWriter::WritePOVRayTree
+//
+//  Purpose:
+//      Writes out an avt data tree as POVRay files.
+//
+//  Arguments:
+//      dt               The data tree to write.
+//      idx              The current index of the file to write.
+//      basename         The file name to use.
+//      spatialextents   The currently accumulated spatial extents
+//      dataextents      The currently accumulated data extents
+//
+//  Returns:    The number of files written from dt.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   April  5, 2007
+//
+// ****************************************************************************
+
+int
+avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
+                                      const char *basename,
+                                      double *spatialextents,
+                                      double *dataextents)
+{
+    if (*dt == NULL)
+    {
+        return 0;
+    }
+
+    int totalWritten = 0;
+    if (dt->HasData())
+    {
+        avtDataRepresentation &rep = dt->GetDataRepresentation();
+        vtkDataSet *ds = rep.GetDataVTK();
+        char filename[1024];
+        sprintf(filename, "%s.%04d.inc", basename, idx);
+        WritePOVRayFile(ds, filename, idx, spatialextents, dataextents);
+        totalWritten = 1;
+    }
+    else
+    {
+        int workingIndex = idx;
+        for (int i = 0 ; i < dt->GetNChildren() ; i++)
+        {
+            if (dt->ChildIsPresent(i))
+            {
+                int numWritten = WritePOVRayTree(dt->GetChild(i), workingIndex,
+                                                 basename, spatialextents,
+                                                 dataextents);
+                workingIndex += numWritten;
+                totalWritten += numWritten;
+            }
+        }
+    }
+
+    return totalWritten;
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetFileWriter::WritePOVRayTree
+//
+//  Purpose:
+//      Writes a single vtkDataSet to a POVRay file.
+//
+//  Arguments:
+//      ds               The vtkDataSet to write.
+//      filename         The filename to use.
+//      idx              The current index of the file to write.
+//      spatialextents   The currently accumulated spatial extents
+//      dataextents      The currently accumulated data extents
+//
+//  Returns:    nothing
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   April  5, 2007
+//
+// ****************************************************************************
+
+void
+avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
+                                      const char *filename,
+                                      int idx,
+                                      double *spatialextents,
+                                      double *dataextents)
+{
+    ofstream out(filename, ios::out);
+    vtkGeometryFilter *geom = vtkGeometryFilter::New();
+    vtkTriangleFilter *tris = vtkTriangleFilter::New();
+    tris->SetPassLines(true);
+    tris->SetPassVerts(true);
+
+    //
+    // We need triangle-only polydata
+    //
+    if (ds->GetDataObjectType() != VTK_POLY_DATA)
+    {
+        geom->SetInput(ds);
+        tris->SetInput(geom->GetOutput());
+    }
+    else
+    {
+        tris->SetInput((vtkPolyData*)ds);
+    }
+
+    //
+    // Get a bunch of info from the dataset
+    //
+    vtkPolyData *pd = (vtkPolyData *) tris->GetOutput();
+    pd->Update();
+
+    vtkDataArray *ptscalars = pd->GetPointData()->GetScalars();
+    vtkDataArray *ptvectors = pd->GetPointData()->GetVectors();
+    vtkDataArray *ptnormals = pd->GetPointData()->GetNormals();
+    vtkDataArray *cellscalars = pd->GetCellData()->GetScalars();
+    vtkDataArray *cellvectors = pd->GetCellData()->GetVectors();
+
+    vtkCellArray *lines = pd->GetLines();
+    vtkCellArray *verts = pd->GetVerts();
+    vtkCellArray *polys = pd->GetPolys();
+
+    int numPoints = pd->GetNumberOfPoints();
+    int numCells = pd->GetNumberOfCells();
+    int numLines = lines->GetNumberOfCells();
+    int numVerts = verts->GetNumberOfCells();
+    int numPolys = polys->GetNumberOfCells();
+    int numVecs = (ptvectors || cellvectors) ? numVerts : 0;
+
+    vtkIdType npts, *ids;
+    vtkIdList *idlist = vtkIdList::New();
+    
+    //
+    // We need to accumulate the data and spatial extents to
+    // set a good max/min and camera default for the user
+    //
+    for (int i=0; i<numPoints; i++)
+    {
+        double pt[3];
+        pd->GetPoint(i, pt);
+        if (spatialextents[0] > pt[0])
+            spatialextents[0] = pt[0];
+        if (spatialextents[1] < pt[0])
+            spatialextents[1] = pt[0];
+        if (spatialextents[2] > pt[1])
+            spatialextents[2] = pt[1];
+        if (spatialextents[3] < pt[1])
+            spatialextents[3] = pt[1];
+        if (spatialextents[4] > -pt[2]) // yes, z values are inverted
+            spatialextents[4] = -pt[2];
+        if (spatialextents[5] < -pt[2])
+            spatialextents[5] = -pt[2];
+    }
+    if (cellscalars)
+    {
+        for (int i=0; i<cellscalars->GetNumberOfTuples(); i++)
+        {
+            double val = cellscalars->GetComponent(i, 0);
+            if (dataextents[0] > val)
+                dataextents[0] = val;
+            if (dataextents[1] < val)
+                dataextents[1] = val;
+        }
+    }
+    if (ptscalars)
+    {
+        for (int i=0; i<ptscalars->GetNumberOfTuples(); i++)
+        {
+            double val = ptscalars->GetComponent(i, 0);
+            if (dataextents[0] > val)
+                dataextents[0] = val;
+            if (dataextents[1] < val)
+                dataextents[1] = val;
+        }
+    }
+
+    //
+    // Write the array sizes.
+    //
+    char idxstr[20];
+    sprintf(idxstr, "%04d", idx);
+    out << "#declare npts"<<idxstr<<"   = "<<numPoints<<";"<<endl;
+    out << "#declare ncells"<<idxstr<<" = "<<numCells<<";"<<endl;
+    out << "#declare nverts"<<idxstr<<" = "<<numVerts<<";"<<endl;
+    out << "#declare nlines"<<idxstr<<" = "<<numLines<<";"<<endl;
+    out << "#declare ntris"<<idxstr<<"  = "<<numPolys<<";"<<endl;
+    out << "#declare nvecs"<<idxstr<<"  = "<<numVecs<<";"<<endl;
+    out << endl;
+
+    //
+    // Write the coordinates
+    //
+    if (numPoints > 0)
+    {
+        out << "#declare pts"<<idxstr<<" = array[npts"<<idxstr<<"]" << endl;
+        out << "{"<<endl;
+        for (int i=0; i<numPoints; i++)
+        {
+            double pt[3];
+            pd->GetPoint(i, pt);
+            pt[2] *= -1;
+            out << "  <"<<pt[0]<<","<<pt[1]<<","<<pt[2]<<">";
+            if (i < numPoints-1)
+                out << ",";
+            out << endl;
+        }
+        out << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write the point scalars
+    //
+    if (ptscalars)
+    {
+        out << "#declare ptscalars"<<idxstr<<" = array[npts"<<idxstr<<"]\n" << endl;
+        out << "{"<<endl;
+        for (int i=0; i<numPoints; i++)
+        {
+            double val = ptscalars->GetComponent(i, 0);
+            out << "  " << val;
+            if (i < numPoints-1)
+                out << ",";
+            out << endl;
+        }
+        out << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write the cell scalars
+    //
+    if (cellscalars)
+    {
+        out << "#declare cellscalars"<<idxstr<<" = array[ncells"<<idxstr<<"]" << endl;
+        out << "{"<<endl;
+        for (int i=0; i<numCells; i++)
+        {
+            double val = cellscalars->GetComponent(i, 0);
+            out << "  " << val;
+            if (i < numCells-1)
+                out << ",";
+            out << endl;
+        }
+        out << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write the point vectors
+    //
+    if (ptvectors)
+    {
+        out << "#declare ptvectors"<<idxstr<<" = array[npts"<<idxstr<<"]" << endl;
+        out << "{"<<endl;
+        for (int i=0; i<numPoints; i++)
+        {
+            double vec[3] = {ptvectors->GetComponent(i, 0),
+                             ptvectors->GetComponent(i, 1),
+                             ptvectors->GetComponent(i, 2)};
+            vec[2] *= -1;
+            out << "  <"<<vec[0]<<","<<vec[1]<<","<<vec[2]<<">";
+            if (i < numPoints-1)
+                out << ",";
+            out << endl;
+        }
+        out << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write the cell vectors
+    //
+    if (cellvectors)
+    {
+        out << "#declare cellvectors"<<idxstr<<" = array[ncels"<<idxstr<<"]" << endl;
+        out << "{"<<endl;
+        for (int i=0; i<numCells; i++)
+        {
+            double vec[3] = {cellscalars->GetComponent(i, 0),
+                             cellscalars->GetComponent(i, 1),
+                             cellscalars->GetComponent(i, 2)};
+            vec[2] *= -1;
+            out << "  <"<<vec[0]<<","<<vec[1]<<","<<vec[2]<<">";
+            if (i < numCells-1)
+                out << ",";
+            out << endl;
+        }
+        out << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write the point normals (cell normals are useless)
+    //
+    if (ptnormals)
+    {
+        out << "#declare ptnorms"<<idxstr<<" = array[npts"<<idxstr<<"]"<<endl;
+        out << " {"<<endl;
+        for (int i=0; i<numPoints; i++)
+        {
+            double norm[3];
+            ptnormals->GetTuple(i, norm);
+            norm[2] *= -1;
+            out << "    <"<<norm[0]<<","<<norm[1]<<","<<norm[2]<<">";
+            if (i < numPoints-1)
+                out << ",";
+            out << endl;
+        }
+        out << "};"<<endl;
+        out << endl;
+    }
+
+    //
+    // Write the connectivity for 0-dimensional data as a
+    // (1+1)-component array (the 0th entry is the cell ID).
+    //
+    if (numVerts > 0)
+    {
+        out << "#declare verts"<<idxstr<<" = array[nverts"<<idxstr<<"][2]"<<endl;
+        out << "{"<<endl;
+        bool first = true;
+        for (int c=0; c<numCells; c++)
+        {
+            int type = pd->GetCellType(c);
+            pd->GetCellPoints(c, idlist);
+            npts = idlist->GetNumberOfIds();
+            ids = idlist->GetPointer(0);
+            if (type != VTK_VERTEX || npts != 1)
+                continue;
+            if (!first)
+                out << "," << endl;
+            first = false;
+            out << "  {"<<c<<",  "<<ids[0]<<"}";
+        }
+        out << endl << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write the connectivity for 1-dimensional data as a
+    // (2+1)-component array (the 0th entry is the cell ID).
+    //
+    if (numLines > 0)
+    {
+        out << "#declare lines"<<idxstr<<" = array[nlines"<<idxstr<<"][3]"<<endl;
+        out << "{"<<endl;
+        bool first = true;
+        for (int c=0; c<numCells; c++)
+        {
+            int type = pd->GetCellType(c);
+            pd->GetCellPoints(c, idlist);
+            npts = idlist->GetNumberOfIds();
+            ids = idlist->GetPointer(0);
+            if (type != VTK_LINE || npts != 2)
+                continue;
+            if (!first)
+                out << "," << endl;
+            first = false;
+            out << "  {"<<c<<",  "<<ids[0]<<","<<ids[1]<<"}";
+        }
+        out << endl  << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write the connectivity for 2-dimensional data as a
+    // (3+1)-component array (the 0th entry is the cell ID).
+    //
+    if (numPolys > 0)
+    {
+        out << "#declare tris"<<idxstr<<" = array[ntris"<<idxstr<<"][4]"<<endl;
+        out << "{"<<endl;
+        bool first = true;
+        for (int c=0; c<numCells; c++)
+        {
+            int type = pd->GetCellType(c);
+            pd->GetCellPoints(c, idlist);
+            npts = idlist->GetNumberOfIds();
+            ids = idlist->GetPointer(0);
+            if (type != VTK_TRIANGLE || npts != 3)
+                continue;
+            if (!first)
+                out << "," << endl;
+            first = false;
+            out << "  {"<<c<<",  "<<ids[0]<<","<<ids[1]<<","<<ids[2]<<"}";
+        }
+        out << endl  << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write the geometry for 0-dimensional vertex cells.
+    //
+    if (numVerts)
+    {
+        out << "#declare vertex_geometry"<<idxstr<<" = union"<<endl;
+        out << "{"<<endl;
+        out << "#declare vertctr=0;" <<endl;
+        out << "#while (vertctr < nverts"<<idxstr<<")"<<endl;
+        if (ptscalars)
+            out << "    #declare vertvalue=ptscalars"<<idxstr<<"[verts"<<idxstr<<"[vertctr][1]];"<<endl;
+        else if (cellscalars)
+            out << "    #declare vertvalue=cellscalars"<<idxstr<<"[verts"<<idxstr<<"[vertctr][0]];"<<endl;
+        out << "    object {"<<endl;
+        out << "        VertGlyph"<<endl;
+        if (ptscalars || cellscalars)
+            out << "        scale VertFixedSize+vertvalue*VertScaleSize"<<endl;
+        else
+            out << "        scale VertFixedSize"<<endl;
+        out << "        translate pts"<<idxstr<<"[verts"<<idxstr<<"[vertctr][1]]"<<endl;
+        out << "        #if (ConstantVertColor)" << endl;
+        out << "        pigment { VertPigment }" << endl;
+        out << "        #else" << endl;
+        if (ptscalars)
+        {
+            out << "        pigment {"<<endl;
+            out << "            pigment_pattern {" << endl;
+            out << "                color ";
+            out << "ScalarNormalize(ptscalars"<<idxstr<<"[verts"<<idxstr<<"[vertctr][1]])"<<endl;
+            out << "            }"<<endl;
+            out << "            color_map {colortable}"<<endl;
+            out << "        }" << endl;
+        }
+        else if (cellscalars)
+        {
+            out << "        pigment {"<<endl;
+            out << "            pigment_pattern {" << endl;
+            out << "                color ";
+            out << "ScalarNormalize(cellscalars"<<idxstr<<"[verts"<<idxstr<<"[vertctr][0]])"<<endl;
+            out << "            }"<<endl;
+            out << "            color_map {colortable}"<<endl;
+            out << "        }" << endl;
+        }
+        else
+        {
+            out << "        pigment {VertPigment}" << endl;
+        }
+        out << "        #end" << endl;
+        out << endl;
+        out << "        finish {VertFinish}" << endl;
+        out << "    }" << endl;
+            
+        out << "#declare vertctr = vertctr+1;" << endl;
+        out << "#end"<<endl;
+        out << "};" << endl;
+    }
+    out << endl;
+
+    //
+    // Write the geometry for 0-dimensional-origin glyphed 3D vectors.
+    //
+    if (numVecs)
+    {
+        out << "#declare vector_geometry"<<idxstr<<" = union"<<endl;
+        out << "{"<<endl;
+        out << "#declare vecctr=0;" <<endl;
+        out << "#while (vecctr < nvecs"<<idxstr<<")"<<endl;
+        if (ptvectors)
+            out << "    #declare vec=ptvectors"<<idxstr<<"[verts"<<idxstr<<"[vecctr][1]];"<<endl;
+        else // cellvectors
+            out << "    #declare vec=cellvectors"<<idxstr<<"[verts"<<idxstr<<"[vecctr][0]];"<<endl;
+        out << "    object {"<<endl;
+        out << "        VecGlyph" << endl;
+        out << "        Point_At_Trans(vec)"<<endl;
+        out << "        scale (VecFixedSize + VecScaleSize*vlength(vec))"<<endl;
+        out << "        translate pts"<<idxstr<<"[verts"<<idxstr<<"[vecctr][1]]"<<endl;
+        out << "        #if (ConstantVecColor)" << endl;
+        out << "        pigment { VecPigment }" << endl;
+        out << "        #else" << endl;
+        if (ptscalars)
+        {
+            out << "        pigment {"<<endl;
+            out << "            pigment_pattern {" << endl;
+            out << "                color ";
+            out << "ScalarNormalize(ptscalars"<<idxstr<<"[verts"<<idxstr<<"[vecctr][1]])"<<endl;
+            out << "            }"<<endl;
+            out << "            color_map {colortable}"<<endl;
+            out << "        }" << endl;
+        }
+        else if (cellscalars)
+        {
+            out << "        pigment {"<<endl;
+            out << "            pigment_pattern {" << endl;
+            out << "                color ";
+            out << "ScalarNormalize(cellscalars"<<idxstr<<"[verts"<<idxstr<<"[vecctr][0]])"<<endl;
+            out << "            }"<<endl;
+            out << "            color_map {colortable}"<<endl;
+            out << "        }" << endl;
+        }
+        else
+        {
+            out << "        pigment {VecPigment}";
+        }
+        out << "        #end" << endl;
+        out << "        finish {VecFinish}" << endl;;
+        out << "    }" << endl;            
+        out << "#declare vecctr = vecctr+1;" << endl;
+        out << "#end"<<endl;
+        out << "};" << endl;
+    }
+    out << endl;
+
+    //
+    // Write the geometry for 1-dimensional line segment cells.
+    //
+    if (numLines)
+    {
+        out << "#declare line_geometry"<<idxstr<<" = union"<<endl;
+        out << "{"<<endl;
+        out << "#declare linectr=0;" <<endl;
+        out << "#while (linectr < nlines"<<idxstr<<")"<<endl;
+        out << "    #declare cellid=lines"<<idxstr<<"[linectr][0];"<<endl;
+        out << "    #declare id0=lines"<<idxstr<<"[linectr][1];"<<endl;
+        out << "    #declare id1=lines"<<idxstr<<"[linectr][2];"<<endl;
+        out << "    #declare pt_0=pts"<<idxstr<<"[id0];"<<endl;
+        out << "    #declare pt_1=pts"<<idxstr<<"[id1];"<<endl;
+        out << "    #declare pt_mid=(pt_0 + pt_1)/2.;"<<endl;
+        if (ptscalars)
+        {
+            out << "    object {"<<endl;
+            out << "        cylinder {pt_0,pt_mid,LineWidth}"<<endl;
+            out << "        #if (ConstantLineColor)" << endl;
+            out << "        pigment { LinePigment }" << endl;
+            out << "        #else" << endl;
+            out << "        pigment {"<<endl;
+            out << "            pigment_pattern {" << endl;
+            out << "                color ";
+            out << "ScalarNormalize(ptscalars"<<idxstr<<"[id0])"<<endl;
+            out << "            }"<<endl;
+            out << "            color_map {colortable}"<<endl;
+            out << "        }"<<endl;
+            out << "        #end" << endl;
+            out << "        finish {LineFinish}" << endl;;
+            out << "    }"<<endl;
+            out << "    object {"<<endl;
+            out << "        cylinder {pt_mid,pt_1,LineWidth}"<<endl;
+            out << "        #if (ConstantLineColor)" << endl;
+            out << "        pigment { LinePigment }" << endl;
+            out << "        #else" << endl;
+            out << "        pigment {"<<endl;
+            out << "            pigment_pattern {" << endl;
+            out << "                color ";
+            out << "ScalarNormalize(ptscalars"<<idxstr<<"[id1])"<<endl;
+            out << "            }"<<endl;
+            out << "            color_map {colortable}"<<endl;
+            out << "        }"<<endl;
+            out << "        #end" << endl;
+            out << "        finish {LineFinish}" << endl;;
+            out << "    }"<<endl;
+        }
+        else if (cellscalars)
+        {
+            out << "    object {"<<endl;
+            out << "        cylinder {pt_0,pt_1,LineWidth}"<<endl;
+            out << "        #if (ConstantLineColor)" << endl;
+            out << "        pigment { LinePigment }" << endl;
+            out << "        #else" << endl;
+            out << "        pigment {"<<endl;
+            out << "            pigment_pattern {" << endl;
+            out << "                color ";
+            out << "ScalarNormalize(cellscalars"<<idxstr<<"[cellid])"<<endl;
+            out << "            }"<<endl;
+            out << "            color_map {colortable}"<<endl;
+            out << "        }"<<endl;
+            out << "        #end" << endl;
+            out << "        finish {LineFinish}" << endl;;
+            out << "    }"<<endl;
+        }
+        else
+        {
+            out << "    object {"<<endl;
+            out << "        cylinder {pt_0,pt_1,LineWidth}"<<endl;
+            out << "        pigment { LinePigment }"<<endl;
+            out << "        finish {LineFinish}" << endl;;
+            out << "    }"<<endl;
+        }
+        out << "#declare linectr = linectr+1;" << endl;
+        out << "#end"<<endl;
+        out << "};"<<endl;
+    }
+    out << endl;
+
+    //
+    // Write the geometry for 2-dimensional triangle cells.
+    //
+    if (numPolys > 0)
+    {
+        out << "#declare poly_geometry"<<idxstr<<" = mesh2"<<endl;
+        out << "{"<<endl;
+        out << "    vertex_vectors {"<<endl;
+        out << "        npts"<<idxstr<<","<<endl;
+        out << "        #declare ptctr=0;"<<endl;
+        out << "        #while (ptctr < npts"<<idxstr<<")"<<endl;
+        out << "            pts"<<idxstr<<"[ptctr]," << endl;
+        out << "            #declare ptctr = ptctr+1;" << endl;
+        out << "        #end"<<endl;
+        out << "    }"<<endl;
+
+        if (ptnormals)
+        {
+            out << "    normal_vectors {"<<endl;
+            out << "        npts"<<idxstr<<","<<endl;
+            out << "        #declare normctr=0;"<<endl;
+            out << "        #while (normctr < npts"<<idxstr<<")"<<endl;
+            out << "            ptnorms"<<idxstr<<"[normctr]," << endl;
+            out << "            #declare normctr = normctr+1;" << endl;
+            out << "        #end"<<endl;
+            out << "    }"<<endl;
+        }
+
+        if (ptscalars || cellscalars)
+        {
+            out << "    #if (!ConstantPolyColor)" << endl;
+            out << "    texture_list {"<<endl;
+            out << "        256,"<<endl;
+            out << "        #declare texctr=0;"<<endl;
+            out << "        #while (texctr < 256)"<<endl;
+            out << "            texture {"<<endl;
+            out << "                pigment {"<<endl;
+            out << "                    pigment_pattern {color texctr/255.}"<<endl;
+            out << "                    color_map {colortable}"<<endl;
+            out << "                }"<<endl;
+            out << "                finish { PolyFinish }"<<endl;
+            out << "            },"<<endl;
+            out << "            #declare texctr = texctr+1;" << endl;
+            out << "        #end"<<endl;
+            out << "    }"<<endl;
+            out << "    #end"<<endl;
+        }
+
+        out << "    face_indices {"<<endl;
+        out << "        ntris"<<idxstr<<","<<endl;
+        out << "        #declare facectr=0;"<<endl;
+        out << "        #while (facectr < ntris"<<idxstr<<")"<<endl;
+        out << "            <tris"<<idxstr<<"[facectr][1],"<<endl;
+        out << "             tris"<<idxstr<<"[facectr][2],"<<endl;
+        out << "             tris"<<idxstr<<"[facectr][3]>"<<endl;
+        if (ptscalars)
+        {
+            out << "            #if (!ConstantPolyColor)" << endl;
+            out << "            ,255*ScalarNormalize(ptscalars"<<idxstr<<"[tris"<<idxstr<<"[facectr][1]])"<<endl;
+            out << "            ,255*ScalarNormalize(ptscalars"<<idxstr<<"[tris"<<idxstr<<"[facectr][2]])"<<endl;
+            out << "            ,255*ScalarNormalize(ptscalars"<<idxstr<<"[tris"<<idxstr<<"[facectr][3]])"<<endl;
+            out << "            #end" << endl;
+        }
+        else if (cellscalars)
+        {
+            out << "            #if (!ConstantPolyColor)" << endl;
+            out << "            ,255*ScalarNormalize(cellscalars"<<idxstr<<"[tris"<<idxstr<<"[facectr][0]])"<<endl;
+            out << "            #end" << endl;
+        }
+        out << "            #declare facectr = facectr+1;" << endl;
+        out << "        #end"<<endl;
+        out << "    }"<<endl;
+
+        if (ptnormals)
+        {
+            out << "    normal_indices {"<<endl;
+            out << "        ntris"<<idxstr<<","<<endl;
+            out << "        #declare facectr=0;"<<endl;
+            out << "        #while (facectr < ntris"<<idxstr<<")"<<endl;
+            out << "            <tris"<<idxstr<<"[facectr][1],"<<endl;
+            out << "             tris"<<idxstr<<"[facectr][2],"<<endl;
+            out << "             tris"<<idxstr<<"[facectr][3]>"<<endl;
+            out << "            #declare facectr = facectr+1;" << endl;
+            out << "        #end"<<endl;
+            out << "    }"<<endl;
+        }
+
+        if (cellscalars || ptscalars)
+            out << "    #if (ConstantPolyColor)" << endl;
+        out << "    pigment {PolyPigment} finish {PolyFinish}" << endl;
+        if (cellscalars || ptscalars)
+            out << "    #end" << endl;
+        out << "};"<<endl;
+    }
+    out << endl;
+
+    //
+    // Close the file, free memory
+    //
+    out.close();
+    tris->Delete();
+    geom->Delete();
 }
 
 

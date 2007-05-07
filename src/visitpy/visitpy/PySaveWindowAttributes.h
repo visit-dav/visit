@@ -46,11 +46,11 @@
 //
 void VISITPY_API           PySaveWindowAttributes_StartUp(SaveWindowAttributes *subj, void *data);
 void VISITPY_API           PySaveWindowAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PySaveWindowAttributes_GetMethodTable(int *nMethods);
+PyMethodDef * VISITPY_API  PySaveWindowAttributes_GetMethodTable(int *nMethods);
 bool VISITPY_API           PySaveWindowAttributes_Check(PyObject *obj);
-VISITPY_API SaveWindowAttributes *  PySaveWindowAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PySaveWindowAttributes_New();
-VISITPY_API PyObject *      PySaveWindowAttributes_Wrap(const SaveWindowAttributes *attr);
+SaveWindowAttributes * VISITPY_API PySaveWindowAttributes_FromPyObject(PyObject *obj);
+PyObject * VISITPY_API     PySaveWindowAttributes_New();
+PyObject * VISITPY_API     PySaveWindowAttributes_Wrap(const SaveWindowAttributes *attr);
 void VISITPY_API           PySaveWindowAttributes_SetParent(PyObject *obj, PyObject *parent);
 void VISITPY_API           PySaveWindowAttributes_SetDefaults(const SaveWindowAttributes *atts);
 std::string VISITPY_API    PySaveWindowAttributes_GetLogString();

@@ -589,6 +589,11 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Slow(int model)
 //    Jeremy Meredith, Mon Aug 28 17:49:30 EDT 2006
 //    Bonds are now line segment cells, not an atom-centered 4-comp array.
 //
+//    Jeremy Meredith, Wed Apr 18 11:02:04 EDT 2007
+//    Account for potentially zero atoms.  This only seemed to appear
+//    when there was a parsing problem with the file, so maybe it should
+//    be changed to throw an error in ReadAtomsForModel()?
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
@@ -599,6 +604,8 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 
     vector<Atom> &atoms = allatoms[model];
     int natoms = atoms.size();
+    if (natoms <= 0)
+        return;
 
     //
     // The strategy here is to divide atoms into 3D spatial bins
@@ -742,6 +749,11 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Apr 18 10:59:48 EDT 2007
+//    Files with non-unixy text formatting (^M's at the end of every line)
+//    required allowing for an extra character in getline.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::ReadAllMetaData()
@@ -753,8 +765,8 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
 
     metadata_read = true;
 
-    char line[81];
-    in.getline(line, 81);
+    char line[82];
+    in.getline(line, 82);
     nmodels = 0;
     int titleLineCount = 0, sourceLineCount = 0;
     std::string source;
@@ -778,7 +790,7 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
             source += string(line + 10);
             sourceLineCount++;
         }
-        in.getline(line, 81);
+        in.getline(line, 82);
     }
 
     if(titleLineCount == 0 && sourceLineCount > 0)
@@ -843,6 +855,10 @@ avtProteinDataBankFileFormat::OpenFileAtBeginning()
 //    Jeremy Meredith, Mon Aug 28 17:53:21 EDT 2006
 //    Added support for CONECT records.
 //
+//    Jeremy Meredith, Wed Apr 18 10:59:48 EDT 2007
+//    Files with non-unixy text formatting (^M's at the end of every line)
+//    required allowing for an extra character in getline.
+//
 // ****************************************************************************
 
 void
@@ -857,8 +873,8 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
     vector<Atom> &atoms = allatoms[model];    
     atoms.clear();
 
-    char line[81];
-    in.getline(line, 81);
+    char line[82];
+    in.getline(line, 82);
 
     if (nmodels != 0)
     {
@@ -870,7 +886,7 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
             {
                 curmodel++;
             }
-            in.getline(line, 81);
+            in.getline(line, 82);
         }
     }
 
@@ -940,7 +956,7 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
             // ignoring record type 'record'
         }
 
-        in.getline(line, 81);
+        in.getline(line, 82);
     }
 
     CreateBondsFromModel(model);
@@ -1231,7 +1247,7 @@ ConnectRecord::ConnectRecord(const char *origline)
     // may be more stuff later on the line.  This
     // probably means sscanf is not the best way
     // to accomplish this.
-    char line[81];
+    char line[82];
     strcpy(line, origline);
     line[31] = '\0';
 

@@ -57,6 +57,11 @@ class vtkDoubleArray;
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Apr 20 14:59:53 EDT 2007
+//    Added a special case where axis-aligned unit cell vectors
+//    construct a *true* rectilinear grid, not a transformed one.
+//
 // ****************************************************************************
 
 class avtCHGCARFileFormat : public avtSTSDFileFormat
@@ -82,6 +87,7 @@ class avtCHGCARFileFormat : public avtSTSDFileFormat
     int origdims[3];
     int meshdims[3];
     double unitCell[3][3];
+    bool is_rectilinear;
     ifstream in;
     std::string filename;
     bool metadata_read;
