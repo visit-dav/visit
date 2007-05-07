@@ -443,9 +443,9 @@ if("$os" == "darwin") then
         endif
         echo "#\!$csh -f"           >  "$dir"/bin/$appscript.command
         if($i > 1) then
-            echo "$dir/bin/visit -$app" >> "$dir"/bin/$appscript.command
+            echo "`pwd`/visit -$app" >> "$dir"/bin/$appscript.command
         else
-            echo "$dir/bin/visit"       >> "$dir"/bin/$appscript.command
+            echo "`pwd`/visit"       >> "$dir"/bin/$appscript.command
         endif
         echo "exit 0"               >> "$dir"/bin/$appscript.command
         if ($group_ownership != none) then

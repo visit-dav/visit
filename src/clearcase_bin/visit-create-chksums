@@ -101,8 +101,10 @@ do
    $cmd visit-install                       >> $output
    $cmd jvisit$version.tar.gz               >> $output
    $cmd visit$version.exe                   >> $output
+   $cmd visit$version2.aix.tar.gz           >> $output
    $cmd visit$version2.aix64.tar.gz         >> $output
-   $cmd visit$version2.darwin.tar.gz        >> $output
+   $cmd visit$version2.darwin-ppc.tar.gz    >> $output
+   $cmd visit$version2.darwin-i386.tar.gz   >> $output
    $cmd visit$version2.irix6.tar.gz         >> $output
    $cmd visit$version2.linux-altix.tar.gz   >> $output
    $cmd visit$version2.linux-ia64.tar.gz    >> $output
@@ -120,7 +122,7 @@ do
    cd ../visit_third_party
    $cmd cmake-2.2.3.tar.gz                  >> ../visit$version/$output
    $cmd Mesa-5.0-mangled.tar.gz             >> ../visit$version/$output
-   $cmd Python-2.4.2.tgz                    >> ../visit$version/$output
+   $cmd Python-2.5.tgz                      >> ../visit$version/$output
    $cmd qt-x11-free-3.3.2.tar.gz            >> ../visit$version/$output
    $cmd silo060605.sh                       >> ../visit$version/$output
    $cmd vtk-5.0.0c.tar.gz                   >> ../visit$version/$output
