@@ -266,7 +266,7 @@ avtSiloFileFormat::~avtSiloFileFormat()
 //    can lead to strange failures because not all processors make calls
 //    to GetMesh, GetVar, etc. All processors do call this method.
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   February 9, 2004 
 //
 // ****************************************************************************
@@ -5554,6 +5554,9 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
 //    Jeremy Meredith, Tue Jun  7 08:32:46 PDT 2005
 //    Added support for "EMPTY" domains in multi-objects.
 //
+//    Cyrus Harrison, Thu Apr 26 10:14:42 PDT 2007
+//    Added group_id as field data to the VTK dataset.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -5593,7 +5596,17 @@ avtSiloFileFormat::GetQuadMesh(DBfile *dbfile, const char *mn, int domain)
     }
 
     GetQuadGhostZones(qm, ds);
- 
+
+    //
+    // Add group id as field data
+    //
+    vtkIntArray *grp_id_arr = vtkIntArray::New();
+    grp_id_arr->SetNumberOfTuples(1);
+    grp_id_arr->SetValue(0, qm->group_no);
+    grp_id_arr->SetName("group_id");
+    ds->GetFieldData()->AddArray(grp_id_arr);
+    grp_id_arr->Delete();
+
     //
     // Determine the indices of the mesh within its group.  Add that to the
     // VTK dataset as field data.
