@@ -733,12 +733,9 @@ cp vtkstd/*                       $VISITPATH/vtk/vtkstd
 cp bin/*.dylib                    $VISITPATH/vtk/lib
 
 #
-# Install the VTK JPEG library under the visit directory in case the
+# Create a JPEG library from the VTK JPEG library in case the
 # computer does not have a JPEG library.
-#
-mkdir $VISITPATH/jpeg $VISITPATH/jpeg/include $VISITPATH/jpeg/lib
-cp Utilities/vtkjpeg/*.h          $VISITPATH/jpeg/include
-cp bin/libvtkjpeg.dylib           $VISITPATH/jpeg/lib/libjpeg.dylib
+ln -s $VISITPATH/vtk/lib/libvtkjpeg.dylib $VISITPATH/vtk/lib/libjpeg.dylib
 cd ..
 
 ===============================================================================
@@ -871,9 +868,7 @@ HDF4 is a data storage library that lets you write large volumes of data to
 disk files and it is the predecessor of HDF5. Like most of the other libraries
 mentioned so far, HDF4 does not have a make target to produce a dynamic
 library. In fact, its make target for MacOS X produces a static library. Follow
-the instructions below for creating universal dynamic libraries. I got a 
-pre-release distribution from the developer that compiled on Intel Mac, and
-supported gcc-4.x.
+the instructions below for creating universal dynamic libraries. 
 This distribution however would not build as 2-way universal binary without
 building on separate machines.
 
@@ -882,8 +877,8 @@ built in to MacOS, JPEG was created during the VTK step above, and SZIP
 will be ignored.
 
 # Unpack HDF4
-tar zxf hdf4.tar.gz
-cd hdf4
+tar zxf HDF4.2r1.tar.gz
+cd HDF4.2r1
 
 vi configure
 # Note that as of VTK 5.0, the names in the VTK
@@ -891,24 +886,47 @@ vi configure
 # against the VTK jpeg library just fine once you get past configure, which
 # does not like VTK's mangled jpeg library.
 # 
-# insert after line 6612 and 6892:
+# Comment out lines 5659-5708
+#
+# insert after line 5708:
 # ac_cv_lib_jpeg_jpeg_start_decompress=yes
+
 # 
-# Comment out lines 8536-8558 because the script exits with a failure to
+# Comment out lines 6878-7181 because the script exits with a failure to
 # calculate the size of int*.
 #
-# Insert, after line 8566, ac_cv_sizeof_intp=4
+# Insert, after line 7181, ac_cv_sizeof_intp=4
 #
 
-vi mfhdf/libsrc/config/netcdf-apple.h
-# Append to the end of line 307:
-# || defined __ppc_64__ || defined __x86_64__
-#
+vi hdf/src/hdfi.h
+# Replace line 739:
+
+#define DF_MT   DFMT_APPLE
+
+# with the following:
+
+#ifdef __i386
+#ifndef INTEL86
+#define INTEL86   /* we need this Intel define or bad things happen later */
+#endif /* INTEL86 */
+#define DF_MT   DFMT_APPLE_INTEL
+#else
+#define DF_MT   DFMT_APPLE
+#endif /* __i386 */
+
+# Replace line 889:
+
+#if !(defined(macintosh) || defined(MAC))
+
+# With:
+
+#if !(defined(macintosh) || defined(MAC) || defined (__APPLE__))
 
 # Build
 ./configure --prefix=$VISITPATH/hdf4 \
-CPPFLAGS="-I$VISITPATH/vtk/Utilities" CFLAGS="-O2 -fno-common" \
-LDFLAGS="-Wl,-headerpad_max_install_names" --with-jpeg=$VISITPATH/jpeg \
+CPPFLAGS="-I$VISITPATH/vtk/Utilities -I$VISITPATH/vtk/Utilities/vtkjpeg" \
+CFLAGS="-O2 -fno-common" \
+LDFLAGS="-Wl,-headerpad_max_install_names" --with-jpeg=$VISITPATH/vtk/lib \
 --with-szlib=no --disable-fortran --disable-dependency-tracking
 
 # The build, and install will bomb during test, just ignore
@@ -922,7 +940,7 @@ gcc -dynamiclib -o libdf.dylib hdf/src/*.o \
 -Wl,-headerpad_max_install_names,\
 -install_name,@executable_path/../lib/libdf.dylib,\
 -compatibility_version,4.0,-current_version,4.2.1 \
--L$VISITPATH/jpeg/lib -ljpeg -lz
+-L$VISITPATH/vtk/lib -ljpeg -lz
 
 cp libdf.dylib $VISITPATH/hdf4/lib
 
@@ -931,7 +949,7 @@ gcc -dynamiclib -o libmfhdf.dylib mfhdf/libsrc/*.o \
 -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,\
 -install_name,@executable_path/../lib/libmfhdf.dylib,\
 -compatibility_version,4.0,-current_version,4.2.1 \
--L$VISITPATH/jpeg/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -lz
+-L$VISITPATH/vtk/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -lz
 
 cp libmfhdf.dylib $VISITPATH/hdf4/lib
 
@@ -965,7 +983,7 @@ vi libsrc/netcdf.h
 
 # Have to run configure to create head files on both PPC and Intel machines
 ./configure --enable-largefile --prefix=$VISITPATH/netcdf/3.6.0 \
-"CFLAGS="-O2 -fno-common" CXXFLAGS="-O2 -fno-common"
+"CFLAGS="-O2 -fno-common" CXXFLAGS="-O2 -fno-common" FC=""
 
 # Build the C library 
 cd libsrc
@@ -1213,6 +1231,15 @@ vi FPC.cpp
 #to: 
 # defined(__sun) || defined(__ppc__) || defined(__ppc64__) || \
 
+vi Make.package
+# Comment out the Fortran interfaces starting a line 94:
+#f$(BOXLIB_BASE)_sources += BLutil_F.f
+#f$(BOXLIB_BASE)_sources += BLParmParse_F.f
+#f$(BOXLIB_BASE)_sources += BLBoxLib_F.f
+
+#F$(BOXLIB_BASE)_sources += SPECIALIZE_$(DIM)D.F
+#F$(BOXLIB_BASE)_headers += SPECIALIZE_F.H
+
 # Create a Darwin Makefile templet:
 cp ../mk/Make.FreeBSD ../mk/Make.Darwin
 
@@ -1221,7 +1248,7 @@ cp ../mk/Make.FreeBSD ../mk/Make.Darwin
 # 
 # Don't want the fortran bindings, so we'll try and bull I way through to that
 # part.
-make -f GNUmakefile -i FC=""
+make -f GNUmakefile
 
 # Build a dynamic library
 libtool -o libbox3D.dylib -dynamic libbox3d.Darwin.CC.f77.a -lSystem \
@@ -1239,7 +1266,7 @@ vi GNUmakefile
 # You will need to modify the GNUmakefile to set the dimension to 2.  This
 # will involve replacing "3" with "2" in the line "DIM       = 3".
 #
-make -f GNUmakefile -i FC=""
+make -f GNUmakefile
 
 # Build a universal dynamic library
 libtool -o libbox2D.dylib -dynamic libbox2d.Darwin.CC.f77.a -lSystem \
@@ -1375,17 +1402,19 @@ cd ..
 #
 # If VisIt failed to configure properly, check the contents of the
 # `hostname`.conf file to make sure that it points to the libraries that
-# you build. You can look at whitestar.conf, which is a configuration file
+# you build. You can look at tread.local.conf, which is a configuration file
 # for another MacOS X computer, if you want an example file that works.
 #
 
 # Build VisIt
 make
 
-# Create a distribution tarball.
+# Create a binary distribution tarball, which for an Intel Mac will create
+# a visit1_6.darwin-i386.tar.gz file of about 60Mbytes.
 clearcase_bin/visit-bin-dist
 
-# install, and create a .dmg
-clearcase_bin/visit-install -dmg 1.6 darwin INSTALL_DIR_PATH
+# To install the binaries in a directory called "INSTALL_DIR_PATH", and 
+# create a disk image file called Visit-1.6.dmg use:
+clearcase_bin/visit-install -dmg 1.6 darwin-i386 INSTALL_DIR_PATH
 
 If you have any problems send e-mail to visit-help@llnl.gov.
