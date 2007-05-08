@@ -104,7 +104,9 @@ QvisCracksClipperWindow::~QvisCracksClipperWindow()
 // Creation:   Mon Aug 22 09:10:02 PDT 2005
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
+//   Added calculateDensity, inMarVar, outDenVar.
+//
 // ****************************************************************************
 
 void
@@ -165,6 +167,31 @@ QvisCracksClipperWindow::CreateWindowContents()
     connect(strainVar, SIGNAL(activated(const QString &)),
         this, SLOT(strainVarChanged(const QString &)));
     mainLayout->addMultiCellWidget(strainVar, 6, 6, 1, 3);
+
+    // Calculate Density 
+    calculateDensity = new QCheckBox("Calculate Density", 
+                                     central, "calculateDensity");
+    connect(calculateDensity, SIGNAL(toggled(bool)),
+        this, SLOT(calculateDensityChanged(bool)));
+    mainLayout->addWidget(calculateDensity, 7, 0);
+
+    // Input Mass Variable 
+    inMassVarLabel = new QLabel("Input Mass Variable", central, "inMassVar");
+    mainLayout->addWidget(inMassVarLabel, 8, 0);
+    inMassVar = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars, central, "inMassVar");
+    connect(inMassVar, SIGNAL(activated(const QString &)),
+        this, SLOT(inMassVarChanged(const QString &)));
+    mainLayout->addMultiCellWidget(inMassVar, 8, 8, 1, 3);
+
+    // Output Density Variable 
+    outDenVarLabel = new QLabel("Output Density Variable", central, "outDenVar");
+    mainLayout->addWidget(outDenVarLabel, 9, 0);
+    outDenVar = new QvisVariableButton(true, true, true,
+        QvisVariableButton::Scalars, central, "outDenVar");
+    connect(outDenVar, SIGNAL(activated(const QString &)),
+        this, SLOT(outDenVarChanged(const QString &)));
+    mainLayout->addMultiCellWidget(outDenVar, 9, 9, 1, 3);
 }
 
 
@@ -178,6 +205,8 @@ QvisCracksClipperWindow::CreateWindowContents()
 // Creation:   Mon Aug 22 09:10:02 PDT 2005
 //
 // Modifications:
+//   Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
+//   Added calculateDensity, inMarVar, outDenVar.
 //   
 // ****************************************************************************
 
@@ -222,6 +251,21 @@ QvisCracksClipperWindow::UpdateWindow(bool doAll)
             break;
           case 6: //showCrack3
             showCrack3->setChecked(atts->GetShowCrack3());
+            break;
+          case 7: //calculateDensity
+            calculateDensity->setChecked(atts->GetCalculateDensity());
+            inMassVarLabel->setEnabled(atts->GetCalculateDensity());
+            outDenVarLabel->setEnabled(atts->GetCalculateDensity());
+            inMassVar->setEnabled(atts->GetCalculateDensity());
+            outDenVar->setEnabled(atts->GetCalculateDensity());
+            break;
+          case 8: //inMassVar
+            temp = atts->GetInMassVar().c_str();
+            inMassVar->setText(temp);
+            break;
+          case 9: //outDenVar
+            temp = atts->GetOutDenVar().c_str();
+            outDenVar->setText(temp);
             break;
         }
     }
@@ -356,3 +400,25 @@ QvisCracksClipperWindow::showCrack3Changed(bool val)
     Apply();
 }
 
+void
+QvisCracksClipperWindow::calculateDensityChanged(bool val)
+{
+    atts->SetCalculateDensity(val);
+    Apply();
+}
+
+void
+QvisCracksClipperWindow::inMassVarChanged(const QString &var)
+{
+    atts->SetInMassVar(var.latin1());
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisCracksClipperWindow::outDenVarChanged(const QString &var)
+{
+    atts->SetOutDenVar(var.latin1());
+    SetUpdate(false);
+    Apply();
+}

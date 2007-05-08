@@ -224,6 +224,10 @@ avtLabelRenderer::SetForegroundColor(const double *fg)
 //    Hank Childs, Thu Jul 21 16:40:13 PDT 2005
 //    Initialize MAX_LABEL_SIZE based on variable type.
 //
+//    Brad Whitlock, Tue May 1 15:48:05 PST 2007
+//    Increased the size of MAX_LABEL_SIZE to include enough room for minus
+//    signs on numbers that get printed to scientific notation.
+//
 // ****************************************************************************
 
 void
@@ -282,7 +286,7 @@ avtLabelRenderer::Render(vtkDataSet *ds)
     // Check for Mesh plot
     if (biggest == 0)
         biggest = 3;
-    MAX_LABEL_SIZE = 12*biggest;
+    MAX_LABEL_SIZE = 13*biggest;
 
     //
     // Render the labels using the derived type's RenderLabels method.

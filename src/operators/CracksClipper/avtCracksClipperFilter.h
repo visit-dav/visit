@@ -43,7 +43,8 @@
 #define AVT_CracksClipper_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginFilter.h>
+#include <avtDatasetToDatasetFilter.h>
 #include <CracksClipperAttributes.h>
 
 
@@ -63,9 +64,14 @@ class vtkDataSet;
 //    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
 //    Removed int arg from RemoveCracks method.
 //
+//    Kathleen Bonnell, Thu May  3 07:51:38 PDT 2007 
+//    Changed inheritance for this filter, so that it can create a pipeline
+//    with multiple filters.  Moved bulk of code to new avtRemoveCracksFilter.
+//
 // ****************************************************************************
 
-class avtCracksClipperFilter : public avtPluginStreamer
+class avtCracksClipperFilter : virtual public avtPluginFilter,
+                               virtual public avtDatasetToDatasetFilter 
 {
   public:
                          avtCracksClipperFilter();
@@ -83,16 +89,14 @@ class avtCracksClipperFilter : public avtPluginStreamer
   protected:
     CracksClipperAttributes   atts;
 
-    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+    virtual void          Execute(void);
     virtual void          PostExecute(void);
     virtual void          RefashionDataObjectInfo(void);
+    virtual int           AdditionalPipelineFilters(void);
     virtual avtPipelineSpecification_p
                           PerformRestriction(avtPipelineSpecification_p);
 
   private:
-    bool                  NeedsProcessing(vtkDataSet *, bool *np);
-    vtkDataSet           *RemoveCracks(vtkDataSet *inds);
-    void                  RemoveExtraArrays(vtkDataSet *ds, bool v = false);
 };
 
 

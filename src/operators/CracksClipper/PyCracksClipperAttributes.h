@@ -45,11 +45,12 @@
 //
 void            PyCracksClipperAttributes_StartUp(CracksClipperAttributes *subj, void *data);
 void            PyCracksClipperAttributes_CloseDown();
-PyMethodDef    *PyCracksClipperAttributes_GetMethodTable(int *nMethods);
+ PyMethodDef *   PyCracksClipperAttributes_GetMethodTable(int *nMethods);
 bool            PyCracksClipperAttributes_Check(PyObject *obj);
-CracksClipperAttributes *PyCracksClipperAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyCracksClipperAttributes_NewPyObject();
-PyObject       *PyCracksClipperAttributes_WrapPyObject(const CracksClipperAttributes *attr);
+ CracksClipperAttributes *  PyCracksClipperAttributes_FromPyObject(PyObject *obj);
+ PyObject *      PyCracksClipperAttributes_New();
+ PyObject *      PyCracksClipperAttributes_Wrap(const CracksClipperAttributes *attr);
+void            PyCracksClipperAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyCracksClipperAttributes_SetDefaults(const CracksClipperAttributes *atts);
 std::string     PyCracksClipperAttributes_GetLogString();
 std::string     PyCracksClipperAttributes_ToString(const CracksClipperAttributes *, const char *);
