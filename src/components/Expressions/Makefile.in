@@ -198,6 +198,9 @@
 #   Brad Whitlock, Mon Apr 23 17:29:50 PST 2007
 #   Added avtColorComposeFilter.C
 #
+#   Sean Ahern, Tue May 8 10:36:36 PDT 2007
+#   Added avtArctan2Filter.C
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -316,6 +319,7 @@ Math_src= \
   Math/avtArccosFilter.C \
   Math/avtArcsinFilter.C \
   Math/avtArctanFilter.C \
+  Math/avtArctan2Filter.C \
   Math/avtBase10LogFilter.C \
   Math/avtBinaryAddFilter.C \
   Math/avtBinaryDivideFilter.C \

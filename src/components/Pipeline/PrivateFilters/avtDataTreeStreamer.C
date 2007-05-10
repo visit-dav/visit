@@ -124,6 +124,9 @@ avtDataTreeStreamer::~avtDataTreeStreamer()
 //    Hank Childs, Mon Feb 28 10:39:28 PST 2005
 //    Moved timings code into base class avtFilter.
 //
+//    Hank Childs, Wed May  9 16:57:25 PDT 2007
+//    Make sure that output tree is not NULL, since that causes heartache.
+//
 // ****************************************************************************
 
 void
@@ -135,6 +138,15 @@ avtDataTreeStreamer::Execute(void)
     avtDataTree_p tree    = GetInputDataTree();
     totalNodes = tree->GetNumberOfLeaves();
     avtDataTree_p newTree = Execute(tree);
+
+    if (*newTree == NULL)
+    {
+        //
+        // Lots of code assumes that the root tree is non-NULL.  Put a dummy
+        // tree in its place.
+        //
+        newTree = new avtDataTree();
+    }
 
     SetOutputDataTree(newTree);
 }

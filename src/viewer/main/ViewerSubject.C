@@ -5082,6 +5082,35 @@ ViewerSubject::ResetPlotOptions()
 }
 
 // ****************************************************************************
+//  Method: ViewerSubject::AddInitializedOperator
+//
+//  Purpose:
+//    Execute the AddInitializedOperator RPC.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue May 8 16:54:36 PST 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerSubject::AddInitializedOperator()
+{
+    //
+    // Get the rpc arguments.
+    //
+    int type = GetViewerState()->GetViewerRPC()->GetOperatorType();
+
+    //
+    // Perform the rpc.
+    //
+    ViewerWindowManager *wM=ViewerWindowManager::Instance();
+    bool applyToAll = wM->GetClientAtts()->GetApplyOperator();
+    wM->GetActiveWindow()->GetPlotList()->AddOperator(type, applyToAll, false);
+}
+
+// ****************************************************************************
 //  Method: ViewerSubject::SetDefaultOperatorOptions
 //
 //  Purpose:
@@ -7189,6 +7218,9 @@ ViewerSubject::SendKeepAlives()
 //    Brad Whitlock, Fri Mar 9 16:26:48 PST 2007
 //    Added RequestMetaData.
 //
+//    Brad Whitlock, Tue May 8 16:57:00 PST 2007
+//    Added AddInitializedOperator.
+//
 // ****************************************************************************
 
 void
@@ -7266,6 +7298,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SetDefaultPlotOptionsRPC:
         SetDefaultPlotOptions();
+        break;
+    case ViewerRPC::AddInitializedOperatorRPC:
+        AddInitializedOperator();
         break;
     case ViewerRPC::SetDefaultOperatorOptionsRPC:
         SetDefaultOperatorOptions();

@@ -41,6 +41,7 @@
       SetActivePlotsRPC
       ChangeActivePlotsVarRPC
       AddOperatorRPC
+      AddInitializedOperatorRPC
       PromoteOperatorRPC
       DemoteOperatorRPC
       RemoveOperatorRPC

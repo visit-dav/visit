@@ -129,6 +129,7 @@ Macro_GetRecord()
 bool
 LogFile_Open(const char *filename)
 {
+    logging = true;
     logFile = fopen(filename, "wb");
     if(logFile)
     {
@@ -138,10 +139,7 @@ LogFile_Open(const char *filename)
         fprintf(logFile, "    print \"This script is for VisIt %%s. "
                 "It may not work with version %%s\" %% "
                 "(ScriptVersion, Version())\n");
-        logging = true;
     }
-    else
-        logging = false;
 
     return logging;
 }
@@ -156,10 +154,7 @@ LogFile_Close()
 void
 LogFile_SetEnabled(bool val)
 {
-    if(logFile == NULL)
-        logging = false;
-    else
-        logging = val;
+    logging = val;
 }
 
 bool
@@ -192,7 +187,8 @@ LogFile_Write(const char *str)
             macroString += str;
 
         // Write to the log
-        fprintf(logFile, "%s", str);
+        if(logFile != NULL)
+            fprintf(logFile, "%s", str);
     }
 }
 
@@ -660,6 +656,14 @@ static void log_SetOperatorOptionsRPC(ViewerRPC *rpc, char *str)
     SNPRINTF(str, SLEN, "%s", atts.c_str());
 }
 
+static void log_AddInitializedOperatorRPC(ViewerRPC *rpc, char *str)
+{
+    char tmp1[SLEN], tmp2[SLEN];
+    log_AddOperatorRPC(rpc, tmp1);
+    log_SetOperatorOptionsRPC(rpc, tmp2);
+    SNPRINTF(str, SLEN, "%s%s", tmp1, tmp2);
+}
+
 static void log_WriteConfigFileRPC(ViewerRPC *rpc, char *str)
 {
     SNPRINTF(str, SLEN, "WriteConfigFile()\n");
@@ -933,20 +937,32 @@ static void log_ProcessExpressionsRPC(ViewerRPC *rpc, char *str)
     SNPRINTF(str, SLEN, "%s", exprList.c_str());
 }
 
+//*****************************************************************************
+//  Modifications:
+//    Brad Whitlock, Tue May 8 10:52:04 PDT 2007
+//    Fixed so the prefixes have dots.
+// 
+//*****************************************************************************
+
+
 static void log_SetLightListRPC(ViewerRPC *rpc, char *str)
 {
     std::string s;
     LightList *lightlist = viewer->GetViewerState()->GetLightList();
     for(int i = 0; i < lightlist->NumLights(); ++i)
     {
-        char objName[20];
+        char objName[20], objNameDot[20], index[20];
         SNPRINTF(objName, 20, "light%d", i);
+        SNPRINTF(objNameDot, 20, "light%d.", i);
+        SNPRINTF(index, 20, "%d", i);
 
         LightAttributes L(lightlist->GetLight(i));
         s += objName;
         s += " = LightAttributes()\n";
-        s += PyLightAttributes_ToString(&L, objName);
+        s += PyLightAttributes_ToString(&L, objNameDot);
         s += "SetLight(";
+        s += index;
+        s += ", ";
         s += objName;
         s += ")\n";
     }
@@ -1261,15 +1277,15 @@ static void log_CloneWindowRPC(ViewerRPC *rpc, char *str)
 
 static void log_SetMaterialAttributesRPC(ViewerRPC *rpc, char *str)
 {
-    std::string s(PyRenderingAttributes_GetLogString());
-    s += "SetMaterialAttributes(RenderingAtts)\n";
+    std::string s(PyMaterialAttributes_GetLogString());
+    s += "SetMaterialAttributes(MaterialAtts)\n";
     SNPRINTF(str, SLEN, "%s", s.c_str());
 }
 
 static void log_SetDefaultMaterialAttributesRPC(ViewerRPC *rpc, char *str)
 {
-    std::string s(PyRenderingAttributes_GetLogString());
-    s += "SetDefaultMaterialAttributes(RenderingAtts)\n";
+    std::string s(PyMaterialAttributes_GetLogString());
+    s += "SetDefaultMaterialAttributes(MaterialAtts)\n";
     SNPRINTF(str, SLEN, "%s", s.c_str());
 }
 
@@ -1627,6 +1643,9 @@ static void log_RequestMetaDataRPC(ViewerRPC *rpc, char *str)
 //   Brad Whitlock, Fri Mar 9 17:48:59 PST 2007
 //   Added RequestMetaDataRPC.
 //
+//   Brad Whitlock, Tue May 8 16:32:06 PST 2007
+//   Added debug5 logging.
+//
 // ****************************************************************************
 
 void
@@ -1643,6 +1662,8 @@ LogRPCs(Subject *subj, void *)
     str[0] = '\0';
 
     ViewerRPC *rpc = (ViewerRPC *)subj;
+    debug5 << "Logging: " << ViewerRPC::ViewerRPCType_ToString(rpc->GetRPCType()).c_str() << endl;
+
     switch(rpc->GetRPCType())
     {
     case ViewerRPC::SetStateLoggingRPC:
@@ -1764,6 +1785,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::AddOperatorRPC:
         log_AddOperatorRPC(rpc, str);
+        break;
+    case ViewerRPC::AddInitializedOperatorRPC:
+        log_AddInitializedOperatorRPC(rpc, str);
         break;
     case ViewerRPC::PromoteOperatorRPC:
         log_PromoteOperatorRPC(rpc, str);
@@ -2163,7 +2187,8 @@ LogRPCs(Subject *subj, void *)
             macroString += str;
 
         // Write to the log
-        fprintf(logFile, "%s", str);
+        if(logFile != 0)
+            fprintf(logFile, "%s", str);
     }
 }
 
@@ -2185,9 +2210,12 @@ SpontaneousStateLogger(const std::string &s)
         // DatabaseCorrelationList
         //
 
-        fprintf(logFile, beginSpontaneousComment);
-        fprintf(logFile, "%s", s.c_str());
-        fprintf(logFile, endSpontaneousComment);
+        if(logFile != 0)
+        {
+            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", s.c_str());
+            fprintf(logFile, endSpontaneousComment);
+        }
 
         if(macroRecord)
         {
@@ -2221,10 +2249,13 @@ SS_log_ViewCurve(const std::string &s)
     {
         const char *v = "SetViewCurve(ViewCurveAtts)\n";
 
-        fprintf(logFile, beginSpontaneousComment);
-        fprintf(logFile, "%s", s.c_str());
-        fprintf(logFile, v);
-        fprintf(logFile, endSpontaneousComment);
+        if(logFile != 0)
+        {
+            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", s.c_str());
+            fprintf(logFile, v);
+            fprintf(logFile, endSpontaneousComment);
+        }
 
         if(macroRecord)
         {
@@ -2258,10 +2289,13 @@ SS_log_View2D(const std::string &s)
     {
         const char *v = "SetView2D(View2DAtts)\n";
 
-        fprintf(logFile, beginSpontaneousComment);
-        fprintf(logFile, "%s", s.c_str());
-        fprintf(logFile, v);
-        fprintf(logFile, endSpontaneousComment);
+        if(logFile != 0)
+        {
+            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", s.c_str());
+            fprintf(logFile, v);
+            fprintf(logFile, endSpontaneousComment);
+        }
 
         if(macroRecord)
         {
@@ -2295,10 +2329,13 @@ SS_log_View3D(const std::string &s)
     {
         const char *v = "SetView3D(View3DAtts)\n";
 
-        fprintf(logFile, beginSpontaneousComment);
-        fprintf(logFile, "%s", s.c_str());
-        fprintf(logFile, v);
-        fprintf(logFile, endSpontaneousComment);
+        if(logFile != 0)
+        {
+            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", s.c_str());
+            fprintf(logFile, v);
+            fprintf(logFile, endSpontaneousComment);
+        }
 
         if(macroRecord)
         {

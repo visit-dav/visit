@@ -2014,6 +2014,37 @@ ViewerMethods::AddOperator(int oper, const bool fromDefault)
 }
 
 // ****************************************************************************
+// Method: ViewerMethods::AddInitializedOperator
+//
+// Purpose: 
+//   Adds an operator, getting the initial attributes from the client atts.
+//
+// Arguments:
+//  oper : The index of the operator to add.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue May 8 16:49:46 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerMethods::AddInitializedOperator(int oper)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::AddInitializedOperatorRPC);
+    state->GetViewerRPC()->SetOperatorType(oper);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerMethods::PromoteOperator
 //
 // Purpose: 

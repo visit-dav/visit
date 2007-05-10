@@ -516,6 +516,7 @@ private:
 
     void SetDefaultPlotOptions();
     void ResetPlotOptions();
+    void AddInitializedOperator();
     void SetDefaultOperatorOptions();
     void ResetOperatorOptions();
 
