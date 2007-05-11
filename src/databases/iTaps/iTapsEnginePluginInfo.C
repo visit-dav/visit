@@ -35,7 +35,7 @@
 *
 *****************************************************************************/
 
-#include <TSTTPluginInfo.h>
+#include <iTapsPluginInfo.h>
 
 #if defined(__APPLE__)
 #define GetEngineInfo TSTT_GetEngineInfo
