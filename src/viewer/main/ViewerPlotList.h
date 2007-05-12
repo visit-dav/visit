@@ -49,6 +49,7 @@
 #include <string>
 #include <map>
 #include <vectortypes.h>
+#include <VisWindowTypes.h>
 #include <enumtypes.h>
 
 #define KF_TIME_SLIDER "Keyframe animation"
@@ -267,6 +268,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007 
 //    Added SetScaleMode.
 //
+//    Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007 
+//    Added GetScaleMode, CanDoLogViewScaling.
+//
 // ****************************************************************************
 
 
@@ -437,7 +441,9 @@ public:
     bool SetFromNode(DataNode *, const std::map<std::string, std::string> &);
     static bool SessionContainsErrors(DataNode *);
 
-    void SetScaleMode(ScaleMode ds, ScaleMode rs);
+    void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE);
+    void GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE);
+    bool CanDoLogViewScaling(WINDOW_MODE);
 
   protected:
     bool        AskForCorrelationPermission(const stringVector &dbs) const;

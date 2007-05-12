@@ -531,11 +531,19 @@ VisWinAxes::NoPlots(void)
 //    Kathleen Bonnell, Thu Mar 29 10:30:41 PDT 2007
 //    Call AdjustLabelFormatForLogScale.
 //
+//    Kathleen Bonnell, Wed May  9 11:01:47 PDT 2007 
+//    Account for 2D log scaling.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::UpdateView(void)
 {
+    VisWindow *vw = mediator;
+    if (vw->GetWindowMode() != WINMODE_2D &&
+        vw->GetWindowMode() != WINMODE_CURVE)
+        return;
+    
     double  min_x = 0., max_x = 0., min_y = 0., max_y = 0.;
     GetRange(min_x, max_x, min_y, max_y);
 
@@ -577,16 +585,24 @@ VisWinAxes::UpdateView(void)
     yAxis->SetGridlineXLength(abs(x[0] - y[0]));
     yAxis->SetGridlineYLength(0.);
 
-    VisWindow *vw = mediator;
+    bool scaleMode[2] = {false, false};
     if (vw->GetWindowMode() == WINMODE_CURVE)
     {
         const avtViewCurve viewCurve = vw->GetViewCurve();
-        xAxis->SetLogScale((int)(viewCurve.domainScale == LOG));
-        yAxis->SetLogScale((int)(viewCurve.rangeScale == LOG));
-        if (viewCurve.domainScale == LOG || viewCurve.rangeScale == LOG)
-        {
-            AdjustLabelFormatForLogScale(min_x, max_x, min_y, max_y);
-        }
+        scaleMode[0] = viewCurve.domainScale == LOG;     
+        scaleMode[1] = viewCurve.rangeScale == LOG;     
+    }
+    else if (vw->GetWindowMode() == WINMODE_2D)
+    {
+        const avtView2D view2D = vw->GetView2D();
+        scaleMode[0] = view2D.xScale == LOG;     
+        scaleMode[1] = view2D.yScale == LOG;     
+    }
+    xAxis->SetLogScale((int)scaleMode[0]);
+    yAxis->SetLogScale((int)scaleMode[1]);
+    if (scaleMode[0] || scaleMode[1])
+    {
+        AdjustLabelFormatForLogScale(min_x, max_x, min_y, max_y, scaleMode);
     }
 }
 
@@ -1556,22 +1572,25 @@ VisWinAxes::SetYUnits(const string &units, bool userSet)
 //   Fix setting of y-axis info, also changed to use new LogLabelFormat so 
 //   that the switching between Log-Linear the labels have the right format. 
 //
+//    Kathleen Bonnell, Wed May  9 11:01:47 PDT 2007 
+//    Account for 2D log scaling, added bool args.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::AdjustLabelFormatForLogScale(
-    double min_x, double max_x, double min_y, double max_y)
+    double min_x, double max_x, double min_y, double max_y, bool sm[2])
 {
     VisWindow *vw = mediator;
-    if (vw->GetWindowMode() != WINMODE_CURVE)
+    if (vw->GetWindowMode() != WINMODE_CURVE &&
+        vw->GetWindowMode() != WINMODE_2D)
         return;
 
-    const avtViewCurve viewCurve = vw->GetViewCurve();
     //
     // The labels will be non-log-scaled, so must convert min & max here
     // to get the correct range that will be used.
     //
-    if (viewCurve.domainScale == LOG)
+    if (sm[0])
     {    
         double minx = pow(10., min_x);
         double maxx = pow(10., max_x);
@@ -1580,15 +1599,17 @@ VisWinAxes::AdjustLabelFormatForLogScale(
 
         int ipow_minx = (floor(floor(min_x)/3.))*3;
         int ipow_maxx = (floor(floor(max_x)/3.))*3;
-        int curPowX = ipow_minx < ipow_maxx ? ipow_minx : ipow_maxx;
 
-        if (curPowX < -4)
+        int ipow_min = ipow_minx < ipow_maxx ? ipow_minx : ipow_maxx;
+        int ipow_max = ipow_minx > ipow_maxx ? ipow_minx : ipow_maxx;
+
+        if (ipow_min < -4 || ipow_max > 4)
             SNPRINTF(format, 16, "%%.%de", xAxisDigits);
         else 
             SNPRINTF(format, 16, "%%.%df", xAxisDigits);
         xAxis->SetLogLabelFormat(format);
     }
-    if (viewCurve.rangeScale == LOG)
+    if (sm[1])
     {    
         double miny = pow(10., min_y);
         double maxy = pow(10., max_y);
@@ -1597,9 +1618,10 @@ VisWinAxes::AdjustLabelFormatForLogScale(
 
         int ipow_miny = (floor(floor(min_y)/3.))*3;
         int ipow_maxy = (floor(floor(max_y)/3.))*3;
-        int curPowY = ipow_miny < ipow_maxy ? ipow_miny : ipow_maxy;
+        int ipow_min = ipow_miny < ipow_maxy ? ipow_miny : ipow_maxy;
+        int ipow_max = ipow_miny > ipow_maxy ? ipow_miny : ipow_maxy;
 
-        if (curPowY < -4)
+        if (ipow_min < -4 || ipow_max > 4)
             SNPRINTF(format, 16, "%%.%de", yAxisDigits);
         else 
             SNPRINTF(format, 16, "%%.%df", yAxisDigits);

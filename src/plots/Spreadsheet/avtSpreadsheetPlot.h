@@ -62,6 +62,10 @@ class     avtSpreadsheetMapper;
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Feb 6 12:08:42 PDT 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007
+//    Set CanDo2DViewScaling to false.
+//
 // ****************************************************************************
 
 class avtSpreadsheetPlot : public avtVolumeDataPlot
@@ -77,6 +81,7 @@ class avtSpreadsheetPlot : public avtVolumeDataPlot
     virtual void                SetAtts(const AttributeGroup*);
     virtual bool                SetColorTable(const char *ctName);
     virtual bool                SetForegroundColor(const double *fg);
+    virtual bool                CanDo2DViewScaling(void) { return false;}
 
   protected:
     SpreadsheetAttributes       atts;

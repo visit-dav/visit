@@ -104,6 +104,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Bonnell, Thu Mar 29 10:30:41 PDT 2007
 //    Added AdjustLabelFormatForLogScale.
 //
+//    Kathleen Bonnell, Wed May  9 10:54:12 PDT 2007 
+//    Added bool args to AdjustLabelFormatForLogScale.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinAxes : public VisWinColleague
@@ -179,7 +182,7 @@ class VISWINDOW_API VisWinAxes : public VisWinColleague
     bool                      ShouldAddAxes(void);
     void                      SetTitle(void);
 
-    void  AdjustLabelFormatForLogScale(double, double, double, double);
+    void  AdjustLabelFormatForLogScale(double, double, double, double, bool[2]);
 };
 
 

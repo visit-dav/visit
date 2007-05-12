@@ -2435,6 +2435,10 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Kathleen Bonnell, Wed Apr  4 10:08:27 PDT 2007 
 //    Ensure that the current ScaleMode is retrieved before setting it.
 //
+//    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007 
+//    Moved Getting/Setting of scale mode to more appropriate place, to support
+//    2d as well as curve log scaling. 
+//
 // ****************************************************************************
 
 int
@@ -2481,12 +2485,6 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     {
         newPlot->SetFromNode(attributesNode);
     }
-
-    //
-    // Set the scaling mode.
-    //
-    window->GetScaleMode(xScaleMode, yScaleMode);
-    newPlot->SetScaleMode(xScaleMode, yScaleMode);
 
     //
     // Add the new plot to the plot list.
@@ -5711,7 +5709,6 @@ CreatePlot(void *info)
                     plotInfo->plot->GetVariableName().c_str());
                 plotInfo->plotList->Warning(message);
             }
-
         }
         else
             plotInfo->plotList->InterruptUpdatePlotList();
@@ -8439,16 +8436,76 @@ ViewerPlotList::AlternateDisplayChangedPlotAttributes(ViewerPlot *plot)
 //   Kathleen Bonnell, Wed Apr  4 08:14:35 PDT 2007
 //   Set the scale mode for all plots, not just active non-hidden ones.
 //  
+//   Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007 
+//   Added WINDOW_MODE arg.
+//  
 // ****************************************************************************
 
 void 
-ViewerPlotList::SetScaleMode(ScaleMode ds, ScaleMode rs)
+ViewerPlotList::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 {
     xScaleMode = ds;
     yScaleMode = rs;
     for (int i = 0; i < nPlots; ++i)
     {
-        plots[i].plot->SetScaleMode(ds, rs);
+        plots[i].plot->SetScaleMode(ds, rs, wm);
     }
 }
 
+
+// ****************************************************************************
+// Method: ViewerPlotList::GetScaleMode
+//
+// Purpose: 
+//   Gets the scalemode ivars from the window.
+//
+// Arguments:
+//   ds        domain (x) scale mode 
+//   rs        range  (y) scale mode
+//   wm        The window mode
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   May 9, 2007
+//
+// Modifications:
+//  
+// ****************************************************************************
+
+void 
+ViewerPlotList::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
+{
+    window->GetScaleMode(ds, rs, wm);
+    xScaleMode = ds;
+    yScaleMode = rs;
+}
+
+
+// ****************************************************************************
+// Method: ViewerPlotList::CanDoLogViewScaling
+//
+// Purpose: 
+//   Returns whether or not all plots support log view scaling.
+//
+// Arguments:
+//   wm        The window mode.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   May 11, 2007
+//
+// Modifications:
+//  
+// ****************************************************************************
+
+bool 
+ViewerPlotList::CanDoLogViewScaling(WINDOW_MODE wm)
+{
+    if (nPlots <= 0)
+        return false;
+
+    bool rv = true;
+    for (int i = 0; i < nPlots && rv; ++i)
+    {
+        rv &= plots[i].plot->CanDoLogViewScaling(wm);
+    }
+    return rv;
+}

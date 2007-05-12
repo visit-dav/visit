@@ -3801,6 +3801,10 @@ ViewerWindow::GetScaleFactorAndType(double &s, int &t)
 //    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
 //    Added support for Log scaling.
 //
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Record when log of the domain/range coords has been done.
+//    Ensure we aren't attempting log scaling when plots don't support it.
+//
 // ****************************************************************************
 
 void
@@ -3836,15 +3840,33 @@ ViewerWindow::RecenterViewCurve(const double *limits)
     viewCurve.range[0]  = boundingBoxCurve[2];
     viewCurve.range[1]  = boundingBoxCurve[3];
 #define SMALL 1e-100
-    if (viewCurve.domainScale == LOG)
+    if (viewCurve.domainScale == LOG || viewCurve.rangeScale == LOG)
     {
-        viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) + SMALL);
-        viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) + SMALL);
-    }
-    if (viewCurve.rangeScale == LOG)
-    {
-        viewCurve.range[0] = log10(fabs(viewCurve.range[0]) + SMALL);
-        viewCurve.range[1] = log10(fabs(viewCurve.range[1]) + SMALL);
+        bool logsOkay = GetPlotList()->CanDoLogViewScaling(WINMODE_CURVE);
+        if (logsOkay)
+        {
+            if (viewCurve.domainScale == LOG)
+            {
+                viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) + SMALL);
+                viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) + SMALL);
+                viewCurve.havePerformedLogDomain = true;
+            }
+            if (viewCurve.rangeScale == LOG)
+            {
+                viewCurve.range[0] = log10(fabs(viewCurve.range[0]) + SMALL);
+                viewCurve.range[1] = log10(fabs(viewCurve.range[1]) + SMALL);
+                viewCurve.havePerformedLogRange = true;
+            }
+        }
+        else 
+        {
+            viewCurve.domainScale = LINEAR;
+            viewCurve.rangeScale = LINEAR;
+            viewCurve.havePerformedLogDomain = false;
+            viewCurve.havePerformedLogRange = false;
+            Warning("There are plots in the window that do not\n"
+                    "support log-scaling.  It will not be done.");
+        }
     }
 
     visWindow->SetViewCurve(viewCurve);
@@ -3887,6 +3909,9 @@ ViewerWindow::RecenterViewCurve(const double *limits)
 //    Eric Brugger, Thu Oct 16 11:21:53 PDT 2003
 //    I moved the handling of full frame mode to VisWindow.
 //
+//    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007 
+//    Support log scaling.
+//
 // ****************************************************************************
 
 void
@@ -3921,6 +3946,36 @@ ViewerWindow::RecenterView2d(const double *limits)
     for (i = 0; i < 4; i++)
     {
         view2D.window[i] = limits[i];
+    }
+
+#define SMALL 1e-100
+    if (view2D.xScale == LOG || view2D.yScale == LOG)
+    {
+        bool logsOkay = GetPlotList()->CanDoLogViewScaling(WINMODE_2D);
+        if (logsOkay)
+        {
+            if (view2D.xScale == LOG)
+            {
+                view2D.window[0] = log10(fabs(view2D.window[0]) + SMALL);
+                view2D.window[1] = log10(fabs(view2D.window[1]) + SMALL);
+                view2D.havePerformedLogX = true;
+            }
+            if (view2D.yScale == LOG)
+            {
+                view2D.window[2] = log10(fabs(view2D.window[2]) + SMALL);
+                view2D.window[3] = log10(fabs(view2D.window[3]) + SMALL);
+                view2D.havePerformedLogY = true;
+            }
+        }
+        else
+        {
+            view2D.xScale = LINEAR;
+            view2D.yScale = LINEAR;
+            view2D.havePerformedLogX = false;
+            view2D.havePerformedLogY = false;
+            Warning("There are plots in the window that do not\n"
+                    "support log-scaling.  It will not be done.");
+        }
     }
 
     visWindow->SetView2D(view2D);
@@ -4113,6 +4168,10 @@ ViewerWindow::RecenterView3d(const double *limits)
 //    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
 //    Added support for Log scaling.
 //
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Record when log of the domain/range coords has been done.  Ensure
+//    we aren't attempting log scaling when plots don't support it.
+//
 // ****************************************************************************
 
 void
@@ -4153,15 +4212,35 @@ ViewerWindow::ResetViewCurve()
     viewCurve.range[0]   = boundingBoxCurve[2];
     viewCurve.range[1]   = boundingBoxCurve[3];
 #define SMALL 1e-100
-    if (viewCurve.domainScale == LOG)
+    
+    if (viewCurve.domainScale == LOG || viewCurve.rangeScale == LOG)
     {
-        viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) +SMALL);
-        viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) +SMALL);
-    }
-    if (viewCurve.rangeScale == LOG)
-    {
-        viewCurve.range[0] = log10(fabs(viewCurve.range[0]) +SMALL);
-        viewCurve.range[1] = log10(fabs(viewCurve.range[1]) +SMALL);
+        bool logsOkay = GetPlotList()->CanDoLogViewScaling(WINMODE_CURVE);
+        if (logsOkay)
+        {
+            if (viewCurve.domainScale == LOG)
+            {
+                viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) +SMALL);
+                viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) +SMALL);
+                viewCurve.havePerformedLogDomain = true;
+            }
+            if (viewCurve.rangeScale == LOG)
+            {
+                viewCurve.range[0] = log10(fabs(viewCurve.range[0]) +SMALL);
+                viewCurve.range[1] = log10(fabs(viewCurve.range[1]) +SMALL);
+                viewCurve.havePerformedLogRange = true;
+            }
+        }
+        else
+        {
+            viewCurve.domainScale = LINEAR;
+            viewCurve.rangeScale = LINEAR;
+            viewCurve.havePerformedLogDomain = false;
+            viewCurve.havePerformedLogRange = false;
+            Warning("There are plots in the window that do not\n"
+                  "support log-scaling.  It will not be done.");
+ 
+        }
     }
     visWindow->SetViewCurve(viewCurve);
 
@@ -4218,6 +4297,9 @@ ViewerWindow::ResetViewCurve()
 //    reset the view.  I also set more flags indicating the view is invalid
 //    in the case were we don't reset the view just to be on the safe side.
 //
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Added support for Log scaling.
+//
 // ****************************************************************************
 
 void
@@ -4258,6 +4340,36 @@ ViewerWindow::ResetView2d()
     view2D.window[2]   = boundingBox2d[2];
     view2D.window[3]   = boundingBox2d[3];
 
+#define SMALL 1e-100
+    if (view2D.xScale == LOG || view2D.yScale == LOG)
+    {
+        bool logsOkay = GetPlotList()->CanDoLogViewScaling(WINMODE_2D);
+        if (logsOkay)
+        {
+            if (view2D.xScale == LOG)
+            {
+                view2D.window[0] = log10(fabs(view2D.window[0]) + SMALL);
+                view2D.window[1] = log10(fabs(view2D.window[1]) + SMALL);
+                view2D.havePerformedLogX = true;
+            }
+            if (view2D.yScale == LOG)
+            {
+                view2D.window[2] = log10(fabs(view2D.window[2]) + SMALL);
+                view2D.window[3] = log10(fabs(view2D.window[3]) + SMALL);
+                view2D.havePerformedLogY = true;
+            }
+        }
+        else
+        {
+            view2D.xScale = LINEAR;
+            view2D.yScale = LINEAR;
+            view2D.havePerformedLogX = false;
+            view2D.havePerformedLogY = false;
+            Warning("There are plots in the window that do not\n"
+                  "support log-scaling.  It will not be done.");
+        }
+    }
+    
     visWindow->SetView2D(view2D);
 
     //
@@ -4740,6 +4852,10 @@ ViewerWindow::SetInitialView3d()
 //
 //    Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //    Made it set bools appropriately for call to vwm->UpdateViewAtts
+//
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Added support for Log scaling.
+//
 // ****************************************************************************
 
 void
@@ -4756,8 +4872,13 @@ ViewerWindow::UpdateViewCurve(const double *limits)
 
         boundingBoxValidCurve = true;
         centeringValidCurve   = true;
+        const avtViewCurve &viewCurve = GetViewCurve();
+        bool mustReset = 
+            (viewCurve.domainScale == LOG && !viewCurve.havePerformedLogDomain)
+         || (viewCurve.rangeScale  == LOG && !viewCurve.havePerformedLogRange);
+          
 
-        if (!viewSetInCurve)
+        if (!viewSetInCurve || mustReset)
         {
             ResetViewCurve();
         }
@@ -4811,7 +4932,15 @@ ViewerWindow::UpdateViewCurve(const double *limits)
     //
     else
     {
-        visWindow->UpdateView();
+        const avtViewCurve &viewCurve = GetViewCurve();
+        bool mustReset = 
+            ((viewCurve.domainScale == LOG  || viewCurve.rangeScale == LOG ) &&
+              !GetPlotList()->CanDoLogViewScaling(WINMODE_CURVE));
+       
+        if (!mustReset) 
+            visWindow->UpdateView();
+        else 
+            ResetViewCurve();
     }
 
     viewSetInCurve = true;
@@ -4864,6 +4993,9 @@ ViewerWindow::UpdateViewCurve(const double *limits)
 //    Added code to set a fullframe scale into the plots so their mappers
 //    can compensate for fullframe if they need to.
 //
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Added support for Log scaling.
+//
 // ****************************************************************************
 
 void
@@ -4904,7 +5036,10 @@ ViewerWindow::UpdateView2d(const double *limits)
         boundingBoxValid2d = true;
         centeringValid2d   = true;
 
-        if (!viewSetIn2d)
+        bool mustReset = (view2d.xScale == LOG && !view2d.havePerformedLogX)
+                      || (view2d.yScale == LOG && !view2d.havePerformedLogY);
+
+        if (!viewSetIn2d || mustReset)
         {
             ResetView2d();
         }
@@ -4965,6 +5100,14 @@ ViewerWindow::UpdateView2d(const double *limits)
            << "}" << endl;
     plotList->SetFullFrameScaling(currentFullFrameMode, scale);
 
+    // 
+    // Ensure we aren't attempting log scaling when plots don't support it.
+    // 
+    if ((view2d.xScale == LOG  || view2d.yScale == LOG ) &&
+        !GetPlotList()->CanDoLogViewScaling(WINMODE_2D))
+    {
+        ResetView2d();
+    }
 
     viewSetIn2d = true;
 }
@@ -8840,13 +8983,18 @@ ViewerWindow::GlyphPick(const double pt1[3], const double pt2[3],
 //    Kathleen Bonnell, Tue Apr  3 17:19:28 PDT 2007
 //    Added early termination for non-curve windows.
 //
+//    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007
+//    Support 2d log scaling, use new WINDOW_MODE arg.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::SetScaleMode(ScaleMode ds, ScaleMode rs)
+ViewerWindow::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 {
-    if (windowMode != WINMODE_CURVE)
+    if (windowMode != wm)
+    {
         return;
+    }
 
     bool updatesEnabled = UpdatesEnabled();
 
@@ -8856,7 +9004,7 @@ ViewerWindow::SetScaleMode(ScaleMode ds, ScaleMode rs)
     ClearPlots();
 
     // scale the plots
-    GetPlotList()->SetScaleMode(ds, rs);
+    GetPlotList()->SetScaleMode(ds, rs, wm);
 
     if (updatesEnabled)
     {
@@ -8873,7 +9021,7 @@ ViewerWindow::SetScaleMode(ScaleMode ds, ScaleMode rs)
 //  Method: ViewerWindow::GetScaleMode
 //
 //  Purpose: 
-//    Retrieves the scaling mode from the curve view.
+//    Retrieves the scaling mode from the appropriate view.
 //
 //  Arguments:
 //    ds        A place to store the domain scale.
@@ -8883,13 +9031,29 @@ ViewerWindow::SetScaleMode(ScaleMode ds, ScaleMode rs)
 //  Creation:   March 6, 2007
 //
 //  Modifications:
+//    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007
+//    Support 2d log scaling.
 //
 // ****************************************************************************
 
 void
-ViewerWindow::GetScaleMode(ScaleMode &ds, ScaleMode &rs)
+ViewerWindow::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
 {
-    const avtViewCurve &viewCurve = visWindow->GetViewCurve();
-    ds = viewCurve.domainScale;
-    rs = viewCurve.rangeScale;
+    if (wm == WINMODE_CURVE)
+    {
+        const avtViewCurve &viewCurve = visWindow->GetViewCurve();
+        ds = viewCurve.domainScale;
+        rs = viewCurve.rangeScale;
+    }
+    else if (wm == WINMODE_2D)
+    {
+        const avtView2D &view2D = visWindow->GetView2D();
+        ds = view2D.xScale;
+        rs = view2D.yScale;
+    }
+    else
+    {
+        ds = LINEAR;
+        rs = LINEAR; 
+    }
 }

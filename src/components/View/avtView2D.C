@@ -76,6 +76,9 @@ avtView2D::avtView2D()
 //    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
 //    Added stuff to support auto full frame
 //
+//    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
+//    Added xScale and yScale, havePerformedLogX/Y for LOG scaling.
+//
 // ****************************************************************************
 
 avtView2D &
@@ -95,6 +98,11 @@ avtView2D::operator=(const avtView2D &vi)
     fullFrameActivationMode = vi.fullFrameActivationMode;
     fullFrameAutoThreshold = vi.fullFrameAutoThreshold;
 
+    xScale = vi.xScale;
+    yScale = vi.yScale;
+    havePerformedLogX = vi.havePerformedLogX;
+    havePerformedLogY = vi.havePerformedLogY;
+
     return *this;
 }
 
@@ -113,6 +121,10 @@ avtView2D::operator=(const avtView2D &vi)
 //
 //    Mark C. Miller, Tue Mar 14 10:04:56 PST 2006
 //    Renamed from operator==
+//
+//    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
+//    Added xScale and yScale, for LOG scaling.
+//
 // ****************************************************************************
 
 bool
@@ -133,7 +145,15 @@ avtView2D::EqualViews(const avtView2D &vi)
     {
         return false;
     }
-
+    if (xScale != vi.xScale || yScale != vi.yScale)
+    {
+        return false;
+    }
+    if (havePerformedLogX != vi.havePerformedLogX || 
+        havePerformedLogY != vi.havePerformedLogY)
+    {
+        return false;
+    }
     return true;
 }
 
@@ -192,6 +212,9 @@ avtView2D::operator==(const avtView2D &vi)
 //    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
 //    Added stuff to support auto full frame
 //
+//    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
+//    Added xScale and yScale, havePerformedLogX/Y for LOG scaling.
+//
 // ****************************************************************************
 
 void
@@ -211,6 +234,11 @@ avtView2D::SetToDefault()
 
     fullFrameActivationMode = (int) defaultView2DAtts.GetFullFrameActivationMode();
     fullFrameAutoThreshold = defaultView2DAtts.GetFullFrameAutoThreshold(); 
+
+    xScale = LINEAR;
+    yScale = LINEAR;
+    havePerformedLogX = false;
+    havePerformedLogY = false;
 }
 
 // ****************************************************************************
@@ -474,6 +502,9 @@ avtView2D::GetScaleFactor(int *size)
 //    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
 //    Added stuff to support auto full frame
 //
+//    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
+//    Added xScale and yScale, for LOG scaling.
+//
 // ****************************************************************************
 
 void
@@ -487,6 +518,9 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
     fullFrameActivationMode = view2DAtts->GetFullFrameActivationMode();
     fullFrameAutoThreshold = view2DAtts->GetFullFrameAutoThreshold();
     fullFrame = view2DAtts->GetUseFullFrame();
+
+    xScale = (ScaleMode)view2DAtts->GetXScale();
+    yScale = (ScaleMode)view2DAtts->GetYScale();
 }
 
 // ****************************************************************************
@@ -511,6 +545,9 @@ avtView2D::SetFromView2DAttributes(const View2DAttributes *view2DAtts)
 //    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
 //    Added stuff to support auto full frame
 //
+//    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
+//    Added xScale and yScale, for LOG scaling.
+//
 // ****************************************************************************
 
 void
@@ -522,6 +559,9 @@ avtView2D::SetToView2DAttributes(View2DAttributes *view2DAtts) const
                                            fullFrameActivationMode);
     view2DAtts->SetFullFrameAutoThreshold(fullFrameAutoThreshold);
     view2DAtts->SetUseFullFrame(fullFrame);
+
+    view2DAtts->SetXScale(xScale);
+    view2DAtts->SetYScale(yScale);
 }
 
 // ****************************************************************************

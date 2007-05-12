@@ -188,6 +188,9 @@ QvisViewWindow::~QvisViewWindow()
 //   Kathleen Bonnell, Thu Mar 22 16:07:56 PDT 2007
 //   I added radio buttons for log scaling.
 //
+//   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007 
+//   I added radio buttons for 2d log scaling.
+//
 // ****************************************************************************
 
 void
@@ -316,6 +319,30 @@ QvisViewWindow::CreateWindowContents()
     fullFrameOff = new QRadioButton("Off", view2DGroup, "Off");
     fullFrameActivationMode->insert(fullFrameOff);
     Layout2d->addWidget(fullFrameOff, 2, 3);
+
+    QLabel *xScaleLabel = new QLabel("X Scale", view2DGroup, "xScaleLabel");
+    Layout2d->addWidget(xScaleLabel, 3, 0);
+    xScaleMode = new QButtonGroup(0, "xScaleMode");
+    connect(xScaleMode, SIGNAL(clicked(int)),
+            this, SLOT(xScaleModeChanged(int)));
+    xLinear = new QRadioButton("Linear", view2DGroup, "xLinear");
+    xScaleMode->insert(xLinear);
+    Layout2d->addWidget(xLinear, 3, 1);
+    xLog = new QRadioButton("Log", view2DGroup, "xLog");
+    xScaleMode->insert(xLog);
+    Layout2d->addWidget(xLog, 3, 2);
+
+    QLabel *yScaleLabel = new QLabel("Y Scale", view2DGroup, "yScaleLabel");
+    Layout2d->addWidget(yScaleLabel, 4, 0);
+    yScaleMode = new QButtonGroup(0, "yScaleMode");
+    connect(yScaleMode, SIGNAL(clicked(int)),
+            this, SLOT(yScaleModeChanged(int)));
+    yLinear = new QRadioButton("Linear", view2DGroup, "yLinear");
+    yScaleMode->insert(yLinear);
+    Layout2d->addWidget(yLinear, 4, 1);
+    yLog = new QRadioButton("Log", view2DGroup, "yLog");
+    yScaleMode->insert(yLog);
+    Layout2d->addWidget(yLog, 4, 2);
 
     //
     // Add the simple controls for the 3d view.
@@ -720,6 +747,10 @@ QvisViewWindow::UpdateCurve(bool doAll)
 //
 //   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //   Added logic for auto full frame mode
+//
+//   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007 
+//   I added radio buttons for 2d log scaling.
+//
 // ****************************************************************************
 
 void
@@ -761,6 +792,20 @@ QvisViewWindow::Update2D(bool doAll)
                fullFrameActivationMode->setButton(0);
             fullFrameActivationMode->blockSignals(false);
             break;
+        case 3: // xScale
+          {
+            xScaleMode->blockSignals(true);
+            xScaleMode->setButton(view2d->GetXScale());
+            xScaleMode->blockSignals(false);
+          }
+          break;
+        case 4: // yScale
+          {
+            yScaleMode->blockSignals(true);
+            yScaleMode->setButton(view2d->GetYScale());
+            yScaleMode->blockSignals(false);
+          }
+          break;
         }
     }
 }
@@ -2998,5 +3043,43 @@ QvisViewWindow::rangeScaleModeChanged(int val)
     if (val != viewCurve->GetRangeScale())
     {
         viewCurve->SetRangeScale(val);
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisViewWindow::xScaleModeChanged
+//
+// Purpose: Qt slot function to handle changes in x scale
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   April 2, 2007 
+//
+// ****************************************************************************
+void
+QvisViewWindow::xScaleModeChanged(int val)
+{
+    if (val != view2d->GetXScale())
+    {
+        view2d->SetXScale(val);
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisViewWindow::yScaleModeChanged
+//
+// Purpose: Qt slot function to handle changes in y scale
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   April 2, 2007 
+//
+// ****************************************************************************
+void
+QvisViewWindow::yScaleModeChanged(int val)
+{
+    if (val != view2d->GetYScale())
+    {
+        view2d->SetYScale(val);
     }
 }

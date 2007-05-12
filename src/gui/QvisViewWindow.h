@@ -113,6 +113,9 @@ class QPushButton;
 //   Kathleen Bonnell, Thu Mar 22 16:07:56 PDT 2007 
 //   Added radio buttons for log scaling.
 //
+//   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007 
+//   Added radio buttons for 2d log scaling.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -159,6 +162,8 @@ private slots:
     void processViewportText();
     void processWindowText();
     void fullFrameActivationModeChanged(int);
+    void xScaleModeChanged(int);
+    void yScaleModeChanged(int);
 
     void processNormalText();
     void processFocusText();
@@ -226,6 +231,14 @@ private:
     QRadioButton *fullFrameAuto;
     QRadioButton *fullFrameOn;
     QRadioButton *fullFrameOff;
+    QLabel       *xScaleLabel;
+    QButtonGroup *xScaleMode;
+    QRadioButton *xLinear;
+    QRadioButton *xLog;
+    QLabel       *yScaleLabel;
+    QButtonGroup *yScaleMode;
+    QRadioButton *yLinear;
+    QRadioButton *yLog;
 
     // 3d widgets
     QVBox       *page3D;

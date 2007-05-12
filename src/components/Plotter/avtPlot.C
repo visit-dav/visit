@@ -667,7 +667,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         avtPipelineSpecification_p ds = 
               new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
 
-        avtDataObject_p sd = SetScaleMode(geo); 
+        avtDataObject_p sd = SetScaleMode(geo);
         sd->Update(ds);
 
         mapper->SetInput(sd);
@@ -1220,9 +1220,6 @@ avtPlot::SetCurrentExtents(avtDataObject_p curDS)
 avtDataObject_p
 avtPlot::SetScaleMode(avtDataObject_p curDS)
 {
-    if (!CanDoCurveViewScaling())
-        return curDS;
-
     if (!havePerformedLogX && !havePerformedLogY && 
         xScaleMode == LINEAR && yScaleMode == LINEAR)
     {
@@ -1474,13 +1471,22 @@ avtPlot::GetPlotInfoAtts()
 //    Kathleen Bonnell, Tue Apr  3 16:06:54 PDT 2007
 //    Don't set scale modes if this plot doesn't support curve view scaling.
 //
+//    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007 
+//    Added support for 2D log scaling.
+//
 // ****************************************************************************
 
 bool
-avtPlot::SetScaleMode(ScaleMode ds, ScaleMode rs)
+avtPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 {
     bool retval = false;
-    if (CanDoCurveViewScaling())
+    if (wm == WINMODE_CURVE && CanDoCurveViewScaling()) 
+    {
+        xScaleMode = ds;
+        yScaleMode = rs;
+        retval = true;
+    }
+    else if (wm == WINMODE_2D && CanDo2DViewScaling())
     {
         xScaleMode = ds;
         yScaleMode = rs;

@@ -1,4 +1,4 @@
-#!/bin/ksh 
+#!/bin/bash 
 # *****************************************************************************
 #   Script: build_visit
 #
@@ -120,6 +120,14 @@
 #     Reordered logic to better support more architectures
 #     Went back to the HDF4.2r1.tar.gz release ffor the Mac.
 #
+#     Thomas R. Treadway, Mon May  7 16:51:58 PDT 2007
+#     More bug fixes, and argument options.
+#
+#     Thomas R. Treadway, Fri May 11 10:12:57 PDT 2007
+#     Support for MacOS X10.3.9, gcc-3.3 (ppc), along with MacOS X10.4.x,
+#     gcc-4.0 (ppc and i386).
+#     Switched to bash shell.
+#
 # *****************************************************************************
 
 
@@ -151,6 +159,8 @@ export C_OPT_FLAGS="-O2"
 export CXX_OPT_FLAGS="-O2"
 
 if [[ $MACBUILD == "Yes"  ]]; then
+   C_OPT_FLAGS="$C_OPT_FLAGS -fno-common -fexceptions"
+   CXX_OPT_FLAGS="$CXX_OPT_FLAGS -fno-common -fexceptions"
    export QT_PLATFORM="macx-g++"
 else
    export QT_PLATFORM="linux-g++"
@@ -179,6 +189,7 @@ export DO_HDF4="no"
 export DO_HDF5="no"
 export DO_MILI="no"
 export DO_NETCDF="no"
+export ABS_PATH="no"
 parallel="no"          # "yes" or "no"
 PAR_INCLUDE=""
 PAR_LIBS=""
@@ -387,7 +398,7 @@ function check_files
     #
     HAVE_VTK_ALREADY="NO"
     HAVE_VTK_TARBALL="NO"
-    if [[ -d $VISITDIR/vtk/$VTK_VERSION/$VISITARCH ]] ; then
+    if [[ -d "$VISITDIR/vtk/$VTK_VERSION/$VISITARCH" ]] ; then
        HAVE_VTK_ALREADY="YES"
     fi
     if [[ -f $VTK_FILE || -f ${VTK_FILE}.gz ]] ; then
@@ -407,7 +418,7 @@ function check_files
     #
     HAVE_MESA_ALREADY="NO"
     HAVE_MESA_TARBALL="NO"
-    if [[ -d $VISITDIR/mesa/$MESA_VERSION/$VISITARCH ]] ; then
+    if [[ -d "$VISITDIR/mesa/$MESA_VERSION/$VISITARCH" ]] ; then
        HAVE_MESA_ALREADY="YES"
     fi
     if [[ -f $MESA_FILE || -f ${MESA_FILE}.gz ]] ; then
@@ -427,7 +438,7 @@ function check_files
     #
     HAVE_QT_ALREADY="NO"
     HAVE_QT_TARBALL="NO"
-    if [[ -d $VISITDIR/qt/$QT_VERSION/$VISITARCH ]] ; then
+    if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" ]] ; then
        HAVE_QT_ALREADY="YES"
     fi
     if [[ -f $QT_FILE || -f ${QT_FILE}.gz ]] ; then
@@ -446,7 +457,7 @@ function check_files
     #
     HAVE_PYTHON_ALREADY="NO"
     HAVE_PYTHON_TARBALL="NO"
-    if [[ -d $VISITDIR/python/$PYTHON_VERSION/$VISITARCH ]] ; then
+    if [[ -d "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" ]] ; then
        HAVE_PYTHON_ALREADY="YES"
     fi
     if [[ -f $PYTHON_FILE || -f ${PYTHON_FILE}.gz ]] ; then
@@ -467,7 +478,7 @@ function check_files
     #
     HAVE_SILO_ALREADY="NO"
     HAVE_SILO_TARBALL="NO"
-    if [[ -d $VISITDIR/silo/$SILO_VERSION/$VISITARCH ]] ; then
+    if [[ -d "$VISITDIR/silo/$SILO_VERSION/$VISITARCH" ]] ; then
        HAVE_SILO_ALREADY="YES"
     fi
     if [[ -f $SILO_FILE ]] ; then
@@ -515,7 +526,7 @@ function check_3rdparty
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
         HAVE_BOXLIB_ALREADY="NO"
         HAVE_BOXLIB_TARBALL="NO"
-        if [[ -d $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH" ]] ; then
            HAVE_BOXLIB_ALREADY="YES"
         fi
         if [[ -f $BOXLIB_FILE || -f ${BOXLIB_FILE}.gz ]] ; then
@@ -536,7 +547,7 @@ function check_3rdparty
     if [[ "$DO_CFITSIO" == "yes" ]] ; then
         HAVE_CFITSIO_ALREADY="NO"
         HAVE_CFITSIO_TARBALL="NO"
-        if [[ -d $VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH" ]] ; then
            HAVE_CFITSIO_ALREADY="YES"
         fi
         if [[ -f $CFITSIO_FILE || -f ${CFITSIO_FILE}.gz ]] ; then
@@ -557,7 +568,7 @@ function check_3rdparty
     if [[ "$DO_CGNS" == "yes" ]] ; then
         HAVE_CGNS_ALREADY="NO"
         HAVE_CGNS_TARBALL="NO"
-        if [[ -d $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH" ]] ; then
            HAVE_CGNS_ALREADY="YES"
         fi
         if [[ -f $CGNS_FILE || -f ${CGNS_FILE}.gz ]] ; then
@@ -578,7 +589,7 @@ function check_3rdparty
     if [[ "$DO_EXODUS" == "yes" ]] ; then
         HAVE_EXODUS_ALREADY="NO"
         HAVE_EXODUS_TARBALL="NO"
-        if [[ -d $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH" ]] ; then
            HAVE_EXODUS_ALREADY="YES"
         fi
         if [[ -f $EXODUS_FILE || -f ${EXODUS_FILE}.gz ]] ; then
@@ -599,7 +610,7 @@ function check_3rdparty
     if [[ "$DO_GDAL" == "yes" ]] ; then
         HAVE_GDAL_ALREADY="NO"
         HAVE_GDAL_TARBALL="NO"
-        if [[ -d $VISITDIR/gdal/$GDAL_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH" ]] ; then
            HAVE_GDAL_ALREADY="YES"
         fi
         if [[ -f $GDAL_FILE || -f ${GDAL_FILE}.gz ]] ; then
@@ -620,7 +631,7 @@ function check_3rdparty
     if [[ "$DO_HDF4" == "yes" ]] ; then
         HAVE_HDF4_ALREADY="NO"
         HAVE_HDF4_TARBALL="NO"
-        if [[ -d $VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" ]] ; then
            HAVE_HDF4_ALREADY="YES"
         fi
         if [[ -f $HDF4_FILE || -f ${HDF4_FILE}.gz ]] ; then
@@ -641,7 +652,7 @@ function check_3rdparty
     if [[ "$DO_HDF5" == "yes" ]] ; then
         HAVE_HDF5_ALREADY="NO"
         HAVE_HDF5_TARBALL="NO"
-        if [[ -d $VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" ]] ; then
            HAVE_HDF5_ALREADY="YES"
         fi
         if [[ -f $HDF5_FILE || -f ${HDF5_FILE}.gz ]] ; then
@@ -662,7 +673,7 @@ function check_3rdparty
     if [[ "$DO_MILI" == "yes" ]] ; then
         HAVE_MILI_ALREADY="NO"
         HAVE_MILI_TARBALL="NO"
-        if [[ -d $VISITDIR/mili/$MILI_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/mili/$MILI_VERSION/$VISITARCH" ]] ; then
            HAVE_MILI_ALREADY="YES"
         fi
         if [[ -f $MILI_FILE || -f ${MILI_FILE}.gz ]] ; then
@@ -683,7 +694,7 @@ function check_3rdparty
     if [[ "$DO_NETCDF" == "yes" ]] ; then
         HAVE_NETCDF_ALREADY="NO"
         HAVE_NETCDF_TARBALL="NO"
-        if [[ -d $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH ]] ; then
+        if [[ -d "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH" ]] ; then
            HAVE_NETCDF_ALREADY="YES"
         fi
         if [[ -f $NETCDF_FILE || -f ${NETCDF_FILE}.gz ]] ; then
@@ -711,16 +722,6 @@ function check_3rdparty
 
 function check_parallel
 {
-    # Ask whether the user wants to build parallel.
-#    if [[ "$GRAPHICAL" == "yes" ]] ; then
-#        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-#"Would you like to build VisIt with support for an MPI parallel compute engine?" 7 $DLG_WIDTH
-#        if [[ $? == 1 ]] ; then
-#            parallel="no"
-#        else
-#            parallel="yes"
-#        fi
-#    fi
 
     #
     # Parallelization
@@ -815,11 +816,13 @@ function check_parallel
         # you are working on a better configured system than I have 
         # ever encountered.
         if [[ "$PAR_INCLUDE" == "" ]] ; then
-            echo "You must set up the PAR_INCLUDE to get VisIt to build in parallel."
+            echo \
+"You must set up the PAR_INCLUDE to get VisIt to build in parallel."
             rv=1
         fi
         if [[ "$PAR_LIBS" == "" ]] ; then
-            echo "You must set up the PAR_LIBS to get VisIt to build in parallel."
+            echo \
+"You must set up the PAR_LIBS to get VisIt to build in parallel."
             rv=1
         fi
     fi
@@ -844,14 +847,16 @@ function build_mesa
        info_box "Unzipping/untarring ${MESA_FILE}.gz . . ." >&3
        tar zxf ${MESA_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo "Unable to untar $MESA_FILE.gz  Corrupted file or out of space on device?"
+          echo \
+"Unable to untar $MESA_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
     elif [[ -f ${MESA_FILE} ]] ; then
        info_box "Untarring ${MESA_FILE} . . ." >&3
        tar xf ${MESA_FILE}
        if [[ $? != 0 ]] ; then
-          echo "Unable to untar $MESA_FILE.  Corrupted file or out of space on device?"
+          echo \
+"Unable to untar $MESA_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
     fi
@@ -1025,30 +1030,44 @@ EOF
     #
     info_box "Installing Mesa . . ." >&3
     echo "Installing Mesa"
-    mkdir $VISITDIR/mesa
-    mkdir $VISITDIR/mesa/${MESA_VERSION}
-    mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH
-    mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/{include,lib}
-    mkdir $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL
-    cp include/GL/*.h $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL
+    mkdir "$VISITDIR/mesa"
+    mkdir "$VISITDIR/mesa/${MESA_VERSION}"
+    mkdir "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH"
+    mkdir "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include"
+    mkdir "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
+    mkdir "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL"
+    cp include/GL/*.h "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL"
     for file in libMesaGL libOSMesa libGLU
     do  
-       cp lib/${file}.$SO_EXT $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib
+       cp lib/${file}.$SO_EXT "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
     done
     if [[ $MACBUILD == "Yes" ]]; then
-        install_name_tool -id @executable_path/../lib/libMesaGL.dylib \
-        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGL.dylib
-        install_name_tool -id @executable_path/../lib/libOSMesa.dylib \
-        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib
-        install_name_tool \
-        -change libMesaGL.1.dylib @executable_path/../lib/libMesaGL.dylib \
-        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib
-        install_name_tool \
-        -id @executable_path/../lib/libGLU.dylib \
-        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib
-        install_name_tool \
-        -change libMesaGL.1.dylib @executable_path/../lib/libMesaGL.dylib \
-        $VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        install_name_tool -id \
+           "$INSTALLNAMEPATH/libMesaGL.dylib" \
+           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libMesaGL.dylib"
+        install_name_tool -id \
+           "$INSTALLNAMEPATH/libOSMesa.dylib" \
+           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib"
+        install_name_tool -change \
+           libMesaGL.1.dylib \
+           "$INSTALLNAMEPATH/libMesaGL.dylib" \
+           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.dylib"
+        install_name_tool -id \
+           "$INSTALLNAMEPATH/libGLU.dylib" \
+           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib"
+        install_name_tool -change \
+           libMesaGL.1.dylib \
+           "$INSTALLNAMEPATH/libMesaGL.dylib" \
+           "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.dylib"
+        if [[ $? != 0 ]] ; then
+           echo "Mesa dynamic library install failed.  Giving up"
+           return 1
+        fi
     fi
     echo "Done with Mesa"
 
@@ -1089,16 +1108,16 @@ function build_qt
     #
     QT_DIR=${QT_FILE%.tar}
     cd ${QT_DIR}
-    export QTDIR=$PWD
-    export PATH=$QTDIR/bin:$PATH
-    export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+    export QTDIR="$PWD"
+    export PATH="$QTDIR"/bin:"$PATH"
+    export LD_LIBRARY_PATH="$QTDIR"/lib:"$LD_LIBRARY_PATH"
 
     #
     # Check to see if we are going to have to issue a "-thread" flag.
     #
     THREAD=""
     HAS_THREAD=$(./configure -platform ${QT_PLATFORM} \
--shared -qt-libpng -help | grep threaded)
+-shared -qt-libpng -help | grep thread)
     if [[ "$HAS_THREAD" != "" ]] ; then
        THREAD="-thread"
        echo "Adding threading option"
@@ -1187,25 +1206,35 @@ function build_qt
     info_box "Installing Qt" >&3
     echo "Installing Qt"
     echo "Installing to directory $VISITDIR/qt"
-    mkdir $VISITDIR/qt
-    mkdir $VISITDIR/qt/${QT_VERSION}
-    mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH
-    mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH/{bin,include,lib}
-    mkdir $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private 
+    mkdir "$VISITDIR/qt"
+    mkdir "$VISITDIR/qt/${QT_VERSION}"
+    mkdir "$VISITDIR/qt/${QT_VERSION}/$VISITARCH"
+    mkdir "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin"
+    mkdir "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/include"
+    mkdir "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib"
+    mkdir "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private"
     cp bin/{designer,findtr,moc,qt20fix,qtrename140} \
-    $VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin
-    cd include; cp *.h $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include
-    cp private/*.h $VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private
+    "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin"
+    cd include; cp *.h "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/include"
+    cp private/*.h "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/include/private"
     cd ../lib;find . -print | \
-    cpio -pvmud $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib
+    cpio -pvmud "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib"
     if [[ $MACBUILD == "Yes" ]]; then
-        install_name_tool -id @executable_path/../lib/libqt.dylib \
-        $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqt.dylib
-        install_name_tool -id @executable_path/../lib/libqui.dylib \
-        $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib
-        install_name_tool \
-        -change libqt.3.dylib @executable_path/../lib/libqt.dylib \
-        $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        install_name_tool -id \
+          "$INSTALLNAMEPATH/libqt.dylib" \
+          "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqt.dylib"
+        install_name_tool -id \
+          "$INSTALLNAMEPATH/libqui.dylib" \
+          "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib"
+        install_name_tool -change \
+          libqt.3.dylib \
+          "$INSTALLNAMEPATH/libqt.dylib" \
+          "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.dylib"
     fi
     cd ../..
     echo "Done with Qt"
@@ -1261,7 +1290,7 @@ function build_cmake
        return 1
     fi
 
-    print "Successfully built CMake"
+    echo "Successfully built CMake"
     cd ..
 }
 
@@ -1342,8 +1371,8 @@ diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
 !   SET(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS} -Wl,-twolevel_namespace,-headerpad_max_install_names")
 !   SET(CMAKE_SHARED_MODULE_CREATE_C_FLAGS "${CMAKE_SHARED_MODULE_CREATE_C_FLAGS} -Wl,-twolevel_namespace,-headerpad_max_install_names")
     IF(CMAKE_COMPILER_IS_GNUCXX)
-!     SET(VTK_REQUIRED_C_FLAGS "${VTK_REQUIRED_C_FLAGS} -fno-common")
-!     SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fno-common")
+!     SET(VTK_REQUIRED_C_FLAGS "${VTK_REQUIRED_C_FLAGS} -fno-common -fexceptions")
+!     SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fno-common -fexceptions")
       IF(VTK_USE_CARBON)
         SET(VTK_REQUIRED_CXX_FLAGS "${VTK_REQUIRED_CXX_FLAGS} -fpascal-strings")
       ENDIF(VTK_USE_CARBON)
@@ -1446,21 +1475,40 @@ EOF
     info_box "Executing CMake on VTK" >&3
     cd VTK
     CMAKE_DIR=../${CMAKE_FILE%.tar}/bin/
-    ${CMAKE_DIR}/cmake \
-     -DBUILD_SHARED_LIBS:BOOL=ON\
-     -DBUILD_TESTING:BOOL=OFF\
-     -DUSE_ANSI_STD_LIB:BOOL=ON\
-     -DVTK_USE_MANGLED_MESA:BOOL=ON\
-     -DVTK_USE_HYBRID:BOOL=ON\
-     -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
-     -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-     -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
-     -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-     -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
-     -DMANGLED_MESA_INCLUDE_DIR:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\
-     -DMANGLED_MESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}\  -DMANGLED_OSMESA_INCLUDE:PATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include\
-     -DMANGLED_OSMESA_LIBRARY:FILEPATH=$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}\
-     .
+    if [[ $MACBUILD == "Yes" ]]; then
+       ${CMAKE_DIR}/cmake \
+        -DBUILD_SHARED_LIBS:BOOL=ON\
+        -DBUILD_TESTING:BOOL=OFF\
+        -DUSE_ANSI_STD_LIB:BOOL=ON\
+        -DVTK_USE_MANGLED_MESA:BOOL=ON\
+        -DVTK_USE_HYBRID:BOOL=ON\
+        -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
+        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
+        -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        .
+    else
+       ${CMAKE_DIR}/cmake \
+        -DBUILD_SHARED_LIBS:BOOL=ON\
+        -DBUILD_TESTING:BOOL=OFF\
+        -DUSE_ANSI_STD_LIB:BOOL=ON\
+        -DVTK_USE_MANGLED_MESA:BOOL=ON\
+        -DVTK_USE_HYBRID:BOOL=ON\
+        -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
+        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+        -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        .
+    fi
 
     if [[ $? != 0 ]] ; then
        echo "Cannot get CMAKE to create the makefiles.  Giving up."
@@ -1478,6 +1526,11 @@ EOF
     fi
 
     if [[ $MACBUILD == "Yes" ]]; then
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
         # fix the internal name with in the libraries
         #
         # first change the libraries name and identification by executing the
@@ -1485,35 +1538,38 @@ EOF
         cd bin
         for i in libvtkCommon libvtkDICOMParser libvtkFiltering \
         libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
-        libvtkImaging libvtkMPEG2Encode libvtkNetCDF libvtkRendering \
-        libvtkVolumeRendering libvtkWidgets libvtkexoIIc libvtkexpat \
+        libvtkImaging libvtkMPEG2Encode libvtkRendering \
+        libvtkVolumeRendering libvtkexpat \
         libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
         libvtktiff libvtkzlib
         do 
-          rm $i.dylib
-          cp $i.5.0.0.dylib $i.dylib
-          install_name_tool -id @executable_path/../lib/$i.dylib $i.dylib
+           rm $i.dylib
+           cp $i.5.0.0.dylib $i.dylib
+           install_name_tool -id \
+             $INSTALLNAMEPATH/$i.dylib \
+             $i.dylib
         done
      
         #
         # Next change the dependent libraries names and paths
         for i in libvtkCommon libvtkDICOMParser libvtkFiltering \
         libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
-        libvtkImaging libvtkMPEG2Encode libvtkNetCDF libvtkRendering \
-        libvtkVolumeRendering libvtkWidgets libvtkexoIIc libvtkexpat \
+        libvtkImaging libvtkMPEG2Encode libvtkRendering \
+        libvtkVolumeRendering libvtkexpat \
         libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
         libvtktiff libvtkzlib 
         do
           for j in libvtkCommon libvtkDICOMParser libvtkFiltering \
           libvtkGenericFiltering libvtkGraphics libvtkHybrid libvtkIO \
-          libvtkImaging libvtkMPEG2Encode libvtkNetCDF libvtkRendering \
-          libvtkVolumeRendering libvtkWidgets libvtkexoIIc libvtkexpat \
+          libvtkImaging libvtkMPEG2Encode libvtkRendering \
+          libvtkVolumeRendering libvtkexpat \
           libvtkfreetype libvtkftgl libvtkjpeg libvtkpng libvtksys \
           libvtktiff libvtkzlib
           do
-            # One of those is not necessary, but just to play safe ...
-            install_name_tool \
-            -change $j.5.0.dylib @executable_path/../lib/$j.dylib $i.dylib
+             install_name_tool -change \
+                $j.5.0.dylib \
+                $INSTALLNAMEPATH/$j.dylib \
+                $i.dylib
           done
         done
         cd ..
@@ -1525,72 +1581,82 @@ EOF
     
     # Save off this directory for later
     cd MangleMesaInclude
-    export BAD_MESA=$PWD
+    export BAD_MESA="$PWD"
     cd ..
 
     info_box "Installing VTK . . ." >&3
     echo "Installing VTK"
-    mkdir $VISITDIR/vtk
-    mkdir $VISITDIR/vtk/${VTK_VERSION}
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{Common,Filtering}
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{GenericFiltering,Graphics}
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{Hybrid,IO,Imaging}
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{MangleMesaInclude,Rendering}
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{Utilities,VolumeRendering}
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/{lib,vtkstd}
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib
-    mkdir $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg
-    cp vtkConfigure.h         $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
-    cp vtkToolkits.h          $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
-    cp vtk*Instantiator.h     $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH
-    cp Common/*.h             $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common
-    cp Common/*.txx           $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common
-    cp Filtering/*.h          $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering
-    cp Filtering/*.txx        $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering
+    mkdir "$VISITDIR/vtk"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/GenericFiltering"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Graphics"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Hybrid"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/IO"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Imaging"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Rendering"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib"
+    mkdir "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg"
+    cp vtkConfigure.h         "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
+    cp vtkToolkits.h          "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
+    cp vtk*Instantiator.h     "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
+    cp Common/*.h             "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common"
+    cp Common/*.txx           "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Common"
+    cp Filtering/*.h          \
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering"
+    cp Filtering/*.txx        \
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Filtering"
     cp GenericFiltering/*.h   \
-    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/GenericFiltering
-    cp Graphics/*.h           $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Graphics
-    cp Hybrid/*.h             $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Hybrid
-    cp IO/*.h                 $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/IO
-    cp Imaging/*.h            $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Imaging
-    cp Rendering/*.h          $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Rendering
-    cp Utilities/*.h          $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/GenericFiltering"
+    cp Graphics/*.h           \
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Graphics"
+    cp Hybrid/*.h             "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Hybrid"
+    cp IO/*.h                 "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/IO"
+    cp Imaging/*.h            "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Imaging"
+    cp Rendering/*.h          \
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Rendering"
+    cp Utilities/*.h          \
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities"
     cp Utilities/vtktiff/*.h  \
-    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtktiff"
     cp Utilities/vtkexpat/*.h \
-    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkexpat"
     cp Utilities/vtkzlib/*.h  \
-    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkzlib"
     cp Utilities/vtkjpeg/*.h  \
-    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg"
     cp VolumeRendering/*.h    \
-    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/VolumeRendering"
     cp MangleMesaInclude/*.h  \
-    $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude
-    cp vtkstd/*               $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd
+    "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude"
+    cp vtkstd/*               "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/vtkstd"
     if [[ $MACBUILD == "Yes" ]]; then
-        # MacOS doesn't understand the "-d" option, so install libraries like Qt
-        # BECAUSE IT'S NOT POSIX
-        cd bin; find . -name \*dylib\* -print | \
-        cpio -pvmud $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib
-        ln -s $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libvtkjpeg.dylib \
-        $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libjpeg.dylib
+        cd bin
+        cp *.dylib       "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
+        ln -s "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libvtkjpeg.dylib" \
+        "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libjpeg.dylib"
         cd ..
     else
-        cp -d bin/*.so*       $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib
+        cp -d bin/*.so*  "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
     fi
     
     #
     # The MangleMesa headers have absolute paths.  Correct these headers now for
     # the new location they have been copied into.
     #
-    cd $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude 
-    SED_STR1=$(echo $BAD_MESA | sed 's/\//\\\//g')  
+    cd "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude"
+    SED_STR1=$(echo "$BAD_MESA" | sed 's/\//\\\//g')  
     # Converts all '/' to "\/" for later sed'ding 
-    SED_STR2=$(echo $VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude |\
+    SED_STR2=$(echo "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/MangleMesaInclude" |\
     sed 's/\//\\\//g')
     for i in *.h ; do
        cat $i | sed 's/'${SED_STR1}'/'${SED_STR2}'/g' > tmp.h
@@ -1624,15 +1690,12 @@ function build_python
     PYTHON_DIR=${PYTHON_FILE%.$PYTHON_FILE_SUFFIX}
     cd ${PYTHON_DIR}
     PYTHON_OPT="$C_OPT_FLAGS"
-    if [[ $MACBUILD == "Yes" ]]; then
-        PYTHON_OPT+=" -fno-common -fPIC"
-    fi
     echo \
 "Invoking command to build Python: ./configure OPT=\"$PTHON_OPT\" \
 CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
---prefix=$VISITDIR/python/$VISITARCH"
+--prefix=\"$VISITDIR/python/$VISITARCH\""
     ./configure OPT="$PYTHON_OPT" CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-    --prefix=$VISITDIR/python/$VISITARCH
+    --prefix="$VISITDIR/python/$VISITARCH"
     if [[ $? != 0 ]] ; then
        echo "Python configure failed.  Giving up"
        return 1
@@ -1660,18 +1723,31 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     info_box "Creating Python shared library" >&3
     echo "Creating shared library"
     if [[ $MACBUILD == "Yes" ]]; then
+        # Check for version >= 8.0.0 (MacOS 10.4, Tiger) for SystemStubs
+        VER=$(uname -r)
+        if (( ${VER%%.*} > 7 )) ; then
+           USESTUBS="-lSystemStubs"
+        else
+           USESTUBS=""
+        fi
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH=\
+"$VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
         echo "char **environ=0;" > environhack.c
         gcc -c environhack.c -fno-common
         mkdir tmpdir
         cd tmpdir
         ar x ../libpython${PYTHON_VERSION}.a
         gcc -o ../libpython${PYTHON_VERSION}.dylib -dynamiclib \
-        ../environhack.o *.o -lSystem -lSystemStubs \
-        -framework Carbon -Wl,-twolevel_namespace \
-        -Wl,-undefined,dynamic_lookup,-headerpad_max_install_names \
-        -Wl,-install_name,@executable_path/../lib/libpython2.5.dylib \
-        -Wl,-compatibility_version,${PYTHON_COMPATIBILITY_VERSION} \
-        -Wl,-current_version,${PYTHON_VERSION}
+           ../environhack.o *.o -lSystem $USESTUBS \
+           -framework Carbon -Wl,-twolevel_namespace \
+           -Wl,-undefined,dynamic_lookup,-headerpad_max_install_names \
+           -Wl,-install_name,$INSTALLNAMEPATH/libpython$PYTHON_VERSION.dylib \
+           -Wl,-compatibility_version,${PYTHON_COMPATIBILITY_VERSION} \
+           -Wl,-current_version,${PYTHON_VERSION}
         if [[ $? != 0 ]] ; then
            echo "Python dynamic library build failed.  Giving up"
            return 1
@@ -1679,7 +1755,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         cd ..
         rm -rf tmpdir
         cp libpython$PYTHON_VERSION.dylib \
-        $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
+        "$VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     else
         mkdir tmpdir
         cd tmpdir
@@ -1688,7 +1764,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         cd ..
         rm -rf tmpdir
         cp libpython$PYTHON_VERSION.so \
-        $VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/
+        "$VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     fi
     cd ..
     echo "Done with Python"
@@ -1720,30 +1796,19 @@ function build_silo
     cd ${SILO_DIR}
     echo "Invoking command to configure Silo"
     if [[ "$DO_HDF5" == "yes" ]] ; then
-       export HDF5INCLUDE=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include
-       export HDF5LIB=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib
+       export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
+       export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
        WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
     else
        WITHHDF5ARG="--without-hdf5"
     fi
-    if [[ $MACBUILD == "Yes" ]]; then
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS -fno-common" \
-        CXXFLAGS="$CXX_OPT_FLAGS -fno-common" --without-readline \
-        "$WITHHDF5ARG" --without-exodus --disable-sdx \
-        --without-python --disable-browser
-        if [[ $? != 0 ]] ; then
-           echo "Silo configure --with-hdf5 failed.  Giving up"
-           return 1
-        fi
-    else
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --without-readline "$WITHHDF5ARG" --without-exodus
-        if [[ $? != 0 ]] ; then
-           echo "Silo configure failed.  Giving up"
-           return 1
-        fi
+        --without-readline "$WITHHDF5ARG" --without-exodus \
+        --disable-sdx --without-python --disable-browser
+    if [[ $? != 0 ]] ; then
+       echo "Silo configure failed.  Giving up"
+       return 1
     fi
 
     #
@@ -1761,11 +1826,16 @@ function build_silo
         #
         # Make dynamic executable
         #
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
         gcc -dynamiclib -o libsilo.dylib silo/*/*.o \
-        -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
-        -Wl,-install_name,@executable_path/../lib/libsilo.dylib \
-        -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
-        -Wl,-current_version,${SILO_VERSION}
+           -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+           -Wl,-install_name,$INSTALLNAMEPATH/libsilo.dylib \
+           -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
+           -Wl,-current_version,${SILO_VERSION}
         if [[ $? != 0 ]] ; then
            echo "Silo dynamic library build failed.  Giving up"
            return 1
@@ -1777,20 +1847,21 @@ function build_silo
     #
     info_box "Installing Silo . . ." >&3
     echo "Installing Silo"
-    mkdir $VISITDIR/silo
-    mkdir $VISITDIR/silo/${SILO_VERSION}
-    mkdir $VISITDIR/silo/${SILO_VERSION}/$VISITARCH
-    mkdir $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/{include,lib}
-    cp silo/silo/silo.h $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
-    cp silo/silo/silo.inc $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
-    cp silo/sdx/sdx.h $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
-    cp silo/sdx/sdx.inc $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include
+    mkdir "$VISITDIR/silo"
+    mkdir "$VISITDIR/silo/${SILO_VERSION}"
+    mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
+    mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+    mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
+    cp silo/silo/silo.h   "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+    cp silo/silo/silo.inc "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+    cp silo/sdx/sdx.h     "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+    cp silo/sdx/sdx.inc   "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
     if [[ $MACBUILD == "Yes" ]]; then
-        cp libsilo.dylib      $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
+        cp libsilo.dylib  "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
     else
-        cp lib/libsilo.a      $VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib
+        cp lib/libsilo.a  "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
     fi
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with Silo"
 }
 
@@ -1808,7 +1879,7 @@ function build_hdf5
        info_box "Unzipping/Tarring ${HDF5_FILE}.gz . . ." >&3
        tar zxf ${HDF5_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $HDF5_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -1816,7 +1887,7 @@ function build_hdf5
        info_box "Tarring ${HDF5_FILE} . . ." >&3
        tar xf ${HDF5_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $HDF5_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -1827,23 +1898,12 @@ function build_hdf5
     HDF5_DIR=${HDF5_FILE%.tar}
     cd ${HDF5_DIR}
     echo "Invoking command to configure HDF5"
-    if [[ $MACBUILD == "Yes" ]]; then
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS -fno-common" \
-        LDFLAGS="-Wl,-headerpad_max_install_names" \
-        --prefix=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "HDF5 configure failed.  Giving up"
-           return 1
-        fi
-    else
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --prefix=$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "HDF5 configure failed.  Giving up"
-           return 1
-        fi
+        --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       echo "HDF5 configure failed.  Giving up"
+       return 1
     fi
 
     #
@@ -1869,26 +1929,39 @@ function build_hdf5
 
     if [[ $MACBUILD == "Yes" ]]; then
         #
-        # Make dynamic executable
+        # Make dynamic executable, need to patch up the install path and
+        # version information.
         #
         info_box "Creating dynamic libraries for HDF5 . . ." >&3
         echo "Creating dynamic libraries for HDF5"
-        libtool -o libhdf5.dylib -dynamic src/.libs/libhdf5.a -lSystem -lz \
-        -twolevel_namespace -undefined dynamic_lookup \
-        -headerpad_max_install_names \
-        -install_name @executable_path/../lib/libhdf5.dylib \
-        -compatibility_version $HDF5_COMPATIBILITY_VERSION \
-        -current_version $HDF5_VERSION
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+## go back to gcc bacause if "external relocation entries" restFP saveFP
+##      libtool -o libhdf5.dylib -dynamic src/.libs/libhdf5.a -lSystem -lz \
+##      -twolevel_namespace -undefined dynamic_lookup \
+##      -headerpad_max_install_names \
+##      -install_name $INSTALLNAMEPATH/libhdf5.dylib \
+##      -compatibility_version $HDF5_COMPATIBILITY_VERSION \
+##      -current_version $HDF5_VERSION
+        gcc -dynamiclib -o libhdf5.dylib src/*.o \
+           -Wl,-twolevel_namespace,-headerpad_max_install_names \
+           -Wl,-undefined,dynamic_lookup \
+           -Wl,-install_name,$INSTALLNAMEPATH/libhdf5.dylib \
+           -Wl,-compatibility_version,$HDF5_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$HDF5_VERSION -lSystem -lz
         if [[ $? != 0 ]] ; then
            echo "HDF5 dynamic library build failed.  Giving up"
            return 1
         fi
-
-        cp libhdf5.dylib $VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib
+        rm -f "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.dylib"
+        cp libhdf5.dylib "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
 
     fi
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with HDF5"
 }
 
@@ -1906,7 +1979,7 @@ function build_mili
        info_box "Unzipping/Tarring ${MILI_FILE}.gz . . ." >&3
        tar zxf ${MILI_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $MILI_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -1914,7 +1987,7 @@ function build_mili
        info_box "Tarring ${MILI_FILE} . . ." >&3
        tar xf ${MILI_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $MILI_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -1952,23 +2025,12 @@ EOF
     cd ${MILI_DIR}
 
     echo "Invoking command to configure Mili"
-    if [[ $MACBUILD == "Yes" ]]; then
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS -fno-common" \
-        LDFLAGS="-Wl,-headerpad_max_install_names" \
-        --prefix=$VISITDIR/mili/$MILI_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "Mili configure failed.  Giving up"
-           return 1
-        fi
-    else
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --prefix=$VISITDIR/mili/$MILI_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "Mili configure failed.  Giving up"
-           return 1
-        fi
+        --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       echo "Mili configure failed.  Giving up"
+       return 1
     fi
 
     #
@@ -1979,7 +2041,7 @@ EOF
     if [[ $MACBUILD == "Yes" ]]; then
        cd MILI-Darwin-*/src
 
-       gcc -O2 -fno-common -D_LARGEFILE64_SOURCE -c mili.c direc.c param.c \
+       gcc $C_OPT_FLAGS -D_LARGEFILE64_SOURCE -c mili.c direc.c param.c \
        io.c util.c dep.c svar.c srec.c mesh_u.c wrap_c.c io_mem.c eprtf.c \
        sarray.c gahl.c util.c partition.c ti.c tidirc.c
        if [[ $? != 0 ]] ; then
@@ -1999,32 +2061,37 @@ EOF
     info_box "Installing Mili . . ." >&3
     echo "Installing Mili"
     if [[ $MACBUILD == "Yes" ]]; then
-       gcc -dynamiclib -o libmili.dylib *.o \
-       -Wl,-headerpad_max_install_names \
-       -Wl,-install_name,@executable_path/../lib/libmili.dylib \
-       -Wl,-compatibility_version,$MILI_COMPATIBILITY_VERSION \
-       -Wl,-current_version,$MILI_VERSION
-       if [[ $? != 0 ]] ; then
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/mili/${MILI_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        gcc -dynamiclib -o libmili.dylib *.o \
+          -Wl,-headerpad_max_install_names \
+          -Wl,-install_name,$INSTALLNAMEPATH/libmili.dylib \
+          -Wl,-compatibility_version,$MILI_COMPATIBILITY_VERSION \
+          -Wl,-current_version,$MILI_VERSION
+        if [[ $? != 0 ]] ; then
           echo "Mili dynamic library build failed.  Giving up"
           return 1
-       fi
+        fi
 
-       mkdir $VISITDIR/mili
-       mkdir $VISITDIR/mili/$MILI_VERSION
-       mkdir $VISITDIR/mili/$MILI_VERSION/$VISITARCH
-       cp mili.h $VISITDIR/mili/$MILI_VERSION/$VISITARCH
-       cp mili_enum.h $VISITDIR/mili/$MILI_VERSION/$VISITARCH
-       cp libmili.dylib $VISITDIR/mili/$MILI_VERSION/$VISITARCH
-       cd ../..
+        mkdir "$VISITDIR/mili"
+        mkdir "$VISITDIR/mili/$MILI_VERSION"
+        mkdir "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
+        cp mili.h "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
+        cp mili_enum.h "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
+        cp libmili.dylib "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
+        cd ../..
     else
-       make install
-       if [[ $? != 0 ]] ; then
+        make install
+        if [[ $? != 0 ]] ; then
           echo "Mili install failed.  Giving up"
           return 1
-       fi
+        fi
     fi
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with Mili"
 }
 
@@ -2042,7 +2109,7 @@ function build_hdf4
        info_box "Unzipping/Tarring ${HDF4_FILE}.gz . . ." >&3
        tar zxf ${HDF4_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $HDF4_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -2050,7 +2117,7 @@ function build_hdf4
        info_box "Tarring ${HDF4_FILE} . . ." >&3
        tar xf ${HDF4_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $HDF4_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -2912,12 +2979,11 @@ EOF
     MAKEOPS=""
     if [[ $MACBUILD == "Yes" ]]; then
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS -fno-common" \
+        CFLAGS="$C_OPT_FLAGS" \
         CPPFLAGS="-I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities \
         -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg" \
-        LDFLAGS="-Wl,-headerpad_max_install_names" \
-        --prefix=$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH \
-        --with-jpeg=$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH \
+        --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
+        --with-jpeg="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" \
         --with-szlib=no --disable-fortran --disable-dependency-tracking
         if [[ $? != 0 ]] ; then
            echo "HDF4 configure failed.  Giving up"
@@ -2927,7 +2993,7 @@ EOF
     else
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" LIBS="-lm" --disable-fortran \
-        --prefix=$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH
+        --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH"
         if [[ $? != 0 ]] ; then
            echo "HDF4 configure failed.  Giving up"
            return 1
@@ -2962,37 +3028,42 @@ EOF
         info_box "Creating dynamic libraries for HDF4 . . ." >&3
         echo "Creating dynamic libraries for HDF4"
         # Relink libdf.
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
         gcc -dynamiclib -o libdf.dylib hdf/src/*.o \
-        -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
-        -Wl,-install_name,@executable_path/../lib/libdf.dylib \
-        -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
-        -Wl,-current_version,$HDF4_VERSION \
-        -L$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib -lvtkjpeg -lz
+           -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+           -Wl,-install_name,$INSTALLNAMEPATH/libdf.dylib \
+           -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$HDF4_VERSION \
+           -L"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib" -lvtkjpeg -lz
         if [[ $? != 0 ]] ; then
            echo \
 "HDF4 dynamic library build failed for libdf.dylib.  Giving up"
            return 1
         fi
-        cp libdf.dylib $VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib
+        cp libdf.dylib "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib"
 
         # Relink libmfhdf.
         gcc -dynamiclib -o libmfhdf.dylib mfhdf/libsrc/*.o \
-        -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
-        -Wl,-install_name,@executable_path/../lib/libmfhdf.dylib \
-        -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
-        -Wl,-current_version,$HDF4_VERSION \
-        -L$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib \
-        -L$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib \
-        -lvtkjpeg -ldf -lz
+           -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+           -Wl,-install_name,$INSTALLNAMEPATH/libmfhdf.dylib \
+           -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$HDF4_VERSION \
+           -L"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib" \
+           -L"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
+           -lvtkjpeg -ldf -lz
         if [[ $? != 0 ]] ; then
            echo \
 "HDF4 dynamic library build failed for libmfhdf.dylib.  Giving up"
            return 1
         fi
-        cp libmfhdf.dylib $VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib
+        cp libmfhdf.dylib "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib"
     fi
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with HDF4"
 }
 
@@ -3010,7 +3081,7 @@ function build_netcdf
        info_box "Unzipping/Tarring ${NETCDF_FILE}.gz . . ." >&3
        tar zxf ${NETCDF_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $NETCDF_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3018,7 +3089,7 @@ function build_netcdf
        info_box "Tarring ${NETCDF_FILE} . . ." >&3
        tar xf ${NETCDF_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $NETCDF_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3069,23 +3140,17 @@ EOF
     cd netcdf-3.6.0-p1/src
     echo "Invoking command to configure NetCDF"
     if [[ $MACBUILD == "Yes" ]]; then
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS -fno-common" \
-        CXXFLAGS="$C_OPT_FLAGS -fno-common" \
-        FC="" --enable-largefile \
-        --prefix=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "NetCDF configure failed.  Giving up"
-           return 1
-        fi
+        EXTRA_FLAGS="FC=\"\" --enable-largefile"
     else
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        EXTRA_FLAGS=""
+    fi
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --prefix=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "NetCDF configure failed.  Giving up"
-           return 1
-        fi
+        $EXTRA_FLAGS \
+        --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+        echo "NetCDF configure failed.  Giving up"
+        return 1
     fi
 
     #
@@ -3095,26 +3160,31 @@ EOF
     echo "Building NetCDF"
     if [[ $MACBUILD == "Yes" ]]; then
         cd libsrc
-        gcc -c -O2 -fno-common -DVERSION=`cat ../VERSION` libvers.c
-        gcc -c -O2 -fno-common attr.c dim.c error.c nc.c ncio.c \
+        gcc -c $C_OPT_FLAGS -DVERSION=`cat ../VERSION` libvers.c
+        gcc -c $C_OPT_FLAGS attr.c dim.c error.c nc.c ncio.c \
         ncx.c putget.c string.c v1hpg.c v2i.c var.c
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
         gcc -dynamiclib -o ../libnetcdf.dylib *.o \
-        -Wl,-headerpad_max_install_names \
-        -Wl,-install_name,@executable_path/../lib/libnetcdf.dylib \
-        -Wl,-compatibility_version,$NETCDF_COMPATIBILITY_VERSION \
-        -Wl,-current_version,$NETCDF_VERSION
+           -Wl,-headerpad_max_install_names \
+           -Wl,-install_name,$INSTALLNAMEPATH/libnetcdf.dylib \
+           -Wl,-compatibility_version,$NETCDF_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$NETCDF_VERSION
         if [[ $? != 0 ]] ; then
            echo "NetCDF dynamic library build failed.  Giving up"
            return 1
         fi
         cd ../cxx
-        g++ -c -O2 -fno-common -I../libsrc -I.   netcdf.cpp
-        g++ -c -O2 -fno-common -I../libsrc -I.   ncvalues.cpp
+        g++ -c $CXX_OPT_FLAGS -I../libsrc -I.   netcdf.cpp
+        g++ -c $CXX_OPT_FLAGS -I../libsrc -I.   ncvalues.cpp
         g++ -dynamiclib -o ../libnetcdf_c++.dylib netcdf.o ncvalues.o \
-        -L.. -lnetcdf -Wl,-headerpad_max_install_names \
-        -Wl,-install_name,@executable_path/../lib/libnetcdf_c++.dylib \
-        -Wl,-compatibility_version,$NETCDF_COMPATIBILITY_VERSION \
-        -Wl,-current_version,$NETCDF_VERSION
+           -L.. -lnetcdf -Wl,-headerpad_max_install_names \
+           -Wl,-install_name,$INSTALLNAMEPATH/libnetcdf_c++.dylib \
+           -Wl,-compatibility_version,$NETCDF_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$NETCDF_VERSION
         if [[ $? != 0 ]] ; then
            echo "NetCDF dynamic library build failed.  Giving up"
            return 1
@@ -3132,19 +3202,19 @@ EOF
     #
     info_box "Installing NetCDF . . ." >&3
     echo "Installing NetCDF"
-    mkdir $VISITDIR/netcdf
-    mkdir $VISITDIR/netcdf/$NETCDF_VERSION
-    mkdir $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH
-    mkdir $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
-    mkdir $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib
+    mkdir "$VISITDIR/netcdf"
+    mkdir "$VISITDIR/netcdf/$NETCDF_VERSION"
+    mkdir "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
+    mkdir "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
+    mkdir "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
     if [[ $MACBUILD == "Yes" ]]; then
-        cp cxx/ncvalues.h $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
-        cp cxx/netcdf.hh $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
-        cp cxx/netcdfcpp.h $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
-        cp libsrc/netcdf.h $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
+        cp cxx/ncvalues.h  "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
+        cp cxx/netcdf.hh   "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
+        cp cxx/netcdfcpp.h "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
+        cp libsrc/netcdf.h "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
 
-        cp libnetcdf.dylib $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib
-        cp libnetcdf_c++.dylib $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib
+        cp libnetcdf.dylib "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
+        cp libnetcdf_c++.dylib "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
     else
         make install
         if [[ $? != 0 ]] ; then
@@ -3153,7 +3223,7 @@ EOF
         fi
     fi
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with NetCDF"
 }
 
@@ -3171,7 +3241,7 @@ function build_cgns
        info_box "Unzipping/Tarring ${CGNS_FILE}.gz . . ." >&3
        tar zxf ${CGNS_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $CGNS_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3179,7 +3249,7 @@ function build_cgns
        info_box "Tarring ${CGNS_FILE} . . ." >&3
        tar xf ${CGNS_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $CGNS_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3190,23 +3260,12 @@ function build_cgns
     CGNS_DIR=${CGNS_FILE%-3.tar}
     cd ${CGNS_DIR}
     echo "Invoking command to configure CGNS"
-    if [[ $MACBUILD == "Yes" ]]; then
-        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS -fno-common" \
-        CXXFLAGS="$C_OPT_FLAGS -fno-common" \
-        ./configure --prefix=$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "CGNS configure failed.  Giving up"
-           return 1
-        fi
-    else
-        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        ./configure --prefix=$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "CGNS configure failed.  Giving up"
-           return 1
-        fi
+    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       ./configure --prefix="$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       echo "CGNS configure failed.  Giving up"
+       return 1
     fi
 
     #
@@ -3224,11 +3283,11 @@ function build_cgns
     #
     info_box "Installing CGNS . . ." >&3
     echo "Installing CGNS"
-    mkdir $VISITDIR/cgns
-    mkdir $VISITDIR/cgns/$CGNS_VERSION
-    mkdir $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH
-    mkdir $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/include
-    mkdir $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib
+    mkdir "$VISITDIR/cgns"
+    mkdir "$VISITDIR/cgns/$CGNS_VERSION"
+    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH"
+    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/include"
+    mkdir "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
     make install
     if [[ $? != 0 ]] ; then
        echo "CGNS install failed.  Giving up"
@@ -3241,17 +3300,32 @@ function build_cgns
         #
         info_box "Creating dynamic libraries for CGNS . . ." >&3
         echo "Creating dynamic libraries for CGNS"
+        # Check for version >= 8.0.0 (MacOS 10.4, Tiger) for SystemStubs
+        VER=$(uname -r)
+        if (( ${VER%%.*} > 7 )) ; then
+           USESTUBS="-lSystemStubs"
+        else
+           USESTUBS=""
+        fi
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
         libtool -o libcgns.dylib -dynamic DARWIN/libcgns.a -lSystem \
-        -lSystemStubs -headerpad_max_install_names \
-        -twolevel_namespace -undefined dynamic_lookup \
-        -install_name @executable_path/../lib/libcgns.dylib \
-        -compatibility_version $CGNS_COMPATIBILITY_VERSION \
-        -current_version $CGNS_VERSION
-
-        cp libcgns.dylib $VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib
+           $USESTUBS -headerpad_max_install_names \
+           -twolevel_namespace -undefined dynamic_lookup \
+           -install_name $INSTALLNAMEPATH/libcgns.dylib \
+           -compatibility_version $CGNS_COMPATIBILITY_VERSION \
+           -current_version $CGNS_VERSION
+        if [[ $? != 0 ]] ; then
+           echo "CGNS dynamic library creation failed.  Giving up"
+           return 1
+        fi
+        cp libcgns.dylib "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
     fi
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with CGNS"
 }
 
@@ -3269,7 +3343,7 @@ function build_gdal
        info_box "Unzipping/Tarring ${GDAL_FILE}.gz . . ." >&3
        tar zxf ${GDAL_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $GDAL_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3277,7 +3351,7 @@ function build_gdal
        info_box "Tarring ${GDAL_FILE} . . ." >&3
        tar xf ${GDAL_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $GDAL_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3289,30 +3363,20 @@ function build_gdal
     cd ${GDAL_DIR}
     echo "Invoking command to configure GDAL"
     if [[ $MACBUILD == "Yes" ]]; then
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS -fno-common" \
-        CXXFLAGS="$C_OPT_FLAGS -fno-common" F77="" \
-        --prefix=$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH \
-        --with-libtiff=internal --with-gif=internal \
-        --with-png=internal --with-jpeg=internal \
-        --with-libz=internal --with-netcdf=no \
-        --without-jasper --without-python
-        if [[ $? != 0 ]] ; then
-           echo "GDAL configure failed.  Giving up"
-           return 1
-        fi
+       EXTRA_FLAGS="F77=\"\""
     else
-        ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --prefix=$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH \
-        --with-libtiff=internal --with-gif=internal \
-        --with-png=internal --with-jpeg=internal \
-        --with-libz=internal --with-netcdf=no \
-        --without-jasper --without-python
-        if [[ $? != 0 ]] ; then
-           echo "GDAL configure failed.  Giving up"
-           return 1
-        fi
+       EXTRA_FLAGS=""
+    fi
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
+       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       --prefix="$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH" \
+       --with-libtiff=internal --with-gif=internal \
+       --with-png=internal --with-jpeg=internal \
+       --with-libz=internal --with-netcdf=no \
+       --without-jasper --without-python
+    if [[ $? != 0 ]] ; then
+       echo "GDAL configure failed.  Giving up"
+       return 1
     fi
 
     #
@@ -3343,15 +3407,20 @@ function build_gdal
         info_box "Fixing install_name of dynamic libraries for GDAL . . ." >&3
         echo "Fixing install_name of dynamic libraries for GDAL"
         cp .libs/libgdal.1.10.0.dylib libgdal.dylib
-        install_name_tool -id @executable_path/../lib/libgdal.dylib \
-        libgdal.dylib
-
-        rm $VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.dylib
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        install_name_tool -id \
+           $INSTALLNAMEPATH/libgdal.dylib \
+           libgdal.dylib
+        rm "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.dylib"
         cp libgdal.dylib \
-        $VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.dylib
+        "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.dylib"
     fi
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with GDAL"
 }
 
@@ -3369,7 +3438,7 @@ function build_exodus
        info_box "Unzipping/Tarring ${EXODUS_FILE}.gz . . ." >&3
        tar zxf ${EXODUS_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $EXODUS_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3377,7 +3446,7 @@ function build_exodus
        info_box "Tarring ${EXODUS_FILE} . . ." >&3
        tar xf ${EXODUS_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $EXODUS_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3392,9 +3461,9 @@ function build_exodus
     echo "Building Exodus"
     if [[ $MACBUILD == "Yes" ]]; then
        cd cbind/src
-       export NETCDFLIB=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib
-       export NETCDFINC=$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include
-       gcc -O2 -fno-common -I../include -I$NETCDFINC -c *.c
+       export NETCDFLIB="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
+       export NETCDFINC="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include"
+       gcc $C_OPT_FLAGS -I../include -I"$NETCDFINC" -c *.c
        if [[ $? != 0 ]] ; then
           echo "Exodus build failed.  Giving up"
           return 1
@@ -3412,11 +3481,11 @@ function build_exodus
     #
     info_box "Installing Exodus . . ." >&3
     echo "Installing Exodus"
-    mkdir $VISITDIR/exodus
-    mkdir $VISITDIR/exodus/$EXODUS_VERSION
-    mkdir $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH
-    mkdir $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc
-    mkdir $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib
+    mkdir "$VISITDIR/exodus"
+    mkdir "$VISITDIR/exodus/$EXODUS_VERSION"
+    mkdir "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH"
+    mkdir "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
+    mkdir "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
 
     if [[ $MACBUILD == "Yes" ]]; then
         #
@@ -3424,35 +3493,40 @@ function build_exodus
         #
         info_box "Creating dynamic libraries for Exodus . . ." >&3
         echo "Creating dynamic libraries for Exodus"
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
         gcc -dynamiclib -o libexoIIv2c.dylib *.o \
-        -Wl,-headerpad_max_install_names \
-        -Wl,-install_name,@executable_path/../lib/libexoIIv2c.dylib \
-        -Wl,-compatibility_version,4.0,-current_version,4.46 \
-        -L$NETCDFLIB -lnetcdf
+           -Wl,-headerpad_max_install_names \
+           -Wl,-install_name,$INSTALLNAMEPATH/libexoIIv2c.dylib \
+           -Wl,-compatibility_version,4.0,-current_version,4.46 \
+           -L$NETCDFLIB -lnetcdf
         if [[ $? != 0 ]] ; then
            echo "Creation of dynamic library failed.  Giving up"
            return 1
         fi
-        cp libexoIIv2c.dylib $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib
-        cp ../include/*.h $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc
-        ln -s  $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h \
-        $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h
+        cp libexoIIv2c.dylib "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
+        cp ../include/*.h "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
+        ln -s  "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
+        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h"
         cd ../..
     else
         cp cbind/include/exodusII.h \
-        $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc
+        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
         cp cbind/include/exodusII_ext.h \
-        $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc
-        ln -s  $VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h \
-        $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h
-        cp libexoIIv2c.a $VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib
+        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
+        ln -s  "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
+        "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h"
+        cp libexoIIv2c.a "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
         if [[ $? != 0 ]] ; then
            echo "Exodus install failed.  Giving up"
            return 1
         fi
     fi
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with Exodus"
 }
 
@@ -3470,7 +3544,7 @@ function build_boxlib
        info_box "Unzipping/Tarring ${BOXLIB_FILE}.gz . . ." >&3
        tar zxf ${BOXLIB_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $BOXLIB_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3478,7 +3552,7 @@ function build_boxlib
        info_box "Tarring ${BOXLIB_FILE} . . ." >&3
        tar xf ${BOXLIB_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $BOXLIB_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3789,45 +3863,45 @@ EOF
     echo "Building Boxlib 3D"
     if [[ $MACBUILD == "Yes" ]]; then
        cp ../mk/Make.FreeBSD ../mk/Make.Darwin
-       make -f GNUmakefile
-       if [[ $? != 0 ]] ; then
-          echo "Boxlib build failed.  Giving up"
-          return 1
-       fi
-    else
-       make -f GNUmakefile 
-       if [[ $? != 0 ]] ; then
-          echo "Boxlib build failed.  Giving up"
-          return 1
-       fi
+    fi
+    make -f GNUmakefile 
+    if [[ $? != 0 ]] ; then
+       echo "Boxlib build failed.  Giving up"
+       return 1
     fi
     #
     # Install into the VisIt third party location.
     #
     info_box "Installing Boxlib 3D. . ." >&3
     echo "Installing Boxlib 3D"
-    mkdir $VISITDIR/boxlib
-    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION
-    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH
-    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include
-    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib
-    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D
-    mkdir $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D
+    mkdir "$VISITDIR/boxlib"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D"
+    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D"
     if [[ $MACBUILD == "Yes" ]]; then
-       libtool -o libbox3D.dylib -dynamic libbox3d.Darwin.CC.f77.a \
-       -lSystem -twolevel_namespace -undefined dynamic_lookup \
-       -headerpad_max_install_names \
-       -install_name @executable_path/../lib/libbox3D.dylib \
-       -compatibility_version $BOXLIB_COMPATIBILITY_VERSION \
-       -current_version $BOXLIB_VERSION
-       if [[ $? != 0 ]] ; then
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/boxlib/${BOXLIB_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        libtool -o libbox3D.dylib -dynamic libbox3d.Darwin.CC.f77.a \
+          -lSystem -twolevel_namespace -undefined dynamic_lookup \
+          -headerpad_max_install_names \
+          -install_name $INSTALLNAMEPATH/libbox3D.dylib \
+          -compatibility_version $BOXLIB_COMPATIBILITY_VERSION \
+          -current_version $BOXLIB_VERSION
+        if [[ $? != 0 ]] ; then
           echo "Creation of dynamic 3D Boxlib library failed.  Giving up"
           return 1
-       fi
-       cp libbox3D.dylib $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/
-       tar cf Boxlib3D.h.tar *.H
+        fi
+        cp libbox3D.dylib "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/"
+        tar cf Boxlib3D.h.tar *.H
     else
-       cp libbox3d*.a $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/libbox3D.a
+       cp libbox3d*.a \
+       "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/libbox3D.a"
        tar cf Boxlib3D.h.tar *.H
        if [[ $? != 0 ]] ; then
           echo "Boxlib install failed.  Giving up"
@@ -3876,52 +3950,52 @@ EOF
     echo "Building Boxlib 2D"
     if [[ $MACBUILD == "Yes" ]]; then
        cp ../mk/Make.FreeBSD ../mk/Make.Darwin
-       make -f GNUmakefile
-       if [[ $? != 0 ]] ; then
-          echo "Boxlib build failed.  Giving up"
-          return 1
-       fi
-    else
-       make -f GNUmakefile 
-       if [[ $? != 0 ]] ; then
-          echo "Boxlib build failed.  Giving up"
-          return 1
-       fi
+    fi
+    make -f GNUmakefile 
+    if [[ $? != 0 ]] ; then
+       echo "Boxlib build failed.  Giving up"
+       return 1
     fi
     info_box "Installing Boxlib 2D. . ." >&3
     echo "Installing Boxlib 2D"
     if [[ $MACBUILD == "Yes" ]]; then
-       libtool -o libbox2D.dylib -dynamic libbox2d.Darwin.CC.f77.a \
-       -lSystem -twolevel_namespace -undefined dynamic_lookup \
-       -headerpad_max_install_names \
-       -install_name @executable_path/../lib/libbox2D.dylib \
-       -compatibility_version $BOXLIB_COMPATIBILITY_VERSION \
-       -current_version $BOXLIB_VERSION
-       if [[ $? != 0 ]] ; then
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/boxlib/${BOXLIB_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        libtool -o libbox2D.dylib -dynamic libbox2d.Darwin.CC.f77.a \
+          -lSystem -twolevel_namespace -undefined dynamic_lookup \
+          -headerpad_max_install_names \
+          -install_name $INSTALLNAMEPATH/libbox2D.dylib \
+          -compatibility_version $BOXLIB_COMPATIBILITY_VERSION \
+          -current_version $BOXLIB_VERSION
+        if [[ $? != 0 ]] ; then
           echo "Creation of dynamic 2D Boxlib library failed.  Giving up"
           return 1
-       fi
-       cp libbox2D.dylib $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/
-       tar cf Boxlib2D.h.tar *.H
+        fi
+        cp libbox2D.dylib "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/"
+        tar cf Boxlib2D.h.tar *.H
     else
-       cp libbox2d*.a $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/libbox2D.a
-       tar cf Boxlib2D.h.tar *.H
-       if [[ $? != 0 ]] ; then
+        cp libbox2d*.a \
+        "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/libbox2D.a"
+        tar cf Boxlib2D.h.tar *.H
+        if [[ $? != 0 ]] ; then
           echo "Boxlib install failed.  Giving up"
           return 1
-       fi
+        fi
     fi
 
     info_box "Installing Boxlib includes. . ." >&3
     echo "Installing Boxlib includes"
-    cp Boxlib2D.h.tar $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D
-    cp Boxlib3D.h.tar $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D
-    cd $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D
+    cp Boxlib2D.h.tar "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D"
+    cp Boxlib3D.h.tar "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D"
+    cd "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D"
     tar xf Boxlib2D.h.tar
-    cd $VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D
+    cd "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D"
     tar xf Boxlib3D.h.tar
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with Boxlib"
 }
 
@@ -3939,7 +4013,7 @@ function build_cfitsio
        info_box "Unzipping/Tarring ${CFITSIO_FILE}.gz . . ." >&3
        tar zxf ${CFITSIO_FILE}.gz
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $CFITSIO_FILE.gz  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3947,7 +4021,7 @@ function build_cfitsio
        info_box "Tarring ${CFITSIO_FILE} . . ." >&3
        tar xf ${CFITSIO_FILE}
        if [[ $? != 0 ]] ; then
-          echo 
+          echo \
 "Unable to untar $CFITSIO_FILE.  Corrupted file or out of space on device?"
           return 1
        fi
@@ -3957,25 +4031,13 @@ function build_cfitsio
     info_box "Configuring CFITSIO . . ." >&3
     cd cfitsio
     echo "Invoking command to configure CFITSIO"
-    if [[ $MACBUILD == "Yes" ]]; then
-        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS -fno-common" \
-        CXXFLAGS="$C_OPT_FLAGS -fno-common" \
-        ./configure \
-        --prefix=$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "CFITSIO configure failed.  Giving up"
-           return 1
-        fi
-    else
-        env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        ./configure \
-        --prefix=$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH
-        if [[ $? != 0 ]] ; then
-           echo "CFITSIO configure failed.  Giving up"
-           return 1
-        fi
+    env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       ./configure \
+       --prefix="$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       echo "CFITSIO configure failed.  Giving up"
+       return 1
     fi
 
     #
@@ -3995,33 +4057,45 @@ function build_cfitsio
         #
         info_box "Creating dynamic libraries for CFITSIO . . ." >&3
         echo "Creating dynamic libraries for CFITSIO"
-        libtool -o libcfitsio.dylib -dynamic libcfitsio.a -lSystem \
-        -twolevel_namespace -undefined dynamic_lookup \
-        -headerpad_max_install_names \
-        -install_name @executable_path/../lib/libcfitsio.dylib \
-        -compatibility_version $CFITSIO_COMPATIBILITY_VERSION \
-        -current_version $CFITSIO_VERSION
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+## switch back to gcc "external relocation entries" restFP saveFP
+##      libtool -o libcfitsio.dylib -dynamic libcfitsio.a -lSystem \
+##      -twolevel_namespace -undefined dynamic_lookup \
+##      -headerpad_max_install_names \
+##      -install_name $INSTALLNAMEPATH/libcfitsio.dylib \
+##      -compatibility_version $CFITSIO_COMPATIBILITY_VERSION \
+##      -current_version $CFITSIO_VERSION
+        gcc -o libcfitsio.dylib -dynamiclib *.o -lSystem \
+           -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
+           -Wl,-headerpad_max_install_names \
+           -Wl,-install_name,$INSTALLNAMEPATH/libcfitsio.dylib \
+           -Wl,-compatibility_version,$CFITSIO_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$CFITSIO_VERSION
         if [[ $? != 0 ]] ; then
            echo "Creating dynamic CFITSIO library failed.  Giving up"
            return 1
         fi
-#       cp libcfitsio.dylib $VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib
+#       cp libcfitsio.dylib "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib"
     fi
     #
     # Install into the VisIt third party location.
     #
     info_box "Installing CFITSIO . . ." >&3
     echo "Installing CFITSIO"
-    mkdir $VISITDIR/cfitsio
-    mkdir $VISITDIR/cfitsio/$CFITSIO_VERSION
-    mkdir $VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH
+    mkdir "$VISITDIR/cfitsio"
+    mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION"
+    mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH"
     make install
     if [[ $? != 0 ]] ; then
        echo "CFITSIO install failed.  Giving up"
        return 1
     fi
 
-    cd $START_DIR
+    cd "$START_DIR"
     echo "Done with CFITSIO"
 }
 
@@ -4071,7 +4145,7 @@ function build_visit
     #
     info_box "Creating `hostname`.conf" >&3
     VISIT_DIR=${VISIT_FILE%.tar}
-    cd ${VISIT_DIR}
+    cd "${VISIT_DIR}"
     cd config-site
     echo VISITHOME=$VISITDIR > `hostname`.conf
     sed -e "s/ARCH/$VISITARCH/" -e "s/MESA_VERSION/$MESA_VERSION/" \
@@ -4147,6 +4221,16 @@ function build_visit
        return 1
     fi
 
+    if [[ $MACBUILD == "Yes" ]]; then
+        # Check for version < 8.0.0 (MacOS 10.4, Tiger) for gcc < 4.x
+        VER=$(uname -r)
+        if (( ${VER%%.*} < 8 )) ; then
+           info_box "Patching VisIt . . ." >&3
+           cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
+           mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
+           mv -f Make.tmp databases/Fluent/Makefile
+        fi
+    fi
     #
     # Build VisIt
     #
@@ -4156,26 +4240,43 @@ function build_visit
        echo "VisIt build failed.  Giving up"
        return 1
     fi
-    print "All indications are that VisIt successfully built."
+    echo "All indications are that VisIt successfully built."
 }
 
 usage () {
-  printf "Usage: %s [-45bcdefghmnx] [-t opt] [-v opt]\n" $0
+  printf "Usage: %s [-45bcdefghimnpx] [-a opt] [-s opt]\n" $0
+  printf "       [-t opt] [-v opt]\n"
   printf "\n"
   printf "%s\n" "-4     Build HDF4"
   printf "%s\n" "-5     Build HDF5"
+  printf "%s\n" "-a opt The architecture variable name (VISITARCH). This"
+  printf "%s\n" "       variable is used in contructing the 3rd parthy" 
+  printf "%s\n" "       library path usually set to something like"
+  printf "%s\n" "       linux_gcc-3.4.6 or Darwin_gcc-4.0.1"
   printf "%s\n" "-b     Build Boxlib"
   printf "%s\n" "-c     Build CGNS"
-  printf "%s\n" "-d     Turn on -g, debugging flag"
+  printf "%s\n" "-d     Turn on -g, debugging flag in CFLAGS/CXXFLAGS"
   printf "%s\n" "-e     Build Exodus"
   printf "%s\n" "-f     Build CFITSIO"
   printf "%s\n" "-g     Build GDAL"
   printf "%s\n" "-h     display this message"
+  printf "%s\n" "-i     Change the behavior of the install name path for"
+  printf "%s\n" "       the Darwin dynamic libraries. Enabling this flag"
+  printf "%s\n" "       will used the THIRD_PARTY_LOCATION path for creating"
+  printf "%s\n" "       an absolute path to the dynamic libraries and not"
+  printf "%s\n" "       use the default relative path [@executable_path/../lib]"
   printf "%s\n" "-m     Build Mili"
   printf "%s\n" "-n     Build NetCDF"
-  printf "%s\n" "-p     Enable parallel build"
-  printf "%s\n" "-s opt The THIRD_PARTY_LOCATION path [./visit]"
-  printf "%s\n" "-t opt The VISIT_FILE name [visit070330.tar]"
+  printf "%s\n" "-p     Enable parallel build, display MPI prompt"
+  printf "%s\n" "-s opt The THIRD_PARTY_LOCATION path contains the root"
+  printf "%s\n" "       directory name underwhich the 3rd party libraries"
+  printf "%s\n" "       have been installed. If defined, it would typically"
+  printf "%s\n" "       mean the 3rd party libraries are pre-built and are"
+  printf "%s\n" "       installed some where like /usr/gapps/visit. The"
+  printf "%s\n" "       default assumes 3rd party libraries are to be built"
+  printf "%s\n" "       and installed in [./visit]"
+  printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
+  printf "%s\n" "       variable [visit070330.tar.gz]"
   printf "%s\n" "-v opt The VISIT_VERSION value [1.6]"
   printf "%s\n" "-x     Turn on SHELL debugging"
 }
@@ -4186,13 +4287,13 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-
-while getopts :45bcdefghmnps:t:v:xBCDEFGHMNPS:T:V:X ARG
+while getopts :45a:bcdefghimnps:t:v:xA:BCDEFGHIMNPS:T:V:X ARG
 do
     argcur=$ARG
     case $ARG in
       4) DO_HDF4="yes";;
       5) DO_HDF5="yes";;
+      a|A) VISITARCH="$OPTARG";;
       b|B) DO_BOXLIB="yes";;
       c|C) DO_CGNS="yes";;
       d|D) C_OPT_FLAGS="$C_OPT_FLAGS -g"
@@ -4201,11 +4302,12 @@ do
       f|F) DO_FITS="yes";;
       g|G) DO_GDAL="yes";;
       h|H) usage; exit 2;;
+      i|I) ABS_PATH="yes";;
       m|M) DO_MILI="yes";;
       n|N) DO_NETCDF="yes";;
       p|P) parallel="yes";;
-      s|S) THIRD_PARTY_LOCATION=$OPTARG;;
-      t|T) VISIT_FILE=$OPTARG;;
+      s|S) THIRD_PARTY_LOCATION="$OPTARG";;
+      t|T) VISIT_FILE=${OPTARG%.gz};;
       v|V) VISIT_VERSION=$OPTARG;;
       x|X) set -vx;;
       :) echo "$0: \"$argcur\" requires a value"; exit 2;;
@@ -4216,23 +4318,6 @@ done
 # or "whiptail", which we use to show dialogs. If we do not have either
 # then proceed in non-graphical mode.
 #
-##if [[ "$GRAPHICAL" == "yes" ]] ; then
-##    GRAPHICAL="no" # This will be set back to "yes" if we find dialog
-##    for DLG in dialog whiptail; do
-##        $DLG --backtitle "$DLG_BACKTITLE" --msgbox \
-##"Welcome to the VisIt $VISIT_VERSION build process.\n\n"\
-##"This program will build VisIt and its required "\
-##"3rd party sources, downloading any missing source packages "\
-##"before building. The 3rd party libraries are built and "\
-##"installed before VisIt is built so please be patient. "\
-##"Note that you can build a parallel version of VisIt by "\
-##"specifying the location of your MPI installation when prompted." 0 0
-##        if [[ $? != 127 ]] ; then
-##             GRAPHICAL="yes";
-##             break;
-##        fi
-##    done
-##fi
 
 if [[ "$GRAPHICAL" == "yes" ]] ; then
     GRAPHICAL="no" # This will be set back to "yes" if we find dialog
@@ -4319,38 +4404,41 @@ fi
 if [[ -e "tmp$$" ]] ; then
     rm tmp$$
 fi
-export VISITARCH=${ARCH}_${C_COMPILER}
-if [[ "$CXX_COMPILER" == "g++" ]] ; then
-   VERSION=$(g++ -v 2>&1 | grep version | cut -d' ' -f3)
-   if [[ ${#VERSION} == 5 ]] ; then
-      VISITARCH=${VISITARCH}-${VERSION}
-   fi
+
+if [[ $VISITARCH == "" ]] ; then
+    export VISITARCH=${ARCH}_${C_COMPILER}
+    if [[ "$CXX_COMPILER" == "g++" ]] ; then
+       VERSION=$(g++ -v 2>&1 | grep version | cut -d' ' -f3)
+       if [[ ${#VERSION} == 5 ]] ; then
+          VISITARCH=${VISITARCH}-${VERSION}
+       fi
+    fi
 fi
 
-if [[ ! -d $THIRD_PARTY_LOCATION ]] ; then
+if [[ ! -d "$THIRD_PARTY_LOCATION" ]] ; then
    if [[ "$THIRD_PARTY_LOCATION" == "./visit" ]] ; then
-      mkdir $THIRD_PARTY_LOCATION
+      mkdir "$THIRD_PARTY_LOCATION"
       if [[ $? != 0 ]] ; then
           echo "Unable to write files to the third party library location."
           echo "Bailing out."
           exit 1
       fi
    else
-      echo "The location to install the third party libraries is not valid."
+      echo "The location to install the third party libraries does not exit."
       echo "Bailing out"
       exit 1
    fi
 fi
 
-START_DIR=$PWD
-cd $THIRD_PARTY_LOCATION
+START_DIR="$PWD"
+cd "$THIRD_PARTY_LOCATION"
 if [[ $? != 0 ]] ; then
    echo "Unable to access the third party location"
    echo "Bailing out."
    exit 1
 fi
-export VISITDIR=$PWD
-cd $START_DIR
+export VISITDIR="$PWD"
+cd "$START_DIR"
 
 #
 # Now make sure that we have everything we need to build VisIt, so we can bail
@@ -4422,15 +4510,15 @@ echo $LINES >> build_visit_log
 #
 # We are now ready to build.  Start with Mesa.
 #
-cd $START_DIR
-if [[ -d $VISITDIR/mesa/$MESA_VERSION/$VISITARCH ]] ; then
+cd "$START_DIR"
+if [[ -d "$VISITDIR/mesa/$MESA_VERSION/$VISITARCH" ]] ; then
    echo "Skipping Mesa build.  Mesa is already installed."
 else
    echo "Building Mesa (~2 minutes)"
    build_mesa 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Mesa.  Bailing out."
-      echo 
+      echo \
 "More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
@@ -4441,15 +4529,15 @@ fi
 #
 # Build Qt
 #
-cd $START_DIR
-if [[ -d $VISITDIR/qt/$QT_VERSION/$VISITARCH ]] ; then
+cd "$START_DIR"
+if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" ]] ; then
    echo "Skipping Qt build.  Qt is already installed."
 else
    echo "Building Qt (~10 minutes)"
    build_qt 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Qt.  Bailing out."
-      echo 
+      echo \
 "More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
@@ -4460,15 +4548,15 @@ fi
 #
 # Build VTK
 #
-cd $START_DIR
-if [[ -d $VISITDIR/vtk/$VTK_VERSION/$VISITARCH ]] ; then
+cd "$START_DIR"
+if [[ -d "$VISITDIR/vtk/$VTK_VERSION/$VISITARCH" ]] ; then
    echo "Skipping VTK build.  VTK is already installed."
 else
    echo "Building VTK (~20 minutes)"
    build_vtk 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install VTK.  Bailing out."
-      echo 
+      echo \
 "More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
@@ -4479,15 +4567,15 @@ fi
 #
 # Build Python
 #
-cd $START_DIR
-if [[ -d $VISITDIR/python/$VISITARCH ]] ; then
+cd "$START_DIR"
+if [[ -d "$VISITDIR/python/$VISITARCH" ]] ; then
    echo "Skipping Python build.  Python is already installed."
 else
    echo "Building Python (~3 minutes)"
    build_python 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Python.  Bailing out."
-      echo 
+      echo \
 "More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
@@ -4495,15 +4583,15 @@ else
 fi
 
 if [[ "$DO_HDF5" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping HDF5 build.  HDF5 is already installed."
    else
       echo "Building HDF5 (~2 minutes)"
       build_hdf5 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install HDF5.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4511,15 +4599,15 @@ if [[ "$DO_HDF5" == "yes" ]] ; then
    fi
 fi
 if [[ "$DO_MILI" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/mili ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/mili" ]] ; then
       echo "Skipping Mili build.  Mili is already installed."
    else
       echo "Building Mili (~2 minutes)"
       build_mili 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Mili.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4527,15 +4615,15 @@ if [[ "$DO_MILI" == "yes" ]] ; then
    fi
 fi
 if [[ "$DO_HDF4" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping HDF4 build.  HDF4 is already installed."
    else
       echo "Building HDF4 (~2 minutes)"
       build_hdf4 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install HDF4.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4543,15 +4631,15 @@ if [[ "$DO_HDF4" == "yes" ]] ; then
    fi
 fi
 if [[ "$DO_NETCDF" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping NetCDF build.  NetCDF is already installed."
    else
       echo "Building NetCDF (~2 minutes)"
       build_netcdf 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install NetCDF.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4559,15 +4647,15 @@ if [[ "$DO_NETCDF" == "yes" ]] ; then
    fi
 fi
 if [[ "$DO_CGNS" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping CGNS build.  CGNS is already installed."
    else
       echo "Building CGNS (~2 minutes)"
       build_cgns 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install CGNS.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4575,15 +4663,15 @@ if [[ "$DO_CGNS" == "yes" ]] ; then
    fi
 fi
 if [[ "$DO_GDAL" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping GDAL build.  GDAL is already installed."
    else
       echo "Building GDAL (~2 minutes)"
       build_gdal 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install GDAL.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4591,15 +4679,15 @@ if [[ "$DO_GDAL" == "yes" ]] ; then
    fi
 fi
 if [[ "$DO_EXODUS" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping EXODUS build.  EXODUS is already installed."
    else
       echo "Building EXODUS (~2 minutes)"
       build_exodus 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install EXODUS.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4607,15 +4695,15 @@ if [[ "$DO_EXODUS" == "yes" ]] ; then
    fi
 fi
 if [[ "$DO_BOXLIB" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/boxlib/${BOXLIB_VERSION}/$VISITARCH ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/boxlib/${BOXLIB_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping Boxlib build.  Boxlib is already installed."
    else
       echo "Building Boxlib (~2 minutes)"
       build_boxlib 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Boxlib.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4623,15 +4711,15 @@ if [[ "$DO_BOXLIB" == "yes" ]] ; then
    fi
 fi
 if [[ "$DO_FITS" == "yes" ]] ; then
-   cd $START_DIR
-   if [[ -d $VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH ]] ; then
+   cd "$START_DIR"
+   if [[ -d "$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping CFITSIO build.  CFITSIO is already installed."
    else
       echo "Building CFITSIO (~2 minutes)"
       build_cfitsio 3>&1 >> build_visit_log 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install CFITSIO.  Bailing out."
-         echo 
+         echo \
 "More information about the failed build can be found in \"build_visit_log\""
          exit 1
       fi
@@ -4642,15 +4730,15 @@ fi
 #
 # Build Silo
 #
-cd $START_DIR
-if [[ -d $VISITDIR/silo/${SILO_VERSION}/$VISITARCH ]] ; then
+cd "$START_DIR"
+if [[ -d "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH" ]] ; then
    echo "Skipping Silo build.  Silo is already installed."
 else
    echo "Building Silo (~2 minutes)"
    build_silo 3>&1 >> build_visit_log 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install Silo.  Bailing out."
-      echo 
+      echo \
 "More information about the failed build can be found in \"build_visit_log\""
       exit 1
    fi
@@ -4661,18 +4749,18 @@ fi
 #
 # Build the actual VisIt code
 #
-cd $START_DIR
+cd "$START_DIR"
 echo "Building VisIt (~50 minutes)"
 build_visit 3>&1 >> build_visit_log 2>&1
 if [[ $? != 0 ]] ; then
    echo "Unable to build or install VisIt.  Bailing out."
-   echo 
+   echo \
 "More information about the failed build can be found in \"build_visit_log\""
    exit 1
 fi
 echo "Done building VisIt"
 
-echo "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar}/bin "
+echo "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar}/bin"
 echo "directory and invoking \"visit\"."
 echo "If you run into problems, contact visit-help@llnl.gov"
 

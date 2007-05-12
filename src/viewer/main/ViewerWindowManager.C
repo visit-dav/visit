@@ -2354,6 +2354,10 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 //    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007
 //    Added support for log scaling.
 //
+//    Kathleen Bonnell, Wed May  9 17:40:35 PDT 2007 
+//    Added error message for non-positive values when log scaling.  Only
+//    attempt to take the log of the domain/range coords if there are plots.
+//
 // ****************************************************************************
 
 void
@@ -2370,6 +2374,44 @@ ViewerWindowManager::SetViewCurveFromClient()
     bool updateScaleMode = ((viewCurve.domainScale != newDomainScale) ||
                             (viewCurve.rangeScale != newRangeScale));
 
+    if (windows[activeWindow]->GetWindowMode() == WINMODE_CURVE) 
+    {
+        ViewerPlotList *vpl = windows[activeWindow]->GetPlotList();
+        if ((newDomainScale == LOG || newRangeScale == LOG) &&
+           (vpl->GetNumPlots() > 0 && !vpl->CanDoLogViewScaling(WINMODE_CURVE)))
+        {
+            UpdateViewAtts(activeWindow, true, false, false);
+            Error("There are plots in the window that do not\n"
+                  "support log-scaling.  It will not be done.");
+            return;
+        }
+        if (updateScaleMode && newDomainScale == LOG)
+        {
+            if (domain[0] <= 0 || domain[1] <= 0) 
+            {
+                UpdateViewAtts(activeWindow, true, false, false);
+                Error("There are non-positive values in the domain of the\n"
+                      "curve, so log scaling cannot be done. You must\n"
+                      "limit the spatial extents to positive values.\n"
+                      "e.g. via Transform or Box operators and/or\n"
+                      "setting view extents type to 'actual'");
+                return;
+            }
+        }
+        if (updateScaleMode && newRangeScale == LOG)
+        {
+            if (range[0] <= 0 || range[1] <= 0) 
+            {
+                UpdateViewAtts(activeWindow, true, false, false);
+                Error("There are non-positive values in the range of the\n"
+                      "curve, so log scaling cannot be done. You must\n"
+                      "limit the spatial extents to positive values.\n"
+                      "e.g. via Transform or Box operators and/or\n"
+                      "setting view extents type to 'actual'");
+                return;
+            }
+        }
+    }
     for (int i = 0; i < 4; i++)
     {
         viewCurve.viewport[i] = viewport[i];
@@ -2379,37 +2421,44 @@ ViewerWindowManager::SetViewCurveFromClient()
     viewCurve.domain[1] = domain[1];
     viewCurve.range[0]  = range[0];
     viewCurve.range[1]  = range[1];
+    if (windows[activeWindow]->GetPlotList()->GetNumRealizedPlots() > 0)
+    {
 #define SMALL 1e-100
-    if (viewCurve.domainScale == LINEAR && newDomainScale == LOG)
-    {
-        viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) + SMALL);
-        viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) + SMALL);
-    }
-    else if (viewCurve.domainScale == LOG && newDomainScale == LINEAR)
-    {
-        viewCurve.domain[0] = pow(10., viewCurve.domain[0]);
-        viewCurve.domain[1] = pow(10., viewCurve.domain[1]);
-    }
-    if (viewCurve.rangeScale == LINEAR && newRangeScale == LOG)
-    {
-        viewCurve.range[0] = log10(fabs(viewCurve.range[0]) + SMALL);
-        viewCurve.range[1] = log10(fabs(viewCurve.range[1]) + SMALL);
-    }
-    else if (viewCurve.rangeScale == LOG && newRangeScale == LINEAR)
-    {
-        viewCurve.range[0] = pow(10., viewCurve.range[0]);
-        viewCurve.range[1] = pow(10., viewCurve.range[1]);
+        if (!viewCurve.havePerformedLogDomain && newDomainScale == LOG)
+        {
+            viewCurve.domain[0] = log10(fabs(viewCurve.domain[0]) + SMALL);
+            viewCurve.domain[1] = log10(fabs(viewCurve.domain[1]) + SMALL);
+            viewCurve.havePerformedLogDomain = true;
+        }
+        else if (viewCurve.havePerformedLogDomain && newDomainScale == LINEAR)
+        {
+            viewCurve.domain[0] = pow(10., viewCurve.domain[0]);
+            viewCurve.domain[1] = pow(10., viewCurve.domain[1]);
+            viewCurve.havePerformedLogDomain = false;
+        }
+        if (!viewCurve.havePerformedLogRange && newRangeScale == LOG)
+        {
+            viewCurve.range[0] = log10(fabs(viewCurve.range[0]) + SMALL);
+            viewCurve.range[1] = log10(fabs(viewCurve.range[1]) + SMALL);
+            viewCurve.havePerformedLogRange = true;
+        }
+        else if (viewCurve.havePerformedLogRange && newRangeScale == LINEAR)
+        {
+            viewCurve.range[0] = pow(10., viewCurve.range[0]);
+            viewCurve.range[1] = pow(10., viewCurve.range[1]);
+            viewCurve.havePerformedLogRange = false;
+        }
     }
 
     viewCurve.domainScale = newDomainScale;
     viewCurve.rangeScale  = newRangeScale;
     if (updateScaleMode)
     {
-        windows[activeWindow]->SetScaleMode(viewCurve.domainScale, viewCurve.rangeScale);
+        windows[activeWindow]->SetScaleMode(viewCurve.domainScale, viewCurve.rangeScale, WINMODE_CURVE);
     }
 
     //
-    // Set the 2D view for the active viewer window.
+    // Set the Curve view for the active viewer window.
     //
     windows[activeWindow]->SetViewCurve(viewCurve);
 
@@ -2458,6 +2507,9 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Mark C. Miller, Thu Apr  6 01:45:57 PDT 2006
 //    Moved code to check axes' units to ViewerWindow.
 //
+//    Kathleen Bonnell, Wed May  9 17:40:35 PDT 2007 
+//    Added support for log scaling.
+//
 // ****************************************************************************
 
 void
@@ -2465,7 +2517,97 @@ ViewerWindowManager::SetView2DFromClient()
 {
     avtView2D view2d = windows[activeWindow]->GetView2D();
 
-    view2d.SetFromView2DAttributes(view2DClientAtts);
+    ScaleMode newXScale = (ScaleMode)view2DClientAtts->GetXScale();
+    ScaleMode newYScale = (ScaleMode)view2DClientAtts->GetYScale();
+    bool updateScaleMode = ((view2d.xScale != newXScale) ||
+                            (view2d.yScale != newYScale));
+
+    for(int i = 0; i < 4; ++i)
+    {
+        view2d.viewport[i] = view2DClientAtts->GetViewportCoords()[i];
+        view2d.window[i] = view2DClientAtts->GetWindowCoords()[i];
+    }
+
+    if (windows[activeWindow]->GetWindowMode() == WINMODE_2D) 
+    {
+        ViewerPlotList *vpl = windows[activeWindow]->GetPlotList();
+        if ((newXScale == LOG || newYScale == LOG) && 
+            (vpl->GetNumPlots() > 0 && !vpl->CanDoLogViewScaling(WINMODE_2D)))
+        {
+            UpdateViewAtts(activeWindow, false, true, false);
+            Error("There are plots in the window that do not\n" 
+                  "support log-scaling.  It will not be done.");
+            return;
+        }
+        if (updateScaleMode && newXScale == LOG)
+        {
+            if (view2d.window[0] <= 0 || view2d.window[1] <= 0) 
+            {
+                UpdateViewAtts(activeWindow, false, true, false);
+                Error("There are non-positive values in the x-coords of\n"
+                      "the mesh, so log scaling cannot be done. You must\n"
+                      "limit the spatial extents to positive values.\n"
+                      "e.g. via Transform or Box operators and/or\n"
+                      "setting view extents type to 'actual'");
+                return;
+            }
+        }
+        if (updateScaleMode && newYScale == LOG)
+        {
+            if (view2d.window[2] <= 0 || view2d.window[3] <= 0) 
+            {
+                UpdateViewAtts(activeWindow, false, true, false);
+                Error("There are non-positive values in the y-coords of\n"
+                      "the mesh, so log scaling cannot be done. You must\n"
+                      "limit the spatial extents to positive values.\n"
+                      "e.g. via Transform or Box operators and/or\n"
+                      "setting view extents type to 'actual'");
+                return;
+            }
+        }
+    }
+
+
+    view2d.fullFrameActivationMode = view2DClientAtts->GetFullFrameActivationMode();
+    view2d.fullFrameAutoThreshold = view2DClientAtts->GetFullFrameAutoThreshold();
+    view2d.fullFrame = view2DClientAtts->GetUseFullFrame();
+
+    if (windows[activeWindow]->GetPlotList()->GetNumRealizedPlots()  > 0)
+    {
+#define SMALL 1e-100
+        if (!view2d.havePerformedLogX  && newXScale == LOG)
+        {
+            view2d.window[0] = log10(fabs(view2d.window[0]) + SMALL);
+            view2d.window[1] = log10(fabs(view2d.window[1]) + SMALL);
+            view2d.havePerformedLogX = true;
+        }
+        else if (view2d.havePerformedLogX && newXScale == LINEAR)
+        {
+            view2d.window[0] = pow(10., view2d.window[0]);
+            view2d.window[1] = pow(10., view2d.window[1]);
+            view2d.havePerformedLogX = false;
+        }
+        if (!view2d.havePerformedLogY && newYScale == LOG)
+        {
+            view2d.window[2] = log10(fabs(view2d.window[2]) + SMALL);
+            view2d.window[3] = log10(fabs(view2d.window[3]) + SMALL);
+            view2d.havePerformedLogY = true;
+        }
+        else if (view2d.havePerformedLogY && newYScale == LINEAR)
+        {
+            view2d.window[2] = pow(10., view2d.window[2]);
+            view2d.window[3] = pow(10., view2d.window[3]);
+            view2d.havePerformedLogY = false;
+        }
+    }
+
+    view2d.xScale = newXScale;
+    view2d.yScale = newYScale;
+    if (updateScaleMode)
+    {
+        windows[activeWindow]->SetScaleMode(view2d.xScale, view2d.yScale, WINMODE_2D);
+    }
+
 
     if (view2DClientAtts->GetFullFrameActivationMode() ==
         View2DAttributes::Auto)

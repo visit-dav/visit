@@ -92,6 +92,9 @@ class avtResampleFilter;
 //    Hank Childs, Sun Dec  4 17:55:06 PST 2005
 //    Added GetNumberOfStagesForImageBasedPlots.
 //
+//    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007
+//    Set CanDo2DViewScaling to false.
+//
 // ****************************************************************************
 
 class
@@ -115,6 +118,8 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual bool        Equivalent(const AttributeGroup *);
 
     virtual bool        CanCacheWriterExternally(void) { return false; }
+
+    virtual bool        CanDo2DViewScaling(void) { return false; }
 
   protected:
     VolumeAttributes         atts;

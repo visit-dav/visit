@@ -221,6 +221,10 @@ class     WindowAttributes;
 //    Added bool return to SetScaleMode. Added virtual method
 //    CanDoCurveViewScaling.
 //
+//    Kathleen Bonnell,  Wed May  9 16:58:50 PDT 2007 
+//    Added WindowMode arg to SetScaleMode. Added virtual method
+//    CanDo2DViewScaling.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -285,11 +289,12 @@ class PLOTTER_API avtPlot
     float                      GetCellCountMultiplierForSRThreshold() const;
     const PlotInfoAttributes  *GetPlotInfoAtts(); 
 
-    bool                      SetScaleMode(ScaleMode, ScaleMode);
+    bool                      SetScaleMode(ScaleMode, ScaleMode, WINDOW_MODE wm);
     void                      GetScaleMode(ScaleMode &ds, ScaleMode &rs)
                                 {ds = xScaleMode, rs = yScaleMode; }
 
-    virtual bool               CanDoCurveViewScaling(void) { return false; } 
+    virtual bool              CanDoCurveViewScaling(void) { return false; } 
+    virtual bool              CanDo2DViewScaling(void)    { return true; } 
 
   protected:
     bool                       needsRecalculation;

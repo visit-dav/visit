@@ -66,6 +66,9 @@ class avtLookupTable;
 //    Jeremy Meredith, Mon Mar 19 11:28:57 EDT 2007
 //    Added background color so context will fade nicely into background.
 //   
+//    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007
+//    Set CanDo2DViewScaling to false.
+//
 // ****************************************************************************
 
 class avtParallelAxisPlot : public avtSurfaceDataPlot
@@ -80,6 +83,7 @@ public:
 
     virtual void             SetAtts(const AttributeGroup*);
     virtual void             ReleaseData(void);
+    virtual bool             CanDo2DViewScaling(void) { return false;}
 
 protected:
     avtParallelAxisFilter   *parAxisFilter;

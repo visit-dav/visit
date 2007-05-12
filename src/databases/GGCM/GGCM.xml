@@ -5,21 +5,21 @@
     </Extensions>
 	<Files components="M">
 		avtGGCMFileFormat.C
-		ggcm_grid.o
-		ggcm_grid_gse.o
-		ggcm_field_matrix.o
-		ggcm_mhd_gse.o
-		ggcm_read_mhd.o
-		matrix.o
+		ggcm_grid.C
+		ggcm_grid_gse.C
+		ggcm_field_matrix.C
+		ggcm_mhd_gse.C
+		ggcm_read_mhd.C
+		matrix.C
 	</Files>
 	<Files components="E">
 		avtGGCMFileFormat.C
-		ggcm_grid.o
-		ggcm_grid_gse.o
-		ggcm_field_matrix.o
-		ggcm_mhd_gse.o
-		ggcm_read_mhd.o
-		matrix.o
+		ggcm_grid.C
+		ggcm_grid_gse.C
+		ggcm_field_matrix.C
+		ggcm_mhd_gse.C
+		ggcm_read_mhd.C
+		matrix.C
 	</Files>
     <Attribute name="none" purpose="none" persistent="true" exportAPI="" exportInclude="">
       <Include file="header" quoted="true">

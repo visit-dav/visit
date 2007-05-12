@@ -23,6 +23,12 @@
     <Field name="fullFrameAutoThreshold" label="fullFrameAutoThreshold" type="double">
       100.000000
     </Field>
+    <Field name="xScale" label="xScale" type="scalemode">
+      0
+    </Field>
+    <Field name="yScale" label="yScale" type="scalemode">
+      0
+    </Field>
     <Function name="GetUseFullFrame" user="true" member="true">
     </Function>
     <Function name="SetUseFullFrame" user="true" member="true">
