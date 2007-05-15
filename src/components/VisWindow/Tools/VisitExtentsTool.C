@@ -194,7 +194,8 @@ VisitExtentsTool::~VisitExtentsTool()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DoOneTimeInitializations()
+void
+VisitExtentsTool::DoOneTimeInitializations()
 {
     buttonQuadsActor    = NULL; buttonQuadsMapper    = NULL; buttonQuadsData    = NULL;
     buttonLogosActor    = NULL; buttonLogosMapper    = NULL; buttonLogosData    = NULL;
@@ -339,7 +340,8 @@ void VisitExtentsTool::DoOneTimeInitializations()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::GetCurrentPlotAttributes()
+void
+VisitExtentsTool::GetCurrentPlotAttributes()
 {
     UpdateToolAttributesWithPlotAttributes();
 
@@ -503,7 +505,8 @@ void VisitExtentsTool::GetCurrentPlotAttributes()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::InitializeAllHotpoints()
+void
+VisitExtentsTool::InitializeAllHotpoints()
 {
     hotPoints.clear();
 
@@ -525,7 +528,8 @@ void VisitExtentsTool::InitializeAllHotpoints()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::InitializeButtonHotpoints()
+void
+VisitExtentsTool::InitializeButtonHotpoints()
 {
     buttonYs[VET_LEFT_MOVE_LEFT_BUTTON_ID] =
         windowHToWRatio * VET_LEFT_MOVE_LEFT_BUTTON_Y;
@@ -621,7 +625,8 @@ void VisitExtentsTool::InitializeButtonHotpoints()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::InitializeMarkSliderHotpoints()
+void
+VisitExtentsTool::InitializeMarkSliderHotpoints()
 {
     doubleVector axisXPositions = Interface.GetAxisXPositions();
 
@@ -667,7 +672,8 @@ void VisitExtentsTool::InitializeMarkSliderHotpoints()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::InitializeAxisSliderHotpoints()
+void
+VisitExtentsTool::InitializeAxisSliderHotpoints()
 {
     intVector    axisInfoFlagSets = Interface.GetAxisInfoFlagSets();
     doubleVector axisXPositions   = Interface.GetAxisXPositions();
@@ -744,7 +750,8 @@ void VisitExtentsTool::InitializeAxisSliderHotpoints()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::UpdateToolAttributesWithPlotAttributes()
+void
+VisitExtentsTool::UpdateToolAttributesWithPlotAttributes()
 {
     const PlotInfoAttributes *parAxisAtts = proxy.GetPlotInfoAtts("ParallelAxis");
     
@@ -809,7 +816,7 @@ void VisitExtentsTool::UpdateToolAttributesWithPlotAttributes()
         newInfoFlagSets.push_back((int)axisAttVals[valIndex++]);
         newXPositions.push_back(axisAttVals[valIndex++]);
     }
-
+    
     Interface.SetScalarNames(newAxisNames);
     Interface.SetScalarMinima(newAxisMinima);
     Interface.SetScalarMaxima(newAxisMaxima);
@@ -843,11 +850,19 @@ void VisitExtentsTool::UpdateToolAttributesWithPlotAttributes()
 //    Mark Blair, Thu Nov  2 12:33:23 PST 2006
 //    Signals the plot that the tool will now draw all axis information.
 //
+//    Mark Blair, Mon May 14 10:36:16 PDT 2007
+//    Now updates tool attributes with most recent ParallelAxis plot attributes
+//    sent to the viewer by that plot's filter BEFORE the tool broadcasts its
+//    first set of attributes to the rest of the world.
+//
 // ****************************************************************************
 
-void VisitExtentsTool::Enable()
+void
+VisitExtentsTool::Enable()
 {
     bool toolWasEnabled = IsEnabled();
+    
+    UpdateToolAttributesWithPlotAttributes();
 
     Interface.SetPlotToolModeFlags(
         Interface.GetPlotToolModeFlags() | EA_TOOL_DRAWS_AXIS_INFO_FLAG);
@@ -874,7 +889,8 @@ void VisitExtentsTool::Enable()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::Disable()
+void
+VisitExtentsTool::Disable()
 {
     bool toolWasEnabled = IsEnabled();
 
@@ -902,50 +918,11 @@ void VisitExtentsTool::Disable()
 //   
 // ****************************************************************************
 
-bool VisitExtentsTool::IsAvailable() const
+bool
+VisitExtentsTool::IsAvailable() const
 {
     return (proxy.GetPlotListIndex("ParallelAxis") >= 0);
 }
-
-
-// ****************************************************************************
-// Method: VisitExtentsTool::SetForegroundColor
-//
-// Purpose: This method sets the tool's foreground color.
-//
-// Arguments:
-//   r : The red color component.
-//   g : The green color component.
-//   b : The blue color component.
-//
-// Programmer: Mark Blair
-// Creation:   Mon Oct 31 18:35:00 PST 2005
-//
-// Modifications:
-//
-// ****************************************************************************
-
-/* debug 112906
-void VisitExtentsTool::SetForegroundColor(float r, float g, float b)
-{
-    unsigned char arrowRed   = (unsigned char)(r * 255.0);
-    unsigned char arrowGreen = (unsigned char)(g * 255.0);
-    unsigned char arrowBlue  = (unsigned char)(b * 255.0);
-
-    vtkDataArray *scalars = sliderData->GetCellData()->GetScalars();
-    vtkUnsignedCharArray *arrowColors = vtkUnsignedCharArray::SafeDownCast(scalars);
-    int numArrows = hotPoints.size();
-    unsigned char *rgb;
-
-    for (int arrowNum = 0; arrowNum < numArrows; arrowNum++)
-    {
-        rgb = arrowColors->GetPointer(arrowNum*3);
-        rgb[0] = arrowRed; rgb[1] = arrowGreen; rgb[2] = arrowBlue;
-    }
-
-    sliderData->Modified();
-}
-*/
 
 
 // ****************************************************************************
@@ -960,7 +937,8 @@ void VisitExtentsTool::SetForegroundColor(float r, float g, float b)
 //
 // ****************************************************************************
 
-void VisitExtentsTool::UpdateTool()
+void
+VisitExtentsTool::UpdateTool()
 {
     RemoveAllActors();
 
@@ -995,7 +973,8 @@ void VisitExtentsTool::UpdateTool()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::PositionAxisSequenceMarks()
+void
+VisitExtentsTool::PositionAxisSequenceMarks()
 {
     int axisID, axisInfoFlags;
     int plotToolModeFlags = Interface.GetPlotToolModeFlags();
@@ -1141,7 +1120,8 @@ void VisitExtentsTool::PositionAxisSequenceMarks()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CreateAllActors()
+void
+VisitExtentsTool::CreateAllActors()
 {
     CreateButtonQuadsActor();
     CreateButtonLogosActor();
@@ -1173,7 +1153,8 @@ void VisitExtentsTool::CreateAllActors()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::CreateButtonQuadsActor()
+void
+VisitExtentsTool::CreateButtonQuadsActor()
 {
     DeleteButtonQuadsActor();
 
@@ -1350,7 +1331,8 @@ void VisitExtentsTool::CreateButtonQuadsActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::CreateButtonLogosActor()
+void
+VisitExtentsTool::CreateButtonLogosActor()
 {
     DeleteButtonLogosActor();
 
@@ -1454,7 +1436,8 @@ void VisitExtentsTool::CreateButtonLogosActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::CreateButtonChecksActor()
+void
+VisitExtentsTool::CreateButtonChecksActor()
 {
     DeleteButtonChecksActor();
 
@@ -1595,7 +1578,8 @@ void VisitExtentsTool::CreateButtonChecksActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::CreateButtonLabelsActors()
+void
+VisitExtentsTool::CreateButtonLabelsActors()
 {
     vtkTextActor *buttonLabelActor;
     avtVector labelPos;
@@ -1647,7 +1631,8 @@ void VisitExtentsTool::CreateButtonLabelsActors()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::CreateAxisExtensionsActor()
+void
+VisitExtentsTool::CreateAxisExtensionsActor()
 {
     DeleteAxisExtensionsActor();
 
@@ -1744,7 +1729,8 @@ void VisitExtentsTool::CreateAxisExtensionsActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::CreateMarkSlidersActor()
+void
+VisitExtentsTool::CreateMarkSlidersActor()
 {
     DeleteMarkSlidersActor();
 
@@ -1837,7 +1823,8 @@ void VisitExtentsTool::CreateMarkSlidersActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::CreateMarkTitlesActors()
+void
+VisitExtentsTool::CreateMarkTitlesActors()
 {
     vtkTextActor *markTitleActor;
     avtVector titlePos;
@@ -1915,7 +1902,8 @@ void VisitExtentsTool::CreateMarkTitlesActors()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CreateAxisSlidersActor()
+void
+VisitExtentsTool::CreateAxisSlidersActor()
 {
     DeleteAxisSlidersActor();
 
@@ -2027,7 +2015,8 @@ void VisitExtentsTool::CreateAxisSlidersActor()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CreateAxisTitlesActors()
+void
+VisitExtentsTool::CreateAxisTitlesActors()
 {
     intVector axisInfoFlagSets = Interface.GetAxisInfoFlagSets();
 
@@ -2123,7 +2112,8 @@ void VisitExtentsTool::CreateAxisTitlesActors()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CreateAxisBoundsActors()
+void
+VisitExtentsTool::CreateAxisBoundsActors()
 {
     doubleVector axisMinima    = Interface.GetScalarMinima();
     doubleVector axisMaxima    = Interface.GetScalarMaxima();
@@ -2245,7 +2235,8 @@ void VisitExtentsTool::CreateAxisBoundsActors()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CreateAxisExtentsActors()
+void
+VisitExtentsTool::CreateAxisExtentsActors()
 {
     doubleVector axisMinima    = Interface.GetScalarMinima();
     doubleVector axisMaxima    = Interface.GetScalarMaxima();
@@ -2371,7 +2362,8 @@ void VisitExtentsTool::CreateAxisExtentsActors()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteAllActors()
+void
+VisitExtentsTool::DeleteAllActors()
 {
     DeleteButtonQuadsActor();
     DeleteButtonLogosActor();
@@ -2407,7 +2399,8 @@ void VisitExtentsTool::DeleteAllActors()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteButtonQuadsActor()
+void
+VisitExtentsTool::DeleteButtonQuadsActor()
 {
     if (buttonQuadsActor != NULL)
     {
@@ -2442,7 +2435,8 @@ void VisitExtentsTool::DeleteButtonQuadsActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteButtonLogosActor()
+void
+VisitExtentsTool::DeleteButtonLogosActor()
 {
     if (buttonLogosActor != NULL)
     {
@@ -2477,7 +2471,8 @@ void VisitExtentsTool::DeleteButtonLogosActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteButtonChecksActor()
+void
+VisitExtentsTool::DeleteButtonChecksActor()
 {
     if (buttonChecksActor != NULL)
     {
@@ -2512,7 +2507,8 @@ void VisitExtentsTool::DeleteButtonChecksActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteButtonLabelsActors()
+void
+VisitExtentsTool::DeleteButtonLabelsActors()
 {
     for (int actorNum = 0; actorNum < buttonLabelsActors.size(); actorNum++)
         buttonLabelsActors[actorNum]->Delete();
@@ -2534,7 +2530,8 @@ void VisitExtentsTool::DeleteButtonLabelsActors()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteMarkSlidersActor()
+void
+VisitExtentsTool::DeleteMarkSlidersActor()
 {
     if (markSlidersActor != NULL)
     {
@@ -2569,7 +2566,8 @@ void VisitExtentsTool::DeleteMarkSlidersActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteMarkTitlesActors()
+void
+VisitExtentsTool::DeleteMarkTitlesActors()
 {
     if (markTitlesActors.size() == 2)
     {
@@ -2595,7 +2593,8 @@ void VisitExtentsTool::DeleteMarkTitlesActors()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteAxisExtensionsActor()
+void
+VisitExtentsTool::DeleteAxisExtensionsActor()
 {
     if (axisExtensionsActor != NULL)
     {
@@ -2630,7 +2629,8 @@ void VisitExtentsTool::DeleteAxisExtensionsActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteAxisSlidersActor()
+void
+VisitExtentsTool::DeleteAxisSlidersActor()
 {
     if (axisSlidersActor != NULL)
     {
@@ -2664,7 +2664,8 @@ void VisitExtentsTool::DeleteAxisSlidersActor()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteAxisTitlesActors()
+void
+VisitExtentsTool::DeleteAxisTitlesActors()
 {
     for (int actorNum = 0; actorNum < axisTitlesActors.size(); actorNum++)
         axisTitlesActors[actorNum]->Delete();
@@ -2686,7 +2687,8 @@ void VisitExtentsTool::DeleteAxisTitlesActors()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteAxisBoundsActors()
+void
+VisitExtentsTool::DeleteAxisBoundsActors()
 {
     for (int actorNum = 0; actorNum < axisMinimaActors.size(); actorNum++)
     {
@@ -2711,7 +2713,8 @@ void VisitExtentsTool::DeleteAxisBoundsActors()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::DeleteAxisExtentsActors()
+void
+VisitExtentsTool::DeleteAxisExtentsActors()
 {
     for (int actorNum = 0; actorNum < extentMinimaActors.size(); actorNum++)
     {
@@ -2739,7 +2742,8 @@ void VisitExtentsTool::DeleteAxisExtentsActors()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::AddAllActors()
+void
+VisitExtentsTool::AddAllActors()
 {
     int actorNum;
 
@@ -2792,7 +2796,8 @@ void VisitExtentsTool::AddAllActors()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::RemoveAllActors()
+void
+VisitExtentsTool::RemoveAllActors()
 {
     int actorNum;
 
@@ -2858,7 +2863,8 @@ void VisitExtentsTool::RemoveAllActors()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::ButtonAction(
+void
+VisitExtentsTool::ButtonAction(
     CB_ENUM e, int ctrl, int shift, int x, int y, int buttonID)
 {
     if (e == CB_START)
@@ -2914,7 +2920,8 @@ void VisitExtentsTool::ButtonAction(
 //
 // ****************************************************************************
 
-void VisitExtentsTool::LeftAxisSelectionMark(
+void
+VisitExtentsTool::LeftAxisSelectionMark(
     CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     avtVector cursorPos = ComputeDisplayToWorld(avtVector(x,y,0.0));
@@ -2997,7 +3004,8 @@ void VisitExtentsTool::LeftAxisSelectionMark(
 //
 // ****************************************************************************
 
-void VisitExtentsTool::RightAxisSelectionMark(
+void
+VisitExtentsTool::RightAxisSelectionMark(
     CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     avtVector cursorPos = ComputeDisplayToWorld(avtVector(x,y,0.0));
@@ -3088,7 +3096,8 @@ void VisitExtentsTool::RightAxisSelectionMark(
 //
 // ****************************************************************************
 
-void VisitExtentsTool::AxisSliderMinimum(CB_ENUM e, int ctrl, int shift, int x, int y)
+void
+VisitExtentsTool::AxisSliderMinimum(CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     bool gangedSlidersMotion = false;
     
@@ -3195,7 +3204,8 @@ void VisitExtentsTool::AxisSliderMinimum(CB_ENUM e, int ctrl, int shift, int x, 
 //
 // ****************************************************************************
 
-void VisitExtentsTool::AxisSliderMaximum(CB_ENUM e, int ctrl, int shift, int x, int y)
+void
+VisitExtentsTool::AxisSliderMaximum(CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     bool gangedSlidersMotion = false;
     
@@ -3296,8 +3306,8 @@ void VisitExtentsTool::AxisSliderMaximum(CB_ENUM e, int ctrl, int shift, int x, 
 //
 // ****************************************************************************
 
-void VisitExtentsTool::GangAxisSliders(
-    bool draggedSliderIsMin, CB_ENUM e, int x, int y)
+void
+VisitExtentsTool::GangAxisSliders(bool draggedSliderIsMin, CB_ENUM e, int x, int y)
 {
     avtVector cursorPos = ComputeDisplayToWorld(avtVector(x,y,0.0));
 
@@ -3370,7 +3380,8 @@ void VisitExtentsTool::GangAxisSliders(
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::UpdateGangedAxisSliderPositions(
+void
+VisitExtentsTool::UpdateGangedAxisSliderPositions(
     bool draggedSliderIsMin, double cursorY)
 {
     double cursorYPos = cursorY;
@@ -3418,11 +3429,12 @@ void VisitExtentsTool::UpdateGangedAxisSliderPositions(
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CallButtonCallback(int buttonID)
+void
+VisitExtentsTool::CallButtonCallback(int buttonID)
 {
     doubleVector axisXPositions;
     intVector axisInfoFlagSets;
-    int plotToolModeFlags, axisID;
+    int axisID;
 
     switch (buttonID)
     {
@@ -3525,20 +3537,15 @@ void VisitExtentsTool::CallButtonCallback(int buttonID)
 
         case VET_THRESHOLD_BETWEEN_BUTTON_ID:
 
-            plotToolModeFlags =
-                Interface.GetPlotToolModeFlags() ^ EA_THRESHOLD_SELECTED_ONLY_FLAG;
-
-            Interface.SetPlotToolModeFlags(plotToolModeFlags);
+            Interface.SetPlotToolModeFlags(
+                Interface.GetPlotToolModeFlags() ^ EA_THRESHOLD_SELECTED_ONLY_FLAG);
             Interface.ExecuteCallback();
 
             break;
 
         case VET_SHOW_TITLES_ONLY_BUTTON_ID:
 
-            plotToolModeFlags = Interface.GetPlotToolModeFlags();
-            axisInfoFlagSets  = Interface.GetAxisInfoFlagSets();
-            
-            plotToolModeFlags ^= EA_SHOW_LIMITED_AXIS_INFO_FLAG;
+            axisInfoFlagSets = Interface.GetAxisInfoFlagSets();
             
             for (axisID = 0; axisID < axisInfoFlagSets.size(); axisID++)
             {
@@ -3546,8 +3553,9 @@ void VisitExtentsTool::CallButtonCallback(int buttonID)
                 axisInfoFlagSets[axisID] ^= EA_SHOW_SLIDER_LIMITS_ONLY_FLAG;
             }
 
-            Interface.SetPlotToolModeFlags(plotToolModeFlags);
             Interface.SetAxisInfoFlagSets(axisInfoFlagSets);
+            Interface.SetPlotToolModeFlags(
+                Interface.GetPlotToolModeFlags() ^ EA_SHOW_LIMITED_AXIS_INFO_FLAG);
             Interface.ExecuteCallback();
 
             break;
@@ -3568,7 +3576,8 @@ void VisitExtentsTool::CallButtonCallback(int buttonID)
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CallLeftMarkMoveCallback()
+void
+VisitExtentsTool::CallLeftMarkMoveCallback()
 {
     intVector axisInfoFlagSets = Interface.GetAxisInfoFlagSets();
     
@@ -3598,7 +3607,8 @@ void VisitExtentsTool::CallLeftMarkMoveCallback()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CallRightMarkMoveCallback()
+void
+VisitExtentsTool::CallRightMarkMoveCallback()
 {
     intVector axisInfoFlagSets = Interface.GetAxisInfoFlagSets();
     
@@ -3627,7 +3637,8 @@ void VisitExtentsTool::CallRightMarkMoveCallback()
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
+void
+VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
 {
     if (sendMinima)
     {
@@ -3668,7 +3679,7 @@ void VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
         Interface.SetMaxima(newMaxima);
         Interface.SetMaxTimeOrdinals(newMaxTimeOrdinals);
     }
-    
+
     Interface.ExecuteCallback();
 }
 
@@ -3689,7 +3700,8 @@ void VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
 //
 // ****************************************************************************
 
-void VisitExtentsTool::PressButton(int buttonID)
+void
+VisitExtentsTool::PressButton(int buttonID)
 {
     if (buttonCheckIDs[buttonID] < 0)
     {
@@ -3769,7 +3781,8 @@ void VisitExtentsTool::PressButton(int buttonID)
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::ReleaseButton(int buttonID)
+void
+VisitExtentsTool::ReleaseButton(int buttonID)
 {
     if (buttonAlreadyPressed)
     {
@@ -3825,7 +3838,8 @@ void VisitExtentsTool::ReleaseButton(int buttonID)
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::MoveLeftMarkSliderArrow(int axisIndex)
+void
+VisitExtentsTool::MoveLeftMarkSliderArrow(int axisIndex)
 {
     double hotPointX = hotPoints[msHotpointStartID].pt.x;
     avtVector titlePos;
@@ -3889,7 +3903,8 @@ void VisitExtentsTool::MoveLeftMarkSliderArrow(int axisIndex)
 //   
 // ****************************************************************************
 
-void VisitExtentsTool::MoveRightMarkSliderArrow(int axisIndex)
+void
+VisitExtentsTool::MoveRightMarkSliderArrow(int axisIndex)
 {
     double hotPointX = hotPoints[msHotpointStartID+1].pt.x;
     avtVector titlePos;
@@ -3948,15 +3963,15 @@ void VisitExtentsTool::MoveRightMarkSliderArrow(int axisIndex)
 //
 // ****************************************************************************
 
-void VisitExtentsTool::ExpandAxisSequenceBetweenSelectionMarks()
+void
+VisitExtentsTool::ExpandAxisSequenceBetweenSelectionMarks()
 {
     if (leftShownAxisID == leftSelectedAxisID)
     {
         if (rightShownAxisID == rightSelectedAxisID) return;
     }
 
-    int plotToolModeFlags       = Interface.GetPlotToolModeFlags();
-    intVector axisInfoFlagSets  = Interface.GetAxisInfoFlagSets();
+    intVector axisInfoFlagSets = Interface.GetAxisInfoFlagSets();
     
     leftExpandAxisIDs.push_back(leftShownAxisID);
     rightExpandAxisIDs.push_back(rightShownAxisID);
@@ -3969,11 +3984,9 @@ void VisitExtentsTool::ExpandAxisSequenceBetweenSelectionMarks()
     axisInfoFlagSets[leftShownAxisID]  |= EA_LEFT_SHOWN_AXIS_FLAG;
     axisInfoFlagSets[rightShownAxisID] |= EA_RIGHT_SHOWN_AXIS_FLAG;
     
-    plotToolModeFlags |= EA_SHOW_MARKED_AXES_ONLY_FLAG;
-
-    Interface.SetPlotToolModeFlags(plotToolModeFlags);
+    Interface.SetPlotToolModeFlags(
+        Interface.GetPlotToolModeFlags() | EA_SHOW_MARKED_AXES_ONLY_FLAG);
     Interface.SetAxisInfoFlagSets(axisInfoFlagSets);
-
     Interface.ExecuteCallback();
 }
 
@@ -3994,7 +4007,8 @@ void VisitExtentsTool::ExpandAxisSequenceBetweenSelectionMarks()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::UndoPreviousAxisSequenceExpansion()
+void
+VisitExtentsTool::UndoPreviousAxisSequenceExpansion()
 {
     int stackDepth = leftExpandAxisIDs.size();
 
@@ -4019,7 +4033,6 @@ void VisitExtentsTool::UndoPreviousAxisSequenceExpansion()
 
     Interface.SetPlotToolModeFlags(plotToolModeFlags);
     Interface.SetAxisInfoFlagSets(axisInfoFlagSets);
-
     Interface.ExecuteCallback();
 }
 
@@ -4040,7 +4053,8 @@ void VisitExtentsTool::UndoPreviousAxisSequenceExpansion()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::MoveAxisSliderMinimumArrow(int axisIndex)
+void
+VisitExtentsTool::MoveAxisSliderMinimumArrow(int axisIndex)
 {
     int hotpointPairID = asAxisHotpointIDs[axisIndex];
     vtkIdType firstVertexID = (vtkIdType)(hotpointPairID * 6);
@@ -4081,7 +4095,8 @@ void VisitExtentsTool::MoveAxisSliderMinimumArrow(int axisIndex)
 //
 // ****************************************************************************
 
-void VisitExtentsTool::MoveAxisSliderMaximumArrow(int axisIndex)
+void
+VisitExtentsTool::MoveAxisSliderMaximumArrow(int axisIndex)
 {
     int hotpointPairID = asAxisHotpointIDs[axisIndex];
     vtkIdType firstVertexID = (vtkIdType)(hotpointPairID*6 + 3);
@@ -4120,7 +4135,8 @@ void VisitExtentsTool::MoveAxisSliderMaximumArrow(int axisIndex)
 //
 // ****************************************************************************
 
-void VisitExtentsTool::ReAddToWindow()
+void
+VisitExtentsTool::ReAddToWindow()
 {
     // Nothing yet.
 }
@@ -4142,7 +4158,8 @@ void VisitExtentsTool::ReAddToWindow()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::FullFrameOn(const double, const int)
+void
+VisitExtentsTool::FullFrameOn(const double, const int)
 {
     if (IsEnabled()) UpdateTool();
 }
@@ -4160,7 +4177,8 @@ void VisitExtentsTool::FullFrameOn(const double, const int)
 //
 // ****************************************************************************
 
-void VisitExtentsTool::FullFrameOff()
+void
+VisitExtentsTool::FullFrameOff()
 {
     if (IsEnabled()) UpdateTool();
 }
@@ -4182,7 +4200,8 @@ void VisitExtentsTool::FullFrameOff()
 //
 // ****************************************************************************
 
-void VisitExtentsTool::MoveLeftMarkOneAxisLeftButtonCallback(
+void
+VisitExtentsTool::MoveLeftMarkOneAxisLeftButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4190,7 +4209,8 @@ void VisitExtentsTool::MoveLeftMarkOneAxisLeftButtonCallback(
 }
 
 
-void VisitExtentsTool::MoveRightMarkOneAxisLeftButtonCallback(
+void
+VisitExtentsTool::MoveRightMarkOneAxisLeftButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4198,7 +4218,8 @@ void VisitExtentsTool::MoveRightMarkOneAxisLeftButtonCallback(
 }
 
 
-void VisitExtentsTool::MoveLeftMarkOneAxisRightButtonCallback(
+void
+VisitExtentsTool::MoveLeftMarkOneAxisRightButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4206,7 +4227,8 @@ void VisitExtentsTool::MoveLeftMarkOneAxisRightButtonCallback(
 }
 
 
-void VisitExtentsTool::MoveRightMarkOneAxisRightButtonCallback(
+void
+VisitExtentsTool::MoveRightMarkOneAxisRightButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4214,7 +4236,8 @@ void VisitExtentsTool::MoveRightMarkOneAxisRightButtonCallback(
 }
 
 
-void VisitExtentsTool::ShowAxisInfoAtLeftMarkIfOnButtonCallback(
+void
+VisitExtentsTool::ShowAxisInfoAtLeftMarkIfOnButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4222,7 +4245,8 @@ void VisitExtentsTool::ShowAxisInfoAtLeftMarkIfOnButtonCallback(
 }
 
 
-void VisitExtentsTool::ShowAxisInfoAtRightMarkIfOnButtonCallback(
+void
+VisitExtentsTool::ShowAxisInfoAtRightMarkIfOnButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4230,7 +4254,8 @@ void VisitExtentsTool::ShowAxisInfoAtRightMarkIfOnButtonCallback(
 }
 
 
-void VisitExtentsTool::ExpandBetweenMarkedAxesButtonCallback(
+void
+VisitExtentsTool::ExpandBetweenMarkedAxesButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4238,7 +4263,8 @@ void VisitExtentsTool::ExpandBetweenMarkedAxesButtonCallback(
 }
 
 
-void VisitExtentsTool::UndoLastAxisSectionExpansionButtonCallback(
+void
+VisitExtentsTool::UndoLastAxisSectionExpansionButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4246,7 +4272,8 @@ void VisitExtentsTool::UndoLastAxisSectionExpansionButtonCallback(
 }
 
 
-void VisitExtentsTool::ThresholdBetweenMarkedAxesOnlyIfOnButtonCallback(
+void
+VisitExtentsTool::ThresholdBetweenMarkedAxesOnlyIfOnButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4254,7 +4281,8 @@ void VisitExtentsTool::ThresholdBetweenMarkedAxesOnlyIfOnButtonCallback(
 }
 
 
-void VisitExtentsTool::ShowAxisTitlesOnlyIfOnButtonCallback(
+void
+VisitExtentsTool::ShowAxisTitlesOnlyIfOnButtonCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4262,7 +4290,8 @@ void VisitExtentsTool::ShowAxisTitlesOnlyIfOnButtonCallback(
 }
 
 
-void VisitExtentsTool::LeftAxisSelectionMarkCallback(
+void
+VisitExtentsTool::LeftAxisSelectionMarkCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4270,7 +4299,8 @@ void VisitExtentsTool::LeftAxisSelectionMarkCallback(
 }
 
 
-void VisitExtentsTool::RightAxisSelectionMarkCallback(
+void
+VisitExtentsTool::RightAxisSelectionMarkCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4278,7 +4308,8 @@ void VisitExtentsTool::RightAxisSelectionMarkCallback(
 }
 
 
-void VisitExtentsTool::AxisSliderMinimumCallback(
+void
+VisitExtentsTool::AxisSliderMinimumCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4286,7 +4317,8 @@ void VisitExtentsTool::AxisSliderMinimumCallback(
 }
 
 
-void VisitExtentsTool::AxisSliderMaximumCallback(
+void
+VisitExtentsTool::AxisSliderMaximumCallback(
     VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
@@ -4310,7 +4342,8 @@ void VisitExtentsTool::AxisSliderMaximumCallback(
 //
 // *****************************************************************************
 
-int VisitExtentsTool::AxisClosestToTipOfArrow(double arrowTipX)
+int
+VisitExtentsTool::AxisClosestToTipOfArrow(double arrowTipX)
 {
     doubleVector axisXPositions = Interface.GetAxisXPositions();
 
@@ -4353,7 +4386,8 @@ int VisitExtentsTool::AxisClosestToTipOfArrow(double arrowTipX)
 //
 // *****************************************************************************
 
-void VisitExtentsTool::MakeAxisTitleText(
+void
+VisitExtentsTool::MakeAxisTitleText(
     char titleText[], const std::string &axisTitle, int maxTitleChars)
 {
     int rawTitleLen;
@@ -4387,7 +4421,8 @@ void VisitExtentsTool::MakeAxisTitleText(
 //
 // *****************************************************************************
 
-void VisitExtentsTool::MakeDataBoundText(char boundText[], double boundValue)
+void
+VisitExtentsTool::MakeDataBoundText(char boundText[], double boundValue)
 {
     int textLen, charNum;
 

@@ -45,11 +45,11 @@
 #include <ViewerPlot.h>
 #include <ParsingExprList.h>
 #include <Expression.h>
+#include <ColorAttribute.h>
 
 #include <InvalidVariableException.h>
 #include <ImproperUseException.h>
 #include <DebugStream.h>
-#include <ViewerPlot.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -606,6 +606,10 @@ ParseExtendedArrayExpression(stringVector &axisVariableList,
 //
 //      Mark Blair, Mon Feb 26 17:57:42 PST 2007
 //      Changed API to accommodate corresponding API change throughout VisIt.
+//
+//      Mark Blair, Mon May 14 10:36:16 PDT 2007
+//      Added default "Context" attributes needed when plot variable is an
+//      Array expression.
 //   
 // ****************************************************************************
 
@@ -716,6 +720,10 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         fallbackAtts->SetAxisAttributeVariables(axisNames);
         fallbackAtts->SetAttributesPerAxis(PCP_ATTRIBUTES_PER_AXIS);
         fallbackAtts->SetAxisAttributeData(axisAttData);
+        fallbackAtts->SetDrawLines(true);
+        fallbackAtts->SetLinesColor(ColorAttribute(160, 160, 160));
+        fallbackAtts->SetDrawContext(false);
+        fallbackAtts->SetDrawLinesOnlyIfExtentsOn(false);
 
         initAtts = fallbackAtts;
     }

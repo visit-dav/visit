@@ -417,6 +417,44 @@ bool
 ParallelAxisAttributes::ChangesRequireRecalculation(
     const ParallelAxisAttributes &obj)
 {
+/* 5/14/07: When PA plot custom renderer is implemented, this code will be enabled.
+    if (obj.GetDrawContext()) return true;
+    if (drawContext) return true;
+    
+    if (obj.GetOrderedAxisNames() != orderedAxisNames) return true;
+    
+    if (obj.GetAxisMinima() != axisMinima) return true;
+    if (obj.GetAxisMaxima() != axisMaxima) return true;
+    
+    if (obj.GetAxisGroupNames()         != axisGroupNames        ) return true;
+    if (obj.GetAxisXPositions()         != axisXPositions        ) return true;
+    if (obj.GetAxisAttributeVariables() != axisAttributeVariables) return true;
+    if (obj.GetAxisAttributeData()      != axisAttributeData     ) return true;
+    
+    int ptModeFlagsDiff = obj.GetPlotToolModeFlags() ^ plotToolModeFlags;
+
+    if ((ptModeFlagsDiff & (0xffffffff ^ EA_SHOW_LIMITED_AXIS_INFO_FLAG)) != 0)
+        return true;
+        
+    intVector newAxisFlagSets = obj.GetAxisInfoFlagSets();
+    int newFlagSetCount = newAxisFlagSets.size();
+    int axisID, flagSetDiff;
+    
+    if (newFlagSetCount != axisInfoFlagSets.size()) return true;
+    
+    for (axisID = 0; axisID < newFlagSetCount; axisID++)
+    {
+        flagSetDiff = newAxisFlagSets[axisID] ^ axisInfoFlagSets[axisID];
+        
+        if ((flagSetDiff & EA_LEFT_SHOWN_AXIS_FLAG ) != 0) return true;
+        if ((flagSetDiff & EA_RIGHT_SHOWN_AXIS_FLAG) != 0) return true;
+
+        if ((flagSetDiff & EA_THRESHOLD_BY_EXTENT_FLAG) != 0) return true;
+    }
+    
+    return false;
+*/
+
     return true;
 }
 
