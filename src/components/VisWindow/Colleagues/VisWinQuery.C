@@ -581,6 +581,9 @@ VisWinQuery::ClearPickPoints(int which)
 //    Mark C. Miller, Tue Jan 18 12:44:34 PST 2005
 //    Added code to set lo's line width and line style
 //
+//    Kathleen Bonnell, Tue May 15 13:46:22 PDT 2007
+//    Only project the z-coords of a 2d lineout. 
+//
 // ****************************************************************************
 
 void 
@@ -597,6 +600,10 @@ VisWinQuery::Lineout(const VisualCueInfo *vq)
     vq->GetColor().GetRgba(color);
     lo->SetForegroundColor(color[0], color[1], color[2]);
 
+    double pt1[3];
+    double pt2[3];
+    vq->GetPointD(0,pt1);
+    vq->GetPointD(1,pt2);
     if (mediator.GetMode() == WINMODE_3D)
     {
         lo->SetMode3D(true);
@@ -604,29 +611,26 @@ VisWinQuery::Lineout(const VisualCueInfo *vq)
     else 
     {
         lo->SetMode3D(false);
+        //
+        // Pull the lineout actors a little closer to the camera to make sure
+        // there are no z-buffer errors.  Note that canvas issues are hidden
+        // by GetCanvas routine.
+        //
+        double distance = 0.003;
+        double z_foc, z_pos, z_proj;
+        z_pos = mediator.GetCanvas()->GetActiveCamera()->GetPosition()[2];
+        z_foc = mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint()[2];
+        z_proj = distance*(z_pos - z_foc);
+        pt1[2] += z_proj;
+        pt2[2] += z_proj;
     }
+
+    lo->SetAttachmentPoint(pt1[0], pt1[1], pt1[2]);
+    lo->SetPoint2(pt2[0], pt2[1], pt2[2]);
+
     lo->SetShowLabels(vq->GetShowLabel());
     lo->SetLineWidth(vq->GetLineWidth());
     lo->SetLineStyle(vq->GetLineStyle());
-
-    //
-    // Pull the lineout actors a little closer to the camera to make sure
-    // there are no z-buffer errors.  Note that canvas issues are hidden
-    // by GetCanvas routine.
-    //
-    double distance = 0.003;
-    double z_foc, z_pos, z_proj;
-    z_pos = mediator.GetCanvas()->GetActiveCamera()->GetPosition()[2];
-    z_foc = mediator.GetCanvas()->GetActiveCamera()->GetFocalPoint()[2];
-    z_proj = distance*(z_pos - z_foc);
-
-    double pt1[3];
-    double pt2[3];
-    vq->GetPointD(0,pt1);
-    vq->GetPointD(1,pt2);
-
-    lo->SetAttachmentPoint(pt1[0], pt1[1], pt1[2] + z_proj);
-    lo->SetPoint2(pt2[0], pt2[1], pt2[2] + z_proj);
 
     if (mediator.GetFullFrameMode())
     {

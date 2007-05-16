@@ -6520,6 +6520,9 @@ ViewerSubject::PointQuery()
 //   Changed Call from "LineQuery" to "StartLineQuery", added call to
 //   MessageRendererThread. 
 //   
+//   Kathleen Bonnell, Tue May 15 10:43:49 PDT 2007 
+//   Added bool arg to StartLineQuery. 
+//   
 // ****************************************************************************
 
 void
@@ -6530,9 +6533,13 @@ ViewerSubject::LineQuery()
     msg.sprintf("Performing %s query...", GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
     Status(msg.latin1());
 
-    ViewerQueryManager::Instance()->StartLineQuery( GetViewerState()->GetViewerRPC()->GetQueryName().c_str(),
-              GetViewerState()->GetViewerRPC()->GetQueryPoint1(), GetViewerState()->GetViewerRPC()->GetQueryPoint2(),
-              GetViewerState()->GetViewerRPC()->GetQueryVariables(), GetViewerState()->GetViewerRPC()->GetIntArg1());
+    ViewerQueryManager::Instance()->StartLineQuery( 
+        GetViewerState()->GetViewerRPC()->GetQueryName().c_str(),
+        GetViewerState()->GetViewerRPC()->GetQueryPoint1(), 
+        GetViewerState()->GetViewerRPC()->GetQueryPoint2(),
+        GetViewerState()->GetViewerRPC()->GetQueryVariables(), 
+        GetViewerState()->GetViewerRPC()->GetIntArg1(),
+        GetViewerState()->GetViewerRPC()->GetBoolFlag());
     MessageRendererThread("finishLineQuery;");
 }
 

@@ -9896,6 +9896,9 @@ visit_PickByGlobalNode(PyObject *self, PyObject *args)
 //    Brad Whitlock, Tue Mar 2 10:08:54 PDT 2004
 //    I made it use GetDoubleArrayFromPyObject and GetStringVectorFromPyObject.
 //
+//    Kathleen Bonnell, Tue May 15 10:36:47 PDT 2007 
+//    Added haveSamples. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9907,6 +9910,7 @@ visit_Lineout(PyObject *self, PyObject *args)
     PyObject *p1tuple = NULL;
     PyObject *tuple = NULL;
     int samples = 50;
+    bool haveSamples = false;
     // Allow both vars and samples to be optional, but if both are listed,
     // then vars should come first.
     if (!PyArg_ParseTuple(args, "OOOi", &p0tuple, &p1tuple, &tuple, &samples))
@@ -9920,8 +9924,16 @@ visit_Lineout(PyObject *self, PyObject *args)
                 return NULL;
                 }
              }
-         }
-         PyErr_Clear();
+        }
+        else
+        {
+            haveSamples = true;
+        }
+        PyErr_Clear();
+    }
+    else
+    {
+        haveSamples = true;
     }
 
     // Extract the starting point from the first object.
@@ -9950,7 +9962,7 @@ visit_Lineout(PyObject *self, PyObject *args)
         // Lineout should not be applied to more than one plot at a time. 
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
         GetViewerState()->GetGlobalAttributes()->Notify();
-        GetViewerMethods()->Lineout(p0, p1, vars, samples);
+        GetViewerMethods()->Lineout(p0, p1, vars, samples, haveSamples);
 
         // Write the output to the log
         char tmp[1024];
