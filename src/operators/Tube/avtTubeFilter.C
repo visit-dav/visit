@@ -160,6 +160,9 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    Made it use the connected tube filter (our own creation) whenever
 //    possible; it welds adjacent segments and creates good normals.
 //
+//    Hank Childs, Wed May 16 09:02:22 PDT 2007
+//    Add comment.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -187,8 +190,8 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
     else
     {
-        // The vtk tube filter cries like a little baby if the points are not
-        // exactly like it expects.  Use the vtkCleanPolyData filter.
+        // The vtk tube filter is not robust if you do not
+        // use the vtkCleanPolyData filter.  So use it...
         vtktube->SetInput(cpd->GetOutput());
         vtktube->SetVaryRadius(VTK_VARY_RADIUS_OFF);
         vtktube->SetRadius(atts.GetWidth());
