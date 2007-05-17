@@ -20,6 +20,9 @@
 #    Hank Childs, Mon Jan  8 11:04:50 PST 2007
 #    Add testing for non-scalar variable types with symmetry CMFE expressions.
 #
+#    Brad Whitlock, Thu May 10 09:06:46 PDT 2007
+#    Changed the name of an expression.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -89,8 +92,8 @@ Test("symm_07")
 
 ActivateDatabase("../data/rect2d.silo")
 DeleteAllPlots()
-DefineScalarExpression("sp4", "symm_point(d, [0.4, 0.6, 0])")
-AddPlot("Pseudocolor", "sp4")
+DefineScalarExpression("sp4_2", "symm_point(d, [0.4, 0.6, 0])")
+AddPlot("Pseudocolor", "sp4_2")
 DrawPlots()
 Test("symm_08")
 

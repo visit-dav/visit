@@ -1,9 +1,9 @@
 # ----------------------------------------------------------------------------
 #  CLASSES: nightly
 #
-#  Test Case:  tstt.py 
+#  Test Case:  itaps.py 
 #
-#  Tests:      TSTT-MOAB files (the MOAB implementation of TSTT interface)
+#  Tests:      ITAPS-MOAB files (the MOAB implementation of ITAPS interface)
 #
 #  Programmer: Mark C. Miller 
 #  Date:       March 15, 2007 
@@ -52,7 +52,7 @@ a.backgroundColor = (255, 255, 255, 255)
 SetAnnotationAttributes(a)
 
 # test the main mesh
-OpenDatabase("../data/TSTT_test_data/mbtest1", 0, "TSTT_1.0")
+OpenDatabase("../data/iTaps_test_data/mbtest1", 0, "iTaps_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 DrawPlots()
@@ -60,7 +60,7 @@ v=GetView3D()
 v.viewNormal = (-0.761903, 0.456228, -0.45974)
 v.viewUp = (0.198721, 0.840238, 0.50449)
 SetView3D(v)
-Test("tstt_01")
+Test("itaps_01")
 
 InitSetIds()
 SetActivePlots((0,1))
@@ -70,31 +70,31 @@ silr.TurnOffSet(edgeSetId)
 silr.TurnOffSet(regSetId)
 SetPlotSILRestriction(silr)
 DrawPlots()
-Test("tstt_02")
+Test("itaps_02")
 
 silr.TurnOffSet(faceSetId)
 silr.TurnOnSet(edgeSetId)
 SetPlotSILRestriction(silr)
 DrawPlots()
-Test("tstt_03")
+Test("itaps_03")
 
 silr.TurnOffSet(edgeSetId)
 silr.TurnOnSet(regSetId)
 SetPlotSILRestriction(silr)
 DrawPlots()
-Test("tstt_04")
+Test("itaps_04")
 
 silr.TurnOnSet(edgeSetId)
 silr.TurnOnSet(faceSetId)
 silr.TurnOffSet(regSetId)
 SetPlotSILRestriction(silr)
 DrawPlots()
-Test("tstt_05")
+Test("itaps_05")
 
 DeleteAllPlots()
-CloseDatabase("../data/TSTT_test_data/mbtest1")
+CloseDatabase("../data/iTaps_test_data/mbtest1")
 
-OpenDatabase("../data/TSTT_test_data/bricks.cub", 0, "TSTT_1.0")
+OpenDatabase("../data/iTaps_test_data/bricks.cub", 0, "iTaps_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 DrawPlots()
@@ -105,26 +105,26 @@ silr.TurnOffSet(faceSetId)
 silr.TurnOffSet(regSetId)
 SetPlotSILRestriction(silr)
 DrawPlots()
-Test("tstt_06")
+Test("itaps_06")
 
 DeleteAllPlots()
-CloseDatabase("../data/TSTT_test_data/bricks.cub")
+CloseDatabase("../data/iTaps_test_data/bricks.cub")
 
 # test another mesh with some different element types
-OpenDatabase("../data/TSTT_test_data/globe_mats", 0, "TSTT_1.0")
+OpenDatabase("../data/iTaps_test_data/globe_mats", 0, "iTaps_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 SetActivePlots((0,1))
 AddOperator("Slice")
 DrawPlots()
 ResetView()
-Test("tstt_07")
+Test("itaps_07")
 
 DeleteAllPlots()
-CloseDatabase("../data/TSTT_test_data/bricks.cub")
+CloseDatabase("../data/iTaps_test_data/bricks.cub")
 
 # test another mesh with some different element types
-OpenDatabase("../data/TSTT_test_data/mixed-hex-pyr-tet", 0, "TSTT_1.0")
+OpenDatabase("../data/iTaps_test_data/mixed-hex-pyr-tet", 0, "iTaps_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 DrawPlots()
@@ -133,30 +133,30 @@ ResetView()
 v=GetView3D()
 v.viewNormal = (-0.707107, 0, 0.707107)
 SetView3D(v)
-Test("tstt_08")
+Test("itaps_08")
 
 setIdsTxt="entity type set ids = %d %d %d"%(edgeSetId, faceSetId, regSetId)
-TestText("tstt_09", setIdsTxt)
+TestText("itaps_09", setIdsTxt)
 
 DeleteAllPlots()
-CloseDatabase("../data/TSTT_test_data/mixed-hex-pyr-tet")
+CloseDatabase("../data/iTaps_test_data/mixed-hex-pyr-tet")
 
 # test some variables now (node-centered, zone-centered, integer valued)
-OpenDatabase("../data/TSTT_test_data/globe_mats", 0, "TSTT_1.0")
+OpenDatabase("../data/iTaps_test_data/globe_mats", 0, "iTaps_1.0")
 AddPlot("Pseudocolor","dx")
 DrawPlots()
-Test("tstt_10")
+Test("itaps_10")
 DeleteAllPlots()
 
 AddPlot("Pseudocolor","u")
 DrawPlots()
-Test("tstt_11")
+Test("itaps_11")
 DeleteAllPlots()
 
 AddPlot("Pseudocolor","Subsets")
 AddOperator("Slice")
 DrawPlots()
-Test("tstt_12")
+Test("itaps_12")
 DeleteAllPlots()
 
 Exit()

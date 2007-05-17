@@ -1131,6 +1131,9 @@ avtMiliFileFormat::GetSizeInfoForGroup(const char *group_name, int &offset,
 //    Added code to detect tetrahedra stored as degenerate hexahedra and
 //    convert them to tetrahedra.
 //
+//    Brad Whitlock, Thu May 10 16:30:33 PST 2007
+//    I corrected a bug that caused node 1 to be messed up.
+//
 // ****************************************************************************
 
 void
@@ -1172,9 +1175,10 @@ avtMiliFileFormat::ReadMesh(int dom)
                 for (int p = nnodes[dom][mesh_id]-1; p >= 0; p--)
                 {
                     int q = p*3, r = p*2;
-                    vpts[q+0] = vpts[r+0];
-                    vpts[q+1] = vpts[r+1];
+                    // Store the coordinates in reverse so we don't mess up at node 1.
                     vpts[q+2] = 0.0;
+                    vpts[q+1] = vpts[r+1];
+                    vpts[q+0] = vpts[r+0];
                 }
             }
         }

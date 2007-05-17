@@ -39,7 +39,7 @@
 //  File: TSTTPluginInfo.C
 // ************************************************************************* //
 
-#include <TSTTPluginInfo.h>
+#include <iTapsPluginInfo.h>
 
 #include <visit-config.h>
 #if defined(__APPLE__)
@@ -83,7 +83,7 @@ extern "C" GeneralDatabasePluginInfo* GetGeneralInfo()
 char *
 TSTTGeneralPluginInfo::GetName() const
 {
-    return "TSTT";
+    return "iTaps";
 }
 
 // ****************************************************************************
@@ -121,7 +121,7 @@ TSTTGeneralPluginInfo::GetVersion() const
 char *
 TSTTGeneralPluginInfo::GetID() const
 {
-    return "TSTT_1.0";
+    return "iTaps_1.0";
 }
 // ****************************************************************************
 //  Method: TSTTGeneralPluginInfo::EnabledByDefault

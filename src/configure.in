@@ -2462,39 +2462,39 @@ AC_SUBST(CFITSIO_LIB)
 AC_SUBST(CFITSIO_LIBDIR)
 
 #
-# Look for TSTT
+# Look for ITAPS
 # Note: to make it easier to support a variety of implementations
-# of TSTT, we treat the TSTT_INCLUDE and TSTT_LIB symbols a little
+# of ITAPS, we treat the ITAPS_INCLUDE and ITAPS_LIB symbols a little
 # differently here than for other libs. Here, they are expected
 # to include the -I and -L compiler/linker option flags and can
-# contain multiple of them. The TSTT_LIB symbol also needs to
+# contain multiple of them. The ITAPS_LIB symbol also needs to
 # include the -lxxx linker options too.
 #
-AC_MSG_CHECKING(for a TSTT Implementation)
-TSTT=""
-TSTT_INCLUDE=""
-TSTT_LIB=""
-AC_ARG_WITH(tstt,
-            [  --with-tstt=INC-DIR,LIB-DIR      -I and -L/-l compiler options for TSTT],
-           tstt_specified="yes",
-           tstt_specified="no"
+AC_MSG_CHECKING(for a ITAPS Implementation)
+ITAPS=""
+ITAPS_INCLUDE=""
+ITAPS_LIB=""
+AC_ARG_WITH(itaps,
+            [  --with-itaps=INC-DIR,LIB-DIR      -I and -L/-l compiler options for ITAPS],
+           itaps_specified="yes",
+           itaps_specified="no"
            )
-if test "$tstt_specified" = "yes"; then
+if test "$itaps_specified" = "yes"; then
    if test "$withval" != "no"; then
-      TSTT_INCLUDE="`echo $withval |cut -f1 -d,`"
-      TSTT_LIB="`echo $withval |cut -f2- -d, -s`"
+      ITAPS_INCLUDE="`echo $withval |cut -f1 -d,`"
+      ITAPS_LIB="`echo $withval |cut -f2- -d, -s`"
    fi
 else
-   if test "$DEFAULT_TSTT_INCLUDE" != "" ; then
-      TSTT_INCLUDE="$DEFAULT_TSTT_INCLUDE"
+   if test "$DEFAULT_ITAPS_INCLUDE" != "" ; then
+      ITAPS_INCLUDE="$DEFAULT_ITAPS_INCLUDE"
    fi
-   if test "$DEFAULT_TSTT_LIB" != "" ; then
-      TSTT_LIB="$DEFAULT_TSTT_LIB"
+   if test "$DEFAULT_ITAPS_LIB" != "" ; then
+      ITAPS_LIB="$DEFAULT_ITAPS_LIB"
    fi
 fi
-if test "$TSTT_LIB" != "" ; then
-   if test "$TSTT_INCLUDE" != "" ; then
-      TSTT="$""(TSTT)"
+if test "$ITAPS_LIB" != "" ; then
+   if test "$ITAPS_INCLUDE" != "" ; then
+      ITAPS="$""(ITAPS)"
       AC_MSG_RESULT(yes)
    else
       AC_MSG_RESULT(no)
@@ -2502,9 +2502,9 @@ if test "$TSTT_LIB" != "" ; then
 else
    AC_MSG_RESULT(no)
 fi
-AC_SUBST(TSTT)
-AC_SUBST(TSTT_INCLUDE)
-AC_SUBST(TSTT_LIB)
+AC_SUBST(ITAPS)
+AC_SUBST(ITAPS_INCLUDE)
+AC_SUBST(ITAPS_LIB)
 
 #
 # Add Some include paths to the engine's CPPFLAGS.
