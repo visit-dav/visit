@@ -72,6 +72,9 @@ class ViewerState;
 //   Brad Whitlock, Fri Mar 9 16:22:07 PST 2007
 //   Added RequestMetaData.
 //
+//   Brad Whitlock, Tue May 8 16:48:04 PST 2007
+//   Added AddInitializedOperator to avoid CLI logging problems.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -161,6 +164,7 @@ public:
     void ChangeActivePlotsVar(const std::string &var);
 
     void AddOperator(int oper, const bool fromDefault = true);
+    void AddInitializedOperator(int oper);
     void PromoteOperator(int operatorId);
     void DemoteOperator(int operatorId);
     void RemoveOperator(int operatorId);

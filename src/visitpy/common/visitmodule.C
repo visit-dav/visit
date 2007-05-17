@@ -2479,6 +2479,10 @@ visit_GetDatabaseCorrelationNames(PyObject *self, PyObject *args)
 //    Sean Ahern, Tue Nov 19 15:51:38 PST 2002
 //    Moved ENSURE_VIEWER_EXISTS in here, just to tidy things up a bit.
 //
+//    Brad Whitlock, Tue May 8 16:13:35 PST 2007
+//    Added code to get the expression if it exists instead of always adding 
+//    a new expression.
+//
 // ****************************************************************************
 
 PyObject *
@@ -2491,15 +2495,31 @@ ExpressionDefinitionHelper(PyObject *args, const char *name, Expression::ExprTyp
     if (!PyArg_ParseTuple(args, "ss", &exprName, &exprDef))
         return NULL;
 
-    // Access the expression list and add a new one.
+    // Access the expression list and add a new one, if necessary.
     MUTEX_LOCK();
 
         ExpressionList *list = GetViewerState()->GetExpressionList();
-        Expression *e = new Expression();
+        // Get the existing expression if it exists or create a new one.
+        Expression *e = list->operator[](exprName);
+        bool expressionExists = e != 0;
+        if(!expressionExists)
+            e = new Expression();
+        else
+            debug4 << "Replacing definition for expression " << exprName << endl;
+
+        // Set the expression properties.
         e->SetName(exprName);
         e->SetDefinition(exprDef);
         e->SetType(t);
-        list->AddExpressions(*e);
+
+        // Add the expression if it's not in the list.
+        if(!expressionExists)
+        {
+            list->AddExpressions(*e);
+            delete e;
+        }
+
+        // Send the new list to the viewer.
         list->Notify();
         GetViewerMethods()->ProcessExpressions();
     MUTEX_UNLOCK();
@@ -2930,7 +2950,7 @@ visit_AddPlot(PyObject *self, PyObject *args)
 //   all plots.
 //
 //   Brad Whitlock, Fri Jul 26 12:17:54 PDT 2002
-//   I made it return a sucess value.
+//   I made it return a success value.
 //
 // ****************************************************************************
 
@@ -12178,6 +12198,9 @@ NeedToLoadPlugins(Subject *, void *)
 //   use the module with "import visit". I also moved the code to read
 //   the plugin directory until later.
 //
+//   Brad Whitlock, Tue May 8 13:31:20 PST 2007
+//   I added code to honor -pid.
+//
 // ****************************************************************************
 
 static int
@@ -12191,7 +12214,7 @@ InitializeModule()
     TRY
     {
         int argc = 1;
-        char *argv[3];
+        char *argv[4];
         argv[0] = "cli";
 
         if(moduleDebugLevel > 0)
@@ -12199,6 +12222,14 @@ InitializeModule()
             static char *nums[] = {"1", "2", "3", "4", "5"};
             argv[argc++] = "-debug";
             argv[argc++] = nums[moduleDebugLevel - 1];
+        }
+        for(int i = 1; i < cli_argc; ++i)
+        {
+           if(strcmp(cli_argv[i], "-pid") == 0)
+           {
+               argv[argc++] = "-pid";
+               break;
+           }
         }
 
         Init::Initialize(argc, argv, 0, 1, false);

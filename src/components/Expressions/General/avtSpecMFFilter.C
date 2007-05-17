@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtSpecMFFilter.C                            //
+//                               avtSpecMFFilter.C                           //
 // ************************************************************************* //
 
 #include <avtSpecMFFilter.h>
@@ -519,6 +519,9 @@ avtSpecMFFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Jeremy Meredith, Mon Jun 13 11:42:38 PDT 2005
 //    Changed the way constant expressions work.
 //
+//    Brad Whitlock, Tue May 8 10:40:11 PDT 2007
+//    Fixed copy+paste error.
+//
 // ****************************************************************************
 void
 avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
@@ -640,9 +643,9 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
         ArgExpr *fourtharg = (*arguments)[3];
         ExprParseTreeNode *fourthTree = fourtharg->GetExpr();
         string fourthtype = fourthTree->GetTypeName();
-        if ((secondtype != "BooleanConst"))
+        if ((fourthtype != "BooleanConst"))
         {
-            EXCEPTION1(ExpressionException, "avtSpecMFFilter: Fourth argument is not a constant boolean.");
+            EXCEPTION1(ExpressionException, "avtSpecMFFilter: Fourth argument is not a constant boolean (true, false).");
         }
         weightByVF = dynamic_cast<BooleanConstExpr*>(fourthTree)->GetValue();
     }

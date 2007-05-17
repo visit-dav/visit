@@ -55,6 +55,7 @@
 #include <avtDistanceToBestFitLineFilter.h>
 #include <avtRandomFilter.h>
 #include <avtArctanFilter.h>
+#include <avtArctan2Filter.h>
 #include <avtArcsinFilter.h>
 #include <avtArccosFilter.h>
 #include <avtDegreeToRadianFilter.h>
@@ -445,6 +446,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Brad Whitlock, Mon Apr 23 17:32:14 PST 2007
 //    Added color.
 //
+//    Sean Ahern, Tue May  8 13:11:47 EDT 2007
+//    Added atan2.
+// 
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -458,6 +462,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtTanFilter();
     if (functionName == "atan")
         return new avtArctanFilter();
+    if (functionName == "atan2")
+        return new avtArctan2Filter();
     if (functionName == "asin")
         return new avtArcsinFilter();
     if (functionName == "acos")

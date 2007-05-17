@@ -177,6 +177,10 @@ QvisOperatorWindow::GetCurrentValues(int)
 //   I added a 3rd option to the dialog so you can answer Yes once but have
 //   it always add the operator if it does not exist in the future.
 //
+//   Brad Whitlock, Tue May 8 16:58:12 PST 2007
+//   Changed from setting client atts to using AddInitializedOperator, which
+//   does the same thing but can get logged in the CLI better.
+//
 // ****************************************************************************
 
 void
@@ -240,8 +244,7 @@ QvisOperatorWindow::SetOperatorOptions()
                 // to false in the call to AddOperator, so that the operator 
                 // knows to initialize the atts from client rather than the 
                 // ususal default atts. 
-                GetViewerMethods()->SetOperatorOptions(operatorType);
-                GetViewerMethods()->AddOperator(operatorType, false);
+                GetViewerMethods()->AddInitializedOperator(operatorType);
             }
             else if (button == 2)
             {
@@ -254,8 +257,7 @@ QvisOperatorWindow::SetOperatorOptions()
                 // to false in the call to AddOperator, so that the operator 
                 // knows to initialize the atts from client rather than the 
                 // ususal default atts. 
-                GetViewerMethods()->SetOperatorOptions(operatorType);
-                GetViewerMethods()->AddOperator(operatorType, false);
+                GetViewerMethods()->AddInitializedOperator(operatorType);
             }
         }
         else
