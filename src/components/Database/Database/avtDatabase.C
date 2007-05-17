@@ -1725,6 +1725,9 @@ avtDatabase::NumStagesForFetch(avtDataSpecification_p)
 //    Brad Whitlock, Wed Sep 21 16:41:56 PST 2005
 //    Fixed for win32.
 //
+//    Hank Childs, Mon May 14 17:19:30 PDT 2007
+//    Fixed bug with reading binary files.
+//
 // ****************************************************************************
 
 void
@@ -1751,7 +1754,8 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
     char  str_auto[1024];
     char  str_with_dir[1024];
     int   count = 0;
-    while (!ifile.eof())
+    int   badCount = 0;
+    while (!ifile.eof() && badCount < 10000)
     {
         str_auto[0] = '\0';
         ifile.getline(str_auto, 1024, '\n');
@@ -1769,6 +1773,8 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
             list.push_back(str_heap); 
             count++;
         }
+        else
+            badCount++;
     }
 
     filelist = new char*[count];

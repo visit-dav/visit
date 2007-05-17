@@ -93,7 +93,8 @@ dnl
 dnl    Hank Childs, Sat Mar 10 18:20:57 PST 2001
 dnl    Added an option for timings.
 dnl
-dnl    Eric Brugger, Thu Mar 15 17:13:09 PST 2001dnl    Modify the script to not generate viewer/cli/Makefile since the cli
+dnl    Eric Brugger, Thu Mar 15 17:13:09 PST 2001
+dnl    Modify the script to not generate viewer/cli/Makefile since the cli
 dnl    directory has been removed.
 dnl
 dnl    Jim Reus, Fri Mar 23 06:42:10 PST 2001
@@ -676,6 +677,9 @@ dnl    Hank Childs, Sat Apr  7 18:31:21 PDT 2007
 dnl    Adaptively find data directory.  Its location is dependent on whether
 dnl    you are in ClearCase or Subversion.  And for Subversion, it might not
 dnl    be available at all.
+dnl
+dnl    Gunther H. Weber, Thu Apr 19 18:22:49 PDT 2007
+dnl    Adaptively replace relative visit path in data directory
 dnl
 dnl --------------------------------------------------------------------------
 
@@ -3340,9 +3344,13 @@ DATABASE_FILES="databases/Makefile"
 DATA_FILES=""
 if test -f ../data/Makefile.in ; then
    DATA_FILES="../data/Makefile"
+   DATA_REL_VISIT_PATH="../src"
+   AC_SUBST(DATA_REL_VISIT_PATH)
 fi
 if test -f data/Makefile.in ; then
    DATA_FILES="data/Makefile"
+   DATA_REL_VISIT_PATH=".."
+   AC_SUBST(DATA_REL_VISIT_PATH)
 fi
 
 SIMULATION_PROTOTYPE_FILES="sim/Makefile

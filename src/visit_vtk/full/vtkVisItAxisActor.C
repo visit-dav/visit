@@ -595,6 +595,10 @@ vtkVisItAxisActor::SetLabelPositions(vtkViewport *viewport, bool force)
 //    Added TitleTime test so that the title can be rebuilt when its
 //    text has changed.
 //
+//    Hank Childs, Sun May 13 11:06:12 PDT 2007
+//    Fix bug with positioning of titles (the titles were being placed
+//    far away from the bounding box in some cases).
+//
 // **********************************************************************
 
 void
@@ -661,8 +665,8 @@ vtkVisItAxisActor::BuildTitle(bool force)
   center[0] += xmult * (halfTitleWidth + maxWidth); 
   center[1] += ymult * (halfTitleHeight + 2*maxHeight);
 
-  pos[0] = center[0] - halfTitleWidth;
-  pos[1] = center[1] - halfTitleHeight;
+  pos[0] = center[0] - xmult*halfTitleWidth;
+  pos[1] = center[1] - ymult*halfTitleHeight;
   pos[2] = center[2]; 
   this->TitleActor->SetPosition(pos[0], pos[1], pos[2]);
 }

@@ -131,6 +131,9 @@
 #    Treat the platformDir like all of the others, allowing darwin-ppc,
 #    darwin-i386, or darwin (universal) directory.
 #
+#    Hank Childs, Mon May 14 17:28:28 PDT 2007
+#    Add information to usage statement regarding directory format.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -205,6 +208,10 @@ end
 if ($#argv != 3) then
    echo "Usage: visit-install [-c open | closed] [-g group] [-b bank] [-gw] [-l] [-dmg]"
    echo "                     [-r] [-beta | -private] version platform directory"
+   echo ""
+   echo "                     This will install all of its files and subdirectories"
+   echo "                     directly in the specified directory."
+   echo "                     (So use /usr/local/visit, not /usr/local)"
    exit (1)
 endif
 

@@ -132,6 +132,7 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
     for (int i = 0; i < sizeof(renderTimeHistory)/sizeof(renderTimeHistory[0]); i++)
         renderTimeHistory[i] = 0.0;
     rtIdx = 0;
+    doNextExternalRenderAsVisualQueue = false;
 }
 
 

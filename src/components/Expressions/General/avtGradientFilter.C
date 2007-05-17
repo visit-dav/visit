@@ -677,6 +677,11 @@ avtGradientFilter::RectilinearGradient(vtkRectilinearGrid *rg)
 //  Programmer: Hank Childs
 //  Creation:   February 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs / Cyrus Harrison, Wed May 16 11:37:53 PDT 2007
+//    Fix memory leak.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -918,6 +923,8 @@ avtGradientFilter::LogicalGradient(vtkStructuredGrid *sg)
         }
     }
 
+    if (deletePoints)
+        delete [] pts;
     return out_array;
 }
 
