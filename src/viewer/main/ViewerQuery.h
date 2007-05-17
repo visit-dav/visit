@@ -95,6 +95,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Wed Jun 21 17:52:26 PDT 2006
 //    Added UpdateResultsTime. 
 //
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
+//    Added optional bool arg to constructor, CreateLineout. 
+//
 // ****************************************************************************
 
 
@@ -102,7 +105,8 @@ class VIEWER_API ViewerQuery : public SimpleObserver
 {
   public:
                      ViewerQuery(ViewerWindow *, ViewerWindow *, Line *,
-                                 const bool fromDefault = true);
+                                 const bool fromDefault = true,
+                                 const bool forceSampling = false);
                      ViewerQuery(const ViewerQuery *obj, int ts); 
                     ~ViewerQuery();
 
@@ -137,7 +141,8 @@ class VIEWER_API ViewerQuery : public SimpleObserver
     void             UpdateResultsTime(int ts);
 
   private:
-    void             CreateLineout(const bool fromDefault = true);
+    void             CreateLineout(const bool fromDefault = true,
+                                   const bool forceSampling = false);
     void             StartObservingPlot();
     void             StopObservingPlot();
 

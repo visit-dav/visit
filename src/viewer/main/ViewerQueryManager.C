@@ -398,11 +398,14 @@ ViewerQueryManager::SetOperatorFactory(ViewerOperatorFactory *factory)
 //    for Lineout should already exist at this point, and its ID is stored
 //    in lineoutCache.
 //
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
+//    Added optional bool arg forceSampling. 
+//
 // ****************************************************************************
 
 void
 ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
-                             const bool fromDefault)
+                             const bool fromDefault, const bool forceSampling)
 {
     intVector plotIDs;
     origWin->GetPlotList()->GetActivePlotIDs(plotIDs);
@@ -455,7 +458,8 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
     lineAtts->SetDesignator(designator);
 
 
-    ViewerQuery_p newQuery = new ViewerQuery(origWin, resWin, lineAtts, fromDefault);
+    ViewerQuery_p newQuery = new ViewerQuery(origWin, resWin, lineAtts, 
+        fromDefault, forceSampling);
     if(*newQuery == NULL)
     {
         Error("VisIt could not create the desired plot.");
@@ -1377,12 +1381,15 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 //    Suspend socket signals in the viewer so that Lineout does not cause 
 //    synchronization events to be processed before we are ready for them. 
 //
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
+//    Added optional bool arg forceSampling. 
+//
 // ****************************************************************************
 
 void         
 ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1, 
                     const double *pt2, const stringVector &vars,
-                    const int samples)
+                    const int samples, const bool forceSampling)
 {
     if (strcmp(qName, "Lineout") == 0)
     {
@@ -1432,6 +1439,7 @@ ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1,
         lineoutCache.fromDefault = true;
         lineoutCache.vars = uniqueVars;
         lineoutCache.resWinId = resWin->GetWindowId();
+        lineoutCache.forceSampling = forceSampling;
     }
 }
 
@@ -4638,6 +4646,9 @@ ViewerQueryManager::FinishLineout()
 //    Resume socket signals in the viewer so that synchronization events 
 //    can be processed. 
 //
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
+//    Send lineoutCache.forceSampling to AddQuery. 
+//
 // ****************************************************************************
 
 void
@@ -4648,7 +4659,8 @@ ViewerQueryManager::FinishLineQuery()
         for (int i = 0; i < lineoutCache.vars.size(); i++)
         {
             lineoutCache.line.SetVarName(lineoutCache.vars[i]);
-            AddQuery(lineoutCache.origWin, &lineoutCache.line);
+            AddQuery(lineoutCache.origWin, &lineoutCache.line,
+                     lineoutCache.fromDefault, lineoutCache.forceSampling);
         }
         ResetLineoutCache();  
     }

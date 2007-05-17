@@ -117,10 +117,14 @@ void CreateBasis(const avtVector &N, const avtVector &UP,
 //    Kathleen Bonnell, Thu Nov 18 17:56:00 PST 2004 
 //    Added call to SendVisualCue. 
 //
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
+//    Added optional bool arg, forceSampling. 
+//
 // ***********************************************************************
 
 ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin, 
-                         Line *lA, const bool fromDefault) : SimpleObserver()
+                         Line *lA, const bool fromDefault,
+                         const bool forceSampling) : SimpleObserver()
 {
     resPlotQueryInfo = 0;
     planeAtts = 0;
@@ -130,7 +134,7 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
     resultsWindow = resWin;
     lineAtts->CopyAttributes(lA);
 
-    CreateLineout(fromDefault);
+    CreateLineout(fromDefault, forceSampling);
 
     //  
     // Retrieve the interactivity and sampling setting from LineoutOp Atts.
@@ -140,7 +144,7 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
                    CreateCompatible("Line");
     lineAtts->SetInteractive(temp->GetInteractive()); 
     lineAtts->SetReflineLabels(temp->GetReflineLabels()); 
-    lineAtts->SetSamplingOn(temp->GetSamplingOn()); 
+    lineAtts->SetSamplingOn(forceSampling || temp->GetSamplingOn()); 
     delete temp;
 
     SendVisualCue();
@@ -395,10 +399,14 @@ ViewerQuery::StopObservingPlot()
 //    Kathleen Bonnell, Wed Jun 28 15:40:28 PDT 2006
 //    Use timeslider associated with hdbName instead of ActiveTimeSlider.
 //
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
+//    Added optional bool arg, forceSampling. Resend lineAtts to Lineout
+//    if forceSampling is true. 
+//
 // ****************************************************************************
 
 void
-ViewerQuery::CreateLineout(const bool fromDefault)
+ViewerQuery::CreateLineout(const bool fromDefault, const bool forceSampling)
 {
     //
     //  Grab information from the originating window.
@@ -475,6 +483,11 @@ ViewerQuery::CreateLineout(const bool fromDefault)
     resultsPlot->GetOperator(id)->SetOperatorAtts(lineAtts);
     resultsPlot->GetOperator(id)->SetOperatorAtts(
         ViewerQueryManager::Instance()->GetGlobalLineoutAtts());
+    if (forceSampling)
+    {
+        lineAtts->SetSamplingOn(true);
+        resultsPlot->GetOperator(id)->SetOperatorAtts(lineAtts);
+    }
 
     plotList->RealizePlots();
 }

@@ -72,6 +72,7 @@ typedef struct {
    bool     fromDefault;
    std::vector<std::string> vars;
    int      resWinId;
+   bool     forceSampling;
 } CachedLineout;
 
 
@@ -226,6 +227,10 @@ typedef struct {
 //    Brad Whitlock, Mon Feb 12 17:44:20 PST 2007
 //    Added ViewerBase.
 //
+//    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
+//    Added optional bool arg to StartLineQuery, AddQuery, added bool
+//    to CachedLineout struct.
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager : public ViewerBase
@@ -253,7 +258,7 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
 
     void            StartLineQuery(const char *qName, const double *pt1, 
                       const double *pt2, const std::vector<std::string> &vars,
-                      const int samples);
+                      const int samples, const bool forceSampling);
 
     void            PointQuery(const std::string &qName, const double *pt, 
                             const std::vector<std::string> &vars,
@@ -340,7 +345,8 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
   private:
     bool            EngineExistsForQuery(ViewerPlot *);
     void            AddQuery(ViewerWindow *origwin, Line *lineAtts,
-                             const bool fromDefault = true);
+                             const bool fromDefault = true,
+                             const bool forceSampling = false);
 
     void            SimpleAddQuery(ViewerQuery_p query, ViewerPlot *, 
                                    ViewerWindow *, ViewerWindow *);

@@ -11,6 +11,9 @@ Definition:
 //   Added ability to copy GlobalLineoutAttributes, as long as we aren't
 //   ignoring them. 
 //
+//   Kathleen Bonnell, Tue May 15 14:22:23 PDT 2007 
+//   Allow Line to copy SamplingOn. 
+//
 // ****************************************************************************
 bool
 LineoutAttributes::CopyAttributes(const AttributeGroup *atts)
@@ -31,6 +34,7 @@ LineoutAttributes::CopyAttributes(const AttributeGroup *atts)
         SetPoint2(tmp->GetPoint2());
         SetDesignator(tmp->GetDesignator());
         SetNumberOfSamplePoints(tmp->GetNumSamples());
+        SetSamplingOn(GetSamplingOn() || tmp->GetSamplingOn());
         retval = true;
     }
     else if(atts->TypeName() == "GlobalLineoutAttributes")

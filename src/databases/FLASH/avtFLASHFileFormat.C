@@ -819,43 +819,6 @@ avtFLASHFileFormat::GetMortonCurve()
     vtkCellArray *lines = vtkCellArray::New();
     int i, j;
 
-#if 0
-    //
-    // One cell for entire polyline may cause the twisting of the polytube
-    // Read centers of leaf blocks and insert into point object
-    //
-    for (i=0, j=0; i<numBlocks; i++)
-    {
-        if (blocks[i].nodetype == LEAF_NODE)
-        {
-            points->InsertPoint(j, blocks[i].coords[0], blocks[i].coords[1], blocks[i].coords[2]);
-            j++;
-        }
-    }
-    lines->InsertNextCell(j);
-    for (i=0; i<j; i++)
-        lines->InsertCellPoint(i);
-#elif 0
-    //
-    // One cell per line segment, but still common end points
-    // Read centers of leaf blocks and insert into point object
-    //
-    for (i=0, j=0; i<numBlocks; i++)
-    {
-        if (blocks[i].nodetype == LEAF_NODE)
-        {
-            points->InsertPoint(j, blocks[i].coords[0], blocks[i].coords[1], blocks[i].coords[2]);
-            j++;
-        }
-    }
-    for (i=0; i<(j-1); i++)
-    {
-        // Each cell is a (2-point) line
-        lines->InsertNextCell(2);
-        lines->InsertCellPoint(i);
-        lines->InsertCellPoint(i+1);
-    }
-#else
     //
     // One cell per line segment, and unique end points (ones that coincide
     // are duplicated in vtkPoints)
@@ -885,7 +848,6 @@ avtFLASHFileFormat::GetMortonCurve()
         lines->InsertCellPoint(i);
         lines->InsertCellPoint(i+1);
     }
-#endif
 
     pdata->SetPoints(points);
     pdata->SetLines(lines);
@@ -1256,9 +1218,24 @@ void avtFLASHFileFormat::ReadCoordinates()
     for (int b=0; b<numBlocks; b++)
     {
          double *coords = &coordinates_array[dimension*b];
-         blocks[b].coords[0] = coords[0];
-         blocks[b].coords[1] = coords[1];
-         blocks[b].coords[2] = coords[2];
+         if (dimension == 1)
+         {
+             blocks[b].coords[0] = coords[0];
+             blocks[b].coords[1] = 0.0;
+             blocks[b].coords[2] = 0.0;
+         }
+         else if (dimension == 2)
+         {
+             blocks[b].coords[0] = coords[0];
+             blocks[b].coords[1] = coords[1];
+             blocks[b].coords[2] = 0.0;
+         }
+         else if (dimension == 3)
+         {
+             blocks[b].coords[0] = coords[0];
+             blocks[b].coords[1] = coords[1];
+             blocks[b].coords[2] = coords[2];
+         }
     }
 
     // Done with the space
@@ -2567,3 +2544,4 @@ avtFLASHFileFormat::ReadParticleVar(hid_t pointId, const char *vname,
     H5Sclose(dataspace);
     H5Sclose(memspace);
 }
+

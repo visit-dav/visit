@@ -4262,11 +4262,15 @@ ViewerMethods::PointQuery(const std::string &queryName, const double pt[3],
 //   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
 //   Added samples arg.
 //   
+//   Kathleen Bonnell, Tue May 15 10:39:58 PDT 2007 
+//   Added forceSampling arg.
+//   
 // ****************************************************************************
 
 void
 ViewerMethods::LineQuery(const std::string &queryName, const double pt1[3],
-    const double pt2[3], const stringVector &vars, const int samples)
+    const double pt2[3], const stringVector &vars, const int samples,
+    const bool forceSampling)
 {
     //
     // Set the rpc type.
@@ -4277,6 +4281,7 @@ ViewerMethods::LineQuery(const std::string &queryName, const double pt1[3],
     state->GetViewerRPC()->SetQueryPoint2(pt2);
     state->GetViewerRPC()->SetQueryVariables(vars);
     state->GetViewerRPC()->SetIntArg1(samples);
+    state->GetViewerRPC()->SetBoolFlag(forceSampling);
 
     //
     // Issue the RPC.
@@ -4417,13 +4422,16 @@ ViewerMethods::NodePick(double xyz[3], const stringVector &vars)
 //   Kathleen Bonnell, Wed Jul 23 17:04:10 PDT 2003
 //   Added samples arg.
 //   
+//   Kathleen Bonnell, Tue May 15 10:39:58 PDT 2007 
+//   Added forceSampling arg.
+//   
 // ****************************************************************************
 
 void
 ViewerMethods::Lineout(const double p0[3], const double p1[3],
-    const stringVector &vars, const int samples)
+    const stringVector &vars, const int samples, const bool forceSampling)
 {
-    LineQuery("Lineout", p0, p1, vars, samples);
+    LineQuery("Lineout", p0, p1, vars, samples, forceSampling);
 }
 
 
