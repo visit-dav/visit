@@ -37,6 +37,7 @@
 
 #include <ParallelAxisAttributes.h>
 #include <DataNode.h>
+#include <DebugStream.h>
 
 // Type map format string
 const char *ParallelAxisAttributes::TypeMapFormatString = "s*id*d*d*d*i*i*is*i*d*s*id*babfiab";
@@ -328,45 +329,39 @@ ParallelAxisAttributes::CopyAttributes(const AttributeGroup *atts)
         stringVector toolGroupNames   = extAtts->GetAxisGroupNames();
         intVector    toolInfoFlagSets = extAtts->GetAxisInfoFlagSets();
         doubleVector toolXPositions   = extAtts->GetAxisXPositions();
-
-        int toolVarCount = toolVarNames.size();
-        int axisCount = orderedAxisNames.size();
-        int toolVarNum, axisNum;
-        std::string toolVarName;
-
-        for (toolVarNum = 0; toolVarNum < toolVarCount; toolVarNum++)
+        
+        if (toolVarNames != orderedAxisNames)
         {
-            toolVarName = toolVarNames[toolVarNum];
-
-            for (axisNum = 0; axisNum < axisCount; axisNum++ )
+           debug3 << "PCP/PAA/CA1: ParallelAxis plot attributes "
+                  << "and Extents tool attributes inconsistent." << endl;
+        }
+        else
+        {
+            for (int axisNum = 0; axisNum < orderedAxisNames.size(); axisNum++)
             {
-                if (orderedAxisNames[axisNum] == toolVarName)
-                {
-                    axisMinima[axisNum] = toolVarMinima[toolVarNum];
-                    axisMaxima[axisNum] = toolVarMaxima[toolVarNum];
+                axisMinima[axisNum] = toolVarMinima[axisNum];
+                axisMaxima[axisNum] = toolVarMaxima[axisNum];
 
-                    extentMinima[axisNum] = toolSliderMinima[toolVarNum];
-                    extentMaxima[axisNum] = toolSliderMaxima[toolVarNum];
+                extentMinima[axisNum] = toolSliderMinima[axisNum];
+                extentMaxima[axisNum] = toolSliderMaxima[axisNum];
                     
-                    extMinTimeOrds[axisNum] = toolMinTimeOrds[toolVarNum];
-                    extMaxTimeOrds[axisNum] = toolMaxTimeOrds[toolVarNum];
+                extMinTimeOrds[axisNum] = toolMinTimeOrds[axisNum];
+                extMaxTimeOrds[axisNum] = toolMaxTimeOrds[axisNum];
                     
-                    axisGroupNames[axisNum]   = toolGroupNames[toolVarNum];
-                    axisInfoFlagSets[axisNum] = toolInfoFlagSets[toolVarNum];
-                    axisXPositions[axisNum]   = toolXPositions[toolVarNum];
-
-                    break;
-                }
+                axisGroupNames[axisNum]   = toolGroupNames[axisNum];
+                axisInfoFlagSets[axisNum] = toolInfoFlagSets[axisNum];
+                axisXPositions[axisNum]   = toolXPositions[axisNum];
             }
         }
 
         plotToolModeFlags = extAtts->GetPlotToolModeFlags();
-        
+
         retval = true;
     }
 
     return retval;
 }
+
 
 // ****************************************************************************
 // Method: ParallelAxisAttributes::CreateCompatible
@@ -387,6 +382,7 @@ AttributeSubject *
 ParallelAxisAttributes::CreateCompatible(const std::string &tname) const
 {
     AttributeSubject *retval = 0;
+
     if(TypeName() == tname)
         retval = new ParallelAxisAttributes(*this);
     // Other cases could go here too. 
@@ -1715,6 +1711,44 @@ bool
 ParallelAxisAttributes::ChangesRequireRecalculation(
     const ParallelAxisAttributes &obj)
 {
+/* 5/14/07: When PA plot custom renderer is implemented, this code will be enabled.
+    if (obj.GetDrawContext()) return true;
+    if (drawContext) return true;
+    
+    if (obj.GetOrderedAxisNames() != orderedAxisNames) return true;
+    
+    if (obj.GetAxisMinima() != axisMinima) return true;
+    if (obj.GetAxisMaxima() != axisMaxima) return true;
+    
+    if (obj.GetAxisGroupNames()         != axisGroupNames        ) return true;
+    if (obj.GetAxisXPositions()         != axisXPositions        ) return true;
+    if (obj.GetAxisAttributeVariables() != axisAttributeVariables) return true;
+    if (obj.GetAxisAttributeData()      != axisAttributeData     ) return true;
+    
+    int ptModeFlagsDiff = obj.GetPlotToolModeFlags() ^ plotToolModeFlags;
+
+    if ((ptModeFlagsDiff & (0xffffffff ^ EA_SHOW_LIMITED_AXIS_INFO_FLAG)) != 0)
+        return true;
+        
+    intVector newAxisFlagSets = obj.GetAxisInfoFlagSets();
+    int newFlagSetCount = newAxisFlagSets.size();
+    int axisID, flagSetDiff;
+    
+    if (newFlagSetCount != axisInfoFlagSets.size()) return true;
+    
+    for (axisID = 0; axisID < newFlagSetCount; axisID++)
+    {
+        flagSetDiff = newAxisFlagSets[axisID] ^ axisInfoFlagSets[axisID];
+        
+        if ((flagSetDiff & EA_LEFT_SHOWN_AXIS_FLAG ) != 0) return true;
+        if ((flagSetDiff & EA_RIGHT_SHOWN_AXIS_FLAG) != 0) return true;
+
+        if ((flagSetDiff & EA_THRESHOLD_BY_EXTENT_FLAG) != 0) return true;
+    }
+    
+    return false;
+*/
+
     return true;
 }
 
@@ -2256,4 +2290,3 @@ ParallelAxisAttributes::IdentifyReasonableAxesToLabel()
         axisInfoFlagSets[axisID] = axisInfoFlagSet;
     }
 }
-

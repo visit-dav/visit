@@ -722,7 +722,6 @@ function check_3rdparty
 
 function check_parallel
 {
-
     #
     # Parallelization
     #
@@ -733,10 +732,27 @@ function check_parallel
         MPICC_CPPFLAGS=""
         MPICC_LDFLAGS=""
         args=`mpicc -show`
+
         index=0
         foundL=0
+        foundCompiler=0
         for arg in $args; do
-            if [[ $index == 1 || $index > 1 ]] ; then
+            # If mpicc -show output a line "Link Line:" then all arguments 
+            # should go to the LDFLAGS.
+            if [[ "$arg" == "Link" ]]; then
+               foundL=1
+               continue
+            fi
+            # If we have not found the compiler argument yet, look for it.
+            if [[ $foundCompiler == 0 ]]; then
+                for compiler in xlc gcc cc; do
+                    m=`echo $arg $compiler | awk '{ printf "%d", match($1,$2); }'`
+                    if [[ $m != 0 ]]; then
+                        foundCompiler=1
+                        break
+                    fi
+                done
+            else
                 pos=`echo "$arg" | awk '{ printf "%d", index($1,"-L"); }'`
                 if [[ "$pos" != "0" ]] ; then
                     foundL=1
@@ -744,6 +760,15 @@ function check_parallel
 
                 if [[ $foundL == 1 ]] ; then
                     MPICC_LDFLAGS="$MPICC_LDFLAGS$arg "
+ 
+                   # If we got to linker flags without any CPPFLAGS then
+                   # let's try and convert a -L/.../lib to a -I/.../include
+                   if [[ "$MPICC_CPPFLAGS" == "" ]]; then
+                       incdir=`echo "$arg" | sed "s/-L//g" | sed "s/lib/include/g"`
+                       if [[ -d $incdir ]]; then
+                           MPICC_CPPFLAGS="$MPICC_CPPFLAGS-I$incdir "
+                       fi
+                   fi
                 else
                     MPICC_CPPFLAGS="$MPICC_CPPFLAGS$arg "
                 fi

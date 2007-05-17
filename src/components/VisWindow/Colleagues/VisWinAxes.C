@@ -534,16 +534,15 @@ VisWinAxes::NoPlots(void)
 //    Kathleen Bonnell, Wed May  9 11:01:47 PDT 2007 
 //    Account for 2D log scaling.
 //
+//    Kathleen Bonnell,Tue May 15 08:52:02 PDT 2007
+//    Remove early termination if not 2D or Curve, was causing regression 
+//    failures.
+//
 // ****************************************************************************
 
 void
 VisWinAxes::UpdateView(void)
 {
-    VisWindow *vw = mediator;
-    if (vw->GetWindowMode() != WINMODE_2D &&
-        vw->GetWindowMode() != WINMODE_CURVE)
-        return;
-    
     double  min_x = 0., max_x = 0., min_y = 0., max_y = 0.;
     GetRange(min_x, max_x, min_y, max_y);
 
@@ -586,6 +585,8 @@ VisWinAxes::UpdateView(void)
     yAxis->SetGridlineYLength(0.);
 
     bool scaleMode[2] = {false, false};
+
+    VisWindow *vw = mediator;
     if (vw->GetWindowMode() == WINMODE_CURVE)
     {
         const avtViewCurve viewCurve = vw->GetViewCurve();
