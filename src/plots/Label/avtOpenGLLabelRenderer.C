@@ -369,6 +369,10 @@ avtOpenGLLabelRenderer::ClearCharacterDisplayLists()
 //   Brad Whitlock, Fri Aug 5 09:38:52 PDT 2005
 //   Improved newline support.
 //
+//   Brad Whitlock, Tue May 1 15:57:26 PST 2007
+//   Added code to limit the label to MAX_LABEL_SIZE characters since the
+//   labels in the caches don't necessarily seem to have NULL terminators.
+//
 // ****************************************************************************
 
 void
@@ -388,9 +392,11 @@ avtOpenGLLabelRenderer::DrawLabel(const double *screenPoint, const char *label)
     //
     // Compute the width of the label. Cache this??
     //
+    int li = 0;
     float width = 0;
     const char *cptr = label;
-    for(cptr = label; *cptr != '\0' && *cptr != '\n'; ++cptr)
+    for(cptr = label; *cptr != '\0' && *cptr != '\n' && li < MAX_LABEL_SIZE;
+        ++cptr, ++li)
     {
         unsigned int cIndex = (unsigned int)(*cptr);
         width += arial_triangle_spacing[cIndex];
@@ -413,7 +419,8 @@ avtOpenGLLabelRenderer::DrawLabel(const double *screenPoint, const char *label)
     glTranslatef(dx, dy + off_y, 0);
 
     double total_translate = 0.;
-    for(cptr = label; *cptr != '\0'; ++cptr)
+    li = 0;
+    for(cptr = label; *cptr != '\0' && li < MAX_LABEL_SIZE; ++cptr, ++li)
     {
         unsigned int cIndex = (unsigned int)(*cptr);
         if (cIndex == '\n')
@@ -461,6 +468,10 @@ avtOpenGLLabelRenderer::DrawLabel(const double *screenPoint, const char *label)
 //   Brad Whitlock, Fri Aug 5 09:40:36 PDT 2005
 //   Improved newline support.
 //
+//   Brad Whitlock, Tue May 1 15:57:26 PST 2007
+//   Added code to limit the label to MAX_LABEL_SIZE characters since the
+//   labels in the caches don't necessarily seem to have NULL terminators.
+//
 // ****************************************************************************
 
 void
@@ -476,9 +487,11 @@ avtOpenGLLabelRenderer::DrawLabel2(const double *screenPoint, const char *label)
     //
     // Compute the width of the label. Cache this??
     //
+    int li = 0;
     float width = 0;
     const char *cptr = label;
-    for(cptr = label; *cptr != '\0' && *cptr != '\n'; ++cptr)
+    for(cptr = label; *cptr != '\0' && *cptr != '\n' && li < MAX_LABEL_SIZE;
+        ++cptr, ++li)
     {
         unsigned int cIndex = (unsigned int)(*cptr);
         width += arial_triangle_spacing[cIndex];
@@ -502,7 +515,8 @@ avtOpenGLLabelRenderer::DrawLabel2(const double *screenPoint, const char *label)
     glTranslatef(screenPoint[0]*x_scale + dx, screenPoint[1]*y_scale + dy + off_y, 0);
 
     double total_translate = 0.;
-    for(cptr = label; *cptr != '\0'; ++cptr)
+    li = 0;
+    for(cptr = label; *cptr != '\0' && li < MAX_LABEL_SIZE; ++cptr, ++li)
     {
         unsigned int cIndex = (unsigned int)(*cptr);
         if (cIndex == '\n')

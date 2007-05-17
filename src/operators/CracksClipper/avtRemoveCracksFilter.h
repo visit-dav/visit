@@ -35,77 +35,61 @@
 *
 *****************************************************************************/
 
-#ifndef QVISCRACKSCLIPPERWINDOW_H
-#define QVISCRACKSCLIPPERWINDOW_H
+// ************************************************************************* //
+//  File: avtRemoveCracksFilter.h
+// ************************************************************************* //
 
-#include <QvisOperatorWindow.h>
-#include <AttributeSubject.h>
+#ifndef AVT_RemoveCracksFilter_H
+#define AVT_RemoveCracksFilter_H
 
-class CracksClipperAttributes;
-class QCheckBox;
-class QComboBox;
-class QLabel;
-class QvisVariableButton;
+
+#include <avtPluginStreamer.h>
+#include <CracksClipperAttributes.h>
+
+
+class vtkDataSet;
+
 
 // ****************************************************************************
-// Class: QvisCracksClipperWindow
+//  Class: avtRemoveCracksFilter
 //
-// Purpose: 
-//   Defines QvisCracksClipperWindow class.
+//  Purpose:
+//    A plugin operator for clipping away Cracks.
 //
-// Notes:      This class was automatically generated!
-
-// Programmer: xml2window
-// Creation:   Mon Aug 22 09:10:02 PDT 2005
+//  Programmer: Kathleen Bonnell
+//  Creation:   Thu Oct 13 08:17:36 PDT 2005
 //
-// Modifications:
-//   Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
-//   Added calculateDensity, inMassVar, outDenVar.
-//   
+//  Modifications:
+//    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
+//    Removed int arg from RemoveCracks method.
+//
 // ****************************************************************************
 
-class QvisCracksClipperWindow : public QvisOperatorWindow
+class avtRemoveCracksFilter : public avtPluginStreamer
 {
-    Q_OBJECT
   public:
-    QvisCracksClipperWindow(const int type,
-                         CracksClipperAttributes *subj,
-                         const char *caption = 0,
-                         const char *shortName = 0,
-                         QvisNotepadArea *notepad = 0);
-    virtual ~QvisCracksClipperWindow();
-    virtual void CreateWindowContents();
+                         avtRemoveCracksFilter();
+    virtual             ~avtRemoveCracksFilter();
+
+    static avtFilter    *Create();
+
+    virtual const char  *GetType(void)  { return "avtRemoveCracksFilter"; };
+    virtual const char  *GetDescription(void)
+                             { return "RemoveCracksFilter"; };
+
+    virtual void         SetAtts(const AttributeGroup*);
+    virtual bool         Equivalent(const AttributeGroup*);
+
   protected:
-    void UpdateWindow(bool doAll);
-    virtual void GetCurrentValues(int which_widget);
-  private slots:
-    void crack1VarChanged(const QString &);
-    void crack2VarChanged(const QString &);
-    void crack3VarChanged(const QString &);
-    void strainVarChanged(const QString &);
-    void showCrack1Changed(bool val);
-    void showCrack2Changed(bool val);
-    void showCrack3Changed(bool val);
-    void calculateDensityChanged(bool val);
-    void inMassVarChanged(const QString &);
-    void outDenVarChanged(const QString &);
+    CracksClipperAttributes   atts;
+
+    virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
+
   private:
-    QvisVariableButton *crack1Var;
-    QvisVariableButton *crack2Var;
-    QvisVariableButton *crack3Var;
-    QvisVariableButton *strainVar;
-    QCheckBox *showCrack1;
-    QCheckBox *showCrack2;
-    QCheckBox *showCrack3;
-    QCheckBox *calculateDensity;
-    QvisVariableButton *inMassVar;
-    QvisVariableButton *outDenVar;
-    QLabel *inMassVarLabel;
-    QLabel *outDenVarLabel;
-
-    CracksClipperAttributes *atts;
+    bool                  NeedsProcessing(vtkDataSet *, bool *np);
+    vtkDataSet           *RemoveCracks(vtkDataSet *inds);
+    void                  RemoveExtraArrays(vtkDataSet *ds, bool v = false);
 };
-
 
 
 #endif
