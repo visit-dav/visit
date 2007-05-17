@@ -42,6 +42,7 @@
 #ifndef AVT_VIEW_2D_H
 #define AVT_VIEW_2D_H
 #include <view_exports.h>
+#include <enumtypes.h>
 
 struct avtViewInfo;
 class View2DAttributes;
@@ -78,6 +79,9 @@ class View2DAttributes;
 //    Mark C. Miller, Tue Mar 14 17:49:26 PST 2006
 //    Added stuff to support auto full frame
 //
+//    Kathleen Bonnell, Thu Mar 29 11:04:17 PDT 2007 
+//    Added xScale, yScale, havePerformedLogX, havePerformedLogY.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtView2D
@@ -88,6 +92,12 @@ struct AVTVIEW_API avtView2D
 
     int      fullFrameActivationMode;
     float    fullFrameAutoThreshold;
+
+    ScaleMode xScale;
+    ScaleMode yScale;
+
+    bool     havePerformedLogX;
+    bool     havePerformedLogY;
 
   public:
                     avtView2D();

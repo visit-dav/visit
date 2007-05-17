@@ -419,6 +419,9 @@ class ViewerToolbar;
 //    Kathleen Bonnell, Wed Apr  4 10:08:27 PDT 2007 
 //    Added GetScaleMode.
 //
+//    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007 
+//    Added WINDOW_MODE arg to Set/GetScaleMode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -656,8 +659,8 @@ public:
     void GlyphPick(const double pt3[3], const double pt2[3], 
                    int &dom, int &elNum, bool &forCell);
 
-    void SetScaleMode(ScaleMode ds, ScaleMode rs);
-    void GetScaleMode(ScaleMode &ds, ScaleMode &rs);
+    void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE);
+    void GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE);
 
 private:
     void RecenterViewCurve(const double *limits);

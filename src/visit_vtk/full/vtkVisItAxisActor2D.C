@@ -41,6 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include <math.h>
+#include <float.h>
 #include "vtkVisItAxisActor2D.h"
 #include <vtkCellArray.h>
 #include <vtkObjectFactory.h>
@@ -59,6 +60,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CLOSETO_REL(x1, x2) \
       ((2.0*fabs((x1)-(x2))/(fabs(x1)+fabs(x2)+VSMALL) < TOLERANCE))
 
+#define MAX_DECADES 8
+static int nDecades;
 
 //------------------------------------------------------------------------------
 // Modifications:
@@ -160,6 +163,7 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->GridlineYLength = 1.;  
 
   this->LogScale = 0;  
+  nDecades = 2;  
 }
 
 vtkVisItAxisActor2D::~vtkVisItAxisActor2D()
@@ -439,8 +443,11 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   More support for log scaling, use minor ticks for labels if there will
 //   be no major ticks.
 //
-//    Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
-//    Added LogLabelFormat.
+//   Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
+//   Added LogLabelFormat.
+//
+//   Kathleen Bonnell, Wed May  9 09:31:42 PDT 2007 
+//   For log scale, if too many decades, only print every other label.
 //
 // ****************************************************************************
 
@@ -527,7 +534,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   // generate point along axis (as well as tick points)
   deltaX = p2[0] - p1[0];
   deltaY = p2[1] - p1[1];
-  
+
   // Determine the axis orientation angle.
   if (UseOrientationAngle)
     {
@@ -548,8 +555,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
     {
     if (ticksize[i] == 2.0) // gridlines, draw them inside the viewport.
       {
-      temp[0] = p1[0] + proportion[i]*(p2[0] - p1[0]);
-      temp[1] = p1[1] + proportion[i]*(p2[1] - p1[1]);
+      temp[0] = p1[0] + proportion[i]*deltaX;
+      temp[1] = p1[1] + proportion[i]*deltaY;
       xTick[0] = temp[0] - this->GridlineXLength*sin_theta;
       xTick[1] = temp[1] + this->GridlineYLength*cos_theta;
       pts->InsertNextPoint(xTick);
@@ -562,8 +569,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       {
       if (this->TickLocation == 1) // outside
         {   
-        xTick[0] = p1[0] + proportion[i]*(p2[0] - p1[0]);
-        xTick[1] = p1[1] + proportion[i]*(p2[1] - p1[1]);
+        xTick[0] = p1[0] + proportion[i]*deltaX;
+        xTick[1] = p1[1] + proportion[i]*deltaY;
         pts->InsertNextPoint(xTick);
         xTick[0] = xTick[0] + 2*ticksize[i]*this->TickLength*sin_theta;
         xTick[1] = xTick[1] - 2*ticksize[i]*this->TickLength*cos_theta;
@@ -571,8 +578,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         }
       else if (this->TickLocation == 0) // inside
         {
-        temp[0] = p1[0] + proportion[i]*(p2[0] - p1[0]);
-        temp[1] = p1[1] + proportion[i]*(p2[1] - p1[1]);
+        temp[0] = p1[0] + proportion[i]*deltaX;
+        temp[1] = p1[1] + proportion[i]*deltaY;
         xTick[0] = temp[0] - 2*ticksize[i]*this->TickLength*sin_theta;
         xTick[1] = temp[1] + 2*ticksize[i]*this->TickLength*cos_theta;
         pts->InsertNextPoint(xTick);
@@ -583,8 +590,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         }
       else  // both sides
         {
-        temp[0] = p1[0] + proportion[i]*(p2[0] - p1[0]);
-        temp[1] = p1[1] + proportion[i]*(p2[1] - p1[1]);
+        temp[0] = p1[0] + proportion[i]*deltaX;
+        temp[1] = p1[1] + proportion[i]*deltaY;
         xTick[0] = temp[0] - 2*ticksize[i]*this->TickLength*sin_theta;
         xTick[1] = temp[1] + 2*ticksize[i]*this->TickLength*cos_theta;
         pts->InsertNextPoint(xTick);
@@ -643,6 +650,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       }
 
     labelCount = 0;
+    int skipCount = 0;
     for ( i=0; i < numLabels && labelCount < 200; i++)
       {
       if (!useMinorForLabels && ticksize[i] != 1.0)
@@ -653,7 +661,12 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         {
         continue;  // minor tick or gridline, should not be labeled.
         }
-
+      if (this->LogScale && nDecades > MAX_DECADES && (skipCount%2 == 0))
+        {
+        skipCount++;
+        continue; // too many decades, only label half of them
+        }
+      skipCount++; 
       val = proportion[i]*(outRange[1]-outRange[0]) + outRange[0];
 
       if (!this->LogScale)
@@ -706,7 +719,7 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       tprop->SetFontSize((int)(this->LabelFontHeight*size[1]));
       labelCount++;
       }
-     
+    skipCount = 0; 
     for (i = 0, labelCount = 0; i < numLabels; i++)
       {
       if (!useMinorForLabels && ticksize[i] != 1.0)
@@ -717,6 +730,12 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         {
         continue;
         }
+      if (this->LogScale && nDecades > MAX_DECADES && (skipCount%2 == 0))
+        {
+        skipCount++;
+        continue;
+        }
+      skipCount++; 
       pts->GetPoint(2*i+1, xTick);
       this->LabelMappers[labelCount]->GetSize(viewport, stringSize);
       // Fudge factor, the height of the digits varies roughly from
@@ -752,8 +771,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       }
     else
       {
-      xTick[0] = p1[0] + (p2[0] - p1[0]) / 2.0;
-      xTick[1] = p1[1] + (p2[1] - p1[1]) / 2.0;
+      xTick[0] = p1[0] + deltaX / 2.0;
+      xTick[1] = p1[1] + deltaY / 2.0;
       xTick[0] = xTick[0] + (this->TickLength+this->TickOffset)*sin(theta);
       xTick[1] = xTick[1] - (this->TickLength+this->TickOffset)*cos(theta);
       }
@@ -1260,6 +1279,9 @@ vtkVisItAxisActor2D::GetMTime()
 //   Handle cases where major-start label value is exactly 0 -- which 
 //   can cause problems.
 //
+//   Kathleen Bonnell, Wed May  9 09:31:42 PDT 2007 
+//   Calculate number of decades needed. 
+//
 // ----------------------------------------------------------------------------
 
 void 
@@ -1288,10 +1310,12 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
   double lv2 = sortedRange[1];
   double v1 = pow(10., lv1);    /* original axis range */
   double v2 = pow(10., lv2);
+
+  nDecades = (int)lv2 - (int)lv1 + 1;
+
   double dr = v2 - v1;
   double a = v1;
   double b = 1.;
-  int axis_n_decades = 8;
   double dlv = fabs(lv1-lv2);
   if (dlv > 1)
     {
@@ -1327,20 +1351,13 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     }
   dlv = fabs(va-vb);
   int n = (int)( 1.0 + dlv/sp + EPSILON);
+
   va = pow(10., va);
   vb = pow(10., vb);
   double *dx = new double[n];
-  if (v1 == 0.0)
-    {
-    if (v2 > 100.0)
-      v1 = 1.0;
-    else
-      v1 = pow(10., -axis_n_decades)*v2;
-    }
 
   int ilv1 = (int) log10(v1);
   int ilv2 = (int) log10(v2);
-  ilv1 = ilv1 > (ilv2 - axis_n_decades - 1) ? ilv1 : ilv2 - axis_n_decades -1;
   int na = ilv2 - ilv1 + 1;
   na = na > 2 ? na : 2;
   int dexp;
@@ -1350,9 +1367,10 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     dexp = 1;
   int rmnd = n - na;
   int step = rmnd / na;
-  step = step < 8 ? step : 8;
+  step = step < nDecades ? step : nDecades;
   double sub[10]; 
   int i, j, k, jin, jout;
+
   if (step > 0)
     {
     for (j = 0; j <= step; j++)
@@ -1361,6 +1379,7 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
       sub[step] = log_value[4];
     }
   na = (na/dexp) + step*(na - 1);
+
   step++;
   int decade;
   for (j = 0, decade = ilv1; j < na; decade += dexp)
@@ -1387,12 +1406,9 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
       double t = pow(10., dx[jin]);
       if ((v1d <= t) && (t <= v2d))
         {
-          {
-          double s = floor(log10(1.0000000001*t));
-          if (((s != 0.0) || (dx[jin] != 0.0)) &&
-               !CLOSETO_REL(s, dx[jin]))
+        double s = floor(log10(1.0000000001*t));
+        if (((s != 0.0) || (dx[jin] != 0.0)) && !CLOSETO_REL(s, dx[jin]))
             continue;
-          }
         dx[jout++] = t;
         }
       }

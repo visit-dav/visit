@@ -75,6 +75,9 @@ avtViewCurve::avtViewCurve()
 //    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
 //    Added domainScale, rangeScale. 
 //
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Added havePerformedLogDomain/Range.
+//
 // ****************************************************************************
 
 avtViewCurve &
@@ -91,6 +94,8 @@ avtViewCurve::operator=(const avtViewCurve &vi)
 
     domainScale  = vi.domainScale;
     rangeScale   = vi.rangeScale;
+    havePerformedLogDomain = vi.havePerformedLogDomain;
+    havePerformedLogRange  = vi.havePerformedLogRange;
 
     return *this;
 }
@@ -111,6 +116,9 @@ avtViewCurve::operator=(const avtViewCurve &vi)
 //
 //    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
 //    Added domainScale, rangeScale. 
+//
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Added havePerformedLogDomain/Range.
 //
 // ****************************************************************************
 
@@ -142,6 +150,11 @@ avtViewCurve::operator==(const avtViewCurve &vi)
         return false;
     }
 
+    if (havePerformedLogDomain != vi.havePerformedLogDomain ||
+        havePerformedLogRange  != vi.havePerformedLogRange)
+    {
+        return false;
+    }
     return true;
 }
 
@@ -162,6 +175,9 @@ avtViewCurve::operator==(const avtViewCurve &vi)
 //    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
 //    Added domainScale, rangeScale. 
 //
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Added havePerformedLogDomain/Range.
+//
 // ****************************************************************************
 
 void
@@ -177,6 +193,8 @@ avtViewCurve::SetToDefault()
     range[1]    = 1.;
     domainScale = LINEAR;
     rangeScale = LINEAR;
+    havePerformedLogDomain = false;
+    havePerformedLogRange  = false;
 }
 
 // ****************************************************************************

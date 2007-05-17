@@ -309,6 +309,9 @@
 #    Thomas R. Treadway, Tue Mar 27 11:55:22 PDT 2007
 #    Added Mesa libraries to link.
 #
+#    Thomas R. Treadway, Wed May  9 11:39:17 PDT 2007
+#    Added OpenGL libraries (framework) for MacOS X10.3 build
+#
 ##############################################################################
 
 ##
@@ -391,7 +394,7 @@ CPPFLAGS=-I$(TOPDIR)/include @VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ 
 
 OBJ=$(SRC:.C=.o) $(OPENGL_OBJ) $(MESA_OBJ)
 LIB=libvisit_vtk
-LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) -framework Carbon
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(GL_LIBS) -framework Carbon
 LIBS=-lmisc -lavtexceptions -llightweight_visit_vtk $(GLEW_LIBS) $(VTK_LIBS) $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS)
 
 

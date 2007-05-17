@@ -77,15 +77,20 @@ class ViewCurveAttributes;
 //    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
 //    Added domainScale, rangeScale. 
 //
+//    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
+//    Added havePerformedLogDomain/Range.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtViewCurve
 {
-    double   viewport[4];
-    double   domain[2];
-    double   range[2];
+    double    viewport[4];
+    double    domain[2];
+    double    range[2];
     ScaleMode domainScale;
     ScaleMode rangeScale;
+    bool      havePerformedLogDomain;
+    bool      havePerformedLogRange;
 
   public:
                     avtViewCurve();

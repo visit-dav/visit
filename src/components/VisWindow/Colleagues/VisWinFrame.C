@@ -642,6 +642,9 @@ VisWinFrame::SetLineWidth(int width)
 //    Kathleen Bonnell, Thu Mar 22 19:24:21 PDT 2007 
 //    Send the log-scaling mode to the borders if Curve mode.
 //
+//    Kathleen Bonnell, Wed May  9 10:48:56 PDT 2007 
+//    Update for 2D log scaling. 
+//
 // ****************************************************************************
 
 void
@@ -672,15 +675,23 @@ VisWinFrame::UpdateView(void)
     topBorder->SetOrientationAngle(3.1415926);
 
     VisWindow *vw = mediator;
+    bool logScale[2] = { false, false};
     if (vw->GetWindowMode() == WINMODE_CURVE)
     {
         const avtViewCurve viewCurve = vw->GetViewCurve();
-        topBorder->SetLogScale((int)(viewCurve.domainScale == LOG));
-        bottomBorder->SetLogScale((int)(viewCurve.domainScale == LOG));
-        rightBorder->SetLogScale((int)(viewCurve.rangeScale == LOG));
-        leftBorder->SetLogScale((int)(viewCurve.rangeScale == LOG));
+        logScale[0] = viewCurve.domainScale == LOG;
+        logScale[1] = viewCurve.rangeScale == LOG;
     }
-
+    else if (vw->GetWindowMode() == WINMODE_2D)
+    {
+        const avtView2D view2D = vw->GetView2D();
+        logScale[0] = view2D.xScale == LOG;
+        logScale[1] = view2D.yScale == LOG;
+    }
+    topBorder->SetLogScale((int)logScale[0]);
+    bottomBorder->SetLogScale((int)logScale[0]);
+    rightBorder->SetLogScale((int)logScale[1]);
+    leftBorder->SetLogScale((int)logScale[1]);
 }
 
 

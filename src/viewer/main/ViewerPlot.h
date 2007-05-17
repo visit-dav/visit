@@ -271,6 +271,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
 //    Added SetScaleMode, xScaleMode, yScaleMode in support of log-scaled views
 //
+//    Kathleen Bonnell, Fri May 11 15:06:40 PDT 2007 
+//    Added WINDOW_MODE arg to SetScaleMode, Add CanDoLogViewScaling().
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -466,7 +469,8 @@ class VIEWER_API ViewerPlot : public ViewerBase
     bool SetFullFrameScaling(bool, double *);
 
     const PlotInfoAttributes *GetPlotInfoAtts(void);
-    void SetScaleMode(ScaleMode ds, ScaleMode rs);
+    void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm);
+    bool CanDoLogViewScaling(WINDOW_MODE wm);
 
   protected:
     void CopyHelper(const ViewerPlot &);

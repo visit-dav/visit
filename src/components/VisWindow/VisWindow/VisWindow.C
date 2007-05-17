@@ -2728,8 +2728,8 @@ VisWindow::UpdateView()
         {
             FullFrameOff();
             FullFrameOn(view2D.GetScaleFactor(size), 1);
-            Render();
         }
+        Render();
     }
     else if (mode == WINMODE_3D)
     {
