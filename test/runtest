@@ -217,6 +217,11 @@
 #    Make executable path be "../src/bin/visit", instead of "../bin/visit",
 #    since that is the right path for the new Subversion repo.
 #
+#    Jeremy Meredith, Thu May 17 14:44:15 EDT 2007
+#    I made the html, diff, and current directories be forcibly removed
+#    and re-created.  (This was previously unsafe because they were
+#    clearcase elements, but I have removed them from SVN control.)
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -655,9 +660,12 @@ cleanTmpFiles
 rm -f log summary 1>/dev/null 2>&1
 rm -f *.log 1>/dev/null 2>&1
 rm -f *.timings 1>/dev/null 2>&1
-find html    -type f | xargs -n 100 rm -f
-find current -type f | xargs -n 100 rm -f
-find diff    -type f | xargs -n 100 rm -f
+rm -rf html    1>/dev/null 2>&1
+rm -rf current 1>/dev/null 2>&1
+rm -rf diff    1>/dev/null 2>&1
+mkdir html
+mkdir current
+mkdir diff
 
 touch log summary
 touch html/index.html
