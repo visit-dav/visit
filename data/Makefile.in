@@ -271,7 +271,10 @@
 #   Added MESA_LIBS and GL_LIBS since they are no longer included in VTK_LIBS.
 #
 #   Thomas R. Treadway, Tue Mar 27 15:23:50 PDT 2007
-#   corrected synrax error
+#   Corrected syntax error
+#
+#   Gunther H. Weber, Thu Apr 19 18:22:49 PDT 2007
+#   Adaptively replace relative visit path
 #
 ##############################################################################
 
@@ -313,7 +316,7 @@ LIBS=$(SILO_LIB) @LIBS@
 MATH_LIBS_ONLY=@LIBS@
 LDFLAGS=@LDFLAGS@
 CXXFLAGS=@CXXFLAGS@
-CPPFLAGS=@CPPFLAGS@ -I. -I../include -I../include/visit @SILO_INCLUDE@ @PDB_FLAGS@ @VTK_INCLUDES@
+CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/include/visit @SILO_INCLUDE@ @PDB_FLAGS@ @VTK_INCLUDES@
 
 ##
 ## Files...

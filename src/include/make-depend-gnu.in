@@ -20,8 +20,11 @@
 ##    Jeremy Meredith, Wed Mar 28 09:39:27 PDT 2007
 ##    Made it work better in parallel.
 ##
-.PRECIOUS: .depend
-dep depend: .depend
+##    Jeremy Meredith (via Hank Childs), Thu May 17 08:22:59 PDT 2007
+##    Improve parallel dependencies.
+
+.PRECIOUS: .depend .pardepend
+dep depend: .depend .pardepend
 
 .depend: $(SRC)
 	@touch .depend
@@ -36,16 +39,24 @@ dep depend: .depend
               fi;\
 	      $(CXX) -M -MG -MT $$obj $(CXXFLAGS) $(CPPFLAGS) $$dep >>$@;\
 	   fi;\
-	   if [ $$dep != "dummy" ]; then \
-	      obj=`echo $$dep | sed 's/\.C/_par.o/'` ;\
-	      echo Building dependencies for $$obj ;\
-	      sed "\|^$$obj|,\|[^\\]$$|d" <$@ > $@- && mv $@- $@ ;\
-	      dir=`dirname $$obj`;\
-	      if [ $$dir != "." ]; then \
-	          printf "$$dir/" >> $@;\
-              fi;\
-	      $(CXX) -M -MG -MT $$obj -DPARALLEL $(CXXFLAGS) $(CPPFLAGS) $$dep  >>$@;\
-	   fi;\
 	done
 
+.pardepend: $(SRC)
+	@if [ -n "@PARALLEL@" ]; then \
+	   touch .pardepend; \
+	   for dep in $? dummy; do \
+	      if [ $$dep != "dummy" ]; then \
+	         obj=`echo $$dep | sed 's/\.C/_par.o/'` ;\
+	         echo Building dependencies for $$obj ;\
+	         sed "\|^$$obj|,\|[^\\]$$|d" <$@ > $@- && mv $@- $@ ;\
+	         dir=`dirname $$obj`;\
+	         if [ $$dir != "." ]; then \
+	             printf "$$dir/" >> $@;\
+                 fi;\
+	         $(CXX) -M -MG -MT $$obj -DPARALLEL $(CXXFLAGS) $(CPPFLAGS) $$dep  >>$@;\
+	       fi;\
+	   done;\
+	fi;
+
 -include .depend
+-include .pardepend

@@ -29,8 +29,11 @@ install_bin:
 ## DISTCLEAN_FILES are things that are generated through *.in files by
 ## configure.
 ##
+##  Jeremy Meredith (via Hank Childs), Thu May 17 08:42:21 PDT 2007
+##  Remove .pardepend as well.
+##
 distclean: clean
-	-$(RM) $(DISTCLEAN_FILES) *~ .depend core
+	-$(RM) $(DISTCLEAN_FILES) *~ .depend .pardepend core
 	-$(RM) Makefile
 
 ##
