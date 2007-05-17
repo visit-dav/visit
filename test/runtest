@@ -212,6 +212,11 @@
 #    Removed backgrounding of 'interactive' runs as well as limiting the time
 #    for them to run. Removed setting of PYTHONPATH var to include
 #    /usr/gapps/visit/python+/sunos_57/python2.1
+#
+#    Hank Childs, Thu May 17 10:23:50 PDT 2007
+#    Make executable path be "../src/bin/visit", instead of "../bin/visit",
+#    since that is the right path for the new Subversion repo.
+#
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -240,7 +245,7 @@ testcases=""
 timeLimit="-timeout 300"
 notrackMem=""
 skipList=""
-exepath="../bin/visit"
+exepath="../src/bin/visit"
 interactive=""
 noPIL=""
 nowin="-nowin"
@@ -590,7 +595,7 @@ if test $purify -eq 1; then
        echo "'FixPack' is not in the pathname returned by 'which purify'"
        exit 1
     fi
-    if test -z "`strings ../engine/main/Engine.o | grep DEBUG_MEMORY_LEAKS`" && test $quiet -eq 0; then
+    if test -z "`strings ../src/engine/main/Engine.o | grep DEBUG_MEMORY_LEAKS`" && test $quiet -eq 0; then
         echo "#################################################################"
         echo "#################################################################"
         echo "I will re-build engine with -DDEBUG_MEMORY_LEAKS for a purify run"
@@ -598,7 +603,7 @@ if test $purify -eq 1; then
         echo "#################################################################"
     fi
     if test -n "$verbose"; then
-        if test -z "`grep ^CXXFLAGS ../include/make-variables | grep ' -g'`" && test $quiet -eq 0; then
+        if test -z "`grep ^CXXFLAGS ../src/include/make-variables | grep ' -g'`" && test $quiet -eq 0; then
             echo "#########################################################"
             echo "#########################################################"
 	    echo "Warning: Purify results aren't very useful without having"
@@ -606,7 +611,7 @@ if test $purify -eq 1; then
             echo "#########################################################"
             echo "#########################################################"
         fi
-        if test -z "`grep ^CXXFLAGS ../include/make-variables | grep ' -DDEBUG_MEMORY_LEAKS'`" && test $quiet -eq 0; then
+        if test -z "`grep ^CXXFLAGS ../src/include/make-variables | grep ' -DDEBUG_MEMORY_LEAKS'`" && test $quiet -eq 0; then
             echo "#########################################################"
             echo "#########################################################"
 	    echo "Warning: You should really re-configure and re-build with" 
@@ -623,8 +628,8 @@ if test $purify -eq 1; then
     compNames="engine/main mdserver/main"
     #compNames="engine/main viewer/main mdserver/main"
     for comp in $compNames; do
-        numCXXFLAGSLines=`grep ^CXXFLAGS= ../$comp/Makefile | wc -l`
-        lastCXXFLAGSLine=`grep ^CXXFLAGS= ../$comp/Makefile | paste -s | cut -f $numCXXFLAGSLines`
+        numCXXFLAGSLines=`grep ^CXXFLAGS= ../src/$comp/Makefile | wc -l`
+        lastCXXFLAGSLine=`grep ^CXXFLAGS= ../src/$comp/Makefile | paste -s | cut -f $numCXXFLAGSLines`
         lastCXXFLAGS=`echo $lastCXXFLAGSLine | cut -d'=' -f 2`
         newCXXFLAGS=
         if test $comp = "engine/main"; then
@@ -637,7 +642,7 @@ if test $purify -eq 1; then
                 newCXXFLAGS="$newCXXFLAGS $flag"
             fi
         done
-        (cd ../$comp ; env LD_LIBRARY_PATH=/data_vobs/VisIt/lib CXXFLAGS="$newCXXFLAGS" clearmake -e purify 1>/dev/null 2>&1)
+        (cd ../src/$comp ; env LD_LIBRARY_PATH=/data_vobs/VisIt/lib CXXFLAGS="$newCXXFLAGS" clearmake -e purify 1>/dev/null 2>&1)
     done
 fi
 
@@ -816,7 +821,7 @@ for t in $testcases; do
 	        if test "$fileType" != ""; then
                     error=1 
 	            coreName=`echo $fileType | cut -d',' -f4 | cut -d' ' -f3 | sed s/\'//g`
-		    cp ../exe/$coreName cores/.
+		    cp ../src/exe/$coreName cores/.
 	            mv $fname cores/core.${coreName}_${category}_${base}_${modesnm}
 	        else
 	            mv $fname cores/${fname}.unknown.${unki}
