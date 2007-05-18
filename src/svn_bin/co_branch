@@ -1,0 +1,235 @@
+#!/bin/ksh
+#
+#  Script: co_branch
+# 
+#  Purpose: 
+#      Checks out a branch into the $PWD.
+#
+#  Programmer: Hank Childs
+#  Creation:   May 12, 2007
+#
+#  Modifications:
+#
+# *****************************************************************************
+
+issueHelp="no"
+CDPATH="" # Prevent unneeded echoing of chdir's.
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+if [[ $# != 2 ]] ; then
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   ${0##*/} <branch> <dir>"
+   echo "Usage:   ${0##*/} <branch> <known-dir-combo>"
+   echo ""
+   echo "Example: ${0##*/} my_dev_work /src"
+   echo "\twill check out the /src directory of the branch my_dev_work "
+   echo "\tinto the subdirectory /my_dev_work"
+   echo ""
+   echo "Example: ${0##*/} my_dev_work /src/plots/Volume"
+   echo "\twill check out the /src/plots/Volume directory of the branch "
+   echo "\tmy_dev_work into the subdirectory /my_dev_work"
+   echo ""
+   echo "known-dir-combos: \"all\" (all subdirs), \"sdt\" (source-data-test)"
+   echo ""
+   echo "Example: ${0##*/} my_dev_work sdt"
+   echo "\twill check out the /src, /data/, and /test directories of the "
+   echo "\tbranch my_dev_work into the subdirectory /my_dev_work"
+   echo ""
+   echo "Note: you *can* check out different directories through multiple "
+   echo "invocations, for example: ${0##*/} branch /src followed by "
+   echo "${0##*/} branch /data"
+   echo ""
+   echo "But you *CANNOT* do this if the directories are at different levels "
+   echo "in the directory structure.  For example, you *CANNOT* do "
+   echo "${0##*/} branch /src/plots/Volume and then later do ${0##*/} branch /src/"
+   echo ""
+   exit 1
+fi
+
+
+function checkout_dir
+{
+   BRANCH=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${1}/${2#/}
+   svn ls $BRANCH 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "The branch $1 does not appear to exist."
+      echo "(Looking for it at $BRANCH)"
+      echo "Try using the script ls_branches to locate your branch."
+      exit 1
+   fi
+   
+   if [[ "${2#/}" == "${2}" ]] ; then
+      TMP="/${2}"
+      ROOT="${TMP%/*}"
+   else
+      ROOT="${2%/*}"
+   fi
+   if [[ "$ROOT" == "" ]] ; then
+      ROOT="/"
+   fi
+
+   if [[ -d ${1} ]] ; then
+      cd ${1}
+      if [[ ! -f .branchname ]] ; then
+         echo "The subdirectory I want to check out the files into appears to "
+         echo "be corrupted.  It is missing the file \".branchname\"."
+         exit 1
+      fi
+      NAME=$(cat .branchname)
+      if [[ "$NAME" != "${1}" ]] ; then
+         echo "The subdirectory I want to place the check out in is for a "
+         echo "different branch.  You are requesting ${1}, but it is for "
+         echo "branch $NAME"
+         exit 1
+      fi
+      if [[ ! -f .rootpath ]] ; then
+         echo "The subdirectory I want to check out the files into appears to "
+         echo "be corrupted.  It is missing the file \".rootpath\"."
+         exit 1
+      fi
+      ROOT2=$(cat .rootpath)
+      if [[ "$ROOT" != "$ROOT2" ]] ; then
+         echo "The subdirectory I want to place the check out in is at a different "
+         echo "level of the directory hierarchy.  You can still do a checkout "
+         echo "of this subdirectory, but you may not do it here, since it makes "
+         echo "merging too difficult.  So you should go to a different directory "
+         echo "and issue this checkout command again."
+         echo "Your previous checkout(s) have been from ${ROOT2}"
+         echo "You are now requesting a checkout from ${ROOT}"
+         exit 1
+      fi
+      cd ..
+   else
+      mkdir ${1}
+      cd ${1}
+      echo ${1} > .branchname
+      chmod 400 .branchname
+      echo ${ROOT} > .rootpath
+      chmod 400 .rootpath
+      cd ..
+   fi
+   
+   cd ${1}
+   echo "Getting files for \"${2}\" from remote repo..."
+   svn checkout --quiet --non-interactive $BRANCH
+
+   mkdir tmp_forRev$$
+   cd tmp_forRev$$
+   svn checkout --quiet ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${1}/svninfo > /dev/null
+   cd svninfo
+   init="notFound"
+   if [[ ! -f Rev_initial ]] ; then
+       echo "Cannot locate file Rev_initial ... is this a valid branch?"
+   else
+       init=$(cat Rev_initial)
+   fi
+   current="notFound"
+   if [[ ! -f Rev_fromTrunk ]] ; then
+       echo "Cannot locate file Rev_fromTrunk ... is this a valid branch?"
+   else
+       current=$(cat Rev_fromTrunk)
+   fi
+   cd ../../
+   rm -Rf tmp_forRev$$
+   if [[ "$current" != "$init" ]] ; then
+      stop="no"
+      while [[ "$stop" == "no" ]] ; do
+           echo ""
+           echo "ATTENTION"
+           echo ""
+           echo "A merge from the trunk has taken place on this branch previously."
+           echo "The branch was created at revision ${init}, but the merge took it to ${current}."
+           echo "It is not known whether the merge took place on the \"${2}\" directory"
+           echo "or not.  You must decide if you would like to merge the changes "
+           echo "from ${init} to ${current} onto \"${2}\"."
+           echo ""
+           echo "You have three options: \"yes\", \"no\", and \"abort\"." 
+           echo ""
+           echo "\"Yes\" means that you will do the merge and that the working copy "
+           echo "you receive will be at the current revision of the trunk."
+           echo ""
+           echo "\"No\" means that you will not do the merge and nothing will "
+           echo "change on this directory.  If you have previously checked out "
+           echo "and done a merge on this directory, then this is the right "
+           echo "option.  If you have *not* done a checkout or merge on this "
+           echo "directory before, then you will get the same revision of this "
+           echo "directory from when you issed \"mk_branch_from_trunk\"."
+           echo ""
+           echo "\"Abort\" will exit you from this script.  The checkout of \"${2}\""
+           echo "has already occurred, but it was not merged and no further "
+           echo "directories will be checked out."
+           echo ""
+           echo "Enter \"yes\", \"no\", or \"abort\":"
+           read answer
+           if [[ "$answer" == "yes" ]] ; then
+              stop="yes"
+           fi
+           if [[ "$answer" == "no" ]] ; then
+               stop="yes"
+           fi
+           if [[ "$answer" == "abort" ]] ; then
+               stop="yes"
+           fi
+       done
+       if [[ "$answer" == "abort" ]] ; then
+           exit 1
+       elif [[ "$answer" == "yes" ]] ; then
+           echo ""
+           echo "Merging"
+           echo ""
+           if [[ "$init" == "notFound" ]] ; then
+              echo "Don't have the initial merging info ... can't proceed with merge"
+           else
+              RETURN_TO=${PWD}
+              cd ${2}
+              svn merge -r ${init}:HEAD ${VISIT_SVN_TRUNK}/$2
+              cd ${RETURN_TO}
+           fi
+           echo ""
+           echo "Done merging.  Note: the changes were not automatically "
+           echo "committed.  If there were changes, you will need to commit them."
+           echo ""
+       fi 
+   fi
+
+   cd ..
+}
+
+if [[ "$2" == "sdt" ]] ; then
+   echo "Checking out /src"
+   checkout_dir $1 "/src"
+   echo "Checking out /data"
+   checkout_dir $1 "/data"
+   echo "Checking out /test"
+   checkout_dir $1 "/test"
+elif [[ "$2" == "all" ]] ; then
+   echo "Checking out /src"
+   checkout_dir $1 "/src"
+   echo "Checking out /data"
+   checkout_dir $1 "/data"
+   echo "Checking out /test"
+   checkout_dir $1 "/test"
+   echo "Checking out /docs"
+   checkout_dir $1 "/docs"
+   echo "Checking out /third_party"
+   checkout_dir $1 "/third_party"
+   echo "Checking out /windowsbuild"
+   checkout_dir $1 "/windowsbuild"
+else
+   checkout_dir $1 "$2"
+fi
+
+echo ""
+echo "Your check out is ready!"
+echo "cd to the \"$1\" directory to access the working copy."
+echo ""
+
+return 0
+
