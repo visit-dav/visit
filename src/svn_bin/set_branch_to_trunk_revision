@@ -53,12 +53,12 @@ mkdir tmp_forRev$$
 cd tmp_forRev$$
 echo ""
 echo "Getting appropriate files..."
-svn co $DEST/svninfo
+svn co --quiet $DEST/svninfo
 cd svninfo
 echo $2 > Rev_toTrunk
 echo ""
 echo "Updating with new revision info..."
-svn commit -m "Reset revision from branch $1 to trunk as $2"
+svn commit --quiet -m "Reset revision from branch $1 to trunk as $2"
 cd ../../
 rm -Rf tmp_forRev$$
 

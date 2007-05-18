@@ -77,7 +77,6 @@ cd ../..
 echo "The revision of the last merge was $REV"
 echo ""
 
-NEW_REV_WITH_M="$REV"
 for i in * ; do
    if [[ -d $i  && "$i" != "tmp_forRev$$" ]] ; then
        cd $i
@@ -85,11 +84,10 @@ for i in * ; do
        echo "Merging directory \"$i\""
        echo ""
        svn merge -r ${REV}:HEAD ${VISIT_SVN_TRUNK}/${ROOTPATH}/$i
-       NEW_REV_WITH_M=$(svnversion .)
        cd ..
    fi
 done
-NEW_REV=${NEW_REV_WITH_M%M}
+NEW_REV=$(get_latest_rev)
 
 cd tmp_forRev$$/svninfo
 echo "$NEW_REV" > Rev_fromTrunk
