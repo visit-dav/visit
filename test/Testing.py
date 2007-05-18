@@ -986,6 +986,7 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 
     return (totpixels, plotpixels, diffpixels, dmean)
 
+
 # ----------------------------------------------------------------------------
 # Function: FilterTestText
 #
@@ -1021,6 +1022,8 @@ def FilterTestText(inText, baseText):
 	        outText = outText + inWords[w]
         return tmpText
     else:
+	# note, this substitution is applied to the entire string
+        inText = re.sub("\"(.*):/?(.*/)*data/(.*)\"", "\"\\1:../data/\\3\"", inText)
         if silo == 1:
             return string.replace(inText, "/view/visit_VOBowner_testsilo", "")
 	else:
@@ -1310,7 +1313,7 @@ def TurnOffAllAnnotations():
 #    deal with test view used for silo's tests
 # ----------------------------------------------------------------------------
 
-import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
+import string, re, sys, time, os, commands, thread, HtmlDiff, HtmlPython
 from stat import *
 
 #############################################################################
