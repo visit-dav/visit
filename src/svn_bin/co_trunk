@@ -1,0 +1,155 @@
+#!/bin/ksh
+#
+#  Script: co_trunk
+# 
+#  Purpose: 
+#      Checks out the trunk into the $PWD.
+#
+#  Programmer: Hank Childs
+#  Creation:   May 12, 2007
+#
+#  Modifications:
+#
+# *****************************************************************************
+
+issueHelp="no"
+
+# Supresses print statement when you change directories
+CDPATH=""
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+if [[ $# == 1 ]] ; then
+   if [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
+       issueHelp="yes"
+   fi
+else
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   ${0##*/} <dir>"
+   echo "Usage:   ${0##*/} <known-dir-combo>"
+   echo ""
+   echo "Example: ${0##*/} /src"
+   echo "\twill check out the /src directory of the trunk into the subdirectory /trunk"
+   echo ""
+   echo "Example: ${0##*/} /src/plots/Volume"
+   echo "\twill check out the /src/plots/Volume directory of the trunk "
+   echo "\tinto the subdirectory trunk"
+   echo ""
+   echo "known-dir-combos: \"all\" (all subdirs), \"sdt\" (source-data-test)"
+   echo ""
+   echo "Example: ${0##*/} sdt"
+   echo "\twill check out the /src, /data/, and /test directories of the "
+   echo "\ttrunk into the subdirectory /trunk"
+   echo ""
+   echo "Note: you *can* check out different directories through multiple "
+   echo "invocations, for example: ${0##*/} /src followed by "
+   echo "${0##*/} /data"
+   echo ""
+   echo "But you *CANNOT* do this if the directories are at different levels "
+   echo "in the directory structure.  For example, you *CANNOT* do "
+   echo "${0##*/} /src/plots/Volume and then later do ${0##*/} /src/"
+   echo ""
+   exit 1
+fi
+
+DIR=""
+ROOT="/"
+if [[ "$1" != "all" && "$1" != "sdt"  ]] ; then
+    svn ls ${VISIT_SVN_TRUNK}/${1} 2>/dev/null > /dev/null
+    if [[ $? != 0 ]] ; then
+       echo "The trunk location $1 does not appear to exist."
+       echo "Aborting checkout"
+       exit 1
+    fi
+    if [[ "${1#/}" == "${1}" ]] ; then
+       TMP="/${1}"
+       ROOT="${TMP%/*}"
+    else
+       ROOT="${1%/*}"
+    fi
+    if [[ "$ROOT" == "" ]] ; then
+       ROOT="/"
+    fi
+fi
+
+function checkout_dir
+{
+    cd trunk
+    echo "Getting files for \"${1}\" from remote repo..."
+    svn checkout --quiet --non-interactive ${VISIT_SVN_TRUNK}/${1}
+    cd ..
+}
+
+if [[ -d trunk ]] ; then
+  cd trunk
+  if [[ ! -f .branchname ]] ; then
+     echo "The subdirectory I want to place the check out in (trunk) does not appear "
+     echo "to be a valid check out."
+     exit 1
+  fi
+  NAME=$(cat .branchname)
+  if [[ "$NAME" != "trunk" ]] ; then
+     echo "The subdirectory I want to place the check out in (trunk) does not appear "
+     echo "to be a valid check out."
+     exit 1
+  fi
+  if [[ ! -f .rootpath ]] ; then
+     echo "The subdirectory I want to place the check out in is not consistent"
+     exit 1
+  fi
+  ROOT2=$(cat .rootpath)
+  if [[ "$ROOT" != "$ROOT2" ]] ; then
+     echo "The directory you are requesting is from a different directory in the repo."
+     echo "This is not allowed."
+     echo "Your previous checkout(s) have been from ${ROOT2}"
+     echo "You are now requesting a checkout from ${ROOT}"
+     exit 1
+  fi
+  cd ..
+else
+  mkdir trunk
+  cd trunk
+  echo "trunk" > .branchname
+  chmod 400 .branchname
+  echo "$ROOT" > .rootpath
+  chmod 400 .rootpath
+  cd ..
+fi
+
+if [[ "$1" == "sdt" ]] ; then
+   echo "Checking out /src"
+   checkout_dir "/src"
+   echo "Checking out /data"
+   checkout_dir "/data"
+   echo "Checking out /test"
+   checkout_dir "/test"
+elif [[ "$1" == "all" ]] ; then
+   echo "Checking out /src"
+   checkout_dir "/src"
+   echo "Checking out /data"
+   checkout_dir "/data"
+   echo "Checking out /test"
+   checkout_dir "/test"
+   echo "Checking out /docs"
+   checkout_dir "/docs"
+   echo "Checking out /third_party"
+   checkout_dir "/third_party"
+   echo "Checking out /windowsbuild"
+   checkout_dir "/windowsbuild"
+else
+   checkout_dir $1
+fi
+
+echo ""
+echo "Your check out is ready"
+echo "cd to the \"trunk\" directory to access the working copy"
+echo ""
+
+return 0
+

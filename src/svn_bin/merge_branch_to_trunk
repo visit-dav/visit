@@ -1,0 +1,147 @@
+#!/bin/ksh
+#
+#  Script: merge_branch_to_trunk
+# 
+#  Purpose: 
+#      Merges a branch into the trunk
+#
+#  Programmer: Hank Childs
+#  Creation:   May 15, 2007
+#
+#  Modifications:
+#
+# *****************************************************************************
+
+issueHelp="no"
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+# Prevent print statements when changing directories
+CDPATH=""
+
+BRANCH=""
+BRANCHNAME=""
+if [[ $# != 1 ]] ; then
+   issueHelp="yes"
+elif [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
+   issueHelp="yes"
+elif [[ ! -f .branchname ]] ; then
+   echo "ERROR: You must run this script at the top of your checkout directory"
+   echo ""
+   issueHelp="yes"
+elif [[ ! -f .rootpath ]] ; then
+   echo "ERROR: You must run this script at the top of your checkout directory"
+   echo ""
+   issueHelp="yes"
+else
+   TRUNKNAME=$(cat .branchname)
+   if [[ "$TRUNKNAME" != "trunk" ]] ; then
+      echo "You must be in the trunk when you run this script"
+      echo ""
+      issueHelp="yes"
+   fi
+   WHOLE_TRUNK="yes"
+   ROOTPATH=$(cat .rootpath)
+   if [[ "$ROOTPATH" != "/" ]] ; then
+      WHOLE_TRUNK="no"
+   else
+      if [[ ! -d src || ! -d data || ! -d docs || ! -d test || ! -d third_party || ! -d windowsbuild ]] ; then
+      WHOLE_TRUNK="no"
+      fi
+   fi
+   if [[ "$WHOLE_TRUNK" == "no" ]]; then
+      echo "Your checkout is not of the entire trunk.  The merge will only "
+      echo "take place over your checkout.  If you continue, any changes that "
+      echo "are on directories not in your current checkout of the trunk will be lost!"
+      stop="no"
+      while [[ "$stop" == "no" ]] ; do
+           echo "Do you want to continue? [yes/no]"
+           read answer
+           if [[ "$answer" == "yes" ]] ; then
+              stop="yes"
+           fi
+           if [[ "$answer" == "no" ]] ; then
+              stop="yes"
+           fi
+       done
+       if [[ "$answer" == "no" ]] ; then
+           exit 1
+       fi
+   fi
+
+   BRANCHNAME=$1
+   BRANCH=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}${ROOTPATH}
+   svn ls $BRANCH 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "The branch $1 does not appear to exist."
+      echo "(Looking for it at $BRANCH)"
+      echo "Try using the script ls_branches to locate your branch."
+      issueHelp="yes"
+   fi
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   ${0##*/} <branch>"
+   echo ""
+   echo "Example: ${0##*/} my_dev_work"
+   echo "\tshould be run at the top level of your checked out trunk.  It will "
+   echo "\tmerge the work from my_dev_work into the trunk."
+   echo ""
+   
+   exit 1
+fi
+
+echo ""
+echo "Merging $BRANCH into the trunk"
+echo ""
+
+echo ""
+echo "Getting record of last merge from this branch into the trunk..."
+mkdir tmp_forRev$$
+cd tmp_forRev$$
+svn co ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/svninfo
+cd svninfo
+REV=$(cat Rev_toTrunk)
+cd ../..
+echo ""
+echo "The revision of the last merge was $REV"
+echo ""
+
+for i in * ; do 
+  if [[ -d $i && "$i" != "tmp_forRev$$" ]] ; then
+      cd $i
+      echo ""
+      echo "Merging directory \"$i\""
+      echo ""
+      svn merge -r ${REV}:HEAD ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/${ROOTPATH}/$i
+      NEW_REV_WITH_M=$(svnversion .)
+      NEW_REV=${NEW_REV_WITH_M%M}
+      cd ..
+  fi
+done
+
+cd tmp_forRev$$/svninfo
+echo "$NEW_REV" > Rev_toTrunk
+echo ""
+echo "Updating branch $BRANCHNAME to contain a record of this merge"
+echo ""
+svn commit -m "Update for revision sent to trunk from $BRANCHNAME, $REV to $NEW_REV"
+cd ../..
+rm -Rf tmp_forRev$$
+
+echo ""
+echo "The changes from the branch $BRANCHNAME have been put on your working copy."
+echo "You need to review the changes and do an \"svn commit\" for these changes "
+echo "to be saved.  Note that the branch has been updated with the info that this "
+echo "merge took place and future merges into the trunk will not attempt to merge "
+echo "these revisions again.  If you want to back out this merge, you will need "
+echo "invoke the following command to update our bookkeeping: "
+echo ""
+echo "  set_branch_to_trunk_revision $BRANCHNAME $REV"
+echo ""
+
+return 0
+

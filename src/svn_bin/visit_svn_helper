@@ -1,0 +1,211 @@
+
+##
+##
+## Check to make sure that environment variables are set
+##
+##
+
+if [[ "$SVN_NERSC_NAME" == "" ]] ; then
+   echo "You must define the environment variable SVN_NERSC_NAME to use these scripts."
+   echo "This should be your username on svn.nersc.gov"
+   exit 1
+fi
+
+
+##
+##
+## Set up environment variables for other scripts
+##
+##
+
+VISIT_SVN_REPO=svn+ssh://${SVN_NERSC_NAME}@svn.nersc.gov/svn/visit
+VISIT_SVN_BRANCHES=${VISIT_SVN_REPO}/branches
+VISIT_SVN_TRUNK=${VISIT_SVN_REPO}/trunk
+VISIT_SVN_TAGS=${VISIT_SVN_REPO}/tags
+
+
+##
+##
+## Define utility functions
+##
+##
+
+# Note that the is_version_string test would fail for numbers bigger than 9,
+# such as 1.6.10.  If this ever comes up, it should be easy to fix.
+function is_version_string
+{
+    if [[ ${#1} == 3 ]] ; then
+       is_two_digit_version_string $1
+       return $?
+    elif [[ ${#1} == 5 ]] ; then
+       is_three_digit_version_string $1
+       return $?
+    fi
+
+    return 0
+}
+
+function is_two_digit_version_string
+{
+    if [[ ${#1} != 3 ]] ; then
+        return 0
+    fi
+
+    typeset X
+    typeset -L1 X=$1
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    typeset -L2 X=$1
+    typeset -R1 X
+    if [[ "$X" != "." ]] ; then
+        return 0
+    fi
+
+    typeset -L3 X=$1
+    typeset -R1 X
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    return 1
+}
+
+function is_three_digit_version_string
+{
+    if [[ ${#1} != 5 ]] ; then
+        return 0
+    fi
+
+    typeset X
+    typeset -L1 X=$1
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    typeset -L2 X=$1
+    typeset -R1 X
+    if [[ "$X" != "." ]] ; then
+        return 0
+    fi
+
+    typeset -L3 X=$1
+    typeset -R1 X
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    typeset -L4 X=$1
+    typeset -R1 X
+    if [[ "$X" != "." ]] ; then
+        return 0
+    fi
+
+    typeset -L5 X=$1
+    typeset -R1 X
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    return 1
+}
+
+function is_four_digit_version_string
+{
+    if [[ ${#1} != 7 ]] ; then
+        return 0
+    fi
+
+    typeset X
+    typeset -L1 X=$1
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    typeset -L2 X=$1
+    typeset -R1 X
+    if [[ "$X" != "." ]] ; then
+        return 0
+    fi
+
+    typeset -L3 X=$1
+    typeset -R1 X
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    typeset -L4 X=$1
+    typeset -R1 X
+    if [[ "$X" != "." ]] ; then
+        return 0
+    fi
+
+    typeset -L5 X=$1
+    typeset -R1 X
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    typeset -L6 X=$1
+    typeset -R1 X
+    if [[ "$X" != "." ]] ; then
+        return 0
+    fi
+
+    typeset -L7 X=$1
+    typeset -R1 X
+    if [[ "$X" != [0-9] ]] ; then
+        return 0
+    fi
+
+    return 1
+}
+
+
+function svn_cp_dir
+{
+   SRC=$1
+   DEST=$2
+
+   # Confirm presence of $SRC
+   svn ls $SRC 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "Cannot locate release candidate ($SRC) for copying.  Aborting!"
+      exit 1
+   fi
+
+   # Confirm that $DEST does not already exist
+   svn ls $DEST 2>/dev/null > /dev/null
+   if [[ $? == 0 ]] ; then
+      echo "Destination ($DEST) already exists.  Aborting!"
+      exit 1
+   fi
+
+   echo "Creating ${DEST}...."
+   svn copy $SRC $DEST -m "Making copy of $SRC as $DEST"
+   if [[ $? == 0 ]] ; then
+      echo "Successful."
+   else
+      echo "Not successful."
+      exit 1
+   fi
+}
+
+
+function svn_rm_dir
+{
+   DIR=$1
+   # Confirm presence of $DIR
+   svn ls $DIR 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "Cannot locate release candidate ($DIR) for deleting.  Aborting!"
+      exit 1
+   fi
+
+   svn delete $DIR -m "Removing directory $DIR"
+   return $?
+}
+
+
+

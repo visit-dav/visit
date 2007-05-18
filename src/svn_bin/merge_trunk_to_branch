@@ -1,0 +1,115 @@
+#!/bin/ksh
+#
+#  Script: merge_trunk_to_branch
+# 
+#  Purpose: 
+#      Merges the trunk into a branch
+#
+#  Programmer: Hank Childs
+#  Creation:   May 14, 2007
+#
+#  Modifications:
+#
+# *****************************************************************************
+
+issueHelp="no"
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+# Prevent print statements when changing directories
+CDPATH=""
+
+BRANCH=""
+if [[ $# != 0 ]] ; then
+   issueHelp="yes"
+elif [[ ! -f .branchname ]] ; then
+   echo ""
+   echo "ERROR: You must run this script at the top of your branch directory"
+   echo ""
+   issueHelp="yes"
+elif [[ ! -f .rootpath ]] ; then
+   echo ""
+   echo "ERROR: You must run this script at the top of your branch directory"
+   echo ""
+   issueHelp="yes"
+else
+   BRANCHNAME=$(cat .branchname)
+   ROOTPATH=$(cat .rootpath)
+   BRANCH=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}${ROOTPATH}
+   svn ls $BRANCH 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "The branch $1 does not appear to exist."
+      echo "(Looking for it at $BRANCH)"
+      echo "Try using the script ls_branches to locate your branch."
+      issueHelp="yes"
+   fi
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   ${0##*/}"
+   echo ""
+   echo "Example: ${0##*/}"
+   echo "\tshould be run at the top level of your checked out branch.  It will "
+   echo "\tuse the contents of the file \".branchname\" to determine which branch "
+   echo "\tto merge the trunk into."
+   echo ""
+   
+   exit 1
+fi
+
+
+echo ""
+echo "Merging trunk into branch $BRANCH"
+echo ""
+
+echo ""
+echo "Getting record of last merge from trunk into branch..."
+
+mkdir tmp_forRev$$
+cd tmp_forRev$$
+svn checkout --quiet ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/svninfo
+cd svninfo
+REV=$(cat Rev_fromTrunk)
+cd ../..
+echo "The revision of the last merge was $REV"
+echo ""
+
+NEW_REV_WITH_M="$REV"
+for i in * ; do
+   if [[ -d $i  && "$i" != "tmp_forRev$$" ]] ; then
+       cd $i
+       echo ""
+       echo "Merging directory \"$i\""
+       echo ""
+       svn merge -r ${REV}:HEAD ${VISIT_SVN_TRUNK}/${ROOTPATH}/$i
+       NEW_REV_WITH_M=$(svnversion .)
+       cd ..
+   fi
+done
+NEW_REV=${NEW_REV_WITH_M%M}
+
+cd tmp_forRev$$/svninfo
+echo "$NEW_REV" > Rev_fromTrunk
+echo ""
+echo "Updating branch $BRANCHNAME to contain a record of this merge..."
+echo ""
+svn commit --quiet -m "Update for revision sent from trunk to $BRANCHNAME, $REV to $NEW_REV"
+cd ../..
+rm -Rf tmp_forRev$$
+
+echo ""
+echo "The changes from the trunk have been put on your working copy."
+echo "You need to review the changes and do an \"svn commit\" for these changes "
+echo "to be saved.  Note that the branch has been updated with the info that this "
+echo "merge took place and future merges from the trunk will not attempt to merge "
+echo "these revisions again.  If you want to back out this merge, you will need "
+echo "invoke the following command to update our bookkeeping: "
+echo ""
+echo "  set_trunk_to_branch_revision $BRANCHNAME $REV"
+echo ""
+
+return 0
+

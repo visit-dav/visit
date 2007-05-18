@@ -1,0 +1,70 @@
+#!/bin/ksh
+#
+#  Script: del_branch
+# 
+#  Purpose: 
+#     Removes a branch.
+#
+#  Programmer: Hank Childs
+#  Creation:   May 10, 2007
+#
+#  Modifications:
+#
+# *****************************************************************************
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+issueHelp="no"
+if [[ $# != 1 ]] ; then
+   issueHelp="yes"
+fi
+if [[ $# == 1 ]] ; then
+   if [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
+       issueHelp="yes"
+   fi
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   $0 <dir>"
+   echo ""
+   echo "Example: $0 bugfix"
+   echo "\tDeletes the branch ${VISIT_SVN_BRANCHES}/$SVN_NERSC_NAME/bugfix"
+   echo ""
+   exit 1
+fi
+
+TARGET=${VISIT_SVN_BRANCHES}/$SVN_NERSC_NAME/${1}
+svn ls $TARGET 2>/dev/null > /dev/null
+if [[ $? != 0 ]] ; then
+   echo "Branch ${TARGET} does not exist.  No action will be taken."
+   exit 1
+fi
+
+stop="no"
+while [[ "$stop" == "no" ]] ; do
+   echo "Are you sure you want to delete ${TARGET}? [yes/no]"
+   read answer
+   if [[ "$answer" == "yes" ]] ; then
+      stop="yes"
+   fi
+   if [[ "$answer" == "no" ]] ; then
+      stop="yes"
+   fi
+done
+
+if [[ "$answer" == "no" ]] ; then
+   echo "Aborting ... $TARGET will not be deleted"
+   exit 1
+fi
+
+svn delete $TARGET -m "Remove development branch $1"
+if [[ $? == 0 ]] ; then
+   echo "Successfully deleted"
+else
+   echo "There was an error with deleting the branch"
+fi
+
+exit 0
