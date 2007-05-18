@@ -503,6 +503,11 @@ avtParallelAxisFilter::PostExecute(void)
 //     tool has actually been enabled and thresholded the range of one or
 //     more axes.  This allows the "lines" to be used strictly as a "focus".
 //
+//     Jeremy Meredith, Fri May 18 09:41:30 EDT 2007
+//     Only add the individual tuples to the data sets if the lines are
+//     actually going to be drawn.  This lets situtions where only the context
+//     is drawn scale easily to huge datasets without going into SR mode.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -628,6 +633,20 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
     InitializeDataTupleInput(drawLabelsAndTitles, selectedVarsOnly);
     InitializeOutputDataSets();
     
+    bool extentsApplied = false;
+    for (int axisID = 0; axisID < axisCount; axisID++)
+    {
+        if (applySubranges[axisID])
+            extentsApplied = true;
+    }
+
+    bool drawLines = false;
+    if (parAxisAtts.GetDrawLines() &&
+        (!parAxisAtts.GetDrawLinesOnlyIfExtentsOn() || extentsApplied))
+    {
+        drawLines = true;
+    }
+
     if (plotCellData && (pointArrayCount > 0))
     {
         pointIdList = vtkIdList::New();
@@ -668,7 +687,8 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
                 }
             }
             
-            InputDataTuple(inputTuple);
+            if (drawLines)
+                InputDataTuple(inputTuple);
             CountDataTuple(inputTuple);
         }
     }
@@ -686,7 +706,8 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
                 arrayValues[tupleNum*componentCount + varTupleIndex];
             }
             
-            InputDataTuple(inputTuple);
+            if (drawLines)
+                InputDataTuple(inputTuple);
             CountDataTuple(inputTuple);
         }
     }
@@ -696,15 +717,7 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
         pointIdList->Delete();
     }
 
-    bool extentsApplied = false;
-    for (int axisID = 0; axisID < axisCount; axisID++)
-    {
-        if (applySubranges[axisID])
-            extentsApplied = true;
-    }
-
-    if (parAxisAtts.GetDrawLines() &&
-        (!parAxisAtts.GetDrawLinesOnlyIfExtentsOn() || extentsApplied))
+    if (drawLines)
     {
         DrawDataCurves();
     }
