@@ -117,11 +117,10 @@ for i in * ; do
       echo "Merging directory \"$i\""
       echo ""
       svn merge -r ${REV}:HEAD ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/${ROOTPATH}/$i
-      NEW_REV_WITH_M=$(svnversion .)
-      NEW_REV=${NEW_REV_WITH_M%M}
       cd ..
   fi
 done
+NEW_REV=$(get_latest_rev)
 
 cd tmp_forRev$$/svninfo
 echo "$NEW_REV" > Rev_toTrunk

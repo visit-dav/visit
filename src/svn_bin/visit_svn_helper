@@ -30,6 +30,22 @@ VISIT_SVN_TAGS=${VISIT_SVN_REPO}/tags
 ##
 ##
 
+function get_latest_rev
+{
+    # This assumes a certain format for SVN log.  It gets the second line,
+    # which has "r<REV> | ...", and then strips off the "| ...", and then 
+    # strips off the 'r'.
+    REV=$(svn log $VISIT_SVN_REPO --revision HEAD | head -2 | tail -1 | cut -d'|' -f1 | sed 's/r//g')
+    if (( REV < 950 )) ; then
+       echo "An error occurred in getting revision!!" >&2
+       echo "Pursue this problem with a VisIt-SVN guru" >&2
+       echo "1000000"
+    else
+       echo $REV
+    fi
+}
+
+
 # Note that the is_version_string test would fail for numbers bigger than 9,
 # such as 1.6.10.  If this ever comes up, it should be easy to fix.
 function is_version_string

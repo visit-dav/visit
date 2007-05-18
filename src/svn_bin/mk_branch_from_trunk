@@ -65,7 +65,7 @@ echo ""
 echo "Logging revision numbers (needed for merging later)..."
 svn co $DEST/svninfo
 cd svninfo
-REV=$(svnversion .)
+REV=$(get_latest_rev)
 if [[ -f Rev_fromTrunk ]] ; then
    echo $REV > Rev_fromTrunk
 else
