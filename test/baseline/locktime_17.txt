@@ -1,6 +1,6 @@
 localhost:/data_vobs/VisIt/data/dbA00.pdb has 10 states
-activeSource = "localhost:/data_vobs/VisIt/data/dbA00.pdb"
+activeSource = "localhost:../data/dbA00.pdb"
 activeTimeSlider = 0
-timeSliders = ("localhost:/data_vobs/VisIt/data/dbA00.pdb")
+timeSliders = ("localhost:../data/dbA00.pdb")
 timeSliderCurrentStates = (3)
 animationMode = 2

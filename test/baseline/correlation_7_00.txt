@@ -1,12 +1,12 @@
 localhost:/data_vobs/VisIt/data/dbC00.pdb has 30 states
-activeSource = "localhost:/data_vobs/VisIt/data/dbC00.pdb"
+activeSource = "localhost:../data/dbC00.pdb"
 activeTimeSlider = 2
-timeSliders = ("localhost:/data_vobs/VisIt/data/dbA00.pdb", "localhost:/data_vobs/VisIt/data/dbB00.pdb", "localhost:/data_vobs/VisIt/data/dbC00.pdb")
+timeSliders = ("localhost:/data_vobs/VisIt/data/dbA00.pdb", "localhost:/data_vobs/VisIt/data/dbB00.pdb", "localhost:../data/dbC00.pdb")
 timeSliderCurrentStates = (9, 19, 15)
 animationMode = 2
 
 
-name = "localhost:/data_vobs/VisIt/data/dbA00.pdb"
+name = "localhost:../data/dbA00.pdb"
 numStates = 10
 method = IndexForIndexCorrelation  # IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation
 database[0]=localhost:/data_vobs/VisIt/data/dbA00.pdb
@@ -17,7 +17,7 @@ database[0]=localhost:/data_vobs/VisIt/data/dbA00.pdb
 condensedTimes = ()
 condensedCycles = ()
 
-name = "localhost:/data_vobs/VisIt/data/dbB00.pdb"
+name = "localhost:../data/dbB00.pdb"
 numStates = 20
 method = IndexForIndexCorrelation  # IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation
 database[0]=localhost:/data_vobs/VisIt/data/dbB00.pdb
@@ -28,7 +28,7 @@ database[0]=localhost:/data_vobs/VisIt/data/dbB00.pdb
 condensedTimes = ()
 condensedCycles = ()
 
-name = "localhost:/data_vobs/VisIt/data/dbC00.pdb"
+name = "localhost:../data/dbC00.pdb"
 numStates = 30
 method = IndexForIndexCorrelation  # IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation
 database[0]=localhost:/data_vobs/VisIt/data/dbC00.pdb

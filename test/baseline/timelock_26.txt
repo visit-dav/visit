@@ -1,4 +1,4 @@
-name = "localhost:/data_vobs/VisIt/data/wave.visit"
+name = "localhost:../data/wave.visit"
 numStates = 71
 method = IndexForIndexCorrelation  # IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation
 database[0]=localhost:/data_vobs/VisIt/data/wave.visit
@@ -9,7 +9,7 @@ database[0]=localhost:/data_vobs/VisIt/data/wave.visit
 condensedTimes = ()
 condensedCycles = ()
 
-name = "localhost:/data_vobs/VisIt/data/wave_tv.visit"
+name = "localhost:../data/wave_tv.visit"
 numStates = 71
 method = IndexForIndexCorrelation  # IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation
 database[0]=localhost:/data_vobs/VisIt/data/wave_tv.visit

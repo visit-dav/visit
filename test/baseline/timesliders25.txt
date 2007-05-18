@@ -1,4 +1,4 @@
-activeSource = "localhost:/data_vobs/VisIt/data/curv2d.silo"
+activeSource = "localhost:../data/curv2d.silo"
 activeTimeSlider = -1
 timeSliders = ()
 timeSliderCurrentStates = ()
