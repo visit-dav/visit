@@ -1,12 +1,12 @@
 Correlation01 has 20 states
-activeSource = "localhost:/data_vobs/VisIt/data/dbA00.pdb"
+activeSource = "localhost:../data/dbA00.pdb"
 activeTimeSlider = 0
-timeSliders = ("Correlation01", "localhost:/data_vobs/VisIt/data/dbA00.pdb")
+timeSliders = ("Correlation01", "localhost:../data/dbA00.pdb")
 timeSliderCurrentStates = (0, 0)
 animationMode = 2
 
 
-name = "localhost:/data_vobs/VisIt/data/dbA00.pdb"
+name = "localhost:../data/dbA00.pdb"
 numStates = 10
 method = IndexForIndexCorrelation  # IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation
 database[0]=localhost:/data_vobs/VisIt/data/dbA00.pdb
@@ -17,7 +17,7 @@ database[0]=localhost:/data_vobs/VisIt/data/dbA00.pdb
 condensedTimes = ()
 condensedCycles = ()
 
-name = "localhost:/data_vobs/VisIt/data/dbB00.pdb"
+name = "localhost:../data/dbB00.pdb"
 numStates = 20
 method = IndexForIndexCorrelation  # IndexForIndexCorrelation, StretchedIndexCorrelation, TimeCorrelation, CycleCorrelation, UserDefinedCorrelation
 database[0]=localhost:/data_vobs/VisIt/data/dbB00.pdb

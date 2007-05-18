@@ -1,5 +1,5 @@
-activeSource = "localhost:/data_vobs/VisIt/data/dbA00.pdb"
+activeSource = "localhost:../data/dbA00.pdb"
 activeTimeSlider = 1
-timeSliders = ("A_and_B", "localhost:/data_vobs/VisIt/data/dbA00.pdb")
+timeSliders = ("A_and_B", "localhost:../data/dbA00.pdb")
 timeSliderCurrentStates = (19, 0)
 animationMode = 2
