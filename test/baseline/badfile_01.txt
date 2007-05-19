@@ -1,5 +1,5 @@
-VisIt could not read from the file "/data_vobs/VisIt/test/junk.silo".
+VisIt could not read from the file "VISIT_TOP_DIR/test/junk.silo".
 
 The generated error message was:
 
-There was an error opening /data_vobs/VisIt/test/junk.silo. It may be an invalid file.  VisIt tried using the following file format readers to open the file: Silo
+There was an error opening VISIT_TOP_DIR/test/junk.silo. It may be an invalid file.  VisIt tried using the following file format readers to open the file: Silo

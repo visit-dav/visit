@@ -1,6 +1,6 @@
 ABC_Time has 42 states
-activeSource = "localhost:../data/dbC00.pdb"
+activeSource = "localhost:VISIT_TOP_DIR/data/dbC00.pdb"
 activeTimeSlider = 2
-timeSliders = ("ABC_Index", "ABC_Stretch", "ABC_Time", "localhost:/data_vobs/VisIt/data/dbA00.pdb", "localhost:/data_vobs/VisIt/data/dbB00.pdb", "localhost:../data/dbC00.pdb")
+timeSliders = ("ABC_Index", "ABC_Stretch", "ABC_Time", "localhost:VISIT_TOP_DIR/data/dbA00.pdb", "localhost:VISIT_TOP_DIR/data/dbB00.pdb", "localhost:VISIT_TOP_DIR/data/dbC00.pdb")
 timeSliderCurrentStates = (29, 29, 41, 9, 19, 29)
 animationMode = 2

@@ -1,6 +1,6 @@
-localhost:/data_vobs/VisIt/test/wave*.silo database has 71 states
-activeSource = "localhost:/data_vobs/VisIt/test/wave*.silo database"
+localhost:VISIT_TOP_DIR/test/wave*.silo database has 71 states
+activeSource = "localhost:VISIT_TOP_DIR/test/wave*.silo database"
 activeTimeSlider = 0
-timeSliders = ("localhost:/data_vobs/VisIt/test/wave*.silo database")
+timeSliders = ("localhost:VISIT_TOP_DIR/test/wave*.silo database")
 timeSliderCurrentStates = (70)
 animationMode = 2

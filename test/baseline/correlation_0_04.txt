@@ -1,6 +1,6 @@
 ABC_Index has 30 states
-activeSource = "localhost:../data/dbC00.pdb"
+activeSource = "localhost:VISIT_TOP_DIR/data/dbC00.pdb"
 activeTimeSlider = 0
-timeSliders = ("ABC_Index", "localhost:/data_vobs/VisIt/data/dbA00.pdb", "localhost:/data_vobs/VisIt/data/dbB00.pdb", "localhost:../data/dbC00.pdb")
+timeSliders = ("ABC_Index", "localhost:VISIT_TOP_DIR/data/dbA00.pdb", "localhost:VISIT_TOP_DIR/data/dbB00.pdb", "localhost:VISIT_TOP_DIR/data/dbC00.pdb")
 timeSliderCurrentStates = (5, 5, 5, 5)
 animationMode = 2

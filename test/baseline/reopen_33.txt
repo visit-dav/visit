@@ -1,2 +1,2 @@
 Pseudocolor:  (InvalidFilesException)
-viewer: There was an error opening /data_vobs/VisIt/test/wave0080.silo. It may be an invalid file.
+viewer: There was an error opening VISIT_TOP_DIR/test/wave0080.silo. It may be an invalid file.

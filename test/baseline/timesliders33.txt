@@ -1,5 +1,5 @@
-activeSource = "localhost:../data/wave*.silo database"
+activeSource = "localhost:VISIT_TOP_DIR/data/wave*.silo database"
 activeTimeSlider = 0
-timeSliders = ("localhost:../data/wave*.silo database")
+timeSliders = ("localhost:VISIT_TOP_DIR/data/wave*.silo database")
 timeSliderCurrentStates = (30)
 animationMode = 2

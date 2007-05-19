@@ -1,6 +1,6 @@
-activeSource = "localhost:../data/dbA00.pdb"
+activeSource = "localhost:VISIT_TOP_DIR/data/dbA00.pdb"
 activeTimeSlider = 0
-timeSliders = ("localhost:../data/dbA00.pdb")
+timeSliders = ("localhost:VISIT_TOP_DIR/data/dbA00.pdb")
 timeSliderCurrentStates = (5)
 animationMode = 2
 interactionMode = 0
