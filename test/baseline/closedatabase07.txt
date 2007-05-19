@@ -1,4 +1,4 @@
-sources = ("localhost:/data_vobs/VisIt/data/curv3d.silo", "localhost:/data_vobs/VisIt/data/globe.silo", "localhost:../data/wave.visit")
+sources = ("localhost:VISIT_TOP_DIR/data/curv3d.silo", "localhost:VISIT_TOP_DIR/data/globe.silo", "localhost:VISIT_TOP_DIR/data/wave.visit")
 windows = (1, 2)
 activeWindow = 1
 iconifiedFlag = 0

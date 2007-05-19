@@ -1,6 +1,6 @@
 MyThreeDatabaseCorrelation has 30 states
-activeSource = "localhost:../data/dbA00.pdb"
+activeSource = "localhost:VISIT_TOP_DIR/data/dbA00.pdb"
 activeTimeSlider = 0
-timeSliders = ("MyThreeDatabaseCorrelation", "localhost:/data_vobs/VisIt/data/dbA00.pdb", "localhost:/data_vobs/VisIt/data/dbB00.pdb", "localhost:../data/dbC00.pdb")
+timeSliders = ("MyThreeDatabaseCorrelation", "localhost:VISIT_TOP_DIR/data/dbA00.pdb", "localhost:VISIT_TOP_DIR/data/dbB00.pdb", "localhost:VISIT_TOP_DIR/data/dbC00.pdb")
 timeSliderCurrentStates = (24, 7, 16, 24)
 animationMode = 2

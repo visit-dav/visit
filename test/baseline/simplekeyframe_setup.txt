@@ -1,4 +1,4 @@
-activeSource = "localhost:../data/globe.silo"
+activeSource = "localhost:VISIT_TOP_DIR/data/globe.silo"
 activeTimeSlider = 0
 timeSliders = ("Keyframe animation")
 timeSliderCurrentStates = (0)

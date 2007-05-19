@@ -1,2 +1,2 @@
 GetTimeSliders returned:
- {'localhost:/data_vobs/VisIt/data/dbA00.pdb': 0, 'localhost:/data_vobs/VisIt/data/dbB00.pdb': 10}
+ {'localhost:VISIT_TOP_DIR/data/dbA00.pdb': 0, 'localhost:VISIT_TOP_DIR/data/dbB00.pdb': 10}

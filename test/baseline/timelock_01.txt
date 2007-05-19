@@ -1,6 +1,6 @@
-activeSource = "localhost:/data_vobs/VisIt/test/wave.visit"
+activeSource = "localhost:VISIT_TOP_DIR/test/wave.visit"
 activeTimeSlider = 0
-timeSliders = ("localhost:/data_vobs/VisIt/test/wave.visit")
+timeSliders = ("localhost:VISIT_TOP_DIR/test/wave.visit")
 timeSliderCurrentStates = (0)
 animationMode = 2
 interactionMode = 0

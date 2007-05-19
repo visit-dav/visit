@@ -1,4 +1,4 @@
-activeSource = "localhost:../data/wave0000.silo"
+activeSource = "localhost:VISIT_TOP_DIR/data/wave0000.silo"
 activeTimeSlider = -1
 timeSliders = ()
 timeSliderCurrentStates = ()

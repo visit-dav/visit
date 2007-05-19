@@ -1,6 +1,6 @@
-localhost:/data_vobs/VisIt/test/reopen_samrai.visit has 11 states
-activeSource = "localhost:/data_vobs/VisIt/test/reopen_samrai.visit"
+localhost:VISIT_TOP_DIR/test/reopen_samrai.visit has 11 states
+activeSource = "localhost:VISIT_TOP_DIR/test/reopen_samrai.visit"
 activeTimeSlider = 0
-timeSliders = ("localhost:/data_vobs/VisIt/test/reopen_samrai.visit")
+timeSliders = ("localhost:VISIT_TOP_DIR/test/reopen_samrai.visit")
 timeSliderCurrentStates = (10)
 animationMode = 2

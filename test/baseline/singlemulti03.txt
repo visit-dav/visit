@@ -1,5 +1,5 @@
-activeSource = "localhost:../data/curv3d.silo"
+activeSource = "localhost:VISIT_TOP_DIR/data/curv3d.silo"
 activeTimeSlider = 0
-timeSliders = ("localhost:../data/wave*.silo database")
+timeSliders = ("localhost:VISIT_TOP_DIR/data/wave*.silo database")
 timeSliderCurrentStates = (20)
 animationMode = 2

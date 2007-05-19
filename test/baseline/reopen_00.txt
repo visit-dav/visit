@@ -1,5 +1,5 @@
-activeSource = "localhost:../data/wave.visit"
+activeSource = "localhost:VISIT_TOP_DIR/data/wave.visit"
 activeTimeSlider = 0
-timeSliders = ("localhost:../data/wave.visit")
+timeSliders = ("localhost:VISIT_TOP_DIR/data/wave.visit")
 timeSliderCurrentStates = (20)
 animationMode = 2

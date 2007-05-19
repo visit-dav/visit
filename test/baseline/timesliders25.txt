@@ -1,4 +1,4 @@
-activeSource = "localhost:../data/curv2d.silo"
+activeSource = "localhost:VISIT_TOP_DIR/data/curv2d.silo"
 activeTimeSlider = -1
 timeSliders = ()
 timeSliderCurrentStates = ()

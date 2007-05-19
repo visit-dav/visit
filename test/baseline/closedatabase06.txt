@@ -1,4 +1,4 @@
-The database ../data/wave*.silo database was closed.
+The database VISIT_TOP_DIR/data/wave*.silo database was closed.
 sources = ()
 windows = (1, 2)
 activeWindow = 1

@@ -1,6 +1,6 @@
 Correlation01 has 20 states
-activeSource = "localhost:../data/dbB00.pdb"
+activeSource = "localhost:VISIT_TOP_DIR/data/dbB00.pdb"
 activeTimeSlider = 0
-timeSliders = ("Correlation01", "localhost:../data/dbB00.pdb")
+timeSliders = ("Correlation01", "localhost:VISIT_TOP_DIR/data/dbB00.pdb")
 timeSliderCurrentStates = (17, 17)
 animationMode = 2

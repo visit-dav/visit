@@ -1,1 +1,1 @@
-VisIt could not close "localhost:../data/wave*.silo database" because it is still being used by one or more plots.
+VisIt could not close "localhost:VISIT_TOP_DIR/data/wave*.silo database" because it is still being used by one or more plots.
