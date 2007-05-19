@@ -704,10 +704,13 @@ for t in $testcases; do
     export VISIT_TEST_CATEGORY
     export VISIT_TEST_NAME
     export VISIT_TEST_MODES
-    export VISIT_TEST_INTERACTIVE
+    export VISIT_TOP_DIR
     VISIT_TEST_CATEGORY=$category
     VISIT_TEST_NAME=$name
     VISIT_TEST_MODES=$modes
+    # Note: the '-P' is necessary to get pwd
+    # to return physical path (without links)
+    VISIT_TOP_DIR=`(cd .. ; pwd -P)`
 
     # check if this test is in the current skip list
     skipIt=false

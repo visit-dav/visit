@@ -1023,7 +1023,8 @@ def FilterTestText(inText, baseText):
         return tmpText
     else:
 	# note, this substitution is applied to the entire string
-        inText = re.sub("\"(.*):/?(.*/)*data/(.*)\"", "\"\\1:../data/\\3\"", inText)
+	inText = string.replace(inText, "%s/data/"%visitTopDir, "VISIT_TOP_DIR/data/")
+	inText = string.replace(inText, "%s/test/"%visitTopDir, "VISIT_TOP_DIR/test/")
         if silo == 1:
             return string.replace(inText, "/view/visit_VOBowner_testsilo", "")
 	else:
@@ -1313,7 +1314,7 @@ def TurnOffAllAnnotations():
 #    deal with test view used for silo's tests
 # ----------------------------------------------------------------------------
 
-import string, re, sys, time, os, commands, thread, HtmlDiff, HtmlPython
+import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
 from stat import *
 
 #############################################################################
@@ -1351,6 +1352,7 @@ for arg in sys.argv:
         avgdifftol = float(subargs[1])
 
 # find our file name
+visitTopDir = os.environ['VISIT_TOP_DIR']
 filename = os.environ['VISIT_TEST_NAME']
 filebase = filename[:-3]
 category = os.environ['VISIT_TEST_CATEGORY']
