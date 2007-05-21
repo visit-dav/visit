@@ -251,6 +251,9 @@
 #   Brad Whitlock, Thu May 17 13:54:01 PST 2007
 #   Added Dyna3D reader.
 #
+#   Gunther H. Weber, Mon May 21 16:49:55 PDT 2007
+#   Added Cristina Siegerist's H5Nimrod plugin
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -265,7 +268,7 @@ CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
 HDF4=Cosmos Enzo ZeusMP
-HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC
+HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC H5Nimrod
 MILI=Mili
 NETCDF=NETCDF S3D
 PDB=KullLite PDB
