@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+  <Plugin name="H5Nimrod" type="database" label="H5Nimrod" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTSD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(HDF5_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(HDF5_LIB)
+    </LIBS>
+    <Extensions>
+      .h5nimrod
+    </Extensions>
+    <Files components="M">
+      avtH5NimrodFileFormat.C
+      H5utils.C
+    </Files>
+    <Files components="E">
+      avtH5NimrodFileFormat.C
+      H5utils.C
+    </Files>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
