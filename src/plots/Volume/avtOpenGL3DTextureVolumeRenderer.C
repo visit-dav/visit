@@ -207,6 +207,10 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Thomas R. Treadway, Tue Feb  6 17:04:03 PST 2007
 //    The gcc-4.x compiler no longer just warns about automatic type conversion.
 //
+//    Gunther H. Weber, Mon May 21 13:46:15 PDT 2007
+//    Fixed 3D texture detection problem for Mac OS by checking for
+//    GL_VERSION_1_2 before using GLEW.
+//
 // ****************************************************************************
 
 void
@@ -223,6 +227,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
     static bool haveIssuedWarning = false;
 #ifndef VTK_IMPLEMENT_MESA_CXX
     // OpenGL mode
+#if !defined(GL_VERSION_1_2)
 #ifdef HAVE_LIBGLEW
     // If we have GLEW then we're in the OpenGL version and we should
     // be sure that the extension exists on the display.
@@ -259,20 +264,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
         return;
 #endif
     }
-#elif !defined(GL_VERSION_1_2)
-    // We're not using GLEW for some reason so return if OpenGL's
-    // version is less than 1.2.
-    debug1 << "avtOpenGL3DTextureVolumeRenderer::Render: "
-              "returning because there is no texture3D. The "
-              "version of OpenGL is too old."
-           << endl;
-    if (!haveIssuedWarning)
-    {
-        avtCallback::IssueWarning("3D textured volume rendering is not "
-                   "available, because the version of OpenGL is too old.");
-        haveIssuedWarning = true;
-    }
-    return;
+#endif
 #endif
 #endif
 
@@ -468,7 +460,11 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
 
 #ifndef VTK_IMPLEMENT_MESA_CXX
         // OpenGL mode
-#ifdef HAVE_LIBGLEW 
+#ifdef GL_VERSION_1_2
+        // OpenGL supports glTexImage3D.
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
+                     0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
+#elif HAVE_LIBGLEW 
         if (GLEW_EXT_texture3D)
         {
             // glTexImage3D via GLEW.
@@ -482,10 +478,6 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                              0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
         }
 #endif
-#elif defined(GL_VERSION_1_2)
-        // OpenGL supports glTexImage3D.
-        glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, newnx, newny, newnz,
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, volumetex);
 #endif
 #else
         // Mesa mode
