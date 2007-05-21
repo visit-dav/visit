@@ -1,0 +1,14 @@
+Different MPEG coding strategies
+--------------------------------
+
+Strategy			Speed	Compression	Quality
+--------			-----	-----------	-------
+Increase MV Search Range	Down	Up		Up?
+Increasing Q-Scale		Same	Up		Down
+Decreasing Q-Scale		Same	Down		Up
+Use half-pixel search		Down	Up		Up?
+Use pixel subsampling		Up	Down		Down?
+Use motion vector subsampling	Up	Down		Down?
+Use decoded frame as reference	Same	Unknown		Up?
+Varying q-scale			Down	Up		Down
+

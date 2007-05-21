@@ -1,0 +1,41 @@
+EXTENSIONS
+----------
+
+This is a list of things that we'd like to incorporate into the encoder.
+If you succeed in implementing any of them, please let us know!
+
+*  better B-frame search technique
+*  use DCT-space when computing error terms
+*  vary the q-scale according to the error term
+*  other motion vector search techniques
+*  modify the program to have a finer-grained parallelism option -- we
+   can probably encode slices in parallel (this will only be useful if we
+   want to do a few B-frames using exhaustive search)
+*  include system layer
+*  VBV delay with rate control
+
+
+CREATING YOUR OWN MOTION SEARCH ROUTINES
+----------------------------------------
+
+Adding your own special motion search routine is very easy.  We'll explain
+adding a P-frame search routine; adding a B-frame routine is similar.
+
+First, edit the procedures PMotionSearch and SetPSearchAlg (both in the
+file psearch.c) to recognize your new search routine.  You probably want
+to define a constant
+    PSEARCH_<your search name> in headers/search.h
+
+Have PMotionSearch call your search procedure just as it calls the other
+standard search procedures.  Make sure your procedure follows the guidelines
+in the comments for PMotionSearch.
+
+Note:  The encoder uses MAD as its search criterion.  The reason for this:
+	"Among the various criteria that can be used as a measure of the
+	 match between the two blocks, the mean absolute difference (MAD)
+	 is favored because it requires no multiplication and gives
+	 similar performance as the mean squared error (MSE)."
+	- Liu and Zaccarin,
+	  "New Fast Algorithms for the Estimation of Block Motion Vectors,"
+	  IEEE Transactions on Circuits and Systems for Video Technology
+	  Volume 3 No. 2 (April 1993)
