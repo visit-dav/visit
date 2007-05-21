@@ -1,0 +1,386 @@
+.\" @(#)mpeg_encode.1 1.5 93/01/27 SMI;
+.TH MPEG_ENCODE 1 "1 February 1995"
+.SH NAME
+mpeg_encode \- encodes MPEG-1 bitstreams
+.SH SYNOPSIS
+.B mpeg_encode
+[
+.B \fIoptions\fP
+]
+.B \fIparameter-file\fP
+.SH DESCRIPTION
+.B mpeg_encode
+produces an MPEG-1 video stream.  param_file is a parameter file which
+includes a list of input files and other parameters.  The file is described
+in detail below.  The -gop, -combine_gops, -frames, and -combine_frames
+options are all exclusive.  This man page is probably incomplete.  For
+complete usage, see the User's Guide.
+.SH OPTIONS
+.HP
+.B -stat stat_file
+: causes the encoder to append the statistics to the file \fIstat_file\fP.
+In any case, the statistics are output to stdout.  The statistics use the
+following abbreviations:  bits per block (bpb), bits per frame (bpf),
+seconds per frame (spf), and bits per second (bps).
+.HP
+.B -quiet num_seconds
+: causes the program to not report remaining time for at least num_seconds
+seconds.  A negative values tells the program not to report at all.  0 is
+the default (reports once after each frame).  Note that the time remaining
+is an estimate and does not take into account time to read in frames.
+.HP
+.B -realquiet
+: causes the encoder to run silently, with the only screen output being errors.
+Particularly useful when reading input from stdin.
+.HP
+.B -no_frame_summary
+: prevents the program from printing a summary line for each frame
+.HP
+.B -float_dct
+: forces the encoder to use a more accurate, yet more computationally expensive
+version of the DCT.
+.HP
+.B -gop gop_num
+: causes the encoder to only encode the numbered GOP (first GOP is 0).  The
+parameter file is the same as for normal usage.  The output file will be
+the normal output file with the suffix ".gop.<gop_num>"  No sequence info
+is output.
+.HP
+.B -combine_gops
+: causes the encoder to simply combine some GOP files into a single MPEG
+stream.  A sequence header/ender are inserted.  In this case, the parameter
+file need only contain the YUV_SIZE value, an output file, and perhaps a
+list of input GOP files (see below).
+.HP
+.B -frames first_frame last_frame
+: causes the encoder to only encode the frames from first_frame to
+last_frame, inclusive.  The parameter file is the same as for normal usage.
+The output will be placed in separate files, one per frame, with the file
+names being the normal output file with the suffix ".frame.<frame num>"  No
+GOP header information is output.  (Thus, the parameter file need not include
+the GOP_SIZE value)
+.HP
+.B -combine_frames
+: causes the encoder to simply combine some frames into a single MPEG stream.
+Sequence and GOP headers are inserted appropriately.  In this case, the
+parameter file need only contain the YUV_SIZE
+value, the GOP_SIZE value, an output file, and perhaps a list of frame
+files (see below).
+.HP
+.B -nice
+: causes the program to run any remote processes 'nicely.'  This is only
+relevant if the program is using parallel encoding.  (see 'man nice.')
+.HP
+.B -max_machines num_machines
+: causes the program to use no more than num_machines machines as slaves for
+use in parallel encoding.
+.HP
+.B -snr
+: print the signal-to-noise ratio.  Prints SNR (Y U V) and peak SNR (Y U V)
+for each frame.  In summary, prints averages of luminance only (Y).  SNR is
+defined as 10*log(variance of original/variance of error).  Peak SNR is
+defined as 20*log(255/RMSE).  Note that the encoder will run a little slower
+if you want it to print the SNR.
+.HP
+.B -mse
+: computes the mean squared error per block.  Also automatically computes 
+the quality of the images when set, so there is no need to specify -snr then.
+.HP
+.B -bit_rate_info rate_file
+: prints bit rate information into the file rate_file.  Bit rate info is bits
+per frame, and also bits per I-frame-to-I-frame.
+.HP
+.B -mv-histogram
+: prints histogram of motion vectors as part of statistics.  There are three
+histograms -- one for P, forward B, and backward B vectors.  Each histogram
+is a 2-dimensional array, and there is one entry for each vector in the
+search window.
+.HP
+.SH PARAMETER FILE
+The parameter file MUST contain the following lines (except when using the
+-combine_gops or -combine_frames options):
+.HP
+.RS
+PATTERN <pattern>
+.HP
+OUTPUT <output file>
+.HP
+INPUT_DIR <directory>
+.RS
+all input files must reside in this directory.  If you want to refer to the
+current directory, use '.' (an empty INPUT_DIR value would refer to the root
+directory).  If input files will be coming in from standard input, use
+'stdin'.
+.RE
+.HP
+INPUT
+.RS
+This line must be followed by a list of the input files (in display order)
+and then the line
+.RS
+END_INPUT
+.RE
+There are three types of lines between INPUT and END_INPUT.  First, a line
+may simply be the name of an input file.  Secondly, the line may be of the
+form
+.RS
+<single_star_expr> [x-y]
+.RE
+single_star_expr can have a single '*' in it.  It is replaced by all the
+numbers between x and y inclusive.  So, for example, the line
+.RS
+tennis*.ppm [12-15]
+.RE
+is replaced by tennis12.ppm, tennis13.ppm, tennis14.ppm, tennis15.ppm.
+Uniform zero-padding occurs, as well.  For example, the line
+.RS
+football.*.ppm [001-130]
+.RE
+is replaced by football.001.ppm, football.002.ppm, ..., football.009.ppm,
+football.010.ppm, ..., football.130.ppm.  The third type of line is:
+.RS
+<single_star_expr> [x-y+s]
+.RE
+Where the line is treated exactly as above, except that we skip by s.  Thus,
+the line
+.RS
+football.*.ppm [001-130+4]
+.RE
+is replaced by football.001.ppm, football.005.ppm, football.009.ppm,
+football.013.ppm, etc.
+.RE
+.HP
+BASE_FILE_FORMAT <YUV or PPM or PNM or JPEG or JMOVIE>
+.RS
+All the input files must be converted to YUV, JPEG(v4), JMOVIE, PNM, or PPM 
+format.  This line specifies which of the three formats (actually PPM is a 
+subset of PNM).  The reason for having a separate PPM option is for 
+simplicity.  If your files are RAWBITS ppm files, then use the PPM option 
+rather than the PNM.  Also, depending on the system, file reads will go much 
+faster with the PPM option (as opposed to PNM).
+.RE
+.HP
+INPUT_CONVERT <conversion command>
+.RS
+You must specify how to convert a file to the base file format.  In the
+conversion command, each '*' is replaced by the filename (the items listed
+between INPUT and END_INPUT).  If no conversion is necessary, then you would
+just say:
+.RS
+INPUT_CONVERT *
+.RE
+If you had a bunch of gif files, you might say:
+.RS
+INPUT_CONVERT giftoppm *
+.RE
+If you have a bunch of separate a.Y, a.U, and a.V files, then you might say:
+.RS
+INPUT_CONVERT cat *.Y *.U *.V
+.RE
+.RS
+Input conversion is not allowed with input from stdin.
+.RE
+.HP
+GOP_SIZE <n>
+.RS
+n is roughly the number of frames in a Group of Pictures (roughly because
+a GOP must begin with an I-frame)
+.RE
+.HP
+SLICES_PER_FRAME <n>
+.RS
+n is roughly the number of slices per frame.  Note, at least one MPEG player
+may complain if slices do not start at the left side of an image.  To ensure
+this does not happen, make sure the number of rows is divisible by
+SLICES_PER_FRAME.
+.RE
+.HP
+PIXEL <FULL or HALF>
+.RS
+use half-pixel motion vectors, or only full-pixel ones
+.RE
+.HP
+RANGE <n>
+.RS
+use a search range of +/- n pixels
+.RE
+.HP
+PSEARCH_ALG <algorithm>
+.RS
+algorithm must be one of {EXHAUSTIVE, TWOLEVEL, SUBSAMPLE, LOGARITHMIC}.
+Tells what kind of search procedure should be used for P-frames.
+Exhaustive gives the best compression, but logarithmic is the
+fastest.  You select the desired combination of speed and compression.
+TWOLEVEL is an exhaustive full-pixel search, followed by a local half-
+pixel search around the best full-pixel vector (the PIXEL option is
+ignored for this search algorithm).
+.RE
+.HP
+BSEARCH_ALG <algorithm>
+.RS
+algorithm must be one of {SIMPLE, CROSS2, EXHAUSTIVE}.  Tells what kind of
+search procedure should be used for B-frames.  Simple means find best forward
+and backward vectors, then interpolate.  Cross2 means find those two vectors,
+then see what backward vector best matches the best forward vector, and vice
+versa.  Exhaustive does an n-squared search and is EXTREMELY slow in
+relation to the others (Cross2 is about twice as slow as Simple).
+.RE
+.HP
+IQSCALE <n>
+.RS
+use n as the qscale for I-frames
+.RE
+.HP
+PQSCALE <n>
+.RS
+use n as the qscale for P-frames
+.RE
+.HP
+BQSCALE <n>
+.RS
+use n as the qscale for B-frames
+.RE
+.HP
+REFERENCE_FRAME <ORIGINAL or DECODED>
+.RS
+If ORIGINAL is specified, then the original images are used when computing
+motion vectors.  To be more accurate, use DECODED, in which the decoded
+images are used.  This should increase the quality of the image, but will
+take a bit longer to encode.
+.RE
+The following lines are optional:
+.HP
+.RS
+FORCE_I_ALIGN
+.RS
+This option is only relevant for parallel execution (see below).  It forces
+each processor to encode a block of N frames, where N must be a multiple of
+the pattern length.  Since the first frame in any pattern is an I-frame,
+this forces each block encoded by a processor to begin with an I-frame.
+.RE
+foo
+.RE
+.HP
+.SH NOTES
+If the BASE_FILE_FORMAT is YUV, then the parameter file must contain:
+.RS
+YUV_SIZE <w>x<h>
+.RE
+where w = width, h = height (in pixels) of image, and
+.RS
+YUV_FORMAT <ABEKAS or PHILLIPS or UCB or EYUV or pattern>.
+.RE
+See the file doc/INPUT.FORMAT for more information.
+.LP
+If the -combine-gops option is used, then only the YUV_SIZE and OUTPUT
+values need be specified in the parameter file.  In addition, the parameter
+file may specify input GOP files in the same manner as normal input files
+-- except instead of using INPUT_DIR, INPUT, and END_INPUT, use GOP_INPUT_DIR,
+GOP_INPUT, and GOP_END_INPUT.  If no input GOP files are specified, then the
+default is to use the output file name with suffix ".gop.<gop_num>"
+starting from 0 as the input files.
+.LP
+If the -combine-frames option is used, then only the YUV_SIZE, GOP_SIZE, and
+OUTPUT
+values need be specified in the parameter file.  In addition, the parameter
+file may specify input frame files in the same manner as normal input files
+-- except instead of using INPUT_DIR, INPUT, and END_INPUT, use
+FRAME_INPUT_DIR,
+FRAME_INPUT, and FRAME_END_INPUT.  If no input frame files are specified,
+then the
+default is to use the output file name with suffix ".frame.<frame_num>"
+starting from 0 as the input files.
+.LP
+Any number of spaces and tabs may come between each option and value.  Lines
+beginning with '#' are ignored.  Any other lines are ignored except for
+those between INPUT and END_INPUT.  This allows you to use the same
+parameter file for normal usage and for -combine_gops and -combine_frames.
+.LP
+The encoder is case-sensitive so, except for file names and directories,
+everything should be in upper case.
+.LP
+The lines may appear in any order, except the following exceptions.
+INPUT must appear before END_INPUT  (also, GOP_INPUT before GOP_END_INPUT and
+FRAME_INPUT before FRAME_END_INPUT).  All lines
+between INPUT and END_INPUT must be the frames in play order.
+.LP
+The encoder is prepared to handle up to 16 B frames between reference 
+frames when encoding with input from stdin.  To increase this amount,
+change the constant B_FRAME_RUN in frame.c and recompile.
+.LP
+.HP
+.SH PARALLEL OPERATION
+The encoder may be run on multiple machines at once.  To do so, add a line
+"PARALLEL" in the parameter file, followed by a listing, one machine per
+line, then "END_PARALLEL".  Each of the lines should be in one of two forms.
+If the machine has access to the file server, then the line should be:
+.LP
+	<machine> <user> <executable>
+.LP
+The executable is normally mpeg_encode (you may need to give the complete path
+if you've built for different architectures).
+If the machine is a remote machine, then the line should be:
+.LP
+	REMOTE <machine> <user> <executable> <parameter file>
+.LP
+Full paths should generally be used when describing executables and parameter
+files.  This INCLUDES the parameter file given as an argument to the original
+call to mpeg_encode.  Also, .rhosts files on the appropriate machines should
+have the appropriate information.
+.LP
+The encoder will use the original machine for the master and I/O server
+processes, and uses the listed machines as slaves to do the computation.
+.LP
+Optional lines are
+.RE
+.HP
+RSH <remote shell command>
+.RS
+The encoder uses the remote shell command to start processes on other
+machines.  The default command is 'rsh.'  If your machine supports a
+different command, specify it here.
+.RE
+.HP
+PARALLEL_TEST_FRAMES <n>
+.RS
+n is the number of frames to encode initially on each processor
+.RE
+.HP
+PARALLEL_TIME_CHUNKS <t>
+.RS
+subsequently, each slave processor will be asked to encode for approximately
+t seconds.  Smaller values of <t> increase communication, but improve load
+balancing.
+.HP
+The default values for these two options are n = 3 frames and t = 30 seconds.
+.RE
+.HP
+PARALLEL_PERFECT
+.RS
+If this line is present, then scheduling is done on the assumption that
+work distribution will be perfectly even -- meaning that each machine is
+about the same speed.  The frames will simply be divided up evenly between
+the processors.  This has the advantage of very minimal scheduling overhead,
+but is obviously wrong if machines have varying speeds, or if the network
+load makes performance uneven.
+.RE
+.SH VERSION
+This is version 1.5 it contins new features and bug fixes from version 1.3.
+.SH BUGS
+No known bugs, but if you find any, report them to mpeg-bugs@plateau.cs.berkeley.edu.
+.HP
+.SH AUTHORS
+.HP
+Kevin Gong - University of California, Berkeley, keving@cs.berkeley.edu
+.HP
+Ketan Patel - University of California, Berkeley, kpatel@cs.berkeley.edu
+.HP
+Dan Wallach - University of California, Berkeley, dwallach@cs.berkeley.edu
+.HP
+Darryl Brown - University of California, Berkeley, darryl@cs.berkeley.edu
+.HP
+Eugene Hung - University of California, Berkeley, eyhung@cs.berkeley.edu
+.HP
+Steve Smoot - University of California, Berkeley, smoot@cs.berkeley.edu
+.HP
+
