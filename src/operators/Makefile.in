@@ -210,6 +210,9 @@
 #    Cyrus Harrison, Thu Apr 26 10:20:55 PDT 2007
 #    Added ZoneDump Operator
 #
+#    Jeremy Meredith, Tue May 22 11:40:38 EDT 2007
+#    Added "MINIMAL" subset of plugins.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -226,7 +229,10 @@ REQUIRED=Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder Decimate \
          PDF Project Reflect Replicate Resample Revolve Slice Smooth \
          SphereSlice ThreeSlice Threshold Transform Tube ZoneDump
 
-SUBDIRS=$(REQUIRED) @OPERATOR_OPTIONAL_DIRS@
+# The following is a minimal subset of the OPTIONAL/REQUIRED plugins
+MINIMAL=Lineout Slice Threshold
+
+SUBDIRS=@OPERATOR_BUILD_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)
 
 message:
