@@ -681,10 +681,16 @@ dnl
 dnl    Gunther H. Weber, Thu Apr 19 18:22:49 PDT 2007
 dnl    Adaptively replace relative visit path in data directory
 dnl
+dnl    Gunther H. Weber, Mon May 21 15:55:12 PDT 2007
+dnl    Added check for H5Part
+dnl
 dnl    Jeremy Meredith, Tue May 22 11:43:30 EDT 2007
 dnl    Added --enable-minimal-plugins to only build the few most common
 dnl    plugins, like the Pseudocolor plot and Slice operator.   
 dnl 
+dnl    Gunther H. Weber, Tue May 22 10:20:31 PDT 2007
+dnl    Merged Jeremy's last change (Tue May 22 11:43:30 EDT 2007) and my
+dnl    last change (Mon May 21 15:55:12 PDT 2007).
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2246,6 +2252,49 @@ AC_SUBST(BOXLIB3D)
 AC_SUBST(BOXLIB3D_INCLUDE)
 AC_SUBST(BOXLIB3D_LIBS)
 AC_SUBST(BOXLIB3D_LIBDIR)
+
+#
+# Look for H5Part
+#
+AC_MSG_CHECKING(for H5Part)
+H5PART=""
+H5PART_INCLUDE=""
+H5PART_LIB=""
+H5PART_LIBDIR=""
+AC_ARG_WITH(h5part,
+            [  --with-h5part=INC-DIR,LIB-DIR       Location of H5Part headers and library],
+           h5part_specified="yes",
+           h5part_specified="no",
+           )
+if test "$h5part_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      H5PART_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      H5PART_LIB="-L`echo $withval |cut -f2 -d, -s`"
+      H5PART_LIBDIR="`echo $withval |cut -f2 -d, -s`"
+   fi
+else
+   if test "$DEFAULT_H5PART_INCLUDE" != "" ; then
+      H5PART_INCLUDE="-I$DEFAULT_H5PART_INCLUDE $H5PART_INCLUDE"
+   fi
+   if test "$DEFAULT_H5PART_LIB" != "" ; then
+      H5PART_LIB="-L$DEFAULT_H5PART_LIB -lH5Part"
+      H5PART_LIBDIR="$DEFAULT_H5PART_LIB"
+   fi
+fi
+if test "$H5PART_LIB" != "" ; then
+   if test "$H5PART_INCLUDE" != "" ; then
+      H5PART="$""(H5PART)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(H5PART)
+AC_SUBST(H5PART_INCLUDE)
+AC_SUBST(H5PART_LIB)
+AC_SUBST(H5PART_LIBDIR)
 
 #
 # Look for ViSUS 

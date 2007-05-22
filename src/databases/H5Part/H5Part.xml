@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+  <Plugin name="H5Part" type="database" label="H5Part" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS> $(HDF5_INCLUDE) $(H5PART_INCLUDE) </CXXFLAGS>
+    <LIBS> $(H5PART_LIB) $(HDF5_LIB) </LIBS>
+    <Extensions> h5part </Extensions>
+    <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude=""> </Attribute>
+  </Plugin>

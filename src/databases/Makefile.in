@@ -254,8 +254,15 @@
 #   Gunther H. Weber, Mon May 21 16:49:55 PDT 2007
 #   Added Cristina Siegerist's H5Nimrod plugin
 #
+#   Gunther H. Weber, Mon May 21 17:35:35 PDT 2007
+#   Added Cristina Siegerist's H5Part plugin
+#
 #   Jeremy Meredith, Tue May 22 11:40:38 EDT 2007
 #   Added "MINIMAL" subset of plugins.
+#
+#   Gunther H. Weber, Tue May 22 10:20:31 PDT 2007
+#   Merged Jeremy's last change (Tue May 22 11:40:38 EDT 2007) and my
+#   last change (Mon May 21 17:35:35 PDT 2007).
 #
 ##############################################################################
 
@@ -277,6 +284,7 @@ NETCDF=NETCDF S3D
 PDB=KullLite PDB
 ITAPS=iTaps
 VISUS=ViSUS
+H5PART=H5Part
 
 SAMPLES=Rect Hex
 
@@ -330,11 +338,10 @@ REQUIRED=\
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve2D Silo VTK
 
-THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS@
+THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS@ @H5PART@
 
 SUBDIRS=@DB_BUILD_DIRS@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(GDAL) $(CFITSIO) $(ITAPS) $(SAMPLES) $(OPTIONAL)
-
+ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(GDAL) $(CFITSIO) $(ITAPS) $(H5PART) $(SAMPLES) $(OPTIONAL)
 
 message:
 	@echo
