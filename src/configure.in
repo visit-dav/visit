@@ -681,6 +681,10 @@ dnl
 dnl    Gunther H. Weber, Thu Apr 19 18:22:49 PDT 2007
 dnl    Adaptively replace relative visit path in data directory
 dnl
+dnl    Jeremy Meredith, Tue May 22 11:43:30 EDT 2007
+dnl    Added --enable-minimal-plugins to only build the few most common
+dnl    plugins, like the Pseudocolor plot and Slice operator.   
+dnl 
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1306,6 +1310,10 @@ AC_ARG_ENABLE(buildall,
   [  --enable-buildall       build all plugins],
   buildall="all", buildall=base)
 
+AC_ARG_ENABLE(minimal-plugins,
+  [  --enable-minimal-plugins   build only a few most common plugins],
+  buildall="minimal")
+
 AC_MSG_CHECKING([which plot plugins to build])
 AC_ARG_WITH(plots,
             [  --with-plots=all,base   What plot plugins to build (overrides --enable-buildall)],
@@ -1313,18 +1321,21 @@ AC_ARG_WITH(plots,
             withval=$buildall)
 case $withval in
     all)
-        PLOT_OPTIONAL_DIRS="$""(OPTIONAL)"
+        PLOT_BUILD_DIRS="$""(REQUIRED) $""(OPTIONAL)"
         AC_MSG_RESULT([all])
         ;;
     base)
-        PLOT_OPTIONAL_DIRS=""
+        PLOT_BUILD_DIRS="$""(REQUIRED)"
         AC_MSG_RESULT([base only])
+        ;;
+    minimal)
+        PLOT_BUILD_DIRS="$""(MINIMAL)"
+        AC_MSG_RESULT([minimal only])
         ;;
     *)
         AC_MSG_ERROR([Please specify one of "all" or "base" for --with-plots.])
-        PLOT_OPTIONAL_DIRS="error"
 esac
-AC_SUBST(PLOT_OPTIONAL_DIRS)
+AC_SUBST(PLOT_BUILD_DIRS)
 
 AC_MSG_CHECKING([which operator plugins to build])
 AC_ARG_WITH(operators,
@@ -1333,17 +1344,21 @@ AC_ARG_WITH(operators,
             withval=$buildall)
 case $withval in
     all)
-        OPERATOR_OPTIONAL_DIRS="$""(OPTIONAL)"
+        OPERATOR_BUILD_DIRS="$""(REQUIRED) $""(OPTIONAL)"
         AC_MSG_RESULT([all])
         ;;
     base)
-        OPERATOR_OPTIONAL_DIRS=""
+        OPERATOR_BUILD_DIRS="$""(REQUIRED)"
         AC_MSG_RESULT([base only])
+        ;;
+    minimal)
+        OPERATOR_BUILD_DIRS="$""(MINIMAL)"
+        AC_MSG_RESULT([minimal only])
         ;;
     *)
         AC_MSG_ERROR([Please specify one of "all" or "base" for --with-operators.])
 esac
-AC_SUBST(OPERATOR_OPTIONAL_DIRS)
+AC_SUBST(OPERATOR_BUILD_DIRS)
 
 AC_MSG_CHECKING([which database plugins to build])
 AC_ARG_WITH(dbs,
@@ -1352,17 +1367,21 @@ AC_ARG_WITH(dbs,
             withval=$buildall)
 case $withval in
     all)
-        DB_OPTIONAL_DIRS="$""(OPTIONAL)"
+        DB_BUILD_DIRS="$""(REQUIRED) $""(THIRDPARTY_DEPENDENT) $""(OPTIONAL)"
         AC_MSG_RESULT([all])
         ;;
     base)
-        DB_OPTIONAL_DIRS=""
+        DB_BUILD_DIRS="$""(REQUIRED) $""(THIRDPARTY_DEPENDENT)"
         AC_MSG_RESULT([base only])
+        ;;
+    minimal)
+        DB_BUILD_DIRS="$""(MINIMAL)"
+        AC_MSG_RESULT([minimal only])
         ;;
     *)
         AC_MSG_ERROR([Please specify one of "all" or "base" for --with-dbs.])
 esac
-AC_SUBST(DB_OPTIONAL_DIRS)
+AC_SUBST(DB_BUILD_DIRS)
 
 dnl
 dnl Disable building bzip2. Only necessary if bzip2 won't buid somewhere 

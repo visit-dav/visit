@@ -145,6 +145,9 @@
 #    Brad Whitlock, Thu Feb 8 17:15:44 PST 2007
 #    Added Spreadsheet plot.
 #
+#    Jeremy Meredith, Tue May 22 11:40:38 EDT 2007
+#    Added "MINIMAL" subset of plugins.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -159,7 +162,10 @@ REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
          ParallelAxis Pseudocolor Scatter Spreadsheet Streamline Subset Surface \
          Tensor Truecolor Vector Volume
 
-SUBDIRS=$(REQUIRED) @PLOT_OPTIONAL_DIRS@
+# The following is a minimal subset of the OPTIONAL/REQUIRED plugins
+MINIMAL=Curve Mesh Pseudocolor
+
+SUBDIRS=@PLOT_BUILD_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(OPTIONAL)
 
 message:
