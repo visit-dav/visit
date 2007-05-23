@@ -1025,8 +1025,6 @@ def FilterTestText(inText, baseText):
 	# note, this substitution is applied to the entire string
 	inText = string.replace(inText, "%s/data/"%visitTopDir, "VISIT_TOP_DIR/data/")
 	inText = string.replace(inText, "%s/test/"%visitTopDir, "VISIT_TOP_DIR/test/")
-	inText = string.replace(inText, "../data/", "VISIT_TOP_DIR/data/")
-	inText = string.replace(inText, "../test/", "VISIT_TOP_DIR/test/")
         if silo == 1:
             return string.replace(inText, "/view/visit_VOBowner_testsilo", "")
 	else:
