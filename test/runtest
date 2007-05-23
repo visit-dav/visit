@@ -250,7 +250,7 @@ testcases=""
 timeLimit="-timeout 300"
 notrackMem=""
 skipList=""
-exepath="../src/bin/visit"
+exepath="../bin/visit"
 interactive=""
 noPIL=""
 nowin="-nowin"
@@ -707,7 +707,7 @@ for t in $testcases; do
     export VISIT_TOP_DIR
     VISIT_TEST_CATEGORY=$category
     VISIT_TEST_NAME=$name
-    VISIT_TEST_MODES=$modes
+    VISIT_TEST_MODES=`echo $modes | tr ',' '\n' | grep -v nersc | tr '\n' ',' | cut -d',' -f1,2`
     # Note: the '-P' is necessary to get pwd
     # to return physical path (without links)
     VISIT_TOP_DIR=`(cd .. ; pwd -P)`
