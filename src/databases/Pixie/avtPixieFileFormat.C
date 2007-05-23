@@ -1500,6 +1500,9 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
 //   Eric Brugger, Mon Nov 29 15:52:39 PST 2004
 //   Modified the reader to handle gaps in the cycle numbering (e.g. allowing
 //   0, 10, 20, 30 instead of requiring 0, 1, 2, 3).
+//
+//   Mark C. Miller, Wed May 23 15:27:53 PDT 2007
+//   Initialized varInfo.dims before populating with call to get_simple_extents
 //   
 // ****************************************************************************
 
@@ -1595,6 +1598,7 @@ avtPixieFileFormat::GetVariableList(hid_t group, const char *name,
 
             // Get the variable's size.
             hid_t sid = H5Dget_space(obj);
+	    for (int dd = 0; dd < 3; varInfo.dims[dd] = 1, dd++);
             H5Sget_simple_extent_dims(sid, varInfo.dims, NULL);
 
             //
