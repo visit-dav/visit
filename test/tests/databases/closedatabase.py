@@ -29,7 +29,7 @@ def TestGlobalAttributes(testname):
 
 def GetCloseString(db):
     if(CloseDatabase(db) == 1):
-        testString = "The database %s was closed." % db
+        testString = "The database %s was closed." % os.path.abspath(db)
     else:
         testString = GetLastError()
     return testString
