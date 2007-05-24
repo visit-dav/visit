@@ -24,6 +24,7 @@
                 <Field name="active" type="bool">true</Field>
                 <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
                 <Field name="parallel" type="bool">true</Field>
+                <Field name="tunnelSSH" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">parallel</Field>
@@ -46,6 +47,7 @@
                 <Field name="active" type="bool">false</Field>
                 <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
                 <Field name="parallel" type="bool">true</Field>
+                <Field name="tunnelSSH" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">serial on login node</Field>
@@ -68,6 +70,7 @@
                 <Field name="active" type="bool">false</Field>
                 <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
                 <Field name="parallel" type="bool">false</Field>
+                <Field name="tunnelSSH" type="bool">true</Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">photon serial on batch nodes</Field>
