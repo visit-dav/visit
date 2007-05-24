@@ -64,6 +64,9 @@
 //   parsed from the SSH_CLIENT (or related) environment variables.  Added
 //   ability to specify an SSH port.
 //
+//   Jeremy Meredith, Thu May 24 11:10:15 EDT 2007
+//   Added SSH tunneling argument to Open.
+//
 // ****************************************************************************
 
 class COMM_API ExistingRemoteProcess : public RemoteProcess
@@ -75,7 +78,7 @@ public:
                       HostProfile::ClientHostDetermination chd,
                       const std::string &clientHostName,
                       bool manualSSHPort,
-                      int sshPort,
+                      int sshPort, bool useTunneling,
                       int numRead, int numWrite,
                       bool createAsThoughLocal = false);
     void SetConnectCallback(ConnectCallback *cb);

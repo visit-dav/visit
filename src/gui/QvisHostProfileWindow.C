@@ -220,6 +220,9 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Added support for additional sublauncher arguments.  Replaced the qsub
 //   launch option with qsub/mpiexec and qsub/srun.
 //
+//   Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
+//   Added support for SSH port tunneling.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::CreateWindowContents()
@@ -543,7 +546,7 @@ QvisHostProfileWindow::CreateWindowContents()
 
     shareMDServerCheckBox = new QCheckBox("Share batch job with Metadata Server",
                                           advancedGroup, "shareMDServerCheckBox");
-    parLayout->addMultiCellWidget(shareMDServerCheckBox, arow,arow, 0,3);
+    advLayout->addMultiCellWidget(shareMDServerCheckBox, arow,arow, 0,3);
     connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleShareMDServer(bool)));
     arow++;
@@ -551,7 +554,7 @@ QvisHostProfileWindow::CreateWindowContents()
     useVisItScriptForEnvCheckBox = new QCheckBox(
                              "Use VisIt script to set up parallel environment",
                              advancedGroup, "useVisItScriptForEnvCheckBox");
-    parLayout->addMultiCellWidget(useVisItScriptForEnvCheckBox, arow,arow, 0,3);
+    advLayout->addMultiCellWidget(useVisItScriptForEnvCheckBox, arow,arow, 0,3);
     connect(useVisItScriptForEnvCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleUseVisItScriptForEnv(bool)));
     arow++;
@@ -595,6 +598,14 @@ QvisHostProfileWindow::CreateWindowContents()
     advLayout->addMultiCellWidget(sshPortCheckBox, arow, arow, 0, 0);
     advLayout->addMultiCellWidget(sshPort, arow, arow, 1, 2);
     arow++;
+
+    tunnelSSH = new QCheckBox("Tunnel data connections through SSH",
+                              advancedGroup, "tunnelSSH");
+    advLayout->addMultiCellWidget(tunnelSSH, arow,arow, 0,3);
+    connect(tunnelSSH, SIGNAL(toggled(bool)),
+            this, SLOT(toggleTunnelSSH(bool)));
+    arow++;
+
 }
 
 // ****************************************************************************
@@ -877,6 +888,9 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Eric Brugger, Thu Feb 15 12:14:34 PST 2007
 //   Added support for additional sublauncher arguments.
 //
+//   Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
+//   Added support for SSH port tunneling.
+//
 // ****************************************************************************
 void
 QvisHostProfileWindow::UpdateActiveProfile()
@@ -920,6 +934,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
     preCommandCheckBox->blockSignals(true);
     postCommand->blockSignals(true);
     postCommandCheckBox->blockSignals(true);
+    tunnelSSH->blockSignals(true);
 
     // If there is no active profile, set some "default" values.
     if(i < 0)
@@ -954,6 +969,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
         clientHostName->setText("");
         sshPortCheckBox->setChecked(false);
         sshPort->setText("");
+        tunnelSSH->setChecked(false);
     }
     else
     {
@@ -1078,6 +1094,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
         char portStr[256];
         SNPRINTF(portStr, 256, "%d", current.GetSshPort());
         sshPort->setText(portStr);
+        tunnelSSH->setChecked(current.GetTunnelSSH());
     }
 
     // Set the widgets' sensitivity
@@ -1119,6 +1136,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
     preCommandCheckBox->blockSignals(false);
     postCommand->blockSignals(false);
     postCommandCheckBox->blockSignals(false);
+    tunnelSSH->blockSignals(false);
 }
 
 // ****************************************************************************
@@ -1187,6 +1205,9 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //
 //    Eric Brugger, Thu Feb 15 12:14:34 PST 2007
 //    Added support for additional sublauncher arguments.
+//
+//    Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
+//    Added support for SSH port tunneling.
 //
 // ****************************************************************************
 
@@ -1257,6 +1278,7 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
                                current->GetClientHostDetermination() ==
                                               HostProfile::ManuallySpecified);
     sshPort->setEnabled(enabled && current->GetSshPortSpecified());
+    tunnelSSH->setEnabled(enabled);
 }
 
 // ****************************************************************************
@@ -3087,6 +3109,35 @@ QvisHostProfileWindow::postCommandChanged(const QString &portStr)
         }
         profiles->MarkActiveProfile();
         UpdateWindowSensitivity();
+        SetUpdate(false);
+        Apply();
+    }
+}
+
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::toggleTunnelSSH
+//
+// Purpose: 
+//   This is a Qt slot function that is activated when the tunnel SSH
+//   check box is toggled.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May 22, 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if(profiles->GetActiveProfile() >= 0)
+    {
+        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+        current.SetTunnelSSH(tunnel);
+        profiles->MarkActiveProfile();
         SetUpdate(false);
         Apply();
     }

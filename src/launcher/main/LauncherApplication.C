@@ -39,6 +39,7 @@
 #include <LauncherApplication.h>
 #include <ConnectionGroup.h>
 #include <SocketConnection.h>
+#include <SocketBridge.h>
 #include <DebugStream.h>
 #include <IncompatibleVersionException.h>
 #include <CouldNotConnectException.h>
@@ -46,6 +47,7 @@
 #include <RPCExecutor.h>
 #include <map>
 #include <snprintf.h>
+#include <time.h>
 
 #if defined(_WIN32)
 #include <process.h>
@@ -206,6 +208,9 @@ LauncherApplication::Instance()
 //   Jeremy Meredith, Tue Mar 30 17:27:59 PST 2004
 //   Added connectSimExecutor.
 //
+//   Jeremy Meredith, Thu May 24 11:25:16 EDT 2007
+//   Initialize useSSHTunneling.
+//
 // ****************************************************************************
 
 LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
@@ -217,6 +222,7 @@ LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
     connectSimExecutor = 0;
     timeout = 60;
     keepGoing = true;
+    useSSHTunneling = false;
 
 #if !defined(_WIN32)
     // Set up an alarm signal handler to exit gracefully.
@@ -295,6 +301,9 @@ LauncherApplication::Execute(int *argc, char **argv[])
 // Creation:   Fri May 2 17:29:41 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Thu May 24 11:25:31 EDT 2007
+//    Added detection of the SSH tunneling argument.  This is how
+//    the client tells us the SSH port forwarding is in effect.
 //   
 // ****************************************************************************
 
@@ -312,6 +321,10 @@ LauncherApplication::ProcessArguments(int *argcp, char **argvp[])
         {
             timeout = atol(argv[i+1]);
             ++i;
+        }
+        else if (arg == "-sshtunneling")
+        {
+            useSSHTunneling = true;
         }
     }
 }
@@ -477,7 +490,7 @@ LauncherApplication::DeadChildHandler(int)
 // Method: LauncherApplication::MainLoop
 //
 // Purpose: 
-//   This is the main loop for the laucher application.
+//   This is the main loop for the launcher application.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri May 2 17:32:23 PST 2003
@@ -552,6 +565,130 @@ LauncherApplication::ProcessInput()
 }
 
 // ****************************************************************************
+//  Method:  LauncherApplication::SetupGatewaySocketBridgeIfNeeded
+//
+//  Purpose:
+//    If SSH tunneling is enabled and we're about to launch a parallel
+//    engine, we need to set up a local port from any incoming host
+//    that gets forwarded through the appropriate SSH tunnel.  We cannot
+//    access SSH tunnels at the login node for a cluster from the
+//    compute nodes, because by default SSH only listens for connections
+//    from localhost.
+//
+//    The launch arguments containing the login node forward ("localhost":port)
+//    are also converted to the new bridge (loginnode:newport);
+//
+//  Arguments:
+//    launchArgs    the launch arguments (these will be modified in-place!)
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 24, 2007
+//
+// ****************************************************************************
+void
+LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
+{
+    const char *mName="LauncherApplication::SetupGatewaySocketBridgeIfNeeded: ";
+
+    if (!useSSHTunneling)
+        return;
+
+    debug5 << mName << "SSH Tunneling was enabled\n";
+
+    // Detect if we're launching a parallel engine
+    bool launching_parallel = false;
+    bool launching_engine   = false;
+    int  oldlocalport       = -1;
+    int  portargument       = -1;
+    int  hostargument       = -1;
+    for (int i=0; i<launchArgs.size(); i++)
+    {
+        if (launchArgs[i] == "-np" || launchArgs[i] == "-par")
+        {
+            launching_parallel = true;
+        }
+        else if (launchArgs[i] == "-engine")
+        {
+            launching_engine = true;
+        }
+        else if (i<launchArgs.size()-1 && launchArgs[i] == "-port")
+        {
+            oldlocalport = atoi(launchArgs[i+1].c_str());
+            portargument = i+1;
+        }
+        else if (i<launchArgs.size()-1 && launchArgs[i] == "-host")
+        {
+            hostargument = i+1;
+        }
+    }
+
+    if (launching_parallel && launching_engine)
+    {
+        debug5 << mName << "Parallel Engine launch detected; "
+               << "Setting up gateway port bridge.\n";
+        // find a new local port
+        int lowerRemotePort = 10000;
+        int upperRemotePort = 40000;
+        int remotePortRange = 1+upperRemotePort-lowerRemotePort;
+
+#if defined(_WIN32)
+        srand((unsigned)time(0));
+        int newlocalport = lowerRemotePort+(rand()%remotePortRange);
+#else
+        srand48(long(time(0)));
+        int newlocalport = lowerRemotePort+(lrand48()%remotePortRange);
+#endif
+        debug5 << mName << "Bridging new port INADDR_ANY/" << newlocalport
+               << " to tunneled port localhost/" << oldlocalport << endl;
+
+        // replace the host with my host name
+        char hostname[1024];
+        gethostname(hostname,1024);
+        launchArgs[hostargument] = hostname;
+
+        // replace the launch argument port number
+        char newportstr[10];
+        sprintf(newportstr,"%d",newlocalport);
+        launchArgs[portargument] = newportstr;
+
+        // fork and start the socket bridge
+        switch (fork())
+        {
+          case -1:
+            // Could not fork.
+            exit(-1);
+            break;
+          case 0:
+              {
+                  // Close stdin and any other file descriptors.
+                  fclose(stdin);
+                  for (int k = 3 ; k < 32 ; ++k)
+                  {
+                      close(k);
+                  }
+                  // The child process will start the bridge
+                  SocketBridge bridge(newlocalport,oldlocalport);
+                  bridge.Bridge();
+                  exit(0);
+                  break;
+              }
+          default:
+            // Parent process continues on as normal
+            // Caution: there is a slight race condition here, though
+            // it would require the engine to launch and try to connect
+            // back before the child process got the bridge set up.
+            // The odds of this happening are low, but it should be fixed.
+            break;
+        }
+    }
+    else
+    {
+        debug5 << mName << "Not launching parallel engine; "
+               << "skipping gateway port bridge." << endl;
+    }
+}
+
+// ****************************************************************************
 // Method: LauncherApplication::LaunchProcess
 //
 // Purpose: 
@@ -568,10 +705,20 @@ LauncherApplication::ProcessInput()
 // ****************************************************************************
 
 void
-LauncherApplication::LaunchProcess(const stringVector &launchArgs)
+LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
 {
+    const char *mName = "LauncherApplication::LaunchProcess: ";
+
+    stringVector launchArgs(origLaunchArgs);
+
     if(launchArgs.size() < 1)
         return;
+
+    // Set up an extra indirection if we're tunneling and 
+    // launching a parallel engine.  SSH port forwarding
+    // is typically restricted to forwarding from localhost
+    // which doesn't work if we're on a compute node.
+    SetupGatewaySocketBridgeIfNeeded(launchArgs);
 
     std::string remoteProgram(launchArgs[0]);
     debug2 << "LaunchRPC command = " << remoteProgram.c_str() << ", args=(";

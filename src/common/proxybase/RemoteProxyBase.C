@@ -112,6 +112,9 @@ RemoteProxyBase::~RemoteProxyBase()
 //    Brad Whitlock, Thu Mar 11 12:51:34 PDT 2004
 //    I added keep alive RPC.
 //
+//    Jeremy Meredith, Thu May 24 10:20:57 EDT 2007
+//    Added SSH tunneling argument; pass it along to RemoteProcess::Open.
+//
 // ****************************************************************************
 
 void
@@ -120,6 +123,7 @@ RemoteProxyBase::Create(const std::string &hostName,
                         const std::string &clientHostName,
                         bool manualSSHPort,
                         int sshPort,
+                        bool useTunneling,
                         ConnectCallback *connectCallback, void *data,
                         bool createAsThoughLocal)
 {
@@ -150,7 +154,7 @@ RemoteProxyBase::Create(const std::string &hostName,
     // Open the remote component.
     //
     component->Open(hostName, chd, clientHostName,
-                    manualSSHPort, sshPort,
+                    manualSSHPort, sshPort, useTunneling,
                     nRead, nWrite, createAsThoughLocal);
 
     //

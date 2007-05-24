@@ -57,6 +57,9 @@
 #
 # Modifications:
 #
+#    Jeremy Meredith, Thu May 24 11:24:15 EDT 2007
+#    Added SocketBridge.
+#
 ##############################################################################
 
 ##
@@ -73,7 +76,7 @@ CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
 ##
 ## Files...
 ##
-SRC=LauncherApplication.C main.C
+SRC=LauncherApplication.C SocketBridge.C main.C
 
 OBJ=$(SRC:.C=.o)
 

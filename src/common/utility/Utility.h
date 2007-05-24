@@ -45,6 +45,7 @@
 #include <visit-config.h>
 #include <string>
 #include <vector>
+#include <map>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -110,6 +111,9 @@ void        UTILITY_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
 
 int         UTILITY_API VisItStat(const char *filename, VisItStat_t *buf);
 int         UTILITY_API VisItFstat(int fd, VisItStat_t *buf);
+
+bool        UTILITY_API ConvertArgsToTunneledValues(const std::map<int,int>&,
+                                                    std::vector<std::string>&);
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);

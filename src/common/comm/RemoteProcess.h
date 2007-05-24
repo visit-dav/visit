@@ -46,6 +46,7 @@
 #endif
 #include <vectortypes.h>
 #include <HostProfile.h>
+#include <map>
 
 class Connection;
 
@@ -109,6 +110,10 @@ class Connection;
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Jeremy Meredith, Thu May 24 11:08:03 EDT 2007
+//    Added support for SSH port tunneling.  Also made CreateCommandLine
+//    non-const; we need to store the port forwarding map at that time.
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -121,6 +126,7 @@ public:
                       const std::string &clientHostName,
                       bool manualSSHPort,
                       int sshPort,
+                      bool useTunneling,
                       int numRead, int numWrite,
                       bool createAsThoughLocal = false);
     void WaitForTermination();
@@ -132,6 +138,7 @@ public:
     Connection *GetWriteConnection(int i=0) const;
     int  GetProcessId() const;
     void SetProgressCallback(bool (*)(void *, int), void *);
+    std::map<int,int> GetPortTunnelMap() { return portTunnelMap; }
 
     static void SetAuthenticationCallback(void (*)(const char *, const char *, int));    
     static void DisablePTY();
@@ -147,8 +154,8 @@ protected:
                            HostProfile::ClientHostDetermination chd,
                            const std::string &clientHostName,
                            bool manualSSHPort,
-                           int sshPort,
-                           int numRead, int numWrite, bool local) const;
+                           int sshPort, bool useTunneling,
+                           int numRead, int numWrite, bool local);
 protected:
     int                      listenPortNum;
     std::string              localHost, localUserName;
@@ -175,6 +182,7 @@ private:
     int                      nReadConnections, nWriteConnections;
     bool                   (*progressCallback)(void *, int);
     void                    *progressCallbackData;
+    std::map<int,int>        portTunnelMap;
 
     static void            (*getAuthentication)(const char *, const char *, int);
     static bool              disablePTY;

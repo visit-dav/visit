@@ -113,6 +113,9 @@ ExistingRemoteProcess::~ExistingRemoteProcess()
 //   parsed from the SSH_CLIENT (or related) environment variables.  Added
 //   ability to specify an SSH port.
 //
+//   Jeremy Meredith, Thu May 24 11:10:15 EDT 2007
+//   Added SSH tunneling argument; pass it along to CreateCommandLine.
+//
 // ****************************************************************************
 
 bool
@@ -120,7 +123,7 @@ ExistingRemoteProcess::Open(const std::string &rHost,
                             HostProfile::ClientHostDetermination chd,
                             const std::string &clientHostName,
                             bool manualSSHPort,
-                            int sshPort,
+                            int sshPort, bool useTunneling,
                             int numRead, int numWrite,
                             bool createAsThoughLocal)
 {
@@ -131,7 +134,7 @@ ExistingRemoteProcess::Open(const std::string &rHost,
     // Add all of the relevant command line arguments to a vector of strings.
     stringVector commandLine;
     CreateCommandLine(commandLine, rHost,
-                      chd, clientHostName, manualSSHPort, sshPort,
+                      chd, clientHostName, manualSSHPort, sshPort,useTunneling,
                       numRead, numWrite,
                       createAsThoughLocal);
 

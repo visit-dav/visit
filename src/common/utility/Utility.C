@@ -1456,3 +1456,46 @@ VisItFstat(int fd, VisItStat_t *buf)
 
 #endif
 }
+
+
+// ****************************************************************************
+//  Method:  ConvertArgsToTunneledValues
+//
+//  Purpose:
+//    When we're doing SSH tunneling, we  need to replace client:oldport
+//    with remote:tunnelend port (called "localhost":tunneledport because
+//    localhost is determined relative to the remote machine).
+//
+//  Arguments:
+//    portTunnelMap        the map of local-to-remote port numbers
+//    args                 the argv stringVector to modify in-place
+//
+//  Returns:  true on success, false on failure.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 24, 2007
+//
+// ****************************************************************************
+bool
+ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
+                            std::vector<std::string> &args)
+{
+    for (int i=0; i<args.size(); i++)
+    {
+        if (i<args.size()-1 && args[i] == "-host")
+        {
+            args[i+1] = "localhost";
+        }
+        if (i<args.size()-1 && args[i] == "-port")
+        {
+            int oldport = atoi(args[i+1].c_str());
+            if (portTunnelMap.count(oldport) <= 0)
+                return false;
+            int newport = portTunnelMap.find(oldport)->second;
+            char newportstr[10];
+            sprintf(newportstr,"%d",newport);
+            args[i+1] = newportstr;
+        }
+    }
+    return true;
+}

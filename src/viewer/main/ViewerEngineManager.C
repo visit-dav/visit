@@ -564,6 +564,10 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    Hank Childs, Thu May 25 09:06:23 PDT 2006
 //    Change CATCH to CATCHALL.
 //
+//    Jeremy Meredith, Thu May 24 10:33:27 EDT 2007
+//    Added SSH tunneling option to EngineProxy::Create, and set it to false.
+//    If we need to tunnel, the VCL will do the host/port translation for us.
+//
 // ****************************************************************************
 
 bool
@@ -648,6 +652,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
         int  sshPort;
         GetSSHPortOptions(ek.HostName(), manualSSHPort, sshPort);
 
+        // We don't set up tunnels when launching an engine, just the VCL
+        bool useTunneling = false;
+
         //
         // Launch the engine.
         //
@@ -657,12 +664,12 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
             if (!ShouldShareBatchJob(ek.HostName()) && 
                 HostIsLocalHost(ek.HostName()))
                 newEngine.proxy->Create("localhost", chd, clientHostName,
-                                  manualSSHPort, sshPort);
+                                        manualSSHPort, sshPort, useTunneling);
             else
             {
                 // Use VisIt's launcher to start the remote engine.
                 newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
-                                  manualSSHPort, sshPort,
+                                  manualSSHPort, sshPort, useTunneling,
                                   OpenWithLauncher, (void *)dialog, true);
             }
         }
@@ -786,6 +793,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 //    Jeremy Meredith, Mon May  9 14:39:44 PDT 2005
 //    Added security key.
 //
+//    Jeremy Meredith, Thu May 24 10:33:27 EDT 2007
+//    Added SSH tunneling option to EngineProxy::Create, and set it to false.
+//
 // ****************************************************************************
 
 bool
@@ -843,6 +853,10 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         int  sshPort;
         GetSSHPortOptions(ek.HostName(), manualSSHPort, sshPort);
 
+        // We don't set up tunnels when connecting to a simulation,
+        // just when launching the VCL
+        bool useTunneling = false;
+
         //
         // Launch the engine.
         //
@@ -858,7 +872,7 @@ ViewerEngineManager::ConnectSim(const EngineKey &ek,
         simData.d = SetupConnectionProgressWindow(newEngine.proxy, ek.HostName());
 
         newEngine.proxy->Create(ek.HostName(),  chd, clientHostName,
-                          manualSSHPort, sshPort,
+                          manualSSHPort, sshPort, useTunneling,
                           SimConnectThroughLauncher, (void *)&simData,
                           true);
 
