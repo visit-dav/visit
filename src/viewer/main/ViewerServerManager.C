@@ -371,6 +371,44 @@ ViewerServerManager::GetSSHPortOptions(const std::string &host,
 }
 
 // ****************************************************************************
+// Method: ViewerServerManager::GetSSHTunnelOptions
+//
+// Purpose: 
+//   This method finds a host profile that matches the specified hostname
+//   and returns the ssh tunneling options.
+//
+// Arguments:
+//   host          : The host where the component will be run.
+//   tunnelSSH     : True if we need to attempt tunneling
+//
+// Programmer: Jeremy Meredith
+// Creation:   May 22, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
+                                         bool &tunnelSSH)
+{
+    //
+    // Check for a host profile for the hostName. If one exists, 
+    // return the ssh tunneling options.
+    //
+    const HostProfile *profile =
+         clientAtts->FindMatchingProfileForHost(host.c_str());
+    if(profile != 0)
+    {
+        tunnelSSH = profile->GetTunnelSSH();
+    }
+    else
+    {
+        tunnelSSH = false;
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerServerManager::ShouldShareBatchJob
 //
 //  Purpose: 
@@ -605,6 +643,10 @@ ViewerServerManager::SendKeepAlivesToLaunchers()
 //   Brad Whitlock, Thu Aug 5 10:52:40 PDT 2004
 //   I made it get its profile from the chooser if possible.
 //
+//   Jeremy Meredith, Thu May 24 10:17:57 EDT 2007
+//   Since SSH tunneling is only useful when launching the VCL, we
+//   check its actual value and use pass it along.
+//
 // ****************************************************************************
 
 void
@@ -667,11 +709,14 @@ ViewerServerManager::StartLauncher(const std::string &host,
             int  sshPort;
             GetSSHPortOptions(host, manualSSHPort, sshPort);
 
+            bool useTunneling;
+            GetSSHTunnelOptions(host, useTunneling);
+
             //
             // Launch the VisIt component launcher on the specified host.
             //
             newLauncher->Create(host, chd, clientHostName,
-                                manualSSHPort, sshPort);
+                                manualSSHPort, sshPort, useTunneling);
             launchers[host] = newLauncher;
 
             // Set the dialog's information back to the previous values.
@@ -902,5 +947,30 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
     {
         EXCEPTION0(CouldNotConnectException);
     }
+}
+
+
+
+// ****************************************************************************
+//  Method:  ViewerServerManager::GetPortTunnelMap
+//
+//  Purpose:
+//    Retrieve the SSH tunneling local-to-remote port map for the
+//    appropriate host.
+//
+//  Arguments:
+//    host       the host for which we need the ssh port tunnel map
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 24, 2007
+//
+// ****************************************************************************
+std::map<int,int>
+ViewerServerManager::GetPortTunnelMap(const std::string &host)
+{
+    std::map<int,int> ret;
+    if (launchers.count(host))
+        ret = launchers[host]->GetPortTunnelMap();
+    return ret;
 }
 

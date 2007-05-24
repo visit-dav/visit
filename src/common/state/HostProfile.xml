@@ -107,6 +107,9 @@
     </Field>
     <Field name="hwAccelPostCommand" label="Post-command for hardware acceleration" type="string" enabler="havePostCommand:true">
     </Field>
+    <Field name="tunnelSSH" label="Tunnel data connections through SSH" type="bool">
+      false
+    </Field>
     <Function name="defaultUserName" user="true" member="true">
     </Function>
     <Function name="SplitHostPattern" user="true" member="true">

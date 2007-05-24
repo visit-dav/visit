@@ -56,6 +56,7 @@ extern ViewerSubject *viewerSubject;
 // Static members
 ViewerPasswordWindow *ViewerPasswordWindow::instance = NULL;
 ViewerConnectionProgressDialog *ViewerPasswordWindow::dialog = NULL;
+std::set<int> ViewerPasswordWindow::failedPortForwards;
 
 // ****************************************************************************
 //  Constructor:  ViewerPasswordWindow::ViewerPasswordWindow
@@ -169,6 +170,9 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    Hank Childs, Thu Jan 26 09:55:31 PST 2006
 //    Add support for "Enter PASSCODE:". ('6946)
 //
+//    Jeremy Meredith, Thu May 24 10:57:02 EDT 2007
+//    Added support for checking failed port forward messages.
+//
 // ****************************************************************************
 
 void
@@ -179,6 +183,8 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
     int  timeout = 3000;
     char *buffer = new char[20000];
     char *pbuf   = buffer;
+
+    failedPortForwards.clear();
 
     for (;;)
     {
@@ -250,6 +256,23 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         }
         else if (strstr(buffer, "Running: "))
         {
+            // Check for failed port forwards; this will be
+            // in the buffer after the password was accepted.
+            char failedStr[]  = "forwarding failed for listen port ";
+            if (strstr(buffer, failedStr))
+            {
+                char failedStrLen = strlen(failedStr);
+                for (char *p = buffer; p < pbuf-failedStrLen-1; p++)
+                {
+                    if (strncmp(failedStr, p, failedStrLen) == 0)
+                    {
+                        int failedPort = -1;
+                        sscanf(p+failedStrLen, "%d", &failedPort);
+                        failedPortForwards.insert(failedPort);
+                    }
+                }
+            }
+
             // Success!  Just return.
             delete[] buffer;
 

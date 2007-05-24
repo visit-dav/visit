@@ -68,6 +68,12 @@
 //   Jeremy Meredith, Mon May  9 16:09:06 PDT 2005
 //   I added security protocols for simulations.
 //
+//   Jeremy Meredith, Thu May 24 12:31:29 EDT 2007
+//   Added support for SSH tunneling.  Specifically, added a bridge
+//   so that the login node could act as a gateway between the SSH 
+//   tunnel origination (on the login node) and the compute node
+//   where a parallel engine might run.
+//
 // ****************************************************************************
 
 class LauncherApplication
@@ -90,6 +96,7 @@ protected:
     void TurnOnAlarm();
     void TurnOffAlarm();
     void TerminateConnectionRequest(int, char **);
+    void SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs);
 
     static void AlarmHandler(int);
     static void DeadChildHandler(int);
@@ -110,6 +117,7 @@ private:
     RPCExecutor<LaunchRPC>     *launchExecutor;
     RPCExecutor<ConnectSimRPC> *connectSimExecutor;
 
+    bool                        useSSHTunneling;
     bool                        keepGoing;
     int                         timeout;
 };

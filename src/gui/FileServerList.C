@@ -807,6 +807,10 @@ FileServerList::SetHost(const string &host)
 //   Jeremy Meredith, Wed Jul  7 17:04:03 PDT 2004
 //   I made the filter be global to all hosts.
 //
+//   Jeremy Meredith, Thu May 24 10:35:14 EDT 2007
+//   Added SSH tunneling option to MDServerProxy::Create, and set it to false.
+//   If we need to tunnel, the VCL will do the host/port translation for us.
+//
 // ****************************************************************************
 
 void
@@ -823,7 +827,7 @@ FileServerList::StartServer(const string &host)
         info->server->SetProgressCallback(progressCallback,
             progressCallbackData);
         info->server->Create(host,
-                             HostProfile::MachineName, "", false, 0,
+                             HostProfile::MachineName, "", false, 0, false,
                              connectCallback, connectCallbackData);
         connectingServer = false;
 

@@ -73,6 +73,9 @@ using std::string;
 //   parsed from the SSH_CLIENT (or related) environment variables.  Added
 //   ability to specify an SSH port.
 //
+//   Jeremy Meredith, Thu May 24 10:16:11 EDT 2007
+//   Added ssh tunneling argument.
+//
 // ****************************************************************************
 
 int
@@ -106,7 +109,7 @@ TRY
 {
     cout << "----------------------------------------" << endl;
     cout << "Creating MDServer" << endl;
-    mdserver->Create(argv[1], HostProfile::MachineName, "", false, 0);
+    mdserver->Create(argv[1], HostProfile::MachineName, "", false, 0, false);
 
     cout << "----------------------------------------" << endl;
     cout << "Getting Directory" << endl;

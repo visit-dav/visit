@@ -36,6 +36,8 @@
 *****************************************************************************/
 
 #include <LauncherProxy.h>
+#include <RemoteProcess.h>
+#include <Utility.h>
 
 // ****************************************************************************
 // Method: LauncherProxy::LauncherProxy
@@ -128,12 +130,31 @@ LauncherProxy::SetupComponentRPCs()
 // Creation:   Fri May 2 16:41:13 PST 2003
 //
 // Modifications:
+//    Jeremy Meredith, Thu May 24 10:27:55 EDT 2007
+//    When sending a launch command, if we're doing ssh port tunneling,
+//    map the local host/port to the remote one.
 //   
 // ****************************************************************************
 
 void
-LauncherProxy::LaunchProcess(const stringVector &programArgs)
+LauncherProxy::LaunchProcess(const stringVector &origProgramArgs)
 {
+    stringVector programArgs(origProgramArgs);
+
+    if (!GetPortTunnelMap().empty())
+    {
+        // If we're doing ssh tunneling, map the local host/port to the
+        // remote one.
+        bool success = ConvertArgsToTunneledValues(GetPortTunnelMap(),
+                                                   programArgs);
+        if (!success)
+        {
+            EXCEPTION1(VisItException, "Launcher needed to tunnel to a local "
+                       "port that wasn't in the port map.  The number of "
+                       "tunneled ports may need to be increased.");
+        }
+    }
+
     launchRPC(programArgs);
 }
 
@@ -163,4 +184,25 @@ LauncherProxy::ConnectSimulation(const stringVector &programArgs,
                                  const std::string &simSecurityKey)
 {
     connectSimRPC(programArgs, simHost, simPort, simSecurityKey);
+}
+
+
+// ****************************************************************************
+//  Method:  LauncherProxy::GetPortTunnelMap
+//
+//  Purpose:
+//    Retrieve the SSH tunneling local-to-remote port map from the
+//    remote process object.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    May 24, 2007
+//
+// ****************************************************************************
+std::map<int,int>
+LauncherProxy::GetPortTunnelMap()
+{
+    return component->GetPortTunnelMap();
 }

@@ -201,6 +201,9 @@ ViewerClientConnection::~ViewerClientConnection()
 //
 // Modifications:
 //   
+//    Jeremy Meredith, Thu May 24 10:35:14 EDT 2007
+//    Added SSH tunneling option to RemoteProcess::Open, and set it to false.
+//
 // ****************************************************************************
 
 void
@@ -256,7 +259,7 @@ ViewerClientConnection::LaunchClient(const std::string &program,
     // Try opening the client.
     debug1 << mName << "Opening client connection." << endl;
     remoteProcess->Open("localhost", HostProfile::MachineName, "",
-                        false, 0, 1, 1);
+                        false, 0, false, 1, 1);
 
     debug1 << mName << "Successfully opened client connection." << endl;
 

@@ -123,6 +123,9 @@ class QRadioButton;
 //    Eric Brugger, Thu Feb 15 12:10:21 PST 2007
 //    Added support for additional sublauncher arguments.
 //
+//    Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
+//    Added support for SSH port tunneling.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -189,6 +192,7 @@ private slots:
     void togglePreCommand(bool);
     void postCommandChanged(const QString &);
     void togglePostCommand(bool);
+    void toggleTunnelSSH(bool);
 private:
     QTabWidget   *hostTabs;
     QListBox     *emptyListBox;
@@ -252,6 +256,7 @@ private:
     QCheckBox    *preCommandCheckBox;
     QLineEdit    *postCommand;
     QCheckBox    *postCommandCheckBox;
+    QCheckBox    *tunnelSSH;
 
     int          profileCounter;
 };

@@ -38,6 +38,7 @@
 #ifndef VIEWERPASSWORDWINDOW_H
 #define VIEWERPASSWORDWINDOW_H
 #include <qdialog.h>
+#include <set>
 
 // Forward declarations
 class QLineEdit;
@@ -61,6 +62,9 @@ class ViewerConnectionProgressDialog;
 //    Brad Whitlock, Thu Aug 29 17:50:25 PST 2002
 //    I added a userName argument to the getPassword and authenticate methods.
 //
+//    Jeremy Meredith, Thu May 24 10:57:02 EDT 2007
+//    Added support for checking failed SSH tunneling (port forwards).
+//
 // ****************************************************************************
 
 class ViewerPasswordWindow : public QDialog
@@ -76,7 +80,9 @@ class ViewerPasswordWindow : public QDialog
     {
         dialog = d;
     }
+    static std::set<int> GetFailedPortForwards();
   private:
+    static std::set<int> failedPortForwards;
     QLineEdit *passedit;
     QLabel    *label;
     static ViewerConnectionProgressDialog *dialog;

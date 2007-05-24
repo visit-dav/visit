@@ -617,6 +617,9 @@ ParentProcess::GetWriteConnection(int i) const
 //   Brad Whitlock, Fri May 12 11:50:15 PDT 2006
 //   Added more extensive debug logging for the Windows platform.
 //
+//   Jeremy Meredith, Thu May 24 11:22:55 EDT 2007
+//   Added errno to unix output to determine the actual error.
+//
 // ****************************************************************************
 
 int
@@ -682,7 +685,7 @@ ParentProcess::GetClientSocketDescriptor(int port)
     debug5 << mName << "Calling connect" << endl;
     if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
-        debug5 << mName << "Could not connect!" << endl;
+        debug5 << mName << "Could not connect! (error="<<errno<<")" << endl;
         close(s);
         return -1;
     }

@@ -68,6 +68,7 @@
 #include <DebugStream.h>
 #include <snprintf.h>
 #include <map>
+#include <set>
 
 #ifdef HAVE_THREADS
 #if !defined(_WIN32)
@@ -1077,6 +1078,9 @@ RemoteProcess::MultiThreadedAcceptSocket()
 //    Brad Whitlock, Tue Jan 17 13:49:43 PST 2006
 //    Adding debug logging.
 //
+//    Jeremy Meredith, Thu May 24 11:10:15 EDT 2007
+//    Added SSH tunneling argument; pass it along to CreateCommandLine.
+//
 // ****************************************************************************
 
 bool
@@ -1085,6 +1089,7 @@ RemoteProcess::Open(const std::string &rHost,
                     const std::string &clientHostName,
                     bool manualSSHPort,
                     int sshPort,
+                    bool useTunneling,
                     int numRead, int numWrite,
                     bool createAsThoughLocal)
 {
@@ -1100,6 +1105,7 @@ RemoteProcess::Open(const std::string &rHost,
         debug5 << i_chd;
     debug5 << ", manualSSHPort=" << (manualSSHPort?"true":"false");
     debug5 << ", sshPort=" << sshPort;
+    debug5 << ", useTunneling=" << useTunneling;
     debug5 << ", numRead=" << numRead;
     debug5 << ", numWrite=" << numWrite;
     debug5 << ", createAsThoughLocal=" << (createAsThoughLocal?"true":"false");
@@ -1114,12 +1120,12 @@ RemoteProcess::Open(const std::string &rHost,
     }
 
     // Add all of the relevant command line arguments to a vector of strings.
-    debug5 << mName << "Creating the command line to use: (";
     stringVector commandLine;
     CreateCommandLine(commandLine, rHost,
-                      chd, clientHostName, manualSSHPort, sshPort,
+                      chd, clientHostName, manualSSHPort, sshPort,useTunneling,
                       numRead, numWrite,
                       createAsThoughLocal);
+    debug5 << mName << "Creating the command line to use: (";
     for(int i = 0; i < commandLine.size(); ++i)
     {
         debug5 << commandLine[i].c_str();
@@ -1656,6 +1662,15 @@ RemoteProcess::SecureShellArgs() const
 //    parsed from the SSH_CLIENT (or related) environment variables.  Added
 //    ability to specify an SSH port.
 //
+//    Jeremy Meredith, Thu May 24 11:11:22 EDT 2007
+//    Added support for SSH tunneling.  The initial implementation here
+//    will be to forward N remote ports to local ports 5600 .. 5600+N-1.
+//    We save off this map, and when launching remote processes we will
+//    convert client:originalport to remote:tunneledport using this map.
+//    If N is too low, we will run out of forwards.  If N is too high
+//    then picking arbitrary random ports on the remote machine is
+//    liable to run into collisions with other users more quickly.
+//
 // ****************************************************************************
 
 void
@@ -1664,7 +1679,8 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
                                  const std::string &clientHostName,
                                  bool manualSSHPort,
                                  int sshPort,
-                                 int numRead, int numWrite, bool local) const
+                                 bool useTunneling,
+                                 int numRead, int numWrite, bool local)
 {
     //
     // If the host is not local, then add some ssh arguments to the
@@ -1707,6 +1723,54 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
              args.push_back("-l");
              args.push_back(remoteUserName);
         }
+
+        // If we're tunneling, add the arguments to SSH to 
+        // forward a bunch of remote ports to our local ports.
+        if (useTunneling)
+        {
+            int numRemotePortsPerLocalPort = 1;
+            int numLocalPorts              = 5;
+            int firstLocalPort             = INITIAL_PORT_NUMBER;
+            int lowerRemotePort            = 10000;
+            int upperRemotePort            = 40000;
+            int remotePortRange            = 1+upperRemotePort-lowerRemotePort;
+            portTunnelMap.clear();
+            std::set<int> remotePortSet;
+            for (int i = 0; i < numLocalPorts ; i++)
+            {
+                int localPort = firstLocalPort + i;
+                for (int j = 0; j < numRemotePortsPerLocalPort; j++)
+                {
+                    int remotePort;
+                    do
+                    {
+#if defined(_WIN32)
+                        remotePort = lowerRemotePort+(rand()%remotePortRange);
+#else
+                        remotePort = lowerRemotePort+(lrand48()%remotePortRange);
+#endif
+                    }
+                    while (remotePortSet.count(remotePort) != 0);
+
+                    remotePortSet.insert(remotePort);
+
+                    // NOTE: using a (non-multi) map only works
+                    // when there is one remote port for each local port.
+                    // If we change the implementation so that we try to
+                    // map more than one remote port to each local port,
+                    // we much change this!
+                    portTunnelMap[localPort] = remotePort;
+
+                    char forwardSpec[256];
+                    sprintf(forwardSpec, "%d:%s:%d",
+                            remotePort, "localhost", localPort);
+                    debug5 << "RemoteProcess::CreateCommandLine -- "
+                           << "forwarding ("<< forwardSpec << ")" << endl;
+                    args.push_back("-R");
+                    args.push_back(forwardSpec);
+                }
+            }
+        }
     
         // Set the name of the host to run on.
         args.push_back(remoteHost.c_str());
@@ -1733,25 +1797,52 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     //
     // Add the local hostname and the ports we'll be talking on.
     //
-    switch (chd)
+    if (useTunneling)
     {
-      case HostProfile::MachineName:
-        args.push_back("-host");
-        args.push_back(localHost.c_str());
-        break;
-      case HostProfile::ManuallySpecified:
-        args.push_back("-host");
-        args.push_back(clientHostName);
-        break;
-      case HostProfile::ParsedFromSSHCLIENT:
-        args.push_back("-guesshost");
-        break;
-    }
+        // If we're tunneling, we know that the VCL must attempt to
+        // connect to localhost on the forwarded port.
+        args.push_back("-sshtunneling");
 
-    args.push_back("-port");
-    char tmp[20];
-    sprintf(tmp, "%d", listenPortNum);
-    args.push_back(tmp);
+        args.push_back("-host");
+        args.push_back("localhost");
+
+        if (portTunnelMap.count(listenPortNum)<=0)
+        {
+            debug5 << "Error finding tunnel for port "<<listenPortNum<<endl;
+            EXCEPTION1(VisItException, "Launcher needed to tunnel to a local "
+                       "port that wasn't in the port map.  The number of "
+                       "tunneled ports may need to be increased.");
+        }
+
+        args.push_back("-port");
+        char tmp[20];
+        sprintf(tmp, "%d", portTunnelMap[listenPortNum]);
+        args.push_back(tmp);
+    }
+    else
+    {
+        // If we're not tunneling, we must choose a method of determining
+        // the host name, and use the actual listen port number.
+        switch (chd)
+        {
+          case HostProfile::MachineName:
+            args.push_back("-host");
+            args.push_back(localHost.c_str());
+            break;
+          case HostProfile::ManuallySpecified:
+            args.push_back("-host");
+            args.push_back(clientHostName);
+            break;
+          case HostProfile::ParsedFromSSHCLIENT:
+            args.push_back("-guesshost");
+            break;
+        }
+
+        args.push_back("-port");
+        char tmp[20];
+        sprintf(tmp, "%d", listenPortNum);
+        args.push_back(tmp);
+    }
 
     //
     // Add the security key

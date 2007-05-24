@@ -403,6 +403,9 @@ ViewerProxy::AddArgument(const std::string &arg)
 //    Brad Whitlock, Fri Feb 9 18:20:24 PST 2007
 //    I made it use ViewerState and I removed old modification comments.
 //
+//    Jeremy Meredith, Thu May 24 10:16:39 EDT 2007
+//    Added SSH tunneling argument to RemoteProcess::Open, set it to false.
+//
 // ****************************************************************************
 
 void
@@ -456,7 +459,7 @@ ViewerProxy::Create(const char *visitProgram, int *inputArgc, char ***inputArgv)
         //
         viewer->Open("localhost",
                      HostProfile::MachineName, "", 
-                     false, 0,
+                     false, 0, false,
                      1, 1);
 
         // Use viewer's connections for xfer.

@@ -76,6 +76,9 @@ class ViewerConnectionProgressDialog;
 //    Brad Whitlock, Mon Feb 12 17:46:53 PST 2007
 //    Added ViewerBase base class.
 //
+//    Jeremy Meredith, Tue May 22 13:00:38 EDT 2007
+//    Added SSH tunneling option.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager : public ViewerBase
@@ -106,6 +109,7 @@ protected:
                                      std::string &clientHostName);
     static void GetSSHPortOptions(const std::string &host,
                                   bool &manualSSHPort, int &sshPort);
+    static void GetSSHTunnelOptions(const std::string &host, bool &tunnelSSH);
 
     static ViewerConnectionProgressDialog *
         SetupConnectionProgressWindow(RemoteProxyBase *component, 
@@ -119,6 +123,8 @@ protected:
                                           void *data);
 
     const char *RealHostName(const char *hostName) const;
+
+    static std::map<int,int> GetPortTunnelMap(const std::string &host);
 
     static HostProfileList         *clientAtts;
 private:

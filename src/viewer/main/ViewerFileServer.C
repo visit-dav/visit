@@ -62,6 +62,8 @@
 #include <SILAttributes.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerWindowManager.h>
+#include <LauncherProxy.h>
+#include <Utility.h>
 
 #include <DebugStream.h>
 
@@ -1180,6 +1182,10 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Brad Whitlock, Fri Mar 17 10:56:20 PDT 2006
 //    Improved the "Cound not connect" exception error message even more.
 //
+//    Jeremy Meredith, Thu May 24 10:33:27 EDT 2007
+//    Added SSH tunneling option to MDServerProxy::Create, and set it to false.
+//    If we need to tunnel, the VCL will do the host/port translation for us.
+//
 // ****************************************************************************
 
 void
@@ -1211,6 +1217,9 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         int  sshPort;
         GetSSHPortOptions(host, manualSSHPort, sshPort);
 
+        // We don't set up tunnels when launching an MD server, just the VCL
+        bool useTunneling = false;
+
         // Create a connection progress dialog and hook it up to the
         // mdserver proxy.
         dialog = SetupConnectionProgressWindow(newServer, host);
@@ -1219,13 +1228,13 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         if (!ShouldShareBatchJob(host) && HostIsLocalHost(host))
         {
             newServer->Create("localhost", chd, clientHostName,
-                              manualSSHPort, sshPort);
+                              manualSSHPort, sshPort, useTunneling);
         }
         else
         {
             // Use VisIt's launcher to start the remote mdserver.
             newServer->Create(host, chd, clientHostName,
-                              manualSSHPort, sshPort,
+                              manualSSHPort, sshPort, useTunneling,
                               OpenWithLauncher, (void*)dialog, true);
         }
 
@@ -1614,7 +1623,28 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
     // to another program.
     if(servers.find(mdServerHost) != servers.end())
     {
-        servers[mdServerHost]->proxy->Connect(args);
+        // If we're doing ssh tunneling, map the local host/port to the
+        // remote one.
+        std::map<int,int> portTunnelMap = GetPortTunnelMap(mdServerHost);
+        if (!portTunnelMap.empty())
+        {
+            stringVector newargs(args);
+            bool success = ConvertArgsToTunneledValues(portTunnelMap, newargs);
+            if (!success)
+            {
+                debug1 << termString
+                       << "tunneling was requested and no remote port existed"
+                       << " to map to the desired local port. Try "
+                       << "increasing the number of tunneled ports.";
+                TerminateConnectionRequest(args, 5);
+            }
+            servers[mdServerHost]->proxy->Connect(newargs);
+        }
+        else
+        {
+            // Not tunneling through SSH; just go ahead and connect
+            servers[mdServerHost]->proxy->Connect(args);
+        }
     }
 }
 

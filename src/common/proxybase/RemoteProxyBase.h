@@ -77,6 +77,9 @@ class RemoteProcess;
 //    Brad Whitlock, Thu Aug 5 09:59:11 PDT 2004
 //    Added AddProfileArguments from another class.
 //
+//    Jeremy Meredith, Thu May 24 10:20:32 EDT 2007
+//    Added SSH tunneling argument to Create.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -95,6 +98,7 @@ public:
                 const std::string &clientHostName,
                 bool manualSSHPort,
                 int sshPort,
+                bool useTunneling,
                 ConnectCallback *connectCallback = 0,
                 void *data = 0, bool createAsThoughLocal = false);
     void Close();

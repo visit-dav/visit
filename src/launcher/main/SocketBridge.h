@@ -35,58 +35,58 @@
 *
 *****************************************************************************/
 
-#ifndef LAUNCHER_PROXY_H
-#define LAUNCHER_PROXY_H
-#include <vclproxy_exports.h>
-#include <RemoteProxyBase.h>
-#include <LaunchRPC.h>
-#include <ConnectSimRPC.h>
-#include <map>
+#ifndef SOCKET_BRIDGE_H
+#define SOCKET_BRIDGE_H
+
+#if defined(_WIN32)
+#include <winsock2.h>
+#else
+#include <netdb.h>
+#include <netinet/in.h>
+#endif
 
 // ****************************************************************************
-// Class: LauncherProxy
+// Class: SocketBridge
 //
 // Purpose:
-//   This is a proxy class for the launcher program.
+//   This class bridges two local ports.
 //
 // Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri May 2 16:11:43 PST 2003
+// Programmer: Jeremy Meredith
+// Creation:   May 23, 2007
 //
 // Modifications:
-//    Jeremy Meredith, Tue Mar 30 10:08:18 PST 2004
-//    I added support for simulations.
-//
-//    Jeremy Meredith, Wed May 11 09:04:52 PDT 2005
-//    Added security key to simulation connection.
-//
-//    Jeremy Meredith, Thu May 24 10:21:48 EDT 2007
-//    Added method to retrieve the SSH tunneling local-to-remote port map.
-//
 // ****************************************************************************
 
-class LAUNCHER_PROXY_API LauncherProxy : public RemoteProxyBase
+class SocketBridge
 {
-public:
-    LauncherProxy();
-    virtual ~LauncherProxy();
+  public:
+          SocketBridge(int from, int to);
+         ~SocketBridge();
 
-    virtual std::string GetComponentName() const;
+    void  Bridge();
 
-    std::map<int,int> GetPortTunnelMap();
+  protected:
+    int   NumActiveBridges();
+    bool  GetListenActivity();
+    int   GetOriginatingActivity();
+    int   GetTerminatingActivity();
+    void  WaitForActivity();
+    void  StartNewBridge();
+    void  CloseBridge(int index);
+    void  ForwardOrigToTerm(int index);
+    void  ForwardTermToOrig(int index);
 
-    // RPCs to access functionality on the visit component launcher.
-    void LaunchProcess(const stringVector &programArgs);
-    void ConnectSimulation(const stringVector &programArgs,
-                           const std::string &simHost, int simPort,
-                           const std::string &simSecurityKey);
-
-protected:
-    virtual void SetupComponentRPCs();
-private:
-    LaunchRPC     launchRPC;
-    ConnectSimRPC connectSimRPC;
+  private:
+    int                from_port;
+    int                to_port;
+    struct sockaddr_in listen_sock;
+    int                listen_fd;
+    int                originating_fd[1000];
+    int                terminating_fd[1000];
+    int                num_bridges;
+    fd_set             activity;
 };
 
 #endif
