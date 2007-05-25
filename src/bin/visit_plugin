@@ -195,10 +195,10 @@ EOF
 #
 packagePluginDir () {
     typeset theDir=$1
-    mkdir $TMPDIR/${theDir}_tmp.$$
-    cp -R $theDir $TMPDIR/${theDir}_tmp.$$/. 1>/dev/null 2>&1
-    cleanPluginDir $TMPDIR/${theDir}_tmp.$$/$theDir 1>/dev/null 2>&1
-    pushd $TMPDIR/${theDir}_tmp.$$ 1>/dev/null 2>&1
+    mkdir $tmpDir/${theDir}_tmp.$$
+    cp -R $theDir $tmpDir/${theDir}_tmp.$$/. 1>/dev/null 2>&1
+    cleanPluginDir $tmpDir/${theDir}_tmp.$$/$theDir 1>/dev/null 2>&1
+    pushd $tmpDir/${theDir}_tmp.$$ 1>/dev/null 2>&1
     makeInstructionsFile $theDir/README 1>/dev/null 2>&1
     if test -n "$requiredVersions"; then
         echo $requiredVersions | cut -d' ' -f1 > $theDir/.REQUIRED_VISIT_VERSION
@@ -206,14 +206,14 @@ packagePluginDir () {
     if test -n "$testRun"; then
         inputFileName=`echo $testRun | cut -d':' -f1`
 	pushd 1>/dev/null 2>&1
-        cp $inputFileName $TMPDIR/${theDir}_tmp.$$/$theDir/. 
+        cp $inputFileName $tmpDir/${theDir}_tmp.$$/$theDir/. 
 	pushd 1>/dev/null 2>1
         echo $testRun > $theDir/.TEST_RUN_COMMAND
     fi
     tar cf - $theDir | gzip > $theDir.tar.gz
     popd 1>/dev/null 2>&1
-    cp $TMPDIR/${theDir}_tmp.$$/$theDir.tar.gz .
-    rm -rf $TMPDIR/${theDir}_tmp.$$
+    cp $tmpDir/${theDir}_tmp.$$/$theDir.tar.gz .
+    rm -rf $tmpDir/${theDir}_tmp.$$
 }
 
 #
@@ -223,10 +223,10 @@ testBuildPluginTarball () {
     typeset theTarball=$1
     typeset deleteIt=$2
     thePluginName=`basename $theTarball .tar.gz`
-    mkdir $TMPDIR/${theTarball}_tmp.$$
-    cp $theTarball $TMPDIR/${theTarball}_tmp.$$/.
+    mkdir $tmpDir/${theTarball}_tmp.$$
+    cp $theTarball $tmpDir/${theTarball}_tmp.$$/.
     oldDir=`pwd`
-    pushd $TMPDIR/${theTarball}_tmp.$$ 1>/dev/null 2>&1
+    pushd $tmpDir/${theTarball}_tmp.$$ 1>/dev/null 2>&1
     gunzip < $theTarball | tar xf -
     cd $thePluginName
     vers=
@@ -241,10 +241,10 @@ testBuildPluginTarball () {
     hadError=$?
     if test -z "$deleteIt" || test $deleteIt -ne 0; then
         make clean 1>/dev/null 2>&1
-        rm -rf $TMPDIR/${theTarball}_tmp.$$
+        rm -rf $tmpDir/${theTarball}_tmp.$$
         echo $hadError
     else
-        echo $hadError $TMPDIR/${theTarball}_tmp.$$
+        echo $hadError $tmpDir/${theTarball}_tmp.$$
     fi
     popd 1>/dev/null 2>&1
 }
@@ -271,8 +271,8 @@ testRunPluginTarball () {
         plotType=`cat $tarballDir/.TEST_RUN_COMMAND | cut -d':' -f2`
         varName=`cat $tarballDir/.TEST_RUN_COMMAND | cut -d':' -f3`
     fi
-    mkdir $TMPDIR/visit_plugin_test.$$
-    pushd $TMPDIR/visit_plugin_test.$$ 1>/dev/null 2>&1
+    mkdir $tmpDir/visit_plugin_test.$$
+    pushd $tmpDir/visit_plugin_test.$$ 1>/dev/null 2>&1
     cat > visit_plugin_test.py <<- EOF
 import sys
 try:
@@ -294,13 +294,13 @@ except:
     print "###FAILED###"
     sys.exit(1)
 EOF
-    passedIt=`visit $vers -debug 5 -cli -nowin -s visit_plugin_test.py 2>&1 | grep '###PASSED###'`
+    passedIt=`visit $vers -noconfig -debug 5 -cli -nowin -s visit_plugin_test.py 2>&1 | grep '###PASSED###'`
     if test -z "$passedIt"; then
         origDir=`pushd 1>/dev/null 2>&1; pwd ; pushd 1>/dev/null`
         cp *.5.log $origDir/.
     fi
     popd 1>/dev/null 2>&1
-    rm -rf $TMPDIR/visit_plugin_test.$$
+    rm -rf $tmpDir/visit_plugin_test.$$
     if test $action = pack; then
         pushd $tarballDir 1>/dev/null 2>&1
         make clean 1>/dev/null 2>&1
@@ -317,6 +317,16 @@ EOF
 #
 # Handle Command Line Arguments
 #
+tmpDir=$TMPDIR
+if test -z "$tmpDir"; then
+    if test -d /usr/tmp; then
+       tmpDir=/usr/tmp
+    elif test -d /tmp; then
+       tmpDir=/tmp
+    else
+       tmpDir=`(cd ~; pwd -P)`
+    fi
+fi
 action=
 optError=0
 pluginName=
@@ -563,20 +573,31 @@ if test $action = pack; then
 
     #
     # Email tarball to recipients if specified
+    # Mutt is unreliable. So, we loop making several attempts
     #
     if test -n "$emailRecipients"; then
         oldTmpDir=$TMPDIR
-        TMPDIR=$TMPDIR/mutt$$
+        TMPDIR=$tmpDir/mutt$$
 	export TMPDIR
 	mkdir $TMPDIR
 	chmod 700 $TMPDIR
         makeInstructionsFile mutt.msg 1>/dev/null 2>&1
+	muttAttempts=0
 	while true; do
-            env EMAIL="$meEmail" REPLYTO="$meEmail" mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg >& $TMPDIR/mutt.errors
-	    if test -z "`cat $TMPDIR/mutt.errors`"; then
+            env EMAIL="$meEmail" REPLYTO="$meEmail" mutt -s "Updated $pluginName plugin" -a $pluginName.tar.gz $emailRecipients < mutt.msg 1>$TMPDIR/mutt.errors 2>&1
+	    if test $? -ne 0; then
+	        sleep 1
+	    elif test -z "`cat $TMPDIR/mutt.errors`"; then
+	        cat $TMPDIR/mutt.errors
+	        rm -f $TMPDIR/mutt.errors
 	        break;
 	    else
 	        sleep 1
+	    fi
+	    muttAttempts=`expr $muttAttempts + 1`
+	    if test $muttAttempts -gt 10; then
+	        "Mutt failed to successfully send mail after $muttAttempts attempts"
+		break;
 	    fi
 	done
 	rm -rf $TMPDIR
