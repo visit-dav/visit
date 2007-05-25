@@ -91,7 +91,7 @@ VisItException::VisItException(const std::string &m)
         if (mtmp.find("avtprep:") == 0 ||
             mtmp.find("cli:") == 0 ||
             mtmp.find("engine:") == 0 ||
-	    mtmp.find("gui:") == 0
+	    mtmp.find("gui:") == 0 ||
             mtmp.find("launcher:") == 0 ||
             mtmp.find("mdserver:") == 0 ||
 	    mtmp.find("viewer:") == 0)
