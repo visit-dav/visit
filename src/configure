@@ -8160,6 +8160,7 @@ fi
 #
 echo "$as_me:$LINENO: checking for a ITAPS Implementation" >&5
 echo $ECHO_N "checking for a ITAPS Implementation... $ECHO_C" >&6
+CREATE_ITAPS_LINK=""
 ITAPS=""
 ITAPS_INCLUDE=""
 ITAPS_LIB=""
