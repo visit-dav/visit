@@ -691,6 +691,10 @@ dnl
 dnl    Gunther H. Weber, Tue May 22 10:20:31 PDT 2007
 dnl    Merged Jeremy's last change (Tue May 22 11:43:30 EDT 2007) and my
 dnl    last change (Mon May 21 15:55:12 PDT 2007).
+dnl
+dnl    Mark C. Miller, Thu May 24 22:54:35 PDT 2007
+dnl    Removed use of rpath options from iTaps lib symbols. Made it build
+dnl    symbolic link in lib dir for iTaps libs
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2568,6 +2572,7 @@ if test "$ITAPS_LIB" != "" ; then
    if test "$ITAPS_INCLUDE" != "" ; then
       ITAPS="$""(ITAPS)"
       AC_MSG_RESULT(yes)
+      CREATE_ITAPS_LINK="create_itaps_link"
    else
       AC_MSG_RESULT(no)
    fi
@@ -2577,6 +2582,7 @@ fi
 AC_SUBST(ITAPS)
 AC_SUBST(ITAPS_INCLUDE)
 AC_SUBST(ITAPS_LIB)
+AC_SUBST(CREATE_ITAPS_LINK)
 
 #
 # Add Some include paths to the engine's CPPFLAGS.
@@ -3157,6 +3163,9 @@ case $SHORT_UNAME in
     fi
     if test "$CFITSIO_LIB" != "" ; then
         CREATE_CFITSIO_LINK="create_cfitsio_link"
+    fi
+    if test "$ITAPS_LIB" != "" ; then
+        CREATE_ITAPS_LINK="create_itaps_link"
     fi
   ;;
 esac
