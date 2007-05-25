@@ -57,7 +57,8 @@
 #
 cleanPluginDir () {
     pushd $1
-    rm -f .depend .cmake.depend .cmake.state Makefile *.o
+    rm -rf .svn
+    rm -f .depend .cmake.depend .cmake.state Makefile *.o findmerge*
     rm -f *.contrib* *.keep*
     rm -f *PluginInfo*.[Ch]
     chmod -f 664 *

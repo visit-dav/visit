@@ -146,6 +146,9 @@
 #    Removed references LIBVTKNETCDF and LIBVTKEXOIIC in clean target.
 #    Removed 'distclean' as alias for clean target.
 #
+#    Mark C. Miller, Thu May 24 20:57:11 PDT 2007
+#    Added links for itaps libraries. Added cleanlinks target
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -181,7 +184,7 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys \
-     libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ @CREATE_CFITSIO_LINK@
+     libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ @CREATE_CFITSIO_LINK@ @CREATE_ITAPS_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)*
@@ -337,7 +340,24 @@ create_exodus_link:
 	$(RM) libexoIIv2c.@SHLIB_LIBEXT@
 	ln -s @EXODUS_LIB@ .
 
-clean:
+create_itaps_link:
+	libDirs=`echo "@ITAPS_LIB@" | tr -s ' ' | tr ' ' '\n' | grep '^-L' | sed -e 's|^-L\(.*\)|\1|'` ; \
+	libFiles=`echo "@ITAPS_LIB@" | tr -s ' ' | tr ' ' '\n' | grep '^-l' | sed -e 's|^-l\(.*\)|\1|'` ; \
+	for d in $$libDirs; do \
+	    for f in $$libFiles; do \
+	        if test -e $$d/lib$$f.@SHLIB_LIBEXT@ ; then \
+		    for fvers in $$d/lib$$f*.@SHLIB_LIBEXT@ ; do \
+		        $(RM) `basename $$fvers` ; \
+			ln -s $$fvers . ; \
+		    done ; \
+	        fi ; \
+	    done ; \
+	done
+
+cleanlinks:
+	find . -type l -maxdepth 1 -exec $(RM) {} \;
+
+clean: cleanlinks
 	$(RM) \
 	$(LIBMESAGL) \
 	$(LIBGLU) \
