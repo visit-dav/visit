@@ -75,12 +75,30 @@ VisItException::VisItException()
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added component name to exception string
 //
+//    Mark C. Miller, Thu May 24 20:29:35 PDT 2007
+//    Added filtering for component name
+//
 // ****************************************************************************
 
 VisItException::VisItException(const std::string &m)
 {
     filename = "Unknown";
-    msg      = std::string(Init::GetComponentName()) + ": " + m; 
+    std::string mtmp = std::string(m,0,16);
+    if (mtmp.find(':') == std::string::npos)
+        msg = std::string(Init::GetComponentName()) + ": " + m;
+    else
+    {
+        if (mtmp.find("avtprep:") == 0 ||
+            mtmp.find("cli:") == 0 ||
+            mtmp.find("engine:") == 0 ||
+	    mtmp.find("gui:") == 0
+            mtmp.find("launcher:") == 0 ||
+            mtmp.find("mdserver:") == 0 ||
+	    mtmp.find("viewer:") == 0)
+            msg = m;
+        else
+            msg = std::string(Init::GetComponentName()) + ": " + m;
+    }
     type     = "VisItException";
     line     = -1;
     log      = &debug1_real;
