@@ -2547,6 +2547,7 @@ AC_SUBST(CFITSIO_LIBDIR)
 # include the -lxxx linker options too.
 #
 AC_MSG_CHECKING(for a ITAPS Implementation)
+CREATE_ITAPS_LINK=""
 ITAPS=""
 ITAPS_INCLUDE=""
 ITAPS_LIB=""
