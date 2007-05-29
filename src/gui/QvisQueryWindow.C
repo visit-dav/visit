@@ -40,6 +40,8 @@
 #include <qbuttongroup.h>
 #include <qcombobox.h>
 #include <qcheckbox.h>
+#include <qdir.h>
+#include <qfiledialog.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlineedit.h>
@@ -82,6 +84,9 @@ using std::string;
 //   Brad Whitlock, Fri Nov 7 17:24:42 PST 2003
 //   Prevented extra buttons from being created.
 //
+//   Ellen Tarwater, Tues May 15 2007
+//   Added saveCount for 'Save Results as...' functionality.
+//
 // ****************************************************************************
 
 QvisQueryWindow::QvisQueryWindow(const char *caption, const char *shortName,
@@ -92,6 +97,7 @@ QvisQueryWindow::QvisQueryWindow(const char *caption, const char *shortName,
     queryAtts = 0;
     pickAtts = 0;
     plotList = 0;
+    saveCount = 0;
 }
 
 // ****************************************************************************
@@ -303,6 +309,8 @@ QvisQueryWindow::CreateWindowContents()
 //   Brad Whitlock, Mon Nov 14 10:36:09 PDT 2005
 //   Disable the post button if posting is not enabled.
 //
+//   Ellen Tarwater, Mon May 21
+//   Added "Save results as..." button.
 // ****************************************************************************
 
 void
@@ -329,6 +337,13 @@ QvisQueryWindow::CreateEntireWindow()
     connect(clearResultsButton, SIGNAL(clicked()),
             this, SLOT(clearResultText()));
     buttonLayout->addWidget(clearResultsButton);
+
+    QPushButton *saveResultsButton = new QPushButton("Save results as...", central,
+            "saveResultsButton");
+    connect(saveResultsButton, SIGNAL(clicked()),
+            this, SLOT(saveResultText()));
+    buttonLayout->addWidget(saveResultsButton);
+    
     buttonLayout->addStretch();
 
     postButton = new QPushButton("Post", central,
@@ -1531,4 +1546,62 @@ QvisQueryWindow::useGlobalToggled(bool val)
 {
     labels[0]->setEnabled(!val);
     textFields[0]->setEnabled(!val);
+}
+
+// ****************************************************************************
+// Method: QvisQueryWindow::saveResultText
+//
+// Purpose: 
+//   This is a Qt slot function that saves the results text in a user selected file.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Tuesday May 15 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisQueryWindow::saveResultText()
+{
+    QString saveExtension(".txt");
+
+    // Create the name of a VisIt save file to use.
+    QString defaultFile;
+    defaultFile.sprintf("visit%04d", saveCount);
+    defaultFile += saveExtension;
+    
+    QString currentDir;
+    currentDir = QDir::current().path();
+    
+    defaultFile = currentDir + "/" + defaultFile;
+
+    // Get the name of the file that the user saved.
+    QString sFilter(QString("VisIt save (*") + saveExtension + ")");
+    QString fileName = QFileDialog::getSaveFileName(defaultFile, sFilter);
+
+    // If the user chose to save a file, write the query result text
+    // to that file.
+    if(!fileName.isNull())
+    {
+        ++saveCount;
+	QFile file( fileName );
+	if ( file.open(IO_WriteOnly) )
+	{
+	    QTextStream stream( &file );
+            QString txt( resultText->text() );
+	    if ( txt.length() > 0 )
+	        stream << txt;
+	    else
+	        file.remove();
+		
+	    file.close();
+	}
+	else
+	    Error( "VisIt could not save the query results"
+	           "to the selected file" ) ;
+		
+	
+   }
+
 }

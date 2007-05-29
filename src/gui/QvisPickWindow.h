@@ -113,6 +113,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Mon Oct 31 10:39:28 PST 2005 
 //   Added spinbox for userMaxPickTabs, and ResizeTabs method.
 //
+//   Ellen Tarwater, Fri May 18, 2007
+//   Added saveCount and SavePickText to write pick text to a file.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -156,6 +159,7 @@ private slots:
     void showMeshNameToggled(bool);
     void showTimestepToggled(bool);
     void addPickVariable(const QString &);
+    void savePickText();
 private:
     void UpdatePage(void);
     void ClearPages(void);
@@ -192,5 +196,7 @@ private:
     QCheckBox          *displayGlobalIds;
     QCheckBox          *displayPickLetter;
     QSpinBox           *userMaxPickTabs;
+
+    int		        saveCount;
 };
 #endif

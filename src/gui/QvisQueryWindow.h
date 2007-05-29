@@ -101,6 +101,9 @@ class QueryList;
 //   Hank Childs, Mon Jul 10 17:23:24 PDT 2006
 //   Added GetFloatingPointNumber.
 //
+//   Ellen Tarwater, Tues May 15 2006
+//   Added saveResultText and saveCount
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -141,6 +144,7 @@ private slots:
     void clearResultText();
     void displayModeChanged(int);
     void useGlobalToggled(bool);
+    void saveResultText();
 
 private:
     QueryList       *queries;
@@ -159,6 +163,8 @@ private:
     QCheckBox       *useGlobal;
   
     QButtonGroup    *dataOpts;
+    
+    int		    saveCount;
 };
 
 #endif

@@ -40,6 +40,8 @@
 #include <vector>
 
 #include <qcheckbox.h>
+#include <qdir.h>
+#include <qfiledialog.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
@@ -49,8 +51,8 @@
 #include <qspinbox.h>
 #include <qstringlist.h>
 #include <qvbox.h>
-#include <QvisVariableButton.h>
 
+#include <QvisVariableButton.h>
 #include <QvisPickWindow.h>
 #include <PickAttributes.h>
 #include <ViewerProxy.h>
@@ -96,6 +98,9 @@ using std::vector;
 //   Kathleen Bonnell, Wed Dec 17 15:06:34 PST 2003 
 //   Made the window have all buttons.  
 //
+//   Ellen Tarwater, Fri May 18, 2007
+//   Added save Count for 'Save Pick as...' functionality.
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption, 
@@ -108,6 +113,7 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption,
     autoShow = true;
     nextPage = 0;
     savePicks = false;
+    saveCount = 0;
 }
 
 // ****************************************************************************
@@ -185,6 +191,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Hide all tabs whose index > MIN_PICK_TABS.
 //   Added 'userMaxPickTabs' spinbox. 
 //
+//   Ellen Tarwater, Fri May 18, 2007
+//   Added "Save Picks as..." button
+//
 // ****************************************************************************
 
 void
@@ -218,6 +227,12 @@ QvisPickWindow::CreateWindowContents()
     gLayout->addWidget(userMaxPickTabs, 0, 1);
     gLayout->addWidget(new QLabel(userMaxPickTabs, "Max Tabs", central), 0,0);
 
+    QPushButton *savePicksButton = new QPushButton("Save Picks as...", central,
+            "savePicksButton");
+    connect(savePicksButton, SIGNAL(clicked()),
+            this, SLOT(savePickText()));
+    gLayout->addWidget(savePicksButton, 0, 3);
+    
     varsButton = new QvisVariableButton(true, false, true, -1,
         central, "varsButton");
     varsButton->setText("Variables");
@@ -1370,6 +1385,66 @@ QvisPickWindow::ResizeTabs()
         if (tabWidget->label(nextPage) != " ")
             nextPage = currentMax; 
     }
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::savePickText
+//
+// Purpose: 
+//   This is a Qt slot function that saves the pick text in a user selected file.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Friday May 18 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::savePickText()
+{
+    QString saveExtension(".txt");
+
+    // Create the name of a VisIt save file to use.
+    QString defaultFile;
+    defaultFile.sprintf("visit%04d", saveCount);
+    defaultFile += saveExtension;
+    
+    QString currentDir;
+    currentDir = QDir::current().path();
+    
+    defaultFile = currentDir + "/" + defaultFile;
+
+    // Get the name of the file that the user saved.
+    QString sFilter(QString("VisIt save (*") + saveExtension + ")");
+    QString fileName = QFileDialog::getSaveFileName(defaultFile, sFilter);
+
+    // If the user chose to save a file, write the pick result text
+    // to that file.
+    if(!fileName.isNull())
+    {
+        ++saveCount;
+	QFile file( fileName );
+	if ( file.open(IO_WriteOnly) )
+	{
+	    QTextStream stream( &file );
+	    int i;
+            for ( i = 0; i < tabWidget->count(); i++ )
+            {
+                QString txt( infoLists[i]->text() );
+	        if ( txt.length() > 0 )
+	            stream << txt;
+            }
+		
+	    file.close();
+	}
+	else
+	    Error( "VisIt could not save the pick results"
+	           "to the selected file" ) ;
+		
+	
+   }
+
 }
 
 
