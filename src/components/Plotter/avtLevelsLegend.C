@@ -165,6 +165,9 @@ avtLevelsLegend::~avtLevelsLegend()
 //    Brad Whitlock, Wed Mar 21 21:41:53 PST 2007
 //    Added scaling.
 //
+//    Hank Childs, Wed May 30 11:32:47 PDT 2007
+//    Increase fudge factor (contours of 3 isolevels weren't showing up)
+//
 // ****************************************************************************
 
 void
@@ -178,7 +181,7 @@ avtLevelsLegend::GetLegendSize(double maxHeight, double &w, double &h)
     // because this algorithm doesn't exactly match the algorithm in
     // vtkVerticalScalarBarActor.
     //
-    double fudge = 0.5;
+    double fudge = 0.7;
     double nLines = 0.0;
     if (title != NULL)        nLines += 1.0;
     if (databaseInfo != NULL) nLines += 2.0;
