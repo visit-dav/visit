@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
-  <Plugin name="Displace" type="operator" label="Displace" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="Displace.xpm">
-    <Attribute name="DisplaceAttributes" purpose="This class contains attributes for the displace operator." persistent="true">
+  <Plugin name="Displace" type="operator" label="Displace" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Displace.xpm">
+    <Files components="E">
+      avtDisplacePluginFilter.C
+    </Files>
+    <Attribute name="DisplaceAttributes" purpose="This class contains attributes for the displace operator." persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Field name="factor" label="Displacement multiplier " type="double">
         1.000000
       </Field>

@@ -105,6 +105,9 @@ class   avtWebpage;
 //    Hank Childs, Thu Dec 21 09:58:57 PST 2006
 //    Added method for debug dumps.
 //
+//    Hank Childs, Fri May 18 16:51:07 PDT 2007
+//    Add a constructor for creating a new data set with a specific data tree.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -122,6 +125,8 @@ class PIPELINE_API avtDataset : public avtDataObject
                              avtDataset(avtDataObjectSource *);
                              avtDataset(ref_ptr<avtDataset> ds,
                                         bool dontCopyData = false);
+                             avtDataset(ref_ptr<avtDataset> ds,
+                                        avtDataTree_p);
                              avtDataset(vtkDataSet *);
                              avtDataset(vtkDataSet *, avtDataset *);
     virtual                 ~avtDataset();

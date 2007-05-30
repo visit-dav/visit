@@ -53,7 +53,7 @@ if [[ "$issueHelp" == "yes" ]] ; then
    echo ""
    echo "But you *CANNOT* do this if the directories are at different levels "
    echo "in the directory structure.  For example, you *CANNOT* do "
-   echo "${0##*/} /src/plots/Volume and then later do ${0##*/} /src/"
+   echo "\"${0##*/} /src/plots/Volume\" and then later do \"${0##*/} /src/\""
    echo ""
    exit 1
 fi

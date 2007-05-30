@@ -264,6 +264,10 @@
 #   Merged Jeremy's last change (Tue May 22 11:40:38 EDT 2007) and my
 #   last change (Mon May 21 17:35:35 PDT 2007).
 #
+#   Hank Childs, Fri May 18 17:37:43 PDT 2007
+#   Added ExtrudedVol reader.  This is a special purpose reader/writer for
+#   the types of extruded volumes created by the TraceHistory operator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -302,6 +306,7 @@ REQUIRED=\
  Dune \
  Dyna3D \
  EnSight \
+ ExtrudedVol \
  GGCM \
  Fluent \
  Image \
