@@ -110,6 +110,13 @@
 //    Cyrus Harrison, Wed Mar  7 09:46:07 PST 2007
 //    Allow for engine-specific code in a plugin's source files
 //
+//    Hank Childs, Fri May 18 17:46:23 PDT 2007
+//    Added argument to OpenFile, since it now takes a "num blocks" argument.
+//
+//    Hank Childs, Tue May 22 11:17:19 PDT 2007
+//    Changed "float *extents" to "double *extents", since that is now the
+//    interface.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1163,7 +1170,7 @@ class AVTGeneratorPlugin
             c << "    // int block_origin = 0;" << endl;
             c << "    // int spatial_dimension = 2;" << endl;
             c << "    // int topological_dimension = 2;" << endl;
-            c << "    // float *extents = NULL;" << endl;
+            c << "    // double *extents = NULL;" << endl;
             c << "    //" << endl;
             c << "    // Here's the call that tells the meta-data object that we have a mesh:" << endl;
             c << "    //" << endl;
@@ -1487,7 +1494,7 @@ class AVTGeneratorPlugin
             c << "    // int block_origin = 0;" << endl;
             c << "    // int spatial_dimension = 2;" << endl;
             c << "    // int topological_dimension = 2;" << endl;
-            c << "    // float *extents = NULL;" << endl;
+            c << "    // double *extents = NULL;" << endl;
             c << "    //" << endl;
             c << "    // Here's the call that tells the meta-data object that we have a mesh:" << endl;
             c << "    //" << endl;
@@ -1799,7 +1806,7 @@ class AVTGeneratorPlugin
             c << "    // int block_origin = 0;" << endl;
             c << "    // int spatial_dimension = 2;" << endl;
             c << "    // int topological_dimension = 2;" << endl;
-            c << "    // float *extents = NULL;" << endl;
+            c << "    // double *extents = NULL;" << endl;
             c << "    //" << endl;
             c << "    // Here's the call that tells the meta-data object that we have a mesh:" << endl;
             c << "    //" << endl;
@@ -2132,7 +2139,7 @@ class AVTGeneratorPlugin
             c << "    // int block_origin = 0;" << endl;
             c << "    // int spatial_dimension = 2;" << endl;
             c << "    // int topological_dimension = 2;" << endl;
-            c << "    // float *extents = NULL;" << endl;
+            c << "    // double *extents = NULL;" << endl;
             c << "    //" << endl;
             c << "    // Here's the call that tells the meta-data object that we have a mesh:" << endl;
             c << "    //" << endl;
@@ -2516,7 +2523,7 @@ class AVTGeneratorPlugin
         h << "  protected:" << endl;
         h << "    std::string    stem;" << endl;
         h << "" << endl;
-        h << "    virtual void   OpenFile(const std::string &);" << endl;
+        h << "    virtual void   OpenFile(const std::string &, int nb);" << endl;
         h << "    virtual void   WriteHeaders(const avtDatabaseMetaData *," << endl;
         h << "                                std::vector<std::string> &, " << endl;
         h << "                                std::vector<std::string> &," << endl;
@@ -2576,7 +2583,7 @@ class AVTGeneratorPlugin
         c << "// ****************************************************************************" << endl;
         c << "" << endl;
         c << "void" << endl;
-        c << "avt"<<name<<"Writer::OpenFile(const string &stemname)" << endl;
+        c << "avt"<<name<<"Writer::OpenFile(const string &stemname, int numblocks)" << endl;
         c << "{" << endl;
         c << "    stem = stemname;" << endl;
         c << "}" << endl;

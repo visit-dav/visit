@@ -104,6 +104,9 @@
 #    Thomas R. Treadway, Tue Mar 27 12:18:12 PDT 2007
 #    Added Mesa libraries.
 #
+#    Hank Childs, Fri May 18 16:01:06 PDT 2007
+#    Added avtDisplaceFilter.
+#
 ##############################################################################
 
 ##
@@ -124,6 +127,7 @@ SRC=\
  avtCurrentExtentFilter.C \
  avtCurveConstructorFilter.C \
  avtCustomTransform.C \
+ avtDisplaceFilter.C \
  avtFacelistFilter.C \
  avtFeatureEdgesFilter.C \
  avtGhostZoneAndFacelistFilter.C \

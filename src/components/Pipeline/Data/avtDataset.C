@@ -116,7 +116,7 @@ avtDataset::avtDataset(vtkDataSet *ds, avtDataset *obj)
 //  Method: avtDataset copy constructor
 //
 //  Programmer: Mark C. Miller 
-//  Creation:   23Apr03 
+//  Creation:   April 23, 2003
 //
 // ****************************************************************************
 
@@ -125,6 +125,22 @@ avtDataset::avtDataset(avtDataset_p in, bool dontCopyData)
 {
    info.Copy(in->GetInfo());
    dataTree = new avtDataTree(in->dataTree, dontCopyData);
+}
+
+
+// ****************************************************************************
+//  Method: avtDataset copy constructor
+//
+//  Programmer: Hank Childs
+//  Creation:   May 18, 2007
+//
+// ****************************************************************************
+
+avtDataset::avtDataset(avtDataset_p in, avtDataTree_p newTree)
+   : avtDataObject(in->source)
+{
+   info.Copy(in->GetInfo());
+   dataTree = newTree;
 }
 
 
