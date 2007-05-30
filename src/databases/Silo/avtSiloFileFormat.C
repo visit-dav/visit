@@ -167,6 +167,9 @@ bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added ability to turn forcing single precision off to support testing
+//
+//    Mark C. Miller, Wed May 30 08:25:05 PDT 2007
+//    Added this bogus comment to test svn update behavior
 // ****************************************************************************
 
 avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
