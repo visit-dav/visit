@@ -117,6 +117,11 @@ avtPointExtractor::~avtPointExtractor()
 //  Programmer:   Hank Childs
 //  Creation:     January 24, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 31 08:26:30 PDT 2007
+//    Sharpen up weighting function ... values were being blurred way too much.
+//
 // ****************************************************************************
 
 void
@@ -161,6 +166,8 @@ avtPointExtractor::Extract(const avtPoint &pt)
     maxx = (maxx > restrictedMaxWidth ? restrictedMaxWidth : maxx);
     miny = (miny < restrictedMinHeight ? restrictedMinHeight : miny);
     maxy = (maxy > restrictedMaxHeight ? restrictedMaxHeight : maxy);
+    minz = (minz < 0 ? 0 : minz);
+    maxz = (maxz >= depth ? depth-1 : maxz);
 
     int potentialNumSamples = (maxx-minx+1)*(maxy-miny+1)*(maxz-minz+1);
     if (sendCellsMode && potentialNumSamples > 64)
@@ -193,15 +200,13 @@ avtPointExtractor::Extract(const avtPoint &pt)
                 float zf = ((float)k)/((float)depth);
                 float zD = 2*(zf-center[2]);
                 double dist = xD*xD + yD*yD + zD*zD;
+                double weight = 0.;
                 if (dist >= rad*rad)
                     continue;
-                //dist = sqrt(dist);
-                double weight = (rad*rad-dist) / (rad*rad);
-                weight = weight*weight;
-                //double tmp = dist/rad + epsilon;
-                //double weight = 1./(tmp) - correction;
-                //weight = sqrt(weight);
-                //weight = weight*weight;
+                else if (dist < 1e-6)
+                    weight = 1000000.;
+                else
+                    weight = 1/dist;
                 for (int ii = 0 ; ii < nVars ; ii++)
                     cval2[ii] = weight*pt.val[ii];
                 cval2[nVars] = weight;
