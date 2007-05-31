@@ -196,6 +196,19 @@ cat >> $1 <<- EOF
     ending in 'make-variables' near the top of the Makefile. There
     you will find all the make variable names that are used to define
     locations of third party libraries.
+
+    Finally, be aware that sometimes you may need to remove .depend
+    file(s) in the directory where you are building the plugin to
+    get things to build correctly. This is so becuase the .depend file
+    is generated only when it does not exist, after that, make assumes
+    the dependencies are correct. If you get error messages that look
+    like...
+
+        gmake: *** No rule to make target 'foo.h', needed by
+        'somefile.o'.  Stop.
+
+    It can never hurt to remove the .depend file(s) and try remaking.
+
 EOF
 }
 
