@@ -1167,6 +1167,10 @@ avtSliceFilter::OutputCanBeRectilinear(vtkRectilinearGrid *rg)
 //  Programmer: Hank Childs
 //  Creation:   December 29, 2006
 //
+//  Modifications:
+//    Gunther H. Weber, Wed May 23 17:41:28 PDT 2007
+//    Added Hank's bug fix for copying field data.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -1526,6 +1530,7 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
     delete [] Z;
     flat_dim->Delete();
 
+    output->GetFieldData()->ShallowCopy(rg->GetFieldData());
     return output;
 }
 

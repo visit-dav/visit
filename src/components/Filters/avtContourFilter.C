@@ -539,6 +539,11 @@ avtContourFilter::PreExecute(void)
 //    VTK pipeline changes: no more SetOutput method for filters, instead
 //    SetOutputData for the filter's Executive. 
 //
+//    Gunther H. Weber, Wed May 30 16:41:15 PDT 2007
+//    Copy field data when generating isosurfaces. There are still problems
+//    when isosurfaces for multiple values are generated, but it seems to work
+//    for single isosurfaces.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -655,6 +660,7 @@ avtContourFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
         {
             out_ds[i] = vtkPolyData::New();
             out_ds[i]->ShallowCopy(output);
+	    out_ds[i]->GetFieldData()->ShallowCopy(in_ds->GetFieldData());
         }
         visitTimer->StopTimer(id2, "Calculating isosurface");
         UpdateProgress(current_node*total + 2*nLevels+2+2*i, total*nnodes);
