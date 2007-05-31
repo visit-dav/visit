@@ -1,0 +1,84 @@
+#!/bin/sh
+# Do a little magic to run perl from anywhere in your path.
+
+lines=`cat $0 | wc -l`
+lines=`expr $lines - 10`
+tail -$lines $0 > /tmp/visitperl$$
+echo "__END__" >> /tmp/visitperl$$
+echo "$0 $*" >> /tmp/visitperl$$
+exec perl /tmp/visitperl$$ $0 ${1+"$@"}
+
+unlink($0);
+$0 = shift @ARGV;
+
+# ----------------------------------------------------------------------------
+
+if  (! -d "engine")
+{
+   die "invoke $0 from the root of the VisIt source tree\n";
+}
+
+sub get ($@)
+{
+    my ($dir, $recursearg) = @_;
+    @tmpfiles = `svn ls $recursearg $dir | egrep -v /\$`;
+    my @files = ();
+    foreach (@tmpfiles)
+    {
+        chomp;
+        push @files, "$dir/$_";
+    }
+    return @files
+}
+
+sub get_recursive ($@)
+{
+    my ($dir) = @_;
+    return get($dir, "-R");
+}
+
+sub get_norecursive ($@)
+{
+    my ($dir) = @_;
+    return get($dir, "");
+}
+
+
+@files = ();
+
+push @files, get_norecursive  ".";
+push @files, get_recursive    "./common";
+push @files, get_recursive    "./visit_vtk";
+push @files, get_recursive    "./engine";
+push @files, get_recursive    "./launcher";
+push @files, get_recursive    "./components";
+push @files, get_recursive    "./vtkqt";
+push @files, get_recursive    "./plots";
+push @files, get_recursive    "./operators";
+push @files, get_recursive    "./databases";
+push @files, get_recursive    "./winutil";
+push @files, get_recursive    "./viewer";
+push @files, get_recursive    "./gui";
+push @files, get_recursive    "./mdserver";
+push @files, get_recursive    "./visitpy";
+push @files, get_recursive    "./java";
+push @files, get_recursive    "./tools";
+push @files, get_recursive    "./sim";
+push @files, get_recursive    "./include";
+push @files, get_recursive    "./bin";
+push @files, get_recursive    "./exe";
+push @files, get_norecursive  "./lib";
+push @files, get_norecursive  "./help";
+push @files, get_recursive    "./archives";
+push @files, get_recursive    "./plugins";
+push @files, get_recursive    "./clearcase_bin";
+push @files, get_recursive    "./svn_bin";
+push @files, get_recursive    "./config-site";
+push @files, get_recursive    "./cqscore";
+push @files, get_recursive    "./third_party_builtin";
+
+foreach (sort @files)
+{
+    print "$_\n";
+}
+
