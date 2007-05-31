@@ -1,39 +1,39 @@
 /*****************************************************************************
-*
-* Copyright (c) 2000 - 2006, The Regents of the University of California
-* Produced at the Lawrence Berkeley National Laboratory
-* All rights reserved.
-*
-* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The
-* full copyright notice is contained in the file COPYRIGHT located at the root
-* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
-*
-* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
-* modification, are permitted provided that the following conditions are met:
-*
-*  - Redistributions of  source code must  retain the above  copyright notice,
-*    this list of conditions and the disclaimer below.
-*  - Redistributions in binary form must reproduce the above copyright notice,
-*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or materials provided with the distribution.
-*  - Neither the name of the UC/LBNL nor  the names of its contributors may be
-*    used to  endorse or  promote products derived from  this software without
-*    specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF
-* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR
-* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
-* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
-* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-* DAMAGE.
-*
-*****************************************************************************/
+ *
+ * Copyright (c) 2000 - 2006, The Regents of the University of California
+ * Produced at the Lawrence Berkeley National Laboratory
+ * All rights reserved.
+ *
+ * This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The
+ * full copyright notice is contained in the file COPYRIGHT located at the root
+ * of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+ *
+ * Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  - Redistributions of  source code must  retain the above  copyright notice,
+ *    this list of conditions and the disclaimer below.
+ *  - Redistributions in binary form must reproduce the above copyright notice,
+ *    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+ *    documentation and/or materials provided with the distribution.
+ *  - Neither the name of the UC/LBNL nor  the names of its contributors may be
+ *    used to  endorse or  promote products derived from  this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+ * ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF
+ * CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR
+ * ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+ * LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+ * OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ *****************************************************************************/
 
 // ************************************************************************* //
 //                            avtH5NimrodFileFormat.C                           //
@@ -61,10 +61,12 @@
 
 #include <vector>
 
+#include <DebugStream.h>
+
 using
-  std::string;
+std::string;
 using
-  std::vector;
+std::vector;
 
 
 // ****************************************************************************
@@ -76,128 +78,130 @@ using
 // ****************************************************************************
 
 avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
-avtMTSDFileFormat (&filename, 1)
+    avtMTSDFileFormat (&filename, 1)
 {
-  // INITIALIZE DATA MEMBERS
-  fname = filename;
-  hid_t file;
-  hid_t root_id, group_id, vector_id;
-  char *string_attrib;
-  float time;
-  file = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
+    // INITIALIZE DATA MEMBERS
+    fname = filename;
+    hid_t file;
+    hid_t root_id, group_id, vector_id;
+    char *string_attrib;
+    float time;
+    file = H5Fopen (filename, H5F_ACC_RDONLY, H5P_DEFAULT);
 
-  if (file < 0)
-    EXCEPTION1 (InvalidFilesException, filename);
+    if (file < 0)
+	EXCEPTION1 (InvalidFilesException, filename);
 
-  hsize_t i, j, npoints, nhexes;
+    hsize_t i, j, npoints, nhexes;
 
-  // Read attributes
-  root_id = H5Gopen (file, "/");
-  H5NIMROD_read_string_attrib (root_id, "Description", &string_attrib);
-  printf ("Description: %s\n", string_attrib);
-  free (string_attrib);
-  H5NIMROD_read_string_attrib (root_id, "Source", &string_attrib);
-  printf ("Source: %s\n", string_attrib);
-  free (string_attrib);
-  H5NIMROD_read_attrib (root_id, "time", &time);
-  printf ("time: %e\n", time);
-  H5NIMROD_read_attrib (root_id, "nsteps", &nsteps);
-  printf ("nsteps: %d\n", nsteps);
-  stepnames.resize (nsteps);
-  hid_t grid_id = H5Gopen (file, "/GRID");
-  H5NIMROD_read_string_attrib (grid_id, "Coordinate System", &string_attrib);
-  printf ("Coordinate System: %s\n", string_attrib);
-  if (strstr(string_attrib, "Cartesian - XYZ") == NULL){
-	printf("Cannot handle non cartesian coordinates\n");
+    // Read attributes
+    root_id = H5Gopen (file, "/");
+    H5NIMROD_read_string_attrib (root_id, "Description", &string_attrib);
+    debug5 << "Description: " <<  string_attrib << std::endl;
+    free (string_attrib);
+    H5NIMROD_read_string_attrib (root_id, "Source", &string_attrib);
+    debug5 << "Source: " << string_attrib << std::endl;
+    free (string_attrib);
+    H5NIMROD_read_attrib (root_id, "time", &time);
+    debug5 << "time: " << time << std::endl;
+    H5NIMROD_read_attrib (root_id, "nsteps", &nsteps);
+    debug5 << "nsteps: " << nsteps << std::endl;
+    stepnames.resize (nsteps);
+    hid_t grid_id = H5Gopen (file, "/GRID");
+    H5NIMROD_read_string_attrib (grid_id, "Coordinate System", &string_attrib);
+    debug5 << "Coordinate System: " << string_attrib << std::endl;
+    if (strstr(string_attrib, "Cartesian - XYZ") == NULL)
+    {
+	debug5 << "Cannot handle non cartesian coordinates" << std::endl;
 	EXCEPTION2 (UnexpectedValueException, "Coordinate System", "Cartesian - XYZ");
-  }
-  H5NIMROD_read_string_attrib (grid_id, "Topology", &string_attrib);
-  if (strstr (string_attrib, "Structured") != NULL)
-    {
-      structured = 1;
-      printf ("Grid is structured!\n");
     }
-  else
+    H5NIMROD_read_string_attrib (grid_id, "Topology", &string_attrib);
+    if (strstr (string_attrib, "Structured") != NULL)
     {
-      structured = 0;
-      printf("Cannot handle unstructured mesh\n");
-      EXCEPTION2 (UnexpectedValueException, "Topology", "Structured");
+	structured = 1;
+	debug5 << "Grid is structured!" << std::endl;
     }
-  free (string_attrib);
-  H5NIMROD_read_string_attrib (grid_id, "Geometry", &string_attrib);
-  printf ("Geometry: %s\n", string_attrib);
-  free (string_attrib);
-  H5NIMROD_read_dims (grid_id, "X", &ndims, grid_dims);
-  if (ndims != 3){
-	printf("Cannot handle other than 3 dimensional data\n");
-      EXCEPTION2 (UnexpectedValueException, "Number of dimensions", "3");
-  }
-  // points
-  for (i = 0, npoints = 1; i < ndims; i++)
+    else
     {
-      printf ("ndims: %d %d\n", ndims, grid_dims[i]);
-      npoints *= grid_dims[i];
+	structured = 0;
+	debug5 << "Cannot handle unstructured mesh" << std::endl;
+	EXCEPTION2 (UnexpectedValueException, "Topology", "Structured");
     }
-  npoints *= ndims;
-  // connectivity is implicit
-  // point vars
-  int num_groups = H5NIMROD_get_num_objects_matching_pattern (root_id,
-							      "/",
-							      H5G_GROUP,
-							      NULL);
-  int numstep = 0;
-  char name[MAXLENGTH], name1[MAXLENGTH], name2[MAXLENGTH];
-  for (int idx = 0; idx < num_groups; idx++)
+    free (string_attrib);
+    H5NIMROD_read_string_attrib (grid_id, "Geometry", &string_attrib);
+    debug5 << "Geometry: " << string_attrib << std::endl;
+    free (string_attrib);
+    H5NIMROD_read_dims (grid_id, "X", &ndims, grid_dims);
+    if (ndims != 3)
     {
-      int len_of_name = MAXLENGTH;
-      H5NIMROD_get_object_name (root_id,
-				"/", H5G_GROUP, idx, name, len_of_name);
-      if (strncmp (name, "step_", strlen ("step_")) == 0)
+	debug5 << "Cannot handle other than 3 dimensional data" << std::endl;
+	EXCEPTION2 (UnexpectedValueException, "Number of dimensions", "3");
+    }
+    // points
+    for (i = 0, npoints = 1; i < ndims; i++)
+    {
+	debug5 << "ndims: " << ndims << " " << grid_dims[i] << std::endl;
+	npoints *= grid_dims[i];
+    }
+    npoints *= ndims;
+    // connectivity is implicit
+    // point vars
+    int num_groups = H5NIMROD_get_num_objects_matching_pattern (root_id,
+	    "/",
+	    H5G_GROUP,
+	    NULL);
+    int numstep = 0;
+    char name[MAXLENGTH], name1[MAXLENGTH], name2[MAXLENGTH];
+    for (int idx = 0; idx < num_groups; idx++)
+    {
+	int len_of_name = MAXLENGTH;
+	H5NIMROD_get_object_name (root_id,
+		"/", H5G_GROUP, idx, name, len_of_name);
+	if (strncmp (name, "step_", strlen ("step_")) == 0)
 	{
-	  sprintf (name1, "/%s", name);
-	  stepnames[numstep] = name;
-	  numstep += 1;
-	  group_id = H5Gopen (root_id, name1);
-	  nvectorvars = H5NIMROD_get_num_objects_matching_pattern (group_id,
-								   name1,
-								   H5G_GROUP,
-								   NULL);
-	  vectorvars.resize (nvectorvars);
-	  vectorvarnames.resize (nvectorvars);
-	  vectorvardims.resize (nvectorvars);
-	  for (int kdx = 0; kdx < nvectorvars; kdx++)
+	    sprintf (name1, "/%s", name);
+	    stepnames[numstep] = name;
+	    numstep += 1;
+	    group_id = H5Gopen (root_id, name1);
+	    nvectorvars = H5NIMROD_get_num_objects_matching_pattern (group_id,
+		    name1,
+		    H5G_GROUP,
+		    NULL);
+	    vectorvars.resize (nvectorvars);
+	    vectorvarnames.resize (nvectorvars);
+	    vectorvardims.resize (nvectorvars);
+	    for (int kdx = 0; kdx < nvectorvars; kdx++)
 	    {
-	      H5NIMROD_get_object_name (group_id,
-					name1,
-					H5G_GROUP, kdx, name2, len_of_name);
-	      vectorvarnames[kdx] = name2;
-	      vectorvardims[kdx] =
-		H5NIMROD_get_num_objects_matching_pattern (group_id, name2,
-							   H5G_DATASET, NULL);
+		H5NIMROD_get_object_name (group_id,
+			name1,
+			H5G_GROUP, kdx, name2, len_of_name);
+		vectorvarnames[kdx] = name2;
+		vectorvardims[kdx] =
+		    H5NIMROD_get_num_objects_matching_pattern (group_id, name2,
+			    H5G_DATASET, NULL);
 	    }
 
-	  nscalarvars = H5NIMROD_get_num_objects_matching_pattern (group_id,
-								   name1,
-								   H5G_DATASET,
-								   NULL);
-	  scalarvars.resize (nscalarvars);
-	  scalarvarnames.resize (nscalarvars);
-	  for (int kdx = 0; kdx < nscalarvars; kdx++)
+	    nscalarvars = H5NIMROD_get_num_objects_matching_pattern (group_id,
+		    name1,
+		    H5G_DATASET,
+		    NULL);
+	    scalarvars.resize (nscalarvars);
+	    scalarvarnames.resize (nscalarvars);
+	    for (int kdx = 0; kdx < nscalarvars; kdx++)
 	    {
-	      H5NIMROD_get_object_name (group_id,
-					name1,
-					H5G_DATASET, kdx, name, len_of_name);
-	      scalarvarnames[kdx] = name;
+		H5NIMROD_get_object_name (group_id,
+			name1,
+			H5G_DATASET, kdx, name, len_of_name);
+		scalarvarnames[kdx] = name;
 	    }
-	  break;
+	    break;
 	}	
     }
-  printf ("num scalarvars: %d\n", nscalarvars);
-  printf ("num vectorvars: %d\n", nvectorvars);
-  H5Gclose (group_id);
-  H5Gclose (grid_id);
-  H5Gclose (root_id);
-  H5Fclose (file);
+    debug5 << "num scalarvars: " << nscalarvars << std::endl;
+    debug5 << "num vectorvars: " << nvectorvars << std::endl;
+    H5Gclose (group_id);
+    H5Gclose (grid_id);
+    H5Gclose (root_id);
+    H5Fclose (file);
 }
 
 
@@ -212,10 +216,10 @@ avtMTSDFileFormat (&filename, 1)
 //
 // ****************************************************************************
 
-int
+    int
 avtH5NimrodFileFormat::GetNTimesteps (void)
 {
-  return nsteps;
+    return nsteps;
 }
 
 
@@ -233,7 +237,7 @@ avtH5NimrodFileFormat::GetNTimesteps (void)
 //
 // ****************************************************************************
 
-void
+    void
 avtH5NimrodFileFormat::FreeUpResources (void)
 {
 }
@@ -252,37 +256,37 @@ avtH5NimrodFileFormat::FreeUpResources (void)
 //
 // ****************************************************************************
 
-void
+    void
 avtH5NimrodFileFormat::PopulateDatabaseMetaData (avtDatabaseMetaData * md,
-						 int timeState)
+	int timeState)
 {
-  avtMeshType mt = AVT_CURVILINEAR_MESH;
-  int nblocks = 1;		//  <-- this must be 1 for MTSD
-  int block_origin = 0;
-  int spatial_dimension = ndims;
-  int topological_dimension = ndims;
-  double *extents = NULL;
+    avtMeshType mt = AVT_CURVILINEAR_MESH;
+    int nblocks = 1;		//  <-- this must be 1 for MTSD
+    int block_origin = 0;
+    int spatial_dimension = ndims;
+    int topological_dimension = ndims;
+    double *extents = NULL;
 
 
-  AddMeshToMetaData (md, "Mesh", AVT_CURVILINEAR_MESH, extents, nblocks,
-		     block_origin, spatial_dimension, topological_dimension);
+    AddMeshToMetaData (md, "Mesh", AVT_CURVILINEAR_MESH, extents, nblocks,
+	    block_origin, spatial_dimension, topological_dimension);
 
-  for (int idx = 0; idx < nscalarvars; idx++)
+    for (int idx = 0; idx < nscalarvars; idx++)
     {
-      string mesh_for_this_var = "Mesh";	// ??? -- could be multiple meshes
-      string varname = scalarvarnames[idx];
-      // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-      avtCentering cent = AVT_NODECENT;
-      AddScalarVarToMetaData (md, varname, mesh_for_this_var, cent);
+	string mesh_for_this_var = "Mesh";	// ??? -- could be multiple meshes
+	string varname = scalarvarnames[idx];
+	// AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
+	avtCentering cent = AVT_NODECENT;
+	AddScalarVarToMetaData (md, varname, mesh_for_this_var, cent);
     }
-  for (int idx = 0; idx < nvectorvars; idx++)
+    for (int idx = 0; idx < nvectorvars; idx++)
     {
-      string mesh_for_this_var = "Mesh";	// ??? -- could be multiple meshes
-      string varname = vectorvarnames[idx];
-      // AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
-      avtCentering cent = AVT_NODECENT;
-      AddVectorVarToMetaData (md, varname, mesh_for_this_var, cent,
-			      vectorvardims[idx]);
+	string mesh_for_this_var = "Mesh";	// ??? -- could be multiple meshes
+	string varname = vectorvarnames[idx];
+	// AVT_NODECENT, AVT_ZONECENT, AVT_UNKNOWN_CENT
+	avtCentering cent = AVT_NODECENT;
+	AddVectorVarToMetaData (md, varname, mesh_for_this_var, cent,
+		vectorvardims[idx]);
     }
 
 
@@ -309,64 +313,64 @@ avtH5NimrodFileFormat::PopulateDatabaseMetaData (avtDatabaseMetaData * md,
 //
 // ****************************************************************************
 
-vtkDataSet *
+    vtkDataSet *
 avtH5NimrodFileFormat::GetMesh (int timestate, const char *meshname)
 {
-  //YOU MUST IMPLEMENT THIS
+    //YOU MUST IMPLEMENT THIS
 
-  vtkStructuredGrid *dataset = vtkStructuredGrid::New ();
-  vtkPoints *vtkpoints = vtkPoints::New ();
-  vtkpoints->SetDataTypeToFloat ();
-  int dims[3];
+    vtkStructuredGrid *dataset = vtkStructuredGrid::New ();
+    vtkPoints *vtkpoints = vtkPoints::New ();
+    vtkpoints->SetDataTypeToFloat ();
+    int dims[3];
 
-  hsize_t npoints = 1;
-  for (int i = 0; i < ndims; i++)
+    hsize_t npoints = 1;
+    for (int i = 0; i < ndims; i++)
     {
-      dims[i] = (int) grid_dims[i];
-      npoints *= grid_dims[i];
+	dims[i] = (int) grid_dims[i];
+	npoints *= grid_dims[i];
     }
 
-  dataset->SetDimensions (dims);
-  hid_t file;
-  file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
-  if (file < 0)
-    EXCEPTION1 (InvalidFilesException, fname.c_str ());
+    dataset->SetDimensions (dims);
+    hid_t file;
+    file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (file < 0)
+	EXCEPTION1 (InvalidFilesException, fname.c_str ());
 
-  hid_t grid_id = H5Gopen (file, "/GRID");
-  vtkpoints->SetNumberOfPoints (npoints);
+    hid_t grid_id = H5Gopen (file, "/GRID");
+    vtkpoints->SetNumberOfPoints (npoints);
 
-  float *Xcoord;
-  Xcoord = (float *) malloc (sizeof (float) * npoints);
-  H5NIMROD_read_float32_array (grid_id, "X", NULL, ndims, NULL, Xcoord);
-  _transpose_3D(Xcoord, grid_dims);
-  float *Ycoord;
-  Ycoord = (float *) malloc (sizeof (float) * npoints);
-  H5NIMROD_read_float32_array (grid_id, "Y", NULL, ndims, NULL, Ycoord);
-  _transpose_3D(Ycoord, grid_dims);
-  float *Zcoord;
-  Zcoord = (float *) malloc (sizeof (float) * npoints);
-  H5NIMROD_read_float32_array (grid_id, "Z", NULL, ndims, NULL, Zcoord);
-  _transpose_3D(Zcoord, grid_dims);
+    float *Xcoord;
+    Xcoord = (float *) malloc (sizeof (float) * npoints);
+    H5NIMROD_read_float32_array (grid_id, "X", NULL, ndims, NULL, Xcoord);
+    _transpose_3D(Xcoord, grid_dims);
+    float *Ycoord;
+    Ycoord = (float *) malloc (sizeof (float) * npoints);
+    H5NIMROD_read_float32_array (grid_id, "Y", NULL, ndims, NULL, Ycoord);
+    _transpose_3D(Ycoord, grid_dims);
+    float *Zcoord;
+    Zcoord = (float *) malloc (sizeof (float) * npoints);
+    H5NIMROD_read_float32_array (grid_id, "Z", NULL, ndims, NULL, Zcoord);
+    _transpose_3D(Zcoord, grid_dims);
 
-  float *pts = (float *) vtkpoints->GetVoidPointer (0);
-  hsize_t idx = 0;
-  for (hsize_t i = 0; i < npoints; i++)
+    float *pts = (float *) vtkpoints->GetVoidPointer (0);
+    hsize_t idx = 0;
+    for (hsize_t i = 0; i < npoints; i++)
     {
-      pts[idx] = Xcoord[i];
-      pts[idx + 1] = Ycoord[i];
-      pts[idx + 2] = Zcoord[i];
-      idx += 3;
+	pts[idx] = Xcoord[i];
+	pts[idx + 1] = Ycoord[i];
+	pts[idx + 2] = Zcoord[i];
+	idx += 3;
     }
-  dataset->SetPoints (vtkpoints);
+    dataset->SetPoints (vtkpoints);
 
-  free (Xcoord);
-  free (Ycoord);
-  free (Zcoord);
+    free (Xcoord);
+    free (Ycoord);
+    free (Zcoord);
 
-  H5Gclose (grid_id);
-  H5Fclose (file);
+    H5Gclose (grid_id);
+    H5Fclose (file);
 
-  return dataset;
+    return dataset;
 }
 
 
@@ -388,43 +392,43 @@ avtH5NimrodFileFormat::GetMesh (int timestate, const char *meshname)
 //
 // ****************************************************************************
 
-vtkDataArray *
+    vtkDataArray *
 avtH5NimrodFileFormat::GetVar (int timestate, const char *varname)
 {
 
-  printf ("GetVar: %s %s\n", stepnames[timestate].c_str (), varname);
-  hid_t file;
-  file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
+    debug5 << "GetVar: " << stepnames[timestate] << " " <<  varname << std::endl;
+    hid_t file;
+    file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
 
-  if (file < 0)
-    EXCEPTION1 (InvalidFilesException, fname.c_str ());
+    if (file < 0)
+	EXCEPTION1 (InvalidFilesException, fname.c_str ());
 
-  hid_t root_id, group_id;
-  root_id = H5Gopen (file, "/");
-  group_id = H5Gopen (root_id, stepnames[timestate].c_str ());
+    hid_t root_id, group_id;
+    root_id = H5Gopen (file, "/");
+    group_id = H5Gopen (root_id, stepnames[timestate].c_str ());
 
-  float *var;
-  hsize_t npoints = 1;
-  for (hsize_t i = 0; i < ndims; i++)
+    float *var;
+    hsize_t npoints = 1;
+    for (hsize_t i = 0; i < ndims; i++)
     {
-      npoints *= grid_dims[i];
+	npoints *= grid_dims[i];
     }
-  var = (float *) malloc (sizeof (float) * npoints);
-  H5NIMROD_read_float32_array (group_id, varname, NULL, ndims, NULL, var);
-  _transpose_3D(var, grid_dims);
+    var = (float *) malloc (sizeof (float) * npoints);
+    H5NIMROD_read_float32_array (group_id, varname, NULL, ndims, NULL, var);
+    _transpose_3D(var, grid_dims);
 
-  hsize_t ntuples = npoints;
-  vtkFloatArray *scalars = vtkFloatArray::New ();
-  scalars->SetNumberOfTuples (ntuples);
-  float *ptr = (float *) scalars->GetVoidPointer (0);
-  memcpy (ptr, var, sizeof (float) * npoints);
+    hsize_t ntuples = npoints;
+    vtkFloatArray *scalars = vtkFloatArray::New ();
+    scalars->SetNumberOfTuples (ntuples);
+    float *ptr = (float *) scalars->GetVoidPointer (0);
+    memcpy (ptr, var, sizeof (float) * npoints);
 
-  free (var);
-  H5Gclose (group_id);
-  H5Gclose (root_id);
-  H5Fclose (file);
+    free (var);
+    H5Gclose (group_id);
+    H5Gclose (root_id);
+    H5Fclose (file);
 
-  return scalars;
+    return scalars;
 
 }
 
@@ -447,73 +451,73 @@ avtH5NimrodFileFormat::GetVar (int timestate, const char *varname)
 //
 // ****************************************************************************
 
-vtkDataArray *
+    vtkDataArray *
 avtH5NimrodFileFormat::GetVectorVar (int timestate, const char *varname)
 {
-  printf ("GetVectorVar: %s %s\n", stepnames[timestate].c_str (), varname);
-  hid_t file;
-  file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
+    debug5 << "GetVectorVar: " << stepnames[timestate] << " " <<  varname << std::endl;
+    hid_t file;
+    file = H5Fopen (fname.c_str (), H5F_ACC_RDONLY, H5P_DEFAULT);
 
-  if (file < 0)
-    EXCEPTION1 (InvalidFilesException, fname.c_str ());
+    if (file < 0)
+	EXCEPTION1 (InvalidFilesException, fname.c_str ());
 
-  hid_t root_id, group_id;
-  root_id = H5Gopen (file, "/");
-  group_id = H5Gopen (root_id, stepnames[timestate].c_str ());
-  int num_comp = H5NIMROD_get_num_objects_matching_pattern (group_id,
-							    varname,
-							    H5G_DATASET,
-							    NULL);
+    hid_t root_id, group_id;
+    root_id = H5Gopen (file, "/");
+    group_id = H5Gopen (root_id, stepnames[timestate].c_str ());
+    int num_comp = H5NIMROD_get_num_objects_matching_pattern (group_id,
+	    varname,
+	    H5G_DATASET,
+	    NULL);
 
-  hsize_t npoints = 1;
-  for (hsize_t i = 0; i < ndims; i++)
+    hsize_t npoints = 1;
+    for (hsize_t i = 0; i < ndims; i++)
     {
-      npoints *= grid_dims[i];
+	npoints *= grid_dims[i];
     }
 
-  float **comp;
-  comp = (float **) malloc (sizeof (float *) * num_comp);
-  for (int idx = 0; idx < num_comp; idx++)
-    comp[idx] = (float *) malloc (sizeof (float) * npoints);
+    float **comp;
+    comp = (float **) malloc (sizeof (float *) * num_comp);
+    for (int idx = 0; idx < num_comp; idx++)
+	comp[idx] = (float *) malloc (sizeof (float) * npoints);
 
-  hid_t vector_id = H5Gopen (group_id, varname);
-  char name[MAXLENGTH];
-  int len_of_name = MAXLENGTH;
-  for (int idx = 0; idx < num_comp; idx++)
+    hid_t vector_id = H5Gopen (group_id, varname);
+    char name[MAXLENGTH];
+    int len_of_name = MAXLENGTH;
+    for (int idx = 0; idx < num_comp; idx++)
     {
-      H5NIMROD_get_object_name (group_id,
-				varname, H5G_DATASET, idx, name, len_of_name);
-      H5NIMROD_read_float32_array (vector_id,
-				   name, NULL, ndims, NULL, comp[idx]);
-      _transpose_3D(comp[idx], grid_dims);
+	H5NIMROD_get_object_name (group_id,
+		varname, H5G_DATASET, idx, name, len_of_name);
+	H5NIMROD_read_float32_array (vector_id,
+		name, NULL, ndims, NULL, comp[idx]);
+	_transpose_3D(comp[idx], grid_dims);
     }
 
-  vtkFloatArray *vector = vtkFloatArray::New ();
-  hsize_t ntuples = npoints;
-  vector->SetNumberOfComponents (num_comp);
-  vector->SetNumberOfTuples (ntuples);
-  float *ptr = (float *) vector->GetVoidPointer (0);
-  hsize_t count = 0;
-  for (hsize_t idx = 0; idx < ntuples; idx++)
+    vtkFloatArray *vector = vtkFloatArray::New ();
+    hsize_t ntuples = npoints;
+    vector->SetNumberOfComponents (num_comp);
+    vector->SetNumberOfTuples (ntuples);
+    float *ptr = (float *) vector->GetVoidPointer (0);
+    hsize_t count = 0;
+    for (hsize_t idx = 0; idx < ntuples; idx++)
     {
-      for (int jdx = 0; jdx < num_comp; jdx++)
+	for (int jdx = 0; jdx < num_comp; jdx++)
 	{
-	  ptr[count + jdx] = comp[jdx][idx];
+	    ptr[count + jdx] = comp[jdx][idx];
 	}
-      count += num_comp;
+	count += num_comp;
     }
-  for (int idx = 0; idx < num_comp; idx++)
+    for (int idx = 0; idx < num_comp; idx++)
     {
-      if (comp[idx] != NULL)
-	free (comp[idx]);
+	if (comp[idx] != NULL)
+	    free (comp[idx]);
     }
-  if (comp != NULL)
-    free (comp);
+    if (comp != NULL)
+	free (comp);
 
-  return vector;
+    return vector;
 
-  H5Gclose (vector_id);
-  H5Gclose (group_id);
-  H5Gclose (root_id);
-  H5Fclose (file);
+    H5Gclose (vector_id);
+    H5Gclose (group_id);
+    H5Gclose (root_id);
+    H5Fclose (file);
 }

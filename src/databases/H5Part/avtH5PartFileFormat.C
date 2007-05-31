@@ -31,10 +31,10 @@
 #include <iomanip>
 #include <iostream>
 
+#include <DebugStream.h>
 
 
-#ifdef PARALLEL_IO
-#include <mpi.h>
+#ifdef PARALLEL
 #include <avtParallel.h>
 #endif
 
@@ -73,13 +73,13 @@ avtH5PartFileFormat::avtH5PartFileFormat(const char *filename)
     if (npoints ==  0)
 	EXCEPTION1(VisItException, "npoints is zero");
     points.resize(npoints*nspace);
-    cout << "constructor: npoints: " << npoints << "\n";
+    debug5 << "constructor: npoints: " << npoints << "\n";
 
     //point vars
     npointvars= (int) H5PartGetNumDatasets(file); /* get number of datasets in timestep 0 */
     pointvars.resize(npointvars);
     pointvarnames.resize(npointvars);
-    cout << "constructor: nvariables: " << npointvars << "\n";
+    debug5 << "constructor: nvariables: " << npointvars << "\n";
 
     char name[128];
     h5part_int64_t status;
@@ -260,7 +260,7 @@ avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
     //
     int size;
     size = 1;
-#ifdef PARALLEL_IO
+#ifdef PARALLEL
     size = PAR_Size();
 #endif
 
@@ -270,7 +270,7 @@ avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
 	EXCEPTION1(InvalidFilesException, "Number of points is zero");
     }
 
-    cout << "Populate: size, : " << size << "\n";
+    debug5 << "Populate: size, : " << size << "\n";
 
     avtMeshMetaData *pmesh = new avtMeshMetaData;
 
@@ -280,7 +280,7 @@ avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
     pmesh->meshType = AVT_POINT_MESH;
     pmesh->topologicalDimension = 0;
     pmesh->spatialDimension = dimension;
-    cout << "Spatial dimension: " << pmesh->spatialDimension << endl;
+    debug5 << "Spatial dimension: " << pmesh->spatialDimension << endl;
     pmesh->numBlocks = size;
     pmesh->blockTitle = "subset";
     pmesh->blockPieceName = "subset";
@@ -322,7 +322,7 @@ avtH5PartFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeS
 vtkDataSet *
 avtH5PartFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 {
-    cout << "GetMesh domain: " << domain << "\n";
+    debug5 << "GetMesh domain: " << domain << "\n";
 
     H5PartFile *file;
     file = H5PartOpenFile(fname.c_str(),H5PART_READ);
@@ -334,7 +334,7 @@ avtH5PartFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     int npointvars;
     int nspace = 3;
     int nprocs = 1;
-#ifdef PARALLEL_IO
+#ifdef PARALLEL
     nprocs = PAR_Size();	
 #endif
 
@@ -354,7 +354,7 @@ avtH5PartFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
     //points
     npoints= (long int) H5PartGetNumParticles(file);
-    cout << "GetMesh: npoints for domain " << domain << ": " << npoints << "\n";
+    debug5 << "GetMesh: npoints for domain " << domain << ": " << npoints << "\n";
 
     if (strcmp(meshname, "particles") != 0)
     {
@@ -385,7 +385,7 @@ avtH5PartFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 	points[nspace*i] = (float) x[i];
 	points[nspace*i+1] = (float) y[i];
 	points[nspace*i+2] = (float) z[i];
-	std::cout << i << ": " << x[i] << " " << y[i] << " " << z[i] << endl;
+	//debug5 << i << ": " << x[i] << " " << y[i] << " " << z[i] << endl;
     }
     free(x);
     free(y);
@@ -415,7 +415,7 @@ avtH5PartFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
 
     H5PartCloseFile(file);
-    fprintf(stderr,"proc[%u]:  done\n", domain);
+    debug5 << "Proc [" << domain << "]: done" << std::endl;
 
     return dataset;
 }
@@ -479,7 +479,7 @@ avtH5PartFileFormat::GetVar(int timestate, int domain, const char *varname)
     int npointvars;
     int nspace = 3;
     int nprocs = 1;
-#ifdef PARALLEL_IO
+#ifdef PARALLEL
     nprocs = PAR_Size(); 
 #endif
 
@@ -500,7 +500,7 @@ avtH5PartFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     H5PartSetView(file,idStart,idEnd);
     npoints= H5PartGetNumParticles(file);
-    cout << "GetVar: npoints for domain " << domain << ": " << npoints << "\n"; 
+    debug5 << "GetVar: npoints for domain " << domain << ": " << npoints << "\n"; 
 
     for (size_t j=0; j < (size_t)(pointvarnames.size()); j++)
     {
