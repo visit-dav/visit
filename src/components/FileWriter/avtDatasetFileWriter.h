@@ -50,6 +50,7 @@
 
 #include <avtOriginatingDatasetSink.h>
 
+class vtkRectilinearGrid;
 
 typedef enum
 {
@@ -89,6 +90,9 @@ typedef enum
 //    Jeremy Meredith, Mon Apr 23 13:54:01 EDT 2007
 //    Added POVRay output file format.
 //
+//    Jeremy Meredith, Thu May 31 11:06:48 EDT 2007
+//    Added support for POVRay .df3 density files for volume rendering.
+//
 // ****************************************************************************
 
 class AVTFILEWRITER_API avtDatasetFileWriter : public avtOriginatingDatasetSink
@@ -116,6 +120,8 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtOriginatingDatasetSink
                                        double*, double*);
     void               WritePOVRayFile(vtkDataSet*, const char *, int,
                                        double*, double*);
+    bool               WritePOVRayDF3File(vtkRectilinearGrid*,
+                                          const char *, double[6]);
 
     void               WriteVTKFamily(const char *, bool);
     int                WriteVTKTree(avtDataTree_p, int, const char *, bool);

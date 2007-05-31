@@ -54,6 +54,7 @@
 #include <vtkOBJWriter.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkVisItSTLWriter.h>
 #include <vtkTriangleFilter.h>
 #include <vtkUnstructuredGrid.h>
@@ -1078,6 +1079,8 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //  Creation:   April  5, 2007
 //
 //  Modifications:
+//    Jeremy Meredith, Thu May 31 15:31:31 EDT 2007
+//    Added suppport for volume rendering rectilinear grids
 //
 // ****************************************************************************
 
@@ -1227,6 +1230,16 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     masterfile << "// Set up the color table default" << endl;
     masterfile << "#declare colortable = ct_hot;" << endl;
     masterfile << endl;
+    masterfile << "// Set up the color table and opacity for volume renderings " << endl;
+    masterfile << "#declare volren_colortable = ct_hot;" << endl;
+    masterfile << "#declare volren_opacity = color_map {" << endl;
+    masterfile << "   [0.00  color  0.0]" << endl;
+    masterfile << "   [1.00  color  1.0]" << endl;
+    masterfile << "};" << endl;
+    masterfile << endl;
+    masterfile << "// The emission for volume plots typically needs to scale with data set size" << endl;
+    masterfile << "#declare volren_attenuation = 2.0 / ds_size;" << endl;
+    masterfile << endl;
     masterfile << "// Set some variables to make camera/light source positioning easier" << endl;
     masterfile << "#declare aspect       = 4/3;" << endl;
     masterfile << "#declare scene_origin = <xcenter,ycenter,zcenter>;" << endl;
@@ -1271,6 +1284,7 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
         masterfile << "#if (nvecs"<<idxstr<<"  > 0) object { vector_geometry"<<idxstr<<" }  #end" << endl;
         masterfile << "#if (nlines"<<idxstr<<" > 0) object { line_geometry"<<idxstr<<"   }  #end" << endl;
         masterfile << "#if (ntris"<<idxstr<<"  > 0) object { poly_geometry"<<idxstr<<"   }  #end" << endl;
+        masterfile << "#if (nvols"<<idxstr<<"  > 0) object { volume_geometry"<<idxstr<<" }  #end" << endl;
 
         masterfile << endl;
     }
@@ -1340,7 +1354,7 @@ avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
 
 
 // ****************************************************************************
-//  Method: avtDatasetFileWriter::WritePOVRayTree
+//  Method: avtDatasetFileWriter::WritePOVRayFile
 //
 //  Purpose:
 //      Writes a single vtkDataSet to a POVRay file.
@@ -1357,6 +1371,12 @@ avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
 //  Programmer: Jeremy Meredith
 //  Creation:   April  5, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu May 31 15:34:42 EDT 2007
+//    Added volume rendering support through dense-media in a bounding box,
+//    using a 32-bit density file, and with transfer functions implemented
+//    using independent density maps for color and opacity.
+//
 // ****************************************************************************
 
 void
@@ -1371,6 +1391,19 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
     vtkTriangleFilter *tris = vtkTriangleFilter::New();
     tris->SetPassLines(true);
     tris->SetPassVerts(true);
+
+    //
+    // Write out a density file for rectilinear grids
+    //
+    bool densityWritten = false;
+    double densityExtents[6];
+    char df3name[256];
+    if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        sprintf(df3name, "%s.df3", filename);
+        densityWritten = WritePOVRayDF3File((vtkRectilinearGrid*)ds,
+                                            df3name, densityExtents);
+    }
 
     //
     // We need triangle-only polydata
@@ -1407,6 +1440,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
     int numVerts = verts->GetNumberOfCells();
     int numPolys = polys->GetNumberOfCells();
     int numVecs = (ptvectors || cellvectors) ? numVerts : 0;
+    int numVols = densityWritten ? 1 : 0;
 
     vtkIdType npts, *ids;
     vtkIdList *idlist = vtkIdList::New();
@@ -1466,6 +1500,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
     out << "#declare nlines"<<idxstr<<" = "<<numLines<<";"<<endl;
     out << "#declare ntris"<<idxstr<<"  = "<<numPolys<<";"<<endl;
     out << "#declare nvecs"<<idxstr<<"  = "<<numVecs<<";"<<endl;
+    out << "#declare nvols"<<idxstr<<"  = "<<numVols<<";"<<endl;
     out << endl;
 
     //
@@ -1959,11 +1994,157 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
     out << endl;
 
     //
+    // Write the geometry for 3-dimensional grids as a density
+    // map of emissive media in a bounding box.
+    //
+    if (numVols > 0)
+    {
+        double dx = densityExtents[1]-densityExtents[0];
+        double dy = densityExtents[3]-densityExtents[2];
+        double dz = densityExtents[5]-densityExtents[4];
+        out << "#declare volume_geometry"<<idxstr<<" = box" << endl;
+        out << "{" << endl;
+        out << "   <0,0,0> <1,1,1>" << endl;
+        out << "   texture { pigment { color rgbf 1 } }" << endl;
+        out << "   interior {" << endl;
+        out << "       media {" << endl;
+        out << "           intervals 100" << endl;
+        out << "           samples 1,10" << endl;
+        out << "           emission <1,1,1> * volren_attenuation" << endl;
+        out << "           absorption <0,0,0>" << endl;
+        out << "           scattering { 1,<0,0,0> }" << endl;
+        out << "           confidence 0.99" << endl;
+        out << "           variance 1/256" << endl;
+        out << "           density {" << endl;
+        out << "               density_file df3 \""<<df3name<<"\"" << endl;
+        out << "               interpolate 1" << endl;
+        out << "               color_map { volren_colortable }" << endl;
+        out << "           }" << endl;
+        out << "           density {" << endl;
+        out << "               density_file df3 \""<<df3name<<"\"" << endl;
+        out << "               interpolate 1" << endl;
+        out << "               color_map { volren_opacity }" << endl;
+        out << "           }" << endl;
+        out << "       }" << endl;
+        out << "   }" << endl;
+        out << "   scale <"
+            << dx << ","
+            << dy << ","
+            << dz << ">" << endl;
+        out << "   translate <"
+            <<densityExtents[0]<<","
+            <<densityExtents[2]<<","
+            <<densityExtents[4]<<">" << endl;
+        out << "   hollow" << endl;
+        out << "};" << endl;
+    }
+
+    //
     // Close the file, free memory
     //
     out.close();
     tris->Delete();
     geom->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtDatasetFileWriter::WritePOVRayDF3File
+//
+//  Purpose:
+//      Writes a rectilinear grid to a DF3 file for POVRay.
+//
+//  Arguments:
+//      rgrid            The vtkRectilinearGrid to write.
+//      filename         The filename to use.
+//      extents          The actual spatial extents of this grid.
+//
+//  Returns:    true if file was written
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   May 31, 2007
+//
+// ****************************************************************************
+
+bool
+avtDatasetFileWriter::WritePOVRayDF3File(vtkRectilinearGrid *rgrid,
+                                         const char *df3name,
+                                         double extents[6])
+{
+    vtkDataArray *ptscalars = rgrid->GetPointData()->GetScalars();
+    vtkDataArray *cellscalars = rgrid->GetCellData()->GetScalars();
+
+    // If there is no data, this is pointless
+    if (!ptscalars && !cellscalars)
+        return false;
+
+    // Get the dimensions
+    int dims[3];
+    rgrid->GetDimensions(dims);
+
+    // Get the  extents
+    rgrid->ComputeBounds();
+    double *bounds = rgrid->GetBounds();
+    for (int i=0; i<6; i++)
+        extents[i] = bounds[i];
+
+    // Get the scalar array and adjust dims to match
+    vtkDataArray *scalars = ptscalars;
+    if (!ptscalars)
+    {
+        scalars = cellscalars;
+        dims[0]--;
+        dims[1]--;
+        dims[2]--;
+    }
+    int nvals = dims[0]*dims[1]*dims[2];
+
+    // These had better match....
+    if (nvals != scalars->GetNumberOfTuples())
+        return false;
+
+    // Get the min/max value for scaling
+    double minval = +FLT_MAX;
+    double maxval = -FLT_MAX;
+    for (int i=0; i<nvals; i++)
+    {
+        double val = scalars->GetComponent(i, 0);
+        if (minval > val)
+            minval = val;
+        if (maxval < val)
+            maxval = val;
+    }
+    if (maxval==minval)
+        maxval = minval+1;
+
+    // Open the file and write the dims as big-endian 2-byte ints
+    ofstream out(df3name, ios::out);
+    out.put((dims[0] >> 8) & 0xff);
+    out.put(dims[0] & 0xff);
+    out.put((dims[1] >> 8) & 0xff);
+    out.put(dims[1] & 0xff);
+    out.put((dims[2] >> 8) & 0xff);
+    out.put(dims[2] & 0xff);
+
+    // Write the data as 4-byte big-endian ints
+    for (int i=0; i<nvals; i++)
+    {
+        double value      = scalars->GetComponent(i, 0);
+        double normalized = (value-minval)/(maxval-minval);
+        if (normalized<0)
+            normalized=0;
+        if (normalized>1)
+            normalized=1;
+        unsigned int scaled =
+            (unsigned int)((unsigned int)(0xffffffff) * normalized);
+        out.put((scaled >> 24) & 0xff);
+        out.put((scaled >> 16) & 0xff);
+        out.put((scaled >> 8)  & 0xff);
+        out.put(scaled & 0xff);
+    }
+
+    out.close();
+    return true;
 }
 
 
