@@ -2664,10 +2664,21 @@ if test "$enable_gui" = "yes"; then
     else
         AC_MSG_RESULT(Qt $QtVersion in $QT_INCLUDE)
     fi
+
+    if test -f $QT_LIB/libqt-mt.so -o -f $QT_LIB/libqt-mt.dylib; then
+	AC_MSG_RESULT(Linking to libqt-mt)
+	LIBQT=libqt-mt
+    	QT_LIBS=-lqt-mt
+    else
+	AC_MSG_RESULT(Linking to libqt)
+	LIBQT=libqt
+    	QT_LIBS=-lqt
+    fi
+
     AC_SUBST(QT_BIN)
     AC_SUBST(QT_INCLUDE)
     AC_SUBST(QT_LIB)
-    QT_LIBS=-lqt
+    AC_SUBST(LIBQT)
     AC_SUBST(QT_LIBS)
     QUI_LIBS=-lqui
     AC_SUBST(QUI_LIBS)
