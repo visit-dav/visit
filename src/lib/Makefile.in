@@ -175,7 +175,7 @@ LIBVTKMPEG2ENCODE=libvtkMPEG2Encode.@SHLIB_LIBEXT@
 LIBMESAGL=libMesaGL.@SHLIB_LIBEXT@
 LIBGLU=libGLU.@SHLIB_LIBEXT@
 LIBOSMESA=libOSMesa.@SHLIB_LIBEXT@
-LIBQT=libqt.@SHLIB_LIBEXT@
+LIBQT=@LIBQT@.@SHLIB_LIBEXT@
 LIBQUI=libqui.@SHLIB_LIBEXT@
 LIBSILO=libsilo.@SHLIB_LIBEXT@
 
@@ -270,9 +270,9 @@ libqt:
 	if test -n "@QT_LIB@"; then              \
 	    $(RM) $(LIBQT)*                 ;    \
 	    ln -s @QT_LIB@/$(LIBQT)* .   ;       \
-            if test -n "@QT_LIB@/libqt.a"; then  \
-                $(RM) libqt.a ;                  \
-                ln -s @QT_LIB@/libqt.a . ;       \
+            if test -n "@QT_LIB@/@LIBQT@.a"; then  \
+                $(RM) @LIBQT@.a ;                  \
+                ln -s @QT_LIB@/@LIBQT@.a . ;       \
             fi                                   \
 	fi
 
