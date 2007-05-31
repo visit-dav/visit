@@ -164,24 +164,24 @@ cat >> $1 <<- EOF
 
     If you are working with a binary distribution of VisIt (that is,
     you did not build and install it from sources) or if VisIt was
-    installed on your system without this database plugin,
-    then you will most likely have to use the Manual approach for
-    installing and UNinstalling the plugin. Also, if you know the
-    plugin you are using requires special purpose libraries to read
-    the files, you will have to modify the Makefile that gets created
-    by xml2makefile to specify the location(s) of these libraries. 
-    For example, if the name(s) of the required third party libraries
-    were 'foo' and 'bar,' you might do this by editing Makefile and
-    defining something like... 
+    installed on your system without this database plugin and/or the
+    third party libraries it requires, then you will most likely have
+    to use the Manual approach for installing and UNinstalling the
+    plugin. Also, if you know the plugin you are using requires special
+    purpose libraries to read the files, you will have to modify the
+    Makefile that gets created by xml2makefile to specify the location(s)
+    of these libraries.  For example, if the name(s) of the required
+    third party libraries were 'foo' and 'bar,' you might do this by
+    editing Makefile and defining something like... 
 
     FOO_INCLUDE="-I/usr/local/foo/include -I/usr/local/bar/include"
     FOO_LIB="-L/usr/local/foo/lib -lfoo -L/usr/local/bar/lib -lbar"
 
-    In other words, modify the above make variables to point to
-    your local installation of any applicable third party include
-    and library files. A commone example is the HDF5 library where
-    you would need to define HDF5_INCLUDE and HDF5_LIB to get the
-    plugin to link properly.
+    In other words, introduce explicit definitions for the appropriate
+    make variables to point to your local installation of any applicable
+    third party include and library files. A commone example is the HDF5
+    library where you would need to define HDF5_INCLUDE and HDF5_LIB to
+    get the plugin to link properly.
 
     You would place these lines AFTER the include directive that
     includes 'make-variables' near the top of the Makefile.
@@ -192,10 +192,10 @@ cat >> $1 <<- EOF
     FOO_LIB="/usr/local/foo/lib/libfoo.a /usr/local/bar/lib/libbar.a"
 
     If you are unsure as to the necessary make variable names to
-    define, look in the file referenced by the first include directive
-    ending in 'make-variables' near the top of the Makefile. There
-    you will find all the make variable names that are used to define
-    locations of third party libraries.
+    define, look in 'make-variables' file referenced by the first
+    include directive near the top of the Makefile. There you will
+    find all the make variable names that are used to define locations
+    of third party libraries.
 
     Finally, be aware that sometimes you may need to remove .depend
     file(s) in the directory where you are building the plugin to
