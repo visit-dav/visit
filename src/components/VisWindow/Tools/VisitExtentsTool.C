@@ -3698,18 +3698,26 @@ VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
 //     Mark Blair, Tue Jan 23 19:13:03 PST 2007
 //     Now supports toggle buttons via check marks (actually X marks).
 //
+//     Mark Blair, Wed May 30 12:20:33 PDT 2007
+//     Fixed incorrect sanity check for invalid check-mark button indices.
+//
 // ****************************************************************************
 
 void
 VisitExtentsTool::PressButton(int buttonID)
 {
+    bool buttonIsToggle = ((buttonFlags[buttonID] & VET_BUTTON_IS_A_TOGGLE) != 0);
+
     if (buttonCheckIDs[buttonID] < 0)
     {
-        debug3 << "VET/PB/1: Invalid button index." << endl;
-        buttonID = 0;
-    }
+        if ((buttonFlags[buttonID] & VET_BUTTON_HAS_CHECK_MARK) != 0)
+        {
+            debug3 << "VET/PB/1: Check mark button info inconsistent." << endl;
 
-    bool buttonIsToggle = ((buttonFlags[buttonID] & VET_BUTTON_IS_A_TOGGLE) != 0);
+            buttonID = VET_LEFT_MOVE_LEFT_BUTTON_ID;
+            buttonIsToggle = false;
+        }
+    }
 
     if (!buttonAlreadyPressed)
     {
