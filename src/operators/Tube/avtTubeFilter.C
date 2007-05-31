@@ -41,10 +41,13 @@
 
 #include <avtTubeFilter.h>
 
+#include <vtkCellData.h>
 #include <vtkCleanPolyData.h>
 #include <vtkConnectedTubeFilter.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkTubeFilter.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <ImproperUseException.h>
 
@@ -160,12 +163,22 @@ avtTubeFilter::Equivalent(const AttributeGroup *a)
 //    Made it use the connected tube filter (our own creation) whenever
 //    possible; it welds adjacent segments and creates good normals.
 //
+//    Hank Childs, Wed May 30 16:34:42 PDT 2007
+//    Allow for unstructured grids to also be processed.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 {
-    if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
+    bool haveSurface = false;
+    if (in_ds->GetDataObjectType() == VTK_POLY_DATA)
+        haveSurface = true;
+    if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID &&
+        GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() <= 2)
+        haveSurface = true;
+
+    if (!haveSurface)
     {
         EXCEPTION0(ImproperUseException);
     }
@@ -175,8 +188,35 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtkConnectedTubeFilter *tube    = vtkConnectedTubeFilter::New();
     vtkDataSet *output;
 
-    cpd->SetInput((vtkPolyData *)in_ds);
-    tube->SetInput((vtkPolyData*)in_ds);
+    vtkPolyData *ugridAsPD = NULL;
+    if (in_ds->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
+    {
+        vtkUnstructuredGrid *ugrid = (vtkUnstructuredGrid *) in_ds;
+        vtkPolyData *ugridAsPD = vtkPolyData::New();
+        ugridAsPD->SetPoints(ugrid->GetPoints());
+        ugridAsPD->GetPointData()->ShallowCopy(ugrid->GetPointData());
+        ugridAsPD->GetCellData()->ShallowCopy(ugrid->GetCellData());
+        ugridAsPD->GetFieldData()->ShallowCopy(ugrid->GetFieldData());
+        int ncells = ugrid->GetNumberOfCells();
+        ugridAsPD->Allocate(ncells);
+        for (int i = 0 ; i < ncells ; i++)
+        {
+            int celltype = ugrid->GetCellType(i);
+            vtkIdType *pts;
+            int npts;
+            ugrid->GetCellPoints(i, npts, pts);
+            ugridAsPD->InsertNextCell(celltype, npts, pts);
+        }
+
+        cpd->SetInput(ugridAsPD);
+        tube->SetInput(ugridAsPD);
+    }
+    else
+    {
+        cpd->SetInput((vtkPolyData *)in_ds);
+        tube->SetInput((vtkPolyData*)in_ds);
+    }
+
     if (tube->BuildConnectivityArrays())
     {
         tube->SetRadius(atts.GetWidth());
@@ -187,8 +227,9 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     }
     else
     {
-        // The vtk tube filter cries like a little baby if the points are not
-        // exactly like it expects.  Use the vtkCleanPolyData filter.
+        // The vtk tube filter is sensitive to duplicated points, etc.
+        // Use the vtkCleanPolyData filter to make sure it is in a good
+        // format.
         vtktube->SetInput(cpd->GetOutput());
         vtktube->SetVaryRadius(VTK_VARY_RADIUS_OFF);
         vtktube->SetRadius(atts.GetWidth());
@@ -204,6 +245,9 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     vtktube->Delete();
     tube->Delete();
     cpd->Delete();
+
+    if (ugridAsPD != NULL)
+        ugridAsPD->Delete();
 
     return output;
 }
