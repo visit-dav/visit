@@ -22,7 +22,13 @@
 ##
 ##    Jeremy Meredith (via Hank Childs), Thu May 17 08:22:59 PDT 2007
 ##    Improve parallel dependencies.
-
+##
+##    Jeremy Meredith, Thu May 31 14:11:46 EDT 2007
+##    Removed the test for subdirectores where it prepended the dirname.
+##    It seems something has changed to render this unnecessary and
+##    now it causes problems (specifically, dirname is now there twice).
+##    Removing this section seems to fix the problem.
+##
 .PRECIOUS: .depend .pardepend
 dep depend: .depend .pardepend
 
@@ -33,10 +39,6 @@ dep depend: .depend .pardepend
 	      obj=`echo $$dep | sed 's/\.C/.o/'` ;\
 	      echo Building dependencies for $$obj ;\
 	      sed "\|^$$obj|,\|[^\\]$$|d" <$@ > $@- && mv $@- $@ ;\
-	      dir=`dirname $$obj`;\
-	      if [ $$dir != "." ]; then \
-	          printf "$$dir/" >> $@;\
-              fi;\
 	      $(CXX) -M -MG -MT $$obj $(CXXFLAGS) $(CPPFLAGS) $$dep >>$@;\
 	   fi;\
 	done
@@ -49,10 +51,6 @@ dep depend: .depend .pardepend
 	         obj=`echo $$dep | sed 's/\.C/_par.o/'` ;\
 	         echo Building dependencies for $$obj ;\
 	         sed "\|^$$obj|,\|[^\\]$$|d" <$@ > $@- && mv $@- $@ ;\
-	         dir=`dirname $$obj`;\
-	         if [ $$dir != "." ]; then \
-	             printf "$$dir/" >> $@;\
-                 fi;\
 	         $(CXX) -M -MG -MT $$obj -DPARALLEL $(CXXFLAGS) $(CPPFLAGS) $$dep  >>$@;\
 	       fi;\
 	   done;\
