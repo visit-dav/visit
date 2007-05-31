@@ -1097,6 +1097,10 @@ const char *dlerror(void)
 //   Hank Childs, Fri Jan 28 13:19:33 PST 2005
 //   Change comment style so escan will not pick up false positives.
 //
+//   Gunther H. Weber, Sat Apr  7 16:38:32 PDT 2007
+//   Added/changed typecasts to fix compile errors on Mac with gcc 4.0.1
+//   if MACOSX_DEPLOYMENT_TARGET is _not_ set to 10.3 or later
+//
 // ****************************************************************************
 
 void *dlopen(const char *path, int mode)
@@ -1133,9 +1137,9 @@ void *dlopen(const char *path, int mode)
               if (!make_private_module_public)
               {
                 _dyld_func_lookup("__dyld_NSMakePrivateModulePublic", 
-                (unsigned long *)&make_private_module_public);
+                (void **)&make_private_module_public);
               }
-              make_private_module_public(module);
+              make_private_module_public((NSModule)module);
             }
             break;
         case NSObjectFileImageInappropriateFile:
@@ -1162,6 +1166,15 @@ void *dlopen(const char *path, int mode)
     return module;
 }
 
+// ****************************************************************************
+// Modifications:
+//
+//   Gunther H. Weber, Sat Apr  7 16:38:32 PDT 2007
+//   Added/changed typecasts to fix compile errors on Mac with gcc 4.0.1
+//   if MACOSX_DEPLOYMENT_TARGET is _not_ set to 10.3 or later
+//
+// ****************************************************************************
+
 int dlclose(void *handle)
 {
     if ((((struct mach_header *)handle)->magic == MH_MAGIC) ||
@@ -1170,18 +1183,28 @@ int dlclose(void *handle)
         dlerror_helper(-1, "Can't remove dynamic libraries on darwin");
         return 0;
     }
-    if (!NSUnLinkModule(handle, 0))
+    if (!NSUnLinkModule((NSModule)handle, 0))
     {
-        dlerror_helper(0, "unable to unlink module %s", NSNameOfModule(handle));
+        dlerror_helper(0, "unable to unlink module %s", NSNameOfModule((NSModule)handle));
         return 1;
     }
     return 0;
 }
 
+// ****************************************************************************
+// Modifications:
+//
+//   Gunther H. Weber, Sat Apr  7 16:38:32 PDT 2007
+//   Added/changed typecasts to fix compile errors on Mac with gcc 4.0.1
+//   if MACOSX_DEPLOYMENT_TARGET is _not_ set to 10.3 or later
+//   Changed type of nssym from NSSymbol* to NSSymbol to fix compile errors.
+//
+// ****************************************************************************
+
 /* dlsymIntern is used by dlsym to find the symbol */
 void *dlsymIntern(void *handle, const char *symbol)
 {
-    NSSymbol *nssym = 0;
+    NSSymbol nssym = 0;
     /* If the handle is -1, if is the app global context */
     if (handle == (void *)-1)
     {
@@ -1213,7 +1236,7 @@ void *dlsymIntern(void *handle, const char *symbol)
         }
         else
         {
-            nssym = NSLookupSymbolInModule(handle, symbol);
+            nssym = NSLookupSymbolInModule((NSModule)handle, symbol);
         }
     }
     if (!nssym)
@@ -1239,7 +1262,7 @@ void *dlsym(void *handle, const char *symbol)
     }
     else
     {
-        malloc_sym = malloc(sym_len + 2);
+        malloc_sym = (char*)malloc(sym_len + 2);
         if (malloc_sym)
         {
             sprintf(malloc_sym, "_%s", symbol);
