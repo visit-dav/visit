@@ -100,6 +100,10 @@
 //    Brad Whitlock, Wed Mar 21 23:02:05 PST 2007
 //    Added plotName.
 //
+//    Gunther H. Weber, Thu Apr 12 11:02:44 PDT 2007
+//    Added AddFilterNodeAfterExpressionEveluator that adds node directly
+//    after expression evaluator
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -114,6 +118,7 @@ public:
     virtual void SetPlot(avtPlot *_plot) { plot = _plot; };
     void SetTerminalNode(Netnode* t) {terminalNode = t;};
     void AddNode(Netnode *n) { nodeList.push_back(n); };
+    void AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f);
     void SetPipelineSpec(avtPipelineSpecification_p s) {pspec = s;};
     avtDataObject_p GetOutput(void) { return terminalNode->GetOutput(); };
     void SetDataSpec(avtDataSpecification_p s) {dspec = s;};

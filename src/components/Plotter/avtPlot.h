@@ -55,6 +55,7 @@
 #include <avtLegend.h>
 #include <avtMapper.h>
 #include <avtBehavior.h>
+#include <avtDatasetToDatasetFilter.h>
 
 #include <vector>
 #include <enumtypes.h>
@@ -221,6 +222,9 @@ class     WindowAttributes;
 //    Added bool return to SetScaleMode. Added virtual method
 //    CanDoCurveViewScaling.
 //
+//    Gunther H. Weber, Thu Apr 12 10:48:17 PDT 2007
+//    Added GetFilterForTopOfPipeline()
+//
 //    Kathleen Bonnell,  Wed May  9 16:58:50 PDT 2007 
 //    Added WindowMode arg to SetScaleMode. Added virtual method
 //    CanDo2DViewScaling.
@@ -295,6 +299,8 @@ class PLOTTER_API avtPlot
 
     virtual bool              CanDoCurveViewScaling(void) { return false; } 
     virtual bool              CanDo2DViewScaling(void)    { return true; } 
+
+    virtual avtFilter	      *GetFilterForTopOfPipeline() { return 0; }
 
   protected:
     bool                       needsRecalculation;
