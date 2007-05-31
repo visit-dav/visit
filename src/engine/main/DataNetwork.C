@@ -119,6 +119,47 @@ DataNetwork::~DataNetwork(void)
 }
 
 // ****************************************************************************
+//  Method:  DataNetwork::AddFilterNodeAfterExpressionEvaluator()
+//
+//  Purpose: Add a filter at the beginning of the pipeline (after expression
+//           evaluator.
+//
+//  Programmer:  Gunther H. Weber
+//  Creation:    Apr 12, 2007
+//
+// ****************************************************************************
+void DataNetwork::AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f)
+{
+    std::vector<Netnode*>::iterator it = ++nodeList.begin();
+    if (it != nodeList.end())
+    {
+	// There is another Netnode ...
+	NetnodeFilter *f2 = dynamic_cast<NetnodeFilter*>(*it);
+	if (f2)
+	{
+	    // ... and it is a filter
+	    // -> Insert out filter and connect inputs and outputs
+	    f->GetInputNodes() = f2->GetInputNodes();
+	    f2->GetInputNodes().clear();
+	    f2->GetInputNodes().push_back(f);
+	    nodeList.insert(it, f);
+	}
+	else
+	{
+	    // ... it is not a filter
+	    debug1 << "DataNetwork::AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f): Subsequent Netnode is not a filter!" << endl;
+	}
+    }
+    else
+    {
+	// There is no other filter
+	// -> Add our filter as last Netnode and conncect inputs
+	f->GetInputNodes().push_back(*nodeList.begin());
+	nodeList.push_back(f);
+    }
+}
+
+// ****************************************************************************
 //  Method:  DataNetwork::GetWriter
 //
 //  Purpose: Cache data object writer for network output

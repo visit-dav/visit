@@ -1039,6 +1039,9 @@ NetworkManager::AddFilter(const string &filtertype,
 //    Brad Whitlock, Wed Mar 21 23:00:00 PST 2007
 //    Added plotName.
 //
+//    Gunther H. Weber, Thu Apr 12 10:52:36 PDT 2007
+//    Add filter to beginning of pipeline if necessary
+//
 // ****************************************************************************
 void
 NetworkManager::MakePlot(const string &plotName, const string &pluginID, 
@@ -1067,11 +1070,35 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
     avtPlot *p = PlotPluginManager::Instance()->
                                 GetEnginePluginInfo(pluginID)->AllocAvtPlot();
 
+    // Check, whether plot wants to place a filter at the beginning of
+    // the pipeline
+    if (avtFilter *f = p->GetFilterForTopOfPipeline()) {
+	debug5 << "NetworkManager::MakePlot(): Inserting filter on top of pipeline." << std::endl;
+	NetnodeFilter *filt = new NetnodeFilter(f, "InsertedPlotFilter");
+	//f->GetOutput()->SetTransientStatus(true);
+
+	if (workingNet->GetNodeList().size() > 1)
+	    workingNet->AddFilterNodeAfterExpressionEvaluator(filt);
+	else
+	{
+	    std::vector<Netnode*> &filtInputs = filt->GetInputNodes();
+	    Netnode *n = workingNetnodeList.back();
+	    workingNetnodeList.pop_back();
+	    filtInputs.push_back(n);
+	    // Push the filter onto the working list.
+	    workingNetnodeList.push_back(filt);
+	    workingNet->AddNode(filt);
+	}
+	debug5 << "NetworkManager::MakePlot(): Added filter after expression evaluator." << std::endl;
+    }
+
     p->SetDataExtents(dataExtents);
     workingNet->SetPlot(p);
     workingNet->GetPlot()->SetAtts(atts);
     workingNet->SetPlottype(pluginID);
     workingNet->SetPlotName(plotName);
+
+    debug5 << "NetworkManager::MakePlot(): Leaving NetworkManager::MakePlot()." << std::endl;
 }
 
 // ****************************************************************************
@@ -1092,6 +1119,9 @@ NetworkManager::MakePlot(const string &plotName, const string &pluginID,
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Added code to set network's window ID and manage multiple VisWindow
 //    objects
+//
+//    Gunther H. Weber, Thu Apr 12 11:00:57 PDT 2007
+//    Added missing space to debug message
 // ****************************************************************************
 int
 NetworkManager::EndNetwork(int windowID)
@@ -1100,7 +1130,7 @@ NetworkManager::EndNetwork(int windowID)
     if (workingNetnodeList.size() != 1)
     {
         debug1 << "Network building still in progress.  Filter required to "
-               << "absorb" << workingNetnodeList.size() << " nodes."  << endl;
+               << "absorb " << workingNetnodeList.size() << " nodes."  << endl;
 
         EXCEPTION0(ImproperUseException);
     }
