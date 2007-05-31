@@ -170,23 +170,32 @@ cat >> $1 <<- EOF
     plugin you are using requires special purpose libraries to read
     the files, you will have to modify the Makefile that gets created
     by xml2makefile to specify the location(s) of these libraries. 
-    Typically, you would do this by editing Makefile and defining
-    something like... 
+    For example, if the name(s) of the required third party libraries
+    were 'foo' and 'bar,' you might do this by editing Makefile and
+    defining something like... 
 
-    ${upperPluginName}_INCLUDE="-I/usr/local/foo/include -I/usr/local/bar/include"
-    ${upperPluginName}_LIB="-L/usr/local/foo/lib -lfoo -L/usr/local/bar/lib -lbar"
+    FOO_INCLUDE="-I/usr/local/foo/include -I/usr/local/bar/include"
+    FOO_LIB="-L/usr/local/foo/lib -lfoo -L/usr/local/bar/lib -lbar"
 
     In other words, modify the above make variables to point to
     your local installation of any applicable third party include
-    and library files.
+    and library files. A commone example is the HDF5 library where
+    you would need to define HDF5_INCLUDE and HDF5_LIB to get the
+    plugin to link properly.
 
     You would place these lines AFTER the include directive that
     includes 'make-variables' near the top of the Makefile.
     Alternatively, you may need to statically link to third party
     libraries by specifing the complete path to the .a files in
-    ${upperPluginName}_LIB like so...
+    FOO_LIB like so...
 
-    ${upperPluginName}_LIB="/usr/local/foo/lib/libfoo.a /usr/local/bar/lib/libbar.a"
+    FOO_LIB="/usr/local/foo/lib/libfoo.a /usr/local/bar/lib/libbar.a"
+
+    If you are unsure as to the necessary make variable names to
+    define, look in the file referenced by the first include directive
+    ending in 'make-variables' near the top of the Makefile. There
+    you will find all the make variable names that are used to define
+    locations of third party libraries.
 EOF
 }
 
