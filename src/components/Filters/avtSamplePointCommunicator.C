@@ -156,6 +156,10 @@ avtSamplePointCommunicator::SetImagePartition(avtImagePartition *ip)
 //    Tell the cell list not to extract samples that are outside the volume
 //    of interest.
 //
+//    Hank Childs, Thu May 31 22:40:47 PDT 2007
+//    Do not tell the output how many variables there will be ... the base
+//    class now does that.
+//
 // ****************************************************************************
 
 void
@@ -269,10 +273,7 @@ avtSamplePointCommunicator::Execute(void)
     if (GetTypedInput()->GetUseWeightingScheme())
         GetTypedOutput()->SetUseWeightingScheme(true);
     if (GetTypedOutput()->GetVolume() == NULL)
-    {
-        GetTypedOutput()->SetNumberOfVariables(nv);
         GetTypedOutput()->SetVolume(volumeWidth, volumeHeight, volumeDepth);
-    }
     else
         GetTypedOutput()->GetVolume()->ResetSamples();
 

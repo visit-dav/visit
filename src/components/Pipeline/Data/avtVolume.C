@@ -1022,9 +1022,10 @@ avtVolume::ExtractSamples(const char * const *msgs, const int *cnt, int nmsgs)
 //
 //  Arguments:
 //      defaultVal   The default value.
-//      scalars      The scalars to be populated.  They should already have
+//      arrays       The arrays to be populated.  They should already have
 //                   been instantiated, but do not need to have been set up
-//                   (-> you call New, but this will call Set#OfScalars)
+//                   (-> you call New, but this will call Set#OfTuples)
+//      nArrays      The number of arrays passed in.
 //
 //  Notes:      This is only a reasonable thing to do for small volumes.
 //
@@ -1046,20 +1047,23 @@ avtVolume::ExtractSamples(const char * const *msgs, const int *cnt, int nmsgs)
 //    Hank Childs, Tue Feb 28 08:14:32 PST 2006
 //    Initialize differently if we are using the kernel method.
 //
+//    Hank Childs, Thu May 31 23:07:02 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
-avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars,
+avtVolume::GetVariables(float defaultVal, vtkDataArray **arrays, int nArrays,
                         avtImagePartition *ip)
 {
-    int   i, j, k, l;
+    int   i, j, k, l, m;
 
     //
     // Create the scalars and tell it how many elements we want.
     //
-    for (i = 0 ; i < numVariables ; i++)
+    for (i = 0 ; i < nArrays ; i++)
     {
-        scalars[i]->SetNumberOfTuples(volumeWidth*volumeHeight*volumeDepth);
+        arrays[i]->SetNumberOfTuples(volumeWidth*volumeHeight*volumeDepth);
     }
 
     //
@@ -1081,6 +1085,10 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars,
     if (hEnd > volumeHeight)
         return;
 
+    int *arraySize = new int[nArrays];
+    for (i = 0 ; i < nArrays ; i++)
+        arraySize[i] = arrays[i]->GetNumberOfComponents();
+
     //
     // Put the default value into the variable, so if we don't have samples
     // we don't have to worry about it.
@@ -1092,11 +1100,14 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars,
         {
             for (k = 0 ; k < volumeDepth ; k++)
             {
-                for (l = 0 ; l < numVariables ; l++)
+                for (l = 0 ; l < nArrays ; l++)
                 {
-                    float val = (useKernel && l == (numVariables-1)
-                                  ? 0. : defaultVal);
-                    scalars[l]->SetTuple1(count, val);
+                    for (m = 0 ; m < arraySize[l] ; m++)
+                    {
+                        float val = (useKernel && l == (numVariables-1)
+                                      ? 0. : defaultVal);
+                        arrays[l]->SetComponent(count, m, val);
+                    }
                 }
                 count++;
             }
@@ -1123,9 +1134,12 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars,
                         {
                             int index = k*vHeight*vWidth + (i-hStart)*vWidth 
                                       + (j-wStart);
-                            for (l = 0 ; l < numVariables ; l++)
+                            int nv = 0;
+                            for (l = 0 ; l < nArrays ; l++)
                             {
-                                scalars[l]->SetTuple1(index, sample[l]);
+                                for (m = 0 ; m < arraySize[l] ; m++)
+                                    arrays[l]->SetComponent(index, m, 
+                                                            sample[nv++]);
                             }
                         }
                     }
@@ -1133,6 +1147,8 @@ avtVolume::GetVariables(float defaultVal, vtkDataArray **scalars,
             }
         }
     }
+
+    delete [] arraySize;
 }
 
 

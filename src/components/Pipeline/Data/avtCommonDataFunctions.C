@@ -495,6 +495,11 @@ CBreakVTKPipelineConnections(avtDataRepresentation &data, void *, bool &)
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 31 13:49:59 PDT 2007
+//    Set varsizes as well.
+//
 // ****************************************************************************
 
 void
@@ -518,6 +523,7 @@ CGetVariableList(avtDataRepresentation &data, void *nv, bool &success)
     vl->nvars = ds->GetPointData()->GetNumberOfArrays() + 
                 ds->GetCellData()->GetNumberOfArrays();
     vl->varnames.clear();
+    vl->varsizes.clear();
     for (i = 0 ; i < ds->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *dat = ds->GetCellData()->GetArray(i);
@@ -531,12 +537,14 @@ CGetVariableList(avtDataRepresentation &data, void *nv, bool &success)
         {
             vl->varnames.push_back(string(name));
         }
+        vl->varsizes.push_back(dat->GetNumberOfComponents());
     }
     for (i = 0 ; i < ds->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *dat = ds->GetPointData()->GetArray(i);
         const char *name = dat->GetName();
         vl->varnames.push_back(string(name));
+        vl->varsizes.push_back(dat->GetNumberOfComponents());
     }
 
     success = true;

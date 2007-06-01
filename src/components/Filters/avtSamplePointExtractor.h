@@ -49,6 +49,8 @@
 
 #include <avtViewInfo.h>
 
+class  vtkDataArray;
+class  vtkDataSet;
 class  vtkHexahedron;
 class  vtkPixel;
 class  vtkPyramid;
@@ -111,6 +113,9 @@ class  avtRayFunction;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Hank Childs, Fri Jun  1 11:47:56 PDT 2007
+//    Add method GetLoadingInfoForArrays.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSamplePointExtractor 
@@ -166,19 +171,41 @@ class AVTFILTERS_API avtSamplePointExtractor
     virtual void              ExecuteTree(avtDataTree_p);
     void                      SetUpExtractors(void);
 
-    inline void               ExtractHex(vtkHexahedron*,vtkDataSet*,int);
-    inline void               ExtractVoxel(vtkVoxel *, vtkDataSet *,int);
-    inline void               ExtractTet(vtkTetra *, vtkDataSet *, int);
-    inline void               ExtractPyramid(vtkPyramid *, vtkDataSet *, int);
-    inline void               ExtractWedge(vtkWedge *, vtkDataSet *, int);
-    inline void               ExtractTriangle(vtkTriangle *, vtkDataSet *,int);
-    inline void               ExtractQuad(vtkQuad *, vtkDataSet *, int);
-    inline void               ExtractPixel(vtkPixel *, vtkDataSet *, int);
+    typedef struct 
+    {
+      std::vector<int>                  cellDataIndex;
+      std::vector<int>                  pointDataIndex;
+      std::vector<int>                  cellDataSize;
+      std::vector<int>                  pointDataSize;
+      std::vector<vtkDataArray *>       cellArrays;
+      std::vector<vtkDataArray *>       pointArrays;
+      int                               nVars;
+    } LoadingInfo;
+
+    inline void               ExtractHex(vtkHexahedron*,vtkDataSet*, int,
+                                           LoadingInfo &);
+    inline void               ExtractVoxel(vtkVoxel *, vtkDataSet *, int,
+                                           LoadingInfo &);
+    inline void               ExtractTet(vtkTetra *, vtkDataSet *, int,
+                                           LoadingInfo &);
+    inline void               ExtractPyramid(vtkPyramid *, vtkDataSet *, int,
+                                           LoadingInfo &);
+    inline void               ExtractWedge(vtkWedge *, vtkDataSet *, int,
+                                           LoadingInfo &);
+    inline void               ExtractTriangle(vtkTriangle *, vtkDataSet *, int,
+                                           LoadingInfo &);
+    inline void               ExtractQuad(vtkQuad *, vtkDataSet *, int,
+                                           LoadingInfo &);
+    inline void               ExtractPixel(vtkPixel *, vtkDataSet *, int, 
+                                           LoadingInfo &);
 
     void                      KernelBasedSample(vtkDataSet *);
     void                      RasterBasedSample(vtkDataSet *);
 
     virtual bool              FilterUnderstandsTransformedRectMesh();
+
+    void                      GetLoadingInfoForArrays(vtkDataSet *,
+                                                      LoadingInfo &);
 };
 
 

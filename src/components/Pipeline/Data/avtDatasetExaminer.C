@@ -105,6 +105,9 @@ avtDatasetExaminer::GetNumberOfZones(avtDataset_p &ds)
 //    Get the variable list using meta-data information, rather than by 
 //    searching the dataset.
 //
+//    Hank Childs, Thu May 31 22:32:08 PDT 2007
+//    Set the variable size.
+//
 // ****************************************************************************
  
 void
@@ -112,8 +115,13 @@ avtDatasetExaminer::GetVariableList(avtDataset_p &ds, VarList &vl)
 {
     avtDataAttributes &atts = ds->GetInfo().GetAttributes();
     vl.nvars = atts.GetNumberOfVariables();
+    vl.varnames.clear();
+    vl.varsizes.clear();
     for (int i = 0 ; i < vl.nvars ; i++)
+    {
         vl.varnames.push_back(atts.GetVariableName(i));
+        vl.varsizes.push_back(atts.GetVariableDimension(vl.varnames[i].c_str()));
+    }
 }
 
 
