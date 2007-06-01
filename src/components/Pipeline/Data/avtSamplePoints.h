@@ -84,8 +84,13 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
                                 avtSamplePoints(avtDataObjectSource *);
     virtual                    ~avtSamplePoints();
 
-    void                        SetNumberOfVariables(int);
-    int                         GetNumberOfVariables(void) { return numVars; };
+    void                        SetNumberOfVariables(std::vector<int> &, 
+                                                   std::vector<std::string> &);
+    int                         GetNumberOfVariables(void);
+    int                         GetNumberOfRealVariables(void) 
+                                                   { return varnames.size(); };
+    const std::string          &GetVariableName(int);
+    int                         GetVariableSize(int);
     virtual int                 GetNumberOfCells(bool polysOnly = false) const
                                    { return celllist->GetNumberOfCells(); };
     void                        SetVolume(int, int, int);
@@ -104,7 +109,8 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
   protected:
     avtVolume                  *volume;
     avtCellList                *celllist;
-    int                         numVars;
+    std::vector<std::string>    varnames;
+    std::vector<int>            varsize;
     bool                        useWeightingScheme;
 };
 

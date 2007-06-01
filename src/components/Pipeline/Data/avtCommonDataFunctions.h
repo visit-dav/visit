@@ -106,6 +106,9 @@ class     vtkDataArray;
 //    Added CApplyTransformToRectGrid and
 //    CInsertRectilinearTransformInfoIntoDataset.
 //
+//    Hank Childs, Thu May 31 13:49:59 PDT 2007
+//    Added varsizes to VarList structure.
+//
 // ****************************************************************************
 
 //
@@ -169,6 +172,7 @@ typedef struct
 {
     int  nvars;
     std::vector<std::string> varnames;
+    std::vector<int>         varsizes;
 } VarList;
 
 typedef struct

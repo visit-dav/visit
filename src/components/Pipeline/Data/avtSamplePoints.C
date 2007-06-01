@@ -62,6 +62,9 @@
 //    Hank Childs, Sun Jan  8 12:52:20 PST 2006
 //    Initialize useWeightingScheme.
 //
+//    Hank Childs, Thu May 31 10:40:50 PDT 2007
+//    Remove reference to removed data member "numVars".
+//
 // ****************************************************************************
 
 avtSamplePoints::avtSamplePoints(avtDataObjectSource *up)
@@ -69,7 +72,6 @@ avtSamplePoints::avtSamplePoints(avtDataObjectSource *up)
 {
     volume   = NULL;
     celllist = NULL;
-    numVars  = -1;
     useWeightingScheme = false;
 }
 
@@ -102,17 +104,94 @@ avtSamplePoints::~avtSamplePoints()
 //      Sets the number of variables that we will sample over.
 //
 //  Arguments:
-//      nv      The number of variables to sample over.
+//      vn      The variable names.
+//      vs      The size of each variable (i.e. 1 for scalar, etc.)
 //
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 31 08:49:53 PDT 2007
+//    Add support for non-scalar variables.
+//
 // ****************************************************************************
 
 void
-avtSamplePoints::SetNumberOfVariables(int nv)
+avtSamplePoints::SetNumberOfVariables(std::vector<int> &vs,
+                                      std::vector<std::string> &vn)
 {
-    numVars = nv;
+    varnames = vn;
+    varsize  = vs;
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePoints::GetNumberOfVariables
+//
+//  Purpose:
+//      Gets the "number of variables".  This will treat a single vector as
+//      "three variables", since the sample points data object has limited
+//      understanding of anything except scalars.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 31, 2007
+//
+// ****************************************************************************
+
+int
+avtSamplePoints::GetNumberOfVariables(void)
+{
+    int nv = 0;
+    for (int i = 0 ; i < varsize.size() ; i++)
+        nv += varsize[i];
+    return nv;
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePoints::GetVariableName
+//
+//  Arguments:
+//      idx     The index of the variable name to get.
+//
+//  Returns:    The name of the idx'th variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 31, 2007
+//
+// ****************************************************************************
+
+const std::string &
+avtSamplePoints::GetVariableName(int idx)
+{
+    if (idx < 0 || idx >= varnames.size())
+        EXCEPTION2(BadIndexException, idx, varnames.size());
+
+    return varnames[idx];
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePoints::GetVariableSize
+//
+//  Arguments:
+//      idx     The index of the variable size to get.
+//
+//  Returns:    The size of the idx'th variable.
+//
+//  Programmer: Hank Childs
+//  Creation:   May 31, 2007
+//
+// ****************************************************************************
+
+int
+avtSamplePoints::GetVariableSize(int idx)
+{
+    if (idx < 0 || idx >= varsize.size())
+        EXCEPTION2(BadIndexException, idx, varsize.size());
+
+    return varsize[idx];
 }
 
 
@@ -127,19 +206,24 @@ avtSamplePoints::SetNumberOfVariables(int nv)
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Thu May 31 10:40:50 PDT 2007
+//    Remove reference to removed data member "numVars".
+//
 // ****************************************************************************
 
 avtCellList *
 avtSamplePoints::GetCellList(void)
 {
-    if (numVars < 0)
+    if (varnames.size() <= 0)
     {
         EXCEPTION0(ImproperUseException);
     }
 
     if (celllist == NULL)
     {
-        celllist = new avtCellList(numVars);
+        celllist = new avtCellList(GetNumberOfVariables());
     }
 
     return celllist;
@@ -183,6 +267,9 @@ avtSamplePoints::ResetCellList(void)
 //    Hank Childs, Sun Dec  4 19:18:37 PST 2005
 //    Add support for weighting schemes.
 //
+//    Hank Childs, Thu May 31 10:40:50 PDT 2007
+//    Remove reference to removed data member "numVars".
+//
 // ****************************************************************************
 
 void
@@ -193,7 +280,7 @@ avtSamplePoints::SetVolume(int width, int height, int depth)
         EXCEPTION0(ImproperUseException);
     }
 
-    int nv = numVars;
+    int nv = GetNumberOfVariables(); // counts a vector as 3 vars.
     if (useWeightingScheme)
         nv++;
     volume = new avtVolume(width, height, depth, nv);

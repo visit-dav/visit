@@ -64,6 +64,9 @@ avtSamplePointsToSamplePointsFilter::~avtSamplePointsToSamplePointsFilter()
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
 //    Call inherited PreExecute before everything else.
 //
+//    Hank Childs, Thu May 31 13:54:52 PDT 2007
+//    Added support for non-scalar variables.
+//
 // ****************************************************************************
 
 void
@@ -73,7 +76,16 @@ avtSamplePointsToSamplePointsFilter::PreExecute(void)
 
     avtSamplePoints_p in  = GetTypedInput();
     avtSamplePoints_p out = GetTypedOutput();
-    out->SetNumberOfVariables(in->GetNumberOfVariables());
+    int nvar = out->GetNumberOfRealVariables();
+    std::vector<std::string> varnames;
+    std::vector<int>         varsizes;
+    for (int i = 0 ; i < nvar ; i++)
+    {
+         varnames.push_back(in->GetVariableName(i));
+         varsizes.push_back(in->GetVariableSize(i));
+    }
+
+    out->SetNumberOfVariables(varsizes, varnames);
 }
 
 

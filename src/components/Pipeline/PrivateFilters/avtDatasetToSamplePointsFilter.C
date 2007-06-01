@@ -42,6 +42,7 @@
 #include <avtDatasetToSamplePointsFilter.h>
 
 #include <avtDatasetExaminer.h>
+#include <avtParallel.h>
 
 #include <DebugStream.h>
 
@@ -107,6 +108,9 @@ avtDatasetToSamplePointsFilter::~avtDatasetToSamplePointsFilter()
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
 //    Call inherited PreExecute before everything else.
 //
+//    Hank Childs, Thu May 31 13:47:16 PDT 2007
+//    Add support for non-scalar variables.
+//
 // ****************************************************************************
 
 void
@@ -142,6 +146,8 @@ avtDatasetToSamplePointsFilter::PreExecute(void)
 
     if (!leaveAsIs)
     {
+        vector<string> varnames;
+        vector<int>    varsize;
         int realNVars = 0;
         for (int i = 0 ; i < vl.nvars ; i++)
         {
@@ -150,9 +156,22 @@ avtDatasetToSamplePointsFilter::PreExecute(void)
                 continue;
             if (strstr(vname, "avt") != NULL)
                 continue;
+            varnames.push_back(vl.varnames[i]);
+            varsize.push_back(vl.varsizes[i]);
             realNVars++;
         }
-        sp->SetNumberOfVariables(realNVars);
+
+        // Some contortions here to use existing calls in avtParalell.
+        int nvars = UnifyMaximumValue(varnames.size());
+        GetListToRootProc(varnames, nvars);
+        BroadcastStringVector(varnames, PAR_Rank());
+
+        while (varsize.size() < nvars)
+            varsize.push_back(0);
+        std::vector<int> varsize2(nvars);
+        UnifyMaximumValue(varsize, varsize2);
+
+        sp->SetNumberOfVariables(varsize2, varnames);
     }
 }
 

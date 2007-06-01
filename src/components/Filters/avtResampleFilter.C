@@ -43,6 +43,8 @@
 
 #include <avtResampleFilter.h>
 
+#include <vtkCellData.h>
+#include <vtkFieldData.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
@@ -67,11 +69,11 @@
 // Function Prototypes
 //
 
-vtkRectilinearGrid     *CreateGrid(const double *, int, int, int,
-                                   int, int, int, int);
-void                    CreateViewFromBounds(avtViewInfo &, const double *,
+static vtkRectilinearGrid  *CreateGrid(const double *, int, int, int,
+                                   int, int, int, int, bool);
+static void                 CreateViewFromBounds(avtViewInfo &, const double *,
                                              double [3]);
-vtkDataArray           *GetCoordinates(float, float, int, int, int);
+static vtkDataArray        *GetCoordinates(float, float, int, int, int);
 
 
 #ifndef MAX
@@ -88,8 +90,12 @@ vtkDataArray           *GetCoordinates(float, float, int, int, int);
 //  Creation:   March 26, 2001
 //
 //  Modifications:
+//
 //    Mark C. Miller, Tue Sep 13 20:09:49 PDT 2005
 //    Initialized selection id
+//
+//    Hank Childs, Fri Jun  1 16:17:51 PDT 2007
+//    Initialized cellCenteredOutput.
 //
 // ****************************************************************************
 
@@ -98,6 +104,7 @@ avtResampleFilter::avtResampleFilter(const AttributeGroup *a)
     atts = *(ResampleAttributes*)a;
     primaryVariable = NULL;
     selID = -1;
+    cellCenteredOutput = false;
 }
 
 
@@ -343,12 +350,16 @@ avtResampleFilter::BypassResample(void)
 //    Hank Childs, Mon May 22 15:14:04 PDT 2006
 //    Fix UMR.
 //
+//    Hank Childs, Thu May 31 15:56:04 PDT 2007
+//    Add support for vector variables.  Also add support for cell-centered
+//    data.
+//
 // ****************************************************************************
 
 void
 avtResampleFilter::ResampleInput(void)
 {
-    int  i, j;
+    int  i, j, k;
 
     avtRelativeValueSamplePointArbitrator *arb = NULL;
     bool is3D = true;
@@ -436,6 +447,16 @@ avtResampleFilter::ResampleInput(void)
     int width, height, depth;
     GetDimensions(width, height, depth, bounds, is3D);
 
+    bool doKernel = 
+        (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0);
+    avtSamplePointExtractor extractor(width, height, depth);
+    extractor.SendCellsMode(false);
+    extractor.Set3DMode(is3D);
+    extractor.SetInput(trans.GetOutput());
+    if (doKernel)
+        extractor.SetKernelBasedSampling(true);
+    avtSamplePoints_p samples = extractor.GetTypedOutput();
+
     //
     // If the selection this filter exists to create has already been handled,
     // or if there are no pieces for this processor to process, then we can skip
@@ -454,16 +475,13 @@ avtResampleFilter::ResampleInput(void)
             return;
 
         // here is some dummied up code to match collective calls below
-        int myVarstmp = 0;
-        int effectiveVarstmp = UnifyMaximumValue(myVarstmp);
+        int effectiveVars = samples->GetNumberOfRealVariables();
         float *ptrtmp = new float[width*height*depth];
         for (int jj = 0; jj < width*height*depth; jj++)
             ptrtmp[jj] = atts.GetDefaultVal();
-        for (i = 0 ; i < effectiveVarstmp ; i++)
+        for (i = 0 ; i < effectiveVars ; i++)
             Collect(ptrtmp, width*height*depth);
         delete [] ptrtmp;
-        std::vector<std::string> varnamestmp;
-        GetListToRootProc(varnamestmp, 0);
         return;
     }
     else
@@ -474,21 +492,11 @@ avtResampleFilter::ResampleInput(void)
     //
     //
     // PROBLEM SIZED WORK OCCURS BEYOND THIS POINT
-    // If you add collecive calls below this point, make sure to
+    // If you add (or remove) collective calls below this point, make sure to
     // put matching sequence into bypass code above
     //
     //
 
-    bool doKernel = 
-        (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0);
-    avtSamplePointExtractor extractor(width, height, depth);
-    extractor.SendCellsMode(false);
-    extractor.Set3DMode(is3D);
-    extractor.SetInput(trans.GetOutput());
-    if (doKernel)
-        extractor.SetKernelBasedSampling(true);
-    avtSamplePoints_p samples = extractor.GetTypedOutput();
-    
     avtSamplePointCommunicator communicator;
     avtImagePartition partition(width, height, PAR_Size(), PAR_Rank());
     communicator.SetImagePartition(&partition);
@@ -506,42 +514,33 @@ avtResampleFilter::ResampleInput(void)
         samples = communicator.GetTypedOutput();
     }
 
-    //
-    // This is hack-ish.  The sample point extractor throws out variables
-    // that have "avt" or "vtk" in them.  The returned sample points don't
-    // have variable names, so we need to match up the variables from the
-    // input dataset.
-    //
-    VarList vl;
-    vl.nvars = -1;
-    avtDatasetExaminer::GetVariableList(ds, vl);
-    int myVars = 0;
-    for (i = 0 ; i < vl.nvars ; i++)
-        if ((strstr(vl.varnames[i].c_str(), "vtk") == NULL) &&
-            (strstr(vl.varnames[i].c_str(), "avt") == NULL))
-            myVars++;
-    if (doKernel)
-       myVars++; // For the weight variable.
-
     if (atts.GetUseArbitrator())
     {
-        int tmpCnt = 0;
-        int match = -1;
-        for (i = 0 ; i < vl.nvars ; i++)
-            if ((strstr(vl.varnames[i].c_str(), "vtk") == NULL) &&
-                (strstr(vl.varnames[i].c_str(), "avt") == NULL))
+        int tmpIndex = 0;
+        int theMatch = -1;
+        int nvars = samples->GetNumberOfRealVariables();
+        for (i = 0 ; i < nvars ; i++)
+        {
+            bool foundMatch = false;
+            if (samples->GetVariableName(i) == atts.GetArbitratorVarName())
+                foundMatch = true;
+            if (atts.GetArbitratorVarName() == "default" &&
+                samples->GetVariableName(i) == primaryVariable)
+                foundMatch = true;
+
+            if (foundMatch)
             {
-                if (vl.varnames[i] == atts.GetArbitratorVarName())
-                    match = tmpCnt;
-                if (atts.GetArbitratorVarName() == "default" &&
-                    vl.varnames[i] == primaryVariable)
-                    match = tmpCnt;
-                tmpCnt++;
+                theMatch = tmpIndex;
+                break;
             }
-        if (match != -1)
+            else
+                tmpIndex += samples->GetVariableSize(i);
+        }
+        
+        if (theMatch != -1)
         {
             arb = new avtRelativeValueSamplePointArbitrator(
-                                         atts.GetArbitratorLessThan(), match);
+                                      atts.GetArbitratorLessThan(), theMatch);
             avtRay::SetArbitrator(arb);
         }
     }
@@ -581,90 +580,76 @@ avtResampleFilter::ResampleInput(void)
     // gracefully.  Communicate how many variables there are so that those
     // that don't have data can play well.
     //
-    int effectiveVars = UnifyMaximumValue(myVars);
-    vtkDataArray **vars = new vtkDataArray*[effectiveVars];
-    for (i = 0 ; i < effectiveVars ; i++)
+    int realVars  = samples->GetNumberOfRealVariables();
+    int numArrays = realVars;
+    if (doKernel)
+        numArrays++;
+    vtkDataArray **vars = new vtkDataArray*[numArrays];
+    for (i = 0 ; i < numArrays ; i++)
     {
         vars[i] = vtkFloatArray::New();
-    }
-    if (doKernel)
-    {
-        effectiveVars -= 1;
-        samples->GetVolume()->SetUseKernel(true);
-    }
-    if (myVars <= 0)
-    {
-        //
-        // No variables -- this is probably because we didn't get any domains
-        // to process on this processor.
-        //
-        for (i = 0 ; i < effectiveVars ; i++)
+        if (doKernel && (i == numArrays-1))
+            vars[i]->SetNumberOfComponents(1);
+        else
         {
-            int numVals = (width_end-width_start) * (height_end-height_start)
-                        * depth;
-            vars[i]->SetNumberOfTuples(numVals);
-            for (j = 0 ; j < numVals ; j++)
-            {
-                vars[i]->SetTuple1(j, atts.GetDefaultVal());
-            }
+            vars[i]->SetNumberOfComponents(samples->GetVariableSize(i));
+            vars[i]->SetName(samples->GetVariableName(i).c_str());
         }
     }
-    else
-    {
-        avtImagePartition *ip = NULL;
-        if (doDistributedResample)
-            ip = &partition;
-        samples->GetVolume()->GetVariables(atts.GetDefaultVal(), vars, ip);
-    }
 
-    bool iHaveData = false;
+    if (doKernel)
+        samples->GetVolume()->SetUseKernel(true);
+
+    avtImagePartition *ip = NULL;
     if (doDistributedResample)
-        iHaveData = true;
-    if (!iHaveData)
+        ip = &partition;
+    samples->GetVolume()->GetVariables(atts.GetDefaultVal(), vars, 
+                                       numArrays, ip);
+
+    if (!doDistributedResample)
     {
         //
         // Collect will perform the parallel collection.  Does nothing in
         // serial.  This will only be valid on processor 0.
         //
-        for (i = 0 ; i < effectiveVars ; i++)
+        for (i = 0 ; i < numArrays ; i++)
         {
             float *ptr = (float *) vars[i]->GetVoidPointer(0);
-            iHaveData = Collect(ptr, width*height*depth);
+            Collect(ptr, vars[i]->GetNumberOfComponents()*width*height*depth);
         }
     }
     
-    std::vector<std::string> varnames;
-    for (i = 0 ; i < vl.nvars ; i++)
-    {
-        const char *varname = vl.varnames[i].c_str();
-        if ((strstr(varname, "vtk") == NULL) &&
-            (strstr(varname, "avt") == NULL))
-           varnames.push_back(varname);
-    }
-    GetListToRootProc(varnames, effectiveVars);
-
+    bool iHaveData = false;
+    if (doDistributedResample)
+        iHaveData = true;
+    if (PAR_Rank() == 0)
+        iHaveData = true;
     if (height_end > height)
         iHaveData = false;
     if (iHaveData)
     {
         vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
                                         width_start, width_end, height_start,
-                                        height_end);
+                                        height_end, cellCenteredOutput);
 
         if (doKernel)
         {
             float min_weight = avtPointExtractor::GetMinimumWeightCutoff();
-            vtkDataArray *weights = vars[effectiveVars];
+            vtkDataArray *weights = vars[numArrays-1];
             int numVals = weights->GetNumberOfTuples();
-            for (i = 0 ; i < effectiveVars ; i++)
+            for (i = 0 ; i < realVars ; i++)
             {
-                for (j = 0 ; j < numVals ; j++)
+                for (j = 0 ; j < vars[i]->GetNumberOfComponents() ; j++)
                 {
-                    float weight = weights->GetTuple1(j);
-                    if (weight <= min_weight)
-                        vars[i]->SetTuple1(j, atts.GetDefaultVal());
-                    else
-                        vars[i]->SetTuple1(j, vars[i]->GetTuple1(j) / weight);
+                    for (k = 0 ; k < numVals ; k++)
+                    {
+                        float weight = weights->GetTuple1(k);
+                        if (weight <= min_weight)
+                            vars[i]->SetComponent(k, j, atts.GetDefaultVal());
+                        else
+                            vars[i]->SetComponent(k, j, 
+                                         vars[i]->GetComponent(k, j) / weight);
+                    }
                 }
             }
         }
@@ -672,16 +657,32 @@ avtResampleFilter::ResampleInput(void)
         //
         // Attach these variables to our rectilinear grid.
         //
-        int varsSeen = 0;
-        for (i = 0 ; i < effectiveVars ; i++)
+        for (i = 0 ; i < realVars ; i++)
         {
-            const char *varname = varnames[i].c_str();
-            vars[varsSeen]->SetName(varname);
+            const char *varname = vars[i]->GetName();
             if (strcmp(varname, primaryVariable) == 0)
-                rg->GetPointData()->SetScalars(vars[varsSeen]);
+            {
+                if (vars[i]->GetNumberOfComponents() == 3)
+                    if (cellCenteredOutput)
+                        rg->GetCellData()->SetVectors(vars[i]);
+                    else
+                        rg->GetPointData()->SetVectors(vars[i]);
+                else if (vars[i]->GetNumberOfComponents() == 1)
+                    if (cellCenteredOutput)
+                        rg->GetCellData()->SetScalars(vars[i]);
+                    else
+                        rg->GetPointData()->SetScalars(vars[i]);
+                else
+                    if (cellCenteredOutput)
+                        rg->GetCellData()->AddArray(vars[i]);
+                    else
+                        rg->GetPointData()->AddArray(vars[i]);
+            }
             else
-                rg->GetPointData()->AddArray(vars[varsSeen]);
-            varsSeen++;
+                if (cellCenteredOutput)
+                    rg->GetCellData()->AddArray(vars[i]);
+                else
+                    rg->GetPointData()->AddArray(vars[i]);
         }
 
         avtDataTree_p tree = new avtDataTree(rg, 0);
@@ -697,7 +698,7 @@ avtResampleFilter::ResampleInput(void)
         SetOutputDataTree(dummy);
     }
 
-    for (i = 0 ; i < effectiveVars ; i++)
+    for (i = 0 ; i < numArrays ; i++)
     {
         vars[i]->Delete();
     }
@@ -1000,11 +1001,14 @@ avtResampleFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Fri Sep 30 10:50:24 PDT 2005
 //    Add support for distributed resampling.
 //
+//    Hank Childs, Fri Jun  1 16:17:51 PDT 2007
+//    Add support for cell-centered data.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
 CreateGrid(const double *bounds, int numX, int numY, int numZ, int minX,
-           int maxX, int minY, int maxY)
+           int maxX, int minY, int maxY, bool cellCenteredOutput)
 {
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
@@ -1014,12 +1018,20 @@ CreateGrid(const double *bounds, int numX, int numY, int numZ, int minX,
     float height = bounds[3] - bounds[2];
     float depth  = bounds[5] - bounds[4];
 
-    xc = GetCoordinates(bounds[0], width, numX, minX, maxX);
-    yc = GetCoordinates(bounds[2], height, numY, minY, maxY);
-    zc = GetCoordinates(bounds[4], depth, numZ, 0, numZ);
+    int numX2 = (cellCenteredOutput ? numX+1 : numX);
+    int maxX2 = (cellCenteredOutput ? maxX+1 : maxX);
+    xc = GetCoordinates(bounds[0], width, numX2, minX, maxX2);
+    int numY2 = (cellCenteredOutput ? numY+1 : numY);
+    int maxY2 = (cellCenteredOutput ? maxY+1 : maxY);
+    yc = GetCoordinates(bounds[2], height, numY2, minY, maxY2);
+    int numZ2 = (cellCenteredOutput ? numZ+1 : numZ);
+    zc = GetCoordinates(bounds[4], depth, numZ2, 0, numZ2);
       
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
-    rv->SetDimensions(maxX-minX, maxY-minY, numZ);
+    if (cellCenteredOutput)
+        rv->SetDimensions(maxX-minX+1, maxY-minY+1, numZ+1);
+    else
+        rv->SetDimensions(maxX-minX, maxY-minY, numZ);
     rv->SetXCoordinates(xc);
     xc->Delete();
     rv->SetYCoordinates(yc);

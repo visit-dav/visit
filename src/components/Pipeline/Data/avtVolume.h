@@ -92,6 +92,9 @@ typedef void (*PixelProgressCallback)(void *, int, int);
 //    Hank Childs, Sun Oct  2 12:06:39 PDT 2005
 //    Add image partition argument to GetVariables.
 //
+//    Hank Childs, Thu May 31 23:07:02 PDT 2007
+//    Add argument for number of arrays being passed in.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtVolume
@@ -133,7 +136,7 @@ class PIPELINE_API avtVolume
 
     void                      SetUseKernel(bool uk) { useKernel = uk; };
 
-    void                      GetVariables(float, vtkDataArray **, 
+    void                      GetVariables(float, vtkDataArray **, int,
                                            avtImagePartition * = NULL);
     void                      SetGradientVariable(int);
 

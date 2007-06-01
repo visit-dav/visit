@@ -146,15 +146,19 @@ avtMassVoxelExtractor::~avtMassVoxelExtractor()
 //    Added an ability to extract voxels using the world-space version
 //    even when they're really in image space.
 //
+//    Hank Childs, Fri Jun  1 16:40:10 PDT 2007
+//    Added support for non-scalars.
+//
 // ****************************************************************************
 
 void
-avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid)
+avtMassVoxelExtractor::Extract(vtkRectilinearGrid *rgrid,
+                std::vector<std::string> &varnames, std::vector<int> &varsizes)
 {
     if (gridsAreInWorldSpace || pretendGridsAreInWorldSpace)
-        ExtractWorldSpaceGrid(rgrid);
+        ExtractWorldSpaceGrid(rgrid, varnames, varsizes);
     else
-        ExtractImageSpaceGrid(rgrid);
+        ExtractImageSpaceGrid(rgrid, varnames, varsizes);
 }
 
 
@@ -350,16 +354,20 @@ avtMassVoxelExtractor::SetGridsAreInWorldSpace(bool val, const avtViewInfo &v,
 //    screen space, but if we are tiling, then it will correspond to only
 //    the tile.
 //
+//    Hank Childs, Fri Jun  1 15:45:58 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
-avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid)
+avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid,
+                 std::vector<std::string> &varnames, std::vector<int> &varsize)
 {
     //
     // Some of our sampling routines need a chance to pre-process the data.
     // Register the grid here so we can do that.
     //
-    RegisterGrid(rgrid);
+    RegisterGrid(rgrid, varnames, varsize);
 
     //
     // Set up a list of ranges to look at.
@@ -446,12 +454,19 @@ avtMassVoxelExtractor::ExtractWorldSpaceGrid(vtkRectilinearGrid *rgrid)
 //  Programmer: Hank Childs
 //  Creation:   November 20, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  1 15:37:33 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
-avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid)
+avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid,
+                                    std::vector<std::string> &varorder,
+                                    std::vector<int> &varsize)
 {
-    int  i;
+    int  i, j, k;
 
     X = (float *) rgrid->GetXCoordinates()->GetVoidPointer(0);
     Y = (float *) rgrid->GetYCoordinates()->GetVoidPointer(0);
@@ -469,27 +484,48 @@ avtMassVoxelExtractor::RegisterGrid(vtkRectilinearGrid *rgrid)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
         if (arr->GetDataType() != VTK_FLOAT)
+        {
+            debug1 << "Not able to sample non-float!" << endl;
             continue;
-        if (arr->GetNumberOfComponents() != 1)
-            continue;
-        if (strstr(arr->GetName(), "vtk") != NULL)
-            continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        }
+        const char *name = arr->GetName();
+        cell_size[ncell_arrays] = arr->GetNumberOfComponents();
+        for (j = 0 ; j < varorder.size() ; j++)
+        {
+            if (varorder[j] == name)
+            {
+                int idx = 0;
+                for (k = 0 ; k < j ; k++)
+                    idx += varsize[k];
+                cell_index[ncell_arrays] = idx;
+                break;
+            }
+        }
         cell_arrays[ncell_arrays++] = (float *) arr->GetVoidPointer(0);
     }
+
     npt_arrays = 0;
     for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
         if (arr->GetDataType() != VTK_FLOAT)
+        {
+            debug1 << "Not able to sample non-float!" << endl;
             continue;
-        if (arr->GetNumberOfComponents() != 1)
-            continue;
-        if (strstr(arr->GetName(), "vtk") != NULL)
-            continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        }
+        const char *name = arr->GetName();
+        pt_size[npt_arrays] = arr->GetNumberOfComponents();
+        for (j = 0 ; j < varorder.size() ; j++)
+        {
+            if (varorder[j] == name)
+            {
+                int idx = 0;
+                for (k = 0 ; k < j ; k++)
+                    idx += varsize[k];
+                pt_index[npt_arrays] = idx;
+                break;
+            }
+        }
         pt_arrays[npt_arrays++] = (float *) arr->GetVoidPointer(0);
     }
 
@@ -960,6 +996,11 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
 //  Programmer: Hank Childs
 //  Creation:   November 20, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  1 15:45:58 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
@@ -996,10 +1037,11 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
 
         int  l;
 
-        int var_index = 0;
         for (l = 0 ; l < ncell_arrays ; l++)
         {
-            tmpSampleList[count][var_index++] = cell_arrays[l][index];
+            for (int m = 0 ; m < cell_size[l] ; m++)
+                tmpSampleList[count][cell_index[l]+m] = 
+                                          cell_arrays[l][cell_size[l]*index+m];
         }
         if (npt_arrays > 0)
         {
@@ -1027,16 +1069,20 @@ avtMassVoxelExtractor::SampleVariable(int first, int last, int w, int h)
             for (l = 0 ; l < npt_arrays ; l++)
             {
                 float *pt_array = pt_arrays[l];
-                float val = 
-                      x_left*y_bottom*z_front*pt_array[index0] +
-                      x_right*y_bottom*z_front*pt_array[index1] +
-                      x_left*y_top*z_front*pt_array[index2] +
-                      x_right*y_top*z_front*pt_array[index3] +
-                      x_left*y_bottom*z_back*pt_array[index4] +
-                      x_right*y_bottom*z_back*pt_array[index5] +
-                      x_left*y_top*z_back*pt_array[index6] +
-                      x_right*y_top*z_back*pt_array[index7];
-                tmpSampleList[count][var_index++] = val;
+                int    s = pt_size[l];
+                for (int m = 0 ; m < s ; m++)
+                {
+                    float val = 
+                      x_left*y_bottom*z_front*pt_array[s*index0+m] +
+                      x_right*y_bottom*z_front*pt_array[s*index1+m] +
+                      x_left*y_top*z_front*pt_array[s*index2+m] +
+                      x_right*y_top*z_front*pt_array[s*index3+m] +
+                      x_left*y_bottom*z_back*pt_array[s*index4+m] +
+                      x_right*y_bottom*z_back*pt_array[s*index5+m] +
+                      x_left*y_top*z_back*pt_array[s*index6+m] +
+                      x_right*y_top*z_back*pt_array[s*index7+m];
+                    tmpSampleList[count][pt_index[l]+m] = val;
+                }
             }    
         }
 
@@ -1334,12 +1380,16 @@ inline int FindIndex(const float &pt, const int &last_hit, const int &n,
 //    Fix another issue with ghost zones that only comes up with AMR grids
 //    ['6940].
 //
+//    Hank Childs, Fri Jun  1 15:45:58 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
-avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid)
+avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid,
+                std::vector<std::string> &varnames, std::vector<int> &varsizes)
 {
-    int  i, j, k, l;
+    int  i, j, k, l, m;
 
     int dims[3];
     rgrid->GetDimensions(dims);
@@ -1358,23 +1408,56 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid)
     vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)rgrid->GetCellData()
                                                    ->GetArray("avtGhostZones");
     std::vector<float *> cell_arrays;
+    std::vector<int>     cell_size;
+    std::vector<int>     cell_index;
     for (i = 0 ; i < rgrid->GetCellData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (arr->GetDataType() != VTK_FLOAT)
+        {
+            debug1 << "Not able to sample non-float!" << endl;
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        }
+        const char *name = arr->GetName();
+        cell_size.push_back(arr->GetNumberOfComponents());
+        for (j = 0 ; j < varnames.size() ; j++)
+        {
+            if (varnames[j] == name)
+            {
+                int idx = 0;
+                for (k = 0 ; k < j ; k++)
+                    idx += varsizes[k];
+                cell_index.push_back(idx);
+                break;
+            }
+        }
         cell_arrays.push_back((float *) arr->GetVoidPointer(0));
     }
+
     std::vector<float *> pt_arrays;
+    std::vector<int>     pt_size;
+    std::vector<int>     pt_index;
     for (i = 0 ; i < rgrid->GetPointData()->GetNumberOfArrays() ; i++)
     {
         vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (arr->GetDataType() != VTK_FLOAT)
+        {
+            debug1 << "Not able to sample non-float!" << endl;
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        }
+        const char *name = arr->GetName();
+        pt_size.push_back(arr->GetNumberOfComponents());
+        for (j = 0 ; j < varnames.size() ; j++)
+        {
+            if (varnames[j] == name)
+            {
+                int idx = 0;
+                for (k = 0 ; k < j ; k++)
+                    idx += varsizes[k];
+                pt_index.push_back(idx);
+                break;
+            }
+        }
         pt_arrays.push_back((float *) arr->GetVoidPointer(0));
     }
 
@@ -1471,7 +1554,9 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid)
                 for (l = 0 ; l < cell_arrays.size() ; l++)
                 {
                     int index = zind*((nX-1)*(nY-1)) + yind*(nX-1) + xind;
-                    tmpSampleList[count][var_index++] = cell_arrays[l][index];
+                    for (m = 0 ; m < cell_size[l] ; m++)
+                        tmpSampleList[count][cell_index[l]+m] = 
+                                            cell_arrays[l][cell_size[l]*index+m];
                 }
                 if (pt_arrays.size() > 0)
                 {
@@ -1486,16 +1571,20 @@ avtMassVoxelExtractor::ExtractImageSpaceGrid(vtkRectilinearGrid *rgrid)
                     for (l = 0 ; l < pt_arrays.size() ; l++)
                     {
                         float *pt_array = pt_arrays[l];
-                        float val = 
-                              x_left*y_bottom*z_front*pt_array[index0] +
-                              x_right*y_bottom*z_front*pt_array[index1] +
-                              x_left*y_top*z_front*pt_array[index2] +
-                              x_right*y_top*z_front*pt_array[index3] +
-                              x_left*y_bottom*z_back*pt_array[index4] +
-                              x_right*y_bottom*z_back*pt_array[index5] +
-                              x_left*y_top*z_back*pt_array[index6] +
-                              x_right*y_top*z_back*pt_array[index7];
-                        tmpSampleList[count][var_index++] = val;
+                        int    s        = pt_size[l];
+                        for (m = 0 ; m < s ; m++)
+                        {
+                            float val = 
+                                  x_left*y_bottom*z_front*pt_array[s*index0+m] +
+                                  x_right*y_bottom*z_front*pt_array[s*index1+m] +
+                                  x_left*y_top*z_front*pt_array[s*index2+m] +
+                                  x_right*y_top*z_front*pt_array[s*index3+m] +
+                                  x_left*y_bottom*z_back*pt_array[s*index4+m] +
+                                  x_right*y_bottom*z_back*pt_array[s*index5+m] +
+                                  x_left*y_top*z_back*pt_array[s*index6+m] +
+                                  x_right*y_top*z_back*pt_array[s*index7+m];
+                            tmpSampleList[count][pt_index[l]+m] = val;
+                        }
                     }    
                 }
                 count++;

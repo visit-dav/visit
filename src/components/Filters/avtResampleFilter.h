@@ -72,6 +72,9 @@
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Hank Childs, Fri Jun  1 16:17:51 PDT 2007
+//    Added support for cell-centered output.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
@@ -85,10 +88,14 @@ class AVTFILTERS_API avtResampleFilter : public avtDatasetToDatasetFilter
     virtual const char   *GetType(void)  { return "avtResampleFilter"; };
     virtual const char   *GetDescription(void) { return "Resampling"; };
 
+    void                  MakeOutputCellCentered(bool doIt)
+                                { cellCenteredOutput = doIt; };
+
   protected:
     ResampleAttributes    atts;
     char                 *primaryVariable;
     int                   selID;
+    bool                  cellCenteredOutput;
 
     virtual void          Execute(void);
     virtual void          RefashionDataObjectInfo(void);

@@ -574,6 +574,9 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
 //    Hank Childs, Fri Feb 24 11:22:05 PST 2006
 //    Remove topological tests ... anything goes (points, lines, triangles).
 //
+//    Hank Childs, Fri Jun  1 09:46:58 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
@@ -585,6 +588,12 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
                                   ds->GetCellData()->GetArray("avtGhostZones");
 
     bool is2D = GetInput()->GetInfo().GetAttributes().GetSpatialDimension()==2;
+    LoadingInfo li;
+    GetLoadingInfoForArrays(ds, li);
+
+    if (li.nVars <= 0)
+        return;
+
     for (int j = 0 ; j < numCells ; j++)
     {
         //
@@ -593,50 +602,40 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
         if (ghosts != NULL && ghosts->GetValue(j) > 0)
             continue;
         vtkCell *cell = ds->GetCell(j);
+        int npts = cell->GetNumberOfPoints();
+
         avtPoint pt;
-        pt.nVars = 0;
+        pt.nVars = li.nVars;
 
         //
         // Get all the zonal variables.
         //
-        int npts = cell->GetNumberOfPoints();
         int v;
-        vtkFieldData *cd = ds->GetCellData();
-        int ncd = cd->GetNumberOfArrays();
-        for (v = 0 ; v < ncd ; v++)
+        for (v = 0 ; v < li.cellDataIndex.size() ; v++)
         {
-            vtkDataArray *arr = cd->GetArray(v);
-            if (strstr(arr->GetName(), "vtk") != NULL)
+            if (li.cellDataIndex[v] < 0)
                 continue;
-            if (strstr(arr->GetName(), "avt") != NULL)
-                continue;
-            float val = arr->GetComponent(j, 0);
-            pt.val[pt.nVars] = val;
-            pt.nVars++;
+            for (int k = 0 ; k < li.cellDataSize[v] ; k++)
+                pt.val[li.cellDataIndex[v]+k] = 
+                                         li.cellArrays[v]->GetComponent(j, k);
         }
 
         //
         // Turn all the nodal variables into zonal variables.
         //
-        vtkFieldData *pd = ds->GetPointData();
-        int npd = pd->GetNumberOfArrays();
-        for (v = 0 ; v < npd ; v++)
+        vtkIdList *ids = cell->GetPointIds();
+        for (v = 0 ; v < li.pointDataIndex.size() ; v++)
         {
-            vtkDataArray *arr = pd->GetArray(v);
-            if (strstr(arr->GetName(), "vtk") != NULL)
+            if (li.pointDataIndex[v] < 0)
                 continue;
-            if (strstr(arr->GetName(), "avt") != NULL)
-                continue;
-            vtkIdList *ids = cell->GetPointIds();
-            double accum = 0;
-            for (int i = 0 ; i < npts ; i++)
+            for (int k = 0 ; k < li.pointDataSize[v] ; k++)
             {
-                float val = arr->GetComponent(ids->GetId(i), 0);
-                accum += val;
+                double accum = 0;
+                for (int i = 0 ; i < npts ; i++)
+                    accum += li.pointArrays[v]->GetComponent(ids->GetId(i),k);
+                accum /= npts;
+                pt.val[li.pointDataIndex[v]+k] = accum;
             }
-            accum /= npts;
-            pt.val[pt.nVars] = accum;
-            pt.nVars++;
         }
 
         // 
@@ -691,6 +690,9 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Hank Childs, Fri Jun  1 12:50:45 PDT 2007
+//    Added support for non-scalars.
+//
 // ****************************************************************************
 
 void
@@ -704,11 +706,24 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds)
             xform = atts.GetRectilinearGridTransform();
         massVoxelExtractor->SetGridsAreInWorldSpace(
            rectilinearGridsAreInWorldSpace, viewInfo, aspect, xform);
-        massVoxelExtractor->Extract((vtkRectilinearGrid *) ds);
+        avtSamplePoints_p samples = GetTypedOutput();
+        int numVars = samples->GetNumberOfRealVariables(); 
+        std::vector<std::string> varnames;
+        std::vector<int>         varsizes;
+        for (int i = 0 ; i < numVars ; i++)
+        {
+            varnames.push_back(samples->GetVariableName(i));
+            varsizes.push_back(samples->GetVariableSize(i));
+        }
+        massVoxelExtractor->Extract((vtkRectilinearGrid *) ds,
+                                    varnames, varsizes);
         return;
     }
 
     int numCells = ds->GetNumberOfCells();
+    LoadingInfo li;
+    GetLoadingInfoForArrays(ds, li);
+
     int lastMilestone = 0;
     vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *)
                                   ds->GetCellData()->GetArray("avtGhostZones");
@@ -727,35 +742,35 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds)
         switch (cell->GetCellType())
         {
           case VTK_HEXAHEDRON:
-            ExtractHex((vtkHexahedron *) cell, ds, j);
+            ExtractHex((vtkHexahedron *) cell, ds, j, li);
             break;
 
           case VTK_VOXEL:
-            ExtractVoxel((vtkVoxel *) cell, ds, j);
+            ExtractVoxel((vtkVoxel *) cell, ds, j, li);
             break;
                     
           case VTK_TETRA:
-            ExtractTet((vtkTetra *) cell, ds, j);
+            ExtractTet((vtkTetra *) cell, ds, j, li);
             break;
 
           case VTK_WEDGE:
-            ExtractWedge((vtkWedge *) cell, ds, j);
+            ExtractWedge((vtkWedge *) cell, ds, j, li);
             break;
 
           case VTK_PYRAMID:
-            ExtractPyramid((vtkPyramid *) cell, ds, j);
+            ExtractPyramid((vtkPyramid *) cell, ds, j, li);
             break;
 
           case VTK_TRIANGLE:
-            ExtractTriangle((vtkTriangle *) cell, ds, j);
+            ExtractTriangle((vtkTriangle *) cell, ds, j, li);
             break;
 
           case VTK_QUAD:
-            ExtractQuad((vtkQuad *) cell, ds, j);
+            ExtractQuad((vtkQuad *) cell, ds, j, li);
             break;
 
           case VTK_PIXEL:
-            ExtractPixel((vtkPixel *) cell, ds, j);
+            ExtractPixel((vtkPixel *) cell, ds, j, li);
             break;
 
           default:
@@ -797,56 +812,54 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds)
 //    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
 //    Don't extract VTK or AVT variables.
 //
+//    Hank Childs, Fri Jun  1 13:41:57 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
-                                    int hexind)
+                                    int hexind, LoadingInfo &li)
 {
-    int  v, i;
+    int   i, j, v;
 
-    avtHexahedron   h;
-    h.nVars = 0;
+    avtHexahedron h;
+    h.nVars = li.nVars;
 
     //
     // Retrieve all of the zonal variables.
     //
-    vtkFieldData *cd = ds->GetCellData();
-    int ncd = cd->GetNumberOfArrays();
+    int ncd = li.cellArrays.size();
     for (v = 0 ; v < ncd ; v++)
     {
-        vtkDataArray *arr = cd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.cellDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
-        float val = arr->GetComponent(hexind, 0);
-        for (i = 0 ; i < 8 ; i++)
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            h.val[i][h.nVars] = val;
+             float val = arr->GetComponent(hexind, j);
+             for (i = 0 ; i < 8 ; i++)
+                  h.val[i][idx+j] = val;
         }
-        h.nVars++;
     }
 
     //
     // Retrieve all of the nodal variables.
     //
-    vtkFieldData *pd = ds->GetPointData();
-    int npd = pd->GetNumberOfArrays();
+    int npd = li.pointArrays.size();
     for (v = 0 ; v < npd ; v++)
     {
-        vtkDataArray *arr = pd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.pointDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
         vtkIdList *ids = hex->GetPointIds();
-        for (i = 0 ; i < 8 ; i++)
-        {
-            float val = arr->GetComponent(ids->GetId(i), 0);
-            h.val[i][h.nVars] = val;
-        }
-        h.nVars++;
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+            for (i = 0 ; i < 8 ; i++)
+             h.val[i][idx+j] = arr->GetComponent(ids->GetId(i), j);
     }
 
     if (rayfoo != NULL)
@@ -902,56 +915,54 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
 //    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
 //    Don't extract VTK or AVT variables.
 //
+//    Hank Childs, Fri Jun  1 13:41:57 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::ExtractWedge(vtkWedge *wedge, vtkDataSet *ds,
-                                      int wedgeind)
+                                      int wedgeind, LoadingInfo &li)
 {
-    int   i, v;
+    int   i, j, v;
 
     avtWedge   w;
-    w.nVars = 0;
+    w.nVars = li.nVars;
 
     //
     // Retrieve all of the zonal variables.
     //
-    vtkFieldData *cd = ds->GetCellData();
-    int ncd = cd->GetNumberOfArrays();
+    int ncd = li.cellArrays.size();
     for (v = 0 ; v < ncd ; v++)
     {
-        vtkDataArray *arr = cd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.cellDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
-        float val = arr->GetComponent(wedgeind, 0);
-        for (i = 0 ; i < 6 ; i++)
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            w.val[i][w.nVars] = val;
+            float val = arr->GetComponent(wedgeind, j);
+            for (i = 0 ; i < 6 ; i++)
+                w.val[i][idx+j] = val;
         }
-        w.nVars++;
     }
 
     //
     // Retrieve all of the nodal variables.
     //
-    vtkFieldData *pd = ds->GetPointData();
-    int npd = pd->GetNumberOfArrays();
+    int npd = li.pointArrays.size();
     for (v = 0 ; v < npd ; v++)
     {
-        vtkDataArray *arr = pd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.pointDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
         vtkIdList *ids = wedge->GetPointIds();
-        for (i = 0 ; i < 6 ; i++)
-        {
-            float val = arr->GetComponent(ids->GetId(i), 0);
-            w.val[i][w.nVars] = val;
-        }
-        w.nVars++;
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+            for (i = 0 ; i < 6 ; i++)
+                w.val[i][idx+j] = arr->GetComponent(ids->GetId(i), j);
     }
 
     if (rayfoo != NULL)
@@ -1007,56 +1018,54 @@ avtSamplePointExtractor::ExtractWedge(vtkWedge *wedge, vtkDataSet *ds,
 //    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
 //    Don't extract VTK or AVT variables.
 //
+//    Hank Childs, Fri Jun  1 13:41:57 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::ExtractTet(vtkTetra *tet, vtkDataSet *ds,
-                                    int tetind)
+                                    int tetind, LoadingInfo &li)
 {
-    int   i, v;
+    int   i, j, v;
 
     avtTetrahedron   t;
-    t.nVars = 0;
+    t.nVars = li.nVars;
 
     //
     // Retrieve all of the zonal variables.
     //
-    vtkFieldData *cd = ds->GetCellData();
-    int ncd = cd->GetNumberOfArrays();
+    int ncd = li.cellArrays.size();
     for (v = 0 ; v < ncd ; v++)
     {
-        vtkDataArray *arr = cd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.cellDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
-        float val = arr->GetComponent(tetind, 0);
-        for (i = 0 ; i < 4 ; i++)
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            t.val[i][t.nVars] = val;
+            float val = arr->GetComponent(tetind, j);
+            for (i = 0 ; i < 4 ; i++)
+                t.val[i][idx+j] = val;
         }
-        t.nVars++;
     }
 
     //
     // Retrieve all of the nodal variables.
     //
-    vtkFieldData *pd = ds->GetPointData();
-    int npd = pd->GetNumberOfArrays();
+    int npd = li.pointArrays.size();
     for (v = 0 ; v < npd ; v++)
     {
-        vtkDataArray *arr = pd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.pointDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
         vtkIdList *ids = tet->GetPointIds();
-        for (i = 0 ; i < 4 ; i++)
-        {
-            float val = arr->GetComponent(ids->GetId(i), 0);
-            t.val[i][t.nVars] = val;
-        }
-        t.nVars++;
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+            for (i = 0 ; i < 4 ; i++)
+                t.val[i][idx+j] = arr->GetComponent(ids->GetId(i), j);
     }
 
     if (rayfoo != NULL)
@@ -1112,56 +1121,54 @@ avtSamplePointExtractor::ExtractTet(vtkTetra *tet, vtkDataSet *ds,
 //    Hank Childs, Thu Jul 17 17:27:59 PDT 2003
 //    Don't extract VTK or AVT variables.
 //
+//    Hank Childs, Fri Jun  1 13:41:57 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
-                                       int pyrind)
+                                       int pyrind, LoadingInfo &li)
 {
-    int   i, v;
+    int   i, j, v;
 
     avtPyramid   p;
-    p.nVars = 0;
+    p.nVars = li.nVars;
 
     //
     // Retrieve all of the zonal variables.
     //
-    vtkFieldData *cd = ds->GetCellData();
-    int ncd = cd->GetNumberOfArrays();
+    int ncd = li.cellArrays.size();
     for (v = 0 ; v < ncd ; v++)
     {
-        vtkDataArray *arr = cd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.cellDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
-        float val = arr->GetComponent(pyrind, 0);
-        for (i = 0 ; i < 5 ; i++)
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            p.val[i][p.nVars] = val;
+            float val = arr->GetComponent(pyrind, j);
+            for (i = 0 ; i < 5 ; i++)
+                p.val[i][idx+j] = val;
         }
-        p.nVars++;
     }
 
     //
     // Retrieve all of the nodal variables.
     //
-    vtkFieldData *pd = ds->GetPointData();
-    int npd = pd->GetNumberOfArrays();
+    int npd = li.pointArrays.size();
     for (v = 0 ; v < npd ; v++)
     {
-        vtkDataArray *arr = pd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.pointDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
         vtkIdList *ids = pyr->GetPointIds();
-        for (i = 0 ; i < 5 ; i++)
-        {
-            float val = arr->GetComponent(ids->GetId(i), 0);
-            p.val[i][p.nVars] = val;
-        }
-        p.nVars++;
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+            for (i = 0 ; i < 5 ; i++)
+                p.val[i][idx+j] = arr->GetComponent(ids->GetId(i), j);
     }
 
     if (rayfoo != NULL)
@@ -1221,31 +1228,29 @@ avtSamplePointExtractor::ExtractPyramid(vtkPyramid *pyr, vtkDataSet *ds,
 
 void
 avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
-                                      int voxind)
+                                      int voxind, LoadingInfo &li)
 {
-    int   i, v;
+    int   i, j, v;
 
     avtHexahedron   h;
-    h.nVars = 0;
+    h.nVars = li.nVars;
 
     //
     // Retrieve all of the zonal variables.
     //
-    vtkFieldData *cd = ds->GetCellData();
-    int ncd = cd->GetNumberOfArrays();
+    int ncd = li.cellArrays.size();
     for (v = 0 ; v < ncd ; v++)
     {
-        vtkDataArray *arr = cd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.cellDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
-        float val = arr->GetComponent(voxind, 0);
-        for (i = 0 ; i < 8 ; i++)
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            h.val[i][h.nVars] = val;
+            float val = arr->GetComponent(voxind, j);
+            for (i = 0 ; i < 8 ; i++)
+                h.val[i][idx+j] = val;
         }
-        h.nVars++;
     }
 
     //
@@ -1256,22 +1261,19 @@ avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
     //
     // Retrieve all of the nodal variables.
     //
-    vtkFieldData *pd = ds->GetPointData();
-    int npd = pd->GetNumberOfArrays();
+    int npd = li.pointArrays.size();
     for (v = 0 ; v < npd ; v++)
     {
-        vtkDataArray *arr = pd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.pointDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
         vtkIdList *ids = voxel->GetPointIds();
-        for (i = 0 ; i < 8 ; i++)
-        {
-            float val = arr->GetComponent(ids->GetId(i), 0);
-            h.val[vth[i]][h.nVars] = val;
-        }
-        h.nVars++;
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+            for (i = 0 ; i < 8 ; i++)
+                h.val[vth[i]][idx+j] = arr->GetComponent(ids->GetId(i), j);
     }
 
     if (rayfoo != NULL)
@@ -1316,60 +1318,66 @@ avtSamplePointExtractor::ExtractVoxel(vtkVoxel *voxel, vtkDataSet *ds,
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  1 13:41:57 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::ExtractTriangle(vtkTriangle *tri, vtkDataSet *ds,
-                                         int triind)
+                                         int triind, LoadingInfo &li)
 {
-    int   i, v;
+    int   i, j, v;
 
     avtWedge w;
-    w.nVars = 0;
+    w.nVars = li.nVars;
 
     //
     // Retrieve all of the zonal variables.
     //
-    vtkFieldData *cd = ds->GetCellData();
-    int ncd = cd->GetNumberOfArrays();
+    int ncd = li.cellArrays.size();
     for (v = 0 ; v < ncd ; v++)
     {
-        vtkDataArray *arr = cd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.cellDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
-        float val = arr->GetComponent(triind, 0);
-        for (i = 0 ; i < 6 ; i++)
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            w.val[i][w.nVars] = val;
+            float val = arr->GetComponent(triind, j);
+            for (i = 0 ; i < 6 ; i++)
+                w.val[i][idx+j] = val;
         }
-        w.nVars++;
     }
+
 
     //
     // Retrieve all of the nodal variables.
     //
-    vtkFieldData *pd = ds->GetPointData();
-    int npd = pd->GetNumberOfArrays();
+    int npd = li.pointArrays.size();
     for (v = 0 ; v < npd ; v++)
     {
-        vtkDataArray *arr = pd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.pointDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
         vtkIdList *ids = tri->GetPointIds();
-        float val0 = arr->GetComponent(ids->GetId(0), 0);
-        float val1 = arr->GetComponent(ids->GetId(1), 0);
-        float val2 = arr->GetComponent(ids->GetId(2), 0);
-        w.val[0][w.nVars] = val0;
-        w.val[1][w.nVars] = val1;
-        w.val[2][w.nVars] = val2;
-        w.val[3][w.nVars] = val0;
-        w.val[4][w.nVars] = val1;
-        w.val[5][w.nVars] = val2;
-        w.nVars++;
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+        {
+            float val0 = arr->GetComponent(ids->GetId(0), j);
+            float val1 = arr->GetComponent(ids->GetId(1), j);
+            float val2 = arr->GetComponent(ids->GetId(2), j);
+            w.val[0][idx+j] = val0;
+            w.val[1][idx+j] = val1;
+            w.val[2][idx+j] = val2;
+            w.val[3][idx+j] = val0;
+            w.val[4][idx+j] = val1;
+            w.val[5][idx+j] = val2;
+        }
     }
 
     if (rayfoo != NULL)
@@ -1417,63 +1425,68 @@ avtSamplePointExtractor::ExtractTriangle(vtkTriangle *tri, vtkDataSet *ds,
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  1 13:41:57 PDT 2007
+//    Add support for non-scalars.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::ExtractQuad(vtkQuad *quad, vtkDataSet *ds,
-                                     int quadind)
+                                     int quadind, LoadingInfo &li)
 {
-    int   i, v;
+    int   i, j, v;
 
     avtHexahedron h;
-    h.nVars = 0;
+    h.nVars = li.nVars;
 
     //
     // Retrieve all of the zonal variables.
     //
-    vtkFieldData *cd = ds->GetCellData();
-    int ncd = cd->GetNumberOfArrays();
+    int ncd = li.cellArrays.size();
     for (v = 0 ; v < ncd ; v++)
     {
-        vtkDataArray *arr = cd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.cellDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
-        float val = arr->GetComponent(quadind, 0);
-        for (i = 0 ; i < 8 ; i++)
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            h.val[i][h.nVars] = val;
+            float val = arr->GetComponent(quadind, j);
+            for (i = 0 ; i < 8 ; i++)
+                h.val[i][idx+j] = val;
         }
-        h.nVars++;
     }
 
     //
     // Retrieve all of the nodal variables.
     //
-    vtkFieldData *pd = ds->GetPointData();
-    int npd = pd->GetNumberOfArrays();
+    int npd = li.pointArrays.size();
     for (v = 0 ; v < npd ; v++)
     {
-        vtkDataArray *arr = pd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.pointDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
         vtkIdList *ids = quad->GetPointIds();
-        float val0 = arr->GetComponent(ids->GetId(0), 0);
-        float val1 = arr->GetComponent(ids->GetId(1), 0);
-        float val2 = arr->GetComponent(ids->GetId(2), 0);
-        float val3 = arr->GetComponent(ids->GetId(3), 0);
-        h.val[0][h.nVars] = val0;
-        h.val[1][h.nVars] = val1;
-        h.val[2][h.nVars] = val2;
-        h.val[3][h.nVars] = val3;
-        h.val[4][h.nVars] = val0;
-        h.val[5][h.nVars] = val1;
-        h.val[6][h.nVars] = val2;
-        h.val[7][h.nVars] = val3;
-        h.nVars++;
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+        {
+            float val0 = arr->GetComponent(ids->GetId(0), j);
+            float val1 = arr->GetComponent(ids->GetId(1), j);
+            float val2 = arr->GetComponent(ids->GetId(2), j);
+            float val3 = arr->GetComponent(ids->GetId(3), j);
+            h.val[0][idx+j] = val0;
+            h.val[1][idx+j] = val1;
+            h.val[2][idx+j] = val2;
+            h.val[3][idx+j] = val3;
+            h.val[4][idx+j] = val0;
+            h.val[5][idx+j] = val1;
+            h.val[6][idx+j] = val2;
+            h.val[7][idx+j] = val3;
+        }
     }
 
     if (rayfoo != NULL)
@@ -1521,63 +1534,68 @@ avtSamplePointExtractor::ExtractQuad(vtkQuad *quad, vtkDataSet *ds,
 //  Programmer:  Hank Childs
 //  Creation:    January 29, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun  1 12:39:26 PDT 2007
+//    Add support for vectors.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::ExtractPixel(vtkPixel *pixel, vtkDataSet *ds,
-                                     int pixind)
+                                      int pixind, LoadingInfo &li)
 {
-    int   i, v;
+    int   i, j, v;
 
     avtHexahedron h;
-    h.nVars = 0;
+    h.nVars = li.nVars;
 
     //
     // Retrieve all of the zonal variables.
     //
-    vtkFieldData *cd = ds->GetCellData();
-    int ncd = cd->GetNumberOfArrays();
+    int ncd = li.cellArrays.size();
     for (v = 0 ; v < ncd ; v++)
     {
-        vtkDataArray *arr = cd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.cellDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
-        float val = arr->GetComponent(pixind, 0);
-        for (i = 0 ; i < 8 ; i++)
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
         {
-            h.val[i][h.nVars] = val;
+             float val = arr->GetComponent(pixind, j);
+             for (i = 0 ; i < 8 ; i++)
+                  h.val[i][idx+j] = val;
         }
-        h.nVars++;
     }
 
     //
     // Retrieve all of the nodal variables.
     //
-    vtkFieldData *pd = ds->GetPointData();
-    int npd = pd->GetNumberOfArrays();
+    int npd = li.pointArrays.size();
     for (v = 0 ; v < npd ; v++)
     {
-        vtkDataArray *arr = pd->GetArray(v);
-        if (strstr(arr->GetName(), "vtk") != NULL)
+        if (li.pointDataIndex[v] < 0)
             continue;
-        if (strstr(arr->GetName(), "avt") != NULL)
-            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
         vtkIdList *ids = pixel->GetPointIds();
-        float val0 = arr->GetComponent(ids->GetId(0), 0);
-        float val1 = arr->GetComponent(ids->GetId(1), 0);
-        float val2 = arr->GetComponent(ids->GetId(2), 0);
-        float val3 = arr->GetComponent(ids->GetId(3), 0);
-        h.val[0][h.nVars] = val0;
-        h.val[1][h.nVars] = val1;
-        h.val[2][h.nVars] = val3;  // Swap for pixel
-        h.val[3][h.nVars] = val2;  // Swap for pixel
-        h.val[4][h.nVars] = val0;
-        h.val[5][h.nVars] = val1;
-        h.val[6][h.nVars] = val3;  // Swap for pixel
-        h.val[7][h.nVars] = val2;  // Swap for pixel
-        h.nVars++;
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+        {
+             float val0 = arr->GetComponent(ids->GetId(0), j);
+             float val1 = arr->GetComponent(ids->GetId(1), j);
+             float val2 = arr->GetComponent(ids->GetId(2), j);
+             float val3 = arr->GetComponent(ids->GetId(3), j);
+             h.val[0][idx+j] = val0;
+             h.val[1][idx+j] = val1;
+             h.val[2][idx+j] = val3;  // Swap for pixel
+             h.val[3][idx+j] = val2;  // Swap for pixel
+             h.val[4][idx+j] = val0;
+             h.val[5][idx+j] = val1;
+             h.val[6][idx+j] = val3;  // Swap for pixel
+             h.val[7][idx+j] = val2;  // Swap for pixel
+        }
     }
 
     if (rayfoo != NULL)
@@ -1606,7 +1624,7 @@ avtSamplePointExtractor::ExtractPixel(vtkPixel *pixel, vtkDataSet *ds,
     }
 
     //
-    // Have the extractor extract the sample points from this pixel.
+    // Have the hex extractor extract the sample points from this pixel.
     //
     hexExtractor->Extract(h);
 }
@@ -1690,3 +1708,78 @@ avtSamplePointExtractor::FilterUnderstandsTransformedRectMesh()
     else
         return true;
 }
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::GetLoadingInfoForArrays
+//
+//  Purpose:
+//      Gets the "loading info" the data arrays.  The loading info pertains
+//      to how to put the variable information into a cell so that it can
+//      be handed off to a derived type of avtExtractor.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 1, 2007
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::GetLoadingInfoForArrays(vtkDataSet *ds,
+                                                 LoadingInfo &li)
+{
+    int  i, j, k;
+
+    avtSamplePoints_p samples = GetTypedOutput();
+    int numVars = samples->GetNumberOfRealVariables(); // Counts vector as 1
+    li.nVars = samples->GetNumberOfVariables();        // Counts vector as 3
+   
+    int ncd = ds->GetCellData()->GetNumberOfArrays();
+    li.cellDataIndex.resize(ncd);
+    li.cellDataSize.resize(ncd);
+    li.cellArrays.resize(ncd);
+    for (i = 0 ; i < ncd ; i++)
+    {
+        vtkDataArray *arr = ds->GetCellData()->GetArray(i);
+        li.cellArrays[i] = arr;
+        const char *name = arr->GetName();
+        li.cellDataSize[i]  = arr->GetNumberOfComponents();
+        li.cellDataIndex[i] = -1;
+        for (j = 0 ; j < numVars ; j++)
+        {
+            if (samples->GetVariableName(j) == name)
+            {
+                int idx = 0;
+                for (k = 0 ; k < j ; k++)
+                    idx += samples->GetVariableSize(k);
+                li.cellDataIndex[i] = idx;
+                break;
+            }
+        }
+    }
+
+    int npd = ds->GetPointData()->GetNumberOfArrays();
+    li.pointDataIndex.resize(npd);
+    li.pointDataSize.resize(npd);
+    li.pointArrays.resize(npd);
+    for (i = 0 ; i < npd ; i++)
+    {
+        vtkDataArray *arr = ds->GetPointData()->GetArray(i);
+        li.pointArrays[i] = arr;
+        const char *name = arr->GetName();
+        li.pointDataSize[i]  = arr->GetNumberOfComponents();
+        li.pointDataIndex[i] = -1;
+        for (j = 0 ; j < numVars ; j++)
+        {
+            if (samples->GetVariableName(j) == name)
+            {
+                int idx = 0;
+                for (k = 0 ; k < j ; k++)
+                    idx += samples->GetVariableSize(k);
+                li.pointDataIndex[i] = idx;
+                break;
+            }
+        }
+    }
+}
+
+

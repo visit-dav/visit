@@ -343,6 +343,11 @@ avtRayTracer::GetNumberOfDivisions(int screenX, int screenY, int screenZ)
 //    Hank Childs, Mon Jan 16 11:11:47 PST 2006
 //    Add support for kernel based sampling.
 //
+//    Hank Childs, Thu May 31 22:36:32 PDT 2007
+//    Remove code for setting number of variables for processors that don't
+//    have data, since that is now handled by the avtSamplePointExtractor's
+//    base class.
+//
 // ****************************************************************************
 
 void
@@ -395,19 +400,6 @@ avtRayTracer::Execute(void)
     // instead of sample points when appropriate.
     //
     extractor.SendCellsMode(true);
-
-    //
-    // If we have more processors than domains, we have to handle that
-    // gracefully.  Communicate how many variables there are so that those
-    // that don't have data can play well.
-    //
-    VarList vl;
-    vl.nvars = -1;
-    avtDataset_p ds=GetTypedInput();
-    avtDatasetExaminer::GetVariableList(ds, vl);
-
-    int effectiveVars = UnifyMaximumValue(vl.nvars);
-    extractor.GetTypedOutput()->SetNumberOfVariables(effectiveVars);
 
     //
     // Communicate the samples to the other processors.

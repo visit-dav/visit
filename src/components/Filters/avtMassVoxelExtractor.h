@@ -75,6 +75,9 @@ class     vtkMatrix4x4;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Hank Childs, Fri Jun  1 15:28:14 PDT 2007
+//    Added support for non-scalars.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
@@ -84,10 +87,14 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
                                             avtCellList *);
     virtual         ~avtMassVoxelExtractor();
 
-    void             Extract(vtkRectilinearGrid *);
+    void             Extract(vtkRectilinearGrid *,
+                             std::vector<std::string> &varnames,
+                             std::vector<int> &varsize);
 
     void             SetGridsAreInWorldSpace(bool, const avtViewInfo &,double,
                                              const double *);
+    void             SetVariableInformation(std::vector<std::string> &names,
+                                            std::vector<int> varsize);
 
   protected:
     bool             gridsAreInWorldSpace;
@@ -105,8 +112,12 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     int              dims[3];
     int              ncell_arrays;
     float           *cell_arrays[AVT_VARIABLE_LIMIT];
+    int              cell_size[AVT_VARIABLE_LIMIT];
+    int              cell_index[AVT_VARIABLE_LIMIT];
     int              npt_arrays;
     float           *pt_arrays[AVT_VARIABLE_LIMIT];
+    int              pt_size[AVT_VARIABLE_LIMIT];
+    int              pt_index[AVT_VARIABLE_LIMIT];
 
     float           *prop_buffer;
     int             *ind_buffer;
@@ -119,10 +130,15 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     float           *divisors_Y;
     float           *divisors_Z;
 
-    void             ExtractImageSpaceGrid(vtkRectilinearGrid *);
-    void             ExtractWorldSpaceGrid(vtkRectilinearGrid *);
+    void             ExtractImageSpaceGrid(vtkRectilinearGrid *,
+                             std::vector<std::string> &varnames,
+                             std::vector<int> &varsize);
+    void             ExtractWorldSpaceGrid(vtkRectilinearGrid *,
+                             std::vector<std::string> &varnames,
+                             std::vector<int> &varsize);
 
-    void             RegisterGrid(vtkRectilinearGrid *);
+    void             RegisterGrid(vtkRectilinearGrid*,
+                                  std::vector<std::string>&,std::vector<int>&);
     void             SampleAlongSegment(const float *, const float*, int, int);
     void             SampleVariable(int, int, int, int);
     bool             FrustumIntersectsGrid(int, int, int, int) const;
@@ -132,7 +148,6 @@ class AVTFILTERS_API avtMassVoxelExtractor : public avtExtractor
     bool             GridOnPlusSideOfPlane(const float *, const float *) const;
     bool             FindSegmentIntersections(const float *, const float *, 
                                               int &, int &);
-
 };
 
 
