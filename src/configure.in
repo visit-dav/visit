@@ -692,6 +692,9 @@ dnl    Gunther H. Weber, Tue May 22 10:20:31 PDT 2007
 dnl    Merged Jeremy's last change (Tue May 22 11:43:30 EDT 2007) and my
 dnl    last change (Mon May 21 15:55:12 PDT 2007).
 dnl
+dnl    Thomas R. Treadway, Wed May 23 17:04:07 PDT 2007
+dnl    FreeBSD patches from Nathan Lay <nlay@scs.fsu.edu>
+dnl
 dnl    Mark C. Miller, Thu May 24 22:54:35 PDT 2007
 dnl    Removed use of rpath options from iTaps lib symbols. Made it build
 dnl    symbolic link in lib dir for iTaps libs
@@ -955,6 +958,7 @@ if test "$SHORT_UNAME" = "darwin"; then
     GL_LIBS="-framework OpenGL"
     AC_MSG_RESULT(found $GL_LIBS)
 fi
+
 AC_SUBST(GL_LIBS)
 
 AC_LANG_C
@@ -1571,7 +1575,7 @@ if test "$USE_PTY" = "yes"; then
 
     # Check for SYSV versus BSD style pseudo-ttys
     AC_MSG_CHECKING(for SYSV vs BSD style ptys)
-    if test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
+    if test "$UNAME" = "FreeBSD" || test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
         AC_MSG_RESULT(BSD)
     else
         AC_TRY_LINK([#include <stdlib.h>], grantpt(0),
@@ -2919,6 +2923,13 @@ fi
 # Figure out how to create shared libraries
 #
 case $SHORT_UNAME in
+  freebsd)
+    # Expecting g++
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -shared -o"
+    fi
+    ;;
+
   irix)
     # Both g++ and CC use this
     if test -z "$SHLIB_CREATEPROG"; then

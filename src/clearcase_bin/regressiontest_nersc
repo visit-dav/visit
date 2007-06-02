@@ -7,6 +7,9 @@
 #  Date:       May 16, 2007 
 #
 #  Modifications:
+#    Mark C. Miller, Wed May 23 09:43:39 PDT 2007
+#    Fixed uniqing of email recipient addrs. Add -publicpluginsonly to visit
+#    startup
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -122,7 +125,7 @@ EOF
     # make sure we don't wind up including a user from logrecipients
     # and modifiers twice
     emailList="`echo $logrecipients` `echo $modifiersEmails`"
-    emailList=`echo $emailList | sort | uniq`
+    emailList=`echo $emailList | tr ' ' '\n' | sort | uniq`
 
     cat mailmsg | /usr/sbin/sendmail $emailList
     rm -f mailmsg
@@ -251,9 +254,9 @@ for m in $modes; do
     /home/visit/clearcase_bin/cleanipcs 1> /dev/null 2>&1
 
     if test "$skipList" = ""; then
-        ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+        ./runtest -vargs "-publicpluginsonly" -q -p -m "$m" -d "$curdate" -notrackmem
     else
-        ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+        ./runtest -vargs "-publicpluginsonly" -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
     fi
     curerror=$?
     theMode=`echo $m | tr ',' '_'`
