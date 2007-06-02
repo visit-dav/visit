@@ -132,6 +132,10 @@
 #     Changes to support AIX (except for gdal)
 #     Added a MAKE variable
 #
+#     Thomas R. Treadway, Thu May 24 16:26:37 PDT 2007
+#     Added an option to disable building VisIt
+#     Missing required libraries cause immediate about
+#
 # *****************************************************************************
 
 
@@ -231,7 +235,8 @@ export THIRD_PARTY_PATH=${THIRD_PARTY_PATH-"./visit"}
 #
 # OPTIONS
 #
-export DO_SILO="yes"   # "yes" or "no"
+export DO_VISIT="yes"   # "yes" or "no"
+export DO_SILO="yes"
 export DO_BOXLIB="no"
 export DO_FITS="no"
 export DO_CGNS="no"
@@ -249,13 +254,6 @@ PAR_LIBS=""
 #PAR_INCLUDE="-I/usr/lib/mpi/gcc/mvapich-gen2/include"
 #PAR_LIBS="-L/usr/lib/mpi/gcc/mvapich-gen2/lib -Wl,-rpath=/usr/lib/mpi/gcc/mvapich-gen2/lib/shared -lmpich -libverbs -lpthread -lsysfs -ldl"
 
-export DO_OPSYS="no"
-export DO_ARCH="no"
-export DO_CC="no"
-export DO_CXX="no"
-export DO_CFLAGS="no"
-export DO_CXXFLAGS="no"
-export DO_PATH="no"
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
@@ -486,7 +484,7 @@ function check_files
         download_3rdparty ${CMAKE_FILE}
         if [[ $? == 0 ]] ; then
             echo "Unable to build VisIt.  CMAKE is not available."
-            rv=1
+            return 1
         fi
     fi  
 
@@ -506,7 +504,7 @@ function check_files
         download_3rdparty ${VTK_FILE}
         if [[ $? == 0 ]] ; then
             echo "Unable to build VisIt.  VTK is not available."
-            rv=1
+            return 1
         fi
     fi
     
@@ -526,7 +524,7 @@ function check_files
         download_3rdparty ${MESA_FILE}
         if [[ $? == 0 ]] ; then
             echo "Unable to build VisIt.  Mesa is not available."
-            rv=1
+            return 1
         fi
     fi
     
@@ -545,7 +543,7 @@ function check_files
         download_3rdparty ${QT_FILE}
         if [[ $? == 0 ]] ; then
             echo "Unable to build VisIt.  Qt is not available."
-            rv=1
+            return 1
         fi
     fi
     
@@ -567,7 +565,7 @@ function check_files
         download_3rdparty ${PYTHON_FILE}
         if [[ $? == 0 ]] ; then
             echo "Unable to build VisIt.  Python is not available."
-            rv=1
+            return 1
         fi
     fi
     
@@ -587,28 +585,27 @@ function check_files
         download_3rdparty $SILO_FILE
         if [[ $? == 0 ]] ; then
             echo "Unable to build VisIt.  Silo is not available."
-            rv=1
+            return 1
         fi
     fi
 
     #
     # VisIt source code
     #
-    if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
-        echo \
+    if [[ "$DO_VISIT" == "yes" ]] ; then
+        if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
+            echo \
 "Got VisIt. Lets look for 3rd party libraries."
-    else
-        download_file "${VISIT_VERSION}" "$VISIT_FILE"
-        if [[ $? == 0 ]] ; then
-           echo \
+        else
+            download_file "${VISIT_VERSION}" "$VISIT_FILE"
+            if [[ $? == 0 ]] ; then
+               echo \
 "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
-           rv=1
+               return 1
+            fi
         fi
     fi
 
-    if [[ $rv != 0 ]] ; then
-       return 1
-    fi
     check_3rdparty
     return 0
 }
@@ -4761,6 +4758,7 @@ usage () {
   printf "%s\n" "       will used the THIRD_PARTY_PATH path for creating"
   printf "%s\n" "       an absolute path to the dynamic libraries and not"
   printf "%s\n" "       use the default relative path [@executable_path/../lib]"
+  printf "%s\n" "-j     Do not build VisIt, build 3rd party libraries only"
   printf "%s\n" "-m     Build Mili"
   printf "%s\n" "-n     Build NetCDF"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
@@ -4783,7 +4781,7 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghimnps:t:v:xA:BCDEFGHIMNPS:T:V:X ARG
+while getopts :45a:bcdefghijmnps:t:v:xA:BCDEFGHIJMNPS:T:V:X ARG
 do
     argcur=$ARG
     case $ARG in
@@ -4799,6 +4797,7 @@ do
       g|G) DO_GDAL="yes";;
       h|H) usage; exit 2;;
       i|I) ABS_PATH="yes";;
+      j|J) DO_VISIT="no";;
       m|M) DO_MILI="yes";;
       n|N) DO_NETCDF="yes";;
       p|P) parallel="yes";;
@@ -5261,20 +5260,25 @@ fi
 #
 # Build the actual VisIt code
 #
-cd "$START_DIR"
-echo "Building VisIt (~50 minutes)"
-build_visit 3>&1 >> build_visit_log 2>&1
-if [[ $? != 0 ]] ; then
-   echo "Unable to build or install VisIt.  Bailing out."
-   echo \
+if [[ "$DO_VISIT" == "yes" ]] ; then
+   cd "$START_DIR"
+   echo "Building VisIt (~50 minutes)"
+   build_visit 3>&1 >> build_visit_log 2>&1
+   if [[ $? != 0 ]] ; then
+      echo "Unable to build or install VisIt.  Bailing out."
+      echo \
 "More information about the failed build can be found in \"build_visit_log\""
-   exit 1
-fi
-echo "Done building VisIt"
+      exit 1
+   fi
+   echo "Done building VisIt"
 
-echo "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/bin"
-echo "directory and invoking \"visit\"."
-echo "If you run into problems, contact visit-help@llnl.gov"
+   echo \
+"You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/bin"
+   echo "directory and invoking \"visit\"."
+   echo "If you run into problems, contact visit-help@llnl.gov"
+else
+   echo "Done"
+fi
 
 exit 0
 
