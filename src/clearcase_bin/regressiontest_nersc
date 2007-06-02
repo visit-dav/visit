@@ -1,0 +1,317 @@
+#!/bin/sh -x
+
+# ----------------------------------------------------------------------------
+#      Run VisIt regression tests from NERSC source repo on LLNL systems 
+#
+#  Programmer: Mark C. Miller 
+#  Date:       May 16, 2007 
+#
+#  Modifications:
+# ----------------------------------------------------------------------------
+dateTag=`date +%y%b%d`
+svnHost=svn.nersc.gov
+rootTestDir=/gscratch/miller/nersc_repo_test
+errorLogFile=$rootTestDir/testLogFile_$dateTag
+modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass
+modifiersEmails=
+subjectLeader="NERSC-VisIt Testing:"
+rm -f $rootTestDir/testLogFile_*
+errorMsgCount=0;
+touch $errorLogFile
+
+# list of users who want email every night with the log file
+logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov"
+#logrecipients="miller86@llnl.gov"
+
+eqzero() {
+    if test "$1" = "0"; then
+        echo 0
+	return
+    fi
+    if test -z "$1"; then
+        echo 0
+	return
+    fi
+    echo 1
+}
+
+nezero() {
+    if test "$1" != "0"; then
+        echo 0
+	return
+    fi
+    if test -n "$1"; then
+        echo 0
+	return
+    fi
+    echo 1
+}
+
+#
+# Check current error status and, if set, log the given error
+# checkAndHandleError args...
+#     $1 <error-status-flag>
+#     $2 <select warning/fatal/email behavior (other behaviors could be added)>
+#     $3 <short-subject-text>
+#     $4 <optional file or string containing details>
+#
+checkAndHandleError() {
+
+    local errorStatus=$1
+    local handlerBehavior=$2
+    local shortSubject=$3
+    local errorDetails=$4
+    local timeOfError=`date '+%l:%M:%S %p'`
+
+    # there is nothing to do if the error status flag is zero
+    if test "$errorStatus" = "0"; then
+        return
+    fi
+    errorMsgCount=`expr $errorMsgCount + 1`
+
+    # put this error's information in the log file
+    echo "********************************************************************************" >> $errorLogFile
+    echo "Message #$errorMsgCount [$timeOfError]: $shortSubject" >> $errorLogFile
+    if test -n "$errorDetails"; then
+        echo "Details follow..." >> $errorLogFile
+        if test -e $errorDetails; then
+            cat $errorDetails >> $errorLogFile 
+        else
+            echo "$errorDetails" >> $errorLogFile 
+        fi
+    else
+        echo "No details given." >> $errorLogFile
+    fi
+    echo "" >> $errorLogFile
+    echo "" >> $errorLogFile
+    echo "" >> $errorLogFile
+
+    # if this is just a warning, return now
+    if test -n "`echo $handlerBehavior | grep warn`"; then
+        return
+    fi
+
+    # we get here either because the error is fatal or we're flushing the log
+    # at the end of a run
+    emailSubject=$shortSubject
+    if test -n "`echo $handlerBehavior | grep flush`"; then
+        if test `wc -l $errorLogFile` -eq 0; then
+            return
+	else
+	    emailSubject="Message(s) from VisIt's Automatic Test Run"
+	fi
+    fi
+
+    # put logfile contents in an email and send it
+    rm -rf mailmsg
+    cat > mailmsg << EOF
+From: visit@llnl.gov 
+Subject: $subjectLeader $emailSubject
+This email was generated from VisIt's Automatic Test Run
+
+One or more messages were logged.
+
+The list of users who have modified VisIt since the
+last test run is...
+
+$modifiersEmails
+
+EOF
+    cat $errorLogFile >> mailmsg
+
+    # make sure we don't wind up including a user from logrecipients
+    # and modifiers twice
+    emailList="`echo $logrecipients` `echo $modifiersEmails`"
+    emailList=`echo $emailList | sort | uniq`
+
+    cat mailmsg | /usr/sbin/sendmail $emailList
+    rm -f mailmsg
+
+    if test -n "`echo $handlerBehavior | grep fatal`"; then
+        arg1Len=`expr length "$errorStatus"`
+        if test $arg1Len -lt 3; then
+            exit $errorStatus
+        else
+            exit 1
+        fi
+    fi
+}
+
+# set up the environment
+PATH=/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/bin:/data_vobs/VisIt/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:.
+export PATH
+
+# clean up ipc resources
+/home/visit/clearcase_bin/cleanipcs 1> /dev/null 2>&1
+
+# check connectivity to nersc
+ping -c 1 $svnHost 1> /dev/null 2>&1
+checkAndHandleError $? fatal "ping of $svnHost failed"
+pingWorks=`ping -c 5 $svnHost | grep "0% packet loss"`
+checkAndHandleError "`nezero $pingWorks`" fatal "dropped packets to $svnHost"
+
+# Update our current 'checkout' of visit trunk from NERSC
+pushd $rootTestDir 1> /dev/null 2>&1
+touch nersc_repo_update_$dateTag
+touch nersc_repo_modifiers_$dateTag
+for dir in src src/data src/test; do
+    pushd $dir 1> /dev/null 2>&1
+    svn status -u -v >> $rootTestDir/svn_status.out 2> $rootTestDir/stderr.txt
+    checkAndHandleError $? warning "svn status on $dir failed" $rootTestDir/stderr.txt
+    rm -f $rootTestDir/stderr.txt
+    cat $rootTestDir/svn_status.out | grep '^ *\*' | tr -s ' ' | cut -d' ' -f5 >> $rootTestDir/nersc_repo_modifiers_$dateTag
+    rm -rf $rootTestDir/svn_status.out
+    svn update >> $rootTestDir/nersc_repo_update_$dateTag 2> $rootTestDir/stderr.txt
+    checkAndHandleError $? warning "svn update on $dir failed" $rootTestDir/stderr.txt
+    rm -f stderr.txt
+    popd 1> /dev/null 2>&1
+done
+
+# See if any files actually changed
+numChangedFiles=`grep '^[ADUCG]' nersc_repo_update_$dateTag | wc -l`
+if test -z "$numChangedFiles"; then
+    checkAndHandleError 1 flush "No Changes Found. Skipping Tests"
+    exit 0
+else
+    checkAndHandleError $numChangedFiles warning "changed files" nersc_repo_update_$dateTag
+fi
+
+# make sure we don't have conflicts
+conflictFiles=`grep '^C' nersc_repo_update_$dateTag | tr -s ' ' | cut -d' ' -f2`
+checkAndHandleError "`eqzero $conflictFiles`" fatal "conflicting files" "$conflictFiles"
+
+# build list of modifiers email addresses
+cat $modifiersFile nersc_repo_modifiers_$dateTag | sort | uniq > ${modifiersFile}_tmp
+rm -f $modifiersFile
+mv ${modifiersFile}_tmp $modifiersFile 
+for u in `cat $modifiersFile`; do
+    uemail=`./nersc_username_to_email $u`
+    modifiersEmails="$modifiersEmails $uemail" 
+done
+
+# build visit
+cd src
+rm -f config.log config.status config.cache config_log.txt make_log.txt
+find . -name '*.so' -exec rm {} \;
+echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> config_log.txt 2>&1
+echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
+LD_LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH
+env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel 1>> config_log.txt 2>&1
+checkAndHandleError $? fatal "configure failed" config_log.txt 
+gmake -j 4 1>> make_log.txt 2>&1
+checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
+
+# build data
+cd data
+rm -f make_log.txt
+gmake -j 4 test 1>> make_log.txt 2>&1
+checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt 
+cd ..
+
+# set the datestamp used for all test modes
+curdate=`date +%Y-%m-%d-%p%I%M`
+theDay=`date +%A`
+
+# set mode to run in
+modes="nersc,serial nersc,parallel nersc,scalable,parallel"
+
+# set list of tests/modes to skip
+skipList="nersc,scalable,parallel:tests/databases/boxlib.py \
+          nersc,scalable,parallel:tests/hybrid/locus.py \
+          nersc,parallel:tests/hybrid/locus.py \
+          nersc,scalable,parallel:tests/rendering/saveformats.py \
+	  nersc,parallel:tests/operators/defer_expr.py \
+	  nersc,scalable,parallel:tests/operators/defer_expr.py \
+	  nersc,optimized:tests/operators/defer_expr.py \
+          nersc,scalable,parallel:tests/queries/bestfitline.py \
+          nersc,parallel:tests/databases/ProteinDataBank.py \
+          nersc,scalable,parallel:tests/databases/ProteinDataBank.py \
+	  nersc,scalable,parallel:tests/operators/transform.py" 
+
+#
+# Make directory for where to store core files
+#
+rm -rf test/cores
+mkdir test/cores
+
+#
+# run the test(s)
+error=0
+cd test
+
+#
+# Short term fix for path to VisIt in 'runtest' script
+#
+sed -i -e 's|^exepath="../src/bin/visit"|exepath="../bin/visit"|' runtest
+
+for m in $modes; do
+
+    # clean up ipc resources
+    /home/visit/clearcase_bin/cleanipcs 1> /dev/null 2>&1
+
+    if test "$skipList" = ""; then
+        ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
+    else
+        ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+    fi
+    curerror=$?
+    theMode=`echo $m | tr ',' '_'`
+    rm -f short_summary
+    touch short_summary
+    echo "Failed results should be obtainable from" >> short_summary
+    echo "ftp://ftp.llnl.gov/outgoing/visit_results_${theMode}_${dateTag}.tar.gz" >> short_summary
+    grep 'category\|failed' summary >> short_summary
+    checkAndHandleError $curerror warning "test mode $m failed" short_summary 
+
+    # try to use auto-login, anonymous ftp to
+    # put failed results on ftp.llnl.gov
+    failedPyFiles=`grep failed short_summary | cut -d':' -f1`
+    if test -n "$failedPyFiles"; then
+        mkdir html_$dateTag
+        cp html/index.html html_$dateTag/.
+        for f in $failedPyFiles; do
+            fileKey=`basename $f .py`
+	    cp html/*$fileKey* html_$dateTag/.
+        done
+	tar cf - html_$dateTag | gzip > visit_results_${theMode}_${dateTag}.tar.gz
+	hasOrigNetrc=0
+	if test -e .netrc; then
+	    hasOrigNetrc=1
+	    mv .netrc .netrc.orig
+	fi
+	touch .netrc
+	chmod 600 .netrc
+	echo "machine ftp.llnl.gov login anonymous password miller86@llnl.gov" >> ./.netrc
+        rm -f ftp_commands.txt 
+	echo "cd outgoing" >> ftp_commands.txt
+	echo "bin" >> ftp_commands.txt
+	echo "put visit_results_${theMode}_${dateTag}.tar.gz" >> ftp_commands.txt
+	env HOME=. ftp ftp.llnl.gov < ftp_commands.txt
+        checkAndHandleError $? "ftp transfer of results failed" sftp.log
+	rm -f visit_results_${theMode}_${dateTag}.tar.gz
+	rm -f .netrc
+	rm -f ftp_commands.txt
+	if test $hasOrigNetrc -eq 1; then
+	    mv .netrc.orig .netrc
+	fi
+        rm -f sftp_batch sftp.log
+        rm -rf html_$dateTag
+    fi
+
+    if test ! "$curerror" = "0"; then
+        error=1
+    fi
+done
+
+#
+# Reset last pass modifiers if everything passed
+#
+if test $error -eq 0; then
+    rm -f $modifiersFile
+    touch $modifiersFile
+fi
+
+checkAndHandleError 1 flush "Tests completed"
+
+exit
