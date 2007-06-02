@@ -3863,6 +3863,7 @@ echo "${ECHO_T}found $GL_LIBS" >&6; }
 fi
 
 
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -7155,7 +7156,7 @@ _ACEOF
     # Check for SYSV versus BSD style pseudo-ttys
     { echo "$as_me:$LINENO: checking for SYSV vs BSD style ptys" >&5
 echo $ECHO_N "checking for SYSV vs BSD style ptys... $ECHO_C" >&6; }
-    if test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
+    if test "$UNAME" = "FreeBSD" || test "$UNAME" = "AIX" || test "$UNAME" = "Darwin"; then
         { echo "$as_me:$LINENO: result: BSD" >&5
 echo "${ECHO_T}BSD" >&6; }
     else
@@ -11517,6 +11518,13 @@ fi
 # Figure out how to create shared libraries
 #
 case $SHORT_UNAME in
+  freebsd)
+    # Expecting g++
+    if test -z "$SHLIB_CREATEPROG"; then
+        SHLIB_CREATEPROG="$""(CXX) -shared -o"
+    fi
+    ;;
+
   irix)
     # Both g++ and CC use this
     if test -z "$SHLIB_CREATEPROG"; then

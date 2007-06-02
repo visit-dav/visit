@@ -281,6 +281,9 @@
 #    Thomas R. Treadway, Tue Apr 10 11:30:28 PDT 2007
 #    Replaced "uname -m" with "uname -p" for darwin.
 #
+#    Thomas R. Treadway, Wed May 23 17:04:07 PDT 2007
+#    FreeBSD patches from Nathan Lay <nlay@scs.fsu.edu>
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -553,6 +556,14 @@ endif
 #
 if ("$ArchGiven" == "FALSE") then
   switch ($os)
+   case freebsd:
+      echo "Found a FreeBSD version of visit"
+      set version = `uname -r`
+      set mach = `uname -m`
+      set osver = FreeBSD
+      set visitbindir = FreeBSD-$version-$mach
+      breaksw
+
    case hp-ux:
       echo "Found an HP-UX version of visit"
       set osver = hp
