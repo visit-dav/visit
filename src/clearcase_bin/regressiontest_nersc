@@ -10,6 +10,13 @@
 #    Mark C. Miller, Wed May 23 09:43:39 PDT 2007
 #    Fixed uniqing of email recipient addrs. Add -publicpluginsonly to visit
 #    startup
+#
+#    Mark C. Miller, Tue May 29 14:10:11 PDT 2007
+#    Added 'make clean' before make 
+#    Fixed problem with grep filter to identify changed files
+#    Added smarts to not re-test if nothing has changed
+#    Added CL arg parsing and -force option to force testing even if nothing
+#    has changed since last run
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -24,7 +31,6 @@ touch $errorLogFile
 
 # list of users who want email every night with the log file
 logrecipients="miller86@llnl.gov childs3@llnl.gov jsmeredith@ornl.gov"
-#logrecipients="miller86@llnl.gov"
 
 eqzero() {
     if test "$1" = "0"; then
@@ -115,11 +121,13 @@ This email was generated from VisIt's Automatic Test Run
 One or more messages were logged.
 
 The list of users who have modified VisIt since the
-last test run is...
-
-$modifiersEmails
+test suite last succesfully PASSED or PASSED w/SKIPS
+is...
 
 EOF
+    echo $modifiersEmails | tr ' ' '\n' >> mailmsg
+    echo "" >> mailmsg
+
     cat $errorLogFile >> mailmsg
 
     # make sure we don't wind up including a user from logrecipients
@@ -143,6 +151,38 @@ EOF
 # set up the environment
 PATH=/misc/gapps/mpich/1.2.4/Linux/serial/64/debug/bin:/data_vobs/VisIt/clearcase_bin:/usr/atria/bin:/usr/security/bin:/sbin:/usr/sbin:/usr/bsd:/usr/local/bin:/usr/bin:/bin:/etc:/usr/bin/X11:/usr/local/X11:/usr/etc:/usr/lib:/usr/atria/bin:/usr/ccs/bin:/usr/SUNWspro/bin:.
 export PATH
+
+optError=0
+skipIfNoChanges=1
+for options
+do
+   case $1 in
+      "")
+         # handle empty argument
+         ;;
+      -force)
+         skipIfNoChanges=0;
+	 shift
+	 ;;
+      -help)
+         optError=1
+         shift
+         ;;
+      -*)
+         echo "Unknown option $1"
+         optError=1
+         shift
+         ;;
+   esac
+done
+
+if test $optError -eq 1; then
+    echo "Usage:  $0 <options>"
+    echo "Available options:"
+    echo "        -help             display this help message"
+    echo "        -force            force a test even if no files have changed since last run."
+    exit 1
+fi
 
 # clean up ipc resources
 /home/visit/clearcase_bin/cleanipcs 1> /dev/null 2>&1
@@ -170,19 +210,6 @@ for dir in src src/data src/test; do
     popd 1> /dev/null 2>&1
 done
 
-# See if any files actually changed
-numChangedFiles=`grep '^[ADUCG]' nersc_repo_update_$dateTag | wc -l`
-if test -z "$numChangedFiles"; then
-    checkAndHandleError 1 flush "No Changes Found. Skipping Tests"
-    exit 0
-else
-    checkAndHandleError $numChangedFiles warning "changed files" nersc_repo_update_$dateTag
-fi
-
-# make sure we don't have conflicts
-conflictFiles=`grep '^C' nersc_repo_update_$dateTag | tr -s ' ' | cut -d' ' -f2`
-checkAndHandleError "`eqzero $conflictFiles`" fatal "conflicting files" "$conflictFiles"
-
 # build list of modifiers email addresses
 cat $modifiersFile nersc_repo_modifiers_$dateTag | sort | uniq > ${modifiersFile}_tmp
 rm -f $modifiersFile
@@ -191,6 +218,23 @@ for u in `cat $modifiersFile`; do
     uemail=`./nersc_username_to_email $u`
     modifiersEmails="$modifiersEmails $uemail" 
 done
+
+# See if any files actually changed
+numChangedFiles=`grep '^[ADUCG]' nersc_repo_update_$dateTag | grep -v '^At revision' | wc -l | tr -d ' '`
+if test $numChangedFiles -eq 0; then
+    if test $skipIfNoChanges -eq 1; then
+        checkAndHandleError 1 flush "No Changes Found. Skipping Tests"
+        exit 0
+    else
+        checkAndHandleError 1 warning "Although no changes were found, testing forced"
+    fi
+else
+    checkAndHandleError $numChangedFiles warning "$numChangedFiles files changed" nersc_repo_update_$dateTag
+fi
+
+# make sure we don't have conflicts
+conflictFiles=`grep '^C' nersc_repo_update_$dateTag | tr -s ' ' | cut -d' ' -f2`
+checkAndHandleError "`eqzero $conflictFiles`" fatal "conflicting files" "$conflictFiles"
 
 # build visit
 cd src
@@ -202,11 +246,13 @@ LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "configure failed" config_log.txt 
+gmake clean
 gmake -j 4 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
 
 # build data
 cd data
+gmake clean
 rm -f make_log.txt
 gmake -j 4 test 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt 
@@ -230,7 +276,16 @@ skipList="nersc,scalable,parallel:tests/databases/boxlib.py \
           nersc,scalable,parallel:tests/queries/bestfitline.py \
           nersc,parallel:tests/databases/ProteinDataBank.py \
           nersc,scalable,parallel:tests/databases/ProteinDataBank.py \
-	  nersc,scalable,parallel:tests/operators/transform.py" 
+	  nersc,scalable,parallel:tests/operators/transform.py \
+	  nersc,serial:tests/operators/defer_expr.py \
+	  nersc,parallel:tests/databases/global_node_ids.py \
+	  nersc,parallel:tests/databases/netcdf.py \
+	  nersc,parallel:tests/databases/samrai.py \
+	  nersc,parallel:tests/hybrid/sil.py \
+	  nersc,parallel:tests/plots/label.py \
+	  nersc,parallel:tests/plots/ray_trace.py \
+	  nersc,parallel:tests/rendering/renderpoints.py \
+	  nersc,scalable,parallel:tests/databases/netcdf.py"
 
 #
 # Make directory for where to store core files
@@ -247,6 +302,7 @@ cd test
 # Short term fix for path to VisIt in 'runtest' script
 #
 sed -i -e 's|^exepath="../src/bin/visit"|exepath="../bin/visit"|' runtest
+#rm -f ~miller/.visit/linux-intel/plugins/databases/*.so
 
 for m in $modes; do
 
