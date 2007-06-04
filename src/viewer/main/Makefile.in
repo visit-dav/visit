@@ -313,6 +313,10 @@
 #    Using configure generated VIEWER_MESA_LIBS, as determined by
 #    --enable-viewer-mesa-stub
 #
+#    Jeremy Meredith, Mon Jun  4 14:40:21 EDT 2007
+#    Added a SRC= definition.  Automatic ("gnu") dependency generation
+#    depends on this containing a full list of source files in this directory.
+#
 ##############################################################################
 
 ##
@@ -440,6 +444,11 @@ VIEWEREXE_SRC=@VIEWEREXE_SRC@
 VIEWERLIB_OBJ=${VIEWERLIB_SRC:.C=.o}
 VIEWEREXE_OBJ=${VIEWEREXE_SRC:.C=.o}
 OBJ=$(VIEWERLIB_OBJ)
+
+##
+## dependency generation requires SRC to be defined as all source files
+##
+SRC=$(PUBLIC_SRC) $(PRIVATE_SRC) $(MAINSRC) $(SRCMOC)
 
 ##
 ## Standard targets...
