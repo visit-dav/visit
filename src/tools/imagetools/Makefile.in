@@ -57,6 +57,10 @@
 #
 # Modifications:
 #
+#    Jeremy Meredith, Mon Jun  4 14:40:21 EDT 2007
+#    Added a SRC= definition.  Automatic ("gnu") dependency generation
+#    depends on this containing a full list of source files in this directory.
+#
 ###############################################################################
 
 @SET_MAKE@
@@ -76,6 +80,8 @@ VISIT_COMPOSITE=$(tmpbin)/visit_composite
 
 VISIT_TRANSITION_OBJ=visit_transition.o $(COMMON_OBJ)
 VISIT_TRANSITION=$(tmpbin)/visit_transition
+
+SRC=$(COMMON_SRC) visit_composite.C visit_transition.C
 
 all: message $(VISIT_COMPOSITE) $(VISIT_TRANSITION)
 
