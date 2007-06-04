@@ -98,7 +98,7 @@ inline char toupper(char c)
 //    to be generated when the first field is internal.
 //
 //    Kathleen Bonnell, Fri Jun 27 14:49:20 PDT 2003 
-//    I made code generation for Enum's getattr obey the internal flag. 
+//    I made code generation for Enum's getattr obey the internal flag.
 //
 //    Brad Whitlock, Thu Sep 11 11:24:28 PDT 2003
 //    I rewrote the code to set colors so it handles doubles and ints.
@@ -140,6 +140,9 @@ inline char toupper(char c)
 //
 //    Cyrus Harrison, Wed Mar  7 09:52:17 PST 2007
 //    Allow for engine-specific code in a plugin's source files.
+//
+//    Cyrus Harrison, Tue May 29 13:24:42 PDT 2007
+//    Fixed code gen problem with LineStyle.
 //
 // ****************************************************************************
 
@@ -1607,7 +1610,9 @@ class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonG
     virtual void StringRepresentation(ostream &c, const QString &classname)
     {
         c << "    const char *" << name << "_values[] = {\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"};" << endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s  # SOLID, DASH, DOT, DOTDASH\\n\", prefix, " << name << "_values[atts->";
+        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = ";
+        c << "%s%s  # SOLID, DASH, DOT, DOTDASH\\n\", prefix, prefix, " << name << "_values[atts->";
+
         if(accessType == Field::AccessPublic)
             c << name;
         else
