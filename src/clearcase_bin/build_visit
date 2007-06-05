@@ -68,6 +68,7 @@
 #     Section 1:                    setting up inputs/environment variables
 #     Function 1, check_files:      ensures input files are available
 #     Function 2, check_parallel:   parallel build information
+#     Function 2.1, check_variables:edit variable build information
 #     Function 3, build_mesa:       build mangled Mesa
 #     Function 4, build_qt:         build Qt
 #     Function 5, build_cmake:      build CMake (like configure, for VTK)
@@ -83,7 +84,8 @@
 #     Function 8.8, build_boxlib:   build Boxlib
 #     Function 8.9, build_cfitsio:  build CFITSIO
 #     Function 8, build_silo:       build Silo
-#     Function 9, build_visit:      build the VisIt source code
+#     Function 9, build_hostconf:   build the config-site/host.conf file
+#     Function 9.1, build_visit:    build the VisIt source code
 #     Section 2:                    oversees build process (calls Functions 1-8)
 #
 #   Programmer: Hank Childs (with large portions borrowed from BUILD_NOTES,
@@ -134,7 +136,15 @@
 #
 #     Thomas R. Treadway, Thu May 24 16:26:37 PDT 2007
 #     Added an option to disable building VisIt
-#     Missing required libraries cause immediate about
+#     Missing required libraries cause immediate abort
+#
+#     Thomas R. Treadway, Fri May 25 15:41:42 PDT 2007
+#     Added an option to build from svn
+#     Added a build_hostconf function to create the host conf file
+#
+#     Thomas R. Treadway, Thu May 31 16:05:36 PDT 2007
+#     Modified Mesa install for 64-bit linux
+#     Change Boxlib install path back to the legacy path 
 #
 # *****************************************************************************
 
@@ -147,8 +157,6 @@
 # etc.  Note that this script is really only known to work with gcc.          #
 # *************************************************************************** #
 
-export VISIT_FILE=${VISIT_FILE-"visit070330.tar.gz"}
-export VISIT_VERSION=${VISIT_VERSION-"1.6"}
 export OPSYS=${OPSYS-$(uname -s)}
 # Determine architecture
 if [[ "$OPSYS" == "Darwin" ]]; then
@@ -236,9 +244,10 @@ export THIRD_PARTY_PATH=${THIRD_PARTY_PATH-"./visit"}
 # OPTIONS
 #
 export DO_VISIT="yes"   # "yes" or "no"
+export DO_SVN="no"
 export DO_SILO="yes"
 export DO_BOXLIB="no"
-export DO_FITS="no"
+export DO_CFITSIO="no"
 export DO_CGNS="no"
 export DO_EXODUS="no"
 export DO_GDAL="no"
@@ -258,69 +267,72 @@ PAR_LIBS=""
 # TARBALL LOCATIONS AND VERSIONS
 #
 
-export VTK_FILE="vtk-5.0.0c.tar.gz"
-export VTK_VERSION="5.0.0c"
+export VISIT_FILE=${VISIT_FILE-"visit070330.tar.gz"}
+export VISIT_VERSION=${VISIT_VERSION-"1.6"}
 
-export CMAKE_FILE="cmake-2.4.5.tar.gz"
-export CMAKE_VERSION="2.4.5"
-export MESA_FILE="MesaLib-6.4.2.tar.gz"
-export MESA_VERSION="6.4.2"
-export MESA_DIR="Mesa-6.4.2"  # The directory contained in the tarball
+export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
+export VTK_VERSION=${VTK_VERSION-"5.0.0c"}
+
+export CMAKE_FILE=${CMAKE_FILE-"cmake-2.4.5.tar.gz"}
+export CMAKE_VERSION=${CMAKE_VERSION-"2.4.5"}
+export MESA_FILE=${MESA_FILE-"MesaLib-6.4.2.tar.gz"}
+export MESA_VERSION=${MESA_VERSION-"6.4.2"}
+export MESA_DIR=${MESA_DIR-"Mesa-6.4.2"}  # The directory in the tarball
 
 # The old Python version at LLNL does not work on Mac, we need a newer version
-#export PYTHON_FILE_SUFFIX="tar.gz" # This is for the old version. Remove this later
-export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. Uncomment this later
-export PYTHON_VERSION="2.5"       # We're up to 2.5 now. Change this back later.
-export PYTHON_COMPATIBILITY_VERSION="2.5" # Need this for the dylib build
+export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. 
+export PYTHON_VERSION=${PYTHON_VERSION-"2.5"}
+# Need this for the dylib build
+export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION-"2.5"}
 export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
 
 if [[ "$OPSYS" == "Darwin" ]] ; then
-   export QT_FILE="qt-mac-free-3.3.8.tar.gz"
-   export QT_VERSION="3.3.8"
+   export QT_FILE=${QT_FILE-"qt-mac-free-3.3.8.tar.gz"}
+   export QT_VERSION=${QT_VERSION-"3.3.8"}
 else
-   export QT_FILE="qt-x11-free-3.3.8.tar.gz"
-   export QT_VERSION="3.3.8"
+   export QT_FILE=${QT_FILE-"qt-x11-free-3.3.8.tar.gz"}
+   export QT_VERSION=${QT_VERSION-"3.3.8"}
 fi
 
-export SILO_FILE="silo060605.sh"
-export SILO_VERSION="4.5.1"
-export SILO_COMPATIBILITY_VERSION="4.5"
+export SILO_FILE=${SILO_FILE-"silo060605.sh"}
+export SILO_VERSION=${SILO_VERSION-"4.5.1"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.5"}
 
-export HDF5_FILE="hdf5-1.6.5.tar.gz"
-export HDF5_VERSION="1.6.5"
-export HDF5_COMPATIBILITY_VERSION="1.6"
+export HDF5_FILE=${HDF5_FILE-"hdf5-1.6.5.tar.gz"}
+export HDF5_VERSION=${HDF5_VERSION-"1.6.5"}
+export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION-"1.6"}
 
-export HDF4_FILE="HDF4.2r1.tar.gz"
-export HDF4_VERSION="4.2.1"
-export HDF4_COMPATIBILITY_VERSION="4.0"
+export HDF4_FILE=${HDF4_FILE-"HDF4.2r1.tar.gz"}
+export HDF4_VERSION=${HDF4_VERSION-"4.2.1"}
+export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION-"4.0"}
 
-export MILI_FILE="mili.tar.gz"
-export MILI_VERSION="1.10.0"
-export MILI_COMPATIBILITY_VERSION="1.0"
+export MILI_FILE=${MILI_FILE-"mili.tar.gz"}
+export MILI_VERSION=${MILI_VERSION-"1.10.0"}
+export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION-"1.0"}
 
-export NETCDF_FILE="netcdf.tar.gz"
-export NETCDF_VERSION="3.6.0"
-export NETCDF_COMPATIBILITY_VERSION="3.6"
+export NETCDF_FILE=${NETCDF_FILE-"netcdf.tar.gz"}
+export NETCDF_VERSION=${NETCDF_VERSION-"3.6.0"}
+export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"3.6"}
 
-export CGNS_FILE="cgnslib_2.4-3.tar.gz"
-export CGNS_VERSION="2.4"
-export CGNS_COMPATIBILITY_VERSION="2.4"
+export CGNS_FILE=${CGNS_FILE-"cgnslib_2.4-3.tar.gz"}
+export CGNS_VERSION=${CGNS_VERSION-"2.4"}
+export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION-"2.4"}
 
-export GDAL_FILE="gdal-1.3.2.tar.gz"
-export GDAL_VERSION="1.3.2"
-export GDAL_COMPATIBILITY_VERSION="1.3"
+export GDAL_FILE=${GDAL_FILE-"gdal-1.3.2.tar.gz"}
+export GDAL_VERSION=${GDAL_VERSION-"1.3.2"}
+export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION-"1.3"}
 
-export EXODUS_FILE="exodusii-4.46.tar.gz"
-export EXODUS_VERSION="4.46"
-export EXODUS_COMPATIBILITY_VERSION="4.0"
+export EXODUS_FILE=${EXODUS_FILE-"exodusii-4.46.tar.gz"}
+export EXODUS_VERSION=${EXODUS_VERSION-"4.46"}
+export EXODUS_COMPATIBILITY_VERSION=${EXODUS_COMPATIBILITY_VERSION-"4.0"}
 
-export BOXLIB_FILE="boxlib.tar.gz"
-export BOXLIB_VERSION="2.5"
-export BOXLIB_COMPATIBILITY_VERSION="2.0"
+export BOXLIB_FILE=${BOXLIB_FILE-"boxlib.tar.gz"}
+export BOXLIB_VERSION=${BOXLIB_VERSION-"2.5"}
+export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION-"2.0"}
 
-export CFITSIO_FILE="cfitsio3006.tar.gz"
-export CFITSIO_VERSION="3.006"
-export CFITSIO_COMPATIBILITY_VERSION="3.0"
+export CFITSIO_FILE=${CFITSIO_FILE-"cfitsio3006.tar.gz"}
+export CFITSIO_VERSION=${CFITSIO_VERSION-"3.006"}
+export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION-"3.0"}
 
 # Dialog-related variables.
 DLG="dialog"
@@ -398,18 +410,23 @@ function download_file
     fi
 
     # Try and download the file.
-    if [[ "$1" == "" ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            # MaxOS X comes with curl
-            curl -sfo $2 "http://www.llnl.gov/visit/$2"
-        else
-            wget -o /dev/null "http://www.llnl.gov/visit/$2" 
-        fi
+    if [[ "$DO_SVN" == "yes" ]] ; then
+        svn export \
+            svn+ssh://$(whoami)@svn.nersc.gov/svn/visit/trunk/third_party/$2
     else
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            curl -sfo $2 "http://www.llnl.gov/visit/$1/$2"
+        if [[ "$1" == "" ]] ; then
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                # MaxOS X comes with curl
+                curl -sfo $2 "http://www.llnl.gov/visit/$2"
+            else
+                wget -o /dev/null "http://www.llnl.gov/visit/$2" 
+            fi
         else
-            wget -o /dev/null "http://www.llnl.gov/visit/$1/$2" 
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                curl -sfo $2 "http://www.llnl.gov/visit/$1/$2"
+            else
+                wget -o /dev/null "http://www.llnl.gov/visit/$1/$2" 
+            fi
         fi
     fi
     if [[ -e $2 ]] ; then
@@ -593,15 +610,33 @@ function check_files
     # VisIt source code
     #
     if [[ "$DO_VISIT" == "yes" ]] ; then
-        if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
-            echo \
-"Got VisIt. Lets look for 3rd party libraries."
+        if [[ "$DO_SVN" == "yes" ]] ; then
+            if [[ -d src ]] ; then
+               echo "VisIt svn src directory found, using it."
+#              svn up svn+ssh://$(whoami)@svn.nersc.gov/svn/visit/trunk/src
+#              if [[ $? == 0 ]] ; then
+#                  echo "Unable to update VisIt.  SVN update failed."
+#                  return 1
+#              fi
+            else
+               svn co --quite --non-interactive \
+                  svn+ssh://$(whoami)@svn.nersc.gov/svn/visit/trunk/src
+               if [[ $? == 0 ]] ; then
+                   echo "Unable to build VisIt.  SVN download failed."
+                   return 1
+               fi
+            fi
         else
-            download_file "${VISIT_VERSION}" "$VISIT_FILE"
-            if [[ $? == 0 ]] ; then
-               echo \
+            if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
+                echo \
+"Got VisIt. Lets look for 3rd party libraries."
+            else
+                download_file "${VISIT_VERSION}" "$VISIT_FILE"
+                if [[ $? == 0 ]] ; then
+                   echo \
 "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
-               return 1
+                   return 1
+                fi
             fi
         fi
     fi
@@ -624,7 +659,7 @@ function check_3rdparty
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
         HAVE_BOXLIB_ALREADY="NO"
         HAVE_BOXLIB_TARBALL="NO"
-        if [[ -d "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/boxlib/$VISITARCH" ]] ; then
            HAVE_BOXLIB_ALREADY="YES"
         fi
         if [[ -e ${BOXLIB_FILE%.gz} || -e ${BOXLIB_FILE} ]] ; then
@@ -820,6 +855,7 @@ function check_3rdparty
 
 function check_parallel
 {
+
     #
     # Parallelization
     #
@@ -830,27 +866,10 @@ function check_parallel
         MPICC_CPPFLAGS=""
         MPICC_LDFLAGS=""
         args=`mpicc -show`
-
         index=0
         foundL=0
-        foundCompiler=0
         for arg in $args; do
-            # If mpicc -show output a line "Link Line:" then all arguments 
-            # should go to the LDFLAGS.
-            if [[ "$arg" == "Link" ]]; then
-               foundL=1
-               continue
-            fi
-            # If we have not found the compiler argument yet, look for it.
-            if [[ $foundCompiler == 0 ]]; then
-                for compiler in xlc gcc cc; do
-                    m=`echo $arg $compiler | awk '{ printf "%d", match($1,$2); }'`
-                    if [[ $m != 0 ]]; then
-                        foundCompiler=1
-                        break
-                    fi
-                done
-            else
+            if [[ $index == 1 || $index > 1 ]] ; then
                 pos=`echo "$arg" | awk '{ printf "%d", index($1,"-L"); }'`
                 if [[ "$pos" != "0" ]] ; then
                     foundL=1
@@ -858,15 +877,6 @@ function check_parallel
 
                 if [[ $foundL == 1 ]] ; then
                     MPICC_LDFLAGS="$MPICC_LDFLAGS$arg "
- 
-                   # If we got to linker flags without any CPPFLAGS then
-                   # let's try and convert a -L/.../lib to a -I/.../include
-                   if [[ "$MPICC_CPPFLAGS" == "" ]]; then
-                       incdir=`echo "$arg" | sed "s/-L//g" | sed "s/lib/include/g"`
-                       if [[ -d $incdir ]]; then
-                           MPICC_CPPFLAGS="$MPICC_CPPFLAGS-I$incdir "
-                       fi
-                   fi
                 else
                     MPICC_CPPFLAGS="$MPICC_CPPFLAGS$arg "
                 fi
@@ -1406,7 +1416,6 @@ EOF
        return 1
     fi
     
-    
     #
     # Install into the VisIt third party location.
     #
@@ -1421,7 +1430,16 @@ EOF
     cp include/GL/*.h "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/include/GL"
     for file in libMesaGL libOSMesa libGLU
     do  
-       cp lib/${file}.$SO_EXT* "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
+       if [[ -d lib64 ]] ; then
+          cp lib64/${file}.$SO_EXT* \
+             "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
+       elif [[ -d lib ]] ; then
+          cp lib/${file}.$SO_EXT* \
+             "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib"
+       else
+          find . -name ${file}.$SO_EXT\* -exec cp {} \
+             "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib" \;
+       fi
     done
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
@@ -1436,14 +1454,14 @@ EOF
            "$INSTALLNAMEPATH/libOSMesa.$SO_EXT" \
            "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.$SO_EXT"
         install_name_tool -change \
-           libMesaGL.1.$SO_EXT \
+           libMesaGL.$SO_EXT \
            "$INSTALLNAMEPATH/libMesaGL.$SO_EXT" \
            "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libOSMesa.$SO_EXT"
         install_name_tool -id \
            "$INSTALLNAMEPATH/libGLU.$SO_EXT" \
            "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.$SO_EXT"
         install_name_tool -change \
-           libMesaGL.1.$SO_EXT \
+           libMesaGL.$SO_EXT \
            "$INSTALLNAMEPATH/libMesaGL.$SO_EXT" \
            "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH/lib/libGLU.$SO_EXT"
         if [[ $? != 0 ]] ; then
@@ -1918,25 +1936,23 @@ EOF
     cd VTK
     CMAKE_DIR=../${CMAKE_FILE%.tar*}/bin/
     if [[ "$OPSYS" == "Darwin" ]]; then
-       VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
+    ${CMAKE_DIR}/cmake \
+        -DBUILD_SHARED_LIBS:BOOL=ON\
+        -DBUILD_TESTING:BOOL=OFF\
+        -DUSE_ANSI_STD_LIB:BOOL=ON\
+        -DVTK_USE_MANGLED_MESA:BOOL=ON\
+        -DVTK_USE_HYBRID:BOOL=ON\
+        -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
         -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0"
+        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-headerpad_max_install_names,-compatibility_version,5.0,-current_version,5.0.0\
+        -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        .
     elif [[ "$OPSYS" == "IRIX64" ]]; then
-       VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS} -LANG:std -64\
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-        -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
-        -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
-        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-LANG:std -64"
-    else
-       VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
-    fi
     ${CMAKE_DIR}/cmake \
         -DBUILD_SHARED_LIBS:BOOL=ON\
         -DBUILD_TESTING:BOOL=OFF\
@@ -1949,6 +1965,31 @@ EOF
         -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
+       VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS} -LANG:std -64\
+        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+        -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
+        -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
+        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-LANG:std -64"
+    else
+    ${CMAKE_DIR}/cmake \
+        -DBUILD_SHARED_LIBS:BOOL=ON\
+        -DBUILD_TESTING:BOOL=OFF\
+        -DUSE_ANSI_STD_LIB:BOOL=ON\
+        -DVTK_USE_MANGLED_MESA:BOOL=ON\
+        -DVTK_USE_HYBRID:BOOL=ON\
+        $VTKPLATFORMFLAGS\
+        -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        .
+       VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
+        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    fi
     if [[ $? != 0 ]] ; then
        echo "Cannot get CMAKE to create the makefiles.  Giving up."
        return 1
@@ -2085,7 +2126,7 @@ EOF
         "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib/libjpeg.$SO_EXT"
         cd ..
     else
-        cp -R bin/*.so*  "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
+        cp -R bin/*.$SO_EXT*  "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib"
     fi
     
     #
@@ -4344,33 +4385,37 @@ EOF
     info_box "Installing Boxlib 3D. . ." >&3
     echo "Installing Boxlib 3D"
     mkdir "$VISITDIR/boxlib"
-    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION"
-    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH"
-    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include"
-    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib"
-    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D"
-    mkdir "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D"
+    mkdir "$VISITDIR/boxlib/$VISITARCH"
+    mkdir "$VISITDIR/boxlib/$VISITARCH/include"
+    mkdir "$VISITDIR/boxlib/$VISITARCH/lib"
+    mkdir "$VISITDIR/boxlib/$VISITARCH/include/2D"
+    mkdir "$VISITDIR/boxlib/$VISITARCH/include/3D"
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/boxlib/${BOXLIB_VERSION}/$VISITARCH/lib"
+           INSTALLNAMEPATH="$VISITDIR/boxlib/$VISITARCH/lib"
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
-        libtool -o libbox3D.dylib -dynamic libbox3d.Darwin.CC.f77.a \
-          -lSystem -twolevel_namespace -undefined dynamic_lookup \
-          -headerpad_max_install_names \
-          -install_name $INSTALLNAMEPATH/libbox3D.dylib \
-          -compatibility_version $BOXLIB_COMPATIBILITY_VERSION \
-          -current_version $BOXLIB_VERSION
+        mkdir tmp
+        cd tmp
+        ar x ../libbox3d.Darwin.CC.f77.a
+        $CXX_COMPILER -dynamiclib -o libbox3D.$SO_EXT *.o \
+          -lSystem -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
+          -Wl,-headerpad_max_install_names \
+          -Wl,-install_name,$INSTALLNAMEPATH/libbox3D.$SO_EXT \
+          -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
+          -Wl,-current_version,$BOXLIB_VERSION
         if [[ $? != 0 ]] ; then
           echo "Creation of dynamic 3D Boxlib library failed.  Giving up"
           return 1
         fi
-        cp libbox3D.dylib "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/"
+        cp libbox3D.$SO_EXT "$VISITDIR/boxlib/$VISITARCH/lib/"
+        rm *.o
+        cd ..
         tar cf Boxlib3D.h.tar *.H
     else
        cp libbox3d*.a \
-       "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/libbox3D.a"
+       "$VISITDIR/boxlib/$VISITARCH/lib/libbox3D.a"
        tar cf Boxlib3D.h.tar *.H
        if [[ $? != 0 ]] ; then
           echo "Boxlib install failed.  Giving up"
@@ -4453,25 +4498,30 @@ EOF
     echo "Installing Boxlib 2D"
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
-           INSTALLNAMEPATH="$VISITDIR/boxlib/${BOXLIB_VERSION}/$VISITARCH/lib"
+           INSTALLNAMEPATH="$VISITDIR/boxlib/$VISITARCH/lib"
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
-        libtool -o libbox2D.dylib -dynamic libbox2d.Darwin.CC.f77.a \
-          -lSystem -twolevel_namespace -undefined dynamic_lookup \
-          -headerpad_max_install_names \
-          -install_name $INSTALLNAMEPATH/libbox2D.dylib \
-          -compatibility_version $BOXLIB_COMPATIBILITY_VERSION \
-          -current_version $BOXLIB_VERSION
+        cd tmp
+        ar x ../libbox2d.Darwin.CC.f77.a
+        $CXX_COMPILER -dynamiclib -o libbox2D.$SO_EXT *.o \
+          -lSystem -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
+          -Wl,-headerpad_max_install_names \
+          -Wl,-install_name,$INSTALLNAMEPATH/libbox2D.$SO_EXT \
+          -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
+          -Wl,-current_version,$BOXLIB_VERSION
         if [[ $? != 0 ]] ; then
           echo "Creation of dynamic 2D Boxlib library failed.  Giving up"
           return 1
         fi
-        cp libbox2D.dylib "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/"
+        cp libbox2D.$SO_EXT "$VISITDIR/boxlib/$VISITARCH/lib/"
+        rm *.o
+        cd ..
+        rmdir tmp
         tar cf Boxlib2D.h.tar *.H
     else
         cp libbox2d*.a \
-        "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/lib/libbox2D.a"
+        "$VISITDIR/boxlib/$VISITARCH/lib/libbox2D.a"
         tar cf Boxlib2D.h.tar *.H
         if [[ $? != 0 ]] ; then
           echo "Boxlib install failed.  Giving up"
@@ -4481,11 +4531,11 @@ EOF
 
     info_box "Installing Boxlib includes. . ." >&3
     echo "Installing Boxlib includes"
-    cp Boxlib2D.h.tar "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D"
-    cp Boxlib3D.h.tar "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D"
-    cd "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/2D"
+    cp Boxlib2D.h.tar "$VISITDIR/boxlib/$VISITARCH/include/2D"
+    cp Boxlib3D.h.tar "$VISITDIR/boxlib/$VISITARCH/include/3D"
+    cd "$VISITDIR/boxlib/$VISITARCH/include/2D"
     tar xf Boxlib2D.h.tar
-    cd "$VISITDIR/boxlib/$BOXLIB_VERSION/$VISITARCH/include/3D"
+    cd "$VISITDIR/boxlib/$VISITARCH/include/3D"
     tar xf Boxlib3D.h.tar
 
     cd "$START_DIR"
@@ -4556,23 +4606,23 @@ function build_cfitsio
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
 ## switch back to gcc "external relocation entries" restFP saveFP
-##      libtool -o libcfitsio.dylib -dynamic libcfitsio.a -lSystem \
+##      libtool -o libcfitsio.$SO_EXT -dynamic libcfitsio.a -lSystem \
 ##      -twolevel_namespace -undefined dynamic_lookup \
 ##      -headerpad_max_install_names \
-##      -install_name $INSTALLNAMEPATH/libcfitsio.dylib \
+##      -install_name $INSTALLNAMEPATH/libcfitsio.$SO_EXT \
 ##      -compatibility_version $CFITSIO_COMPATIBILITY_VERSION \
 ##      -current_version $CFITSIO_VERSION
-        gcc -o libcfitsio.dylib -dynamiclib *.o -lSystem \
+        gcc -o libcfitsio.$SO_EXT -dynamiclib *.o -lSystem \
            -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
            -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libcfitsio.dylib \
+           -Wl,-install_name,$INSTALLNAMEPATH/libcfitsio.$SO_EXT \
            -Wl,-compatibility_version,$CFITSIO_COMPATIBILITY_VERSION \
            -Wl,-current_version,$CFITSIO_VERSION
         if [[ $? != 0 ]] ; then
            echo "Creating dynamic CFITSIO library failed.  Giving up"
            return 1
         fi
-#       cp libcfitsio.dylib "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib"
+#       cp libcfitsio.$SO_EXT "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib"
     fi
     #
     # Install into the VisIt third party location.
@@ -4594,30 +4644,231 @@ function build_cfitsio
 
 
 # *************************************************************************** #
-#                          Function 9, build_visit                            #
+#                          Function 9, build_hostconf                         #
+# *************************************************************************** #
+
+function build_hostconf
+{
+    #
+    # Set up environment variables for the configure step.
+    #
+    PARFLAGS=""
+    CXXFLAGS="$CXX_OPT_FLAGS"
+    if [[ "$parallel" == "yes" ]] ; then
+       PARFLAGS="--enable-parallel"
+       CXXFLAGS="$CXX_OPT_FLAGS $PAR_INCLUDE"
+    fi
+    
+    #
+    # Set up the config-site file, which gives configure the information it
+    # needs about the third party libraries.
+    #
+    info_box "Creating `hostname`.conf" >&3
+    HOSTCONF="$(hostname).conf"
+    touch $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## build_vist generated host.conf" >> $HOSTCONF
+    echo "## created: $(date)" >> $HOSTCONF
+    echo "## by: $(whoami)" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## Set the VISITHOME environment variable." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "VISITHOME=$VISITDIR" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo \
+"## Specify the location of the mesa include files and libraries." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "MESA=\$VISITHOME/mesa/$MESA_VERSION/$VISITARCH" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo \
+"## Specify the location of the vtk include files and libraries." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "VTK=\$VISITHOME/vtk/$VTK_VERSION/$VISITARCH" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo \
+"## Specify the location of the qt include files and libraries." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "QT_BIN=\$VISITHOME/qt/$QT_VERSION/$VISITARCH/bin" >> $HOSTCONF
+    echo "QT_INCLUDE=\$VISITHOME/qt/$QT_VERSION/$VISITARCH/include" >> $HOSTCONF
+    echo "QT_LIB=\$VISITHOME/qt/$QT_VERSION/$VISITARCH/lib" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo \
+"## Specify the location of the python include and libraries." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "PYDIR=\$VISITHOME/python/$VISITARCH" >> $HOSTCONF
+    echo "PYVERSION=python$PYTHON_VERSION" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## Silo" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo \
+"DEFAULT_SILO_INCLUDES=\$VISITHOME/silo/$SILO_VERSION/$VISITARCH/include" \
+    >> $HOSTCONF
+    echo \
+"DEFAULT_SILO_LIBRARY=\$VISITHOME/silo/$SILO_VERSION/$VISITARCH/lib" \
+    >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "## Compiler flage." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "CC=\"$C_COMPILER\"" >> $HOSTCONF
+    echo "CXX=\"$CXX_COMPILER\"" >> $HOSTCONF
+    echo "CFLAGS=\"$C_OPT_FLAGS\"" >> $HOSTCONF
+    echo "CXXFLAGS=\"$CXXFLAGS\"" >> $HOSTCONF
+    if [[ "$parallel" == "yes" ]] ; then
+        echo "MPI_LIBS=\"$PAR_LIBS\"" >> $HOSTCONF
+    fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## Database reader plugin support libraries" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo \
+"##############################################################" >> $HOSTCONF
+    if [[ "$DO_BOXLIB" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Boxlib" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_BOXLIB2D_INCLUDE=\$VISITHOME/boxlib/$VISITARCH/include/2D" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_BOXLIB2D_LIBS=\$VISITHOME/boxlib/$VISITARCH/lib" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_BOXLIB3D_INCLUDE=\$VISITHOME/boxlib/$VISITARCH/include/3D" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_BOXLIB3D_LIBS=\$VISITHOME/boxlib/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_CFITSIO" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## CFITSIO" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_CFITSIO_INCLUDE=\$VISITHOME/cfitsio/$CFITSIO_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_CFITSIO_LIB=\$VISITHOME/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_CGNS" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## CGNS" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_CGNS_INCLUDE=\$VISITHOME/cgns/$CGNS_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_CGNS_LIB=\$VISITHOME/cgns/$CGNS_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_EXODUS" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Exodus" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_EXODUS_INCLUDES=\$VISITHOME/exodus/$EXODUS_VERSION/$VISITARCH/inc" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_EXODUS_LIBRARY=\$VISITHOME/exodus/$EXODUS_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_GDAL" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## GDAL" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_GDAL_INCLUDE=\$VISITHOME/gdal/$GDAL_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_GDAL_LIB=\$VISITHOME/gdal/$GDAL_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_HDF4" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## HDF4" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_HDF4_FLAGS=\$VISITHOME/hdf4/$HDF4_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_HDF4_LIBS=\$VISITHOME/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## HDF5" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_HDF5_INCLUDE=\$VISITHOME/hdf5/$HDF5_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_HDF5_LIB=\$VISITHOME/hdf5/$HDF5_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_MILI" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Mili" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"MILI_DIR=\$VISITHOME/mili/$MILI_VERSION/$VISITARCH" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_NETCDF" == "yes" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## NetCDF" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+"DEFAULT_NETCDF_INCLUDE=\$VISITHOME/netcdf/$NETCDF_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_NETCDF_LIB=\$VISITHOME/netcdf/$NETCDF_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    echo "##" >> $HOSTCONF
+}
+
+# *************************************************************************** #
+#                          Function 9.1, build_visit                          #
 # *************************************************************************** #
 
 function build_visit
 {
-    #
-    # Unzip the file, provided a gzipped file exists.
-    #
-    if [[ -f ${VISIT_FILE} ]] ; then
-       info_box "Unzipping/untarring ${VISIT_FILE} . . ." >&3
-       uncompress_untar ${VISIT_FILE}
-       if [[ $? != 0 ]] ; then
-          echo \
+    if [[ "$DO_SVN" != "yes" ]] ; then
+        #
+        # Unzip the file, provided a gzipped file exists.
+        #
+        if [[ -f ${VISIT_FILE} ]] ; then
+           info_box "Unzipping/untarring ${VISIT_FILE} . . ." >&3
+           uncompress_untar ${VISIT_FILE}
+           if [[ $? != 0 ]] ; then
+              echo \
 "Unable to untar ${VISIT_FILE}.  Corrupted file or out of space on device?"
-          return 1
-       fi
-    elif [[ -f ${VISIT_FILE%.*} ]] ; then
-       info_box "Unzipping ${VISIT_FILE%.*} . . ." >&3
-       tar xf ${VISIT_FILE%.*}
-       if [[ $? != 0 ]] ; then
-          echo \
+              return 1
+           fi
+        elif [[ -f ${VISIT_FILE%.*} ]] ; then
+           info_box "Unzipping ${VISIT_FILE%.*} . . ." >&3
+           tar xf ${VISIT_FILE%.*}
+           if [[ $? != 0 ]] ; then
+              echo \
 "Unable to untar ${VISIT_FILE%.*}.  Corrupted file or out of space on device?"
-          return 1
-       fi
+              return 1
+           fi
+        fi
     fi
 
     #
@@ -4637,72 +4888,13 @@ function build_visit
     # needs about the third party libraries.
     #
     info_box "Creating `hostname`.conf" >&3
-    VISIT_DIR=${VISIT_FILE%.tar*}
-    cd "${VISIT_DIR}"
-    cd config-site
-    echo VISITHOME=$VISITDIR > `hostname`.conf
-    sed -e "s/ARCH/$VISITARCH/" -e "s/MESA_VERSION/$MESA_VERSION/" \
-        -e "s/VTK_VERSION/$VTK_VERSION/" -e "s/QT_VERSION/$QT_VERSION/" \
-        -e "s/PYTHON_VERSION/$PYTHON_VERSION/" AutobuildTemplate.conf \
-        >> `hostname`.conf
-    echo "CC=\"$C_COMPILER\"" >> `hostname`.conf
-    echo "CXX=\"$CXX_COMPILER\"" >> `hostname`.conf
-    echo "CFLAGS=\"$C_OPT_FLAGS\"" >> `hostname`.conf
-    echo "CXXFLAGS=\"$CXXFLAGS\"" >> `hostname`.conf
-    if [[ "$parallel" == "yes" ]] ; then
-        echo "MPI_LIBS=\"$PAR_LIBS\"" >> `hostname`.conf
+    if [[ "$DO_SVN" == "yes" ]] ; then
+        cd src
+    else
+        VISIT_DIR=${VISIT_FILE%.tar*}
+        cd "${VISIT_DIR}"
     fi
-    if [[ "$DO_BOXLIB" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_BOXLIB/DEFAULT_BOXLIB/" \
-           -e "s/BOXLIB_VERSION/$BOXLIB_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_FITS" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_CFITSIO/DEFAULT_CFITSIO/" \
-           -e "s/CFITSIO_VERSION/$CFITSIO_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_CGNS" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_CGNS/DEFAULT_CGNS/" \
-           -e "s/CGNS_VERSION/$CGNS_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_EXODUS" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_EXODUS/DEFAULT_EXODUS/" \
-           -e "s/EXODUS_VERSION/$EXODUS_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_GDAL" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_GDAL/DEFAULT_GDAL/" \
-           -e "s/GDAL_VERSION/$GDAL_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_HDF4" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_HDF4/DEFAULT_HDF4/" \
-           -e "s/HDF4_VERSION/$HDF4_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_HDF5" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_HDF5/DEFAULT_HDF5/" \
-           -e "s/HDF5_VERSION/$HDF5_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_MILI" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##MILI_DIR/MILI_DIR/" \
-           -e "s/MILI_VERSION/$MILI_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_NETCDF" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_NETCDF/DEFAULT_NETCDF/" \
-           -e "s/NETCDF_VERSION/$NETCDF_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    if [[ "$DO_SILO" == "yes" ]] ; then
-       mv `hostname`.conf tmpfile
-       sed -e "s/##DEFAULT_SILO/DEFAULT_SILO/" \
-           -e "s/SILO_VERSION/$SILO_VERSION/" tmpfile >> `hostname`.conf
-    fi
-    cd ..
+    cp ../$(hostname).conf config-site
 
     #
     # Call configure
@@ -4737,21 +4929,21 @@ function build_visit
 }
 
 usage () {
-  printf "Usage: %s [-45bcdefghimnpx] [-a opt] [-s opt]\n" $0
-  printf "       [-t opt] [-v opt]\n"
+  printf "Usage: %s [-45bcdefghijmnpsx] [-a opt] [-t opt]\n" $0
+  printf "       [-u opt] [-v opt]\n"
   printf "\n"
-  printf "%s\n" "-4     Build HDF4"
-  printf "%s\n" "-5     Build HDF5"
+  printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
+  printf "%s %s %s\n" "-5     Build HDF5 from [" $HDF5_FILE "]"
   printf "%s\n" "-a opt The architecture variable name (VISITARCH). This"
   printf "%s\n" "       variable is used in contructing the 3rd parthy" 
   printf "%s\n" "       library path usually set to something like"
   printf "%s\n" "       linux_gcc-3.4.6 or Darwin_gcc-4.0.1"
-  printf "%s\n" "-b     Build Boxlib"
-  printf "%s\n" "-c     Build CGNS"
+  printf "%s %s %s\n" "-b     Build Boxlib from [" $BOXLIB_FILE "]"
+  printf "%s %s %s\n" "-c     Build CGNS from [" $CGNS_FILE "]"
   printf "%s\n" "-d     Turn on -g, debugging flag in CFLAGS/CXXFLAGS"
-  printf "%s\n" "-e     Build Exodus"
-  printf "%s\n" "-f     Build CFITSIO"
-  printf "%s\n" "-g     Build GDAL"
+  printf "%s %s %s\n" "-e     Build Exodus from [" $EXODUS_FILE "]"
+  printf "%s %s %s\n" "-f     Build CFITSIO from [" $CFITSIO_FILE "]"
+  printf "%s %s %s\n" "-g     Build GDAL from [" $GDAL_FILE "]"
   printf "%s\n" "-h     display this message"
   printf "%s\n" "-i     Change the behavior of the install name path for"
   printf "%s\n" "       the Darwin dynamic libraries. Enabling this flag"
@@ -4759,19 +4951,21 @@ usage () {
   printf "%s\n" "       an absolute path to the dynamic libraries and not"
   printf "%s\n" "       use the default relative path [@executable_path/../lib]"
   printf "%s\n" "-j     Do not build VisIt, build 3rd party libraries only"
-  printf "%s\n" "-m     Build Mili"
-  printf "%s\n" "-n     Build NetCDF"
+  printf "%s %s %s\n" "-m     Build Mili from:[" $MILI_FILE "]"
+  printf "%s %s %s\n" "-n     Build NetCDF from [" $NETCDF_FILE "]"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
-  printf "%s\n" "-s opt The THIRD_PARTY_PATH path contains the root"
+  printf "%s\n" "-s     Use the SVN server for the VisIt distribution"
+  printf "%s %s %s\n" "       [ svn co svn+ssh://"$(whoami)"@svn.nersc.gov/svn/visit/trunk/src ]"
+  printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
+  printf "%s %s %s\n" "       variable [" $VISIT_FILE "]"
+  printf "%s\n" "-u opt The THIRD_PARTY_PATH path contains the root"
   printf "%s\n" "       directory name underwhich the 3rd party libraries"
   printf "%s\n" "       have been installed. If defined, it would typically"
   printf "%s\n" "       mean the 3rd party libraries are pre-built and are"
   printf "%s\n" "       installed some where like /usr/gapps/visit. The"
   printf "%s\n" "       default assumes 3rd party libraries are to be built"
   printf "%s\n" "       and installed in [./visit]"
-  printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
-  printf "%s\n" "       variable [visit070330.tar.gz]"
-  printf "%s\n" "-v opt The VISIT_VERSION value [1.6]"
+  printf "%s %s %s\n" "-v opt The VISIT_VERSION value [" $VISIT_VERSION "]"
   printf "%s\n" "-x     Turn on SHELL debugging"
 }
 
@@ -4781,7 +4975,7 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijmnps:t:v:xA:BCDEFGHIJMNPS:T:V:X ARG
+while getopts :45a:bcdefghijmnpst:u:v:xA:BCDEFGHIJMNPST:U:V:X ARG
 do
     argcur=$ARG
     case $ARG in
@@ -4793,7 +4987,7 @@ do
       d|D) C_OPT_FLAGS="$C_OPT_FLAGS -g"
            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g";;
       e|E) DO_EXODUS="yes";;
-      f|F) DO_FITS="yes";;
+      f|F) DO_CFITSIO="yes";;
       g|G) DO_GDAL="yes";;
       h|H) usage; exit 2;;
       i|I) ABS_PATH="yes";;
@@ -4801,8 +4995,9 @@ do
       m|M) DO_MILI="yes";;
       n|N) DO_NETCDF="yes";;
       p|P) parallel="yes";;
-      s|S) THIRD_PARTY_PATH="$OPTARG";;
+      s|S) DO_SVN="yes";;
       t|T) VISIT_FILE="$OPTARG";;
+      u|U) THIRD_PARTY_PATH="$OPTARG";;
       v|V) VISIT_VERSION=$OPTARG;;
       x|X) set -vx;;
       :) echo "$0: \"$argcur\" requires a value"; exit 2;;
@@ -4830,7 +5025,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
 "Select the build options and optional 3rd party libraries "\
 "to be built and installed" 30 $DLG_WIDTH 12 \
            "Boxlib"   "2.5    $BOXLIB_FILE"    $DO_BOXLIB \
-           "CFITSIO"  "3006   $CFITSIO_FILE"   $DO_FITS \
+           "CFITSIO"  "3006   $CFITSIO_FILE"   $DO_CFITSIO \
            "CGNS"     "2.4.3  $CGNS_FILE"      $DO_CGNS \
            "ExodusII" "4.46   $EXODUS_FILE"    $DO_EXODUS \
            "GDAL"     "1.3.2  $GDAL_FILE"      $DO_GDAL \
@@ -4847,7 +5042,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
     case $retval in
       0)
         DO_BOXLIB="no"
-        DO_FITS="no"
+        DO_CFITSIO="no"
         DO_CGNS="no"
         DO_EXODUS="no"
         DO_GDAL="no"
@@ -4863,7 +5058,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
               Boxlib)
                  DO_BOXLIB="yes";;
               CFITSIO)
-                 DO_FITS="yes";;
+                 DO_CFITSIO="yes";;
               CGNS)
                  DO_CGNS="yes";;
               ExodusII)
@@ -5207,7 +5402,7 @@ if [[ "$DO_EXODUS" == "yes" ]] ; then
 fi
 if [[ "$DO_BOXLIB" == "yes" ]] ; then
    cd "$START_DIR"
-   if [[ -d "$VISITDIR/boxlib/${BOXLIB_VERSION}/$VISITARCH" ]] ; then
+   if [[ -d "$VISITDIR/boxlib/$VISITARCH" ]] ; then
       echo "Skipping Boxlib build.  Boxlib is already installed."
    else
       echo "Building Boxlib (~2 minutes)"
@@ -5221,7 +5416,7 @@ if [[ "$DO_BOXLIB" == "yes" ]] ; then
       echo "Done building Boxlib"
    fi
 fi
-if [[ "$DO_FITS" == "yes" ]] ; then
+if [[ "$DO_CFITSIO" == "yes" ]] ; then
    cd "$START_DIR"
    if [[ -d "$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping CFITSIO build.  CFITSIO is already installed."
@@ -5256,6 +5451,10 @@ else
    echo "Done building Silo"
 fi
 
+#
+# Create the host.conf file
+#
+build_hostconf
 
 #
 # Build the actual VisIt code
@@ -5271,9 +5470,13 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
       exit 1
    fi
    echo "Done building VisIt"
-
+if [[ "$DO_SVN" == "yes" ]] ; then
+   echo \
+"You may now try to run VisIt by cd'ing into the src/bin"
+    else
    echo \
 "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/bin"
+    fi
    echo "directory and invoking \"visit\"."
    echo "If you run into problems, contact visit-help@llnl.gov"
 else
