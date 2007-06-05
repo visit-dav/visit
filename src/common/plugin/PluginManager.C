@@ -51,10 +51,13 @@
 #include <map>
 #include <algorithm>
 
+#if __DARWIN__
+#include <AvailabilityMacros.h>
+#endif
 #if defined(_WIN32)
 #include <windows.h>
 #include <direct.h>
-#elif __APPLE__ && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1030
+#elif defined(__DARWIN__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_2 )
 #include <mach-o/dyld.h>
 #include <dirent.h>
 #else
@@ -1032,7 +1035,7 @@ PluginManager::GetPluginInitializationErrors()
     return ret;
 }
 
-#if __APPLE__ && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1030
+#if defined(__DARWIN__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_2 )
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -1101,6 +1104,9 @@ const char *dlerror(void)
 //   Added/changed typecasts to fix compile errors on Mac with gcc 4.0.1
 //   if MACOSX_DEPLOYMENT_TARGET is _not_ set to 10.3 or later
 //
+//   Thomas R. Treadway, Mon Jun  4 11:43:16 PDT 2007
+//   Added conditional to renable MacOS X 10.3
+//
 // ****************************************************************************
 
 void *dlopen(const char *path, int mode)
@@ -1136,8 +1142,13 @@ void *dlopen(const char *path, int mode)
             {
               if (!make_private_module_public)
               {
+#if MAC_OS_X_VERSION_MAX_ALLOWED = MAC_OS_X_VERSION_10_3
+                _dyld_func_lookup("__dyld_NSMakePrivateModulePublic", 
+                (unsigned long *)&make_private_module_public);
+#else
                 _dyld_func_lookup("__dyld_NSMakePrivateModulePublic", 
                 (void **)&make_private_module_public);
+#endif
               }
               make_private_module_public((NSModule)module);
             }
@@ -1506,7 +1517,7 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
     void *retval;
 #if defined(_WIN32)
     retval = (void *)GetProcAddress((HMODULE)handle, symbol.c_str());
-#elif defined(__APPLE__)
+#elif defined(__DARWIN__)
     string symbolName(symbol);
 
     //
