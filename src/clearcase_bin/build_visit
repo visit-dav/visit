@@ -621,10 +621,10 @@ function check_files
             else
                svn co --quite --non-interactive \
                   svn+ssh://$(whoami)@svn.nersc.gov/svn/visit/trunk/src
-               if [[ $? == 0 ]] ; then
-                   echo "Unable to build VisIt.  SVN download failed."
-                   return 1
-               fi
+#              if [[ $? == 0 ]] ; then
+#                  echo "Unable to build VisIt.  SVN download failed."
+#                  return 1
+#              fi
             fi
         else
             if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
