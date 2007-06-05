@@ -202,6 +202,9 @@ avtSiloWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //    Use the saved mesh type and number of blocks instead of assuming
 //    the metadata was correct.
 //
+//    Mark C. Miller, Mon Jun  4 17:29:11 PDT 2007
+//    Don't write extents if running in parallel. 
+//
 // ****************************************************************************
 
 void
@@ -281,7 +284,7 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
         DBAddOption(tmpOptlist, DBOPT_ZUNITS, (char *) atts.GetZUnits().c_str());
 
     // the following silo options exist only for silo 4.4 and later
-#ifdef DBOPT_EXTENTS_SIZE 
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
     int extsize = ndims * 2;
     DBAddOption(tmpOptlist, DBOPT_EXTENTS_SIZE, &extsize);
     DBAddOption(tmpOptlist, DBOPT_EXTENTS, extents);
@@ -327,6 +330,9 @@ avtSiloWriter::ConstructMultimesh(DBfile *dbfile, const avtMeshMetaData *mmd)
 //    Jeremy Meredith, Tue Mar 27 11:36:57 EDT 2007
 //    Use the saved mesh type and number of blocks instead of assuming
 //    the metadata was correct.
+//
+//    Mark C. Miller, Mon Jun  4 17:29:11 PDT 2007
+//    Don't write extents if running in parallel. 
 //
 // ****************************************************************************
 
@@ -420,7 +426,7 @@ avtSiloWriter::ConstructMultivar(DBfile *dbfile, const string &sname,
     // the following silo options exist only for silo 4.4 and later
     if (extents != 0)
     {
-#ifdef DBOPT_EXTENTS_SIZE 
+#if defined(DBOPT_EXTENTS_SIZE) && !defined(PARALLEL)
         int extsize = ncomps * 2;
         DBAddOption(tmpOptlist, DBOPT_EXTENTS_SIZE, &extsize);
         DBAddOption(tmpOptlist, DBOPT_EXTENTS, extents);
