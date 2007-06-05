@@ -41,6 +41,7 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #else
+#include <sys/types.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #endif
@@ -57,6 +58,9 @@
 // Creation:   May 23, 2007
 //
 // Modifications:
+// Thomas R. Treadway, Mon Jun  4 09:54:17 PDT 2007
+// Added types.h for fd_set definition.
+//
 // ****************************************************************************
 
 class SocketBridge
