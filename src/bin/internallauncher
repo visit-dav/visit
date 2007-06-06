@@ -177,6 +177,9 @@ $0 = shift @ARGV;
 #    Thomas R. Treadway, Wed May 23 17:04:07 PDT 2007
 #    FreeBSD patches from Nathan Lay <nlay@scs.fsu.edu>
 #
+#    Jeremy Meredith, Wed Jun  6 12:42:27 EDT 2007
+#    Added -outputtoinputdir flag for xml tools.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -382,7 +385,9 @@ $fullusage = "$usage
         -public              xml2makefile: force install plugins publicly
         -private             xml2makefile: force install plugins privately
         -clobber             Permit xml2... tools to overwrite old files
-        -noprint             do not print any debugging output
+        -noprint             Silence debugging output from xml2... tools
+        -outputtoinputdir    Force xml2... tools to write output files to
+                             the directory containing the input xml file
 	-arch                print supported architecture(s) and exit
 
     Debugging options

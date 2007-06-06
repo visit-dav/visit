@@ -182,8 +182,12 @@ message:
 	@echo "****************************************************************************"
 
 
+dirmakefiles_old:
+	for dir in $(ALLSUBDIRS); do if test -d $$dir; then (cd $$dir && ../../bin/xml2makefile -noprint -clobber $${dir}.xml) || exit 1; fi; done
+
 dirmakefiles:
-	for dir in $(ALLSUBDIRS); do (cd $$dir && ../../bin/xml2makefile -noprint -clobber $${dir}.xml) || exit 1; done
+	@files=""; for dir in $(ALLSUBDIRS); do if test -d $$dir; then files="$$files $$dir/$${dir}.xml"; fi; done; \
+        ../bin/xml2makefile -noprint -clobber -outputtoinputdir $$files
 
 clean:
 	-$(RM) $(LIB)

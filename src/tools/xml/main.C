@@ -56,6 +56,8 @@ bool print   = true;
 bool clobber = false;
 bool installpublic  = false;
 bool installprivate = false;
+bool outputtoinputdir = false;
+QString currentInputDir = "";
 
 std::string copyright_str = 
 "/*****************************************************************************\n"
@@ -204,9 +206,31 @@ class ErrorHandler : public QXmlErrorHandler
     }
 };
 
+// ****************************************************************************
+//  Function:  Open
+//
+//  Purpose:
+//    Open a file, checking for errors.
+//
+//  Arguments:
+//    file           the ofstream to use for opening the file
+//    name_nopath    the filename, without path, of the file to open
+//
+//  Modifications:
+//    Jeremy Meredith, Wed Jun  6 12:37:34 EDT 2007
+//    Added support for outputing files to the input directory.
+//
+// ****************************************************************************
+
 bool
-Open(ofstream &file, const QString &name)
+Open(ofstream &file, const QString &name_withoutpath)
 {
+    QString name;
+    if (outputtoinputdir)
+        name = currentInputDir + name_withoutpath;
+    else
+        name = name_withoutpath;
+
     bool alreadyexists = false;
     if (clobber)
         file.open(name.latin1(), ios::out);
@@ -321,6 +345,10 @@ void ProcessFile(QString file);
 //    Hank Childs, Tue May 24 09:41:53 PDT 2005
 //    Added hasoptions.
 //
+//    Jeremy Meredith, Wed Jun  6 12:36:30 EDT 2007
+//    Added -outputtoinputdir.
+//    Check for any nonexistent files before starting the processing.
+//
 // ****************************************************************************
 
 int main(int argc, char *argv[])
@@ -375,6 +403,14 @@ int main(int argc, char *argv[])
             i--;
         }
 #endif
+        else if (strcmp(argv[i], "-outputtoinputdir") == 0)
+        {
+            outputtoinputdir = true;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
     }
 
     if (installpublic && installprivate)
@@ -384,13 +420,16 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    ifstream testfile(argv[1],ios::in);
-    if (!testfile)
+    for (int f = 1 ; f < argc ; f++)
     {
-        cerr << "File '"<<argv[1]<<"' doesn't exist!\n";
-        exit(1);
+        ifstream testfile(argv[f],ios::in);
+        if (!testfile)
+        {
+            cerr << "File '"<<argv[1]<<"' doesn't exist!\n";
+            exit(1);
+        }
+        testfile.close();
     }
-    testfile.close();
 
     for (int f = 1 ; f < argc ; f++)
     {
@@ -408,6 +447,13 @@ ProcessFile(QString file)
     Attribute *attribute = NULL;
 
     EnumType::enums.clear();
+
+    currentInputDir = "";
+    int lastslash = file.findRev("/");
+    if (lastslash < 0)
+        lastslash = file.findRev("\\");
+    if (lastslash >= 0)
+        currentInputDir = file.left(lastslash+1);
 
     FieldFactory  *fieldFactory = new FieldFactory;
     XMLParser     parser(fieldFactory, file);
