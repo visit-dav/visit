@@ -85,6 +85,9 @@ extern "C" int Py_Main(int, char **);
 //   Dave Bremer, Wed Mar 14 17:58:15 PDT 2007
 //   Pass commandline arguments through to the main interpreter.
 //
+//   Jeremy Meredith, Wed Jun  6 16:41:45 EDT 2007
+//   Add the -forceinteractivecli argument (equivalent to -i in python).
+//
 // ****************************************************************************
 
 int
@@ -138,6 +141,14 @@ main(int argc, char *argv[])
             // the -output argument will be accessible in sys.argv but it
             // is not passed along in the args that are sent to the viewer.
             ++i;
+        }
+        else if(strcmp(argv[i], "-forceinteractivecli") == 0)
+        {
+            // Force the python interpreter to behave interactively
+            // even if there is no TTY.  This lets clients hook
+            // into visit's cli using pipes, and is the equivalent
+            // of the "-i" flag in python.
+            Py_InteractiveFlag++;
         }
         else if(strcmp(argv[i], "-format") == 0)
         {
