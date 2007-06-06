@@ -126,6 +126,11 @@ class QRadioButton;
 //    Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
 //    Added support for SSH port tunneling.
 //
+//    Brad Whitlock, Tue Jun 5 15:53:20 PST 2007
+//    Changed all slot functions for QLineEdit so they modify the host profile
+//    as text is typed to avoid losing data when editing multiple profiles
+//    and not clicking Apply.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -156,13 +161,13 @@ private slots:
     void activateProfile(QListBoxItem *item);
     void pageTurned(QWidget *);
     void processProfileNameText(const QString &name);
-    void processEngineArgumentsText();
-    void processPartitionNameText();
-    void processBankNameText();
-    void processTimeLimitText();
-    void processMachinefileText();
-    void processLaunchArgsText();
-    void processSublaunchArgsText();
+    void processEngineArgumentsText(const QString &);
+    void processPartitionNameText(const QString &);
+    void processBankNameText(const QString &);
+    void processTimeLimitText(const QString &);
+    void processMachinefileText(const QString &);
+    void processLaunchArgsText(const QString &);
+    void processSublaunchArgsText(const QString &);
     void numProcessorsChanged(int value);
     void timeoutChanged(int value);
     void launchMethodChanged(const QString &method);
@@ -194,6 +199,12 @@ private slots:
     void togglePostCommand(bool);
     void toggleTunnelSSH(bool);
 private:
+    QWidget *CreateSelectedTab(QWidget *parent);
+    QWidget *CreateParallelTab(QWidget *parent);
+    QWidget *CreateAdvancedTab(QWidget *parent);
+    QWidget *CreateHardwareAccelerationTab(QWidget *parent);
+    QWidget *CreateNetworkingTab(QWidget *parent);
+
     QTabWidget   *hostTabs;
     QListBox     *emptyListBox;
     HostTabMap   hostTabMap;
@@ -228,10 +239,7 @@ private:
     QCheckBox    *machinefileCheckBox;
     QLineEdit    *machinefile;
     QLabel       *loadBalancingLabel;
-    QButtonGroup *loadBalancing;
-    QRadioButton *lbAuto;
-    QRadioButton *lbStatic;
-    QRadioButton *lbDynamic;
+    QComboBox    *loadBalancing;
     QLabel       *engineArgumentsLabel;
     QLineEdit    *engineArguments;
     QCheckBox    *parallelCheckBox;
@@ -257,7 +265,7 @@ private:
     QLineEdit    *postCommand;
     QCheckBox    *postCommandCheckBox;
     QCheckBox    *tunnelSSH;
-
+    QWidget      *networkingGroup;
     int          profileCounter;
 };
 

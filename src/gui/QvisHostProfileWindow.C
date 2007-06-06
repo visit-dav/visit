@@ -58,6 +58,8 @@
 #include <HostProfileList.h>
 #include <ViewerProxy.h>
 
+#define HOST_PROFILE_SPACING 8
+
 // ****************************************************************************
 // Method: QvisHostProfileWindow::QvisHostProfileWindow
 //
@@ -82,6 +84,9 @@
 //   Brad Whitlock, Thu Feb 21 10:17:24 PDT 2002
 //   I removed user name initialization.
 //
+//   Brad Whitlock, Wed Jun 6 09:35:57 PDT 2007
+//   Removed a button group.
+//
 // ****************************************************************************
 
 QvisHostProfileWindow::QvisHostProfileWindow(HostProfileList *profiles,
@@ -91,9 +96,6 @@ QvisHostProfileWindow::QvisHostProfileWindow(HostProfileList *profiles,
     hostTabMap()
 {
     profileCounter = 0;
-
-    // Initialize parentless widgets.
-    loadBalancing = 0;
 }
 
 // ****************************************************************************
@@ -109,11 +111,13 @@ QvisHostProfileWindow::QvisHostProfileWindow(HostProfileList *profiles,
 //   Brad Whitlock, Fri Feb 15 15:11:40 PST 2002
 //   Deleted parentless widgets.
 //
+//   Brad Whitlock, Wed Jun 6 09:35:57 PDT 2007
+//   Removed a button group.
+//
 // ****************************************************************************
 
 QvisHostProfileWindow::~QvisHostProfileWindow()
 {
-    delete loadBalancing;
 }
 
 // ****************************************************************************
@@ -223,7 +227,11 @@ QvisHostProfileWindow::~QvisHostProfileWindow()
 //   Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
 //   Added support for SSH port tunneling.
 //
+//   Brad Whitlock, Tue Jun 5 15:53:20 PST 2007
+//   Moved individual tabs into their own creation functions.
+//
 // ****************************************************************************
+
 void
 QvisHostProfileWindow::CreateWindowContents()
 {
@@ -251,16 +259,64 @@ QvisHostProfileWindow::CreateWindowContents()
     optionsTabs = new QTabWidget(central, "optionsTabs");
     topLayout->addWidget(optionsTabs);
 
-    activeProfileGroup = new QWidget(central, "activeProfileGroup");
+    //
+    // Create a tab for the general options
+    //
+    activeProfileGroup = CreateSelectedTab(central);
     optionsTabs->addTab(activeProfileGroup,"Selected profile");
+
+    //
+    // Create a tab for Parallel options.
+    //
+    parGroup = CreateParallelTab(central);
+    optionsTabs->addTab(parGroup, "Parallel options");
+
+    //
+    // Create a tab for Advanced options
+    //
+    advancedGroup = CreateAdvancedTab(central);
+    optionsTabs->addTab(advancedGroup, "Advanced options");
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::CreateSelectedTab
+//
+// Purpose: 
+//   Creates the widgets for the "Selected profile" tab.
+//
+// Arguments:
+//   parent : The parent widget for the tab.
+//
+// Returns:    The widget that contains all controls for the tab.
+//
+// Note:       
+//
+// Programmer: VisIt team
+// Creation:   Wed Jun 6 10:14:17 PDT 2007
+//
+// Modifications:
+//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
+//   I moved the code to create the tab to this function so I could focus on
+//   less code. I also improved the layout.
+//
+// ****************************************************************************
+
+QWidget *
+QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
+{
+    activeProfileGroup = new QWidget(parent, "activeProfileGroup");
 
     QVBoxLayout *innerLayout = new QVBoxLayout(activeProfileGroup);
     innerLayout->setMargin(10);
-    innerLayout->addSpacing(15);
-    QGridLayout *profileLayout = new QGridLayout(innerLayout, 8, 4);
-    profileLayout->setColStretch(2, 50);
-    profileLayout->setColStretch(3, 50);
-    profileLayout->setSpacing(10);
+    innerLayout->addSpacing(5);
+    QGridLayout *profileLayout = new QGridLayout(innerLayout, 8, 2);
+    profileLayout->setSpacing(HOST_PROFILE_SPACING);
+    innerLayout->addStretch(5);
+
+    QLabel *disclaimer = new QLabel("<i>* Applies to all profiles for a given host</i>",
+                           activeProfileGroup, "disclaimer");
+    disclaimer->setTextFormat(Qt::RichText);
+    innerLayout->addWidget(disclaimer);
 
     int row = 0;
 
@@ -269,15 +325,15 @@ QvisHostProfileWindow::CreateWindowContents()
             this, SLOT(processProfileNameText(const QString&)));
     profileNameLabel = new QLabel(profileName, "Profile name",
         activeProfileGroup, "profileNameLabel");
-    profileLayout->addMultiCellWidget(profileNameLabel, row, row, 0, 0);
-    profileLayout->addMultiCellWidget(profileName, row, row, 1, 3);
+    profileLayout->addWidget(profileNameLabel, row, 0);
+    profileLayout->addWidget(profileName, row, 1);
     row++;
 
     activeProfileCheckBox = new QCheckBox("Default profile for host",
         activeProfileGroup, "activeProfileCheckBox");
     connect(activeProfileCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(makeActiveProfile(bool)));
-    profileLayout->addMultiCellWidget(activeProfileCheckBox, row, row, 1, 3);
+    profileLayout->addWidget(activeProfileCheckBox, row, 1);
     row++;
 
     hostName = new QComboBox(true, activeProfileGroup, "hostName");
@@ -286,26 +342,26 @@ QvisHostProfileWindow::CreateWindowContents()
             this, SLOT(hostNameChanged(const QString &)));
     hostNameLabel = new QLabel(hostName, "Remote host name",
         activeProfileGroup, "hostNameLabel");
-    profileLayout->addMultiCellWidget(hostNameLabel, row, row, 0, 0);
-    profileLayout->addMultiCellWidget(hostName, row, row, 1, 3);
+    profileLayout->addWidget(hostNameLabel, row, 0);
+    profileLayout->addWidget(hostName, row, 1);
     row++;
 
     hostAliases = new QLineEdit(activeProfileGroup, "hostAliases");
     connect(hostAliases, SIGNAL(textChanged(const QString &)),
             this, SLOT(hostAliasesChanged(const QString &)));
-    hostAliasesLabel = new QLabel(hostAliases, "Host name aliases",
+    hostAliasesLabel = new QLabel(hostAliases, "*Host name aliases",
         activeProfileGroup, "hostAliasesLabel");
-    profileLayout->addMultiCellWidget(hostAliasesLabel, row, row, 0, 0);
-    profileLayout->addMultiCellWidget(hostAliases, row, row, 1, 3);
+    profileLayout->addWidget(hostAliasesLabel, row, 0);
+    profileLayout->addWidget(hostAliases, row, 1);
     row++;
 
     userName = new QLineEdit(activeProfileGroup, "userName");
     connect(userName, SIGNAL(textChanged(const QString &)),
             this, SLOT(userNameChanged(const QString &)));
-    userNameLabel = new QLabel(userName, "Username",
+    userNameLabel = new QLabel(userName, "*Username",
         activeProfileGroup, "userNameLabel");
-    profileLayout->addMultiCellWidget(userNameLabel, row, row, 0, 0);
-    profileLayout->addMultiCellWidget(userName, row, row, 1, 3);
+    profileLayout->addWidget(userNameLabel, row, 0);
+    profileLayout->addWidget(userName, row, 1);
     row++;
 
     timeout = new QSpinBox(1, 1440, 1, activeProfileGroup, "timeout");
@@ -313,37 +369,63 @@ QvisHostProfileWindow::CreateWindowContents()
             this, SLOT(timeoutChanged(int)));
     timeoutLabel = new QLabel(timeout, "Timeout (minutes)",
         activeProfileGroup, "timeoutLabel");
-    profileLayout->addMultiCellWidget(timeoutLabel, row, row, 0, 0);
-    profileLayout->addMultiCellWidget(timeout, row, row, 1, 3);
+    profileLayout->addWidget(timeoutLabel, row, 0);
+    profileLayout->addWidget(timeout, row, 1);
     row++;
 
     engineArguments = new QLineEdit(activeProfileGroup, "engineArguments");
-    connect(engineArguments, SIGNAL(returnPressed()),
-            this, SLOT(processEngineArgumentsText()));
+    connect(engineArguments, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processEngineArgumentsText(const QString &)));
     engineArgumentsLabel = new QLabel(engineArguments, "Additional options",
         activeProfileGroup, "engineArgumentsLabel");
-    profileLayout->addMultiCellWidget(engineArgumentsLabel, row, row, 0, 0);
-    profileLayout->addMultiCellWidget(engineArguments, row, row, 1, 3);
+    profileLayout->addWidget(engineArgumentsLabel, row, 0);
+    profileLayout->addWidget(engineArguments, row, 1);
     row++;
 
     parallelCheckBox = new QCheckBox("Parallel computation engine", 
                                      activeProfileGroup, "parallelCheckBox");
     connect(parallelCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleParallel(bool)));
-    profileLayout->addMultiCellWidget(parallelCheckBox, row, row, 0, 3);
+    profileLayout->addMultiCellWidget(parallelCheckBox, row, row, 0, 1);
     row++;
 
-    parGroup = new QWidget(central, "parGroup");
-    optionsTabs->addTab(parGroup, "Parallel options");
+    return activeProfileGroup;
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::CreateParallelTab
+//
+// Purpose: 
+//   Creates the widgets for the "Parallel options" tab.
+//
+// Arguments:
+//   parent : The parent widget for the tab.
+//
+// Returns:    The widget that contains all controls for the tab.
+//
+// Note:       
+//
+// Programmer: VisIt team
+// Creation:   Wed Jun 6 10:14:17 PDT 2007
+//
+// Modifications:
+//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
+//   I moved the code to create the tab to this function so I could focus on
+//   less code. I also improved the layout.
+//
+// ****************************************************************************
+
+QWidget *
+QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
+{
+    parGroup = new QWidget(parent, "parGroup");
 
     QVBoxLayout *innerParLayout = new QVBoxLayout(parGroup);
     innerParLayout->setMargin(10);
-    innerParLayout->addSpacing(15);
+    innerParLayout->addSpacing(5);
 
-    QGridLayout *parLayout = new QGridLayout(innerParLayout, 9, 4);
-    parLayout->setColStretch(2, 50);
-    parLayout->setColStretch(3, 50);
-    parLayout->setSpacing(10);
+    QGridLayout *parLayout = new QGridLayout(innerParLayout, 9, 2);
+    parLayout->setSpacing(HOST_PROFILE_SPACING);
 
     int prow = 0;
 
@@ -369,58 +451,53 @@ QvisHostProfileWindow::CreateWindowContents()
                                    parGroup, "launchCheckBox");
     connect(launchCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleLaunch(bool)));
-    parLayout->addMultiCellWidget(launchCheckBox, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(launchMethod, prow, prow, 2, 3);
+    parLayout->addWidget(launchCheckBox, prow, 0);
+    parLayout->addWidget(launchMethod, prow, 1);
     prow++;
 
     launchArgs = new QLineEdit(parGroup, "launchArgs");
-    connect(launchArgs, SIGNAL(returnPressed()),
-            this, SLOT(processLaunchArgsText()));
-    launchArgsCheckBox = new QCheckBox("Additional launcher arguments",
+    connect(launchArgs, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processLaunchArgsText(const QString &)));
+    launchArgsCheckBox = new QCheckBox("Launcher arguments",
                                       parGroup, "launchArgsLabel");
     connect(launchArgsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleLaunchArgs(bool)));
-    parLayout->addMultiCellWidget(launchArgsCheckBox, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(launchArgs, prow, prow, 2, 3);
+    parLayout->addWidget(launchArgsCheckBox, prow, 0);
+    parLayout->addWidget(launchArgs, prow, 1);
     prow++;
 
     sublaunchArgs = new QLineEdit(parGroup, "sublaunchArgs");
-    connect(sublaunchArgs, SIGNAL(returnPressed()),
-            this, SLOT(processSublaunchArgsText()));
-    sublaunchArgsCheckBox = new QCheckBox("Additional sublauncher arguments",
+    connect(sublaunchArgs, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processSublaunchArgsText(const QString &)));
+    sublaunchArgsCheckBox = new QCheckBox("Sublauncher arguments",
                                       parGroup, "sublaunchArgsLabel");
     connect(sublaunchArgsCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleSublaunchArgs(bool)));
-    parLayout->addMultiCellWidget(sublaunchArgsCheckBox, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(sublaunchArgs, prow, prow, 2, 3);
+    parLayout->addWidget(sublaunchArgsCheckBox, prow, 0);
+    parLayout->addWidget(sublaunchArgs, prow, 1);
     prow++;
 
     partitionName = new QLineEdit(parGroup, "partitionName");
-    connect(partitionName, SIGNAL(returnPressed()),
-            this, SLOT(processPartitionNameText()));
+    connect(partitionName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processPartitionNameText(const QString &)));
     partitionCheckBox = new QCheckBox("Partition / Pool",
                                       parGroup, "partitionLabel");
     connect(partitionCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(togglePartitionName(bool)));
-    parLayout->addMultiCellWidget(partitionCheckBox, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(partitionName, prow, prow, 2, 3);
+    parLayout->addWidget(partitionCheckBox, prow, 0);
+    parLayout->addWidget(partitionName, prow, 1);
     prow++;
 
-    loadBalancing = new QButtonGroup(0, "loadBalancing");
-    lbAuto = new QRadioButton("Auto", parGroup, "lbAuto");
-    lbStatic = new QRadioButton("Static", parGroup, "lbStatic");
-    lbDynamic = new QRadioButton("Dynamic", parGroup, "lbDynamic");
-    lbAuto->setChecked(true);
-    loadBalancing->insert(lbAuto);
-    loadBalancing->insert(lbStatic);
-    loadBalancing->insert(lbDynamic);
+    loadBalancing = new QComboBox(false, parGroup, "loadBalancing");
+    loadBalancing->insertItem("Auto");
+    loadBalancing->insertItem("Static");
+    loadBalancing->insertItem("Dynamic");
+    connect(loadBalancing, SIGNAL(activated(int)),
+            this, SLOT(loadBalancingChanged(int)));
+
     loadBalancingLabel = new QLabel("Load balancing", parGroup, "loadBalancingLabel");
     parLayout->addWidget(loadBalancingLabel, prow, 0);
-    parLayout->addWidget(lbAuto, prow, 1);
-    parLayout->addWidget(lbStatic, prow, 2);
-    parLayout->addWidget(lbDynamic, prow, 3);
-    connect(loadBalancing, SIGNAL(clicked(int)),
-            this, SLOT(loadBalancingChanged(int)));
+    parLayout->addWidget(loadBalancing, prow, 1);
     prow++;
 
     numProcessors = new QSpinBox(2, 99999, 1, parGroup, "numProcessors");
@@ -428,8 +505,8 @@ QvisHostProfileWindow::CreateWindowContents()
             this, SLOT(numProcessorsChanged(int)));
     numProcLabel = new QLabel(numProcessors, "Default number of processors",
         parGroup, "numProcLabel");
-    parLayout->addMultiCellWidget(numProcLabel, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(numProcessors, prow, prow, 2, 3);
+    parLayout->addWidget(numProcLabel, prow, 0);
+    parLayout->addWidget(numProcessors, prow, 1);
     prow++;
 
     numNodes = new QSpinBox(1, 99999, 1, parGroup, "numNodes");
@@ -439,65 +516,251 @@ QvisHostProfileWindow::CreateWindowContents()
                                      parGroup, "numNodesCheckBox");
     connect(numNodesCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleNumNodes(bool)));
-    parLayout->addMultiCellWidget(numNodesCheckBox, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(numNodes, prow, prow, 2, 3);
+    parLayout->addWidget(numNodesCheckBox, prow, 0);
+    parLayout->addWidget(numNodes, prow, 1);
     prow++;
 
     bankName = new QLineEdit(parGroup, "bankName");
-    connect(bankName, SIGNAL(returnPressed()),
-            this, SLOT(processBankNameText()));
+    connect(bankName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processBankNameText(const QString &)));
     bankCheckBox = new QCheckBox("Default Bank",
                                  parGroup, "bankLabel");
     connect(bankCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleBankName(bool)));
-    parLayout->addMultiCellWidget(bankCheckBox, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(bankName, prow, prow, 2, 3);
+    parLayout->addWidget(bankCheckBox, prow, 0);
+    parLayout->addWidget(bankName, prow, 1);
     prow++;
 
     timeLimit = new QLineEdit(parGroup, "timeLimit");
-    connect(timeLimit, SIGNAL(returnPressed()),
-            this, SLOT(processTimeLimitText()));
+    connect(timeLimit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processTimeLimitText(const QString &)));
     timeLimitCheckBox = new QCheckBox("Default Time Limit",
                                       parGroup, "timeLimitLabel");
     connect(timeLimitCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleTimeLimit(bool)));
-    parLayout->addMultiCellWidget(timeLimitCheckBox, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(timeLimit, prow, prow, 2, 3);
+    parLayout->addWidget(timeLimitCheckBox, prow, 0);
+    parLayout->addWidget(timeLimit, prow, 1);
     prow++;
 
     machinefile = new QLineEdit(parGroup, "machinefile");
-    connect(machinefile, SIGNAL(returnPressed()),
-            this, SLOT(processMachinefileText()));
+    connect(machinefile, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processMachinefileText(const QString &)));
     machinefileCheckBox = new QCheckBox("Default Machine File",
                                       parGroup, "machinefileLabel");
     connect(machinefileCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(toggleMachinefile(bool)));
-    parLayout->addMultiCellWidget(machinefileCheckBox, prow, prow, 0, 1);
-    parLayout->addMultiCellWidget(machinefile, prow, prow, 2, 3);
+    parLayout->addWidget(machinefileCheckBox, prow, 0);
+    parLayout->addWidget(machinefile, prow, 1);
     prow++;
 
-    hwGroup = new QWidget(central, "hwGroup");
-    optionsTabs->addTab(hwGroup, "Hardware Acceleration");
+    return parGroup;
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::CreateAdvancedTab
+//
+// Purpose: 
+//   Creates the widgets for the "Advanced options" tab.
+//
+// Arguments:
+//   parent : The parent widget for the tab.
+//
+// Returns:    The widget that contains all controls for the tab.
+//
+// Note:       
+//
+// Programmer: VisIt team
+// Creation:   Wed Jun 6 10:14:17 PDT 2007
+//
+// Modifications:
+//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
+//   I moved the code to create the tab to this function so I could focus on
+//   less code.
+//
+// ****************************************************************************
+
+QWidget *
+QvisHostProfileWindow::CreateAdvancedTab(QWidget *parent)
+{
+    advancedGroup = new QWidget(parent, "advancedGroup");
+
+    QVBoxLayout *innerAdvLayout = new QVBoxLayout(advancedGroup);
+    innerAdvLayout->setMargin(10);
+    innerAdvLayout->addSpacing(5);
+
+    QVBoxLayout *advLayout = new QVBoxLayout(innerAdvLayout);
+    advLayout->setSpacing(HOST_PROFILE_SPACING);
+
+    shareMDServerCheckBox = new QCheckBox("Share batch job with Metadata Server",
+                                          advancedGroup, "shareMDServerCheckBox");
+    advLayout->addWidget(shareMDServerCheckBox);
+    connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleShareMDServer(bool)));
+
+    useVisItScriptForEnvCheckBox = new QCheckBox(
+                             "Use VisIt script to set up parallel environment",
+                             advancedGroup, "useVisItScriptForEnvCheckBox");
+    advLayout->addWidget(useVisItScriptForEnvCheckBox);
+    connect(useVisItScriptForEnvCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleUseVisItScriptForEnv(bool)));
+
+    QTabWidget *advancedOptionsTabs = new QTabWidget(advancedGroup, "advancedOptionsTabs");
+    advLayout->addWidget(advancedOptionsTabs);
+
+    //
+    // Create a tab for Networking
+    //
+    networkingGroup = CreateNetworkingTab(advancedGroup);
+    advancedOptionsTabs->addTab(networkingGroup, "Networking");
+
+    //
+    // Create a tab for Hardware acceleration
+    //
+    hwGroup = CreateHardwareAccelerationTab(advancedGroup);
+    advancedOptionsTabs->addTab(hwGroup, "Hardware acceleration");
+    
+    return advancedGroup;
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::CreateNetworkingTab
+//
+// Purpose: 
+//   Creates the widgets for the "Networking" tab.
+//
+// Arguments:
+//   parent : The parent widget for the tab.
+//
+// Returns:    The widget that contains all controls for the tab.
+//
+// Note:       
+//
+// Programmer: Jeremy Meredith
+// Creation:   Wed Jun 6 10:14:17 PDT 2007
+//
+// Modifications:
+//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
+//   I moved the code to create the tab to this function so I could focus on
+//   less code. I also improved the layout.
+//
+// ****************************************************************************
+
+QWidget *
+QvisHostProfileWindow::CreateNetworkingTab(QWidget *parent)
+{
+    int nrow = 0;
+
+    networkingGroup = new QWidget(parent, "networkingGroup");
+
+    QVBoxLayout *innerNetLayout = new QVBoxLayout(networkingGroup);
+    innerNetLayout->setMargin(10);
+    innerNetLayout->addSpacing(5);
+
+    QGridLayout *netLayout = new QGridLayout(innerNetLayout, 7, 4);
+    netLayout->setSpacing(HOST_PROFILE_SPACING);
+    innerNetLayout->addStretch(5);
+
+    QLabel *disclaimer = new QLabel("<i>Networking options apply to "
+        "all profiles for a given host.</i>", networkingGroup, "disclaimer");
+    disclaimer->setTextFormat(Qt::RichText);
+    netLayout->addMultiCellWidget(disclaimer, nrow, nrow, 0, 3);
+    nrow++;
+
+    clientHostNameMethod = new QButtonGroup(0, "clientHostNameMethod");
+    connect(clientHostNameMethod, SIGNAL(clicked(int)),
+            this, SLOT(clientHostNameMethodChanged(int)));
+    chnMachineName = new QRadioButton("Use local machine name",
+                                      networkingGroup, "chnMachineName");
+    chnParseFromSSHClient = new QRadioButton("Parse from SSH_CLIENT environment variable",
+                                             networkingGroup, "chnParseFromSSHClient");
+    chnSpecifyManually = new QRadioButton("Specify manually:",
+                                          networkingGroup, "chnSpecifyManually");
+    chnMachineName->setChecked(true);
+    clientHostNameMethod->insert(chnMachineName);
+    clientHostNameMethod->insert(chnParseFromSSHClient);
+    clientHostNameMethod->insert(chnSpecifyManually);
+    netLayout->addMultiCellWidget(new QLabel("Method used to determine local host name:",
+                                             networkingGroup,
+                                             "clientHostNameMethodLabel"),
+                                  nrow, nrow, 0, 3);
+    nrow++;
+    netLayout->addMultiCellWidget(chnMachineName, nrow, nrow, 1, 3);
+    nrow++;
+    netLayout->addMultiCellWidget(chnParseFromSSHClient, nrow, nrow, 1, 3);
+    nrow++;
+    netLayout->addMultiCellWidget(chnSpecifyManually, nrow, nrow, 1, 2);
+    clientHostName = new QLineEdit(networkingGroup, "clientHostName");
+    connect(clientHostName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(clientHostNameChanged(const QString &)));
+    netLayout->addMultiCellWidget(clientHostName, nrow, nrow, 3,3);
+    nrow++;
+
+    sshPort = new QLineEdit(networkingGroup, "sshPort");
+    sshPortCheckBox = new QCheckBox("Specify SSH port", networkingGroup,
+                                    "sshPortCheckBox");
+    connect(sshPort, SIGNAL(textChanged(const QString &)),
+            this, SLOT(sshPortChanged(const QString &)));
+    connect(sshPortCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(toggleSSHPort(bool)));
+    netLayout->addMultiCellWidget(sshPortCheckBox, nrow, nrow, 0, 1);
+    netLayout->addMultiCellWidget(sshPort, nrow, nrow, 2, 3);
+    nrow++;
+
+    tunnelSSH = new QCheckBox("Tunnel data connections through SSH",
+                              networkingGroup, "tunnelSSH");
+    netLayout->addMultiCellWidget(tunnelSSH, nrow,nrow, 0,3);
+    connect(tunnelSSH, SIGNAL(toggled(bool)),
+            this, SLOT(toggleTunnelSSH(bool)));
+
+    return networkingGroup;
+}
+
+// ****************************************************************************
+// Method: QvisHostProfileWindow::CreateHardwareAccelerationTab
+//
+// Purpose: 
+//   Creates the widgets for the "Hardware acceleration" tab.
+//
+// Arguments:
+//   parent : The parent widget for the tab.
+//
+// Returns:    The widget that contains all controls for the tab.
+//
+// Note:       
+//
+// Programmer: Hank Childs
+// Creation:   Wed Jun 6 10:14:17 PDT 2007
+//
+// Modifications:
+//   Brad Whitlock, Wed Jun 6 10:14:35 PDT 2007
+//   I moved the code to create the tab to this function so I could focus on
+//   less code. I also improved the layout.
+//
+// ****************************************************************************
+
+QWidget *
+QvisHostProfileWindow::CreateHardwareAccelerationTab(QWidget *parent)
+{
+    hwGroup = new QWidget(parent, "hwGroup");
 
     QVBoxLayout *innerHwLayout = new QVBoxLayout(hwGroup);
     innerHwLayout->setMargin(10);
-    innerHwLayout->addSpacing(15);
+    innerHwLayout->addSpacing(5);
 
-    QGridLayout *hwLayout = new QGridLayout(innerHwLayout, 8, 2);
-    hwLayout->setColStretch(2, 50);
-    hwLayout->setColStretch(3, 50);
-    hwLayout->setSpacing(10);
+    QGridLayout *hwLayout = new QGridLayout(innerHwLayout, 4, 2);
+    hwLayout->setSpacing(HOST_PROFILE_SPACING);
+    innerHwLayout->addStretch(5);
 
-    QString str1("These options are for hardware accelerating the\n"
-                 "scalable rendering feature on a parallel cluster.\n"
-                 "In other modes, VisIt will automatically use hardware acceleration.\n"
-                 "This tab only needs to be modified for parallel \n"
-                 "clusters that have graphics cards.\n");
-  
+    QString str1("<i>These options are for hardware accelerating the scalable rendering "
+                 "feature on a parallel cluster. In other modes, VisIt will automatically "
+                 "use hardware acceleration. This tab only needs to be modified for "
+                 "parallel clusters that have graphics cards.</i>");
+
+    QLabel *disclaimer = new QLabel(str1, hwGroup, "disclaimer1");
+    disclaimer->setTextFormat(Qt::RichText);
     int hrow = 0;
-    hwLayout->addMultiCellWidget(new QLabel(str1, hwGroup,
-                                 "disclaimer1"), hrow, hrow+4, 0, 1);
-    hrow += 4;
+    hwLayout->addMultiCellWidget(disclaimer, hrow, hrow, 0, 1);
+    hrow++;
 
     canDoHW = new QCheckBox("Use cluster's graphics cards",
                                      hwGroup, "canDoHW");
@@ -528,84 +791,7 @@ QvisHostProfileWindow::CreateWindowContents()
     hwLayout->addMultiCellWidget(postCommand, hrow, hrow, 1, 1);
     hrow++;
 
-    advancedGroup = new QWidget(central, "advancedGroup");
-    optionsTabs->addTab(advancedGroup, "Advanced options");
-
-    QVBoxLayout *innerAdvLayout = new QVBoxLayout(advancedGroup);
-    innerAdvLayout->setMargin(10);
-    innerAdvLayout->addSpacing(15);
-
-    QGridLayout *advLayout = new QGridLayout(innerAdvLayout, 9, 4);
-    advLayout->setColStretch(0, 10);
-    advLayout->setColStretch(1, 10);
-    advLayout->setColStretch(2, 40);
-    advLayout->setColStretch(3, 40);
-    advLayout->setSpacing(10);
-
-    int arow = 0;
-
-    shareMDServerCheckBox = new QCheckBox("Share batch job with Metadata Server",
-                                          advancedGroup, "shareMDServerCheckBox");
-    advLayout->addMultiCellWidget(shareMDServerCheckBox, arow,arow, 0,3);
-    connect(shareMDServerCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleShareMDServer(bool)));
-    arow++;
-
-    useVisItScriptForEnvCheckBox = new QCheckBox(
-                             "Use VisIt script to set up parallel environment",
-                             advancedGroup, "useVisItScriptForEnvCheckBox");
-    advLayout->addMultiCellWidget(useVisItScriptForEnvCheckBox, arow,arow, 0,3);
-    connect(useVisItScriptForEnvCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleUseVisItScriptForEnv(bool)));
-    arow++;
-
-    clientHostNameMethod = new QButtonGroup(0, "clientHostNameMethod");
-    connect(clientHostNameMethod, SIGNAL(clicked(int)),
-            this, SLOT(clientHostNameMethodChanged(int)));
-    chnMachineName = new QRadioButton("Use local machine name",
-                                      advancedGroup, "chnMachineName");
-    chnParseFromSSHClient = new QRadioButton("Parse from SSH_CLIENT environment variable",
-                                             advancedGroup, "chnParseFromSSHClient");
-    chnSpecifyManually = new QRadioButton("Specify manually:",
-                                          advancedGroup, "chnSpecifyManually");
-    chnMachineName->setChecked(true);
-    clientHostNameMethod->insert(chnMachineName);
-    clientHostNameMethod->insert(chnParseFromSSHClient);
-    clientHostNameMethod->insert(chnSpecifyManually);
-    advLayout->addMultiCellWidget(new QLabel("Method used to determine local host name:",
-                                             advancedGroup,
-                                             "clientHostNameMethodLabel"),
-                                  arow, arow, 0, 3);
-    arow++;
-    advLayout->addMultiCellWidget(chnMachineName, arow, arow, 1, 2);
-    arow++;
-    advLayout->addMultiCellWidget(chnParseFromSSHClient, arow, arow, 1, 2);
-    arow++;
-    advLayout->addMultiCellWidget(chnSpecifyManually, arow, arow, 1, 1);
-    clientHostName = new QLineEdit(advancedGroup, "clientHostName");
-    connect(clientHostName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(clientHostNameChanged(const QString &)));
-    advLayout->addMultiCellWidget(clientHostName, arow, arow, 2,3);
-    arow++;
-
-    sshPort = new QLineEdit(advancedGroup, "sshPort");
-    sshPortCheckBox = new QCheckBox("Specify SSH port", advancedGroup,
-                                    "sshPortCheckBox");
-    connect(sshPort, SIGNAL(textChanged(const QString &)),
-            this, SLOT(sshPortChanged(const QString &)));
-    connect(sshPortCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(toggleSSHPort(bool)));
-    advLayout->addMultiCellWidget(sshPortCheckBox, arow, arow, 0, 0);
-    advLayout->addMultiCellWidget(sshPort, arow, arow, 1, 2);
-    arow++;
-
-    tunnelSSH = new QCheckBox("Tunnel data connections through SSH",
-                              advancedGroup, "tunnelSSH");
-    advLayout->addMultiCellWidget(tunnelSSH, arow,arow, 0,3);
-    connect(tunnelSSH, SIGNAL(toggled(bool)),
-            this, SLOT(toggleTunnelSSH(bool)));
-    arow++;
-
+    return hwGroup;
 }
 
 // ****************************************************************************
@@ -891,7 +1077,11 @@ QvisHostProfileWindow::UpdateProfileList()
 //   Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
 //   Added support for SSH port tunneling.
 //
+//   Brad Whitlock, Wed Jun 6 09:37:06 PDT 2007
+//   Changed a widget to be a QComboBox.
+//
 // ****************************************************************************
+
 void
 QvisHostProfileWindow::UpdateActiveProfile()
 {
@@ -962,7 +1152,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
         launchArgs->setText("");
         sublaunchArgsCheckBox->setChecked(false);
         sublaunchArgs->setText("");
-        loadBalancing->setButton(0);
+        loadBalancing->setCurrentItem(0);
         engineArguments->setText("");
         activeProfileCheckBox->setChecked(false);
         clientHostNameMethod->setButton(0);
@@ -970,6 +1160,8 @@ QvisHostProfileWindow::UpdateActiveProfile()
         sshPortCheckBox->setChecked(false);
         sshPort->setText("");
         tunnelSSH->setChecked(false);
+        shareMDServerCheckBox->setChecked(false);
+        useVisItScriptForEnvCheckBox->setChecked(false);
     }
     else
     {
@@ -1058,7 +1250,7 @@ QvisHostProfileWindow::UpdateActiveProfile()
             lb = 1;
         if (current.GetForceDynamic())
             lb = 2;
-        loadBalancing->setButton(lb);
+        loadBalancing->setCurrentItem(lb);
         // Turn the string list into a single QString.
         QString temp;
         stringVector::const_iterator pos;
@@ -1209,6 +1401,11 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    Jeremy Meredith, Thu May 24 11:05:45 EDT 2007
 //    Added support for SSH port tunneling.
 //
+//    Brad Whitlock, Wed Jun 6 09:34:56 PDT 2007
+//    Removed load balancing radio buttons. Added code to set enabled state for
+//    "batch job" and "parallel environment" advanced check boxes. Added code
+//    to set enabled state of advancedGroup.
+//
 // ****************************************************************************
 
 void
@@ -1255,17 +1452,14 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     machinefile->setEnabled(parEnabled && current->GetMachinefileSet());
 #if 0 // disabling dynamic load balancing for now
     loadBalancingLabel->setEnabled(parEnabled);
-    lbAuto->setEnabled(parEnabled);
-    lbStatic->setEnabled(parEnabled);
-    lbDynamic->setEnabled(parEnabled);
     loadBalancing->setEnabled(parEnabled);
 #else
     loadBalancingLabel->setEnabled(false);
-    lbAuto->setEnabled(false);
-    lbStatic->setEnabled(false);
-    lbDynamic->setEnabled(false);
     loadBalancing->setEnabled(false);
 #endif
+    optionsTabs->setTabEnabled(advancedGroup, enabled);
+    advancedGroup->setEnabled(enabled);
+
     canDoHW->setEnabled(enabled);
     preCommandCheckBox->setEnabled(enabled && current->GetCanDoHWAccel());
     postCommandCheckBox->setEnabled(enabled && current->GetCanDoHWAccel());
@@ -1279,6 +1473,9 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
                                               HostProfile::ManuallySpecified);
     sshPort->setEnabled(enabled && current->GetSshPortSpecified());
     tunnelSSH->setEnabled(enabled);
+
+    shareMDServerCheckBox->setEnabled(parEnabled);
+    useVisItScriptForEnvCheckBox->setEnabled(parEnabled);
 }
 
 // ****************************************************************************
@@ -2118,7 +2315,7 @@ QvisHostProfileWindow::togglePartitionName(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processPartitionNameText()
+QvisHostProfileWindow::processPartitionNameText(const QString &)
 {
     // Update the partition name.
     if(!GetCurrentValues(6))
@@ -2169,7 +2366,7 @@ QvisHostProfileWindow::toggleBankName(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processBankNameText()
+QvisHostProfileWindow::processBankNameText(const QString &)
 {
     // Update the bank name.
     if(!GetCurrentValues(7))
@@ -2248,7 +2445,7 @@ QvisHostProfileWindow::toggleMachinefile(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processTimeLimitText()
+QvisHostProfileWindow::processTimeLimitText(const QString &)
 {
     // Update the timeLimit name.
     if(!GetCurrentValues(8))
@@ -2271,7 +2468,7 @@ QvisHostProfileWindow::processTimeLimitText()
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processMachinefileText()
+QvisHostProfileWindow::processMachinefileText(const QString &)
 {
     // Update the machinefile name.
     if(!GetCurrentValues(15))
@@ -2322,7 +2519,7 @@ QvisHostProfileWindow::toggleLaunchArgs(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processLaunchArgsText()
+QvisHostProfileWindow::processLaunchArgsText(const QString &)
 {
     // Update the launch args text.
     if(!GetCurrentValues(10))
@@ -2346,7 +2543,6 @@ QvisHostProfileWindow::processLaunchArgsText()
 void
 QvisHostProfileWindow::toggleSublaunchArgs(bool state)
 {
-    cerr << "QvisHostProfileWindow::toggleSublaunchArgs" << endl;
     HostProfileList *profiles = (HostProfileList *)subject;
     if(profiles->GetActiveProfile() >= 0)
     {
@@ -2374,7 +2570,7 @@ QvisHostProfileWindow::toggleSublaunchArgs(bool state)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processSublaunchArgsText()
+QvisHostProfileWindow::processSublaunchArgsText(const QString &)
 {
     // Update the sublaunch args text.
     if(!GetCurrentValues(16))
@@ -2529,7 +2725,7 @@ QvisHostProfileWindow::hostAliasesChanged(const QString &aliases)
 // ****************************************************************************
 
 void
-QvisHostProfileWindow::processEngineArgumentsText()
+QvisHostProfileWindow::processEngineArgumentsText(const QString &)
 {
     // Update the engine arguments.
     if(!GetCurrentValues(9))
@@ -2950,6 +3146,43 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
 }
 
 // ****************************************************************************
+// Method: QvisHostProfileWindow::toggleTunnelSSH
+//
+// Purpose: 
+//   This is a Qt slot function that is activated when the tunnel SSH
+//   check box is toggled.
+//
+// Programmer: Jeremy Meredith
+// Creation:   May 22, 2007
+//
+// Modifications:
+//   Brad Whitlock, Wed Jun 6 11:26:37 PDT 2007
+//   I made it apply to all profiles for a host.
+//
+// ****************************************************************************
+
+void
+QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
+{
+    HostProfileList *profiles = (HostProfileList *)subject;
+    if (profiles->GetActiveProfile() < 0)
+        return;
+    HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
+
+    for(int i = 0; i < profiles->GetNumProfiles(); ++i)
+    {
+        HostProfile &prof = profiles->operator[](i);
+
+        if (prof.GetHost() == current.GetHost())
+            prof.SetTunnelSSH(tunnel);
+    }
+
+    profiles->MarkActiveProfile();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
 //  Method:  QvisHostProfileWindow::toggleCanDoHW
 //
 //  Purpose:
@@ -3109,35 +3342,6 @@ QvisHostProfileWindow::postCommandChanged(const QString &portStr)
         }
         profiles->MarkActiveProfile();
         UpdateWindowSensitivity();
-        SetUpdate(false);
-        Apply();
-    }
-}
-
-
-// ****************************************************************************
-// Method: QvisHostProfileWindow::toggleTunnelSSH
-//
-// Purpose: 
-//   This is a Qt slot function that is activated when the tunnel SSH
-//   check box is toggled.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May 22, 2007
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
-{
-    HostProfileList *profiles = (HostProfileList *)subject;
-    if(profiles->GetActiveProfile() >= 0)
-    {
-        HostProfile &current = profiles->operator[](profiles->GetActiveProfile());
-        current.SetTunnelSSH(tunnel);
-        profiles->MarkActiveProfile();
         SetUpdate(false);
         Apply();
     }
