@@ -55,6 +55,11 @@
 #    of  California,  and  shall  not  be  used  for  advertising  or  product
 #    endorsement purposes.
 #
+#  Modifications:
+#    Jeremy Meredith, Tue Jun  5 17:38:34 EDT 2007
+#    Renamed the main object files to a more standard SEROBJ, PAROBJ, and FOBJ
+#    to play better with automatic dependencies.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -64,12 +69,12 @@ SIMSER=simulation
 SIMPAR=psimulation
 
 SIMSRC=sim.c simconnection.c
-SIMSEROBJ=$(SIMSRC:.c=.o)
-SIMPAROBJ=$(SIMSRC:.c=_par.o)
+SEROBJ=$(SIMSRC:.c=.o)
+PAROBJ=$(SIMSRC:.c=_par.o)
 
 SIMFSER=simf
 SIMFSRC=simf.f
-SIMFSEROBJ=$(SIMFSRC:.f=.o)
+FSEROBJ=$(SIMFSRC:.f=.o)
 
 CPPFLAGS=-I. @CPPFLAGS@
 CFLAGS=-I. -I$(TOPDIR)/include/visit -Wimplicit-function-declaration
@@ -85,22 +90,22 @@ BUILD_FORTRAN=$(SIMFSER)
 
 all:  $(SIMSER) $(SIMPAR) @BUILD_FORTRAN@
 
-$(SIMSER): $(SIMSEROBJ)
-	$(CC) -Wl,--export-dynamic $(SIMSEROBJ) $(LDFLAGS) $(LIBS)    -o $@
+$(SIMSER): $(SEROBJ)
+	$(CC) -Wl,--export-dynamic $(SEROBJ) $(LDFLAGS) $(LIBS)    -o $@
 
-$(SIMPAR): $(SIMPAROBJ)
-	$(CC) -Wl,--export-dynamic $(LDFLAGS) $(SIMPAROBJ) $(LIBS) $(PARLIBS)  -o $@
+$(SIMPAR): $(PAROBJ)
+	$(CC) -Wl,--export-dynamic $(LDFLAGS) $(PAROBJ) $(LIBS) $(PARLIBS)  -o $@
 
-$(SIMSER).pure: $(SIMSEROBJ)
-	purify $(LD) $(LDFLAGS) $(SIMSEROBJ) $(LIBS) -o $@
+$(SIMSER).pure: $(SEROBJ)
+	purify $(LD) $(LDFLAGS) $(SEROBJ) $(LIBS) -o $@
 
-$(SIMFSER): $(SIMFSEROBJ)
-	$(F77) -Wl,--export-dynamic $(SIMFSEROBJ) $(LDFLAGS) $(FLIBS) -o $@
+$(SIMFSER): $(FSEROBJ)
+	$(F77) -Wl,--export-dynamic $(FSEROBJ) $(LDFLAGS) $(FLIBS) -o $@
 
 clean:
-	$(RM) $(SIMSEROBJ) $(SIMSER) $(SIMSER).pure
-	$(RM) $(SIMPAROBJ) $(SIMPAR)
-	$(RM) $(SIMFSEROBJ) $(SIMFSER)
+	$(RM) $(SEROBJ) $(SIMSER) $(SIMSER).pure
+	$(RM) $(PAROBJ) $(SIMPAR)
+	$(RM) $(FSEROBJ) $(SIMFSER)
 
 
 @TARGETS@

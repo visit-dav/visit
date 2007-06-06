@@ -216,6 +216,9 @@
 #    Hank Childs, Fri May 18 14:42:38 PDT 2007
 #    Added TraceHistory operator.
 #
+#    Jeremy Meredith, Tue Jun  5 14:15:10 EDT 2007
+#    Removed reference to .depend.  Nothing is built in this directory.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -262,7 +265,7 @@ distclean: clean
 		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
 		for dir in $$rev; do (cd $$dir && test ! -f Makefile || $(MAKE) $@); done \
 	fi
-	-$(RM) $(DISTCLEAN_FILES) *~ .depend core
+	-$(RM) $(DISTCLEAN_FILES) *~ core
 	-$(RM) Makefile
 
 depend: dirmakefiles

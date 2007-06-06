@@ -62,6 +62,10 @@
 #    Brad Whitlock, Tue Jan 4 17:01:46 PST 2005
 #    Added additional libraries to the link line so it links on MacOS X.
 #
+#    Jeremy Meredith, Tue Jun  5 17:34:25 EDT 2007
+#    Renamed the TESTOBJ1 to a slightly more standard TESTOBJ to play better
+#    with automatic dependencies.
+#
 ##############################################################################
 
 ##
@@ -77,8 +81,8 @@ CPPFLAGS=-I. @CPPFLAGS@
 ## Files...
 ##
 CONFIGPROG=exprconfig
-TESTPROG1=parse
-TESTSRC1=test.C
+TESTPROG=parse
+TESTSRC=test.C
 COMMONSRC = \
     ExprGrammar.C \
     ExprParseTreeNode.C \
@@ -95,10 +99,9 @@ LIBSRC = \
     ExprInit.C
 SRC=${LIBSRC} ${COMMONSRC}
 OBJ=$(SRC:.C=.o)
-CONFIGOBJ=$(CONFIGSRC:.C=.o)
 COMMONOBJ=${COMMONSRC:.C=.o}
 CONFIGOBJ=${CONFIGSRC:.C=.o}
-TESTOBJ1=$(TESTSRC1:.C=.o)
+TESTOBJ=$(TESTSRC:.C=.o)
 LIB=libexpr
 NOT_DISTRIB=
 LIBS=-L../../lib -lmisc -lstate -lcomm -lutility -lparser -lavtexceptions @LIBS@
@@ -129,8 +132,8 @@ $(CONFIGPROG): $(COMMONOBJ) $(CONFIGOBJ)
 ##
 ## Test targets...
 ##
-$(TESTPROG1) test: $(INITOBJ) $(TESTOBJ1) $(LIBSHARED)
-	$(CXX) -o $(TESTPROG1) $(LDFLAGS) -lexpr -lparser $(TESTOBJ1) $(LIBS) @PTHREAD_LIB@
+$(TESTPROG) test: $(INITOBJ) $(TESTOBJ) $(LIBSHARED)
+	$(CXX) -o $(TESTPROG) $(LDFLAGS) -lexpr -lparser $(TESTOBJ) $(LIBS) @PTHREAD_LIB@
 
 
 ##

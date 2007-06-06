@@ -124,6 +124,10 @@
 #   Brad Whitlock, Wed Mar 14 17:57:11 PST 2007
 #   Added support for a dynamically generated metadata object.
 #
+#   Jeremy Meredith, Tue Jun  5 14:16:42 EDT 2007
+#   Renamed the C object file list to simply OBJ to play better with
+#   dependencies.
+#
 ##############################################################################
 
 ##
@@ -245,8 +249,7 @@ MAIN_SRC = NIFGUI.java RunViewer.java TryLighting.java TryQuery.java PlotAtts.ja
 MAIN_CLASS = $(MAIN_SRC:.java=.class)
 
 VERSIONWRITER = versionwriter
-VERSIONWRITER_SRC = VersionWriter.C
-VERSIONWRITER_OBJ = $(VERSIONWRITER_SRC:.C=.o)
+OBJ = VersionWriter.o
 
 JARFILE=visit.jar
 
@@ -260,13 +263,13 @@ install: install_bin
 
 clean:
 	$(RM) $(JARFILE) $(MAIN_CLASS) $(INSTDIR)/*.class
-	$(RM) $(VERSIONWRITER_OBJ) $(VERSIONWRITER)
+	$(RM) $(OBJ) $(VERSIONWRITER)
 
 ##
 ## Other targets...
 ##
-$(VERSIONWRITER): $(VERSIONWRITER_OBJ)
-	$(CXX) -o ${VERSIONWRITER} $(CXXFLAGS) $(VERSIONWRITER_OBJ)
+$(VERSIONWRITER): $(OBJ)
+	$(CXX) -o ${VERSIONWRITER} $(CXXFLAGS) $(OBJ)
 
 version: $(VERSIONWRITER)
 	$(VERSIONWRITER)

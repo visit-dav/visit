@@ -88,6 +88,10 @@
 #   Jeremy Meredith, Mon Jun 13 15:53:10 PDT 2005
 #   Added purify target for parser test.  Removed TokenParseTreeNode.
 #
+#   Jeremy Meredith, Tue Jun  5 17:34:25 EDT 2007
+#   Renamed the TESTOBJ1 to a slightly more standard TESTOBJ to play better
+#   with automatic dependencies.
+#
 ##############################################################################
 
 ##
@@ -102,9 +106,9 @@ CPPFLAGS=-I. @CPPFLAGS@
 ##
 ## Files...
 ##
-TESTPROG1=testparser
-TESTSRC1=testparser.C
-COMMONSRC = \
+TESTPROG=testparser
+TESTSRC=testparser.C
+SRC = \
     ConfiguratingItem.C \
     ConfiguratingSet.C \
     Dictionary.C \
@@ -116,11 +120,8 @@ COMMONSRC = \
     Sequence.C \
     Symbol.C \
     Token.C
-LIBSRC =
-SRC=${LIBSRC} ${COMMONSRC}
 OBJ=$(SRC:.C=.o)
-COMMONOBJ=${COMMONSRC:.C=.o}
-TESTOBJ1=$(TESTSRC1:.C=.o)
+TESTOBJ=$(TESTSRC:.C=.o)
 LIB=libparser
 NOT_DISTRIB=
 LIBS=-L../../lib -lmisc -lstate -lcomm -lutility @LIBS@
@@ -139,11 +140,11 @@ clean:
 ##
 ## Test targets...
 ##
-$(TESTPROG1) test: $(TESTOBJ1) $(LIBSHARED)
-	$(CXX) -o $(TESTPROG1) $(LDFLAGS) -lparser $(TESTOBJ1) -lmisc @LIBS@
+$(TESTPROG) test: $(TESTOBJ) $(LIBSHARED)
+	$(CXX) -o $(TESTPROG) $(LDFLAGS) -lparser $(TESTOBJ) -lmisc @LIBS@
 
-purifytest: $(TESTOBJ1) $(LIBSHARED)
-	purify $(CXX) -o $(TESTPROG1) $(LDFLAGS) -lparser $(TESTOBJ1) -lmisc @LIBS@
+purifytest: $(TESTOBJ) $(LIBSHARED)
+	purify $(CXX) -o $(TESTPROG) $(LDFLAGS) -lparser $(TESTOBJ) -lmisc @LIBS@
 
 
 ##

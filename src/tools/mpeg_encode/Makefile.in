@@ -27,6 +27,9 @@
 #    does not use jpeg since I had an unresolved symbol that I couldn't get
 #    rid of on the Suns.
 #
+#    Jeremy Meredith, Tue Jun  5 17:26:11 EDT 2007
+#    Added an ALLOBJ= definition.  This is for updated dependency generation.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -89,4 +92,5 @@ message:
 ##
 ## Automatic dependency stuff
 ##
+ALLOBJ=$(MP_ALL_OBJS)
 @TARGETS@

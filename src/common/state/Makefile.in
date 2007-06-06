@@ -277,6 +277,10 @@
 #    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
 #    Added ExtentsAttributes.
 #
+#    Jeremy Meredith, Tue Jun  5 17:34:25 EDT 2007
+#    Renamed the TSTOBJ to a slightly more standard TESTOBJ to play better
+#    with automatic dependencies.
+#
 ##############################################################################
 
 ##
@@ -391,8 +395,8 @@ LIB=libstate
 LIBS=-lcomm -lmisc -lutility
 NOT_DISTRIB=
 
-TSTPROG=test1 test2 test3
-TSTOBJ=$(TSTPROG:=.o) TestUtil.o
+TESTPROG=test1 test2 test3
+TESTOBJ=$(TESTPROG:=.o) TestUtil.o
 
 ##
 ## Standard targets...
@@ -400,7 +404,7 @@ TSTOBJ=$(TSTPROG:=.o) TestUtil.o
 all: message $(LIBSHARED)
 
 clean:
-	$(RM) $(LIBSHARED) $(OBJ) $(TSTOBJ) $(TSTPROG)
+	$(RM) $(LIBSHARED) $(OBJ) $(TESTOBJ) $(TESTPROG)
 
 ##
 ## Other targets

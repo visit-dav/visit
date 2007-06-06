@@ -429,12 +429,53 @@ Grammar::Configure()
 //    Jeremy Meredith, Wed Jun  8 17:06:40 PDT 2005
 //    Added a symbol dictionary to remove static data.
 //
+//    Jeremy Meredith, Tue Jun  5 13:29:33 EDT 2007
+//    Added copyright notice.  Added parentheses to function definition.
+//
 // ****************************************************************************
 
 void
 Grammar::WriteStateInitialization(const string &name, ostream &o)
 {
     int i;
+
+    o << "/*****************************************************************************" << endl;
+    o << "*" << endl;
+    o << "* Copyright (c) 2000 - 2007, The Regents of the University of California" << endl;
+    o << "* Produced at the Lawrence Livermore National Laboratory" << endl;
+    o << "* All rights reserved." << endl;
+    o << "*" << endl;
+    o << "* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The" << endl;
+    o << "* full copyright notice is contained in the file COPYRIGHT located at the root" << endl;
+    o << "* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html." << endl;
+    o << "*" << endl;
+    o << "* Redistribution  and  use  in  source  and  binary  forms,  with  or  without" << endl;
+    o << "* modification, are permitted provided that the following conditions are met:" << endl;
+    o << "*" << endl;
+    o << "*  - Redistributions of  source code must  retain the above  copyright notice," << endl;
+    o << "*    this list of conditions and the disclaimer below." << endl;
+    o << "*  - Redistributions in binary form must reproduce the above copyright notice," << endl;
+    o << "*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the" << endl;
+    o << "*    documentation and/or materials provided with the distribution." << endl;
+    o << "*  - Neither the name of the UC/LLNL nor  the names of its contributors may be" << endl;
+    o << "*    used to  endorse or  promote products derived from  this software without" << endl;
+    o << "*    specific prior written permission." << endl;
+    o << "*" << endl;
+    o << "* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS \"AS IS\"" << endl;
+    o << "* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE" << endl;
+    o << "* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE" << endl;
+    o << "* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF" << endl;
+    o << "* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR" << endl;
+    o << "* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL" << endl;
+    o << "* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR" << endl;
+    o << "* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER" << endl;
+    o << "* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT" << endl;
+    o << "* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY" << endl;
+    o << "* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH" << endl;
+    o << "* DAMAGE." << endl;
+    o << "*" << endl;
+    o << "*****************************************************************************/" << endl;
+    o << "" << endl;
 
     o << "//" << endl;
     o << "//   Automatically generated!!!  Use 'make init' to rebuild." << endl;
@@ -528,7 +569,7 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
         o << "}" << endl;
         o << endl;
     }
-    o << "bool " << name.c_str() << "::Initialize" << endl;
+    o << "bool " << name.c_str() << "::Initialize()" << endl;
     o << "{" << endl;
     o << "    states.resize(" << states.size() << ");" << endl;
     o << endl;

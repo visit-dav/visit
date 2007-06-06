@@ -61,6 +61,9 @@
 #    Added a SRC= definition.  Automatic ("gnu") dependency generation
 #    depends on this containing a full list of source files in this directory.
 #
+#    Jeremy Meredith, Tue Jun  5 17:27:00 EDT 2007
+#    Added an ALLOBJ= definition.  This is for updated dependency generation.
+#
 ###############################################################################
 
 @SET_MAKE@
@@ -114,4 +117,5 @@ message:
 ##
 ## Automatic dependency stuff
 ##
+ALLOBJ=$(COMMON_OBJ) $(VISIT_COMPOSITE_OBJ) $(VISIT_TRANSITION_OBJ)
 @TARGETS@
