@@ -178,7 +178,10 @@ $0 = shift @ARGV;
 #    FreeBSD patches from Nathan Lay <nlay@scs.fsu.edu>
 #
 #    Jeremy Meredith, Wed Jun  6 12:42:27 EDT 2007
-#    Added -outputtoinputdir flag for xml tools.
+#    Added documentation of -outputtoinputdir flag for xml tools.
+#
+#    Jeremy Meredith, Wed Jun  6 16:45:55 EDT 2007
+#    Added documentation of -forceinteractivecli flag for CLI interpreter.
 #
 ###############################################################################
 
@@ -379,6 +382,8 @@ $fullusage = "$usage
         -compiler <cc>       Require version built with the specified compiler.
         -switch <switch>     Require version built for the specified switch.
         -objectmode <mode>   Require a specific object file mode.
+        -forceinteractivecli Force the CLI to behave interactively, even if run
+                             with no terminal; similar to python's '-i' flag.
 
     Developer options
     ---------------------------------------------------------------------------
