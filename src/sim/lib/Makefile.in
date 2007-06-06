@@ -55,6 +55,11 @@
 #    of  California,  and  shall  not  be  used  for  advertising  or  product
 #    endorsement purposes.
 #
+#  Modifications:
+#    Jeremy Meredith, Tue Jun  5 17:38:34 EDT 2007
+#    Renamed the main object files to a more standard OBJ and FOBJ to play
+#    better with automatic dependencies.
+#
 ##############################################################################
 ##
 ## Programs and options...
@@ -66,18 +71,18 @@
 ## Files...
 ##
 
-SIMSRC= \
+SRC= \
   VisItControlInterface_V1.c \
   SimHelperFunc.c \
   UI_Connection.c
-SIMFSRC= \
+FSRC= \
   visitfortransiminterface.c
 
 
-SIMOBJ=$(SIMSRC:.c=.o)
+OBJ=$(SRC:.c=.o)
 SIMLIB=libsim
 SIMLIBNAME=$(TOPDIR)/archives/$(SIMLIB).a
-SIMFOBJ=$(SIMFSRC:.c=.o)
+FOBJ=$(FSRC:.c=.o)
 SIMFLIB=libsimf
 SIMFLIBNAME=$(TOPDIR)/archives/$(SIMFLIB).a
 
@@ -95,15 +100,15 @@ CFLAGS= -I. -I../../include/visit
 ##
 all:  message $(SIMLIBNAME) $(SIMFLIBNAME)
 
-$(SIMLIBNAME): $(SIMOBJ)
-	$(AR) -rc $(SIMLIBNAME) $(SIMOBJ) 
+$(SIMLIBNAME): $(OBJ)
+	$(AR) -rc $(SIMLIBNAME) $(OBJ) 
 
-$(SIMFLIBNAME): $(SIMFOBJ)
-	$(AR) -rc $(SIMFLIBNAME) $(SIMFOBJ) 
+$(SIMFLIBNAME): $(FOBJ)
+	$(AR) -rc $(SIMFLIBNAME) $(FOBJ) 
 
 clean:
 	$(RM) $(SIMLIBNAME) $(SIMFLIBNAME)
-	$(RM) $(SIMOBJ) $(SIMFOBJ)
+	$(RM) $(OBJ) $(FOBJ)
 
 message:
 	@echo

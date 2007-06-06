@@ -378,6 +378,9 @@
 #    Simulation widgets that are sometime reference by their names
 #    simulation code.
 #
+#    Jeremy Meredith, Tue Jun  5 17:31:29 EDT 2007
+#    Removed the test program; it no longer exists.
+#
 ##############################################################################
 
 ##
@@ -588,13 +591,6 @@ purify: $(LIBDEP) $(MAINOBJ) $(LIBSHARED)
 
 quantify: $(LIBDEP) $(MAINOBJ) $(LIBSHARED)
 	quantify $(CXX) -o $(tmpbin)/gui $(MAINOBJ) $(LDFLAGS) $(LIBS) -lgui
-
-
-TESTOBJ=QvisColorSelectionWidget.C testmain.C
-TESTOBJMOC=moc_QvisColorSelectionWidget.C
-
-$(tmpbin)/test: $(LIBDEP) $(TESTOBJ) $(TESTOBJMOC)
-	$(CXX) $(CXXFLAGS) -o $@ $(TESTOBJ) $(TESTOBJMOC) $(LDFLAGS) $(LIBS)
 
 install_bin: $(tmpbin)/gui
 	$(INSTALL) $(tmpbin)/gui $(bindir)

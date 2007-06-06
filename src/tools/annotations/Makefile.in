@@ -76,6 +76,9 @@
 #   Added a SRC= definition.  Automatic ("gnu") dependency generation
 #   depends on this containing a full list of source files in this directory.
 #
+#   Jeremy Meredith, Tue Jun  5 17:26:11 EDT 2007
+#   Added an ALLOBJ= definition.  This is for updated dependency generation.
+#
 ##############################################################################
 
 
@@ -122,4 +125,5 @@ install_bin: $(tmpbin)/text2polys $(tmpbin)/time_annotation
 
 # Automatic dependency stuff
 # --------------------------
+ALLOBJ=$(T2P_OBJ) $(TA_OBJ)
 @TARGETS@

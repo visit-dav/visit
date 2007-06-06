@@ -148,6 +148,9 @@
 #    Jeremy Meredith, Tue May 22 11:40:38 EDT 2007
 #    Added "MINIMAL" subset of plugins.
 #
+#    Jeremy Meredith, Tue Jun  5 14:15:10 EDT 2007
+#    Removed reference to .depend.  Nothing is built in this directory.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -192,7 +195,7 @@ distclean: clean
 		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
 		for dir in $$rev; do (cd $$dir && test ! -f Makefile || $(MAKE) $@); done \
 	fi
-	-$(RM) $(DISTCLEAN_FILES) *~ .depend core
+	-$(RM) $(DISTCLEAN_FILES) *~ core
 	-$(RM) Makefile
 
 depend: dirmakefiles

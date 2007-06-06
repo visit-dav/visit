@@ -317,6 +317,9 @@
 #    Added a SRC= definition.  Automatic ("gnu") dependency generation
 #    depends on this containing a full list of source files in this directory.
 #
+#    Jeremy Meredith, Tue Jun  5 17:26:11 EDT 2007
+#    Added an ALLOBJ= definition.  This is for updated dependency generation.
+#
 ##############################################################################
 
 ##
@@ -487,5 +490,6 @@ ${SRCMOC}:
 ##
 ## Automatic dependency stuff
 ##
+ALLOBJ=$(VIEWERLIB_OBJ) $(VIEWEREXE_OBJ)
 @TARGETS@
 @LIBTARGETS@

@@ -57,6 +57,9 @@
  *    Jeremy Meredith, Mon Jan  6 10:09:13 PST 2003
  *    Fixed a couple problems with the hex/vox cases.
  *
+ *    Jeremy Meredith, Tue Jun  5 13:23:18 EDT 2007
+ *    Added copyright notice.
+ *
  *---------------------------------------------------------------------------*/
 #include <visitstream.h>
 #include <stdio.h>
@@ -1424,6 +1427,46 @@ void wedge_1()
     end_table();
 }
 
+static void WriteCopyright(ostream &out)
+{
+    out << "/*****************************************************************************" << endl;
+    out << "*" << endl;
+    out << "* Copyright (c) 2000 - 2007, The Regents of the University of California" << endl;
+    out << "* Produced at the Lawrence Livermore National Laboratory" << endl;
+    out << "* All rights reserved." << endl;
+    out << "*" << endl;
+    out << "* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The" << endl;
+    out << "* full copyright notice is contained in the file COPYRIGHT located at the root" << endl;
+    out << "* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html." << endl;
+    out << "*" << endl;
+    out << "* Redistribution  and  use  in  source  and  binary  forms,  with  or  without" << endl;
+    out << "* modification, are permitted provided that the following conditions are met:" << endl;
+    out << "*" << endl;
+    out << "*  - Redistributions of  source code must  retain the above  copyright notice," << endl;
+    out << "*    this list of conditions and the disclaimer below." << endl;
+    out << "*  - Redistributions in binary form must reproduce the above copyright notice," << endl;
+    out << "*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the" << endl;
+    out << "*    documentation and/or materials provided with the distribution." << endl;
+    out << "*  - Neither the name of the UC/LLNL nor  the names of its contributors may be" << endl;
+    out << "*    used to  endorse or  promote products derived from  this software without" << endl;
+    out << "*    specific prior written permission." << endl;
+    out << "*" << endl;
+    out << "* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS \"AS IS\"" << endl;
+    out << "* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE" << endl;
+    out << "* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE" << endl;
+    out << "* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF" << endl;
+    out << "* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR" << endl;
+    out << "* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL" << endl;
+    out << "* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR" << endl;
+    out << "* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER" << endl;
+    out << "* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT" << endl;
+    out << "* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY" << endl;
+    out << "* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH" << endl;
+    out << "* DAMAGE." << endl;
+    out << "*" << endl;
+    out << "*****************************************************************************/" << endl;
+    out << "" << endl;
+}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -1433,6 +1476,8 @@ void wedge_1()
 int
 main()
 {
+    WriteCopyright(outc);
+    WriteCopyright(outh);
     outc << comment("*****************************************************************") << endl
          << comment("-----------------------------------------------------------------") << endl
          << comment("                                                                 ") << endl

@@ -109,9 +109,6 @@ CPPFLAGS=@CPPFLAGS@ -I$(TOPDIR)/include/visit -I../xml -I.
 
 .SUFFIXES: .C _moc.C _moc.o
 
-.C.o:
-	$(CXX) -c $< $(CPPFLAGS) $(CXXFLAGS)
-
 .h_moc.C:
 	@QT_BIN@/moc $< > $@
 
@@ -120,10 +117,10 @@ all: $(tmpbin)/xmledit
 clean:
 	$(RM) xmledit $(OBJ) $(MOCSRC) $(MOCOBJ)
 
-distclean: clean
-
 $(tmpbin)/xmledit: $(OBJ) $(MOCSRC) $(MOCOBJ)
 	$(CXX) $(OBJ) $(MOCOBJ) -o $@ $(CXXFLAGS) $(LDFLAGS) $(LIBS)
 
 purify: $(OBJ) $(MOCSRC) $(MOCOBJ)
 	purify $(CXX) $(OBJ) $(MOCOBJ) -o $(tmpbin)/xmledit $(CXXFLAGS) $(LDFLAGS) $(LIBS)
+
+@TARGETS@
