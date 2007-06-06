@@ -698,6 +698,12 @@ dnl
 dnl    Mark C. Miller, Thu May 24 22:54:35 PDT 2007
 dnl    Removed use of rpath options from iTaps lib symbols. Made it build
 dnl    symbolic link in lib dir for iTaps libs
+dnl
+dnl    Jeremy Meredith, Tue Jun  5 17:32:39 EDT 2007
+dnl    Added the "PARDEP" substitution that expands to $(PARDEP) when parallel
+dnl    builds are enabled.  This lets us avoid building dependencies for
+dnl    parallel object files if we're not building parallel objects.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -861,6 +867,7 @@ if test "$UseParallel" = "yes"; then
    LIBSTATICPAR="$""(LIBSTATICPAR)"
    LIBSHAREDPAR="$""(LIBSHAREDPAR)"
    LIBSHAREDPAR_UPDATEONLY="libsharedpar_updateonly"
+   PARDEP="$""(PARDEP)"
 
    if test "$UNAME" != "AIX"; then
        if (test -z "$MPI_LIBS") then
@@ -888,6 +895,7 @@ else
    LIBSTATICPAR=""
    LIBSHAREDPAR=""
    LIBSHAREDTEMPPAR=""
+   PARDEP=""
 fi
 AC_SUBST(PARALLEL)
 AC_SUBST(PARALLEL_CPPFLAGS)
@@ -897,6 +905,7 @@ AC_SUBST(MPI_CXX)
 AC_SUBST(LIBSTATICPAR)
 AC_SUBST(LIBSHAREDPAR)
 AC_SUBST(LIBSHAREDPAR_UPDATEONLY)
+AC_SUBST(PARDEP)
 
 #
 # Set up some Mesa variables.
