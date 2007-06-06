@@ -1,0 +1,341 @@
+#!/bin/csh -f
+#-----------------------------------------------------------------------
+#
+# VISIT-WINDOWS-DIST - Build a tar file that contains the VisIt source
+#                      code and Windows project files.
+#
+# Author: Brad Whitlock
+# Date:   Fri Jul 5 14:34:16 PST 2002
+#
+# Usage:
+#    visit-windows-dist 
+#
+#
+# Modifications:
+#   Brad Whitlock, Mon Jul 15 15:29:37 PST 2002
+#   I made it distribute help files.
+#
+#   Brad Whitlock, Wed Dec 10 09:32:39 PDT 2003
+#   I rewrote it so it includes more recent project files and installtion
+#   files. It also puts the core header files into a single include directory
+#   so you don't have to add tons of include directories in MSVC.
+#
+#   Brad Whitlock, Thu Jan 8 11:15:13 PDT 2004
+#   I added BUILD_NOTES.txt.
+#
+#   Brad Whitlock, Tue Feb 24 09:00:27 PDT 2004
+#   I changed the script so some files are copied using converttextfile, which
+#   copies text files but also converts the end of line from UNIX to Windows.
+#   This allows me to use the UNIX config files but make them Windows friendly
+#   when creating the Windows distribution.
+#
+#   Brad Whitlock, Fri Mar 5 10:32:41 PDT 2004
+#   I changed the script so it copies the lite PDB header files into the new
+#   include directory before the old directory gets blown away.
+#
+#   Brad Whitlock, Thu May 27 14:26:41 PST 2004
+#   Changed to account for the new location of winutil.
+#
+#   Brad Whitlock, Tue Jun 29 10:12:12 PDT 2004
+#   I made the Windows version get its own config files.
+#
+#   Brad Whitlock, Thu Aug 12 12:26:57 PDT 2004
+#   I added support for the MSVC7.Net compiler suite.
+#
+#   Brad Whitlock, Thu Jun 23 17:12:02 PST 2005
+#   I made it copy makemoviemain.py
+#
+#   Brad Whitlock, Mon Nov 21 16:57:39 PST 2005
+#   I made it copy libbz2.{dll,lib}.
+#
+#   Brad Whitlock, Thu Mar 16 11:59:27 PDT 2006
+#   I added code to copy the NERSC and ORNL config files. I also added an
+#   optional -nodist argument that can make the script use an existing
+#   source distribution.
+#
+#   Brad Whitlock, Tue Jun 13 16:44:22 PST 2006
+#   Added VisIt 1.5.3 and VTK 5.0 updates.
+#
+#   Brad Whitlock, Tue Nov 21 16:38:58 PST 2006
+#   Added code to copy movie templates.
+#
+#   Kathleen Bonnell, Fri Mar  2 21:34:44 PST 2007 
+#   Added code for Python 2.5.  No longer distribute VC 6 project files. 
+#
+#   Kathleen Bonnell, Tue Jun  5 10:08:57 PDT 2007 
+#   Modified to work with SVN tree structure.  Remove unnecessary
+#   directories (old Python versions, .svn)  Temporarily disable help file
+#   creation for call to visit-dist.
+#
+#------------------------------------------------------------------------------
+
+# Need another way to determine we are starting in the right directory.
+#if(`pwd` != "/data_vobs/VisIt") then
+#    echo "The visit-windows-dist script must be run from the top level VOB directory."
+#    exit(-1)
+#endif
+
+# If there is no Makefile, run configure.
+# We need to ensure that the includes are created.
+if(!(-e Makefile)) then
+    echo "No Makefile was found. We need to configure\!"
+    if(-e config.cache) then
+        rm -f config.cache
+    endif
+    configure
+endif
+
+# Parse the comand line arguents.
+set create_src_dist = true
+set option_found = true
+while ($option_found == true)
+   switch ($1)
+      case -nodist:
+         # Use an existing source distribution.
+         set create_src_dist = false
+         shift
+         breaksw
+      default:
+         set option_found = false
+         breaksw
+   endsw
+end
+
+# Set some directory variables.
+set TOPDIR = `pwd` 
+set SCRIPTDIR = "$TOPDIR/svn_bin"
+set SCRIPTDIR2 = "$TOPDIR/clearcase_bin"
+
+set VERSION = `cat $TOPDIR/VERSION`
+set VisItDev = "$TOPDIR/VisItDev$VERSION"
+set VISITSRC="visit"
+
+# Run the visit-dist script so it creates a source distribution
+if ($create_src_dist == true) then
+    echo "Creating intermediate source package..."
+    #This currently is working in svn, so disable the -withhelp directive
+    #$SCRIPTDIR/visit-dist -withhelp $VISITSRC
+    $SCRIPTDIR/visit-dist $VISITSRC
+endif
+
+# Create a directory to contain the VisIt source distribution.
+echo "Creating $VisItDev directory..."
+mkdir $VisItDev
+cp $VISITSRC.tar.gz $VisItDev
+cd $VisItDev
+
+# Put the source into the development directory.
+echo "Untarring intermediate source package..."
+gunzip $VISITSRC.tar.gz
+tar xvf $VISITSRC.tar > /dev/null
+rm $VISITSRC.tar
+
+# Remove the tools/mpeg_encode directory since it does not build on Windows
+# and it creates a name conflict with the prep tool.
+rm -rf $VISITSRC/tools/mpeg_encode
+
+# Copy windowsbuild/VisItBuildInstructionsOnWindows.doc to $VisItDev
+cp $TOPDIR/../windowsbuild/VisItBuildInstructionsOnWindows.doc .
+cp $TOPDIR/../windowsbuild/BUILD_NOTES.txt .
+
+# Move windowsbuild/include to $VisItDev/include.
+cp -R $TOPDIR/../windowsbuild/include .
+
+#
+# Set up a new include directory.
+#
+echo "Creating new visit include directory..."
+mkdir include/VisIt
+# Copy the lite PDB headers from the include/visit directory before
+# blowing it away.
+cp $VISITSRC/include/visit/lite_pdb.h include/VisIt
+cp $VISITSRC/include/visit/lite_score.h include/VisIt
+cp $VISITSRC/include/visit/visit-hdf5.h include/VisIt
+# Remove the $VISITSRC/include/visit directory since it's full of symlinks and 
+# Windows will not honor them.
+echo "Removing old visit include directory..."
+rm -rf $VISITSRC/include/visit
+#
+# Move a bunch of the core header files to the new visit directory
+#
+foreach srcdir (common components gui viewer engine mdserver launcher visitpy visit_vtk vtkqt winutil)
+    foreach srcfile (`find $VISITSRC/$srcdir -name "*.h"`)
+        mv $srcfile include/VisIt
+    end
+end
+
+#
+# Remove SiloObj's Field.h since it will mess up the build for the XML tools.
+#
+rm -f include/VisIt/Field.h
+
+#
+# Copy the XPM files into include/VisIt and remove the copy directories that
+# used to be symlinks to common/icons. Also, since the GUI and viewer seem
+# to reference the icons using slightly different directory schemes, we
+# have to duplicate them for now. The source code should probably be fixed
+# at some point so it references the XPM files consistently so we can
+# remove the need to duplicate the XPM files like this.
+#
+echo "Copying icons to include/VisIt..."
+mkdir include/VisIt/icons
+foreach xpmfile (`find $VISITSRC/common/icons -name "*.xpm"`)
+    cp $xpmfile include/VisIt
+    mv $xpmfile include/VisIt/icons
+end
+rm -rf $VISITSRC/gui/icons
+rm -rf $VISITSRC/viewer/main/icons
+
+# Replace the version in visit-config.h with the current version and move
+# visit-config.h into the include/visit directory
+sed -e "s/XXX/$VERSION/" include/visit-config.h > include/VisIt/visit-config.h
+rm -f include/visit-config.h
+
+echo "Copying tool include files to include/Tools...".
+# Move a bunch of the tool header files to the new tool directory
+mkdir include/Tools
+foreach tooldir (qtssh silex xml xmledit)
+    foreach hdrfile (`find $VISITSRC/tools/$tooldir -name "*.h"`)
+        mv $hdrfile include/Tools
+    end
+end
+
+#
+# Put the VTK header files into include/VTK
+#
+echo "Copying VTK include files to include/VTK..."
+foreach hdrdir (Common Filtering GenericFiltering Graphics Hybrid IO Imaging Rendering VolumeRendering)
+    foreach hdrfile (`find $TOPDIR/include/vtk/$hdrdir -name "*.h"`)
+        cp $hdrfile include/VTK
+    end
+end
+# Copy TXX files
+cp $TOPDIR/include/vtk/Common/*.txx    include/VTK
+cp $TOPDIR/include/vtk/Filtering/*.txx include/VTK
+# Copy vtkstd
+cp -R $TOPDIR/include/vtk/vtkstd include/VTK
+# Copy mangled mesa
+mkdir include/VTK/MangleMesaInclude
+cp $TOPDIR/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
+
+
+#
+# Create an include/Mesa directory and copy the Mesa files to it.
+#
+echo "Copying Mesa include files to include/Mesa..."
+mkdir include/Mesa
+mkdir include/Mesa/GL
+cp $TOPDIR/include/mesa/GL/*.h include/Mesa/GL
+
+cd $VisItDev
+
+#
+# Move windowsbuild/bin up to $VisItDev and add the plugin directories into
+# it so that we have some place to store them when we build.
+#
+echo "Creating bin directory..."
+cp -R $TOPDIR/../windowsbuild/bin .
+foreach configdir (MSVC7.Net/Debug MSVC7.Net/Release)
+    echo "copying makemovie scripts ..."
+    # Copy the makemovie scripts to the right bin dir.
+    cp $VISITSRC/bin/makemovie.py bin/$configdir
+    cp $VISITSRC/bin/makemoviemain.py bin/$configdir
+    echo "copying host config files ..."
+    # Copy the host config files to the right bin dir.
+    $SCRIPTDIR2/converttextfile $SCRIPTDIR2/visit-config-open.ini   bin/$configdir/visit-config-open.ini
+    $SCRIPTDIR2/converttextfile $SCRIPTDIR2/visit-config-closed.ini bin/$configdir/visit-config-closed.ini
+    $SCRIPTDIR2/converttextfile $SCRIPTDIR2/visit-config-nersc.ini  bin/$configdir/visit-config-nersc.ini
+    $SCRIPTDIR2/converttextfile $SCRIPTDIR2/visit-config-ornl.ini   bin/$configdir/visit-config-ornl.ini
+    echo "copying help files ..."
+    mkdir bin/$configdir/help
+    cp $VISITSRC/help/*.{html,helpml} bin/$configdir/help
+    echo "copying movie templates ..."
+    mkdir bin/$configdir/movietemplates
+    cp $VISITSRC/bin/movietemplates/*.{py,mt,bmp,ui} bin/$configdir/movietemplates
+    mkdir bin/$configdir/databases
+    mkdir bin/$configdir/operators
+    mkdir bin/$configdir/plots
+    # Create small placeholder files or the directory will not be preserved
+    # when extracting the distribution since empty directories tend to be
+    # removed on Windows.
+    echo "Directory for database plugins." > bin/$configdir/databases/README.txt
+    echo "Directory for operator plugins." > bin/$configdir/operators/README.txt
+    echo "Directory for plot plugins." > bin/$configdir/plots/README.txt
+end
+
+#
+# We don't maintain all DLLs for the MSVC7.Net distribution so add the rest 
+# of the DLLs from the MSVC 6 distribution into the MSVC7.Net directory.
+#
+foreach buildmode (Debug Release)
+    cd $VisItDev/bin/$buildmode
+    foreach DLL (MesaGL.dll hdf5dll.dll osmesa.dll silohdf5.dll szlibdll.dll zlib.dll libbz2.dll)
+        cp $DLL ../MSVC7.Net/$buildmode
+    end
+    cd $VisItDev/bin/
+    rm -rf $buildmode
+end
+cd $VisItDev
+
+# Unzip the Python tar file in bin/MSVC7.Net/Release so we have Python modules
+# available when we try to distribute VisIt on Windows.
+echo "Extracting python modules.... "
+cd bin/MSVC7.Net/Release
+gunzip PythonLib-2.5.tar.gz
+tar xf PythonLib-2.5.tar
+rm -f  PythonLib-2.5.tar
+
+gunzip PythonDLL-2.5.tar.gz
+tar xf PythonDLL-2.5.tar
+rm -f  PythonDLL-2.5.tar
+cd $VisItDev
+
+# Remove the help files since we've copied them into different directories.
+echo "Removing  help files..."
+rm $VISITSRC/help/*.{html,helpml}
+
+# Move windowsbuild/lib directory up to $VisItDev.
+echo "Creating lib directory..."
+cp -R $TOPDIR/../windowsbuild/lib .
+foreach buildmode (Debug Release)
+    # Copy import libraries
+    cd $VisItDev/lib/$buildmode
+    foreach DLL (MesaGL.lib hdf5dll.lib osmesa.lib silohdf5.lib zlib.lib libbz2.lib)
+        cp $DLL ../MSVC7.Net/$buildmode
+    end
+    cd $VisItDev/lib
+    rm -rf $buildmode
+end
+cd $VisItDev
+
+# Move windowsbuild/resources directory up to $VisItDev.
+echo "Creating resources directory..."
+cp -R $TOPDIR/../windowsbuild/resources .
+
+# Move windowsbuild/installation directory up to $VisItDev.
+echo "Creating installation directory..."
+cp -R $TOPDIR/../windowsbuild/installation .
+
+# Move the windowsbuild/projects directory up to $VisItDev.
+echo "Creating projects-MSVC7.Net directory..."
+cp -R $TOPDIR/../windowsbuild/projects-MSVC7.Net .
+
+# Copy the windowsbuild/script directory up to $VisItDev.
+echo "Creating script directory..."
+cp -R $TOPDIR/../windowsbuild/script .
+
+echo "Removing .svn directories..."
+cd $VisItDev
+foreach svndir (`find '.' -name ".svn"`)
+    rm -rf $svndir
+end
+
+# Create the new distribution
+echo "Creating tar file distribution..."
+cd $TOPDIR
+set VisItDev = "VisItDev$VERSION"
+tar cf $VisItDev.tar $VisItDev
+
+# Cleanup
+echo "Cleaning up..."
+rm -rf $VisItDev
