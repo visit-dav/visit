@@ -1,60 +1,111 @@
 ##							-*- makefile -*-
-## Automatic dependencies...  We keep a list of dependencies in `.depend'
-## for each of the source files on which it depends.  When one of the source
-## files is modified we remove its record from .depend and regenerate the
-## dependencies, tacking them onto the end of .depend.  By including the
-## .depend file into the makefile, we're telling make that the makefile
-## depends on the dependency list in the .depend file.
+## Automatic dependencies...
 ##
-## This is as fast as the `.d' method described in the GNU make manual
-## for automatic dependencies, but has the added advantage that all
-## dependencies are stored in one place.  The advantage over the
-## `makedepend' program is that only those files that are out of date
-## have dependency information rebuilt, and the Makefile is not modified.
+## Programmer:  Jeremy Meredith
+## Date:        June  5, 2007
 ##
-## Modifications:
-##    Jeremy Meredith, Thu May  9 11:58:51 PDT 2002
-##    1) Made it work with .C, not .c files
-##    2) Made it work correctly with subdirectories, e.g. "dir/file.C"
-##
-##    Jeremy Meredith, Wed Mar 28 09:39:27 PDT 2007
-##    Made it work better in parallel.
-##
-##    Jeremy Meredith (via Hank Childs), Thu May 17 08:22:59 PDT 2007
-##    Improve parallel dependencies.
-##
-##    Jeremy Meredith, Thu May 31 14:11:46 EDT 2007
-##    Removed the test for subdirectores where it prepended the dirname.
-##    It seems something has changed to render this unnecessary and
-##    now it causes problems (specifically, dirname is now there twice).
-##    Removing this section seems to fix the problem.
-##
-.PRECIOUS: .depend .pardepend
-dep depend: .depend .pardepend
 
-.depend: $(SRC)
-	@touch .depend
-	@for dep in $? dummy; do \
-	   if [ $$dep != "dummy" ]; then \
-	      obj=`echo $$dep | sed 's/\.C/.o/'` ;\
-	      echo Building dependencies for $$obj ;\
-	      sed "\|^$$obj|,\|[^\\]$$|d" <$@ > $@- && mv $@- $@ ;\
-	      $(CXX) -M -MG -MT $$obj $(CXXFLAGS) $(CPPFLAGS) $$dep >>$@;\
-	   fi;\
-	done
+## Notes on the flags:
+##  -MP generates dummy rules for headers to avoid the
+##      "deleted header file" problem
+##  -MG assumes missing headers are generated and places them
+##      in the output .d file with no path, and no errors
+##
+## Neither of these are particularly portable.  To get this to work using xlc,
+## for example, the following changes would have to be made:
+##  1)  change CDEPFLAGS to: -M -MF tmp$$$$.d -E
+##  2)  change the CC lines to avoid the pipe and use this temporary file, e.g.:
+##      $(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS)  $< > /dev/null ; $(POSTDEPCMD) < tmp$$$$.d > $@ ; rm -f tmp$$$$.d
+##
+CDEPFLAGS=-M -MP -MG
+POSTDEPCMD=sed 's,$*\.o[ :]*,$(@:.d=.o) $@ : ,g'
 
-.pardepend: $(SRC)
-	@if [ -n "@PARALLEL@" ]; then \
-	   touch .pardepend; \
-	   for dep in $? dummy; do \
-	      if [ $$dep != "dummy" ]; then \
-	         obj=`echo $$dep | sed 's/\.C/_par.o/'` ;\
-	         echo Building dependencies for $$obj ;\
-	         sed "\|^$$obj|,\|[^\\]$$|d" <$@ > $@- && mv $@- $@ ;\
-	         $(CXX) -M -MG -MT $$obj -DPARALLEL $(CXXFLAGS) $(CPPFLAGS) $$dep  >>$@;\
-	       fi;\
-	   done;\
-	fi;
+.c.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS)  $< | $(POSTDEPCMD) > $@
 
--include .depend
--include .pardepend
+.c_mds.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS) -DMDSERVER  $< | $(POSTDEPCMD) > $@
+
+.c_par.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@  $< | $(POSTDEPCMD) > $@
+
+.C.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS)  $< | $(POSTDEPCMD) > $@
+
+.C_eng.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DENGINE  $< | $(POSTDEPCMD) > $@
+
+.C_mds.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DMDSERVER  $< | $(POSTDEPCMD) > $@
+
+.C_par.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@  $< | $(POSTDEPCMD) > $@
+
+.C_ogl.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS)  $< | $(POSTDEPCMD) > $@
+
+.C_mesa.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(MESA_INCLUDE)  $< | $(POSTDEPCMD) > $@
+
+.C_par_eng.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DENGINE @PARALLEL_CPPFLAGS@  $< | $(POSTDEPCMD) > $@
+
+.C_par_ogl.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@  $< | $(POSTDEPCMD) > $@
+
+.C_par_mesa.d:
+	@echo "updating $@"; rm -f $@; \
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $(MESA_INCLUDE)  $< | $(POSTDEPCMD) > $@
+
+.f.d:
+	@echo "can't create fortran dependencies; creating empty $@"; rm -f $@ ; touch $@
+
+SERDEP:=\
+ $(ALLOBJ:.o=.d) \
+ $(COMMONOBJ:.o=.d) \
+ $(CONFIGOBJ:.o=.d) \
+ $(INITOBJ:.o=.d) \
+ $(LIBRARYSEROBJ:.o=.d) \
+ $(MAINOBJ:.o=.d) \
+ $(MAINSEROBJ:.o=.d) \
+ $(MOCOBJ:.o=.d) \
+ $(OBJMOC:.o=.d) \
+ $(OBJ:.o=.d) \
+ $(FOBJ:.o=.d) \
+ $(SEROBJ:.o=.d) \
+ $(FSEROBJ:.o=.d) \
+ $(TESTOBJ:.o=.d) \
+ $(TESTOBJMOC:.o=.d) \
+ $(ESEROBJ:.o=.d) \
+ $(GOBJ:.o=.d) \
+ $(IOBJ:.o=.d) \
+ $(JAVAOBJ:.o=.d) \
+ $(MOBJ:.o=.d) \
+ $(SOBJ:.o=.d) \
+ $(VOBJ:.o=.d) \
+ $(VIEWERMOCOBJ:.o=.d) \
+ $(MOCOBJ:.o=.d)
+
+PARDEP:=\
+ $(LIBRARYPAROBJ:.o=.d) \
+ $(MAINPAROBJ:.o=.d) \
+ $(PAROBJ:.o=.d) \
+ $(FPAROBJ:.o=.d) \
+ $(EPAROBJ:.o=.d)
+
+DEP=$(SERDEP) @PARDEP@
+
+-include $(DEP)
+
+depend: $(DEP)
