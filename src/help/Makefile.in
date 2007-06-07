@@ -79,7 +79,6 @@
 @VARIABLES@
 
 CXXFLAGS=-I. -I../include -I../include/visit @CXXFLAGS@
-MOC=@QT_MOC@
 
 ##
 ## Files...

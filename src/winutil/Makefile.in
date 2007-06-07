@@ -74,6 +74,9 @@
 #    Brad Whitlock, Tue Feb 20 11:45:46 PDT 2007
 #    Moved QvisColorTableButton and 2 others from the gui.
 #
+#    Jeremy Meredith, Thu Jun  7 13:23:18 EDT 2007
+#    Build rules to _moc.C are now in make-targets.in. Remove them from here.
+#
 ##############################################################################
 
 ##
@@ -84,7 +87,6 @@
 
 CXXFLAGS=-I. -I../include/visit -I../include @QT_CXXFLAGS@ @CXXFLAGS@
 CPPFLAGS=-I. @CPPFLAGS@
-MOC=@QT_MOC@
 
 ##
 ## Files...
@@ -121,12 +123,6 @@ message:
 	@echo "****************************************************************************"
 
 moc: $(SRCMOC)
-
-##
-## Source file specific rules
-##
-${SRCMOC}:
-	${MOC} ${@:_moc.C=.h} > $@
 
 ##
 ## Automatic dependency stuff

@@ -132,6 +132,17 @@ distclean: clean
 	$(F77) $(F77FLAGS) -c $<
 
 
+##
+## Implicit rule for Qt MOC source.
+##
+## Jeremy Meredith, Thu Jun  7 13:24:49 EDT 2007
+## Added initial version.
+##
+.h_moc.C:
+	@$(RM) $@
+	@QT_MOC@ $< > $@
+
+
 ## Jeremy Meredith, Fri May 11 13:51:37 PDT 2001
 ## Create GUI, Viewer and Engine shared libraries.  This is for plugins.
 ## 
