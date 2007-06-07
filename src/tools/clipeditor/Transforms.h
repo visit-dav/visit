@@ -48,6 +48,9 @@
 //    Jeremy Meredith, Thu Jun 24 10:38:05 PDT 2004
 //    Added voxel and pixel transform.
 //
+//    Jeremy Meredith, Thu Jun  7 13:21:32 EDT 2007
+//    Added line transform.
+//
 // ----------------------------------------------------------------------------
 
 #ifndef TRANSFORMS_H
@@ -109,6 +112,13 @@ struct TriTransform
     bool f;
 };
 
+struct LineTransform
+{
+    int  n[2];
+    char e[2];
+    bool f;
+};
+
 extern HexTransform     hexTransforms[48];
 extern VoxTransform     voxTransforms[48];
 extern WedgeTransform   wedgeTransforms[12];
@@ -117,5 +127,6 @@ extern TetTransform     tetTransforms[24];
 extern QuadTransform    quadTransforms[8];
 extern PixelTransform   pixelTransforms[8];
 extern TriTransform     triTransforms[6];
+extern LineTransform    lineTransforms[2];
 
 #endif
