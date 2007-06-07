@@ -86,6 +86,12 @@
 
 #define plotAtts ((SpreadsheetAttributes *)plot->GetPlotAtts())
 
+// Since the Mac's tab bars don't have limits on their width, make the
+// window use just a single tab to display data on the Mac.
+#ifdef Q_WS_MACX
+#define SINGLE_TAB_WINDOW
+#endif
+
 // ****************************************************************************
 // Method: SpreadsheetViewer::SpreadsheetViewer
 //
@@ -521,6 +527,8 @@ SpreadsheetViewer::setColorTable(const char *ctName)
 // Creation:   Tue Feb 20 14:05:34 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
+//   Support using a single tab of values.
 //   
 // ****************************************************************************
 
@@ -587,6 +595,9 @@ SpreadsheetViewer::Update(Subject *)
             break;
         case 7: //sliceIndex
             sliceIndexSet = true;
+#ifdef SINGLE_TAB_WINDOW
+            needsRebuild = true;
+#endif
             break;
         }
     }
@@ -707,7 +718,9 @@ SpreadsheetViewer::updateSpreadsheet()
 // Creation:   Tue Feb 20 14:08:30 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
+//   Support using a single tab of values.
+//
 // ****************************************************************************
 
 void
@@ -790,6 +803,11 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
         }
 
         // Make sure that each table can access the VTK data.
+#ifndef SINGLE_TAB_WINDOW
+        int offset = 0;
+#else
+        int offset = plotAtts->GetSliceIndex();
+#endif
         for(int t = 0; t < nTables; ++t)
         {
             tables[t]->setUpdatesEnabled(false);
@@ -798,7 +816,7 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
             // Tell the table about our data so it can display it 
             // appropriately.
             tables[t]->setDataArray(arr, ghostArray, dims, 
-                dMode, t, base_index);
+                dMode, offset + t, base_index);
             tables[t]->setFormatString(plotAtts->GetFormatString().c_str());
             tables[t]->setRenderInColor(plotAtts->GetUseColorTable());
 
@@ -1102,6 +1120,8 @@ SpreadsheetViewer::updateMinMaxButtons()
 // Creation:   Tue Feb 20 14:14:01 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
+//   Support using a single tab of values.
 //   
 // ****************************************************************************
 
@@ -1114,6 +1134,8 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
     bool updateSlider = true;
 
     zTabs->blockSignals(true);
+
+#ifndef SINGLE_TAB_WINDOW
     if(ntabs == nTables)
     {
         updateSlider = false;
@@ -1161,7 +1183,13 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
         delete [] tables;
         tables = t;
     }
+#endif
 
+#ifndef SINGLE_TAB_WINDOW
+    int offset = 0;
+#else
+    int offset = plotAtts->GetSliceIndex();
+#endif
     // Set the names of the tabs
     for(int i = 0; i < nTables; ++i)
     {
@@ -1169,11 +1197,11 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
         if(!structured)
             name.sprintf("Unstructured");
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::X)
-            name.sprintf("i=%d", i+base);
+            name.sprintf("i=%d", i+base+offset);
         else if(plotAtts->GetNormal() == SpreadsheetAttributes::Y)
-            name.sprintf("j=%d", i+base);
+            name.sprintf("j=%d", i+base+offset);
         else
-            name.sprintf("k=%d", i+base);
+            name.sprintf("k=%d", i+base+offset);
         zTabs->setTabLabel(tables[i], name);
     }
     zTabs->blockSignals(false);
@@ -1359,23 +1387,30 @@ SpreadsheetViewer::formatChanged()
 // Creation:   Tue Feb 20 14:16:44 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
+//   Support using a single tab of values.
 //   
 // ****************************************************************************
 
 void
-SpreadsheetViewer::sliderChanged(int val)
+SpreadsheetViewer::sliderChanged(int slice)
 {
-    if(val >= 0 && val < nTables)
+#ifndef SINGLE_TAB_WINDOW
+    int tabIndex = slice;
+#else
+    int tabIndex = 0;
+#endif
+    if(tabIndex >= 0 && tabIndex < nTables)
     {
-        plotAtts->SetSliceIndex(val);
+        plotAtts->SetSliceIndex(slice);
         postNotify();
 
         zTabs->blockSignals(true);
-        zTabs->showPage(tables[val]);
+        zTabs->showPage(tables[tabIndex]);
         zTabs->blockSignals(false);
 
         updateSliderLabel();
-        updateMenuEnabledState(tables[val]);
+        updateMenuEnabledState(tables[tabIndex]);
     }
 }
 
@@ -1553,19 +1588,21 @@ SpreadsheetViewer::tracerCheckBoxToggled(bool val)
 // Creation:   Tue Feb 20 14:19:50 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
+//   Support using a single tab of values.
 //   
 // ****************************************************************************
 
 void
 SpreadsheetViewer::minClicked()
 {
+    // minCell[0] = The index of the table that contains min
+    // minCell[1] = The row of the table that contains min
+    // minCell[2] = The column of the table that contains min
+#ifndef SINGLE_TAB_WINDOW
     if(minCell[0] != -1 && minCell[1] != -1 && minCell[2] != -1 &&
        minCell[0] < nTables)
     {
-        // minCell[0] = The index of the table that contains min
-        // minCell[1] = The row of the table that contains min
-        // minCell[2] = The column of the table that contains min
-
         // Show the page and don't block signals so we are sure to also
         // update the kSlider via the tabShanged slot
         zTabs->showPage(tables[minCell[0]]);
@@ -1581,6 +1618,25 @@ SpreadsheetViewer::minClicked()
         tables[minCell[0]]->addSelection(sel);
         tables[minCell[0]]->ensureCellVisible(minCell[1], minCell[2]);
     }
+#else
+    if(minCell[0] != -1 && minCell[1] != -1 && minCell[2] != -1)
+    {
+        // Show the right slice of data.
+        plotAtts->SetSliceIndex(minCell[0]);
+        plotAtts->Notify();
+
+        // Remove the selections that may be on the table.
+        for(int i = 0; i < tables[0]->numSelections(); ++i)
+            tables[0]->removeSelection(i);
+
+        // Select the new cell.
+        QTableSelection sel;
+        sel.init(minCell[1], minCell[2]);
+        sel.expandTo(minCell[1], minCell[2]);
+        tables[0]->addSelection(sel);
+        tables[0]->ensureCellVisible(minCell[1], minCell[2]);
+    }
+#endif
 }
 
 // ****************************************************************************
@@ -1594,19 +1650,21 @@ SpreadsheetViewer::minClicked()
 // Creation:   Tue Feb 20 14:19:50 PST 2007
 //
 // Modifications:
+//   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
+//   Support using a single tab of values.
 //   
 // ****************************************************************************
 
 void
 SpreadsheetViewer::maxClicked()
 {
+    // maxCell[0] = The index of the table that contains max
+    // maxCell[1] = The row of the table that contains max
+    // maxCell[2] = The column of the table that contains max
+#ifndef SINGLE_TAB_WINDOW
     if(maxCell[0] != -1 && maxCell[1] != -1 && maxCell[2] != -1 &&
        maxCell[0] < nTables)
     {
-        // maxCell[0] = The index of the table that contains max
-        // maxCell[1] = The row of the table that contains max
-        // maxCell[2] = The column of the table that contains max
-
         // Show the page and don't block signals so we are sure to also
         // update the kSlider via the tabShanged slot
         zTabs->showPage(tables[maxCell[0]]);
@@ -1622,6 +1680,25 @@ SpreadsheetViewer::maxClicked()
         tables[maxCell[0]]->addSelection(sel);
         tables[maxCell[0]]->ensureCellVisible(maxCell[1], maxCell[2]);
     }
+#else
+    if(maxCell[0] != -1 && maxCell[1] != -1 && maxCell[2] != -1)
+    {
+        // Show the right slice of data.
+        plotAtts->SetSliceIndex(maxCell[0]);
+        plotAtts->Notify();
+
+        // Remove the selections that may be on the table.
+        for(int i = 0; i < tables[0]->numSelections(); ++i)
+            tables[0]->removeSelection(i);
+
+        // Select the new cell.
+        QTableSelection sel;
+        sel.init(maxCell[1], maxCell[2]);
+        sel.expandTo(maxCell[1], maxCell[2]);
+        tables[0]->addSelection(sel);
+        tables[0]->ensureCellVisible(maxCell[1], maxCell[2]);
+    }
+#endif
 }
 
 // ****************************************************************************
