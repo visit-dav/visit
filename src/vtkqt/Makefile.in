@@ -102,6 +102,10 @@
 #    Thomas R. Treadway, Wed May  9 11:39:17 PDT 2007
 #    Added OpenGL libraries (framework) for MacOS X10.3 build
 #
+#    Jeremy Meredith, Thu Jun  7 13:23:18 EDT 2007
+#    Build rules for _moc.C are now in make-targets.in. Remove them from here.
+#    Also clean up the naming of the widgets and moc files.
+#
 ##############################################################################
 
 ##
@@ -109,7 +113,6 @@
 ##
 @SET_MAKE@
 @VARIABLES@
-MOC=@QT_MOC@
 
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@
 CPPFLAGS=@CPPFLAGS@ -I. -I../include/visit @VTK_INCLUDES@
@@ -122,7 +125,8 @@ NOT_DISTRIB=moc_vtkQtRenderWindowInteractor.C moc_vtkQtGLWidget.C
 SRC=vtkQtGLWidget.C vtkQtRenderWindow.C vtkQtRenderWindowInteractor.C vtkQtImagePrinter.C
 HDR=vtkQtGLWidget.h vtkQtRenderWindow.h vtkQtRenderWindowInteractor.h vtkQtImagePrinter.h
 
-MOCSRC=moc_vtkQtRenderWindowInteractor.C moc_vtkQtGLWidget.C
+WIDGETS=vtkQtRenderWindowInteractor.h vtkQtGLWidget.h
+MOCSRC=$(WIDGETS:.h=_moc.C)
 MOCOBJ=$(MOCSRC:.C=.o)
 
 OBJ=$(SRC:.C=.o) $(MOCOBJ)
@@ -147,21 +151,6 @@ message:
 	@echo "****************************************************************************"
 	@echo "*** Building VTK/Qt Render Window Library ($(LIB))"
 	@echo "****************************************************************************"
-
-##
-## Source file specific rules
-##
-moc_vtkQtRenderWindowInteractor.o: moc_vtkQtRenderWindowInteractor.C \
-	vtkQtRenderWindowInteractor.h
-
-moc_vtkQtRenderWindowInteractor.C: vtkQtRenderWindowInteractor.h
-	$(MOC) vtkQtRenderWindowInteractor.h -o moc_vtkQtRenderWindowInteractor.C
-
-moc_vtkQtGLWidget.o: moc_vtkQtGLWidget.C \
-	vtkQtGLWidget.h
-
-moc_vtkQtGLWidget.C: vtkQtGLWidget.h
-	$(MOC) vtkQtGLWidget.h -o moc_vtkQtGLWidget.C
 
 ##
 ## Misc stuff

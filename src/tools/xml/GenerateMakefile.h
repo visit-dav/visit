@@ -200,6 +200,9 @@
 //    Need to include Mesa and OpenGL for the Mac dependences
 //    Wrapped Mac dependences in #ifdef
 //
+//    Jeremy Meredith, Thu Jun  7 13:22:18 EDT 2007
+//    Remove build rule for moc.C from .h.  This is now in make-targets.in.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -349,7 +352,6 @@ class MakefileGeneratorPlugin
         out << "  -I"<<vtkdir<<"/Imaging \\"<<endl;
         out << "  -I"<<vtkdir<<"/Rendering \\"<<endl;
         out << "  -I"<<vtkdir<<"/Utilities"<<endl;
-        out << "MOC="<<visithome<<"/bin/moc" << endl;
         if(type == "database")
             out << "CXXFLAGS=$(CXXFLAGSORIG)";
         else
@@ -799,18 +801,6 @@ class MakefileGeneratorPlugin
                 out << "\t@echo \"*** Building "<<label<<" Database Plugin\"" << endl;
             out << "\t@echo \"****************************************************************************\"" << endl;
         }
-        out << "" << endl;
-        out << "##" << endl;
-        out << "## moc" << endl;
-        out << "##" << endl;
-        out << "$(MOCSRC) or_no_widgets: $(WIDGETS)" << endl;
-        out << "\t@rm -f $@" << endl;
-        out << "\t$(MOC) $(@:_moc.C=.h) > $@" << endl;
-        out << "" << endl;
-        out << "$(VIEWERMOCSRC) or_no_viewer_widgets: $(VIEWERWIDGETS)" << endl;
-        out << "\t@rm -f $@" << endl;
-        out << "\t$(MOC) $(@:_moc.C=.h) > $@" << endl;
-        out << "" << endl;
         out << "" << endl;
         out << "##" << endl;
         out << "## Automatic dependency stuff" << endl;

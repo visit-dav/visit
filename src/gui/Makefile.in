@@ -381,6 +381,9 @@
 #    Jeremy Meredith, Tue Jun  5 17:31:29 EDT 2007
 #    Removed the test program; it no longer exists.
 #
+#    Jeremy Meredith, Thu Jun  7 13:23:18 EDT 2007
+#    Build rules for _moc.C are now in make-targets.in. Remove them from here.
+#
 ##############################################################################
 
 ##
@@ -398,8 +401,6 @@ LIBS=-lplugin $(QT_LIBS) $(QUI_LIBS) -L../lib -lviewerproxy -lviewerrpc \
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
 LIBDEP=
 CXXFLAGS=-I. @CXXFLAGS@ @QT_CXXFLAGS@ -I../include/visit
-
-MOC=@QT_MOC@
 
 ##
 ## Files...
@@ -610,9 +611,6 @@ moc: $(SRCMOC)
 ##
 ## Source file specific rules
 ##
-.h_moc.C:
-	$(MOC) $< > $@
-
 main.o: main.C QvisMainWindow.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c main.C
 
