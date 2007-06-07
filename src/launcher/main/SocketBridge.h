@@ -42,6 +42,7 @@
 #include <winsock2.h>
 #else
 #include <sys/types.h>
+#include <sys/select.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #endif
@@ -58,8 +59,11 @@
 // Creation:   May 23, 2007
 //
 // Modifications:
-// Thomas R. Treadway, Mon Jun  4 09:54:17 PDT 2007
-// Added types.h for fd_set definition.
+//    Thomas R. Treadway, Mon Jun  4 09:54:17 PDT 2007
+//    Added types.h for fd_set definition.
+//
+//    Cyrus Harrison, Thu Jun  7 11:44:07 PDT 2007
+//    Added <sys/select.h> for AIX fd_set definition 
 //
 // ****************************************************************************
 
