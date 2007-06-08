@@ -4,69 +4,81 @@
 ## Programmer:  Jeremy Meredith
 ## Date:        June  5, 2007
 ##
+## Modifications:
+##    Jeremy Meredith, Fri Jun  8 12:59:19 EDT 2007
+##    Removed -MG; it seemed to cause recursive dependency loops with -MP.
+##    Added -MT to avoid basename target problem and add .o and .d 
+##    targets in the first pass, avoiding the need for sed.  Also added a
+##    fail command that aborts the make, since with no -MG errors can occur.
 
-## Notes on the flags:
-##  -MP generates dummy rules for headers to avoid the
+## Notes:
+##  -MG is avoided, since when used with -MP it appears to sometimes create
+##      loops when generating dependencies when header files are missing
+##
+##  -MP is used, as it generates dummy rules for headers to avoid the
 ##      "deleted header file" problem
-##  -MG assumes missing headers are generated and places them
-##      in the output .d file with no path, and no errors
+##  -MT is used for two reasons: first, to make sure the basename of the .o
+##      is not used; we need to keep the path.... and second, so that
+##      we can have the .d and .o both depend on the same files
 ##
-## Neither of these are particularly portable.  To get this to work using xlc,
-## for example, the following changes would have to be made:
-##  1)  change CDEPFLAGS to: -M -MF tmp$$$$.d -E
-##  2)  change the CC lines to avoid the pipe and use this temporary file, e.g.:
-##      $(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS)  $< > /dev/null ; $(POSTDEPCMD) < tmp$$$$.d > $@ ; rm -f tmp$$$$.d
-##
-CDEPFLAGS=-M -MP -MG
-POSTDEPCMD=sed 's,$*\.o[ :]*,$(@:.d=.o) $@ : ,g'
+##  For porting to a compiler where these flags are missing:
+##   -E  may need to be added; not all compilers presume -M implies -E
+##   -MP can be dropped; developers can rm the erroneous .d files themselves
+##   -MT must be replaced with a postprocessing step, e.g.
+##       POSTCMD=sed 's,$*\.o[ :]*,$(@:.d=.o) $@ : ,g' < $@ > $@- && mv $@- $@
+##       and change the command to $(CC) ... $< && $(POSTCMD) || $(FAILCMD)
+##       ... but note that even this example might not fix the basename problem
+
+CDEPFLAGS=-M -MP -MF $@ -MT "$(@:.d=.o) $@"
+FAILCMD=(echo "error resolving dependencies; removing $@ and exiting" && rm -f $@ && exit 1)
 
 .c.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS)  $< | $(POSTDEPCMD) > $@
+	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS)  $<  ||  $(FAILCMD)
 
 .c_mds.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS) -DMDSERVER  $< | $(POSTDEPCMD) > $@
+	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS) -DMDSERVER   $<  ||  $(FAILCMD)
 
 .c_par.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@  $< | $(POSTDEPCMD) > $@
+	$(CC) $(CDEPFLAGS) $(CFLAGS) $(CPPFLAGS) -DPARALLEL   $<  ||  $(FAILCMD)
 
 .C.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS)  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS)  $<  ||  $(FAILCMD)
 
 .C_eng.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DENGINE  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DENGINE   $<  ||  $(FAILCMD)
 
 .C_mds.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DMDSERVER  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DMDSERVER   $<  ||  $(FAILCMD)
 
 .C_par.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DPARALLEL   $<  ||  $(FAILCMD)
 
 .C_ogl.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS)  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS)   $<  ||  $(FAILCMD)
 
 .C_mesa.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(MESA_INCLUDE)  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(MESA_INCLUDE)   $<  ||  $(FAILCMD)
 
 .C_par_eng.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DENGINE @PARALLEL_CPPFLAGS@  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DENGINE -DPARALLEL   $<  ||  $(FAILCMD)
 
 .C_par_ogl.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DPARALLEL   $<  ||  $(FAILCMD)
 
 .C_par_mesa.d:
 	@echo "updating $@"; rm -f $@; \
-	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) @PARALLEL_CPPFLAGS@ $(MESA_INCLUDE)  $< | $(POSTDEPCMD) > $@
+	$(CXX) $(CDEPFLAGS) $(CXXFLAGS) $(CPPFLAGS) -DPARALLEL $(MESA_INCLUDE)   $<  ||  $(FAILCMD)
 
 .f.d:
 	@echo "can't create fortran dependencies; creating empty $@"; rm -f $@ ; touch $@
