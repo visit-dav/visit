@@ -107,6 +107,7 @@ class avtIndexSelectFilter : public avtPluginStreamer
     bool                        haveIssuedWarning;
     bool                        successfullyExecuted;
     int                         selID;
+    bool                        groupCategory;
 
     vtkVisItExtractGrid                  *curvilinearFilter;
     vtkVisItExtractRectilinearGrid       *rectilinearFilter;
@@ -118,6 +119,7 @@ class avtIndexSelectFilter : public avtPluginStreamer
     virtual void                PreExecute(void);
     virtual void                PostExecute(void);
     virtual void                RefashionDataObjectInfo(void);
+    virtual void                VerifyInput(void);
 
     virtual avtPipelineSpecification_p
                                 PerformRestriction(avtPipelineSpecification_p);

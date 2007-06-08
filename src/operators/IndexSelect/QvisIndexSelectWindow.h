@@ -43,10 +43,11 @@
 
 class IndexSelectAttributes;
 class QButtonGroup;
+class QCheckBox;
 class QGroupBox;
 class QLabel;
-class QLineEdit;
 class QSpinBox;
+class QvisSILSetSelector;
 
 // ****************************************************************************
 // Class: QvisIndexSelectWindow
@@ -64,6 +65,10 @@ class QSpinBox;
 //   Changed Min/Max/Incr from LineEdit to SpinBox for usability, added
 //   labels and group boxes for each dim.
 //   
+//   Kathleen Bonnell, Thu Jun  7 11:40:58 PDT 2007 
+//   Added QvisSILSetSelector, removed domainIndex, groupIndex.
+//   Changed whichData buttongroup to useWholeCollection checkbox.
+// 
 // ****************************************************************************
 
 class QvisIndexSelectWindow : public QvisOperatorWindow
@@ -76,8 +81,8 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
                          const char *shortName = 0,
                          QvisNotepadArea *notepad = 0);
     virtual ~QvisIndexSelectWindow();
-    virtual void CreateWindowContents();
   protected:
+    virtual void CreateWindowContents();
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
@@ -91,9 +96,9 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
     void threeDMinChanged(int min);
     void threeDMaxChanged(int max);
     void threeDIncrChanged(int incr);
-    void whichDataChanged(int val);
-    void domainIndexProcessText();
-    void groupIndexProcessText();
+    void useWholeCollectionToggled(bool val);
+    void categoryChanged(const QString &);
+    void subsetChanged(const QString &);
   private:
     QButtonGroup *dim;
 
@@ -115,10 +120,9 @@ class QvisIndexSelectWindow : public QvisOperatorWindow
     QSpinBox     *threeDMax;
     QSpinBox     *threeDIncr;
 
-    QButtonGroup *whichData;
-    QLineEdit *domainIndex;
-    QLineEdit *groupIndex;
+    QCheckBox *useWholeCollection;
 
+    QvisSILSetSelector *silSet;
     IndexSelectAttributes *atts;
 };
 

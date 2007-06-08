@@ -57,11 +57,16 @@
 #include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
-#include <avtSILRestrictionTraverser.h>
 #include <avtLogicalSelection.h>
+#include <avtSILRestrictionTraverser.h>
+#include <avtTerminatingSource.h>
+#include <CompactSILRestrictionAttributes.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <InvalidSetException.h>
+#include <InvalidCategoryException.h>
+#include <InvalidVariableException.h>
 #include <snprintf.h>
 
 
@@ -84,6 +89,9 @@
 //    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006 
 //    Add vtkMaskPoints for a points filter. 
 // 
+//    Kathleen Bonnell, Thu Jun  7 14:37:49 PDT 2007 
+//    Added groupCategory.
+// 
 // ****************************************************************************
 
 avtIndexSelectFilter::avtIndexSelectFilter()
@@ -95,6 +103,7 @@ avtIndexSelectFilter::avtIndexSelectFilter()
     pointsFilter->RandomModeOff();
     haveIssuedWarning = false;
     selID             = -1;
+    groupCategory = false;
 }
 
 
@@ -187,6 +196,9 @@ avtIndexSelectFilter::SetAtts(const AttributeGroup *a)
 //    Kathleen Bonnell, Mon Jan 30 15:10:26 PST 2006 
 //    Setup vtkMaskPoints.
 //
+//    Kathleen Bonnell, Thu Jun  7 14:37:49 PDT 2007 
+//    Use groupCategory insead of WhichData == OneGroup.
+// 
 // ****************************************************************************
 
 void
@@ -196,7 +208,7 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3])
     // Only adjust the base index if we are index selecting by group.
     //
     int bi[3];
-    if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
+    if (groupCategory)
     {
         bi[0] = groupIndices[0];
         bi[1] = groupIndices[1];
@@ -335,6 +347,9 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Remove call to SetSource(NULL) as it now removes information necessary
 //    for the dataset. 
 //
+//    Kathleen Bonnell, Thu Jun  7 14:37:49 PDT 2007 
+//    Use groupCategory insead of WhichData == OneGroup.
+// 
 // ****************************************************************************
 
 vtkDataSet *
@@ -494,7 +509,7 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
         d[2] = dims->GetValue(2);
 
         int base[3] = { 0, 0, 0 };
-        if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
+        if (groupCategory)
         {
             vtkDataArray *arr = in_ds->GetFieldData()->GetArray("base_index");
             if (arr != NULL)
@@ -659,6 +674,9 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //    Jeremy Meredith, Wed Aug 24 13:37:07 PDT 2005
 //    Added support for group origin.
 //
+//    Kathleen Bonnell, Thu Jun  7 14:37:49 PDT 2007 
+//    Modified how SIL selection is done, based on new atts. 
+// 
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -666,88 +684,43 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
 
-    intVector chunks;
-    if (atts.GetWhichData() == IndexSelectAttributes::OneDomain)
+    if (!atts.GetUseWholeCollection()) 
     {
-        int chunk = 0;
-        intVector domains;
-        int blockOrigin 
-                      = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
-        rv->GetDataSpecification()->GetSIL().GetDomainList(domains);
-        int maxDomain = domains[domains.size()-1] + blockOrigin;
-        domains.clear();
-        if (atts.GetDomainIndex() < blockOrigin)
+        string category = atts.GetCategoryName();
+        string subset = atts.GetSubsetName();
+        avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
+        int collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
+        CompactSILRestrictionAttributes *silAtts = silr->MakeCompactAttributes();
+        const unsignedCharVector &useSet =  silAtts->GetUseSet();
+        int setID = silr->GetSetIndex(subset, collectionID);
+        if (useSet[setID] == 0) 
         {
-            char warning[128];
-            SNPRINTF(warning, 128, "\nThe selected block number (%d) is too "
-                            "small for this data, using %d instead.", 
-                            atts.GetDomainIndex(), blockOrigin);
-            avtCallback::IssueWarning(warning);
-            chunk = 0;
+            EXCEPTION1(InvalidSetException, subset.c_str());
         }
-        else if (atts.GetDomainIndex() > maxDomain)
+        TRY
         {
-            char warning[128];
-            SNPRINTF(warning, 128, "\nThe selected block number (%d) is too "
-                            "large for this data, using %d instead.", 
-                            atts.GetDomainIndex(), maxDomain);
-            avtCallback::IssueWarning(warning);
-            chunk = maxDomain -blockOrigin; 
+            silr = rv->GetDataSpecification()->GetRestriction();
+            silr->TurnOffAll();
+            silr->TurnOnSet(setID);
+            // We've just turned on an entire set, but some parts
+            // (materials) may have been turned off before, so ensure
+            // that remains the case.
+            for (int i = 0; i < useSet.size(); i++)
+            {
+                if (setID == i)
+                    continue;
+                if (useSet[i] == 0)
+                    silr->TurnOffSet(i);
+            }
         }
-        else
+        CATCH(InvalidVariableException)
         {
-            chunk = atts.GetDomainIndex()-blockOrigin;
+            // If for some reason the GetSetIndex fails.
+            RETHROW;
         }
-        chunks.push_back(chunk);
-    }
-    else if (atts.GetWhichData() == IndexSelectAttributes::OneGroup)
-    {
-        int groupOrigin=GetInput()->GetInfo().GetAttributes().GetGroupOrigin();
-        avtSILRestriction_p silr =rv->GetDataSpecification()->GetRestriction();
-        int nc = silr->GetNumCollections();
-        for (int i = 0 ; i < nc ; i++)
-        {
-             avtSILCollection_p coll = silr->GetSILCollection(i);
-             if (coll->GetRole() == SIL_BLOCK)
-             {
-                 //
-                 // So we are assuming that the first collection we run across
-                 // is the right one -- there really is no other way to do this
-                 // when we try to take a single text field from a GUI and
-                 // translate into the context of a SIL -- the text field would
-                 // have to have SIL qualifiers otherwise.
-                 //
-                 const vector<int> &els = coll->GetSubsetList();
-                 int group = atts.GetGroupIndex() - groupOrigin;
-
-                 //
-                 // Only go through the restriction process if we have
-                 // more than 1 group 
-                 //
-                 if (group >= 0 && group < els.size() && els.size() > 1)
-                 {
-                     //
-                     // We think we found the group, so set up the new spec.
-                     // We don't want to turn on any materials that are
-                     // already off, so make a copy of the current silr,
-                     // restrict it to the chosen group and determine
-                     // which domains are part of this group, then restrict
-                     // the silr by those domains.
-                     //
-                     rv = new avtPipelineSpecification(spec);
-                     avtSILRestriction_p sil2 = new avtSILRestriction(silr);
-                     sil2->TurnOffAll();
-                     sil2->TurnOnSet(els[group]);
-                     avtSILRestrictionTraverser trav(sil2);
-                     trav.GetDomainList(chunks);
-                     break;
-                 }
-             }
-        }
+        ENDTRY
     }
 
-    if (chunks.size() > 0)
-        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(chunks);
 
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
@@ -763,9 +736,9 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
         bool needSI = false;
         avtSILRestriction_p silr =rv->GetDataSpecification()->GetRestriction();
         avtSILRestrictionTraverser trav(silr);
-        if (chunks.size() > 0)
+        if (atts.GetUseWholeCollection())
         {
-            chunks.clear();
+            intVector chunks;
             trav.GetDomainList(chunks);
             for (int i = 0; i < chunks.size(); i++)
             {
@@ -1021,3 +994,76 @@ avtIndexSelectFilter::FilterUnderstandsTransformedRectMesh()
     // Index select is based on logical coordinates only.
     return true;
 }
+
+
+// ****************************************************************************
+//  Method: avtOnionPeelFilter::VerifyInput
+//
+//  Purpose:
+//    Throw an exception if user-selected domain is out of range. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   June 7, 2007 
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+void
+avtIndexSelectFilter::VerifyInput()
+{
+    if (atts.GetUseWholeCollection() || atts.GetSubsetName() == "Whole")
+    {
+        return;
+    }
+
+    std::string category = atts.GetCategoryName();
+    std::string subset = atts.GetSubsetName();
+    avtSILRestriction_p silr = GetTerminatingSource()->
+        GetFullDataSpecification()->GetRestriction();
+
+    int setID, collectionID;
+    TRY
+    {
+        collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
+        setID = silr->GetSetIndex(subset, collectionID);
+        avtSILCollection_p coll = silr->GetSILCollection(collectionID);
+
+        if (coll->GetRole() != SIL_DOMAIN && coll->GetRole() != SIL_BLOCK)
+        {
+            //
+            //  May occur if user types in a category name.
+            //
+            EXCEPTION1(InvalidCategoryException, category.c_str()); 
+        }
+
+        const vector<int> &els = coll->GetSubsetList();
+        bool validSet = false;
+        for (int i = 0; i < els.size() && !validSet; i++)
+        {
+            validSet = (setID == els[i]);
+        }
+
+        if (!validSet)
+        {
+            //
+            //  May occur if user types in a set name.
+            //
+            EXCEPTION2(InvalidSetException, category.c_str(), subset.c_str());
+        }
+
+        if (coll->GetRole() == SIL_BLOCK)
+        {
+            groupCategory = true;
+        }
+    }
+    CATCH(InvalidVariableException)
+    {
+        //
+        //  SIL could not match category name or subset name to an id.
+        //
+        RETHROW; 
+    }
+    ENDTRY
+}
+
