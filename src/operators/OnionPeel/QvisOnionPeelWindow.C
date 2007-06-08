@@ -41,24 +41,21 @@
 #include <ViewerProxy.h>
 #include <avtSIL.h>
 #include <SILRestrictionAttributes.h>
+#include <QvisSILSetSelector.h>
 
+#include <qbuttongroup.h>
 #include <qcheckbox.h>
-#include <qcombobox.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
-#include <qlistbox.h>
-#include <qspinbox.h>
-#include <qbuttongroup.h>
 #include <qradiobutton.h>
+#include <qspinbox.h>
 #include <qstringlist.h>
 #include <qtimer.h>
 #include <stdio.h>
-#include <string>
+#include <vectortypes.h>
 
 
-using std::string;
-using std::vector;
 
 // ****************************************************************************
 // Method: QvisOnionPeelWindow::QvisOnionPeelWindow
@@ -73,6 +70,9 @@ using std::vector;
 //   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
 //   Added observation of SILRestrictionAttributes, data member silUseSet.
 //   
+//   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
+//   Removed defaultItem, silTopSet, silNumSets, silNumCollections, silAtts.
+//
 // ****************************************************************************
 
 QvisOnionPeelWindow::QvisOnionPeelWindow(const int type,
@@ -80,15 +80,9 @@ QvisOnionPeelWindow::QvisOnionPeelWindow(const int type,
                          const char *caption,
                          const char *shortName,
                          QvisNotepadArea *notepad)
-    : QvisOperatorWindow(type,subj, caption, shortName, notepad) ,silUseSet()
+    : QvisOperatorWindow(type,subj, caption, shortName, notepad) 
 {
     atts = subj;
-    defaultItem = "Whole";
-    silTopSet = -1;
-    silNumSets = -1;
-    silNumCollections = -1;
-    silAtts = GetViewerState()->GetSILRestrictionAttributes();
-    silAtts->Attach(this);
 }
 
 
@@ -129,13 +123,15 @@ QvisOnionPeelWindow::~QvisOnionPeelWindow()
 //   Kathleen Bonnell, Wed Jan 19 15:45:38 PST 2005 
 //   Added 'seedType' button group. 
 //
+//   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
+//   Replace categoryName/subsetName combo boxes with QvisSILSetSelector.
+//
 // ****************************************************************************
 
 void
 QvisOnionPeelWindow::CreateWindowContents()
 {
     QGridLayout *mainLayout = new QGridLayout(topLayout, 7,3,  10, "mainLayout");
-
 
     //
     // Adjacency
@@ -154,40 +150,23 @@ QvisOnionPeelWindow::CreateWindowContents()
     mainLayout->addWidget(adjacencyType, 0,1);
 
     //
-    // Category
+    // silSet (category/subset)
     //
-    categoryLabel = new QLabel("Category", central, "categoryNameLabel");
-    mainLayout->addWidget(categoryLabel,1,0);
-
-    categoryName = new QComboBox(true, central, "categoryName");
-    categoryName->setAutoCompletion(true);
-    categoryName->setInsertionPolicy(QComboBox::NoInsertion);
-    categoryName->insertItem(defaultItem);
-    categoryName->setCurrentItem(0);
-    categoryName->setEditText(defaultItem);
-    connect(categoryName, SIGNAL(activated(int)),
-            this, SLOT(categoryNameChanged()));
-    mainLayout->addMultiCellWidget(categoryName, 1,1, 1,2);
-
-    //
-    // Set
-    //
-    subsetLabel = new QLabel("Set", central, "subsetNameLabel");
-    mainLayout->addWidget(subsetLabel,2,0);
-    subsetName = new QComboBox(true, central, "subsetName");
-    subsetName->setAutoCompletion(true);
-    subsetName->setInsertionPolicy(QComboBox::NoInsertion);
-    subsetName->insertItem(defaultItem);
-    subsetName->setCurrentItem(0);
-    subsetName->setEditText(defaultItem);
-    connect(subsetName, SIGNAL(activated(int)),
-            this, SLOT(subsetNameChanged()));
-    mainLayout->addMultiCellWidget(subsetName, 2,2, 1,2);
+    intVector roles;
+    roles.push_back(SIL_DOMAIN);
+    roles.push_back(SIL_BLOCK);
+    silSet = new QvisSILSetSelector(central, "silSet", 
+        GetViewerState()->GetSILRestrictionAttributes(), roles);
+    connect(silSet, SIGNAL(categoryChanged(const QString &)),
+            this, SLOT(categoryChanged(const QString &)));
+    connect(silSet, SIGNAL(subsetChanged(const QString &)),
+            this, SLOT(subsetChanged(const QString &)));
+    mainLayout->addMultiCellWidget(silSet, 1,1, 0,2);
 
     //
     // Seed
     //
-    mainLayout->addWidget(new QLabel("Seed", central, "seedTypeLabel"),3,0);
+    mainLayout->addWidget(new QLabel("Seed", central, "seedTypeLabel"),2,0);
     seedType = new QButtonGroup(central, "seedType");
     seedType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *seedTypeLayout = new QHBoxLayout(seedType);
@@ -198,18 +177,22 @@ QvisOnionPeelWindow::CreateWindowContents()
     seedTypeLayout->addWidget(rb);
     connect(seedType, SIGNAL(clicked(int)),
             this, SLOT(seedTypeChanged(int)));
-    mainLayout->addWidget(seedType, 3,1);
+    mainLayout->addWidget(seedType, 2,1);
     
     //
     // Index
     //
+#if 0
     mainLayout->addMultiCellWidget(new QLabel("Seed # or i j [k]", 
-                central, "indexLabel"),4,4,0,1);
+                central, "indexLabel"),3,3,0,1);
+#endif
+    mainLayout->addWidget(new QLabel("Seed # or i j [k]", 
+                central, "indexLabel"),3,0);
     index = new QLineEdit(central, "index");
     index->setText(QString("1"));
     connect(index, SIGNAL(returnPressed()),
             this, SLOT(indexChanged()));
-    mainLayout->addWidget(index, 4,2);
+    mainLayout->addWidget(index, 3,1);
 
     //
     // UseGlobalId
@@ -218,16 +201,16 @@ QvisOnionPeelWindow::CreateWindowContents()
     useGlobalId->setChecked(false);
     connect(useGlobalId, SIGNAL(toggled(bool)),
             this, SLOT(useGlobalIdToggled(bool)));
-    mainLayout->addMultiCellWidget(useGlobalId, 5,5, 0,2);
+    mainLayout->addMultiCellWidget(useGlobalId, 4,4, 0,1);
 
     //
     // Layers
     //
-    mainLayout->addWidget(new QLabel("Layers", central, "requestedLayerLabel"),6,0);
+    mainLayout->addWidget(new QLabel("Layers", central, "requestedLayerLabel"),5,0);
     requestedLayer = new QSpinBox(0, 10000, 1, central, "requestedLayer");
     connect(requestedLayer, SIGNAL(valueChanged(int)), 
             this, SLOT(requestedLayerChanged(int)));
-    mainLayout->addWidget(requestedLayer, 6,1);
+    mainLayout->addWidget(requestedLayer, 5,1);
 }
 
 
@@ -253,6 +236,9 @@ QvisOnionPeelWindow::CreateWindowContents()
 //   Kathleen Bonnell, Wed Jan 19 15:45:38 PST 2005 
 //   Added 'seedType' button group. 
 //
+//   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
+//   Removed calls to UpdateComboBoxes, replace category/subset with silSet.
+//
 // ****************************************************************************
 
 void
@@ -260,16 +246,8 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
 {
     QString temp;
     int i, j;
-    std::vector<int> ivec;
+    intVector ivec;
 
-    if (selectedSubject == silAtts)
-    {
-        UpdateComboBoxes();
-        return;
-    }
-
-    if (doAll)
-        UpdateComboBoxes();
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
@@ -292,18 +270,18 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
         case 1: //useGlobalId 
             useGlobalId->blockSignals(true);
             useGlobalId->setChecked(atts->GetUseGlobalId());
-            if (atts->GetUseGlobalId())
-            {
-                categoryName->setEnabled(false);
-                categoryLabel->setEnabled(false);
-                subsetName->setEnabled(false);
-                subsetLabel->setEnabled(false);
-            }
+            silSet->setEnabled(!atts->GetUseGlobalId());
             useGlobalId->blockSignals(false);
             break;
         case 2: //Category 
+            silSet->blockSignals(true);
+            silSet->SetCategoryName(atts->GetCategoryName().c_str());
+            silSet->blockSignals(false);
             break;
         case 3: // Subset 
+            silSet->blockSignals(true);
+            silSet->SetSubsetName(atts->GetSubsetName().c_str());
+            silSet->blockSignals(false);
             break;
         case 4: // index 
             index->blockSignals(true);
@@ -332,259 +310,8 @@ QvisOnionPeelWindow::UpdateWindow(bool doAll)
             break;
         }
     } // end for
-    if (!doAll)
-        UpdateComboBoxesEnabledState(2);
 }
 
-// ****************************************************************************
-// Method: QvisOnionPeelWindow::UpdateComboBoxes
-//
-// Purpose: 
-//   Determnes which combo box needs to be updated. 
-//
-// Programmer: Kathleen Bonnell 
-//
-// Modifications:
-//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
-//   Only update the box whose information has changed. 
-//   
-// ****************************************************************************
-
-void
-QvisOnionPeelWindow::UpdateComboBoxes()
-{
-    QString cn = categoryName->currentText();
-
-    if (silAtts->GetTopSet() != silTopSet ||
-        silAtts->GetSilAtts().GetNCollections() != silNumCollections)
-    {
-        silTopSet = silAtts->GetTopSet();
-        silNumCollections = silAtts->GetSilAtts().GetNCollections();
-        FillCategoryBox();
-    }
-
-    if (cn != categoryName->currentText() || silUseSet != silAtts->GetUseSet())
-    {
-        silUseSet = silAtts->GetUseSet();
-        FillSubsetBox();
-    }
-}
-
-// ****************************************************************************
-// Method: QvisOnionPeelWindow::UpdateComboBoxesEnabledState
-//
-// Purpose: 
-//   Updates the enabled state for category and subset combo boxes. 
-//
-// Arguments:
-//   which     Which combo box should be updated. 0 == Category
-//             1 == Subset, 2 == Both.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 10, 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisOnionPeelWindow::UpdateComboBoxesEnabledState(int which)
-{
-    bool doAll = which == 2;
-    if (which == 0 || doAll)
-    {
-        if (categoryName->count() == 0)
-        {
-            categoryName->insertItem(defaultItem);
-            categoryName->setCurrentItem(0);
-            categoryName->setEnabled(false);
-            categoryLabel->setEnabled(false);
-        }
-        else if (categoryName->count() == 1)
-        {
-            categoryName->setEnabled(false);
-            categoryLabel->setEnabled(false);
-        }
-        else if (atts->GetUseGlobalId())
-        {
-            categoryName->setEnabled(false);
-            categoryLabel->setEnabled(false);
-        }
-        else 
-        {
-            categoryName->setEnabled(true);
-            categoryLabel->setEnabled(true);
-        }
-    }
-    if (which == 1 || doAll)
-    {
-        if (subsetName->count() == 0)
-        {
-            subsetName->insertItem(defaultItem);
-            subsetName->setCurrentItem(0);
-            subsetName->setEnabled(false);
-            subsetLabel->setEnabled(false);
-        }
-        else if (subsetName->count() == 1)
-        {
-            subsetName->setEnabled(false);
-            subsetLabel->setEnabled(false);
-        }
-        else if (atts->GetUseGlobalId())
-        {
-            subsetName->setEnabled(false);
-            subsetLabel->setEnabled(false);
-        }
-        else
-        {
-            subsetName->setEnabled(true);
-            subsetLabel->setEnabled(true);
-        }
-        categoryName->blockSignals(false);
-        subsetName->blockSignals(false);
-    }
-}
-
-
-// ****************************************************************************
-// Method: QvisOnionPeelWindow::FillCategoryBox
-//
-// Purpose: 
-//   Reads the current SILRestriction and updates the category list. 
-//
-// Programmer: Kathleen Bonnell 
-//
-// Modifications:
-//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
-//   Only update the box whose information has changed. 
-//   
-//   Kathleen Bonnell, Thu Sep  2 15:54:03 PDT 2004 
-//   Disable if zero or 1 names.
-//   
-// ****************************************************************************
-
-void
-QvisOnionPeelWindow::FillCategoryBox()
-{
-    categoryName->blockSignals(true);
-    categoryName->clear();
-
-    if (silTopSet > -1)
-    {
-        avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
-        avtSILSet_p current = restriction->GetSILSet(silTopSet);
-        const std::vector<int> &mapsOut = current->GetMapsOut();
-        for (int j = 0; j < mapsOut.size(); ++j)
-        {
-            int cIndex = mapsOut[j];
-            avtSILCollection_p collection =restriction->GetSILCollection(cIndex);
-            QString collectionName(collection->GetCategory().c_str());
-            if ((collection->GetRole() == SIL_DOMAIN) ||
-                (collection->GetRole() == SIL_BLOCK)) 
-            {
-                categoryName->insertItem(collectionName);    
-            }
-        }
-
-        if (categoryName->count() != 0)
-        {
-            //
-            // Set the current item for the category
-            //
-            QString cn(atts->GetCategoryName().c_str());
- 
-            if (cn == defaultItem)
-            {
-                categoryName->setCurrentItem(0);
-            }
-            else 
-            {
-                QListBox *lb = categoryName->listBox();
-                int idx = lb->index(lb->findItem(cn));
-                idx = (idx == -1 ? 0 : idx);
-                categoryName->setCurrentItem(idx);
-            }
-        } /* if category has items in it */
-    }
-
-    UpdateComboBoxesEnabledState(0);
-    categoryName->setEditText(categoryName->currentText());
-    categoryName->blockSignals(false);
-}
-
-
-// ****************************************************************************
-// Method: QvisOnionPeelWindow::FillSubsetBox
-//
-// Purpose: 
-//   Reads the current SILRestriction and updates the subset list. 
-//
-// Programmer: Kathleen Bonnell 
-//
-// Modifications:
-//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
-//   Check the silUseSet for names to include. 
-//   
-//   Kathleen Bonnell, Thu Sep  2 15:54:03 PDT 2004 
-//   Disable if zero or 1 names.
-//   
-//   Kathleen Bonnell, Thu Jan 26 07:33:29 PST 2006 
-//   Add silTopSet to argslist for GetCollectionIndex. 
-//   
-// ****************************************************************************
-
-void
-QvisOnionPeelWindow::FillSubsetBox()
-{
-    subsetName->blockSignals(true);
-    subsetName->clear();
-
-    QString cn = categoryName->currentText();
-
-    if (cn != defaultItem) 
-    {
-        avtSILRestriction_p restriction = GetViewerProxy()->GetPlotSILRestriction();
-
-        //
-        // Fill  with sets under the currently selected category.
-        //
-        int colIndex = restriction->GetCollectionIndex(cn.latin1(), silTopSet);
-        avtSILCollection_p collection =restriction->GetSILCollection(colIndex); 
-        if (*collection != NULL)
-        {
-            std::vector<int> sets = collection->GetSubsetList();
-            for (int i = 0; i < sets.size(); ++i)
-            {
-                if (silUseSet[sets[i]] != 0)
-                {
-                    avtSILSet_p set = restriction->GetSILSet(sets[i]);
-                    subsetName->insertItem(QString(set->GetName().c_str()));
-                } 
-            } 
-            //
-            // Set the current item for the subset 
-            //
-            if (subsetName->count() != 0)
-            {
-                QString sn(atts->GetSubsetName().c_str());
-                if (sn == defaultItem) 
-                {
-                    subsetName->setCurrentItem(0);
-                }
-                else 
-                {
-                    QListBox *lb = subsetName->listBox();
-                    int idx = lb->index(lb->findItem(sn));
-                    idx = (idx == -1 ? 0 : idx);
-                    subsetName->setCurrentItem(idx);
-                }
-            }
-        } /*if collection!=NULL */
-    }
-    UpdateComboBoxesEnabledState(1);
-    subsetName->setEditText(subsetName->currentText());
-    subsetName->blockSignals(false);
-}
 
 // ****************************************************************************
 // Method: QvisOnionPeelWindow::GetCurrentValues
@@ -599,6 +326,9 @@ QvisOnionPeelWindow::FillSubsetBox()
 //   Kathleen Bonnell, Tue Jan 18 19:37:46 PST 2005
 //   Added logic for requestedLayer.
 //   
+//   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
+//   Replaced category/subset with silSet.
+//
 // ****************************************************************************
 
 void
@@ -613,44 +343,11 @@ QvisOnionPeelWindow::GetCurrentValues(int which_widget)
         // Nothing for adjacencyType
     }
 
-    // Do categoryName
-    if(which_widget == 1 || doAll)
+    // Do categoryName && subsetName
+    if(doAll)
     {
-        temp = categoryName->currentText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            atts->SetCategoryName(temp.latin1());
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of categoryName was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetCategoryName().c_str());
-            Message(msg);
-            atts->SetCategoryName(atts->GetCategoryName());
-        }
-    }
-
-    // Do subsetName
-    if(which_widget == 2 || doAll)
-    {
-        temp = subsetName->currentText();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            atts->SetSubsetName(temp.latin1());
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of subsetName was invalid. "
-                "Resetting to the last good value of %s.",
-                atts->GetSubsetName().c_str());
-            Message(msg);
-            atts->SetSubsetName(atts->GetSubsetName());
-        }
+        atts->SetCategoryName(silSet->GetCategoryName().latin1());
+        atts->SetSubsetName(silSet->GetSubsetName().latin1());
     }
 
     // Do index
@@ -749,15 +446,18 @@ QvisOnionPeelWindow::seedTypeChanged(int val)
 }
 
 
+// ****************************************************************************
+// Modifications:
+//   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
+//   Changed name from 'categoryNameChanged' to 'categoryChanged'. 
+//   SetCategory name directly instead of calling GetCurrentValues. 
+//   
+// ****************************************************************************
+
 void
-QvisOnionPeelWindow::categoryNameChanged()
+QvisOnionPeelWindow::categoryChanged(const QString &cname)
 {
-    if (strcmp(categoryName->currentText().latin1(),
-               atts->GetCategoryName().c_str()) != 0)
-    {
-        FillSubsetBox();
-    }
-    GetCurrentValues(1);
+    atts->SetCategoryName(cname.latin1());
     if (AutoUpdate())
         QTimer::singleShot(100, this, SLOT(delayedApply()));
     else
@@ -765,10 +465,18 @@ QvisOnionPeelWindow::categoryNameChanged()
 }
 
 
+// ****************************************************************************
+// Modifications:
+//   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
+//   Changed name from 'subsetNameChanged' to 'subsetChanged'. SetSubsetname
+//   directly instead of calling GetCurrentValues. 
+//   
+// ****************************************************************************
+
 void
-QvisOnionPeelWindow::subsetNameChanged()
+QvisOnionPeelWindow::subsetChanged(const QString &sname)
 {
-    GetCurrentValues(2);
+    atts->SetSubsetName(sname.latin1());
     if (AutoUpdate())
         QTimer::singleShot(100, this, SLOT(delayedApply()));
     else
@@ -792,6 +500,7 @@ QvisOnionPeelWindow::indexChanged()
 //   Added call to GetCurrentValues. 
 //   
 // ****************************************************************************
+
 void
 QvisOnionPeelWindow::requestedLayerChanged(int val)
 {
@@ -802,6 +511,12 @@ QvisOnionPeelWindow::requestedLayerChanged(int val)
         Apply();
 }
 
+// ****************************************************************************
+// Modifications:
+//   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
+//   Replaced 'UpdateComboBoxesEnabled' with 'silSet->setEnabled'.
+//   
+// ****************************************************************************
 
 void
 QvisOnionPeelWindow::useGlobalIdToggled(bool val)
@@ -809,7 +524,7 @@ QvisOnionPeelWindow::useGlobalIdToggled(bool val)
     if(val != atts->GetUseGlobalId())
     {
         atts->SetUseGlobalId(val);
-        UpdateComboBoxesEnabledState(2);
+        silSet->setEnabled(!val);
         if (AutoUpdate())
             QTimer::singleShot(100, this, SLOT(delayedApply()));
         else

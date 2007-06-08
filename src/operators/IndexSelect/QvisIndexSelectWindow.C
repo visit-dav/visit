@@ -39,16 +39,22 @@
 
 #include <IndexSelectAttributes.h>
 #include <ViewerProxy.h>
+#include <avtSIL.h>
+#include <SILRestrictionAttributes.h>
+#include <QvisSILSetSelector.h>
 
+#include <qbuttongroup.h>
+#include <qcheckbox.h>
 #include <qlabel.h>
 #include <qlayout.h>
-#include <qlineedit.h>
-#include <qspinbox.h>
-#include <qvbox.h>
-#include <qbuttongroup.h>
 #include <qradiobutton.h>
+#include <qspinbox.h>
+#include <qtimer.h>
+#include <qvbox.h>
+#include <vectortypes.h>
 #include <stdio.h>
 #include <string>
+
 
 using std::string;
 
@@ -119,12 +125,16 @@ QvisIndexSelectWindow::~QvisIndexSelectWindow()
 //   Changed Min/Max/Incr from LineEdit to SpinBox for usability, added
 //   labels and group boxes for each dim.
 //
+//   Kathleen Bonnell, Thu Jun  7 12:53:47 PDT 2007 
+//   Added QvisSILSetSelector to replace domainIndex and groupIndex. 
+//   Changed whichData button group to useWholeCollection checkbox.
+// 
 // ****************************************************************************
 
 void
 QvisIndexSelectWindow::CreateWindowContents()
 {
-    QGridLayout *wholeLayout = new QGridLayout(topLayout, 5, 4, 10,
+    QGridLayout *wholeLayout = new QGridLayout(topLayout, 7, 4, 10,
                                               "wholeLayout");
     QGridLayout *mainLayout = new QGridLayout(4,2,  10, "mainLayout");
     wholeLayout->addMultiCellLayout(mainLayout, 0, 0, 0, 3);
@@ -264,33 +274,25 @@ QvisIndexSelectWindow::CreateWindowContents()
     wholeLayout->addMultiCellWidget(threeDWidgetGroup, 4,4, 0,3);
 
 
-    whichData = new QButtonGroup(central, "whichData");
-    whichData->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *whichDataLayout = new QHBoxLayout(whichData);
-    whichDataLayout->setSpacing(5);
-    QRadioButton *whichDataDataTypeAllDomains = new QRadioButton("All", whichData);
-    whichDataLayout->addWidget(whichDataDataTypeAllDomains);
-    QRadioButton *whichDataDataTypeOneDomain = new QRadioButton("Block", whichData);
-    whichDataLayout->addWidget(whichDataDataTypeOneDomain);
+    useWholeCollection = new QCheckBox("Use Whole Collection", central, "useWholeCollection");
+    useWholeCollection->setChecked(false);
+    connect(useWholeCollection, SIGNAL(toggled(bool)),
+            this, SLOT(useWholeCollectionToggled(bool)));
+    wholeLayout->addMultiCellWidget(useWholeCollection, 5,5, 0,1);
 
-    domainIndex = new QLineEdit(whichData, "domainIndex");
-    domainIndex->setMaximumWidth(30);
-    connect(domainIndex, SIGNAL(returnPressed()),
-            this, SLOT(domainIndexProcessText()));
-    whichDataLayout->addWidget(domainIndex);
-
-    QRadioButton *whichDataDataTypeOneGroup = new QRadioButton("Group", whichData);
-    whichDataLayout->addWidget(whichDataDataTypeOneGroup);
-    connect(whichData, SIGNAL(clicked(int)),
-            this, SLOT(whichDataChanged(int)));
-
-    groupIndex = new QLineEdit(whichData, "groupIndex");
-    groupIndex->setMaximumWidth(30);
-    connect(groupIndex, SIGNAL(returnPressed()),
-            this, SLOT(groupIndexProcessText()));
-    whichDataLayout->addWidget(groupIndex);
-
-    wholeLayout->addMultiCellWidget(whichData, 5,5,0,3);
+    //
+    // silSet (category/subset)
+    //
+    intVector roles;
+    roles.push_back(SIL_DOMAIN);
+    roles.push_back(SIL_BLOCK);
+    silSet = new QvisSILSetSelector(central, "silSet", 
+        GetViewerState()->GetSILRestrictionAttributes(), roles);
+    connect(silSet, SIGNAL(categoryChanged(const QString &)),
+            this, SLOT(categoryChanged(const QString &)));
+    connect(silSet, SIGNAL(subsetChanged(const QString &)),
+            this, SLOT(subsetChanged(const QString &)));
+    wholeLayout->addMultiCellWidget(silSet, 5,5, 1,3);
 }
 
 
@@ -307,6 +309,10 @@ QvisIndexSelectWindow::CreateWindowContents()
 //   Kathleen Bonnell, Thu Aug 26 16:55:59 PDT 2004
 //   Changed Min/Max/Incr from LineEdit to SpinBox.
 //   
+//   Kathleen Bonnell, Thu Jun  7 12:53:47 PDT 2007 
+//   Added QvisSILSetSelector to replace domainIndex and groupIndex. 
+//   Changed whichData button group to useWholeCollection checkbox.
+//
 // ****************************************************************************
 
 void
@@ -383,32 +389,23 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
             threeDIncr->setValue(atts->GetZIncr());
             threeDIncr->blockSignals(false);
             break;
-          case 10: //whichData
-            whichData->setButton(atts->GetWhichData());
-            if (atts->GetWhichData() == IndexSelectAttributes::OneDomain)
-            {
-                domainIndex->setEnabled(true);
-                groupIndex->setEnabled(false);
-            }
-            else if (atts->GetWhichData() == IndexSelectAttributes::OneGroup)
-            {
-                domainIndex->setEnabled(false);
-                groupIndex->setEnabled(true);
-            }
-            else
-            {
-                domainIndex->setEnabled(false);
-                groupIndex->setEnabled(false);
-            }
+          case 10: //useWholeCollection
+            useWholeCollection->blockSignals(true);
+            useWholeCollection->setChecked(atts->GetUseWholeCollection());
+            silSet->setEnabled(!atts->GetUseWholeCollection());
+            useWholeCollection->blockSignals(false);
             break;
-          case 11: //domainIndex
-            temp.sprintf("%d", atts->GetDomainIndex());
-            domainIndex->setText(temp);
+          case 11: //categoryName
+            silSet->blockSignals(true);
+            silSet->SetCategoryName(atts->GetCategoryName().c_str());
+            silSet->blockSignals(false);
             break;
-          case 12: //groupIndex
-            temp.sprintf("%d", atts->GetGroupIndex());
-            groupIndex->setText(temp);
+          case 12: // Subset Name
+            silSet->blockSignals(true);
+            silSet->SetSubsetName(atts->GetSubsetName().c_str());
+            silSet->blockSignals(false);
             break;
+ 
         }
     }
 }
@@ -435,6 +432,10 @@ QvisIndexSelectWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004 
 //   Added back in code associated with Min/Max/Incr, so that they get updated
 //   correctly on Apply.
+//
+//   Kathleen Bonnell, Thu Jun  7 12:53:47 PDT 2007 
+//   Added QvisSILSetSelector to replace domainIndex and groupIndex. 
+//   Changed whichData button group to useWholeCollection checkbox.
 //
 // ****************************************************************************
 
@@ -495,52 +496,11 @@ QvisIndexSelectWindow::GetCurrentValues(int which_widget)
             atts->SetZIncr(threeDIncr->value());
     }
 
-    // Do whichData
-    if(which_widget == 10 || doAll)
+    // Do categoryName and subsetName
+    if(doAll)
     {
-        // Nothing for whichData
-    }
-
-    // Do domainIndex
-    if(which_widget == 11 || doAll)
-    {
-        temp = domainIndex->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
-            atts->SetDomainIndex(val);
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of domainIndex was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetDomainIndex());
-            Message(msg);
-            atts->SetDomainIndex(atts->GetDomainIndex());
-        }
-    }
-
-    // Do groupIndex
-    if(which_widget == 12 || doAll)
-    {
-        temp = groupIndex->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            int val = temp.toInt(&okay);
-            atts->SetGroupIndex(val);
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of groupIndex was invalid. "
-                "Resetting to the last good value of %d.",
-                atts->GetGroupIndex());
-            Message(msg);
-            atts->SetGroupIndex(atts->GetGroupIndex());
-        }
+        atts->SetCategoryName(silSet->GetCategoryName().latin1());
+        atts->SetSubsetName(silSet->GetSubsetName().latin1());
     }
 }
 
@@ -623,30 +583,39 @@ QvisIndexSelectWindow::threeDIncrChanged(int)
     Apply();
 }
 
+
 void
-QvisIndexSelectWindow::whichDataChanged(int val)
+QvisIndexSelectWindow::useWholeCollectionToggled(bool val)
 {
-    if(val != atts->GetWhichData())
+    if(val != atts->GetUseWholeCollection())
     {
-        atts->SetWhichData(IndexSelectAttributes::DataType(val));
-        Apply();
+        atts->SetUseWholeCollection(val);
+        silSet->setEnabled(!val);
+        if (AutoUpdate())
+            QTimer::singleShot(100, this, SLOT(delayedApply()));
+        else
+            Apply();
     }
 }
 
 
 void
-QvisIndexSelectWindow::domainIndexProcessText()
+QvisIndexSelectWindow::categoryChanged(const QString &cname)
 {
-    GetCurrentValues(11);
-    Apply();
+    atts->SetCategoryName(cname.latin1());
+    if (AutoUpdate())
+        QTimer::singleShot(100, this, SLOT(delayedApply()));
+    else
+        Apply();
 }
-
 
 void
-QvisIndexSelectWindow::groupIndexProcessText()
+QvisIndexSelectWindow::subsetChanged(const QString &sname)
 {
-    GetCurrentValues(12);
-    Apply();
+    atts->SetSubsetName(sname.latin1());
+    if (AutoUpdate())
+        QTimer::singleShot(100, this, SLOT(delayedApply()));
+    else
+        Apply();
 }
-
 

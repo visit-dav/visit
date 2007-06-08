@@ -1,15 +1,10 @@
 <?xml version="1.0"?>
-  <Plugin name="IndexSelect" type="operator" label="Index Select" version="1.0" iconFile="IndexSelect.xpm">
-    <Attribute name="IndexSelectAttributes" purpose="This class contains attributes for the index select operator." persistent="true">
+  <Plugin name="IndexSelect" type="operator" label="Index Select" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="IndexSelect.xpm">
+    <Attribute name="IndexSelectAttributes" purpose="This class contains attributes for the index select operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="IndexSelectAttributes.code">
       <Enum name="Dimension">
         OneD
         TwoD
         ThreeD
-      </Enum>
-      <Enum name="DataType">
-        AllDomains
-        OneDomain
-        OneGroup
       </Enum>
       <Field name="dim" label="Dimension" type="enum" subtype="Dimension">
         TwoD
@@ -41,14 +36,16 @@
       <Field name="zIncr" label="Z-Incr" type="int">
         1
       </Field>
-      <Field name="whichData" label="Which Data" type="enum" subtype="DataType">
-        AllDomains
+      <Field name="useWholeCollection" label="useWholeCollection" type="bool">
+        true
       </Field>
-      <Field name="domainIndex" label="Domain" type="int" enabler="whichData:OneDomain">
-        0
+      <Field name="categoryName" label="Category" type="string" enabler="useWholeCollection:false">
+        Whole
       </Field>
-      <Field name="groupIndex" label="Group" type="int" enabler="whichData:OneGroup">
-        0
+      <Field name="subsetName" label="Set" type="string" enabler="useWholeCollection:false">
+        Whole
       </Field>
+      <Function name="ProcessOldVersions" user="true" member="true">
+      </Function>
     </Attribute>
   </Plugin>

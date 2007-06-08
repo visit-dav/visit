@@ -35,82 +35,79 @@
 *
 *****************************************************************************/
 
-#ifndef QVISONIONPEELWINDOW_H
-#define QVISONIONPEELWINDOW_H
+#ifndef QVIS_SIL_SET_SELECTOR_H
+#define QVIS_SIL_SET_SELECTOR_H
 
-#include <QvisOperatorWindow.h>
-#include <AttributeSubject.h>
+#include <gui_exports.h>
+#include <qwidget.h>
+#include <SimpleObserver.h>
+#include <GUIBase.h>
+#include <vectortypes.h>
 
-class OnionPeelAttributes;
-class QButtonGroup;
-class QCheckBox;
-class QLineEdit;
-class QSpinBox;
-class QvisSILSetSelector;
+class QComboBox;
+class QLabel;
+class SILRestrictionAttributes;
 
 // ****************************************************************************
-// Class: QvisOnionPeelWindow
+// Class: QvisSILSetSelector
 //
 // Purpose: 
-//   Defines QvisOnionPeelWindow class.
+//   Defines QvisSILSetSelector class.
 //
-// Notes:      This class was automatically generated!
-//
-// Programmer: xml2window
-// Creation:   Thu Aug 8 14:29:46 PST 2002
+// Programmer: Kathleen Bonnell 
+// Creation:   June 6, 2007 
 //
 // Modifications:
-//   Kathleen Bonnell, Thu Feb 26 13:19:40 PST 2004
-//   Added silUseSet and silAtts.
 //   
-//   Kathleen Bonnell, Fri Dec 10 14:28:14 PST 2004 
-//   Added useGlobalId checkbox, related methods and method
-//   UpdateComboBoxesEnabledState. 
-//   
-//   Kathleen Bonnell, Wed Jan 19 15:45:38 PST 2005 
-//   Added 'seedType' button group and 'seedTypeChanged' slot.
-//
-//   Kathleen Bonnell, Wed Jun  6 17:22:08 PDT 2007 
-//   Replaced widgets/slots/var associated with Category/Set with
-//   QvisSILSetSelector and its slots.
-//
 // ****************************************************************************
 
-class QvisOnionPeelWindow : public QvisOperatorWindow
+class GUI_API QvisSILSetSelector : public QWidget, 
+                                   public SimpleObserver, 
+                                   public GUIBase
 {
     Q_OBJECT
   public:
-    QvisOnionPeelWindow(const int type,
-                        OnionPeelAttributes *subj,
-                        const char *caption = 0,
-                        const char *shortName = 0,
-                        QvisNotepadArea *notepad = 0);
-    virtual ~QvisOnionPeelWindow();
-  protected:
-    virtual void CreateWindowContents();
-    void UpdateWindow(bool doAll);
-    virtual void GetCurrentValues(int which_widget);
-  private slots:
-    void adjacencyTypeChanged(int val);
-    void seedTypeChanged(int val);
+    QvisSILSetSelector(QWidget *parent , const char *name ,
+            SILRestrictionAttributes *, intVector &);
+    virtual ~QvisSILSetSelector();
+
+    virtual void Update(Subject *);
+    virtual void SubjectRemoved(Subject *);
+
+    void SetCategoryName(const QString &name);
+    QString GetCategoryName() const;
+    void SetSubsetName(const QString &name);
+    QString GetSubsetName() const;
+
+
+  signals:
     void categoryChanged(const QString &);
     void subsetChanged(const QString &);
-    void indexChanged();
-    void useGlobalIdToggled(bool val);
-    void requestedLayerChanged(int val);
-    void delayedApply();
+
+  private slots:
+    void categoryNameChanged();
+    void subsetNameChanged();
+
   private:
-    QButtonGroup *adjacencyType;
-    QButtonGroup *seedType;
+    void UpdateComboBoxes();
+    void FillCategoryBox();
+    void FillSubsetBox();
 
-    QvisSILSetSelector *silSet;
-    QLineEdit *index;
-    QSpinBox  *requestedLayer;
-    QCheckBox *useGlobalId;
+    QLabel    *categoryLabel;
+    QComboBox *categoryName;
+    QLabel    *subsetLabel;
+    QComboBox *subsetName;
 
-    OnionPeelAttributes *atts;
+    SILRestrictionAttributes *silAtts;
+    QString defaultItem;
+    QString lastGoodCategory;
+    QString lastGoodSubset;
+    int silTopSet;
+    int silNumSets;
+    int silNumCollections;
+    unsignedCharVector silUseSet;
+    intVector allowedCategories;
 };
-
 
 
 #endif
