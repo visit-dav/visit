@@ -45,6 +45,8 @@
 #include <vtkVisItDataSetMapper.h>
 #include <vtkVisItOpenGLPolyDataMapper.h>
 #include <vtkVisItMesaPolyDataMapper.h>
+#include <vtkVisItRectilinearGrid.h>
+#include <vtkVisItStructuredGrid.h>
 #if defined(__APPLE__)
 #include <vtkOSMesaRenderWindow.h>
 #endif
@@ -81,6 +83,9 @@ VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItMesaPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
+
 #if defined(__APPLE__)
 VTK_CREATE_CREATE_FUNCTION(vtkOSMesaRenderWindow);
 #endif
@@ -105,6 +110,13 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 //    Brad Whitlock, Fri Aug 26 10:29:26 PDT 2005
 //    Added override for vtkDataSetMapper.
 //
+//    Dave Bremer, Fri May 25 11:48:48 PDT 2007
+//    Added override for vtkVisItStructuredGrid and vtkVisItRectilinearGrid
+//    (our versions are much more memory friendly).  Note: since 
+//    vtkVisItCellDataToPointData is in this module, this isn't really a
+//    "graphics" factory any more.  Maybe it should be renamed.  I decided
+//    to pile on instead.
+//
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
   this->RegisterOverride("vtkOpenGLPolyDataMapper", "vtkVisItOpenGLPolyDataMapper",
@@ -123,6 +135,14 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          "vtkVisItDataSetMapper override vtkDataSetMapper",
                          1,
                          vtkObjectFactoryCreatevtkVisItDataSetMapper);
+  this->RegisterOverride("vtkRectilinearGrid", "vtkVisItRectilinearGrid",
+                         "vtkVisItRectilinearGrid override vtkRectilinearGrid",
+                         1,
+                         vtkObjectFactoryCreatevtkVisItRectilinearGrid);
+  this->RegisterOverride("vtkStructuredGrid", "vtkVisItStructuredGrid",
+                         "vtkVisItStructuredGrid override vtkStructuredGrid",
+                         1,
+                         vtkObjectFactoryCreatevtkVisItStructuredGrid);
 #if defined(__APPLE__)
   this->RegisterOverride("vtkCarbonRenderWindow", "vtkOSMesaRenderWindow",
                          "vtkOSMesaRenderWindow override vtkCarbonRenderWindow",

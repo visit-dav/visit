@@ -312,6 +312,9 @@
 #    Thomas R. Treadway, Wed May  9 11:39:17 PDT 2007
 #    Added OpenGL libraries (framework) for MacOS X10.3 build
 #
+#    Dave Bremer, Fri May 25 15:27:41 PDT 2007
+#    Added vtkVisItStructuredGrid and vtkVisItRectilinearGrid
+#
 ##############################################################################
 
 ##
@@ -381,9 +384,11 @@ SRC=InitVTK.C \
     vtkVisItFeatureEdges.C \
     vtkVisItGlyph3D.C \
     vtkVisItPolyDataNormals.C \
+    vtkVisItRectilinearGrid.C \
     vtkVisItSTLWriter.C \
     vtkVisItScalarTree.C \
     vtkVisItStreamLine.C \
+    vtkVisItStructuredGrid.C \
     vtkVisItStructuredGridNormals.C \
     vtkVisItTensorGlyph.C \
     vtkVisItTIFFWriter.C \
