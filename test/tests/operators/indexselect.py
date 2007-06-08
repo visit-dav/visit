@@ -43,6 +43,9 @@
 #    Kathleen Bonnell, Mon Jan 30 16:40:30 PST 2006 
 #    Add tests 33-38 which tests point meshes.
 #
+#    Kathleen Bonnell, Thu Jun  7 14:43:32 PDT 2007 
+#    IndexSelect atts have changed, make corrections. 
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -301,8 +304,9 @@ atts.zMax = 1000
 atts.xIncr = 1
 atts.yIncr = 1
 atts.zIncr = 1
-atts.whichData = atts.OneDomain
-atts.domainIndex = 2
+atts.useWholeCollection = 0
+atts.categoryName = "domains"
+atts.subsetName = "domain2"
 SetOperatorOptions(atts)
 DrawPlots()
 ResetView()
@@ -326,12 +330,11 @@ SetView3D(v)
 Test("ops_indexselect18")
 
 # smallest domainIndex should be 1
-atts.domainIndex = 0 
+atts.subsetName = "domain1" 
 SetOperatorOptions(atts)
 Test("ops_indexselect19")
 
-# largest domainIndex should be 30
-atts.domainIndex = 30 
+atts.subsetName = "domain27"
 SetOperatorOptions(atts)
 Test("ops_indexselect20")
 
@@ -353,8 +356,8 @@ atts.yMin = 1
 atts.yMax = 2
 atts.zMin = 0
 atts.zMax = -1
-atts.whichData = atts.OneGroup
-atts.groupIndex = 0
+atts.categoryName = "blocks"
+atts.subsetName = "block0"
 SetOperatorOptions(atts)
 
 DrawPlots()
@@ -374,8 +377,8 @@ v.imagePan = (-0.23029, 0.259159)
 SetView3D(v)
 Test("ops_indexselect21")
 
-atts.whichData = atts.OneDomain
-atts.domainIndex = 1
+atts.categoryName = "domains"
+atts.subsetName = "domain1"
 SetOperatorOptions(atts)
 Test("ops_indexselect22")
 
@@ -383,8 +386,8 @@ SetActivePlots(1)
 DeleteActivePlots()
 
 SetActivePlots(1)
-atts.whichData = atts.OneGroup
-atts.groupIndex = 2
+atts.categoryName = "blocks"
+atts.subsetName = "block2"
 atts.xMin = 0
 atts.xMax = -1
 atts.yMin = 5
@@ -424,6 +427,7 @@ atts.zMax = -1
 atts.xIncr = 1
 atts.yIncr = 1
 atts.zIncr = 1
+atts.useWholeCollection = 1
 SetOperatorOptions(atts)
 pc = PseudocolorAttributes()
 pc.limitsMode = pc.CurrentPlot
@@ -493,10 +497,11 @@ atts.zMax = -1 #max
 atts.xIncr = 1
 atts.yIncr = 1
 atts.zIncr = 1
-atts.whichData = atts.OneGroup
+atts.useWholeCollection = 0
+atts.categoryName = "blocks"
 # middle group for this dataset, has group boundaries and internal
 # domain boundaries
-atts.groupIndex = 1 
+atts.subsetName = "block1" 
 
 AddOperator("IndexSelect")
 SetOperatorOptions(atts)
