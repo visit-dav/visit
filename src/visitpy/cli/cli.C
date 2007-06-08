@@ -42,7 +42,7 @@
 #include <VisItException.h>
 
 // For the VisIt module.
-extern "C" void cli_initvisit(int, bool, int, char **);
+extern "C" void cli_initvisit(int, bool, int, char **, int, char **);
 extern "C" void cli_runscript(const char *);
 extern "C" int Py_Main(int, char **);
 
@@ -88,6 +88,9 @@ extern "C" int Py_Main(int, char **);
 //   Jeremy Meredith, Wed Jun  6 16:41:45 EDT 2007
 //   Add the -forceinteractivecli argument (equivalent to -i in python).
 //
+//   Brad Whitlock, Fri Jun 8 10:57:02 PDT 2007
+//   Added support for saving the arguments after -s to their own tuple.
+//
 // ****************************************************************************
 
 int
@@ -95,10 +98,11 @@ main(int argc, char *argv[])
 {
     int  retval = 0;
     int  debugLevel = 0;
-    bool verbose = false;
+    bool verbose = false, s_found = false;
     char *runFile = 0, *loadFile = 0;
     char **argv2 = new char *[argc];
-    int  argc2 = 0;
+    char **argv_after_s = new char *[argc];
+    int  argc2 = 0, argc_after_s = 0;
 
     // Parse the arguments
     for(int i = 0; i < argc; ++i)
@@ -125,6 +129,8 @@ main(int argc, char *argv[])
         {
             runFile = argv[i+1];
             ++i;
+
+            s_found = true;
         }
         else if(strcmp(argv[i], "-o") == 0 && (i+1 < argc))
         {
@@ -174,6 +180,14 @@ main(int argc, char *argv[])
         {
             // Pass the array along to the visitmodule.
             argv2[argc2++] = argv[i];
+
+            // This argument is after -s file.py so count it unless it's
+            // the -dv argument.
+            if(s_found && 
+               strcmp(argv[i], "-dv") != 0)
+            {
+                argv_after_s[argc_after_s++] = argv[i];
+            }
         }
     }
 
@@ -186,7 +200,8 @@ main(int argc, char *argv[])
         PySys_SetArgv(argc, argv);
 
         // Initialize the VisIt module.
-        cli_initvisit(debugLevel, verbose, argc2, argv2);
+        cli_initvisit(debugLevel, verbose, argc2, argv2,
+                      argc_after_s, argv_after_s);
 
         // Run some Python commands that import VisIt and launch the viewer.
         PyRun_SimpleString((char*)"from visit import *");
@@ -229,6 +244,7 @@ main(int argc, char *argv[])
 
     // Delete the argv2 array.
     delete [] argv2;
+    delete [] argv_after_s;
 
     return retval;
 }

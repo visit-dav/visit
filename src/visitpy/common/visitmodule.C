@@ -190,7 +190,7 @@ extern "C"
 {
     void initvisit();
     void initvisit2();
-    void cli_initvisit(int, bool, int, char **);
+    void cli_initvisit(int, bool, int, char **, int, char **);
     void cli_runscript(const char *);
 
     // Expose these functions so we can call them from a facade
@@ -367,6 +367,8 @@ static PyObject             *VisItInterrupt;
 
 static int                   cli_argc = 0;
 static char                **cli_argv = 0;
+static int                   cli_argc_after_s = 0;
+static char                **cli_argv_after_s = 0;
 
 static PyThreadState        *mainThreadState = NULL;
 
@@ -10709,6 +10711,37 @@ visit_SetDefaultMeshManagementAttributes(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_Argv
+//
+// Purpose: 
+//   Returns all arguments after the -s script.py argument.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 8 10:43:56 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_Argv(PyObject *self, PyObject *args)
+{
+    NO_ARGUMENTS();
+          
+    // Allocate a tuple the with enough entries to hold the argv list.
+    PyObject *retval = PyTuple_New(cli_argc_after_s);
+    for(int i = 0; i < cli_argc_after_s; ++i)
+    {
+        PyObject *dval = PyString_FromString(cli_argv_after_s[i]);
+        if(dval == NULL)
+            continue;
+        PyTuple_SET_ITEM(retval, i, dval);
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Function: PopulateMethodArgs
 //
 // Purpose: 
@@ -11762,6 +11795,7 @@ AddDefaultMethods()
     AddMethod("GetActiveDiscreteColorTable", visit_GetActiveDiscreteColorTable,
                                                 visit_GetActiveColorTable_doc);
     AddMethod("GetNumPlots", visit_GetNumPlots, visit_GetNumPlots_doc);
+    AddMethod("Argv", visit_Argv, NULL);
 }
 
 // ****************************************************************************
@@ -12689,16 +12723,23 @@ VisItErrorFunc(const char *errString)
 //   Brad Whitlock, Mon Dec 16 13:45:28 PST 2002
 //   I added moduleVerbose.
 //
+//   Brad Whitlock, Fri Jun 8 11:00:02 PDT 2007
+//   Added argc,v_after_s so we can query which arguments to the cli came
+//   after -s file.py.
+//
 // ****************************************************************************
 
 void
-cli_initvisit(int debugLevel, bool verbose, int argc, char **argv)
+cli_initvisit(int debugLevel, bool verbose, int argc, char **argv,
+    int argc_after_s, char **argv_after_s)
 {
     moduleDebugLevel = debugLevel;
     moduleVerbose = verbose;
     localNameSpace = true;
     cli_argc = argc;
     cli_argv = argv;
+    cli_argc_after_s = argc_after_s;
+    cli_argv_after_s = argv_after_s;
     initvisit();
 }
 
