@@ -586,7 +586,7 @@ while (scalar(@ARGV) > 0) {
                                         }
     elsif ($arg eq "-guesshost" )       { $guesshost = 1; }
     elsif ($arg eq "-setupenv" )        { $visit_sets_up_environment = 1; }
-    elsif ($arg eq "-quiet" )           { $quiet = 1; }
+    elsif ($arg eq "-quiet" )           { $quiet = 1; push @visitargs, "-quiet"; }
     elsif ($arg eq "-hw-pre" )          { $pre_command = shift; }
     elsif ($arg eq "-hw-post" )         { $post_command = shift; }
     else                         { push @visitargs, $arg; }
