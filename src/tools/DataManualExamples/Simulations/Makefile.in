@@ -229,7 +229,7 @@ cleanscalar:
 	$(RM) $(SCALAR) $(OBJ_SCALAR) $(FSCALAR) $(FOBJ_SCALAR) $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR)
 
 cleanmaterial:
-	$(RM) $(FMATERIAL) (FOBJ_MATERIAL)
+	$(RM) $(FMATERIAL) $(FOBJ_MATERIAL)
 
 $(SIM1): $(OBJ_SIM1)
 	$(CC) -o $(SIM1) $(OBJ_SIM1) $(LDFLAGS) $(LIBS)

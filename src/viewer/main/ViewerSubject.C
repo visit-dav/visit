@@ -252,7 +252,7 @@ Viewer_LogQtMessages(QtMsgType type, const char *msg)
 // ****************************************************************************
 
 ViewerSubject::ViewerSubject() : ViewerBase(0, "ViewerSubject"), 
-    xfer(), clients(),
+    interpretCommands(), xfer(), clients(),
     borders(), shift(), preshift(), geometry(),
     engineParallelArguments(), unknownArguments(), clientArguments()
 {
@@ -7951,6 +7951,10 @@ ViewerSubject::HandleClientMethod()
 //   Brad Whitlock, Tue Mar 13 11:42:29 PDT 2007
 //   Updated due to code generation changes.
 //
+//   Brad Whitlock, Mon Jun 11 11:50:45 PDT 2007
+//   Added code to send pending interpret commands if we have an interpreter
+//   and commands to process.
+//
 // ****************************************************************************
 
 void
@@ -7977,6 +7981,15 @@ ViewerSubject::HandleClientInformation()
     }
 
     BroadcastToAllClients((void *)this, GetViewerState()->GetClientInformationList());
+
+    // If we just received client method information from the cli then try and 
+    // interpret any commands that we've stored up.
+    if(HasInterpreter() && interpretCommands.size() > 0)
+    {
+        // Interpret the stored up commands.
+        debug4 << "Interpreting stored up commands." << endl;
+        InterpretCommands("\n");
+    }
 }
 
 // ****************************************************************************
@@ -8593,7 +8606,9 @@ ViewerSubject::HandleColorTable()
 // Creation:   Thu Jan 25 14:50:19 PST 2007
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Jun 11 11:55:03 PDT 2007
+//   Made it use the InterpretCommands method.
+//
 // ****************************************************************************
 
 void
@@ -8612,13 +8627,124 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
     }
     else if(command.substr(0,10) == "Interpret:")
     {
+        InterpretCommands(command.substr(10, command.size()-10));
+    }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::HasInterpreter
+//
+// Purpose: 
+//   Scans the client information list and looks for a client that has an
+//   Interpret method.
+//
+// Returns:    True if there is a client with an interpreter; False otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 11 11:54:16 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerSubject::HasInterpreter() const
+{
+    // Let's make sure that there's an Interpret client first.
+    bool hasInterpreter = false;
+    for(int i = 0; 
+        i < GetViewerState()->GetClientInformationList()->GetNumClients() &&
+        !hasInterpreter;
+        ++i)
+    {
+        const ClientInformation &client = GetViewerState()->GetClientInformationList()->GetClients(i);
+        for(int j = 0; j < client.GetMethodNames().size() && !hasInterpreter; ++j)
+            hasInterpreter = client.GetMethod(j) == "Interpret" &&
+                             client.GetMethodPrototype(j) == "s";
+    }
+
+    return hasInterpreter;
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::InterpretCommands
+//
+// Purpose: 
+//   Allows the viewer to interpret CLI commands, launching a CLI if one does
+//   not exist.
+//
+// Arguments:
+//   commands : The command string to execute. More than one line can be
+//              included by using end of line characters.
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Jun 11 11:51:32 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::InterpretCommands(const std::string &commands)
+{
+    const char *mName = "ViewerSubject::InterpretCommands: ";
+
+    // Make sure there's an end of line.
+    std::string cmd(commands);
+    if(cmd.size() > 0 && cmd[cmd.size()-1] != '\n')
+        cmd += "\n";
+
+    // Print what we're trying to execute.
+    debug4 << mName << "commands = \"" << cmd.c_str() << "\"" << endl;
+
+    // Let's make sure that there's an Interpret client first.
+    if(!HasInterpreter())
+    {
+        // We don't have an interpreter and there are no sim commands, meaning
+        // that we have not yet tried to launch an interpreting client while
+        // processing commands. That means we need to launch a client.
+        if(interpretCommands.size() == 0)
+        {
+            // Add to the sim commands. NOTE that this needs to happen before
+            // the client is launched or we can get into InterpretCommands 
+            // again if another command is send for interpretation while the
+            // client is getting launched.
+            interpretCommands += cmd;
+
+            debug4 << mName << "The simulation wants to interpret some "
+                "commands but there's no interpreter. Start one." << endl;
+            stringVector clientArgs;
+            clientArgs.push_back("-cli");
+            clientArgs.push_back("-newconsole");
+            GetViewerMethods()->OpenClient("CLI", "visit", clientArgs);
+        }
+        else
+        {
+            // Add to the sim commands.
+            interpretCommands += cmd;
+        }
+    }
+    else
+    {
+        interpretCommands += cmd;
+
+        debug4 << mName << "Telling client to interpret!" << endl;
+
         // The simulation told us to interpret some python code.
         stringVector args;
-        args.push_back(command.substr(10, command.size()-10));
+        args.push_back(interpretCommands);
         GetViewerState()->GetClientMethod()->SetMethodName("Interpret");
         GetViewerState()->GetClientMethod()->ClearArgs();
         GetViewerState()->GetClientMethod()->SetStringArgs(args);
         BroadcastToAllClients((void *)this, GetViewerState()->GetClientMethod());
+
+        // Clear out the command buffer.
+        interpretCommands.clear();
     }
 }
 

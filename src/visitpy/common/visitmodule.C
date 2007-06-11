@@ -10968,12 +10968,18 @@ ExecuteClientMethodHelper(Subject *subj, void *)
 {
     ClientMethod *method = (ClientMethod *)subj;
     debug1 << "Received a " << method->GetMethodName().c_str()
-           << " client method." << endl;
+           << " client method. ";
 
     if(!clientMethodsAllowed)
+    {
+        debug1 << "Save it for later." << endl;
         cachedClientMethods.push_back(new ClientMethod(*method));
+    }
     else
+    {
+        debug1 << "Execute it now." << endl;
         ExecuteClientMethod(method, true);
+    }
 }
 
 // ****************************************************************************
