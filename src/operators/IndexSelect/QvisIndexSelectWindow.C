@@ -292,7 +292,7 @@ QvisIndexSelectWindow::CreateWindowContents()
             this, SLOT(categoryChanged(const QString &)));
     connect(silSet, SIGNAL(subsetChanged(const QString &)),
             this, SLOT(subsetChanged(const QString &)));
-    wholeLayout->addMultiCellWidget(silSet, 5,5, 1,3);
+    wholeLayout->addMultiCellWidget(silSet, 5,5, 2,3);
 }
 
 
