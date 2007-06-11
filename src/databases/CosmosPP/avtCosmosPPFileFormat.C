@@ -294,6 +294,9 @@ avtCosmosPPFileFormat::~avtCosmosPPFileFormat()
 //    Hank Childs, Wed Sep 15 08:14:22 PDT 2004
 //    Finally gave up using VTK's point locator and wrote our own.
 //
+//    Kathleen Bonnell, Mon Jun 11 12:32:10 PDT 2007 
+//    Added H5*close for attr1, space_id, c_handle.
+//
 // ****************************************************************************
 
 void
@@ -532,6 +535,9 @@ avtCosmosPPFileFormat::ReadDataset(int ts, int dom)
     ghosts->Delete();
 
     // Clean up resources.
+    H5Aclose(attr1);
+    H5Sclose(space_id);
+    H5Dclose(c_handle);
     H5Fclose(file_handle);
     delete [] all_vars;
 
