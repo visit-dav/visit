@@ -198,6 +198,11 @@ ProcessConsoleCommand()
         simDone = 1;
         simUpdatePlots = 1;
     }
+    else if(strcmp(buff, "addplot") == 0)
+    {
+        VisItExecuteCommand("AddPlot(\"Pseudocolor\", \"zonal\")\n");
+        VisItExecuteCommand("DrawPlots()\n");
+    }
 }
 
 /******************************************************************************
@@ -447,7 +452,7 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->expressions[0].vartype = VISIT_VARTYPE_VECTOR;
 
     /* Add some custom commands. */
-    md->numGenericCommands = 3;
+    md->numGenericCommands = 4;
     sz = sizeof(VisIt_SimulationControlCommand) * md->numGenericCommands;
     md->genericCommands = (VisIt_SimulationControlCommand *)malloc(sz);
     memset(md->genericCommands, 0, sz);
@@ -463,6 +468,10 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->genericCommands[2].name = strdup("run");
     md->genericCommands[2].argType = VISIT_CMDARG_NONE;
     md->genericCommands[2].enabled = 1;
+
+    md->genericCommands[3].name = strdup("addplot");
+    md->genericCommands[3].argType = VISIT_CMDARG_NONE;
+    md->genericCommands[3].enabled = 1;
 
     return md;
 }

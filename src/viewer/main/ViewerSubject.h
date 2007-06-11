@@ -426,6 +426,9 @@ class avtDefaultPlotMetaData;
 //    Brad Whitlock, Fri Mar 9 16:25:33 PST 2007
 //    Added HandleRequestMetaData.
 //
+//    Brad Whitlock, Mon Jun 11 11:56:37 PDT 2007
+//    Added InterpretCommands method and some helper methods.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -481,6 +484,9 @@ private:
     int  OpenDatabaseHelper(const std::string &db, int timeState,
                             bool loadDefaultPlots, bool udpateWindowInfo,
                             const std::string &forcedFileType = "");
+
+    bool HasInterpreter() const;
+    void InterpretCommands(const std::string &commands);
 
     DataNode *CreateAttributesDataNode(const avtDefaultPlotMetaData *) const;
 
@@ -657,6 +663,7 @@ private:
     int                    animationStopOpcode;
     int                    iconifyOpcode;
     int                    numEngineRestarts;
+    std::string            interpretCommands;
 
     ViewerMasterXfer       xfer;
     ParentProcess         *parent;
