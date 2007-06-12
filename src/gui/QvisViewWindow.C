@@ -960,6 +960,10 @@ QvisViewWindow::Update3D(bool doAll)
 //   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //   Fixed confusion in indices of members of WindowInformation and case labels 
 //   Added logic for setting tab to whatever the active window's mode is.
+//
+//   Hank Childs, Mon Jun 11 21:51:55 PDT 2007
+//   If there is a command in the command line edit, process it.
+//
 // ****************************************************************************
 
 void
@@ -967,6 +971,11 @@ QvisViewWindow::UpdateGlobal(bool doAll)
 {
     if(windowInfo == 0)
         return;
+
+    QString temp;
+    temp = commandLineEdit->displayText().stripWhiteSpace();
+    if(!temp.isEmpty())
+        processCommandText();
 
     for(int i = 0; i < windowInfo->NumAttributes(); ++i)
     {

@@ -62,6 +62,7 @@
 #include <snprintf.h>
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
+#include <InvalidFilesException.h>
 
 #include <map>
 #include <string>
@@ -103,6 +104,9 @@ static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
 //     Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
 //     Add vtk_time, to store time from the VTK file if it is available.
 //
+//     Hank Childs, Mon Jun 11 21:27:04 PDT 2007
+//     Do not assume there is an extension.
+//
 // ****************************************************************************
 
 avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *) 
@@ -113,13 +117,17 @@ avtVTKFileFormat::avtVTKFileFormat(const char *fname, DBOptionsAttributes *)
     matvarname = NULL;
 
     // find the file extension
-    int i, start;
+    int i, start = -1;
     int len = strlen(fname);
     for(i = 0; i < len; i++)
         if(fname[i] == '.')
             start = i;
 
-    extension = string(fname, start+1, len-1);
+    if (start != -1)
+        extension = string(fname, start+1, len-1);
+    else
+        extension = "none";
+
     vtk_time = INVALID_TIME;
 }
 
@@ -176,8 +184,11 @@ avtVTKFileFormat::~avtVTKFileFormat()
 //    Remove call to SetSource(NULL), as it now removes information necessary
 //    to the dataset.
 //
-//     Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
-//     Retrieve TIME from FieldData if available.
+//    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
+//    Retrieve TIME from FieldData if available.
+//
+//    Hank Childs, Mon Jun 11 21:27:04 PDT 2007
+//    Add support for files with no extensions.
 //
 // ****************************************************************************
 
@@ -196,8 +207,12 @@ avtVTKFileFormat::ReadInDataset(void)
         dataset->Delete();
     }
 
-    if (extension == "vtk")
+    if (extension == "vtk" || extension == "none")
     {
+        if (extension == "none")
+            debug1 << "No extension given ... assuming legacy VTK format." 
+                   << endl;
+
         //
         // Create a file reader and set our dataset to be its output.
         //
@@ -270,6 +285,11 @@ avtVTKFileFormat::ReadInDataset(void)
         //dataset->SetSource(NULL);
         reader->Delete();
     } 
+    else
+    {
+        EXCEPTION2(InvalidFilesException, filename, 
+                   "could not match extension to a VTK file format type");
+    }
 
     vtk_time = INVALID_TIME;
     if (dataset->GetFieldData()->GetArray("TIME") != 0)
