@@ -59,6 +59,9 @@
 #   Brad Whitlock, Tue Sep 19 16:57:46 PST 2006
 #   Created this Makefile.in to build mpeg2encode.
 #
+#   Tom Fogal, Mon Jun  4 10:08:49 PDT 2007
+#   Added LDFLAGS to link line, so user can control where libraries come from.
+#
 ###############################################################################
 
 @SET_MAKE@
@@ -98,7 +101,7 @@ all: message $(tmpbin)/mpeg2encode
 ############
 
 $(tmpbin)/mpeg2encode: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIBDIRS) $(LIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIBDIRS) $(LDFLAGS) $(LIBS)
 	strip $(tmpbin)/mpeg2encode
 
 clean:
