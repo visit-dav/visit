@@ -4313,6 +4313,11 @@ vtkVisItOpenGLPolyDataMapper::UsesPointData(vtkDataSet *input, int scalarMode,
 //   on it can no longer use its display list.  (And the display generation
 //   depended on this routine, so it snowballed.)  ['7625]
 //
+//   Hank Childs, Tue Jun 12 10:48:37 PDT 2007
+//   Somehow, a plot is ending up here with a lookup table with a single color.
+//   That probably means that something bad happened.  Regardless, this routine
+//   was crashing with divide-by-zeros. (# / (sizeof(LUT)-1 --> sizeof(LUT)==1)
+//
 // ****************************************************************************
 
 bool
@@ -4390,7 +4395,10 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
         for(int i = 0; i < LUT->GetNumberOfTableValues(); ++i)
         {
             double r,g,b,a;
-            r = double(i) / double(LUT->GetNumberOfTableValues()-1);
+            if (LUT->GetNumberOfTableValues() > 1)
+                r = double(i) / double(LUT->GetNumberOfTableValues()-1);
+            else
+                r = 0.;
             g = b = 0.;
             a = 1.;
             LUT->SetTableValue(i, r,g,b,a);
@@ -4404,8 +4412,16 @@ vtkVisItOpenGLPolyDataMapper::MapScalarsWithTextureSupport(double opacity)
         int same_count = 0;
         for(int i = 0; i < 5; ++i)
         {
-            float t = float(i) / float(LUT->GetNumberOfTableValues()-1);
-            int index = int(t * (LUT->GetNumberOfTableValues() - 2));
+            int   index;
+            if (LUT->GetNumberOfTableValues() > 1)
+            {
+                float t = float(i) / float(LUT->GetNumberOfTableValues()-1);
+                index = int(t * (LUT->GetNumberOfTableValues() - 2));
+            }
+            else
+            {
+                index = 0;
+            }
 
             unsigned char c0[3], c1[3];
             c0[0] = (unsigned char)(255. * NewColorTexture[(index * 4) + 0]);
