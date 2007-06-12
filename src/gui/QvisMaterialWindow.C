@@ -424,6 +424,9 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
 //    Jeremy Meredith, Fri Jan 24 11:05:28 PST 2003
 //    Added a message so as not to confuse users.
 //
+//    Hank Childs, Mon Jun 11 21:33:42 PDT 2007
+//    Only issue the warning a few times.
+//
 // ****************************************************************************
 
 void
@@ -435,8 +438,17 @@ QvisMaterialWindow::Apply(bool ignore)
         atts->Notify();
 
         GetViewerMethods()->SetMaterialAttributes();
-        GUIBase::Warning("Note:  These settings only apply to new plots.  "
+        static int timesIssued = 0;
+        if (timesIssued == 0)
+            GUIBase::Warning("Note:  These settings only apply to new plots.  "
                          "To apply them to current plots, re-open the file.");
+        else if (timesIssued == 1)
+            GUIBase::Warning("Note:  These settings only apply to new plots.  "
+                      "To apply them to current plots, re-open the file.  "
+                      "VisIt will NOT issue this message any further times "
+                      "for this session, but keep in mind that you must "
+                      "re-open each time you change the material attributes.");
+        timesIssued++;
     }
     else
         atts->Notify();
