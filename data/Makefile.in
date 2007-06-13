@@ -276,6 +276,9 @@
 #   Gunther H. Weber, Thu Apr 19 18:22:49 PDT 2007
 #   Adaptively replace relative visit path
 #
+#   Hank Childs, Wed Jun 13 10:46:06 PDT 2007
+#   Added program thinplane.
+#
 ##############################################################################
 
 ##
@@ -324,16 +327,16 @@ CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/
 SRC=bigsil.C curve_builder.C distribution_curves.C ghost.C global_node.C \
     globe.C multi_test.C noise.C noise2d.C specmix.C testall.C tire.C wave.C \
     degen_meshes.C quad_disk.C emptydomains.C galaxy.C csg.C lowfrac.C \
-    bov.C largefile.C one_quad.C fullframe.C $(PDBSRC)
+    bov.C largefile.C one_quad.C fullframe.C thinplane.C $(PDBSRC)
 
 OBJ=$(SRC:.C=.o)
 
 ##
 ## Standard targets...
 ##
-all: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe @PDB@ $(BINSRC)
+all: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe ./thinplane @PDB@ $(BINSRC)
 
-test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe @PDB@ $(BINSRC)
+test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./distribution_curves ./csg ./lowfrac ./bov ./largefile ./one_quad ./fullframe ./thinplane @PDB@ $(BINSRC)
 	./bigsil
 	./curve_builder
 	./global_node
@@ -359,6 +362,7 @@ test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./mu
 	./bov
 	./one_quad
 	./fullframe
+	./thinplane
 	-@if test -e /home/visit/data/sesame.pdb; then \
 	    ln -sf /home/visit/data/sesame.pdb . ;\
 	else \
@@ -367,7 +371,7 @@ test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./mu
 	fi
 	@PDB_EXEC@
 
-testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./specmix ./sid97 ./testall ./tire ./wave ./emptydomains ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe
+testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./specmix ./sid97 ./testall ./tire ./wave ./emptydomains ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane
 	-@if test -n "`echo $(SILO_LIB) | grep libhdf5.a`"; then \
 	   echo "***********************************" ;\
 	   echo "***********************************" ;\
@@ -396,6 +400,7 @@ testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./
 	   ./lowfrac -driver DB_HDF5;\
 	   ./one_quad -driver DB_HDF5; \
 	   ./fullframe -driver DB_HDF5; \
+	   ./thinplane -driver DB_HDF5; \
 	else \
 	   echo "HDF5 driver for Silo not available in this configuration" ;\
 	   exit 1;\
@@ -404,7 +409,7 @@ testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./
 install: install_bin
 
 clean:
-	$(RM) $(OBJ) ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./csg ./lowfrac ./distribution_curves ./bov ./largefile ./one_quad ./fullframe @PDB@
+	$(RM) $(OBJ) ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./csg ./lowfrac ./distribution_curves ./bov ./largefile ./one_quad ./fullframe ./thinplane @PDB@
 	$(RM) *.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra sid97.o
 	$(RM) curve.visit wave*.visit
 	$(RM) -r $(BINSRC)
@@ -490,7 +495,10 @@ clean:
 ./fullframe: fullframe.o
 	$(CXX) -o $@ fullframe.o $(LDFLAGS) $(LIBS)
 
-install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe
+./thinplane: thinplane.o
+	$(CXX) -o $@ thinplane.o $(LDFLAGS) $(LIBS)
+
+install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./galaxy ./csg ./lowfrac ./largefile ./one_quad ./fullframe ./thinplane
 	$(INSTALL) ./bigsil $(bindir)
 	$(INSTALL) ./distribution_curves $(bindir)
 	$(INSTALL) ./degen_meshes $(bindir)
@@ -512,6 +520,7 @@ install_bin: ./bigsil ./distribution_curves ./global_node ./globe ./multi_test .
 	$(INSTALL) ./largefile $(bindir)
 	$(INSTALL) ./one_quad $(bindir)
 	$(INSTALL) ./fullframe $(bindir)
+	$(INSTALL) ./thinplane $(bindir)
 
 #
 # Inference rules for compressed binary data files
