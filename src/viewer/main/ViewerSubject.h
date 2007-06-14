@@ -598,6 +598,7 @@ private:
     void GetProcessAttributes();
 
     void SetTryHarderCyclesTimes();
+    void SetTreatAllDBsAsTimeVarying();
 
     void MoveWindow();
     void MoveAndResizeWindow();

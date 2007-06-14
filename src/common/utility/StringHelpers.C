@@ -37,6 +37,8 @@
 
 #include <StringHelpers.h>
 
+#include <errno.h>
+
 #include <sys/types.h>
 #if defined(_WIN32)
 #include <win32-regex.h>
@@ -55,6 +57,16 @@ static string IGNORE_CHARS = StringHelpers::NON_RELEVANT_CHARS;
 const int STATIC_BUF_SIZE = 4096;
 static char StaticStringBuf[STATIC_BUF_SIZE];
 
+// ****************************************************************************
+//  Function: RelevantString 
+//
+//  Purpose: Return a string containing only the relevant characters of the
+//  input string. Relevant characters are those NOT in IGNORE_CHARS
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Unknown
+//
+// ****************************************************************************
 string RelevantString(string inStr)
 {
    string outStr;
@@ -70,6 +82,16 @@ string RelevantString(string inStr)
    return outStr;
 }
 
+// ****************************************************************************
+//  Function: CompareRelevantStrings
+//
+//  Purpose: Compare two strings using only their relevant characters 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Unknown
+//
+// ****************************************************************************
+
 static int CompareRelevantStrings(const void *arg1, const void *arg2)
 {
     string str1 = RelevantString(*((char **) arg1));
@@ -77,10 +99,16 @@ static int CompareRelevantStrings(const void *arg1, const void *arg2)
     return strcmp(str1.c_str(),str2.c_str());
 }
 
+// ****************************************************************************
+//  Function: GroupStrings 
 //
-// Groups a list of strings by finding identical leading substrings
-// of length numLeadingVals.
+//  Purpose: Groups a list of strings by finding identical leading substrings
+//  of length numLeadingVals.
 //
+//  Programmer: Mark C. Miller 
+//  Creation:   Unknown
+//
+// ****************************************************************************
 void
 StringHelpers::GroupStrings(vector<string> stringList,
                             vector<vector<string> > &stringGroups,
@@ -188,10 +216,16 @@ StringHelpers::GroupStrings(vector<string> stringList,
    delete [] stringPtrs;
 }
 
+// ****************************************************************************
+//  Function: GroupStringsAsPaths
 //
-// Groups a list of strings that look like file paths into groups
-// that have same dirname
+//  Purpose: Groups a list of strings that look like file paths into groups
+//  that have same dirname
 //
+//  Programmer: Mark C. Miller 
+//  Creation:   Unknown
+//
+// ****************************************************************************
 void
 StringHelpers::GroupStringsAsPaths(vector<string> stringList,
                             vector<vector<string> > &stringGroups,
@@ -246,10 +280,16 @@ StringHelpers::GroupStringsAsPaths(vector<string> stringList,
 }
 
 
+// ****************************************************************************
+//  Function: GroupStringsAsFixedAlpha
 //
-// Groups a list of strings into a fixed number of groups
-// by alphabetizing and then dividing the alphabetized list into pieces
+//  Purpose: Groups a list of strings into a fixed number of groups
+//  by alphabetizing and then dividing the alphabetized list into pieces
 //
+//  Programmer: Brad Whitlock 
+//  Creation:   Unknown
+//
+// ****************************************************************************
 void
 StringHelpers::GroupStringsFixedAlpha(vector<string> stringList,
                             int numGroups,
@@ -292,12 +332,21 @@ StringHelpers::GroupStringsFixedAlpha(vector<string> stringList,
     }
 }
 
+// ****************************************************************************
+//  Function: GroupStringsAsFixedAlpha
 //
-// This version does not need to sort the strings since they are already
-// sorted because they're in a set. The sort rule for the set is the same
-// as that for the other GroupStringsFixedAlpha because IGNORE_CHARS gets
-// set to "", which means use the entire string in comparisons.
+//  Purpose: Groups a list of strings into a fixed number of groups
+//  by alphabetizing and then dividing the alphabetized list into pieces
 //
+//  This version does not need to sort the strings since they are already
+//  sorted because they're in a set. The sort rule for the set is the same
+//  as that for the other GroupStringsFixedAlpha because IGNORE_CHARS gets
+//  set to "", which means use the entire string in comparisons.
+//
+//  Programmer: Brad Whitlock 
+//  Creation:   Unknown
+//
+// ****************************************************************************
 void
 StringHelpers::GroupStringsFixedAlpha(
     const std::set<std::string> &stringList,
@@ -325,6 +374,16 @@ StringHelpers::GroupStringsFixedAlpha(
     }
 }
 
+// ****************************************************************************
+//  Function: FindRE 
+//
+//  Purpose: Find match of a regular expression in a given string. Return the
+//  starting offset into the string where the match occured.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Unknown
+//
+// ****************************************************************************
 int
 StringHelpers::FindRE(const char *strToSearch, const char *re)
 {
@@ -350,6 +409,99 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
     return (int) pm.rm_so;
 }
 
+
+// ****************************************************************************
+//  Function: ExtractRESubstr 
+//
+//  Purpose: Extract the (sub)string matched by the regular expression. 
+//
+//  The format of RE string passed here is an opening '<' followed by the actual
+//  regular expression string followed by a closing '>', optionally followed
+//  by a ' ' (space) and a backslashed reference to the specific substring
+//  containing the cycle digits. For example, to extract the cycle digits
+//  from strings looking like 'run_23_0010_yana.silo' where '0010' is the cycle
+//  digits, the string to pass here would look like...
+//
+//                                               V--substring reference
+//                      "<.*_([0-9]{4})_.*\\..*> \1"
+//          opening char-^                     ^--closing char
+//                        ^------RE part------^
+//
+//  Do a 'man 7 regex' to get more information on regular expression syntax
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   June 12, 2007 
+//
+// ****************************************************************************
+std::string
+StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
+{
+    regex_t cre;
+    regmatch_t pm[255];
+    string reToUse;
+    string retval = "";
+
+    //
+    // extract actual RE from VisIt's required format ('<RE> \i')
+    //
+    int len = strlen(re);
+    int matchToExtract;
+    if (re[0] != '<')
+        return retval;
+    char *last = strrchr(re, '>'); 
+    if (last == 0)
+        return retval;
+    if (*(last+1) == '\0')
+    {
+        reToUse = string(re, 1, len-2);
+        matchToExtract = 0;
+    }
+    else if (*(last+1) == ' ' && *(last+2) == '\\')
+    {
+        reToUse = string(re, 1, (last-re+1)-2); // -2 for '<' and '>' chars
+	errno = 0;
+        matchToExtract = strtol(last+3, 0, 10);
+	if (errno != 0)
+	    return retval;
+    }
+    else
+    {
+        return retval;
+    }
+
+    if (regcomp(&cre, reToUse.c_str(), REG_EXTENDED))
+        return retval;
+
+    int rval = regexec(&cre, strToSearch, 255, pm, 0);
+
+    regfree(&cre);
+
+    if (rval == REG_NOMATCH)
+        return retval;
+
+    for (int i = 0; i < 255; i++)
+    {
+        if (pm[i].rm_so == -1)
+	    continue;
+	if (i == matchToExtract)
+	{
+	    retval = std::string(strToSearch, pm[i].rm_so,
+	                                      pm[i].rm_eo - pm[i].rm_so);
+	    break;
+        }
+    }
+    return retval;
+}
+
+// ****************************************************************************
+//  Function: Basename 
+//
+//  Purpose: Find the basename of a file path string
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Unknown
+//
+// ****************************************************************************
 static const char *
 basename(const char *path, int& start)
 {
@@ -414,6 +566,15 @@ StringHelpers::Basename(const char *path)
    return basename(path, dummy1);
 }
 
+// ****************************************************************************
+//  Function: Dirname 
+//
+//  Purpose: Find the dirname of a file path string
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   Unknown
+//
+// ****************************************************************************
 const char *
 StringHelpers::Dirname(const char *path)
 {

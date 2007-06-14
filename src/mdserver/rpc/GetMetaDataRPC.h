@@ -67,6 +67,8 @@
 //   Added ability to force using a specific plugin when reading
 //   the metadata from a file (if it causes the file to be opened).
 //
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added support to treat all databases as time varying
 // ****************************************************************************
 
 class MDSERVER_RPC_API GetMetaDataRPC : public BlockingRPC
@@ -80,13 +82,15 @@ public:
     // Invokation method
     const avtDatabaseMetaData *operator()(const std::string&, int timeState=0,
                                           bool forceReadAllCyclesAndTimes=false,
-                                          const std::string &forcedFileType="");
+                                          const std::string &forcedFileType="",
+					  bool treatAllDBsAsTimeVarying=false);
 
     // Property setting methods
     void SetFile(const std::string&);
     void SetTimeState(int ts);
     void SetForceReadAllCyclesAndTimes(bool force);
     void SetForcedFileType(const std::string&);
+    void SetTreatAllDBsAsTimeVarying(bool set);
 
 
     // Property getting methods
@@ -94,6 +98,7 @@ public:
     int GetTimeState() const;
     bool GetForceReadAllCyclesAndTimes() const;
     std::string GetForcedFileType() const;
+    bool GetTreatAllDBsAsTimeVarying() const;
 
     // Property selection methods
     virtual void SelectAll();
@@ -103,6 +108,7 @@ private:
     int                  timeState;
     bool                 forceReadAllCyclesAndTimes;
     std::string          forcedFileType;
+    bool                 treatAllDBsAsTimeVarying;
 };
 
 

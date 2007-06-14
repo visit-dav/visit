@@ -187,6 +187,8 @@ extern const char *visit_SetQueryOverTimeAttributes_doc;
 extern const char *visit_SetRenderingAttributes_doc;
 extern const char *visit_SetSaveWindowAttributes_doc;
 extern const char *visit_SetTimeSliderState_doc;
+extern const char *visit_SetTreatAllDBsAsTimeVarying_doc;
+extern const char *visit_SetTryHarderCyclesTimes_doc;
 extern const char *visit_SetView_doc;
 extern const char *visit_SetViewExtentsType_doc;
 extern const char *visit_SetViewKeyframe_doc;

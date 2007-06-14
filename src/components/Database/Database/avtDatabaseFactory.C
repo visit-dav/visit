@@ -179,13 +179,16 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //    Hank Childs, Thu Jan 11 15:56:53 PST 2007
 //    Added argument for which plugin types were tried.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                              int timestep, vector<string> &plugins,
                              const char *format,
-                             bool forceReadAllCyclesAndTimes)
+                             bool forceReadAllCyclesAndTimes,
+			     bool treatAllDBsAsTimeVarying)
 {
     int   i, j;
 
@@ -266,7 +269,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             dbmgr->GetCommonPluginInfo(formatid);
         plugins.push_back(info->GetName());
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
-                           nBlocks, forceReadAllCyclesAndTimes);
+                           nBlocks, forceReadAllCyclesAndTimes,
+			   treatAllDBsAsTimeVarying);
 
         if (rv == NULL)
         {
@@ -334,7 +338,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             {
                 plugins.push_back(info->GetName());
                 rv = SetupDatabase(info, filelist, filelistN, timestep,
-                                   fileIndex, nBlocks, forceReadAllCyclesAndTimes);
+                                   fileIndex, nBlocks, forceReadAllCyclesAndTimes,
+				   treatAllDBsAsTimeVarying);
             }
             CATCH2(InvalidDBTypeException, e)
             {
@@ -358,7 +363,8 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                                          dbmgr->GetCommonPluginInfo(defaultid);
             plugins.push_back(info->GetName());
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
-                               nBlocks, forceReadAllCyclesAndTimes);
+                               nBlocks, forceReadAllCyclesAndTimes,
+			       treatAllDBsAsTimeVarying);
         }
         else
         {
@@ -403,13 +409,17 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //
 //    Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //    Added bool arg to forceReadAllCyclesTimes
+//
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
                                   const char * const *filelist, int filelistN, 
                                   int timestep, int fileIndex, int nBlocks,
-                                  bool forceReadAllCyclesAndTimes)
+                                  bool forceReadAllCyclesAndTimes,
+				  bool treatAllDBsAsTimeVarying)
 {
     avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
                                           filelistN-fileIndex, nBlocks);
@@ -427,7 +437,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     {
         rv->ActivateTimestep(timestep);
         rv->SetFileFormat(info->GetID());
-        rv->GetMetaData(timestep, forceReadAllCyclesAndTimes);
+        rv->GetMetaData(timestep, forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
     }
 
     return rv;
@@ -484,12 +494,15 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 //    Hank Childs, Thu Jan 11 15:56:53 PST 2007
 //    Added an argument for which plugins were tried.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 avtDatabase *
 avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
                               vector<string> &plugins,
-                              const char *format, bool forceReadAllCyclesAndTimes)
+                              const char *format, bool forceReadAllCyclesAndTimes,
+			      bool treatAllDBsAsTimeVarying)
 {
     //
     // Make sure we can read the file before we proceed.
@@ -545,7 +558,7 @@ avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
     // Create a database using the list of files.
     //
     avtDatabase *rv = FileList(reallist, listcount, timestep, plugins, format,
-                               forceReadAllCyclesAndTimes);
+                               forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
 
     //
     // Clean up memory

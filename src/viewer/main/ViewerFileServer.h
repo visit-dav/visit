@@ -314,6 +314,10 @@ public:
                                    { tryHarderCyclesTimes = val; }
     bool                       GetTryHarderCyclesTimes() const
                                    { return tryHarderCyclesTimes; }
+    void                       SetTreatAllDBsAsTimeVarying(bool val)
+                                   { treatAllDBsAsTimeVarying = val; }
+    bool                       GetTreatAllDBsAsTimeVarying() const
+                                   { return treatAllDBsAsTimeVarying; }
 
     void                       CreateNode(DataNode *, 
                                           const std::map<std::string,std::string> &,
@@ -350,6 +354,7 @@ private:
     stringVector              declinedFiles;
     intVector                 declinedFilesLength;
     bool                      tryHarderCyclesTimes;
+    bool                      treatAllDBsAsTimeVarying;
 };
 
 #endif

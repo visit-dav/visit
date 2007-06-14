@@ -271,6 +271,7 @@ public:
     void ResetQueryOverTimeAttributes();
 
     void SetTryHarderCyclesTimes(int flag);
+    void SetTreatAllDBsAsTimeVarying(int flag);
 
     void SetMeshManagementAttributes();
     void SetDefaultMeshManagementAttributes();

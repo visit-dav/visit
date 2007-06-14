@@ -1036,6 +1036,8 @@ Engine::ProcessInput()
 //    Cyrus Harrison, Fri Mar 16 09:38:10 PDT 2007
 //    Added -info-dump option
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added CL argument to specify cycle number regular expression 
 // ****************************************************************************
 
 void
@@ -1147,6 +1149,11 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 cerr << "-ui-bcast-thresholds option ignored due to missing argument." << endl;
                 debug1 << "-ui-bcast-thresholds option ignored due to missing argument." << endl;
             }
+        }
+        else if (strcmp(argv[i], "-cycleregex") == 0)
+        {
+            avtDatabaseMetaData::SetCycleFromFilenameRegex(argv[i+1]);
+            i++;
         }
         else if (strcmp(argv[i], "-dump") == 0)
         {

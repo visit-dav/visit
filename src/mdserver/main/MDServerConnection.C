@@ -242,6 +242,8 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //    Hank Childs, Wed May 25 10:29:30 PDT 2005
 //    Added new RPCs.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support for specifying cycle number regular expression 
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
@@ -249,6 +251,15 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     int total = visitTimer->StartTimer();
     int timeid = visitTimer->StartTimer();
     string connectStr("Connecting to client");
+
+    for (int i = 0; i < *argc; i++)
+    {
+        if (strcmp((*argv)[i], "-cycleregex") == 0)
+	{
+	    avtDatabaseMetaData::SetCycleFromFilenameRegex((*argv)[i+1]);
+	    i++;
+	}
+    }
 
     // Initialize some static members.
     if(!staticInit)
@@ -632,12 +643,15 @@ MDServerConnection::GetPluginErrors()
 //   Hank Childs, Thu Jan 11 16:14:25 PST 2007
 //   Capture the list of plugins used to open a file.
 //
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added support to treat all databases as time varying
 // ****************************************************************************
 
 void
 MDServerConnection::ReadMetaData(std::string file, int timeState,
                                  bool forceReadAllCyclesAndTimes,
-                                 std::string forcedFileType)
+                                 std::string forcedFileType,
+				 bool treatAllDBsAsTimeVarying)
 {
     currentMetaData = NULL;
 
@@ -646,6 +660,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
            << ", timeState=" << ts
            << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
            << ", forcedFileType=" << forcedFileType
+	   << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
            << endl;
 
     //
@@ -656,7 +671,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     TRY
     {
         db = GetDatabase(file, ts, forceReadAllCyclesAndTimes,
-                                      plugins, forcedFileType);
+                 plugins, forcedFileType, treatAllDBsAsTimeVarying);
     }
     CATCH2(VisItException, e)
     {
@@ -669,7 +684,8 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     {
         TRY
         {
-            currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes);
+            currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes,
+	                              treatAllDBsAsTimeVarying);
         }
         CATCHALL(...)
         {
@@ -2590,13 +2606,16 @@ MDServerConnection::GetVirtualFileDefinition(const std::string &file)
 //    Hank Childs, Thu Jan 11 16:14:25 PST 2007
 //    Capture the list of plugins attempted in opening the file.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 avtDatabase *
 MDServerConnection::GetDatabase(string file, int timeState,
                                 bool forceReadAllCyclesAndTimes,
                                 std::vector<std::string> &plugins,
-                                string forcedFileType)
+                                string forcedFileType,
+				bool treatAllDBsAsTimeVarying)
 {
     //
     // Make sure that the plugins are loaded.
@@ -2610,6 +2629,7 @@ MDServerConnection::GetDatabase(string file, int timeState,
 
     if (currentDatabase == NULL ||
         file != currentDatabaseName ||
+	treatAllDBsAsTimeVarying ||
         (timeState != currentDatabaseTimeState && currentDatabaseHasInvariantMD))
     {
         string timerMessage(string("Time to open ") + file);
@@ -2618,7 +2638,9 @@ MDServerConnection::GetDatabase(string file, int timeState,
                << ". file=" << file.c_str()
                << ", timeState=" << timeState
                << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
-               << ", forcedFileType=" << forcedFileType << endl;
+               << ", forcedFileType=" << forcedFileType
+	       << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
+	       << endl;
 
         if (currentDatabase != NULL)
         {
@@ -2685,7 +2707,8 @@ MDServerConnection::GetDatabase(string file, int timeState,
                 currentDatabase = avtDatabaseFactory::FileList(names,
                     fileNames.size(), timeState, plugins,
                     forcedFileType=="" ? NULL : forcedFileType.c_str(),
-                    forceReadAllCyclesAndTimes);
+                    forceReadAllCyclesAndTimes,
+		    treatAllDBsAsTimeVarying);
 
                 // Free the memory that we used.
                 for(i = 0; i < fileNames.size(); ++i)
@@ -2727,14 +2750,16 @@ MDServerConnection::GetDatabase(string file, int timeState,
             currentDatabase =
                 avtDatabaseFactory::VisitFile(fn, timeState, plugins,
                                               forcedFileType=="" ? NULL : forcedFileType.c_str(),
-                                              forceReadAllCyclesAndTimes);
+                                              forceReadAllCyclesAndTimes,
+					      treatAllDBsAsTimeVarying);
         }
         else
         {
             currentDatabase =
                 avtDatabaseFactory::FileList(&fn, 1, timeState, plugins,
                                              forcedFileType=="" ? NULL : forcedFileType.c_str(),
-                                             forceReadAllCyclesAndTimes);
+                                             forceReadAllCyclesAndTimes,
+					     treatAllDBsAsTimeVarying);
         }
 
         visitTimer->StopTimer(timeid, timerMessage);

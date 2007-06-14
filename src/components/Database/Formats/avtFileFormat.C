@@ -39,6 +39,7 @@
 //                             avtFileFormat.C                               //
 // ************************************************************************* //
 
+#include <errno.h>
 #include <limits.h> // for INT_MAX
 #include <float.h> // for DBL_MAX
 #include <snprintf.h>
@@ -50,6 +51,7 @@
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <StringHelpers.h>
 
 
 using std::string;
@@ -630,6 +632,60 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
     md->Add(new avtSpeciesMetaData(name, mesh, mat, nmat, nspecs, specnames));
 }
 
+// ****************************************************************************
+//  Method: avtFileFormat::GuessCycle
+//
+//  Purpose: Guess cycle numbers from a filename optionally using a regular
+//  expression to find them.
+//
+//  Note: care must be taken we defining the string literal here for the RE
+//  as C/C++ compiler tries to interpret a backslash character in the string
+//  literal. So, two backslashes are required although the final compiled form
+//  of the string will have only one.
+//
+//  Programmer:    Mark C. Miller 
+//  Creation:      June 12, 2007 
+//
+// ****************************************************************************
+
+int
+avtFileFormat::GuessCycle(const char *fname, const char *re) const
+{
+    string reToUse = avtDatabaseMetaData::GetCycleFromFilenameRegex();
+    if (reToUse == "")
+        reToUse = re ? re : "";
+    if (reToUse == "")
+        reToUse = "<([0-9]+)\\..*> \\1";
+
+    double d = GuessCycleOrTime(fname, reToUse.c_str());
+
+    if (d == INVALID_TIME) return INVALID_CYCLE;
+    return (int) d;
+}
+
+// ****************************************************************************
+//  Method: avtFileFormat::GuessTime
+//
+//  Purpose: Guess time numbers from a filename optionally using a regular
+//  expression to find them. Note the RE here is different from that used
+//  for cycle to permit a possible dot ('.') in the time spec. See note on
+//  string literal RE, above.
+//
+//  Programmer:    Mark C. Miller 
+//  Creation:      June 12, 2007 
+//
+// ****************************************************************************
+double
+avtFileFormat::GuessTime(const char *fname, const char *re) const
+{
+    string reToUse = avtDatabaseMetaData::GetCycleFromFilenameRegex();
+    if (reToUse == "")
+        reToUse = re ? re : "";
+    if (reToUse == "")
+        reToUse = "<([0-9]*\\.?[0-9]*)\\..*> \\1";
+
+    return GuessCycleOrTime(fname, reToUse.c_str());
+}
 
 // ****************************************************************************
 //  Method: avtFileFormat::GuessCycleOrTime
@@ -653,60 +709,27 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 //    Added permitDot arg to indicate whether a dot in the filename
 //    should be permitted. Made it return double instead of int.
 //    Made it return -DBL_MAX to indicate inability to obtain cycle/time
+//
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Modified to use string helper methods.
 // ****************************************************************************
 
 double
-avtFileFormat::GuessCycleOrTime(const char *fname, bool permitDot) const
+avtFileFormat::GuessCycleOrTime(const char *fname, const char *re) const
 {
     //
     // Take out any of the name that comes from the directory structure.
     //
-    const char *p = fname;
-    const char *q = fname;
-    while (p != NULL)
-    {
-        q = p;
-        p = strstr(p+1, "/");
-    }
-    if (q != fname)
-    {
-        fname = q+1;
-    }
+    fname = StringHelpers::Basename(fname);
 
-    int len = strlen(fname);
-    int lastDigit = -1;
-    bool inRun = false;
-    for (int i = 0 ; i < len ; i++)
-    {
-        if (isdigit(fname[i]) ||
-            (permitDot && (fname[i] == '.')))
-        {
-            if (!inRun)
-            {
-                lastDigit = i;
-            }
-            inRun = true;
-        }
-        else
-        {
-            inRun = false;
-        }
-    }
+    string substr = StringHelpers::ExtractRESubstr(fname, re);
+    errno = 0;
+    double ret = strtod(substr.c_str(), 0);
+    if (errno != 0)
+        ret = INVALID_TIME;
 
-    //
-    // Example of atoi: atoi("1234str") = 1234.
-    //
-    if (lastDigit >= 0 && (!permitDot || fname[lastDigit] != '.' || isdigit(fname[lastDigit+1])))
-    {
-        return atof(fname+lastDigit);
-    }
-
-    //
-    // No number in the string, so the cycle must be 0.
-    //
-    return -DBL_MAX;
+    return ret;
 }
-
 
 // ****************************************************************************
 //  Method: avtFileFormat::CloseFileDescriptor

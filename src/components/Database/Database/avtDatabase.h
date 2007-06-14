@@ -267,6 +267,8 @@ typedef struct {
 //    Mark C. Miller, Tue Aug 15 15:28:11 PDT 2006
 //    Added static domain decomposition help functions
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -288,7 +290,8 @@ class DATABASE_API avtDatabase
 
     avtDatabaseMetaData        *GetMetaData(int stateIndex,
                                     bool forceReadAllCyclesTimes = false,
-                                    bool forceReadThisStateCycleTime = false);
+                                    bool forceReadThisStateCycleTime = false,
+				    bool treatAllDBsAsTimeVarying = false);
     avtSIL                     *GetSIL(int stateIndex);
     int                         GetMostRecentTimestep() const;
 

@@ -65,6 +65,8 @@ class MDServerConnection;
 //   Added code to keep track of the client host.  This lets us guess
 //   host names better.
 //
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added method to set cycle number regular expression
 // ****************************************************************************
 
 class MDServerApplication
@@ -76,6 +78,7 @@ public:
     void Execute();
     void ExecuteDebug();
     void SetTimeout(long t) {timeout = t;}
+    void SetCycleFromFilenameRegex(const char *cfnre);
 
     static MDServerApplication *Instance();
     static void AlarmHandler(int signal);

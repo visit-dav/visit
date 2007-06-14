@@ -61,13 +61,16 @@ using std::string;
 //    Added ability to force using a specific plugin when reading
 //    the metadata from a file (if it causes the file to be opened).
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
-GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sibs",&metaData)
+GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sibsb",&metaData)
 {
     timeState = 0;
     forceReadAllCyclesAndTimes = false;
     forcedFileType="";
+    treatAllDBsAsTimeVarying = false;
 }
 
 // ****************************************************************************
@@ -135,22 +138,26 @@ GetMetaDataRPC::TypeName() const
 //    Added ability to force using a specific plugin when reading
 //    the metadata from a file (if it causes the file to be opened).
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 GetMetaDataRPC::operator()(const string &f, int ts, bool force,
-                           const string &fft)
+                           const string &fft, bool tv)
 {
     debug3 << "Executing GetMetaData RPC on file " << f.c_str()
            << ", timestate=" << ts
            << ", forceReadAllCyclesAndTimes = " << force
            << ", forcedFileType = " << fft
+	   << ", treatAllDBsAsTimeVarying = " << tv
            << endl;;
 
     SetFile(f);
     SetTimeState(ts);
     SetForceReadAllCyclesAndTimes(force);
     SetForcedFileType(fft);
+    SetTreatAllDBsAsTimeVarying(tv);
 
     // Try to execute the RPC.
     Execute();
@@ -186,6 +193,8 @@ GetMetaDataRPC::operator()(const string &f, int ts, bool force,
 //    Added ability to force using a specific plugin when reading
 //    the metadata from a file (if it causes the file to be opened).
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 void
@@ -195,6 +204,7 @@ GetMetaDataRPC::SelectAll()
     Select(1, (void*)&timeState);
     Select(2, (void*)&forceReadAllCyclesAndTimes);
     Select(3, (void*)&forcedFileType);
+    Select(4, (void*)&treatAllDBsAsTimeVarying);
 }
 
 // ****************************************************************************
@@ -276,6 +286,24 @@ GetMetaDataRPC::SetForcedFileType(const std::string &f)
 }
 
 // ****************************************************************************
+// Method: GetMetaDataRPC::SetTreatAllDBsAsTimeVarying
+//
+// Purpose: This sets the bool for whether to treat all databases as time
+//          varying
+//
+// Programmer: Mark C. Miller 
+// Creation:   June 11, 2007
+//
+// ****************************************************************************
+
+void
+GetMetaDataRPC::SetTreatAllDBsAsTimeVarying(bool set)
+{
+    treatAllDBsAsTimeVarying = set;
+    Select(4, (void*)&treatAllDBsAsTimeVarying);
+}
+
+// ****************************************************************************
 // Method: GetMetaDataRPC::GetFile
 //
 // Purpose: 
@@ -350,3 +378,19 @@ GetMetaDataRPC::GetForcedFileType() const
     return forcedFileType;
 }
 
+// ****************************************************************************
+// Method: GetMetaDataRPC::GetTreatAllDBsAsTimeVarying
+//
+// Purpose: This gets the bool for whether to treat all databases as time
+//          varying
+//
+// Programmer: Mark C. Miller 
+// Creation:   June 11, 2007 
+//
+// ****************************************************************************
+
+bool
+GetMetaDataRPC::GetTreatAllDBsAsTimeVarying() const
+{
+    return treatAllDBsAsTimeVarying;
+}

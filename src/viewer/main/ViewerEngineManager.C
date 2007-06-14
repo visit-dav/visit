@@ -1817,13 +1817,15 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
             }
 
             // Tell the engine to generate the plot
+	    bool treatAllDBsAsTimeVarying = ViewerFileServer::Instance()->GetTreatAllDBsAsTimeVarying();
             engine->ReadDataObject(defaultFormat, 
                                    plot->GetDatabaseName(),
                                    plot->GetVariableName(),
                                    state, plot->GetSILRestriction(),
                                    *GetMaterialClientAtts(),
                                    plot->GetExpressions(),
-                                   *GetMeshManagementClientAtts());
+                                   *GetMeshManagementClientAtts(),
+				   treatAllDBsAsTimeVarying);
         }
 
         //

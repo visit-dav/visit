@@ -1976,7 +1976,7 @@ avtDatabaseMetaData::GetNumberOfExpressions(void) const
 }
 
 Function: ConvertCSGDomainToBlockAndRegion
-Declaration: bool         ConvertCSGDomainToBlockAndRegion(const char *const var, int *domain, int *region) const; 
+Declaration: bool         ConvertCSGDomainToBlockAndRegion(const char *const var, int *domain, int *region) const;
 Definition:
 // ****************************************************************************
 //  Function: ConvertCSGDomainId
@@ -2865,244 +2865,6 @@ avtDatabaseMetaData::GetAllMeshNames() const
     return meshNames;
 }
 
-Function: RegisterWarningCallback
-Declaration: void  RegisterWarningCallback(void (*)(const char *));
-Definition:
-// ****************************************************************************
-//  Method: avtDatabaseMetaData::RegisterWarningCallback
-//
-//  Purpose:
-//      Register a warning callback.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 15, 2005
-//
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::RegisterWarningCallback(void (*WC)(const char *))
-{
-    WarningCallback = WC;
-    haveWarningCallback = true;
-}
-
-Function: WarnCallbackData1
-Declaration: static void (*WarningCallback)(const char *);
-Definition:
-void    (*avtDatabaseMetaData::WarningCallback)(const char *) = NULL;
-
-Function: WarnCallbackData2
-Declaration: static bool haveWarningCallback;
-Definition:
-bool    avtDatabaseMetaData::haveWarningCallback = false;
-
-Function: IssueWarning
-Declaration: void IssueWarning(const char *msg);
-Definition:
-// ****************************************************************************
-//  Method: avtDatabaseMetaData::IssueWarning
-//
-//  Purpose:
-//      Issues a warning.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 15, 2005
-//
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::IssueWarning(const char *msg)
-{
-    if (haveWarningCallback)
-    {
-        WarningCallback(msg);
-    }
-    else
-    {
-        debug1 << "avtDatabaseMetaData wanted to issue the following warning, "
-               << "but could not, because no callback was registered:" << endl;
-        debug1 << msg << endl;
-    }
-}
-
-Function: VarIsCompound
-Declaration: bool VarIsCompound(const std::string &inVar) const;
-Definition:
-// ****************************************************************************
-//  Function: avtDatabaseMetaData::VarIsCompound
-//
-//  Purpose:
-//    Determines if a variable is in compound form: 'CategoryName(MeshName)'. 
-//
-//  Arguments:
-//    v       The (possibly) compound variable. 
-//
-//  Returns:
-//    true if the variable is in compound form, false otherwise. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 5, 2002 
-//
-// ****************************************************************************
-
-bool
-avtDatabaseMetaData::VarIsCompound(const std::string &v) const
-{
-    int beg = -1, end = -1;
-
-    // find the mesh name enclosed in parentheses
-    beg = v.find('(');
-    end = v.find(')');
-
-    if (beg == -1 || end == -1)
-    {
-        return false;
-    }
-    return true;
-}
-
-Function: ParseCompoundForVar
-Declaration: void ParseCompoundForVar(const std::string &inVar, std::string &outVar) const;
-Definition:
-// ****************************************************************************
-//  Function: avtDatabaseMetaData::ParseCompoundForVar
-//
-//  Purpose:
-//    Parses a compound variable of the form 'CategoryName(MeshName)' for
-//    the variable portion. 
-//
-// Notes:
-//    The desired variable is one that can be 'typed', which may be either 
-//    CategoryName or MeshName, depending depending upon the subset. 
-//    e.g. if the CategoryName matches with blockTile or groupTitle of the 
-//    corresponding MeshMetaData, then the MeshName is returned, so that the 
-//    variable can be typed as 'AVT_MESH_VAR'. 
-//
-//    This code pulled from gui. (QvisPlotManagerWidget).
-//    If inVar is not in the correct compound form, then outVar set to inVar.
-//
-//  Arguments:
-//    inVar   The (possibly) compound variable to parse. 
-//    outVar  A place to store the parsed variable name. 
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 5, 2002 
-//
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::ParseCompoundForVar(const std::string &inVar, 
-    std::string &outVar) const
-{
-    if (!VarIsCompound(inVar))
-    {
-        outVar = inVar;
-        return; 
-    }
-
-    avtSubsetType sT = DetermineSubsetType(inVar);
-
-    switch (sT)
-    {
-        case AVT_DOMAIN_SUBSET : // fall-through
-        case AVT_GROUP_SUBSET  :
-            ParseCompoundForMesh(inVar, outVar);
-            break; 
-        case AVT_MATERIAL_SUBSET :
-            ParseCompoundForCategory(inVar, outVar);
-            break; 
-        default:
-            outVar = inVar;
-            break; 
-    }  
-}
-
-Function: ParseCompoundForMesh
-Declaration: void ParseCompoundForMesh(const std::string &inVar, std::string &meshName) const;
-Definition:
-// ****************************************************************************
-//  Function: avtDatabaseMetaData::ParseCompoundForMesh
-//
-//  Purpose:
-//    Parses a compound variable of the form 'CategoryName(MeshName)' for
-//    the mesh portion. 
-//
-//  Arguments:
-//    inVar   The (possibly) compound variable to parse. 
-//    outVar  A place to store the parsed mesh name. 
-//
-//  Notes:
-//    If inVar is not in the correct compound form, then outVar set to inVar.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 5, 2002 
-//
-// ****************************************************************************
-
-void
-avtDatabaseMetaData::ParseCompoundForMesh(const std::string &inVar, 
-      std::string &outVar) const
-{
-    int beg = -1, end = -1;
- 
-    // find the mesh name enclosed in parentheses
-    beg = inVar.find('(');
-    end = inVar.find(')');
- 
-    if (beg == -1 || end == -1)
-    {
-        // this is not a parseable variable.
-        outVar = inVar;
-        return;
-    }
- 
-    //move past the first paren
-    beg += 1;
-    outVar = inVar.substr(beg, end - beg);
-}
-
-Function: ParseCompoundForCategory
-Declaration: void ParseCompoundForCategory(const std::string &inVar, std::string &meshName) const;
-Definition:
-// ****************************************************************************
-//  Function: avtDatabaseMetaData::ParseCompoundForCategory
-//
-//  Purpose:
-//    Parses a compound variable of the form 'CategoryName(MeshName)' for
-//    the category portion. 
-//
-//  Arguments:
-//    inVar   The (possibly) compound variable to parse. 
-//    outVar  A place to store the parsed category name. 
-//
-//  Notes:
-//    If inVar is not in the correct compound form, then outVar set to inVar.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 5, 2002 
-//
-// ****************************************************************************
-
-
-void
-avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar, 
-      std::string &outVar) const
-{
-    int end = -1, beg = -1;
- 
-    // find the mesh name enclosed in parentheses
-    beg = inVar.find('(');
-    end = inVar.find(')');
-
-    if (beg == -1 || end == -1)
-    {
-        // this is not a compound variable.
-        outVar = inVar;
-        return;
-    }
-    outVar = inVar.substr(0, beg);
-}
-
 Function: Print
 Declaration: void         Print(ostream &, int = 0) const;
 Definition:
@@ -3480,6 +3242,243 @@ avtDatabaseMetaData::Print(ostream &out, int indent) const
     }
 }
 
+Function: RegisterWarningCallback
+Declaration: void  RegisterWarningCallback(void (*)(const char *));
+Definition:
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::RegisterWarningCallback
+//
+//  Purpose:
+//      Register a warning callback.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 15, 2005
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::RegisterWarningCallback(void (*WC)(const char *))
+{
+    WarningCallback = WC;
+    haveWarningCallback = true;
+}
+
+Function: WarnCallbackData1
+Declaration: static void (*WarningCallback)(const char *);
+Definition:
+void    (*avtDatabaseMetaData::WarningCallback)(const char *) = NULL;
+
+Function: WarnCallbackData2
+Declaration: static bool haveWarningCallback;
+Definition:
+bool    avtDatabaseMetaData::haveWarningCallback = false;
+
+Function: IssueWarning
+Declaration: void IssueWarning(const char *msg);
+Definition:
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::IssueWarning
+//
+//  Purpose:
+//      Issues a warning.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 15, 2005
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::IssueWarning(const char *msg)
+{
+    if (haveWarningCallback)
+    {
+        WarningCallback(msg);
+    }
+    else
+    {
+        debug1 << "avtDatabaseMetaData wanted to issue the following warning, "
+               << "but could not, because no callback was registered:" << endl;
+        debug1 << msg << endl;
+    }
+}
+
+Function: VarIsCompound
+Declaration: bool VarIsCompound(const std::string &inVar) const;
+Definition:
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::VarIsCompound
+//
+//  Purpose:
+//    Determines if a variable is in compound form: 'CategoryName(MeshName)'. 
+//
+//  Arguments:
+//    v       The (possibly) compound variable. 
+//
+//  Returns:
+//    true if the variable is in compound form, false otherwise. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+bool
+avtDatabaseMetaData::VarIsCompound(const std::string &v) const
+{
+    int beg = -1, end = -1;
+
+    // find the mesh name enclosed in parentheses
+    beg = v.find('(');
+    end = v.find(')');
+
+    if (beg == -1 || end == -1)
+    {
+        return false;
+    }
+    return true;
+}
+
+Function: ParseCompoundForVar
+Declaration: void ParseCompoundForVar(const std::string &inVar, std::string &outVar) const;
+Definition:
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::ParseCompoundForVar
+//
+//  Purpose:
+//    Parses a compound variable of the form 'CategoryName(MeshName)' for
+//    the variable portion. 
+//
+// Notes:
+//    The desired variable is one that can be 'typed', which may be either 
+//    CategoryName or MeshName, depending depending upon the subset. 
+//    e.g. if the CategoryName matches with blockTile or groupTitle of the 
+//    corresponding MeshMetaData, then the MeshName is returned, so that the 
+//    variable can be typed as 'AVT_MESH_VAR'. 
+//
+//    This code pulled from gui. (QvisPlotManagerWidget).
+//    If inVar is not in the correct compound form, then outVar set to inVar.
+//
+//  Arguments:
+//    inVar   The (possibly) compound variable to parse. 
+//    outVar  A place to store the parsed variable name. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::ParseCompoundForVar(const std::string &inVar, 
+    std::string &outVar) const
+{
+    if (!VarIsCompound(inVar))
+    {
+        outVar = inVar;
+        return; 
+    }
+
+    avtSubsetType sT = DetermineSubsetType(inVar);
+
+    switch (sT)
+    {
+        case AVT_DOMAIN_SUBSET : // fall-through
+        case AVT_GROUP_SUBSET  :
+            ParseCompoundForMesh(inVar, outVar);
+            break; 
+        case AVT_MATERIAL_SUBSET :
+            ParseCompoundForCategory(inVar, outVar);
+            break; 
+        default:
+            outVar = inVar;
+            break; 
+    }  
+}
+
+Function: ParseCompoundForMesh
+Declaration: void ParseCompoundForMesh(const std::string &inVar, std::string &meshName) const;
+Definition:
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::ParseCompoundForMesh
+//
+//  Purpose:
+//    Parses a compound variable of the form 'CategoryName(MeshName)' for
+//    the mesh portion. 
+//
+//  Arguments:
+//    inVar   The (possibly) compound variable to parse. 
+//    outVar  A place to store the parsed mesh name. 
+//
+//  Notes:
+//    If inVar is not in the correct compound form, then outVar set to inVar.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::ParseCompoundForMesh(const std::string &inVar, 
+      std::string &outVar) const
+{
+    int beg = -1, end = -1;
+ 
+    // find the mesh name enclosed in parentheses
+    beg = inVar.find('(');
+    end = inVar.find(')');
+ 
+    if (beg == -1 || end == -1)
+    {
+        // this is not a parseable variable.
+        outVar = inVar;
+        return;
+    }
+ 
+    //move past the first paren
+    beg += 1;
+    outVar = inVar.substr(beg, end - beg);
+}
+
+Function: ParseCompoundForCategory
+Declaration: void ParseCompoundForCategory(const std::string &inVar, std::string &meshName) const;
+Definition:
+// ****************************************************************************
+//  Function: avtDatabaseMetaData::ParseCompoundForCategory
+//
+//  Purpose:
+//    Parses a compound variable of the form 'CategoryName(MeshName)' for
+//    the category portion. 
+//
+//  Arguments:
+//    inVar   The (possibly) compound variable to parse. 
+//    outVar  A place to store the parsed category name. 
+//
+//  Notes:
+//    If inVar is not in the correct compound form, then outVar set to inVar.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 5, 2002 
+//
+// ****************************************************************************
+
+
+void
+avtDatabaseMetaData::ParseCompoundForCategory(const std::string &inVar, 
+      std::string &outVar) const
+{
+    int end = -1, beg = -1;
+ 
+    // find the mesh name enclosed in parentheses
+    beg = inVar.find('(');
+    end = inVar.find(')');
+
+    if (beg == -1 || end == -1)
+    {
+        // this is not a compound variable.
+        outVar = inVar;
+        return;
+    }
+    outVar = inVar.substr(0, beg);
+}
 
 Function: VariableNamesEqual
 Declaration: bool VariableNamesEqual(const std::string &v1, const std::string &v2) const;
@@ -3520,3 +3519,61 @@ avtDatabaseMetaData::VariableNamesEqual(const std::string &v1, const std::string
     else
         return v2.substr(1) == v1;
 }
+
+Function: CycleFromFilenameRegex
+Declaration: static std::string cycleFromFilenameRegex;
+Definition:
+std::string avtDatabaseMetaData::cycleFromFilenameRegex;
+
+Function: SetCycleFromFilenameRegex
+Declaration: static void SetCycleFromFilenameRegex(const char *re);
+Definition:
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::SetCycleFromFilenameRegex
+//
+//  Purpose: Set regular expression for finding cycles in filenames
+//
+//  The format of string passed here is an opening '<' followed by the actual
+//  regular expression string followed by a closing '>', optionally followed
+//  by a ' ' (space) and a backslashed reference to the specific substring
+//  containing the cycle digits. For example, to extract the cycle digits
+//  from strings looking like 'run_23_0010_yana.silo' where '0010' is the cycle
+//  digits, the string to pass here would look like...
+//
+//                                               V--substring reference
+//                      "<.*_([0-9]{4})_.*\\..*> \1"
+//          opening char-^                     ^--closing char
+//                        ^------RE part------^
+//
+//  Do a 'man 7 regex' to get more information on regular expression syntax
+//
+//  Programmer: Mark C. Miller
+//  Creation:   June 13, 2007
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::SetCycleFromFilenameRegex(const char *re)
+{
+    cycleFromFilenameRegex = re;
+}
+
+Function: GetCycleFromFilenameRegex
+Declaration: static std::string GetCycleFromFilenameRegex();
+Definition:
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetCycleFromFilenameRegex
+//
+//  Purpose: Get regular expression for finding cycles in filenames
+//
+//  Programmer: Mark C. Miller
+//  Creation:   June 13, 2007
+//
+// ****************************************************************************
+
+std::string
+avtDatabaseMetaData::GetCycleFromFilenameRegex()
+{
+    return cycleFromFilenameRegex;
+}
+

@@ -179,6 +179,8 @@ class Xfer;
 //    Add argument to GetDatabase so we can retrieve the names of plugins
 //    we used to open a file.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 class MDServerConnection
@@ -226,7 +228,8 @@ public:
     // Functions used by the RPC Executors.
     void ReadMetaData(std::string file, int timeState,
                       bool forceReadAllCyclesAndTimes,
-                      std::string forcedFileType);
+                      std::string forcedFileType,
+		      bool treatAllDBsAsTimeVarying);
     avtDatabaseMetaData *GetCurrentMetaData() const;
 
     void ReadSIL(std::string file, int timeState);
@@ -322,7 +325,8 @@ private:
     avtDatabase               *GetDatabase(std::string, int timeState,
                                            bool forceReadAllCyclesAndTimes,
                                            std::vector<std::string> &,
-                                           std::string forcedFileType="");
+                                           std::string forcedFileType="",
+					   bool treatAllDBsAsTimeVarying=false);
 };
 
 #endif

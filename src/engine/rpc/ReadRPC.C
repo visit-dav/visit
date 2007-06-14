@@ -61,9 +61,12 @@ using std::string;
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes 
+//
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added bool to support to treat all databases as time varying
 // ****************************************************************************
 
-ReadRPC::ReadRPC() : BlockingRPC("ssiaasa")
+ReadRPC::ReadRPC() : BlockingRPC("ssiaasab")
 {
 }
 
@@ -115,19 +118,23 @@ ReadRPC::~ReadRPC()
 //    Mark C. Miller Sun Nov  6 07:07:53 PST 2005
 //    Added mesh management attributes
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added bool to support to treat all databases as time varying
 // ****************************************************************************
 
 void
 ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
                     const CompactSILRestrictionAttributes &s,
                     const MaterialAttributes &m,
-                    const MeshManagementAttributes &mm)
+                    const MeshManagementAttributes &mm,
+		    bool treatAllDBsAsTimeVarying)
 {
     debug3 << "Executing read RPC" 
            << "\n\t file format='" << ft.c_str() << "'"
            << "\n\t file='" << f.c_str() << "'"
            << "\n\t var ='" << v.c_str() << "'"
            << "\n\t time='" << t << "'"
+           << "\n\t treatAllDBsAsTimeVarying ='" << treatAllDBsAsTimeVarying << "'"
            << endl;
 
     SetFormat(ft);
@@ -137,6 +144,7 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
     SetCSRAttributes(s);
     SetMaterialAttributes(m);
     SetMeshManagementAttributes(mm);
+    SetTreatAllDBsAsTimeVarying(treatAllDBsAsTimeVarying);
 
     Execute();
 }
@@ -162,6 +170,8 @@ ReadRPC::operator()(const string &ft, const string &f, const string &v, int t,
 //    Mark C. Miller Sun Nov  6 07:07:53 PST 2005
 //    Added mesh management attributes
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added bool to support to treat all databases as time varying
 // ****************************************************************************
 
 void
@@ -174,6 +184,7 @@ ReadRPC::SelectAll()
     Select(4, (void*)&materialAtts);
     Select(5, (void*)&format);
     Select(6, (void*)&meshManagementAtts);
+    Select(7, (void*)&treatAllDBsAsTimeVarying);
 }
 
 
@@ -319,6 +330,23 @@ ReadRPC::SetMeshManagementAttributes(const MeshManagementAttributes &mm)
 }
 
 // ****************************************************************************
+//  Method:  ReadRPC::SetTreatAllDBsAsTimeVarying
+//
+//  Purpose: Sets flag to treat all databases as time varying
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    June 12, 2007 
+//
+// ****************************************************************************
+
+void
+ReadRPC::SetTreatAllDBsAsTimeVarying(bool set)
+{
+    treatAllDBsAsTimeVarying = set;
+    Select(7, (void*)&treatAllDBsAsTimeVarying);
+}
+
+// ****************************************************************************
 //  Method: ReadRPC::GetFile
 //
 //  Purpose: 
@@ -444,4 +472,21 @@ const MeshManagementAttributes &
 ReadRPC::GetMeshManagementAttributes() const
 {
     return meshManagementAtts;
+}
+
+// ****************************************************************************
+//  Method:  ReadRPC::GetTreatAllDBsAsTimeVarying
+//
+//  Purpose: Returns flag indicating if all databases should be treated as time
+//  varying
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    June 12, 2007 
+//
+// ****************************************************************************
+
+bool
+ReadRPC::GetTreatAllDBsAsTimeVarying() const
+{
+    return treatAllDBsAsTimeVarying;
 }

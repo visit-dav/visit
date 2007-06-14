@@ -100,6 +100,7 @@ static const char *ViewerRPCType_strings[] = {
 "SetDefaultMeshManagementAttributesRPC", "ResetMeshManagementAttributesRPC", "ResizeWindowRPC", 
 "MoveWindowRPC", "MoveAndResizeWindowRPC", "SetStateLoggingRPC", 
 "ConstructDDFRPC", "UpdatePlotInfoAttsRPC", "RequestMetaDataRPC", 
+"SetTreatAllDBsAsTimeVaryingRPC",
 "MaxRPC"};
 
 std::string

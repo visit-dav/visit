@@ -69,7 +69,6 @@
 #include <avtColorTables.h>
 #include <avtExtents.h>
 #include <avtNullData.h>
-#include <avtDatabaseMetaData.h>
 #include <avtDataObjectQuery.h>
 #include <avtMultipleInputQuery.h>
 #include <avtAreaBetweenCurvesQuery.h>
@@ -441,11 +440,13 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //    Hank Childs, Thu Jan 11 16:10:12 PST 2007
 //    Added argument to DatabaseFactory calls.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 NetnodeDB *
 NetworkManager::GetDBFromCache(const string &filename, int time,
-                               const char *format)
+    const char *format, bool treatAllDBsAsTimeVarying)
 {
     // If we don't have a load balancer, we're dead.
     if (loadBalancer == NULL)
@@ -468,15 +469,23 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
         }
     }
 
+    // use of these makes calls to GetMetaData a little clearer
+    const bool forceReadAllCyclesAndTimes = false;
+    const bool forceReadThisCycleAndTime  = false;
+
     // got a match
     if (cachedDB != NULL)
     {
         // even if we found the DB in the cache,
         // we need to update the metadata if its time-varying
-        if (!cachedDB->GetDB()->MetaDataIsInvariant() ||
+        if (treatAllDBsAsTimeVarying ||
+	    !cachedDB->GetDB()->MetaDataIsInvariant() ||
             !cachedDB->GetDB()->SILIsInvariant())
         {
-            cachedDB->GetDB()->GetMetaData(time);
+            cachedDB->GetDB()->GetMetaData(time,
+	                                   forceReadAllCyclesAndTimes,
+					   forceReadThisCycleAndTime,
+	                                   treatAllDBsAsTimeVarying);
             cachedDB->GetDB()->GetSIL(time);
         }
 
@@ -502,6 +511,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
         // If we want to open the file at a later timestep, get the
         // SIL so that it contains the right data.
         if ((time > 0) ||
+	    treatAllDBsAsTimeVarying ||
             (!db->MetaDataIsInvariant()) ||
             (!db->SILIsInvariant()))
         {
@@ -509,7 +519,10 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
                    << filename.c_str() << " at timestate=" << time
                    << " so we're reading the SIL early."
                    << endl;
-            db->GetMetaData(time);
+            db->GetMetaData(time,
+	                    forceReadAllCyclesAndTimes,
+			    forceReadThisCycleAndTime,
+			    treatAllDBsAsTimeVarying);
             db->GetSIL(time);
         }
 
@@ -673,6 +686,8 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //    Tell the output of the expression evaluator filter that it is *not*
 //    transient, since picks sometimes like to look at these.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 void
@@ -682,7 +697,8 @@ NetworkManager::StartNetwork(const string &format,
                              int time,
                              const CompactSILRestrictionAttributes &atts,
                              const MaterialAttributes &matopts,
-                             const MeshManagementAttributes &meshopts)
+                             const MeshManagementAttributes &meshopts,
+			     bool treatAllDBsAsTimeVarying)
 {
     // If the variable is an expression, we need to find a "real" variable
     // name to work with.
@@ -695,7 +711,8 @@ NetworkManager::StartNetwork(const string &format,
 
     // Start up the DataNetwork and add the database to it.
     workingNet = new DataNetwork;
-    NetnodeDB *netDB = GetDBFromCache(filename, time, defaultFormat);
+    NetnodeDB *netDB = GetDBFromCache(filename, time, defaultFormat,
+                                      treatAllDBsAsTimeVarying);
     workingNet->SetNetDB(netDB);
     netDB->SetDBInfo(filename, leaf, time);
 

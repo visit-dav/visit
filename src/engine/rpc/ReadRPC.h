@@ -64,6 +64,9 @@
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes 
+//
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 class ENGINE_RPC_API ReadRPC : public BlockingRPC
@@ -79,7 +82,8 @@ public:
                     const std::string &var, int time,
                     const CompactSILRestrictionAttributes &,
                     const MaterialAttributes &,
-                    const MeshManagementAttributes &);
+                    const MeshManagementAttributes &,
+		    bool);
 
     // Property selection methods
     virtual void SelectAll();
@@ -92,6 +96,7 @@ public:
     void SetCSRAttributes(const CompactSILRestrictionAttributes &);
     void SetMaterialAttributes(const MaterialAttributes &);
     void SetMeshManagementAttributes(const MeshManagementAttributes &);
+    void SetTreatAllDBsAsTimeVarying(bool);
 
     // Property getting methods
     std::string GetVar()  const;
@@ -101,6 +106,7 @@ public:
     const CompactSILRestrictionAttributes &GetCSRAttributes() const;
     const MaterialAttributes &GetMaterialAttributes() const;
     const MeshManagementAttributes &GetMeshManagementAttributes() const;
+    bool        GetTreatAllDBsAsTimeVarying() const;
 
 private:
     std::string file;
@@ -110,6 +116,7 @@ private:
     CompactSILRestrictionAttributes silr_atts;
     MaterialAttributes materialAtts;
     MeshManagementAttributes meshManagementAtts;
+    bool treatAllDBsAsTimeVarying;
 };
 
 #endif

@@ -886,6 +886,9 @@ AddPlotAction::~AddPlotAction()
 //   deciding when the menu must be cleared since it does a better overall
 //   job.
 //
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added bool to treat all databases as time varying to call to
+//   PopulateVariableLists
 // ****************************************************************************
 
 void
@@ -910,7 +913,8 @@ AddPlotAction::Update()
             // new file.
             //
             if(menuPopulator.PopulateVariableLists(plotList->GetHostDatabaseName(),
-                                                   md, sil, exprList))
+                                                   md, sil, exprList,
+						   fileServer->GetTreatAllDBsAsTimeVarying()))
             {
                 // Print to the debug logs.
                 debug4 << "AddPlotAction::Update: Either the host or the database " << endl

@@ -209,25 +209,19 @@ avtChomboFileFormat::GetTime(void)
 //    Brad Whitlock, Mon Sep 25 13:57:02 PST 2006
 //    Added code to support names like plot0.0080.2d.hdf5 where we want the 80.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Modified to use regular expression based guess 
 // ****************************************************************************
 
 int
 avtChomboFileFormat::GetCycleFromFilename(const char *fname) const
 {
-    const char *tmp = strstr(fname, "plt");
-    int offset = 3;
-    if(tmp == NULL)
-    {
-        tmp = strstr(fname, ".");
-        offset = 1;
-    }
-    int ret = 0;
-    if (tmp == NULL)
-        ret = avtSTMDFileFormat::GetCycleFromFilename(fname);
-    else
-        ret = atoi(tmp + offset);
- 
-    return ret;
+    int ret = avtFileFormat::INVALID_CYCLE;
+
+    if (fname == 0 || fname[0] == '\0')
+        return ret;
+
+    return GuessCycle(fname, "<plo?t(([0-9]\\.)|())([0-9]{2,5})\\..*\\.hdf5$> \\4");
 }
 
 

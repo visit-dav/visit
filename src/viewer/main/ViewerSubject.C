@@ -7579,6 +7579,9 @@ ViewerSubject::HandleViewerRPC()
     case ViewerRPC::RequestMetaDataRPC:
         HandleRequestMetaData();
         break;
+    case ViewerRPC::SetTreatAllDBsAsTimeVaryingRPC:
+        SetTreatAllDBsAsTimeVarying();
+	break;
     case ViewerRPC::MaxRPC:
         break;
     default:
@@ -8763,6 +8766,24 @@ ViewerSubject::SetTryHarderCyclesTimes()
 {
     ViewerFileServer *fs = ViewerFileServer::Instance();
     fs->SetTryHarderCyclesTimes(GetViewerState()->GetViewerRPC()->GetIntArg1());
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SetTreatAllDBsAsTimeVarying
+//
+//  Purpose: Handle a SetTreatAllDBsAsTimeVarying RPC
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    June 11, 2007 
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetTreatAllDBsAsTimeVarying()
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    fs->SetTreatAllDBsAsTimeVarying(GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
 
 

@@ -4,10 +4,10 @@
       false
     </Field>
     <Field name="minTemporalExtents" label="Minimum temporal extents" type="double">
-      0.
+      0.000000
     </Field>
     <Field name="maxTemporalExtents" label="Maximum temporal extents" type="double">
-      0.
+      0.000000
     </Field>
     <Field name="numStates" label="Number of time states" type="int">
       0
@@ -222,91 +222,97 @@
     </Function>
     <Function name="Print" user="true" member="true">
     </Function>
-    <Function name="RegisterWarningCallback" user="true" member="true" access="private">
+    <Function name="RegisterWarningCallback" user="true" member="true">
     </Function>
-    <Function name="WarnCallbackData1" user="true" member="true" access="private">
+    <Function name="WarnCallbackData1" user="true" member="true">
     </Function>
-    <Function name="WarnCallbackData2" user="true" member="true" access="private">
+    <Function name="WarnCallbackData2" user="true" member="true">
     </Function>
-    <Function name="IssueWarning" user="true" member="true" access="private">
+    <Function name="IssueWarning" user="true" member="true">
     </Function>
-    <Function name="VarIsCompound" user="true" member="true" access="private">
+    <Function name="VarIsCompound" user="true" member="true">
     </Function>
-    <Function name="ParseCompoundForVar" user="true" member="true" access="private">
+    <Function name="ParseCompoundForVar" user="true" member="true">
     </Function>
-    <Function name="ParseCompoundForMesh" user="true" member="true" access="private">
+    <Function name="ParseCompoundForMesh" user="true" member="true">
     </Function>
-    <Function name="ParseCompoundForCategory" user="true" member="true" access="private">
+    <Function name="ParseCompoundForCategory" user="true" member="true">
     </Function>
-    <Function name="VariableNamesEqual" user="true" member="true" access="private">
+    <Function name="VariableNamesEqual" user="true" member="true">
+    </Function>
+    <Function name="CycleFromFilenameRegex" user="true" member="true">
+    </Function>
+    <Function name="SetCycleFromFilenameRegex" user="true" member="true">
+    </Function>
+    <Function name="GetCycleFromFilenameRegex" user="true" member="true">
     </Function>
     <Include file="header" quoted="false">
-       Expression.h
+      Expression.h
     </Include>
     <Include file="header" quoted="false">
-       avtArrayMetaData.h
+      avtArrayMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtCurveMetaData.h
+      avtCurveMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtDatabaseMetaData.h
+      avtDatabaseMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtDefaultPlotMetaData.h
+      avtDefaultPlotMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtLabelMetaData.h
+      avtLabelMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtMatSpeciesMetaData.h
+      avtMatSpeciesMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtMaterialMetaData.h
+      avtMaterialMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtMeshMetaData.h
+      avtMeshMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtSILCollectionMetaData.h
+      avtSILCollectionMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtSILMetaData.h
+      avtSILMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtScalarMetaData.h
+      avtScalarMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtSpeciesMetaData.h
+      avtSpeciesMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtSymmetricTensorMetaData.h
+      avtSymmetricTensorMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtTensorMetaData.h
+      avtTensorMetaData.h
     </Include>
     <Include file="header" quoted="false">
-       avtVectorMetaData.h
+      avtVectorMetaData.h
     </Include>
     <Include file="source" quoted="false">
-       ImproperUseException.h
+      ImproperUseException.h
     </Include>
     <Include file="source" quoted="false">
-       InvalidVariableException.h
+      InvalidVariableException.h
     </Include>
     <Include file="source" quoted="false">
-       BadIndexException.h
+      BadIndexException.h
     </Include>
     <Include file="source" quoted="false">
-       DebugStream.h
+      DebugStream.h
     </Include>
     <Include file="source" quoted="false">
-       ParsingExprList.h
+      ParsingExprList.h
     </Include>
     <Include file="source" quoted="false">
-       ExprNode.h
+      ExprNode.h
     </Include>
     <Include file="source" quoted="false">
-       snprintf.h
+      snprintf.h
     </Include>
   </Attribute>

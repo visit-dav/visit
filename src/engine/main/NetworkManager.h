@@ -301,6 +301,9 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Brad Whitlock, Wed Mar 21 22:59:34 PST 2007
 //    Added plotName to MakePlot.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added bools to GetDBFromCache and StartNetwork to support to treat
+//    all databases as time varying
 // ****************************************************************************
 
 class NetworkManager
@@ -314,12 +317,13 @@ class NetworkManager
     void          ClearNetworksWithDatabase(const std::string &);
 
     NetnodeDB*    GetDBFromCache(const string &filename, int time,
-                                 const char * = NULL);
+                                 const char * = NULL, bool=false);
     void          StartNetwork(const std::string&, const std::string &,
                                const std::string &, int,
                                const CompactSILRestrictionAttributes &,
                                const MaterialAttributes &,
-                               const MeshManagementAttributes &);
+                               const MeshManagementAttributes &,
+			       bool);
     void          DefineDB(const std::string &, const std::string &,
                            const stringVector &, int, const std::string &);
     void          AddFilter(const std::string&,

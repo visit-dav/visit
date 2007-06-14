@@ -178,6 +178,13 @@ QvisPreferencesWindow::CreateWindowContents()
             this, SLOT(automaticallyApplyOperatorToggled(bool)));
     topLayout->addWidget(automaticallyApplyOperatorToggle);
 
+    treatAllDBsAsTimeVaryingToggle =
+        new QCheckBox("Treat all databases as time-varying",
+                      central, "treatAllDBsAsTimeVaryingToggle");
+    connect(treatAllDBsAsTimeVaryingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(treatAllDBsAsTimeVaryingToggled(bool)));
+    topLayout->addWidget(treatAllDBsAsTimeVaryingToggle);
+
     //
     // Create group box for time controls.
     //
@@ -316,6 +323,14 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         tryHarderCyclesTimesToggle->setChecked(
             atts->GetTryHarderCyclesTimes());
         tryHarderCyclesTimesToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(15))
+    {
+        treatAllDBsAsTimeVaryingToggle->blockSignals(true);
+        treatAllDBsAsTimeVaryingToggle->setChecked(
+            atts->GetTreatAllDBsAsTimeVarying());
+        treatAllDBsAsTimeVaryingToggle->blockSignals(false);
     }
 
     if(doAll)
@@ -663,6 +678,27 @@ QvisPreferencesWindow::tryHarderCyclesTimesToggled(bool val)
 {
     atts->SetTryHarderCyclesTimes(val);
     fileServer->SetForceReadAllCyclesTimes(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::treatAllDBsAsTimeVarying
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the
+//   treatAllDBsAsTimeVarying is clicked.
+//
+// Programmer: Mark C. Miller 
+// Creation:   June 11, 2007 
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::treatAllDBsAsTimeVaryingToggled(bool val)
+{
+    atts->SetTreatAllDBsAsTimeVarying(val);
+    fileServer->SetTreatAllDBsAsTimeVarying(val);
     SetUpdate(false);
     Apply();
 }

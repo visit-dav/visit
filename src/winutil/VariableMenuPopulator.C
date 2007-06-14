@@ -307,12 +307,14 @@ VariableMenuPopulator::ClearGroupingInfo()
 //   Brad Whitlock, Thu Mar 8 10:34:25 PDT 2007
 //   Use new avtDatabaseMetaData interface.
 //
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added support to treat all databases as time varying
 // ****************************************************************************
 
 bool
 VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     const avtDatabaseMetaData *md, const avtSIL *sil,
-    const ExpressionList *exprList)
+    const ExpressionList *exprList, bool treatAllDBsAsTimeVarying)
 {
     if(md == 0 || sil == 0 || exprList == 0)
         return false;
@@ -339,7 +341,8 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     bool expressionsSame = newExpressionList == cachedExpressionList;
     bool variableMetaData = md->GetMustRepopulateOnStateChange() ||
                             md->GetIsSimulation();
-    if(dbName == cachedDBName && expressionsSame && !variableMetaData)
+    if(dbName == cachedDBName && expressionsSame && !variableMetaData &&
+       !treatAllDBsAsTimeVarying)
     {
         visitTimer->StopTimer(total, mName);
         return false;
