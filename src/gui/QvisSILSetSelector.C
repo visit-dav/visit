@@ -61,6 +61,8 @@ using std::string;
 // Creation:   June 6, 2007 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
+//   Added userCategory and userSubset.
 //   
 // ****************************************************************************
 
@@ -71,6 +73,8 @@ QvisSILSetSelector::QvisSILSetSelector(QWidget *parent, const char *name,
     defaultItem = "Whole";
     lastGoodCategory = defaultItem;
     lastGoodSubset = defaultItem;
+    userCategory = defaultItem;
+    userSubset = defaultItem;
     silTopSet = -1;
     silNumSets = -1;
     silNumCollections = -1;
@@ -224,6 +228,8 @@ QvisSILSetSelector::UpdateComboBoxes()
 // Creation:   June 6, 2007
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
+//   Added userCategory.
 //   
 // ****************************************************************************
 
@@ -255,14 +261,16 @@ QvisSILSetSelector::FillCategoryBox()
             //
             // Set the current item for the category
             //
-            if (lastGoodCategory == defaultItem)
+            if (userCategory == defaultItem && lastGoodCategory == defaultItem)
             {
                 categoryName->setCurrentItem(0);
             }
             else 
             {
                 QListBox *lb = categoryName->listBox();
-                int idx = lb->index(lb->findItem(lastGoodCategory, Qt::ExactMatch));
+                int idx = lb->index(lb->findItem(userCategory, Qt::ExactMatch));
+                if (idx == -1)
+                    idx = lb->index(lb->findItem(lastGoodCategory, Qt::ExactMatch));
                 idx = (idx == -1 ? 0 : idx);
                 categoryName->setCurrentItem(idx);
             }
@@ -301,6 +309,8 @@ QvisSILSetSelector::FillCategoryBox()
 // Creation:   June 6, 2007 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
+//   Added userSubset.
 //   
 // ****************************************************************************
 
@@ -337,14 +347,16 @@ QvisSILSetSelector::FillSubsetBox()
             //
             if (subsetName->count() != 0)
             {
-                if (lastGoodSubset == defaultItem) 
+                if (userSubset == defaultItem && lastGoodSubset == defaultItem) 
                 {
                     subsetName->setCurrentItem(0);
                 }
                 else 
                 {
                     QListBox *lb = subsetName->listBox();
-                    int idx = lb->index(lb->findItem(lastGoodSubset, Qt::ExactMatch));
+                    int idx = lb->index(lb->findItem(userSubset, Qt::ExactMatch));
+                    if (idx == -1)
+                        idx = lb->index(lb->findItem(lastGoodSubset, Qt::ExactMatch));
                     idx = (idx == -1 ? 0 : idx);
                     subsetName->setCurrentItem(idx);
                 }
@@ -447,12 +459,15 @@ QvisSILSetSelector::subsetNameChanged()
 // Creation:   June 6, 2007 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
+//   Added userCategory.
 //   
 // ****************************************************************************
 
 void 
 QvisSILSetSelector::SetCategoryName(const QString &name)
 {
+    userCategory = name;
     blockSignals(true);
     if (categoryName->count() != 0)
     {
@@ -499,12 +514,15 @@ QvisSILSetSelector::GetCategoryName() const
 // Creation:   June 6, 2007 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
+//   Added userSubset.
 //   
 // ****************************************************************************
 
 void 
 QvisSILSetSelector::SetSubsetName(const QString &name)
 {
+    userSubset = name;
     blockSignals(true);
     if (subsetName->count() != 0)
     {

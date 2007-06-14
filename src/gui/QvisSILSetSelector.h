@@ -58,6 +58,9 @@ class SILRestrictionAttributes;
 // Creation:   June 6, 2007 
 //
 // Modifications:
+//   Kathleen Bonnell, Thu Jun 14 12:18:47 PDT 2007
+//   Added userCategory, userSubset, so that options stored in sesisonfiles
+//   can be restored.
 //   
 // ****************************************************************************
 
@@ -102,6 +105,8 @@ class GUI_API QvisSILSetSelector : public QWidget,
     QString defaultItem;
     QString lastGoodCategory;
     QString lastGoodSubset;
+    QString userCategory;
+    QString userSubset;
     int silTopSet;
     int silNumSets;
     int silNumCollections;
