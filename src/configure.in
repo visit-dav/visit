@@ -704,6 +704,9 @@ dnl    Added the "PARDEP" substitution that expands to $(PARDEP) when parallel
 dnl    builds are enabled.  This lets us avoid building dependencies for
 dnl    parallel object files if we're not building parallel objects.
 dnl
+dnl    Jeremy Meredith, Thu Jun 14 11:22:29 EDT 2007
+dnl    Added the tools/clidriver directory.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3410,6 +3413,7 @@ TOOLS_FILES="tools/Makefile
              tools/DataManualExamples/Simulations/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
+             tools/clidriver/Makefile
              tools/clipeditor/Makefile
              tools/convert/Makefile
              tools/curv3dprep/Makefile
