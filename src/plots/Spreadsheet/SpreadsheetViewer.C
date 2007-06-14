@@ -405,17 +405,22 @@ SpreadsheetViewer::render(vtkDataSet *ds)
 //
 // Modifications:
 //   
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying to
+//    PopulateVariableLists
 // ****************************************************************************
 
 void
 SpreadsheetViewer::updateVariableMenus()
 {
     // Update the variable menu, if needed.
+    const bool treatAllDBsAsTimeVarying = false; // don't have ViewerFileServer
     if(menuPopulator.PopulateVariableLists(
         plot->GetSource(),
         plot->GetMetaData(),
         *plot->GetSILRestriction(),
-        plot->GetViewerState()->GetExpressionList()))
+        plot->GetViewerState()->GetExpressionList(),
+	treatAllDBsAsTimeVarying))
     {
         QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator);
     }

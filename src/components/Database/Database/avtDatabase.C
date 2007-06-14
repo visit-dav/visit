@@ -1324,15 +1324,17 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
 //    if it was requested AND the metadata about to be returned doesn't think
 //    it already has accurate cycle/time information for that state.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 avtDatabaseMetaData *
 avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes,
-    bool forceReadThisStateCycleTime)
+    bool forceReadThisStateCycleTime, bool treatAllDBsAsTimeVarying)
 {
     std::list<CachedMDEntry>::iterator i;
 
-    if (MetaDataIsInvariant())
+    if (MetaDataIsInvariant() && !treatAllDBsAsTimeVarying)
     {
 
         if (metadata.size() == 0)

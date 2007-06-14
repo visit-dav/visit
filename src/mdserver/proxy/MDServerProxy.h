@@ -155,6 +155,9 @@ class     DBPluginInfoAttributes;
 //    Added ability to force using a specific plugin when reading
 //    the metadata from a file (if it causes the file to be opened).
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -214,7 +217,8 @@ public:
                                            bool=true);
     const avtDatabaseMetaData *GetMetaData(const std::string &, int=0,
                                    bool forceReadAllCyclesTimes = false,
-                                   const std::string &forcedFileType = "");
+                                   const std::string &forcedFileType = "",
+				   bool treatAllDBsAsTimeVarying = false);
     const SILAttributes       *GetSIL(const std::string &, int=0);
     std::string                ExpandPath(const std::string &);
     void                       CloseDatabase();

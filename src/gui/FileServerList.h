@@ -190,6 +190,9 @@ class MessageAttributes;
 //   Changed interfaces to GetMetaData and GetSIL
 //   Added ANY_STATE and GET_NEW_MD constants. Repalced isntances of 'std::'
 //   with using statements, above.
+//
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added support to treat all databases as time varying
 // ****************************************************************************
 class GUI_API FileServerList : public AttributeSubject
 {
@@ -231,6 +234,7 @@ public:
     void SendKeepAlives();
 
     void SetForceReadAllCyclesTimes(bool set);
+    void SetTreatAllDBsAsTimeVarying(bool set);
 
     void OpenFile(const QualifiedFilename &filename, int timeState);
     void ReplaceFile(const QualifiedFilename &filename);
@@ -254,6 +258,7 @@ public:
     bool GetSmartFileGrouping() const;
 
     bool GetForceReadAllCyclesTimes() const;
+    bool GetTreatAllDBsAsTimeVarying() const;
 
     const stringVector &GetRecentPaths(const string &host) const;
     void AddPathToRecentList(const string &host, const string &path);
@@ -332,6 +337,7 @@ private:
     bool        connectingServer;
     string      filter;
     bool        forceReadAllCyclesTimes;
+    bool        treatAllDBsAsTimeVarying;
 
     // The file list for the current host.
     MDServerProxy::FileList fileList;

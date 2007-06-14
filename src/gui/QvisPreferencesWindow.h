@@ -74,6 +74,9 @@ class QSpinBox;
 //
 //   Mark C. Miller, Wed Jun  1 11:12:25 PDT 2005
 //   Added setTryHarderCyclesTimes check box
+//
+//   Mark C. Miller, Mon Jun 11 17:45:24 PDT 2007
+//   Added treatAllDBsAsTimeVarying check box
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -109,6 +112,7 @@ private slots:
     void timeStateNDigitsChanged(int val);
     void selectedFilesToggled(bool);
     void allowFileSelectionChangeToggled(bool);
+    void treatAllDBsAsTimeVaryingToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -117,6 +121,7 @@ private:
     QCheckBox        *automaticallyApplyOperatorToggle;
     QCheckBox        *selectedFilesToggle;
     QCheckBox        *allowFileSelectionChangeToggle;
+    QCheckBox        *treatAllDBsAsTimeVaryingToggle;
     QButtonGroup     *timeStateDisplayMode;
     QSpinBox         *timeStateNDigits;
     GlobalAttributes *atts;

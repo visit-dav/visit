@@ -400,6 +400,9 @@ EngineProxy::SendKeepAlive()
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes 
+//
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 void
@@ -408,7 +411,8 @@ EngineProxy::ReadDataObject(const string &format, const string &file,
                             avtSILRestriction_p silr,
                             const MaterialAttributes &matopts,
                             const ExpressionList &expressions,
-                            const MeshManagementAttributes &meshopts)
+                            const MeshManagementAttributes &meshopts,
+			    bool treatAllDBsAsTimeVarying)
 {
     // Make sure the engine knows about our current expression list.
     if (exprList != expressions)
@@ -418,7 +422,8 @@ EngineProxy::ReadDataObject(const string &format, const string &file,
     }
 
     CompactSILRestrictionAttributes *atts = silr->MakeCompactAttributes();
-    readRPC(format, file, var, time, *atts, matopts, meshopts);
+    readRPC(format, file, var, time, *atts, matopts, meshopts,
+        treatAllDBsAsTimeVarying);
     if (readRPC.GetStatus() == VisItRPC::error)
     {
         RECONSTITUTE_EXCEPTION(readRPC.GetExceptionType(),

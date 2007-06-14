@@ -183,6 +183,8 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Wed Jun  6 16:45:55 EDT 2007
 #    Added documentation of -forceinteractivecli flag for CLI interpreter.
 #
+#    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+#    Added documentation for -cycleregex
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -384,6 +386,23 @@ $fullusage = "$usage
         -objectmode <mode>   Require a specific object file mode.
         -forceinteractivecli Force the CLI to behave interactively, even if run
                              with no terminal; similar to python's '-i' flag.
+	-cycleregex <string> A regex-style regular expression to be used
+	                     in extracting cycle numbers from file names. It
+                             is best to bracket this string in single
+                             quotes (') to avoid shell interpretation of
+                             special characters such as star (*). The format
+			     of the string begins with an opening '<' character,
+			     followed by the regular expression itself followed
+			     by a closing '>' character, optionally followed by
+			     a space ' ' character and sub-expression reference
+			     to indicate which part of the regular expression is
+			     the cycle number.  Default behavior is as if
+			     -cycleregex '<.*([0-9]+)\..*> \1'
+                             was specified meaning the first sequence of one
+			     or more digits before the first dot (.) found
+			     is used as the cycle number. Do a 'man 7 regex'
+			     to get more information on regular expression
+			     syntax.
 
     Developer options
     ---------------------------------------------------------------------------

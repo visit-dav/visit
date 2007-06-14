@@ -4621,6 +4621,24 @@ ViewerMethods::SetTryHarderCyclesTimes(int flag)
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::SetTreatAllDBsAsTimeVarying
+//
+//  Purpose: Tells viewer to treat all databases as time varying 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   June 11, 2007 
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetTreatAllDBsAsTimeVarying(int flag)
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetTreatAllDBsAsTimeVaryingRPC);
+    state->GetViewerRPC()->SetIntArg1(flag);
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerMethods::ResetLineoutColor
 //
 // Purpose: 

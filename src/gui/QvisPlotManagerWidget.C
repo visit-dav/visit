@@ -531,6 +531,9 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Moved an UpdatePlotVariableMenu call out of a too constraining if test 
 //   Added conditional for changes in winInfo's time slider's current states
+//
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added support to treat all databases as time varying
 // ****************************************************************************
 
 void
@@ -664,7 +667,8 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
             // Although the innards of the called routines, here, also
             // check MustRepopulationOnStateChange, checking here saves
             // some GUI work, too.
-            if (md && md->GetMustRepopulateOnStateChange())
+            if (fileServer->GetTreatAllDBsAsTimeVarying() ||
+	        (md && md->GetMustRepopulateOnStateChange()))
             {
                 UpdateVariableMenu();
                 UpdatePlotVariableMenu();
@@ -1121,6 +1125,9 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interfaces to GetMetaData and GetSIL
 //   Added else case to GetSIL for ANY_STATE
+//
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added support to treat all databases as time varying
 // ****************************************************************************
 
 bool
@@ -1134,7 +1141,8 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                                  FileServerList::ANY_STATE,
                                 !FileServerList::GET_NEW_MD);
 
-    if (md && md->GetMustRepopulateOnStateChange())
+    if (fileServer->GetTreatAllDBsAsTimeVarying() ||
+        (md && md->GetMustRepopulateOnStateChange()))
     {
         // we need metadata and sil for current state
         md = fileServer->GetMetaData(filename,
@@ -1149,7 +1157,8 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                                FileServerList::GET_NEW_MD);
     
         return populator.PopulateVariableLists(filename.FullName(),
-                                               md, sil, exprList);
+                                               md, sil, exprList,
+                         fileServer->GetTreatAllDBsAsTimeVarying());
     }
     else
     {
@@ -1161,7 +1170,8 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                               !FileServerList::GET_NEW_MD);
     
         return populator.PopulateVariableLists(filename.FullName(),
-                                               md, sil, exprList);
+                                               md, sil, exprList,
+                         fileServer->GetTreatAllDBsAsTimeVarying());
     }
 }
 

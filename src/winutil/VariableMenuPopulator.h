@@ -102,6 +102,9 @@ class QObject;
 //   Brad Whitlock, Wed Mar 22 12:05:43 PDT 2006
 //   I added GroupingInfo and added another argument to UpdateSingleMenu.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added bool to support to treat all databases as time varying to 
+//    PopulateVariableLists
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -113,7 +116,8 @@ public:
     bool PopulateVariableLists(const std::string &,
                                const avtDatabaseMetaData *,
                                const avtSIL *,
-                               const ExpressionList *);
+                               const ExpressionList *,
+			       bool);
 
     int UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
                                  int varTypes,

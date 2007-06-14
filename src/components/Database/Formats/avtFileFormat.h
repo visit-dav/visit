@@ -104,6 +104,9 @@ class     avtVariableCache;
 //    Added bool to AddScalarVarToMetaData, in order to specify whether
 //    the var should be treated as ascii (default -- false). 
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Moved implementations of GuessCycle/GuessTime to .C file. Added
+//    optional regular expression to guide the guessing.
 // ****************************************************************************
 
 class DATABASE_API avtFileFormat
@@ -248,25 +251,19 @@ class DATABASE_API avtFileFormat
     void       AddArrayVarToMetaData(avtDatabaseMetaData *, std::string, int,
                                      std::string, avtCentering);
 
-    int        GuessCycle(const char *fname) const
-                   { double d = GuessCycleOrTime(fname, false);
-                     if (d == INVALID_TIME) return INVALID_CYCLE;
-                     return (int) d;};
-    double     GuessTime(const char *fname) const
-                   { return GuessCycleOrTime(fname, true); };
-
     void          RegisterFile(int);
     void          UnregisterFile(int);
     void          UsedFile(int);
     virtual void  CloseFile(int);
     void          CloseFileDescriptor(int);
 
+    int        GuessCycle(const char *fname, const char *re = 0) const;
+    double     GuessTime(const char *fname, const char *re = 0) const;
+
   private:
-    double     GuessCycleOrTime(const char *, bool) const;
+    double     GuessCycleOrTime(const char *, const char *re = 0) const;
 
 };
 
 
 #endif
-
-

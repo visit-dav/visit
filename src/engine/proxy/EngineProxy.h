@@ -287,6 +287,8 @@ class ExportDBAttributes;
 //    Brad Whitlock, Wed Mar 21 22:54:33 PST 2007
 //    Added plotName to MakePlot.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -331,7 +333,8 @@ public:
                                             avtSILRestriction_p,
                                             const MaterialAttributes&,
                                             const ExpressionList &,
-                                            const MeshManagementAttributes &);
+                                            const MeshManagementAttributes &,
+					    bool);
     void                     ApplyOperator(const std::string&, 
                                            const AttributeSubject*);
     void                     ApplyNamedFunction(const std::string &name,

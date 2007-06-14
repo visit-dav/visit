@@ -112,6 +112,7 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
     databaseCorrelationList = new DatabaseCorrelationList;
     dbPluginInfoAtts = new DBPluginInfoAttributes;
     tryHarderCyclesTimes = false;
+    treatAllDBsAsTimeVarying = false;
 }
 
 // ****************************************************************************
@@ -132,6 +133,7 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
 ViewerFileServer::ViewerFileServer(const ViewerFileServer &) : ViewerServerManager()
 {
     tryHarderCyclesTimes = false;
+    treatAllDBsAsTimeVarying = false;
 }
 
 // ****************************************************************************
@@ -371,7 +373,9 @@ ViewerFileServer::GetMetaData(const std::string &host,
                                      pos->second->AreAllCyclesAccurateAndValid();
 
         if (name == dbName && (!forceReadAllCyclesAndTimes || cyclesAndTimesAreGood))
+	{
             return pos->second;
+        }
     }
 
     // if we're here because we've forced reading all cycles and times
@@ -470,7 +474,8 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
             // If the metadata does not change over time or if it does and
             // the time states match then return what we found.
             //
-            if(!pos->second->GetMustRepopulateOnStateChange() ||
+            if((!treatAllDBsAsTimeVarying && 
+	        !pos->second->GetMustRepopulateOnStateChange()) ||
                ts == timeState)
             {
                 return pos->second;
@@ -551,7 +556,8 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                     servers[host]->proxy->GetMetaData(db, timeState,
                                               forceReadAllCyclesAndTimes ||
                                               tryHarderCyclesTimes,
-                                              forcedFileType);
+                                              forcedFileType,
+					      treatAllDBsAsTimeVarying);
 
                 if(md != NULL)
                 {
@@ -789,7 +795,7 @@ ViewerFileServer::GetSILForState(const std::string &host,
             // If the metadata does not change over time or if it does and
             // the time states match then return what we found.
             //
-            if(invariantMetaData || ts == timeState)
+            if ((invariantMetaData || ts == timeState) && !treatAllDBsAsTimeVarying)
             {
                 return pos->second;
             }
@@ -850,8 +856,9 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
                 // Create a key to use when storing the SIL in the map.
                 //
                 std::string key(ComposeDatabaseName(host, db));
-                if(timeState != ANY_STATE &&
-                   !MetaDataIsInvariant(host, db, timeState))
+                if(treatAllDBsAsTimeVarying ||
+		   (timeState != ANY_STATE &&
+                    !MetaDataIsInvariant(host, db, timeState)))
                 {
                     char state_str[64];
                     SNPRINTF(state_str, 64, ":%d", timeState);

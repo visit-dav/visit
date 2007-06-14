@@ -229,6 +229,7 @@ public:
         ConstructDDFRPC,
         UpdatePlotInfoAttsRPC,
         RequestMetaDataRPC,
+        SetTreatAllDBsAsTimeVaryingRPC,
         MaxRPC
     };
 

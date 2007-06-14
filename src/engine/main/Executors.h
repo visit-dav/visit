@@ -193,6 +193,9 @@ RPCExecutor<KeepAliveRPC>::Execute(KeepAliveRPC *rpc)
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Passed MeshManagement attributes 
+//
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added support to treat all databases as time varying
 // ****************************************************************************
 
 template<>
@@ -213,7 +216,8 @@ RPCExecutor<ReadRPC>::Execute(ReadRPC *rpc)
                              rpc->GetTime(),
                              rpc->GetCSRAttributes(),
                              rpc->GetMaterialAttributes(),
-                             rpc->GetMeshManagementAttributes());
+                             rpc->GetMeshManagementAttributes(),
+			     rpc->GetTreatAllDBsAsTimeVarying());
         rpc->SendReply();
     }
     CATCH2(VisItException, e)
@@ -888,6 +892,8 @@ RPCExecutor<SetWinAnnotAttsRPC>::Execute(SetWinAnnotAttsRPC *rpc)
 //    Mark C. Miller, Wed Dec 14 16:43:07 PST 2005
 //    Changed to pass compression bool to Engine::WriteData
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Minor alteration to debug2 statement outpu 
 // ****************************************************************************
 template<>
 void
@@ -915,8 +921,9 @@ RPCExecutor<ExecuteRPC>::Execute(ExecuteRPC *rpc)
 
 
 
-    debug2 << "Executing ExecuteRPC with respondWithNullDataObject = " <<
-       rpc->GetRespondWithNull() << endl;
+    debug2 << "Executing ExecuteRPC with "
+           << "respondWithNullDataObject = " << rpc->GetRespondWithNull()
+           << endl;
     TRY
     {
         // save the current network id for later

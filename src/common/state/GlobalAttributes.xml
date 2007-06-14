@@ -43,6 +43,9 @@
     <Field name="tryHarderCyclesTimes" label="tryHarderCyclesTimes" type="bool">
       false
     </Field>
+    <Field name="treatAllDBsAsTimeVarying" label="treatAllDBsAsTimeVarying" type="bool">
+      false
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

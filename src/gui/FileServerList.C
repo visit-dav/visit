@@ -168,6 +168,7 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
     openFileTimeState = -1;
 
     forceReadAllCyclesTimes = false;
+    treatAllDBsAsTimeVarying = false;
 
     // Initialize some callback functions.
     connectCallback = 0;
@@ -1223,6 +1224,23 @@ void
 FileServerList::SetForceReadAllCyclesTimes(bool set)
 {
     forceReadAllCyclesTimes = set;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetTreatAllDBsAsTimeVarying
+//
+// Purpose: Set flag indicating if all databases should be treated as time
+// varying
+//
+// Programmer: Mark C. Miller 
+// Creation:   June 11, 2007 
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetTreatAllDBsAsTimeVarying(bool set)
+{
+    treatAllDBsAsTimeVarying = set;
 }
 
 // ****************************************************************************
@@ -2406,7 +2424,8 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
         MDServerProxy *mds = svit->second->server;
         const avtDatabaseMetaData *md =
             mds->GetMetaData(filename.PathAndFile(), timeState,
-                             forceReadAllCyclesTimes);
+                             forceReadAllCyclesTimes, "",
+			     treatAllDBsAsTimeVarying);
 
         // cache what we got
         if (md)
@@ -2417,7 +2436,7 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
 
             // decide on the right key
             string useKey = mdKeys[0]; // non-state-qualified key
-            if (md->GetMustRepopulateOnStateChange())
+            if (treatAllDBsAsTimeVarying || md->GetMustRepopulateOnStateChange())
                 useKey = mdKeys[1];    // state-qualified key
 
             // cache it. Note MRU handles deletion
@@ -2462,6 +2481,12 @@ bool
 FileServerList::GetForceReadAllCyclesTimes() const
 {
     return forceReadAllCyclesTimes;
+}
+
+bool
+FileServerList::GetTreatAllDBsAsTimeVarying() const
+{
+    return treatAllDBsAsTimeVarying;
 }
 
 // ****************************************************************************
@@ -2540,8 +2565,8 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
 
             // decide on the right key
             string useKey = mdKeys[0]; // non-state-qualified key
-            if (GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0)->
-                GetMustRepopulateOnStateChange())
+            if (treatAllDBsAsTimeVarying || GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0)->
+                                            GetMustRepopulateOnStateChange())
                 useKey = mdKeys[1];    // state-qualified key
 
             // cache it. Note MRU handles deletion

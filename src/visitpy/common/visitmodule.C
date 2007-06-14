@@ -1531,6 +1531,33 @@ visit_SetTimeSliderState(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetTreatAllDBsAsTimeVarying
+//
+// Purpose: Tells the viewer to treat all databases as time varying 
+//
+// Programmer: Mark C. Miller
+// Creation:   May 27, 2005 
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetTreatAllDBsAsTimeVarying(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int flag;
+    if (!PyArg_ParseTuple(args, "i", &flag))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetTreatAllDBsAsTimeVarying(flag);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SetTryHarderCyclesTimes
 //
 // Purpose: Tells the viewer to try harder to obtain accurate cycles/times
@@ -11699,7 +11726,10 @@ AddDefaultMethods()
                                          visit_SetQueryOverTimeAttributes_doc);
     AddMethod("SetTimeSliderState", visit_SetTimeSliderState,
                                                  visit_SetTimeSliderState_doc);
-    AddMethod("SetTryHarderCyclesTimes", visit_SetTryHarderCyclesTimes);
+    AddMethod("SetTreatAllDBsAsTimeVarying", visit_SetTreatAllDBsAsTimeVarying,
+                                             visit_SetTreatAllDBsAsTimeVarying_doc);
+    AddMethod("SetTryHarderCyclesTimes", visit_SetTryHarderCyclesTimes,
+                                         visit_SetTryHarderCyclesTimes_doc);
     AddMethod("SetViewExtentsType", visit_SetViewExtentsType,
                                                  visit_SetViewExtentsType_doc);
     AddMethod("SetViewCurve", visit_SetViewCurve, visit_SetView_doc);

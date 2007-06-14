@@ -84,6 +84,9 @@ class CommonDatabasePluginInfo;
 //    Hank Childs, Thu Jan 11 15:56:53 PST 2007
 //    Added argument for list of plugins attempted.
 //
+//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//    Added bool to support to treat all databases as time varying to various
+//    methods
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -91,16 +94,18 @@ class DATABASE_API avtDatabaseFactory
   public:
     static avtDatabase           *FileList(const char * const *, int, int,
                                            std::vector<std::string> &,
-                                           const char * = NULL, bool = false);
+                                           const char * = NULL, bool = false,
+					   bool = false);
     static avtDatabase           *VisitFile(const char *, int,
                                            std::vector<std::string> &,
-                                            const char * = NULL, bool = false);
+                                            const char * = NULL, bool = false,
+					    bool = false);
     static void                   SetDefaultFormat(const char *);
 
   protected:
     static avtDatabase           *SetupDatabase(CommonDatabasePluginInfo *,
                                                 const char * const *, int,
-                                                int, int, int, bool);
+                                                int, int, int, bool, bool);
 
     static char                  *defaultFormat;
 };

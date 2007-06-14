@@ -122,6 +122,8 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //   Added ability to force using a specific plugin when reading
 //   the metadata from a file (if it causes the file to be opened).
 //
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added support to treat all databases as time varying
 // ****************************************************************************
 
 void
@@ -139,7 +141,8 @@ GetMetaDataRPCExecutor::Update(Subject *s)
         // Either send a successful reply or send an error.
         parent->ReadMetaData(rpc->GetFile(), rpc->GetTimeState(),
                              rpc->GetForceReadAllCyclesAndTimes(),
-                             rpc->GetForcedFileType());
+                             rpc->GetForcedFileType(),
+			     rpc->GetTreatAllDBsAsTimeVarying());
 
         debug5 << "MetaData=" << endl;
         if(debug5_real)
