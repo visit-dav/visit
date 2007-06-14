@@ -17772,6 +17772,7 @@ TOOLS_FILES="tools/Makefile
              tools/DataManualExamples/Simulations/Makefile
              tools/annotations/Makefile
              tools/avtprep/Makefile
+             tools/clidriver/Makefile
              tools/clipeditor/Makefile
              tools/convert/Makefile
              tools/curv3dprep/Makefile
