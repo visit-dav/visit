@@ -11,21 +11,16 @@
 #  Programmer: Hank Childs
 #  Date:       April 9, 2004 
 #
+#  Modifications:
+#
+#    Mark C. Miller, June 12, 2007
+#    Replaced explicit annotation manipulation with call to
+#    TurnOffAllAnnotations. Added tests of TreatAllDBsAsTimeVarying
+#    functionality
+#
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-a = AnnotationAttributes()
-a.axesFlag2D = 0
-a.axesFlag = 0
-a.triadFlag = 0
-a.bboxFlag = 0
-a.userInfoFlag = 0
-a.databaseInfoFlag = 0
-a.legendInfoFlag = 0
-a.backgroundMode = 0
-a.foregroundColor = (0, 0, 0, 255)
-a.backgroundColor = (255, 255, 255, 255)
-SetAnnotationAttributes(a)
+TurnOffAllAnnotations()
 
 OpenDatabase("../data/wave_tv*.silo database", 9)
 
@@ -49,5 +44,37 @@ TimeSliderNextState()
 TimeSliderNextState()
 
 Test("wave_tv_02")
+
+DeleteAllPlots()
+CloseDatabase("../data/wave_tv*.silo database")
+
+#
+# Open wave_tv one state BEFORE where variable 'transient' is
+# defined and then march forward. With 'TreatAllDBsAsTimeVarying'
+# turned off, the add should always fail. With it turned on,
+# the add should succeed on state 17.
+#
+OpenDatabase("../data/wave_tv*.silo database", 16)
+addOk16 = AddPlot("Pseudocolor","transient")
+DeleteAllPlots()
+TimeSliderNextState()
+addOk17 = AddPlot("Pseudocolor","transient")
+msg = "With TreatAllDBsAsTimeVarying set to its default value,\n"
+msg = msg + "AddPlot() returned %d for state 16 and %d for state 17"%(addOk16,addOk17)
+TestText("wave_tv_03", msg)
+DeleteAllPlots()
+CloseDatabase("../data/wave_tv*.silo database")
+
+SetTreatAllDBsAsTimeVarying(1)
+OpenDatabase("../data/wave_tv*.silo database", 16)
+addOk16 = AddPlot("Pseudocolor","transient")
+DeleteAllPlots()
+TimeSliderNextState()
+addOk17 = AddPlot("Pseudocolor","transient")
+msg = "With TreatAllDBsAsTimeVarying set to 1 (true),\n"
+msg = msg + "AddPlot() returned %d for state 16 and %d for state 17"%(addOk16,addOk17)
+TestText("wave_tv_04", msg)
+DrawPlots()
+Test("wave_tv_05")
 
 Exit()

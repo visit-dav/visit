@@ -1,0 +1,2 @@
+With TreatAllDBsAsTimeVarying set to 1 (true),
+AddPlot() returned 0 for state 16 and 1 for state 17
