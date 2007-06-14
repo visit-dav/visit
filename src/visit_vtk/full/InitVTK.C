@@ -83,8 +83,8 @@ VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItMesaPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
-VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
-VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
+//VTK_CREATE_CREATE_FUNCTION(vtkVisItRectilinearGrid);
+//VTK_CREATE_CREATE_FUNCTION(vtkVisItStructuredGrid);
 
 #if defined(__APPLE__)
 VTK_CREATE_CREATE_FUNCTION(vtkOSMesaRenderWindow);
@@ -117,6 +117,11 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 //    "graphics" factory any more.  Maybe it should be renamed.  I decided
 //    to pile on instead.
 //
+//    Dave Bremer, Thu Jun 14 16:47:37 PDT 2007
+//    Disable my previous change.  It causes a problem I don't understand
+//    yet, seemingly related to reading a vtkRectilinearGrid or vtkStructuredGrid
+//    from a file.
+//    
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
   this->RegisterOverride("vtkOpenGLPolyDataMapper", "vtkVisItOpenGLPolyDataMapper",
@@ -135,6 +140,7 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          "vtkVisItDataSetMapper override vtkDataSetMapper",
                          1,
                          vtkObjectFactoryCreatevtkVisItDataSetMapper);
+#if 0
   this->RegisterOverride("vtkRectilinearGrid", "vtkVisItRectilinearGrid",
                          "vtkVisItRectilinearGrid override vtkRectilinearGrid",
                          1,
@@ -143,6 +149,7 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          "vtkVisItStructuredGrid override vtkStructuredGrid",
                          1,
                          vtkObjectFactoryCreatevtkVisItStructuredGrid);
+#endif
 #if defined(__APPLE__)
   this->RegisterOverride("vtkCarbonRenderWindow", "vtkOSMesaRenderWindow",
                          "vtkOSMesaRenderWindow override vtkCarbonRenderWindow",
