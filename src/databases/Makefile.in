@@ -271,6 +271,9 @@
 #   Jeremy Meredith, Tue Jun  5 14:15:10 EDT 2007
 #   Removed reference to .depend.  Nothing is built in this directory.
 #
+#   Jeremy Meredith, Thu Jun 14 13:39:01 EDT 2007
+#   Added XYZ molecular file format.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -341,7 +344,8 @@ REQUIRED=\
  Vista \
  VTK \
  WavefrontOBJ \
- Xmdv
+ Xmdv \
+ XYZ
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve2D Silo VTK
