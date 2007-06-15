@@ -46,5 +46,6 @@ AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 Test("nek3d_reader5")
 
+Exit()
 
 
