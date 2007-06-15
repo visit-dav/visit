@@ -279,6 +279,9 @@
 #   Hank Childs, Wed Jun 13 10:46:06 PDT 2007
 #   Added program thinplane.
 #
+#   Dave Bremer, Thu Jun 14 20:02:18 PDT 2007
+#   Added NEK3D test data
+#
 ##############################################################################
 
 ##
@@ -310,7 +313,8 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
        vtk_cylindrical_test_data ProteinDataBank_test_data \
        Fluent_test_data OpenFOAM_test_data EnSight_test_data \
        FITS_test_data GGCM_test_data Chombo_test_data Enzo_test_data \
-       csg_test_data miranda_raw FLASH_test_data iTaps_test_data
+       csg_test_data miranda_raw FLASH_test_data iTaps_test_data nek3d_test_data
+
 
 ##
 ## Libraries and includes...
