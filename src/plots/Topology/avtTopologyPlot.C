@@ -346,6 +346,9 @@ avtTopologyPlot::SetAtts(const AttributeGroup *a)
 //    Eric Brugger, Wed Jul 16 11:27:41 PDT 2003
 //    Modified to work with the new way legends are managed.
 //
+//    Hank Childs, Fri Jun 15 11:57:07 PDT 2007
+//    Was using a deprecated method ... changed to a valid one.
+//
 // ****************************************************************************
 
 void 
@@ -360,7 +363,7 @@ avtTopologyPlot::SetColors()
     labels[3] = avtTopologyFilter::labelNames[3];
     
     ColorAttributeList cal(atts.GetMultiColor());
-    int numColors = cal.GetNumColorAttributes();
+    int numColors = cal.GetNumColors();
     
     //
     //  Create colors from original color table. 
