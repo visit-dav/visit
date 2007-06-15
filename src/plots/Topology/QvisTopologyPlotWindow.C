@@ -305,6 +305,9 @@ QvisTopologyPlotWindow::UpdateWindow(bool doAll)
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Jun 15 11:57:07 PDT 2007
+//   Fixed compilation issue, was using deprecated method.
+//
 // ****************************************************************************
 
 void
@@ -331,13 +334,13 @@ QvisTopologyPlotWindow::GetCurrentValues(int which_widget)
         ColorAttributeList mc;
         int r,g,b;
         minColorButton->buttonColor().rgb(&r,&g,&b);
-        mc.AddColorAttribute(ColorAttribute(r,g,b));
+        mc.AddColors(ColorAttribute(r,g,b));
         minPlateauColorButton->buttonColor().rgb(&r,&g,&b);
-        mc.AddColorAttribute(ColorAttribute(r,g,b));
+        mc.AddColors(ColorAttribute(r,g,b));
         maxPlateauColorButton->buttonColor().rgb(&r,&g,&b);
-        mc.AddColorAttribute(ColorAttribute(r,g,b));
+        mc.AddColors(ColorAttribute(r,g,b));
         maxColorButton->buttonColor().rgb(&r,&g,&b);
-        mc.AddColorAttribute(ColorAttribute(r,g,b));
+        mc.AddColors(ColorAttribute(r,g,b));
 
         atts->SetMultiColor(mc);
     }

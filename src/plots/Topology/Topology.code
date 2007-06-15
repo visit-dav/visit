@@ -1,8 +1,8 @@
 Initialization: multiColor
-    multiColor.AddColorAttribute(ColorAttribute(255,0,0));
-    multiColor.AddColorAttribute(ColorAttribute(0,255,0));
-    multiColor.AddColorAttribute(ColorAttribute(0,0,255));
-    multiColor.AddColorAttribute(ColorAttribute(0,255,255));
+    multiColor.AddColors(ColorAttribute(255,0,0));
+    multiColor.AddColors(ColorAttribute(0,255,0));
+    multiColor.AddColors(ColorAttribute(0,0,255));
+    multiColor.AddColors(ColorAttribute(0,255,255));
 
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const TopologyAttributes &obj);
