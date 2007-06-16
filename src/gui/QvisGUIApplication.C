@@ -128,6 +128,7 @@
 #include <QvisInterpreter.h>
 #include <QvisKeyframeWindow.h>
 #include <QvisLightingWindow.h>
+#include <QvisMacroWindow.h>
 #include <QvisMainWindow.h>
 #include <QvisMaterialWindow.h>
 #include <QvisMessageWindow.h>
@@ -212,6 +213,7 @@
 #define WINDOW_COMMAND          29
 #define WINDOW_MESH_MANAGEMENT  30
 #define WINDOW_FILE_OPEN        31
+#define WINDOW_MACRO            32
 
 const char *QvisGUIApplication::windowNames[] = {
 "File selection",
@@ -245,7 +247,8 @@ const char *QvisGUIApplication::windowNames[] = {
 "Export Database",
 "Commands",
 "Mesh Management Options",
-"File open"
+"File open",
+"Macros"
 };
 
 // Some internal prototypes.
@@ -1250,6 +1253,9 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Brad Whitlock, Tue Nov 14 14:57:37 PST 2006
 //   I changed the argument list to RestoreSessionFile.
 //
+//   Brad Whitlock, Fri Jun 15 17:48:09 PST 2007
+//   Load the CLI if the visitrc file exists.
+//
 // ****************************************************************************
 
 void
@@ -1365,6 +1371,11 @@ QvisGUIApplication::FinalInitialization()
 #endif
         break;
     case 10:
+        // If the visitrc file exists then make sure that we load the CLI.
+        if(QFile(GetUserVisItRCFile().c_str()).exists())
+            Interpret("");
+        break;
+    case 11:
         // Show the release notes if this is the first time that the
         // user has run this version of VisIt.
         if(GetIsDevelopmentVersion())
@@ -2603,6 +2614,9 @@ QvisGUIApplication::CreateMainWindow()
 //   Jeremy Meredith, Mon Aug 28 17:28:05 EDT 2006
 //   Added File Open window.
 //
+//   Brad Whitlock, Fri Jun 15 09:38:47 PDT 2007
+//   Added Macro window.
+//
 // ****************************************************************************
 
 void
@@ -2720,6 +2734,8 @@ QvisGUIApplication::SetupWindows()
              this, SLOT(showCommandWindow()));
      connect(mainWin, SIGNAL(activateMeshManagementWindow()),
              this, SLOT(showMeshManagementWindow()));
+     connect(mainWin, SIGNAL(activateMacroWindow()),
+             this, SLOT(showMacroWindow()));
 }
 
 // ****************************************************************************
@@ -2765,6 +2781,9 @@ QvisGUIApplication::SetupWindows()
 //
 //   Brad Whitlock, Wed Mar 21 21:24:21 PST 2007
 //   Connect plot list to Annotation window.
+//
+//   Brad Whitlock, Fri Jun 15 09:40:48 PDT 2007
+//   Added Macro window.
 //
 // ****************************************************************************
 
@@ -2980,6 +2999,12 @@ QvisGUIApplication::WindowFactory(int i)
                                    GetViewerState()->GetDBPluginInfoAttributes());
           win = foWin;
         }
+        break;
+    case WINDOW_MACRO:
+        // Create the macro window.
+        win = new QvisMacroWindow(windowNames[i], "Macros", mainWin->GetNotepad());
+        connect(win, SIGNAL(runCommand(const QString &)),
+                this, SLOT(Interpret(const QString &)));
         break;
     }
 
@@ -6412,6 +6437,9 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
 //   Brad Whitlock, Fri Jan 6 13:53:48 PST 2006
 //   I added the AcceptRecordedMacro client method.
 //
+//   Brad Whitlock, Fri Jun 15 09:43:02 PDT 2007
+//   Added ClearMacroButtons, AddMacroButton.
+//
 // ****************************************************************************
 
 void
@@ -6435,6 +6463,8 @@ QvisGUIApplication::SendInterface()
     info->DeclareMethod("MovieProgress",       "sii");
     info->DeclareMethod("MovieProgressEnd",    "");
     info->DeclareMethod("AcceptRecordedMacro", "s");
+    info->DeclareMethod("AddMacroButton", "s");
+    info->DeclareMethod("ClearMacroButtons", "");
     info->SelectAll();
     info->Notify();
 
@@ -6465,6 +6495,9 @@ QvisGUIApplication::SendInterface()
 //
 //   Brad Whitlock, Fri Jan 6 13:35:18 PST 2006
 //   Added code to get macros.
+//
+//   Brad Whitlock, Fri Jun 15 09:43:02 PDT 2007
+//   Added ClearMacroButtons, AddMacroButton.
 //
 // ****************************************************************************
 
@@ -6636,6 +6669,19 @@ QvisGUIApplication::HandleClientMethod()
                     GetWindowPointer(WINDOW_COMMAND);
                 QString macro(method->GetStringArgs()[0].c_str());
                 cmdWin->acceptRecordedMacro(macro);
+            }
+            else if(method->GetMethodName() == "AddMacroButton")
+            {
+                QvisMacroWindow *macroWin = (QvisMacroWindow *)
+                    GetWindowPointer(WINDOW_MACRO);
+                QString macro(method->GetStringArgs()[0].c_str());
+                macroWin->addMacro(macro);
+            }
+            else if(method->GetMethodName() == "ClearMacroButtons")
+            {
+                QvisMacroWindow *macroWin = (QvisMacroWindow *)
+                    GetWindowPointer(WINDOW_MACRO);
+                macroWin->clearMacros();
             }
         }
     }
@@ -7264,3 +7310,4 @@ void QvisGUIApplication::showInteractorWindow()      { GetInitializedWindowPoint
 void QvisGUIApplication::showSimulationWindow()      { GetInitializedWindowPointer(WINDOW_SIMULATION)->show(); }
 void QvisGUIApplication::showExportDBWindow()        { GetInitializedWindowPointer(WINDOW_EXPORT_DB)->show(); }
 void QvisGUIApplication::showMeshManagementWindow()  { GetInitializedWindowPointer(WINDOW_MESH_MANAGEMENT)->show(); }
+void QvisGUIApplication::showMacroWindow()           { GetInitializedWindowPointer(WINDOW_MACRO)->show(); }

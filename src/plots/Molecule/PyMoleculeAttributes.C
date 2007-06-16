@@ -1022,6 +1022,15 @@ MoleculeAttributes_getattr(PyObject *self, char *name)
         return MoleculeAttributes_GetBondLineWidth(self, NULL);
     if(strcmp(name, "bondLineStyle") == 0)
         return MoleculeAttributes_GetBondLineStyle(self, NULL);
+    if(strcmp(name, "SOLID") == 0)
+        return PyInt_FromLong(long(0));
+    else if(strcmp(name, "DASH") == 0)
+        return PyInt_FromLong(long(1));
+    else if(strcmp(name, "DOT") == 0)
+        return PyInt_FromLong(long(2));
+    else if(strcmp(name, "DOTDASH") == 0)
+        return PyInt_FromLong(long(3));
+
     if(strcmp(name, "elementColorTable") == 0)
         return MoleculeAttributes_GetElementColorTable(self, NULL);
     if(strcmp(name, "residueTypeColorTable") == 0)

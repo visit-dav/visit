@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <Python.h>
 #include <string.h>
+#include <Utility.h>
 #include <VisItException.h>
 
 // For the VisIt module.
@@ -90,6 +91,9 @@ extern "C" int Py_Main(int, char **);
 //
 //   Brad Whitlock, Fri Jun 8 10:57:02 PDT 2007
 //   Added support for saving the arguments after -s to their own tuple.
+//
+//   Brad Whitlock, Fri Jun 15 16:49:53 PST 2007
+//   Load the visitrc file on startup.
 //
 // ****************************************************************************
 
@@ -206,6 +210,15 @@ main(int argc, char *argv[])
         // Run some Python commands that import VisIt and launch the viewer.
         PyRun_SimpleString((char*)"from visit import *");
         PyRun_SimpleString((char*)"Launch()");
+
+        // If a visitrc file exists, execute it.
+        std::string visitrc(GetUserVisItDirectory() + "visitrc");
+        VisItStat_t s;
+        if(VisItStat(visitrc.c_str(), &s) == 0)
+        {
+            PyRun_SimpleString("ClearMacros()");
+            cli_runscript(visitrc.c_str());
+        }
 
         // If a database was specified, load it.
         if(loadFile != 0)

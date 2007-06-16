@@ -35,106 +35,51 @@
 *
 *****************************************************************************/
 
-#ifndef QVIS_COMMAND_WINDOW_H
-#define QVIS_COMMAND_WINDOW_H
+#ifndef QVIS_MACRO_WINDOW_H
+#define QVIS_MACRO_WINDOW_H
 #include <QvisPostableWindow.h>
 
 class QButtonGroup;
-class QCheckBox;
-class QComboBox;
-class QPushButton;
-class QTabWidget;
-class QTextEdit;
-class QVBox;
+class QGroupBox;
+class QGridLayout;
 
 // ****************************************************************************
-// Class: QvisCommandWindow
+// Class: QvisMacroWindow
 //
 // Purpose:
-//   This class implements a window that lets you type commands to be
-//   interpreted.
+//   This class implements a window that shows buttons that let you execute
+//   one-click macros.
 //
 // Notes:      
 //
 // Programmer: Brad Whitlock
-// Creation:   Mon May 9 10:20:44 PDT 2005
+// Creation:   Thu Jun 14 16:51:28 PST 2007
 //
 // Modifications:
-//   Brad Whitlock, Fri Jan 6 13:35:40 PST 2006
-//   Added new buttons for recording macros.
-//
-//   Brad Whitlock, Fri Jun 15 13:31:37 PST 2007
-//   Added a new tab for visitrc macros.
 //
 // ****************************************************************************
 
-class QvisCommandWindow : public QvisPostableWindow
+class QvisMacroWindow : public QvisPostableWindow
 {
     Q_OBJECT
 public:
-    QvisCommandWindow(const char *captionString = 0,
+    QvisMacroWindow(const char *captionString = 0,
                       const char *shortName = 0,
                       QvisNotepadArea *n = 0);
-    virtual ~QvisCommandWindow();
+    virtual ~QvisMacroWindow();
     virtual void CreateWindowContents();
-    virtual void CreateNode(DataNode *);
-    virtual void SetFromNode(DataNode *, const int *borders);
+
 signals:
     void runCommand(const QString &);
 public slots:
-    void acceptRecordedMacro(const QString &);
+    void addMacro(const QString &);
+    void clearMacros();
 private slots:
-    void executeClicked(int);
-    void clearClicked(int);
-
-    void macroRecordClicked();
-    void macroPauseClicked();
-    void macroEndClicked();
-    void macroAppendClicked(bool);
-    void macroStorageActivated(int);
-    void macroClearClicked();
-    void macroUpdateClicked();
-    void macroCreate(int);
-
-    void textChanged0();
-    void textChanged1();
-    void textChanged2();
-    void textChanged3();
-    void textChanged4();
-    void textChanged5();
-    void textChanged6();
-    void textChanged7();
+    void invokeMacro(int);
 private:
-    QString fileName(int index) const;
-    QString RCFileName() const;
-    void LoadScripts();
-    void SaveScripts();
-    void UpdateMacroCheckBoxes();
-    void CreateMacroFromText(const QString &);
-
-    QTabWidget      *tabWidget;
-    QButtonGroup    *executeButtonsGroup;
-    QPushButton    **executeButtons;
-    QButtonGroup    *clearButtonsGroup;
-    QPushButton    **clearButtons;
-    QButtonGroup    *addMacroButtonsGroup;
-    QPushButton    **addMacroButtons;
-
-    QTextEdit      **lineEdits;
-
-    QPushButton     *macroRecord;
-    QPushButton     *macroPause;
-    QPushButton     *macroEnd;
-    QCheckBox       *macroAppendCheckBox;
-    QComboBox       *macroStorageComboBox;
-
-    QVBox           *macroTab;
-    QTextEdit       *macroLineEdit;
-    QPushButton     *macroUpdateButton;
-    QPushButton     *macroClearButton;
-
-    int              macroStorageMode;
-    bool             macroAppend;
+    QGroupBox    *macroGroup;
+    QGridLayout  *buttonLayout;
+    QButtonGroup *macroButtons;
 };
 
 #endif

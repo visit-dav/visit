@@ -62,6 +62,7 @@ class QvisApplication;
 class QvisColorTableWindow;
 class QvisInterpreter;
 class QvisMainWindow;
+class QvisMacroWindow;
 class QvisMessageWindow;
 class QvisMovieProgressDialog;
 class QvisOutputWindow;
@@ -318,6 +319,9 @@ class SplashScreen;
 //    Brad Whitlock, Tue Nov 14 15:17:53 PST 2006
 //    Added ability to restore sessions with different sources.
 //
+//    Brad Whitlock, Fri Jun 15 09:34:43 PDT 2007
+//    Added macroWindow.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -443,6 +447,7 @@ private slots:
     void showKeyframeWindow();
     void showLightingWindow();
     void showGlobalLineoutWindow();
+    void showMacroWindow();
     void showMaterialWindow();
     void showHelpWindow();
     void displayCopyright();

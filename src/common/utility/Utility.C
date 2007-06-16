@@ -872,6 +872,29 @@ GetUserVisItDirectory()
     return homedir;
 }
 
+// ****************************************************************************
+// Method: GetUserVisItRCFile
+//
+// Purpose: 
+//   Returns the name of the VisIt RC file in the user's .visit directory.
+//
+// Returns:    The name of the RC file.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 15 17:44:04 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+GetUserVisItRCFile()
+{
+    return GetUserVisItDirectory() + "visitrc";
+}
+
 #if defined(_WIN32)
 //
 // Functions to get at VisIt data stored in the Windows registry.

@@ -375,6 +375,8 @@ static PyThreadState        *mainThreadState = NULL;
 static bool                  clientMethodsAllowed = false;
 static std::vector<ClientMethod *> cachedClientMethods;
 
+static std::map<std::string, PyObject*> macroFunctions;
+
 
 typedef struct
 {
@@ -10884,6 +10886,140 @@ visit_ClientMethod(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_RegisterMacro
+//
+// Purpose: 
+//   Gives a function a name that can be called from the VisIt GUI.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 14 16:29:57 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_RegisterMacro(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *name = 0;
+    PyObject *callback = 0;
+
+    if (!PyArg_ParseTuple(args, "sO", &name, &callback))
+        return NULL;
+
+    if(callback == 0 || !PyCallable_Check(callback))
+    {
+        VisItErrorFunc("The object passed to RegisterMacro is not callable.");
+        return NULL;
+    }
+
+    std::string sname(name);
+    bool found = macroFunctions.find(sname) != macroFunctions.end();
+
+    // Now, send a client method to the GUI defining the macro button.
+    if(found)
+    {
+        // We found a previous copy of an object. Let's decrement its
+        // reference since we don't need it anymore.
+        Py_DECREF(macroFunctions[sname]);
+    }
+    else
+    {
+        // We're caching the object for the first time. We need to increment
+        // its reference count since we're keeping a pointer to the object.
+        // This ensures that it won't go away behind our backs.
+        Py_INCREF(callback);
+
+        ClientMethod *m = GetViewerState()->GetClientMethod();
+        m->SetMethodName("AddMacroButton");
+        m->ClearArgs();
+        m->AddArgument(name);
+        clientMethodObserver->SetUpdate(false);
+        m->Notify();
+    }
+
+    // Save the macro name to function mapping so we know how to call
+    // the macro when the GUI wants to call it via a client method.
+    macroFunctions[sname] = callback;
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
+// Function: visit_ExecuteMacro
+//
+// Purpose: 
+//   Calls a function registered with RegisterMacro.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 14 16:29:57 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ExecuteMacro(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *name = 0;
+    PyObject *obj = 0;
+
+    if (!PyArg_ParseTuple(args, "s", &name))
+        return NULL;
+
+    std::string sname(name);
+    if(macroFunctions.find(sname) == macroFunctions.end())
+    {
+        VisItErrorFunc("An unrecognized macro name was provided.\n");
+        return NULL;
+    }
+
+    // Call the function that the user named with the RegisterMacro function.
+    return PyObject_CallFunction(macroFunctions[sname], NULL);
+}
+
+// ****************************************************************************
+// Function: visit_ClearMacro
+//
+// Purpose: 
+//   Gives a function a name that can be called from the VisIt GUI.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 14 16:29:57 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_ClearMacros(PyObject *self, PyObject *args)
+{
+    // Decrement the reference counts for objects that we've stored.
+    for(std::map<std::string,PyObject*>::iterator pos = macroFunctions.begin();
+        pos != macroFunctions.end(); ++pos)
+    {
+        Py_DECREF(pos->second);
+    }
+    macroFunctions.clear();
+
+    // Send a client method to the GUI telling it to clear its macro buttons.
+    // Now, send a client method to the GUI defining the macro button.
+    ClientMethod *m = GetViewerState()->GetClientMethod();
+    m->SetMethodName("ClearMacroButtons");
+    m->ClearArgs();
+    clientMethodObserver->SetUpdate(false);
+    m->Notify();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
 // Function: visit_exec_client_method
 //
 // Purpose:
@@ -11444,6 +11580,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Fri Mar 9 17:23:33 PST 2007
 //   Added GetMetaData.
 //
+//   Brad Whitlock, Thu Jun 14 16:43:26 PST 2007
+//   Added ClearMacros, RegisterMacro, ExecuteMacros
+//
 // ****************************************************************************
 
 static void
@@ -11808,6 +11947,10 @@ AddDefaultMethods()
     AddMethod("SetColorTexturingEnabled", visit_SetColorTexturingEnabled, NULL/*DOCUMENT ME*/);
     AddMethod("GetMetaData", visit_GetMetaData, NULL/*DOCUMENT ME*/);
     AddMethod("GetPlotList", visit_GetPlotList, NULL/*DOCUMENT ME*/);
+
+    AddMethod("ClearMacros", visit_ClearMacros, NULL/*DOCUMENT ME*/);
+    AddMethod("ExecuteMacro", visit_ExecuteMacro, NULL/*DOCUMENT ME*/);
+    AddMethod("RegisterMacro", visit_RegisterMacro, NULL/*DOCUMENT ME*/);
 
     //
     // Lighting

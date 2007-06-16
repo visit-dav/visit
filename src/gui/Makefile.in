@@ -387,6 +387,9 @@
 #    Kathleen Bonnell, Thu Jun  7 14:56:18 PDT 2007 
 #    Added QvisSILSetSelector. 
 #
+#    Brad Whitlock, Fri Jun 15 09:30:06 PDT 2007
+#    Added QvisMacroWindow.
+#
 ##############################################################################
 
 ##
@@ -461,6 +464,7 @@ HDRMOC = \
     QvisLine2DInterface.h \
     QvisLineStyleWidget.h \
     QvisLineWidthWidget.h \
+    QvisMacroWindow.h \
     QvisMainWindow.h \
     QvisMaterialWindow.h \
     QvisMessageWindow.h \
