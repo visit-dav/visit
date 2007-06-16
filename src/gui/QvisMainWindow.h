@@ -193,6 +193,9 @@ class WindowInformation;
 //   Brad Whitlock, Wed Nov 22 10:53:21 PDT 2006
 //   Added override of show method.
 //
+//   Brad Whitlock, Fri Jun 15 09:32:04 PDT 2007
+//   Added activateMacroWindow.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -244,6 +247,7 @@ signals:
     void activateKeyframeWindow();
     void activateLightingWindow();
     void activateMaterialWindow();
+    void activateMacroWindow();
     void activatePickWindow();
     void activateQueryWindow();
     void activateSubsetWindow();

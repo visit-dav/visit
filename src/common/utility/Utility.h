@@ -106,6 +106,8 @@ std::string UTILITY_API GetUserVisItDirectory();
 UTILITY_API char *      GetDefaultConfigFile(const char *filename = 0, const char *home = 0);
 UTILITY_API char *      GetSystemConfigFile(const char *filename = 0);
 
+std::string UTILITY_API GetUserVisItRCFile();
+
 int         UTILITY_API ConfigStateGetRunCount(ConfigStateEnum &code);
 void        UTILITY_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
 

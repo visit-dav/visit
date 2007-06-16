@@ -41,6 +41,7 @@
 #include <qcombobox.h>
 #include <qfile.h>
 #include <qfont.h>
+#include <qinputdialog.h>
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qpushbutton.h>
@@ -52,6 +53,7 @@
 
 #include <Utility.h>
 #include <DataNode.h>
+#include <DebugStream.h>
 
 #include <icons/macrorecord.xpm>
 #include <icons/macropause.xpm>
@@ -73,6 +75,9 @@
 //   Brad Whitlock, Fri Jan 6 13:36:05 PST 2006
 //   Inititalized new members.
 //
+//   Brad Whitlock, Fri Jun 15 13:36:56 PST 2007
+//   Added new buttons.
+//
 // ****************************************************************************
 
 QvisCommandWindow::QvisCommandWindow(const char *captionString,
@@ -83,6 +88,8 @@ QvisCommandWindow::QvisCommandWindow(const char *captionString,
     executeButtons = 0;
     clearButtons = 0;
     clearButtonsGroup = 0;
+    addMacroButtons = 0;
+    addMacroButtonsGroup = 0;
     lineEdits = 0;
 
     macroRecord = 0;
@@ -105,7 +112,9 @@ QvisCommandWindow::QvisCommandWindow(const char *captionString,
 // Creation:   Mon May 9 10:51:22 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jun 15 13:37:31 PST 2007
+//   Delete new widgets.
+//
 // ****************************************************************************
 
 QvisCommandWindow::~QvisCommandWindow()
@@ -114,6 +123,8 @@ QvisCommandWindow::~QvisCommandWindow()
     delete [] executeButtons;
     delete clearButtonsGroup;
     delete [] clearButtons;
+    delete addMacroButtonsGroup;
+    delete [] addMacroButtons;
     delete [] lineEdits;
 }
 
@@ -136,13 +147,16 @@ QvisCommandWindow::~QvisCommandWindow()
 //   Brad Whitlock, Fri Mar 17 09:46:58 PDT 2006
 //   Added UpdateMacroCheckBoxes.
 //
+//   Brad Whitlock, Fri Jun 15 13:37:48 PST 2007
+//   Added Macros tab and buttons to convert "code" to "macros".
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::CreateWindowContents()
 {
     QGroupBox *macroBox = new QGroupBox(central, "macroBox");
-    macroBox->setTitle("Macro");
+    macroBox->setTitle("Commands");
     topLayout->addWidget(macroBox);
 
     QVBoxLayout *innerMacroLayout = new QVBoxLayout(macroBox);
@@ -154,20 +168,20 @@ QvisCommandWindow::CreateWindowContents()
     macroRecord = new QPushButton(QIconSet(QPixmap(macrorecord_xpm)),
         "Record", macroBox, "macroRecord");
     connect(macroRecord, SIGNAL(clicked()), this, SLOT(macroRecordClicked()));
-    QToolTip::add(macroRecord, "Start recording macro");
+    QToolTip::add(macroRecord, "Start recording commands");
     macroLayout->addWidget(macroRecord);
 
     macroPause = new QPushButton(QIconSet(QPixmap(macropause_xpm)),
         "Pause", macroBox, "macroPause");
     macroPause->setToggleButton(true);
     connect(macroPause, SIGNAL(clicked()), this, SLOT(macroPauseClicked()));
-    QToolTip::add(macroPause, "Pause macro recording");
+    QToolTip::add(macroPause, "Pause recording commands");
     macroLayout->addWidget(macroPause);
 
     macroEnd = new QPushButton(QIconSet(QPixmap(macrostop_xpm)),
         "Stop", macroBox, "macroEnd");
     connect(macroEnd, SIGNAL(clicked()), this, SLOT(macroEndClicked()));
-    QToolTip::add(macroEnd, "Stop macro recording");
+    QToolTip::add(macroEnd, "Stop recording commands");
     macroLayout->addWidget(macroEnd);
     macroRecord->setEnabled(true);
     macroPause->setEnabled(false);
@@ -182,13 +196,14 @@ QvisCommandWindow::CreateWindowContents()
     macroStorageComboBox = new QComboBox(macroBox, "macroAppendCheckBox");
     macroStorageComboBox->insertItem("Active tab");
     macroStorageComboBox->insertItem("First empty tab");
+    macroStorageComboBox->insertItem("Macros");
     connect(macroStorageComboBox, SIGNAL(activated(int)),
             this, SLOT(macroStorageActivated(int)));
     mLayout->addWidget(macroStorageComboBox, 0, 1);
-    mLayout->addWidget(new QLabel(macroStorageComboBox, "Store macro in",
+    mLayout->addWidget(new QLabel(macroStorageComboBox, "Store commands in",
         macroBox), 0, 0);
 
-    macroAppendCheckBox = new QCheckBox("Append macro to existing text", macroBox,
+    macroAppendCheckBox = new QCheckBox("Append commands to existing text", macroBox,
         "macroAppendCheckBox");
     connect(macroAppendCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(macroAppendClicked(bool)));
@@ -206,9 +221,15 @@ QvisCommandWindow::CreateWindowContents()
     connect(clearButtonsGroup, SIGNAL(clicked(int)),
             this, SLOT(clearClicked(int)));
 
+    addMacroButtonsGroup = new QButtonGroup(0, "addMacroButtonsGroup");
+    connect(addMacroButtonsGroup, SIGNAL(clicked(int)),
+            this, SLOT(macroCreate(int)));
+
+    // Create the tabs that let us edit command scripts.
     lineEdits = new QTextEdit*[MAXTABS];
     executeButtons = new QPushButton*[MAXTABS];
     clearButtons = new QPushButton*[MAXTABS];
+    addMacroButtons = new QPushButton*[MAXTABS];
     QFont monospaced("Courier");
     for (int i = 0; i < MAXTABS; i++)
     {
@@ -239,10 +260,37 @@ QvisCommandWindow::CreateWindowContents()
         clearButtons[i]->setEnabled(false);
         clearButtonsGroup->insert(clearButtons[i], i);
 
+        addMacroButtons[i] = new QPushButton("Make macro", hb,
+            "addMacroButton");
+        addMacroButtons[i]->setEnabled(false);
+        addMacroButtonsGroup->insert(addMacroButtons[i], i);
+
         // Add the top vbox as a new tab.
         n.sprintf("%d", i+1);
         tabWidget->addTab(vb, n);
     }
+
+    // Create the Macros tab.
+    macroTab = new QVBox(central, "page");
+    macroTab->setMargin(10);
+    macroTab->setSpacing(5);
+    macroLineEdit = new QTextEdit(macroTab, "macroLineEdit");
+    macroLineEdit->setWordWrap(QTextEdit::WidgetWidth);
+    macroLineEdit->setReadOnly(false);
+    macroLineEdit->setFont(monospaced);
+    macroLineEdit->setTextFormat(Qt::PlainText);
+    macroLineEdit->setWordWrap(QTextEdit::NoWrap);
+    QHBox *hb = new QHBox(macroTab, "hb");
+    hb->setSpacing(5);
+    macroUpdateButton = new QPushButton("Update macros", hb,
+        "macroUpdateButton");
+    connect(macroUpdateButton, SIGNAL(clicked()),
+            this, SLOT(macroUpdateClicked()));
+    macroClearButton = new QPushButton("Clear", hb,
+        "macroClearButton");
+    connect(macroClearButton, SIGNAL(clicked()),
+            this, SLOT(macroClearClicked()));
+    tabWidget->addTab(macroTab, "Macros");
 
     // Load the saved Python scripts.
     LoadScripts();
@@ -301,6 +349,9 @@ QvisCommandWindow::CreateNode(DataNode *node)
 //   Brad Whitlock, Fri Mar 17 09:43:25 PDT 2006
 //   Moved code to update widgets into UpdateMacroCheckBoxes.
 //
+//   Brad Whitlock, Fri Jun 15 13:02:38 PST 2007
+//   Added 1 to macroStorageMode.
+//
 // ****************************************************************************
 
 void
@@ -316,8 +367,8 @@ QvisCommandWindow::SetFromNode(DataNode *parentNode, const int *borders)
     if((n = winNode->GetNode("macroStorageMode")) != 0)
     {
         macroStorageMode = n->AsInt();
-        if(macroStorageMode > 1)
-            macroStorageMode = 1;
+        if(macroStorageMode > 2)
+            macroStorageMode = 2;
     }
     if((n = winNode->GetNode("macroAppend")) != 0)
         macroAppend = n->AsBool();
@@ -385,6 +436,27 @@ QvisCommandWindow::fileName(int index) const
 }
 
 // ****************************************************************************
+// Method: QvisCommandWindow::RCFileName
+//
+// Purpose: 
+//   Returns the name of the "visitrc" file.
+//
+// Returns:    The name of the visitrc file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 15 14:08:47 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisCommandWindow::RCFileName() const
+{
+    return QString(GetUserVisItRCFile().c_str());
+}
+
+// ****************************************************************************
 // Method: QvisCommandWindow::LoadScripts
 //
 // Purpose: 
@@ -394,12 +466,15 @@ QvisCommandWindow::fileName(int index) const
 // Creation:   Wed Jun 22 16:38:30 PST 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jun 15 14:13:17 PST 2007
+//   Added code to load the visitrc file.
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::LoadScripts()
 {
+    // Load scripts into the tabs.
     for(int i = 0; i < MAXTABS; ++i)
     {
         QFile file(fileName(i+1));
@@ -417,6 +492,22 @@ QvisCommandWindow::LoadScripts()
 
             lineEdits[i]->setText(lines);
         }
+    }
+
+    // Try and load the visitrc file.
+    QFile file(RCFileName());
+    if(file.open(IO_ReadOnly))
+    {
+        QTextStream stream(&file);
+        QString lines;
+        while(!stream.eof())
+        {
+            lines += stream.readLine();
+            lines += "\n";
+        }
+        file.close();
+
+        macroLineEdit->setText(lines);
     }
 }
 
@@ -452,6 +543,69 @@ QvisCommandWindow::SaveScripts()
         else
             file.remove();
     }
+}
+
+// ****************************************************************************
+// Method: CreateMacroFromText
+//
+// Purpose: 
+//   Converts the supplied text to a macro, prompting the user for names, and
+//   adds the new macro text to the macro tab.
+//
+// Arguments:
+//   s : The macro string that we're turning into a function.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 15 16:08:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::CreateMacroFromText(const QString &s)
+{
+    QString func, funcName, macroName;
+    bool ok = true;
+
+    // Get the name of the function to create from the user.
+    funcName = QInputDialog::getText("VisIt",
+        "Please enter the name of the Python function to be defined for the macro.",
+        QLineEdit::Normal, QString::null, &ok, this);
+    if(!ok || funcName.isEmpty())
+        return;
+    if(funcName.contains(' '))
+    {
+        Error("Function names may not contain spaces. Please try to create "
+              "the macro again using a valid function name.");
+        return;
+    }
+
+    // Get the name of the macro from the user.
+    macroName = QInputDialog::getText("VisIt",
+        "Please enter the name of the macro to be defined (as you want it to appear in a button).",
+        QLineEdit::Normal, QString::null, &ok, this);
+    if(!ok || macroName.isEmpty())
+        return;
+
+#if 1
+    // This function is assuming Python code.
+
+    // Now, iterate over the lines of text and indent appropriately to
+    // make a Python function.
+    func = QString("def ") + funcName + QString("():\n");
+    QStringList lines(QStringList::split("\n", s, true));
+    for(int i = 0; i < lines.count(); ++i)
+        func += QString("    ") + lines[i] + QString("\n");
+    func += QString("RegisterMacro(\"") + macroName + QString("\", ") +
+            funcName + QString(")\n");
+
+    // Add the function definition to the Macros tab.
+    macroLineEdit->setText(macroLineEdit->text() + func);
+
+    // Make the Macros tab active.
+    tabWidget->showPage((QWidget *)macroTab);
+#endif
 }
 
 //
@@ -515,12 +669,15 @@ QvisCommandWindow::clearClicked(int index)
 // Creation:   Mon May 9 10:52:56 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jun 15 14:21:22 PST 2007
+//   Set addMacroButton enabled.
+//
 // ****************************************************************************
 
 #define TEXT_CHANGED(I) void QvisCommandWindow::textChanged##I() { \
     bool e = lineEdits[I]->length() > 0; \
     executeButtons[I]->setEnabled(e); \
+    addMacroButtons[I]->setEnabled(e); \
     clearButtons[I]->setEnabled(e); \
 }
 
@@ -629,41 +786,157 @@ QvisCommandWindow::macroStorageActivated(int val)
 // Creation:   Fri Jan 6 15:18:21 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jun 15 16:10:33 PST 2007
+//   Added ability to record to the Macros tab.
+//
 // ****************************************************************************
 
 void
 QvisCommandWindow::acceptRecordedMacro(const QString &s)
 {
-    int index = 0;
-    if(macroStorageMode == 0)
-        index = tabWidget->currentPageIndex();
+    if(macroStorageMode == 2)
+    {
+        // Add the recorded macro to the macros tab.
+        CreateMacroFromText(s);
+    }
     else
     {
-        // Look for the first empty tab.
-        bool found = false;
-        for(int i = 0; i < MAXTABS; ++i)
+        int index = 0;
+        if(macroStorageMode == 0)
         {
-            if(lineEdits[i]->text().isEmpty())
+            index = tabWidget->currentPageIndex();
+
+            // If the active tab is the macros tab, record there.
+            if(index == MAXTABS)
             {
-                index = i;
-                found = true;
-                break;
+                CreateMacroFromText(s);
+                return;
             }
         }
+        else
+        {
+            // Look for the first empty tab.
+            bool found = false;
+            for(int i = 0; i < MAXTABS; ++i)
+            {
+                if(lineEdits[i]->text().isEmpty())
+                {
+                    index = i;
+                    found = true;
+                    break;
+                }
+            }
 
-        index = found ? index : 0;
-        tabWidget->blockSignals(true);
-        tabWidget->setCurrentPage(index);
-        tabWidget->blockSignals(false);
+            index = found ? index : 0;
+            tabWidget->blockSignals(true);
+            tabWidget->setCurrentPage(index);
+            tabWidget->blockSignals(false);
+        }
+
+        if(macroAppend)
+        {
+            QString macro(lineEdits[index]->text());
+            macro += s;
+            lineEdits[index]->setText(macro);
+        }
+        else
+            lineEdits[index]->setText(s);
     }
+}
 
-    if(macroAppend)
+// ****************************************************************************
+// Method: QvisCommandWindow::macroClearClicked
+//
+// Purpose: 
+//   Clear the macros tab.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 15 14:14:53 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::macroClearClicked()
+{
+    macroLineEdit->clear();
+}
+
+// ****************************************************************************
+// Method: QvisCommandWindow::macroUpdateClicked
+//
+// Purpose: 
+//   Update the macros by executing the visitrc again.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 15 14:15:32 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::macroUpdateClicked()
+{
+    // Save the updated visitrc file based on the contents in the Macros tab.
+    QFile file(RCFileName());
+    QString txt(macroLineEdit->text());
+    if(txt.length() > 0)
     {
-        QString macro(lineEdits[index]->text());
-        macro += s;
-        lineEdits[index]->setText(macro);
+        if(file.open(IO_WriteOnly))
+        {
+            QTextStream stream(&file);
+            stream << txt;
+            file.close();
+            debug1 << "Saved updated " << RCFileName().latin1()
+                   << " file." << endl;
+
+           // Tell the CLI to source the file so we get our macros back with
+           // the changes that have been put into place.
+           QString command;
+           command.sprintf("ClearMacros()\nSource(\"%s\")\n", RCFileName().latin1());
+           emit runCommand(command);
+        }
+        else
+        {
+            QString msg;
+            msg.sprintf("VisIt could not update the %s file.", RCFileName().latin1());
+            Message(msg);
+        }
     }
     else
-        lineEdits[index]->setText(s);
+    {
+        debug1 << "Removing empty " << RCFileName().latin1()
+               << " file. " << endl;
+        file.remove();
+        emit runCommand("ClearMacros()");
+    }
+}
+
+// ****************************************************************************
+// Method: QvisCommandWindow::macroCreate
+//
+// Purpose: 
+//   Creates a macro from the code defined in the specified tab.
+//
+// Arguments:
+//   tab : The tab whose code will become a macro.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jun 15 14:19:28 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisCommandWindow::macroCreate(int tab)
+{
+    // Add to the macro tab.
+    CreateMacroFromText(lineEdits[tab]->text());
 }

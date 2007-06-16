@@ -290,6 +290,9 @@
 //    Brad Whitlock, Tue Nov 14 15:35:44 PST 2006
 //    I added restoreSessionWithSources.
 //
+//    Brad Whitlock, Fri Jun 15 09:32:23 PDT 2007
+//    Added Macro window.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -408,6 +411,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     id = ctrls->insertItem(keyframeIcon, tr("&Keyframing . . ."), this, SIGNAL(activateKeyframeWindow()), CTRL+Key_K);
     id = ctrls->insertItem(lightIcon, tr("&Lighting . . ."), this, SIGNAL(activateLightingWindow()), CTRL+Key_L );
     id = ctrls->insertItem(globalLineoutIcon, tr("&Lineout . . ."), this, SIGNAL(activateGlobalLineoutWindow()), CTRL+SHIFT+Key_L );
+    id = ctrls->insertItem(tr("Macros . . ."), this, SIGNAL(activateMacroWindow()));
     id = ctrls->insertItem(materialIcon, tr("&Material Options . . ."), this, SIGNAL(activateMaterialWindow()), CTRL+Key_M);
     id = ctrls->insertItem(tr("&Mesh management . . ."), this, SIGNAL(activateMeshManagementWindow()), CTRL+SHIFT+Key_M);
     id = ctrls->insertItem(pickIcon, tr("&Pick . . ."), this, SIGNAL(activatePickWindow()), CTRL+SHIFT+Key_P );

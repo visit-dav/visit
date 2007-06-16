@@ -805,6 +805,15 @@ MeshAttributes_getattr(PyObject *self, char *name)
         return MeshAttributes_GetLegendFlag(self, NULL);
     if(strcmp(name, "lineStyle") == 0)
         return MeshAttributes_GetLineStyle(self, NULL);
+    if(strcmp(name, "SOLID") == 0)
+        return PyInt_FromLong(long(0));
+    else if(strcmp(name, "DASH") == 0)
+        return PyInt_FromLong(long(1));
+    else if(strcmp(name, "DOT") == 0)
+        return PyInt_FromLong(long(2));
+    else if(strcmp(name, "DOTDASH") == 0)
+        return PyInt_FromLong(long(3));
+
     if(strcmp(name, "lineWidth") == 0)
         return MeshAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "meshColor") == 0)
