@@ -58,6 +58,8 @@
     </Constant>
     <Constant name="EA_PLOT_AXES_WERE_MODIFIED_FLAG" member="false">
     </Constant>
+    <Constant name="EA_ATTRIBUTES_FROM_WIZARD_FLAG" member="false">
+    </Constant>
     <Constant name="EA_LEFT_SHOWN_AXIS_FLAG" member="false">
     </Constant>
     <Constant name="EA_LEFT_SELECTED_AXIS_FLAG" member="false">

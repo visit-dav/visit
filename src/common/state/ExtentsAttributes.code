@@ -115,6 +115,11 @@ Declaration: #define EA_PLOT_AXES_WERE_MODIFIED_FLAG  0x00000400
 Definition: 
 
 
+Constant: EA_ATTRIBUTES_FROM_WIZARD_FLAG
+Declaration: #define EA_ATTRIBUTES_FROM_WIZARD_FLAG   0x00000800
+Definition: 
+
+
 Constant: EA_LEFT_SHOWN_AXIS_FLAG
 Declaration: #define EA_LEFT_SHOWN_AXIS_FLAG          0x00000001
 Definition: 
