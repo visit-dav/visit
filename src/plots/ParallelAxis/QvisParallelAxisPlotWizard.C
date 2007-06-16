@@ -448,7 +448,8 @@ QvisParallelAxisPlotWizard::InitializeParallelAxisAttributes(const std::string &
     parAxisAtts->SetExtentMaxima(extMaxs);
     parAxisAtts->SetExtMinTimeOrds(minTimeOrds);
     parAxisAtts->SetExtMaxTimeOrds(maxTimeOrds);
-    parAxisAtts->SetPlotToolModeFlags(EA_AXIS_INFO_AUTO_LAYOUT_FLAG);
+    parAxisAtts->SetPlotToolModeFlags(
+        EA_AXIS_INFO_AUTO_LAYOUT_FLAG | EA_ATTRIBUTES_FROM_WIZARD_FLAG);
     parAxisAtts->SetAxisGroupNames(groupNames);
     parAxisAtts->SetAxisInfoFlagSets(infoFlagSets);
     parAxisAtts->SetAxisXPositions(xPositions);

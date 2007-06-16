@@ -120,7 +120,7 @@ class ParallelAxisViewerPluginInfo: public virtual ViewerPlotPluginInfo, public 
   private:
     static ParallelAxisAttributes *defaultAtts;
     static ParallelAxisAttributes *clientAtts;
-    static ParallelAxisAttributes *fallbackAtts;
+    static ParallelAxisAttributes *arrayExpAtts;
 };
 
 class ParallelAxisEnginePluginInfo: public virtual EnginePlotPluginInfo, public virtual ParallelAxisCommonPluginInfo

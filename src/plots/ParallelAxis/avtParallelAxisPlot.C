@@ -275,31 +275,7 @@ avtParallelAxisPlot::GetMapper(void)
 //  Method: avtParallelAxisPlot::ApplyOperators
 //
 //  Purpose: Applies the implied operators for a ParallelAxis plot, namely,
-//           no operators at all.
-//
-//  Arguments:
-//      input   The input data object.
-//
-//  Returns:    The input data object.
-//
-//  Programmer: Mark Blair
-//  Creation:   Mon Mar 27 18:24:00 PST 2006
-//
-//  Modifications:
-//   
-// ****************************************************************************
-
-avtDataObject_p
-avtParallelAxisPlot::ApplyOperators(avtDataObject_p input)
-{
-    return input;
-}
-
-// ****************************************************************************
-//  Method: avtParallelAxisPlot::ApplyRenderingTransformation
-//
-//  Purpose: Performs the rendering transformation for a ParallelAxis plot,
-//           namely, an avtParallelAxisFilter.
+//           an avtParallelAxisFilter.
 //
 //  Arguments:
 //      input   The input data object.
@@ -314,7 +290,7 @@ avtParallelAxisPlot::ApplyOperators(avtDataObject_p input)
 // ****************************************************************************
 
 avtDataObject_p
-avtParallelAxisPlot::ApplyRenderingTransformation(avtDataObject_p input)
+avtParallelAxisPlot::ApplyOperators(avtDataObject_p input)
 {
     if (parAxisFilter != NULL)
     {
@@ -327,6 +303,30 @@ avtParallelAxisPlot::ApplyRenderingTransformation(avtDataObject_p input)
     parAxisFilter->SetInput(input);
 
     return parAxisFilter->GetOutput();
+}
+
+// ****************************************************************************
+//  Method: avtParallelAxisPlot::ApplyRenderingTransformation
+//
+//  Purpose: Performs the rendering transformation for a ParallelAxis plot,
+//           namely, no transformations at all.
+//
+//  Arguments:
+//      input   The input data object.
+//
+//  Returns:    The input data object.
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//
+//  Modifications:
+//   
+// ****************************************************************************
+
+avtDataObject_p
+avtParallelAxisPlot::ApplyRenderingTransformation(avtDataObject_p input)
+{
+    return input;
 }
 
 
