@@ -282,6 +282,11 @@ avtMacroExpressionFilter::AdditionalPipelineFilters(void)
 //    Make sure we don't lose the active variable if it is not a macro
 //    variable.
 //
+//    Hank Childs, Mon Jun 18 09:41:49 PDT 2007
+//    Change the list of variables sent into our version of the EEF.
+//    Make sure that we are requesting only the variable we want to produce
+//    and also the variables that are needed downstream.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -301,20 +306,19 @@ avtMacroExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
     avtDataSpecification_p new_dspec = new avtDataSpecification(old_dspec, v);
     new_dspec->RemoveSecondaryVariable(v);
 
-    //
-    // If the primary variable is not the macro variable, then we may have just
-    // clobbered it.  Add the primary variable back as a secondary variable.
-    //
-    if (strcmp(old_dspec->GetVariable(), v) != 0)
-        new_dspec->AddSecondaryVariable(old_dspec->GetVariable());
-
+    last_spec = new avtDataSpecification(new_dspec);
     avtPipelineSpecification_p new_pspec = new avtPipelineSpecification(spec,
                                                                     new_dspec);
-    last_spec = new_dspec;
 
     avtPipelineSpecification_p rv = eef.PerformRestriction(new_pspec);
+    avtDataSpecification_p rv_d = rv->GetDataSpecification();
+    avtDataSpecification_p rv_d2 = new avtDataSpecification(rv_d, 
+                                                     old_dspec->GetVariable());
+    rv_d2->AddSecondaryVariable(rv_d->GetVariable());
+    avtPipelineSpecification_p rv2 = new avtPipelineSpecification(rv, rv_d2);
+
     RestoreExpressionList();
-    return rv;
+    return rv2;
 }
 
 

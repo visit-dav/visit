@@ -98,6 +98,11 @@ class     avtWebpage;
 //    All filters can now report that they understand these grids, though
 //    the virtual default in this base class is that each does not.
 //
+//    Hank Childs, Fri Jun 15 11:37:59 PDT 2007
+//    Added a static data member to keep track of the number of filters
+//    currently executing (which also informs the amount of sub-pipelines
+//    that are executing, which allows for formatting the debug dump).
+
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -129,6 +134,7 @@ class PIPELINE_API avtFilter
     bool                                inExecute;
 
     static bool                         debugDump;
+    static int                          numInExecute;
     avtWebpage                         *webpage;
     std::vector<avtDynamicAttribute *>  dynamicAttributes;
 
@@ -175,7 +181,11 @@ class PIPELINE_API avtFilter
     void                                ResolveDynamicAttributes(void);
 
     void                                DumpDataObject(avtDataObject_p,
-                                                       const char *);
+                                                      const char *);
+    void                                DumpContract(avtPipelineSpecification_p,
+                                                     const char *);
+    void                                InitializeWebpage(void);
+    void                                FinalizeWebpage(void);
 };
 
 

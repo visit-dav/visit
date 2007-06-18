@@ -81,6 +81,9 @@ typedef  bool (*GuideFunction)(void *, int);
 //    Hank Childs, Thu Dec 21 09:43:22 PST 2006
 //    Add support for debug dumps
 //
+//    Hank Childs, Fri Jun 15 16:11:00 PDT 2007
+//    Add support for indentation of debug dumps.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
@@ -95,7 +98,7 @@ class PIPELINE_API avtOriginatingSink : virtual public avtDataObjectSink
     static void               GetGuideFunction(GuideFunction &, void *&);
 
     static void               DebugDump(bool d) {debugDump = d;}
-    static void               AddDumpReference(const char *, const char *);
+    static void               AddDumpReference(const char *, const char *, int);
 
   protected:
     virtual void              InputIsReady(void);

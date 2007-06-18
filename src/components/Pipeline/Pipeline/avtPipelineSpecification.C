@@ -41,6 +41,7 @@
 
 #include <avtPipelineSpecification.h>
 
+#include <avtWebpage.h>
 
 // ****************************************************************************
 //  Method: avtPipelineSpecification constructor
@@ -193,6 +194,55 @@ void
 avtPipelineSpecification::UseLoadBalancing(bool newVal)
 {
     useLoadBalancing = newVal;
+}
+
+
+// ****************************************************************************
+//  Method: avtPipelineSpecification::DebugDump
+//
+//  Purpose:
+//      Dumps data members to a webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+static const char *
+YesOrNo(bool b)
+{
+    static const char *yes_str = "yes";
+    static const char *no_str  = "no";
+    if (b)
+        return yes_str;
+
+    return no_str;
+}
+
+
+void
+avtPipelineSpecification::DebugDump(avtWebpage *webpage)
+{
+    char str[1024];
+
+    webpage->AddSubheading("Pipeline attributes");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+    sprintf(str, "%d", pipelineIndex);
+    webpage->AddTableEntry2("Pipeline index", str);
+    webpage->AddTableEntry2("Supports dynamic load balancing", 
+                            YesOrNo(canDoDynamic));
+    webpage->AddTableEntry2("Should use load balancing", 
+                            YesOrNo(useLoadBalancing));
+    webpage->AddTableEntry2("Have curvilinear optimizations", 
+                            YesOrNo(haveCurvilinearMeshOptimizations));
+    webpage->AddTableEntry2("Have rectilinear optimizations", 
+                            YesOrNo(haveRectilinearMeshOptimizations));
+    sprintf(str, "%d", nFilters);
+    webpage->AddTableEntry2("Number of known filters", str);
+    webpage->EndTable();
+
+    data->DebugDump(webpage);
 }
 
 

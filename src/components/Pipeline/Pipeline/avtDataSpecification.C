@@ -42,6 +42,7 @@
 #include <avtDataSpecification.h>
 
 #include <avtSILRestrictionTraverser.h>
+#include <avtWebpage.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -1587,4 +1588,95 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 
     return true;
 }
+
+
+// ****************************************************************************
+//  Method: avtDataSpecification::DebugDump
+//
+//  Purpose:
+//      Outputs data attributes into a webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+static const char *
+YesOrNo(bool b)
+{
+    static const char *yes_str = "yes";
+    static const char *no_str  = "no";
+    if (b)
+        return yes_str;
+
+    return no_str;
+}
+
+
+void
+avtDataSpecification::DebugDump(avtWebpage *webpage)
+{
+    char str[1024];
+
+    webpage->AddSubheading("Data specification attributes");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Field", "Value");
+
+    sprintf(str, "%d", timestep);
+    webpage->AddTableEntry2("Timestep", str);
+    webpage->AddTableEntry2("Variable", variable);
+    if (secondaryVariables.size() > 0)
+    {
+        webpage->AddTableEntry2("Secondary variables", "");
+        for (int i = 0 ; i < secondaryVariables.size() ; i++)
+            webpage->AddTableEntry2("", *(secondaryVariables[i]));
+    }
+    else
+        webpage->AddTableEntry2("Secondary variables", "NONE");
+    webpage->AddTableEntry2("Original variable", orig_variable);
+    webpage->AddTableEntry2("needZones", YesOrNo(needZones));
+    webpage->AddTableEntry2("needNodes", YesOrNo(needNodes));
+    webpage->AddTableEntry2("needGlobalZones", YesOrNo(needGlobalZones));
+    webpage->AddTableEntry2("needGlobalNodes", YesOrNo(needGlobalNodes));
+    webpage->AddTableEntry2("mayRequireNodes", YesOrNo(mayRequireNodes));
+    webpage->AddTableEntry2("mustDoMIR", YesOrNo(mustDoMIR));
+    webpage->AddTableEntry2("needInternalSurfaces", YesOrNo(needInternalSurfaces));
+    webpage->AddTableEntry2("needBoundarySurfaces", YesOrNo(needBoundarySurfaces));
+    webpage->AddTableEntry2("needValidFaceConnectivity", YesOrNo(needValidFaceConnectivity));
+    webpage->AddTableEntry2("needStructuredIndices", YesOrNo(needStructuredIndices));
+    webpage->AddTableEntry2("needMixedVariableReconstruction", YesOrNo(needMixedVariableReconstruction));
+    webpage->AddTableEntry2("needSmoothMaterialInterfaces", YesOrNo(needSmoothMaterialInterfaces));
+    webpage->AddTableEntry2("needCleanZonesOnly", YesOrNo(needCleanZonesOnly));
+    sprintf(str, "%d", mirAlgorithm);
+    webpage->AddTableEntry2("mirAlgorithm", str);
+    sprintf(str, "%f", isovolumeMIRVF);
+    webpage->AddTableEntry2("isovolumeMIRVF", str);
+    webpage->AddTableEntry2("simplifyHeavilyMixedZones", YesOrNo(simplifyHeavilyMixedZones));
+    sprintf(str, "%d", maxMatsPerZone);
+    webpage->AddTableEntry2("maxMatsPerZone", str);
+    webpage->AddTableEntry2("maintainOriginalConnectivity", YesOrNo(maintainOriginalConnectivity));
+    webpage->AddTableEntry2("needNativePrecision", YesOrNo(needNativePrecision));
+    switch (desiredGhostDataType)
+    {
+      case NO_GHOST_DATA:
+        strcpy(str, "No ghost data needed");
+        break;
+      case GHOST_NODE_DATA:
+        strcpy(str, "Need ghost node data");
+        break;
+      case GHOST_ZONE_DATA:
+        strcpy(str, "Need ghost zone data");
+        break;
+    }
+    webpage->AddTableEntry2("Ghost Data", str);
+    sprintf(str, "%f", discTol);
+    webpage->AddTableEntry2("discTol", str);
+    sprintf(str, "%f", flatTol);
+    webpage->AddTableEntry2("flatTol", str);
+    webpage->AddTableEntry2("discBoundaryOnly", YesOrNo(discBoundaryOnly));
+    webpage->AddTableEntry2("passNativeCSG", YesOrNo(passNativeCSG));
+    webpage->AddTableEntry2("usesAllDomains", YesOrNo(usesAllDomains));
+    webpage->EndTable();
+}
+
 

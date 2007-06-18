@@ -63,7 +63,8 @@ using std::string;
 using std::vector;
 
 
-bool avtFilter::debugDump = false;
+bool avtFilter::debugDump    = false;
+int  avtFilter::numInExecute = 0;
 
 
 // ****************************************************************************
@@ -191,6 +192,10 @@ avtFilter::UpdateProgress(int current, int total)
 //    Hank Childs, Thu Dec 21 09:15:00 PST 2006
 //    Add support for the "-dump" option.
 //
+//    Hank Childs, Fri Jun 15 11:37:59 PDT 2007
+//    Maintain "numInExecute" to keep track of how many nested executions
+//    we have.  Also dump info for pipeline specifications.
+//
 // ****************************************************************************
 
 bool
@@ -209,6 +214,12 @@ avtFilter::Update(avtPipelineSpecification_p spec)
         EXCEPTION0(NoInputException);
     }
 
+    if (debugDump)
+    {
+        InitializeWebpage();
+        DumpContract(spec, "input");
+    }
+
     //
     // By using meta-data, we can potentially reduce the amount of data that
     // we are actually interested in using.  Give the derived types an
@@ -216,6 +227,9 @@ avtFilter::Update(avtPipelineSpecification_p spec)
     //
     avtPipelineSpecification_p newSpec =
                                       PerformRestrictionAndDoBookkeeping(spec);
+
+    if (debugDump)
+        DumpContract(newSpec, "output");
 
     bool modifiedUpstream = UpdateInput(newSpec);
 
@@ -238,6 +252,7 @@ avtFilter::Update(avtPipelineSpecification_p spec)
             ResolveDynamicAttributes();
             if (debugDump)
                 DumpDataObject(GetInput(), "input");
+            numInExecute++;
             PreExecute();
             Execute();
             PostExecute();
@@ -260,7 +275,10 @@ avtFilter::Update(avtPipelineSpecification_p spec)
         }
         ENDTRY
 
+        if (debugDump)
+            FinalizeWebpage();
         inExecute = false;
+        numInExecute--;
     }
 
     //
@@ -305,12 +323,20 @@ avtFilter::Update(avtPipelineSpecification_p spec)
 //    Hank Childs, Fri Mar 15 15:36:50 PST 2002
 //    Added support for dynamic attributes.
 //
+//    Hank Childs, Fri Jun 15 17:21:24 PDT 2007
+//    Have filters inspect the original specification, not the new one.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtFilter::PerformRestrictionAndDoBookkeeping(avtPipelineSpecification_p spec)
 {
     int   i;
+
+    //
+    // Some derived types need to examine a specification as it goes up.
+    //
+    ExamineSpecification(spec);
 
     avtPipelineSpecification_p newspec = PerformRestriction(spec);
     newspec->AddFilter();
@@ -319,11 +345,6 @@ avtFilter::PerformRestrictionAndDoBookkeeping(avtPipelineSpecification_p spec)
     {
         newspec->AddFilter();
     }
-
-    //
-    // Some derived types need to examine a specification as it goes up.
-    //
-    ExamineSpecification(newspec);
 
     //
     // Allow our dynamic attributes to add any variables they may need, etc.
@@ -1176,79 +1197,166 @@ avtFilter::SearchDataForDataExtents(double *, const char *)
 
 
 // ****************************************************************************
+//  Method: avtFilter::InitializeWebpage
+//
+//  Purpose:
+//      Initializes the webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+void
+avtFilter::InitializeWebpage(void)
+{
+    if (webpage != NULL)
+    {
+        debug1 << "DUMP CODE: open file handle, exception previously?" 
+               << endl;
+        delete webpage;
+    }
+
+    static int filter_id = 0;
+    char name[128];
+    if (PAR_Size() > 1)
+    {
+        int rank = PAR_Rank();
+        sprintf(name, "filt%d.%d.html", filter_id, rank);
+    }
+    else
+        sprintf(name, "filt%d.html", filter_id);
+    filter_id++;
+    webpage = new avtWebpage(name);
+
+    // Now set up our webpage.
+    char pagename[128];
+    sprintf(pagename, "%s dump info", GetType());
+    webpage->InitializePage(pagename);
+    webpage->WriteTitle(pagename);
+    webpage->AddOnPageLink("input_contract", "Input contract");
+    webpage->AddOnPageLink("output_contract", "Output contract");
+    webpage->AddOnPageLink("input_data_object", "Input data object");
+    webpage->AddOnPageLink("output_data_object", "Output data object");
+}
+
+
+// ****************************************************************************
+//  Method: avtFilter::FinalizeWebpage
+//
+//  Purpose:
+//      Finalizes the webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+void
+avtFilter::FinalizeWebpage(void)
+{
+    if (webpage == NULL)
+    {
+        debug1 << "DUMP CODE: webpage not open, error?" << endl;
+        return;
+    }
+ 
+    webpage->FinalizePage();
+    delete webpage;
+    webpage = NULL;
+}
+
+
+// ****************************************************************************
 //  Method: avtFilter::DumpDataObject
 //
 //  Purpose:
-//      "Dumps" a data object.  This means create a web page and put the
-//      data attributes in that web page.  The data object also can add to
-//      the web page, depending on whether or not it has reimplemented a 
-//      virtual function on how to write itself out.
+//      "Dumps" a data object.  This means put the data attributes into a web 
+//      page.  The data object also can add to the web page, depending on 
+//      whether or not it has reimplemented a virtual function on how to 
+//      write itself out.
 //
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Jun 15 12:41:41 PDT 2007
+//    Moved some code to Initialize and FinalizeWebpage.
 //
 // ****************************************************************************
 
 void
 avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
 {
+    if (webpage == NULL)
+    {
+        debug1 << "Webpage not initialized ... shouldn't happen" << endl;
+        return;
+    }
+
     if (strcmp(prefix, "input") == 0)
     {
-        if (webpage != NULL)
-        {
-            debug1 << "DUMP CODE: open file handle, exception previously?" 
-                   << endl;
-            delete webpage;
-        }
-  
-        static int filter_id = 0;
-        char name[128];
-        if (PAR_Size() > 1)
-        {
-            int rank = PAR_Rank();
-            sprintf(name, "filt%d.%d.html", filter_id, rank);
-        }
-        else
-            sprintf(name, "filt%d.html", filter_id);
-        filter_id++;
-        webpage = new avtWebpage(name);
-  
-        // Add the reference to the main webpage.
+        // If we add the reference to the main web page right now, 
+        // all of the filters will be in execution order.
         char line[1024];
-        avtOriginatingSink::AddDumpReference(name, GetType());
- 
-        // Now set up our webpage.
-        char pagename[128];
-        sprintf(pagename, "%s dump info", GetType());
-        webpage->InitializePage(pagename);
-        webpage->WriteTitle(pagename);
- 
+        avtOriginatingSink::AddDumpReference(webpage->GetName(), GetType(), 
+                                             numInExecute);
+
+
         std::string input_string;
         char prefix[128];
         sprintf(prefix, "before_%s", GetType());
-        webpage->AddHeading("INPUT");
+        webpage->AddSectionForLinks("input_data_object");
+        webpage->AddHeading("INPUT DATA OBJECT");
         dob->DebugDump(webpage, prefix);
     }
     else if (strcmp(prefix, "output") == 0)
     {
-        if (webpage == NULL)
-        {
-            debug1 << "Webpage not initialized ... shouldn't happen" << endl;
-            return;
-        }
  
         std::string output_string;
         char prefix[128];
         sprintf(prefix, "after_%s", GetType());
-        webpage->AddHeading("OUTPUT");
+        webpage->AddSectionForLinks("output_data_object");
+        webpage->AddHeading("OUTPUT DATA OBJECT");
         dob->DebugDump(webpage, prefix);
- 
-        webpage->FinalizePage();
-        delete webpage;
-        webpage = NULL;
     }
 }
 
+
+// ****************************************************************************
+//  Method: avtFilter::DumpContract
+//
+//  Purpose:
+//      "Dumps" a contract.  This means create a web page and put the
+//      information about a pipeline specification into it.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+void
+avtFilter::DumpContract(avtPipelineSpecification_p spec, const char *prefix)
+{
+    if (webpage == NULL)
+    {
+        debug1 << "Webpage not initialized ... shouldn't happen" << endl;
+        return;
+    }
+
+    if (strcmp(prefix, "input") == 0)
+    {
+        webpage->AddSectionForLinks("input_contract");
+        webpage->AddHeading("INPUT CONTRACT");
+    }
+    else if (strcmp(prefix, "output") == 0)
+    {
+        webpage->AddSectionForLinks("output_contract");
+        webpage->AddHeading("OUTPUT CONTRACT");
+    }
+    spec->DebugDump(webpage);
+}
 
 
 // ****************************************************************************

@@ -51,6 +51,11 @@
 // Programmer: Hank Childs
 // Creation:   December 21, 2006
 //
+// Modifications: 
+//
+//   Hank Childs, Fri Jun 15 15:55:30 PDT 2007
+//   Added OnPageLink, AddSectionForLinks, and GetName.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtWebpage
@@ -59,11 +64,15 @@ class PIPELINE_API avtWebpage
                   avtWebpage(const char *filename);
     virtual      ~avtWebpage();
     
+    const char   *GetName(void);
+
     void          InitializePage(const char *heading);
     void          WriteTitle(const char *title);
     void          FinalizePage(void);
 
     void          AddLink(const char *, const char *);
+    void          AddOnPageLink(const char *, const char *);
+    void          AddSectionForLinks(const char *);
 
     void          AddHeading(const char *);
     void          AddSubheading(const char *);
@@ -81,6 +90,7 @@ class PIPELINE_API avtWebpage
     void          EndTable(void);
 
   protected:
+    std::string   name;
     ofstream     *ofile;
 };
 
