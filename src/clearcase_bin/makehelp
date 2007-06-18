@@ -22,10 +22,16 @@
 #  I added an argument that converts the files to MIF but does not convert
 #  the MIF files into HTML.
 #
+#  Mark C. Miller, Mon Jun 18 15:18:48 PDT 2007
+#  Added suport to run from a host that doesn't have 'fmbatch' but will
+#  copy files to the 'fmHost' (default sunpost.llnl.gov) host which can
+#  be specified on the command line
+#
 ###############################################################################
 
 set MIFOnly = "FALSE"
 set Help = "FALSE"
+set fmHost = ""
 
 #
 # Parse the argument list.
@@ -34,6 +40,10 @@ while ($#argv >= 1)
    switch ($1)
       case -mifonly:
                set MIFOnly = TRUE
+               breaksw
+      case -mifhost:
+               set fmHost = "$2"
+	       shift
                breaksw
       case -h:
       case -help:
@@ -52,6 +62,7 @@ if ($Help == TRUE) then
    echo "Usage: makehelp [-mifonly] [-h | -help]"
    echo ""
    echo "       -mifonly       Just convert the frame documents to MIF files."
+   echo "       -mifhost       Specify the host where fmbatch exists [sunspot.llnl.gov]."
    echo "       -h             Print this message."
    exit (1)
 endif
@@ -59,10 +70,16 @@ endif
 # Keep this until we get our sysadmins to add fmbatch to the path.
 if(`hostname` == "sunspot.llnl.gov" || `hostname` == "sunburn.llnl.gov") then
     set path = (/usr/local/framemaker/bin $path)
+    set fmHost = ""
+    set haveFrame = `which fmbatch | grep no`
+else
+    if ("$fmHost" == "") then
+        set fmHost = "sunspot.llnl.gov"
+    endif
+    set haveFrame = `ssh -x $fmHost "set path = (/usr/local/framemaker/bin $path) ; which fmbatch | grep no"`
 endif
 
 # Make sure that we have Frame Maker's fmbatch program in our path.
-set haveFrame = `which fmbatch | grep no`
 if("$haveFrame" != "") then
     echo "ERROR: fmbatch not found! It is required to convert the User manual"
     echo "       into MIF files which are then turned into help HTML files"
@@ -100,6 +117,9 @@ make
 if(!(-e $outputPath)) then
     mkdir $outputPath
 endif
+if ("$fmHost" != "") then
+    ssh -x $fmHost "mkdir -p $outputPath"
+endif
 
 # Create MIF files for each of the input frame maker files.
 foreach input ($inputFiles)
@@ -119,7 +139,14 @@ SaveAs m $srcFile $mifName\
 Quit" > $fmCommands
     
     # Convert the file to MIF.
-    fmbatch $fmCommands > /dev/null
+    if ("$fmHost" != "") then
+        scp $inputPath/$input.fm ${fmHost}:$srcFile
+	scp $fmCommands ${fmHost}:$fmCommands
+        ssh -x $fmHost "set path = (/usr/local/framemaker/bin $path) ; chmod 600 $srcFile $fmCommands ; cd $outputPath ; fmbatch $fmCommands > /dev/null"
+	scp ${fmHost}:$mifName $mifName
+    else
+        fmbatch $fmCommands > /dev/null
+    endif
     if(!(-e $mifName)) then
         echo "Framemaker could not convert $input.fm to a MIF file."
     endif
@@ -144,6 +171,9 @@ if ("$MIFOnly" == "FALSE") then
 
     # Remove the temp directory
     rm -rf $outputPath
+    if ("$fmHost" != "") then
+        ssh -x $fmHost "rm -rf $outputPath"
+    endif
 endif
 
 # Go back to the starting directory.
