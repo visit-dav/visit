@@ -6,7 +6,7 @@
 #  Tests:      mesh      - rectilinear, curvilinear
 #              plots     - vector, contour
 #
-#  Defect ID:  '4141, '5343, '6297, '6460, '7063
+#  Defect ID:  '4141, '5343, '6297, '6460, '7063, '8025
 #
 #  Programmer: Hank Childs
 #  Date:       December 13, 2003
@@ -28,6 +28,10 @@
 #
 #    Hank Childs, Fri Mar  3 09:01:08 PST 2006
 #    Add test for Jacobian (2D determinants).  '7063
+#
+#    Hank Childs, Mon Jun 18 09:54:09 PDT 2007
+#    Add test for dot of curl with a vector.  This is really testing the
+#    ability of macro expressions to maintain secondary variables. '8025
 #
 # ----------------------------------------------------------------------------
 
@@ -238,5 +242,13 @@ DefineScalarExpression("jacobian", "determinant({gradient(u), gradient(v)})")
 AddPlot("Pseudocolor", "jacobian")
 DrawPlots()
 Test("field_op_17")
+
+OpenDatabase("../data/rect3d.silo")
+DefineVectorExpression("mycurl", "curl(vel)")
+DefineScalarExpression("mydot", "dot(curl,vel)")
+DeleteAllPlots()
+AddPlot("Pseudocolor", "mydot")
+DrawPlots()
+Test("field_op_18")
 
 Exit()
