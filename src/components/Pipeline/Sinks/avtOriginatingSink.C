@@ -386,10 +386,17 @@ avtOriginatingSink::FinalizeWebpage(void)
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun 15 11:33:24 PDT 2007
+//    Added "indentation_level" argument, which indicates if this filter is part
+//    of the execution of another filter, and, if so, indents it.
+//
 // ****************************************************************************
 
 void
-avtOriginatingSink::AddDumpReference(const char *filename, const char *listing)
+avtOriginatingSink::AddDumpReference(const char *filename, const char *listing,
+                                     int indentation_level)
 {
     if (webpage == NULL)
     {
@@ -397,7 +404,14 @@ avtOriginatingSink::AddDumpReference(const char *filename, const char *listing)
         return;
     }
 
-    webpage->AddLink(filename, listing);
+    char entry[1024] = { '\0' };
+    for (int i = 0 ; i < indentation_level ; i++)
+    {
+        strcpy(entry + strlen(entry), "--> ");
+    }
+    strcpy(entry + strlen(entry), listing);
+    
+    webpage->AddLink(filename, entry);
 }
 
 

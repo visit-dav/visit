@@ -97,6 +97,9 @@
 //    Hank Childs, Fri Mar  4 08:47:07 PST 2005
 //    Removed cd2pd.
 //
+//    Hank Childs, Mon Jun 18 09:04:39 PDT 2007
+//    Set the active variable here, instead of in PerformRestriction.
+//
 // ****************************************************************************
 
 avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
@@ -108,6 +111,9 @@ avtSurfaceFilter::avtSurfaceFilter(const AttributeGroup *a)
     max = -1;
     Ms = 1.;
     Bs = 0.;
+
+    if (atts.GetVariable() != "default")
+        SetActiveVariable(atts.GetVariable().c_str());
 }
 
 
@@ -566,6 +572,9 @@ avtSurfaceFilter::VerifyInput(void)
 //    Hank Childs, Sun Jan 30 14:05:25 PST 2005
 //    Ask for a secondary variable.
 //
+//    Hank Childs, Mon Jun 18 09:04:39 PDT 2007
+//    Ask for the secondary variable before this method is called.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -598,11 +607,6 @@ avtSurfaceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // boundaries and get no cracks in our isosurface.
     //
     const char *varname = spec->GetDataSpecification()->GetVariable();
-    if (atts.GetVariable() != "default" && atts.GetVariable() != varname)
-    {
-        varname = atts.GetVariable().c_str();
-        SetActiveVariable(varname);
-    }
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     bool skipGhost = false;
     if (in_atts.ValidVariable(varname) &&

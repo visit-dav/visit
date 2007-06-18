@@ -48,10 +48,16 @@
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Jun 15 16:50:12 PDT 2007
+//    Initialize "name".
+//
 // ****************************************************************************
 
 avtWebpage::avtWebpage(const char *filename)
 {
+    name  = filename;
     ofile = new ofstream(filename);
 }
 
@@ -68,6 +74,24 @@ avtWebpage::~avtWebpage()
 {
     if (ofile != NULL)
         delete ofile;
+}
+
+
+// ****************************************************************************
+//  Method: avtWebpage::GetName
+//
+//  Purpose:
+//      Gets the filename of the webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+const char *
+avtWebpage::GetName(void)
+{
+    return name.c_str();
 }
 
 
@@ -150,6 +174,43 @@ avtWebpage::AddLink(const char *file, const char *listing)
 {
     *ofile << "<p><a href=\"" << file << "\">" << listing << "</a></p>" 
            << endl;
+}
+
+
+// ****************************************************************************
+//  Method: avtWebpage::AddOnPageLink
+//
+//  Purpose:
+//      Adds a link to a section on the current webpage.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+void
+avtWebpage::AddOnPageLink(const char *section, const char *listing)
+{
+    *ofile << "<p><a href=\"#" << section << "\">" << listing << "</a></p>" 
+           << endl;
+}
+
+
+// ****************************************************************************
+//  Method: avtWebpage::AddSectionForLinks
+//
+//  Purpose:
+//      Adds a section header for making links.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 15, 2007
+//
+// ****************************************************************************
+
+void
+avtWebpage::AddSectionForLinks(const char *section)
+{
+    *ofile << "<a name=\"" << section << "\"></a>" << endl;
 }
 
 

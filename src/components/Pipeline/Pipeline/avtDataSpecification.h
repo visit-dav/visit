@@ -70,7 +70,8 @@ class PIPELINE_API avtSILSpecification
 };
 
 
-class avtDataSpecification;
+class  avtWebpage;
+class  avtDataSpecification;
 typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 
 
@@ -175,6 +176,10 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Moved implementation of SetDiscMode to .C file 
+//
+//    Hank Childs, Fri Jun 15 12:58:49 PDT 2007
+//    Added method DebugDump.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -370,6 +375,8 @@ class PIPELINE_API avtDataSpecification
                                      { passNativeCSG = p; };
     bool                         PassNativeCSG() const
                                      { return passNativeCSG; };
+
+    void                         DebugDump(avtWebpage *);
 
   protected:
     int                          timestep;

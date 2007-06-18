@@ -48,6 +48,7 @@
 
 #include <avtDataSpecification.h>
 
+class avtWebpage;
 class avtPipelineSpecification;
 typedef ref_ptr<avtPipelineSpecification> avtPipelineSpecification_p;
 
@@ -75,6 +76,9 @@ typedef ref_ptr<avtPipelineSpecification> avtPipelineSpecification_p;
 //
 //    Hank Childs, Sun Mar 13 09:49:16 PST 2005
 //    Added haveStructuredMeshOptimizations.
+//
+//    Hank Childs, Fri Jun 15 12:41:41 PDT 2007
+//    Added support for DebugDump.
 //
 // ****************************************************************************
 
@@ -116,6 +120,7 @@ class PIPELINE_API avtPipelineSpecification
     int                       GetNFilters(void)  { return nFilters; };
 
     avtPipelineSpecification &operator=(avtPipelineSpecification &);
+    void                      DebugDump(avtWebpage *);
 
   protected:
     avtDataSpecification_p    data;
