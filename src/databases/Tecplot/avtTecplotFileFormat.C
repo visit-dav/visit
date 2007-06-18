@@ -64,6 +64,26 @@ using std::vector;
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
+// ****************************************************************************
+//  Method:  SimplifyWhitespace
+//
+//  Purpose:
+//    Remove leading and trailing tabs and spaces from a string.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    June 18, 2007
+//
+// ****************************************************************************
+static string SimplifyWhitespace(const std::string &s)
+{
+    int first = 0;
+    int last = s.length()-1;
+    while (first < last && (s[first] == ' ' || s[first] == '\t'))
+        ++first;
+    while (last > first && (s[last] == ' ' || s[last] == '\t'))
+        --last;
+    return s.substr(first, last-first+1);
+}
 
 // ****************************************************************************
 //  Method:  avtTecplotFileFormat::PushBackToken
@@ -674,6 +694,11 @@ avtTecplotFileFormat::ParsePOINT(int numI, int numJ, int numK)
 //    Brad Whitlock, Tue Jul 26 14:09:45 PST 2005
 //    I made it understand DATASETAUXDATA.
 //
+//    Jeremy Meredith, Mon Jun 18 15:17:45 EDT 2007
+//    If no format is given, assume POINT.  Also, allow for whitespace in
+//    the given names of the X/Y/Z variables; apparently this occurs in real
+//    life due to having to play nice with FORTRAN.
+//
 // ****************************************************************************
 
 void
@@ -745,16 +770,18 @@ avtTecplotFileFormat::ReadFile()
                         tok[i] = '_';
                 }
 
-                if (tok == "X" || tok == "x" || tok == "I")
+                string tok_nw = SimplifyWhitespace(tok);
+
+                if (tok_nw == "X" || tok_nw == "x" || tok_nw == "I")
                 {
                     Xindex = numTotalVars;
                 }
-                else if (tok == "Y" || tok == "y" || tok == "J")
+                else if (tok_nw == "Y" || tok_nw == "y" || tok_nw == "J")
                 {
                     Yindex = numTotalVars;
                     spatialDimension = (spatialDimension < 2) ? 2 : spatialDimension;
                 }
-                else if (tok == "Z" || tok == "z")
+                else if (tok_nw == "Z" || tok_nw == "z")
                 {
                     Zindex = numTotalVars;
                     spatialDimension = (spatialDimension < 3) ? 3 : spatialDimension;
@@ -780,16 +807,18 @@ avtTecplotFileFormat::ReadFile()
 
                 while (true)
                 {
-                    if (tok == "X" || tok == "x" || tok == "I")
+                    string tok_nw = SimplifyWhitespace(tok);
+
+                    if (tok_nw == "X" || tok_nw == "x" || tok_nw == "I")
                     {
                         Xindex = numTotalVars;
                     }
-                    else if (tok == "Y" || tok == "y" || tok == "J")
+                    else if (tok_nw == "Y" || tok_nw == "y" || tok_nw == "J")
                     {
                         Yindex = numTotalVars;
                         spatialDimension = (spatialDimension < 2) ? 2 : spatialDimension;
                     }
-                    else if (tok == "Z" || tok == "z")
+                    else if (tok_nw == "Z" || tok_nw == "z")
                     {
                         Zindex = numTotalVars;
                         spatialDimension = (spatialDimension < 3) ? 3 : spatialDimension;
@@ -909,7 +938,8 @@ avtTecplotFileFormat::ReadFile()
             }
             else if (format=="")
             {
-                // No format; we should probably assume we got a POINT block
+                // No format given; we will assume we got a POINT format
+                ParsePOINT(numI,numJ,numK);
             }
             else
             {
