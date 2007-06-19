@@ -142,6 +142,12 @@ avtCurveConstructorFilter::~avtCurveConstructorFilter()
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Dave Bremer, Thu Jun  7 19:47:35 PDT 2007
+//    Added a fix to correctly construct a curve from a histogram plot.
+//    I determine if there's a problem by looking at the geometry, and
+//    if necessary flip the last two points in each group of 4. 
+//
 // ****************************************************************************
 
 void avtCurveConstructorFilter::Execute()
@@ -336,10 +342,48 @@ void avtCurveConstructorFilter::Execute()
         {
             inXC  = ((vtkPolyData*)ds[(*it).second])->GetPoints()->GetData();
             nPoints = inXC->GetNumberOfTuples();
-            for (i = 0; i < nPoints; i++, index++)
+            
+            // Insert a check to see if this data comes from a histogram plot,
+            // in which case we need to swap some of the points.  Data comes
+            // in groups of 4 points for each bar, connected like this: N
+            // so we reverse the last two points to create bar shapes instead.
+            bool bIsHistogramPlot = false;
+            if (nPoints%4 == 0)
             {
-                outXC->InsertNextTuple1(inXC->GetComponent(i, 0));
-                outVal->InsertNextTuple1(inXC->GetComponent(i, 1));
+                bIsHistogramPlot = true;
+                for (i = 0; i < nPoints; i+=4)
+                {
+                    if ( inXC->GetComponent(i,   0) != inXC->GetComponent(i+1, 0) ||
+                         inXC->GetComponent(i+2, 0) != inXC->GetComponent(i+3, 0) ||
+                         inXC->GetComponent(i,   1) != inXC->GetComponent(i+2, 1) ||
+                         inXC->GetComponent(i+1, 1) != inXC->GetComponent(i+3, 1) )
+                    {
+                        bIsHistogramPlot = false;
+                        break;
+                    }
+                }
+            }
+            if (!bIsHistogramPlot)
+            {
+                for (i = 0; i < nPoints; i++, index++)
+                {
+                    outXC->InsertNextTuple1(inXC->GetComponent(i, 0));
+                    outVal->InsertNextTuple1(inXC->GetComponent(i, 1));
+                }
+            }
+            else
+            {
+                for (i = 0; i < nPoints; i+=4, index+=4)
+                {
+                    outXC->InsertNextTuple1( inXC->GetComponent(i,   0));
+                    outVal->InsertNextTuple1(inXC->GetComponent(i,   1));
+                    outXC->InsertNextTuple1( inXC->GetComponent(i+1, 0));
+                    outVal->InsertNextTuple1(inXC->GetComponent(i+1, 1));
+                    outXC->InsertNextTuple1( inXC->GetComponent(i+3, 0));
+                    outVal->InsertNextTuple1(inXC->GetComponent(i+3, 1));
+                    outXC->InsertNextTuple1( inXC->GetComponent(i+2, 0));
+                    outVal->InsertNextTuple1(inXC->GetComponent(i+2, 1));
+                }
             }
         }
     }
