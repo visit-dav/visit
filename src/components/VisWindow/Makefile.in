@@ -159,6 +159,9 @@
 #    Thomas R. Treadway, Wed May  9 11:39:17 PDT 2007
 #    Added OpenGL libraries (framework) for MacOS X10.3 build
 #
+#    Cyrus Harrison, Sun Jun 17 20:16:02 PDT 2007
+#    Added VisWinPathTracker
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -177,6 +180,7 @@ Colleagues_src= \
   Colleagues/VisWinInteractions.C \
   Colleagues/VisWinLegends.C \
   Colleagues/VisWinLighting.C \
+  Colleagues/VisWinPathTracker.C \
   Colleagues/VisWinPlots.C \
   Colleagues/VisWinQuery.C \
   Colleagues/VisWinRendering.C \

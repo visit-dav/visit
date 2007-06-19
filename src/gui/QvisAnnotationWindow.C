@@ -315,12 +315,15 @@ QvisAnnotationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Brad Whitlock, Thu Oct 30 16:36:49 PST 2003
 //   I moved the code that creates the tabbed controls to different methods.
 //
+//   Cyrus Harrison, Mon Jun 18 08:57:46 PDT 2007
+//   Added database info path expansion mode label and combo box.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::CreateWindowContents()
 {
-    QGridLayout *glayout = new QGridLayout(topLayout, 2, 2);
+    QGridLayout *glayout = new QGridLayout(topLayout, 3, 2);
 
     // Create a toggle for the user information.
     userInfo = new QCheckBox("User information", central, "userInfo");
@@ -334,6 +337,33 @@ QvisAnnotationWindow::CreateWindowContents()
             this, SLOT(databaseInfoChecked(bool)));
     glayout->addWidget(databaseInfo, 0, 1);
 
+
+    // use parent widget to hold path expansion mode combo box w/ label.
+    databasePathExpansionModeParent = new QWidget(central,
+                                            "databasePathExpansionModeParent");
+    QHBoxLayout *pem_layout = new QHBoxLayout(databasePathExpansionModeParent);
+
+    // create label
+    QLabel *pem_label =  new QLabel("Path Expansion: ",
+                                    databasePathExpansionModeParent,
+                                    "databasePathExpansionModeLabel");
+
+    // create path expansion mode combo box
+    databasePathExpansionMode = new QComboBox(databasePathExpansionModeParent,
+                                               "databasePathExpansionMode");
+    databasePathExpansionMode->insertItem("None",  0);
+    databasePathExpansionMode->insertItem("Smart", 1);
+    databasePathExpansionMode->insertItem("Full",  2);
+    connect(databasePathExpansionMode, SIGNAL(activated(int)),
+            this, SLOT(databasePathExpansionModeChanged(int)));
+
+    // add to parent widget
+    pem_layout->addWidget(pem_label);
+    pem_layout->addWidget(databasePathExpansionMode);
+
+    // add pem parent to main layout
+    glayout->addWidget(databasePathExpansionModeParent, 1, 1);
+
     // Create a toggle for the legend.
     legendInfo = new QCheckBox("Legend", central, "legendInfo");
     connect(legendInfo, SIGNAL(toggled(bool)),
@@ -345,7 +375,7 @@ QvisAnnotationWindow::CreateWindowContents()
         "turnOffAllButton");
     connect(turnOffAllButton, SIGNAL(clicked()),
             this, SLOT(turnOffAllAnnotations()));
-    glayout->addWidget(turnOffAllButton, 1, 1);
+    glayout->addWidget(turnOffAllButton, 2, 1);
 
     // Create the tab widget.
     tabs = new QTabWidget(central, "tabs");
@@ -1782,7 +1812,13 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             databaseInfo->setChecked(annotationAtts->GetDatabaseInfoFlag());
             databaseInfo->blockSignals(false);
             break;
-        case 94: // legendInfo
+        case 94: // databaseInfo path expansion
+            databasePathExpansionMode->blockSignals(true);
+            databasePathExpansionMode->setCurrentItem(
+                                annotationAtts->GetDatabaseInfoExpansionMode());
+            databasePathExpansionMode->blockSignals(false);
+            break;
+        case 95: // legendInfo
             legendInfo->blockSignals(true);
             legendInfo->setChecked(annotationAtts->GetLegendInfoFlag());
             legendInfo->blockSignals(false);
@@ -4056,7 +4092,7 @@ QvisAnnotationWindow::userInfoChecked(bool val)
 // ****************************************************************************
 // Method: QvisAnnotationWindow::databaseInfoChecked
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that sets the database info flag.
 //
 // Arguments:
@@ -4066,16 +4102,50 @@ QvisAnnotationWindow::userInfoChecked(bool val)
 // Creation:   Thu Apr 11 11:49:16 PDT 2002
 //
 // Modifications:
-//   
+//   Cyrus Harrison, Mon Jun 18 08:59:15 PDT 2007
+//   Added enable/disable for path expansion mode
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::databaseInfoChecked(bool val)
 {
+    databasePathExpansionModeParent->setEnabled(val);
     annotationAtts->SetDatabaseInfoFlag(val);
     SetUpdate(false);
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::databasePathExpansionModeChanged
+//
+// Purpose:
+//   This is a Qt slot function that sets the database path expansion mode.
+//
+// Arguments:
+//   index : The new path expansion mode
+//
+// Programmer: Cyrus Harrison
+// Creation:   Monday June 18, 2007
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::databasePathExpansionModeChanged(int index)
+{
+    if (index == 0)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::None);}
+    else if (index == 1)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Smart);}
+    else if (index == 2)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Full);}
+
+    cout << " Setting DB ANNO!" << annotationAtts->GetDatabaseInfoExpansionMode() << endl;
+    SetUpdate(false);
+    Apply();
+}
+
 
 // ****************************************************************************
 // Method: QvisAnnotationWindow::legendChecked

@@ -103,6 +103,9 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Wed Mar 21 21:13:39 PST 2007
 //   Added plotList.
 //
+//   Cyrus Harrison, Mon Jun 18 14:48:54 PDT 2007
+//   Added path expansion mode widgets
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -209,6 +212,7 @@ private slots:
     void tabSelected(const QString &tabLabel);
     void userInfoChecked(bool val);
     void databaseInfoChecked(bool val);
+    void databasePathExpansionModeChanged(int index);
     void legendChecked(bool val);
     void turnOffAllAnnotations();
 
@@ -230,6 +234,8 @@ private:
 
     QCheckBox       *userInfo;
     QCheckBox       *databaseInfo;
+    QWidget         *databasePathExpansionModeParent;
+    QComboBox       *databasePathExpansionMode;
     QCheckBox       *legendInfo;
     QPushButton     *turnOffAllButton;
     QTabWidget      *tabs;

@@ -79,6 +79,10 @@ class     vtkTextActor;
 //    Brad Whitlock, Thu Mar 22 02:17:55 PDT 2007
 //    Renamed PositionLegends to UpdateLegendInfo.
 //
+//    Cyrus Harrison, Sun Jun 17 21:42:53 PDT 2007
+//    Added explicit pass of the database name to easily support path
+//    expansion modes.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinLegends : public VisWinColleague
@@ -90,15 +94,18 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     virtual void                  SetForegroundColor(double, double, double);
     virtual void                  UpdatePlotList(std::vector<avtActor_p> &);
 
-    void                          SetVisibility(bool db, bool legend);
+    void                          SetVisibility(bool db,
+                                                int path_exp_mode,
+                                                bool legend);
 
   protected:
     vtkTextActor                 *dbInfoActor;
     bool                          dbInfoIsAdded;
     bool                          mainDBInfoVisible;
+    int                           pathExpansionMode;
     bool                          legendVisible;
     bool                          homogeneous;
-    
+
     static const double            leftColumnPosition;
     static const double            rightColumnPosition;
     static const double            dbInfoHeight;
@@ -109,6 +116,7 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
 
   private:
     static bool                   CreateDatabaseInfo(char *,
+                                                     const std::string &,
                                                      avtDataAttributes &);
 };
 

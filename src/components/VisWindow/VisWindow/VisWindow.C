@@ -3887,7 +3887,7 @@ VisWindow::UpdateAxes3D()
 // ****************************************************************************
 // Method: VisWindow::UpdateTextAnnotations
 //
-// Purpose: 
+// Purpose:
 //   Makes actors that manage certain text annotations update themselves.
 //
 // Programmer: Brad Whitlock
@@ -3897,6 +3897,9 @@ VisWindow::UpdateAxes3D()
 //   Brad Whitlock, Thu Apr 11 12:09:50 PDT 2002
 //   Added code to update the database visibility.
 //
+//   Cyrus Harrison, Tue Jun 19 08:41:55 PDT 2007
+//   Added the passing of database path expansion mode.
+//
 // ****************************************************************************
 
 void
@@ -3905,6 +3908,7 @@ VisWindow::UpdateTextAnnotations()
     // Set the visibility of the user information.
     userInfo->SetVisibility(annotationAtts.GetUserInfoFlag());
     legends->SetVisibility(annotationAtts.GetDatabaseInfoFlag(),
+                           annotationAtts.GetDatabaseInfoExpansionMode(),
                            annotationAtts.GetLegendInfoFlag());
     plots->TriggerPlotListUpdate();
 }

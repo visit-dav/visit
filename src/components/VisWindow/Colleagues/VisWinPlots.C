@@ -54,6 +54,7 @@
 #include <vtkVectorText.h>
 
 #include <VisWindow.h>
+#include <VisWinPathTracker.h>
 
 #include <avtActor.h>
 #include <avtExternallyRenderedImagesActor.h>
@@ -260,6 +261,9 @@ VisWinPlots::~VisWinPlots()
 //    Brad Whitlock, Mon Sep 18 11:17:39 PDT 2006
 //    Added color texturing flag.
 //
+//    Cyrus Harrison, Sun Jun 17 21:07:09 PDT 2007
+//    Added tracking of active paths
+//
 // ****************************************************************************
 
 void
@@ -297,6 +301,10 @@ VisWinPlots::AddPlot(avtActor_p &p)
             vec[1] = scale;
         p->ScaleByVector(vec);
     }
+
+    // get db path and add to active paths
+    avtDataAttributes &atts  = (*p)->GetBehavior()->GetInfo().GetAttributes();
+    VisWinPathTracker::Instance()->AddPath(atts.GetFullDBName());
 
     plots.push_back(p);
     OrderPlots();
@@ -456,6 +464,9 @@ VisWinPlots::CheckPlot(avtActor_p &p)
 //    Hank Childs, Tue Mar 12 17:04:02 PST 2002
 //    Add call to update the plot list.
 //
+//    Cyrus Harrison, Sun Jun 17 21:07:09 PDT 2007
+//    Added tracking of active paths
+//
 // ****************************************************************************
 
 void
@@ -491,6 +502,10 @@ VisWinPlots::RemovePlot(avtActor_p &p)
     {
         (*it)->VisibilityOn();
     }
+
+    // remove ref to db path and from active paths
+    avtDataAttributes &atts = (*it)->GetBehavior()->GetInfo().GetAttributes();
+    VisWinPathTracker::Instance()->RemovePath(atts.GetFullDBName());
 
     //
     // Remove the plot actors from the vector.
