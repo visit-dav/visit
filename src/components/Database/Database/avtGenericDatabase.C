@@ -110,6 +110,11 @@ using     std::vector;
 static const char   *GetOriginalVariableName(const avtDatabaseMetaData *,
                                              const char *);
 
+// static members
+
+// used to track if the matvf/specmv ghost zones warning has been issued.
+bool avtGenericDatabase::issuedOriginalConnectivityWarning = false;
+
 // ****************************************************************************
 //  Method: avtGenericDatabase constructor
 //
@@ -4813,6 +4818,9 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 //    Hank Childs, Sat Mar 17 17:01:51 PDT 2007
 //    Change warning to also include specmf.
 //
+//    Cyrus Harrison, Tue Jun 19 11:10:40 PDT 2007
+//    Made sure the warning is actually issued "only once per session"
+//
 // ****************************************************************************
 
 bool
@@ -4918,7 +4926,6 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
     if (spec->MustMaintainOriginalConnectivity() && 
         ghostType == GHOST_ZONE_DATA)
     {
-        static bool issuedWarning = false;
         const char *warning = "Because of the way VisIt organizes data, "
               "it is not possible to create ghost zones for this plot.  "
               "This problem is likely coming about because you are " 
@@ -4928,10 +4935,10 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
         // We only need to issue the warning if we actuall would have done 
         // something.
         if ((hasDomainBoundaryInfo || canUseGlobalNodeIds) && 
-            allDomains.size() > 1)
+            allDomains.size() > 1 && !issuedOriginalConnectivityWarning)
         {
             avtCallback::IssueWarning(warning);
-            issuedWarning = true;
+            issuedOriginalConnectivityWarning = true;
         }
         return false;
     }
