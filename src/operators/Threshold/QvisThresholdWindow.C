@@ -497,6 +497,12 @@ QvisThresholdWindow::GetCurrentValues(int which_widget)
 //
 // Qt Slot functions
 //
+//  Modifications:
+//   Cyrus Harrison, Tue Jun 12 20:16:59 PDT 2007
+//   Fixed comparison with QString and std::string that causes a runtime
+//   linking error on AIX. Note: to avoid this in the future do not directly
+//   assign or compare a std::string instance to a QString object, use c_str().
+//
 // ****************************************************************************
 
 void
@@ -511,7 +517,7 @@ QvisThresholdWindow::variableAddedToList(const QString &variableToAdd)
 
     for (int varNum = 0; varNum < guiFullVarNames.size(); varNum++ )
     {
-        if (guiFullVarNames[varNum] == variableToAdd) return;
+        if (QString(guiFullVarNames[varNum].c_str()) == variableToAdd) return;
     }
     
     char listVarText[21];

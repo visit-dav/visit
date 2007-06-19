@@ -193,13 +193,16 @@
 #   Added avtConnComponentsExpression
 #
 #   Thomas R. Treadway, Tue Mar 27 12:52:26 PDT 2007
-#   Added $(MESA_LIBS)  
+#   Added $(MESA_LIBS)
 #
 #   Brad Whitlock, Mon Apr 23 17:29:50 PST 2007
 #   Added avtColorComposeFilter.C
 #
 #   Sean Ahern, Tue May 8 10:36:36 PDT 2007
 #   Added avtArctan2Filter.C
+#
+#   Cyrus Harrison, Fri Jun  1 14:37:42 PDT 2007
+#   Added avtTensorContractionFilter.C and avtViscousStressFilter.C
 #
 ##############################################################################
 
@@ -294,10 +297,12 @@ General_src= \
   General/avtRecenterFilter.C \
   General/avtSpecMFFilter.C \
   General/avtSurfaceNormalExpression.C \
+  General/avtTensorContractionFilter.C \
   General/avtVariableSkewFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C \
-  General/avtZoneTypeFilter.C 
+  General/avtViscousStressFilter.C\
+  General/avtZoneTypeFilter.C
 
 
 ImageProcessing_src= \
