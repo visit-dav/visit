@@ -400,6 +400,10 @@ avtTecplotFileFormat::ParseNodesBlock(int numNodes)
 //    Added support for 'POINT' element. This is not a keyword tecplot
 //    understands but was necessary to enable support for point meshes.
 //
+//    Jeremy Meredith, Tue Jun 19 15:11:50 EDT 2007
+//    Allowed an FE mesh with no ET (element type) field in the zone record
+//    header to default to a point mesh.
+//
 // ****************************************************************************
 vtkUnstructuredGrid *
 avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
@@ -433,7 +437,7 @@ avtTecplotFileFormat::ParseElements(int numElements, const string &elemType)
         idtype = VTK_TETRA;
         topologicalDimension = MAX(topologicalDimension, 3);
     }
-    else if (elemType == "POINT")
+    else if (elemType == "POINT" || elemType == "")
     {
         nelempts = 1;
         idtype = VTK_VERTEX;
