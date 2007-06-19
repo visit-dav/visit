@@ -95,6 +95,9 @@ $0 = shift @ARGV;
 #     Copied script from clearcase_bin, added support for SVN.
 #     Still need to do "makehelp"
 #
+#     Mark C. Miller, Tue Jun 19 09:09:42 PDT 2007
+#     Added support for 'makehelp'
+#
 
 require "newgetopt.pl";
 
@@ -116,7 +119,7 @@ if (! -d "engine")
 #
 if($opt_withhelp)
 {
-    system("./clearcase_bin/makehelp");
+    system("./svn_bin/makehelp");
 }
 
 $dist = "";

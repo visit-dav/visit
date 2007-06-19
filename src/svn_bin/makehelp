@@ -1,0 +1,187 @@
+#!/bin/csh -f
+###############################################################################
+#
+# Script: makehelp
+#
+# Purpose: This script creates small html documents from the User's Manual
+#          and also creates an XML file called visit.helpml to index the
+#          html documents for the help viewer.
+#
+# Author:  Brad Whitlock
+# Date:    Thurs, July 11 2002
+#
+# Modifications:
+#  Brad Whitlock, Fri Aug 30 14:42:09 PST 2002
+#  I added code to add fmbatch to the path if we're on sunspot/sunburn and
+#  rebuild the mif2help conversion program. I also added the new Help chapter.
+#
+#  Brad Whitlock, Fri Jun 18 10:21:12 PDT 2004
+#  I added a new chapter to the manual and some that were missing.
+#
+#  Brad Whitlock, Fri Oct 7 13:26:46 PST 2005
+#  I added an argument that converts the files to MIF but does not convert
+#  the MIF files into HTML.
+#
+#  Mark C. Miller, Mon Jun 18 15:18:48 PDT 2007
+#  Added suport to run from a host that doesn't have 'fmbatch' but will
+#  copy files to the 'fmHost' (default sunpost.llnl.gov) host which can
+#  be specified on the command line
+#
+#  Mark C. Miller, Tue Jun 19 09:03:19 PDT 2007
+#  Modified to work correctly with source tree organization in SVN repo.
+#  Modified frameconvert dir name to include user's name.
+#
+###############################################################################
+
+set MIFOnly = "FALSE"
+set Help = "FALSE"
+set fmHost = ""
+
+#
+# Parse the argument list.
+#
+while ($#argv >= 1)
+   switch ($1)
+      case -mifonly:
+               set MIFOnly = TRUE
+               breaksw
+      case -mifhost:
+               set fmHost = "$2"
+	       shift
+               breaksw
+      case -h:
+      case -help:
+               set Help = TRUE
+               breaksw
+      default:
+               echo " "
+               echo ">>>>>>>>>>  Illegal option $1  <<<<<<<<<<"
+               echo " "
+               breaksw
+   endsw
+   shift
+end
+
+if ($Help == TRUE) then
+   echo "Usage: makehelp [-mifonly] [-h | -help]"
+   echo ""
+   echo "       -mifonly       Just convert the frame documents to MIF files."
+   echo "       -mifhost       Specify the host where fmbatch exists [sunspot.llnl.gov]."
+   echo "       -h             Print this message."
+   exit (1)
+endif
+
+# Keep this until we get our sysadmins to add fmbatch to the path.
+if(`hostname` == "sunspot.llnl.gov" || `hostname` == "sunburn.llnl.gov") then
+    set path = (/usr/local/framemaker/bin $path)
+    set fmHost = ""
+    set haveFrame = `which fmbatch | grep no`
+else
+    if ("$fmHost" == "") then
+        set fmHost = "sunburn.llnl.gov"
+    endif
+    set haveFrame = `ssh -x $fmHost "set path = (/usr/local/framemaker/bin $path) ; which fmbatch | grep no"`
+endif
+
+# Make sure that we have Frame Maker's fmbatch program in our path.
+if("$haveFrame" != "") then
+    echo "ERROR: fmbatch not found! It is required to convert the User manual"
+    echo "       into MIF files which are then turned into help HTML files"
+    echo "       Try running this script on hyper."
+    exit
+endif
+
+# Init some variables
+set inputFiles = "Intro WorkingWithFiles Plots Operators SavingPrinting VisualizationWindows Subsetting Quantitative MakingItPretty Animation InteractiveTools MultipleDatabaseAndWindows RemoteVisualization Preferences Help"
+set startDir = `pwd`
+set outputPath = "/tmp/frameconvert_$USER"
+set inputPath = "$startDir/../docs/UserManual"
+set helpPath = "$startDir/help"
+set fmCommands = "$outputPath/fmcommands"
+
+# First make sure the mif2help tool is built.
+cd $helpPath
+# If there is no Makefile, run configure.
+if(!(-e Makefile)) then
+    cd ..
+    echo "No Makefile was found. We need to configure\!"
+    if(-e config.cache) then
+        rm -f config.cache
+    endif
+    configure
+    cd $helpPath
+else
+    # Remove the current version of the mif2help program in case it is old.
+    make clean
+endif
+# Rebuild the mif2help tool to ensure that it is up to date.
+make
+
+# Create a temp directory if one does not exist.
+if(!(-e $outputPath)) then
+    mkdir $outputPath
+endif
+if ("$fmHost" != "") then
+    ssh -x $fmHost "mkdir -p $outputPath"
+endif
+
+# Create MIF files for each of the input frame maker files.
+foreach input ($inputFiles)
+    if(-e $fmCommands) then
+        rm -f $fmCommands
+    endif
+    
+    # Copy the frame maker file to the temp directory
+    set srcFile = "$outputPath/$input.fm"
+    cp -f $inputPath/$input.fm $srcFile
+    chmod 600 $srcFile
+        
+    # Create the frame maker command file
+    set mifName = "$outputPath/$input.mif"
+    echo "Open $srcFile\
+SaveAs m $srcFile $mifName\
+Quit" > $fmCommands
+    
+    # Convert the file to MIF.
+    if ("$fmHost" != "") then
+        echo "Converting $input.fm to $input.mif remotely on host $fmHost"
+        scp $inputPath/$input.fm ${fmHost}:$srcFile > /dev/null
+	scp $fmCommands ${fmHost}:$fmCommands > /dev/null
+        ssh -x $fmHost "set path = (/usr/local/framemaker/bin $path) ; chmod 600 $srcFile $fmCommands ; cd $outputPath ; fmbatch $fmCommands >& /dev/null"
+	scp ${fmHost}:$mifName $mifName > /dev/null
+    else
+        echo "Converting $input.fm to $input.mif"
+        fmbatch $fmCommands >& /dev/null
+    endif
+    if(!(-e $mifName)) then
+        echo "Framemaker could not convert $input.fm to a MIF file."
+    endif
+end
+
+# If we're doing more than converting then run mif2help.
+if ("$MIFOnly" == "FALSE") then
+    # If the tool is built then proceed.
+    if(-e $helpPath/mif2help) then
+        echo "Converting mif files to help files"
+        # Create a list of MIF files to pass to mif2help.
+        set mifargs = " "
+        foreach input ($inputFiles)
+            set mifName = "$outputPath/$input.mif"
+            set tmpvar =  "$mifargs $mifName"
+            set mifargs = "$tmpvar"
+        end
+
+        $helpPath/mif2help $mifargs
+    else
+        echo "The mif2help tool failed to build."
+    endif
+
+    # Remove the temp directory
+    rm -rf $outputPath
+    if ("$fmHost" != "") then
+        ssh -x $fmHost "rm -rf $outputPath"
+    endif
+endif
+
+# Go back to the starting directory.
+cd $startDir
