@@ -4129,6 +4129,10 @@ QvisAnnotationWindow::databaseInfoChecked(bool val)
 // Programmer: Cyrus Harrison
 // Creation:   Monday June 18, 2007
 //
+// Modifications:
+//   Cyrus Harrison, Tue Jun 19 09:36:24 PDT 2007
+//   Removed cout debug print.
+//
 // ****************************************************************************
 
 void
@@ -4141,7 +4145,6 @@ QvisAnnotationWindow::databasePathExpansionModeChanged(int index)
     else if (index == 2)
     {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Full);}
 
-    cout << " Setting DB ANNO!" << annotationAtts->GetDatabaseInfoExpansionMode() << endl;
     SetUpdate(false);
     Apply();
 }
