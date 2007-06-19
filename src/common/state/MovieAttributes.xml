@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="MovieAttributes" purpose="This class contains the attributes used for saving movies." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="MovieAttributes" purpose="This class contains the attributes used for saving movies." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="MovieAttributes.code">
     <Enum name="MovieTypeEnum">
       Simple
       UsingTemplate
@@ -40,4 +40,6 @@
     </Field>
     <Field name="emailAddress" label="Email address" type="string">
     </Field>
+    <Function name="ValidateFormats" user="true" member="true">
+    </Function>
   </Attribute>

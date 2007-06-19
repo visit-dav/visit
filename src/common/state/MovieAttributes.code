@@ -1,0 +1,81 @@
+Code: SetFromNode
+Prefix:
+    
+    //
+    // Make sure the formats stored in the data node are valid
+    // before we attempt to use the data from them.
+    //
+    ValidateFormats(searchNode);
+Postfix:
+
+Function: ValidateFormats
+Declaration: void ValidateFormats(DataNode *);
+Definition:
+// ****************************************************************************
+// Method: MovieAttributes::ValidateFormats
+//
+// Purpose:
+//   This method looks at the formats stored in the DataNode and modifies them
+//   as required to ensure they are all the same length.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jun 19 09:21:17 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+MovieAttributes::ValidateFormats(DataNode *searchNode)
+{
+#define GET_MOVIE_DATA(NN, VN, AF, N) \
+    DataNode *NN = searchNode->GetNode(N); \
+    if(NN != 0) \
+    { \
+        VN = NN->AF(); \
+        len = (len > VN.size()) ? len : VN.size(); \
+    }
+
+#define SET_MOVIE_DATA(NN, VN, SF, N) \
+    if(NN == 0) \
+        searchNode->AddNode(new DataNode(N, VN)); \
+    else \
+        NN->SF(VN);
+
+#define ADJUST_LENGTH(VN, V) \
+    while(VN.size() < len) \
+        VN.push_back(V);
+
+    // Vectors to hold the temporary values.
+    stringVector       fileFormatsVec;
+    intVector          widthsVec, heightsVec, stereoVec;
+    doubleVector       scalesVec;
+    unsignedCharVector useCurrentSizeVec;
+
+    // Populate the vectors based on the DataNode values.
+    int len = 0;
+    GET_MOVIE_DATA(ffNode, fileFormatsVec, AsStringVector,  "fileFormats");
+    GET_MOVIE_DATA(wNode, widthsVec, AsIntVector, "widths");
+    GET_MOVIE_DATA(hNode, heightsVec, AsIntVector, "heights");
+    GET_MOVIE_DATA(stereoNode, stereoVec, AsIntVector, "stereoFlags");
+    GET_MOVIE_DATA(scaleNode, scalesVec, AsDoubleVector, "scales");
+    GET_MOVIE_DATA(csNode, useCurrentSizeVec, AsUnsignedCharVector, "useCurrentSize");
+
+    // Adjust the length of each vector until they all have len items. We put in
+    // some default values: use current size, tiff, no stereo.
+    ADJUST_LENGTH(fileFormatsVec, "tiff");
+    ADJUST_LENGTH(widthsVec, 400);
+    ADJUST_LENGTH(heightsVec, 400);
+    ADJUST_LENGTH(stereoVec, 0);
+    ADJUST_LENGTH(scalesVec, 1.);
+    ADJUST_LENGTH(useCurrentSizeVec, 1);
+
+    // Replace the data in the object with the augmented vector values.
+    SET_MOVIE_DATA(ffNode, fileFormatsVec, SetStringVector,  "fileFormats");
+    SET_MOVIE_DATA(wNode, widthsVec, SetIntVector, "widths");
+    SET_MOVIE_DATA(hNode, heightsVec, SetIntVector, "heights");
+    SET_MOVIE_DATA(stereoNode, stereoVec, SetIntVector, "stereoFlags");
+    SET_MOVIE_DATA(scaleNode, scalesVec, SetDoubleVector, "scales");
+    SET_MOVIE_DATA(csNode, useCurrentSizeVec, SetUnsignedCharVector, "useCurrentSize");
+}
+
