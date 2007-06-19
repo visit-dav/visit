@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnnotationAttributes.code">
+  <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnnotationAttributes.code">
     <Enum name="Ticks">
       Off
       Bottom
@@ -29,6 +29,11 @@
     <Enum name="BackgroundMode">
       Solid
       Gradient
+    </Enum>
+    <Enum name="PathExpansionMode">
+      None
+      Smart
+      Full
     </Enum>
     <Field name="axesFlag2D" label="axesFlag2D" type="bool">
       true
@@ -283,13 +288,13 @@
     <Field name="bboxFlag" label="bboxFlag" type="bool">
       true
     </Field>
-    <Field name="backgroundColor" label="backgroundColor" type="color">
+    <Field name="backgroundColor" label="backgroundColor" type="color" length="4">
       255
       255
       255
       255
     </Field>
-    <Field name="foregroundColor" label="foregroundColor" type="color">
+    <Field name="foregroundColor" label="foregroundColor" type="color" length="4">
       0
       0
       0
@@ -298,13 +303,13 @@
     <Field name="gradientBackgroundStyle" label="gradientBackgroundStyle" type="enum" subtype="GradientStyle">
       Radial
     </Field>
-    <Field name="gradientColor1" label="gradientColor1" type="color">
+    <Field name="gradientColor1" label="gradientColor1" type="color" length="4">
       0
       0
       255
       255
     </Field>
-    <Field name="gradientColor2" label="gradientColor2" type="color">
+    <Field name="gradientColor2" label="gradientColor2" type="color" length="4">
       0
       0
       0
@@ -318,6 +323,8 @@
     </Field>
     <Field name="databaseInfoFlag" label="databaseInfoFlag" type="bool">
       true
+    </Field>
+    <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:None">
     </Field>
     <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
       true

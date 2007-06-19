@@ -47,6 +47,7 @@
 #include <vtkTextMapper.h>
 
 #include <VisWindow.h>
+#include <VisWinPathTracker.h>
 
 #include <avtActor.h>
 #include <avtLegend.h>
@@ -79,6 +80,9 @@ const double   VisWinLegends::dbInfoWidth         = 0.21;
 //    Eric Brugger, Mon Jul 14 16:43:13 PDT 2003
 //    Changed the way database information is handled.
 //
+//    Cyrus Harrison, Sun Jun 17 22:00:15 PDT 2007
+//    Added init of path expansion mode.
+//
 // ****************************************************************************
 
 VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p)
@@ -93,6 +97,7 @@ VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p)
     dbInfoIsAdded = false;
 
     mainDBInfoVisible = true;
+    pathExpansionMode = 0;
     legendVisible = true;
     homogeneous = true;
 }
@@ -216,6 +221,9 @@ VisWinLegends::SetForegroundColor(double fr, double fg, double fb)
 //    Brad Whitlock, Thu Mar 22 02:16:37 PDT 2007
 //    Renamed to UpdateLegendInfo and removed all positioning code.
 //
+//    Cyrus Harrison,Sun Jun 17 21:46:50 PDT 2007
+//    Added support for path expansion mode.
+//
 // ****************************************************************************
 
 void
@@ -240,8 +248,19 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
                 }
                 else
                 {
-                    char info[1024];
-                    CreateDatabaseInfo(info, atts);
+                    char info[2048];
+                    std::string dbname;
+                    if(pathExpansionMode == 0 )
+                    { dbname = atts.GetFilename(); }
+                    else if( pathExpansionMode == 1 )
+                    {
+                        dbname = VisWinPathTracker::Instance()
+                                        ->GetSmartPath(atts.GetFullDBName());
+                    }
+                    else if( pathExpansionMode == 2 )
+                    { dbname = atts.GetFullDBName(); }
+
+                    CreateDatabaseInfo(info,dbname,atts);
                     legend->SetDatabaseInfo(info);
                 }
 
@@ -286,6 +305,9 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 //    Use a slightly larger width for the dbInfoActor if CreateDatabaseInfo
 //    indicates that 'Time' was included. 
 //
+//    Cyrus Harrison,Sun Jun 17 21:46:50 PDT 2007
+//    Added support for path expansion mode.
+//
 // ****************************************************************************
 
 void
@@ -310,14 +332,14 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         {
             cycle = atts.GetCycle();
             dtime = atts.GetTime();
-            filename = atts.GetFilename();
+            filename = atts.GetFullDBName();
             haveSetData = true;
         }
         else
         {
             if (cycle != atts.GetCycle() ||
                 dtime != atts.GetTime() ||
-                filename != atts.GetFilename())
+                filename != atts.GetFullDBName())
             {
                 homogeneous = false;
                 break;
@@ -335,8 +357,21 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         avtBehavior_p b = lst[0]->GetBehavior();
         avtDataAttributes &atts = b->GetInfo().GetAttributes();
 
-        char info[1024];
-        bool hasTime = CreateDatabaseInfo(info, atts);
+        char info[2048];
+        std::string dbname;
+
+        if(pathExpansionMode == 0 )
+        { dbname = atts.GetFilename(); }
+        else if( pathExpansionMode == 1 )
+        {
+            dbname = VisWinPathTracker::Instance()
+                                        ->GetSmartPath(atts.GetFullDBName());
+        }
+        else if( pathExpansionMode == 2 )
+        { dbname = atts.GetFullDBName(); }
+
+        bool hasTime = CreateDatabaseInfo(info,dbname,atts);
+
         dbInfoActor->SetInput(info);
 
         //
@@ -385,12 +420,17 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
 // Programmer: Brad Whitlock
 // Creation:   Thu Apr 11 12:18:49 PDT 2002
 //
+// Modifications:
+//   Cyrus Harrison, Mon Jun 18 09:34:37 PDT 2007
+//   Added database path expansion mode option
+//
 // ****************************************************************************
 
 void
-VisWinLegends::SetVisibility(bool db, bool legend)
+VisWinLegends::SetVisibility(bool db, int path_exp_mode, bool legend)
 {
     mainDBInfoVisible = db;
+    pathExpansionMode = path_exp_mode;
     legendVisible = legend;
 }
 
@@ -410,14 +450,20 @@ VisWinLegends::SetVisibility(bool db, bool legend)
 //  Modifications:
 //    Kathleen Bonnell, Thu Nov 13 12:26:00 PST 2003
 //    Added bool return type to indicate whether or not 'Time' was included.
-//  
+//
+//    Cyrus Harrison, Sun Jun 17 21:42:53 PDT 2007
+//    Added explicit pass of the database name to easily support path
+//    expansion modes.
+//
 // ****************************************************************************
 
 bool
-VisWinLegends::CreateDatabaseInfo(char *info, avtDataAttributes &atts)
+VisWinLegends::CreateDatabaseInfo(char *info,
+                                  const std::string &dbname,
+                                  avtDataAttributes &atts)
 {
     bool hasTime = false;
-    sprintf(info, "DB: %s\n", atts.GetFilename().c_str());
+    sprintf(info, "DB: %s\n", dbname.c_str());
     if (atts.CycleIsAccurate())
     {
         sprintf(info+strlen(info), "Cycle: %-8d ", atts.GetCycle());
