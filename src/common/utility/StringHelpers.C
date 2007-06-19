@@ -38,7 +38,6 @@
 #include <StringHelpers.h>
 
 #include <errno.h>
-
 #include <sys/types.h>
 #if defined(_WIN32)
 #include <win32-regex.h>
@@ -48,6 +47,8 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+
+#include <visit-config.h>
 
 using std::string;
 using std::vector;
@@ -531,21 +532,21 @@ basename(const char *path, int& start)
            return StaticStringBuf;
        }
 
-       // backup, skipping over all trailing '/' chars
+       // backup, skipping over all trailing SLASH_CHAR chars
        int j = n-1;
-       while ((j >= 0) && (path[j] == '/'))
+       while ((j >= 0) && (path[j] == SLASH_CHAR))
            j--;
 
-       // deal with string consisting of all '/' chars
+       // deal with string consisting of all SLASH_CHAR chars
        if (j == -1)
        {
-           strcpy(StaticStringBuf, "/");
+           strcpy(StaticStringBuf, SLASH_STRING);
            return StaticStringBuf;
        }
 
-       // backup to just after next '/' char
+       // backup to just after next SLASH_CHAR char
        int i = j-1;
-       while ((i >= 0) && (path[i] != '/'))
+       while ((i >= 0) && (path[i] != SLASH_CHAR))
            i--;
        i++;
        start = i;
@@ -590,9 +591,9 @@ StringHelpers::Dirname(const char *path)
        strcpy(StaticStringBuf, ".");
        return StaticStringBuf;
    }
-   else if ((path[0] == '/') && (path[1] == '\0'))
+   else if ((path[0] == SLASH_CHAR) && (path[1] == '\0'))
    {
-       strcpy(StaticStringBuf, "/");
+       strcpy(StaticStringBuf, SLASH_STRING);
        return StaticStringBuf;
    }
 
@@ -601,7 +602,7 @@ StringHelpers::Dirname(const char *path)
 
     if (start == -1)
     {
-        strcpy(StaticStringBuf, "/");
+        strcpy(StaticStringBuf, SLASH_STRING);
         return StaticStringBuf;
     }
     else
@@ -609,7 +610,7 @@ StringHelpers::Dirname(const char *path)
         int i;
         for (i = 0; i < start; i++)
             StaticStringBuf[i] = path[i];
-        if (StaticStringBuf[i-1] == '/')
+        if (StaticStringBuf[i-1] == SLASH_CHAR)
             StaticStringBuf[i-1] = '\0';
        else
             StaticStringBuf[i] = '\0';
