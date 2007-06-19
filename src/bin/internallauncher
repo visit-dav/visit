@@ -397,12 +397,37 @@ $fullusage = "$usage
 			     a space ' ' character and sub-expression reference
 			     to indicate which part of the regular expression is
 			     the cycle number.  Default behavior is as if
-			     -cycleregex '<.*([0-9]+)\..*> \1'
+			     -cycleregex '<.*([0-9]+)\..*> \\1'
                              was specified meaning the first sequence of one
 			     or more digits before the first dot (.) found
 			     is used as the cycle number. Do a 'man 7 regex'
 			     to get more information on regular expression
 			     syntax.
+        -ui-bcast-thresholds <int1> <int2> 
+	                     Two integers controlling behavior of parallel
+			     engine waiting in a broadcast for the next RPC
+			     from the viewer. VisIt used to rely solely upon
+			     MPI_Bcast for this. However, many implementations
+			     of MPI_Bcast use a 'busy' wait that winds up
+			     keeping all processors busy and can make them
+			     unuseable by other processors. This is particulary
+			     bad for SMPs. So, VisIt implemented its own
+			     broadcast using MPI's send/recv methods. <int1>
+			     specifies the number of nano-seconds a processor
+			     sleeps before again checking for completion of the
+			     broadcast. Specifying a value of zero (0) for
+			     <int1> results in falling back older behavior using
+			     MPI's MPI_Bcast. <int1> effectively controls how
+			     'busy' processors will be, polling for completion
+			     of the broadcast. <int2> specifies the number of
+			     seconds all processors should spin, polling as fast
+			     as possible, checking for completion of the
+			     broadcast BEFORE inserting sleeps into their
+			     polling loops. <int2> effectivey controls how
+			     many seconds VisIt's server will be maximally
+			     responsive (although also keeping all processors
+			     occupied) before becoming more 'friendly' to
+			     other processes on the same node.
 
     Developer options
     ---------------------------------------------------------------------------
