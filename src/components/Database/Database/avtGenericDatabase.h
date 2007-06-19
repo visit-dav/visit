@@ -298,6 +298,11 @@ class     PickVarInfo;
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added transform manager. Added data spec to GetMaterial method.
+//
+//    Cyrus Harrison, Tue Jun 19 11:05:49 PDT 2007
+//    Added issuedOriginalConnectivityWarning to support once per session
+//    matvf/specmf warning about ghost zones.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -338,6 +343,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     avtTransformManager       *xformManager;
 
     int                        lastTimestep;
+
+    static  bool               issuedOriginalConnectivityWarning;
 
     virtual void               PopulateSIL(avtSIL *, int=0);
     virtual void               PopulateIOInformation(int ts, avtIOInformation &);
