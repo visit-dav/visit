@@ -146,6 +146,19 @@ int vtkVisItDataSetReader::RequestInformation(
   return 1;
 }
 
+
+// ****************************************************************************
+//  Method: vtkVisItDataSetReader::RequestData
+//
+//  Purpose:
+//    Copied from VTK source.
+//
+//  Modified:
+//    Dave Bremer.  Mon Jun 18 17:51:16 PDT 2007
+//    Changed the way type checking happens for vtkStructuredGrid and 
+//    vtkRectilinearGrid, for which I created relpacement subclasses
+//    called vtkVisItStructuredGrid and vtkVisItRectilinearGrid.
+// ****************************************************************************
 int vtkVisItDataSetReader::RequestData(
   vtkInformation *,
   vtkInformationVector **,
@@ -261,7 +274,7 @@ int vtkVisItDataSetReader::RequestData(
       preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
-      if(!(output && strcmp(output->GetClassName(), "vtkStructuredGrid") == 0))
+      if(!(output && output->IsA("vtkStructuredGrid")))
         {
         // Hack to make sure that the object is not modified
         // with SetNthOutput. Otherwise, extra executions occur.
@@ -299,7 +312,7 @@ int vtkVisItDataSetReader::RequestData(
       preader->SetReadAllFields(this->GetReadAllFields());
       preader->Update();
       // Can we use the old output?
-      if(!(output && strcmp(output->GetClassName(), "vtkRectilinearGrid") == 0))
+      if(!(output && output->IsA("vtkRectilinearGrid")))
         {
         // Hack to make sure that the object is not modified
         // with SetNthOutput. Otherwise, extra executions occur.
