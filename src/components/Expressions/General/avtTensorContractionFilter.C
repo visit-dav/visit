@@ -36,81 +36,95 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtMatvfFilter.h                             //
+//                         avtTensorContractionFilter.C                      //
 // ************************************************************************* //
 
-#ifndef AVT_MATVF_FILTER_H
-#define AVT_MATVF_FILTER_H
+#include <avtTensorContractionFilter.h>
 
-#include <avtSingleInputExpressionFilter.h>
+#include <math.h>
 
-class     vtkDataArray;
-class     ArgsExpr;
-class     ExprPipelineState;
-class     ConstExpr;
+#include <vtkDataArray.h>
+#include <vtkMath.h>
+
+#include <ExpressionException.h>
+
 
 // ****************************************************************************
-//  Class: avtMatvfFilter
+//  Method: avtTensorContractionFilter constructor
 //
 //  Purpose:
-//      Creates the material fraction at each point.
-//          
-//  Programmer: Sean Ahern
-//  Creation:   March 18, 2003
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
 //
-//  Modifications:
-//    Jeremy Meredith, Mon Sep 29 12:13:04 PDT 2003
-//    Added support for integer material indices.
-//
-//    Hank Childs, Fri Oct 24 14:49:23 PDT 2003
-//    Added PerformRestriction.  This is because matvf does not work with
-//    ghost zone communication.  It cannot get the avtMaterial object with
-//    ghost information and it causes an exception.  This will tell the
-//    database that it cannot communicate ghost zones until a better solution
-//    comes along.
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined constructor and destructor definitions to .C files
-//    because certain compilers have problems with them.
-//
-//    Hank Childs, Wed Feb 18 09:15:23 PST 2004
-//    Issue a warning if we encounter a bad material name.
-//
-//    Cyrus Harrison, Mon Jun 18 10:52:45 PDT 2007
-//    Ensure that the output is always scalar (added GetVariableDimension)
+//  Programmer: Cyrus Harrison
+//  Creation:   June 1, 2007
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtMatvfFilter : public avtSingleInputExpressionFilter
+avtTensorContractionFilter::avtTensorContractionFilter()
 {
-  public:
-                              avtMatvfFilter();
-    virtual                  ~avtMatvfFilter();
-
-    virtual const char       *GetType(void) { return "avtMatvfFilter"; };
-    virtual const char       *GetDescription(void)
-                                           {return "Calculating Material VF";};
-    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
+    ;
+}
 
 
-  protected:
-    virtual int               GetVariableDimension(void) { return 1; };
+// ****************************************************************************
+//  Method: avtTensorContractionFilter destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   June 1, 2007
+//
+// ****************************************************************************
 
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
-
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual bool              IsPointVariable(void)  { return false; };
-    virtual void              PreExecute(void);
-
-    void                      AddMaterial(ConstExpr *);
-
-    bool                      issuedWarning;
-    std::vector<std::string>  matNames;
-    std::vector<int>          matIndices;
-};
+avtTensorContractionFilter::~avtTensorContractionFilter()
+{
+    ;
+}
 
 
-#endif
+// ****************************************************************************
+//  Method: avtPrincipalTensorFilter::DoOperation
+//
+//  Purpose:
+//      Calculates the contraction of a tensor
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   June 1, 2007
+//
+// ****************************************************************************
+
+void
+avtTensorContractionFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
+                                        int ncomps, int ntuples)
+{
+    if (ncomps == 9)
+    {
+
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            double ctract = 0.0;
+            double *vals = in->GetTuple9(i);
+
+            //
+            // For a rank 2 tensor, the contraction collapses to a scalar.
+            // Conceptually it is like as doting each column vector with
+            // itself and adding the column results
+            //
+
+            ctract +=vals[0] * vals[0] + vals[1] * vals[1] + vals[2] * vals[2];
+            ctract +=vals[3] * vals[3] + vals[4] * vals[4] + vals[5] * vals[5];
+            ctract +=vals[6] * vals[6] + vals[7] * vals[7] + vals[8] * vals[8];
+
+            out->SetTuple(i, &ctract);
+        }
+    }
+    else
+    {
+        EXCEPTION1(ExpressionException, "Cannot determine tensor type");
+    }
+}
 
 

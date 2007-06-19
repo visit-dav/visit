@@ -149,6 +149,8 @@
 #include <avtTimeExpression.h>
 #include <avtMinMaxExpression.h>
 #include <avtConnComponentsExpression.h>
+#include <avtTensorContractionFilter.h>
+#include <avtViscousStressFilter.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -441,14 +443,17 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Added array_compose_with_bins.
 // 
 //    Cyrus Harrison, Wed Feb 21 09:37:38 PST 2007
-//    Added conn_components  
+//    Added conn_components
 //
 //    Brad Whitlock, Mon Apr 23 17:32:14 PST 2007
 //    Added color.
 //
 //    Sean Ahern, Tue May  8 13:11:47 EDT 2007
 //    Added atan2.
-// 
+//
+//    Cyrus Harrison, Fri Jun  1 14:43:59 PDT 2007
+//    Added contraction and viscous_stress
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -544,6 +549,10 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtStrainInfinitesimalFilter();
     if (functionName == "strain_rate")
         return new avtStrainRateFilter();
+    if (functionName == "contraction")
+        return new avtTensorContractionFilter();
+    if (functionName == "viscous_stress")
+        return new avtViscousStressFilter();
     if (functionName == "displacement")
         return new avtDisplacementFilter();
     if (functionName == "degree")

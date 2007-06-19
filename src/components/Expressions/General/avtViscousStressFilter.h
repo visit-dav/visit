@@ -36,81 +36,54 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                              avtMatvfFilter.h                             //
+//                          avtViscousStressFilter.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_MATVF_FILTER_H
-#define AVT_MATVF_FILTER_H
+#ifndef AVT_VISCOUS_STRESS_FILTER_H
+#define AVT_VISCOUS_STRESS_FILTER_H
 
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
-class     ArgsExpr;
-class     ExprPipelineState;
-class     ConstExpr;
 
 // ****************************************************************************
-//  Class: avtMatvfFilter
+//  Class: avtViscousStressFilter
 //
 //  Purpose:
-//      Creates the material fraction at each point.
-//          
-//  Programmer: Sean Ahern
-//  Creation:   March 18, 2003
+//      Constructs a viscous stress tensor given a velocity vector.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   June  5, 2007
 //
 //  Modifications:
-//    Jeremy Meredith, Mon Sep 29 12:13:04 PDT 2003
-//    Added support for integer material indices.
-//
-//    Hank Childs, Fri Oct 24 14:49:23 PDT 2003
-//    Added PerformRestriction.  This is because matvf does not work with
-//    ghost zone communication.  It cannot get the avtMaterial object with
-//    ghost information and it causes an exception.  This will tell the
-//    database that it cannot communicate ghost zones until a better solution
-//    comes along.
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined constructor and destructor definitions to .C files
-//    because certain compilers have problems with them.
-//
-//    Hank Childs, Wed Feb 18 09:15:23 PST 2004
-//    Issue a warning if we encounter a bad material name.
-//
-//    Cyrus Harrison, Mon Jun 18 10:52:45 PDT 2007
-//    Ensure that the output is always scalar (added GetVariableDimension)
+//   Cyrus Harrison, Sun Jun 10 14:18:08 PDT 2007
+//   Added CalculateVStress2D helper function.
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtMatvfFilter : public avtSingleInputExpressionFilter
+class EXPRESSION_API avtViscousStressFilter
+    : public avtSingleInputExpressionFilter
 {
   public:
-                              avtMatvfFilter();
-    virtual                  ~avtMatvfFilter();
+                             avtViscousStressFilter();
+    virtual                 ~avtViscousStressFilter();
 
-    virtual const char       *GetType(void) { return "avtMatvfFilter"; };
-    virtual const char       *GetDescription(void)
-                                           {return "Calculating Material VF";};
-    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
-
+    virtual const char      *GetType(void)
+                             { return "avtViscousStressFilter"; };
+    virtual const char      *GetDescription(void)
+                             { return "Calculating viscous stress";};
 
   protected:
-    virtual int               GetVariableDimension(void) { return 1; };
+    virtual vtkDataArray    *DeriveVariable(vtkDataSet *);
+    virtual avtVarType       GetVariableType(void) { return AVT_TENSOR_VAR; };
+    virtual bool             IsPointVariable(void) { return false; };
+    virtual void             CalculateVStress2D(vtkDataSet *ds,
+                                                vtkDataArray *vel,
+                                                int idx,
+                                                bool rz_mesh,
+                                                double *vstress);
 
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
 
-    virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
-    virtual bool              IsPointVariable(void)  { return false; };
-    virtual void              PreExecute(void);
-
-    void                      AddMaterial(ConstExpr *);
-
-    bool                      issuedWarning;
-    std::vector<std::string>  matNames;
-    std::vector<int>          matIndices;
 };
 
-
 #endif
-
-

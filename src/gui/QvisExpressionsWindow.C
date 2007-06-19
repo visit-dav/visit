@@ -121,6 +121,9 @@
 //    Cyrus Harrison, Tue Feb 20 12:02:00 PST 2007
 //    Added conn_components
 //
+//    Cyrus Harrison, Fri Jun  1 14:49:49 PDT 2007
+//    Added contraction and viscous_stress
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -223,6 +226,7 @@ const char *expr_vector[] = {
 };
 
 const char *expr_tensor[] = {
+    "contraction",
     "determinant",
     "effective_tensor",
     "eigenvalue",
@@ -232,6 +236,7 @@ const char *expr_tensor[] = {
     "principal_tensor",
     "tensor_maximum_shear",
     "trace",
+    "viscous_stress",
     NULL
 };
 
