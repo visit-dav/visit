@@ -62,7 +62,7 @@ def TestOne(index, filename, varname, meshname, absvar, emisvar, numlines, x, y,
     # Now test the outputs
     OpenDatabase("hf0.ult")
     ReOpenDatabase("hf0.ult")  # Flush out cached version
-    AddPlot("Curve", "Hohlraum Flux Query")
+    AddPlot("Curve", "Hohlraum Flux")
     DrawPlots()
     ResetView()
     test1 = "hf_%d_%d" %(index,1)
