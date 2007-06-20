@@ -34,8 +34,9 @@
 * DAMAGE.
 *
 *****************************************************************************/
- 
+#include <VisItDataInterface_V1.h>
 #include "UI_Connection.h"
+#include "SimHelperFunc.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -85,6 +86,40 @@ char *VisItParseCommand( char *cmd, char *signalName, char *buttonName )
     return signalName;
 }
 
+/*****************************************************************************
+** Function: int VisItGetCommandValue ( const char *cmd, char *signalName, char *buttonName )
+**
+** Purpose:
+**   parse the command string and return the value in retVal
+**
+** Arguments:
+**   cmd        : Command passed from VisIt
+**   retValue   : the value in the value position of the cmd string 
+**
+**   returns an error ( 0 ) if no value is found.
+**
+** Programmer: Shelly Prevost
+** Creation:   Fri Jun 15 15:09:48 PDT 2007
+**
+** Modifications:
+**
+** *****************************************************************************/
+int VisItGetCommandValue( char *cmd, double *retVal)
+{
+    int i;
+    char value[MAX_CMD_STR_LEN];
+    char *str = strdup (cmd );
+    char *tok = NULL;
+    tok = strtok(str, ";" );
+    for ( i = 0; i < 4; i++)
+    {
+    	tok = strtok(NULL, ";" );
+        if ( tok ) strncpy( value,tok,MAX_CMD_STR_LEN );
+	else return 0;
+    }
+    *retVal = atof ( value );
+    return 1;
+}
 
 /*****************************************************************************
 ** Function: void VisItClickedSignal ( const char *cmd )

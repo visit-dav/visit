@@ -108,7 +108,7 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
     QString cmd = sig + ";" + ui->name() + ";" + ui->className() + ";" +
                   ui->parent()->name() + ";" + value;
     viewer->GetViewerMethods()->SendSimulationCommand(host, sim, cmd.latin1());
-
+	cout << "cmd = " <<  cmd << endl;
     return 0;
 }
 
@@ -268,6 +268,38 @@ void SimCommandSlots::StateChangedHandler(int OnOff)
 void SimCommandSlots::CurrentChangedHandler(int row, int col)
 {
     const QObject *ui = sender();
+    debug5 << "inside CurrentChangedHandler signal" << endl;
+    if (ui)
+    {
+        debug5 << "signal sender is type " << ui->className() << " named "
+               << ui->name() << " parent " << ui->parent()->name() << endl;
+        debug5 << "New Value row,col,text = " << row << ", " << col << ", "
+               << ((QTable *)ui)->text( row, col ).latin1() << endl;
+    }
+    else
+        debug5 << "unknown signaler" << endl;
+    QString value = QString::number(row) + ";" + QString::number(col) + ";" + ((QTable *)ui)->text( row, col ).latin1();
+    SendCMD("currentChanged()", ui, value);
+}
+
+
+// ****************************************************************************
+// Method: SimCommandSlots::ValueChangedHandler
+//
+// Purpose:
+//   This is the CurrentChangedHandler signal handler function. It is generated
+//   when the users changes a text value inside a text custom UI widget.
+//
+// Programmer: Shelly Prevost
+// Creation:   Mon Jun 18 16:56:13 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void SimCommandSlots::ValueChangedHandler(int row, int col)
+{
+    const QObject *ui = sender();
     debug5 << "inside ValueChangedHandler signal" << endl;
     if (ui)
     {
@@ -278,8 +310,8 @@ void SimCommandSlots::CurrentChangedHandler(int row, int col)
     }
     else
         debug5 << "unknown signaler" << endl;
-    QString value = QString::number(row) + ";" + QString::number(col);
-    SendCMD("currentChanged()", ui, value);
+    QString value = QString::number(row) + ";" + QString::number(col) + ";" + ((QTable *)ui)->text( row, col ).latin1();
+    SendCMD("valueChanged()", ui, value);
 }
 
 // ****************************************************************************

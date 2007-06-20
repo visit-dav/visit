@@ -488,6 +488,9 @@ QvisSimulationWindow::GetUIFile() const
 //   Brad Whitlock, Tue Jan 31 16:33:45 PST 2006
 //   I renamed the method and moved a bunch of its code into helper methods.
 //
+//   Shelly Prevost Tue Jun 19 16:10:17 PDT 2007
+//   Added signal connection for row col table widget.
+//
 // ****************************************************************************
 
 void
@@ -559,7 +562,10 @@ QvisSimulationWindow::CreateCommandUI()
                     SLOT(TextChangedHandler(const QString&)));
         if (thesSignalList.find("currentChanged(int,int)") != -1)
             connect(ui, SIGNAL(currentChanged(int, int)), CommandConnections,
-                    SLOT(CurrentChangedHandler(int, int)));
+                    SLOT(CurrentChangedHandler(int, int)));       
+        if (thesSignalList.find("valueChanged(int,int)") != -1)
+            connect(ui, SIGNAL(valueChanged(int, int)), CommandConnections,
+                    SLOT(ValueChangedHandler(int, int)));
             //connect(ui, SIGNAL(dialMoved(int)), CommandConnections,
             //        SLOT(valueChangedHandler(int)));
     }
@@ -1343,7 +1349,7 @@ QvisSimulationWindow::UpdateInformation(int index)
             break;
         }
 
-        // If we've not created a dynamic commands window and we can get a
+        // If we've not created a dynamic commands window already and we can get a
         // decent-looking UI filename, enabled the custom command button
         // so we can create a window when that button is clicked.
         if(DynamicCommandsWin == NULL)

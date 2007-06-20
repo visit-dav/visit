@@ -968,9 +968,11 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
     EnsureSimulationDirectoryExists();
     CreateRandomSecurityKey();
     
+
     snprintf(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim1",
              GetHomeDirectory(), (int)time(NULL), name);
 
+       
     file = fopen(simulationFileName, "wt");
     if (!file)
     {

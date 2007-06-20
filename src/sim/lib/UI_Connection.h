@@ -61,9 +61,10 @@ typedef struct signalInfo { char *name; char* sig; slotFunc slot; } sigInfoConne
 #ifdef __cplusplus
 extern "C" {
 #endif
-void VisItProcessCustomCommand( char *cmd);
-void VisItAddConnection(char * name, char* sig, slotFunc theSlot );
+void  VisItProcessCustomCommand( char *cmd);
+void  VisItAddConnection(char * name, char* sig, slotFunc theSlot );
 char *VisItParseCommand( char *cmd, char *signalName, char *buttonName );
+int   VisItGetCommandValue( char *cmd, double *retVal );
 #ifdef __cplusplus
 }
 #endif

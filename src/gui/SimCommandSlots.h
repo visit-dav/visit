@@ -82,6 +82,7 @@ public slots:
     void ActivatedHandler(int);
     void StateChangedHandler(int);
     void CurrentChangedHandler(int, int);
+    void ValueChangedHandler(int, int);
     int  SendCMD(QString sig, const  QObject *ui,QString value);
 
 private:
