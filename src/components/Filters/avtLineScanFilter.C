@@ -167,7 +167,7 @@ avtLineScanFilter::SetUniformRandomDistrib()
 //  Method: avtLineScanFilter::SetCylinderDistrib
 //
 //  Purpose:
-//    Set the distribution of lines to be within a cylinder (3D) or rectangle 
+//    Set the distribution of lines to be within a skewed cylinder (3D) or rectangle 
 //    (2D) given by the parameters.  Lines all have the same orientation, and 
 //    are uniformly distributed in space.  This was done to support Hank Shay's
 //    request for the Hohlraum Flux Query.
@@ -230,6 +230,10 @@ avtLineScanFilter::SetCylinderDistrib(float *pos_,
 //
 //      Dave Bremer, Wed Dec 20 16:22:06 PST 2006
 //      Only use the cylindrical execute mode if we are in two dimensions.
+//
+//      Dave Bremer, Fri Jun 15 15:13:35 PDT 2007
+//      Made the cylinder into a skewed cylinder, which is what Hank Shay
+//      really had in mind.
 //
 // ****************************************************************************
 
@@ -361,6 +365,7 @@ avtLineScanFilter::PreExecute(void)
             double sinP = sin(phi);
             avtVector dir( sinT*sinP, sinT*cosP, cosT );
             avtVector perp0(0,1,0), perp1(1,0,0);
+            /*
             if (theta != 0.0f)
             {
                 perp0 = avtVector(0,0,1) % dir;
@@ -370,7 +375,7 @@ avtLineScanFilter::PreExecute(void)
                 perp0.normalize();
                 perp1.normalize();
             }
-
+            */
             for (int i = 0 ; i < nLines ; i++)
             {
                 double u1 = (double) rand() / (double) RAND_MAX;
@@ -384,12 +389,12 @@ avtLineScanFilter::PreExecute(void)
 
                 avtVector  randPt = pos + perp0*cos(u1)*u2 + perp1*sin(u1)*u2;
 
-                lines[6*i+0] = randPt.x - length*dir.x;
-                lines[6*i+1] = randPt.x + length*dir.x;
-                lines[6*i+2] = randPt.y - length*dir.y;
-                lines[6*i+3] = randPt.y + length*dir.y;
-                lines[6*i+4] = randPt.z - length*dir.z;
-                lines[6*i+5] = randPt.z + length*dir.z;
+                lines[6*i+0] = randPt.x - 2.0*length*dir.x;
+                lines[6*i+1] = randPt.x + 2.0*length*dir.x;
+                lines[6*i+2] = randPt.y - 2.0*length*dir.y;
+                lines[6*i+3] = randPt.y + 2.0*length*dir.y;
+                lines[6*i+4] = randPt.z - 2.0*length*dir.z;
+                lines[6*i+5] = randPt.z + 2.0*length*dir.z;
             }
         }
         else
