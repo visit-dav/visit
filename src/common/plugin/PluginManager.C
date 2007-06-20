@@ -51,13 +51,13 @@
 #include <map>
 #include <algorithm>
 
-#if __DARWIN__
+#if __APPLE__
 #include <AvailabilityMacros.h>
 #endif
 #if defined(_WIN32)
 #include <windows.h>
 #include <direct.h>
-#elif defined(__DARWIN__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_2 )
+#elif defined(__APPLE__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_2 )
 #include <mach-o/dyld.h>
 #include <dirent.h>
 #else
@@ -1035,7 +1035,7 @@ PluginManager::GetPluginInitializationErrors()
     return ret;
 }
 
-#if defined(__DARWIN__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_2 )
+#if defined(__APPLE__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_2 )
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -1509,6 +1509,9 @@ PluginManager::PluginOpen(const string &pluginFile)
 //   in all of the plugins don't have underscores in them and I don't want
 //   to change them in all of the plugins. Someday we should though.
 //
+//   Cyrus Harrison, Wed Jun 20 14:05:58 PDT 2007
+//   Changed __DARWIN__ back to __APPLE__
+//
 // ****************************************************************************
 
 void *
@@ -1517,7 +1520,7 @@ PluginManager::PluginSymbol(const string &symbol, bool noError)
     void *retval;
 #if defined(_WIN32)
     retval = (void *)GetProcAddress((HMODULE)handle, symbol.c_str());
-#elif defined(__DARWIN__)
+#elif defined(__APPLE__)
     string symbolName(symbol);
 
     //
