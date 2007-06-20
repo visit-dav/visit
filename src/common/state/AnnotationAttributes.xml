@@ -324,7 +324,8 @@
     <Field name="databaseInfoFlag" label="databaseInfoFlag" type="bool">
       true
     </Field>
-    <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:None">
+    <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:true">
+      None
     </Field>
     <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
       true
