@@ -284,6 +284,8 @@
 #    Thomas R. Treadway, Wed May 23 17:04:07 PDT 2007
 #    FreeBSD patches from Nathan Lay <nlay@scs.fsu.edu>
 #
+#    Mark C. Miller, Tue Jun 19 17:26:56 PDT 2007
+#    Added visit_plugin
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -759,7 +761,10 @@ cp $VisItDir/bin/frontendlauncher  distribution/visit/bin/
 cp $VisItDir/bin/xml2plugin        distribution/visit/bin/
 
 # copy mkgrdbl
-cp $VisItDir/bin/mkgrdbl        distribution/visit/bin/
+cp $VisItDir/bin/mkgrdbl           distribution/visit/bin/
+
+# copy visit_plugin
+cp $VisItDir/bin/visit_plugin      distribution/visit/bin/
 
 # Copy the version-specific visit script
 cp $VisItDir/bin/internallauncher $verdir/bin/
