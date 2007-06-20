@@ -55,6 +55,10 @@
 //  Programmer: David Bremer
 //  Creation:   November 17, 2006
 //
+//  Modifications:
+//    Dave Bremer, Tue Jun 19 18:33:26 PDT 2007
+//    Lowered the number of lines per iteration.
+//  
 // ****************************************************************************
 
 avtHohlraumFluxQuery::avtHohlraumFluxQuery():
@@ -68,6 +72,10 @@ avtHohlraumFluxQuery::avtHohlraumFluxQuery():
     phi    = 0.0f;
     radius = 1.0f;
     radBins = NULL;
+
+    //lower the default number of lines, to work around a problem 
+    //merging lines in vtkCleanPolyData.
+    numLinesPerIteration = 1000;
 }
 
 
@@ -178,6 +186,10 @@ avtHohlraumFluxQuery::SetThetaPhi(float thetaInDegrees, float phiInDegrees)
 //  Programmer: David Bremer
 //  Creation:   Dec 8, 2006
 //
+//  Modifications:
+//    Dave Bremer, Tue Jun 19 18:33:26 PDT 2007
+//    Added code to query for the widths of bins.  If they are available, they
+//    will be used later to compute temperature from flux.
 // ****************************************************************************
 
 void
@@ -230,7 +242,7 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
         EXCEPTION1(VisItException, "Number of bins for absorption and "
                                    "emission did not match.");
     }
-
+    
     if (radBins == NULL)
     {
         numBins = emissivityBins->GetNumberOfComponents();
@@ -238,6 +250,22 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
         for (i = 0 ; i < numBins ; i++)
         {
             radBins[i] = 0.0;
+        }
+        
+        avtDataAttributes &dataAttr = GetInput()->GetInfo().GetAttributes();
+        const std::vector<double> &binRange = dataAttr.GetVariableBinRanges( absVarName.c_str() );
+    
+        if (binRange.size() != 0 && binRange.size() != numBins+1)
+        {
+            EXCEPTION1(VisItException, "Number of array components must equal number of bins + 1");
+        }
+        if (binRange.size() != 0)
+        {
+            binWidths.resize(binRange.size() - 1);
+            for (i = 0 ; i < numBins ; i++)
+            {
+                binWidths[i] = binRange[i+1] - binRange[i];
+            }
         }
     }
     else
@@ -421,6 +449,10 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
 //  Programmer: David Bremer
 //  Creation:   Dec 8, 2006
 //
+//  Modifications:
+//    Dave Bremer, Tue Jun 19 18:33:26 PDT 2007
+//    Added code to use bin widths, if they are available, to compute 
+//    temperature from flux.
 // ****************************************************************************
 
 void
@@ -435,11 +467,20 @@ avtHohlraumFluxQuery::PostExecute(void)
     int ii;
     doubleVector result(numBins);
     double resultSum = 0.0;
+    double resultSum2 = 0.0;
+    double temperature = 0.0;
+        
     for (ii = 0 ; ii < numBins ; ii++)
     {
         result[ii] = accumBins[ii] / (double)numLines;
-        resultSum += result[ii];
+        resultSum  += result[ii];
+        
+        if (binWidths.size() != 0)
+            resultSum2 += result[ii] * binWidths[ii];
     }
+    if (binWidths.size() != 0)
+        temperature = pow( resultSum2 / 1028000.0, 0.25 );
+    
     // Write all bins to an ultra file
     char name[256];
     if (PAR_Rank() == 0)
@@ -447,14 +488,23 @@ avtHohlraumFluxQuery::PostExecute(void)
         int times = 0;
         sprintf(name, "hf%d.ult", times++);
 
-        for (;;)
+        for (times = 0 ; times < 10000 ; times++)
         {
             ifstream ifile(name);
             if (ifile.fail())
             {
                 ifile.close();
                 ofstream ofile(name);
-                ofile << "# Hohlraum Flux Query" << endl;
+                // I would like to stick all this in the file, but the whole thing is 
+                // interpreted as the variable name. -DJB
+                //ofile << "# Flux values in Eu / (ms*cm2*keV).  Sum is " << resultSum << ".";
+                //if (binWidths.size() != 0)
+                //{
+                //    ofile << "Temperature is " << temperature << ".";
+                //}
+                //ofile << endl;
+                ofile << "# Hohlraum Flux" << endl;
+                
                 for (ii = 0 ; ii < numBins ; ii++)
                 {
                     ofile << ii << " " << result[ii] << endl;
@@ -465,17 +515,19 @@ avtHohlraumFluxQuery::PostExecute(void)
             else
             {
                 ifile.close();
-                sprintf(name, "hf%d.ult", times++);
+                sprintf(name, "hf%d.ult", times);
             }
         }
     }
 
-    int   msgBufSize = 256;
+    int   msgBufSize = 512;
     char *msg = (char *)malloc(msgBufSize);
     sprintf(msg, "The hohlraum flux query over %d energy groups "
                  "was written to %s.\n", numBins, name);
-    sprintf(msg + strlen(msg), "Sum is %f.  Energy group values are: ", 
-            resultSum);
+    sprintf(msg + strlen(msg), "Sum is %g.\n", resultSum);
+    if (binWidths.size() != 0)
+        sprintf(msg + strlen(msg), "Temperature is %g.\n", temperature);
+    strcat(msg, "Energy group values are: ");
     
     for (ii = 0 ; ii < numBins ; ii++)
     {
@@ -484,7 +536,10 @@ avtHohlraumFluxQuery::PostExecute(void)
             msg = (char *)realloc(msg, msgBufSize + 256);
             msgBufSize += 256;
         }
-        sprintf(msg + strlen(msg), " %f", result[ii]);
+        sprintf(msg + strlen(msg), " %g", result[ii]);
+        
+        if (ii < numBins-1)
+            strcat(msg, ",");
     }
     SetResultMessage(msg);
     free(msg);

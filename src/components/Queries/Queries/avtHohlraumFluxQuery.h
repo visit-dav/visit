@@ -83,6 +83,7 @@ class QUERY_API avtHohlraumFluxQuery : public avtLineScanQuery
     std::string               absVarName;  //e.g. "absorbtivity"
     std::string               emisVarName; //e.g. "emissivity"
     double *                  radBins;
+    std::vector<double>       binWidths;
 
     //FYI:  Inherits from avtLineScanQuery
     //int                       numBins;    //Used for radiation bins.
