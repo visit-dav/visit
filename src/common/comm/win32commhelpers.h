@@ -41,10 +41,11 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <windows.h>
+#include <comm_exports.h>
 
-struct hostent *CopyHostent(struct hostent *h);
-void            FreeHostent(struct hostent *h);
-void            LogWindowsSocketError(const char *mName, const char *fName);
+COMM_API struct hostent *CopyHostent(struct hostent *h);
+void COMM_API            FreeHostent(struct hostent *h);
+void COMM_API            LogWindowsSocketError(const char *mName, const char *fName);
 #endif
 
 #endif

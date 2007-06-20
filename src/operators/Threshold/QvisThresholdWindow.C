@@ -522,10 +522,10 @@ QvisThresholdWindow::variableAddedToList(const QString &variableToAdd)
     
     char listVarText[21];
     
-    MakeDisplayableVariableNameText(listVarText, variableToAdd, 20);
+    MakeDisplayableVariableNameText(listVarText, variableToAdd.ascii(), 20);
     AddNewRowToVariablesList(QString(listVarText));
     
-    guiFullVarNames.push_back(variableToAdd);
+    guiFullVarNames.push_back(variableToAdd.ascii());
 }
 
 

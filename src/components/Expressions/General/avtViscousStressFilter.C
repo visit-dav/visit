@@ -124,7 +124,7 @@ avtViscousStressFilter::DeriveVariable(vtkDataSet *in_ds)
 
     int dtype = in_ds->GetDataObjectType();
 
-    if( ( dtype != VTK_STRUCTURED_GRID) and
+    if( ( dtype != VTK_STRUCTURED_GRID) &&
         ( dtype != VTK_RECTILINEAR_GRID ))
     {
         EXCEPTION1(ExpressionException,

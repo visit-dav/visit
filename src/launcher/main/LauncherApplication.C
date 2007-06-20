@@ -72,6 +72,31 @@ LauncherApplication *LauncherApplication::instance = 0;
 std::map<int, bool> LauncherApplication::childDied;
 
 // ****************************************************************************
+//  Function:  CreateSocketBridge
+//
+//  Purpose:
+//    Initiate the socket bridge.
+//
+//  Arguments:
+//    ports      (really an int[2]):
+//                 ports[0]=new local port
+//                 ports[1]=old local port
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    June  5, 2007
+//
+// ****************************************************************************
+static void CreateSocketBridge(void *ports)
+{
+    int newlocalport = ((int*)ports)[0];
+    int oldlocalport = ((int*)ports)[1];
+    SocketBridge bridge(newlocalport,oldlocalport);
+    bridge.Bridge();
+}
+
+
+
+// ****************************************************************************
 // Method: RPCExecutor<QuitRPC>::Execute
 //
 // Purpose:
@@ -652,6 +677,12 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
         launchArgs[portargument] = newportstr;
 
         // fork and start the socket bridge
+        int *ports = new int[2];
+        ports[0] = newlocalport;
+        ports[1] = oldlocalport;
+#ifdef _WIN32
+        _beginthread(CreateSocketBridge, 0, (void*)ports);
+#else
         switch (fork())
         {
           case -1:
@@ -660,15 +691,14 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
             break;
           case 0:
               {
+                  // The child process will start the bridge
                   // Close stdin and any other file descriptors.
                   fclose(stdin);
                   for (int k = 3 ; k < 32 ; ++k)
                   {
                       close(k);
                   }
-                  // The child process will start the bridge
-                  SocketBridge bridge(newlocalport,oldlocalport);
-                  bridge.Bridge();
+                  CreateSocketBridge((void*)ports);
                   exit(0);
                   break;
               }
@@ -680,6 +710,7 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
             // The odds of this happening are low, but it should be fixed.
             break;
         }
+#endif
     }
     else
     {
