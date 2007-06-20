@@ -414,8 +414,8 @@ install: install_bin
 
 clean:
 	$(RM) $(OBJ) ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./csg ./lowfrac ./distribution_curves ./bov ./largefile ./one_quad ./fullframe ./thinplane @PDB@
-	$(RM) *.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra sid97.o
-	$(RM) curve.visit wave*.visit
+	$(RM) *.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra multi_ucd3d*
+	$(RM) curve.visit wave*.visit *.bov multi00*.values *_indices*.values
 	$(RM) -r $(BINSRC)
 
 ##
