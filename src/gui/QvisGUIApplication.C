@@ -4634,6 +4634,11 @@ QvisGUIApplication::ReadSavedMainWindowGeometry(DataNode *parentNode,
 //   Brad Whitlock, Mon May 5 14:03:13 PST 2003
 //   I replaced most of the arguments with the args string vector.
 //
+//   Brad Whitlock, Tue Jun 19 17:54:00 PST 2007
+//   Added code to allow mdserver connections to succeed in the event that
+//   they came about implicitly by the viewer sending us updates that require
+//   us to have metadata.
+//
 // ****************************************************************************
 
 void
@@ -4641,6 +4646,18 @@ QvisGUIApplication::StartMDServer(const std::string &hostName,
     const stringVector &args, void *data)
 {
     ViewerProxy *theViewer = (ViewerProxy *)data;
+
+    // Note: This is a VERY important line. We may get to this method when
+    // an mdserver is launched implicitly when are updating a window in
+    // response to data coming back from the viewer. In that situation,
+    // the viewer proxy's xfer's updates are disabled to prevent the update
+    // from the viewer from causing a loop of data going back to the viewer.
+    // In order to connect to mdservers from the GUI, we must send a viewer
+    // RPC. This is prevented since the xfer's updates are off. So, since
+    // danger of sending unwanted data to xfer is past (because xfer is the
+    // first observer for an object), we enable it here so our subsequent
+    // calls to make a connection to the mdserver will succeed.
+    theViewer->SetXferUpdate(true);
 
     // Have the viewer tells its mdserver running on hostName to connect
     // to the gui.
