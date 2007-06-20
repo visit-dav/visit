@@ -1,5 +1,5 @@
-Histogram(d):  The area under the curve is 22.3066.
-Histogram(p):  The area under the curve is 2.21206.
-Histogram(u):  The area under the curve is 15.2733.
-Histogram(v):  The area under the curve is 7.63666.
+Histogram(d):  The area under the curve is 44.6132.
+Histogram(p):  The area under the curve is 4.42412.
+Histogram(u):  The area under the curve is 30.5466.
+Histogram(v):  The area under the curve is 15.2733.
 
