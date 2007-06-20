@@ -60,7 +60,7 @@ cleanPluginDir () {
     rm -rf .svn
     rm -f .depend .cmake.depend .cmake.state Makefile *.o findmerge*
     rm -f *.contrib* *.keep*
-    rm -f *PluginInfo*.[Ch]
+#    rm -f *PluginInfo*.[Ch]
     chmod -f 664 *
     popd
 }
@@ -114,7 +114,6 @@ cat >> $1 <<- EOF
     % gunzip < $pluginName.tar.gz | tar xvf -
     % cd $pluginName
     To install...
-    % xml2info -clobber $pluginName.xml
     % xml2makefile -clobber $pluginName.xml
     % make
     To UNinstall...
@@ -257,7 +256,6 @@ testBuildPluginTarball () {
     elif test -e .REQUIRED_VISIT_VERSION; then
         vers="-v `cat .REQUIRED_VISIT_VERSION`"
     fi
-    xml2info $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
     xml2makefile $vers -clobber $thePluginName.xml 1>/dev/null 2>&1
     make -j 2 1>$oldDir/visit_plugin_${thePluginName}_make.log 2>&1
     hadError=$?
