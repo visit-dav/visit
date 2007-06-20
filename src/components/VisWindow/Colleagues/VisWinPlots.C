@@ -264,6 +264,12 @@ VisWinPlots::~VisWinPlots()
 //    Cyrus Harrison, Sun Jun 17 21:07:09 PDT 2007
 //    Added tracking of active paths
 //
+//    Jeremy Meredith, Wed Jun 20 17:00:33 EDT 2007
+//    Only use the window mode to set whether specular is enabled, not
+//    to clear all the other specular properties that won't be used.
+//    This turned out not to be the cause of a specular bug, but I
+//    believe this behavior is more correct anyway.
+//
 // ****************************************************************************
 
 void
@@ -359,19 +365,13 @@ VisWinPlots::AddPlot(avtActor_p &p)
     mediator.UpdatePlotList(plots);
 
     //
-    // Ensure that the new plot has the right immediate mode rendering flag.
+    // Set the right specular values
     //
-    if (p->GetWindowMode() == WINMODE_3D)
-    {
-        p->SetSpecularProperties(mediator.GetSpecularFlag(),
-                                 mediator.GetSpecularCoeff(),
-                                 mediator.GetSpecularPower(),
-                                 mediator.GetSpecularColor());
-    }
-    else
-    {
-        p->SetSpecularProperties(false, 0, 0, ColorAttribute());
-    }
+    p->SetSpecularProperties((p->GetWindowMode() == WINMODE_3D) ?
+                             mediator.GetSpecularFlag() : false,
+                             mediator.GetSpecularCoeff(),
+                             mediator.GetSpecularPower(),
+                             mediator.GetSpecularColor());
 
     // Ensure that the new plot has the right color texturing flag.
     p->SetColorTexturingFlag(vw->GetColorTexturingFlag());
