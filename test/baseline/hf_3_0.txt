@@ -1,2 +1,3 @@
 The hohlraum flux query over 1 energy groups was written to hf0.ult.
-Sum is 0.538024.  Energy group values are:  0.538024
+Sum is 0.538024.
+Energy group values are:  0.538024
