@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 # *****************************************************************************
 #   Script: build_visit
 #
@@ -144,7 +144,10 @@
 #
 #     Thomas R. Treadway, Thu May 31 16:05:36 PDT 2007
 #     Modified Mesa install for 64-bit linux
-#     Change Boxlib install path back to the legacy path 
+#     Change Boxlib install path back to the legacy path
+#
+#     Cyrus Harrison, Mon Jun 11 08:41:00 PDT 2007
+#     Added support for SVN_NERSC_NAME for svn mode
 #
 # *****************************************************************************
 
@@ -262,6 +265,13 @@ PAR_INCLUDE=""
 PAR_LIBS=""
 #PAR_INCLUDE="-I/usr/lib/mpi/gcc/mvapich-gen2/include"
 #PAR_LIBS="-L/usr/lib/mpi/gcc/mvapich-gen2/lib -Wl,-rpath=/usr/lib/mpi/gcc/mvapich-gen2/lib/shared -lmpich -libverbs -lpthread -lsysfs -ldl"
+
+# Setup svn path: use SVN_NERSC_NAME if set
+if test -z "$SVN_NERSC_NAME" ; then
+   export SVN_ROOT_PATH="svn+ssh://$(whoami)@svn.nersc.gov/svn/visit"
+else
+   export SVN_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@svn.nersc.gov/svn/visit"
+fi
 
 #
 # TARBALL LOCATIONS AND VERSIONS
@@ -411,8 +421,7 @@ function download_file
 
     # Try and download the file.
     if [[ "$DO_SVN" == "yes" ]] ; then
-        svn export \
-            svn+ssh://$(whoami)@svn.nersc.gov/svn/visit/trunk/third_party/$2
+        svn export $SVN_ROOT_PATH/trunk/third_party/$2
     else
         if [[ "$1" == "" ]] ; then
             if [[ "$OPSYS" == "Darwin" ]]; then
@@ -613,14 +622,13 @@ function check_files
         if [[ "$DO_SVN" == "yes" ]] ; then
             if [[ -d src ]] ; then
                echo "VisIt svn src directory found, using it."
-#              svn up svn+ssh://$(whoami)@svn.nersc.gov/svn/visit/trunk/src
+#              svn up $SVN_ROOT_PATH/trunk/src
 #              if [[ $? == 0 ]] ; then
 #                  echo "Unable to update VisIt.  SVN update failed."
 #                  return 1
 #              fi
             else
-               svn co --quite --non-interactive \
-                  svn+ssh://$(whoami)@svn.nersc.gov/svn/visit/trunk/src
+               svn co --quiet --non-interactive $SVN_ROOT_PATH/trunk/src
 #              if [[ $? == 0 ]] ; then
 #                  echo "Unable to build VisIt.  SVN download failed."
 #                  return 1
@@ -3493,7 +3501,7 @@ EOF
     #
     info_box "Installing HDF4 . . ." >&3
     echo "Installing HDF4"
-    $MAKE $MAKEOPS install 
+    $MAKE $MAKEOPS install
     if [[ $? != 0 ]] ; then
        echo "HDF4 install failed.  Giving up"
        return 1
@@ -4955,7 +4963,7 @@ usage () {
   printf "%s %s %s\n" "-n     Build NetCDF from [" $NETCDF_FILE "]"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
   printf "%s\n" "-s     Use the SVN server for the VisIt distribution"
-  printf "%s %s %s\n" "       [ svn co svn+ssh://"$(whoami)"@svn.nersc.gov/svn/visit/trunk/src ]"
+  printf "%s %s %s\n" "       [ svn co $SVN_ROOT_PATHt/trunk/src ]"
   printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
   printf "%s %s %s\n" "       variable [" $VISIT_FILE "]"
   printf "%s\n" "-u opt The THIRD_PARTY_PATH path contains the root"
