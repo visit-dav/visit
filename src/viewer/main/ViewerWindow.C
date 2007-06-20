@@ -7321,6 +7321,11 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   Brad Whitlock, Mon Sep 18 10:59:44 PDT 2006
 //   Added colorTexturingFlag.
 //
+//   Jeremy Meredith, Wed Jun 20 16:54:14 EDT 2007
+//   Made specularColor be written underneath a new object data node with
+//   a specific name.  This forces ViewerWindow::SetFromNode to pick up
+//   the correct ColorAttribute values.
+//
 // ****************************************************************************
 
 void
@@ -7403,8 +7408,10 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("specularFlag", GetSpecularFlag()));
         windowNode->AddNode(new DataNode("specularCoeff", GetSpecularCoeff()));
         windowNode->AddNode(new DataNode("specularPower", GetSpecularPower()));
+        DataNode *specularColorNode = new DataNode("specularColor");
         ColorAttribute specColor(GetSpecularColor());
-        specColor.CreateNode(windowNode, true, true);
+        specColor.CreateNode(specularColorNode, true, true);
+        windowNode->AddNode(specularColorNode);
         windowNode->AddNode(new DataNode("doShading", GetDoShading()));
         windowNode->AddNode(new DataNode("shadingStrength", GetShadingStrength()));
         windowNode->AddNode(new DataNode("colorTexturingFlag", GetColorTexturingFlag()));
@@ -7541,6 +7548,10 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //
 //   Brad Whitlock, Fri Nov 10 10:03:10 PDT 2006
 //   Added sourceToDB.
+//
+//   Jeremy Meredith, Wed Jun 20 16:54:14 EDT 2007
+//   Made specularColor be written underneath a new object data node with
+//   a specific name.  This ensures we pick up the correct ColorAttribute.
 //
 // ****************************************************************************
 
@@ -7795,9 +7806,9 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         tmpSpecularPower = node->AsFloat();
         numParamsSaved++;
     }
-    if((node = windowNode->GetNode("ColorAttribute")) != 0)
+    if((node = windowNode->GetNode("specularColor")) != 0)
     {
-        tmpSpecularColor.SetFromNode(windowNode);
+        tmpSpecularColor.SetFromNode(node);
         numParamsSaved++;
     }
     if (numParamsSaved == 4)
