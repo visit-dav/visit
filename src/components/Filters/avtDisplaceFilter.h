@@ -42,6 +42,7 @@
 #ifndef AVT_Displace_FILTER_H
 #define AVT_Displace_FILTER_H
 
+#include <filters_exports.h>
 
 #include <avtStreamer.h>
 
@@ -76,7 +77,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtDisplaceFilter : public avtStreamer
+class AVTFILTERS_API avtDisplaceFilter : public avtStreamer
 {
   public:
                          avtDisplaceFilter();

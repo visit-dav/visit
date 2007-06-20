@@ -38,6 +38,7 @@
 
 #if defined(_WIN32)
 #include <win32commhelpers.h>
+#include <io.h>
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -551,7 +552,12 @@ static bool
 ForwardData(int read_fd, int write_fd)
 {
     char buff[10000];
+#ifndef WIN32
     int nread = read(read_fd, buff, 10000);
+#else
+    int nread = _read(read_fd, buff, 10000);
+#endif
+
     if (nread <= 0)
         return false;
 
