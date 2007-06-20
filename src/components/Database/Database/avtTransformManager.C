@@ -894,6 +894,10 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 //    Mark C. Miller, Wed Dec  6 13:40:17 PST 2006
 //    Fixed use of SetScalars|Vectors|Tensors and AddArray for copying
 //    over various cell data arrays.
+//
+//    Mark C. Miller, Tue Jun 19 18:29:12 PDT 2007
+//    Corrected code that puts mapped arrays onto output dataset to use
+//    the SetScalars/SetVectors/SetTensors methods as in other cases
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
@@ -921,6 +925,12 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
             int csgdom = dom, csgreg;
             md->ConvertCSGDomainToBlockAndRegion(vname, &csgdom, &csgreg);
 
+	    debug5 << "Preparing to obtain CSG discretized grid for "
+	           << ", dom=" << dom
+		   << ", csgdom=" << csgdom
+		   << ", csgreg=" << csgreg
+		   << endl;
+
             //
             // See if we have discretized result in xform's cache
             //
@@ -935,9 +945,12 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
                     (olddspec->FlatTol() != dspec->FlatTol()) ||
                     (olddspec->DiscMode() != dspec->DiscMode()))
                     dgrid = 0;
+	        debug5 << "Found discretized CSG grid in cache" << endl;
             }
             if (!dgrid)
             {
+	        debug5 << "No discretized CSG grid in cache. Computing a disrcetization..." << endl;
+
                 vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(ds);
                 const double *bnds = csgmesh->GetBounds();
                 if (dspec->DiscBoundaryOnly())
@@ -993,24 +1006,22 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
                     vector<int> mapvals;
                     for (int j = 0; j < rv->GetNumberOfCells(); j++)
                         mapvals.push_back(csgreg);
+		    debug5 << "Mapping array \"" << da->GetName() << "\" to the discretized CSG mesh" << endl;
                     newda = BuildMappedArray(da, mapvals);
                     if (newda)
                     {
                         cache.CacheVTKObject(vname, type, ts, dom, mat, newda);
                         newda->Delete();
-                        if (IsInternalAVTArray(newda))
-                            rv->GetCellData()->AddArray(newda);
-                        else
-                        {
-                            switch (newda->GetNumberOfComponents())
-                            {
-                                case 1: rv->GetCellData()->SetScalars(newda); break;
-                                case 3: rv->GetCellData()->SetVectors(newda); break;
-                                default: rv->GetCellData()->SetTensors(newda); break;
-                            }
-                        }
                     }
                 }
+                if (cd->GetScalars() == da)
+                    rv->GetCellData()->SetScalars(newda);
+                else if (cd->GetVectors() == da)
+                    rv->GetCellData()->SetVectors(newda);
+                else if (cd->GetTensors() == da)
+                    rv->GetCellData()->SetTensors(newda);
+                else
+                    rv->GetCellData()->AddArray(newda);
             }
             return rv;
         }
