@@ -52,6 +52,7 @@
 
 class  avtSamplePointsSource;
 class  avtVolume;
+class  avtWebpage;
 
 
 // ****************************************************************************
@@ -75,6 +76,9 @@ class  avtVolume;
 //
 //     Hank Childs, Sun Dec  4 19:16:23 PST 2005
 //     Add [Get|Set]UseWeightingScheme.
+//
+//     Hank Childs, Thu Jun 21 11:19:02 PDT 2007
+//     Add DebugDump.
 //
 // ****************************************************************************
 
@@ -105,6 +109,8 @@ class PIPELINE_API  avtSamplePoints : public avtDataObject
                                     { useWeightingScheme = b; };
     bool                        GetUseWeightingScheme(void)
                                     { return useWeightingScheme; };
+
+    virtual void                DebugDump(avtWebpage *, const char *);
 
   protected:
     avtVolume                  *volume;

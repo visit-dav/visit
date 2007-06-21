@@ -41,9 +41,12 @@
 
 #include <avtSamplePoints.h>
 
+#include <snprintf.h>
+
 #include <avtCellList.h>
 #include <avtSamplePointsSource.h>
 #include <avtVolume.h>
+#include <avtWebpage.h>
 
 #include <ImproperUseException.h>
 
@@ -284,6 +287,34 @@ avtSamplePoints::SetVolume(int width, int height, int depth)
     if (useWeightingScheme)
         nv++;
     volume = new avtVolume(width, height, depth, nv);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePoints::DebugDump
+//
+//  Purpose:
+//      Does a DebugDump.
+//
+//  Programmer: Hank Childs
+//  Creation:   June 21, 2007
+//
+// ****************************************************************************
+
+void
+avtSamplePoints::DebugDump(avtWebpage *webpage, const char *prefix)
+{
+    avtDataObject::DebugDump(webpage, prefix);
+    webpage->AddSubheading("Sample points variable tracking");
+    webpage->StartTable();
+    webpage->AddTableHeader2("Name", "Size");
+    char str[1024];
+    for (int i = 0 ; i < varnames.size() ; i++)
+    {
+        SNPRINTF(str, 1024, "%d", varsize[i]);
+        webpage->AddTableEntry2(varnames[i].c_str(), str);
+    }
+    webpage->EndTable();
 }
 
 
