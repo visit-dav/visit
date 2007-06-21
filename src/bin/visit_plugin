@@ -46,6 +46,15 @@
 #
 #   Mark C. Miller, Thu Mar 29 13:21:55 PDT 2007
 #   Set email and reply-to fields of mutt's message
+#
+#   Mark C. Miller, Wed Jun 20 17:59:58 PDT 2007
+#   Added (this) comment: Eliminated removal of *PluginInfo* files when
+#   cleaning the plugin dir as well as invokation of xml2info to regenerate
+#   them.
+#
+#   Mark C. Miller, Wed Jun 20 17:59:58 PDT 2007
+#   Added .d files to be cleaned from the plugin dir
+#
 # ----------------------------------------------------------------------------
 #
 
@@ -53,12 +62,13 @@
 # Clean up the plugin dir from extraneous files. We could opt to remove
 # everything that doesn't look like its part of the plugin here. That would
 # be good. However, I am not sure how to reliably do that. Maybe from looking
-# at the xml file?
+# at the xml file? Note: These commands are intended to execute on a copy of
+# the plugin dir and not the original one in the source code tree
 #
 cleanPluginDir () {
     pushd $1
     rm -rf .svn
-    rm -f .depend .cmake.depend .cmake.state Makefile *.o findmerge*
+    rm -f *.d .depend .pardepend .cmake.depend .cmake.state Makefile *.o findmerge*
     rm -f *.contrib* *.keep*
 #    rm -f *PluginInfo*.[Ch]
     chmod -f 664 *
