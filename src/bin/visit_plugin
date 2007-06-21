@@ -55,6 +55,9 @@
 #   Mark C. Miller, Wed Jun 20 17:59:58 PDT 2007
 #   Added .d files to be cleaned from the plugin dir
 #
+#   Mark C. Miller, Wed Jun 20 18:06:14 PDT 2007
+#   Fixed comments in README regarding dependency files to remove explicit
+#   references to files named '.depend' or '.pardepend'
 # ----------------------------------------------------------------------------
 #
 
@@ -206,17 +209,18 @@ cat >> $1 <<- EOF
     find all the make variable names that are used to define locations
     of third party libraries.
 
-    Finally, be aware that sometimes you may need to remove .depend
-    file(s) in the directory where you are building the plugin to
-    get things to build correctly. This is so becuase the .depend file
-    is generated only when it does not exist, after that, make assumes
+    Finally, be aware that sometimes you may need to remove dependency
+    files (named something like .depend or .pardepend or <C++file>.d)
+    in the directory where you are building the plugin to get things to
+    build correctly. This is so becuase the dependency file(s) are
+    generated only when it does not exist, after that, make assumes
     the dependencies are correct. If you get error messages that look
     like...
 
         gmake: *** No rule to make target 'foo.h', needed by
         'somefile.o'.  Stop.
 
-    It can never hurt to remove the .depend file(s) and try remaking.
+    it can never hurt to remove the dependency files(s) and try remaking.
 
 EOF
 }
