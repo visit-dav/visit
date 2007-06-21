@@ -42,7 +42,7 @@
 #include <avtExtrudedVolFileFormat.h>
 
 #include <string>
-#include <fstream.h>
+#include <fstream>
 #include <snprintf.h>
 
 #include <vtkCell.h>
