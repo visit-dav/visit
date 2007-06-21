@@ -13,6 +13,9 @@
 #    Brad Whitlock, Tue Nov 21 10:55:24 PDT 2006
 #    Made it use enums for line style.
 #
+#    Mark C. Miller, Thu Jun 21 11:05:58 PDT 2007
+#    Added tests for overlaying curves on 2D plots
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations(): 
@@ -82,12 +85,79 @@ def Test1():
     SetViewCurve(v)
     Test("curve_1_07")
 
+    DeleteAllPlots()
+    CloseDatabase("../data/distribution.ultra")
+
+def TestOverlayCurves():
+    TestSection("Overlay curves on 2D plots")
+
+    # put up some 2D plots
+    OpenDatabase("../data/ucd2d.silo")
+    AddPlot("Pseudocolor","d")    # id=0
+    AddPlot("Mesh","ucdmesh2d")   # id=1
+    SetActivePlots((1))
+    AddOperator("Transform")
+    ta=TransformAttributes()
+    ta.doTranslate=1
+    ta.translateY=2
+    SetOperatorOptions(ta)
+    DrawPlots()
+
+    OpenDatabase("../data/ol_curveA.curve")
+    AddPlot("Curve","ol_curveA")  # id=2
+    DrawPlots()
+    Test("curve_2_01")
+
+    OpenDatabase("../data/ol_curveB.curve")
+    AddPlot("Curve","ol_curveB")  # id=3
+    DrawPlots()
+    Test("curve_2_02")
+
+    OpenDatabase("../data/ol_curveC.curve")
+    AddPlot("Curve","ol_curveC")  # id=4
+    DrawPlots()
+    Test("curve_2_03")
+
+    # testing hiding/unhiding the 2D plots
+    SetActivePlots(())
+    SetActivePlots((0,1))
+    HideActivePlots()
+    #Test("curve_2_04")
+    HideActivePlots()
+    Test("curve_2_05")
+    SetActivePlots((1))
+    HideActivePlots()
+    Test("curve_2_06")
+    HideActivePlots()
+
+    # test hiding some curves
+    SetActivePlots((2,3,4))
+    HideActivePlots()
+    Test("curve_2_07")
+    HideActivePlots()
+    SetActivePlots((2))
+    HideActivePlots()
+    Test("curve_2_08")
+    HideActivePlots()
+    SetActivePlots((3))
+    HideActivePlots()
+    Test("curve_2_09")
+    HideActivePlots()
+    SetActivePlots((4))
+    HideActivePlots()
+    Test("curve_2_10")
+    HideActivePlots()
 
     DeleteAllPlots()
+    CloseDatabase("../data/ucd2d.silo")
+    CloseDatabase("../data/ol_curveA.curve")
+    CloseDatabase("../data/ol_curveB.curve")
+    CloseDatabase("../data/ol_curveC.curve")
 
 def Main():
     InitAnnotations()
     Test1()
+    TestOverlayCurves()
 
 Main()
 Exit()
