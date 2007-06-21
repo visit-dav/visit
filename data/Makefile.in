@@ -346,8 +346,8 @@ test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./mu
 	./global_node
 	./globe
 	./multi_test
-	-@if test -x ../exe/visitconvert_ser; then \
-	    ../bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo ; \
+	-@if test -x ../src/exe/visitconvert_ser; then \
+	    ../src/bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo ; \
 	fi
 	./noise
 	./noise2d
@@ -386,8 +386,8 @@ testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./
 	   ./global_node -driver DB_HDF5;\
 	   ./globe -driver DB_HDF5;\
 	   ./multi_test -driver DB_HDF5;\
-	   if test -x ../exe/visitconvert_ser; then \
-	      ../bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo;\
+	   if test -x ../src/exe/visitconvert_ser; then \
+	      ../src/bin/visitconvert multi_ucd3d.silo multipart_multi_ucd3d Silo;\
 	   fi;\
 	   ./noise -driver DB_HDF5;\
 	   ./noise2d -driver DB_HDF5;\
