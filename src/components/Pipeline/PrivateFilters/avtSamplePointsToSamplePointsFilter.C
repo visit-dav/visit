@@ -67,6 +67,9 @@ avtSamplePointsToSamplePointsFilter::~avtSamplePointsToSamplePointsFilter()
 //    Hank Childs, Thu May 31 13:54:52 PDT 2007
 //    Added support for non-scalar variables.
 //
+//    Hank Childs, Thu Jun 21 11:40:04 PDT 2007
+//    Fix stupid bug where variables weren't being set up correctly.
+//
 // ****************************************************************************
 
 void
@@ -76,7 +79,7 @@ avtSamplePointsToSamplePointsFilter::PreExecute(void)
 
     avtSamplePoints_p in  = GetTypedInput();
     avtSamplePoints_p out = GetTypedOutput();
-    int nvar = out->GetNumberOfRealVariables();
+    int nvar = in->GetNumberOfRealVariables();
     std::vector<std::string> varnames;
     std::vector<int>         varsizes;
     for (int i = 0 ; i < nvar ; i++)
