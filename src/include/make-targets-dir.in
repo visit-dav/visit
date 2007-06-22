@@ -1,9 +1,17 @@
 all: message
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
 
+## Modifications:
+##   Jeremy Meredith, Fri Jun 22 13:59:41 EDT 2007
+##   Reverse order of subdirectories, and don't fail whole build
+##   if there's an error.
+##
 clean:
 	-$(RM) $(LIB)
-	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
+	if test -n "$(SUBDIRS)"; then \
+		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
+		for dir in $$rev; do (cd $$dir && $(MAKE) $@); done \
+	fi
 	-$(RM) $(CLEAN_FILES)
 
 ## Same as `clean' and then remove Emacs backup files, .depend files,
