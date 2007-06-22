@@ -1,0 +1,159 @@
+#!/bin/ksh
+#
+#  Script: co_rctrunk
+# 
+#  Purpose: 
+#      Checks out the RC trunk into the $PWD.
+#
+#  Programmer: Hank Childs
+#  Creation:   June 22, 2007
+#
+#  Modifications:
+#
+# *****************************************************************************
+
+issueHelp="no"
+
+# Supresses print statement when you change directories
+CDPATH=""
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+if [[ $# != 2 ]] ; then
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   ${0##*/} RC_NAME <dir>"
+   echo "Usage:   ${0##*/} RC_NAME <known-dir-combo>"
+   echo ""
+   echo "Example: ${0##*/} 1.6.1RC /src"
+   echo "\twill check out the /src directory of the 1.6.1RC trunk into the subdirectory /1.6.1RC"
+   echo ""
+   echo "Example: ${0##*/} 1.6.1RC /src/plots/Volume"
+   echo "\twill check out the /src/plots/Volume directory of the 1.6.1RC trunk "
+   echo "\tinto the subdirectory /1.6.1RC"
+   echo ""
+   echo "known-dir-combos: \"all\" (all subdirs), \"sdt\" (source-data-test)"
+   echo ""
+   echo "Example: ${0##*/} 1.6.1RC sdt"
+   echo "\twill check out the /src, /data/, and /test directories of the "
+   echo "\t1.6.1RC trunk into the subdirectory /1.6.1RC"
+   echo ""
+   echo "Note: you *can* check out different directories through multiple "
+   echo "invocations, for example: ${0##*/} 1.6.1RC /src followed by "
+   echo "${0##*/} 1.6.1RC /data"
+   echo ""
+   echo "But you *CANNOT* do this if the directories are at different levels "
+   echo "in the directory structure.  For example, you *CANNOT* do "
+   echo "\"${0##*/} 1.6.1RC /src/plots/Volume\" and then later do \"${0##*/} 1.6.1RC /src/\""
+   echo ""
+   exit 1
+fi
+
+svn ls ${VISIT_SVN_BRANCHES}/${1} 2>/dev/null > /dev/null
+if [[ $? != 0 ]] ; then
+   echo "The RC trunk location $1 does not appear to exist."
+   echo "Aborting checkout"
+   exit 1
+fi
+
+
+DIR=""
+ROOT="/"
+if [[ "$2" != "all" && "$1" != "sdt"  ]] ; then
+    svn ls ${VISIT_SVN_BRANCHES}/${1}/${2} 2>/dev/null > /dev/null
+    if [[ $? != 0 ]] ; then
+       echo "The trunk location $1 does not appear to exist."
+       echo "Aborting checkout"
+       exit 1
+    fi
+    if [[ "${1#/}" == "${1}" ]] ; then
+       TMP="/${1}"
+       ROOT="${TMP%/*}"
+    else
+       ROOT="${1%/*}"
+    fi
+    if [[ "$ROOT" == "" ]] ; then
+       ROOT="/"
+    fi
+fi
+
+function checkout_dir
+{
+    cd ${1}_trunk
+    echo "Getting files for \"${2}\" from remote repo..."
+    svn checkout --quiet --non-interactive ${VISIT_SVN_BRANCHES}/${1}/${2}
+    cd ..
+}
+
+if [[ -d ${1}_trunk ]] ; then
+  cd ${1}_trunk
+  if [[ ! -f .branchname ]] ; then
+     echo "The subdirectory I want to place the check out in (${1}_trunk) does not appear "
+     echo "to be a valid check out."
+     exit 1
+  fi
+  NAME=$(cat .branchname)
+  if [[ "$NAME" != "${1}_trunk" ]] ; then
+     echo "The subdirectory I want to place the check out in (${1}_trunk) does not appear "
+     echo "to be a valid check out."
+     exit 1
+  fi
+  if [[ ! -f .rootpath ]] ; then
+     echo "The subdirectory I want to place the check out in is not consistent"
+     exit 1
+  fi
+  ROOT2=$(cat .rootpath)
+  if [[ "$ROOT" != "$ROOT2" ]] ; then
+     echo "The directory you are requesting is from a different directory in the repo."
+     echo "This is not allowed."
+     echo "Your previous checkout(s) have been from ${ROOT2}"
+     echo "You are now requesting a checkout from ${ROOT}"
+     exit 1
+  fi
+  cd ..
+else
+  mkdir ${1}_trunk
+  cd ${1}_trunk
+  echo "${1}_trunk" > .branchname
+  chmod 400 .branchname
+  echo "$ROOT" > .rootpath
+  chmod 400 .rootpath
+  cd ..
+fi
+
+if [[ "$2" == "sdt" ]] ; then
+   echo "Checking out /src"
+   checkout_dir $1 "/src"
+   echo "Checking out /data"
+   checkout_dir $1 "/data"
+   echo "Checking out /test"
+   checkout_dir $1 "/test"
+elif [[ "$2" == "all" ]] ; then
+   echo "Checking out /src"
+   checkout_dir $1 "/src"
+   echo "Checking out /data"
+   checkout_dir $1 "/data"
+   echo "Checking out /test"
+   checkout_dir $1 "/test"
+   echo "Checking out /docs"
+   checkout_dir $1 "/docs"
+   echo "Checking out /third_party"
+   checkout_dir $1 "/third_party"
+   echo "Checking out /windowsbuild"
+   checkout_dir $1 "/windowsbuild"
+else
+   checkout_dir $1 $2
+fi
+
+echo ""
+echo "Your check out is ready"
+echo "cd to the \"${1}_trunk\" directory to access the working copy"
+echo ""
+
+return 0
+

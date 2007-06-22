@@ -1,0 +1,60 @@
+#!/bin/ksh
+#
+#  Script: mk_rc
+# 
+#  Purpose: 
+#      Copies the trunk into the branches directory to form a release candidate
+#
+#  Programmer: Hank Childs
+#  Creation:   May 10, 2007
+#
+#  Modifications:
+#
+# *****************************************************************************
+
+issueHelp="no"
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+if [[ $# == 1 ]] ; then
+   is_version_string $1
+   if [[ $? != 1 ]] ; then
+      echo "I do not believe $1 is a valid version string"
+      issueHelp="yes"
+   fi
+else
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   $0 <version>"
+   echo ""
+   echo "Example: $0 1.6.1"
+   echo "\twill create a release candidate branch under REPO/branches/1.6.1RC"
+   echo ""
+   exit 1
+fi
+
+# Make the RC branch
+SRC=${VISIT_SVN_TRUNK}
+DEST=${VISIT_SVN_BRANCHES}/${1}RC
+svn_cp_dir $SRC $DEST
+
+# Now set up the files Rev_fromRCTrunk and Rev_toRCTrunk to keep track of
+# revision history for RC merges.
+svn co $DEST/svninfo
+cd svninfo
+cp Rev_fromTrunk Rev_fromRCTrunk
+svn add Rev_fromRCTrunk
+cp Rev_fromTrunk Rev_toRCTrunk
+svn add Rev_toRCTrunk
+svn delete Rev_fromTrunk
+svn commit -m "Add RC revision tracking files"
+cd ..
+rm -Rf svninfo
+
+return 0
+
