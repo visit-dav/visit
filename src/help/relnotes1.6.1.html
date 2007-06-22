@@ -1,0 +1,47 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta http-equiv="Content-Language" content="en-us">
+   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+   <meta name="ProgId" content="FrontPage.Editor.Document">
+   <title>VisIt 1.6.1 Release Notes</title>
+</head>
+<body>
+
+<center><b><font size="6">VisIt 1.6.1 Release Notes</font></b></center>
+
+<p>Welcome to VisIt's release notes page. This page describes the important
+enhancements and bug-fixes that were added to this release.</p>
+<p><b><font size="4">Features added in version 1.6.1</font></b></p>
+<ul>
+<li>VisIt can now read a <i>"visitrc"</i> file at startup for the purpose of Python scripted initialization. The <i>"visitrc"</i> file is a Python script located in <i>~/.visit</i> on most platforms and, if present, it is executed when VisIt starts so users can set up visualizations using Python scripting. Users may also define Python functions and register those functions as macros in VisIt's new <i>Macros window</i> by using the new <i>RegisterMacro(buttonname, function)</i> function in the CLI. When a Python function is registered as a macro using the RegisterMacro() function, VisIt places a button in the Macros window (available from the Controls->Macro menu option). When the user clicks a button in the Macro window, VisIt executes that macro's corresponding user-defined Python function.</li>
+<li>VisIt's <i>Host Profiles</i> window has been modified so that pressing <i>Enter</i> in text fields in order to get changes to apply is no longer necessary. This makes editing multiple profiles much easier without having to click the Apply button as frequently. The window has also been reorganized somewhat so that the <i>Hardware acceleration</i> tab has been moved into the <i>Advanced options</i> tab along with the networking settings.</li>
+<li>VisIt now has <i>color()</i> and <i>color4()</i> expressions that can be used to create color vectors that can be plotted with the Truecolor plot. The <i>color()</i> expression accepts 3 scalars, representing red, green, and blue color channels. The scalars should in the range [0,255]. The <i>color4()</i> expression operates like the <i>color()</i> expression except that it also accepts a fourth scalar for alpha transparency. These expressions allow plotting of multivariate data using colors.</li>
+<li>VisIt now provides an <i>atan2()</i> expression.</li>
+<li>VisIt's Truecolor plot has been enhanced so that it can plot data from vector tuples with 2, 3, or the desired 4 components. This makes it easier to use the Truecolor plot on regular vector data, in addition to color data produced by the <i>color()</i> and <i>color4()</i> expressions.</li>
+<li>VisIt now provides an <i>Argv()</i> function in the CLI to return all VisIt command line arguments that occur after the <i>-s file.py</i> command line argument. The <i>Argv()</i> function is intended to make it easier to create scripts that have positional command line arguments.</li>
+</ul>
+<p><b><font size="4">Bugs fixed in version 1.6.1</font></b></p>
+<ul>
+<li>VisIt's Spreadsheet plot window can be several times the monitor width when using the MacOS X version of VisIt. This happens when slicing a 3D dataset that produces a large number of tabs to show the slices.</li>
+<li>VisIt's File Selection window is completely disabled when VisIt is started from the CLI using the <i>OpenGUI()</i> function.</li>
+<li>When VisIt's GUI is launched from the CLI using the <i>OpenGUI()</i> function, the Splashscreen window can require the user to move the mouse cursor around in it in order for VisIt to completely initialize.</li>
+<li>The Label plot can draw labels whose exponents are truncated if the values are negative.</li>
+<li>VisIt's Mili database reader plugin produces meshes with one node at the wrong location.</li>
+<li>VisIt's GUI can crash when using the Save Movie wizard if a user's config file was saved with versions of VisIt from before version 1.5.5.</li>
+<li>VisIt's command recording feature sets operator options before an operator has been added, making the recorded script invalid.</li>
+<li>The <i>VisItExecuteCommands()</i> function from VisIt's libsim library is used to cause VisIt's viewer to execute Python commands for a simulation, allowing it to set up its visualizations. However, if a CLI is not already running then the commands are not executed. VisIt now launches a CLI if needed.</li>
+<li>VisIt's <i>specmf</i> expression has an argument parsing flaw that prevents its fourth argument from ever working.</li>
+<li>VisIt's command recording feature does not produce valid code for lighting attributes.</li>
+<li>The File Panel in VisIt's Main window does not show the open database when VisIt's GUI is launched from the CLI using the <i>OpenGUI()</i> function.</li>
+<li>VisIt's command recording feature mistakenly reports rendering attributes instead of material attributes, leading to invalid code.</li>
+<li>VisIt's Truecolor plot should not use texturing for nodal variables.</li>
+<li>VisIt's CLI program ignores the -pid command line argument.</li>
+<li>VisIt's launch program does not pass the -quiet flag on to the viewer and other programs.</li>
+<li>Calling expression definition functions such as <i>DefineScalarExpression()</i> in the CLI to redefine an expression of the same name does not redefine the expression. It instead mistakenly adds a duplicate expression definition that VisIt ultimately ignores.</li>
+</ul>
+<p>Click the following link to view the release notes for the previous version
+of VisIt: <a href="relnotes1.6.html">VisIt 1.6 Release Notes</a>.</p>
+</body>
+</html>
