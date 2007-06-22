@@ -22,6 +22,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt's Truecolor plot has been enhanced so that it can plot data from vector tuples with 2, 3, or the desired 4 components. This makes it easier to use the Truecolor plot on regular vector data, in addition to color data produced by the <i>color()</i> and <i>color4()</i> expressions.</li>
 <li>VisIt now provides an <i>Argv()</i> function in the CLI to return all VisIt command line arguments that occur after the <i>-s file.py</i> command line argument. The <i>Argv()</i> function is intended to make it easier to create scripts that have positional command line arguments.</li>
 <li>VisIt's resample operator now supports vectors.</li>
+<li>Simulation Steering documentation was update to include the strip chart and message windows for Simulation steering use.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.6.1</font></b></p>
 <ul>
@@ -56,6 +57,8 @@ that more heavily weight the proximity of the point.  This makes the results mor
 <li>VisIt no longer places the Y-Axis and Z-Axis labels far away from the bounding box 
 when placing 3D annotations.</li>
 <li>VisIt will no longer swap the opacity and color variables when doing a volume rendering.</li>
+<li>Simulation Qtable widget will now send the value in the row and col in addition to the row and col numbers.</li>
+<li>ValueChanged signal is now generated for QTable widgets in custom simulation dialog widgets</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.6.html">VisIt 1.6 Release Notes</a>.</p>
