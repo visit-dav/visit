@@ -126,9 +126,9 @@ vtkVisItRectilinearGrid::~vtkVisItRectilinearGrid()
 //  Method: vtkVisItRectilinearGrid::GetCell
 //
 //  Purpose:
-//      Reimplementation of vtkVisItRectilinearGrid::GetCell, which allocates the
+//      Reimplementation of vtkRectilinearGrid::GetCell, which allocates the
 //      cells on demand.  This is exactly the same as the implementation of 
-//      vtkVisItRectilinearGrid::GetCell in VTK 5.0.0, except for formatting 
+//      vtkRectilinearGrid::GetCell in VTK 5.0.0, except for formatting 
 //      changes and a few lines for on-demand allocation.
 //
 //  Programmer: Dave Bremer
@@ -262,5 +262,43 @@ vtkVisItRectilinearGrid::GetCell(vtkIdType cellId)
 }
 
 
+// ****************************************************************************
+//  Method: vtkVisItRectilinearGrid::FindAndGetCell
+//
+//  Purpose:
+//      Reimplementation of vtkRectilinearGrid::FindAndGetCell.  This is
+//      exactly the same as the implementation in vtk 5.0.0, except that I
+//      call GetCell() instead of calling vtkRectilinearGrid::GetCell()
+//
+//  Programmer: Dave Bremer
+//  Creation:   June 22, 2007
+// ****************************************************************************
+vtkCell *vtkVisItRectilinearGrid::FindAndGetCell(double x[3],
+                                                 vtkCell *vtkNotUsed(cell), 
+                                                 vtkIdType vtkNotUsed(cellId),
+                                                 double vtkNotUsed(tol2),
+                                                 int& subId, 
+                                                 double pcoords[3], double *weights)
+{
+  int loc[3];
+  vtkIdType cellId;
+  
+  subId = 0;
+  if ( this->ComputeStructuredCoordinates(x, loc, pcoords) == 0 )
+    {
+    return NULL;
+    }
+  //
+  // Get the parametric coordinates and weights for interpolation
+  //
+  vtkVoxel::InterpolationFunctions(pcoords,weights);
+  //
+  // Get the cell
+  //
+  cellId = loc[2] * (this->Dimensions[0]-1)*(this->Dimensions[1]-1) +
+           loc[1] * (this->Dimensions[0]-1) + loc[0];
+
+  return GetCell(cellId);
+}
 
 
