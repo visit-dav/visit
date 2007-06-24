@@ -11,6 +11,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Sat Jun 23 16:38:02 PDT 2007
+#    Add support for release candidates.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -21,6 +24,14 @@ CDPATH=""
 P=$(whence $0)
 P2=${P%/*}
 . ${P2}/visit_svn_helper
+
+doRC="no"
+if [[ $# == 3 ]] ; then
+   if [[ "$3" == "RC" ]] ; then
+       doRC="yes"
+       shift
+   fi
+fi
 
 if [[ $# != 2 ]] ; then
    issueHelp="yes"
@@ -55,7 +66,11 @@ echo ""
 echo "Getting appropriate files..."
 svn co --quiet $DEST/svninfo
 cd svninfo
-echo $2 > Rev_fromTrunk
+if [[ "$doRC" == "yes" ]] ; then
+    echo $2 > Rev_fromRCTrunk
+else
+    echo $2 > Rev_fromTrunk
+fi
 echo ""
 echo "Updating with new revision info..."
 svn commit --quiet -m "Reset revision from branch $1 to trunk as $2"

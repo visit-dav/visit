@@ -1,0 +1,121 @@
+#!/bin/ksh
+#
+#  Script: merge_rctrunk_to_rcbranch
+# 
+#  Purpose: 
+#      Merges the RC trunk into a RC branch
+#
+#  Programmer: Hank Childs
+#  Creation:   June 23, 2007
+#
+#  Modifications:
+#
+# *****************************************************************************
+
+issueHelp="no"
+
+P=$(whence $0)
+P2=${P%/*}
+. ${P2}/visit_svn_helper
+
+# Prevent print statements when changing directories
+CDPATH=""
+
+BRANCH=""
+if [[ $# != 1 ]] ; then
+   issueHelp="yes"
+elif [[ ! -f .branchname ]] ; then
+   echo ""
+   echo "ERROR: You must run this script at the top of your branch directory"
+   echo ""
+   issueHelp="yes"
+elif [[ ! -f .rootpath ]] ; then
+   echo ""
+   echo "ERROR: You must run this script at the top of your branch directory"
+   echo ""
+   issueHelp="yes"
+else
+   BRANCHNAME=$(cat .branchname)
+   ROOTPATH=$(cat .rootpath)
+   BRANCH=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}${ROOTPATH}
+   svn ls $BRANCH 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "The RC branch $1 does not appear to exist."
+      echo "(Looking for it at $BRANCH)"
+      echo "Try using the script ls_branches to locate your branch."
+      issueHelp="yes"
+   fi
+   TRUNK=${VISIT_SVN_BRANCHES}/$1
+   svn ls $TRUNK 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "The RC trunk $TRUNK does not appear to exist."
+      echo "(Looking for it at $BRANCH)"
+      echo "Try using the script ls_branches to locate the RC trunk."
+      issueHelp="yes"
+   fi
+fi
+
+if [[ "$issueHelp" == "yes" ]] ; then
+   echo ""
+   echo "Usage:   ${0##*/} RC_NAME"
+   echo ""
+   echo "Example: ${0##*/} 1.6.1RC"
+   echo "\tshould be run at the top level of your checked out RC branch.  It will "
+   echo "\tuse the contents of the file \".branchname\" to determine which branch "
+   echo "\tto merge the RC trunk into."
+   echo ""
+   
+   exit 1
+fi
+
+
+echo ""
+echo "Merging the RC trunk into RC branch $BRANCH"
+echo ""
+
+echo ""
+echo "Getting record of last merge from trunk into branch..."
+
+mkdir tmp_forRev$$
+cd tmp_forRev$$
+svn checkout --quiet ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/svninfo
+cd svninfo
+REV=$(cat Rev_fromRCTrunk)
+cd ../..
+echo "The revision of the last merge was $REV"
+echo ""
+
+for i in * ; do
+   if [[ -d $i  && "$i" != "tmp_forRev$$" ]] ; then
+       cd $i
+       echo ""
+       echo "Merging directory \"$i\""
+       echo ""
+       svn merge -r ${REV}:HEAD ${VISIT_SVN_BRANCHES}/$1/${ROOTPATH}/$i
+       cd ..
+   fi
+done
+NEW_REV=$(get_latest_rev)
+
+cd tmp_forRev$$/svninfo
+echo "$NEW_REV" > Rev_fromRCTrunk
+echo ""
+echo "Updating branch $BRANCHNAME to contain a record of this merge..."
+echo ""
+svn commit --quiet -m "Update for revision sent from trunk to $BRANCHNAME, $REV to $NEW_REV"
+cd ../..
+rm -Rf tmp_forRev$$
+
+echo ""
+echo "The changes from the RC trunk have been put on your working copy."
+echo "You need to review the changes and do an \"svn commit\" for these changes "
+echo "to be saved.  Note that the RC branch has been updated with the info that this "
+echo "merge took place and future merges from the RC trunk will not attempt to merge "
+echo "these revisions again.  If you want to back out this merge, you will need "
+echo "invoke the following command to update our bookkeeping: "
+echo ""
+echo "  set_trunk_to_branch_revision $BRANCHNAME $REV RC"
+echo ""
+
+return 0
+

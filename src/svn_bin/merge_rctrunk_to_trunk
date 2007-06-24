@@ -1,17 +1,12 @@
 #!/bin/ksh
 #
-#  Script: merge_branch_to_trunk
+#  Script: merge_rctrunk_to_trunk
 # 
 #  Purpose: 
-#      Merges a branch into the trunk
+#      Merges the RC trunk into the trunk
 #
 #  Programmer: Hank Childs
-#  Creation:   May 15, 2007
-#
-#  Modifications:
-#
-#    Hank Childs, Sat Jun 23 16:47:06 PDT 2007
-#    Disallow merging from an RC branch to the trunk.
+#  Creation:   June 23, 2007
 #
 # *****************************************************************************
 
@@ -25,7 +20,7 @@ P2=${P%/*}
 CDPATH=""
 
 BRANCH=""
-BRANCHNAME=""
+RCTRUNKNAME=""
 if [[ $# != 1 ]] ; then
    issueHelp="yes"
 elif [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
@@ -74,24 +69,24 @@ else
        fi
    fi
 
-   BRANCHNAME=$1
-   BRANCH=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}${ROOTPATH}
+   RCTRUNKNAME=$1
+   BRANCH=${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}${ROOTPATH}
    svn ls $BRANCH 2>/dev/null > /dev/null
    if [[ $? != 0 ]] ; then
-      echo "The branch $1 does not appear to exist."
+      echo "The RC TRUNK $1 does not appear to exist."
       echo "(Looking for it at $BRANCH)"
-      echo "Try using the script ls_branches to locate your branch."
+      echo "Try using the script ls_branches to locate the RC trunk."
       issueHelp="yes"
    fi
 fi
 
 if [[ "$issueHelp" == "yes" ]] ; then
    echo ""
-   echo "Usage:   ${0##*/} <branch>"
+   echo "Usage:   ${0##*/} <RC trunk>"
    echo ""
-   echo "Example: ${0##*/} my_dev_work"
+   echo "Example: ${0##*/} 1.6.1RC"
    echo "\tshould be run at the top level of your checked out trunk.  It will "
-   echo "\tmerge the work from my_dev_work into the trunk."
+   echo "\tmerge the work from the RC trunk into the trunk."
    echo ""
    
    exit 1
@@ -105,26 +100,10 @@ echo ""
 echo "Getting record of last merge from this branch into the trunk..."
 mkdir tmp_forRev$$
 cd tmp_forRev$$
-svn co ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/svninfo
+svn co ${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}/svninfo
 cd svninfo
 REV=$(cat Rev_toTrunk)
-isRC="no"
-if [[ -f Rev_toRCTrunk ]] ; then
-   isRC="yes"
-fi
 cd ../..
-if [[ "$isRC" == "yes" ]] ; then
-   echo ""
-   echo "I believe the branch you are trying to merge from is an RC branch."
-   echo ""
-   echo "RC branches must be merged onto the RC trunk."
-   echo "The RC trunk can then be merged to using merge_rctrunk_to_trunk."
-   echo ""
-   echo "Aborting!"
-   echo ""
-   rm -Rf tmp_forRev$$
-   exit 1
-fi
 echo ""
 echo "The revision of the last merge was $REV"
 echo ""
@@ -135,7 +114,7 @@ for i in * ; do
       echo ""
       echo "Merging directory \"$i\""
       echo ""
-      svn merge -r ${REV}:HEAD ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/${ROOTPATH}/$i
+      svn merge -r ${REV}:HEAD ${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}/${ROOTPATH}/$i
       cd ..
   fi
 done
@@ -144,21 +123,22 @@ NEW_REV=$(get_latest_rev)
 cd tmp_forRev$$/svninfo
 echo "$NEW_REV" > Rev_toTrunk
 echo ""
-echo "Updating branch $BRANCHNAME to contain a record of this merge"
+echo "Updating branch $RCTRUNKNAME to contain a record of this merge"
 echo ""
-svn commit -m "Update for revision sent to trunk from $BRANCHNAME, $REV to $NEW_REV"
+svn commit -m "Update for revision sent to trunk from RC trunk $RCTRUNKNAME, $REV to $NEW_REV"
 cd ../..
 rm -Rf tmp_forRev$$
 
 echo ""
-echo "The changes from the branch $BRANCHNAME have been put on your working copy."
+echo "The changes from the RC trunk ($RCTRUNKNAME) have been put on your working copy."
 echo "You need to review the changes and do an \"svn commit\" for these changes "
 echo "to be saved.  Note that the branch has been updated with the info that this "
 echo "merge took place and future merges into the trunk will not attempt to merge "
 echo "these revisions again.  If you want to back out this merge, you will need "
 echo "invoke the following command to update our bookkeeping: "
 echo ""
-echo "  set_branch_to_trunk_revision $BRANCHNAME $REV"
+echo "  set_branch_to_trunk_revision $RCTRUNKNAME $REV"
+echo "  (The RC Trunk is technically a branch, so this is the right script)"
 echo ""
 
 return 0
