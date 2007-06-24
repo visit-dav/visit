@@ -10,6 +10,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Sat Jun 23 15:47:53 PDT 2007
+#    Added support for RC branches.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -132,7 +135,11 @@ function checkout_dir
    fi
    current="notFound"
    if [[ ! -f Rev_fromTrunk ]] ; then
-       echo "Cannot locate file Rev_fromTrunk ... is this a valid branch?"
+       if [[ ! -f Rev_fromRCTrunk ]] ; then
+           echo "Cannot locate file Rev_fromTrunk ... is this a valid branch?"
+       else
+           current=$(cat Rev_fromRCTrunk)
+       fi
    else
        current=$(cat Rev_fromTrunk)
    fi

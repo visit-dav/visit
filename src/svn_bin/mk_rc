@@ -10,6 +10,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Sat Jun 23 16:47:06 PDT 2007
+#    Get versioning info right when the RC is created.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -47,11 +50,19 @@ svn_cp_dir $SRC $DEST
 # revision history for RC merges.
 svn co $DEST/svninfo
 cd svninfo
-cp Rev_fromTrunk Rev_fromRCTrunk
+REV=$(get_latest_rev)
+echo $REV > Rev_fromTrunk
 svn add Rev_fromRCTrunk
-cp Rev_fromTrunk Rev_toRCTrunk
+echo $REV > Rev_toRCTrunk
 svn add Rev_toRCTrunk
 svn delete Rev_fromTrunk
+if [[ -f Rev_initial ]] ; then
+   echo $REV > Rev_initial
+else
+   echo $REV > Rev_initial
+   svn add Rev_initial
+fi
+
 svn commit -m "Add RC revision tracking files"
 cd ..
 rm -Rf svninfo

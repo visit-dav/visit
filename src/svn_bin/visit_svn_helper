@@ -188,6 +188,7 @@ function svn_cp_dir
    svn ls $SRC 2>/dev/null > /dev/null
    if [[ $? != 0 ]] ; then
       echo "Cannot locate release candidate ($SRC) for copying.  Aborting!"
+      echo "(Try using ls_branches to locate the directory.)"
       exit 1
    fi
 
