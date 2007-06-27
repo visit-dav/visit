@@ -479,7 +479,7 @@ avtHohlraumFluxQuery::PostExecute(void)
             resultSum2 += result[ii] * binWidths[ii];
     }
     if (binWidths.size() != 0)
-        temperature = pow( resultSum2 / 1028000.0, 0.25 );
+        temperature = pow( M_PI * resultSum2 / 1028000.0, 0.25 );
     
     // Write all bins to an ultra file
     char name[256];
