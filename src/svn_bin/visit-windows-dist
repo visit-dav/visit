@@ -67,6 +67,11 @@
 #   directories (old Python versions, .svn)  Temporarily disable help file
 #   creation for call to visit-dist.
 #
+#   Kathleen Bonnell, Wed Jun 27 15:37:34 PDT 2007 
+#   Add -with-help back in as an arg to 'visit-dist'.  Only copy Mesa dlls
+#   and libs from old MSVC6 directories, as all others have now been built
+#   with MSVC7.
+#
 #------------------------------------------------------------------------------
 
 # Need another way to determine we are starting in the right directory.
@@ -113,9 +118,7 @@ set VISITSRC="visit"
 # Run the visit-dist script so it creates a source distribution
 if ($create_src_dist == true) then
     echo "Creating intermediate source package..."
-    #This currently is working in svn, so disable the -withhelp directive
-    #$SCRIPTDIR/visit-dist -withhelp $VISITSRC
-    $SCRIPTDIR/visit-dist $VISITSRC
+    $SCRIPTDIR/visit-dist -withhelp $VISITSRC
 endif
 
 # Create a directory to contain the VisIt source distribution.
@@ -269,7 +272,7 @@ end
 #
 foreach buildmode (Debug Release)
     cd $VisItDev/bin/$buildmode
-    foreach DLL (MesaGL.dll hdf5dll.dll osmesa.dll silohdf5.dll szlibdll.dll zlib.dll libbz2.dll)
+    foreach DLL (MesaGL.dll osmesa.dll)
         cp $DLL ../MSVC7.Net/$buildmode
     end
     cd $VisItDev/bin/
@@ -300,7 +303,7 @@ cp -R $TOPDIR/../windowsbuild/lib .
 foreach buildmode (Debug Release)
     # Copy import libraries
     cd $VisItDev/lib/$buildmode
-    foreach DLL (MesaGL.lib hdf5dll.lib osmesa.lib silohdf5.lib zlib.lib libbz2.lib)
+    foreach DLL (MesaGL.lib osmesa.lib)
         cp $DLL ../MSVC7.Net/$buildmode
     end
     cd $VisItDev/lib

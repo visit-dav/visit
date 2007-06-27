@@ -389,7 +389,12 @@ int readRLEData(MHDdata *data)
             int_value = lsbits[count] + 94.0 * msbits[count];
 
             /* reconstruct the original floating point value from the range information & sign */
-            data->data[block64+count] = sign * expf(dzi * int_value + data->wrn2_z1);
+            /* Note that the following expression uses float(exp()) instead */
+            /* of expf(). This is because we are using gcc 3.2 on a solaris */
+            /* machine, which doesn't support expf. We should change this */
+            /* when we no longer support gcc 3.2. */
+           
+            data->data[block64+count] = sign * float(exp(dzi * int_value + data->wrn2_z1));
         }
     }
 

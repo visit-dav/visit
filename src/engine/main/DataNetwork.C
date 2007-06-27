@@ -130,7 +130,8 @@ DataNetwork::~DataNetwork(void)
 // ****************************************************************************
 void DataNetwork::AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f)
 {
-    std::vector<Netnode*>::iterator it = ++nodeList.begin();
+    std::vector<Netnode*>::iterator it = nodeList.begin();
+    ++it;
     if (it != nodeList.end())
     {
 	// There is another Netnode ...

@@ -380,12 +380,15 @@ static int console_get_line_or_password(const char *prompt, char *str,
  *   Brad Whitlock, Fri Oct 10 14:21:53 PST 2003
  *   Added the port argument so we can use whatever port we want.
  *
+ *   Jeremy Meredith, Wed Jun 27 12:16:56 EDT 2007
+ *   Added the port forwarding arguments.
+ *
  *****************************************************************************/
 
 int
 RunRemoteCommand(const char *username, const char *host, int port,
     const char *commands[], int nCommands, passwordCallback *cb,
-    int initSockets)
+    int initSockets, const char *portForwards)
 {
     WSAEVENT stdinevent, stdoutevent, stderrevent;
     HANDLE handles[4];
@@ -399,6 +402,7 @@ RunRemoteCommand(const char *username, const char *host, int port,
     int connopen;
     int exitcode;
     int use_subsystem = 0;
+	int i;
 
 /*** BEGIN LLNL CODE ***/
     if(username == NULL || host == NULL || commands == NULL ||
@@ -442,6 +446,18 @@ RunRemoteCommand(const char *username, const char *host, int port,
     host_g = host;
     strncpy(cfg.host, host, sizeof(cfg.host)-1);
     cfg.host[sizeof(cfg.host)-1] = '\0';
+
+    /*
+     * Copy the port forwards into the config.
+     */
+    if (portForwards != NULL && strlen(portForwards) > 0)
+    {
+        for (i=0; i<1024 && (i<2 || portForwards[i-1] != '\0' ||
+			                        portForwards[i-2] != '\0') ; i++)
+        {
+            cfg.portfwd[i] = portForwards[i];
+        }
+    }
 
     /*
      * Verbose for now...

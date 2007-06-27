@@ -58,7 +58,7 @@ typedef const char *passwordCallback(const char *host, int *okay);
 /* Prototypes. */
 REMOTE_COMMAND_API int RunRemoteCommand(const char *username,
     const char *host, int port, const char *commands[], int nCommands,
-    passwordCallback *cb, int initSockets);
+    passwordCallback *cb, int initSockets, const char *portForwards);
 
 #ifdef __cplusplus
 };
