@@ -51,6 +51,10 @@ graphicalGetPassword(const char *host, int *okay)
 //   Brad Whitlock, Tue Dec 21 16:17:12 PST 2004
 //   Added code to close stdin so we don't gobble up input typed into the CLI.
 //
+//   Jeremy Meredith, Wed Jun 27 12:08:52 EDT 2007
+//   Added support for standard SSH-style remote port forwarding arguments
+//   of the form "-R rp:lh:lp:".
+//
 // ****************************************************************************
 
 int
@@ -64,6 +68,8 @@ main(int argc, char *argv[])
     bool printArgs = false;
     bool hostSpecified = false;
     int  port = 22;
+    char portfwd[1024] = "";
+    int portfwdpos = 0;
 
     // Initialize the command line array.
     for(i = 0; i < 100; ++i)
@@ -99,6 +105,65 @@ main(int argc, char *argv[])
                     int tempPort = atoi(argv[i+1]);
                     if(tempPort >= 0)
                         port = tempPort;
+                    ++i;
+                }
+            }
+            else if(strcmp(arg, "-R") == 0)
+            {
+                // we must compose the port forward string
+                // according to PUTTY.H
+                if(i+1 < argc)
+                {
+                    int   l = strlen(argv[i+1]);
+                    char *s = strdup(argv[i+1]);
+                    char *p = s;
+                    int part = 0;
+                    char *remoteport;
+                    char *localhost;
+                    char *localport;
+                    for (int j=0; j<l+1; j++)
+                    {
+                        if (s[j] == ':' || s[j] == '\0')
+                        {
+                            s[j] = '\0';
+                            switch (part)
+                            {
+                              case 0:
+                                remoteport = p;
+                                break;
+                              case 1:
+                                localhost = p;
+                                break;
+                              case 2:
+                                localport = p;
+                                break;
+                              default:
+                                // we'll detect this as an error automatically
+                                break;
+                            }
+                            p = &(s[j+1]);
+                            part++;
+                        }
+                    }
+                    if (part == 3)
+                    {
+                        // first is the R, for Remote
+                        portfwd[portfwdpos++] = 'R';
+                        for (int j=0; j<strlen(remoteport); j++)
+                            portfwd[portfwdpos++] = remoteport[j];
+                        // remote/local separated by tab
+                        portfwd[portfwdpos++] = '\t';
+                        for (int j=0; j<strlen(localhost); j++)
+                            portfwd[portfwdpos++] = localhost[j];
+                        // host/port separated by a colon
+                        portfwd[portfwdpos++] = ':';
+                        for (int j=0; j<strlen(localport); j++)
+                            portfwd[portfwdpos++] = localport[j];
+                        // terminate this forward with a \0
+                        portfwd[portfwdpos++] = '\0';
+                        // and the final forward is terminated with another \0
+                        portfwd[portfwdpos] = '\0';
+                    }
                     ++i;
                 }
             }
@@ -150,7 +215,7 @@ main(int argc, char *argv[])
 
     // Run the command on the remote machine.
     RunRemoteCommand(username, host, port, commands, command_count,
-                     graphicalGetPassword, 1);
+                     graphicalGetPassword, 1, portfwd);
 
     // Clean up.
     if(!userSpecified)

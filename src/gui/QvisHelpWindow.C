@@ -1314,16 +1314,14 @@ QvisHelpWindow::synchronizeContents(const QString &page)
 //   Brad Whitlock, Tue Sep 10 16:29:49 PST 2002
 //   I added code to make the page redraw with the new font size.
 //
+//   Kathleen Bonnell, Wed Jun 27 12:42:47 PDT 2007 
+//   Removed Q_WS_WIN specific code.
+//
 // ****************************************************************************
 
 void
 QvisHelpWindow::increaseFontSize()
 {
-#ifdef Q_WS_WIN
-    QFont f(helpBrowser->font());
-    f.setPointSize(f.pointSize()/2+1);
-    helpBrowser->setFont(f);
-#else
     QFont f(helpBrowser->font());
     f.setPointSize(f.pointSize()+1);
     helpBrowser->setFont(f);
@@ -1336,7 +1334,6 @@ QvisHelpWindow::increaseFontSize()
     helpBrowser->blockSignals(false);
     helpBrowser->setUpdatesEnabled(true);
     helpBrowser->repaint();
-#endif
 #endif
 }
 
@@ -1353,17 +1350,14 @@ QvisHelpWindow::increaseFontSize()
 //   Brad Whitlock, Tue Sep 10 16:29:49 PST 2002
 //   I added code to make the page redraw with the new font size.
 //   
+//   Kathleen Bonnell, Wed Jun 27 12:42:47 PDT 2007 
+//   Removed Q_WS_WIN specific code.
+//
 // ****************************************************************************
 
 void
 QvisHelpWindow::decreaseFontSize()
 {
-#ifdef Q_WS_WIN
-    QFont f(helpBrowser->font());
-    int ptSize = f.pointSize()/2-1;
-    f.setPointSize(ptSize);
-    helpBrowser->setFont(f);
-#else
     QFont f(helpBrowser->font());
     int ptSize = f.pointSize()-1;
     if(ptSize > 2)
@@ -1381,7 +1375,6 @@ QvisHelpWindow::decreaseFontSize()
         helpBrowser->repaint();
 #endif
     }
-#endif
 }
 
 // ****************************************************************************

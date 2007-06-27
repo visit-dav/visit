@@ -35,6 +35,12 @@
 *
 *****************************************************************************/
 
+// The following 2 include lines are only for the MIPSpro 7.41 compiler.
+// There is some conflict between Python.h and Utility.h in including
+// those 2 files.  Remove once support for MIPSpro is dropped.
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include <ctype.h>
 #include <stdio.h>
 #include <Python.h>

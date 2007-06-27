@@ -56,6 +56,7 @@ hoth=true
 sunspot=true
 quad=true
 up=true
+pengra=true
 thunder=true
 prism=true
 yana=true
@@ -78,6 +79,7 @@ do
          sunspot=false
          quad=false
          up=false
+         pengra=false
          thunder=false
          prism=false
          yana=false
@@ -115,6 +117,14 @@ do
          ;;
       +up)
          up=true
+         shift
+         ;;
+      -pengra)
+         pengra=false
+         shift
+         ;;
+      +pengra)
+         pengra=true
          shift
          ;;
       -thunder)
@@ -359,6 +369,42 @@ then
 fi
 
 #
+# Install on pengra.
+#
+rm -f pengra
+cat <<EOF > pengra
+#!/bin/sh
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux_chaos /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on pengra"          > resultlog 2>&1
+echo "       ----------------------------"         >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k /usr/gapps/visit                             >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $pengra = true ]
+then
+   if [ $test = no ]
+   then
+      scp pengra2:/usr/tmp/$user/pengra/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux_chaos.tar.gz
+      scp visit$ver2.linux_chaos.tar.gz pengra2:
+      scp visit-install pengra2:
+      scp pengra pengra2:pengra_install
+      ssh pengra2 "chmod 750 pengra_install;./pengra_install"
+   fi
+fi
+
+#
 # Install on thunder.
 #
 rm -f thunder
@@ -543,5 +589,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad up thunder prism yana xchem davinci
+   rm -f hoth sunspot quad up pengra thunder prism yana xchem davinci
 fi
