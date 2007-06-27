@@ -10,6 +10,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Wed Jun 27 15:12:27 PDT 2007
+#    Fix typo where 'sdt' sequence does not work.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -64,18 +67,18 @@ fi
 
 DIR=""
 ROOT="/"
-if [[ "$2" != "all" && "$1" != "sdt"  ]] ; then
+if [[ "$2" != "all" && "$2" != "sdt"  ]] ; then
     svn ls ${VISIT_SVN_BRANCHES}/${1}/${2} 2>/dev/null > /dev/null
     if [[ $? != 0 ]] ; then
-       echo "The trunk location $1 does not appear to exist."
+       echo "The trunk location $1/$2 does not appear to exist."
        echo "Aborting checkout"
        exit 1
     fi
-    if [[ "${1#/}" == "${1}" ]] ; then
-       TMP="/${1}"
+    if [[ "${2#/}" == "${2}" ]] ; then
+       TMP="/${2}"
        ROOT="${TMP%/*}"
     else
-       ROOT="${1%/*}"
+       ROOT="${2%/*}"
     fi
     if [[ "$ROOT" == "" ]] ; then
        ROOT="/"
