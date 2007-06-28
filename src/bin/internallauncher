@@ -185,6 +185,12 @@ $0 = shift @ARGV;
 #
 #    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 #    Added documentation for -cycleregex
+#
+#    Jeremy Meredith, Thu Jun 28 13:27:34 EDT 2007
+#    Understand the -sshtunneling argument to prevent -guesshost from
+#    overriding the correct host name and to set a default value of
+#    localhost when no host name was specified.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -552,6 +558,7 @@ $visit_sets_up_environment = 0;
 $pre_command = "";
 $post_command = "";
 $print_arch     = 0;
+$ssh_tunneling  = 0;
 
 # Parse the arguments 
 @visitargs = ();
@@ -633,6 +640,7 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-quiet" )           { $quiet = 1; push @visitargs, "-quiet"; }
     elsif ($arg eq "-hw-pre" )          { $pre_command = shift; }
     elsif ($arg eq "-hw-post" )         { $post_command = shift; }
+    elsif ($arg eq "-sshtunneling" )    { $ssh_tunneling = 1; push @visitargs, $arg; }
     else                         { push @visitargs, $arg; }
 }
 
@@ -646,7 +654,7 @@ if ($req_compiler ne "" && $exe_name_passed)
     push @visitargs, "-compiler", $req_compiler; 
 }
 
-if ($guesshost)
+if ($guesshost && !$ssh_tunneling)
 {
     if ($ENV{SSH_CLIENT})
     {
@@ -671,6 +679,15 @@ if ($guesshost)
         exit 1;
     }
     $remotehost =~ s/.*:([^:]*)/$1/;
+}
+
+# If -sshtunneling was enabled and the host name was not already set.
+# assume localhost.  This should never happen, but just in case, this
+# is the safest solution.
+if ($ssh_tunneling && !$remotehost_set)
+{
+    $remotehost = "localhost";
+    $remotehost_set = 1;
 }
 
 # ----

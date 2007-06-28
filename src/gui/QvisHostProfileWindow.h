@@ -131,6 +131,10 @@ class QRadioButton;
 //    as text is typed to avoid losing data when editing multiple profiles
 //    and not clicking Apply.
 //
+//    Jeremy Meredith, Thu Jun 28 13:31:38 EDT 2007
+//    Have the ssh tunneling option override and disable the client host
+//    name determination method.
+//
 // ****************************************************************************
 
 class GUI_API QvisHostProfileWindow : public QvisPostableWindowObserver
@@ -256,6 +260,7 @@ private:
     QRadioButton *chnParseFromSSHClient;
     QRadioButton *chnSpecifyManually;
     QLineEdit    *clientHostName;
+    QLabel       *clientHostNameMethodLabel;
     QCheckBox    *sshPortCheckBox;
     QLineEdit    *sshPort;
     QWidget      *hwGroup;

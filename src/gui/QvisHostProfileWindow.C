@@ -413,6 +413,10 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 //   I moved the code to create the tab to this function so I could focus on
 //   less code. I also improved the layout.
 //
+//   Jeremy Meredith, Thu Jun 28 13:17:50 EDT 2007
+//   Allowed "1" for the minimum number of processors. This is how we specify
+//   serial jobs on batch nodes.
+//
 // ****************************************************************************
 
 QWidget *
@@ -500,7 +504,7 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
     parLayout->addWidget(loadBalancing, prow, 1);
     prow++;
 
-    numProcessors = new QSpinBox(2, 99999, 1, parGroup, "numProcessors");
+    numProcessors = new QSpinBox(1, 99999, 1, parGroup, "numProcessors");
     connect(numProcessors, SIGNAL(valueChanged(int)),
             this, SLOT(numProcessorsChanged(int)));
     numProcLabel = new QLabel(numProcessors, "Default number of processors",
@@ -643,6 +647,10 @@ QvisHostProfileWindow::CreateAdvancedTab(QWidget *parent)
 //   I moved the code to create the tab to this function so I could focus on
 //   less code. I also improved the layout.
 //
+//   Jeremy Meredith, Thu Jun 28 13:18:36 EDT 2007
+//   Rearranged to put SSH tunneling above client host name method, as SSH
+//   tunneling overrides it.  Changed host name method text to clarify this.
+//
 // ****************************************************************************
 
 QWidget *
@@ -666,6 +674,13 @@ QvisHostProfileWindow::CreateNetworkingTab(QWidget *parent)
     netLayout->addMultiCellWidget(disclaimer, nrow, nrow, 0, 3);
     nrow++;
 
+    tunnelSSH = new QCheckBox("Tunnel data connections through SSH",
+                              networkingGroup, "tunnelSSH");
+    netLayout->addMultiCellWidget(tunnelSSH, nrow,nrow, 0,3);
+    connect(tunnelSSH, SIGNAL(toggled(bool)),
+            this, SLOT(toggleTunnelSSH(bool)));
+    nrow++;
+
     clientHostNameMethod = new QButtonGroup(0, "clientHostNameMethod");
     connect(clientHostNameMethod, SIGNAL(clicked(int)),
             this, SLOT(clientHostNameMethodChanged(int)));
@@ -679,9 +694,10 @@ QvisHostProfileWindow::CreateNetworkingTab(QWidget *parent)
     clientHostNameMethod->insert(chnMachineName);
     clientHostNameMethod->insert(chnParseFromSSHClient);
     clientHostNameMethod->insert(chnSpecifyManually);
-    netLayout->addMultiCellWidget(new QLabel("Method used to determine local host name:",
-                                             networkingGroup,
-                                             "clientHostNameMethodLabel"),
+    clientHostNameMethodLabel =
+        new QLabel("Method used to determine local host name when not tunneling:",
+                   networkingGroup, "clientHostNameMethodLabel");
+    netLayout->addMultiCellWidget(clientHostNameMethodLabel,
                                   nrow, nrow, 0, 3);
     nrow++;
     netLayout->addMultiCellWidget(chnMachineName, nrow, nrow, 1, 3);
@@ -705,12 +721,6 @@ QvisHostProfileWindow::CreateNetworkingTab(QWidget *parent)
     netLayout->addMultiCellWidget(sshPortCheckBox, nrow, nrow, 0, 1);
     netLayout->addMultiCellWidget(sshPort, nrow, nrow, 2, 3);
     nrow++;
-
-    tunnelSSH = new QCheckBox("Tunnel data connections through SSH",
-                              networkingGroup, "tunnelSSH");
-    netLayout->addMultiCellWidget(tunnelSSH, nrow,nrow, 0,3);
-    connect(tunnelSSH, SIGNAL(toggled(bool)),
-            this, SLOT(toggleTunnelSSH(bool)));
 
     return networkingGroup;
 }
@@ -1406,6 +1416,10 @@ QvisHostProfileWindow::ReplaceLocalHost()
 //    "batch job" and "parallel environment" advanced check boxes. Added code
 //    to set enabled state of advancedGroup.
 //
+//    Jeremy Meredith, Thu Jun 28 13:19:55 EDT 2007
+//    Disable client host name method determination widgets when SSH tunneling
+//    is enabled.
+//
 // ****************************************************************************
 
 void
@@ -1468,7 +1482,12 @@ QvisHostProfileWindow::UpdateWindowSensitivity()
     engineArgumentsLabel->setEnabled(enabled);
     engineArguments->setEnabled(enabled);
     deleteButton->setEnabled(enabled);
+    chnMachineName->setEnabled(enabled && current->GetTunnelSSH() == false);
+    chnParseFromSSHClient->setEnabled(enabled && current->GetTunnelSSH() == false);
+    chnSpecifyManually->setEnabled(enabled && current->GetTunnelSSH() == false);
+    clientHostNameMethodLabel->setEnabled(enabled && current->GetTunnelSSH() == false);
     clientHostName->setEnabled(enabled &&
+                               current->GetTunnelSSH() == false &&
                                current->GetClientHostDetermination() ==
                                               HostProfile::ManuallySpecified);
     sshPort->setEnabled(enabled && current->GetSshPortSpecified());
@@ -3159,6 +3178,10 @@ QvisHostProfileWindow::clientHostNameChanged(const QString &h)
 //   Brad Whitlock, Wed Jun 6 11:26:37 PDT 2007
 //   I made it apply to all profiles for a host.
 //
+//   Jeremy Meredith, Thu Jun 28 13:20:48 EDT 2007
+//   Force host name determination method to default values when tunneling
+//   is enabled.  The two are incompatible.
+//
 // ****************************************************************************
 
 void
@@ -3174,10 +3197,24 @@ QvisHostProfileWindow::toggleTunnelSSH(bool tunnel)
         HostProfile &prof = profiles->operator[](i);
 
         if (prof.GetHost() == current.GetHost())
+        {
             prof.SetTunnelSSH(tunnel);
+            if (tunnel)
+            {
+                prof.SetClientHostDetermination(HostProfile::MachineName);
+                prof.SetManualClientHostName("");
+                clientHostNameMethod->blockSignals(true);
+                clientHostName->blockSignals(true);
+                clientHostNameMethod->setButton(0);
+                clientHostName->setText("");
+                clientHostNameMethod->blockSignals(false);
+                clientHostName->blockSignals(false);
+            }
+        }
     }
 
     profiles->MarkActiveProfile();
+    UpdateWindowSensitivity();
     SetUpdate(false);
     Apply();
 }
