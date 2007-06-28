@@ -290,6 +290,9 @@ avtCurvePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
 //    Set the legend.
 //    
+//    Mark C. Miller, Thu Jun 21 00:12:28 PDT 2007
+//    Added support to overlay curve plots on 2D plots.
+//    Ensure that curve plots are plotted on top of 2D plots
 // ****************************************************************************
 
 void
@@ -297,6 +300,7 @@ avtCurvePlot::CustomizeBehavior(void)
 {
     behavior->SetLegend(curveLegendRefPtr);
     behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
+    behavior->SetRenderOrder(MUST_GO_LAST);
 }
 
 

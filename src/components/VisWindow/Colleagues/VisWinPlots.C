@@ -270,6 +270,9 @@ VisWinPlots::~VisWinPlots()
 //    This turned out not to be the cause of a specular bug, but I
 //    believe this behavior is more correct anyway.
 //
+//    Mark C. Miller, Thu Jun 21 00:12:28 PDT 2007
+//    Added support to overlay curve plots on 2D plots.
+//    Reset scale vec to all 1's if not in full frame mode.
 // ****************************************************************************
 
 void
@@ -295,16 +298,20 @@ VisWinPlots::AddPlot(avtActor_p &p)
     p->Add(mediator.GetCanvas(), mediator.GetForeground());
     p->SetTransparencyActor(transparencyActor);
 
+    double vec[3] = { 1. , 1., 1.};
     if (mediator.GetFullFrameMode())
     {
         double scale; 
         int type;
         mediator.GetScaleFactorAndType(scale, type);
-        double vec[3] = { 1. , 1., 1.};
         if (type == 0) // x-axis
             vec[0] = scale;
         else
             vec[1] = scale;
+        p->ScaleByVector(vec);
+    }
+    else
+    {
         p->ScaleByVector(vec);
     }
 
@@ -418,6 +425,8 @@ VisWinPlots::TriggerPlotListUpdate(void)
 //    Modify the routine to set the mode based on the plot type if no plots
 //    were present and to check that the modes match otherwise.
 //
+//    Mark C. Miller, Thu Jun 21 00:12:28 PDT 2007
+//    Added support to overlay curve plots on 2D plots.
 // ****************************************************************************
 
 void
@@ -435,11 +444,22 @@ VisWinPlots::CheckPlot(avtActor_p &p)
         //
         // If the modes don't match then it is an error.
         //
-        if (mediator.GetMode() != p->GetWindowMode())
+        if (mediator.GetMode() == p->GetWindowMode())
+	    return;
+
+        if (mediator.GetMode() == WINMODE_2D &&
+	    p->GetWindowMode() == WINMODE_CURVE)
+	    return;
+       
+        if (mediator.GetMode() == WINMODE_CURVE &&
+	    p->GetWindowMode() == WINMODE_2D)
         {
-            EXCEPTION3(PlotDimensionalityException, mediator.GetMode(), 
-                       p->GetWindowMode(), plots.size());
+            mediator.ChangeMode(WINMODE_2D);
+	    return;
         }
+
+        EXCEPTION3(PlotDimensionalityException, mediator.GetMode(), 
+            p->GetWindowMode(), plots.size());
     }
 }
 
