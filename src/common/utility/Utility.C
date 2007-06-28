@@ -1498,16 +1498,41 @@ VisItFstat(int fd, VisItStat_t *buf)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jun 28 13:32:26 EDT 2007
+//    If we're tunneling through SSH, this should override any selection of
+//    how the client host name should otherwise be determined.  We had partly
+//    solved this already by overriding the value of the -host argument,
+//    and this adds support for the case where they specify -guesshost
+//    instead of -host <hostname>.  I also added the -sshtunneling argument
+//    just incase downstream calls need to know this.
+//
 // ****************************************************************************
 bool
 ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
                             std::vector<std::string> &args)
 {
+    bool foundHost = false;
+    // strip off -guesshost
+    for (int i=0; i<args.size(); i++)
+    {
+        if (args[i] == "-guesshost")
+        {
+            for (int j=i+1; j<args.size(); j++)
+            {
+                args[j-1] = args[j];
+            }
+            args.resize(args.size()-1);
+            break;
+        }
+    }
+    // replace host and port
     for (int i=0; i<args.size(); i++)
     {
         if (i<args.size()-1 && args[i] == "-host")
         {
             args[i+1] = "localhost";
+            foundHost = true;
         }
         if (i<args.size()-1 && args[i] == "-port")
         {
@@ -1520,5 +1545,13 @@ ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
             args[i+1] = newportstr;
         }
     }
+    // add "localhost" if it there wasn't already a host specified
+    if (!foundHost)
+    {
+        args.push_back("-host");
+        args.push_back("localhost");
+    }
+    // add -sshtunneling for anyone that wants to know
+    args.push_back("-sshtunneling");
     return true;
 }
