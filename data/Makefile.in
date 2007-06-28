@@ -282,6 +282,9 @@
 #   Dave Bremer, Thu Jun 14 20:02:18 PDT 2007
 #   Added NEK3D test data
 #
+#   Mark C. Miller, Thu Jun 28 15:28:58 PDT 2007
+#   Made the clean target remove only c0*.curve files instead of *.curve
+#
 ##############################################################################
 
 ##
@@ -414,7 +417,7 @@ install: install_bin
 
 clean:
 	$(RM) $(OBJ) ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./sid97 ./specmix ./testall ./tire ./wave ./quad_disk ./emptydomains ./galaxy ./csg ./lowfrac ./distribution_curves ./bov ./largefile ./one_quad ./fullframe ./thinplane @PDB@
-	$(RM) *.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra multi_ucd3d*
+	$(RM) c0*.curve family*.pdb multi*.pdb db*.pdb allinone*.pdb sesame.pdb *.silo hist* distribution.ultra multi_ucd3d*
 	$(RM) curve.visit wave*.visit *.bov multi00*.values *_indices*.values
 	$(RM) -r $(BINSRC)
 
