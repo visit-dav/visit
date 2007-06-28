@@ -5824,6 +5824,9 @@ CreatePlot(void *info)
 //    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007
 //    Added support for Log scaling.
 //
+//    Mark C. Miller, Thu Jun 21 00:12:28 PDT 2007
+//    Added support to overlay curve plots on 2D plots.
+//    Added more logic to setting globalWindowMode
 // ****************************************************************************
 
 void
@@ -5904,10 +5907,21 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
 
             if (globalWindowMode == WINMODE_NONE)
                 globalWindowMode = plotWindowMode;
+            else
+	    {
+	        if (globalWindowMode == WINMODE_CURVE &&
+		    plotWindowMode == WINMODE_2D)
+		    globalWindowMode = WINMODE_2D;
+	        else if (globalWindowMode == WINMODE_2D &&
+		    plotWindowMode == WINMODE_CURVE)
+		    globalWindowMode = WINMODE_2D;
+	    }
 
-            if (plotWindowMode != globalWindowMode)
+            if (plotWindowMode != globalWindowMode &&
+	       !(globalWindowMode == WINMODE_2D && 
+	         plotWindowMode == WINMODE_CURVE))
             {
-                if (errorCount == 0)
+		if (errorCount == 0)
                 {
                     Error("The plot dimensions do not match.");
                     ++errorCount;

@@ -913,6 +913,9 @@ PP_ZFileReader::InitializeVarStorage()
 //
 //   Mark C. Miller, Sat Feb  3 00:42:05 PST 2007
 //   Added support for array variables
+//
+//   Mark C. Miller, Tue Jun  5 18:07:16 PDT 2007
+//   Modified it to be more forgiving about existance of '@' in object name.
 // ****************************************************************************
 
 void
@@ -973,31 +976,6 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
     int cellOrigin = 1;
     int ndims = 2;
 
-    // Add the logical mesh
-    avtMeshMetaData *mmd = new avtMeshMetaData(
-      "logical_mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_RECTILINEAR_MESH);
-    mmd->hasSpatialExtents = false;
-    mmd->xLabel = "K-Axis";
-    mmd->yLabel = "L-Axis";
-    mmd->cellOrigin = 1;
-    md->Add(mmd);
-
-    // Add the mesh.
-    mmd = new avtMeshMetaData(
-        "mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_CURVILINEAR_MESH);
-    mmd->hasSpatialExtents = false;
-    mmd->cellOrigin = 1;
-    mmd->xLabel = "Z-Axis";
-    mmd->yLabel = "R-Axis";
-    md->Add(mmd);
-
-    // Add a revolved mesh.
-    mmd = new avtMeshMetaData(
-        "revolved_mesh", 1, 0, cellOrigin, 0, 3, 3, AVT_UNSTRUCTURED_MESH);
-    mmd->hasSpatialExtents = false;
-    mmd->cellOrigin = 1;
-    md->Add(mmd);
-
     // Determine the size of the problem.
     int problemSize = kmax * lmax * nCycles;
     debug4 << "problemSize = " << problemSize << endl;
@@ -1013,6 +991,9 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
     // If we got any variable names, see if any are the size that we think
     // the problem should be.
     //
+    bool addedLogicalMesh = false;
+    bool addedRevolvedMesh = false;
+    bool addedMesh = false;
     if(varList != NULL)
     {
         for(int j = 0; j < numVars; ++j)
@@ -1079,14 +1060,13 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
             char *s = strstr(varList[j], "@");
             if (s == 0)
             {
-                debug4 << "\t" << varList[j] << " skipped because it is "
-                    "missing separator character '@'" << endl;
-                continue;
+                debug4 << "\t" << varList[j] << " would ordinarily be skipped because it is "
+                    "missing separator character '@'. But we are allowing it." << endl;
             }
 
             debug4 << "\t" << varList[j] << " (problem sized x " << length/problemSize << ")";
 
-            int len = s - varList[j];
+            int len = s ? s - varList[j] : strlen(varList[j]);
             char *newCStr = new char[len + 1];
             strncpy(newCStr, varList[j], len);
             newCStr[len] = '\0';
@@ -1110,12 +1090,16 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
             const char *const meshNames[] = {"logical_mesh", "revolved_mesh", "mesh"};
             for (int m = 0; m < 3; m++)
             {
+	        if (!s && m) continue; // skip revloved & mesh for generic arrays
 #if defined (_WIN32)
                 if (m == 1) continue; // skip revolved mesh on windows
 #endif
                 std::string theMeshName = meshNames[m];
                 std::string theVarName = theMeshName + "/" + newStr;
 
+		if (m == 0) addedLogicalMesh = true;
+		if (m == 1) addedRevolvedMesh = true;
+		if (m == 2) addedMesh = true;
                 if (numFreeDims == 0)
                 {
                     avtScalarMetaData *smd = new avtScalarMetaData(
@@ -1216,6 +1200,41 @@ PP_ZFileReader::PopulateDatabaseMetaData(int timestep, avtDatabaseMetaData *md)
 
         debug4 << endl << endl;
         SFREE(varList);
+    }
+
+    // Add the logical mesh
+    avtMeshMetaData *mmd;
+    if (addedLogicalMesh)
+    {
+        mmd = new avtMeshMetaData(
+          "logical_mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_RECTILINEAR_MESH);
+        mmd->hasSpatialExtents = false;
+        mmd->xLabel = "K-Axis";
+        mmd->yLabel = "L-Axis";
+        mmd->cellOrigin = 1;
+        md->Add(mmd);
+    }
+
+    // Add the mesh.
+    if (addedMesh)
+    {
+        mmd = new avtMeshMetaData(
+            "mesh", 1, 0, cellOrigin, 0, ndims, ndims, AVT_CURVILINEAR_MESH);
+        mmd->hasSpatialExtents = false;
+        mmd->cellOrigin = 1;
+        mmd->xLabel = "Z-Axis";
+        mmd->yLabel = "R-Axis";
+        md->Add(mmd);
+    }
+
+    // Add a revolved mesh.
+    if (addedRevolvedMesh)
+    {
+        mmd = new avtMeshMetaData(
+            "revolved_mesh", 1, 0, cellOrigin, 0, 3, 3, AVT_UNSTRUCTURED_MESH);
+        mmd->hasSpatialExtents = false;
+        mmd->cellOrigin = 1;
+        md->Add(mmd);
     }
 
     //
