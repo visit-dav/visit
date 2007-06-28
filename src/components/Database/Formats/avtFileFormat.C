@@ -712,21 +712,29 @@ avtFileFormat::GuessTime(const char *fname, const char *re) const
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Modified to use string helper methods.
+//
+//    Mark C. Miller, Thu Jun 28 16:02:07 PDT 2007
+//    Made it return INVALID_TIME for empty string
 // ****************************************************************************
 
 double
 avtFileFormat::GuessCycleOrTime(const char *fname, const char *re) const
 {
+    double ret = INVALID_TIME;
+
     //
     // Take out any of the name that comes from the directory structure.
     //
     fname = StringHelpers::Basename(fname);
 
     string substr = StringHelpers::ExtractRESubstr(fname, re);
-    errno = 0;
-    double ret = strtod(substr.c_str(), 0);
-    if (errno != 0)
-        ret = INVALID_TIME;
+    if (substr != "")
+    {
+        errno = 0;
+        double ret = strtod(substr.c_str(), 0);
+        if (errno != 0)
+            ret = INVALID_TIME;
+    }
 
     return ret;
 }
