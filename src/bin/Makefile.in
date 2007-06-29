@@ -72,13 +72,13 @@
 #   Mark C. Miller, Wed Feb 28 11:04:01 PST 2007
 #   Added visit_plugin tool to DISTRIB
 #
+#   Eric Brugger, Fri Jun 29 09:17:48 PDT 2007
+#   Removed the setting of the DISTRIB and NOT_DISTRIB variables.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
-
-DISTRIB= install-sh visit makemovie.py mkgrdbl visit_plugin
-NOT_DISTRIB= run_doxygen
 
 all: mocprogram
 

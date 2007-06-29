@@ -390,6 +390,9 @@
 #    Brad Whitlock, Fri Jun 15 09:30:06 PDT 2007
 #    Added QvisMacroWindow.
 #
+#    Eric Brugger, Fri Jun 29 09:25:16 PDT 2007
+#    Removed the setting of the DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -574,9 +577,6 @@ OBJMOC=${SRCMOC:.C=.o}
 
 OBJ=$(SRC:.C=.o) ${OBJMOC}
 MAINOBJ=$(MAINSRC:.C=.o)
-
-
-DISTRIB=
 
 
 ##

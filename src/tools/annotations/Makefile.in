@@ -79,6 +79,9 @@
 #   Jeremy Meredith, Tue Jun  5 17:26:11 EDT 2007
 #   Added an ALLOBJ= definition.  This is for updated dependency generation.
 #
+#   Eric Brugger, Thu Jun 28 16:16:04 PDT 2007
+#   Removed the setting of the DISTRIB variable.
+#
 ##############################################################################
 
 
@@ -98,7 +101,6 @@ SRC=$(T2P_SRC) $(TA_SRC)
 # ---------------
 T2P_OBJ=$(T2P_SRC:.C=.o) 
 TA_OBJ=$(TA_SRC:.C=.o) 
-DISTRIB=
 
 
 # Standard targets

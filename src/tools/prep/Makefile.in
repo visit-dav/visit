@@ -60,6 +60,9 @@
 #   Hank Childs, Wed Jun 21 13:22:30 PDT 2000
 #   Added Cell.C and Frame.C to list of source.
 #
+#   Eric Brugger, Thu Jun 28 16:22:55 PDT 2007
+#   Removed the setting of the DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -83,7 +86,6 @@ OBJECT_SRC=StructuredTopology_Prep.C Material_Prep.C TimeSequence_Prep.C\
 MESHTVPREP_SRC=Main.C CommandLine.C MeshtvPrep.C InputRepository.C \
                MeshtvPrepLib.C $(OBJECT_SRC)
 PRIVATE_HDR=
-DISTRIB=
 SRC=$(MESHTVPREP_SRC)
 OBJ=$(SRC:.C=.o)
 

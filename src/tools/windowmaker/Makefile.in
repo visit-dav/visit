@@ -55,6 +55,11 @@
 #    of  California,  and  shall  not  be  used  for  advertising  or  product
 #    endorsement purposes.
 #
+#  Modifications:
+#
+#    Eric Brugger, Fri Jun 29 09:30:56 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -66,7 +71,6 @@
 CPPFLAGS=-I. @CPPFLAGS@ 
 
 OBJ=$(SRC:.C=.o)
-NOT_DISTRIB=
 
 all: operwindowmaker plotwindowmaker
 

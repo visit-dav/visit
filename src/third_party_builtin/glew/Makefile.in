@@ -57,6 +57,9 @@
 #
 # Modifications:
 #
+#    Eric Brugger, Fri Jun 29 09:22:02 PDT 2007
+#    Removed the setting of the DISTRIB and NOT_DISTRIB variables.
+#
 ##############################################################################
 
 ##
@@ -69,12 +72,6 @@
 CXXFLAGS=-Iglew/include @CXXFLAGS@
 CPPFLAGS=-Iglew/include @CPPFLAGS@
 LIBS=@GL_LIBS@
-
-##
-## We distribute sources for glew with VisIt via the tar file
-##
-NOT_DISTRIB=glew
-DISTRIB=glew-1.3.4-src.tgz
 
 ##
 ## Files...

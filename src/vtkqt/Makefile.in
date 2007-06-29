@@ -106,6 +106,9 @@
 #    Build rules for _moc.C are now in make-targets.in. Remove them from here.
 #    Also clean up the naming of the widgets and moc files.
 #
+#    Eric Brugger, Fri Jun 29 09:43:34 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -116,8 +119,6 @@
 
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@
 CPPFLAGS=@CPPFLAGS@ -I. -I../include/visit @VTK_INCLUDES@
-
-NOT_DISTRIB=moc_vtkQtRenderWindowInteractor.C moc_vtkQtGLWidget.C
 
 ##
 ## Files...

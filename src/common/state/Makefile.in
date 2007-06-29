@@ -281,6 +281,9 @@
 #    Renamed the TSTOBJ to a slightly more standard TESTOBJ to play better
 #    with automatic dependencies.
 #
+#    Eric Brugger, Fri Jun 29 09:31:52 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -393,7 +396,6 @@ HDR=$(SRC:.C=.h)
 OBJ=$(SRC:.C=.o)
 LIB=libstate
 LIBS=-lcomm -lmisc -lutility
-NOT_DISTRIB=
 
 TESTPROG=test1 test2 test3
 TESTOBJ=$(TESTPROG:=.o) TestUtil.o

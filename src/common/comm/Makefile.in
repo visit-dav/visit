@@ -114,6 +114,9 @@
 #    Renamed the TSTOBJ to a slightly more standard TESTOBJ to play better
 #    with automatic dependencies.
 #
+#    Eric Brugger, Fri Jun 29 09:33:54 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -164,7 +167,6 @@ TESTCOMM_LIBS=@LIBS@
 OBJ=$(SRC:.C=.o)
 LIBS=-lmisc
 LIB=libcomm
-NOT_DISTRIB=
 
 TESTPROG=test1
 TESTOBJ=$(TESTPROG:=.o) TestUtil.o
