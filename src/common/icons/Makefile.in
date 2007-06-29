@@ -58,8 +58,10 @@
 # Programmer: Brad Whitlock
 # Date:       Thu Feb 6 08:12:18 PDT 2003
 #
+# Modifications:
+#
+#    Eric Brugger, Fri Jun 29 09:26:35 PDT 2007
+#    Removed the setting of the DISTRIB and NOT_DISTRIB variables.
+#
 ##############################################################################
-
-DISTRIB=*.xpm
-NOT_DISTRIB=VisIt1.xcf
 

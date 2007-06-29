@@ -31,51 +31,67 @@ sub get ($@)
     return @files
 }
 
-sub get_recursive ($@)
+sub get_svn_recursive ($@)
 {
     my ($dir) = @_;
     return get($dir, "-R");
 }
 
-sub get_norecursive ($@)
+sub get_svn_norecursive ($@)
 {
     my ($dir) = @_;
     return get($dir, "");
 }
 
+sub get_norecursive ($@)
+{
+    my ($files) = @_;
+    @tmpfiles = `ls $files | egrep -v /\$`;
+    my @files = ();
+    foreach (@tmpfiles)
+    {
+        chomp;
+        push @files, "$_";
+    }
+    return @files
+}
+
 
 @files = ();
 
-push @files, get_norecursive  ".";
-push @files, get_recursive    "./common";
-push @files, get_recursive    "./visit_vtk";
-push @files, get_recursive    "./engine";
-push @files, get_recursive    "./launcher";
-push @files, get_recursive    "./components";
-push @files, get_recursive    "./vtkqt";
-push @files, get_recursive    "./plots";
-push @files, get_recursive    "./operators";
-push @files, get_recursive    "./databases";
-push @files, get_recursive    "./winutil";
-push @files, get_recursive    "./viewer";
-push @files, get_recursive    "./gui";
-push @files, get_recursive    "./mdserver";
-push @files, get_recursive    "./visitpy";
-push @files, get_recursive    "./java";
-push @files, get_recursive    "./tools";
-push @files, get_recursive    "./sim";
-push @files, get_recursive    "./include";
-push @files, get_recursive    "./bin";
-push @files, get_recursive    "./exe";
-push @files, get_norecursive  "./lib";
-push @files, get_norecursive  "./help";
-push @files, get_recursive    "./archives";
-push @files, get_recursive    "./plugins";
-push @files, get_recursive    "./clearcase_bin";
-push @files, get_recursive    "./svn_bin";
-push @files, get_recursive    "./config-site";
-push @files, get_recursive    "./cqscore";
-push @files, get_recursive    "./third_party_builtin";
+push @files, get_svn_norecursive  ".";
+push @files, get_svn_recursive    "./common";
+push @files, get_svn_recursive    "./visit_vtk";
+push @files, get_svn_recursive    "./engine";
+push @files, get_svn_recursive    "./launcher";
+push @files, get_svn_recursive    "./components";
+push @files, get_svn_recursive    "./vtkqt";
+push @files, get_svn_recursive    "./plots";
+push @files, get_svn_recursive    "./operators";
+push @files, get_svn_recursive    "./databases";
+push @files, get_svn_recursive    "./winutil";
+push @files, get_svn_recursive    "./viewer";
+push @files, get_svn_recursive    "./gui";
+push @files, get_svn_recursive    "./mdserver";
+push @files, get_svn_recursive    "./visitpy";
+push @files, get_svn_recursive    "./java";
+push @files, get_svn_recursive    "./tools";
+push @files, get_svn_recursive    "./sim";
+push @files, get_svn_recursive    "./include";
+push @files, get_svn_recursive    "./bin";
+push @files, get_svn_recursive    "./exe";
+push @files, get_svn_norecursive  "./lib";
+push @files, get_svn_norecursive  "./help";
+push @files, get_svn_recursive    "./archives";
+push @files, get_svn_recursive    "./plugins";
+push @files, get_svn_recursive    "./clearcase_bin";
+push @files, get_svn_recursive    "./svn_bin";
+push @files, get_svn_recursive    "./config-site";
+push @files, get_svn_recursive    "./cqscore";
+push @files, get_svn_recursive    "./third_party_builtin";
+push @files, get_norecursive      "./help/visit.helpml";
+push @files, get_norecursive      "./help/help*.html";
+push @files, get_norecursive      "./help/list*.html";
 
 foreach (sort @files)
 {

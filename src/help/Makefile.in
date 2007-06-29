@@ -70,6 +70,9 @@
 #    the specified files if they are available but no warnings if they are
 #    not available.
 #
+#    Eric Brugger, Fri Jun 29 10:00:24 PDT 2007
+#    Removed the setting of the IF_AVAILABLE_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -85,9 +88,6 @@ CXXFLAGS=-I. -I../include -I../include/visit @CXXFLAGS@
 ##
 SRC = mif2help.C
 OBJ=$(SRC:.C=.o)
-
-IF_AVAILABLE_DISTRIB=visit.helpml help*.html list*.html
-
 
 ##
 ## Standard targets...

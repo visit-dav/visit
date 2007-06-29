@@ -2,8 +2,12 @@
 # Do a little magic to run perl from anywhere in your path.
 
 lines=`cat $0 | wc -l`
-lines=`expr $lines - 16`
-if (test -z "$TMPDIR") then
+lines=`expr $lines - 20`
+if (test -n "$TMPDIR") then
+    if (test ! -d "$TMPDIR") then
+        TMPDIR=$HOME
+    fi
+else
     TMPDIR=$HOME
 fi
 tail -$lines $0 1> $TMPDIR/visitfelperl$$ 2>/dev/null

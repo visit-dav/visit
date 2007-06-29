@@ -62,6 +62,9 @@
 #    Jeremy Meredith, Thu Jun  7 13:23:18 EDT 2007
 #    Build rules to _moc.C are now in make-targets.in.  Remove them from here.
 #
+#    Eric Brugger, Fri Jun 29 09:27:15 PDT 2007
+#    Removed the setting of the DISTRIB variable.
+#
 ##############################################################################
 
 
@@ -90,7 +93,6 @@ SRCMOC=$(HDRMOC:.h=_moc.C)
 OBJMOC=$(SRCMOC:.C=.o)
 
 OBJ=$(SRC:.C=.o) $(OBJMOC)
-DISTRIB=
 
 
 # Standard targets

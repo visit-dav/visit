@@ -90,6 +90,10 @@
 #
 #    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 #    Added MRUCache_test.C
+#
+#    Eric Brugger, Fri Jun 29 09:33:06 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -110,7 +114,6 @@ HDR=AtomicProperties.h BJHash.h NamingConvention.h StringHelpers.h Utility.h\
     ref_ptr.h array_ref_ptr.h void_ref_ptr.h
 OBJ=$(SRC:.C=.o)
 LIB=libutility
-NOT_DISTRIB=
 
 ##
 ## Standard targets...

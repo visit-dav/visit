@@ -84,6 +84,9 @@
 #    Jeremy Meredith, Fri Jul 12 14:37:49 PDT 2002
 #    Unified include directories.
 #
+#    Eric Brugger, Fri Jun 29 09:34:38 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -102,7 +105,6 @@ SRC=DebugStream.C Init.C VisItException.C TimingsManager.C PTY.C
 HDR=DebugStream.h Init.h VisItException.h TimingsManager.h PTY.h
 OBJ=$(SRC:.C=.o)
 LIB=libmisc
-NOT_DISTRIB=
 
 ##
 ## Standard targets...

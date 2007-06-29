@@ -128,6 +128,9 @@
 #   Renamed the C object file list to simply OBJ to play better with
 #   dependencies.
 #
+#   Eric Brugger, Fri Jun 29 09:46:40 PDT 2007
+#   Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -135,8 +138,6 @@
 ##
 @SET_MAKE@
 @VARIABLES@
-
-NOT_DISTRIB=Version.java
 
 INSTDIR=llnl/visit
 

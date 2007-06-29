@@ -60,6 +60,9 @@
 #    Jeremy Meredith, Thu May 24 11:24:15 EDT 2007
 #    Added SocketBridge.
 #
+#    Eric Brugger, Fri Jun 29 09:27:56 PDT 2007
+#    Removed the setting of the DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -79,9 +82,6 @@ CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
 SRC=LauncherApplication.C SocketBridge.C main.C
 
 OBJ=$(SRC:.C=.o)
-
-DISTRIB=
-
 
 ##
 ## Standard targets...

@@ -55,6 +55,11 @@
 #    of  California,  and  shall  not  be  used  for  advertising  or  product
 #    endorsement purposes.
 #
+#  Modifications:
+#
+#    Eric Brugger, Fri Jun 29 09:20:53 PDT 2007
+#    Removed the setting of the DISTRIB and NOT_DISTRIB variables.
+#
 ##############################################################################
 ##
 ## Programs and options...
@@ -64,13 +69,6 @@
 
 CPPFLAGS=-I. -I../../include @CPPFLAGS@ @VTK_INCLUDES@ @SILO_INCLUDE@
 LIBS=
-
-##
-## We distribute sources for bzip2 with VisIt via the tar file
-##
-NOT_DISTRIB=blocksort.c huffman.c crctable.c randtable.c compress.c decompress.c \
-            bzlib.c bzlib.h  bzlib_private.h words* LICENSE
-DISTRIB=bzip2-1.0.3.v.tar.gz
 
 ##
 ## Files...

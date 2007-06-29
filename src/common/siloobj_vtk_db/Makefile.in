@@ -72,6 +72,9 @@
 #    in addition to TARGETS depending on whether the library is build
 #    from object files in one directory or multiple subdirectories.
 #
+#    Eric Brugger, Fri Jun 29 09:47:30 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -94,7 +97,6 @@ HDR=
 OBJ=$(SRC:.C=.o)
 LIB=libsiloobjvtk
 LIBS=@VTK_LIBS@ @SILO_LIB@ -lsiloobj -lutility
-NOT_DISTRIB= Makefile.options
 
 
 ## Standard targets...

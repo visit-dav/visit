@@ -55,6 +55,11 @@
 #    of  California,  and  shall  not  be  used  for  advertising  or  product
 #    endorsement purposes.
 #
+#  Modifications:
+#
+#    Eric Brugger, Fri Jun 29 09:10:39 PDT 2007
+#    Removed the setting of the DISTRIB and NOT_DISTRIB variables.
+#
 ##############################################################################
 
 ##
@@ -66,8 +71,6 @@
 LIBS=-ll @LIBS@
 CPPFLAGS=-I. @CPPFLAGS@
 
-NOT_DISTRIB=lex.C
-
 ##
 ## Files...
 ##
@@ -75,8 +78,6 @@ DOXYGENATE_SRC=DoxygenDirective.C Doxygenator.C
 LEX_SRC=lex.C
 
 PRIVATE_HDR=Tokens.h
-
-DISTRIB=
 
 SRC=$(DOXYGENATE_SRC) $(LEX_SRC)
 OBJ=$(SRC:.C=.o)

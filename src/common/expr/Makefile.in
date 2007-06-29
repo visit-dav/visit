@@ -66,6 +66,9 @@
 #    Renamed the TESTOBJ1 to a slightly more standard TESTOBJ to play better
 #    with automatic dependencies.
 #
+#    Eric Brugger, Fri Jun 29 09:36:20 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -103,7 +106,6 @@ COMMONOBJ=${COMMONSRC:.C=.o}
 CONFIGOBJ=${CONFIGSRC:.C=.o}
 TESTOBJ=$(TESTSRC:.C=.o)
 LIB=libexpr
-NOT_DISTRIB=
 LIBS=-L../../lib -lmisc -lstate -lcomm -lutility -lparser -lavtexceptions @LIBS@
 
 ##

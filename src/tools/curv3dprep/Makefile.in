@@ -56,8 +56,12 @@
 #    endorsement purposes.
 #
 # Modifications:
+#
 #   Eric Brugger, Tue Jul 27 13:55:45 PDT 2004
 #   Added -I$(TOPDIR)/include/visit to pick up visitstream.h.
+#
+#   Eric Brugger, Fri Jun 29 09:39:54 PDT 2007
+#   Removed the setting of the NOT_DISTRIB variable.
 #
 ##############################################################################
 
@@ -78,9 +82,6 @@ LIBDEP=
 SRC=curv3dprep.C
 HDR=
 OBJ=$(SRC:.C=.o)
-
-NOT_DISTRIB= Makefile.options
-
 
 ##
 ## Standard targets...

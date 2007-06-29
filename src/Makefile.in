@@ -152,13 +152,14 @@
 #    Brad Whitlock, Wed Nov 22 11:41:54 PDT 2006
 #    I added a top level visitmodule target.
 #
+#    Eric Brugger, Fri Jun 29 09:28:51 PDT 2007
+#    Removed the setting of the DISTRIB variable.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
-
-DISTRIB=configure configure.in VERSION
 
 SUBDIRS=include lib bin third_party_builtin common @VTKQT@ visit_vtk \
         components engine launcher @METADATA_SERVER@ winutil @VIEWER@ \

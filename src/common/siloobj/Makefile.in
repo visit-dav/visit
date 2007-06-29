@@ -73,6 +73,9 @@
 #    Jeremy Meredith, Fri Jul 12 14:37:45 PDT 2002
 #    Unified include directories.
 #
+#    Eric Brugger, Fri Jun 29 09:32:37 PDT 2007
+#    Removed the setting of the NOT_DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -95,7 +98,6 @@ HDR=TimeSequence.h Field.h Material.h Mesh.h StructuredTopology.h \
 OBJ=$(SRC:.C=.o)
 LIB=libsiloobj
 LIBS=@SILO_LIB@
-NOT_DISTRIB=
 
 ##
 ## Standard targets...

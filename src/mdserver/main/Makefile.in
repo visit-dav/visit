@@ -199,6 +199,9 @@
 #    Changed $(PREBIND_LIBS) to @PREBIND_LIBS@ in the LIBS list.  Corrected
 #    a comment.
 #
+#    Eric Brugger, Thu Jun 28 16:12:04 PDT 2007
+#    Removed the setting of the DISTRIB variable.
+#
 ##############################################################################
 
 ##
@@ -258,8 +261,6 @@ OBJ=$(SRC:.C=.o)
 ## Source files for the test program
 TESTSRC=testmds.C
 TESTOBJ=testmds.o LibPipelineStubs.o
-
-DISTRIB=
 
 
 ##

@@ -149,12 +149,14 @@
 #    Mark C. Miller, Thu May 24 20:57:11 PDT 2007
 #    Added links for itaps libraries. Added cleanlinks target
 #
+#    Eric Brugger, Fri Jun 29 09:16:03 PDT 2007
+#    Removed the setting of the DISTRIB variable.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-DISTRIB=README
 LIBVTKCOMMON=libvtkCommon.@SHLIB_LIBEXT@
 LIBVTKDICOM=libvtkDICOMParser.@SHLIB_LIBEXT@
 LIBVTKFILTERING=libvtkFiltering.@SHLIB_LIBEXT@
