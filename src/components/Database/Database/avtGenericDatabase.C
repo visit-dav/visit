@@ -420,6 +420,9 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Do not check for "MustMaintainOriginalConnectivity()" here.  If we wait
 //    until a lower level, it makes it easier to issue an error message.
 //
+//    Kathleen Bonnell, Thu Jun 21 17:09:42 PDT 2007 
+//    CreateAMRIndices when requested. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -631,6 +634,17 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     if (spec->NeedStructuredIndices())
     {
         CreateStructuredIndices(datasetCollection, src);
+        //
+        // Tell everything downstream that we do have original cells.
+        //
+        string meshname = md->MeshForVar(spec->GetVariable());
+        md->SetContainsOriginalCells(meshname, true);
+    }
+
+    if (spec->NeedAMRIndices() >= 0)
+    {
+        CreateAMRIndices(datasetCollection, domains, spec, src, 
+                         spec->NeedAMRIndices());
         //
         // Tell everything downstream that we do have original cells.
         //
@@ -9606,4 +9620,81 @@ GetOriginalVariableName(const avtDatabaseMetaData *md, const char *varname)
     }
 
     return varname;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateAMRIndices
+//
+//  Purpose:
+//    Create an array containing ARM indexing information that allow
+//    translation between the requested level and the level of each dataset.
+//
+//  Arguments:
+//      ds        The dataset collection.
+//      domains   Domain numbers associated with the datasets.
+//      spec      The Data specification.
+//      src       The source object.
+//      level     The requested level.
+//
+//  Programmer:   Kathleen Bonnell 
+//  Creation:     June 20, 2007 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtGenericDatabase::CreateAMRIndices(avtDatasetCollection &dsc, 
+                                     intVector &domains,
+                                     avtDataSpecification_p &spec, 
+                                     avtSourceFromDatabase *src, int level)
+{
+    char  progressString[1024] = "Creating AMR Indices";
+    src->DatabaseProgress(0, 0, progressString);
+
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshname = md->MeshForVar(spec->GetVariable());
+    
+    void_ref_ptr vr = cache.GetVoidRef(meshname.c_str(),
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                   ts, -1);
+    if (*vr == NULL)
+        vr = cache.GetVoidRef("any_mesh",
+                              AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                              ts, -1);
+
+    if (*vr == NULL)
+    {
+        debug1 << "avtGenericDatabase could not create AMR Indices as "
+               << "requested because the DomainNesting object could not "
+               << "be retrieved." << endl;
+        return;   
+    }
+
+    avtDomainNesting *dn = (avtDomainNesting*)*vr;
+
+    for (int i = 0; i < dsc.GetNDomains(); i++)
+    {
+        intVector rv = dn->GetRatiosForLevel(level, domains[i]);
+        vtkDataSet *ds = dsc.GetDataset(i, 0);
+        if(ds == NULL)
+        {
+            debug1 << "Requested AMR indices for NULL mesh." << endl;
+            continue;
+        }
+        vtkIntArray *amrDims = vtkIntArray::New();
+        amrDims->SetNumberOfTuples(rv.size());
+        for (int j = 0; j < rv.size(); j++)
+        {
+            amrDims->SetValue(j, rv[j]);
+        }
+        amrDims->SetName("avtAMRDimensions");
+        ds->GetFieldData()->AddArray(amrDims);
+        amrDims->Delete();
+        AddOriginalCellsArray(ds, -1);
+        src->DatabaseProgress(i, dsc.GetNDomains(), progressString);
+    }
+    src->DatabaseProgress(1, 0, progressString);
 }

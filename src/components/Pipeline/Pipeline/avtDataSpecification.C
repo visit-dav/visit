@@ -151,6 +151,9 @@ using     std::map;
 //    Cyrus Harrison, Fri Mar 23 07:48:16 PDT 2007
 //    Set default MIR algorithm to Zoo
 //
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -167,6 +170,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needBoundarySurfaces = false;
     needValidFaceConnectivity = false;
     needStructuredIndices = false;
+    needAMRIndices = -1;
     usesAllDomains = true;
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
@@ -285,6 +289,10 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added initialization of flatness tolerance.
+//
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -300,6 +308,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     needBoundarySurfaces = false;
     needValidFaceConnectivity = false;
     needStructuredIndices = false;
+    needAMRIndices = -1;
     usesAllDomains = true;
     needMixedVariableReconstruction = false;
     needSmoothMaterialInterfaces = false;
@@ -558,6 +567,10 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added flatness tolerance.
+//
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -601,6 +614,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     needBoundarySurfaces            = spec.needBoundarySurfaces;
     needValidFaceConnectivity       = spec.needValidFaceConnectivity;
     needStructuredIndices           = spec.needStructuredIndices;
+    needAMRIndices                  = spec.needAMRIndices;
     usesAllDomains                  = spec.usesAllDomains;
     needMixedVariableReconstruction = spec.needMixedVariableReconstruction;
     needSmoothMaterialInterfaces    = spec.needSmoothMaterialInterfaces;
@@ -716,6 +730,10 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added flatness tolerance.
+//
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
 // ****************************************************************************
 
 bool
@@ -804,6 +822,11 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     }
 
     if (needStructuredIndices != ds.needStructuredIndices)
+    {
+        return false;
+    }
+
+    if (needAMRIndices != ds.needAMRIndices)
     {
         return false;
     }
@@ -1599,6 +1622,10 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //  Programmer: Hank Childs
 //  Creation:   June 15, 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added member needAMRIndices.
+//
 // ****************************************************************************
 
 static const char *
@@ -1644,6 +1671,8 @@ avtDataSpecification::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("needBoundarySurfaces", YesOrNo(needBoundarySurfaces));
     webpage->AddTableEntry2("needValidFaceConnectivity", YesOrNo(needValidFaceConnectivity));
     webpage->AddTableEntry2("needStructuredIndices", YesOrNo(needStructuredIndices));
+    sprintf(str, "%d", needAMRIndices);
+    webpage->AddTableEntry2("needAMRIndices", str);
     webpage->AddTableEntry2("needMixedVariableReconstruction", YesOrNo(needMixedVariableReconstruction));
     webpage->AddTableEntry2("needSmoothMaterialInterfaces", YesOrNo(needSmoothMaterialInterfaces));
     webpage->AddTableEntry2("needCleanZonesOnly", YesOrNo(needCleanZonesOnly));

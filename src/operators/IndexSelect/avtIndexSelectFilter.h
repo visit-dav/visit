@@ -84,6 +84,9 @@ class vtkVisItExtractRectilinearGrid;
 //    Jeremy Meredith, Wed Jan 17 11:41:51 EST 2007
 //    Added support for transformed rectilinear grids.
 //
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added amrLevel, amrMesh, int* arg to PrepareFilters.
+//
 // ****************************************************************************
 
 class avtIndexSelectFilter : public avtPluginStreamer
@@ -108,12 +111,14 @@ class avtIndexSelectFilter : public avtPluginStreamer
     bool                        successfullyExecuted;
     int                         selID;
     bool                        groupCategory;
+    bool                        amrMesh;
+    int                         amrLevel;
 
     vtkVisItExtractGrid                  *curvilinearFilter;
     vtkVisItExtractRectilinearGrid       *rectilinearFilter;
     vtkMaskPoints                        *pointsFilter;
 
-    void                        PrepareFilters(int [3]);
+    void                        PrepareFilters(int [3], int *);
 
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual void                PreExecute(void);

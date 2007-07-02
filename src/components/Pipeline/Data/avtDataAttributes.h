@@ -218,6 +218,10 @@ class     PlotInfoAttributes;
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added node origin
+//
+//    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
+//    Added meshType.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -433,6 +437,11 @@ class PIPELINE_API avtDataAttributes
     void                     SetOrigElementsRequiredForPick(bool v)
                                    { origElementsRequiredForPick = v; };
 
+    avtMeshType              GetMeshType(void) const
+                                   { return meshType; };
+    void                     SetMeshType(avtMeshType t)
+                                   { meshType = t; };
+
     avtMeshCoordType         GetMeshCoordType(void) const
                                    { return meshCoordType; };
     void                     SetMeshCoordType(avtMeshCoordType t)
@@ -490,6 +499,7 @@ class PIPELINE_API avtDataAttributes
     bool                     mirOccurred;
     bool                     canUseOrigZones;
     bool                     origElementsRequiredForPick;
+    avtMeshType              meshType;
     avtMeshCoordType         meshCoordType;
     bool                     nodesAreCritical;
     float                    unitCellVectors[9];

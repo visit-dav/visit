@@ -68,6 +68,9 @@ class vtkDataSet;
 //    Hank Childs, Thu Jan  6 16:00:27 PST 2005
 //    Added ConfirmMesh.
 //
+//    Kathleen Bonnell, Fri Jun 22 16:43:59 PDT 2007 
+//    Added GetRatiosForLevel.
+//
 // ****************************************************************************
 class DATABASE_API avtDomainNesting
 {
@@ -79,6 +82,7 @@ class DATABASE_API avtDomainNesting
                             vector<vtkDataSet*> meshes) = 0;
 
     virtual bool ConfirmMesh(vector<int> &, vector<vtkDataSet*> &) = 0;
+    virtual vector<int> GetRatiosForLevel(int level, int dom) = 0;
 };
 
 #endif

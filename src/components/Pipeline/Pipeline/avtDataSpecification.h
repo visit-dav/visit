@@ -180,6 +180,10 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Hank Childs, Fri Jun 15 12:58:49 PDT 2007
 //    Added method DebugDump.
 //
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added method NeedAMRIndices and SetNeedAMRIndices.  The int represents
+//    level requested.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -244,6 +248,11 @@ class PIPELINE_API avtDataSpecification
                                      { return needStructuredIndices; };
     void                         SetNeedStructuredIndices(bool v)
                                      { needStructuredIndices = v; };
+
+    int                          NeedAMRIndices(void)
+                                     { return needAMRIndices; };
+    void                         SetNeedAMRIndices(int v)
+                                     { needAMRIndices = v; };
 
     bool                         NeedZoneNumbers(void) 
                                      { return needZones; };
@@ -405,6 +414,7 @@ class PIPELINE_API avtDataSpecification
     bool                         needBoundarySurfaces;
     bool                         needValidFaceConnectivity;
     bool                         needStructuredIndices;
+    int                          needAMRIndices;
     bool                         needMixedVariableReconstruction;
     bool                         needSmoothMaterialInterfaces;
     bool                         needCleanZonesOnly;

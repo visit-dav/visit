@@ -92,6 +92,9 @@
 //    Kathleen Bonnell, Thu Jun  7 14:37:49 PDT 2007 
 //    Added groupCategory.
 // 
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added amrLevel, amrMesh.
+//
 // ****************************************************************************
 
 avtIndexSelectFilter::avtIndexSelectFilter()
@@ -103,6 +106,8 @@ avtIndexSelectFilter::avtIndexSelectFilter()
     pointsFilter->RandomModeOff();
     haveIssuedWarning = false;
     selID             = -1;
+    amrLevel          = -1;
+    amrMesh           = false;
     groupCategory = false;
 }
 
@@ -199,10 +204,14 @@ avtIndexSelectFilter::SetAtts(const AttributeGroup *a)
 //    Kathleen Bonnell, Thu Jun  7 14:37:49 PDT 2007 
 //    Use groupCategory insead of WhichData == OneGroup.
 // 
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    Added int* amri arg.  Read from this arg if AMR mesh in order to
+//    determine how to correctly compute min/max.
+//
 // ****************************************************************************
 
 void
-avtIndexSelectFilter::PrepareFilters(int groupIndices[3])
+avtIndexSelectFilter::PrepareFilters(int groupIndices[3], int *amri)
 {
     //
     // Only adjust the base index if we are index selecting by group.
@@ -222,13 +231,43 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3])
     }
 
     int voi[6];
-    voi[0] = (atts.GetXMin() - bi[0] < 0 ? 0 : atts.GetXMin() - bi[0]);
-    voi[1] = (atts.GetXMax() < 0 ? 1000000 : atts.GetXMax() - bi[0]);
-    if (atts.GetDim() == IndexSelectAttributes::TwoD ||
-        atts.GetDim() == IndexSelectAttributes::ThreeD)
+
+    int minmax[6] = {atts.GetXMin(), atts.GetXMax(), atts.GetYMin(),
+                     atts.GetYMax(), atts.GetZMin(), atts.GetZMax()};
+
+    if (amrMesh && groupCategory)
     {
-        voi[2] = (atts.GetYMin() - bi[1] < 0 ? 0 : atts.GetYMin() - bi[1]);
-        voi[3] = (atts.GetYMax() < 0 ? 1000000 : atts.GetYMax() - bi[1]);
+        int OP = amri[3];
+        for (int i = 0; i < 3; i++)
+        {
+            if (amri[i] > 1)
+            {
+                if (OP == 0)
+                {
+                    // min
+                    minmax[i*2] = minmax[i*2]*amri[i]; 
+                    // max
+                    minmax[i*2+1] = minmax[i*2+1]*amri[i]; 
+                }
+                else 
+                {
+                    // min
+                    minmax[i*2] = minmax[i*2]/amri[i]; 
+                    // max
+                    if (minmax[i*2+1] != -1)
+                    minmax[i*2+1] = minmax[i*2+1]/amri[i] + 1; 
+                }
+            }
+        }
+    }
+  
+    voi[0] = (minmax[0] - bi[0] < 0 ? 0 : minmax[0] - bi[0]);
+    voi[1] = (minmax[1] < 0 ? 1000000   : minmax[1] - bi[0]);
+    if (atts.GetDim() == IndexSelectAttributes::TwoD ||
+            atts.GetDim() == IndexSelectAttributes::ThreeD)
+    {
+        voi[2] = (minmax[2] - bi[1] < 0 ? 0 : minmax[2] - bi[1]);
+        voi[3] = (minmax[3] < 0 ? 1000000   : minmax[3] - bi[1]);
     }
     else
     {
@@ -237,8 +276,8 @@ avtIndexSelectFilter::PrepareFilters(int groupIndices[3])
     }
     if (atts.GetDim() == IndexSelectAttributes::ThreeD)
     {
-        voi[4] = (atts.GetZMin() - bi[2] < 0 ? 0 : atts.GetZMin() - bi[2]);
-        voi[5] = (atts.GetZMax() < 0 ? 1000000 : atts.GetZMax() - bi[2]);
+        voi[4] = (minmax[4] - bi[2] < 0 ? 0 : minmax[4] - bi[2]);
+        voi[5] = (minmax[5] < 0 ? 1000000   : minmax[5] - bi[2]);
     }
     else
     {
@@ -350,6 +389,9 @@ avtIndexSelectFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Thu Jun  7 14:37:49 PDT 2007 
 //    Use groupCategory insead of WhichData == OneGroup.
 // 
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
+//    If this is an AMR mesh, retrieve AMR indices and don't remove ghost zones.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -360,6 +402,9 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     int topoDim = GetInput()->GetInfo().GetAttributes().
                   GetTopologicalDimension();
 
+    amrMesh = (GetInput()->GetInfo().GetAttributes().GetMeshType() == 
+                AVT_AMR_MESH);
+
     //
     // If the selection this filter exists to create has already been handled,
     // then we can skip execution
@@ -367,7 +412,7 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
     if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID)) 
     {
         debug1 << "Bypassing IndexSelect operator because database plugin "
-                  "cliams to have applied the selection already" << endl;
+                  "claims to have applied the selection already" << endl;
         successfullyExecuted = true;
         return in_ds;
     }
@@ -385,7 +430,8 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
         // between blocks.
         //
         vtkDataSetRemoveGhostCells *removeGhostCells = NULL;
-        if (in_ds->GetCellData()->GetArray("avtGhostZones"))
+        if (!amrMesh &&  
+            in_ds->GetCellData()->GetArray("avtGhostZones"))
         {
             removeGhostCells  = vtkDataSetRemoveGhostCells::New();
             removeGhostCells->SetInput(in_ds);
@@ -417,7 +463,28 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
             ind[1] = ar2->GetValue(1);
             ind[2] = ar2->GetValue(2);
         }
-        PrepareFilters(ind);
+
+        int *amri = NULL;
+        if (amrMesh && groupCategory)
+        {
+            vtkIntArray *amrdims = (vtkIntArray *)
+                in_ds->GetFieldData()->GetArray("avtAMRDimensions");
+            if (amrdims == NULL)
+            {
+                if (!haveIssuedWarning)
+                {
+                    avtCallback::IssueWarning("An internal error occurred and "
+                            "the index select operator was not applied.");
+                    haveIssuedWarning = true;
+                }
+                return in_ds;
+            }
+            else
+            {
+                amri = (int*)amrdims->GetVoidPointer(0);
+            }
+        }
+        PrepareFilters(ind, amri);
     
         vtkDataSet *rv = NULL;
         int dstype = ds->GetDataObjectType();
@@ -677,6 +744,10 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //    Kathleen Bonnell, Thu Jun  7 14:37:49 PDT 2007 
 //    Modified how SIL selection is done, based on new atts. 
 // 
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007
+//    If this is an AMR mesh and category is group, don't restrict the SIL
+//    and also request AMR indices.
+// 
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -684,7 +755,10 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
 {
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
 
-    if (!atts.GetUseWholeCollection()) 
+    amrMesh = GetInput()->GetInfo().GetAttributes().GetMeshType() == AVT_AMR_MESH;
+    bool skipSILRestriction = amrMesh && groupCategory;
+
+    if (!atts.GetUseWholeCollection() && !skipSILRestriction) 
     {
         string category = atts.GetCategoryName();
         string subset = atts.GetSubsetName();
@@ -721,6 +795,10 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
         ENDTRY
     }
 
+    if (amrMesh && groupCategory && amrLevel != -1)
+    {
+        rv->GetDataSpecification()->SetNeedAMRIndices(amrLevel);
+    }
 
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
@@ -1006,7 +1084,9 @@ avtIndexSelectFilter::FilterUnderstandsTransformedRectMesh()
 //  Creation:   June 7, 2007 
 //
 //  Modifications:
-//   
+//    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007
+//    Determine amrLevel during set validation.
+//
 // ****************************************************************************
 
 void
@@ -1042,6 +1122,8 @@ avtIndexSelectFilter::VerifyInput()
         for (int i = 0; i < els.size() && !validSet; i++)
         {
             validSet = (setID == els[i]);
+            if (validSet && coll->GetRole() == SIL_BLOCK)
+                amrLevel = i;
         }
 
         if (!validSet)
