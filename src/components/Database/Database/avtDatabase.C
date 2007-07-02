@@ -568,6 +568,10 @@ avtDatabase::GetOutput(const char *var, int ts)
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Kathleen Bonnell,  Fri Jun 22 13:41:14 PDT 2007
+//    Added meshType.
+//
 // ****************************************************************************
 
 void
@@ -629,6 +633,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.GetTrueSpatialExtents()->Set(extents);
             haveSetTrueSpatialExtents = true;
         }
+        atts.SetMeshType(mmd->meshType);
         atts.SetMeshCoordType(mmd->meshCoordType);
         atts.SetNodesAreCritical(mmd->nodesAreCritical);
         atts.SetUnitCellVectors(mmd->unitCellVectors);

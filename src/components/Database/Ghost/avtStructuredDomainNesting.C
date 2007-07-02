@@ -358,11 +358,12 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
             ghostData = (unsigned char *) ghostArray->GetVoidPointer(0);
 
             //
-            // because number of ghost layers may vary from one variable to the next,
-            // we have a strange problem here in that we know we have ghost layers but
-            // don't know precisely how many in each dimension. So, we detect it from
-            // knowledge of the non-ghosted size (in the nesting info's logical extents
-            // of the parent) of the patch and the actual ghost data array
+            // because number of ghost layers may vary from one variable to the
+            // next, we have a strange problem here in that we know we have
+            // ghost layers but don't know precisely how many in each 
+            // dimension.  So, we detect it from knowledge of the non-ghosted
+            // size (in the nesting info's logical extents of the parent) of 
+            // the patch and the actual ghost data array
             //
             DetectBoundaryGhostLayers(numDimensions, ghostData, numCells,
                 domainNesting[parentDom].logicalExtents, ghostLayers);
@@ -446,19 +447,23 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
             // Compute min/max extents in the current patch's level by mapping
             // the selected descendent's indexing scheme onto this level
             //
-            int i0         = domainNesting[descDom].logicalExtents[0] / ratio[0];
-            int i1         = (domainNesting[descDom].logicalExtents[3] + 1) / ratio[0];
-            if ((domainNesting[descDom].logicalExtents[3] + 1) % ratio[0]) i1++;
-            int j0         = domainNesting[descDom].logicalExtents[1] / ratio[1];
-            int j1         = (domainNesting[descDom].logicalExtents[4] + 1) / ratio[1];
-            if ((domainNesting[descDom].logicalExtents[4] + 1) % ratio[1]) j1++;
-            int k0         = domainNesting[descDom].logicalExtents[2] / ratio[2];
-            int k1         = (domainNesting[descDom].logicalExtents[5] + 1) / ratio[2];
-            if ((domainNesting[descDom].logicalExtents[5] + 1) % ratio[2]) k1++;
+            int i0 = domainNesting[descDom].logicalExtents[0] / ratio[0];
+            int i1 = (domainNesting[descDom].logicalExtents[3] + 1) / ratio[0];
+            if ((domainNesting[descDom].logicalExtents[3] + 1) % ratio[0]) 
+                i1++;
+            int j0 = domainNesting[descDom].logicalExtents[1] / ratio[1];
+            int j1 = (domainNesting[descDom].logicalExtents[4] + 1) / ratio[1];
+            if ((domainNesting[descDom].logicalExtents[4] + 1) % ratio[1]) 
+                j1++;
+            int k0 = domainNesting[descDom].logicalExtents[2] / ratio[2];
+            int k1 = (domainNesting[descDom].logicalExtents[5] + 1) / ratio[2];
+            if ((domainNesting[descDom].logicalExtents[5] + 1) % ratio[2]) 
+                k1++;
 
             //
             // Often a descendent domain spans multiple parents. So, we need to
-            // clip the bounds computed above to THIS parent's upper/lower bounds
+            // clip the bounds computed above to THIS parent's upper/lower 
+            // bounds
             //
             if (i1 > I1) i1 = I1;
             if (j1 > J1) j1 = J1;
@@ -609,3 +614,66 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
 }
 
 
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetRatiosForLevel
+//
+//  Purpose:
+//    Creates an array of indices for a dataset which allows translation from
+//    its indexing scheme to another levels indexing scheme.  Array is of the 
+//    form RI RJ RK OP where RI, RJ, & RK are the conversion factors for each 
+//    dimension between the dataset's level and the requested AMR level.  OP is
+//    the operation type needed to perform the conversion (multiply or divide). 
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 22, 2007 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vector<int>
+avtStructuredDomainNesting::GetRatiosForLevel(int level, int dom)
+{
+    if (level < 0 || level >= levelRatios.size())
+        EXCEPTION2(BadIndexException, level, levelRatios.size());
+    if (dom < 0 || dom >= domainNesting.size())
+        EXCEPTION2(BadIndexException, dom, domainNesting.size());
+
+    int myLevel        = domainNesting[dom].level;
+    vector<int> rv;
+    int i;
+
+    // 0 for mult 1 for divide
+    int multOrDivide = 0;
+    int ratios[3] = {1, 1, 1}; 
+
+    // how to translate the requested level to my level.
+    if (myLevel > level)
+    {
+        multOrDivide = 0; // multiply
+        // whats the multiplier for each dimension? 
+        for (i = myLevel; i > level; i--)
+        {
+            ratios[0] *= levelRatios[i][0];
+            ratios[1] *= (numDimensions >= 2 ? levelRatios[i][1] : 1);
+            ratios[2] *= (numDimensions >= 3 ? levelRatios[i][2] : 1);
+        }
+    }
+    else if (myLevel < level)
+    {
+        multOrDivide = 1; // divide
+        for (i = level; i > myLevel; i--)
+        {
+            ratios[0] *= levelRatios[i][0];
+            ratios[1] *= (numDimensions >= 2 ? levelRatios[i][1] : 1);
+            ratios[2] *= (numDimensions >= 3 ? levelRatios[i][2] : 1);
+        }
+    }
+    for (i = 0; i < 3; i++)
+    {
+        rv.push_back(ratios[i]);
+    }
+    rv.push_back(multOrDivide);
+    
+    return rv;
+}

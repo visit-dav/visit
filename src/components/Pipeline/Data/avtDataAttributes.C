@@ -148,6 +148,10 @@ using     std::sort;
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added node origin
+//
+//    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
+//    Added meshType.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -203,6 +207,7 @@ avtDataAttributes::avtDataAttributes()
     canUseOrigZones = true;
     origElementsRequiredForPick = false;
     meshCoordType = AVT_XY;
+    meshType = AVT_UNKNOWN_MESH;
     nodesAreCritical = false;
     for (int i=0; i<3; i++)
     {
@@ -418,6 +423,10 @@ avtDataAttributes::DestructSelf(void)
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added node origin
+//
+//    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
+//    Added meshType.
+//
 // ****************************************************************************
 
 void
@@ -680,13 +689,40 @@ avtDataAttributes::Print(ostream &out)
     switch (meshCoordType)
     {
       case AVT_XY:
-        out << "The mesh coord tyep is XY " << endl;
+        out << "The mesh coord type is XY " << endl;
         break; 
       case AVT_RZ:
-        out << "The mesh coord tyep is RZ " << endl;
+        out << "The mesh coord type is RZ " << endl;
         break; 
       case AVT_ZR:
-        out << "The mesh coord tyep is ZR " << endl;
+        out << "The mesh coord type is ZR " << endl;
+        break; 
+    }
+    switch (meshType)
+    {
+      case AVT_RECTILINEAR_MESH:
+        out << "The mesh type is RECTILINEAR " << endl;
+        break; 
+      case AVT_CURVILINEAR_MESH:
+        out << "The mesh type is CURVILINEAR " << endl;
+        break; 
+      case AVT_UNSTRUCTURED_MESH:
+        out << "The mesh type is UNSTRUCTURED " << endl;
+        break; 
+      case AVT_POINT_MESH:
+        out << "The mesh type is POINT " << endl;
+        break; 
+      case AVT_SURFACE_MESH:
+        out << "The mesh type is SURFACE " << endl;
+        break; 
+      case AVT_CSG_MESH:
+        out << "The mesh type is CSG " << endl;
+        break; 
+      case AVT_AMR_MESH:
+        out << "The mesh type is AMR " << endl;
+        break; 
+      case AVT_UNKNOWN_MESH:
+        out << "The mesh type is UNKNOWN " << endl;
         break; 
     }
 
@@ -841,6 +877,10 @@ avtDataAttributes::Print(ostream &out)
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added node origin
+//
+//    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
+//    Added meshType.
+//
 // ****************************************************************************
 
 void
@@ -928,6 +968,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     canUseOrigZones = di.canUseOrigZones;
     origElementsRequiredForPick = di.origElementsRequiredForPick;
     meshCoordType = di.meshCoordType;
+    meshType = di.meshType;
     nodesAreCritical = di.nodesAreCritical;
     for (int j=0; j<9; j++)
         unitCellVectors[j] = di.unitCellVectors[j];
@@ -1049,6 +1090,10 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added node origin
+//
+//    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
+//    Added meshType.
+//
 // ****************************************************************************
 
 void
@@ -1202,6 +1247,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (meshCoordType != da.meshCoordType)
     {
         EXCEPTION2(InvalidMergeException, meshCoordType, da.meshCoordType);
+    }
+    if (meshType != da.meshType)
+    {
+        EXCEPTION2(InvalidMergeException, meshType, da.meshType);
     }
 
     if (nodesAreCritical != da.nodesAreCritical)
@@ -2381,6 +2430,10 @@ avtDataAttributes::SetTime(double d)
 //    Added node origin. Re-wrote code to be a little easier to manage
 //    by using i++ indexing rather than literal ints and basei in the for
 //    loop for variables.
+//
+//    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
+//    Added meshType.
+//
 // ****************************************************************************
 
 void
@@ -2390,7 +2443,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     int   i, j;
 
     int varSize = 6;
-    int numVals = 28 + varSize*variables.size();
+    int numVals = 29 + varSize*variables.size();
     int *vals = new int[numVals];
     i = 0;
     vals[i++] = topologicalDimension;
@@ -2417,6 +2470,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = canUseOrigZones;
     vals[i++] = origElementsRequiredForPick;
     vals[i++] = meshCoordType;
+    vals[i++] = meshType;
     vals[i++] = (nodesAreCritical ? 1 : 0);
     vals[i++] = (rectilinearGridHasTransform ? 1 : 0);
     vals[i++] = activeVariable;
@@ -2643,6 +2697,10 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
+//    Added meshType.
+//
 // ****************************************************************************
 
 int
@@ -2748,6 +2806,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     meshCoordType = (avtMeshCoordType)tmp;
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    meshType = (avtMeshType)tmp;
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -4432,6 +4494,36 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
         break;
      }
     webpage->AddTableEntry2("Coordinate type", str);
+
+    switch (meshType)
+    {
+      case AVT_RECTILINEAR_MESH:
+        strcpy(str, "Rectilinear");
+        break;
+      case AVT_CURVILINEAR_MESH:
+        strcpy(str, "Curvilinear");
+        break;
+      case AVT_UNSTRUCTURED_MESH:
+        strcpy(str, "Unstructured");
+        break;
+      case AVT_POINT_MESH:
+        strcpy(str, "Point");
+        break;
+      case AVT_SURFACE_MESH:
+        strcpy(str, "Surface");
+        break;
+      case AVT_CSG_MESH:
+        strcpy(str, "CSG");
+        break;
+      case AVT_AMR_MESH:
+        strcpy(str, "AMR");
+        break;
+      case AVT_UNKNOWN_MESH:
+        strcpy(str, "Unkown mesh type");
+        break;
+     }
+    webpage->AddTableEntry2("Mesh type", str);
+
     webpage->AddTableEntry2("Are the nodes critical?",
                             YesOrNo(nodesAreCritical));
     webpage->AddTableEntry2("Is there an implied rectilinear grid transform?",

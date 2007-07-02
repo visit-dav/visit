@@ -86,6 +86,9 @@ class vtkDataArray;
 //    Hank Childs, Thu Jan  6 16:00:27 PST 2005
 //    Added ConfirmMesh.
 //
+//    Kathleen Bonnell, Fri Jun 22 16:43:59 PDT 2007  
+//    Added GetRatiosForLevel.
+//
 // ****************************************************************************
 
 typedef struct {
@@ -121,6 +124,8 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
                           { domainNesting[dom].level          = level;
                             domainNesting[dom].childDomains   = childDomains;
                             domainNesting[dom].logicalExtents = exts; } ;
+
+        vector<int>   GetRatiosForLevel(int level, int dom);
 
         virtual bool  ConfirmMesh(vector<int> &, vector<vtkDataSet*> &);
 

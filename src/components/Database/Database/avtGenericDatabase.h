@@ -303,6 +303,9 @@ class     PickVarInfo;
 //    Added issuedOriginalConnectivityWarning to support once per session
 //    matvf/specmf warning about ghost zones.
 //
+//    Kathleen Bonnell, Thu Jun 21 17:00:26 PDT 2007 
+//    Added method CreateAMRIndices.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -499,6 +502,11 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                    avtDataSpecification_p &);
     void                       CreateStructuredIndices(avtDatasetCollection &,
                                                        avtSourceFromDatabase*);
+    void                       CreateAMRIndices(avtDatasetCollection &,
+                                                intVector &,
+                                                avtDataSpecification_p &, 
+                                                avtSourceFromDatabase*,
+                                                int level);
     void                       UpdateInternalState(int);
 
     virtual bool               QueryScalars(const std::string &, const int, 
