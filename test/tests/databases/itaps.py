@@ -16,6 +16,9 @@
 #    Mark C. Miller, Wed Jun 27 10:57:17 PDT 2007
 #    Changed name from iTaps to ITAPS
 #
+#    Mark C. Miller, Tue Jul  3 15:26:41 PDT 2007
+#    Changed to use ITAPS_C plugin
+#
 # ----------------------------------------------------------------------------
 
 edgeSetId = -1
@@ -55,7 +58,7 @@ a.backgroundColor = (255, 255, 255, 255)
 SetAnnotationAttributes(a)
 
 # test the main mesh
-OpenDatabase("../data/iTaps_test_data/mbtest1", 0, "ITAPS_1.0")
+OpenDatabase("../data/iTaps_test_data/mbtest1", 0, "ITAPS_C_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 DrawPlots()
@@ -97,7 +100,7 @@ Test("itaps_05")
 DeleteAllPlots()
 CloseDatabase("../data/iTaps_test_data/mbtest1")
 
-OpenDatabase("../data/iTaps_test_data/bricks.cub", 0, "ITAPS_1.0")
+OpenDatabase("../data/iTaps_test_data/bricks.cub", 0, "ITAPS_C_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 DrawPlots()
@@ -114,7 +117,7 @@ DeleteAllPlots()
 CloseDatabase("../data/iTaps_test_data/bricks.cub")
 
 # test another mesh with some different element types
-OpenDatabase("../data/iTaps_test_data/globe_mats", 0, "ITAPS_1.0")
+OpenDatabase("../data/iTaps_test_data/globe_mats", 0, "ITAPS_C_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 SetActivePlots((0,1))
@@ -127,7 +130,7 @@ DeleteAllPlots()
 CloseDatabase("../data/iTaps_test_data/bricks.cub")
 
 # test another mesh with some different element types
-OpenDatabase("../data/iTaps_test_data/mixed-hex-pyr-tet", 0, "ITAPS_1.0")
+OpenDatabase("../data/iTaps_test_data/mixed-hex-pyr-tet", 0, "ITAPS_C_1.0")
 AddPlot("Mesh","mesh")
 AddPlot("Pseudocolor","zonetype")
 DrawPlots()
@@ -145,7 +148,7 @@ DeleteAllPlots()
 CloseDatabase("../data/iTaps_test_data/mixed-hex-pyr-tet")
 
 # test some variables now (node-centered, zone-centered, integer valued)
-OpenDatabase("../data/iTaps_test_data/globe_mats", 0, "ITAPS_1.0")
+OpenDatabase("../data/iTaps_test_data/globe_mats", 0, "ITAPS_C_1.0")
 AddPlot("Pseudocolor","dx")
 DrawPlots()
 Test("itaps_10")
