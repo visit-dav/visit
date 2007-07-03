@@ -159,6 +159,7 @@ c Close the Silo file.
       integer dbfile
       include "silo.inc"
       integer     err, ierr, types(2), lnames(2), ldefs(2), oldlen
+      integer     optlists(2)
 c Initialize some 20 character length strings
       character*40 names(2) /'zonalvec                                ',
      .                       'nodalvec                                '/
@@ -168,12 +169,14 @@ c Store the length of each string
       data lnames/8, 8/
       data ldefs/37, 37/
       data types/DB_VARTYPE_VECTOR, DB_VARTYPE_VECTOR/
+c Store NULL in the option lists for dbputdefvars
+      data optlists/DB_F77NULL, DB_F77NULL/
 c Set the maximum string length to 40 since that's how long our strings are
       oldlen = dbget2dstrlen()
       err = dbset2dstrlen(40)
 c Write out the expressions
       err = dbputdefvars(dbfile, "defvars", 7, 2, names, lnames, types,
-     . defs, ldefs, DB_F77NULL, ierr)
+     . defs, ldefs, optlists, ierr)
 c Restore the previous value for maximum string length
       err = dbset2dstrlen(oldlen) 
       end

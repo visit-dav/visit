@@ -131,6 +131,7 @@ c Write the mesh coordinates as nodal variables.
       integer dbfile
       include "silo.inc"
       integer     err, ierr, types(2), lnames(2), ldefs(2), oldlen
+      integer     optlists(2)
 c Initialize some 20 character length strings
       character*20 names(2) /'velocity            ',
      .                       'speed               '/
@@ -140,12 +141,14 @@ c Store the length of each string
       data lnames/8, 5/
       data ldefs/10, 19/
       data types/DB_VARTYPE_VECTOR, DB_VARTYPE_SCALAR/
+c Store NULL in the option lists for dbputdefvars
+      data optlists/DB_F77NULL, DB_F77NULL/
 c Set the maximum string length to 20 since that's how long our strings are
       oldlen = dbget2dstrlen()
       err = dbset2dstrlen(20)
 c Write out the expressions
       err = dbputdefvars(dbfile, "defvars", 7, 2, names, lnames, types,
-     . defs, ldefs, DB_F77NULL, ierr)
+     . defs, ldefs, optlists, ierr)
 c Restore the previous value for maximum string length
       err = dbset2dstrlen(oldlen) 
       end
