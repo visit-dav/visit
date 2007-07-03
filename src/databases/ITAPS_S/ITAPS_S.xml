@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="ITAPS" type="database" label="ITAPS" version="1.0" dbtype="STMD">
+  <Plugin name="ITAPS_S" type="database" label="ITAPS_S" version="1.0" dbtype="STMD">
     <Extensions> cub vmesh </Extensions>
     <CXXFLAGS> $(ITAPS_INCLUDE) </CXXFLAGS>
     <LIBS>     $(ITAPS_LIB) </LIBS>
