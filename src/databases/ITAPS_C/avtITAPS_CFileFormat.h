@@ -36,11 +36,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtITAPSFileFormat.h                           //
+//                            avtITAPS_CFileFormat.h                         //
 // ************************************************************************* //
 
-#ifndef AVT_ITAPS_FILE_FORMAT_H
-#define AVT_ITAPS_FILE_FORMAT_H
+#ifndef AVT_ITAPS_C_FILE_FORMAT_H
+#define AVT_ITAPS_C_FILE_FORMAT_H
 
 #include <avtSTMDFileFormat.h>
 
@@ -63,7 +63,7 @@ typedef struct _VisItEntitySetInfo {
 } VisItEntitySetInfo_t;
 
 // ****************************************************************************
-//  Class: avtITAPSFileFormat
+//  Class: avtITAPS_CFileFormat
 //
 //  Purpose:
 //      Reads in ITAPS files as a plugin to VisIt.
@@ -81,13 +81,13 @@ typedef struct _VisItEntitySetInfo {
 //
 // ****************************************************************************
 
-class avtITAPSFileFormat : public avtSTMDFileFormat
+class avtITAPS_CFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtITAPSFileFormat(const char *);
-    virtual           ~avtITAPSFileFormat();
+                       avtITAPS_CFileFormat(const char *);
+    virtual           ~avtITAPS_CFileFormat();
 
-    virtual const char    *GetType(void)   { return "ITAPS"; };
+    virtual const char    *GetType(void)   { return "ITAPS_C"; };
     virtual void           FreeUpResources(void); 
 
     virtual vtkDataSet    *GetMesh(int, const char *);

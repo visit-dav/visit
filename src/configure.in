@@ -2564,9 +2564,12 @@ AC_SUBST(CFITSIO_LIBDIR)
 #
 AC_MSG_CHECKING(for a ITAPS Implementation)
 CREATE_ITAPS_LINK=""
-ITAPS=""
-ITAPS_INCLUDE=""
-ITAPS_LIB=""
+ITAPS_C=""
+ITAPS_S=""
+ITAPS_C_INCLUDE=""
+ITAPS_C_LIB=""
+ITAPS_S_INCLUDE=""
+ITAPS_S_LIB=""
 AC_ARG_WITH(itaps,
             [  --with-itaps=INC-DIR,LIB-DIR      -I and -L/-l compiler options for ITAPS],
            itaps_specified="yes",
@@ -2587,7 +2590,15 @@ else
 fi
 if test "$ITAPS_LIB" != "" ; then
    if test "$ITAPS_INCLUDE" != "" ; then
-      ITAPS="$""(ITAPS)"
+      if test "`echo $ITAPS_LIB | grep sidl`" != ""; then
+          ITAPS_S="$""(ITAPS_S)"
+          ITAPS_S_LIB="$ITAPS_LIB"
+	  ITAPS_S_INCLUDE="$ITAPS_INCLUDE"
+      else
+          ITAPS_C="$""(ITAPS_C)"
+          ITAPS_C_LIB="$ITAPS_LIB"
+	  ITAPS_C_INCLUDE="$ITAPS_INCLUDE"
+      fi
       AC_MSG_RESULT(yes)
       CREATE_ITAPS_LINK="create_itaps_link"
    else
@@ -2596,7 +2607,12 @@ if test "$ITAPS_LIB" != "" ; then
 else
    AC_MSG_RESULT(no)
 fi
-AC_SUBST(ITAPS)
+AC_SUBST(ITAPS_C)
+AC_SUBST(ITAPS_C_INCLUDE)
+AC_SUBST(ITAPS_C_LIB)
+AC_SUBST(ITAPS_S)
+AC_SUBST(ITAPS_S_INCLUDE)
+AC_SUBST(ITAPS_S_LIB)
 AC_SUBST(ITAPS_INCLUDE)
 AC_SUBST(ITAPS_LIB)
 AC_SUBST(CREATE_ITAPS_LINK)
