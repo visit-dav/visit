@@ -715,6 +715,9 @@ avtFileFormat::GuessTime(const char *fname, const char *re) const
 //
 //    Mark C. Miller, Thu Jun 28 16:02:07 PDT 2007
 //    Made it return INVALID_TIME for empty string
+//
+//    Mark C. Miller, Tue Jul  3 17:57:33 PDT 2007
+//    Removed inadvertent redeclaration of 'ret' in 'if' clause 
 // ****************************************************************************
 
 double
@@ -731,7 +734,7 @@ avtFileFormat::GuessCycleOrTime(const char *fname, const char *re) const
     if (substr != "")
     {
         errno = 0;
-        double ret = strtod(substr.c_str(), 0);
+        ret = strtod(substr.c_str(), 0);
         if (errno != 0)
             ret = INVALID_TIME;
     }
