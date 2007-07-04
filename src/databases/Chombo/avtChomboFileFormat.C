@@ -219,15 +219,9 @@ avtChomboFileFormat::GetCycleFromFilename(const char *fname) const
     int ret = avtFileFormat::INVALID_CYCLE;
 
     if (fname == 0 || fname[0] == '\0')
-    {
-	cerr << "Returning bad value" << endl;
         return ret;
-    }
 
-
-    ret = GuessCycle(fname, "<plo?t(([0-9]\\.)|())([0-9]{2,5})\\..*\\.hdf5$> \\4");
-    cerr << "Calling Guess cycle with \"" << fname << "\", ret=" << ret << endl;
-    return ret;
+    return GuessCycle(fname, "<plo?t(([0-9]\\.)|())([0-9]{2,5})\\..*\\.hdf5$> \\4");
 }
 
 
