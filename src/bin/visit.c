@@ -150,6 +150,9 @@ int ReadKey(const char *key, char **keyval);
  *   Kathleen Bonnell, Thu Mar 22 09:29:45 PDT 2007
  *   Enclose argv[i] in quotes before calling PUSHARG, if there are spaces. 
  *
+ *   Kathleen Bonnell, Mon Jul  2 10:43:29 PDT 2007 
+ *   Remove last fix. 
+ *
  *****************************************************************************/
 
 int
@@ -262,13 +265,6 @@ main(int argc, char *argv[])
         }
         else
         {
-            char *newArg = argv[i];
-            if (strstr(argv[i], " ") != NULL)
-            {
-                newArg = (char*)malloc(strlen(argv[i]+1+2)); /* just leak it */
-                sprintf(newArg, "\"%%s\"", argv[i]);
-            }
-
             PUSHARG(argv[i]);
         }
     }
