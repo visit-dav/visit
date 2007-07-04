@@ -7773,6 +7773,57 @@ visit_RemoveColorTable(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Method: visit_ColorTable
+//
+// Purpose: 
+//   Gets the named color table definition.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 3 16:26:42 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetColorTable(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *ctName;
+    if(!PyArg_ParseTuple(args, "s", &ctName))
+    {
+        VisItErrorFunc("The argument must be a color table name.");
+        return NULL;
+    }
+    PyObject *ct = NULL;
+    MUTEX_LOCK();
+        const ColorControlPointList *ctptr = GetViewerState()->GetColorTableAttributes()->GetColorControlPoints(ctName);
+        if(ctptr != 0)
+        {
+            ct = PyColorControlPointList_New();
+            ColorControlPointList *ccpl = PyColorControlPointList_FromPyObject(ct);
+            *ccpl = *ctptr;
+        }
+    MUTEX_UNLOCK();
+    if(ctptr == 0)
+    {
+        VisItErrorFunc("The argument must be a color table name.");
+        return NULL;
+    }
+
+    return ct;
+}
+
+STATIC PyObject *
+visit_SetColorTable(PyObject *self, PyObject *args)
+{
+     return visit_AddColorTable(self, args);
+}
+
+// ****************************************************************************
 // Function: visit_GetNumPlots
 //
 // Purpose:
@@ -11583,6 +11634,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Thu Jun 14 16:43:26 PST 2007
 //   Added ClearMacros, RegisterMacro, ExecuteMacros
 //
+//   Brad Whitlock, Tue Jul 3 16:28:39 PST 2007
+//   Added ColorTable function.
+//
 // ****************************************************************************
 
 static void
@@ -11961,6 +12015,8 @@ AddDefaultMethods()
     // Temporary methods
     AddMethod("AddColorTable", visit_AddColorTable, NULL /*DOCUMENT ME*/);
     AddMethod("RemoveColorTable", visit_RemoveColorTable, NULL /*DOCUMENT ME*/);
+    AddMethod("GetColorTable", visit_GetColorTable, NULL /*DOCUMENT ME*/);
+    AddMethod("SetColorTable", visit_SetColorTable, NULL /*DOCUMENT ME*/);
     AddMethod("ColorTableNames", visit_ColorTableNames, 
                                                     visit_ColorTableNames_doc);
     AddMethod("NumColorTableNames", visit_NumColorTables,

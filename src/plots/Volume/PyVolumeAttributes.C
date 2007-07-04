@@ -304,6 +304,25 @@ VolumeAttributes_GetColorControlPoints(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+VolumeAttributes_SetColorControlPoints(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *ct = NULL;
+    if(!PyArg_ParseTuple(args, "O", &ct))
+        return NULL;
+    if(!PyColorControlPointList_Check(ct))
+        return NULL;
+
+    ColorControlPointList *ccpl = PyColorControlPointList_FromPyObject(ct);
+    if(ccpl != NULL)
+        obj->data->SetColorControlPoints(*ccpl);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
 VolumeAttributes_SetOpacityAttenuation(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
@@ -927,6 +946,9 @@ static struct PyMethodDef VolumeAttributes_methods[] = {
     {"SetLightingFlag", VolumeAttributes_SetLightingFlag, METH_VARARGS},
     {"GetLightingFlag", VolumeAttributes_GetLightingFlag, METH_VARARGS},
     {"GetColorControlPoints", VolumeAttributes_GetColorControlPoints, METH_VARARGS},
+
+    {"SetColorControlPoints", VolumeAttributes_SetColorControlPoints, METH_VARARGS},
+
     {"SetOpacityAttenuation", VolumeAttributes_SetOpacityAttenuation, METH_VARARGS},
     {"GetOpacityAttenuation", VolumeAttributes_GetOpacityAttenuation, METH_VARARGS},
     {"SetFreeformFlag", VolumeAttributes_SetFreeformFlag, METH_VARARGS},
@@ -1093,10 +1115,7 @@ VolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "lightingFlag") == 0)
         retval = (VolumeAttributes_SetLightingFlag(self, tuple) != NULL);
     if (strcmp(name, "colorControlPoints") == 0)
-    {
-        cerr << "You cannot access this data member directly.";
-        cerr << "\nUse GetColorControlPoints().field = value\n\n";
-    }
+        retval = VolumeAttributes_SetColorControlPoints(self, tuple);
     else if(strcmp(name, "opacityAttenuation") == 0)
         retval = (VolumeAttributes_SetOpacityAttenuation(self, tuple) != NULL);
     else if(strcmp(name, "freeformFlag") == 0)
