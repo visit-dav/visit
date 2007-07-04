@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define GLOBAL /* used by global.h */
 #include "config.h"
@@ -154,6 +155,12 @@ char *text;
   exit(1);
 }
 
+/*****************************************************************************
+  Modifications:
+    Kathleen Bonnell, Mon Jul  2 10:43:29 PDT 2007
+    On Windows, spaces are valid characters in a path/filename, so if on 
+    Windows, take that into account when reading tplorg and statname.
+*****************************************************************************/
 static void readparmfile(fname)
 char *fname;
 {
@@ -161,6 +168,8 @@ char *fname;
   int h,m,s,f;
   FILE *fd;
   char line[256];
+  char *commentBegin = NULL;
+  int len = 0;
   static double ratetab[8]=
     {24000.0/1001.0,24.0,25.0,30000.0/1001.0,30.0,50.0,60000.0/1001.0,60.0};
   extern int r,Xi,Xb,Xp,d0i,d0p,d0b; /* rate control */
@@ -173,11 +182,31 @@ char *fname;
   }
 
   fgets(id_string,254,fd);
+#ifndef WIN32
   fgets(line,254,fd); sscanf(line,"%s",tplorg);
+#else
+  fgets(line,254,fd); 
+  commentBegin = strstr(line, "/*");
+  len = strlen(line) - strlen(commentBegin);
+  strncpy(tplorg, line, len);
+  while (tplorg[len-1] == ' ')
+	  len--;
+  tplorg[len] = '\0';
+#endif
   fgets(line,254,fd); sscanf(line,"%s",tplref);
   fgets(line,254,fd); sscanf(line,"%s",iqname);
   fgets(line,254,fd); sscanf(line,"%s",niqname);
+#ifndef WIN32
   fgets(line,254,fd); sscanf(line,"%s",statname);
+#else
+  fgets(line,254,fd); 
+  commentBegin = strstr(line, "/*");
+  len = strlen(line) - strlen(commentBegin);
+  strncpy(statname, line, len);
+  while (statname[len-1] == ' ')
+	  len--;
+  statname[len] = '\0';
+#endif
   fgets(line,254,fd); sscanf(line,"%d",&inputtype);
   fgets(line,254,fd); sscanf(line,"%d",&nframes);
   fgets(line,254,fd); sscanf(line,"%d",&frame0);

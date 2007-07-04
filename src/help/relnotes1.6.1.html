@@ -29,15 +29,13 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt now provides a tensor contraction expression <i>contraction</i> and a viscous stress tensor expression <i>viscous_stress</i> for structured grids with quad zones.</li>
 <li>VisIt's database info annotations now have path expansion options.</li>
 <li>VisIt ITAPS plugin (formerly TSTT) was upgraded to use new C-style interface alleviating requirement for sidl/babel.</li>
-<li>A new preference was added to treat all databases as time varying. Although selecting this preference may have negative
-performance implications, it will eliminate the need to have to re-open databases to see variables added and/or meshes whose
-decomposition changes at later time steps.</li>
-<li>A new database plugin installation shell-script was added called 'visit_plugin' which can be used to facilitate installing
-and removing database plugins from users' ~/.visit directory; 'visit_plugin --help' gives more information. </li>
-<li>A new shell script, mkgrprdbl, was added to facilitate sharing of files and directories amoung users with common groups. The tool
-can be used to easily set group ownership and permissions of files as well as parent directories to enable another user in a common
-group to gain access to the files; 'mkgrprdbl --help' gives more information</li>
+<li>A new preference was added to treat all databases as time varying. Although selecting this preference may have negative performance implications, it will eliminate the need to have to re-open databases to see variables added and/or meshes whose decomposition changes at later time steps.</li>
+<li>A new database plugin installation shell-script was added called 'visit_plugin' which can be used to facilitate installing and removing database plugins from users' ~/.visit directory; 'visit_plugin --help' gives more information. </li>
+<li>A new shell script, mkgrprdbl, was added to facilitate sharing of files and directories amoung users with common groups. The tool can be used to easily set group ownership and permissions of files as well as parent directories to enable another user in a common group to gain access to the files; 'mkgrprdbl --help' gives more information</li>
 <li>The ability to overlay curves on 2D plots was added.</li>
+<li>2D plots can now be scaled logarithmically.</li>
+<li>The Cracks Clipper operator can now calculate density.</li>
+<li>The IndexSelect operator now has a dropdown widget for choosing category and set.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.6.1</font></b></p>
 <ul>
@@ -81,6 +79,11 @@ when placing 3D annotations.</li>
 <li>Binary distribution on Linux reports problems loading TSTT database plugin.</li>
 <li>VisIt reports Invalid Variable 'levels' when plotting SAMRAI files with single patch.</li>
 <li>Silo files written by parallel VisIt have invalid spatial and data extents.</li>
+<li>The CLI Lineout command was fixed so that it no longer ignores the 'numSamples' argument.</li>
+<li>The S3D reader is now available on the windows platform.</li>
+<li>VisIt will no longer crash when animating CosmosPP data through time.</li>
+<li>The help window's <i>Increase/Decrease font size</i> options now work correctly on the Windows platform.</li>
+<li>VisIt's <i>Save movie</i> feature now works on the Windows platform, provided the user has write access to the chosen output directory.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.6.html">VisIt 1.6 Release Notes</a>.</p>
