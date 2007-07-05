@@ -10,6 +10,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Thu Jul  5 16:13:57 PDT 2007
+#    Suppress SVN noise.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -63,7 +66,7 @@ mkdir tmp_forRev$$
 cd tmp_forRev$$
 echo ""
 echo "Logging revision numbers (needed for merging later)..."
-svn co $DEST/svninfo
+svn co --quiet $DEST/svninfo
 cd svninfo
 REV=$(get_latest_rev)
 if [[ -f Rev_fromTrunk ]] ; then
@@ -87,7 +90,7 @@ else
    svn add Rev_initial
 fi
 
-svn commit -m "Add revision info for branch ${1}, which originated at revision $REV"
+svn commit --quiet -m "Add revision info for branch ${1}, which originated at revision $REV"
 cd ../../
 rm -Rf tmp_forRev$$
 

@@ -10,6 +10,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Thu Jul  5 13:58:42 PDT 2007
+#    Make a checkout a little less verbose.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -103,7 +106,7 @@ echo ""
 echo "Getting record of last merge from this branch into the trunk..."
 mkdir tmp_forRev$$
 cd tmp_forRev$$
-svn co ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/svninfo
+svn co --quiet --non-interactive ${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/${BRANCHNAME}/svninfo
 cd svninfo
 if [[ ! -f Rev_toRCTrunk ]] ; then
    REV="not_found"
@@ -139,7 +142,7 @@ echo "$NEW_REV" > Rev_toRCTrunk
 echo ""
 echo "Updating branch $BRANCHNAME to contain a record of this merge"
 echo ""
-svn commit -m "Update for revision sent to trunk from $BRANCHNAME, $REV to $NEW_REV"
+svn commit --quiet -m "Update for revision sent to trunk from $BRANCHNAME, $REV to $NEW_REV"
 cd ../..
 rm -Rf tmp_forRev$$
 
