@@ -35,7 +35,10 @@
 *
 *****************************************************************************/
 
+//    Cyrus Harrison, Thu Jul  5 15:31:30 PDT 2007
+//    explicit include of <algorithm> for AIX
 
+#include <algorithm>
 #include <stdio.h>
 #include <ExprNode.h>
 #include <ExprToken.h>
