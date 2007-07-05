@@ -13,6 +13,9 @@
 #    Hank Childs, Sat Jun 23 16:47:06 PDT 2007
 #    Get versioning info right when the RC is created.
 #
+#    Hank Childs, Thu Jul  5 16:13:57 PDT 2007
+#    Suppress SVN noise.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -48,7 +51,7 @@ svn_cp_dir $SRC $DEST
 
 # Now set up the files Rev_fromRCTrunk and Rev_toRCTrunk to keep track of
 # revision history for RC merges.
-svn co $DEST/svninfo
+svn co --quiet $DEST/svninfo
 cd svninfo
 REV=$(get_latest_rev)
 echo $REV > Rev_fromTrunk
@@ -63,7 +66,7 @@ else
    svn add Rev_initial
 fi
 
-svn commit -m "Add RC revision tracking files"
+svn commit --quiet -m "Add RC revision tracking files"
 cd ..
 rm -Rf svninfo
 
