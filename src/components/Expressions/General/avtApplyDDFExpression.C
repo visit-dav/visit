@@ -227,6 +227,10 @@ avtApplyDDFExpression::PerformRestriction(avtPipelineSpecification_p spec)
 //  Programmer:   Hank Childs
 //  Creation:     February 18, 2006
 //
+//  Modifications:
+//    Cyrus Harrison, Tue Jul  3 08:04:17 PDT 2007
+//    Added error message if unable to create a ddf.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -238,7 +242,17 @@ avtApplyDDFExpression::DeriveVariable(vtkDataSet *in_ds)
         EXCEPTION1(ExpressionException, "Could not locate the DDF.");
     }
 
-    return theDDF->ApplyFunction(in_ds);
+    vtkDataArray *res = theDDF->ApplyFunction(in_ds);
+
+    if ( res == NULL)
+    {
+        // ddf was unsuccessful, this is probably due to a centering problem
+        EXCEPTION1(ExpressionException,
+                   "Could not apply the ddf. Please check that all variables "
+                   " are valid and have the same centering.");
+    }
+
+    return res;
 }
 
 

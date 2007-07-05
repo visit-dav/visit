@@ -35,6 +35,7 @@
 *
 *****************************************************************************/
 
+
 #include <stdio.h>
 #include <ExprNode.h>
 #include <ExprToken.h>
@@ -120,20 +121,31 @@ BinaryExpr::PrintNode(ostream &o)
     right->Print(o,"Right: ");
 }
 
-std::set<std::string>
+
+// ****************************************************************************
+//  Method:  BinaryExpr::GetVarLeaves
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Jul  3 08:27:50 PDT 200
+//    Changed to return a vector to preserve original order, while excluding
+//    duplicates
+//
+// ****************************************************************************
+std::vector<std::string>
 BinaryExpr::GetVarLeaves()
 {
-    std::set<std::string> lset = left->GetVarLeaves();
-    std::set<std::string> rset = right->GetVarLeaves();
+    std::vector<std::string> lvec = left->GetVarLeaves();
+    std::vector<std::string> rvec = right->GetVarLeaves();
 
-    while (!rset.empty())
+    std::vector<std::string>::iterator itr;
+
+    for( itr = rvec.begin(); itr != rvec.end(); ++itr)
     {
-        std::set<std::string>::iterator i = rset.begin();
-        lset.insert(*i);
-        rset.erase(i);
+        if ( find(lvec.begin(), lvec.end(), *itr) == lvec.end() )
+            lvec.push_back(*itr);
     }
 
-    return lset;
+    return lvec;
 }
 
 std::set<ExprParseTreeNode *>
@@ -178,31 +190,36 @@ VectorExpr::PrintNode(ostream &o)
 //    Jeremy Meredith, Thu Aug 14 10:24:14 PDT 2003
 //    Allow 2D vectors.
 //
+//    Cyrus Harrison, Tue Jul  3 08:27:50 PDT 200
+//    Changed to return a vector to preserve original order, while excluding
+//    duplicates
+//
 // ****************************************************************************
-std::set<std::string>
+std::vector<std::string>
 VectorExpr::GetVarLeaves()
 {
-    std::set<std::string> xset = x->GetVarLeaves();
-    std::set<std::string> yset = y->GetVarLeaves();
-    std::set<std::string> zset;
+    std::vector<std::string> xvec = x->GetVarLeaves();
+    std::vector<std::string> yvec = y->GetVarLeaves();
+    std::vector<std::string> zvec;
     if (z)
-        zset = z->GetVarLeaves();
+        zvec = z->GetVarLeaves();
 
-    while (!yset.empty())
+    std::vector<std::string>::iterator itr;
+
+    for( itr = yvec.begin(); itr != yvec.end(); ++itr)
     {
-        std::set<std::string>::iterator i = yset.begin();
-        xset.insert(*i);
-        yset.erase(i);
+        if ( find(xvec.begin(), xvec.end(), *itr) == xvec.end() )
+            xvec.push_back(*itr);
     }
 
-    while (!zset.empty())
+
+    for( itr = zvec.begin(); itr != zvec.end(); ++itr)
     {
-        std::set<std::string>::iterator i = zset.begin();
-        xset.insert(*i);
-        zset.erase(i);
+        if ( find(xvec.begin(), xvec.end(), *itr) == xvec.end() )
+            xvec.push_back(*itr);
     }
 
-    return xset;
+    return xvec;
 }
 
 std::set<ExprParseTreeNode *>
@@ -274,13 +291,22 @@ ListExpr::PrintNode(ostream &o)
     }
 }
 
-std::set<std::string>
+// ****************************************************************************
+//  Method:  ListExpr::GetVarLeaves
+//
+//  Modifications:
+//    Cyrus Harrison, Tue Jul  3 08:27:50 PDT 200
+//    Changed to return a vector to preserve original order, while excluding
+//    duplicates
+//
+// ****************************************************************************
+std::vector<std::string>
 ListExpr::GetVarLeaves()
 {
     if (elems->size() != 0)
         return (*elems)[0]->GetVarLeaves();
     else
-        return std::set<std::string>();
+        return std::vector<std::string>();
 }
 
 std::set<ExprParseTreeNode *>
@@ -356,11 +382,15 @@ FunctionExpr::PrintNode(ostream &o)
 //    Jeremy Meredith, Mon Aug 18 12:00:44 PDT 2003
 //    Allow empty argument lists.
 //
+//    Cyrus Harrison, Tue Jul  3 08:27:50 PDT 200
+//    Changed to return a vector to preserve original order, while excluding
+//    duplicates
+//
 // ****************************************************************************
-std::set<std::string>
+std::vector<std::string>
 FunctionExpr::GetVarLeaves()
 {
-    std::set<std::string> ret;
+    std::vector<std::string> ret;
 
     if (!args)
         return ret;
@@ -369,14 +399,17 @@ FunctionExpr::GetVarLeaves()
 
     for (int i = 0; i < a->size(); i++)
     {
-        std::set<std::string> vars = (*a)[i]->GetExpr()->GetVarLeaves();
+        std::vector<std::string> vars = (*a)[i]->GetExpr()->GetVarLeaves();
 
-        while (!vars.empty())
+
+        std::vector<std::string>::iterator itr;
+
+        for( itr = vars.begin(); itr != vars.end(); ++itr)
         {
-            std::set<std::string>::iterator i = vars.begin();
-            ret.insert(*i);
-            vars.erase(i);
+            if ( find(ret.begin(), ret.end(), *itr) == ret.end() )
+                ret.push_back(*itr);
         }
+
     }
 
     return ret;
@@ -473,15 +506,19 @@ VarExpr::PrintNode(ostream &o)
 //    Only consider variables that are for the currently active database.
 //    Other variables (for CMFE) are handled differently.
 //
+//    Cyrus Harrison, Tue Jul  3 08:27:50 PDT 200
+//    Changed to return a vector to preserve original order, while excluding
+//    duplicates
+//
 // ****************************************************************************
 
-std::set<std::string>
+std::vector<std::string>
 VarExpr::GetVarLeaves()
 {
-    std::set<std::string> ret;
+    std::vector<std::string> ret;
 
     if (db == NULL || !getVarLeavesRequiresCurrentDB)
-        ret.insert(var->GetFullpath());
+        ret.push_back(var->GetFullpath());
 
     return ret;
 }

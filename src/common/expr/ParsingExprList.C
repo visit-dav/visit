@@ -424,6 +424,9 @@ ParsingExprList::GetExpressionTree(Expression *expr)
 //    Jeremy Meredith, Mon Jun 13 15:51:50 PDT 2005
 //    Delete the parse tree when we're done with it.  This fixes leaks.
 //
+//    Cyrus Harrison, Tue Jul  3 10:50:39 PDT 2007
+//    Modified to work with returned vector from GetVarleaves()
+//    
 // ****************************************************************************
 
 static string
@@ -456,7 +459,7 @@ GetRealVariableHelper(const string &var, set<string> expandedVars)
     }
 
     // Get the leaves for this expression
-    const set<string> &varLeaves = tree->GetVarLeaves();
+    const vector<string> &varLeaves = tree->GetVarLeaves();
     if (varLeaves.empty())
     {
         delete tree;
@@ -466,10 +469,10 @@ GetRealVariableHelper(const string &var, set<string> expandedVars)
     // For each leaf, look for a real variable
 #if defined(_WIN32) && defined(USING_MSVC6)
     // Don't use const iterator on win32 MSVC 6.
-    for (std::set<std::string>::iterator it = varLeaves.begin();
+    for (std::vector<std::string>::iterator it = varLeaves.begin();
          it != varLeaves.end(); ++it)
 #else
-    for (std::set<std::string>::const_iterator it = varLeaves.begin();
+    for (std::vector<std::string>::const_iterator it = varLeaves.begin();
          it != varLeaves.end(); ++it)
 #endif
     {
