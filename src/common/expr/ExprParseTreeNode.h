@@ -73,6 +73,10 @@ class Token;
 //    Hank Childs, Thu Sep  8 15:37:05 PDT 2005
 //    Added method GetVarLeafNodes.
 //
+//    Cyrus Harrison, Tue Jul  3 08:22:37 PDT 2007
+//    Changed get GetLeaves to return a vector b/c stl::set sorts
+//    entries alphabetically causing problems when parsing apply_ddf.
+//
 // ****************************************************************************
 class EXPR_API ExprParseTreeNode : public ParseTreeNode
 {
@@ -80,8 +84,8 @@ class EXPR_API ExprParseTreeNode : public ParseTreeNode
     ExprParseTreeNode(const Pos &p) : ParseTreeNode(p) { }
     virtual ~ExprParseTreeNode() { }
     virtual const std::string GetTypeName() {return "ExprParseTreeNode";}
-    virtual std::set<std::string> GetVarLeaves() 
-                                            {return std::set<std::string>();}
+    virtual std::vector<std::string> GetVarLeaves()
+                                      {return std::vector<std::string>();}
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes() 
                                       {return std::set<ExprParseTreeNode *>();}
 };

@@ -344,6 +344,9 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Hank Childs, Sun Feb 19 10:03:12 PST 2006
 //    Add support for DDFs.  Also correct order of perform restriction calls.
 //
+//    Cyrus Harrison, Tue Jul  3 11:24:33 PDT 2007
+//    Changed to reflect return of vector from GetVarLeaves()
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -468,16 +471,15 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             expr_list.push_back(var);
             ExprNode *tree = ParsingExprList::GetExpressionTree(var);
             avtExprNode *avttree = dynamic_cast<avtExprNode*>(tree);
-            set<string> roots = avttree->GetVarLeaves();
+            vector<string> roots = avttree->GetVarLeaves();
             delete tree;
 
-            while (!roots.empty())
+            std::vector<string>::iterator itr = roots.begin();
+            for ( itr = roots.begin(); itr != roots.end(); ++itr)
             {
-                std::set<string>::iterator front = roots.begin();
-                debug5 << "EEF::PerformRestriction:         " << front->c_str()
+                debug5 << "EEF::PerformRestriction:         " << itr->c_str()
                        << endl;
-                candidates.insert(*front);
-                roots.erase(front);
+                candidates.insert(*itr);
             }
         }
     }

@@ -94,6 +94,10 @@ class Pos;
 //    Added GetVarLeafNodes, which is like GetVarLeaves, but returns
 //    ExprNodes instead.
 //
+//    Cyrus Harrison, Tue Jul  3 08:22:37 PDT 2007
+//    Changed get GetLeaves to return a vector b/c stl::set sorts
+//    entries alphabetically causing problems when parsing apply_ddf.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -101,7 +105,7 @@ class EXPR_API ExprNode : public ExprParseTreeNode
     ExprNode(const Pos &p)
         : ExprParseTreeNode(p) {}
     virtual ~ExprNode() { }
-    virtual std::set<std::string> GetVarLeaves() = 0;
+    virtual std::vector<std::string> GetVarLeaves() = 0;
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes() = 0;
     virtual const std::string GetTypeName() = 0;
 };
@@ -112,8 +116,8 @@ class EXPR_API ConstExpr : public virtual ExprNode
     enum ConstType { Integer, Float, String, Boolean };
     ConstExpr(const Pos &p, ConstType ct);
     virtual ~ConstExpr() { }
-    virtual std::set<std::string> GetVarLeaves()
-                            { return std::set<std::string>(); }
+    virtual std::vector<std::string> GetVarLeaves()
+                            { return std::vector<std::string>(); }
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes()
                             { return std::set<ExprParseTreeNode *>(); }
     virtual ConstType GetConstantType() { return constType; }
@@ -191,7 +195,7 @@ class EXPR_API UnaryExpr : public MathExpr
         : MathExpr(p, o), ExprNode(p), expr(e) {}
     virtual ~UnaryExpr() { delete expr; }
     virtual void PrintNode(ostream &o);
-    virtual std::set<std::string> GetVarLeaves()
+    virtual std::vector<std::string> GetVarLeaves()
         {return expr->GetVarLeaves();}
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes()
         { return std::set<ExprParseTreeNode *>(); }
@@ -208,7 +212,7 @@ class EXPR_API BinaryExpr : public MathExpr
         : MathExpr(p, o), ExprNode(p), left(l), right(r) {}
     virtual ~BinaryExpr() { delete left; delete right; }
     virtual void PrintNode(ostream &o);
-    virtual std::set<std::string> GetVarLeaves();
+    virtual std::vector<std::string> GetVarLeaves();
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Binary"; }
   protected:
@@ -223,7 +227,7 @@ class EXPR_API IndexExpr : public virtual ExprNode
         : ExprNode(p), expr(e), ind(i) {}
     virtual ~IndexExpr() { delete expr; }
     virtual void PrintNode(ostream &o);
-    virtual std::set<std::string> GetVarLeaves()
+    virtual std::vector<std::string> GetVarLeaves()
         {return expr->GetVarLeaves();}
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes()
         { return expr->GetVarLeafNodes(); }
@@ -240,7 +244,7 @@ class EXPR_API VectorExpr : public virtual ExprNode
         : ExprNode(p), x(xi), y(yi), z(zi) {}
     virtual ~VectorExpr() { delete x; delete y; delete z; }
     virtual void PrintNode(ostream &o);
-    virtual std::set<std::string> GetVarLeaves();
+    virtual std::vector<std::string> GetVarLeaves();
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Vector"; }
   protected:
@@ -274,7 +278,7 @@ class EXPR_API ListExpr : public ExprParseTreeNode
     virtual void PrintNode(ostream &o);
     virtual const std::string GetTypeName() { return "List"; }
     std::vector<ListElemExpr*> *GetElems(void) { return elems; }
-    virtual std::set<std::string> GetVarLeaves();
+    virtual std::vector<std::string> GetVarLeaves();
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
   protected:
     std::vector<ListElemExpr*> *elems;
@@ -319,7 +323,7 @@ class EXPR_API FunctionExpr : public virtual ExprNode
         : ExprNode(p), name(n), args(e) {}
     virtual ~FunctionExpr() { delete args; }
     virtual void PrintNode(ostream &o);
-    virtual std::set<std::string> GetVarLeaves();
+    virtual std::vector<std::string> GetVarLeaves();
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Function"; }
   protected:
@@ -399,7 +403,7 @@ class EXPR_API VarExpr : public virtual ExprNode
         : ExprNode(p), db(d), var(v), canexpand(exp) {}
     virtual ~VarExpr() { delete db; delete var; }
     virtual void PrintNode(ostream &o);
-    virtual std::set<std::string> GetVarLeaves();
+    virtual std::vector<std::string> GetVarLeaves();
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Var"; }
     PathExpr *GetVar(void) { return var; };
