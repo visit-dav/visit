@@ -3375,6 +3375,9 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
 //    added some logic to not read group information if there is only one
 //    group.
 //
+//    Cyrus Harrison, Fri Jul  6 13:54:15 PDT 2007
+//    Added support for packed connectivity info from Decomp_pack var.
+//
 // ****************************************************************************
 
 void
@@ -3383,6 +3386,8 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
             int &numGroups, int *&groupIds, bool needConnectivityInfo,
             bool needGroupInfo)
 {
+    bool packed_conn_info = DBInqVarExists(dbfile,"NumDecomp_pack") != 0;
+
     DBReadVar(dbfile, "NumDomains", &ndomains);
     if (needConnectivityInfo)
     {
@@ -3406,57 +3411,136 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
                  groupIds[i] = 0;
              }
              needGroupInfo = false;
-         }   
+         }
          else
          {
              needGroupInfo = false;  // What else to do?!?
          }
     }
 
-    for (int j = 0 ; j < ndomains ; j++)
+    if (!packed_conn_info) // use standard connectivity info
     {
-        char dirname[256];
-        if (j > 0)
-            sprintf(dirname, "../Domain_%d", j);
-        else
-            sprintf(dirname, "Domain_%d", j);
-        if (DBSetDir(dbfile, dirname))
+        debug1 << "avtSiloFileFormat: using standard connectivity info" <<endl;
+        for (int j = 0 ; j < ndomains ; j++)
         {
-            ndomains = -1;
-            numGroups = -1;
-            break;
-        }
+            char dirname[256];
+            if (j > 0)
+                sprintf(dirname, "../Domain_%d", j);
+            else
+                sprintf(dirname, "Domain_%d", j);
+            if (DBSetDir(dbfile, dirname))
+            {
+                ndomains = -1;
+                numGroups = -1;
+                break;
+            }
+
+            if (needConnectivityInfo)
+            {
+                DBReadVar(dbfile, "Extents", &extents[j*6]);
+                DBReadVar(dbfile, "NumNeighbors", &nneighbors[j]);
+                lneighbors += nneighbors[j] * 11;
+            }
+
+            if (needGroupInfo)
+            {
+                DBReadVar(dbfile, "BlockNum", &(groupIds[j]));
+            }
+
+    }
+
+        DBSetDir(dbfile, "..");
 
         if (needConnectivityInfo)
         {
-            DBReadVar(dbfile, "Extents", &extents[j*6]);
-            DBReadVar(dbfile, "NumNeighbors", &nneighbors[j]);
-            lneighbors += nneighbors[j] * 11;
+            if (lneighbors > 0)
+            {
+                neighbors = new int[lneighbors];
+                int index = 0;
+                for (int j = 0 ; j < ndomains ; j++)
+                {
+                    for (int k = 0 ; k < nneighbors[j] ; k++)
+                    {
+                        char neighborname[256];
+                        sprintf(neighborname, "Domain_%d/Neighbor_%d",j,k);
+                        DBReadVar(dbfile, neighborname, &neighbors[index]);
+                        index += 11;
+                    }
+                }
+            }
         }
-
-        if (needGroupInfo)
-        {
-            DBReadVar(dbfile, "BlockNum", &(groupIds[j]));
-        }
-
     }
-    DBSetDir(dbfile, "..");
-
-    if (needConnectivityInfo)
+    else // used packed connectivity info
     {
-        if (lneighbors > 0)
+        debug1 << "avtSiloFileFormat: using Decomp_pack connectivity "
+               << "info" <<endl;
+
+        int numdecomp_pack = 0;
+        DBReadVar(dbfile,"NumDecomp_Pack",&numdecomp_pack);
+        int *decomp = new int[numdecomp_pack];
+        DBReadVar(dbfile,"Decomp_Pack",&decomp);
+
+        int *dc_ptr = decomp;
+        int i,j,k;
+
+        // skip header
+        int unblk = *dc_ptr++;
+        int gnblk = *dc_ptr++;
+        int nblk  = *dc_ptr++;
+        dc_ptr += nblk;
+
+        for (i=0; i < unblk; i++)
+        {
+            int nbnd = *dc_ptr++;
+            dc_ptr += 6 + 11 * nbnd;
+        }
+
+        int *dc_start = dc_ptr;
+
+        for (i=0; i < gnblk; i++)
+        {
+            if(needGroupInfo)
+                groupIds[i]    = *dc_ptr++;
+            else
+                dc_ptr++;
+
+            int nbnd       = *dc_ptr++;
+
+            if(needConnectivityInfo)
+            {
+                nneighbors[i]  = nbnd;
+                extents[6*i+0] = *dc_ptr++;
+                extents[6*i+1] = *dc_ptr++;
+                extents[6*i+2] = *dc_ptr++;
+                extents[6*i+3] = *dc_ptr++;
+                extents[6*i+4] = *dc_ptr++;
+                extents[6*i+5] = *dc_ptr++;
+                lneighbors    += 11*nbnd;
+                dc_ptr        += 11*nbnd;
+            }
+            else
+            {dc_ptr +=  6 + 11*nbnd;}
+        }
+
+        dc_ptr = dc_start;
+
+        if(needConnectivityInfo)
         {
             neighbors = new int[lneighbors];
-            int index = 0;
-            for (int j = 0 ; j < ndomains ; j++)
+            int *nei_ptr = neighbors;
+            // get boundary info
+            for (i=0; i < gnblk; i++)
             {
-                for (int k = 0 ; k < nneighbors[j] ; k++)
+                dc_ptr +=1; // skip group id
+                int nbnd = *dc_ptr++;
+                dc_ptr +=6; // skip extents
+
+                for (k=0; k < nbnd; k++)
                 {
-                    char neighborname[256];
-                    sprintf(neighborname, "Domain_%d/Neighbor_%d",j,k);
-                    DBReadVar(dbfile, neighborname, &neighbors[index]);
-                    index += 11;
+                    for(j=0; j< 11; j++)
+                        *nei_ptr++ = *dc_ptr++;
                 }
+
             }
         }
     }
