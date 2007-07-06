@@ -439,6 +439,16 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+// ****************************************************************************
+//
+//    Kathleen Bonnell, Thu Jul  5 17:58:22 PDT 2007 
+//    For GeneratePython, if plugin, call plugin->WriteHeader instead of
+//    attribute->WriteHeader.  There is a flag that needs to be turned off
+//    for plugins.  The plugin->WriteHeader will turn off the flag then call
+//    the WriteHeader for the atts.
+//    
+//
+// ****************************************************************************
 void
 ProcessFile(QString file)
 {
@@ -781,7 +791,14 @@ ProcessFile(QString file)
             ofstream h;
             if (Open(h, prefix+attribute->name+".h"))
             {
-                attribute->WriteHeader(h);
+                if (docType == "Plugin")
+                {
+                    plugin->WriteHeader(h);
+                }
+                else 
+                {
+                    attribute->WriteHeader(h);
+                }
                 h.close();
             }
 

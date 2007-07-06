@@ -39,22 +39,21 @@
 #define PY_TRACEHISTORYATTRIBUTES_H
 #include <Python.h>
 #include <TraceHistoryAttributes.h>
-#include <visitpy_exports.h>
 
 //
 // Functions exposed to the VisIt module.
 //
-void VISITPY_API           PyTraceHistoryAttributes_StartUp(TraceHistoryAttributes *subj, void *data);
-void VISITPY_API           PyTraceHistoryAttributes_CloseDown();
-VISITPY_API PyMethodDef *   PyTraceHistoryAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyTraceHistoryAttributes_Check(PyObject *obj);
-VISITPY_API TraceHistoryAttributes *  PyTraceHistoryAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *      PyTraceHistoryAttributes_New();
-VISITPY_API PyObject *      PyTraceHistoryAttributes_Wrap(const TraceHistoryAttributes *attr);
-void VISITPY_API           PyTraceHistoryAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyTraceHistoryAttributes_SetDefaults(const TraceHistoryAttributes *atts);
-std::string VISITPY_API    PyTraceHistoryAttributes_GetLogString();
-std::string VISITPY_API    PyTraceHistoryAttributes_ToString(const TraceHistoryAttributes *, const char *);
+void            PyTraceHistoryAttributes_StartUp(TraceHistoryAttributes *subj, void *data);
+void            PyTraceHistoryAttributes_CloseDown();
+ PyMethodDef *   PyTraceHistoryAttributes_GetMethodTable(int *nMethods);
+bool            PyTraceHistoryAttributes_Check(PyObject *obj);
+ TraceHistoryAttributes *  PyTraceHistoryAttributes_FromPyObject(PyObject *obj);
+ PyObject *      PyTraceHistoryAttributes_New();
+ PyObject *      PyTraceHistoryAttributes_Wrap(const TraceHistoryAttributes *attr);
+void            PyTraceHistoryAttributes_SetParent(PyObject *obj, PyObject *parent);
+void            PyTraceHistoryAttributes_SetDefaults(const TraceHistoryAttributes *atts);
+std::string     PyTraceHistoryAttributes_GetLogString();
+std::string     PyTraceHistoryAttributes_ToString(const TraceHistoryAttributes *, const char *);
 
 #endif
 
