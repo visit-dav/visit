@@ -149,6 +149,11 @@
 #     Cyrus Harrison, Mon Jun 11 08:41:00 PDT 2007
 #     Added support for SVN_NERSC_NAME for svn mode
 #
+#     Hank Childs, Fri Jul  6 11:53:05 PDT 2007
+#     Fix inconsistency with Python.  It installs Python in a location that
+#     it can't find in later builds.  Also add a no-graphics mode (-z).  Also
+#     don't prompt for Qt license if it is already built.  
+#
 # *****************************************************************************
 
 
@@ -2181,9 +2186,9 @@ function build_python
     echo \
 "Invoking command to build Python: ./configure OPT=\"$PTHON_OPT\" \
 CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
---prefix=\"$VISITDIR/python/$VISITARCH\""
+--prefix=\"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH\""
     ./configure OPT="$PYTHON_OPT" CXX="$CXX_COMPILER" CC="$C_COMPILER" \
-    --prefix="$VISITDIR/python/$VISITARCH" --disable-ipv6
+    --prefix="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" --disable-ipv6
     if [[ $? != 0 ]] ; then
        echo "Python configure failed.  Giving up"
        return 1
@@ -2220,7 +2225,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         fi
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH=\
-"$VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config"
+"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config"
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
@@ -2243,12 +2248,12 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         cd ..
         rm -rf tmpdir
         cp libpython$PYTHON_VERSION.$SO_EXT \
-        "$VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/"
+        "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     elif [[ "$OPSYS" == "AIX" ]]; then
         $C_COMPILER -qmkshrobj \
           -o libpython$PYTHON_VERSION.$SO_EXT libpython$PYTHON_VERSION.a -lm
         cp libpython$PYTHON_VERSION.$SO_EXT \
-          "$VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/"
+          "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     else
         mkdir tmpdir
         cd tmpdir
@@ -2258,7 +2263,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         cd ..
         rm -rf tmpdir
         cp libpython$PYTHON_VERSION.$SO_EXT \
-          "$VISITDIR/python/$VISITARCH/lib/python$PYTHON_VERSION/config/"
+          "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     fi
     cd ..
     echo "Done with Python"
@@ -4937,7 +4942,7 @@ function build_visit
 }
 
 usage () {
-  printf "Usage: %s [-45bcdefghijmnpsx] [-a opt] [-t opt]\n" $0
+  printf "Usage: %s [-45bcdefghijmnpsxz] [-a opt] [-t opt]\n" $0
   printf "       [-u opt] [-v opt]\n"
   printf "\n"
   printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
@@ -4975,6 +4980,7 @@ usage () {
   printf "%s\n" "       and installed in [./visit]"
   printf "%s %s %s\n" "-v opt The VISIT_VERSION value [" $VISIT_VERSION "]"
   printf "%s\n" "-x     Turn on SHELL debugging"
+  printf "%s\n" "-z     Do not bring up a graphical program (i.e. dialog) to direct the build."
 }
 
 # *************************************************************************** #
@@ -4983,7 +4989,7 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijmnpst:u:v:xA:BCDEFGHIJMNPST:U:V:X ARG
+while getopts :45a:bcdefghijmnpst:u:v:xzA:BCDEFGHIJMNPST:U:V:XZ ARG
 do
     argcur=$ARG
     case $ARG in
@@ -5008,6 +5014,7 @@ do
       u|U) THIRD_PARTY_PATH="$OPTARG";;
       v|V) VISIT_VERSION=$OPTARG;;
       x|X) set -vx;;
+      z|Z) GRAPHICAL="no";;
       :) echo "$0: \"$argcur\" requires a value"; exit 2;;
       \?) echo "$0: INVALID option \"$argcur\" at $OPTIND"; exit 2;;
     esac
@@ -5172,36 +5179,48 @@ fi
 # Later we will build Qt.  We are going to bypass their licensing agreement,
 # so echo it here.
 #
-if [[ "$GRAPHICAL" == "yes" ]] ; then
-    $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-    "During the build process, this script will build Qt.  When Qt is "\
-"built, this script confirms that you accept their license. "\
-"So please choose \"Yes\" to accept (in advance) their license "\
-"offer for the Qt/X11 Free Edition, licensed under the Q Public License"\
-"(QPL) or the GNU General Public License (GPL)" 12 $DLG_WIDTH
-    if [[ $? == 1 ]] ; then
-        choice=`$DLG --backtitle "$DLG_BACKTITLE" --radiolist \
-"You chose not to accept Qt\'s license. VisIt requires Qt. "\
-"What would you like to do?" \
-    12 60 5 1 "Accept Qt's license" on 2 "Quit VisIt\'s build process" off 2>&1`
-        if [[ $? == 1 || "$choice" == "2" ]] ; then
+cd "$START_DIR"
+DO_QT="yes"
+if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" ]] ; then
+   DO_QT="no"
+fi
+
+if [[ "$DO_QT" == "yes" ]] ; then
+  if [[ "$GRAPHICAL" == "yes" ]] ; then
+      $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+      "During the build process, this script will build Qt.  When Qt is "\
+  "built, this script confirms that you accept their license. "\
+  "So please choose \"Yes\" to accept (in advance) their license "\
+  "offer for the Qt/X11 Free Edition, licensed under the Q Public License"\
+  "(QPL) or the GNU General Public License (GPL)" 12 $DLG_WIDTH
+      if [[ $? == 1 ]] ; then
+          choice=`$DLG --backtitle "$DLG_BACKTITLE" --radiolist \
+  "You chose not to accept Qt\'s license. VisIt requires Qt. "\
+  "What would you like to do?" \
+      12 60 5 1 "Accept Qt's license" on 2 "Quit VisIt\'s build process" off 2>&1`
+          if [[ $? == 1 || "$choice" == "2" ]] ; then
+              echo "You declined the Qt license and stopped building VisIt."
+              exit 1
+          fi
+      fi
+  else
+      echo "During this build process, this script will build Qt.  When Qt is "
+      echo "built, this script confirms that you accept their license."
+      echo "So please type \"yes\" to accept (in advance) their license "
+      echo "offer for the Qt/X11 Free Edition, licensed under the Q Public "
+      echo "License (QPL) or the GNU General Public License (GPL)"
+      read RESPONSE
+      while [[ "$RESPONSE" != "yes" ]] ; do
+         echo "Please type \"yes\" to accept their license offer for the "
+         echo "Qt/X11 Free Edition, licensed under the Q Public License (QPL) "
+         echo "or the GNU General Public License (GPL)"
+         read RESPONSE
+         if [[ "$RESPONSE" == "no" ]] ; then
             echo "You declined the Qt license and stopped building VisIt."
             exit 1
-        fi
-    fi
-else
-    echo "During this build process, this script will build Qt.  When Qt is "
-    echo "built, this script confirms that you accept their license."
-    echo "So please type \"yes\" to accept (in advance) their license "
-    echo "offer for the Qt/X11 Free Edition, licensed under the Q Public "
-    echo "License (QPL) or the GNU General Public License (GPL)"
-    read RESPONSE
-    while [[ "$RESPONSE" != "yes" ]] ; do
-       echo "Please type \"yes\" to accept their license offer for the "
-       echo "Qt/X11 Free Edition, licensed under the Q Public License (QPL) "
-       echo "or the GNU General Public License (GPL)"
-       read RESPONSE
-    done
+         fi
+      done
+  fi
 fi
 
 
@@ -5239,7 +5258,7 @@ fi
 # Build Qt
 #
 cd "$START_DIR"
-if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" ]] ; then
+if [[ "$DO_QT" == "no" ]]; then
    echo "Skipping Qt build.  Qt is already installed."
 else
    echo "Building Qt (~10 minutes)"
@@ -5277,7 +5296,7 @@ fi
 # Build Python
 #
 cd "$START_DIR"
-if [[ -d "$VISITDIR/python/$VISITARCH" ]] ; then
+if [[ -d "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" ]] ; then
    echo "Skipping Python build.  Python is already installed."
 else
    echo "Building Python (~3 minutes)"
