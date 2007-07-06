@@ -3291,6 +3291,12 @@ class PythonGeneratorAttribute
 };
 
 // ----------------------------------------------------------------------------
+//
+// Modifications:
+//
+//  Kathleen Bonnell, Thu Jul  5 17:53:43 PDT 2007
+//  Added WriteHeader, so that visitpy_api could be disabled.
+//
 // ----------------------------------------------------------------------------
 class PythonGeneratorPlugin
 {
@@ -3343,6 +3349,14 @@ class PythonGeneratorPlugin
         {
             atts->DisableVISITPY();
             atts->Print(cout);
+        }
+    }
+    void WriteHeader(ostream &h)
+    {
+        if (atts)
+        {
+            atts->DisableVISITPY();
+            atts->WriteHeader(h);
         }
     }
 };
