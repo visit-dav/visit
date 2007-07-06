@@ -419,6 +419,11 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //    Hank Childs, Thu Dec 28 09:20:10 PST 2006
 //    Have structured grids return 6 2D grids.
 //
+//    Hank Childs, Thu Jul  5 16:04:31 PDT 2007
+//    Only turn structured grids into 6 2D structured grids 
+//    if they are big grids ... lots of little ones eat up memory for the
+//    overhead per grid.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -441,7 +446,13 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
     if (dstype == VTK_RECTILINEAR_GRID)
     {
         vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) in_ds;
-        if (mustCreatePolyData || forceFaceConsolidation)
+        int dims[3];
+        rgrid->GetDimensions(dims);
+        int numPolys = 2*(dims[0]-1)*(dims[1]-1) + 
+                       2*(dims[0]-1)*(dims[2]-1) + 
+                       2*(dims[1]-1)*(dims[2]-1);
+        bool tooSmall = (numPolys < 500);
+        if (mustCreatePolyData || forceFaceConsolidation || tooSmall)
         {
             rf->SetInput(rgrid);
             rf->Update();
@@ -450,8 +461,6 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
         else
         {
             int voi[6];
-            int dims[3];
-            rgrid->GetDimensions(dims);
 
             vtkVisItExtractRectilinearGrid *imin = 
                                          vtkVisItExtractRectilinearGrid::New();
@@ -527,7 +536,13 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
     else if (dstype == VTK_STRUCTURED_GRID)
     {
         vtkStructuredGrid *sgrid = (vtkStructuredGrid *) in_ds;
-        if (mustCreatePolyData)
+        int dims[3];
+        sgrid->GetDimensions(dims);
+        int numPolys = 2*(dims[0]-1)*(dims[1]-1) + 
+                       2*(dims[0]-1)*(dims[2]-1) + 
+                       2*(dims[1]-1)*(dims[2]-1);
+        bool tooSmall = (numPolys < 500);
+        if (mustCreatePolyData || tooSmall)
         {
             sf->SetInput(sgrid);
             sf->Update();
@@ -537,8 +552,6 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
         {
             // 6 faces
             int voi[6];
-            int dims[3];
-            sgrid->GetDimensions(dims);
 
             vtkVisItExtractGrid *imin = vtkVisItExtractGrid::New();
             voi[0] = voi[1] = 0;
