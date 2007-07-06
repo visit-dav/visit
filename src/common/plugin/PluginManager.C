@@ -475,6 +475,10 @@ PluginManager::EnablePlugin(const string &id)
 //    Jeremy Meredith, Thu Mar 25 14:05:21 PST 2004
 //    Use only the first plugin with the same name, independent of directory.
 //
+//    Hank Childs, Fri Jul  6 15:04:56 PDT 2007
+//    Allow for duplicates.  Throwing out duplicates means that a bad private
+//    plugin disallows the public one from getting loaded.
+//
 // ****************************************************************************
 
 void
@@ -507,12 +511,7 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 
 #undef PLUGIN_MAX
         // It is a valid library name so add it to the list.
-        bool found = false;
-        for(int j = 0; j < libs.size() && !found; ++j)
-            found = (libs[j].second == files[i].second);
-    
-        if(!found)
-            libs.push_back(files[i]);
+        libs.push_back(files[i]);
     }
 
     // Sort the library filename list.
@@ -557,6 +556,14 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    Track the missing vs old plugin version separately, because solving
 //    them correctly requires a different action in each case.
 //
+//    Hank Childs, Fri Jul  6 14:44:55 PDT 2007
+//    Look through the libraries for duplicates.  Previously, duplicates were
+//    sorted out by GetPluginList.  But this made it difficult to load a 
+//    public one if the private one was bad.  Now the duplicates get sent to
+//    this function and we can load public plugins if the private ones fail to
+//    load.
+//    Also, dump warning messages into the debug logs as well.
+//
 // ****************************************************************************
 
 void
@@ -572,6 +579,8 @@ PluginManager::ReadPluginInfo()
 
     // Read the plugin info for each plugin in the libs list.
     string ext(PLUGIN_EXTENSION);
+    vector<string> alreadyLoaded;
+    vector<string> alreadyLoadedDir;
     for (int i=0; i<libs.size(); i++)
     {
         const string &dirname  = libs[i].first;
@@ -595,7 +604,8 @@ PluginManager::ReadPluginInfo()
                           break;
         }
         bool match = false;
-        for (int j=0; j<libs.size() && !match; j++)
+        int j;
+        for (j=0; j<libs.size() && !match; j++)
         {
             if (libs[i].first  == dirname &&
                 libs[j].second == str)
@@ -603,6 +613,20 @@ PluginManager::ReadPluginInfo()
         }
         if (!match)
             continue;
+
+        // see if this plugin has already been loaded, presumably because
+        // we loaded a private one and now we're considering the installed
+        // version.
+        for (j = 0 ; j < alreadyLoaded.size() ; j++)
+        {
+            if (filename == alreadyLoaded[j])
+            {
+                debug1 << "Skipping plugin " << filename << " in " << dirname 
+                       << ", since a plugin by that name was already loaded from "
+                       << alreadyLoadedDir[j] << endl;
+                continue;
+            }
+        }
 
         // We're okay, now try to open the plugin info.
         string pluginFile(dirname + SLASH_STRING + filename);
@@ -630,6 +654,8 @@ PluginManager::ReadPluginInfo()
         {
             // Add the name of the category plugin to the list of plugins
             // that will be loaded later.
+            alreadyLoaded.push_back(filename);
+            alreadyLoadedDir.push_back(dirname);
             libfiles.push_back(dirname + SLASH_STRING + str);
         }
     }
@@ -653,9 +679,18 @@ PluginManager::ReadPluginInfo()
             int len = pluginFile.size() - slashPos - suffixLen - 5 -
                 managerName.size() - ext.size();
             string pluginPrefix(pluginFile.substr(slashPos + 5, len));
+            string pluginlib(pluginFile.substr(slashPos + 1, 
+                                               pluginFile.size() - (slashPos+1)));
 
             pluginInitErrors += string("   the ")+pluginPrefix+
                                 " plugin in the directory "+dirname+"\n";
+            for (int j = 0 ; j < alreadyLoaded.size() ; j++)
+            {
+                if (alreadyLoaded[j] == pluginlib)
+                    pluginInitErrors += string("\t(Note that the plugin from ")
+                                     + alreadyLoadedDir[j] 
+                                     + " is being used in its place.)\n";
+            }
         }
         pluginInitErrors += "\n";
     }
@@ -685,6 +720,8 @@ PluginManager::ReadPluginInfo()
         pluginInitErrors += "\n";
     }
 
+    debug1 << "Going to print the following message to the user: " << endl;
+    debug1 << pluginInitErrors;
 }
 
 // ****************************************************************************
