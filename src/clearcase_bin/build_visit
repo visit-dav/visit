@@ -61,7 +61,7 @@
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
 #           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
-#           Mili     1.09     mili.tar.gz            -m
+#           Mili     1.09     mili-1.10a.tar.gz      -m
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
 #
 #   Layout:
@@ -149,10 +149,18 @@
 #     Cyrus Harrison, Mon Jun 11 08:41:00 PDT 2007
 #     Added support for SVN_NERSC_NAME for svn mode
 #
+#     Thomas R. Treadway, Thu May 31 16:05:36 PDT 2007
+#     Modified access control on 3rd party libraries.
+#
 #     Hank Childs, Fri Jul  6 11:53:05 PDT 2007
 #     Fix inconsistency with Python.  It installs Python in a location that
 #     it can't find in later builds.  Also add a no-graphics mode (-z).  Also
-#     don't prompt for Qt license if it is already built.  
+#     don't prompt for Qt license if it is already built.
+#
+#     Thomas R. Treadway, Fri Jul  6 12:58:58 PDT 2007
+#     Added option to redirect build log to /dev/tty
+#     Allow a mix of SVN for 3rd party libraries, and tar file for VisIt
+#     Added a skip of required 3rd party libraries.
 #
 # *****************************************************************************
 
@@ -168,7 +176,10 @@
 export OPSYS=${OPSYS-$(uname -s)}
 # Determine architecture
 if [[ "$OPSYS" == "Darwin" ]]; then
-   export ARCH=${ARCH-"Darwin"}
+   export PROC=${PROC-$(uname -p)}
+   export REL=${REL-$(uname -r)}
+   export ARCH=${ARCH-"${PROC}-apple-darwin${REL%%.*}"}
+   export VISITARCH=${VISITARCH-${ARCH}}
    export SO_EXT="dylib"
    export MACOSX_DEPLOYMENT_TARGET=10.3
    export C_COMPILER=${C_COMPILER-"gcc"}
@@ -247,12 +258,16 @@ else
 fi
 export MAKE=${MAKE-"make"}
 export THIRD_PARTY_PATH=${THIRD_PARTY_PATH-"./visit"}
+export GROUP=${GROUP-"visit"}
+export LOG_FILE=${LOG_FILE-"build_visit_log"}
 
 #
 # OPTIONS
 #
 export DO_VISIT="yes"   # "yes" or "no"
+export DO_THIRD_PARTY="yes"
 export DO_SVN="no"
+export DO_GROUP="no"
 export DO_SILO="yes"
 export DO_BOXLIB="no"
 export DO_CFITSIO="no"
@@ -281,7 +296,10 @@ fi
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
-
+USE_VISIT_FILE="no"
+if [[ "$VISIT_FILE" != "" ]] ; then
+  USE_VISIT_FILE="yes"
+fi
 export VISIT_FILE=${VISIT_FILE-"visit070330.tar.gz"}
 export VISIT_VERSION=${VISIT_VERSION-"1.6"}
 
@@ -321,7 +339,7 @@ export HDF4_FILE=${HDF4_FILE-"HDF4.2r1.tar.gz"}
 export HDF4_VERSION=${HDF4_VERSION-"4.2.1"}
 export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION-"4.0"}
 
-export MILI_FILE=${MILI_FILE-"mili.tar.gz"}
+export MILI_FILE=${MILI_FILE-"mili-1.10a.tar.gz"}
 export MILI_VERSION=${MILI_VERSION-"1.10.0"}
 export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION-"1.0"}
 
@@ -346,7 +364,7 @@ export BOXLIB_VERSION=${BOXLIB_VERSION-"2.5"}
 export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION-"2.0"}
 
 export CFITSIO_FILE=${CFITSIO_FILE-"cfitsio3006.tar.gz"}
-export CFITSIO_VERSION=${CFITSIO_VERSION-"3.006"}
+export CFITSIO_VERSION=${CFITSIO_VERSION-"3006"}
 export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION-"3.0"}
 
 # Dialog-related variables.
@@ -624,21 +642,28 @@ function check_files
     # VisIt source code
     #
     if [[ "$DO_VISIT" == "yes" ]] ; then
-        if [[ "$DO_SVN" == "yes" ]] ; then
+# Check-out the latest svn sources, before building VisIt
+        if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
             if [[ -d src ]] ; then
-               echo "VisIt svn src directory found, using it."
-#              svn up $SVN_ROOT_PATH/trunk/src
-#              if [[ $? == 0 ]] ; then
-#                  echo "Unable to update VisIt.  SVN update failed."
-#                  return 1
-#              fi
+               echo "Found VisIt SVN src directory, using that . . ."
             else
+               # Print a dialog screen
+               if [[ "$GRAPHICAL" == "yes" ]] ; then
+                   $DLG --backtitle "$DLG_BACKTITLE" --infobox \
+"SVN check-out of VisIt . . ." $DLG_HEIGHT $DLG_WIDTH
+               else
+                   echo "SVN check-out of VisIt . . ." 
+               fi
                svn co --quiet --non-interactive $SVN_ROOT_PATH/trunk/src
-#              if [[ $? == 0 ]] ; then
-#                  echo "Unable to build VisIt.  SVN download failed."
-#                  return 1
-#              fi
+               if [[ $? != 0 ]] ; then
+                   echo "Unable to build VisIt.  SVN download failed."
+                   return 1
+               fi
             fi
+# Build using (the assumed) existing VisIt svn "src" directory
+        elif [[ -d src ]] ; then
+               echo "Found VisIt SVN src directory found, using it."
+# Build using a VisIt source tarball
         else
             if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
                 echo \
@@ -971,10 +996,10 @@ function check_parallel
 "You must set up the PAR_LIBS to get VisIt to build in parallel."
             rv=1
         fi
-    fi
 
-    if [[ $rv != 0 ]] ; then
-       return 1
+        if [[ $rv != 0 ]] ; then
+           return 1
+        fi
     fi
 
     return 0
@@ -1367,6 +1392,53 @@ diff -c Mesa-6.4.2.orig/configs/aix Mesa-6.4.2/configs/aix
   GLU_LIB_NAME = libGLU.a
   GLUT_LIB_NAME = libglut.a
   GLW_LIB_NAME = libGLw.a
+diff -c Mesa-6.4.2.orig/src/mesa/main/glheader.h Mesa-6.4.2/src/mesa/main/glheader.h
+*** Mesa-6.4.2.orig/src/mesa/main/glheader.h	Sun Nov 27 10:16:31 2005
+--- Mesa-6.4.2/src/mesa/main/glheader.h	Mon Jun 25 15:37:10 2007
+***************
+*** 305,312 ****
+   */
+  #if defined(__VMS)
+  #define __FUNCTION__ "VMS$NL:"
+! #elif !(defined(__GNUC__) && __GNUC__ >= 2) && !(defined(_MSC_VER) && _MSC_VER >= 1300)
+! #define __FUNCTION__ "unknown"
+  #endif
+  
+  
+--- 305,315 ----
+   */
+  #if defined(__VMS)
+  #define __FUNCTION__ "VMS$NL:"
+! #elif __STDC_VERSION__ < 199901L
+! # if ((!defined __GNUC__) || (__GNUC__ < 2)) && (!defined __xlC__) && \
+!       (!defined(_MSC_VER) || _MSC_VER < 1300)
+! #  define __FUNCTION__ "<unknown>"
+! # endif
+  #endif
+  
+  
+diff -c Mesa-6.4.2.orig/src/mesa/swrast/s_tritemp.h Mesa-6.4.2/src/mesa/swrast/s_tritemp.h
+*** Mesa-6.4.2.orig/src/mesa/swrast/s_tritemp.h	Tue Dec 13 06:44:22 2005
+--- Mesa-6.4.2/src/mesa/swrast/s_tritemp.h	Mon Jun 25 16:04:48 2007
+***************
+*** 1156,1162 ****
+  #ifdef INTERP_INDEX
+                    CLAMP_INTERPOLANT(index, indexStep, len);
+  #endif
+!                   RENDER_SPAN( span );
+                 }
+  
+                 /*
+--- 1156,1164 ----
+  #ifdef INTERP_INDEX
+                    CLAMP_INTERPOLANT(index, indexStep, len);
+  #endif
+!                   {
+!                      RENDER_SPAN( span );
+!                   }
+                 }
+  
+                 /*
 EOF
     elif [[ "$OPSYS" == "SunOS" ]]; then
         info_box "Patching Mesa . . ." >&3
@@ -1497,8 +1569,12 @@ EOF
         rm *.o
         cd ..
     fi
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH"
+    fi
+    cd "$START_DIR"
     echo "Done with Mesa"
-
     return 0
 }
 
@@ -1609,7 +1685,11 @@ function build_qt
        cat tools/designer/uilib/Makefile | sed 's/qt-mt/qt/g' > Makefile2.tmp
        mv -f tools/designer/uilib/Makefile tools/designer/uilib/Makefile.orig
        mv -f Makefile2.tmp tools/designer/uilib/Makefile
-        
+    fi
+    # having a problem with xlC_r compiling at optimization level 3
+    if [[ "$OPSYS" == "AIX" ]]; then
+       cat src/Makefile | sed 's/-qstrict -O3/-qstrict -O2/g' > Makefile.tmp
+       mv -f Makefile.tmp src/Makefile
     fi
     
     #
@@ -1674,8 +1754,13 @@ function build_qt
         ln -s "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.$SO_EXT.1.0.0" \
           "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.$SO_EXT"
     fi
-    cd ../..
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/qt/${QT_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/qt/${QT_VERSION}/$VISITARCH"
+    fi
+    cd "$START_DIR"
     echo "Done with Qt"
+    return 0
 }
 
 
@@ -1966,18 +2051,6 @@ EOF
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
     elif [[ "$OPSYS" == "IRIX64" ]]; then
-    ${CMAKE_DIR}/cmake \
-        -DBUILD_SHARED_LIBS:BOOL=ON\
-        -DBUILD_TESTING:BOOL=OFF\
-        -DUSE_ANSI_STD_LIB:BOOL=ON\
-        -DVTK_USE_MANGLED_MESA:BOOL=ON\
-        -DVTK_USE_HYBRID:BOOL=ON\
-        $VTKPLATFORMFLAGS\
-        -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
-        -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
-        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
-        .
        VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS} -LANG:std -64\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
         -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
@@ -1985,7 +2058,6 @@ EOF
         -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
         -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
         -DCMAKE_SHARED_LINKER_FLAGS:STRING=-LANG:std -64"
-    else
     ${CMAKE_DIR}/cmake \
         -DBUILD_SHARED_LIBS:BOOL=ON\
         -DBUILD_TESTING:BOOL=OFF\
@@ -1998,10 +2070,23 @@ EOF
         -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
+    else
        VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
         -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
         -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+    ${CMAKE_DIR}/cmake \
+        -DBUILD_SHARED_LIBS:BOOL=ON\
+        -DBUILD_TESTING:BOOL=OFF\
+        -DUSE_ANSI_STD_LIB:BOOL=ON\
+        -DVTK_USE_MANGLED_MESA:BOOL=ON\
+        -DVTK_USE_HYBRID:BOOL=ON\
+        $VTKPLATFORMFLAGS\
+        -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
+        -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
+        .
     fi
     if [[ $? != 0 ]] ; then
        echo "Cannot get CMAKE to create the makefiles.  Giving up."
@@ -2155,7 +2240,13 @@ EOF
        cat $i | sed 's/'${SED_STR1}'/'${SED_STR2}'/g' > tmp.h
        mv -f tmp.h $i
     done
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
+    fi
+    cd "$START_DIR"
     echo "Done with VTK"
+    return 0
 }
 
 
@@ -2248,12 +2339,12 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         cd ..
         rm -rf tmpdir
         cp libpython$PYTHON_VERSION.$SO_EXT \
-        "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
+"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     elif [[ "$OPSYS" == "AIX" ]]; then
         $C_COMPILER -qmkshrobj \
           -o libpython$PYTHON_VERSION.$SO_EXT libpython$PYTHON_VERSION.a -lm
         cp libpython$PYTHON_VERSION.$SO_EXT \
-          "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
+"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     else
         mkdir tmpdir
         cd tmpdir
@@ -2263,10 +2354,15 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         cd ..
         rm -rf tmpdir
         cp libpython$PYTHON_VERSION.$SO_EXT \
-          "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
+"$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     fi
-    cd ..
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/python/${PYTHON_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/python/${PYTHON_VERSION}/$VISITARCH"
+    fi
+    cd "$START_DIR"
     echo "Done with Python"
+    return 0
 }
 
 
@@ -2360,8 +2456,13 @@ function build_silo
     else
         cp lib/libsilo.a  "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
     fi
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with Silo"
+    return 0
 }
 
 
@@ -2460,8 +2561,13 @@ function build_hdf5
 
     fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with HDF5"
+    return 0
 }
 
 
@@ -2520,8 +2626,7 @@ EOF
     fi
 
     info_box "Configuring Mili . . ." >&3
-    MILI_DIR=${MILI_FILE%.tar*}
-    cd ${MILI_DIR}
+    cd mili
 
     echo "Invoking command to configure Mili"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
@@ -2582,8 +2687,13 @@ EOF
         cp libmili.a "$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/mili/${MILI_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/mili/${MILI_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with Mili"
+    return 0
 }
 
 
@@ -3554,8 +3664,13 @@ EOF
         cp libmfhdf.${SO_EXT} "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib"
     fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with HDF4"
+    return 0
 }
 
 
@@ -3714,8 +3829,13 @@ EOF
         fi
     fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with NetCDF"
+    return 0
 }
 
 
@@ -3816,8 +3936,13 @@ function build_cgns
         cp libcgns.${SO_EXT} "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH/lib"
     fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with CGNS"
+    return 0
 }
 
 
@@ -3911,8 +4036,13 @@ function build_gdal
         "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH/lib/libgdal.${SO_EXT}"
     fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with GDAL"
+    return 0
 }
 
 
@@ -4015,8 +4145,13 @@ function build_exodus
         "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib/libnetcdf.a"
     fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with Exodus"
+    return 0
 }
 
 
@@ -4551,8 +4686,13 @@ EOF
     cd "$VISITDIR/boxlib/$VISITARCH/include/3D"
     tar xf Boxlib3D.h.tar
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/boxlib/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/boxlib/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with Boxlib"
+    return 0
 }
 
 
@@ -4651,8 +4791,13 @@ function build_cfitsio
        return 1
     fi
 
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH"
+    fi
     cd "$START_DIR"
     echo "Done with CFITSIO"
+    return 0
 }
 
 
@@ -4676,8 +4821,8 @@ function build_hostconf
     # Set up the config-site file, which gives configure the information it
     # needs about the third party libraries.
     #
-    info_box "Creating `hostname`.conf" >&3
     HOSTCONF="$(hostname).conf"
+    info_box "Creating $HOSTCONF" >&3
     touch $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "## build_vist generated host.conf" >> $HOSTCONF
@@ -4713,7 +4858,7 @@ function build_hostconf
     echo \
 "## Specify the location of the python include and libraries." >> $HOSTCONF
     echo "##" >> $HOSTCONF
-    echo "PYDIR=\$VISITHOME/python/$VISITARCH" >> $HOSTCONF
+    echo "PYDIR=\$VISITHOME/python/$PYTHON_VERSION/$VISITARCH" >> $HOSTCONF
     echo "PYVERSION=python$PYTHON_VERSION" >> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
@@ -4942,8 +5087,8 @@ function build_visit
 }
 
 usage () {
-  printf "Usage: %s [-45bcdefghijmnpsxz] [-a opt] [-t opt]\n" $0
-  printf "       [-u opt] [-v opt]\n"
+  printf "Usage: %s [-45bcdefghijkmnopsxz] [-a opt] [-l opt]\n" $0
+  printf "       [-t opt] [-u opt] [-v opt]\n"
   printf "\n"
   printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
   printf "%s %s %s\n" "-5     Build HDF5 from [" $HDF5_FILE "]"
@@ -4964,13 +5109,17 @@ usage () {
   printf "%s\n" "       an absolute path to the dynamic libraries and not"
   printf "%s\n" "       use the default relative path [@executable_path/../lib]"
   printf "%s\n" "-j     Do not build VisIt, build 3rd party libraries only"
+  printf "%s\n" "-k     Do not build required 3rd party libraries"
+  printf "%s %s %s\n" "-l opt Group name of installed libraries [" $GROUP "]"
   printf "%s %s %s\n" "-m     Build Mili from:[" $MILI_FILE "]"
   printf "%s %s %s\n" "-n     Build NetCDF from [" $NETCDF_FILE "]"
+  printf "%s\n" "-o     Display build log to stdout not to build_visit_log file"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
   printf "%s\n" "-s     Use the SVN server for the VisIt distribution"
-  printf "%s %s %s\n" "       [ svn co $SVN_ROOT_PATHt/trunk/src ]"
+  printf "%s %s %s\n" "       [ svn co $SVN_ROOT_PATH/trunk/src ]"
   printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
   printf "%s %s %s\n" "       variable [" $VISIT_FILE "]"
+  printf "%s\n" "       This option will over-ride the above SVN, -s section"
   printf "%s\n" "-u opt The THIRD_PARTY_PATH path contains the root"
   printf "%s\n" "       directory name underwhich the 3rd party libraries"
   printf "%s\n" "       have been installed. If defined, it would typically"
@@ -4980,7 +5129,8 @@ usage () {
   printf "%s\n" "       and installed in [./visit]"
   printf "%s %s %s\n" "-v opt The VISIT_VERSION value [" $VISIT_VERSION "]"
   printf "%s\n" "-x     Turn on SHELL debugging"
-  printf "%s\n" "-z     Do not bring up a graphical program (i.e. dialog) to direct the build."
+  printf "%s\n" "-z     Do not bring up a graphical program (i.e. dialog) "
+  printf "%s\n" "       to direct the build."
 }
 
 # *************************************************************************** #
@@ -4989,7 +5139,8 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijmnpst:u:v:xzA:BCDEFGHIJMNPST:U:V:XZ ARG
+while getopts :45a:bcdefghijkl:mnopst:u:v:xzA:BCDEFGHIJKL:MNOPST:U:V:XZ ARG
+
 do
     argcur=$ARG
     case $ARG in
@@ -5006,15 +5157,20 @@ do
       h|H) usage; exit 2;;
       i|I) ABS_PATH="yes";;
       j|J) DO_VISIT="no";;
+      k|K) DO_THIRD_PARTY="no";;
+      l|L) DO_GROUP="yes"
+           GROUP="$OPTARG";;
       m|M) DO_MILI="yes";;
       n|N) DO_NETCDF="yes";;
+      o|O) LOG_FILE="/dev/tty";;
       p|P) parallel="yes";;
       s|S) DO_SVN="yes";;
-      t|T) VISIT_FILE="$OPTARG";;
+      t|T) VISIT_FILE="$OPTARG"
+           USE_VISIT_FILE="yes";;
       u|U) THIRD_PARTY_PATH="$OPTARG";;
       v|V) VISIT_VERSION=$OPTARG;;
-      x|X) set -vx;;
       z|Z) GRAPHICAL="no";;
+      x|X) set -vx;;
       :) echo "$0: \"$argcur\" requires a value"; exit 2;;
       \?) echo "$0: INVALID option \"$argcur\" at $OPTIND"; exit 2;;
     esac
@@ -5046,7 +5202,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
            "GDAL"     "1.3.2  $GDAL_FILE"      $DO_GDAL \
            "HDF4"     "2.4.1  $HDF4_FILE"      $DO_HDF4 \
            "HDF5"     "1.6.5  $HDF5_FILE"      $DO_HDF5 \
-           "Mili"     "1.09   $MILI_FILE"      $DO_MILI \
+           "Mili"     "1.10   $MILI_FILE"      $DO_MILI \
            "NetCDF"   "3.6.0  $NETCDF_FILE"    $DO_NETCDF \
            "parallel" "enable parallel"        $parallel \
            "verify"   "check/change arguments" $verify  2> tmp$$
@@ -5100,7 +5256,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
       1)
         echo "Cancel pressed."
         GRAPHICAL="yes"
-        break;;
+        exit 1;;
       255)
         echo "ESC pressed.";;
       *)
@@ -5145,16 +5301,49 @@ if [[ $? != 0 ]] ; then
    exit 1
 fi
 export VISITDIR="$PWD"
-cd "$START_DIR"
 
 #
-# Now make sure that we have everything we need to build VisIt, so we can bail
-# out early if we are headed for failure.
+# Later we will build Qt.  We are going to bypass their licensing agreement,
+# so echo it here.
 #
-check_files
-if [[ $? != 0 ]] ; then
-   echo "Stopping build because necessary files aren't available."
-   exit 1
+cd "$START_DIR"
+DO_QT="yes"
+if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" ]] ; then
+   DO_QT="no"
+fi
+
+if [[ "$DO_QT" == "yes" ]] ; then
+   if [[ "$GRAPHICAL" == "yes" ]] ; then
+       $DLG --backtitle "$DLG_BACKTITLE" --yesno \
+       "During the build process, this script will build Qt.  When Qt is "\
+"built, this script confirms that you accept their license. "\
+"So please choose \"Yes\" to accept (in advance) their license "\
+"offer for the Qt/X11 Free Edition, licensed under the Q Public License"\
+"(QPL) or the GNU General Public License (GPL)" 12 $DLG_WIDTH
+       if [[ $? == 1 ]] ; then
+           choice=`$DLG --backtitle "$DLG_BACKTITLE" --radiolist \
+"You chose not to accept Qt\'s license. VisIt requires Qt. "\
+"What would you like to do?" \
+    12 60 5 1 "Accept Qt's license" on 2 "Quit VisIt\'s build process" off 2>&1`
+           if [[ $? == 1 || "$choice" == "2" ]] ; then
+               echo "You declined the Qt license and stopped building VisIt."
+               exit 1
+           fi
+       fi
+   else
+      echo "During this build process, this script will build Qt.  When Qt is "
+      echo "built, this script confirms that you accept their license."
+      echo "So please type \"yes\" to accept (in advance) their license "
+      echo "offer for the Qt/X11 Free Edition, licensed under the Q Public "
+      echo "License (QPL) or the GNU General Public License (GPL)"
+      read RESPONSE
+      while [[ "$RESPONSE" != "yes" ]] ; do
+         echo "Please type \"yes\" to accept their license offer for the "
+         echo "Qt/X11 Free Edition, licensed under the Q Public License (QPL) "
+         echo "or the GNU General Public License (GPL)"
+         read RESPONSE
+      done
+   fi
 fi
 
 #
@@ -5176,81 +5365,45 @@ if [[ $? != 0 ]] ; then
 fi
 
 #
-# Later we will build Qt.  We are going to bypass their licensing agreement,
-# so echo it here.
+# Now make sure that we have everything we need to build VisIt, so we can bail
+# out early if we are headed for failure.
 #
-cd "$START_DIR"
-DO_QT="yes"
-if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" ]] ; then
-   DO_QT="no"
+check_files
+if [[ $? != 0 ]] ; then
+   echo "Stopping build because necessary files aren't available."
+   exit 1
 fi
-
-if [[ "$DO_QT" == "yes" ]] ; then
-  if [[ "$GRAPHICAL" == "yes" ]] ; then
-      $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-      "During the build process, this script will build Qt.  When Qt is "\
-  "built, this script confirms that you accept their license. "\
-  "So please choose \"Yes\" to accept (in advance) their license "\
-  "offer for the Qt/X11 Free Edition, licensed under the Q Public License"\
-  "(QPL) or the GNU General Public License (GPL)" 12 $DLG_WIDTH
-      if [[ $? == 1 ]] ; then
-          choice=`$DLG --backtitle "$DLG_BACKTITLE" --radiolist \
-  "You chose not to accept Qt\'s license. VisIt requires Qt. "\
-  "What would you like to do?" \
-      12 60 5 1 "Accept Qt's license" on 2 "Quit VisIt\'s build process" off 2>&1`
-          if [[ $? == 1 || "$choice" == "2" ]] ; then
-              echo "You declined the Qt license and stopped building VisIt."
-              exit 1
-          fi
-      fi
-  else
-      echo "During this build process, this script will build Qt.  When Qt is "
-      echo "built, this script confirms that you accept their license."
-      echo "So please type \"yes\" to accept (in advance) their license "
-      echo "offer for the Qt/X11 Free Edition, licensed under the Q Public "
-      echo "License (QPL) or the GNU General Public License (GPL)"
-      read RESPONSE
-      while [[ "$RESPONSE" != "yes" ]] ; do
-         echo "Please type \"yes\" to accept their license offer for the "
-         echo "Qt/X11 Free Edition, licensed under the Q Public License (QPL) "
-         echo "or the GNU General Public License (GPL)"
-         read RESPONSE
-         if [[ "$RESPONSE" == "no" ]] ; then
-            echo "You declined the Qt license and stopped building VisIt."
-            exit 1
-         fi
-      done
-  fi
-fi
-
 
 #
 # Log the start time.  Especially helpful if there are multiple starts
 # dumped into the same log.
 #
 LINES="------------------------------------------------------------" 
-echo $LINES >> build_visit_log
-echo -n "Starting build_visit at " >> build_visit_log
-date >> build_visit_log
-echo $LINES >> build_visit_log
+echo $LINES >> ${LOG_FILE}
+echo -n "Starting build_visit at " >> ${LOG_FILE}
+date >> ${LOG_FILE}
+echo $LINES >> ${LOG_FILE}
 
-
+cd "$START_DIR"
 #
 # We are now ready to build.  Start with Mesa.
 #
-cd "$START_DIR"
-if [[ -d "$VISITDIR/mesa/$MESA_VERSION/$VISITARCH" ]] ; then
-   echo "Skipping Mesa build.  Mesa is already installed."
-else
-   echo "Building Mesa (~2 minutes)"
-   build_mesa 3>&1 >> build_visit_log 2>&1
-   if [[ $? != 0 ]] ; then
-      echo "Unable to build or install Mesa.  Bailing out."
-      echo \
-"More information about the failed build can be found in \"build_visit_log\""
-      exit 1
+if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/mesa/$MESA_VERSION/$VISITARCH" ]] ; then
+      echo "Skipping Mesa build.  Mesa is already installed."
+   else
+      echo "Building Mesa (~2 minutes)"
+      build_mesa 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install Mesa.  Bailing out."
+         echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         exit 1
+      fi
+      echo "Done building Mesa"
    fi
-   echo "Done building Mesa"
+else
+   echo "Skipping Mesa build."
 fi
 
 
@@ -5258,140 +5411,150 @@ fi
 # Build Qt
 #
 cd "$START_DIR"
-if [[ "$DO_QT" == "no" ]]; then
-   echo "Skipping Qt build.  Qt is already installed."
-else
-   echo "Building Qt (~10 minutes)"
-   build_qt 3>&1 >> build_visit_log 2>&1
-   if [[ $? != 0 ]] ; then
-      echo "Unable to build or install Qt.  Bailing out."
-      echo \
-"More information about the failed build can be found in \"build_visit_log\""
-      exit 1
+if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+   if [[ "$DO_QT" == "no" ]]; then
+      echo "Skipping Qt build.  Qt is already installed."
+   else
+      echo "Building Qt (~10 minutes)"
+      build_qt 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install Qt.  Bailing out."
+         echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         exit 1
+      fi
+      echo "Done building Qt"
    fi
-   echo "Done building Qt"
+else
+   echo "Skipping Qt build."
 fi
-
 
 #
 # Build VTK
 #
 cd "$START_DIR"
-if [[ -d "$VISITDIR/vtk/$VTK_VERSION/$VISITARCH" ]] ; then
-   echo "Skipping VTK build.  VTK is already installed."
-else
-   echo "Building VTK (~20 minutes)"
-   build_vtk 3>&1 >> build_visit_log 2>&1
-   if [[ $? != 0 ]] ; then
-      echo "Unable to build or install VTK.  Bailing out."
-      echo \
-"More information about the failed build can be found in \"build_visit_log\""
-      exit 1
+if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" ]] ; then
+      echo "Skipping VTK build.  VTK is already installed."
+   else
+      echo "Building VTK (~20 minutes)"
+      build_vtk 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install VTK.  Bailing out."
+         echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         exit 1
+      fi
+      echo "Done building VTK"
    fi
-   echo "Done building VTK"
+else
+   echo "Skipping VTK build."
 fi
-
 
 #
 # Build Python
 #
 cd "$START_DIR"
-if [[ -d "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" ]] ; then
-   echo "Skipping Python build.  Python is already installed."
-else
-   echo "Building Python (~3 minutes)"
-   build_python 3>&1 >> build_visit_log 2>&1
-   if [[ $? != 0 ]] ; then
-      echo "Unable to build or install Python.  Bailing out."
-      echo \
-"More information about the failed build can be found in \"build_visit_log\""
-      exit 1
+if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/python/${PYTHON_VERSION}/$VISITARCH" ]] ; then
+      echo "Skipping Python build.  Python is already installed."
+   else
+      echo "Building Python (~3 minutes)"
+      build_python 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install Python.  Bailing out."
+         echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         exit 1
+      fi
+      echo "Done building Python"
    fi
-   echo "Done building Python"
+else
+   echo "Skipping Python build."
 fi
 
+cd "$START_DIR"
 if [[ "$DO_HDF5" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ -d "$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping HDF5 build.  HDF5 is already installed."
    else
       echo "Building HDF5 (~2 minutes)"
-      build_hdf5 3>&1 >> build_visit_log 2>&1
+      build_hdf5 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install HDF5.  Bailing out."
          echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
          exit 1
       fi
       echo "Done building HDF5"
    fi
 fi
+cd "$START_DIR"
 if [[ "$DO_MILI" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ -d "$VISITDIR/mili" ]] ; then
       echo "Skipping Mili build.  Mili is already installed."
    else
       echo "Building Mili (~2 minutes)"
-      build_mili 3>&1 >> build_visit_log 2>&1
+      build_mili 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Mili.  Bailing out."
          echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
          exit 1
       fi
       echo "Done building Mili"
    fi
 fi
+cd "$START_DIR"
 if [[ "$DO_HDF4" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ -d "$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping HDF4 build.  HDF4 is already installed."
    else
       echo "Building HDF4 (~2 minutes)"
-      build_hdf4 3>&1 >> build_visit_log 2>&1
+      build_hdf4 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install HDF4.  Bailing out."
          echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
          exit 1
       fi
       echo "Done building HDF4"
    fi
 fi
+cd "$START_DIR"
 if [[ "$DO_NETCDF" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ -d "$VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping NetCDF build.  NetCDF is already installed."
    else
       echo "Building NetCDF (~2 minutes)"
-      build_netcdf 3>&1 >> build_visit_log 2>&1
+      build_netcdf 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install NetCDF.  Bailing out."
          echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
          exit 1
       fi
       echo "Done building NetCDF"
    fi
 fi
+cd "$START_DIR"
 if [[ "$DO_CGNS" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ -d "$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping CGNS build.  CGNS is already installed."
    else
       echo "Building CGNS (~2 minutes)"
-      build_cgns 3>&1 >> build_visit_log 2>&1
+      build_cgns 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install CGNS.  Bailing out."
          echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
          exit 1
       fi
       echo "Done building CGNS"
    fi
 fi
+cd "$START_DIR"
 if [[ "$DO_GDAL" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ "$OPSYS" == "AIX" ]]; then
       echo "Skipping GDAL build.  AIX build is not supported."
       DO_GDAL="no"
@@ -5400,60 +5563,60 @@ if [[ "$DO_GDAL" == "yes" ]] ; then
          echo "Skipping GDAL build.  GDAL is already installed."
       else
          echo "Building GDAL (~2 minutes)"
-         build_gdal 3>&1 >> build_visit_log 2>&1
+         build_gdal 3>&1 >> ${LOG_FILE} 2>&1
          if [[ $? != 0 ]] ; then
             echo "Unable to build or install GDAL.  Bailing out."
             echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
             exit 1
          fi
          echo "Done building GDAL"
       fi
    fi
 fi
+cd "$START_DIR"
 if [[ "$DO_EXODUS" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ -d "$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping EXODUS build.  EXODUS is already installed."
    else
       echo "Building EXODUS (~2 minutes)"
-      build_exodus 3>&1 >> build_visit_log 2>&1
+      build_exodus 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install EXODUS.  Bailing out."
          echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
          exit 1
       fi
       echo "Done building EXODUS"
    fi
 fi
+cd "$START_DIR"
 if [[ "$DO_BOXLIB" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ -d "$VISITDIR/boxlib/$VISITARCH" ]] ; then
       echo "Skipping Boxlib build.  Boxlib is already installed."
    else
       echo "Building Boxlib (~2 minutes)"
-      build_boxlib 3>&1 >> build_visit_log 2>&1
+      build_boxlib 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Boxlib.  Bailing out."
          echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
          exit 1
       fi
       echo "Done building Boxlib"
    fi
 fi
+cd "$START_DIR"
 if [[ "$DO_CFITSIO" == "yes" ]] ; then
-   cd "$START_DIR"
    if [[ -d "$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping CFITSIO build.  CFITSIO is already installed."
    else
       echo "Building CFITSIO (~2 minutes)"
-      build_cfitsio 3>&1 >> build_visit_log 2>&1
+      build_cfitsio 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install CFITSIO.  Bailing out."
          echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
          exit 1
       fi
       echo "Done building CFITSIO"
@@ -5464,18 +5627,22 @@ fi
 # Build Silo
 #
 cd "$START_DIR"
-if [[ -d "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH" ]] ; then
-   echo "Skipping Silo build.  Silo is already installed."
-else
-   echo "Building Silo (~2 minutes)"
-   build_silo 3>&1 >> build_visit_log 2>&1
-   if [[ $? != 0 ]] ; then
-      echo "Unable to build or install Silo.  Bailing out."
-      echo \
-"More information about the failed build can be found in \"build_visit_log\""
-      exit 1
+if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH" ]] ; then
+      echo "Skipping Silo build.  Silo is already installed."
+   else
+      echo "Building Silo (~2 minutes)"
+      build_silo 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install Silo.  Bailing out."
+         echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         exit 1
+      fi
+      echo "Done building Silo"
    fi
-   echo "Done building Silo"
+else
+   echo "Skipping Silo build."
 fi
 
 #
@@ -5489,11 +5656,11 @@ build_hostconf
 if [[ "$DO_VISIT" == "yes" ]] ; then
    cd "$START_DIR"
    echo "Building VisIt (~50 minutes)"
-   build_visit 3>&1 >> build_visit_log 2>&1
+   build_visit 3>&1 >> ${LOG_FILE} 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install VisIt.  Bailing out."
       echo \
-"More information about the failed build can be found in \"build_visit_log\""
+"More information about the failed build can be found in \"${LOG_FILE}\""
       exit 1
    fi
    echo "Done building VisIt"
