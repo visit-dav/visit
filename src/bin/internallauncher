@@ -1178,7 +1178,7 @@ $ENV{LD_LIBRARY_PATH}    = "$ENV{LD_LIBRARY_PATH}:/usr/local/lib";
 # Set up some environment flags that let VisIt run on Darwin.
 if($os eq "darwin")
 {
-    $ENV{DYLD_LIBRARY_PATH}   = "$visitlibdir:$ENV{HOME}/.visit/$archdir/plugins:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_LIBRARY_PATH}";
+    $ENV{DYLD_LIBRARY_PATH}   = "$visitlibdir:$ENV{HOME}/.visit/$archdir/plugins/plots:$ENV{HOME}/.visit/$archdir/plugins/databases:$ENV{HOME}/.visit/$archdir/plugins/operators:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries:$ENV{DYLD_LIBRARY_PATH}";
 }
 
 # Set up plugin search paths in the correct order
