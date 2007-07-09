@@ -5006,7 +5006,7 @@ function build_hostconf
 
 function build_visit
 {
-    if [[ "$DO_SVN" != "yes" ]] ; then
+    if [[ "$DO_SVN" != "yes" || "$USE_VISIT_FILE" == "yes" ]] ; then
         #
         # Unzip the file, provided a gzipped file exists.
         #
@@ -5045,8 +5045,7 @@ function build_visit
     # Set up the config-site file, which gives configure the information it
     # needs about the third party libraries.
     #
-    info_box "Creating `hostname`.conf" >&3
-    if [[ "$DO_SVN" == "yes" ]] ; then
+    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         cd src
     else
         VISIT_DIR=${VISIT_FILE%.tar*}
@@ -5664,13 +5663,13 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
       exit 1
    fi
    echo "Done building VisIt"
-if [[ "$DO_SVN" == "yes" ]] ; then
-   echo \
+   if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
+      echo \
 "You may now try to run VisIt by cd'ing into the src/bin"
-    else
-   echo \
+   else
+       echo \
 "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/bin"
-    fi
+   fi
    echo "directory and invoking \"visit\"."
    echo "If you run into problems, contact visit-help@llnl.gov"
 else
