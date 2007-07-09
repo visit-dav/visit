@@ -36,6 +36,10 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>2D plots can now be scaled logarithmically.</li>
 <li>The Cracks Clipper operator can now calculate density.</li>
 <li>The IndexSelect operator now has a dropdown widget for choosing category and set.</li>
+<li>VisIt can now read molecular data in the .XYZ file format.  This new reader supports the enhanced XYZ format with variables for each atom and multiple timesteps in a single file.</li>
+<li>The Parallel Axis plot can now scale to indefinitely large data sets when only the context is drawn.</li>
+<li>VisIt's CLI now supports a "-forceinteractivecli" flag which allows it to enter Python's interactive mode even when run without a terminal.  This can be used to control the CLI through a pipe.</li>
+<li>VisIt can now tunnel its network connections through SSH.  This should be completely transparent and automatic when this flag is set in the Advanced section of the appropriate Host Profile.  However, watch for errors in the console window where VisIt was launched; due to the indeterminate nature of available remote ports, many users tunneling simultaneously to a single machine may cause a failure when initiating the remote connection, but restarting VisIt and attempting the connection again will typically yield success.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.6.1</font></b></p>
 <ul>
@@ -84,6 +88,9 @@ when placing 3D annotations.</li>
 <li>VisIt will no longer crash when animating CosmosPP data through time.</li>
 <li>The help window's <i>Increase/Decrease font size</i> options now work correctly on the Windows platform.</li>
 <li>VisIt's <i>Save movie</i> feature now works on the Windows platform, provided the user has write access to the chosen output directory.</li>
+<li>Specular highlighting could lose settings and become permanently disabled when restoring sessions.</li>
+<li>Tecplot files with no model in the Zone record now load correctly, defaulting to the POINT ordering.</li>
+<li>Tecplot files with no element type in the Zone record now correctly default to return point meshes.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.6.html">VisIt 1.6 Release Notes</a>.</p>
