@@ -434,6 +434,11 @@ function uncompress_untar
 # Programmer: Brad Whitlock,                                                  #
 # Date: Thu Apr 5 14:38:36 PST 2007                                           #
 #                                                                             #
+# Modifications:                                                              #
+#   Cyrus Harrison, Mon Jul  9 14:46:11 PDT 2007                              #
+#   Switched from "svn export" to "svn cat" b/c of problems with old svn      #
+#   clients.                                                                  #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
@@ -448,7 +453,7 @@ function download_file
 
     # Try and download the file.
     if [[ "$DO_SVN" == "yes" ]] ; then
-        svn export $SVN_ROOT_PATH/trunk/third_party/$2
+        svn cat $SVN_ROOT_PATH/trunk/third_party/$2 > $2
     else
         if [[ "$1" == "" ]] ; then
             if [[ "$OPSYS" == "Darwin" ]]; then
