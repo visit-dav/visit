@@ -162,6 +162,10 @@
 #     Allow a mix of SVN for 3rd party libraries, and tar file for VisIt
 #     Added a skip of required 3rd party libraries.
 #
+#     Thomas R. Treadway, Mon Jul  9 17:26:26 PDT 2007
+#     Updated to VisIt 1.6.1
+#     Corrects some VisIt tarball vs SVN problems
+#
 # *****************************************************************************
 
 
@@ -300,8 +304,8 @@ USE_VISIT_FILE="no"
 if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
 fi
-export VISIT_FILE=${VISIT_FILE-"visit070330.tar.gz"}
-export VISIT_VERSION=${VISIT_VERSION-"1.6"}
+export VISIT_FILE=${VISIT_FILE-"visit070713.tar.gz"}
+export VISIT_VERSION=${VISIT_VERSION-"1.6.1"}
 
 export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
 export VTK_VERSION=${VTK_VERSION-"5.0.0c"}
