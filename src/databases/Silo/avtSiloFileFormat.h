@@ -165,6 +165,10 @@ typedef struct
 //    Mark C. Miller, Wed Dec 13 16:55:30 PST 2006
 //    Added method/data member for explicit multivar to multimesh mapping to
 //    support time-invariant multimeshes stored in separate files from vars.
+//
+//    Mark C. Miller, Mon Jul  9 14:23:22 PDT 2007
+//    Added data member codeNameGuess which is to store a guess of the name
+//    of the code that produced the data.
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -204,6 +208,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     bool                  readGlobalInfo;
     bool                  connectivityIsTimeVarying;
     bool                  hasDisjointElements;
+    std::string           codeNameGuess;
 
     static bool           madeGlobalSiloCalls;
 
