@@ -35,7 +35,12 @@ function get_latest_rev
     # This assumes a certain format for SVN log.  It gets the second line,
     # which has "r<REV> | ...", and then strips off the "| ...", and then 
     # strips off the 'r'.
+    # first check for old non posix tail command
+    if [ $(uname -s) != "SunOS" ] ; then
+    REV=$(svn log $VISIT_SVN_REPO --revision HEAD | head -n 2 | tail -n 1 | cut -d'|' -f1 | sed 's/r//g')
+    else
     REV=$(svn log $VISIT_SVN_REPO --revision HEAD | head -2 | tail -1 | cut -d'|' -f1 | sed 's/r//g')
+    fi
     if (( REV < 950 )) ; then
        echo "An error occurred in getting revision!!" >&2
        echo "Pursue this problem with a VisIt-SVN guru" >&2
