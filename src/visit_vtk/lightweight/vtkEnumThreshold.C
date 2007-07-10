@@ -23,6 +23,8 @@
 #include "vtkPointData.h"
 #include "vtkUnstructuredGrid.h"
 
+#include <limits.h>
+
 vtkCxxRevisionMacro(vtkEnumThreshold, "$Revision: 1.68 $");
 vtkStandardNewMacro(vtkEnumThreshold);
 
@@ -36,8 +38,9 @@ vtkEnumThreshold::vtkEnumThreshold()
     this->SetInputArrayToProcess(0,0,0,
                                  vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
                                  vtkDataSetAttributes::SCALARS);
-
     enumerationMap = NULL;
+    maxEnumerationValue = -INT_MAX;
+    minEnumerationValue =  INT_MAX;
 }
 
 vtkEnumThreshold::~vtkEnumThreshold()
@@ -169,6 +172,9 @@ int vtkEnumThreshold::RequestData(
 //    Jeremy Meredith, Tue Aug 22 16:20:41 EDT 2006
 //    Taken from 5.0.0.a vtkThreshold source, renamed to vtkEnumThreshold, and
 //    made it work on an enumerated scalar selection.
+//
+//    Mark C. Miller and Jeremy Meredith, Tue Jul 10 08:45:44 PDT 2007
+//    Made it work correctly in presence of negative enumeration values.
 int vtkEnumThreshold::EvaluateComponents( vtkDataArray *scalars, vtkIdType id )
 {
     int numComp = scalars->GetNumberOfComponents();
@@ -176,7 +182,9 @@ int vtkEnumThreshold::EvaluateComponents( vtkDataArray *scalars, vtkIdType id )
 
     double val = scalars->GetComponent(id, 0);
     int keepCell = false;
-    if (val >= 0 && val <= maxEnumerationValue && enumerationMap[int(val)])
+    if (val >= minEnumerationValue &&
+        val <= maxEnumerationValue &&
+        enumerationMap[int(val)-minEnumerationValue])
         keepCell = true;
 
     return keepCell;
@@ -207,6 +215,14 @@ void vtkEnumThreshold::SetEnumerationValues(const std::vector<int> &vals)
 //    Jeremy Meredith, Tue Aug 22 16:20:41 EDT 2006
 //    Taken from 5.0.0.a vtkThreshold source, renamed to vtkEnumThreshold, and
 //    made it work on an enumerated scalar selection.
+//
+//    Mark C. Miller, Mon Jul  9 14:35:29 PDT 2007
+//    Eliminated early return when value is negative and changed error message
+//    for that case. It appears to work with negative values too though it
+//    wasn't thoroughly tested.
+//
+//    Mark C. Miller and Jeremy Meredith, Tue Jul 10 08:45:44 PDT 2007
+//    Made it work correctly in presence of negative enumeration values.
 void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
 {
     enumerationSelection = sel;
@@ -218,33 +234,28 @@ void vtkEnumThreshold::SetEnumerationSelection(const std::vector<bool> &sel)
     }
 
     int i;
-    maxEnumerationValue = 0;
+    maxEnumerationValue = -INT_MAX;
+    minEnumerationValue =  INT_MAX;
     for (i=0; i<enumerationValues.size(); i++)
     {
-        if (enumerationValues[i] < 0)
-        {
-            vtkErrorMacro(<<"Negative values in enumeration are not allowed.");
-            return;
-        }
         if (enumerationValues[i] > maxEnumerationValue)
             maxEnumerationValue = enumerationValues[i];
+        if (enumerationValues[i] < minEnumerationValue)
+            minEnumerationValue = enumerationValues[i];
     }
-    if (maxEnumerationValue > 1e7)
+    if (maxEnumerationValue - minEnumerationValue > 1e7)
     {
-        vtkErrorMacro(<<"Extraordinarily large value in enumeration (>1e7).");
+        vtkErrorMacro(<<"Extraordinarily large value in enumeration range (>1e7).");
         return;
     }
 
-    enumerationMap = new unsigned char[maxEnumerationValue+1];
-    for (i=0; i<=maxEnumerationValue; i++)
-    {
+    enumerationMap = new unsigned char[maxEnumerationValue-minEnumerationValue+1];
+    for (i=0; i<=maxEnumerationValue-minEnumerationValue; i++)
         enumerationMap[i] = 0;
-    }
 
     for (i=0; i<enumerationValues.size(); i++)
     {
         if (enumerationSelection[i])
-            enumerationMap[enumerationValues[i]] = 1;
+            enumerationMap[enumerationValues[i]-minEnumerationValue] = 1;
     }
 }
-

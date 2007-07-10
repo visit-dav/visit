@@ -36,6 +36,10 @@
 //    Jeremy Meredith, Tue Aug 22 16:20:41 EDT 2006
 //    Taken from 5.0.0.a vtkThreshold source, renamed to vtkEnumThreshold, and
 //    made it work on an enumerated scalar selection.
+//
+//    Mark C. Miller and Jeremy Meredith, Tue Jul 10 08:45:44 PDT 2007
+//    Added minEnumerationValue data member so this class can handle negative
+//    enumeration values.
 
 
 #ifndef __vtkEnumThreshold_h
@@ -73,6 +77,7 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     std::vector<int> enumerationValues;
     std::vector<bool> enumerationSelection;
     int            maxEnumerationValue;
+    int            minEnumerationValue;
     unsigned char *enumerationMap;
 
   private:

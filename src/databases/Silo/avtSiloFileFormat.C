@@ -130,6 +130,9 @@ template<class T>
 static void RemoveValuesForSkippedZones(vector<int>& zoneRangesSkipped,
                 T *inArray, int inArraySize, T *outArray); 
 
+static string GuessCodeNameFromTopLevelVars(DBfile *dbfile);
+static void AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd);
+
 bool avtSiloFileFormat::madeGlobalSiloCalls = false;
 
 // ****************************************************************************
@@ -1231,6 +1234,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     char  *searchpath_str = NULL;
     if (strcmp(dirname, "/") == 0)
     {
+	codeNameGuess = GuessCodeNameFromTopLevelVars(dbfile);
+
         if (DBInqVarExists(dbfile, "ConnectivityIsTimeVarying"))
         {
             int tvFlag;
@@ -2050,6 +2055,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 smd->hasUnits = true;
                 smd->units = varUnits;
             }
+	    if (codeNameGuess == "Ale3d" && string(multivar_names[i]) == "rlxstat")
+	        AddAle3drlxstatEnumerationInfo(smd);
             md->Add(smd);
         }
         else
@@ -9198,4 +9205,117 @@ avtSiloFileFormat::GetMultivarToMultimeshMap(DBfile *dbfile)
             multivarToMultimeshMap[varVec[i]] = meshVec[i];
         }
     }
+}
+
+// ****************************************************************************
+//  Function: GuessCodeNameFromTopLevelVars
+//
+//  Purpose: Guess name of the code that produced the data 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   July 9, 2007 
+//
+// ****************************************************************************
+static string
+GuessCodeNameFromTopLevelVars(DBfile *dbfile)
+{
+    string retval;
+
+    if (DBInqVarExists(dbfile, "lineage") &&
+        DBInqVarExists(dbfile, "version_number") &&
+        DBInqVarExists(dbfile, "znburn_flag") &&
+        DBInqVarExists(dbfile, "chemistry_flag"))
+        retval = "Ale3d";
+    else
+        retval = "Unknown";
+
+    debug5 << "Looks like this Sile file was produced by code \"" << retval << "\"" << endl;
+    return retval;
+}
+
+// ****************************************************************************
+//  Function: AddAle3drlxstatEnumerationInfo
+//
+//  Purpose: Add enumeration info for Ale3d's rlxstat variable. These names and
+//  values were taken directly from Ale3d's RelaxTest.h file.
+//  Programmer: Mark C. Miller 
+//  Creation:   July 9, 2007 
+//
+// ****************************************************************************
+static void
+AddAle3drlxstatEnumerationInfo(avtScalarMetaData *smd)
+{
+    smd->isEnumeration = true;
+    smd->enumNames.push_back("RLX_Uninitialized_-1");
+    smd->enumNames.push_back("RLX_Constrained_0");
+    smd->enumNames.push_back("RLX_JustRelaxed_1");
+    smd->enumNames.push_back("RLX_Relaxing_2");
+    smd->enumNames.push_back("RLX_MustRelax_3");
+    smd->enumNames.push_back("RLX_DispShortEdge_4");
+    smd->enumNames.push_back("RLX_DispLagMotion_5");
+    smd->enumNames.push_back("RLX_InflowOutflow_6");
+    smd->enumNames.push_back("RLX_Symmetry_7");
+    smd->enumNames.push_back("RLX_AngleWall_8");
+    smd->enumNames.push_back("RLX_MustRelaxLimited_9");
+    smd->enumNames.push_back("RLX_AdvectTangential_10");
+    smd->enumNames.push_back("RLX_Reaction_13");
+    smd->enumNames.push_back("RLX_ChemGrad_14");
+    smd->enumNames.push_back("RLX_HoldNodeset_15");
+    smd->enumNames.push_back("RLX_IntHist_16");
+    smd->enumNames.push_back("RLX_Velocity_20");
+    smd->enumNames.push_back("RLX_LightingTime_21");
+    smd->enumNames.push_back("RLX_Region_22");
+    smd->enumNames.push_back("RLX_ZNBurn_23");
+    smd->enumNames.push_back("RLX_PlasticStrain_24");
+    smd->enumNames.push_back("RLX_SALE_25");
+    smd->enumNames.push_back("RLX_AdvTime_26");
+    smd->enumNames.push_back("RLX_HoldUntilActive_27");
+    smd->enumNames.push_back("RLX_SlaveExtension_29");
+    smd->enumNames.push_back("RLX_PartialInvalid_30");
+    smd->enumNames.push_back("RLX_FreeSurface_31");
+    smd->enumNames.push_back("RLX_MixedNode_32");
+    smd->enumNames.push_back("RLX_IgnitionPt_33");
+    smd->enumNames.push_back("RLX_SlideMaster_34");
+    smd->enumNames.push_back("RLX_PeriodicRelax_35");
+    smd->enumNames.push_back("RLX_HoldUntilGrace_36");
+    smd->enumNames.push_back("RLX_HeldIntHist_37");
+    smd->enumNames.push_back("RLX_Equilibrated_38");
+    smd->enumNames.push_back("RLX_ShellNode_39");
+    smd->enumNames.push_back("RLX_BeamNode_40");
+    smd->enumValues.push_back(-1);
+    smd->enumValues.push_back(0);
+    smd->enumValues.push_back(1);
+    smd->enumValues.push_back(2);
+    smd->enumValues.push_back(3);
+    smd->enumValues.push_back(4);
+    smd->enumValues.push_back(5);
+    smd->enumValues.push_back(6);
+    smd->enumValues.push_back(7);
+    smd->enumValues.push_back(8);
+    smd->enumValues.push_back(9);
+    smd->enumValues.push_back(10);
+    smd->enumValues.push_back(13);
+    smd->enumValues.push_back(14);
+    smd->enumValues.push_back(15);
+    smd->enumValues.push_back(16);
+    smd->enumValues.push_back(20);
+    smd->enumValues.push_back(21);
+    smd->enumValues.push_back(22);
+    smd->enumValues.push_back(23);
+    smd->enumValues.push_back(24);
+    smd->enumValues.push_back(25);
+    smd->enumValues.push_back(26);
+    smd->enumValues.push_back(27);
+    smd->enumValues.push_back(29);
+    smd->enumValues.push_back(30);
+    smd->enumValues.push_back(31);
+    smd->enumValues.push_back(32);
+    smd->enumValues.push_back(33);
+    smd->enumValues.push_back(34);
+    smd->enumValues.push_back(35);
+    smd->enumValues.push_back(36);
+    smd->enumValues.push_back(37);
+    smd->enumValues.push_back(38);
+    smd->enumValues.push_back(39);
+    smd->enumValues.push_back(40);
 }
