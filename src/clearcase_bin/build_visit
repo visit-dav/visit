@@ -817,6 +817,27 @@ function check_3rdparty
         fi
     fi
     #
+    # H5Part
+    #
+    if [[ "$DO_H5PART" == "yes" ]] ; then
+        HAVE_H5PART_ALREADY="NO"
+        HAVE_H5PART_TARBALL="NO"
+        if [[ -d "$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH" ]] ; then
+           HAVE_H5PART_ALREADY="YES"
+        fi
+        if [[ -e ${H5PART_FILE%.gz} || -e ${H5PART_FILE} ]] ; then
+           HAVE_H5PART_TARBALL="YES"
+        fi
+        if [[ "$HAVE_H5PART_ALREADY" = "NO" && \
+              "$HAVE_H5PART_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${H5PART_FILE}
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build H5Part.  ${H5PART_FILE} not found."
+                DO_H5PART="no"
+            fi
+        fi
+    fi
+    #
     # HDF4
     #
     if [[ "$DO_HDF4" == "yes" ]] ; then
@@ -897,27 +918,6 @@ function check_3rdparty
             if [[ $? == 0 ]] ; then
                 echo "Unable to build NetCDF.  ${NETCDF_FILE} not found."
                 DO_NETCDF="no"
-            fi
-        fi
-    fi
-    #
-    # H5Part
-    #
-    if [[ "$DO_H5PART" == "yes" ]] ; then
-        HAVE_H5PART_ALREADY="NO"
-        HAVE_H5PART_TARBALL="NO"
-        if [[ -d "$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH" ]] ; then
-           HAVE_H5PART_ALREADY="YES"
-        fi
-        if [[ -e ${H5PART_FILE%.gz} || -e ${H5PART_FILE} ]] ; then
-           HAVE_H5PART_TARBALL="YES"
-        fi
-        if [[ "$HAVE_H5PART_ALREADY" = "NO" && \
-              "$HAVE_H5PART_TARBALL" = "NO" ]] ; then
-            download_3rdparty ${H5PART_FILE}
-            if [[ $? == 0 ]] ; then
-                echo "Unable to build H5Part.  ${H5PART_FILE} not found."
-                DO_H5PART="no"
             fi
         fi
     fi
@@ -5792,7 +5792,7 @@ if [[ "$DO_CFITSIO" == "yes" ]] ; then
 fi
 cd "$START_DIR"
 if [[ "$DO_H5PART" == "yes" ]] ; then
-   if [[ -d "$VISITDIR/h5part/$VISITARCH" ]] ; then
+   if [[ -d "$VISITDIR/h5part/${H5PART_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping H5Part build.  H5Part is already installed."
    else
       echo "Building H5Part (~1 minutes)"
