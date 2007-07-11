@@ -14,7 +14,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="hostAliases" type="string">alc#.llnl.gov alc##.llnl.gov alc###.llnl.gov alc# alc## alc###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
@@ -27,7 +26,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">alc#.llnl.gov alc##.llnl.gov alc###.llnl.gov alc# alc## alc###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel batch pbatch</Field>
@@ -46,7 +44,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">alc#.llnl.gov alc##.llnl.gov alc###.llnl.gov alc# alc## alc###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -55,7 +52,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/nfs/slac/g/ki/ki04/visit" </Field>
                     <Field name="hostAliases" type="string">red</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
@@ -67,7 +63,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/nfs/slac/g/ki/ki04/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">red</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -76,7 +71,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="hostAliases" type="string">ilx#.llnl.gov ilx##.llnl.gov ilx# ilx##</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -89,20 +83,18 @@
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel pbatch</Field>
                     <Field name="host" type="string">prism.llnl.gov</Field>
-                    <Field name="numProcessors" type="int">4</Field>
+                    <Field name="numProcessors" type="int">8</Field>
                     <Field name="numNodesSet" type="bool">true</Field>
-                    <Field name="numNodes" type="int">2</Field>
+                    <Field name="numNodes" type="int">4</Field>
                     <Field name="partitionSet" type="bool">true</Field>
                     <Field name="partition" type="string">prism</Field>
                     <Field name="timeLimitSet" type="bool">true</Field>
                     <Field name="timeLimit" type="string">30m</Field>
                     <Field name="launchMethodSet" type="bool">true</Field>
                     <Field name="launchMethod" type="string">psub/srun</Field>
-                    <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">prism#.llnl.gov prism##.llnl.gov prism###.llnl.gov prism# prism## prism###</Field>
-                    <Field name="clientHostDetermination" type="string">MachineName</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -110,7 +102,6 @@
                     <Field name="numNodes" type="int">0</Field>
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
@@ -119,7 +110,6 @@
                     <Field name="numNodes" type="int">0</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -128,7 +118,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="hostAliases" type="string">sphere#.llnl.gov sphere##.llnl.gov sphere###.llnl.gov sphere# sphere## sphere###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel pdebug</Field>
@@ -147,7 +136,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">sphere#.llnl.gov sphere##.llnl.gov sphere###.llnl.gov sphere# sphere## sphere###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel pdebug hardware-accelerated</Field>
@@ -165,7 +153,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">sphere#.llnl.gov sphere##.llnl.gov sphere###.llnl.gov sphere# sphere## sphere###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                     <Field name="canDoHWAccel" type="bool">true</Field>
                     <Field name="havePreCommand" type="bool">true</Field>
                     <Field name="hwAccelPreCommand" type="string">/usr/bin/X11/xinit</Field>
@@ -189,7 +176,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">sphere#.llnl.gov sphere##.llnl.gov sphere###.llnl.gov sphere# sphere## sphere###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel pbatch hardware-accelerated</Field>
@@ -207,7 +193,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">sphere#.llnl.gov sphere##.llnl.gov sphere###.llnl.gov sphere# sphere## sphere###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                     <Field name="canDoHWAccel" type="bool">true</Field>
                     <Field name="havePreCommand" type="bool">true</Field>
                     <Field name="hwAccelPreCommand" type="string">/usr/bin/X11/xinit</Field>
@@ -220,7 +205,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="hostAliases" type="string">thunder#.llnl.gov thunder##.llnl.gov thunder###.llnl.gov thunder####.llnl.gov thunder# thunder## thunder### thunder####</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
@@ -234,7 +218,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">thunder#.llnl.gov thunder##.llnl.gov thunder###.llnl.gov thunder####.llnl.gov thunder# thunder## thunder### thunder####</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel batch pbatch</Field>
@@ -253,7 +236,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">thunder#.llnl.gov thunder##.llnl.gov thunder###.llnl.gov thunder####.llnl.gov thunder# thunder## thunder### thunder####</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -262,7 +244,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="hostAliases" type="string">up.llnl.gov up###.llnl.gov</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel pbatch</Field>
@@ -281,7 +262,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-objectmode" "64" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">up.llnl.gov up###.llnl.gov</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
@@ -295,7 +275,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-objectmode" "64" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">up.llnl.gov up###.llnl.gov</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -303,7 +282,6 @@
                     <Field name="numNodes" type="int">0</Field>
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/opt/llnl/visit" </Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
@@ -319,7 +297,6 @@
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="sublaunchArgsSet" type="bool">true</Field>
                     <Field name="sublaunchArgs" type="string">--comm=pmi</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -328,7 +305,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
@@ -340,7 +316,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel batch</Field>
@@ -358,7 +333,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">yana#.llnl.gov yana##.llnl.gov yana# yana##</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -367,7 +341,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib" </Field>
                     <Field name="hostAliases" type="string">zeus#.llnl.gov zeus##.llnl.gov zeus###.llnl.gov zeus# zeus## zeus###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel interactive pdebug</Field>
@@ -381,7 +354,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">zeus#.llnl.gov zeus##.llnl.gov zeus###.llnl.gov zeus# zeus## zeus###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel pbatch</Field>
@@ -400,7 +372,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/usr/gapps/visit" "-switch" "ib" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">zeus#.llnl.gov zeus##.llnl.gov zeus###.llnl.gov zeus# zeus## zeus###</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">serial</Field>
@@ -409,7 +380,6 @@
                     <Field name="active" type="bool">true</Field>
                     <Field name="arguments" type="stringVector">"-dir" "/scratch1/j-meredith/visit" </Field>
                     <Field name="hostAliases" type="string">ellipse# ellipse## ellipse### ellipse####</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                 </Object>
                 <Object name="HostProfile">
                     <Field name="profileName" type="string">parallel</Field>
@@ -422,7 +392,6 @@
                     <Field name="arguments" type="stringVector">"-dir" "/scratch1/j-meredith/visit" </Field>
                     <Field name="parallel" type="bool">true</Field>
                     <Field name="hostAliases" type="string">ellipse# ellipse## ellipse### ellipse####</Field>
-                    <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
                     <Field name="machinefileSet" type="bool">true</Field>
                     <Field name="machinefile" type="string">/set/this/value</Field>
                     <Field name="visitSetsUpEnv" type="bool">true</Field>
