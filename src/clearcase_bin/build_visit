@@ -59,6 +59,7 @@
 #           CGNS     2.4.3    cgnslib_2.4-3.tar.gz   -c
 #           ExodusII 4.46     exodusii-4.46.tar.gz   -e
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
+#           H5part   1.3.3    H5Part-20070711.tar.gz -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
 #           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
 #           Mili     1.09     mili-1.10a.tar.gz      -m
@@ -83,6 +84,7 @@
 #     Function 8.7, build_exodus:   build Exodus
 #     Function 8.8, build_boxlib:   build Boxlib
 #     Function 8.9, build_cfitsio:  build CFITSIO
+#     Function 8.10, build_h5part:  build H5Part
 #     Function 8, build_silo:       build Silo
 #     Function 9, build_hostconf:   build the config-site/host.conf file
 #     Function 9.1, build_visit:    build the VisIt source code
@@ -165,6 +167,14 @@
 #     Thomas R. Treadway, Mon Jul  9 17:26:26 PDT 2007
 #     Updated to VisIt 1.6.1
 #     Corrects some VisIt tarball vs SVN problems
+#
+#     Cyrus Harrison, Mon Jul  9 14:46:11 PDT 2007
+#     Switched from "svn export" to "svn cat" b/c of problems with old svn
+#     clients.
+#
+#     Thomas R. Treadway, Wed Jul 11 12:35:37 PDT 2007
+#     Cleanup and fix of many small errors
+#     Addition of H5Part third party library
 #
 # *****************************************************************************
 
@@ -282,6 +292,7 @@ export DO_HDF4="no"
 export DO_HDF5="no"
 export DO_MILI="no"
 export DO_NETCDF="no"
+export DO_H5PART="no"
 export ABS_PATH="no"
 parallel="no"          # "yes" or "no"
 verify="no"
@@ -371,6 +382,11 @@ export CFITSIO_FILE=${CFITSIO_FILE-"cfitsio3006.tar.gz"}
 export CFITSIO_VERSION=${CFITSIO_VERSION-"3006"}
 export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION-"3.0"}
 
+export H5PART_FILE=${H5PART_FILE-"H5Part-20070711.tar.gz"}
+export H5PART_VERSION=${H5PART_VERSION-"1.3.3"}
+export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION-"1.0"}
+export H5PART_DIR=${H5PART_DIR-"H5Part-1.3.3"}
+
 # Dialog-related variables.
 DLG="dialog"
 DLG_BACKTITLE="VisIt $VISIT_VERSION Build Process"
@@ -433,11 +449,6 @@ function uncompress_untar
 #                                                                             #
 # Programmer: Brad Whitlock,                                                  #
 # Date: Thu Apr 5 14:38:36 PST 2007                                           #
-#                                                                             #
-# Modifications:                                                              #
-#   Cyrus Harrison, Mon Jul  9 14:46:11 PDT 2007                              #
-#   Switched from "svn export" to "svn cat" b/c of problems with old svn      #
-#   clients.                                                                  #
 #                                                                             #
 # *************************************************************************** #
 
@@ -890,6 +901,27 @@ function check_3rdparty
         fi
     fi
     #
+    # H5Part
+    #
+    if [[ "$DO_H5PART" == "yes" ]] ; then
+        HAVE_H5PART_ALREADY="NO"
+        HAVE_H5PART_TARBALL="NO"
+        if [[ -d "$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH" ]] ; then
+           HAVE_H5PART_ALREADY="YES"
+        fi
+        if [[ -e ${H5PART_FILE%.gz} || -e ${H5PART_FILE} ]] ; then
+           HAVE_H5PART_TARBALL="YES"
+        fi
+        if [[ "$HAVE_H5PART_ALREADY" = "NO" && \
+              "$HAVE_H5PART_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${H5PART_FILE}
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build H5Part.  ${H5PART_FILE} not found."
+                DO_H5PART="no"
+            fi
+        fi
+    fi
+    #
     return 0
 }
 
@@ -1134,7 +1166,7 @@ function build_mesa
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -e ${MESA_FILE} ]] ; then
-       info_box "Unzipping/untarring ${MESA_FILE} . . ." >&3
+       info_box "Unzipping/untarring ${MESA_FILE} . . ." 1>&3
        uncompress_untar ${MESA_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -1142,7 +1174,7 @@ function build_mesa
           return 1
        fi
     elif [[ -e ${MESA_FILE%.*} ]] ; then
-       info_box "Untarring ${MESA_FILE%.*} . . ." >&3
+       info_box "Untarring ${MESA_FILE%.*} . . ." 1>&3
        tar xf ${MESA_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -1154,7 +1186,7 @@ function build_mesa
     #
     # Patching mesa.
     #
-    info_box "Patching Mesa . . ." >&3
+    info_box "Patching Mesa . . ." 1>&3
     patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/default Mesa-6.4.2/configs/default
 *** Mesa-6.4.2.orig/configs/default	Wed Feb  1 09:47:36 2006
@@ -1252,7 +1284,7 @@ EOF
         return 1
     fi
     if [[ "$OPSYS" == "Darwin" ]]; then
-        info_box "Patching Mesa for Darwin . . ." >&3
+        info_box "Patching Mesa for Darwin . . ." 1>&3
         patch -p0 <<\EOF
 diff -p -r Mesa-6.4.2.orig/configs/darwin Mesa-6.4.2/configs/darwin
 *** Mesa-6.4.2.orig/configs/darwin	Wed Jun 29 19:34:07 2005
@@ -1339,7 +1371,7 @@ diff -p -r Mesa-6.4.2.orig/src/mesa/sources Mesa-6.4.2/src/mesa/sources
   	drivers/osmesa/osmesa.c
 EOF
     elif [[ "$OPSYS" == "Linux" ]]; then
-        info_box "Patching Mesa for Linux . . ." >&3
+        info_box "Patching Mesa for Linux . . ." 1>&3
         patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/linux Mesa-6.4.2/configs/linux
 *** Mesa-6.4.2.orig/configs/linux	Thu Feb  2 19:54:06 2006
@@ -1363,7 +1395,7 @@ diff -c Mesa-6.4.2.orig/configs/linux Mesa-6.4.2/configs/linux
   
 EOF
     elif [[ "$OPSYS" == "AIX" ]]; then
-        info_box "Patching Mesa for AIX . . ." >&3
+        info_box "Patching Mesa for AIX . . ." 1>&3
         patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/aix Mesa-6.4.2/configs/aix
 *** Mesa-6.4.2.orig/configs/aix	Mon Sep 13 14:04:48 2004
@@ -1450,7 +1482,7 @@ diff -c Mesa-6.4.2.orig/src/mesa/swrast/s_tritemp.h Mesa-6.4.2/src/mesa/swrast/s
                  /*
 EOF
     elif [[ "$OPSYS" == "SunOS" ]]; then
-        info_box "Patching Mesa . . ." >&3
+        info_box "Patching Mesa . . ." 1>&3
         patch -p0 <<\EOF
 diff -p -r Mesa-6.4.2.orig/configs/solaris-x86-gcc Mesa-6.4.2/configs/solaris-x86-gcc
 *** Mesa-6.4.2.orig/configs/solaris-x86-gcc	Mon Sep 13 14:04:48 2004
@@ -1501,7 +1533,7 @@ EOF
     #
     # Build Mesa.
     #
-    info_box "Building Mesa . . . (~2 minutes)" >&3
+    info_box "Building Mesa . . . (~2 minutes)" 1>&3
     cd ${MESA_DIR}
     echo "Invoking command to build Mesa"
     $MAKE $MESA_TARGET
@@ -1513,7 +1545,7 @@ EOF
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing Mesa . . ." >&3
+    info_box "Installing Mesa . . ." 1>&3
     echo "Installing Mesa"
     mkdir "$VISITDIR/mesa"
     mkdir "$VISITDIR/mesa/${MESA_VERSION}"
@@ -1598,7 +1630,7 @@ function build_qt
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -e ${QT_FILE} ]] ; then
-       info_box "Unzipping/Untarring ${QT_FILE} . . ." >&3
+       info_box "Unzipping/Untarring ${QT_FILE} . . ." 1>&3
        uncompress_untar ${QT_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -1606,7 +1638,7 @@ function build_qt
           return 1
        fi
     elif [[ -e ${QT_FILE%.*} ]] ; then
-       info_box "Untarring ${QT_FILE%.*} . . ." >&3
+       info_box "Untarring ${QT_FILE%.*} . . ." 1>&3
        tar xf ${QT_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -1676,7 +1708,7 @@ function build_qt
     # Call configure
     #
     info_box "Configuring Qt: ./configure -platform ${QT_PLATFORM} \
--shared -qt-libpng $THREAD" >&3
+-shared -qt-libpng $THREAD" 1>&3
     echo "yes" | ./configure -platform ${QT_PLATFORM} -shared -qt-libpng $THREAD
     if [[ $? != 0 ]] ; then
        echo "Qt configure failed.  Giving up"
@@ -1704,7 +1736,7 @@ function build_qt
     #
     # Build Qt.  Issue only the targets that we need.
     #
-    info_box "Building Qt . . . (~10 minutes)" >&3
+    info_box "Building Qt . . . (~10 minutes)" 1>&3
     $MAKE symlinks src-qmake src-moc sub-src
     if [[ $? != 0 ]] ; then
        echo "Qt build failed.  Giving up"
@@ -1721,7 +1753,7 @@ function build_qt
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing Qt" >&3
+    info_box "Installing Qt" 1>&3
     echo "Installing Qt"
     echo "Installing to directory $VISITDIR/qt"
     mkdir "$VISITDIR/qt"
@@ -1783,7 +1815,7 @@ function build_cmake
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${CMAKE_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${CMAKE_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${CMAKE_FILE} . . ." 1>&3
        uncompress_untar ${CMAKE_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -1791,7 +1823,7 @@ function build_cmake
           return 1
        fi
     elif [[ -f ${CMAKE_FILE%.*} ]] ; then
-       info_box "Tarring ${CMAKE_FILE%.*} . . ." >&3
+       info_box "Tarring ${CMAKE_FILE%.*} . . ." 1>&3
        tar xf ${CMAKE_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -1804,7 +1836,7 @@ function build_cmake
     # Patching mesa.
     #
     if [[ "$OPSYS" == "AIX" ]]; then
-        info_box "Patching Mesa . . ." >&3
+        info_box "Patching Mesa . . ." 1>&3
         patch -p0 <<\EOF
 diff -c cmake-2.4.5.orig/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/zconf.h
 *** cmake-2.4.5.orig/Utilities/cmzlib/zconf.h	Mon Dec  4 08:04:11 2006
@@ -1834,7 +1866,7 @@ EOF
     #
     # Issue "bootstrap", which takes the place of configure for CMake.
     #
-    info_box "Bootstrapping CMake . . ." >&3
+    info_box "Bootstrapping CMake . . ." 1>&3
     CMAKE_DIR=${CMAKE_FILE%.tar*}
     cd ${CMAKE_DIR}
     if [[ "$OPSYS" == "AIX" ]]; then
@@ -1850,7 +1882,7 @@ EOF
     #
     # Build the CMake program.
     #
-    info_box "Building CMake . . ." >&3
+    info_box "Building CMake . . ." 1>&3
     $MAKE
     if [[ $? != 0 ]] ; then
        echo "Cannot build cmake, giving up."
@@ -1882,7 +1914,7 @@ function build_vtk
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${VTK_FILE} ]] ; then
-       info_box "Unzipping/Untarring ${VTK_FILE} . . ." >&3
+       info_box "Unzipping/Untarring ${VTK_FILE} . . ." 1>&3
        uncompress_untar ${VTK_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -1890,7 +1922,7 @@ function build_vtk
           return 1
        fi
     elif [[ -f ${VTK_FILE%.*} ]] ; then
-       info_box "Untarring ${VTK_FILE%.*} . . ." >&3
+       info_box "Untarring ${VTK_FILE%.*} . . ." 1>&3
        tar xf ${VTK_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -1903,7 +1935,7 @@ function build_vtk
         #
         # Apply patches
         #
-        info_box "Patching VTK . . ." >&3
+        info_box "Patching VTK . . ." 1>&3
         patch -p0 << \EOF
 diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
 *** VTK.orig/CMakeLists.txt     Mon Mar 26 14:28:51 2007
@@ -2039,7 +2071,7 @@ EOF
     #
     # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
     #
-    info_box "Executing CMake on VTK" >&3
+    info_box "Executing CMake on VTK" 1>&3
     cd VTK
     CMAKE_DIR=../${CMAKE_FILE%.tar*}/bin/
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -2060,37 +2092,35 @@ EOF
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
     elif [[ "$OPSYS" == "IRIX64" ]]; then
-       VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS} -LANG:std -64\
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
-        -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
-        -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
-        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-LANG:std -64"
     ${CMAKE_DIR}/cmake \
         -DBUILD_SHARED_LIBS:BOOL=ON\
         -DBUILD_TESTING:BOOL=OFF\
         -DUSE_ANSI_STD_LIB:BOOL=ON\
         -DVTK_USE_MANGLED_MESA:BOOL=ON\
         -DVTK_USE_HYBRID:BOOL=ON\
-        $VTKPLATFORMFLAGS\
+        -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS} -LANG:std -64\
+        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
+        -DCMAKE_EXE_LINKER_FLAGS:STRING=-LANG:std -64\
+        -DCMAKE_MODULE_LINKER_FLAGS:STRING=-LANG:std -64\
+        -DCMAKE_SHARED_LINKER_FLAGS:STRING=-LANG:std -64\
         -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
         -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
     else
-       VTKPLATFORMFLAGS="-DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
-        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
-        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
-        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     ${CMAKE_DIR}/cmake \
         -DBUILD_SHARED_LIBS:BOOL=ON\
         -DBUILD_TESTING:BOOL=OFF\
         -DUSE_ANSI_STD_LIB:BOOL=ON\
         -DVTK_USE_MANGLED_MESA:BOOL=ON\
         -DVTK_USE_HYBRID:BOOL=ON\
-        $VTKPLATFORMFLAGS\
+        -DCMAKE_CXX_FLAGS:STRING=${CXX_OPT_FLAGS}\
+        -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}\
+        -DCMAKE_C_FLAGS:STRING=${C_OPT_FLAGS}\
+        -DCMAKE_C_COMPILER:STRING=${C_COMPILER}\
         -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
         -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
@@ -2105,7 +2135,7 @@ EOF
     #
     # Now build VTK.
     #
-    info_box "Building VTK . . . (~20 minutes)" >&3
+    info_box "Building VTK . . . (~20 minutes)" 1>&3
     $MAKE
     if [[ $? != 0 ]] ; then
        echo "VTK did not build correctly.  Giving up."
@@ -2171,7 +2201,7 @@ EOF
     export BAD_MESA="$PWD"
     cd ..
 
-    info_box "Installing VTK . . ." >&3
+    info_box "Installing VTK . . ." 1>&3
     echo "Installing VTK"
     mkdir "$VISITDIR/vtk"
     mkdir "$VISITDIR/vtk/${VTK_VERSION}"
@@ -2268,7 +2298,7 @@ function build_python
     #
     # Untar the file.
     #
-    info_box "Extracting Python source . . ." >&3
+    info_box "Extracting Python source . . ." 1>&3
     uncompress_untar ${PYTHON_FILE}
     if [[ $? != 0 ]] ; then
        echo \
@@ -2279,7 +2309,7 @@ function build_python
     #
     # Call configure
     #
-    info_box "Configuring Python . . ." >&3
+    info_box "Configuring Python . . ." 1>&3
     PYTHON_DIR=${PYTHON_FILE%.$PYTHON_FILE_SUFFIX}
     cd ${PYTHON_DIR}
     PYTHON_OPT="$C_OPT_FLAGS"
@@ -2297,13 +2327,13 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     #
     # Build Python.
     #
-    info_box "Building Python . . . (~3 minutes)" >&3
+    info_box "Building Python . . . (~3 minutes)" 1>&3
     $MAKE
     if [[ $? != 0 ]] ; then
        echo "Python build failed.  Giving up"
        return 1
     fi
-    info_box "Installing Python . . ." >&3
+    info_box "Installing Python . . ." 1>&3
     $MAKE install
     if [[ $? != 0 ]] ; then
        echo "Python build (make install) failed.  Giving up"
@@ -2313,7 +2343,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     #
     # Create a shared library and copy that to the third party install location
     #
-    info_box "Creating Python shared library" >&3
+    info_box "Creating Python shared library" 1>&3
     echo "Creating shared library"
     if [[ "$OPSYS" == "Darwin" ]]; then
         # Check for version >= 8.0.0 (MacOS 10.4, Tiger) for SystemStubs
@@ -2384,7 +2414,7 @@ function build_silo
     #
     # Run the shell script that effectively "untars" Silo.
     #
-    info_box "Extracting Silo sources" >&3
+    info_box "Extracting Silo sources" 1>&3
     sh ${SILO_FILE}
     if [[ $? != 0 ]] ; then
        echo \
@@ -2395,7 +2425,7 @@ function build_silo
     #
     # Call configure
     #
-    info_box "Configuring Silo . . ." >&3
+    info_box "Configuring Silo . . ." 1>&3
     SILO_DIR=${SILO_FILE%.sh}
     cd ${SILO_DIR}
     echo "Invoking command to configure Silo"
@@ -2418,7 +2448,7 @@ function build_silo
     #
     # Build Silo
     #
-    info_box "Building Silo . . . (~2 minutes)" >&3
+    info_box "Building Silo . . . (~2 minutes)" 1>&3
     echo "Building Silo"
     $MAKE
     if [[ $? != 0 ]] ; then
@@ -2449,7 +2479,7 @@ function build_silo
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing Silo . . ." >&3
+    info_box "Installing Silo . . ." 1>&3
     echo "Installing Silo"
     mkdir "$VISITDIR/silo"
     mkdir "$VISITDIR/silo/${SILO_VERSION}"
@@ -2485,7 +2515,7 @@ function build_hdf5
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${HDF5_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${HDF5_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${HDF5_FILE} . . ." 1>&3
        uncompress_untar ${HDF5_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -2493,7 +2523,7 @@ function build_hdf5
           return 1
        fi
     elif [[ -f ${HDF5_FILE%.*} ]] ; then
-       info_box "Tarring ${HDF5_FILE%.*} . . ." >&3
+       info_box "Tarring ${HDF5_FILE%.*} . . ." 1>&3
        tar xf ${HDF5_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -2503,7 +2533,7 @@ function build_hdf5
     fi
 
     #
-    info_box "Configuring HDF5 . . ." >&3
+    info_box "Configuring HDF5 . . ." 1>&3
     HDF5_DIR=${HDF5_FILE%.tar*}
     cd ${HDF5_DIR}
     echo "Invoking command to configure HDF5"
@@ -2518,7 +2548,7 @@ function build_hdf5
     #
     # Build HDF5
     #
-    info_box "Building HDF5 . . . (~2 minutes)" >&3
+    info_box "Building HDF5 . . . (~2 minutes)" 1>&3
     echo "Building HDF5"
     $MAKE
     if [[ $? != 0 ]] ; then
@@ -2528,7 +2558,7 @@ function build_hdf5
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing HDF5 . . ." >&3
+    info_box "Installing HDF5 . . ." 1>&3
     echo "Installing HDF5"
     $MAKE install
     if [[ $? != 0 ]] ; then
@@ -2541,7 +2571,7 @@ function build_hdf5
         # Make dynamic executable, need to patch up the install path and
         # version information.
         #
-        info_box "Creating dynamic libraries for HDF5 . . ." >&3
+        info_box "Creating dynamic libraries for HDF5 . . ." 1>&3
         echo "Creating dynamic libraries for HDF5"
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH/lib"
@@ -2590,7 +2620,7 @@ function build_mili
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${MILI_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${MILI_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${MILI_FILE} . . ." 1>&3
        uncompress_untar ${MILI_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -2598,7 +2628,7 @@ function build_mili
           return 1
        fi
     elif [[ -f ${MILI_FILE%.*} ]] ; then
-       info_box "Tarring ${MILI_FILE%.*} . . ." >&3
+       info_box "Tarring ${MILI_FILE%.*} . . ." 1>&3
        tar xf ${MILI_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -2612,7 +2642,7 @@ function build_mili
         #
         # Apply patches
         #
-        info_box "Patching Mili . . ." >&3
+        info_box "Patching Mili . . ." 1>&3
         patch -p0 << \EOF
 diff -rp mili.orig/src/mili_internal.h mili/src/mili_internal.h
 *** mili.orig/src/mili_internal.h       Thu Oct 12 14:31:40 2006
@@ -2634,7 +2664,7 @@ EOF
        fi
     fi
 
-    info_box "Configuring Mili . . ." >&3
+    info_box "Configuring Mili . . ." 1>&3
     cd mili
 
     echo "Invoking command to configure Mili"
@@ -2649,7 +2679,7 @@ EOF
     #
     # Build Mili
     #
-    info_box "Building Mili . . . (~2 minutes)" >&3
+    info_box "Building Mili . . . (~2 minutes)" 1>&3
     echo "Building Mili"
     cd MILI-$OPSYS-*
     cd src
@@ -2664,7 +2694,7 @@ EOF
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing Mili . . ." >&3
+    info_box "Installing Mili . . ." 1>&3
     echo "Installing Mili"
     mkdir "$VISITDIR/mili"
     mkdir "$VISITDIR/mili/$MILI_VERSION"
@@ -2716,7 +2746,7 @@ function build_hdf4
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${HDF4_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${HDF4_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${HDF4_FILE} . . ." 1>&3
        uncompress_untar ${HDF4_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -2724,7 +2754,7 @@ function build_hdf4
           return 1
        fi
     elif [[ -f ${HDF4_FILE%.*} ]] ; then
-       info_box "Tarring ${HDF4_FILE%.*} . . ." >&3
+       info_box "Tarring ${HDF4_FILE%.*} . . ." 1>&3
        tar xf ${HDF4_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -2737,7 +2767,7 @@ function build_hdf4
         #
         # Apply patches
         #
-        info_box "Patching HDF4 . . ." >&3
+        info_box "Patching HDF4 . . ." 1>&3
         patch -p0 << \EOF
 *** HDF4.2r1.orig/configure	Tue Feb  8 10:29:27 2005
 --- HDF4.2r1/configure	Thu Apr 26 13:30:56 2007
@@ -3582,7 +3612,7 @@ EOF
     fi
 
     #
-    info_box "Configuring HDF4 . . ." >&3
+    info_box "Configuring HDF4 . . ." 1>&3
     HDF4_DIR=${HDF4_FILE%.tar*}
     cd ${HDF4_DIR}
     echo "Invoking command to configure HDF4"
@@ -3613,7 +3643,7 @@ EOF
     #
     # Build HDF4
     #
-    info_box "Building HDF4 . . . (~2 minutes)" >&3
+    info_box "Building HDF4 . . . (~2 minutes)" 1>&3
     echo "Building HDF4"
     $MAKE $MAKEOPS
     if [[ $? != 0 ]] ; then
@@ -3623,7 +3653,7 @@ EOF
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing HDF4 . . ." >&3
+    info_box "Installing HDF4 . . ." 1>&3
     echo "Installing HDF4"
     $MAKE $MAKEOPS install
     if [[ $? != 0 ]] ; then
@@ -3635,7 +3665,7 @@ EOF
         #
         # Make dynamic executable
         #
-        info_box "Creating dynamic libraries for HDF4 . . ." >&3
+        info_box "Creating dynamic libraries for HDF4 . . ." 1>&3
         echo "Creating dynamic libraries for HDF4"
         # Relink libdf.
         if [[ $ABS_PATH == "Yes" ]]; then
@@ -3693,7 +3723,7 @@ function build_netcdf
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${NETCDF_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${NETCDF_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${NETCDF_FILE} . . ." 1>&3
        uncompress_untar ${NETCDF_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -3701,7 +3731,7 @@ function build_netcdf
           return 1
        fi
     elif [[ -f ${NETCDF_FILE%.*} ]] ; then
-       info_box "Tarring ${NETCDF_FILE%.*} . . ." >&3
+       info_box "Tarring ${NETCDF_FILE%.*} . . ." 1>&3
        tar xf ${NETCDF_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -3713,7 +3743,7 @@ function build_netcdf
     #
     # Apply patches
     #
-    info_box "Patching NetCDF . . ." >&3
+    info_box "Patching NetCDF . . ." 1>&3
     patch -p0 << \EOF
 *** netcdf-3.6.0-p1.orig/src/libsrc/netcdf.h	Tue Sep 14 06:41:22 2004
 --- netcdf-3.6.0-p1/src/libsrc/netcdf.h	Thu Apr 26 14:14:41 2007
@@ -3749,7 +3779,7 @@ EOF
     fi
 
     #
-    info_box "Configuring NetCDF . . ." >&3
+    info_box "Configuring NetCDF . . ." 1>&3
     cd netcdf-3.6.0-p1/src
     echo "Invoking command to configure NetCDF"
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -3769,7 +3799,7 @@ EOF
     #
     # Build NetCDF
     #
-    info_box "Building NetCDF . . . (~2 minutes)" >&3
+    info_box "Building NetCDF . . . (~2 minutes)" 1>&3
     echo "Building NetCDF"
     if [[ "$OPSYS" == "Darwin" ]]; then
         cd libsrc
@@ -3814,7 +3844,7 @@ EOF
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing NetCDF . . ." >&3
+    info_box "Installing NetCDF . . ." 1>&3
     echo "Installing NetCDF"
     mkdir "$VISITDIR/netcdf"
     mkdir "$VISITDIR/netcdf/$NETCDF_VERSION"
@@ -3858,7 +3888,7 @@ function build_cgns
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${CGNS_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${CGNS_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${CGNS_FILE} . . ." 1>&3
        uncompress_untar ${CGNS_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -3866,7 +3896,7 @@ function build_cgns
           return 1
        fi
     elif [[ -f ${CGNS_FILE%.*} ]] ; then
-       info_box "Tarring ${CGNS_FILE%.*} . . ." >&3
+       info_box "Tarring ${CGNS_FILE%.*} . . ." 1>&3
        tar xf ${CGNS_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -3876,7 +3906,7 @@ function build_cgns
     fi
 
     #
-    info_box "Configuring CGNS . . ." >&3
+    info_box "Configuring CGNS . . ." 1>&3
     CGNS_DIR=${CGNS_FILE%-3.tar*}
     cd ${CGNS_DIR}
     echo "Invoking command to configure CGNS"
@@ -3891,7 +3921,7 @@ function build_cgns
     #
     # Build CGNS
     #
-    info_box "Building CGNS . . . (~2 minutes)" >&3
+    info_box "Building CGNS . . . (~2 minutes)" 1>&3
     echo "Building CGNS"
     $MAKE
     if [[ $? != 0 ]] ; then
@@ -3901,7 +3931,7 @@ function build_cgns
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing CGNS . . ." >&3
+    info_box "Installing CGNS . . ." 1>&3
     echo "Installing CGNS"
     mkdir "$VISITDIR/cgns"
     mkdir "$VISITDIR/cgns/$CGNS_VERSION"
@@ -3918,7 +3948,7 @@ function build_cgns
         #
         # Make dynamic executable
         #
-        info_box "Creating dynamic libraries for CGNS . . ." >&3
+        info_box "Creating dynamic libraries for CGNS . . ." 1>&3
         echo "Creating dynamic libraries for CGNS"
         # Check for version >= 8.0.0 (MacOS 10.4, Tiger) for SystemStubs
         VER=$(uname -r)
@@ -3965,7 +3995,7 @@ function build_gdal
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${GDAL_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${GDAL_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${GDAL_FILE} . . ." 1>&3
        uncompress_untar ${GDAL_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -3973,7 +4003,7 @@ function build_gdal
           return 1
        fi
     elif [[ -f ${GDAL_FILE%.*} ]] ; then
-       info_box "Tarring ${GDAL_FILE%.*} . . ." >&3
+       info_box "Tarring ${GDAL_FILE%.*} . . ." 1>&3
        tar xf ${GDAL_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -3983,7 +4013,7 @@ function build_gdal
     fi
 
     #
-    info_box "Configuring GDAL . . ." >&3
+    info_box "Configuring GDAL . . ." 1>&3
     GDAL_DIR=${GDAL_FILE%.tar*}
     cd ${GDAL_DIR}
     echo "Invoking command to configure GDAL"
@@ -4007,7 +4037,7 @@ function build_gdal
     #
     # Build GDAL
     #
-    info_box "Building GDAL . . . (~4 minutes)" >&3
+    info_box "Building GDAL . . . (~4 minutes)" 1>&3
     echo "Building GDAL"
     $MAKE
     if [[ $? != 0 ]] ; then
@@ -4017,7 +4047,7 @@ function build_gdal
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing GDAL . . ." >&3
+    info_box "Installing GDAL . . ." 1>&3
     echo "Installing GDAL"
     $MAKE install
     if [[ $? != 0 ]] ; then
@@ -4029,7 +4059,7 @@ function build_gdal
         #
         # Make dynamic executable
         #
-        info_box "Fixing install_name of dynamic libraries for GDAL . . ." >&3
+        info_box "Fixing install_name of dynamic libraries for GDAL . . ." 1>&3
         echo "Fixing install_name of dynamic libraries for GDAL"
         cp .libs/libgdal.1.10.0.${SO_EXT} libgdal.${SO_EXT}
         if [[ $ABS_PATH == "Yes" ]]; then
@@ -4065,7 +4095,7 @@ function build_exodus
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${EXODUS_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${EXODUS_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${EXODUS_FILE} . . ." 1>&3
        uncompress_untar ${EXODUS_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -4073,7 +4103,7 @@ function build_exodus
           return 1
        fi
     elif [[ -f ${EXODUS_FILE%.*} ]] ; then
-       info_box "Tarring ${EXODUS_FILE%.*} . . ." >&3
+       info_box "Tarring ${EXODUS_FILE%.*} . . ." 1>&3
        tar xf ${EXODUS_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -4087,7 +4117,7 @@ function build_exodus
     #
     # Build Exodus
     #
-    info_box "Building Exodus . . . (~2 minutes)" >&3
+    info_box "Building Exodus . . . (~2 minutes)" 1>&3
     echo "Building Exodus"
     cd cbind/src
     export NETCDFLIB="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib"
@@ -4100,7 +4130,7 @@ function build_exodus
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing Exodus . . ." >&3
+    info_box "Installing Exodus . . ." 1>&3
     echo "Installing Exodus"
     mkdir "$VISITDIR/exodus"
     mkdir "$VISITDIR/exodus/$EXODUS_VERSION"
@@ -4112,7 +4142,7 @@ function build_exodus
         #
         # Make dynamic executable
         #
-        info_box "Creating dynamic libraries for Exodus . . ." >&3
+        info_box "Creating dynamic libraries for Exodus . . ." 1>&3
         echo "Creating dynamic libraries for Exodus"
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH/lib"
@@ -4174,7 +4204,7 @@ function build_boxlib
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${BOXLIB_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${BOXLIB_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${BOXLIB_FILE} . . ." 1>&3
        uncompress_untar ${BOXLIB_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -4182,7 +4212,7 @@ function build_boxlib
           return 1
        fi
     elif [[ -f ${BOXLIB_FILE%.*} ]] ; then
-       info_box "Tarring ${BOXLIB_FILE%.*} . . ." >&3
+       info_box "Tarring ${BOXLIB_FILE%.*} . . ." 1>&3
        tar xf ${BOXLIB_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -4194,7 +4224,7 @@ function build_boxlib
     #
     # Apply patches
     #
-    info_box "Patching Boxlib 3D . . ." >&3
+    info_box "Patching Boxlib 3D . . ." 1>&3
     if [[ "$OPSYS" == "AIX" ]]; then
        patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
@@ -4262,7 +4292,7 @@ EOF
         #
         # Apply patches
         #
-        info_box "Patching Boxlib 3D . . ." >&3
+        info_box "Patching Boxlib 3D . . ." 1>&3
         patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/BaseFab.cpp CCSEApps/BoxLib/BaseFab.cpp
 *** CCSEApps.orig/BoxLib/BaseFab.cpp	Wed Mar 19 10:11:09 2003
@@ -4525,7 +4555,7 @@ EOF
     #
     # Build Boxlib 3D
     #
-    info_box "Building Boxlib 3D. . . (~2 minutes)" >&3
+    info_box "Building Boxlib 3D. . . (~2 minutes)" 1>&3
     echo "Building Boxlib 3D"
     if [[ "$OPSYS" == "Darwin" ]]; then
        cp ../mk/Make.FreeBSD ../mk/Make.Darwin
@@ -4539,7 +4569,7 @@ EOF
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing Boxlib 3D. . ." >&3
+    info_box "Installing Boxlib 3D. . ." 1>&3
     echo "Installing Boxlib 3D"
     mkdir "$VISITDIR/boxlib"
     mkdir "$VISITDIR/boxlib/$VISITARCH"
@@ -4583,7 +4613,7 @@ EOF
     #
     # Apply patches
     #
-    info_box "Patching Boxlib 2D . . ." >&3
+    info_box "Patching Boxlib 2D . . ." 1>&3
     cd $START_DIR
     if [[ "$OPSYS" == "AIX" ]]; then
        patch -p0 << \EOF
@@ -4640,7 +4670,7 @@ EOF
     #
     # Build Boxlib 2D
     #
-    info_box "Building Boxlib 2D. . . (~2 minutes)" >&3
+    info_box "Building Boxlib 2D. . . (~2 minutes)" 1>&3
     echo "Building Boxlib 2D"
     if [[ "$OPSYS" == "Darwin" ]]; then
        cp ../mk/Make.FreeBSD ../mk/Make.Darwin
@@ -4651,7 +4681,7 @@ EOF
        echo "Boxlib build failed.  Giving up"
        return 1
     fi
-    info_box "Installing Boxlib 2D. . ." >&3
+    info_box "Installing Boxlib 2D. . ." 1>&3
     echo "Installing Boxlib 2D"
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ $ABS_PATH == "Yes" ]]; then
@@ -4686,7 +4716,7 @@ EOF
         fi
     fi
 
-    info_box "Installing Boxlib includes. . ." >&3
+    info_box "Installing Boxlib includes. . ." 1>&3
     echo "Installing Boxlib includes"
     cp Boxlib2D.h.tar "$VISITDIR/boxlib/$VISITARCH/include/2D"
     cp Boxlib3D.h.tar "$VISITDIR/boxlib/$VISITARCH/include/3D"
@@ -4715,7 +4745,7 @@ function build_cfitsio
     # Unzip the file, provided a gzipped file exists.
     #
     if [[ -f ${CFITSIO_FILE} ]] ; then
-       info_box "Unzipping/Tarring ${CFITSIO_FILE} . . ." >&3
+       info_box "Unzipping/Tarring ${CFITSIO_FILE} . . ." 1>&3
        uncompress_untar ${CFITSIO_FILE}
        if [[ $? != 0 ]] ; then
           echo \
@@ -4723,7 +4753,7 @@ function build_cfitsio
           return 1
        fi
     elif [[ -f ${CFITSIO_FILE%.*} ]] ; then
-       info_box "Tarring ${CFITSIO_FILE%.*} . . ." >&3
+       info_box "Tarring ${CFITSIO_FILE%.*} . . ." 1>&3
        tar xf ${CFITSIO_FILE%.*}
        if [[ $? != 0 ]] ; then
           echo \
@@ -4733,7 +4763,7 @@ function build_cfitsio
     fi
 
     #
-    info_box "Configuring CFITSIO . . ." >&3
+    info_box "Configuring CFITSIO . . ." 1>&3
     cd cfitsio
     echo "Invoking command to configure CFITSIO"
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
@@ -4748,7 +4778,7 @@ function build_cfitsio
     #
     # Build CFITSIO
     #
-    info_box "Building CFITSIO . . . (~2 minutes)" >&3
+    info_box "Building CFITSIO . . . (~2 minutes)" 1>&3
     echo "Building CFITSIO"
     $MAKE
     if [[ $? != 0 ]] ; then
@@ -4760,7 +4790,7 @@ function build_cfitsio
         #
         # Make dynamic executable
         #
-        info_box "Creating dynamic libraries for CFITSIO . . ." >&3
+        info_box "Creating dynamic libraries for CFITSIO . . ." 1>&3
         echo "Creating dynamic libraries for CFITSIO"
         if [[ $ABS_PATH == "Yes" ]]; then
            INSTALLNAMEPATH="$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH/lib"
@@ -4789,7 +4819,7 @@ function build_cfitsio
     #
     # Install into the VisIt third party location.
     #
-    info_box "Installing CFITSIO . . ." >&3
+    info_box "Installing CFITSIO . . ." 1>&3
     echo "Installing CFITSIO"
     mkdir "$VISITDIR/cfitsio"
     mkdir "$VISITDIR/cfitsio/$CFITSIO_VERSION"
@@ -4809,6 +4839,115 @@ function build_cfitsio
     return 0
 }
 
+# *************************************************************************** #
+#                         Function 8.10, build_h5part                         #
+# *************************************************************************** #
+
+function build_h5part
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${H5PART_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${H5PART_FILE} . . ." 1>&3
+       uncompress_untar ${H5PART_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${H5PART_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${H5PART_FILE%.*} ]] ; then
+       info_box "Tarring ${H5PART_FILE%.*} . . ." 1>&3
+       tar xf ${H5PART_FILE%.*}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${H5PART_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring H5Part . . ." 1>&3
+    cd ${H5PART_DIR}
+    if [[ "$DO_HDF5" == "yes" ]] ; then
+       export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+       WITHHDF5ARG="--with-hdf5path=$HDF5ROOT"
+       HDF5DYLIB="-L$HDF5ROOT/lib -lhdf5 -lz"
+    else
+       WITHHDF5ARG="--without-hdf5path"
+       HDF5DYLIB=""
+    fi
+    if [[ "$parallel" == "yes" ]] ; then
+       OPTIONAL="--enable-parallel"
+    else
+       OPTIONAL="--disable-parallel"
+    fi
+    echo "Invoking command to configure H5Part"
+    ./configure ${WITHHDF5ARG} ${OPTIONAL} \
+       CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+       --prefix="$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       echo "H5Part configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build H5Part
+    #
+    info_box "Building H5Part . . . (~1 minutes)" 1>&3
+    echo "Building H5Part"
+    $MAKE
+    if [[ $? != 0 ]] ; then
+       echo "H5Part build failed.  Giving up"
+       return 1
+    fi
+    info_box "Installing H5Part . . ." 1>&3
+    echo "Installing H5Part"
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+       echo "H5Part build (make install) failed.  Giving up"
+       return 1
+    fi
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        #
+        # Make dynamic executable
+        #
+        info_box "Creating dynamic libraries for H5Part . . ." 1>&3
+        echo "Creating dynamic libraries for H5Part"
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/h5part/${H5PART_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        libtool -o libH5Part.$SO_EXT -dynamic src/libH5Part.a -lSystem \
+        -twolevel_namespace -undefined dynamic_lookup \
+        -headerpad_max_install_names \
+        -install_name $INSTALLNAMEPATH/libH5Part.$SO_EXT \
+        -compatibility_version $H5PART_COMPATIBILITY_VERSION \
+        -current_version $H5PART_VERSION ${HDF5DYLIB}
+##      gcc -o libH5Part.$SO_EXT -dynamiclib src/*.o -lSystem \
+##         -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
+##         -Wl,-headerpad_max_install_names \
+##         -Wl,-install_name,$INSTALLNAMEPATH/libH5Part.$SO_EXT \
+##         -Wl,-compatibility_version,$H5PART_COMPATIBILITY_VERSION \
+##         -Wl,-current_version,$H5PART_VERSION ${HDF5DYLIB}
+        if [[ $? != 0 ]] ; then
+           echo "Creating dynamic H5Part library failed.  Giving up"
+           return 1
+        fi
+        cp libH5Part.$SO_EXT "$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH/lib"
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/h5part/${H5PART_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/h5part/${H5PART_VERSION}/$VISITARCH"
+    fi
+    cd "$START_DIR"
+    echo "Done with H5Part"
+    return 0
+}
 
 # *************************************************************************** #
 #                          Function 9, build_hostconf                         #
@@ -4830,12 +4969,12 @@ function build_hostconf
     # Set up the config-site file, which gives configure the information it
     # needs about the third party libraries.
     #
-    HOSTCONF="$(hostname).conf"
-    info_box "Creating $HOSTCONF" >&3
-    touch $HOSTCONF
-    echo "##" >> $HOSTCONF
+    export HOSTCONF="$(hostname).conf"
+    info_box "Creating $HOSTCONF" 1>&3
+    echo "##" > $HOSTCONF
     echo "## build_vist generated host.conf" >> $HOSTCONF
     echo "## created: $(date)" >> $HOSTCONF
+    echo "## system: $(uname -a)" >> $HOSTCONF
     echo "## by: $(whoami)" >> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
@@ -4895,11 +5034,11 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo \
 "##############################################################" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## Boxlib" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## Boxlib" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "DEFAULT_BOXLIB2D_INCLUDE=\$VISITHOME/boxlib/$VISITARCH/include/2D" \
         >> $HOSTCONF
@@ -4913,11 +5052,11 @@ function build_hostconf
 "DEFAULT_BOXLIB3D_LIBS=\$VISITHOME/boxlib/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## CFITSIO" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_CFITSIO" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## CFITSIO" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "DEFAULT_CFITSIO_INCLUDE=\$VISITHOME/cfitsio/$CFITSIO_VERSION/$VISITARCH/include" \
         >> $HOSTCONF
@@ -4925,11 +5064,11 @@ function build_hostconf
 "DEFAULT_CFITSIO_LIB=\$VISITHOME/cfitsio/$CFITSIO_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## CGNS" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_CGNS" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## CGNS" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "DEFAULT_CGNS_INCLUDE=\$VISITHOME/cgns/$CGNS_VERSION/$VISITARCH/include" \
         >> $HOSTCONF
@@ -4937,11 +5076,11 @@ function build_hostconf
 "DEFAULT_CGNS_LIB=\$VISITHOME/cgns/$CGNS_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## Exodus" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_EXODUS" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## Exodus" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "DEFAULT_EXODUS_INCLUDES=\$VISITHOME/exodus/$EXODUS_VERSION/$VISITARCH/inc" \
         >> $HOSTCONF
@@ -4949,11 +5088,11 @@ function build_hostconf
 "DEFAULT_EXODUS_LIBRARY=\$VISITHOME/exodus/$EXODUS_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## GDAL" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_GDAL" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## GDAL" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "DEFAULT_GDAL_INCLUDE=\$VISITHOME/gdal/$GDAL_VERSION/$VISITARCH/include" \
         >> $HOSTCONF
@@ -4961,11 +5100,23 @@ function build_hostconf
 "DEFAULT_GDAL_LIB=\$VISITHOME/gdal/$GDAL_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## H5Part" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    if [[ "$DO_H5PART" == "yes" ]] ; then
+        echo \
+"DEFAULT_H5PART_INCLUDE=\$VISITHOME/h5part/$H5PART_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_H5PART_LIB=\$VISITHOME/h5part/$H5PART_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## HDF4" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_HDF4" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## HDF4" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "DEFAULT_HDF4_FLAGS=\$VISITHOME/hdf4/$HDF4_VERSION/$VISITARCH/include" \
         >> $HOSTCONF
@@ -4973,11 +5124,11 @@ function build_hostconf
 "DEFAULT_HDF4_LIBS=\$VISITHOME/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## HDF5" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_HDF5" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## HDF5" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "DEFAULT_HDF5_INCLUDE=\$VISITHOME/hdf5/$HDF5_VERSION/$VISITARCH/include" \
         >> $HOSTCONF
@@ -4985,20 +5136,20 @@ function build_hostconf
 "DEFAULT_HDF5_LIB=\$VISITHOME/hdf5/$HDF5_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## Mili" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_MILI" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## Mili" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "MILI_DIR=\$VISITHOME/mili/$MILI_VERSION/$VISITARCH" \
         >> $HOSTCONF
     fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "## NetCDF" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     if [[ "$DO_NETCDF" == "yes" ]] ; then
-        echo >> $HOSTCONF
-        echo "##" >> $HOSTCONF
-        echo "## NetCDF" >> $HOSTCONF
-        echo "##" >> $HOSTCONF
         echo \
 "DEFAULT_NETCDF_INCLUDE=\$VISITHOME/netcdf/$NETCDF_VERSION/$VISITARCH/include" \
         >> $HOSTCONF
@@ -5007,6 +5158,9 @@ function build_hostconf
         >> $HOSTCONF
     fi
     echo "##" >> $HOSTCONF
+    cd "$START_DIR"
+    echo "Done with host.conf"
+    return 0
 }
 
 # *************************************************************************** #
@@ -5020,7 +5174,7 @@ function build_visit
         # Unzip the file, provided a gzipped file exists.
         #
         if [[ -f ${VISIT_FILE} ]] ; then
-           info_box "Unzipping/untarring ${VISIT_FILE} . . ." >&3
+           info_box "Unzipping/untarring ${VISIT_FILE} . . ." 1>&3
            uncompress_untar ${VISIT_FILE}
            if [[ $? != 0 ]] ; then
               echo \
@@ -5028,7 +5182,7 @@ function build_visit
               return 1
            fi
         elif [[ -f ${VISIT_FILE%.*} ]] ; then
-           info_box "Unzipping ${VISIT_FILE%.*} . . ." >&3
+           info_box "Unzipping ${VISIT_FILE%.*} . . ." 1>&3
            tar xf ${VISIT_FILE%.*}
            if [[ $? != 0 ]] ; then
               echo \
@@ -5065,7 +5219,7 @@ function build_visit
     #
     # Call configure
     # 
-    info_box "Configuring VisIt . . ." >&3
+    info_box "Configuring VisIt . . ." 1>&3
     ./configure ${PARFLAGS}
     if [[ $? != 0 ]] ; then
        echo "VisIt configure failed.  Giving up"
@@ -5076,7 +5230,7 @@ function build_visit
         # Check for version < 8.0.0 (MacOS 10.4, Tiger) for gcc < 4.x
         VER=$(uname -r)
         if (( ${VER%%.*} < 8 )) ; then
-           info_box "Patching VisIt . . ." >&3
+           info_box "Patching VisIt . . ." 1>&3
            cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
            mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
            mv -f Make.tmp databases/Fluent/Makefile
@@ -5085,7 +5239,7 @@ function build_visit
     #
     # Build VisIt
     #
-    info_box "Building VisIt . . . (~50 minutes)" >&3
+    info_box "Building VisIt . . . (~50 minutes)" 1>&3
     $MAKE
     if [[ $? != 0 ]] ; then
        echo "VisIt build failed.  Giving up"
@@ -5123,6 +5277,7 @@ usage () {
   printf "%s %s %s\n" "-n     Build NetCDF from [" $NETCDF_FILE "]"
   printf "%s\n" "-o     Display build log to stdout not to build_visit_log file"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
+  printf "%s %s %s\n" "-r     Build H5Part from [" $H5PART_FILE "]"
   printf "%s\n" "-s     Use the SVN server for the VisIt distribution"
   printf "%s %s %s\n" "       [ svn co $SVN_ROOT_PATH/trunk/src ]"
   printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
@@ -5147,7 +5302,7 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijkl:mnopst:u:v:xzA:BCDEFGHIJKL:MNOPST:U:V:XZ ARG
+while getopts :45a:bcdefghijkl:mnoprst:u:v:xzA:BCDEFGHIJKL:MNOPRST:U:V:XZ ARG
 
 do
     argcur=$ARG
@@ -5172,6 +5327,7 @@ do
       n|N) DO_NETCDF="yes";;
       o|O) LOG_FILE="/dev/tty";;
       p|P) parallel="yes";;
+      r|R) DO_H5PART="yes";;
       s|S) DO_SVN="yes";;
       t|T) VISIT_FILE="$OPTARG"
            USE_VISIT_FILE="yes";;
@@ -5208,6 +5364,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
            "CGNS"     "2.4.3  $CGNS_FILE"      $DO_CGNS \
            "ExodusII" "4.46   $EXODUS_FILE"    $DO_EXODUS \
            "GDAL"     "1.3.2  $GDAL_FILE"      $DO_GDAL \
+           "H5Part"   "1.3.3  $H5PART_FILE"    $DO_H5PART \
            "HDF4"     "2.4.1  $HDF4_FILE"      $DO_HDF4 \
            "HDF5"     "1.6.5  $HDF5_FILE"      $DO_HDF5 \
            "Mili"     "1.10   $MILI_FILE"      $DO_MILI \
@@ -5225,6 +5382,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         DO_CGNS="no"
         DO_EXODUS="no"
         DO_GDAL="no"
+        DO_H5PART="no"
         DO_HDF4="no"
         DO_HDF5="no"
         DO_MILI="no"
@@ -5244,6 +5402,8 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  DO_EXODUS="yes";;
               GDAL)
                  DO_GDAL="yes";;
+              H5Part)
+                 DO_H5PART="yes";;
               HDF4)
                  DO_HDF4="yes";;
               HDF5)
@@ -5630,6 +5790,22 @@ if [[ "$DO_CFITSIO" == "yes" ]] ; then
       echo "Done building CFITSIO"
    fi
 fi
+cd "$START_DIR"
+if [[ "$DO_H5PART" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/h5part/$VISITARCH" ]] ; then
+      echo "Skipping H5Part build.  H5Part is already installed."
+   else
+      echo "Building H5Part (~1 minutes)"
+      build_h5part 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install H5Part.  Bailing out."
+         echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         exit 1
+      fi
+      echo "Done building H5Part"
+   fi
+fi
 
 #
 # Build Silo
@@ -5656,7 +5832,8 @@ fi
 #
 # Create the host.conf file
 #
-build_hostconf
+echo "Creating host.conf"
+build_hostconf 3>&1 >> ${LOG_FILE} 2>&1
 
 #
 # Build the actual VisIt code
@@ -5667,8 +5844,10 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
    build_visit 3>&1 >> ${LOG_FILE} 2>&1
    if [[ $? != 0 ]] ; then
       echo "Unable to build or install VisIt.  Bailing out."
-      echo \
+      if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+         echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+      fi
       exit 1
    fi
    echo "Done building VisIt"
