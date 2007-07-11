@@ -152,6 +152,9 @@
 #    Eric Brugger, Fri Jun 29 09:16:03 PDT 2007
 #    Removed the setting of the DISTRIB variable.
 #
+#    Thomas R. Treadway, Wed Jul 11 16:08:40 PDT 2007
+#    Added links for H5Part
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -186,7 +189,12 @@ LIBSILO=libsilo.@SHLIB_LIBEXT@
 all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys \
-     libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ @CREATE_CFITSIO_LINK@ @CREATE_ITAPS_LINK@
+     libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir \
+     @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ \
+     @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ \
+     @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ \
+     @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ \
+     @CREATE_CFITSIO_LINK@ @CREATE_ITAPS_LINK@ @CREATE_H5PART_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)*
@@ -360,6 +368,10 @@ create_itaps_link:
 	        fi ; \
 	    done ; \
 	done
+
+create_h5part_link:
+	$(RM) libH5Part.@SHLIB_LIBEXT@     
+	ln -s @H5PART_LIBDIR@/libH5Part.@SHLIB_LIBEXT@ .
 
 cleanlinks:
 	find . -type l -maxdepth 1 -exec $(RM) {} \;
