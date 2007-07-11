@@ -707,6 +707,9 @@ dnl
 dnl    Jeremy Meredith, Thu Jun 14 11:22:29 EDT 2007
 dnl    Added the tools/clidriver directory.
 dnl
+dnl    Thomas R. Treadway, Wed Jul 11 16:08:40 PDT 2007
+dnl    Added CREATE_H5PART_LINK for H5Part support.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3180,6 +3183,7 @@ CREATE_EXODUS_LINK=""
 CREATE_BOXLIB2D_LINK=""
 CREATE_BOXLIB3D_LINK=""
 CREATE_CFITSIO_LINK=""
+CREATE_H5PART_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -3218,6 +3222,9 @@ case $SHORT_UNAME in
     if test "$ITAPS_LIB" != "" ; then
         CREATE_ITAPS_LINK="create_itaps_link"
     fi
+    if test "$H5PART_LIB" != "" ; then
+        CREATE_H5PART_LINK="create_h5part_link"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
@@ -3231,6 +3238,7 @@ AC_SUBST(CREATE_EXODUS_LINK)
 AC_SUBST(CREATE_BOXLIB2D_LINK)
 AC_SUBST(CREATE_BOXLIB3D_LINK)
 AC_SUBST(CREATE_CFITSIO_LINK)
+AC_SUBST(CREATE_H5PART_LINK)
 
 #
 # Check for library functions that can work around, or that we have
