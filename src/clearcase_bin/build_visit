@@ -5303,9 +5303,7 @@ usage () {
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
 while getopts :45a:bcdefghijkl:mnoprst:u:v:xzA:BCDEFGHIJKL:MNOPRST:U:V:XZ ARG
-
 do
-    argcur=$ARG
     case $ARG in
       4) DO_HDF4="yes";;
       5) DO_HDF5="yes";;
@@ -5335,8 +5333,8 @@ do
       v|V) VISIT_VERSION=$OPTARG;;
       z|Z) GRAPHICAL="no";;
       x|X) set -vx;;
-      :) echo "$0: \"$argcur\" requires a value"; exit 2;;
-      \?) echo "$0: INVALID option \"$argcur\" at $OPTIND"; exit 2;;
+      :) echo "$0: \"$OPTARG\" requires a value"; exit 2;;
+      \?) echo "$0: INVALID option \"$OPTARG\" at $OPTIND"; exit 2;;
     esac
 done
 # Show a splashscreen. This routine also determines if we have "dialog"
