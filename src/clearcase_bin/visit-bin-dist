@@ -286,6 +286,12 @@
 #
 #    Mark C. Miller, Tue Jun 19 17:26:56 PDT 2007
 #    Added visit_plugin
+#
+#    Eric Brugger, Thu Jul  5 13:07:18 PDT 2007
+#    Modified to copy the multi-threaded qt library (libqt-mt) if the
+#    regular one (libqt) is missing.  Modified so that it would work
+#    correctly with the source tree organization of the subversion repository.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -464,8 +470,8 @@ endif
 #
 # Check that the data directory exists so that the data files can be created.
 #
-if (("$DataFiles" == "TRUE") && (! -e $VisItDir/data)) then
-   echo "The directory $VisItDir/data does not exist."
+if (("$DataFiles" == "TRUE") && (! -e $VisItDir/../data)) then
+   echo "The directory $VisItDir/../data does not exist."
    echo "Distribution will not contain sample data files."
    set DataFiles = "FALSE"
 endif
@@ -492,6 +498,9 @@ if ("$os" == "darwin") then
     set QUILibName = `cd $VisItDir/lib && ls libqui.$SHLIB_SOEXT`
 else
     set QtLibName = `cd $VisItDir/lib && ls libqt.$SHLIB_SOEXT.?.?.?`
+    if ($QtLibName == "") then
+        set QtLibName = `cd $VisItDir/lib && ls libqt-mt.$SHLIB_SOEXT.?.?.?`
+    endif
     set QUILibName = `cd $VisItDir/lib && ls libqui.$SHLIB_SOEXT.?.?.?`
 endif
 
@@ -733,7 +742,7 @@ mkdir distribution/visit/$Version/$visitbindir/libsim/V1/lib
 if ($DataFiles == "TRUE") then
    echo "Creating data generation programs..."
    set pwd = `pwd`
-   cd $VisItDir/data
+   cd $VisItDir/../data
    $Make
    echo "Generating data files..."
    ./globe
