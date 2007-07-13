@@ -74,9 +74,9 @@ clean:
 
 visitmodule:
 	$(PYTHON) build_visitmodule.py build
-	cp `find . -name visitmodule.@SHLIB_SOEXT@` $(libdir)
+	cp `find . -name visitmodule.so` $(libdir)
 	$(PYTHON) build_visitfrontend.py build
-	cp `find . -name visit.@SHLIB_SOEXT@` $(libdir)
+	cp `find . -name visit.so` $(libdir)
 	$(PYTHON) build_visitfrontend.py install
 
 message:

@@ -279,23 +279,45 @@ export LOG_FILE=${LOG_FILE-"build_visit_log"}
 # OPTIONS
 #
 export DO_VISIT="yes"   # "yes" or "no"
+export ON_VISIT="on"   # "yes" or "no"
 export DO_THIRD_PARTY="yes"
+export ON_THIRD_PARTY="on"
 export DO_SVN="no"
+export ON_SVN="off"
 export DO_GROUP="no"
+export ON_GROUP="off"
+export DO_MODULE="no"
+export ON_MODULE="on"
+export DO_JAVA="no"
+export ON_JAVA="on"
 export DO_SILO="yes"
+export ON_SILO="on"
 export DO_BOXLIB="no"
+export ON_BOXLIB="off"
 export DO_CFITSIO="no"
+export ON_CFITSIO="off"
 export DO_CGNS="no"
+export ON_CGNS="off"
 export DO_EXODUS="no"
+export ON_EXODUS="off"
 export DO_GDAL="no"
+export ON_GDAL="off"
 export DO_HDF4="no"
+export ON_HDF4="off"
 export DO_HDF5="no"
+export ON_HDF5="off"
 export DO_MILI="no"
+export ON_MILI="off"
 export DO_NETCDF="no"
+export ON_NETCDF="off"
 export DO_H5PART="no"
+export ON_H5PART="off"
 export ABS_PATH="no"
+export ON_ABS_PATH="off"
 parallel="no"          # "yes" or "no"
+ON_parallel="off"          # "yes" or "no"
 verify="no"
+ON_verify="off"
 PAR_INCLUDE=""
 PAR_LIBS=""
 #PAR_INCLUDE="-I/usr/lib/mpi/gcc/mvapich-gen2/include"
@@ -312,8 +334,10 @@ fi
 # TARBALL LOCATIONS AND VERSIONS
 #
 USE_VISIT_FILE="no"
+ON_USE_VISIT_FILE="off"
 if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
+  ON_USE_VISIT_FILE="on"
 fi
 export VISIT_FILE=${VISIT_FILE-"visit070713.tar.gz"}
 export VISIT_VERSION=${VISIT_VERSION-"1.6.1"}
@@ -394,6 +418,7 @@ DLG_HEIGHT="5"
 DLG_WIDTH="60"
 DLG_WIDTH_WIDE="80"
 GRAPHICAL="yes"
+ON_GRAPHICAL="on"
 
 # *************************************************************************** #
 # Function: uncompress_untar
@@ -1071,14 +1096,14 @@ through this interface or using environment varaibles\n\n"\
 "THIRD_PARTY_PATH, is the location for 3rd party libraries\n"\
 "VISITARCH, unique architecure info, appended to library path installation\n"\
 "Select the variables you wish to modify" 30 $DLG_WIDTH 10 \
-           "OPSYS"            "$OPSYS"             "no" \
-           "ARCH"             "$ARCH"              "no" \
-           "C_COMPILER"       "$C_COMPILER"        "no" \
-           "CXX_COMPILER"     "$CXX_COMPILER"      "no" \
-           "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "no" \
-           "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "no" \
-           "THIRD_PARTY_PATH" "$THIRD_PARTY_PATH"  "no" \
-           "VISITARCH"        "$VISITARCH"         "no" 2> tmp$$
+           "OPSYS"            "$OPSYS"             "off" \
+           "ARCH"             "$ARCH"              "off" \
+           "C_COMPILER"       "$C_COMPILER"        "off" \
+           "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
+           "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
+           "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
+           "THIRD_PARTY_PATH" "$THIRD_PARTY_PATH"  "off" \
+           "VISITARCH"        "$VISITARCH"         "off" 2> tmp$$
            retval=$?
 
            # Remove the extra quoting, new dialog has --single-quoted
@@ -5220,7 +5245,14 @@ function build_visit
     # Call configure
     # 
     info_box "Configuring VisIt . . ." 1>&3
-    ./configure ${PARFLAGS}
+    EXTRA_FEATURES=""
+    if [[ "${DO_MODULE}" == "yes" ]] ; then
+       EXTRA_FEATURES="${EXTRA_FEATURES} --enable-visitmodule"
+    fi
+    if [[ "${DO_JAVA}" == "yes" ]] ; then
+       EXTRA_FEATURES="${EXTRA_FEATURES} --enable-java"
+    fi
+    ./configure ${PARFLAGS} ${EXTRA_FEATURES}
     if [[ $? != 0 ]] ; then
        echo "VisIt configure failed.  Giving up"
        return 1
@@ -5249,7 +5281,7 @@ function build_visit
 }
 
 usage () {
-  printf "Usage: %s [-45bcdefghijkmnopsxz] [-a opt] [-l opt]\n" $0
+  printf "Usage: %s [-45bcdefghijkmnopswxyz] [-a opt] [-l opt]\n" $0
   printf "       [-t opt] [-u opt] [-v opt]\n"
   printf "\n"
   printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
@@ -5291,7 +5323,9 @@ usage () {
   printf "%s\n" "       default assumes 3rd party libraries are to be built"
   printf "%s\n" "       and installed in [./visit]"
   printf "%s %s %s\n" "-v opt The VISIT_VERSION value [" $VISIT_VERSION "]"
+  printf "%s\n" "-w     Build with the VisIt Python module"
   printf "%s\n" "-x     Turn on SHELL debugging"
+  printf "%s\n" "-y     Build with the Java client library"
   printf "%s\n" "-z     Do not bring up a graphical program (i.e. dialog) "
   printf "%s\n" "       to direct the build."
 }
@@ -5302,39 +5336,64 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijkl:mnoprst:u:v:xzA:BCDEFGHIJKL:MNOPRST:U:V:XZ ARG
+while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCDEFGHIJKL:MNOPRST:U:V:WXYZ ARG
+
 do
+    argcur=$ARG
     case $ARG in
-      4) DO_HDF4="yes";;
-      5) DO_HDF5="yes";;
+      4) DO_HDF4="yes"
+         ON_HDF4="on";;
+      5) DO_HDF5="yes"
+         ON_HDF5="on";;
       a|A) VISITARCH="$OPTARG";;
-      b|B) DO_BOXLIB="yes";;
-      c|C) DO_CGNS="yes";;
+      b|B) DO_BOXLIB="yes"
+           ON_BOXLIB="on";;
+      c|C) DO_CGNS="yes"
+           ON_CGNS="on";;
       d|D) C_OPT_FLAGS="$C_OPT_FLAGS -g"
            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g";;
-      e|E) DO_EXODUS="yes";;
-      f|F) DO_CFITSIO="yes";;
-      g|G) DO_GDAL="yes";;
+      e|E) DO_EXODUS="yes"
+           ON_EXODUS="on";;
+      f|F) DO_CFITSIO="yes"
+           ON_CFITSIO="on";;
+      g|G) DO_GDAL="yes"
+           ON_GDAL="on";;
       h|H) usage; exit 2;;
-      i|I) ABS_PATH="yes";;
-      j|J) DO_VISIT="no";;
-      k|K) DO_THIRD_PARTY="no";;
+      i|I) ABS_PATH="yes"
+           ON_ABS_PATH="on";;
+      j|J) DO_VISIT="no"
+           ON_VISIT="off";;
+      k|K) DO_THIRD_PARTY="no"
+           ON_THIRD_PARTY="off";;
       l|L) DO_GROUP="yes"
-           GROUP="$OPTARG";;
-      m|M) DO_MILI="yes";;
-      n|N) DO_NETCDF="yes";;
+           GROUP="$OPTARG"
+           ON_GROUP="on";;
+      m|M) DO_MILI="yes"
+           ON_MILI="on";;
+      n|N) DO_NETCDF="yes"
+           ON_NETCDF="on";;
       o|O) LOG_FILE="/dev/tty";;
-      p|P) parallel="yes";;
-      r|R) DO_H5PART="yes";;
-      s|S) DO_SVN="yes";;
+      p|P) parallel="yes"
+           ON_parallel="on";;
+      r|R) DO_H5PART="yes"
+           ON_H5PART="on";;
+      s|S) DO_SVN="yes"
+           ON_SVN="on";;
       t|T) VISIT_FILE="$OPTARG"
-           USE_VISIT_FILE="yes";;
-      u|U) THIRD_PARTY_PATH="$OPTARG";;
+           USE_VISIT_FILE="yes"
+           ON_USE_VISIT_FILE="on";;
+      u|U) THIRD_PARTY_PATH="$OPTARG"
+           ON_THIRD_PARTY_PATH="on";;
       v|V) VISIT_VERSION=$OPTARG;;
-      z|Z) GRAPHICAL="no";;
+      w|W) DO_MODULE="yes"
+           ON_MODULE="on";;
       x|X) set -vx;;
-      :) echo "$0: \"$OPTARG\" requires a value"; exit 2;;
-      \?) echo "$0: INVALID option \"$OPTARG\" at $OPTIND"; exit 2;;
+      y|Y) DO_JAVA="yes"
+           ON_JAVA="on";;
+      z|Z) GRAPHICAL="no"
+           ON_GRAPHICAL="on";;
+      :) echo "$0: \"$argcur\" requires a value"; exit 2;;
+      \?) echo "$0: INVALID option \"$argcur\" at $OPTIND"; exit 2;;
     esac
 done
 # Show a splashscreen. This routine also determines if we have "dialog"
@@ -5357,18 +5416,18 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
 "specifying the location of your MPI installation when prompted.\n"\
 "Select the build options and optional 3rd party libraries "\
 "to be built and installed" 30 $DLG_WIDTH 12 \
-           "Boxlib"   "2.5    $BOXLIB_FILE"    $DO_BOXLIB \
-           "CFITSIO"  "3006   $CFITSIO_FILE"   $DO_CFITSIO \
-           "CGNS"     "2.4.3  $CGNS_FILE"      $DO_CGNS \
-           "ExodusII" "4.46   $EXODUS_FILE"    $DO_EXODUS \
-           "GDAL"     "1.3.2  $GDAL_FILE"      $DO_GDAL \
-           "H5Part"   "1.3.3  $H5PART_FILE"    $DO_H5PART \
-           "HDF4"     "2.4.1  $HDF4_FILE"      $DO_HDF4 \
-           "HDF5"     "1.6.5  $HDF5_FILE"      $DO_HDF5 \
-           "Mili"     "1.10   $MILI_FILE"      $DO_MILI \
-           "NetCDF"   "3.6.0  $NETCDF_FILE"    $DO_NETCDF \
-           "parallel" "enable parallel"        $parallel \
-           "verify"   "check/change arguments" $verify  2> tmp$$
+           "Boxlib"   "2.5    $BOXLIB_FILE"    $ON_BOXLIB \
+           "CFITSIO"  "3006   $CFITSIO_FILE"   $ON_CFITSIO \
+           "CGNS"     "2.4.3  $CGNS_FILE"      $ON_CGNS \
+           "ExodusII" "4.46   $EXODUS_FILE"    $ON_EXODUS \
+           "GDAL"     "1.3.2  $GDAL_FILE"      $ON_GDAL \
+           "H5Part"   "1.3.3  $H5PART_FILE"    $ON_H5PART \
+           "HDF4"     "2.4.1  $HDF4_FILE"      $ON_HDF4 \
+           "HDF5"     "1.6.5  $HDF5_FILE"      $ON_HDF5 \
+           "Mili"     "1.10   $MILI_FILE"      $ON_MILI \
+           "NetCDF"   "3.6.0  $NETCDF_FILE"    $ON_NETCDF \
+           "parallel" "enable parallel"        $ON_parallel \
+           "verify"   "check/change arguments" $ON_verify  2> tmp$$
     retval=$?
 
     # Remove the extra quoting, new dialog has --single-quoted
