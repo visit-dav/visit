@@ -146,28 +146,28 @@ mkdir /export/scratch/$user/crier/visitbuild
 mv crier_$dist.tar.gz /export/scratch/$user/crier/visitbuild/$dist.tar.gz
 cd /export/scratch/$user/crier/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
+cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/gapps/visit/gcc/3.2.3/linux_redhat7/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
-make -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ..
-cd ..
+env CXXFLAGS=-O2 ./configure >> ../../buildlog 2>&1
+make -j 4 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ../..
+cd ../..
 rm -f resultlog
 echo "        build of visit on crier"        > resultlog 2>&1
 echo "       -------------------------"       >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
  
 if [ $crier = true ]
@@ -197,32 +197,32 @@ mkdir /export/scratch/$user/sunset/visitbuild
 mv sunset_$dist.tar.gz /export/scratch/$user/sunset/visitbuild/$dist.tar.gz
 cd /export/scratch/$user/sunset/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
+cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/gnu/gcc-3.2/lib
 export LD_LIBRARY_PATH
-env CXXFLAGS=-O2 ./configure >> ../buildlog 2>&1
+env CXXFLAGS=-O2 ./configure >> ../../buildlog 2>&1
 cp /usr/local/gnu/gcc-3.2/lib/libgcc_s.so.1 lib
 cp /usr/local/gnu/gcc-3.2/lib/libstdc++.so.5 lib
 cd databases/Fluent
 sed "s/\\\$(CXXFLAGSORIG)/-D_LARGEFILE64_SOURCE -Wall -Wno-sign-compare -Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
 cd ../..
-make -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.sunos5.tar.gz ..
-cd ..
+make -j 4 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../../buildlog 2>&1
+mv visit\$ver2.sunos5.tar.gz ../..
+cd ../..
 echo "        build of visit on sunset"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $sunset = true ]
@@ -252,28 +252,28 @@ mkdir /nfs/tmp0/$user/sc/visitbuild
 mv sc_$dist.tar.gz /nfs/tmp0/$user/sc/visitbuild/$dist.tar.gz
 cd /nfs/tmp0/$user/sc/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
+cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 MAKE=gmake ./configure --disable-bilib --enable-parallel >> ../buildlog 2>&1
+env CXXFLAGS=-O2 MAKE=gmake ./configure --disable-bilib --enable-parallel >> ../../buildlog 2>&1
 cd databases/Fluent
 sed "s/\\\$(CXXFLAGSORIG)/-Wno-deprecated/" Makefile > Makefile+;rm Makefile;mv Makefile+ Makefile
 cd ../..
-gmake -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
-mv visit\$ver2.osf1.tar.gz ..
-cd ..
+gmake -j 3 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
+mv visit\$ver2.osf1.tar.gz ../..
+cd ../..
 echo "        build of visit on sc"           > resultlog 2>&1
 echo "       ----------------------"          >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $sc = true ]
@@ -305,25 +305,25 @@ mv purple_$dist.tar.gz /p/gscratch3/$user/purple/visitbuild/$dist.tar.gz
 cd /p/gscratch3/$user/purple/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 mv $dist ${dist}_32
-cd ${dist}_32
+cd ${dist}_32/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 OBJECT_MODE=32
 export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/purple1441_32.conf >> ../buildlog 2>&1
-gmake -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
-mv visit\$ver2.aix.tar.gz ..
-cd ..
+env CXXFLAGS=-O2 MAKE=gmake ./configure --with-config=config-site/purple1441_32.conf >> ../../buildlog 2>&1
+gmake -j 4 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
+mv visit\$ver2.aix.tar.gz ../..
+cd ../..
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
 cd $dist
 OBJECT_MODE=64
 export OBJECT_MODE
-env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../buildlog 2>&1
-gmake -j 4 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -make gmake >> ../buildlog 2>&1
-mv visit\$ver2.aix64.tar.gz ..
-cd ..
+env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../../buildlog 2>&1
+gmake -j 4 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
+mv visit\$ver2.aix64.tar.gz ../..
+cd ../..
 echo "        build of visit on purple"       > resultlog 2>&1
 echo "       --------------------------"      >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -331,21 +331,21 @@ ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "            32 bit build"               >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls ${dist}_32/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls ${dist}_32/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls ${dist}_32/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls ${dist}_32/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls ${dist}_32/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls ${dist}_32/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls ${dist}_32/plugins/databases/libI* | sed "s/${dist}_32\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls ${dist}_32/src/plugins/databases/libI* | sed "s/${dist}_32\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "            64 bit build"               >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $purple = true ]
@@ -375,25 +375,25 @@ mkdir /usr/tmp/$user/lilac/visitbuild
 mv lilac_$dist.tar.gz /usr/tmp/$user/lilac/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/lilac/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
+cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux.tar.gz ..
-cd ..
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
+make -j 3 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ../..
+cd ../..
 echo "        build of visit on lilac"        > resultlog 2>&1
 echo "       -------------------------"       >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $lilac = true ]
@@ -425,26 +425,26 @@ mkdir /usr/tmp/$user/gauss/visitbuild
 mv gauss_$dist.tar.gz /usr/tmp/$user/gauss/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/gauss/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
+cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-make -j 3 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist -switch ib >> ../buildlog 2>&1
-mv visit\$ver2.linux-x86_64-ib.tar.gz ..
-cd ..
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
+make -j 3 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist -switch ib >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64-ib.tar.gz ../..
+cd ../..
 rm -f resultlog
 echo "        build of visit on gauss"        > resultlog 2>&1
 echo "       -------------------------"       >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $gauss = true ]
@@ -476,26 +476,26 @@ mkdir /usr/tmp/$user/hopi/visitbuild
 mv hopi_$dist.tar.gz /usr/tmp/$user/hopi/visitbuild/$dist.tar.gz
 cd /usr/tmp/$user/hopi/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
-cd $dist
+cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-env CXXFLAGS=-O2 ./configure --enable-parallel >> ../buildlog 2>&1
-make -j 6 >> ../buildlog 2>&1
-clearcase_bin/visit-bin-dist >> ../buildlog 2>&1
-mv visit\$ver2.linux-x86_64.tar.gz ..
-cd ..
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../../buildlog 2>&1
+mv visit\$ver2.linux-x86_64.tar.gz ../..
+cd ../..
 rm -f resultlog
 echo "        build of visit on hopi"         > resultlog 2>&1
 echo "       ------------------------"        >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
-echo "number of database plugins = "\`ls $dist/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls $dist/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls $dist/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
-ls $dist/plugins/databases/libI* | sed "s/$dist\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 EOF
 
 if [ $hopi = true ]
