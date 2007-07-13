@@ -176,6 +176,10 @@
 #     Cleanup and fix of many small errors
 #     Addition of H5Part third party library
 #
+#     Thomas R. Treadway, Fri Jul 13 11:19:32 PDT 2007
+#     Added options for VisIt builds with --enable-visitmodule and
+#     --enable-java
+#
 # *****************************************************************************
 
 
@@ -339,7 +343,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_FILE=${VISIT_FILE-"visit070713.tar.gz"}
+export VISIT_FILE=${VISIT_FILE-"visit070702.tar.gz"}
 export VISIT_VERSION=${VISIT_VERSION-"1.6.1"}
 
 export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
