@@ -47,13 +47,14 @@
 /*
  * Platform specific includes.
  */
-#if defined(__APPLE__)
-;
-#elif defined(_WIN32)
+#if defined(_WIN32)
 ;
 #else
 #include <dlfcn.h>
 typedef void* DynamicLibraryHandle;
+#endif
+#if defined(__APPLE__)
+#include <stdlib.h>
 #endif
 
 /*
@@ -72,9 +73,7 @@ static VisItModuleState *moduleState = NULL;
 /*
  * Define dynamic library access functions.
  */
-#if defined(__APPLE__)
-;
-#elif defined(_WIN32)
+#if defined(_WIN32)
 ;
 #else
 void *
@@ -271,12 +270,14 @@ visit_frontend_Launch(PyObject *self, PyObject *args)
     char *visitProgram = NULL, *LIBPATH = NULL;
     PyCFunction func = NULL;
     static char *visitProgramDefault = "visit";
-#if defined(__APPLE__)
-    static const char *moduleFile = "/visitmodule.dylib";
-#elif defined(_WIN32)
+#if defined(_WIN32)
     static const char *moduleFile = "/visitmodule.dll";
 #else
     static const char *moduleFile = "/visitmodule.so";
+#endif
+#if defined(__APPLE__)
+    int length;
+    char *envcommand = NULL, *VISITHOME = NULL;
 #endif
 
     /* Return in the unlikely event that moduleState is NULL. */
@@ -314,6 +315,29 @@ visit_frontend_Launch(PyObject *self, PyObject *args)
     {
         fprintf(stderr, "LIBPATH = %s\n", LIBPATH);
     }
+#endif
+
+#if defined(__APPLE__)
+    /* use LIBPATH but truncate the "/lib" */
+    length=strlen(LIBPATH) - 4;
+    VISITHOME=(char *)malloc(length);
+    strncpy(VISITHOME, LIBPATH, length);
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "VISITHOME = %s\n", VISITHOME);
+#endif
+    envcommand = (char*)malloc(
+      strlen("DYLD_LIBRARY_PATH=") + strlen(VISITHOME) + strlen("/lib:") +
+      strlen(VISITHOME) + strlen("/plugins/operators:") +
+      strlen(VISITHOME) + strlen("/plugins/plots") + 1);
+    sprintf(envcommand, 
+      "DYLD_LIBRARY_PATH=%s/lib:%s/plugins/operators:%s/plugins/plots",
+       VISITHOME, VISITHOME, VISITHOME);
+#ifdef DEBUG_PRINT
+    fprintf(stderr, "envcommand = %s\n", envcommand);
+#endif
+    putenv(envcommand);
+    free(VISITHOME);
+    free(envcommand);
 #endif
 
     /* Save off the name of the module file that we will have to load
