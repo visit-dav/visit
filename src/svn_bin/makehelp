@@ -31,6 +31,10 @@
 #  Modified to work correctly with source tree organization in SVN repo.
 #  Modified frameconvert dir name to include user's name.
 #
+#  Eric Brugger, Fri Jul  6 16:22:34 PDT 2007
+#  Made another modification so that it would work correctly with the
+#  source tree organization of the subversion repository.
+#
 ###############################################################################
 
 set MIFOnly = "FALSE"
@@ -87,7 +91,6 @@ endif
 if("$haveFrame" != "") then
     echo "ERROR: fmbatch not found! It is required to convert the User manual"
     echo "       into MIF files which are then turned into help HTML files"
-    echo "       Try running this script on hyper."
     exit
 endif
 
@@ -95,8 +98,8 @@ endif
 set inputFiles = "Intro WorkingWithFiles Plots Operators SavingPrinting VisualizationWindows Subsetting Quantitative MakingItPretty Animation InteractiveTools MultipleDatabaseAndWindows RemoteVisualization Preferences Help"
 set startDir = `pwd`
 set outputPath = "/tmp/frameconvert_$USER"
-set inputPath = "$startDir/../docs/UserManual"
-set helpPath = "$startDir/help"
+set inputPath = "$startDir/docs/UserManual"
+set helpPath = "$startDir/src/help"
 set fmCommands = "$outputPath/fmcommands"
 
 # First make sure the mif2help tool is built.

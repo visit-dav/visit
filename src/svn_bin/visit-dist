@@ -98,12 +98,16 @@ $0 = shift @ARGV;
 #     Mark C. Miller, Tue Jun 19 09:09:42 PDT 2007
 #     Added support for 'makehelp'
 #
+#     Eric Brugger, Thu Jul  5 13:11:23 PDT 2007
+#     Modified so that it would work correctly with the source tree
+#     organization of the subversion repository.
+#
 
 require "newgetopt.pl";
 
 $USAGE = "USAGE: $0 dist_file [-withhelp] [-withtest]\n";
 
-if (! -d "engine")
+if (! -d "src")
 {
     print STDERR "Invoke $0 from the the root of the source tree.\n";
     print STDERR $USAGE;
@@ -119,11 +123,11 @@ if (! -d "engine")
 #
 if($opt_withhelp)
 {
-    system("./svn_bin/makehelp");
+    system("./src/svn_bin/makehelp");
 }
 
 $dist = "";
-$filelist = "./svn_bin/source_files";
+$filelist = "./src/svn_bin/source_files";
 
 $fulldist = shift;
 if (!defined($fulldist))
