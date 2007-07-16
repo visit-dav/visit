@@ -292,6 +292,10 @@
 #    regular one (libqt) is missing.  Modified so that it would work
 #    correctly with the source tree organization of the subversion repository.
 #
+#    Thomas R. Treadway, Mon Jul 16 14:44:47 PDT 2007
+#    Added DYLD_LIBRARY_PATH so Mac can find libraries when generating
+#    data files, now that the execuate path has changed.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -745,6 +749,9 @@ if ($DataFiles == "TRUE") then
    cd $VisItDir/../data
    $Make
    echo "Generating data files..."
+   if ("$os" == "darwin") then
+      setenv DYLD_LIBRARY_PATH $VisItDir/lib
+   endif
    ./globe
    ./multi_test
    ./testall
@@ -755,6 +762,9 @@ if ($DataFiles == "TRUE") then
    if (-e ./correlationtest) then
       ./correlationtest
        cp db{A,B}00.pdb $pwd/distribution/visit/data
+   endif
+   if ("$os" == "darwin") then
+      unsetenv DYLD_LIBRARY_PATH
    endif
    cd $pwd/distribution/visit/data
    cd $pwd
