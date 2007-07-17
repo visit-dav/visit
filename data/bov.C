@@ -33,6 +33,9 @@
 * OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 * DAMAGE.
 *
+// Modifications:
+//   Thomas R. Treadway, Mon Jul 16 13:45:29 PDT 2007
+//   quad_t conflicts with quad_t in #include <sys/types.h>
 *****************************************************************************/
 
 #include <math.h>
@@ -252,21 +255,21 @@ public:
     int data[3];
 };
 
-class quad_t
+class my_quad_t
 {
 public:
-    quad_t() { data[0] = data[1] = data[2] = data[3] = 0; }
-    quad_t(int v) { data[0] = data[1] = data[2] = data[3] = v; }
-    quad_t(const quad_t &obj)
+    my_quad_t() { data[0] = data[1] = data[2] = data[3] = 0; }
+    my_quad_t(int v) { data[0] = data[1] = data[2] = data[3] = v; }
+    my_quad_t(const my_quad_t &obj)
     { 
         data[0] = obj.data[0];
         data[1] = obj.data[1];
         data[2] = obj.data[2];
         data[3] = obj.data[3];
     }
-    ~quad_t() { ; }
+    ~my_quad_t() { ; }
 
-    quad_t operator = (const quad_t &obj)
+    my_quad_t operator = (const my_quad_t &obj)
     {
         data[0] = obj.data[0];
         data[1] = obj.data[1];
@@ -275,7 +278,7 @@ public:
         return *this;
     }
 
-    quad_t operator + (int val)
+    my_quad_t operator + (int val)
     {
         data[0] += val;
         data[1] += val;
@@ -381,6 +384,9 @@ write_multi_bov()
 //   Brad Whitlock, Fri Oct 20 15:48:01 PST 2006
 //   I made it write out a multiblock dataset.
 //
+//   Thomas R. Treadway, Mon Jul 16 13:45:29 PDT 2007
+//   quad_t conflicts with quad_t in #include <sys/types.h>
+//
 // ****************************************************************************
 
 int
@@ -406,7 +412,7 @@ main(int argc, char *argv[])
     write_BOV_types("TRIPLE", "INT", 3, tdata, false);
     delete [] tdata;
 
-    quad_t *qdata = new quad_t[nels + offset];
+    my_quad_t *qdata = new my_quad_t[nels + offset];
     write_BOV_types("QUAD", "INT", 4, qdata, false);
     delete [] qdata;
 
