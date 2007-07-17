@@ -72,15 +72,20 @@
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
 //
+// Modifications:
+//    Jeremy Meredith, Tue Jul 17 11:29:24 EDT 2007
+//    Converted to a simple observer so we can watch not only the 
+//    export atts but also the DB plugin info atts.
+//
 // ****************************************************************************
 
 QvisExportDBWindow::QvisExportDBWindow(
-    ExportDBAttributes *subj, const char *caption, const char *shortName,
-    QvisNotepadArea *notepad) :
-    QvisPostableWindowObserver(subj, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton)
+    const char *caption, const char *shortName, QvisNotepadArea *notepad) :
+    QvisPostableWindowSimpleObserver(caption, shortName, notepad,
+                                QvisPostableWindowSimpleObserver::ApplyButton)
 {
-    exportDBAtts = subj;
+    exportDBAtts = NULL;
+    dbPluginInfoAtts = NULL;
 }
 
 // ****************************************************************************
@@ -99,6 +104,57 @@ QvisExportDBWindow::QvisExportDBWindow(
 QvisExportDBWindow::~QvisExportDBWindow()
 {
 }
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::ConnectSubjects
+//
+// Purpose: 
+//   This function connects subjects so that the window observes them.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July 17, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisExportDBWindow::ConnectSubjects(ExportDBAttributes *edb,
+                                    DBPluginInfoAttributes *dbp)
+{
+    exportDBAtts = edb;
+    exportDBAtts->Attach(this);
+
+    dbPluginInfoAtts = dbp;
+    dbPluginInfoAtts->Attach(this);
+}
+
+
+// ****************************************************************************
+// Method: QvisExportDBWindow::SubjectRemoved
+//
+// Purpose: 
+//   This function is called when a subject is removed.
+//
+// Arguments:
+//   TheRemovedSubject : The subject being removed.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July 17, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisExportDBWindow::SubjectRemoved(Subject *TheRemovedSubject)
+{
+    if (TheRemovedSubject == exportDBAtts)
+        exportDBAtts = 0;
+    else if (TheRemovedSubject == dbPluginInfoAtts)
+        dbPluginInfoAtts = 0;
+}
+
 
 // ****************************************************************************
 // Method: QvisExportDBWindow::CreateWindowContents
@@ -123,6 +179,10 @@ QvisExportDBWindow::~QvisExportDBWindow()
 //   Brad Whitlock, Thu Nov 2 17:57:52 PST 2006
 //   I changed "File type" to "Export to" since we may not be exporting
 //   to a file after all.
+//
+//   Jeremy Meredith, Tue Jul 17 11:28:43 EDT 2007
+//   Just leave the file format combo box empty.  It will update when
+//   necessary on demand now that we observe DB plugin info.
 //
 // ****************************************************************************
 
@@ -167,14 +227,8 @@ QvisExportDBWindow::CreateWindowContents()
     infoLayout->addWidget(directoryParent, 2, 1);
 
     fileFormatComboBox = new QComboBox(false, infoBox, "fileFormatComboBox");
+    fileFormatComboBox->clear();
   
-    DBPluginInfoAttributes *dbPluginInfoAtts = GetViewerState()->GetDBPluginInfoAttributes();
-    int nTypes = dbPluginInfoAtts->GetTypes().size();
-    for (int i = 0 ; i < nTypes ; i++)
-        if (dbPluginInfoAtts->GetHasWriter()[i] > 0)
-            fileFormatComboBox->insertItem(dbPluginInfoAtts->GetTypes()[i].c_str());
-    fileFormatComboBox->setCurrentItem(0);
-        
     connect(fileFormatComboBox, SIGNAL(activated(int)),
            this, SLOT(fileFormatChanged(int)));
     QLabel *formatLabel = new QLabel(fileFormatComboBox, "Export to",
@@ -231,11 +285,23 @@ QvisExportDBWindow::CreateWindowContents()
 //   Brad Whitlock, Thu Nov 2 18:03:12 PST 2006
 //   Added code to disable the directory when we're saving as SimV1.
 //
+//   Jeremy Meredith, Tue Jul 17 11:28:12 EDT 2007
+//   Changed to observe dbPluginInfoAtts and update file format combo
+//   box as necessary.
+//
 // ****************************************************************************
 
 void
 QvisExportDBWindow::UpdateWindow(bool doAll)
 {
+    if (dbPluginInfoAtts == 0 || exportDBAtts == 0)
+        return;
+
+    if (SelectedSubject() == dbPluginInfoAtts)
+    {
+        doAll = true;
+    }
+
     int  i, j;
 
     QString temp;
@@ -259,8 +325,6 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
                 int count = fileFormatComboBox->count();
                 for (j = count-1 ; j >= 0 ; j--)
                     fileFormatComboBox->removeItem(j);
-                DBPluginInfoAttributes *dbPluginInfoAtts =
-                                           GetViewerState()->GetDBPluginInfoAttributes();
                 int nTypes = dbPluginInfoAtts->GetTypes().size();
                 int curItem = -1;
                 int nItems = 0;
@@ -484,16 +548,26 @@ QvisExportDBWindow::processDirectoryNameText()
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
 //
+// Modifications:
+//    Jeremy Meredith, Tue Jul 17 11:30:54 EDT 2007
+//    Allow for observed subjects not yet being connected and for an empty
+//    file format combo box.  Assume we're directly observing the DB
+//    plugin info atts.
+//
 // ****************************************************************************
 
 void
 QvisExportDBWindow::fileFormatChanged(int index)
 {
+    if (dbPluginInfoAtts == 0 || exportDBAtts == 0)
+        return;
+
     QString tmp = fileFormatComboBox->currentText();
+    if (tmp.isNull())
+        return;
+
     exportDBAtts->SetDb_type(tmp.latin1());
     
-    DBPluginInfoAttributes *dbPluginInfoAtts =
-                                           GetViewerState()->GetDBPluginInfoAttributes();
     int ntypes = dbPluginInfoAtts->GetTypes().size();
     for (int i = 0 ; i < ntypes ; i++)
     {

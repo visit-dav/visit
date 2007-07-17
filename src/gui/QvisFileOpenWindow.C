@@ -364,6 +364,11 @@ QvisFileOpenWindow::CreateWindowContents()
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//    Jeremy Meredith, Tue Jul 17 11:34:59 EDT 2007
+//    Store the DB plugin info atts that we obtain in a map based on
+//    the host name.  This is because DBPluginInfoAttributes follows
+//    the active plots, but we want to show the ones for the host
+//    chosen in this window's combo box.
 //
 // ****************************************************************************
 
@@ -383,7 +388,10 @@ QvisFileOpenWindow::UpdateWindow(bool doAll)
         UpdateHostComboBox();
 
     if (SelectedSubject() == dbplugins || doAll)
+    {
+        dbpluginmap[dbplugins->GetHost()] = *dbplugins;
         UpdateFileFormatComboBox();
+    }
 }
 
 // ****************************************************************************
@@ -2063,18 +2071,32 @@ QvisFileOpenWindow::closeEvent(QCloseEvent *e)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August  9, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Jul 17 11:39:10 EDT 2007
+//    Use the DB plugin info atts obtained for this host.  This is because
+//    DBPluginInfoAttributes now follows the active plots, but we want to
+//    show the ones for the host chosen in this window's combo box.
+//
 // ****************************************************************************
 void
 QvisFileOpenWindow::UpdateFileFormatComboBox()
 {
+    if (dbpluginmap.count(fileServer->GetHost().c_str()) == 0)
+    {
+        return;
+    }
+
+    const DBPluginInfoAttributes &plugins =
+        dbpluginmap[fileServer->GetHost().c_str()];
+
     QString oldtype = fileFormatComboBox->currentText();
 
     fileFormatComboBox->clear();
-    int nTypes = dbplugins->GetTypes().size();
+    int nTypes = plugins.GetTypes().size();
     fileFormatComboBox->insertItem("Guess from file name/extension");
     for (int i = 0 ; i < nTypes ; i++)
     {
-        fileFormatComboBox->insertItem(dbplugins->GetTypes()[i].c_str());
+        fileFormatComboBox->insertItem(plugins.GetTypes()[i].c_str());
     }
 
     if (!oldtype.isNull())

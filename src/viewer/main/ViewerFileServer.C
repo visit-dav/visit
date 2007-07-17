@@ -1193,6 +1193,11 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Added SSH tunneling option to MDServerProxy::Create, and set it to false.
 //    If we need to tunnel, the VCL will do the host/port translation for us.
 //
+//    Jeremy Meredith, Mon Jul 16 17:11:15 EDT 2007
+//    Added call to UpdateDBPluginInfo after the server is started just to
+//    get an initial set of DB plugin info.  It reverts to the previous
+//    active one after we've gotten the initial set.
+//
 // ****************************************************************************
 
 void
@@ -1248,6 +1253,14 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         // Add the information about the new server to the 
         // server map.
         servers[host] = new ServerInfo(newServer, args);
+
+        // Once we start a new server, we need to update the current
+        // DB plugin list with data from this machine.  Revert to the
+        // old one after we have the initial set.
+        string oldhost = dbPluginInfoAtts->GetHost();
+        UpdateDBPluginInfo(host);
+        if (oldhost != "")
+            UpdateDBPluginInfo(oldhost);
     }
     CATCH(BadHostException)
     {
@@ -1729,6 +1742,12 @@ ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failC
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
 //
+// Modifications:
+//    Jeremy Meredith, Mon Jul 16 17:11:49 EDT 2007
+//    Added a "host" member to the DBPluginInfoAttributes, so observers
+//    can tell which host the attributes apply to if they weren't the
+//    ones that requested the update.
+//
 // ****************************************************************************
 void
 ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
@@ -1736,6 +1755,7 @@ ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
     if(servers.find(host) != servers.end())
     {
         *dbPluginInfoAtts = *(servers[host]->proxy->GetDBPluginInfo());
+        dbPluginInfoAtts->SetHost(host);
         dbPluginInfoAtts->Notify();
     }
 }
