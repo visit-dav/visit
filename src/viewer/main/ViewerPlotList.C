@@ -3000,6 +3000,9 @@ ViewerPlotList::CopyFrom(const ViewerPlotList *pl, bool copyPlots)
 //    I added code that makes the plot aware that it belonges to this
 //    plot list.
 //
+//    Jeremy Meredith, Mon Jul 16 17:14:43 EDT 2007
+//    Update DBPluginInfo to follow the host for a selected plot.
+//
 // ****************************************************************************
 
 int
@@ -3092,6 +3095,12 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
                    << "plot " << plot->GetPlotName() << endl;
         }
     }
+
+    //
+    // DBPluginInfo is currently expected to follow the selected plot's host.
+    //
+    ViewerFileServer::Instance()->
+        UpdateDBPluginInfo(plots[plotId].plot->GetHostName());
 
     return plotId;
 }
@@ -3495,6 +3504,9 @@ ViewerPlotList::DeletePlot(ViewerPlot *whichOne, bool doUpdate)
 //    Brad Whitlock, Tue Mar 20 12:14:10 PDT 2007
 //    Added code to remove the plot's annotation object.
 //
+//    Jeremy Meredith, Mon Jul 16 17:14:43 EDT 2007
+//    Update DBPluginInfo to follow the host for a selected plot.
+//
 // ****************************************************************************
 
 void
@@ -3572,6 +3584,15 @@ ViewerPlotList::DeleteActivePlots()
     // Update the frame.
     //
     UpdateFrame();
+
+    //
+    // DBPluginInfo is currently expected to follow the selected plot's host.
+    //
+    if (nPlots > 0)
+    {
+        ViewerFileServer::Instance()->
+            UpdateDBPluginInfo(plots[0].plot->GetHostName());
+    }
 }
 
 // ****************************************************************************
@@ -4808,6 +4829,9 @@ ViewerPlotList::SILRestrictionKey(const std::string &host, const std::string &db
 //    Brad Whitlock, Fri Oct 24 16:19:58 PST 2003
 //    I added code to update the expression list.
 //
+//    Jeremy Meredith, Mon Jul 16 17:14:43 EDT 2007
+//    Update DBPluginInfo to follow the host for a selected plot.
+//
 // ****************************************************************************
 
 void
@@ -4860,6 +4884,15 @@ ViewerPlotList::SetActivePlots(const intVector &activePlots,
     UpdateSILRestrictionAtts();
     UpdatePlotAtts();
     UpdateExpressionList(true);
+
+    //
+    // DBPluginInfo is currently expected to follow the selected plot's host.
+    //
+    if (activePlots.size() > 0 && activePlots[0] < nPlots)
+    {
+        ViewerFileServer::Instance()->
+            UpdateDBPluginInfo(plots[activePlots[0]].plot->GetHostName());
+    }
 }
 
 // ****************************************************************************

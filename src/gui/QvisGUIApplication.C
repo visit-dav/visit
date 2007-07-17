@@ -2785,6 +2785,9 @@ QvisGUIApplication::SetupWindows()
 //   Brad Whitlock, Fri Jun 15 09:40:48 PDT 2007
 //   Added Macro window.
 //
+//   Jeremy Meredith, Tue Jul 17 11:34:02 EDT 2007
+//   Made ExportDB window observe both the export atts and DB plugin info.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -2978,8 +2981,13 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_EXPORT_DB:
         // Create the export DB window.
-        win = new QvisExportDBWindow(GetViewerState()->GetExportDBAttributes(),
-           windowNames[i], "Export Database", mainWin->GetNotepad());
+        {
+         QvisExportDBWindow *expWin = new QvisExportDBWindow(windowNames[i],
+                                     "Export Database", mainWin->GetNotepad());
+         expWin->ConnectSubjects(GetViewerState()->GetExportDBAttributes(),
+                                 GetViewerState()->GetDBPluginInfoAttributes());
+         win = expWin;
+        }
         break;
     case WINDOW_COMMAND:
         // Create the command window.

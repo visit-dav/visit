@@ -38,7 +38,7 @@
 #ifndef QVIS_EXPORT_DB_WINDOW_H
 #define QVIS_EXPORT_DB_WINDOW_H
 #include <gui_exports.h>
-#include <QvisPostableWindowObserver.h>
+#include <QvisPostableWindowSimpleObserver.h>
 
 // Forward declarations.
 class QCheckBox;
@@ -50,6 +50,7 @@ class QPushButton;
 class QSlider;
 class QvisVariableButton;
 class ExportDBAttributes;
+class DBPluginInfoAttributes;
 
 // ****************************************************************************
 // Class: QvisExportDBWindow
@@ -70,16 +71,24 @@ class ExportDBAttributes;
 //   Brad Whitlock, Thu Nov 2 18:01:00 PST 2006
 //   I made a widget be a class member so I can disable it.
 //
+//   Jeremy Meredith, Tue Jul 17 11:29:24 EDT 2007
+//   Converted to a simple observer so we can watch not only the 
+//   export atts but also the DB plugin info atts.
+//
 // ****************************************************************************
 
-class GUI_API QvisExportDBWindow : public QvisPostableWindowObserver
+class GUI_API QvisExportDBWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisExportDBWindow(ExportDBAttributes *subj, const char *caption = 0,
+    QvisExportDBWindow(const char *caption = 0,
                    const char *shortName = 0,
                    QvisNotepadArea *notepad = 0);
     virtual ~QvisExportDBWindow();
+
+    virtual void SubjectRemoved(Subject *TheRemovedSubject);
+    virtual void ConnectSubjects(ExportDBAttributes *edb,
+                                 DBPluginInfoAttributes *dbp);
 public slots:
     virtual void apply();
 protected:
@@ -97,12 +106,14 @@ protected slots:
     void addVariable(const QString &);
     void selectOutputDirectory();
 private:
+    DBPluginInfoAttributes *dbPluginInfoAtts;
+    ExportDBAttributes     *exportDBAtts;
+
     QLineEdit           *filenameLineEdit;
     QLineEdit           *directoryNameLineEdit;
     QPushButton         *directorySelectButton;
     QLabel              *directoryNameLabel;
     QComboBox           *fileFormatComboBox;
-    ExportDBAttributes  *exportDBAtts;
     QvisVariableButton  *varsButton;
     QLineEdit           *varsLineEdit;
 };

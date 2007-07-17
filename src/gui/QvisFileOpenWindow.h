@@ -73,6 +73,10 @@ class DBPluginInfoAttributes;
 //   I changed the window so it can be used as a file selection window in
 //   other contexts.
 //
+//   Jeremy Meredith, Mon Jul 16 17:20:26 EDT 2007
+//   I added support for DBPluginInfoAttributes to be associated with
+//   separate hosts.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileOpenWindow : public QvisDelayedWindowSimpleObserver
@@ -144,6 +148,7 @@ private:
     HostProfileList        *profiles;
     DBPluginInfoAttributes *dbplugins;
     UsageMode               usageMode;
+    std::map<std::string, DBPluginInfoAttributes> dbpluginmap;
 
     QComboBox       *hostComboBox;
     QComboBox       *pathComboBox;
