@@ -123,7 +123,7 @@ if (! -d "src")
 #
 if($opt_withhelp)
 {
-    system("./src/svn_bin/makehelp");
+    system("./src/svn_bin/makehelp.sh");
 }
 
 $dist = "";
