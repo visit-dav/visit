@@ -140,8 +140,12 @@ bool VisItPythonConnection::WaitForPrompt()
 //  Programmer:  Jeremy Meredith
 //  Creation:    June 12, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jul 18 15:38:14 EDT 2007
+//    Allow extra arguments, and thus switch from execlp to execvp.
+//
 // ****************************************************************************
-bool VisItPythonConnection::Open()
+bool VisItPythonConnection::Open(vector<string> extraargs)
 {
     // Make sure it's not already open
     if (visitpid != -1)
@@ -201,7 +205,16 @@ bool VisItPythonConnection::Open()
         {
             sprintf(visitpath, "%s/bin/visit", visithome);
         }
-        execlp(visitpath, visitpath, "-forceinteractivecli", "-cli", NULL);
+
+        char **args = new char*[4 + extraargs.size()];
+        args[0] = strdup(visitpath);
+        args[1] = strdup("-forceinteractivecli");
+        args[2] = strdup("-cli");
+        for (int i=0; i<extraargs.size(); i++)
+            args[3+i] = strdup(extraargs[i].c_str());
+        args[3+extraargs.size()] = NULL;
+
+        execvp(visitpath, args);
         // exec of visit failed
         exit(1);
     }
