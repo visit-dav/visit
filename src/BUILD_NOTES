@@ -39,12 +39,13 @@ build and install those libraries prior to building VisIt.
     =======  =======  ===========            ====================
     Boxlib   ???      An AMR I/O library     ???
     ExodusII 4.46     File I/O library       http://www.sourceforge.net/projects/exodusII
+    H5Part   1.3.3    Fili I/O library       https://codeforge.lbl.gov/projects/h5part/
     HDF4     2.4.1    File I/O library       http://hdf.ncsa.uiuc.edu/hdf4.html
     HDF5     1.6.5    File I/O library       http://hdf.ncsa.uiuc.edu/HDF5/
     Mili     1.10     File I/O library       (none)
     netCDF   3.6.0    File I/O library       http://www.unidata.ucar.edu/packages/netcdf/
     CGNS     2.4      File I/O library       http://www.cgns.org
-    GDAL     1.3.0    GIS reader library     http://www.gdal.org
+    GDAL     1.3.2    GIS reader library     http://www.gdal.org
     CFITSIO  3006     File I/O library       http://heasarc.gsfc.nasa.gov/docs/heasarc/fits.html
 
 
@@ -228,9 +229,9 @@ VTK/README.html file included in the VTK distribution for more information.
 #
 # Build CMake which is used by VTK to configure its distribution
 #
-gunzip cmake-2.2.3.tar.gz
-tar xf cmake-2.2.3.tar
-cd cmake-2.2.3
+gunzip cmake-2.4.5.tar.gz
+tar xf cmake-2.4.5.tar
+cd cmake-2.4.5
 
 #
 # We have experienced problems building CMake on aix with g++/gcc.
@@ -256,9 +257,9 @@ cd VTK
 # On irix systems we have experienced problems with CMake not using the
 # -LANG:std for all the tests, so you will need to add it manually.
 #
-# env CXXFLAGS="-LANG:std" ../cmake-2.2.3/bin/cmake .
+# env CXXFLAGS="-LANG:std" ../cmake-2.4.5/bin/cmake .
 #
-../cmake-2.2.3/bin/cmake .
+../cmake-2.4.5/bin/cmake .
 #
 # Edit CMakeCache.txt.  Turn BUILD_SHARED_LIBS and VTK_USE_MANGLED_MESA on.
 # Turn BUILD_TESTING off.
@@ -274,7 +275,7 @@ cd VTK
 # CMAKE_CXX_FLAGS, CMAKE_EXE_LINKER_FLAGS, CMAKE_MODULE_LINKER_FLAGS, and
 # CMAKE_SHARED_LINKER_FLAGS,
 #
-../cmake-2.2.3/bin/cmake .
+../cmake-2.4.5/bin/cmake .
 #
 # Edit CMakeCache.txt, setting MANGLED_MESA_INCLUDE_DIR, MANGLED_MESA_LIBRARY,
 # MANGLED_OSMESA_INCLUDE_DIR, MANGLED_OSMESA_LIBRARY, to point to the
@@ -289,7 +290,7 @@ cd VTK
 # Note that you need to be very careful in setting the above variables so
 # that you provide the appropriate filename or path.
 #
-../cmake-2.2.3/bin/cmake .
+../cmake-2.4.5/bin/cmake .
 
 #
 # On tru64 systems using g++ 3.3.3, several files in the Imaging directory
@@ -528,14 +529,6 @@ make
 cd ../../../
 
 #
-# If qt was configured with threading support then the qt library will be
-# named qt-mt instead of qt.  This will cause problems linking visit.  To
-# fix this problem, change all occurances of "libqt-mt" to "libqt" in
-# src/Makefile and issue the make command again.  It will now create the qt
-# library properly named for visit.
-#
-
-#
 # Install it in the visit directory under the qt directory.
 #
 mkdir $VISITDIR/qt
@@ -543,7 +536,7 @@ mkdir $VISITDIR/qt/3.3.2
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/{bin,include,lib}
 mkdir $VISITDIR/qt/3.3.2/$VISITARCH/include/private
-cp bin/{designer,findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
+cp bin/{findtr,moc,qt20fix,qtrename140} $VISITDIR/qt/3.3.2/$VISITARCH/bin
 cd include; cp *.h $VISITDIR/qt/3.3.2/$VISITARCH/include
 cp private/*.h $VISITDIR/qt/3.3.2/$VISITARCH/include/private
 cd ../lib;find . -print | cpio -pvmud $VISITDIR/qt/3.3.2/$VISITARCH/lib
@@ -584,7 +577,9 @@ cd silo060605
 #
 # If you want to build silo with hdf5 support then use the commented configure
 # line.  If you want to build silo with hdf5 support you must first build hdf5,
-# which is described later in this document.
+# which is described later in this document.  The hdf5 library you use must
+# be a serial version.  VisIt will not work with a parallel version.
+#
 # env CFLAGS=-O2 ./configure --without-readline -with-hdf5=$VISITDIR/hdf5/1.6.5/$VISITARCH/include,$VISITDIR/hdf5/1.6.5/$VISITARCH/lib --without-exodus
 #
 env CFLAGS=-O2 ./configure --without-readline --without-hdf5 --without-exodus
@@ -1052,13 +1047,13 @@ formats.
 #
 # Build GDAL
 #
-gunzip gdal-1.3.0.tar.gz
-tar xvf gdal-1.3.0.tar
-cd gdal-1.3.0
+gunzip gdal-1.3.2.tar.gz
+tar xvf gdal-1.3.2.tar
+cd gdal-1.3.2
 
 mkdir $VISITDIR/gdal
-mkdir $VISITDIR/gdal/1.3.0
-mkdir $VISITDIR/gdal/1.3.0/$VISITARCH
+mkdir $VISITDIR/gdal/1.3.2
+mkdir $VISITDIR/gdal/1.3.2/$VISITARCH
 
 #
 # On itanium (ia64) systems, you should add "-fPIC" to the CFLAGS, CXXFLAGS.
@@ -1073,7 +1068,7 @@ mkdir $VISITDIR/gdal/1.3.0/$VISITARCH
 # you will need to add "--without-mysql" at the end of the following configure
 # command.
 #
-env CXXFLAGS="-O2" CFLAGS="-O2" ./configure --prefix=$VISITDIR/gdal/1.3.0/$VISITARCH --with-libtiff=internal --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
+env CXXFLAGS="-O2" CFLAGS="-O2" ./configure --prefix=$VISITDIR/gdal/1.3.2/$VISITARCH --with-libtiff=internal --with-gif=internal --with-png=internal --with-jpeg=internal --with-libz=internal --with-netcdf=no --without-jasper --enable-static --disable-shared --without-python
 make
 
 #
@@ -1194,6 +1189,44 @@ cp libexoIIv2c.a $VISITDIR/exodus/4.46/$VISITARCH/lib
 
 cd ..
 
+H5Part (Optional)
+====================
+
+H5Part is a very simple data storage schema and provides an API that
+simplifies the reading/writing of the data to the HDF5 file format.  It
+is developed by the visualization group at the Lawrence Berkeley National
+Laboratory.  Since H5Part uses HDF5, you will need to build a serial version
+of the HDF5 library before building H5Part.  Instructions for building HDF5
+are covered earlier in this document.
+
+#
+# Build H5Part
+#
+gunzip H5Part-1.3.3.tar.gz
+tar xf H5Part-1.3.3.tar
+cd H5Part-1.3.3
+
+mkdir $VISITDIR/h5part
+mkdir $VISITDIR/h5part/1.3.3
+mkdir $VISITDIR/h5part/1.3.3/$VISITARCH
+
+#
+# On linux systems it will try to use the Intel C and C++ compilers.  If
+# you want to use the GNU compilers instead you will need to specify
+# "CC=gcc CXX=g++".
+#
+# On itanium (ia64) systems, you should add "-fPIC" to the following CFLAGS
+# and CXXFLAGS.  On opteron systems, you should add "-fPIC -m64" to the
+# following CFLAGS and CXXFLAGS.
+#
+./configure --with-hdf5path=$VISITDIR/hdf5/1.6.5/$VISITARCH --prefix=$VISITDIR/h5part/1.3.3/$VISITARCH
+cd src
+make
+
+#
+# Install CFITSIO in the visit directory under the cfitsio directory
+#
+make install
 
 VisIt
 ======
@@ -1209,7 +1242,7 @@ More information about building VisIt follows after that.
 #
 gunzip visit070702.tar.gz
 tar xf visit070702.tar
-cd visit070702/config-site
+cd visit070702/src/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..

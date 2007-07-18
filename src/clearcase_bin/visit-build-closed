@@ -316,7 +316,7 @@ clearcase_bin/visit-bin-dist -make gmake >> ../../buildlog 2>&1
 mv visit\$ver2.aix.tar.gz ../..
 cd ../..
 gunzip -c $dist.tar.gz | tar xvf - >> buildlog 2>&1
-cd $dist
+cd $dist/src
 OBJECT_MODE=64
 export OBJECT_MODE
 env CXXFLAGS=-O2 MAKE=gmake ./configure --enable-parallel >> ../../buildlog 2>&1
