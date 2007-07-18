@@ -81,6 +81,9 @@ class     vtkQtRenderWindowInteractor;
 //    Brad Whitlock, Tue Mar 16 09:46:11 PDT 2004
 //    I added SetLargeIcons.
 //
+//    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
+//    Added fullscreen support.
+//
 // ****************************************************************************
 
 class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
@@ -107,6 +110,7 @@ class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
     virtual void                      *CreateToolbar(const char *);
     virtual void                       SetLargeIcons(bool);
     virtual void                       SetCursorForMode(INTERACTION_MODE);
+    virtual void                       SetFullScreenMode(bool);
 
   protected:
     vtkQtRenderWindow                 *renWin;
@@ -118,6 +122,7 @@ class QTVISWINDOW_API VisWinRenderingWithWindow : public VisWinRendering
     virtual void                       RealizeRenderWindow(void);
 
     int                                cursorIndex;
+    bool                               fullScreenMode;
 };
 
 

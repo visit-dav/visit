@@ -59,6 +59,10 @@
 //  Programmer: Hank Childs
 //  Creation:   January 29, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
+//    Added fullscreen support.
+//
 // ****************************************************************************
 
 VisWinRenderingWithWindow::VisWinRenderingWithWindow(
@@ -66,6 +70,7 @@ VisWinRenderingWithWindow::VisWinRenderingWithWindow(
     : VisWinRendering(p)
 {
     cursorIndex = 0;
+    fullScreenMode = false;
 
     renWin = vtkQtRenderWindow::New();
     InitializeRenderWindow(renWin);
@@ -107,12 +112,20 @@ VisWinRenderingWithWindow::~VisWinRenderingWithWindow()
 //  Programmer: Hank Childs
 //  Creation:   January 29, 2002
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
+//    Added fullscreen support.
+//
 // ****************************************************************************
 
 void
 VisWinRenderingWithWindow::RealizeRenderWindow(void)
 {
-    renWin->show();
+    if (fullScreenMode)
+        renWin->showFullScreen();
+    else
+        renWin->show();
+
 #ifdef Q_WS_X11
     WindowMetrics::WaitForWindowManagerToGrabWindow(renWin);
 #endif
@@ -584,3 +597,22 @@ VisWinRenderingWithWindow::SetCursorForMode(INTERACTION_MODE m)
 }
 
 
+// ****************************************************************************
+//  Method:  VisWinRenderingWithWindow::SetFullScreenMode
+//
+//  Purpose:
+//    Set the full screen mode.
+//
+//  Arguments:
+//    fs         the full screen mode
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 17, 2007
+//
+// ****************************************************************************
+
+void
+VisWinRenderingWithWindow::SetFullScreenMode(bool fs)
+{
+    fullScreenMode = fs;
+}

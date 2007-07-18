@@ -2282,6 +2282,9 @@ ViewerSubject::GetOperatorFactory() const
 //    Brad Whitlock, Wed Nov 22 09:27:10 PDT 2006
 //    Added -viewer_geometry.
 //
+//    Jeremy Meredith, Tue Jul 17 16:39:40 EDT 2007
+//    Added -fullscreen argument.
+//
 // ****************************************************************************
 
 void
@@ -2503,6 +2506,10 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
             avtCallback::SetNowinMode(true);
             RemoteProcess::DisablePTY();
             nowin = true;
+        }
+        else if (strcmp(argv2[i], "-fullscreen") == 0)
+        {
+            ViewerWindow::SetFullScreenMode(true);
         }
         else if (strcmp(argv2[i], "-nopty") == 0)
         {

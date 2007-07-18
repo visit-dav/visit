@@ -195,6 +195,9 @@ $0 = shift @ARGV;
 #    overriding the correct host name and to set a default value of
 #    localhost when no host name was specified.
 #
+#    Jeremy Meredith, Tue Jul 17 16:36:07 EDT 2007
+#    Added -fullscreen argument to help text.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -396,6 +399,8 @@ $fullusage = "$usage
         -objectmode <mode>   Require a specific object file mode.
         -forceinteractivecli Force the CLI to behave interactively, even if run
                              with no terminal; similar to python's '-i' flag.
+        -fullscreen          Created the viewer window in full screen mode.
+                             May not be compatible with all window managers.
 	-cycleregex <string> A regex-style regular expression to be used
 	                     in extracting cycle numbers from file names. It
                              is best to bracket this string in single

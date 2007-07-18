@@ -59,12 +59,15 @@
 //    Brad Whitlock, Wed Mar 24 12:23:47 PDT 2004
 //    I made it build on Windows.
 //
+//    Jeremy Meredith, Tue Jul 17 16:35:37 EDT 2007
+//    Added fullscreen support.
+//
 // ****************************************************************************
 
 class QTVISWINDOW_API QtVisWindow : public VisWindow
 {
   public:
-    QtVisWindow();
+    QtVisWindow(bool fullScreenMode = false);
 };
 
 
