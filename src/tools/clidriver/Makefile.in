@@ -59,8 +59,10 @@
 # Date:       June 13, 2007
 #
 # Modifications:
-# 
-##############################################################################
+#    Jeremy Meredith, Wed Jul 18 15:39:05 EDT 2007
+#    Add a second program.
+#
+###############################################################################
 
 
 # Programs and options
@@ -68,21 +70,26 @@
 @SET_MAKE@
 @VARIABLES@
 
-SRC=VisItPythonConnection.C test_cli_driver.C
-OBJ=$(SRC:.C=.o)
+COMMONOBJ=VisItPythonConnection.o
+OBJ1=test_cli_driver.o
+OBJ2=test_parallel_cli_par.o
+ALLOBJ=$(COMMONOBJ) $(OBJ1) $(OBJ2)
 
 # Standard targets
 # ----------------
-all: test_cli_driver
+all: test_cli_driver test_parallel_cli
 
 clean:
-	$(RM) $(OBJ) test_cli_driver
+	$(RM) $(ALLOBJ) test_cli_driver test_parallel_cli
 
 # Other targets
 # ----------------
 
-test_cli_driver: $(OBJ)
-	$(CXX) $(OBJ) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@
+test_cli_driver: $(COMMONOBJ) $(OBJ1)
+	$(CXX) $(COMMONOBJ) $(OBJ1) $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@
+
+test_parallel_cli: $(COMMONOBJ) $(OBJ2)
+	$(CXX) $(COMMONOBJ) $(OBJ2) $(CFLAGS) $(LDFLAGS) $(LIBS) $(MPI_LIBS) -lpthread -o $@
 
 # Automatic dependency stuff
 # --------------------------
