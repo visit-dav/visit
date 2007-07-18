@@ -87,6 +87,7 @@ using std::string;
 // Definition of static variables associated with ViewerWindow.
 //
 bool    ViewerWindow::doNoWinMode = false;
+bool    ViewerWindow::doFullScreenMode = false;
 
 //
 // Local macros.
@@ -244,6 +245,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Brad Whitlock, Mon Feb 12 17:43:04 PST 2007
 //    Added ViewerBase base class.
 //
+//    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
+//    Added fullscreen support to the QtVisWindow.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
@@ -255,7 +259,7 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
     }
     else
     {
-        visWindow = new QtVisWindow();
+        visWindow = new QtVisWindow(doFullScreenMode);
     }
 
     visWindow->SetCloseCallback(CloseCallback, (void *)this);
@@ -451,6 +455,44 @@ bool
 ViewerWindow::GetNoWinMode()
 {
     return doNoWinMode;
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::SetFullScreenMode
+//
+//  Purpose:
+//      Controls whether VisWindows should be created in fullscreen mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   July 17, 2007
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetFullScreenMode(bool newMode)
+{
+    doFullScreenMode = newMode;
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetFullScreenMode
+//
+// Purpose: 
+//   Returns the fullscreen mode.
+//
+// Returns:    The fullscreen mode.
+//
+// Programmer: Jeremy Meredith
+// Creation:   July 17, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerWindow::GetFullScreenMode()
+{
+    return doFullScreenMode;
 }
 
 // ****************************************************************************

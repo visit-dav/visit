@@ -422,6 +422,9 @@ class ViewerToolbar;
 //    Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007 
 //    Added WINDOW_MODE arg to Set/GetScaleMode.
 //
+//    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
+//    Added fullscreen support.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -599,6 +602,9 @@ public:
     static void SetNoWinMode(bool);
     static bool GetNoWinMode();
 
+    static void SetFullScreenMode(bool);
+    static bool GetFullScreenMode();
+
     void SetFullFrameMode(const bool mode);
     bool GetFullFrameMode() const;
     void SetFullFrameActivationMode(const int mode);
@@ -763,6 +769,7 @@ private:
     ViewStack       redoViewStack;
 
     static bool     doNoWinMode;
+    static bool     doFullScreenMode;
 
     // Note: since these aren't stored in VisWindow, this seems like a fine
     // place to put them.  If the shading ever is stored in VisWindow, this

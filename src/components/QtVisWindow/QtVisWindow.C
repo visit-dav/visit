@@ -50,11 +50,18 @@
 //  Programmer: Hank Childs
 //  Creation:   March 4, 2004
 //
+//  Modifications:
+//    Jeremy Meredith, Tue Jul 17 16:35:37 EDT 2007
+//    Added fullscreen support.
+//
 // ****************************************************************************
 
-QtVisWindow::QtVisWindow() : VisWindow(false)
+QtVisWindow::QtVisWindow(bool fullScreenMode) : VisWindow(false)
 {
-    Initialize(new VisWinRenderingWithWindow(colleagueProxy));
+    VisWinRenderingWithWindow *ren =
+        new VisWinRenderingWithWindow(colleagueProxy);
+    ren->SetFullScreenMode(fullScreenMode);
+    Initialize(ren);
 }
 
 
