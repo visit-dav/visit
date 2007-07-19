@@ -198,6 +198,13 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Tue Jul 17 16:36:07 EDT 2007
 #    Added -fullscreen argument to help text.
 #
+#    Eric Brugger, Wed Jul 18 13:29:32 PDT 2007
+#    Removed the yod launch method.  Made a number of miscellaneous
+#    enhancements to the qsub launch method including getting it to also
+#    work with msub (they have the same syntax for what we are using),
+#    adding support for mpirun as a sublauncher, adding support for banks,
+#    improving the support for time limits, and fixing a couple of bugs.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1508,22 +1515,11 @@ if ($procs_set or ($parallel and $parlaunch_set))
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
     }
-    # yod
-    elsif ($launch eq "yod")
-    {
-        @parcmd = ("/cougar/bin/yod");
-        push @parcmd, @launchargs if $launchargs_set;
-        push @parcmd, "-sz", $procs if $procs_set;
-        push @parcmd, @visitcmd;
-        push @parcmd, @post_args;
-
-        @printcmd = @parcmd;
-        chomp($printcmd[0] = `basename $printcmd[0]`);
-    }
     # qsub
-    elsif (substr($launch,0,4) eq "qsub")
+    elsif (substr($launch,0,4) eq "qsub" or substr($launch,0,4) eq "msub")
     {
         ($psubcmd, $sublauncher) = split /\W+/, substr($launch,4);
+        $plauncher = substr($launch,0,4);
         $sublauncher = "" if (!defined $sublauncher);
         chomp($tdate = `date | cut -c 12-19`);
         chomp($tuser = `whoami`);
@@ -1545,12 +1541,21 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 @mpicmd = ("mpiexec");
                 push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-n", $procs if $procs_set;
+                push @mpicmd, "-machinefile", $machinefile if $machinefile_set;
+                push @mpicmd, "@visitcmd\n";
+            }
+            elsif ($sublauncher eq "mpirun")
+            {
+                @mpicmd = ("mpirun");
+                push @mpicmd, @sublaunchargs if $sublaunchargs_set;
+                push @mpicmd, "-np", $procs if $procs_set;
+                push @mpicmd, "-machinefile", $machinefile if $machinefile_set;
                 push @mpicmd, "@visitcmd\n";
             }
             elsif ($sublauncher eq "srun")
             {
                 @mpicmd = ("srun");
-                push @mpicmd, @launchargs if $launchargs_set;
+                push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-n",  $procs if $procs_set;
                 push @mpicmd, "@visitcmd\n";
             }
@@ -1564,17 +1569,14 @@ if ($procs_set or ($parallel and $parlaunch_set))
             print TFILE "@mpicmd";
             close(TFILE);
            
-            @parcmd = ("qsub");
+            @parcmd = ($plauncher);
             push @parcmd, @launchargs if $launchargs_set;
             $nodes = $procs if (!$nodes_set);
             $ppn = ceil($procs / $nodes);
-            push @parcmd, "-l nodes=$nodes:ppn=$ppn";
-            if ($time_set)
-            {
-                $wtime = $time*60;
-                push @parcmd, "-l walltime=$wtime";
-            }
+            push @parcmd, "-l", "nodes=$nodes:ppn=$ppn";
+            push @parcmd, "-l", "walltime=$time" if $time_set;
             push @parcmd, "-q",  $part  if $part_set;
+            push @parcmd, "-A",  $bank  if $bank_set;
           
             @printcmd = @parcmd;
             push @parcmd, $tfilename;

@@ -417,6 +417,10 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 //   Allowed "1" for the minimum number of processors. This is how we specify
 //   serial jobs on batch nodes.
 //
+//   Eric Brugger, Wed Jul 18 13:22:20 PDT 2007
+//   Removed support for psub/prun, qsub/srun, and yod. Added support for
+//   msub/srun and qsub/mpirun.  Alphabetized the list of options.
+//
 // ****************************************************************************
 
 QWidget *
@@ -435,20 +439,19 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
 
     launchMethod = new QComboBox(false, parGroup, "launchMethod");
     launchMethod->insertItem("(default)");
+    launchMethod->insertItem("bsub");
+    launchMethod->insertItem("dmpirun");
     launchMethod->insertItem("mpirun");
     launchMethod->insertItem("poe");
+    launchMethod->insertItem("prun");
     launchMethod->insertItem("psub");
+    launchMethod->insertItem("srun");
+    launchMethod->insertItem("msub/srun");
     launchMethod->insertItem("psub/mpirun");
     launchMethod->insertItem("psub/poe");
-    launchMethod->insertItem("psub/prun");
     launchMethod->insertItem("psub/srun");
-    launchMethod->insertItem("prun");
-    launchMethod->insertItem("srun");
-    launchMethod->insertItem("yod");
-    launchMethod->insertItem("dmpirun");
-    launchMethod->insertItem("bsub");
     launchMethod->insertItem("qsub/mpiexec");
-    launchMethod->insertItem("qsub/srun");
+    launchMethod->insertItem("qsub/mpirun");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox("Parallel launch method",
