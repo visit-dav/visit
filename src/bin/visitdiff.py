@@ -78,17 +78,17 @@ def help():
     expression function to map it onto the mesh in the right database and
     then subtracting it from the same variable in the right database.
 
+    Pos_cmfe expressions will attempt to generate useful results regardless of
+    the similarity of the underlying meshes. You can force use of pos_cmfe
+    expressions by adding '-force_pos_cmfe' to the command line when running
+    'visit -diff'.
+
     Expressions for the differences for all scalar variables will be under the
     'diffs' submenu. For material volume fractions, the scalar volume fraction
     variables will be under the 'matvf_comps' submenu and their differences will
     be under 'diffs/matvf_comps' submenu. Likewise for vector variables, their
     scalar components will be under the 'vector_comps' submenu and their
     differences under the 'diffs/vector_comps' submenu.
-
-    Pos_cmfe expressions will attempt to generate useful results regardless of
-    the similarity of the underlying meshes. You can force use of pos_cmfe
-    expressions by adding '-force_pos_cmfe' to the command line when running
-    'visit -diff'.
 
     'visit -diff' is operated using a combination of VisIt's GUI and CLI.
     There are a number of python functions defined in this script. These
@@ -108,7 +108,7 @@ def help():
     functions available in this script are actionable through the GUI. Only those that
     DO NOT reuquire some kind of user input are.
 
-    Finally, you should be able to do whatever operations you wish in a givne window
+    Finally, you should be able to do whatever operations you wish in a given window
     and then synchronize all other windows to the same state. To do this, add whatever
     operators, plots, as well as adjustments to plot and operator attributes you wish
     to a given window. Then use the SyncWindows() method to bring all other windows
@@ -499,7 +499,9 @@ def UpdateThisExpression(exprName, expr, currentExpressions, addedExpressions,
 #
 # Modifications:
 #   Mark C. Miller, Wed Jul 18 18:12:28 PDT 2007
-#   
+#   Made it work on material volume fractions and vectors. Made it handle
+#   changes in timesteps along with adding new expressions for new variables,
+#   deleting old expressions and leaving unchanged expressions alone.
 #
 ###############################################################################
 def UpdateExpressions(mdl, mdr):
@@ -683,20 +685,20 @@ def UpdateExpressions(mdl, mdr):
     # Print out some information about what we did
     if len(addedExpressions) > 0:
         print "    Added %d expressions..."%len(addedExpressions)
-        for expr_i in range(len(addedExpressions)):
-            print "       %s"%addedExpressions[expr_i]
+#        for expr_i in range(len(addedExpressions)):
+#            print "       %s"%addedExpressions[expr_i]
     if len(unchangedExpressions) > 0:
         print "    Unchanged %d expressioons..."%len(unchangedExpressions)
-        for expr_i in range(len(unchangedExpressions)):
-            print "       %s"%unchangedExpressions[expr_i]
+#        for expr_i in range(len(unchangedExpressions)):
+#            print "       %s"%unchangedExpressions[expr_i]
     if len(updatedExpressions) > 0:
         print "    Updated %d expressions..."%len(updatedExpressions)
-        for expr_i in range(len(updatedExpressions)):
-            print "       %s"%updatedExpressions[expr_i]
+#        for expr_i in range(len(updatedExpressions)):
+#            print "       %s"%updatedExpressions[expr_i]
     if len(deletedExpressions) > 0:
         print "    Deleted %d expressions"%len(deletedExpressions)
-        for expr_i in range(len(deletedExpressions)):
-            print "       %s"%deletedExpressions[expr_i]
+#        for expr_i in range(len(deletedExpressions)):
+#            print "       %s"%deletedExpressions[expr_i]
 
     print "Finished defining expressions"
 
@@ -735,14 +737,6 @@ def Initialize():
             print "VisIt could not open ", winDbMap[win] 
             sys.exit(3)
 
-        # Open both databases, ending on the one whose time slider we want to use.
-#        dbs = (dbl, dbr, windowDBMapping[win])
-#        for db in dbs:
-        # Create a time database correlation. This will make the time slider
-        # for window 1 be "DIFF".
-#        if win == 1:
-#            CreateDatabaseCorrelation("DIFF", (dbl, dbr), 1) #2)
-        
     SyncTimeStates(0)
 
     # If we were able to create any expressions, let's set up some plots based on the
@@ -810,6 +804,8 @@ def Initialize():
     # Back to window 1            
     SetActiveWindow(1)
 
+    print "Type 'help()' to get more information on using 'visit -diff'"
+
 ###############################################################################
 # Function: ChangeVar 
 #
@@ -874,12 +870,40 @@ def ChangeVar(new_var):
 #
 ###############################################################################
 def ToggleHidePlot(plotId):
+
+    # determine target of the toggle (to hide or unhide)
+    hiddenTarget = 0
     for win in (1,2,3,4):
         if win == 2 and cmfeMode == 0:
             continue
         SetActiveWindow(win)
-	SetActivePlots((plotId,))
-	HideActivePlots()
+	plotList = GetPlotList()
+	if plotId >= plotList.GetNumPlots():
+	    print "Plot id %d is out of range 0...%d"%(plotId,plotList.GetNumPlots()-1)
+	    return
+	if plotList.GetPlots(plotId).hiddenFlag == 1:
+	    hiddenTarget = hiddenTarget - 1
+	else:
+	    hiddenTarget = hiddenTarget + 1
+
+    # At this point, if hiddenTarget is largely negative, the target
+    # state is to UNhide the plots, else hide the plots
+
+    for win in (1,2,3,4):
+        if win == 2 and cmfeMode == 0:
+            continue
+        SetActiveWindow(win)
+	plotList = GetPlotList()
+	if plotList.GetPlots(plotId).hiddenFlag == 1:
+	    if hiddenTarget <= 0:
+	        SetActivePlots((plotId,))
+		HideActivePlots()
+	else:
+	    if hiddenTarget > 0:
+	        SetActivePlots((plotId,))
+		HideActivePlots()
+
+    SetActiveWindow(1)
 
 def ToggleHidePlot0():
     ToggleHidePlot(0)
@@ -1094,7 +1118,7 @@ def PickLoop(ids, pickType):
                     s[win-1] = s[win-1] + "%s"%picks[p][2] + ";"
     dpicks = s[0].split(";")
     lpicks = s[2].split(";")
-    rpicks = s[1].split(";")
+    rpicks = s[3].split(";")
     result =          "   id    |       var        |       DIFF       |      dbLeft      |      dbRight     \n"
     result = result + "---------|------------------|------------------|------------------|------------------\n"
     k = 0
@@ -1136,11 +1160,14 @@ def SyncWindows(srcWin):
     # Get List of active plots
     #
     activePlotsList = []
+    hiddenPlotsList = []
     SetActiveWindow(srcWin)
-    plots = GetPlotList()
-    for p in range(plots.GetNumPlots()):
-        if plots.GetPlots(p).activeFlag == 1:
+    srcPlots = GetPlotList()
+    for p in range(srcPlots.GetNumPlots()):
+        if srcPlots.GetPlots(p).activeFlag == 1:
             activePlotsList.append(p)
+        if srcPlots.GetPlots(p).hiddenFlag == 1:
+            hiddenPlotsList.append(p)
 
     #
     # Delete the old windows so we can re-clone them
@@ -1164,6 +1191,8 @@ def SyncWindows(srcWin):
         SetActiveWindow(srcWin)
         CloneWindow()
         SetActiveWindow(win)
+
+	# re-set the annotations
         ao = GetAnnotationObject(1)
         if win == 1:
             ReplaceDatabase(dbl)
@@ -1183,6 +1212,8 @@ def SyncWindows(srcWin):
         elif win == 4:
             ReplaceDatabase(dbr)
             ao.text = "     Right-db"
+
+	# reset the plot variables
         plots = GetPlotList()
         for p in range(plots.GetNumPlots()):
             pv = plots.GetPlots(p).plotVar
@@ -1197,6 +1228,8 @@ def SyncWindows(srcWin):
             else:
                 ChangeActivePlotsVar(theVar[0])
         DrawPlots()
+	SetActivePlots(tuple(hiddenPlotsList))
+	HideActivePlots()
         SetActivePlots(tuple(activePlotsList))
 
     SetActiveWindow(srcWin)
