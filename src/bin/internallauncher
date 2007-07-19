@@ -377,6 +377,47 @@ $fullusage = "$usage
                              has limitations in the types of queries it can 
                              perform.  Under development.
 
+    Database differencing options
+    ---------------------------------------------------------------------------
+        Use the '-diff <ldb> <rdb>' option to run VisIt in a database
+        differencing mode. VisIt will generate expressions to facilitate
+        visualization and analysis of the difference between the left-database,
+        <ldb>, and right-database, <rdb>. VisIt will open windows to display
+        both the left and right databases as well as their difference.
+
+        VisIt uses the Cross-Mesh Field Evaluation (CMFE) expression functions
+        to help generate these differences. A CMFE function creates an instance
+        of a variable from another (source) mesh on the specified (destination)
+        mesh. VisIt can use two variants of CMFE expression functions depending
+        on how similar the source and destination meshes are; connectivity-based
+        (conn_cmfe) which assumes the underlying mesh(s) for the left and right
+        databases have identical connectivity and position-based (pos_cmfe) which
+        does not make this assumption. VisIt will attempt to automatically select
+        which variant of CMFE expression to use based on some simple heuristics.
+        For meshes with identical connectivity, conn_cmfe expressions are
+        preferrable because they are higher performance and do not require VisIt
+        to perform any interpolation. In fact, the conn_cmfe operation is
+        perfectly anti-symmetric. That is <ldb> - <rdb> = -(<rdb> - <ldb>).
+        The same cannot be said for pos_cmfe expressions. However, pos_cmfe
+        expressions will attempt to generate useful results regardless of the
+        similarity of the underlying meshes.
+
+        Finally, be sure to bring up Controls->Macros in the GUI to find a set
+        of useful operations specifically tailored to database differencing. Also,
+	typing 'help()' (including the '()') will generate a useful help message.
+
+        -diff <ldb> <rdb>    Indicate you wish to run VisIt in database
+                             differencing mode and specify the two databases
+                             to difference.
+
+                             Note: All options occuring on the command-line
+                             *after* the '-diff' option are treated as options
+                             to the differencing script while all options
+                             occuring *before* the '-diff' option are treated
+                             as options to VisIt.
+
+        -force_pos_cmfe      Force use of position-based CMFE expressions.
+
     Advanced options
     ---------------------------------------------------------------------------
         -guesshost           Try to guess the client host name from one of
@@ -423,15 +464,15 @@ $fullusage = "$usage
 			     engine waiting in a broadcast for the next RPC
 			     from the viewer. VisIt used to rely solely upon
 			     MPI_Bcast for this. However, many implementations
-			     of MPI_Bcast use a 'busy' wait that winds up
+			     of MPI_Bcast use a polling loop that winds up
 			     keeping all processors busy and can make them
-			     unuseable by other processors. This is particulary
+			     unuseable by other processes. This is particulary
 			     bad for SMPs. So, VisIt implemented its own
 			     broadcast using MPI's send/recv methods. <int1>
 			     specifies the number of nano-seconds a processor
-			     sleeps before again checking for completion of the
-			     broadcast. Specifying a value of zero (0) for
-			     <int1> results in falling back older behavior using
+			     sleeps while polling for completion of the
+			     broadcast. Specifying a value of zero (0) for <int1>
+			     results in falling back to older behavior using
 			     MPI's MPI_Bcast. <int1> effectively controls how
 			     'busy' processors will be, polling for completion
 			     of the broadcast. <int2> specifies the number of
@@ -442,7 +483,12 @@ $fullusage = "$usage
 			     many seconds VisIt's server will be maximally
 			     responsive (although also keeping all processors
 			     occupied) before becoming more 'friendly' to
-			     other processes on the same node.
+			     other processes on the same node. The defaults
+			     are <int1> = 50000000 nanoseconds (1/20th of a sec)
+			     and <int2> = 5 seconds meaning VisIt will spin
+			     processors maximally for 5 seconds before inserting
+			     sleeps such that polling happens at the rate of 20
+			     times per second.
 
     Developer options
     ---------------------------------------------------------------------------
@@ -557,6 +603,7 @@ $debug_gdb    = 0;
 $debug_totalview = "";
 $debug_valgrind = "";
 $add_movie_args = 0;
+$add_diff_args  = 0;
 $envonly        = 0;
 $logging        = 0;
 $req_compiler   = "";
@@ -568,6 +615,8 @@ $pre_command = "";
 $post_command = "";
 $print_arch     = 0;
 $ssh_tunneling  = 0;
+$leftdb = "";
+$rightdb = "";
 
 # Parse the arguments 
 @visitargs = ();
@@ -594,6 +643,8 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-mdserver" ) { $exe_name = "mdserver"; $exe_name_passed = 1;}
     elsif ($arg eq "-engine" )   { $exe_name = "engine"; $exe_name_passed = 1;}
     elsif ($arg eq "-vcl" )      { $exe_name = "vcl"; $exe_name_passed = 1;}
+    elsif ($arg eq "-diff" )     { $exe_name = "cli"; $add_diff_args = 1; $exe_name_passed = 1;
+                                   $leftdb = shift; $rightdb = shift;}
     elsif ($arg eq "-movie" )    { $exe_name = "cli"; $add_movie_args = 1; $exe_name_passed = 1;}
     elsif ($arg eq "-s")         { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
@@ -1123,6 +1174,11 @@ if($add_movie_args)
     push @visitargs, "-s", "$visitscriptdir/makemoviemain.py", "-nowin";
 }
 
+# Add the diff script to the arguments.
+if($add_diff_args)
+{
+    push @visitargs, "-s", "$visitscriptdir/visitdiff.py", "-vdiff", $leftdb, $rightdb;
+}
 
 # -----------------------------------------------------------------------------
 #                   Set up the plugin/shared library environment
