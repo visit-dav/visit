@@ -1164,6 +1164,9 @@ avtDatabase::AddMeshQualityExpressions(avtDatabaseMetaData *md)
 //    Hank Childs, Fri Jun  9 13:57:29 PDT 2006
 //    Add default to switch statement.
 //
+//    Mark C. Miller, Tue Jul 17 11:06:37 PDT 2007
+//    Made expressions divided by time difference (instead of assuming unity).
+//
 // ****************************************************************************
 
 void
@@ -1176,6 +1179,7 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
 
     int numMeshes = md->GetNumMeshes();
     std::string base1 = "time_derivative";
+
     for (i = 0 ; i < numMeshes ; i++)
     {
          const avtMeshMetaData *mmd = md->GetMesh(i);
@@ -1224,6 +1228,55 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
          if (needPrefix)
              pos_base = base2 + std::string("/") + std::string("pos_based");
 
+	 //
+	 // Define expressions for time and last time to use in denominator of expressions
+	 //
+	 if (doConn)
+	 {
+             Expression new_expr;
+             std::string expr_name = conn_base + std::string("/") + mmd->name + "_time";
+             new_expr.SetName(expr_name);
+             char buff[1024];
+             SNPRINTF(buff, 1024, "time(%s)", mmd->name.c_str());
+             new_expr.SetDefinition(buff);
+             new_expr.SetType(Expression::ScalarMeshVar);
+             new_expr.SetAutoExpression(true);
+             md->AddExpression(&new_expr);
+
+             expr_name = conn_base + std::string("/") + mmd->name + "_lasttime";
+             std::string time_expr_name = conn_base + std::string("/") + mmd->name + "_time";
+             new_expr.SetName(expr_name);
+             SNPRINTF(buff, 1024, "conn_cmfe(<[-1]id:%s>, %s)",
+	         time_expr_name.c_str(), mmd->name.c_str());
+             new_expr.SetDefinition(buff);
+             new_expr.SetType(Expression::ScalarMeshVar);
+             new_expr.SetAutoExpression(true);
+             md->AddExpression(&new_expr);
+	 }
+
+	 if (doPos)
+	 {
+             Expression new_expr;
+             std::string expr_name = pos_base + std::string("/") + mmd->name + "_time";
+             new_expr.SetName(expr_name);
+             char buff[1024];
+             SNPRINTF(buff, 1024, "time(%s)", mmd->name.c_str());
+             new_expr.SetDefinition(buff);
+             new_expr.SetType(Expression::ScalarMeshVar);
+             new_expr.SetAutoExpression(true);
+             md->AddExpression(&new_expr);
+
+             expr_name = pos_base + std::string("/") + mmd->name + "_lasttime";
+             std::string time_expr_name = pos_base + std::string("/") + mmd->name + "_time";
+             new_expr.SetName(expr_name);
+             SNPRINTF(buff, 1024, "pos_cmfe(<[-1]id:%s>, %s, 0.)",
+	         time_expr_name.c_str(), mmd->name.c_str());
+             new_expr.SetDefinition(buff);
+             new_expr.SetType(Expression::ScalarMeshVar);
+             new_expr.SetAutoExpression(true);
+             md->AddExpression(&new_expr);
+	 }
+
          int numScalars = md->GetNumScalars();
          for (j = 0 ; j < numScalars ; j++)
          {
@@ -1235,11 +1288,15 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                      Expression new_expr;
                      std::string expr_name = conn_base + std::string("/")
                                            + smd->name;
+                     std::string time_expr_name = conn_base + std::string("/")
+		                           + smd->meshName + "_time";
+                     std::string last_time_expr_name = conn_base + std::string("/")
+		                           + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "%s - conn_cmfe(<[-1]id:%s>, %s)",
-                                smd->name.c_str(), smd->name.c_str(),
-                                smd->meshName.c_str());
+                     SNPRINTF(buff, 1024, "(%s - conn_cmfe(<[-1]id:%s>, %s)) / (<%s> - <%s>)",
+                         smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
+                         time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
                      new_expr.SetType(Expression::ScalarMeshVar);
                      new_expr.SetAutoExpression(true);
@@ -1250,11 +1307,15 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                      Expression new_expr;
                      std::string expr_name = pos_base + std::string("/")
                                            + smd->name;
+                     std::string time_expr_name = pos_base + std::string("/")
+		                           + smd->meshName + "_time";
+                     std::string last_time_expr_name = pos_base + std::string("/")
+		                           + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.)",
-                                smd->name.c_str(), smd->name.c_str(),
-                                smd->meshName.c_str());
+                     SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
+                                smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
+				time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
                      new_expr.SetType(Expression::ScalarMeshVar);
                      new_expr.SetAutoExpression(true);
@@ -1274,11 +1335,15 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                      Expression new_expr;
                      std::string expr_name = conn_base + std::string("/")
                                            + smd->name;
+                     std::string time_expr_name = conn_base + std::string("/")
+		                           + smd->meshName + "_time";
+                     std::string last_time_expr_name = conn_base + std::string("/")
+		                           + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "%s - conn_cmfe(<[-1]id:%s>, %s)",
-                                smd->name.c_str(), smd->name.c_str(),
-                                smd->meshName.c_str());
+                     SNPRINTF(buff, 1024, "%s - conn_cmfe(<[-1]id:%s>, %s) / (<%s> - <%s>)",
+                                smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
+				time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
                      new_expr.SetType(Expression::VectorMeshVar);
                      new_expr.SetAutoExpression(true);
@@ -1289,11 +1354,15 @@ avtDatabase::AddTimeDerivativeExpressions(avtDatabaseMetaData *md)
                      Expression new_expr;
                      std::string expr_name = pos_base + std::string("/")
                                            + smd->name;
+                     std::string time_expr_name = pos_base + std::string("/")
+		                           + smd->meshName + "_time";
+                     std::string last_time_expr_name = pos_base + std::string("/")
+		                           + smd->meshName + "_lasttime";
                      new_expr.SetName(expr_name);
                      char buff[1024];
-                     SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.)",
-                                smd->name.c_str(), smd->name.c_str(),
-                                smd->meshName.c_str());
+                     SNPRINTF(buff, 1024, "%s - pos_cmfe(<[-1]id:%s>, %s, 0.) / (<%s> - <%s>)",
+                                smd->name.c_str(), smd->name.c_str(), smd->meshName.c_str(),
+				time_expr_name.c_str(), last_time_expr_name.c_str());
                      new_expr.SetDefinition(buff);
                      new_expr.SetType(Expression::VectorMeshVar);
                      new_expr.SetAutoExpression(true);
