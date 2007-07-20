@@ -418,8 +418,8 @@ QvisHostProfileWindow::CreateSelectedTab(QWidget *parent)
 //   serial jobs on batch nodes.
 //
 //   Eric Brugger, Wed Jul 18 13:22:20 PDT 2007
-//   Removed support for psub/prun, qsub/srun, and yod. Added support for
-//   msub/srun and qsub/mpirun.  Alphabetized the list of options.
+//   Removed support for psub/prun.  Added support for msub/srun and
+//   qsub/mpirun.  Alphabetized the list of options.
 //
 // ****************************************************************************
 
@@ -446,12 +446,14 @@ QvisHostProfileWindow::CreateParallelTab(QWidget *parent)
     launchMethod->insertItem("prun");
     launchMethod->insertItem("psub");
     launchMethod->insertItem("srun");
+    launchMethod->insertItem("yod");
     launchMethod->insertItem("msub/srun");
     launchMethod->insertItem("psub/mpirun");
     launchMethod->insertItem("psub/poe");
     launchMethod->insertItem("psub/srun");
     launchMethod->insertItem("qsub/mpiexec");
     launchMethod->insertItem("qsub/mpirun");
+    launchMethod->insertItem("qsub/srun");
     connect(launchMethod, SIGNAL(activated(const QString &)),
             this, SLOT(launchMethodChanged(const QString &)));
     launchCheckBox = new QCheckBox("Parallel launch method",
