@@ -57,6 +57,7 @@ prism=true
 yana=true
 xchem=true
 davinci=true
+ellipse=true
 
 dist=undefined
 
@@ -79,6 +80,7 @@ do
          yana=false
          xchem=false
          davinci=false
+         ellipse=false
          shift
          ;;
       -hoth)
@@ -159,6 +161,14 @@ do
          ;;
       +davinci)
          davinci=true
+         shift
+         ;;
+      -ellipse)
+         ellipse=false
+         shift
+         ;;
+      +ellipse)
+         ellipse=true
          shift
          ;;
       -d)
@@ -721,9 +731,62 @@ then
 fi
 
 #
+# Build on ellipse.
+#
+rm -f ellipse
+cat <<EOF > ellipse
+#!/bin/sh
+if test ! -d tmp ; then
+   mkdir tmp
+fi
+if test ! -d tmp/$user ; then
+   mkdir tmp/$user
+fi
+if test ! -d tmp/$user/ellipse; then
+   mkdir tmp/$user/ellipse
+fi
+rm -rf tmp/$user/ellipse/visitbuild
+mkdir tmp/$user/ellipse/visitbuild
+mv ellipse_$dist.tar.gz tmp/$user/ellipse/visitbuild/$dist.tar.gz
+cd tmp/$user/ellipse/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+env CXXFLAGS=-O2 ./configure --enable-parallel >> ../../buildlog 2>&1
+make -j 2 >> ../../buildlog 2>&1
+clearcase_bin/visit-bin-dist >> ../../buildlog 2>&1
+mv visit\$ver2.linux.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on ellipse"      > resultlog 2>&1
+echo "       ---------------------------"     >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $ellipse = true ]
+then
+   if [ $test = no ]
+   then
+      scp ellipse ellipse.uchicago.edu:ellipse_buildit
+      scp $dist.tar.gz ellipse.uchicago.edu:ellipse_$dist.tar.gz
+      ssh ellipse.uchicago.edu "chmod 750 ellipse_buildit;./ellipse_buildit" &
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad up pengra thunder prism yana xchem davinci
+   rm -f hoth sunspot quad up pengra thunder prism yana xchem davinci ellipse
 fi

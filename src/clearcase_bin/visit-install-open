@@ -62,6 +62,7 @@ prism=true
 yana=true
 xchem=true
 davinci=true
+ellipse=true
 
 ver=undefined
 verflag=-private
@@ -85,6 +86,7 @@ do
          yana=false
          xchem=false
          davinci=false
+         ellipse=false
          shift
          ;;
       -hoth)
@@ -165,6 +167,14 @@ do
          ;;
       +davinci)
          davinci=true
+         shift
+         ;;
+      -ellipse)
+         ellipse=false
+         shift
+         ;;
+      +ellipse)
+         ellipse=true
          shift
          ;;
       -v)
@@ -554,7 +564,7 @@ fi
 rm -f davinci
 cat <<EOF > davinci
 #!/bin/sh
-./visit-install -r -private -c nersc -b bdivp $ver linux-altix visit > installlog 2>&1
+./visit-install -r -c nersc -b bdivp $ver linux-altix visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on davinci"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -585,9 +595,45 @@ then
 fi
 
 #
+# Install on ellipse.
+#
+rm -f ellipse
+cat <<EOF > ellipse
+#!/bin/sh
+./visit-install -r -c open -b bdivp $ver linux-ellipse visit > installlog 2>&1
+rm -f resultlog
+echo "        install of visit on ellipse"         > resultlog 2>&1
+echo "       -----------------------------"        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+df -k visit                                        >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+ls -l visit/$ver/linux-intel/bin                   >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "number of database plugins = "\`ls visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                            >> resultlog 2>&1
+echo "The database plugins:"                       >> resultlog 2>&1
+ls visit/$ver/linux-intel/plugins/databases/libI* | sed "s/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mail $emailName < resultlog
+EOF
+
+if [ $ellipse = true ]
+then
+   if [ $test = no ]
+   then
+      scp ellipse.uchicago.edu:tmp/$user/ellipse/visitbuild/visit$ver2.linux.tar.gz visit$ver2.linux-ellipse.tar.gz
+      scp visit$ver2.linux-ellipse.tar.gz ellipse.uchicago.edu:
+      scp visit-install ellipse.uchicago.edu:
+      scp ellipse ellipse.uchicago.edu:ellipse_install
+      ssh ellipse.uchicago.edu "chmod 750 ellipse_install;./ellipse_install"
+   fi
+fi
+
+#
 # Clean up.
 #
 if [ $test = no ]
 then
-   rm -f hoth sunspot quad up pengra thunder prism yana xchem davinci
+   rm -f hoth sunspot quad up pengra thunder prism yana xchem davinci ellipse
 fi

@@ -199,11 +199,11 @@ $0 = shift @ARGV;
 #    Added -fullscreen argument to help text.
 #
 #    Eric Brugger, Wed Jul 18 13:29:32 PDT 2007
-#    Removed the yod launch method.  Made a number of miscellaneous
-#    enhancements to the qsub launch method including getting it to also
-#    work with msub (they have the same syntax for what we are using),
-#    adding support for mpirun as a sublauncher, adding support for banks,
-#    improving the support for time limits, and fixing a couple of bugs.
+#    Made a number of miscellaneous enhancements to the qsub launch method
+#    including getting it to also work with msub (they have the same syntax
+#    for what we are using), adding support for mpirun as a sublauncher,
+#    adding support for banks, improving the support for time limits, and
+#    fixing a couple of bugs.
 #
 ###############################################################################
 
@@ -1514,6 +1514,18 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, @visitcmd;
         @printcmd = @parcmd;
         push @printcmd, ("\"".(pop @printcmd)."\"");
+    }
+    # yod
+    elsif ($launch eq "yod")
+    {
+        @parcmd = ("/cougar/bin/yod");
+        push @parcmd, @launchargs if $launchargs_set;
+        push @parcmd, "-sz", $procs if $procs_set;
+        push @parcmd, @visitcmd;
+        push @parcmd, @post_args;
+
+        @printcmd = @parcmd;
+        chomp($printcmd[0] = `basename $printcmd[0]`);
     }
     # qsub
     elsif (substr($launch,0,4) eq "qsub" or substr($launch,0,4) eq "msub")
