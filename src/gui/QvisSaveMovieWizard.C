@@ -2058,6 +2058,10 @@ QvisSaveMovieWizard::CurrentPageToStaticPageIndex() const
 //   Brad Whitlock, Wed Sep 27 11:00:51 PDT 2006
 //   I added support for movie templates.
 //
+//   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
+//   Move expansion of '.' outputDir to new method 'GetMovieAttsOutputDir'.
+//   Use new method to get the outputdirectory from movie atts.
+//   
 // ****************************************************************************
 
 void
@@ -2158,23 +2162,9 @@ QvisSaveMovieWizard::UpdatePage()
         }
         break;
     case 10: // filename, output dir.
-        // If the path is set to the current directory then use Qt to expand
-        // the path so we have the whole path.
-        if(movieAtts->GetOutputDirectory() == ".")
-        {
-            std::string outDir(QDir::currentDirPath().latin1());
-#if defined(_WIN32)
-            for(int c = 0; c < outDir.length(); ++c)
-                outDir[c] = (outDir[c] == '/') ? SLASH_CHAR : outDir[c];
-#endif
-            if(outDir.size() > 0 && outDir[outDir.size() - 1] != SLASH_CHAR)
-                outDir += SLASH_STRING;
-            movieAtts->SetOutputDirectory(outDir);
-        }
         //qDebug("Update the filename, output dir page.");
         page10_outputDirectoryLineEdit->blockSignals(true);
-        page10_outputDirectoryLineEdit->setText(movieAtts->
-            GetOutputDirectory().c_str());
+        page10_outputDirectoryLineEdit->setText(GetMovieAttsOutputDir().c_str());
         page10_outputDirectoryLineEdit->blockSignals(false);
         page10_filebaseLineEdit->blockSignals(true);
         page10_filebaseLineEdit->setText(movieAtts->
@@ -2779,6 +2769,9 @@ QvisSaveMovieWizard::page7_Update()
 //   Brad Whitlock, Thu Sep 28 12:00:24 PDT 2006
 //   Added information about templates and email.
 //
+//   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
+//   Use new method to get the outputdirectory from movie atts.
+//   
 // ****************************************************************************
 
 void
@@ -2811,7 +2804,7 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
 
     item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
     item->setText(0, "Output directory");
-    item->setText(1, movieAtts->GetOutputDirectory().c_str());
+    item->setText(1, GetMovieAttsOutputDir().c_str());
 
     item = new QvisSaveMovieWizardListViewItem(page8_settingsListView);
     item->setText(0, "Base filename");
@@ -3026,6 +3019,8 @@ QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w
 // Creation:   Thu Jun 23 11:32:49 PDT 2005
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
+//   Use new method to get the outputdirectory from movie atts.
 //   
 // ****************************************************************************
 
@@ -3033,7 +3028,7 @@ void
 QvisSaveMovieWizard::page10_UpdateButtons()
 {
     bool e = (movieAtts->GetOutputName().size() > 0) &&
-             (movieAtts->GetOutputDirectory().size() > 0);
+             (GetMovieAttsOutputDir().size() > 0);
     nextButton()->setEnabled(e);
 }
 
@@ -3650,6 +3645,39 @@ QvisSaveMovieWizard::AddSequencePages()
     }
 
     return true;
+}
+
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::GetMovieAttsOutputDir
+//
+// Purpose: 
+//   This retrieves the OutputDirectory from movieAtts, expanding '.' to
+//   full path if necessary. 
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   July 20, 2007 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+QvisSaveMovieWizard::GetMovieAttsOutputDir()
+{
+    // If the path is set to the current directory then use Qt to expand
+    // the path so we have the whole path.
+    if(movieAtts->GetOutputDirectory() == ".")
+    {
+#if defined(_WIN32)
+        std::string outDir = GetUserVisItDirectory();
+#else
+        std::string outDir(QDir::currentDirPath().latin1());
+#endif
+        if(outDir.size() > 0 && outDir[outDir.size() - 1] != SLASH_CHAR)
+            outDir += SLASH_STRING;
+        movieAtts->SetOutputDirectory(outDir);
+    }
+    return movieAtts->GetOutputDirectory();
 }
 
 //
@@ -4599,6 +4627,8 @@ QvisSaveMovieWizard::page10_processOutputDirectoryText(const QString &s)
 // Creation:   Thu Jun 23 11:36:04 PDT 2005
 //
 // Modifications:
+//   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
+//   Use new method to get the outputdirectory from movie atts.
 //   
 // ****************************************************************************
 
@@ -4608,7 +4638,7 @@ QvisSaveMovieWizard::page10_selectOutputDirectory()
     //
     // Try and get a directory using a file dialog.
     //
-    QString initialDir(movieAtts->GetOutputDirectory().c_str());
+    QString initialDir(GetMovieAttsOutputDir().c_str());
     QString dirName = QFileDialog::getExistingDirectory(initialDir, this,
         "getDirectoryDialog", "Select output directory");
 

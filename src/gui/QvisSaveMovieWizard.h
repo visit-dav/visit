@@ -85,6 +85,9 @@ class MovieTemplateConfig;
 //   Brad Whitlock, Fri Sep 22 16:48:58 PST 2006
 //   Added support for movie templates.
 //
+//   Kathleen Bonnell, Fri Jul 20 10:59:28 PDT 2007 
+//   Added GetMovieAttsOutputDir(). 
+//
 // ****************************************************************************
 
 class QvisSaveMovieWizard : public QvisWizard
@@ -238,6 +241,8 @@ private:
     void CreateGenerationMethodPage();  // page12
 
     QString SplitPrompt(const QString &s) const;
+
+    std::string GetMovieAttsOutputDir();
 
     // Some movie template-related members.
     StringMovieTemplateDataMap  templateTitleToInfo;

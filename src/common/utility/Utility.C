@@ -697,6 +697,9 @@ SplitValues(const string &buff, char delim)
 //   Hank Childs, Wed Aug 24 16:38:55 PDT 2005
 //   Allow for files with absolute paths.
 //
+//   Kathleen Bonnell, Fri Jul 20 10:48:21 PDT 2007 
+//   On Windows, 'realhome' is now VISITUSERHOME. 
+//
 // ****************************************************************************
 
 char *
@@ -730,7 +733,7 @@ GetDefaultConfigFile(const char *filename, const char *home)
     }
 
 #if defined(_WIN32)
-    char *realhome = getenv("VISITHOME");
+    char *realhome = getenv("VISITUSERHOME");
 
     if(realhome != NULL)
     {
@@ -844,13 +847,16 @@ GetSystemConfigFile(const char *filename)
 //   Brad Whitlock, Wed Feb 16 09:29:44 PDT 2005
 //   Moved from ConfigManager class.
 //
+//   Kathleen Bonnell, Fri Jul 20 10:48:21 PDT 2007 
+//   User directory on windows is now defined by VISITUSERHOME env var. 
+//
 // ****************************************************************************
 
 std::string
 GetUserVisItDirectory()
 {
 #if defined(_WIN32)
-    const char *home = getenv("VISITHOME");
+    const char *home = getenv("VISITUSERHOME");
 #else
     const char *home = getenv("HOME");
 #endif
@@ -1263,6 +1269,9 @@ GetIsDevelopmentVersion()
 //   Brad Whitlock, Thu Dec 21 18:55:46 PST 2006
 //   Added missing code for win32 development.
 //
+//   Kathleen Bonnell, Fri Jul 20 10:48:21 PDT 2007 
+//   Removed MSVC6 specific code. 
+//
 // ****************************************************************************
 
 std::string
@@ -1292,15 +1301,7 @@ GetVisItInstallationDirectory(const char *version)
             visitdev = std::string("C:\\VisItDev") + std::string(version);
         else
             visitdev = std::string(devdir);
-#ifdef USING_MSVC6
-#ifdef _DEBUG
-        installDir = visitdev + "\\bin\\Debug";
-#else
-        installDir = visitdev + "\\bin\\Release";
-#endif
-#else
         installDir = visitdev + "\\bin\\MSVC7.Net\\Release";
-#endif
     }
     return installDir;
 #else
@@ -1350,6 +1351,9 @@ GetVisItInstallationDirectory(const char *version)
 //   Brad Whitlock, Mon Jul 11 10:08:30 PDT 2005
 //   Made it work for the non-installed case on Windows.
 //
+//   Kathleen Bonnell, Fri Jul 20 10:48:21 PDT 2007 
+//   Removed MSVC6 specific code. 
+//
 // ****************************************************************************
 
 std::string
@@ -1379,15 +1383,7 @@ GetVisItArchitectureDirectory(const char *version)
             visitdev = std::string("C:\\VisItDev") + std::string(version);
         else
             visitdev = std::string(devdir);
-#ifdef USING_MSVC6
-#ifdef _DEBUG
-        archDir = visitdev + "\\bin\\Debug";
-#else
-        archDir = visitdev + "\\bin\\Release";
-#endif
-#else
         archDir = visitdev + "\\bin\\MSVC7.Net\\Release";
-#endif
     }
     return archDir;
 #else

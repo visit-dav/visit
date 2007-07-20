@@ -2445,7 +2445,7 @@ class MakeMovie:
             absMovieName = self.outputDir + self.slash + moviename
             if (sys.platform != "win32"):
                 command = "visit -v %s -mpeg2encode %s %s" % (Version(), paramFile, absMovieName)
-            else 
+            else:
                 command = "mpeg2enc.exe "  + '"' + paramFile + '" "' + absMovieName + '"'
             self.Debug(1, command)
             # Function to print the mpeg2encode output
@@ -2760,6 +2760,9 @@ class MakeMovie:
     #   Brad Whitlock, Thu Dec 21 19:14:02 PST 2006
     #   Use a safer function to get the host.
     #
+    #   Kathleen Bonnell, Fri Jul 20 10:36:10 PDT 2007 
+    #   Use self.outputDir to report where movie was stored when completed. 
+    #
     ###########################################################################
 
     def EncodeFrames(self):
@@ -2870,10 +2873,10 @@ Message from \"visit -movie\" running on %s.\n\n""" % host
                 self.SendEmail("Movie generation error", emailMsg + s + logContents)
             else:
                 s =     "VisIt completed your movie. It is located at: \n"
-                s = s + "%s." % os.path.abspath(val[1])
+                s = s + "%s." % self.outputDir
                 self.ClientMessageBox(s)
                 s2 =     "VisIt completed your movie. It is located at: "
-                s2 = s2 + "%s." % os.path.abspath(val[1])
+                s2 = s2 + "%s." % self.outputDir
                 self.SendEmail("Movie completed", emailMsg + s2)
 
         # Tell the user that frames were generated.
