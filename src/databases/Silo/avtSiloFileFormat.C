@@ -3385,7 +3385,11 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
 //    Cyrus Harrison, Fri Jul  6 13:54:15 PDT 2007
 //    Added support for packed connectivity info from Decomp_pack var.
 //
+//    Cyrus Harrison, Fri Jul 20 09:28:40 PDT 2007
+//    Fixed typos (Decomp_Pack vs [correct] Decomp_pack)
+//
 // ****************************************************************************
+
 
 void
 avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
@@ -3483,9 +3487,9 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
                << "info" <<endl;
 
         int numdecomp_pack = 0;
-        DBReadVar(dbfile,"NumDecomp_Pack",&numdecomp_pack);
+        DBReadVar(dbfile,"NumDecomp_pack",&numdecomp_pack);
         int *decomp = new int[numdecomp_pack];
-        DBReadVar(dbfile,"Decomp_Pack",&decomp);
+        DBReadVar(dbfile,"Decomp_pack",decomp);
 
         int *dc_ptr = decomp;
         int i,j,k;
