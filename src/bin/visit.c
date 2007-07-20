@@ -35,11 +35,15 @@
 *
 *****************************************************************************/
 
+#include <direct.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <visit-config.h>
 #include <windows.h>
+#include <Winbase.h>
+#include <sys/stat.h>
+
 
 /*
  * Macros
@@ -499,20 +503,28 @@ ReadKey(const char *key, char **keyval)
  *   Brad Whitlock, Mon Aug 16 09:22:53 PDT 2004
  *   Added binary locations for MSVC7.Net versions of VisIt.
  *
+ *   Kathleen Bonnell, Thu Jul 19 07:56:22 PDT 2007
+ *   Added VISITUSERHOME, which defaults to VISITHOME if the reg key could
+ *   not be found.  Create the directory if it does not exist, and add 
+ *   "My images" subdir for saving windows.
+ *
  *****************************************************************************/
 
 char *
 AddEnvironment(int useShortFileName)
 {
     char *tmp, *visitpath = 0, *ssh = 0, *sshargs = 0, *visitsystemconfig = 0;
+	char *visituserpath=0, expvisituserpath[512], tmpdir[512];
     int haveVISITHOME = 0, haveSSH = 0, haveSSHARGS = 0,
-        haveVISITSYSTEMCONFIG = 0;
+        haveVISITSYSTEMCONFIG = 0, haveVISITUSERHOME=0;
+	struct _stat fs;
 
     /* Try and read values from the registry. */
     haveVISITHOME         = ReadKey("VISITHOME", &visitpath);
     haveSSH               = ReadKey("SSH", &ssh);
     haveSSHARGS           = ReadKey("SSHARGS", &sshargs);
     haveVISITSYSTEMCONFIG = ReadKey("VISITSYSTEMCONFIG", &visitsystemconfig);
+	haveVISITUSERHOME     = ReadKey("VISITUSERHOME", &visituserpath);
 
     /* We could not get the value associated with the key. It may mean
      * that VisIt was not installed properly. Use a default value.
@@ -525,19 +537,10 @@ AddEnvironment(int useShortFileName)
 
         if(haveVISITDEVDIR)
         {
-#ifdef USING_MSVC6
-#if defined(_DEBUG)
-            static const char *configDir = "\\bin\\Debug";
-#else
-            static const char *configDir = "\\bin\\Release";
-#endif
-#else
-            /* The location of the binaries are different for MSVC7.Net */
 #if defined(_DEBUG)
             static const char *configDir = "\\bin\\MSVC7.Net\\Debug";
 #else
             static const char *configDir = "\\bin\\MSVC7.Net\\Release";
-#endif
 #endif
             visitpath = (char *)malloc(strlen(visitdevdir) + strlen(configDir) + 1);
             sprintf(visitpath, "%s%s", visitdevdir, configDir);
@@ -545,23 +548,34 @@ AddEnvironment(int useShortFileName)
         else
         {
             char tmpdir[512];
-#ifdef USING_MSVC6
-#if defined(_DEBUG)
-            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\Debug", VERSION);
-#else
-            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\Release", VERSION);
-#endif
-#else
             /* The location of the binaries are different for MSVC7.Net */
 #if defined(_DEBUG)
             sprintf(tmpdir, "C:\\VisItDev%s\\bin\\MSVC7.Net\\Debug", VERSION);
 #else
             sprintf(tmpdir, "C:\\VisItDev%s\\bin\\MSVC7.Net\\Release", VERSION);
 #endif
-#endif
             visitpath = (char *)malloc(strlen(tmpdir) + 1);
             strcpy(visitpath, tmpdir);
         }
+    }
+
+
+    if (haveVISITUSERHOME)
+    {
+        ExpandEnvironmentStrings(visituserpath,expvisituserpath,512);
+        if (_stat(expvisituserpath, &fs) == -1)
+        {
+            mkdir(expvisituserpath);
+        }
+    }
+    else
+    {
+        strcpy(expvisituserpath, visitpath);
+    }
+    sprintf(tmpdir, "%s\\My images", expvisituserpath);
+    if (_stat(tmpdir, &fs) == -1)
+    {
+        mkdir(tmpdir);
     }
 
     /* Turn the long VisIt path into the shortened system path. */
@@ -580,6 +594,9 @@ AddEnvironment(int useShortFileName)
 
     /* Set the VisIt home dir. */
     sprintf(tmp, "VISITHOME=%s", visitpath);
+    putenv(tmp);
+
+    sprintf(tmp, "VISITUSERHOME=%s", expvisituserpath);
     putenv(tmp);
 
     /* Set the plugin dir. */

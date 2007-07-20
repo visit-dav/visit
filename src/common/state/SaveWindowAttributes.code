@@ -7,11 +7,23 @@ Initialization: outputToCurrentDirectory
 
 Initialization: outputDirectory
 #if defined(_WIN32)
-    const char *visitHome = getenv("VISITHOME");
+    const char *visitHome = getenv("VISITUSERHOME");
     if(visitHome != 0)
+    {
         outputDirectory = std::string(visitHome) + "\\My images";
+    }
     else
-        outputDirectory = ".";
+    {
+        visitHome = getenv("VISITHOME");
+        if(visitHome != 0)
+        {
+            outputDirectory = std::string(visitHome) + "\\My images";
+        }
+        else
+        {
+            outputDirectory = ".";
+        }
+    }
 #else
     outputDirectory = ".";
 #endif
