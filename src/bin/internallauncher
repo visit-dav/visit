@@ -205,6 +205,11 @@ $0 = shift @ARGV;
 #    adding support for banks, improving the support for time limits, and
 #    fixing a couple of bugs.
 #
+#    Mark C. Miller, Thu Jul 19 17:12:33 PDT 2007
+#    Added -strace option. Also, adding this comment to indicate that
+#    'visit -diff <dbl> <dbr>' capability was added since June 28th, 2007
+#    modification comment.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -523,7 +528,8 @@ $fullusage = "$usage
                              Have only every Nth processor output timing info.
                              Prevents overwhelming parallel file systems.
         -env                 Print env. variables VisIt will use when run.
-	-dump                Dump intermediate results from AVT filters.
+	-dump                Dump intermediate results from AVT filters and
+	                     scalably rendered images.
         -gdb                 Run under gdb.
         -gdb-gui             Run the gui under gdb.
         -gdb-cli             Run the cli under gdb.
@@ -533,8 +539,20 @@ $fullusage = "$usage
         -break <funcname>    Add the specified breakpoint in gdb.
         -xterm               Run gdb in an xterm window.
         -newconsole          Run any VisIt component in a new console window.
-        -totalview <comp>    Run totalview on the given component.
-        -valgrind <comp>     Run valgrind on the given component.
+        -totalview <args> <comp>
+	                     Run totalview with <args> on component <comp>.
+			     Default <args> is \"\".
+        -valgrind <args> <comp>
+	                     Run valgrind with <args> on component <comp>.
+			     Default <args> is \"--tool=memcheck --error-limit=no
+			     --num-callers=64\".
+	-strace <args> <comp>
+	                     Run strace with <args> on component <comp>.
+			     Default <args> is \"-ttt -T\".
+
+			     In the above, if <args> are present,
+			     wrap them in quotes (single or double).
+
         -numrestarts <#>     Number of attempts to restart a failed engine.
         -quiet               Don't print the Running message.
 ";
@@ -608,7 +626,11 @@ $launchengine = "";
 @breakpoints  = ();
 $debug_gdb    = 0;
 $debug_totalview = "";
+$debug_totalview_args = "";
 $debug_valgrind = "";
+$debug_valgrind_args = "";
+$debug_strace   = "";
+$debug_strace_args = "";
 $add_movie_args = 0;
 $add_diff_args  = 0;
 $envonly        = 0;
@@ -686,20 +708,65 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-objectmode")       { $req_object_mode = shift; push @visitargs, "-objectmode", $req_object_mode; }
     elsif ($arg eq "-totalview" )       {
                                           $debug_totalview = shift;
+					  if (!IsAVisItComponentName($debug_totalview))
+					  {
+					    $debug_totalview_args = $debug_totalview;
+					    $debug_totalview = shift;
+					  }
                                           push @norun, $debug_totalview;
                                           push @visitargs, "-norun", $debug_totalview;
                                           if ($exe_name ne $debug_totalview)
                                           {
-                                            push @visitargs, "-totalview", $debug_totalview;
+					    if ($debug_totalview_args eq "")
+					    {
+                                              push @visitargs, "-totalview", "\"\"", $debug_totalview;
+					    }
+					    else
+					    {
+                                              push @visitargs, "-totalview", "$debug_totalview_args", $debug_totalview;
+					    }
                                           }
                                         }
     elsif ($arg eq "-valgrind" )       {
                                           $debug_valgrind = shift;
+					  if (!IsAVisItComponentName($debug_valgrind))
+					  {
+					    $debug_valgrind_args = $debug_valgrind;
+					    $debug_valgrind = shift;
+					  }
                                           push @norun, $debug_valgrind;
                                           push @visitargs, "-norun", $debug_valgrind;
                                           if ($exe_name ne $debug_valgrind)
                                           {
-                                            push @visitargs, "-valgrind", $debug_valgrind;
+					    if ($debug_valgrind_args eq "")
+					    {
+                                              push @visitargs, "-valgrind", "\"\"", $debug_valgrind;
+					    }
+					    else
+					    {
+                                              push @visitargs, "-valgrind", "$debug_valgrind_args", $debug_valgrind;
+					    }
+                                          }
+                                        }
+    elsif ($arg eq "-strace" )       {
+                                          $debug_strace = shift;
+					  if (!IsAVisItComponentName($debug_strace))
+					  {
+					    $debug_strace_args = $debug_strace;
+					    $debug_strace = shift;
+					  }
+                                          push @norun, $debug_strace;
+                                          push @visitargs, "-norun", $debug_strace;
+                                          if ($exe_name ne $debug_strace)
+                                          {
+					    if ($debug_strace_args eq "")
+					    {
+                                              push @visitargs, "-strace", "\"\"", $debug_strace;
+					    }
+					    else
+					    {
+                                              push @visitargs, "-strace", "$debug_strace_args", $debug_strace;
+					    }
                                           }
                                         }
     elsif ($arg eq "-guesshost" )       { $guesshost = 1; }
@@ -1361,7 +1428,8 @@ else
 }
 
 $printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview or
-                                                 $debug_valgrind);
+                                                 $debug_valgrind or
+						 $debug_strace);
 
 if ($procs_set or ($parallel and $parlaunch_set))
 {
@@ -1631,7 +1699,12 @@ else
     elsif ($debug_totalview eq $exe_name)
     {
         # Run totalview
-        @debugcmd = ("totalview", "$visitbindir/$exe_name", "-a", "-dograb", @visitargs);
+        @debugcmd = ("totalview", "$visitbindir/$exe_name", "-a", "-dograb");
+	if ($debug_totalview_args ne "\"\"")
+	{
+            push @debugcmd, split / /,$debug_totalview_args;
+	}
+	push @debugcmd, @visitargs;
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n" if (! $quiet);
         $exec_totalview_failed = 0;
@@ -1643,10 +1716,36 @@ else
         # Note: could use --tool=addrcheck because it uses much less memory
         #       and runs twice as fast, but it doesn't catch UMRs
         # Note: could add --leak-check=yes to either tool
-        @debugcmd = ("valgrind", "--tool=memcheck", "--error-limit=no", "--num-callers=64", "$visitbindir/$exe_name", @visitargs);
+        @debugcmd = ("valgrind");
+	if ($debug_valgrind_args ne "\"\"")
+	{
+          push @debugcmd, split / /,$debug_valgrind_args;
+	}
+	else
+	{
+	  push @debugcmd, "--tool=memcheck", "--error-limit=no", "--num-callers=64";
+	}
+	push @debugcmd, "$visitbindir/$exe_name", @visitargs;
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n" if (! $quiet);
         exec @debugcmd or die "Could not execute $exe_name under valgrind\n";
+    }
+    elsif ($debug_strace eq $exe_name)
+    {
+        # Run strace with given args 
+	@debugcmd = ("strace");
+	if ($debug_strace_args ne "\"\"")
+	{
+            push @debugcmd, split / /,$debug_strace_args;
+	}
+	else
+	{
+	    push @debugcmd, "-ttt", "-T";
+	}
+	push @debugcmd, "$visitbindir/$exe_name", @visitargs;
+        if ($security_key_set) { push @debugcmd, "-key", $security_key; }
+        print STDERR "Running: @debugcmd\n" if (! $quiet);
+        exec @debugcmd or die "Could not execute $exe_name under strace\n";
     }
     elsif ($debug_gdb)
     {
@@ -1952,3 +2051,12 @@ EOF
     }
 }
 
+sub IsAVisItComponentName {
+    my $theName = shift;
+    if    ($theName eq "mdserver")   { return 1; }
+    elsif ($theName eq "gui")        { return 1; }
+    elsif ($theName eq "engine_ser") { return 1; }
+    elsif ($theName eq "engine_par") { return 1; }
+    elsif ($theName eq "viewer")     { return 1; }
+    return 0;
+}
