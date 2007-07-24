@@ -424,6 +424,10 @@ avtFacelistFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //    if they are big grids ... lots of little ones eat up memory for the
 //    overhead per grid.
 //
+//    Hank Childs, Tue Jul 24 10:29:54 PDT 2007
+//    In the case of transformed rectilinear grids, even allow little 
+//    rectilinear grids to be made into 6 2D rectilinear grids.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -452,6 +456,9 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
                        2*(dims[0]-1)*(dims[2]-1) + 
                        2*(dims[1]-1)*(dims[2]-1);
         bool tooSmall = (numPolys < 500);
+        if (GetInput()->GetInfo().GetAttributes().GetRectilinearGridHasTransform())
+            tooSmall = false;  // Causes problems if we apply this optimization
+                               // for transformed grids.
         if (mustCreatePolyData || forceFaceConsolidation || tooSmall)
         {
             rf->SetInput(rgrid);
