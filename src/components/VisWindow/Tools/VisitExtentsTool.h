@@ -146,13 +146,16 @@
 
 #define VET_H_TITLE_SIZE_MIN_DIM_RATIO    0.020 // Size (not the ratio) is in pixels
 #define VET_H_TITLE_MAX_CHARS             15    // Must be >= VET_V_TITLE_MAX_CHARS
-#define VET_H_TITLE_Y_OFFSET             -0.085
+// #define VET_H_TITLE_Y_OFFSET             -0.085
+#define VET_H_TITLE_Y_OFFSET             -0.075
 #define VET_H_BOUND_SIZE_MIN_DIM_RATIO    0.016 // Size (not the ratio) is in pixels
 #define VET_H_BOUND_MAX_CHARS             25    // Must be >= VET_V_BOUND_MAX_CHARS
 #define VET_H_MARK_Y_OFFSET               0.060
-#define VET_H_AXIS_MIN_Y_OFFSET          -0.065
+// #define VET_H_AXIS_MIN_Y_OFFSET          -0.065
+#define VET_H_AXIS_MIN_Y_OFFSET          -0.055
 #define VET_H_AXIS_MAX_Y_OFFSET           0.115
-#define VET_H_SLIDER_MIN_Y_OFFSET        -0.045
+// #define VET_H_SLIDER_MIN_Y_OFFSET        -0.045
+#define VET_H_SLIDER_MIN_Y_OFFSET        -0.035
 #define VET_H_SLIDER_MAX_Y_OFFSET         0.095
 
 #define VET_V_TITLE_SIZE_MIN_DIM_RATIO    0.020 // Size is in pixels
@@ -227,9 +230,9 @@
 
 // Forward declarations
 class VisWindow;
-class vtkActor;
+class vtkActor2D;
 class vtkPoints;
-class vtkPolyDataMapper;
+class vtkPolyDataMapper2D;
 class vtkPolyData;
 class vtkTextActor;
 class vtkUnsignedCharArray;
@@ -268,6 +271,10 @@ class vtkUnsignedCharArray;
 //    Mark Blair, Wed Mar 14 18:04:12 PDT 2007
 //    Added support for ganged axis sliders.
 //
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now uses VTK 2-D foreground renderer for everything drawn by the tool.
+//    Also added ConvertPointsToPixelCoords.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
@@ -280,10 +287,6 @@ class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
     virtual void Disable();
     virtual bool IsAvailable() const;
     virtual bool ShowsHotPointHighlights() const { return false; };
-
-/* debug 112906
-    virtual void SetForegroundColor(float, float, float);
-*/
 
     virtual const char       *GetName() const { return "Extents"; };
     virtual avtToolInterface &GetInterface() { return Interface; };
@@ -393,29 +396,30 @@ class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
     void MakeAxisTitleText(
         char titleText[], const std::string &axisTitle, int maxTitleChars);
     void MakeDataBoundText(char boundText[], double boundValue);
-    
-    vtkActor                    *buttonQuadsActor;
-    vtkPolyDataMapper           *buttonQuadsMapper;
+    void ConvertPointsToPixelCoords(float *xyzTriples, int pointCount);
+
+    vtkActor2D                  *buttonQuadsActor;
+    vtkPolyDataMapper2D         *buttonQuadsMapper;
     vtkPolyData                 *buttonQuadsData;
 
-    vtkActor                    *buttonLogosActor;
-    vtkPolyDataMapper           *buttonLogosMapper;
+    vtkActor2D                  *buttonLogosActor;
+    vtkPolyDataMapper2D         *buttonLogosMapper;
     vtkPolyData                 *buttonLogosData;
 
-    vtkActor                    *buttonChecksActor;
-    vtkPolyDataMapper           *buttonChecksMapper;
+    vtkActor2D                  *buttonChecksActor;
+    vtkPolyDataMapper2D         *buttonChecksMapper;
     vtkPolyData                 *buttonChecksData;
 
-    vtkActor                    *markSlidersActor;
-    vtkPolyDataMapper           *markSlidersMapper;
+    vtkActor2D                  *markSlidersActor;
+    vtkPolyDataMapper2D         *markSlidersMapper;
     vtkPolyData                 *markSlidersData;
 
-    vtkActor                    *axisExtensionsActor;
-    vtkPolyDataMapper           *axisExtensionsMapper;
+    vtkActor2D                  *axisExtensionsActor;
+    vtkPolyDataMapper2D         *axisExtensionsMapper;
     vtkPolyData                 *axisExtensionsData;
 
-    vtkActor                    *axisSlidersActor;
-    vtkPolyDataMapper           *axisSlidersMapper;
+    vtkActor2D                  *axisSlidersActor;
+    vtkPolyDataMapper2D         *axisSlidersMapper;
     vtkPolyData                 *axisSlidersData;
 
     vtkUnsignedCharArray        *buttonQuadsColors;

@@ -292,6 +292,25 @@ avtViewCurve::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
 }
 
 // ****************************************************************************
+//  Method: avtViewCurve::SetViewport
+//
+//  Purpose: Sets the window's viewport 
+//
+//  Programmer: Mark Blair
+//  Creation:   Mon Jul 16 17:16:29 PDT 2007
+//
+// ****************************************************************************
+
+void
+avtViewCurve::SetViewport(double *newViewport)
+{
+    viewport[0] = newViewport[0];
+    viewport[1] = newViewport[1];
+    viewport[2] = newViewport[2];
+    viewport[3] = newViewport[3];
+}
+
+// ****************************************************************************
 //  Method: avtViewCurve::GetViewport
 //
 //  Purpose:
