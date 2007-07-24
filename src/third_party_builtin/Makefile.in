@@ -62,13 +62,16 @@
 #   Eric Brugger, Tue Mar 20 09:46:13 PDT 2007
 #   Added mesa stub library.
 #
+#   Cyrus Harrison, Tue Jul 24 14:32:07 PDT 2007
+#   Added support for conditional compile of mesa_stub lib
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=mesa_stub @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@
+SUBDIRS=@BUILD_MESA_STUB@ @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@
 
 message:
 	@echo
