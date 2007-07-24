@@ -296,6 +296,9 @@
 #    Added DYLD_LIBRARY_PATH so Mac can find libraries when generating
 #    data files, now that the execuate path has changed.
 #
+#    Eric Brugger, Tue Jul 24 16:12:06 PDT 2007
+#    Corrected the setting of the links for the multi-threaded qt library.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -910,23 +913,35 @@ cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
 # Copy the Qt libraries to the distribution.
 #
 cp $VisItDir/lib/$QtLibName $libdir/$QtLibName
-set majorVersion = `echo $QtLibName | awk '{printf substr($1, 10, 1)}'`
-set minorVersion = `echo $QtLibName | awk '{printf substr($1, 12, 1)}'`
 if ("$os" != "darwin") then
-    ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion.$minorVersion
-    ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT.$majorVersion
-    ln -s $QtLibName $libdir/libqt.$SHLIB_SOEXT
-    if (-e $VisItDir/lib/libqt.a) then
-        ln -s $QtLibName $libdir/libqt.a
+    set QtLibBase = `echo $QtLibName | awk '{printf substr($1, 1, 8)}'`
+    if ("$QtLibBase" == "libqt.so") then
+        set majorVersion = `echo $QtLibName | awk '{printf substr($1, 10, 1)}'`
+        set minorVersion = `echo $QtLibName | awk '{printf substr($1, 12, 1)}'`
+        ln -s $QtLibName $libdir/libqt.so.$majorVersion.$minorVersion
+        ln -s $QtLibName $libdir/libqt.so.$majorVersion
+        ln -s $QtLibName $libdir/libqt.so
+        if (-e $VisItDir/lib/libqt.a) then
+            ln -s $QtLibName $libdir/libqt.a
+        endif
+    else
+        set majorVersion = `echo $QtLibName | awk '{printf substr($1, 13, 1)}'`
+        set minorVersion = `echo $QtLibName | awk '{printf substr($1, 15, 1)}'`
+        ln -s $QtLibName $libdir/libqt-mt.so.$majorVersion.$minorVersion
+        ln -s $QtLibName $libdir/libqt-mt.so.$majorVersion
+        ln -s $QtLibName $libdir/libqt-mt.so
+        if (-e $VisItDir/lib/libqt-mt.a) then
+            ln -s $QtLibName $libdir/libqt-mt.a
+        endif
     endif
 endif
 cp $VisItDir/lib/$QUILibName $libdir/$QUILibName
 set majorVersion = `echo $QUILibName | awk '{printf substr($1, 11, 1)}'`
 set minorVersion = `echo $QUILibName | awk '{printf substr($1, 13, 1)}'`
 if ("$os" != "darwin") then
-    ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT.$majorVersion.$minorVersion
-    ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT.$majorVersion
-    ln -s $QUILibName $libdir/libqui.$SHLIB_SOEXT
+    ln -s $QUILibName $libdir/libqui.so.$majorVersion.$minorVersion
+    ln -s $QUILibName $libdir/libqui.so.$majorVersion
+    ln -s $QUILibName $libdir/libqui.so
     if (-e $VisItDir/lib/libqui.a) then
         ln -s $QUILibName $libdir/libqui.a
     endif
