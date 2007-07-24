@@ -710,6 +710,9 @@ dnl
 dnl    Thomas R. Treadway, Wed Jul 11 16:08:40 PDT 2007
 dnl    Added CREATE_H5PART_LINK for H5Part support.
 dnl
+dnl    Cyrus Harrison, Tue Jul 24 14:36:54 PDT 2007
+dnl    Added support to skip compile of mesa stub if not needed.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -944,13 +947,16 @@ if test "$UseViewerMesaStub" = "yes"; then
    AC_MSG_RESULT(enabled)
    VIEWER_MESA_STUB_CPPFLAGS="-DMESA_STUB"
    VIEWER_MESA_LIBS="-lMesaStub"
+   BUILD_MESA_STUB="mesa_stub"
 else
    AC_MSG_RESULT(disabled)
    VIEWER_MESA_STUB_CPPFLAGS=""
    VIEWER_MESA_LIBS=$MESA_LIBS
+   BUILD_MESA_STUB=""
 fi
 AC_SUBST(VIEWER_MESA_STUB_CPPFLAGS)
 AC_SUBST(VIEWER_MESA_LIBS)
+AC_SUBST(BUILD_MESA_STUB)
 
 #
 # The check for OpenGL can be disabled with `--disable-ogl'.
@@ -1413,7 +1419,7 @@ esac
 AC_SUBST(DB_BUILD_DIRS)
 
 dnl
-dnl Disable building bzip2. Only necessary if bzip2 won't buid somewhere 
+dnl Disable building bzip2. Only necessary if bzip2 won't buid somewhere
 dnl
 AC_ARG_ENABLE(bzip2,
    [  --disable-bzip2         do not build or use bzip2 library -- disables compression],
