@@ -41,12 +41,12 @@
 #include <ExtentsAttributes.h>
 #include <PlotInfoAttributes.h>
 
-#include <vtkActor.h>
+#include <vtkActor2D.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkObject.h>
 #include <vtkPolyData.h>
-#include <vtkPolyDataMapper.h>
+#include <vtkPolyDataMapper2D.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 #include <vtkTextActor.h>
@@ -60,7 +60,7 @@
 // ****************************************************************************
 // Method: VisitExtentsTool::VisitExtentsTool
 //
-// Purpose: This is the constructor for the extents tool.
+// Purpose: This is the constructor for the Extents tool class.
 //
 // Arguments:
 //   p : A reference to the tool proxy.
@@ -163,7 +163,7 @@ VisitExtentsTool::VisitExtentsTool(VisWindowToolProxy &p) : VisitInteractiveTool
 // ****************************************************************************
 // Method: VisitExtentsTool::~VisitExtentsTool
 //
-// Purpose: This is the destructor for the extents tool class.
+// Purpose: This is the destructor for the Extents tool class.
 //
 // Programmer: Mark Blair
 // Creation:   Mon Oct 31 18:35:00 PST 2005
@@ -338,6 +338,9 @@ VisitExtentsTool::DoOneTimeInitializations()
 //    Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //    Now supports all variable axis spacing and axis group conventions.
 //
+//    Mark Blair, Mon Jul 16 17:16:29 PDT 2007
+//    Fixed kludge calculation of apparent viewport aspect ratio.
+//
 // ****************************************************************************
 
 void
@@ -384,10 +387,7 @@ VisitExtentsTool::GetCurrentPlotAttributes()
     double winXMin = winBounds[0];
     double winYMin = winBounds[2];
     double winWidth  = winBounds[1] - winXMin;
-//
-//  KLUDGE OF THE CENTURY!  UTTERLY SCANDALOUS!  An empirical curve fit.
-//  PLEASE FIX ME!
-//
+
     int pixelWidth, pixelHeight;
     proxy.GetSize(pixelWidth, pixelHeight);
 
@@ -395,17 +395,12 @@ VisitExtentsTool::GetCurrentPlotAttributes()
         (double)(pixelWidth < pixelHeight ? pixelWidth : pixelHeight);
     double maxWindowDim =
         (double)(pixelWidth > pixelHeight ? pixelWidth : pixelHeight);
-    double fudgeTerm = 0.07;
 
     windowHToWRatio = (double)pixelHeight / (double)pixelWidth;
 
-    if (windowHToWRatio < 1.05477)
-        fudgeTerm -= (1.05477 - windowHToWRatio) * 0.07;
-    else
-        fudgeTerm += (1.0 - 1.05477/windowHToWRatio) * 0.12;
-
-    double winHeight = (windowHToWRatio+fudgeTerm) * winWidth;
-
+    double winHeight = winWidth * windowHToWRatio *
+        ((EA_PREFERRED_VIEWPORT_TOP_Y - EA_PREFERRED_VIEWPORT_BOTTOM_Y) /
+         (EA_PREFERRED_VIEWPORT_RIGHT_X - EA_PREFERRED_VIEWPORT_LEFT_X));
     double worldBotSliderY = slidersBottomY*winHeight + winYMin;
     double worldTopSliderY = slidersTopY*winHeight + winYMin;
     normToWorldYScale = worldTopSliderY - worldBotSliderY;
@@ -1151,6 +1146,9 @@ VisitExtentsTool::CreateAllActors()
 //
 // Modifications:
 //
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now generates input for VTK 2-D foreground renderer.
+//
 // ****************************************************************************
 
 void
@@ -1158,8 +1156,8 @@ VisitExtentsTool::CreateButtonQuadsActor()
 {
     DeleteButtonQuadsActor();
 
-    buttonQuadsActor = vtkActor::New();
-    buttonQuadsMapper = vtkPolyDataMapper::New();
+    buttonQuadsActor = vtkActor2D::New();
+    buttonQuadsMapper = vtkPolyDataMapper2D::New();
     buttonQuadsData = vtkPolyData::New();
 
     buttonQuadsPoints = vtkPoints::New();
@@ -1291,7 +1289,7 @@ VisitExtentsTool::CreateButtonQuadsActor()
             *quadRGB++ = buttonColor0Green;
             *quadRGB++ = buttonColor0Blue;
         }
-        else    // Currently all toggle buttons use check marks and no others do.
+        else // Currently all toggle buttons use check marks and no others do.
         {
             *quadRGB++ = buttonColor1Red;
             *quadRGB++ = buttonColor1Green;
@@ -1313,6 +1311,9 @@ VisitExtentsTool::CreateButtonQuadsActor()
         }
     }
 
+    ConvertPointsToPixelCoords(
+        (float *)buttonQuadsPoints->GetVoidPointer(0), numPoints);
+
     buttonQuadsMapper->SetInput(buttonQuadsData);
     buttonQuadsActor->SetMapper(buttonQuadsMapper);
 }
@@ -1329,6 +1330,9 @@ VisitExtentsTool::CreateButtonQuadsActor()
 //
 // Modifications:
 //
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now generates input for VTK 2-D foreground renderer.
+//
 // ****************************************************************************
 
 void
@@ -1336,8 +1340,8 @@ VisitExtentsTool::CreateButtonLogosActor()
 {
     DeleteButtonLogosActor();
 
-    buttonLogosActor = vtkActor::New();
-    buttonLogosMapper = vtkPolyDataMapper::New();
+    buttonLogosActor = vtkActor2D::New();
+    buttonLogosMapper = vtkPolyDataMapper2D::New();
     buttonLogosData = vtkPolyData::New();
 
     buttonLogosPoints = vtkPoints::New();
@@ -1418,6 +1422,9 @@ VisitExtentsTool::CreateButtonLogosActor()
         *arrowRGB++ = buttonLogoBlue;
     }
 
+    ConvertPointsToPixelCoords(
+        (float *)buttonLogosPoints->GetVoidPointer(0), numPoints);
+
     buttonLogosMapper->SetInput(buttonLogosData);
     buttonLogosActor->SetMapper(buttonLogosMapper);
 }
@@ -1434,6 +1441,9 @@ VisitExtentsTool::CreateButtonLogosActor()
 //
 // Modifications:
 //
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now generates input for VTK 2-D foreground renderer.
+//
 // ****************************************************************************
 
 void
@@ -1441,8 +1451,8 @@ VisitExtentsTool::CreateButtonChecksActor()
 {
     DeleteButtonChecksActor();
 
-    buttonChecksActor = vtkActor::New();
-    buttonChecksMapper = vtkPolyDataMapper::New();
+    buttonChecksActor = vtkActor2D::New();
+    buttonChecksMapper = vtkPolyDataMapper2D::New();
     buttonChecksData = vtkPolyData::New();
 
     buttonChecksPoints = vtkPoints::New();
@@ -1560,6 +1570,9 @@ VisitExtentsTool::CreateButtonChecksActor()
         }
     }
 
+    ConvertPointsToPixelCoords(
+        (float *)buttonChecksPoints->GetVoidPointer(0), numPoints);
+
     buttonChecksMapper->SetInput(buttonChecksData);
     buttonChecksActor->SetMapper(buttonChecksMapper);
 }
@@ -1629,6 +1642,9 @@ VisitExtentsTool::CreateButtonLabelsActors()
 //
 // Modifications:
 //
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now generates input for VTK 2-D foreground renderer.
+//
 // ****************************************************************************
 
 void
@@ -1636,8 +1652,8 @@ VisitExtentsTool::CreateAxisExtensionsActor()
 {
     DeleteAxisExtensionsActor();
 
-    axisExtensionsActor = vtkActor::New();
-    axisExtensionsMapper = vtkPolyDataMapper::New();
+    axisExtensionsActor = vtkActor2D::New();
+    axisExtensionsMapper = vtkPolyDataMapper2D::New();
     axisExtensionsData = vtkPolyData::New();
 
     axisDotPoints = vtkPoints::New();
@@ -1711,6 +1727,9 @@ VisitExtentsTool::CreateAxisExtensionsActor()
         dotRGB[2] = axisExtensionBlue;
     }
 
+    ConvertPointsToPixelCoords(
+        (float *)axisDotPoints->GetVoidPointer(0), numPoints);
+
     axisExtensionsMapper->SetInput(axisExtensionsData);
     axisExtensionsActor->SetMapper(axisExtensionsMapper);
 }
@@ -1727,6 +1746,9 @@ VisitExtentsTool::CreateAxisExtensionsActor()
 //
 // Modifications:
 //
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now generates input for VTK 2-D foreground renderer.
+//
 // ****************************************************************************
 
 void
@@ -1734,8 +1756,8 @@ VisitExtentsTool::CreateMarkSlidersActor()
 {
     DeleteMarkSlidersActor();
 
-    markSlidersActor = vtkActor::New();
-    markSlidersMapper = vtkPolyDataMapper::New();
+    markSlidersActor = vtkActor2D::New();
+    markSlidersMapper = vtkPolyDataMapper2D::New();
     markSlidersData = vtkPolyData::New();
 
     markArrowPoints = vtkPoints::New();
@@ -1804,6 +1826,8 @@ VisitExtentsTool::CreateMarkSlidersActor()
     arrowRGB[3] = markSliderRed;
     arrowRGB[4] = markSliderGreen;
     arrowRGB[5] = markSliderBlue;
+
+    ConvertPointsToPixelCoords((float *)markArrowPoints->GetVoidPointer(0), 6);
 
     markSlidersMapper->SetInput(markSlidersData);
     markSlidersActor->SetMapper(markSlidersMapper);
@@ -1900,6 +1924,9 @@ VisitExtentsTool::CreateMarkTitlesActors()
 //    Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //    Now creates sliders only for those axes with information currently visible.
 //   
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now generates input for VTK 2-D foreground renderer.
+//
 // ****************************************************************************
 
 void
@@ -1907,8 +1934,8 @@ VisitExtentsTool::CreateAxisSlidersActor()
 {
     DeleteAxisSlidersActor();
 
-    axisSlidersActor = vtkActor::New();
-    axisSlidersMapper = vtkPolyDataMapper::New();
+    axisSlidersActor = vtkActor2D::New();
+    axisSlidersMapper = vtkPolyDataMapper2D::New();
     axisSlidersData = vtkPolyData::New();
 
     axisArrowPoints = vtkPoints::New();
@@ -1992,6 +2019,9 @@ VisitExtentsTool::CreateAxisSlidersActor()
         arrowRGB[1] = axisSliderGreen;
         arrowRGB[2] = axisSliderBlue;
     }
+
+    ConvertPointsToPixelCoords(
+        (float *)axisArrowPoints->GetVoidPointer(0), numPoints);
 
     axisSlidersMapper->SetInput(axisSlidersData);
     axisSlidersActor->SetMapper(axisSlidersMapper);
@@ -2747,12 +2777,12 @@ VisitExtentsTool::AddAllActors()
 {
     int actorNum;
 
-    proxy.GetCanvas()->AddActor(buttonQuadsActor);
-    proxy.GetCanvas()->AddActor(buttonLogosActor);
-    proxy.GetCanvas()->AddActor(buttonChecksActor);
-    proxy.GetCanvas()->AddActor(axisExtensionsActor);
-    proxy.GetCanvas()->AddActor(markSlidersActor);
-    proxy.GetCanvas()->AddActor(axisSlidersActor);
+    proxy.GetForeground()->AddActor2D(buttonQuadsActor);
+    proxy.GetForeground()->AddActor2D(buttonLogosActor);
+    proxy.GetForeground()->AddActor2D(buttonChecksActor);
+    proxy.GetForeground()->AddActor2D(axisExtensionsActor);
+    proxy.GetForeground()->AddActor2D(markSlidersActor);
+    proxy.GetForeground()->AddActor2D(axisSlidersActor);
 
     for (actorNum = 0; actorNum < buttonLabelsActors.size(); actorNum++)
         proxy.GetForeground()->AddActor2D(buttonLabelsActors[actorNum]);
@@ -2802,22 +2832,22 @@ VisitExtentsTool::RemoveAllActors()
     int actorNum;
 
     if (buttonQuadsActor != NULL)
-        proxy.GetCanvas()->RemoveActor(buttonQuadsActor);
+        proxy.GetForeground()->RemoveActor2D(buttonQuadsActor);
 
     if (buttonLogosActor != NULL)
-        proxy.GetCanvas()->RemoveActor(buttonLogosActor);
+        proxy.GetForeground()->RemoveActor2D(buttonLogosActor);
 
     if (buttonChecksActor != NULL)
-        proxy.GetCanvas()->RemoveActor(buttonChecksActor);
+        proxy.GetForeground()->RemoveActor2D(buttonChecksActor);
 
     if (axisExtensionsActor != NULL)
-        proxy.GetCanvas()->RemoveActor(axisExtensionsActor);
+        proxy.GetForeground()->RemoveActor2D(axisExtensionsActor);
 
     if (markSlidersActor != NULL)
-        proxy.GetCanvas()->RemoveActor(markSlidersActor);
+        proxy.GetForeground()->RemoveActor2D(markSlidersActor);
 
     if (axisSlidersActor != NULL)
-        proxy.GetCanvas()->RemoveActor(axisSlidersActor);
+        proxy.GetForeground()->RemoveActor2D(axisSlidersActor);
 
     for (actorNum = 0; actorNum < buttonLabelsActors.size(); actorNum++)
         proxy.GetForeground()->RemoveActor2D(buttonLabelsActors[actorNum]);
@@ -3841,9 +3871,13 @@ VisitExtentsTool::ReleaseButton(int buttonID)
 //
 // Modifications:
 //
-//     Mark Blair, Tue Jan 23 19:13:03 PST 2007
-//     Updates corresponding axis info toggle button to reflect arrow position.
+//    Mark Blair, Tue Jan 23 19:13:03 PST 2007
+//    Updates corresponding axis info toggle button to reflect arrow position.
 //   
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now recalculates arrow X coordinates as pixel coordinates so that VTK 2-D
+//    foreground renderer can be used.
+//
 // ****************************************************************************
 
 void
@@ -3852,7 +3886,10 @@ VisitExtentsTool::MoveLeftMarkSliderArrow(int axisIndex)
     double hotPointX = hotPoints[msHotpointStartID].pt.x;
     avtVector titlePos;
     char markAxisTitle[VET_H_TITLE_MAX_CHARS + 1];
+    double newVertexX;
     double vertexXYZ[3];
+    double vertexPixelCoords[4];
+
     vertexXYZ[2] = 0.0;
 
     for (vtkIdType vertexID = 0; vertexID < 3; vertexID++)
@@ -3860,9 +3897,12 @@ VisitExtentsTool::MoveLeftMarkSliderArrow(int axisIndex)
         markArrowPoints->GetPoint(vertexID, vertexXYZ);
 
         if (vertexID != 2)
-            vertexXYZ[0] = hotPointX;
+            newVertexX = hotPointX;
         else
-            vertexXYZ[0] = hotPointX + msHotpointRadius;
+            newVertexX = hotPointX + msHotpointRadius;
+
+        ComputeWorldToDisplay(newVertexX, 0.0, 0.0, vertexPixelCoords);
+        vertexXYZ[0] = vertexPixelCoords[0];
 
         markArrowPoints->SetPoint(vertexID, vertexXYZ);
     }
@@ -3906,9 +3946,13 @@ VisitExtentsTool::MoveLeftMarkSliderArrow(int axisIndex)
 //
 // Modifications:
 //
-//     Mark Blair, Tue Jan 23 19:13:03 PST 2007
-//     Updates corresponding axis info toggle button to reflect arrow position.
+//    Mark Blair, Tue Jan 23 19:13:03 PST 2007
+//    Updates corresponding axis info toggle button to reflect arrow position.
 //   
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now recalculates arrow X coordinates as pixel coordinates so that VTK 2-D
+//    foreground renderer can be used.
+//
 // ****************************************************************************
 
 void
@@ -3917,7 +3961,10 @@ VisitExtentsTool::MoveRightMarkSliderArrow(int axisIndex)
     double hotPointX = hotPoints[msHotpointStartID+1].pt.x;
     avtVector titlePos;
     char markAxisTitle[VET_H_TITLE_MAX_CHARS + 1];
+    double newVertexX;
     double vertexXYZ[3];
+    double vertexPixelCoords[4];
+
     vertexXYZ[2] = 0.0;
 
     for (vtkIdType vertexID = 3; vertexID < 6; vertexID++)
@@ -3925,9 +3972,12 @@ VisitExtentsTool::MoveRightMarkSliderArrow(int axisIndex)
         markArrowPoints->GetPoint(vertexID, vertexXYZ);
 
         if (vertexID != 3)
-            vertexXYZ[0] = hotPointX;
+            newVertexX = hotPointX;
         else
-            vertexXYZ[0] = hotPointX - msHotpointRadius;
+            newVertexX = hotPointX - msHotpointRadius;
+
+        ComputeWorldToDisplay(newVertexX, 0.0, 0.0, vertexPixelCoords);
+        vertexXYZ[0] = vertexPixelCoords[0];
 
         markArrowPoints->SetPoint(vertexID, vertexXYZ);
     }
@@ -4059,6 +4109,10 @@ VisitExtentsTool::UndoPreviousAxisSequenceExpansion()
 //    Mark Blair, Thu Aug 31 17:56:00 PDT 2006
 //    Changed to new interface for GetPoint in VTK.
 //
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now recalculates arrow Y coordinates as pixel coordinates so that VTK 2-D
+//    foreground renderer can be used.
+//
 // ****************************************************************************
 
 void
@@ -4067,7 +4121,9 @@ VisitExtentsTool::MoveAxisSliderMinimumArrow(int axisIndex)
     int hotpointPairID = asAxisHotpointIDs[axisIndex];
     vtkIdType firstVertexID = (vtkIdType)(hotpointPairID * 6);
     double hotPointY = hotPoints[hotpointPairID*2+asHotpointStartID].pt.y;
+    double newVertexY;
     double vertexXYZ[3];
+    double vertexPixelCoords[4];
     
     vertexXYZ[2] = 0.0;
 
@@ -4076,9 +4132,12 @@ VisitExtentsTool::MoveAxisSliderMinimumArrow(int axisIndex)
         axisArrowPoints->GetPoint(vertexID, vertexXYZ);
 
         if (vertexID != firstVertexID+2)
-            vertexXYZ[1] = hotPointY;
+            newVertexY = hotPointY;
         else
-            vertexXYZ[1] = hotPointY + asHotpointRadius;
+            newVertexY = hotPointY + asHotpointRadius;
+
+        ComputeWorldToDisplay(0.0, newVertexY, 0.0, vertexPixelCoords);
+        vertexXYZ[1] = vertexPixelCoords[1];
 
         axisArrowPoints->SetPoint(vertexID, vertexXYZ);
     }
@@ -4101,6 +4160,10 @@ VisitExtentsTool::MoveAxisSliderMinimumArrow(int axisIndex)
 //    Mark Blair, Thu Aug 31 17:56:00 PDT 2006
 //    Changed to new interface for GetPoint in VTK.
 //
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now recalculates arrow Y coordinates as pixel coordinates so that VTK 2-D
+//    foreground renderer can be used.
+//
 // ****************************************************************************
 
 void
@@ -4109,7 +4172,9 @@ VisitExtentsTool::MoveAxisSliderMaximumArrow(int axisIndex)
     int hotpointPairID = asAxisHotpointIDs[axisIndex];
     vtkIdType firstVertexID = (vtkIdType)(hotpointPairID*6 + 3);
     double hotPointY = hotPoints[hotpointPairID*2+asHotpointStartID+1].pt.y;
+    double newVertexY;
     double vertexXYZ[3];
+    double vertexPixelCoords[4];
 
     vertexXYZ[2] = 0.0;
 
@@ -4118,9 +4183,12 @@ VisitExtentsTool::MoveAxisSliderMaximumArrow(int axisIndex)
         axisArrowPoints->GetPoint(vertexID, vertexXYZ);
 
         if (vertexID != firstVertexID)
-            vertexXYZ[1] = hotPointY;
+            newVertexY = hotPointY;
         else
-            vertexXYZ[1] = hotPointY - asHotpointRadius;
+            newVertexY = hotPointY - asHotpointRadius;
+
+        ComputeWorldToDisplay(0.0, newVertexY, 0.0, vertexPixelCoords);
+        vertexXYZ[1] = vertexPixelCoords[1];
 
         axisArrowPoints->SetPoint(vertexID, vertexXYZ);
     }
@@ -4460,4 +4528,37 @@ VisitExtentsTool::MakeDataBoundText(char boundText[], double boundValue)
     }
 
     boundText[charNum + 1] = '\0';
+}
+
+
+// *****************************************************************************
+//  Method: VisitExtentsTool::ConvertPointsToPixelCoords
+//
+//  Purpose: Converts the X and Y coordinates of an array of floating-point
+//           (X,Y,Z) triples from world coordinates (0 to 1) to display (pixel)
+//           coordinates.
+//
+//  Arguments:
+//      xyzTriples : the input and output array of floating-point coordinates
+//      pointCount : the number of (X,Y,Z) triples in the array
+//
+//  Programmer: Mark Blair
+//  Creation:   Thu Jul 19 19:01:44 PDT 2007
+//
+//  Modifications:
+//
+// *****************************************************************************
+
+void
+VisitExtentsTool::ConvertPointsToPixelCoords(float *xyzTriples, int pointCount)
+{
+    double pixelCoords[4];
+
+    for (int xIndex = 0; xIndex < pointCount*3; xIndex += 3)
+    {
+        ComputeWorldToDisplay((double)xyzTriples[xIndex],
+                              (double)xyzTriples[xIndex+1], 0.0, pixelCoords);
+        xyzTriples[xIndex  ] = (float)pixelCoords[0];
+        xyzTriples[xIndex+1] = (float)pixelCoords[1];
+    }
 }

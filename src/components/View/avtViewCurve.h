@@ -80,6 +80,9 @@ class ViewCurveAttributes;
 //    Kathleen Bonnell, Fri May 11 09:20:06 PDT 2007 
 //    Added havePerformedLogDomain/Range.
 //
+//    Mark Blair, Mon Jul 16 17:16:29 PDT 2007
+//    Added SetViewport.
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtViewCurve
@@ -98,6 +101,7 @@ struct AVTVIEW_API avtViewCurve
     bool            operator==(const avtViewCurve &);
     void            SetToDefault(void);
     void            SetViewInfoFromView(avtViewInfo &, int *);
+    void            SetViewport(double *newViewport);
 
     void            GetViewport(double *) const;
     double          GetScaleFactor(int *);

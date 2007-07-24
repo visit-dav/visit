@@ -2659,7 +2659,7 @@ VisWindow::Render(void)
 }
 
 
-// ****************************************************************************
+// *****************************************************************************
 //  Method: VisWindow::UpdateView
 //
 //  Purpose:
@@ -2696,7 +2696,11 @@ VisWindow::Render(void)
 //    Mark Blair, Tue Dec  5 12:58:17 PST 2006
 //    Uses larger viewport if already set by a 2D plot that wants to use it.
 //
-// ****************************************************************************
+//    Mark Blair, Mon Jul 16 17:16:29 PDT 2007
+//    If viewport is special viewport preferred by ParallelAxis plot and Extents
+//    tool, make sure that it is recorded in window's avtCurveView object.
+//
+// *****************************************************************************
 
 void
 VisWindow::UpdateView()
@@ -2756,6 +2760,18 @@ VisWindow::UpdateView()
             {   // Currently, only ParallelAxis plot uses the larger viewport.
                 SetViewport(viewCurve.viewport[0], viewCurve.viewport[2],
                             viewCurve.viewport[1], viewCurve.viewport[3]);
+            }
+
+            if ((viewportLeft   == EA_PREFERRED_VIEWPORT_LEFT_X  ) &&
+                (viewportRight  == EA_PREFERRED_VIEWPORT_RIGHT_X ) &&
+                (viewportBottom == EA_PREFERRED_VIEWPORT_BOTTOM_Y) &&
+                (viewportTop    == EA_PREFERRED_VIEWPORT_TOP_Y   ))
+            {   // Currently, only ParallelAxis plot uses the larger viewport.
+                double prefViewport[4] = { EA_PREFERRED_VIEWPORT_LEFT_X,
+                                           EA_PREFERRED_VIEWPORT_RIGHT_X,
+                                           EA_PREFERRED_VIEWPORT_BOTTOM_Y,
+                                           EA_PREFERRED_VIEWPORT_TOP_Y };
+                viewCurve.SetViewport(prefViewport);
             }
         }
 
