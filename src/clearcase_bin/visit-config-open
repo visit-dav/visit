@@ -372,7 +372,7 @@
                 <Field name="bankSet" type="bool">false</Field>
                 <Field name="bank" type="string"></Field>
                 <Field name="timeLimitSet" type="bool">true</Field>
-                <Field name="timeLimit" type="string">30m</Field>
+                <Field name="timeLimit" type="string">30:00</Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
                 <Field name="launchMethod" type="string">qsub/mpiexec</Field>
                 <Field name="sublaunchArgsSet" type="bool">true</Field>
