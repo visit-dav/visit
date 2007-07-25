@@ -13,6 +13,7 @@
 
 =========================================================================*/
 #include "vtkOBJReader.h"
+#include <InvalidFilesException.h>
 
 #include "vtkCellArray.h"
 #include "vtkFloatArray.h"
@@ -110,7 +111,7 @@ int vtkOBJReader::RequestData(
     vtkErrorMacro(<< "A FileName must be specified.");
     return 0;
     }
-    
+
   FILE *in = fopen(this->FileName,"r");
     
   if (in == NULL) 
@@ -210,39 +211,55 @@ int vtkOBJReader::RequestData(
           {
           if (sscanf(pChar,"%d/%d/%d",&iVert,&iTCoord,&iNormal)==3) 
             {
-            polys->InsertCellPoint(iVert-1); // convert to 0-based index
-            nVerts++;
-            tcoord_polys->InsertCellPoint(iTCoord-1);
-            nTCoords++;
-            if (iTCoord!=iVert && tcoords_same_as_verts)
-              tcoords_same_as_verts = 0; // (false)
-            normal_polys->InsertCellPoint(iNormal-1);
-            nNormals++;
-            if (iNormal!=iVert && normals_same_as_verts)
-              normals_same_as_verts = 0; // (false)
+                if ((iVert < 0) || (iTCoord < 0) || (iNormal < 0))
+                {
+                    EXCEPTION2(InvalidFilesException, this->FileName, "VisIt does not support relative references in OBJ files.");
+                }
+                polys->InsertCellPoint(iVert-1); // convert to 0-based index
+                nVerts++;
+                tcoord_polys->InsertCellPoint(iTCoord-1);
+                nTCoords++;
+                if (iTCoord!=iVert && tcoords_same_as_verts)
+                    tcoords_same_as_verts = 0; // (false)
+                normal_polys->InsertCellPoint(iNormal-1);
+                nNormals++;
+                if (iNormal!=iVert && normals_same_as_verts)
+                    normals_same_as_verts = 0; // (false)
             }
           else if (sscanf(pChar,"%d//%d",&iVert,&iNormal)==2) 
             {
-            polys->InsertCellPoint(iVert-1);
-            nVerts++;
-            normal_polys->InsertCellPoint(iNormal-1);
-            nNormals++;
-            if (iNormal!=iVert && normals_same_as_verts)
-              normals_same_as_verts = 0; // (false)
+                if ((iVert < 0) || (iNormal < 0))
+                {
+                    EXCEPTION2(InvalidFilesException, this->FileName, "VisIt does not support relative references in OBJ files.");
+                }
+                polys->InsertCellPoint(iVert-1);
+                nVerts++;
+                normal_polys->InsertCellPoint(iNormal-1);
+                nNormals++;
+                if (iNormal!=iVert && normals_same_as_verts)
+                    normals_same_as_verts = 0; // (false)
             }
           else if (sscanf(pChar,"%d/%d",&iVert,&iTCoord)==2) 
             {
-            polys->InsertCellPoint(iVert-1);
-            nVerts++;
-            tcoord_polys->InsertCellPoint(iTCoord-1);
-            nTCoords++;
-            if (iTCoord!=iVert && tcoords_same_as_verts)
-              tcoords_same_as_verts = 0; // (false)
+                if ((iVert < 0) || (iTCoord < 0))
+                {
+                    EXCEPTION2(InvalidFilesException, this->FileName, "VisIt does not support relative references in OBJ files.");
+                }
+                polys->InsertCellPoint(iVert-1);
+                nVerts++;
+                tcoord_polys->InsertCellPoint(iTCoord-1);
+                nTCoords++;
+                if (iTCoord!=iVert && tcoords_same_as_verts)
+                    tcoords_same_as_verts = 0; // (false)
             }
           else if (sscanf(pChar,"%d",&iVert)==1) 
             {
-            polys->InsertCellPoint(iVert-1);
-            nVerts++;
+                if (iVert < 0)
+                {
+                    EXCEPTION2(InvalidFilesException, this->FileName, "VisIt does not support relative references in OBJ files.");
+                }
+                polys->InsertCellPoint(iVert-1);
+                nVerts++;
             }
           else 
             {
