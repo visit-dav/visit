@@ -700,6 +700,9 @@ SplitValues(const string &buff, char delim)
 //   Kathleen Bonnell, Fri Jul 20 10:48:21 PDT 2007 
 //   On Windows, 'realhome' is now VISITUSERHOME. 
 //
+//   Kathleen Bonnell, Tue Jul 24 15:19:23 PDT 2007 
+//   On Windows, don't prepend if filename begins with quotes, or 'C:'
+//
 // ****************************************************************************
 
 char *
@@ -708,6 +711,23 @@ GetDefaultConfigFile(const char *filename, const char *home)
     char *retval;
     char *configFileName;
     int  filenameLength;
+
+#ifdef WIN32
+    // If the filename is enclosed in quotes, do no prepend the home directory.
+    if (filename != NULL && (filename[0] == '\'' || filename[0] == '\"'))
+    {
+        retval = new char[strlen(filename)+1];
+        strcpy(retval, filename);
+        return retval;
+    }
+    // If the filename has an absolute path, do not prepend the home directory.
+    if (filename != NULL && (filename[0] == 'C' && filename[1] == ':'))
+    {
+        retval = new char[strlen(filename)+1];
+        strcpy(retval, filename);
+        return retval;
+    }
+#endif
 
     // If the filename has an absolute path, do not prepend the home
     // directory.

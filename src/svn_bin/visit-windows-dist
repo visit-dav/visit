@@ -82,12 +82,14 @@
 
 # If there is no Makefile, run configure.
 # We need to ensure that the includes are created.
-if(!(-e Makefile)) then
+if(!(-e ./src/Makefile)) then
     echo "No Makefile was found. We need to configure\!"
+    cd ./src
     if(-e config.cache) then
         rm -f config.cache
     endif
     configure
+    cd ../
 endif
 
 # Parse the comand line arguents.
@@ -108,10 +110,10 @@ end
 
 # Set some directory variables.
 set TOPDIR = `pwd` 
-set SCRIPTDIR = "$TOPDIR/svn_bin"
-set SCRIPTDIR2 = "$TOPDIR/clearcase_bin"
+set SCRIPTDIR = "$TOPDIR/src/svn_bin"
+set SCRIPTDIR2 = "$TOPDIR/src/clearcase_bin"
 
-set VERSION = `cat $TOPDIR/VERSION`
+set VERSION = `cat $TOPDIR/src/VERSION`
 set VisItDev = "$TOPDIR/VisItDev$VERSION"
 set VISITSRC="visit"
 
@@ -122,6 +124,7 @@ if ($create_src_dist == true) then
 endif
 
 # Create a directory to contain the VisIt source distribution.
+cd $TOPDIR
 echo "Creating $VisItDev directory..."
 mkdir $VisItDev
 cp $VISITSRC.tar.gz $VisItDev
@@ -133,16 +136,22 @@ gunzip $VISITSRC.tar.gz
 tar xvf $VISITSRC.tar > /dev/null
 rm $VISITSRC.tar
 
+rm -rf $VISITSRC/data
+cd $VISITSRC/src
+mv ./* ../
+cd $VisItDev 
+rmdir $VISITSRC/src
+
 # Remove the tools/mpeg_encode directory since it does not build on Windows
 # and it creates a name conflict with the prep tool.
 rm -rf $VISITSRC/tools/mpeg_encode
 
 # Copy windowsbuild/VisItBuildInstructionsOnWindows.doc to $VisItDev
-cp $TOPDIR/../windowsbuild/VisItBuildInstructionsOnWindows.doc .
-cp $TOPDIR/../windowsbuild/BUILD_NOTES.txt .
+cp $TOPDIR/windowsbuild/VisItBuildInstructionsOnWindows.doc .
+cp $TOPDIR/windowsbuild/BUILD_NOTES.txt .
 
 # Move windowsbuild/include to $VisItDev/include.
-cp -R $TOPDIR/../windowsbuild/include .
+cp -R $TOPDIR/windowsbuild/include .
 
 #
 # Set up a new include directory.
@@ -208,18 +217,18 @@ end
 #
 echo "Copying VTK include files to include/VTK..."
 foreach hdrdir (Common Filtering GenericFiltering Graphics Hybrid IO Imaging Rendering VolumeRendering)
-    foreach hdrfile (`find $TOPDIR/include/vtk/$hdrdir -name "*.h"`)
+    foreach hdrfile (`find $TOPDIR/src/include/vtk/$hdrdir -name "*.h"`)
         cp $hdrfile include/VTK
     end
 end
 # Copy TXX files
-cp $TOPDIR/include/vtk/Common/*.txx    include/VTK
-cp $TOPDIR/include/vtk/Filtering/*.txx include/VTK
+cp $TOPDIR/src/include/vtk/Common/*.txx    include/VTK
+cp $TOPDIR/src/include/vtk/Filtering/*.txx include/VTK
 # Copy vtkstd
-cp -R $TOPDIR/include/vtk/vtkstd include/VTK
+cp -R $TOPDIR/src/include/vtk/vtkstd include/VTK
 # Copy mangled mesa
 mkdir include/VTK/MangleMesaInclude
-cp $TOPDIR/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
+cp $TOPDIR/src/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
 
 
 #
@@ -228,7 +237,7 @@ cp $TOPDIR/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
 echo "Copying Mesa include files to include/Mesa..."
 mkdir include/Mesa
 mkdir include/Mesa/GL
-cp $TOPDIR/include/mesa/GL/*.h include/Mesa/GL
+cp $TOPDIR/src/include/mesa/GL/*.h include/Mesa/GL
 
 cd $VisItDev
 
@@ -237,7 +246,7 @@ cd $VisItDev
 # it so that we have some place to store them when we build.
 #
 echo "Creating bin directory..."
-cp -R $TOPDIR/../windowsbuild/bin .
+cp -R $TOPDIR/windowsbuild/bin .
 foreach configdir (MSVC7.Net/Debug MSVC7.Net/Release)
     echo "copying makemovie scripts ..."
     # Copy the makemovie scripts to the right bin dir.
@@ -299,7 +308,7 @@ rm $VISITSRC/help/*.{html,helpml}
 
 # Move windowsbuild/lib directory up to $VisItDev.
 echo "Creating lib directory..."
-cp -R $TOPDIR/../windowsbuild/lib .
+cp -R $TOPDIR/windowsbuild/lib .
 foreach buildmode (Debug Release)
     # Copy import libraries
     cd $VisItDev/lib/$buildmode
@@ -313,19 +322,19 @@ cd $VisItDev
 
 # Move windowsbuild/resources directory up to $VisItDev.
 echo "Creating resources directory..."
-cp -R $TOPDIR/../windowsbuild/resources .
+cp -R $TOPDIR/windowsbuild/resources .
 
 # Move windowsbuild/installation directory up to $VisItDev.
 echo "Creating installation directory..."
-cp -R $TOPDIR/../windowsbuild/installation .
+cp -R $TOPDIR/windowsbuild/installation .
 
 # Move the windowsbuild/projects directory up to $VisItDev.
 echo "Creating projects-MSVC7.Net directory..."
-cp -R $TOPDIR/../windowsbuild/projects-MSVC7.Net .
+cp -R $TOPDIR/windowsbuild/projects-MSVC7.Net .
 
 # Copy the windowsbuild/script directory up to $VisItDev.
 echo "Creating script directory..."
-cp -R $TOPDIR/../windowsbuild/script .
+cp -R $TOPDIR/windowsbuild/script .
 
 echo "Removing .svn directories..."
 cd $VisItDev
@@ -340,5 +349,5 @@ set VisItDev = "VisItDev$VERSION"
 tar cf $VisItDev.tar $VisItDev
 
 # Cleanup
-echo "Cleaning up..."
+#echo "Cleaning up..."
 rm -rf $VisItDev
