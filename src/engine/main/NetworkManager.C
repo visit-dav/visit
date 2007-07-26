@@ -115,6 +115,7 @@
 #endif
 #include <visit-config.h>
 #include <TimingsManager.h>
+#include <SaveWindowAttributes.h>
 
 #include <set>
 #include <map>
@@ -4165,6 +4166,11 @@ NetworkManager::CallProgressCallback(const char *module, const char *msg,
 //    Mark C. Miller, Thu Dec 16 10:25:09 PST 2004
 //    Added numDumpsAll to correct numbering in output images in parallel
 //
+//    Tom Fogal / Hank Childs, Wed Jul 25 17:13:18 PDT 2007
+//    Fully qualified the `TIFF' format type, as it was being pulled from an
+//    improper enum.  Changed `useLZW' from 6 to 0 so the writer wouldn't
+//    complain about patent issues and bail out.
+//
 // ****************************************************************************
 static void
 DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
@@ -4186,8 +4192,8 @@ DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
     sprintf(tmpName, "%s_%03d.tif", fmt, numDumps);
 #endif
 
-    fileWriter->SetFormat(TIFF);
-    int useLZW = 6;
+    fileWriter->SetFormat(SaveWindowAttributes::TIFF);
+    int useLZW = 0;
     fileWriter->Write(tmpName, img, 100, false, useLZW, false);
 
     if (allprocs)
