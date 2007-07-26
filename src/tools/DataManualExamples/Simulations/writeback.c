@@ -1535,6 +1535,8 @@ void mainloop(void)
  * Date:       Thu Nov 2 17:27:14 PST 2006
  *
  * Modifications:
+ *    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
+ *    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
  *
  *****************************************************************************/
 
@@ -1565,7 +1567,7 @@ int main(int argc, char **argv)
     {
         VisItInitializeSocketAndDumpSimFile("parsim",
         "Parallel C prototype simulation connects to VisIt",
-        "/path/to/where/sim/was/started", NULL, NULL);
+        "/path/to/where/sim/was/started", NULL, NULL, NULL);
     }
 
     /* Read input problem setup, geometry, data.*/

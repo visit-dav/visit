@@ -42,6 +42,8 @@ c Programmer: Brad Whitlock
 c Date:       Fri Jan 12 14:12:55 PST 2007
 c
 c Modifications:
+c    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
+c    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
 c
 c-----------------------------------------------------------------
       program main
@@ -73,7 +75,8 @@ c     Have the master process write the sim file.
      .     "Demonstrates scalar data access function", 40,
      .     "/no/useful/path", 15,
      .     VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     .     VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
+     .     VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
+     .     VISIT_F77NULLSTRING,VISIT_F77NULLSTRINGLEN)
       endif
 
       call mainloop()

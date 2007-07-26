@@ -46,6 +46,8 @@ c Programmer: Brad Whitlock
 c Date:       Fri Jan 27 12:24:54 PDT 2006
 c
 c Modifications:
+c    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
+c    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
 c
 c---------------------------------------------------------------------------
       program main
@@ -58,6 +60,8 @@ ccc   local variables
       err = visitinitializesim("fortran_proto", 13,
      .                         "Fortran prototype simulation", 28,
      .                         "/no/useful/path", 15,
+     .                         VISIT_F77NULLSTRING,
+     .                         VISIT_F77NULLSTRINGLEN,
      .                         VISIT_F77NULLSTRING,
      .                         VISIT_F77NULLSTRINGLEN,
      .                         VISIT_F77NULLSTRING,

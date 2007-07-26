@@ -77,7 +77,7 @@ SIMFSRC=simf.f
 FSEROBJ=$(SIMFSRC:.f=.o)
 
 CPPFLAGS=-I. @CPPFLAGS@
-CFLAGS=-I. -I$(TOPDIR)/include/visit -Wimplicit-function-declaration
+CFLAGS=-I. -I$(TOPDIR)/include/visit -Wimplicit-function-declaration @CFLAGS@
 F77FLAGS=-I$(TOPDIR)/include/visit
 LDFLAGS=@LDFLAGS@ -L$(TOPDIR)/archives
 

@@ -788,6 +788,8 @@ MainLoop()
 * Creation:   Tue Sep 12 10:56:07 PDT 2006
 *
 * Modifications:
+*    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
+*    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
 *
 *****************************************************************************/
 int
@@ -848,7 +850,8 @@ main(int argc, char *argv[])
                                             "Prototype Simulation",
                                             "/no/useful/path",
                                             NULL,
-                                            "SimGUI_1.ui");
+                                            "SimGUI_1.ui",
+					    "/g/g0/shelly/.visit/test.sim1");
         printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
 
         printf("Known Commands:\n"
