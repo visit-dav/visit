@@ -703,6 +703,9 @@ SplitValues(const string &buff, char delim)
 //   Kathleen Bonnell, Tue Jul 24 15:19:23 PDT 2007 
 //   On Windows, don't prepend if filename begins with quotes, or 'C:'
 //
+//   Kathleen Bonnell, Thu Jul 26 11:27:32 PDT 2007 
+//   Fix WIN32 code to use 'home' if not null, otherwise VISITUSERHOME. 
+//
 // ****************************************************************************
 
 char *
@@ -753,7 +756,7 @@ GetDefaultConfigFile(const char *filename, const char *home)
     }
 
 #if defined(_WIN32)
-    char *realhome = getenv("VISITUSERHOME");
+    char *realhome = getenv((home == 0) ? "VISITUSERHOME" : home);
 
     if(realhome != NULL)
     {
