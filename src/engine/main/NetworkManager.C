@@ -4171,6 +4171,10 @@ NetworkManager::CallProgressCallback(const char *module, const char *msg,
 //    improper enum.  Changed `useLZW' from 6 to 0 so the writer wouldn't
 //    complain about patent issues and bail out.
 //
+//    Tom Fogal, Thu Jul 26 10:23:16 PDT 2007
+//    Changed default format to PNG, to avoid patent issues with old TIFF
+//    libraries.
+//
 // ****************************************************************************
 static void
 DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
@@ -4185,16 +4189,16 @@ DumpImage(avtDataObject_p img, const char *fmt, bool allprocs)
 
 #ifdef PARALLEL
     if (allprocs)
-        sprintf(tmpName, "%s_%03d_%03d.tif", fmt, PAR_Rank(), numDumpsAll);
+        sprintf(tmpName, "%s_%03d_%03d.png", fmt, PAR_Rank(), numDumpsAll);
     else
-        sprintf(tmpName, "%s_%03d.tif", fmt, numDumps);
+        sprintf(tmpName, "%s_%03d.png", fmt, numDumps);
 #else
-    sprintf(tmpName, "%s_%03d.tif", fmt, numDumps);
+    sprintf(tmpName, "%s_%03d.png", fmt, numDumps);
 #endif
 
-    fileWriter->SetFormat(SaveWindowAttributes::TIFF);
-    int useLZW = 0;
-    fileWriter->Write(tmpName, img, 100, false, useLZW, false);
+    fileWriter->SetFormat(SaveWindowAttributes::PNG);
+    int compress = 1;
+    fileWriter->Write(tmpName, img, 100, false, compress, false);
 
     if (allprocs)
         numDumpsAll++;
