@@ -59,6 +59,12 @@ using std::vector;
 //  Programmer: Jeremy Meredith
 //  Creation:   June 14, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 26 14:33:16 EDT 2007
+//    Changed to read only the requested time steps on demand instead
+//    of reading the whole file at once.  Keep track of file positions
+//    for all time steps to accessing even late time steps is instantanous.
+//
 // ****************************************************************************
 
 class avtXYZFileFormat : public avtMTSDFileFormat
@@ -77,21 +83,25 @@ class avtXYZFileFormat : public avtMTSDFileFormat
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
-    std::string filename;
-    bool fileRead;
-    int  nTimeSteps;
-    int  nVars;
-    int  nAtoms;
+    ifstream                       in;
+    std::vector<istream::pos_type> file_positions;
+    std::string                    filename;
+    bool                           metaDataRead;
+    int                            nTimeSteps;
+    int                            nVars;
+    int                            nAtoms;
 
-    vector< vector<int> >   e;
-    vector< vector<float> > x;
-    vector< vector<float> > y;
-    vector< vector<float> > z;
-    vector< vector<float> > v[MAX_XYZ_VARS];
+    vector< vector<int> >          e;
+    vector< vector<float> >        x;
+    vector< vector<float> >        y;
+    vector< vector<float> >        z;
+    vector< vector<float> >        v[MAX_XYZ_VARS];
 
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    virtual void    PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    void            OpenFileAtBeginning();
 
-    void ReadFile();
+    void ReadTimeStep(int);
+    void ReadAllMetaData();
 };
 
 
