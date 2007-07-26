@@ -73,6 +73,8 @@ void mainloop(void)
  *   argv : The command line arguments.
  *
  * Modifications:
+ *    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
+ *    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
  *
  *****************************************************************************/
 
@@ -83,7 +85,7 @@ int main(int argc, char **argv)
     /* Write out .sim file that VisIt uses to connect. */
     VisItInitializeSocketAndDumpSimFile("sim3",
         "Moved do..while to mainloop function",
-        "/path/to/where/sim/was/started", NULL, NULL);
+        "/path/to/where/sim/was/started", NULL, NULL, NULL);
 
     /* Read input problem setup, geometry, data. */
     read_input_deck();

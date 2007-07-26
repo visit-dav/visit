@@ -961,17 +961,23 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
                                         const char *comment,
                                         const char *path,
                                         const char *inputfile,
-                                        const char *guifile)
+                                        const char *guifile,
+                                        const char *absoluteFilename)
 {
     FILE *file;
 
     EnsureSimulationDirectoryExists();
     CreateRandomSecurityKey();
     
-
-    snprintf(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim1",
-             GetHomeDirectory(), (int)time(NULL), name);
-
+    if ( !absoluteFilename )
+    {
+        snprintf(simulationFileName, 255, "%s/.visit/simulations/%012d.%s.sim1",
+                 GetHomeDirectory(), (int)time(NULL), name);
+    }
+     else
+     {
+          snprintf(simulationFileName, 255, "%s", absoluteFilename);
+     }
        
     file = fopen(simulationFileName, "wt");
     if (!file)

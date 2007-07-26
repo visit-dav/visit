@@ -73,7 +73,8 @@ int   VisItInitializeSocketAndDumpSimFile(const char *name,
                                           const char *comment,
                                           const char *path,
                                           const char *inputfile,
-                                          const char *guifile);
+                                          const char *guifile,
+                                          const char *absoluteFilename);
 int   VisItDetectInput(int blocking, int consoledesc);
 int   VisItAttemptToCompleteConnection(void);
 void  VisItSetSlaveProcessCallback(void(*)(void));

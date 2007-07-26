@@ -42,6 +42,8 @@ c Programmer: Brad Whitlock
 c Date:       Fri Jan 26 15:24:35 PST 2007
 c
 c Modifications:
+c    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
+c    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
 c
 c-----------------------------------------------------------------
       program main
@@ -54,7 +56,8 @@ ccc   local variables
      . "Demonstrates visitupdateplots function", 39,
      . "/no/useful/path", 15,
      . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
-     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN)
+     . VISIT_F77NULLSTRING, VISIT_F77NULLSTRINGLEN,
+     . VISIT_F77NULLSTRING,VISIT_F77NULLSTRINGLEN)
       call mainloop()
       stop
       end

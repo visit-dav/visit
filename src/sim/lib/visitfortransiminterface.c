@@ -360,7 +360,8 @@ F_VISITINITIALIZESIM(
     VISIT_F77STRING comment, int *lcomment,
     VISIT_F77STRING path, int *lpath,
     VISIT_F77STRING inputfile, int *linputfile,
-    VISIT_F77STRING uifile, int *luifile)
+    VISIT_F77STRING uifile, int *luifile,
+    VISIT_F77STRING absoluteFilename, int *labsoluteFilename)
 {
     int retval = -1;
     char *f_name = NULL;
@@ -368,20 +369,24 @@ F_VISITINITIALIZESIM(
     char *f_path = NULL;
     char *f_inputfile = NULL;
     char *f_uifile = NULL;
+    char *f_absoluteFilename = NULL;
     COPY_FORTRAN_STRING(f_name, name, lname);
     COPY_FORTRAN_STRING(f_comment, comment, lcomment);
     COPY_FORTRAN_STRING(f_path, path, lpath);
     COPY_FORTRAN_STRING(f_inputfile, inputfile, linputfile);
     COPY_FORTRAN_STRING(f_uifile, uifile, luifile);
+    COPY_FORTRAN_STRING(f_absoluteFilename, absoluteFilename, labsoluteFilename);
+    
 
     retval = VisItInitializeSocketAndDumpSimFile(f_name, f_comment,
-                 f_path, f_inputfile, f_uifile);
+                 f_path, f_inputfile, f_uifile,f_absoluteFilename);
 
     FREE(f_name);
     FREE(f_comment);
     FREE(f_path);
     FREE(f_inputfile);
     FREE(f_uifile);
+    FREE(f_absoluteFilename);
 
     return retval;
 }
