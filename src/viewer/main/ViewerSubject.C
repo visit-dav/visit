@@ -158,6 +158,7 @@
 #include <unistd.h>
 #else
 #include <process.h>
+static int nConfigArgs = 1;
 #endif
 
 #include <algorithm>
@@ -584,6 +585,9 @@ ViewerSubject::Connect(int *argc, char ***argv)
 //    Hank Childs, Mon Feb 26 11:33:37 PST 2007
 //    Issue a warning when a config file was not found.
 //
+//    Kathleen Bonnell, Tue Jul 24 15:44:37 PDT 2007 
+//    Added WIN32 specific-code to handle an arg that may have spaces in it. 
+//
 // ****************************************************************************
 
 void
@@ -614,9 +618,29 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
                 delete [] configFileName;
                 configFileName = 0;
             }
+#ifndef WIN32
             int len = strlen(argv[i+1]);
             configFileName = new char[len + 1];
             strcpy(configFileName, argv[i+1]);
+#else
+            string tmp = argv[i+1];
+            int argcnt = 1;
+            if (argv[i+1][0] == '\"' || argv[i+1][0] == '\'')
+            {
+                for (int j = i+2; j < argc; j++, argcnt++)
+                {
+                    if (tmp[tmp.length()-1] == '\"' || 
+                        tmp[tmp.length()-1] == '\'')
+                        break;
+                    tmp += " ";
+                    tmp += argv[j];
+                }
+            }
+            int len = tmp.length();
+            configFileName = new char[len+1];
+            strcpy(configFileName, tmp.c_str());
+            nConfigArgs = argcnt;
+#endif
         }       
     }
 
@@ -2285,6 +2309,10 @@ ViewerSubject::GetOperatorFactory() const
 //    Jeremy Meredith, Tue Jul 17 16:39:40 EDT 2007
 //    Added -fullscreen argument.
 //
+//    Kathleen Bonnell, Tue Jul 24 15:51:03 PDT 2007 
+//    On Windows, increment using nConfigArgs when removing -config and its
+//    arg.
+//
 // ****************************************************************************
 
 void
@@ -2409,7 +2437,11 @@ ViewerSubject::ProcessCommandLine(int *argc, char ***argv)
         {
             // Make sure the -config flag and the filename that follows it is
             // not passed along to other components.
+#ifndef WIN32
             ++i;
+#else
+            i+=nConfigArgs; 
+#endif
         }
         else if (strcmp(argv2[i], "-foreground") == 0 ||
                 strcmp(argv2[i], "-fg") == 0)

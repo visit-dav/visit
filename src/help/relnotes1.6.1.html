@@ -44,6 +44,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <li> Significant changes were make to enable build_visit.  The build_visit script performs a complete build of VisIt, its required support libraries, and the optional third-party libraries.  The location build_visit script is in clearcase_bin directory, it is also available as an independent download from http://www.llnl.gov/visit/1.6.1/build_visit.  The build_visit script is still evolving, but is expected to work for Linux, AIX, and Darwin systems. The supported usage assumes that the visit tarball, all for the required and third-party libraries exist with in the same directory that build_visit is being run. The automatic download feature from VisIt's ftp site is not fully supported for all libraries, and currently the SVN downloads are available to registered users only.</li>
 <li>Made Ale3d's 'rlxstat' variable an enumerated variable in VisIt.</li>
 <li>Added 'visit -diff' tool to support visualization and analysis of differences in databases. Run visit -fullhelp for more info.</li>
+<li>Windows version now saves user config files to <i>My Documents</i> instead of VisIt's installation directory.  This also applies to images, sessions, and movie default save directories.</li>
+<li>Python scripts on Windows platform can be 'double-clicked' to start VisIt's cli and run the script.  This association must be chosen during installation.</li>
+<li>VisIt is now added to the PATH environment variable on Windows, allowing execution from the command prompt.<li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.6.1</font></b></p>
 <ul>
@@ -96,6 +99,8 @@ when placing 3D annotations.</li>
 <li>Tecplot files with no model in the Zone record now load correctly, defaulting to the POINT ordering.</li>
 <li>Tecplot files with no element type in the Zone record now correctly default to return point meshes.</li>
 <li>Fixed time derivative expressions so that they actually divide by delta-time.</li>
+<li>Windows version now honors '-config' command-line directive.</li>
+<li>Double-clicking session files works on Windows again.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.6.html">VisIt 1.6 Release Notes</a>.</p>

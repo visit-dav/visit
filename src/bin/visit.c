@@ -54,6 +54,13 @@
                    strcpy(componentArgs[nComponentArgs], A); \
                    ++nComponentArgs;
 
+#define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
+
+#define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
+
+#define HASSPACE(A) (strstr(A, " ") != NULL)
+
+
 /*
  * Constants
  */
@@ -157,6 +164,11 @@ int ReadKey(const char *key, char **keyval);
  *   Kathleen Bonnell, Mon Jul  2 10:43:29 PDT 2007 
  *   Remove last fix. 
  *
+ *   Kathleen Bonnell, Tue Jul 24 15:19:23 PDT 2007 
+ *   Added tests for spaces in args, so they can be surrounded in quotes, and
+ *   for args beginning with quotes so that the entire arg can be concatenated
+ *   into 1 argument surrounded by quotes. 
+ *
  *****************************************************************************/
 
 int
@@ -164,8 +176,8 @@ main(int argc, char *argv[])
 {
     int   nComponentArgs = 0;
     char *componentArgs[100], *command = 0, *printCommand = 0, *visitpath = 0,
-         *visitargs = 0, *cptr = 0, *cptr2 = 0;
-    int i, size = 0, retval = 0, skipping = 0;
+         *visitargs = 0, *cptr = 0, *cptr2 = 0, tmpArg[512];
+    int i, j, size = 0, retval = 0, skipping = 0, nArgsSkip = 0, tmplen = 0;
     int addMovieArguments = 0, addVISITARGS = 1, useShortFileName = 0;
     int newConsole = 0;
 
@@ -269,7 +281,32 @@ main(int argc, char *argv[])
         }
         else
         {
-            PUSHARG(argv[i]);
+            if (!BEGINSWITHQUOTE(argv[i]))
+            {
+                PUSHARG(argv[i]);
+            }
+            else if (BEGINSWITHQUOTE(argv[i]) && ENDSWITHQUOTE(argv[i]))
+            {
+                PUSHARG(argv[i]);
+            }
+            else
+            {
+                strcpy(tmpArg, argv[i]);
+                nArgsSkip = 1;
+                tmplen += strlen(argv[i]);
+                for (j = i+1; j < argc; j++)
+                {
+                    nArgsSkip++;
+                    strcat(tmpArg, " ");
+                    strcat(tmpArg, argv[j]);
+                    tmplen += (strlen(argv[j]) +1);
+                    if (ENDSWITHQUOTE(argv[j]))
+                        break;
+                }
+                tmpArg[tmplen] = '\0';
+                PUSHARG(tmpArg);
+                i += (nArgsSkip -1);
+            }
         }
     }
 
@@ -302,7 +339,11 @@ main(int argc, char *argv[])
      */
     size = strlen(visitpath) + strlen(component) + 4;
     for(i = 0; i < nComponentArgs; ++i)
+    {
         size += (strlen(componentArgs[i]) + 1);
+        if (HASSPACE(componentArgs[i]))
+            size += 2;
+    }
     if(addMovieArguments)
     {
         size += strlen("-s") + 1;
@@ -333,16 +374,32 @@ main(int argc, char *argv[])
     cptr2 = printCommand + strlen(printCommand);
     for(i = 0; i < nComponentArgs; ++i)
     {
-        sprintf(cptr, " %s", componentArgs[i]);
-        cptr += (strlen(componentArgs[i]) + 1);
+        if (HASSPACE(componentArgs[i]))
+        {
+            sprintf(cptr, " \'%s\'", componentArgs[i]);
+            cptr += (strlen(componentArgs[i]) + 3);
+        }
+        else
+        {
+            sprintf(cptr, " %s", componentArgs[i]);
+            cptr += (strlen(componentArgs[i]) + 1);
+        }
 
         if(strcmp(componentArgs[i], "-key") == 0)
             skipping = 1;
 
         if(skipping == 0) 
         {
-            sprintf(cptr2, " %s", componentArgs[i]);
-            cptr2 += (strlen(componentArgs[i]) + 1);
+            if (HASSPACE(componentArgs[i]))
+            {
+                sprintf(cptr2, " \'%s\'", componentArgs[i]);
+                cptr2 += (strlen(componentArgs[i]) + 3);
+            }
+            else
+            {
+                sprintf(cptr2, " %s", componentArgs[i]);
+                cptr2 += (strlen(componentArgs[i]) + 1);
+            }
         }
     }
     if(addVISITARGS)
