@@ -67,12 +67,17 @@ using     std::string;
 //  Programmer: Jeremy Meredith
 //  Creation:   June 14, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 26 14:33:16 EDT 2007
+//    Changed to read only the requested time steps on demand instead
+//    of reading the whole file at once.
+//
 // ****************************************************************************
 
 avtXYZFileFormat::avtXYZFileFormat(const char *fn)
     : avtMTSDFileFormat(&fn, 1)
 {
-    fileRead = false;
+    metaDataRead = false;
     filename = fn;
 }
 
@@ -86,12 +91,17 @@ avtXYZFileFormat::avtXYZFileFormat(const char *fn)
 //  Programmer: Jeremy Meredith
 //  Creation:   June 14, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 26 14:33:16 EDT 2007
+//    Changed to read only the requested time steps on demand instead
+//    of reading the whole file at once.
+//
 // ****************************************************************************
 
 int
 avtXYZFileFormat::GetNTimesteps(void)
 {
-    ReadFile();
+    ReadAllMetaData();
     return nTimeSteps;
 }
 
@@ -128,8 +138,38 @@ avtXYZFileFormat::FreeUpResources(void)
     z.clear();
     for (int i=0; i<MAX_XYZ_VARS; i++)
         v[i].clear();
+}
 
-    fileRead = false;
+
+// ****************************************************************************
+//  Method:  avtXYZFileFormat::OpenFileAtBeginning
+//
+//  Purpose:
+//    Opens the file, or else seeks to the beginning.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 26, 2007
+//
+// ****************************************************************************
+void
+avtXYZFileFormat::OpenFileAtBeginning()
+{
+    if (!in.is_open())
+    {
+        in.open(filename.c_str());
+        if (!in)
+        {
+            EXCEPTION1(InvalidFilesException, filename.c_str());
+        }
+    }
+    else
+    {
+        in.clear();
+        in.seekg(0, ios::beg);
+    }
 }
 
 
@@ -144,12 +184,18 @@ avtXYZFileFormat::FreeUpResources(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   June 14, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 26 14:33:16 EDT 2007
+//    Changed to read only the requested time steps on demand instead
+//    of reading the whole file at once.
+//
 // ****************************************************************************
 
 void
-avtXYZFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
+avtXYZFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timestep)
 {
-    ReadFile();
+    ReadAllMetaData();
+
     avtMeshMetaData *mmd = new avtMeshMetaData("mesh", 1, 0,0,0,
                                                3, 1,
                                                AVT_POINT_MESH);
@@ -175,7 +221,7 @@ avtXYZFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
 //      vtkUnstructuredGrid, etc).
 //
 //  Arguments:
-//      timestate   The index of the timestate.  If GetNTimesteps returned
+//      timestep    The index of the timestate.  If GetNTimesteps returned
 //                  'N' time steps, this is guaranteed to be between 0 and N-1.
 //      meshname    The name of the mesh of interest.  This can be ignored if
 //                  there is only one mesh.
@@ -183,12 +229,17 @@ avtXYZFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
 //  Programmer: Jeremy Meredith
 //  Creation:   June 14, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 26 14:33:16 EDT 2007
+//    Changed to read only the requested time steps on demand instead
+//    of reading the whole file at once.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtXYZFileFormat::GetMesh(int timestate, const char *meshname)
+avtXYZFileFormat::GetMesh(int timestep, const char *meshname)
 {
-    ReadFile();
+    ReadTimeStep(timestep);
 
     vtkPolyData *pd  = vtkPolyData::New();
     vtkPoints   *pts = vtkPoints::New();
@@ -199,9 +250,9 @@ avtXYZFileFormat::GetMesh(int timestate, const char *meshname)
     for (int j = 0 ; j < nAtoms ; j++)
     {
         pts->SetPoint(j,
-                      x[timestate][j],
-                      y[timestate][j],
-                      z[timestate][j]);
+                      x[timestep][j],
+                      y[timestep][j],
+                      z[timestep][j]);
     }
  
     vtkCellArray *verts = vtkCellArray::New();
@@ -227,19 +278,24 @@ avtXYZFileFormat::GetMesh(int timestate, const char *meshname)
 //      that is supported everywhere through VisIt.
 //
 //  Arguments:
-//      timestate  The index of the timestate.  If GetNTimesteps returned
+//      timestep   The index of the timestate.  If GetNTimesteps returned
 //                 'N' time steps, this is guaranteed to be between 0 and N-1.
 //      varname    The name of the variable requested.
 //
 //  Programmer: Jeremy Meredith
 //  Creation:   June 14, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Jul 26 14:33:16 EDT 2007
+//    Changed to read only the requested time steps on demand instead
+//    of reading the whole file at once.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtXYZFileFormat::GetVar(int timestate, const char *varname)
+avtXYZFileFormat::GetVar(int timestep, const char *varname)
 {
-    ReadFile();
+    ReadTimeStep(timestep);
 
     // element is a built-in variable
     if (string(varname) == "element")
@@ -249,7 +305,7 @@ avtXYZFileFormat::GetVar(int timestate, const char *varname)
         float *ptr = (float *) scalars->GetVoidPointer(0);
         for (int i=0; i<nAtoms; i++)
         {
-            ptr[i] = e[timestate][i];
+            ptr[i] = e[timestep][i];
         }
         return scalars;
     }
@@ -272,7 +328,7 @@ avtXYZFileFormat::GetVar(int timestate, const char *varname)
     float *ptr = (float *) scalars->GetVoidPointer(0);
     for (int i=0; i<nAtoms; i++)
     {
-        ptr[i] = v[varindex][timestate][i];
+        ptr[i] = v[varindex][timestep][i];
     }
     return scalars;
 }
@@ -287,7 +343,7 @@ avtXYZFileFormat::GetVar(int timestate, const char *varname)
 //      that is supported everywhere through VisIt.
 //
 //  Arguments:
-//      timestate  The index of the timestate.  If GetNTimesteps returned
+//      timestep   The index of the timestate.  If GetNTimesteps returned
 //                 'N' time steps, this is guaranteed to be between 0 and N-1.
 //      varname    The name of the variable requested.
 //
@@ -297,38 +353,102 @@ avtXYZFileFormat::GetVar(int timestate, const char *varname)
 // ****************************************************************************
 
 vtkDataArray *
-avtXYZFileFormat::GetVectorVar(int timestate, const char *varname)
+avtXYZFileFormat::GetVectorVar(int timestep, const char *varname)
 {
     // No vector variables
     return NULL;
 }
 
 // ****************************************************************************
-//  Method:  avtXYZFileFormat::ReadFile
+//  Method:  avtXYZFileFormat::ReadTimeStep
 //
 //  Purpose:
-//    Read the file.  We're going ahead and reading the entire thing
-//    right now because it's hard to even count the number of timesteps
-//    in this file without reading it all.
+//    Read only the atoms for the given time step.
+//
+//  Arguments:
+//    timestep   the time state for which to read the atoms
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    July 26, 2007
+//
+// ****************************************************************************
+void
+avtXYZFileFormat::ReadTimeStep(int timestep)
+{
+    ReadAllMetaData();
+
+    // don't read this time step if it's already in memory
+    if (x[timestep].size() > 0)
+        return;
+
+    OpenFileAtBeginning();
+    in.seekg(file_positions[timestep]);
+
+    e[timestep].resize(nAtoms);
+    x[timestep].resize(nAtoms);
+    y[timestep].resize(nAtoms);
+    z[timestep].resize(nAtoms);
+    for (int i=0; i<MAX_XYZ_VARS; i++)
+    {
+        v[i][timestep].resize(nAtoms);
+    }
+
+    char buff[1000];
+
+    // skip the number of atoms
+    in.getline(buff,1000);
+    // skip the molecule name
+    in.getline(buff,1000);
+
+    // read all the atoms
+    for (int a=0; a<nAtoms; a++)
+    {
+        in.getline(buff,1000);
+        char element[100];
+        if (MAX_XYZ_VARS != 6)
+        {
+            EXCEPTION1(VisItException,
+                       "Internal error: avtXYZFileFormat has "
+                       "MAX_XYZ_VARS mismatch.");
+        }
+        int n = sscanf(buff,"%s %f %f %f %f %f %f %f %f %f",
+                       element,
+                       &x[timestep][a],
+                       &y[timestep][a],
+                       &z[timestep][a],
+                       &v[0][timestep][a],
+                       &v[1][timestep][a],
+                       &v[2][timestep][a],
+                       &v[3][timestep][a],
+                       &v[4][timestep][a],
+                       &v[5][timestep][a]);
+        e[timestep][a] = ElementNameToAtomicNumber(element);
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtXYZFileFormat::ReadMetaData
+//
+//  Purpose:
+//    The metadata we need to read here is (a) count the number of
+//    time steps, and (b) count how many entries are in the atoms
+//    so we know how many variables to report.
 //
 //  Arguments:
 //    none
 //
 //  Programmer:  Jeremy Meredith
-//  Creation:    June 14, 2007
+//  Creation:    July 26, 2007
 //
 // ****************************************************************************
 void
-avtXYZFileFormat::ReadFile()
+avtXYZFileFormat::ReadAllMetaData()
 {
-    if (fileRead)
+    if (metaDataRead)
         return;
 
-    ifstream in(filename.c_str());
-    if (!in)
-    {
-        EXCEPTION1(InvalidFilesException, filename.c_str());
-    }
+    OpenFileAtBeginning();
 
     char buff[1000];
 
@@ -336,10 +456,16 @@ avtXYZFileFormat::ReadFile()
     nVars = 0;
     while (in)
     {
+        // get the current file position
+        istream::pos_type current_pos = in.tellg();
+
         in >> nAtoms;
         // this is the first read to return EOF after the last timestep
         if (!in)
             break;
+
+        // record the position as the start of this timestep
+        file_positions.push_back(current_pos);
 
         // the first line had better be a number
         if (nAtoms == 0)
@@ -350,25 +476,15 @@ avtXYZFileFormat::ReadFile()
         // finish the first line
         in.getline(buff,1000);
 
-        // read the molecule name
-        char comment[1000];
-        in.getline(comment,1000);
+        // skip molecule name
+        in.getline(buff,1000);
 
-        // we got a new timestep; add to our arrays
-        e.push_back(vector<int>(nAtoms));
-        x.push_back(vector<float>(nAtoms));
-        y.push_back(vector<float>(nAtoms));
-        z.push_back(vector<float>(nAtoms));
-        for (int i=0; i<MAX_XYZ_VARS; i++)
-        {
-            v[i].push_back(vector<float>(nAtoms));
-        }
-
-        // read all the atoms
-        for (int a=0; a<nAtoms; a++)
+        // in the first time step, get the number of vars.
+        if (nTimeSteps == 0)
         {
             in.getline(buff,1000);
             char element[100];
+            float x,y,z,v0,v1,v2,v3,v4,v5;
             if (MAX_XYZ_VARS != 6)
             {
                 EXCEPTION1(VisItException,
@@ -376,24 +492,39 @@ avtXYZFileFormat::ReadFile()
                            "MAX_XYZ_VARS mismatch.");
             }
             int n = sscanf(buff,"%s %f %f %f %f %f %f %f %f %f",
-                           element,
-                           &x[nTimeSteps][a],
-                           &y[nTimeSteps][a],
-                           &z[nTimeSteps][a],
-                           &v[0][nTimeSteps][a],
-                           &v[1][nTimeSteps][a],
-                           &v[2][nTimeSteps][a],
-                           &v[3][nTimeSteps][a],
-                           &v[4][nTimeSteps][a],
-                           &v[5][nTimeSteps][a]);
-            e[nTimeSteps][a] = ElementNameToAtomicNumber(element);
+                           element,&x,&y,&z,&v0,&v1,&v2,&v3,&v4,&v5);
             nVars = n - 4;
+
+            // skip the remainin atoms
+            for (int a=1; a<nAtoms; a++)
+            {
+                in.getline(buff,1000);
+            }
+        }
+        else
+        {
+            // skip the remainin atoms
+            for (int a=0; a<nAtoms; a++)
+            {
+                in.getline(buff,1000);
+            }
         }
 
         // success; next time step
         nTimeSteps++;
     }
 
-    // don't read it more than once
-    fileRead = true;
+    // don't read the meta data more than once
+    metaDataRead = true;
+
+    // resize our atom arrays
+    e.resize(nTimeSteps);
+    x.resize(nTimeSteps);
+    y.resize(nTimeSteps);
+    z.resize(nTimeSteps);
+    for (int i=0; i<MAX_XYZ_VARS; i++)
+    {
+        v[i].resize(nTimeSteps);
+    }
+    
 }
