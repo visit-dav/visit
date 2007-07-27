@@ -81,6 +81,9 @@
 #    Jeremy Meredith, Tue Aug 29 14:27:57 EDT 2006
 #    Added ClipCasesLin and ClipCasesVtx.
 #
+#    Thomas R. Treadway, Fri Jul 27 15:06:53 PDT 2007
+#    Added Mesa libraries to link.
+#
 ##############################################################################
 
 ##
@@ -119,7 +122,8 @@ CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ @ANNOTATION_FLAGS@ -I. @MESA_INCLUDE@
 
 OBJ=$(SRC:.C=.o)
 LIB=liblightweight_visit_vtk
-LIBS=@VTK_LIBS@ $(X_LIBS) -lmisc
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS)
+LIBS=@VTK_LIBS@ $(LIBS_FOR_MACOSX_PREBINDING) $(X_LIBS) -lmisc
 
 
 ##

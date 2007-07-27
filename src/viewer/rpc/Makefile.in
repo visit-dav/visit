@@ -81,6 +81,9 @@
 #    Brad Whitlock, Mon Feb 12 09:12:56 PDT 2007
 #    I added ViewerMethdods and ViewerState.
 #
+#    Thomas R. Treadway, Thu Jul 26 16:19:55 PDT 2007
+#    Added a couple more libraries for MacOS X.
+#
 ##############################################################################
 
 ##
@@ -99,7 +102,7 @@ SRC=PostponedAction.C ViewerRPC.C ViewerMethods.C ViewerState.C
 HDR=PostponedAction.h ViewerRPC.h ViewerMethods.h ViewerState.h
 OBJ=$(SRC:.C=.o)
 LIB=libviewerrpc
-LIBS=-lmisc -lstate -lcomm -lutility
+LIBS=-ldbatts -lavtexceptions -lparser -lexpr -lmisc -lstate -lcomm -lutility
 
 
 ##

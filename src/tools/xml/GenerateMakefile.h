@@ -203,6 +203,9 @@
 //    Jeremy Meredith, Thu Jun  7 13:22:18 EDT 2007
 //    Remove build rule for moc.C from .h.  This is now in make-targets.in.
 //
+//    Thomas R. Treadway, Thu Jul 26 15:28:07 PDT 2007
+//    Added more Mac dependences for plugins
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -462,21 +465,33 @@ class MakefileGeneratorPlugin
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=" << endl;
 #else
-            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
-            out << "VLIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(BZIP2_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
-            out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin" << endl;
-            out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions -ldbatts -lplugin -lexpr -lparser" << endl;
+            out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) "
+                   "$(MESA_LIBS) $(GL_LIBS)" << endl;
+            out << "VLIBS_FOR_MACOSX_PREBINDING=-lviewer -lengineproxy "
+                   "-lenginerpc -lviewerrpc -lmdserverproxy -lmdserverrpc "
+                   "-lvclproxy -lvclrpc -lplugin -lqtviswindow "
+                   "-lviswindow_ser -lavtwriter_ser -lvtkqt -lwinutil "
+                   "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(BZIP2_LIBS) "
+                   "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
+            out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser "
+                   "-ldatabase_ser -lmir_ser -lplugin" << endl;
+            out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions "
+                   "-ldbatts -lplugin -lexpr -lparser" << endl;
 #endif
             out << "ILIBS=" << endl;
             out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase "
-                   "-lmdserverrpc -lviewerrpc -ldbatts -lwinutil -lavtexceptions "
-                   "-lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility "
-                   "-lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
-            out << "SLIBS=-lstate -lmisc -lutility -lcomm -lvisitpy $(SLIBS_FOR_MACOSX_PREBINDING) $(PY_LIB) -lI$(PLUGINNAME)" << endl;
+                   "-lmdserverrpc -lviewerrpc -ldbatts -lwinutil "
+                   "-lavtexceptions -lstate -lcomm -lmisc -lplugin "
+                   "-lexpr -lparser -lutility -lI$(PLUGINNAME) "
+                   "$(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
+            out << "SLIBS=-lstate -lmisc -lutility -lcomm -lvisitpy "
+                   "$(SLIBS_FOR_MACOSX_PREBINDING) $(PY_LIB) "
+                   "-lI$(PLUGINNAME)" << endl;
             out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
                    "-lavtmath_ser -lavtview -lavtexceptions -ldbatts -lstate "
                    "-lexpr -lmisc -lcomm -lparser -lutility -lvisit_vtk "
-                   "-llightweight_visit_vtk -lparallel_visit_vtk_ser $(VLIBS_FOR_MACOSX_PREBINDING) ";
+                   "-llightweight_visit_vtk -lparallel_visit_vtk_ser "
+                   "$(VLIBS_FOR_MACOSX_PREBINDING) ";
             //
             // HACK HACK HACK -- This should be a flag in the XML file instead
             //                   of using the name of the operator. The flag
@@ -490,15 +505,27 @@ class MakefileGeneratorPlugin
             if (usesViewerLib)
             {
                out << "-lviewer -lviewerrpc -lproxybase -lvclproxy -lvclrpc "
-                      "-lmdserverproxy -lmdserverrpc -lengineproxy -lenginerpc "
-                      "-lplugin -lavtwriter_ser -lviswindow_ser -lqtviswindow -lvtkqt "
-                      "-lwinutil $(QT_LIBS) ";
+                      "-lmdserverproxy -lmdserverrpc -lengineproxy "
+                      "-lenginerpc -lplugin -lavtwriter_ser -lviswindow_ser "
+                      "-lqtviswindow -lvtkqt -lwinutil $(QT_LIBS) ";
             }
 
             // Add the rest of the viewer operator libs
             out << "-lI$(PLUGINNAME) $(VTK_LIBS)" << endl;
-            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser -lI$(PLUGINNAME) $(ESERLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -ldbatts -lavtexceptions -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
+                   "-lavtmath_ser -lavtview -ldbatts -lavtexceptions "
+                   "-lstate -lmisc -lcomm -lexpr -lparser -lutility "
+                   "-lvisit_vtk -llightweight_visit_vtk "
+                   "-lparallel_visit_vtk_ser -lexpressions_ser "
+                   "-lI$(PLUGINNAME) $(ESERLIBS_FOR_MACOSX_PREBINDING) "
+                   "$(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par "
+                   "-lavtmath_par -lavtview -ldbatts -lavtexceptions "
+                   "-lstate -lmisc -lcomm -lexpr -lparser -lutility "
+                   "-lvisit_vtk -llightweight_visit_vtk "
+                   "-lparallel_visit_vtk_par -lexpressions_par "
+                   "-lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) "
+                   "$(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
@@ -637,14 +664,24 @@ class MakefileGeneratorPlugin
             out << "SLIBS_FOR_MACOSX_PREBINDING=" << endl;
 #else
             out << "ELIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(BZIP2_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
-            out << "VLIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
+            out << "VLIBS_FOR_MACOSX_PREBINDING=-lviewer -lengineproxy "
+                   "-lenginerpc -lviewerrpc -lmdserverproxy -lmdserverrpc "
+                   "-lvclproxy -lvclrpc -lplugin -lqtviswindow "
+                   "-lviswindow_ser -lavtwriter_ser -lvtkqt -lwinutil "
+                   "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(BZIP2_LIBS) "
+                   "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions -lplugin -ldbatts -lparser -lexpr" << endl;
 #endif
             out << "ILIBS=" << endl;
             out << "GLIBS=-lgui -lmdserverproxy -lviewerproxy -lproxybase -lmdserverrpc -lviewerrpc -ldbatts -lwinutil -lavtexceptions -lstate -lcomm -lmisc -lplugin -lexpr -lparser -lutility -lI$(PLUGINNAME) $(QT_LDFLAGS) $(QT_LIBS) $(QUI_LIBS) $(X_LIBS)" << endl;
             out << "SLIBS=-lstate -lmisc -lcomm -lutility -lvisitpy $(SLIBS_FOR_MACOSX_PREBINDING) $(PY_LIB) -lI$(PLUGINNAME)" << endl;
-            out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -ldbatts -lavtexceptions -lmisc -lcomm -lstate -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lI$(PLUGINNAME) $(VLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
+            out << "VLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser "
+                   "-lavtmath_ser -lavtview -ldbatts -lavtexceptions "
+                   "-lmisc -lcomm -lstate -lexpr -lparser -lutility "
+                   "-lvisit_vtk -llightweight_visit_vtk "
+                   "-lparallel_visit_vtk_ser -lI$(PLUGINNAME) "
+                   "$(VLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser -lI$(PLUGINNAME) $(ESERLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
