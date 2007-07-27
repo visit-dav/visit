@@ -65,6 +65,9 @@
 #    Thomas R. Treadway, Tue Mar 27 12:01:30 PDT 2007
 #    Added Mesa libraries.
 #
+#    Thomas R. Treadway, Fri Jul 27 15:22:15 PDT 2007
+#    Added GLEW libraries.
+#
 ##############################################################################
 
 ##
@@ -85,9 +88,10 @@ CPPFLAGS=@VISIT_VTK_CPPFLAGS@ @CPPFLAGS@ -I.
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libparallel_visit_vtk
-LIBS=-lmisc -lvisit_vtk -llightweight_visit_vtk -lavtexceptions 
-SERLIBS=$(LIBS) @VTK_LIBS@ @MESA_LIBS@ $(X_LIBS)
-PARLIBS=$(LIBS) @VTK_LIBS@ @MESA_LIBS@ $(X_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=@MESA_LIBS@ $(GL_LIBS)
+LIBS=-lmisc -lvisit_vtk -llightweight_visit_vtk -lavtexceptions $(LIBS_FOR_MACOSX_PREBINDING)
+SERLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
+PARLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
 
 ##
 ## Standard targets...

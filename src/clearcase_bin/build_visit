@@ -180,6 +180,10 @@
 #     Added options for VisIt builds with --enable-visitmodule and
 #     --enable-java
 #
+#     Thomas R. Treadway, Thu Jul 26 14:53:18 PDT 2007
+#     Modified sources path in VisIt tar file.
+#     Changed link options on Mac
+#
 # *****************************************************************************
 
 
@@ -2395,8 +2399,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         ar x ../libpython${PYTHON_VERSION}.a
         $C_COMPILER -o ../libpython${PYTHON_VERSION}.$SO_EXT -dynamiclib \
           ../environhack.o *.o -lSystem $USESTUBS \
-          -framework Carbon -Wl,-twolevel_namespace \
-          -Wl,-undefined,dynamic_lookup,-headerpad_max_install_names \
+          -framework Carbon -Wl,-headerpad_max_install_names \
           -Wl,-install_name,$INSTALLNAMEPATH/libpython$PYTHON_VERSION.$SO_EXT \
           -Wl,-compatibility_version,${PYTHON_COMPATIBILITY_VERSION} \
           -Wl,-current_version,${PYTHON_VERSION}
@@ -2495,7 +2498,7 @@ function build_silo
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
         $C_COMPILER -dynamiclib -o libsilo.${SO_EXT} silo/*/*.o \
-           -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+           -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libsilo.${SO_EXT} \
            -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
            -Wl,-current_version,${SILO_VERSION}
@@ -2609,14 +2612,12 @@ function build_hdf5
         fi
 ## go back to gcc bacause if "external relocation entries" restFP saveFP
 ##      libtool -o libhdf5.${SO_EXT} -dynamic src/.libs/libhdf5.a -lSystem -lz \
-##      -twolevel_namespace -undefined dynamic_lookup \
 ##      -headerpad_max_install_names \
 ##      -install_name $INSTALLNAMEPATH/libhdf5.${SO_EXT} \
 ##      -compatibility_version $HDF5_COMPATIBILITY_VERSION \
 ##      -current_version $HDF5_VERSION
         $C_COMPILER -dynamiclib -o libhdf5.${SO_EXT} src/*.o \
-           -Wl,-twolevel_namespace,-headerpad_max_install_names \
-           -Wl,-undefined,dynamic_lookup \
+           -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libhdf5.${SO_EXT} \
            -Wl,-compatibility_version,$HDF5_COMPATIBILITY_VERSION \
            -Wl,-current_version,$HDF5_VERSION -lSystem -lz
@@ -3703,7 +3704,7 @@ EOF
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
         ${C_COMPILER} -dynamiclib -o libdf.${SO_EXT} hdf/src/*.o \
-           -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+           -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libdf.${SO_EXT} \
            -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
            -Wl,-current_version,$HDF4_VERSION \
@@ -3717,7 +3718,7 @@ EOF
 
         # Relink libmfhdf.
         ${C_COMPILER} -dynamiclib -o libmfhdf.${SO_EXT} mfhdf/libsrc/*.o \
-           -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup \
+           -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libmfhdf.${SO_EXT} \
            -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
            -Wl,-current_version,$HDF4_VERSION \
@@ -3993,7 +3994,6 @@ function build_cgns
         fi
         libtool -o libcgns.${SO_EXT} -dynamic DARWIN/libcgns.a -lSystem \
            $USESTUBS -headerpad_max_install_names \
-           -twolevel_namespace -undefined dynamic_lookup \
            -install_name $INSTALLNAMEPATH/libcgns.${SO_EXT} \
            -compatibility_version $CGNS_COMPATIBILITY_VERSION \
            -current_version $CGNS_VERSION
@@ -4616,8 +4616,7 @@ EOF
         cd tmp
         ar x ../libbox3d.Darwin.CC.f77.a
         $CXX_COMPILER -dynamiclib -o libbox3D.$SO_EXT *.o \
-          -lSystem -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
-          -Wl,-headerpad_max_install_names \
+          -lSystem -Wl,-headerpad_max_install_names \
           -Wl,-install_name,$INSTALLNAMEPATH/libbox3D.$SO_EXT \
           -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
           -Wl,-current_version,$BOXLIB_VERSION
@@ -4721,8 +4720,7 @@ EOF
         cd tmp
         ar x ../libbox2d.Darwin.CC.f77.a
         $CXX_COMPILER -dynamiclib -o libbox2D.$SO_EXT *.o \
-          -lSystem -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
-          -Wl,-headerpad_max_install_names \
+          -lSystem -Wl,-headerpad_max_install_names \
           -Wl,-install_name,$INSTALLNAMEPATH/libbox2D.$SO_EXT \
           -Wl,-compatibility_version,$BOXLIB_COMPATIBILITY_VERSION \
           -Wl,-current_version,$BOXLIB_VERSION
@@ -4828,13 +4826,11 @@ function build_cfitsio
         fi
 ## switch back to gcc "external relocation entries" restFP saveFP
 ##      libtool -o libcfitsio.$SO_EXT -dynamic libcfitsio.a -lSystem \
-##      -twolevel_namespace -undefined dynamic_lookup \
 ##      -headerpad_max_install_names \
 ##      -install_name $INSTALLNAMEPATH/libcfitsio.$SO_EXT \
 ##      -compatibility_version $CFITSIO_COMPATIBILITY_VERSION \
 ##      -current_version $CFITSIO_VERSION
         gcc -o libcfitsio.$SO_EXT -dynamiclib *.o -lSystem \
-           -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
            -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libcfitsio.$SO_EXT \
            -Wl,-compatibility_version,$CFITSIO_COMPATIBILITY_VERSION \
@@ -4951,13 +4947,11 @@ function build_h5part
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
         libtool -o libH5Part.$SO_EXT -dynamic src/libH5Part.a -lSystem \
-        -twolevel_namespace -undefined dynamic_lookup \
         -headerpad_max_install_names \
         -install_name $INSTALLNAMEPATH/libH5Part.$SO_EXT \
         -compatibility_version $H5PART_COMPATIBILITY_VERSION \
         -current_version $H5PART_VERSION ${HDF5DYLIB}
 ##      gcc -o libH5Part.$SO_EXT -dynamiclib src/*.o -lSystem \
-##         -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
 ##         -Wl,-headerpad_max_install_names \
 ##         -Wl,-install_name,$INSTALLNAMEPATH/libH5Part.$SO_EXT \
 ##         -Wl,-compatibility_version,$H5PART_COMPATIBILITY_VERSION \
@@ -5240,10 +5234,10 @@ function build_visit
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
         cd src
     else
-        VISIT_DIR=${VISIT_FILE%.tar*}
+        VISIT_DIR=${VISIT_FILE%.tar*}/src
         cd "${VISIT_DIR}"
     fi
-    cp ../$(hostname).conf config-site
+    cp $START_DIR/$(hostname).conf config-site
 
     #
     # Call configure
@@ -5917,7 +5911,7 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
 "You may now try to run VisIt by cd'ing into the src/bin"
    else
        echo \
-"You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/bin"
+"You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/src/bin"
    fi
    echo "directory and invoking \"visit\"."
    echo "If you run into problems, contact visit-help@llnl.gov"
