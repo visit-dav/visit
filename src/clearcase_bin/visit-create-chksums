@@ -94,38 +94,54 @@ do
 
    rm -f $output
 
-   echo ""                                  >  $output
-   echo "The VisIt executable $property"    >> $output
-   echo ""                                  >> $output
-   $cmd INSTALL_NOTES                       >> $output
-   $cmd visit-install                       >> $output
-   $cmd jvisit$version.tar.gz               >> $output
-   $cmd visit$version.exe                   >> $output
-   $cmd visit$version2.aix.tar.gz           >> $output
-   $cmd visit$version2.aix64.tar.gz         >> $output
-   $cmd visit$version2.darwin-ppc.tar.gz    >> $output
-   $cmd visit$version2.darwin-i386.tar.gz   >> $output
-   $cmd visit$version2.irix6.tar.gz         >> $output
-   $cmd visit$version2.linux-altix.tar.gz   >> $output
-   $cmd visit$version2.linux-ia64.tar.gz    >> $output
-   $cmd visit$version2.linux-x86_64.tar.gz  >> $output
-   $cmd visit$version2.linux_rhel3.tar.gz   >> $output
-   $cmd visit$version2.sunos5.tar.gz        >> $output
+   echo ""                                         >  $output
+   echo "The VisIt executable $property"           >> $output
+   echo ""                                         >> $output
+   $cmd INSTALL_NOTES                              >> $output
+   $cmd visit-install                              >> $output
+   $cmd jvisit$version.tar.gz                      >> $output
+   $cmd visit$version.exe                          >> $output
+   $cmd visit$version2.aix.tar.gz                  >> $output
+   $cmd visit$version2.aix64.tar.gz                >> $output
+   $cmd visit$version2.darwin-ppc.tar.gz           >> $output
+   $cmd visit$version2.darwin-i386.tar.gz          >> $output
+   $cmd visit$version2.irix6.tar.gz                >> $output
+   $cmd visit$version2.linux-altix.tar.gz          >> $output
+   $cmd visit$version2.linux-ellipse.tar.gz        >> $output
+   $cmd visit$version2.linux-ia64.tar.gz           >> $output
+   $cmd visit$version2.linux-x86_64-fedora4.tar.gz >> $output
+   $cmd visit$version2.linux-x86_64.tar.gz         >> $output
+   $cmd visit$version2.linux_rhel3.tar.gz          >> $output
+   $cmd visit$version2.sunos5.tar.gz               >> $output
 
-   echo ""                                  >> $output
-   echo "The VisIt source code $property"   >> $output
-   echo ""                                  >> $output
-   $cmd BUILD_NOTES                         >> $output
-   $cmd BUILD_NOTES_MacOSX                  >> $output
-   $cmd $dist.tar.gz                        >> $output
-   $cmd visitdev$version.exe                >> $output
+   echo ""                                         >> $output
+   echo "The VisIt source code $property"          >> $output
+   echo ""                                         >> $output
+   $cmd BUILD_NOTES                                >> $output
+   $cmd BUILD_NOTES_MacOSX                         >> $output
+   $cmd build_visit                                >> $output
+   $cmd $dist.tar.gz                               >> $output
+   $cmd visitdev$version.exe                       >> $output
    cd ../visit_third_party
-   $cmd cmake-2.2.3.tar.gz                  >> ../visit$version/$output
-   $cmd Mesa-5.0-mangled.tar.gz             >> ../visit$version/$output
-   $cmd Python-2.5.tgz                      >> ../visit$version/$output
-   $cmd qt-x11-free-3.3.2.tar.gz            >> ../visit$version/$output
-   $cmd silo060605.sh                       >> ../visit$version/$output
-   $cmd vtk-5.0.0c.tar.gz                   >> ../visit$version/$output
+   $cmd boxlib.tar.gz                              >> ../visit$version/$output
+   $cmd cfitsio3006.tar.gz                         >> ../visit$version/$output
+   $cmd cgnslib_2.4-3.tar.gz                       >> ../visit$version/$output
+   $cmd cmake-2.2.3.tar.gz                         >> ../visit$version/$output
+   $cmd cmake-2.4.5.tar.gz                         >> ../visit$version/$output
+   $cmd exodusii-4.46.tar.gz                       >> ../visit$version/$output
+   $cmd gdal-1.3.2.tar.gz                          >> ../visit$version/$output
+   $cmd H5Part-20070711.tar.gz                     >> ../visit$version/$output
+   $cmd HDF4.2r1.tar.gz                            >> ../visit$version/$output
+   $cmd hdf5-1.6.5.tar.gz                          >> ../visit$version/$output
+   $cmd Mesa-5.0-mangled.tar.gz                    >> ../visit$version/$output
+   $cmd MesaLib-6.4.2.tar.gz                       >> ../visit$version/$output
+   $cmd netcdf.tar.gz                              >> ../visit$version/$output
+   $cmd Python-2.5.tgz                             >> ../visit$version/$output
+   $cmd qt-mac-free-3.3.8.tar.gz                   >> ../visit$version/$output
+   $cmd qt-x11-free-3.3.2.tar.gz                   >> ../visit$version/$output
+   $cmd qt-x11-free-3.3.8.tar.gz                   >> ../visit$version/$output
+   $cmd silo060605.sh                              >> ../visit$version/$output
+   $cmd vtk-5.0.0c.tar.gz                          >> ../visit$version/$output
    cd ../visit$version
 
    shift

@@ -1173,7 +1173,10 @@ class AttsGeneratorVariableName : public virtual VariableName,
 
     virtual void WriteSourceSetDefault(ostream &c)
     {
-        c << "    " << name << " = new String(\"" << val << "\");" << endl;
+        c << "    " << name << " = new String(\"";
+        if(!val.isEmpty())
+           c << val;
+        c << "\");" << endl;
     }
 
     virtual void WriteSourceCopyCode(ostream &c)
