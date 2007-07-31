@@ -65,6 +65,9 @@ import llnl.visit.AnnotationAttributes;
 //   I added a little code to reduce CPU usage. I also made it use
 //   GetDataPath to locate the data.
 //
+//   Brad Whitlock, Thu Jul 26 15:44:08 PST 2007
+//   Added support for -dv instead of -vob.
+//
 // ****************************************************************************
 
 public class RunViewer
@@ -85,8 +88,8 @@ public class RunViewer
         {
             if(args[i].equals("-stay"))
                 stay = true;
-            else if(args[i].equals("-vob"))
-                viewer.SetBinPath("/data_vobs/VisIt/bin");
+            else if(args[i].equals("-dv"))
+                viewer.SetBinPath("../bin");
             else if(args[i].equals("-sync"))
                 sync = true;
             else if(args[i].equals("-async"))
