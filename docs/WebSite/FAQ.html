@@ -214,59 +214,65 @@ function MM_initTimelines() { //v4.0
 <h1>Frequently Asked Questions</h1>
 <table width="100%" border="0">
   <tr>
-    <td>&nbsp;&nbsp;1. <a href="#1">Contact information</a> </td>
-    <td>&nbsp;&nbsp;15. <a href="#15">Distributed mode on a MacOS X computer</a></td>
+    <td>1. <a href="#1">Contact information</a> </td>
+    <td>16. <a href="#16">Building VisIt on a Windows computer</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;2. <a href="#2">Supported platforms</a> </td>
-    <td>&nbsp;&nbsp;16. <a href="#16">Building VisIt on a Windows computer</a></td>
+    <td>2. <a href="#2">Supported platforms</a> </td>
+    <td>17. <a href="#17">Installing VisIt on a MacOS X computer</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;3. <a href="#3">Optimal hardware/software</a> </td>
-    <td>&nbsp;&nbsp;17. <a href="#17">Installing VisIt on a MacOS X computer</a></td>
+    <td>3. <a href="#3">Optimal hardware/software</a> </td>
+    <td>18. <a href="#18">Hanging at 12% on Windows computers</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;4. <a href="#4">Stereo rendering</a> </td>
-    <td>&nbsp;&nbsp;18. <a href="#18">Hanging at 12% on Windows computers</a></td>
+    <td>4. <a href="#4">Stereo rendering</a> </td>
+    <td>19. <a href="#19">Getting the Plugin Developer's Guide</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;5. <a href="#5">VisIt won't run on Linux</a> </td>
-    <td>&nbsp;&nbsp;19. <a href="#19">Getting the Plugin Developer's Guide</a></td>
+    <td>5. <a href="#5">VisIt won't run on Linux</a> </td>
+    <td>20. <a href="#20">Writing a plugin for VisIt</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;6. <a href="#6">Slow performance on Linux</a> </td>
-    <td>&nbsp;&nbsp;20. <a href="#20">Writing a plugin for VisIt</a></td>
+    <td>6. <a href="#6">Slow performance on Linux</a> </td>
+    <td>21. <a href="#21">When new versions of VisIt are released</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;7. <a href="#7">Slow performance Using SSH</a> </td>
-    <td>&nbsp;&nbsp;21. <a href="#21">When new versions of VisIt are released</a></td>
+    <td>7. <a href="#7">Slow performance Using SSH</a> </td>
+    <td>22. <a href="#22">What is new in the latest version of VisIt</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;8. <a href="#8">No output in visualization window</a> </td>
-    <td>&nbsp;&nbsp;22. <a href="#22">What is new in the latest version of VisIt</a></td>
+    <td>8. <a href="#8">No output in visualization window</a> </td>
+    <td>23. <a href="#23">Compilers that can be used to build VisIt</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;9. <a href="#9">Accessing data on remote machine</a></td>
-    <td>&nbsp;&nbsp;23. <a href="#23">Compilers that can be used to build VisIt</a></td>
+    <td>9. <a href="#9">Accessing data on remote machine</a></td>
+    <td>24. <a href="#24">Joining the mailing list for VisIt users</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;10. <a href="#10">Running VisIt in parallel </a></td>
-    <td>&nbsp;&nbsp;24. <a href="#24">Joining the mailing list for VisIt users</a></td>
+    <td>10. <a href="#10">Running VisIt in parallel </a></td>
+    <td>25. <a href="#25">VisIt's licensing agreement</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;11. <a href="#11">Supported data file formats</a> </td>
-    <td>&nbsp;&nbsp;25. <a href="#25">VisIt's licensing agreement</a></td>
+    <td>11. <a href="#11">Supported data file formats</a> </td>
+    <td>26. <a href="#26">Cannot connect to remote computer</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;12. <a href="#12">Getting your data into VisIt</a></td>
-    <td>&nbsp;&nbsp;26. <a href="#26">Cannot connect to remote computer</a></td>
+    <td>12. <a href="#12">Getting your data into VisIt</a></td>
+    <td>27. <a href="#27">Slow performance with ATI cards on Linux</a> </td>
   </tr>
     <tr>
-    <td>&nbsp;&nbsp;13. <a href="#13">Making a movie of your data</a> </td>
-    <td>&nbsp;&nbsp;27. <a href="#27">Slow performance with ATI cards on Linux</a> </td>
+    <td>13. <a href="#13">Making a movie of your data</a> </td>
+    <td>28. <a href="#28">Custom plugins with a downloaded VisIt binary</a></td>
   </tr>
   <tr>
-    <td>&nbsp;&nbsp;14. <a href="#14">Setting your user name to connect to a remote machine</a> </td>
+    <td>14. <a href="#14">Setting your user name to connect to a remote machine</a> </td>
+    <td>29. <a href="#29">Getting HDF5 data into VisIt </a> </td>
+  </tr>
+  <tr>
+    <td>15. <a href="#15">Distributed mode on a MacOS X computer</a></td>
+    <br>
+    <td>30. <a href="#30">Getting NETCDF data into VisIt </a></td>
   </tr>
 </table>
 <p>&nbsp;</p>
@@ -337,7 +343,8 @@ function MM_initTimelines() { //v4.0
 <h2> <a name="9"></a>9. How do I access data on a remote machine?</h2>
 <p> First, VisIt must be installed on the remote machine. Then, in order to access data on remote machines, simply type in the name of the remote machine in the <font color="999999"> <strong>Host</strong> </font> field in the <font color="999999"> <strong>File Selection</strong> </font> window in the VisIt graphical user interface and include <font color="999999"> <strong>visit</strong> </font> in your search path on the remote machine. For more information, read the Distributed Mode portion of the Remote Visualization section in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf"> <em>VisIt Users Manual</em></a><em>.</em></p>
 <h2> <a name="10"></a>10. How do I run VisIt in parallel?</h2>
-<p> VisIt is a distributed, component-based, visualization tool. The engine component, which performs file input and output as well as the data processing operations, can be run in serial or parallel. In order to run the engine in parallel, you must set up a host profile that specifies how the engine is launched in parallel. For more information, read the Host Profiles portion of the Remote Visualization section in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf"><em>VisIt Users Manual</em></a><em>.</em></p>
+<p>VisIt is a distributed, component-based, visualization tool. The engine component, which performs file input and output as well as the data processing operations, can be run in serial or parallel. In order to run the engine in parallel, you must set up a host profile that specifies how the engine is launched in parallel. For more information, read the Host Profiles portion of the Remote Visualization section in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf"><em>VisIt Users Manual</em></a><em>.</em></p>
+<p>Also note that the VisIt binary distributions will most likely not work for running in parallel on your particular computer system. The most common reason is that the MPI version used to compile VisIt binaries is not compatible with your MPI and parallel launching mechanism. This is solved if you recompile VisIt from source on your computer. We have developed a script called <a href="source.html#build_visit" title="Build VisIt Script">build_visit</a> that automates much of this process for Linux and AIX platforms. </p>
 <p> [<a href="#top">Top</a>]</p>
 <h2><a name="11"></a>11. What data file formats can VisIt read?</h2>
 <p> VisIt can read several dozen file formats. The table below lists some of the most popular data file formats that VisIt can currently read in and visualize. For a complete list of supported file formats, at the time of the last documentation revision, look in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.1/UsersManual.pdf">VisIt User's Manual</a>. You can also look at the <a href="new.html">What's New page</a> for more supported file formats. Each file format is read in by a database reader plug-in that is distributed with VisIt. If you want to use VisIt with your data, you can write your data to a file format that VisIt already understands or you can write your own database reader plug-in. You can find out more about writing compatible files and writing a database reader plug-in in the <a href="ftp://ftp.llnl.gov/pub/visit/visit1.5.4/GettingDataIntoVisIt1.5.4.pdf" title="GDIV" target="_blank">Getting Data Into VisIt</a> manual. </p>
@@ -435,10 +442,35 @@ function MM_initTimelines() { //v4.0
       <td bgcolor="#CCCCFF"><p><a href="http://www.gdal.org">GDAL home page</a></p>
           <p><a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile format description</a></p></td>
     </tr>
+	<tr>
+      <td bgcolor="#CCCCFF">H5Nimrod</td>
+      <td bgcolor="#CCCCFF">The H5Nimrod plugin was developed at <a href="http://www.lbl.gov/" title="LBL" target="_blank">Lawrence Berkeley National Laboratory</a> to read Nimrod's HDF5 output file format. </td>
+      <td bgcolor="#CCCCFF"><a href="http://www-vis.lbl.gov/Vignettes/NIMROD_TXCORP/index.html" title="H5Nimrod" target="_blank">H5Nimrod plugin information</a></td>
+    </tr>
+	<tr>
+      <td bgcolor="#CCCCFF">H5Part</td>
+      <td bgcolor="#CCCCFF">The H5Part plugin was developed at <a href="http://www.lbl.gov/" title="LBL" target="_blank">Lawrence Berkeley National Laboratory</a> to read  HDF5 part files. </td>
+      <td bgcolor="#CCCCFF"><a href="http://www-vis.lbl.gov/Research/AcceleratorSAPP/H5PartVisIt.html" title="H5Part" target="_blank">H5Part plugin information</a></td>
+    </tr>
     <tr>
       <td bgcolor="#CCCCFF">Image</td>
       <td bgcolor="#CCCCFF">VisIt can read in many image file formats created by popular image editing software including: BMP, JPEG, PNG, PPM, PNM, RGB, TIFF. Stacks of images can also be assembled into 3D volumes using a <em>.imgvol</em> file, which is a text file containing the names of the files to assemble into the 3D volume.</td>
       <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+		<tr>
+      <td bgcolor="#CCCCFF">ITAPS</td>
+      <td bgcolor="#CCCCFF">VisIt's ITAPS reader is one implementation
+of the <a href="http://www.tstt-scidac.org/" title="TSTT" target="_blank">TSTT interface</a>  for representing mesh
+and geometric data. The interface is experimental and is being actively
+developed and refined by a follow-on SciDAC project called ITAPS
+(Interoperable Technologies for Advanced Petascale Simulations). The interface
+is designed to be used 'in-situ' and so there is no well defined, persistent
+file format. VisIt's ITAPS reader is currently designed around the
+<a href="http://cubit.sandia.gov/MOAB/" title="MOAB" target="_blank">MOAB implementation</a> of the TSTT interface.
+Presently, it reads unstructured, single-block meshes consisting of any
+combination of the finite element zoo of element types along with zone-
+and node-centered fields implemented as TSTT 'tags'.</td>
+      <td bgcolor="#CCCCFF"><a href="http://www.tstt-scidac.org/" title="TSTT" target="_blank">ITAPS</a></td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">MFIX</td>
@@ -454,6 +486,11 @@ function MM_initTimelines() { //v4.0
       <td bgcolor="#CCCCFF">NASTRAN</td>
       <td bgcolor="#CCCCFF">NASTRAN Bulk data file format is an ASCII format that describes unstructured meshes. </td>
       <td bgcolor="#CCCCFF"><a href="http://www.mscsoftware.com/products/products_detail.cfm?PI=7">NASTRAN home page</a></td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">Nek3D</td>
+      <td bgcolor="#CCCCFF">Nek3D is a file format developed for the Nek3D code at <a href="http://www.anl.gov/" title="ANL" target="_blank">Argonne National Laboratory</a>.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">NetCDF</td>
@@ -521,21 +558,6 @@ href="http://www.gnu.org/licenses/licenses.html#GPL">GNU General Public License<
       <td bgcolor="#CCCCFF">TecPlot</td>
       <td bgcolor="#CCCCFF">TecPlot is another popular visualization tool. VisIt can read the ASCII version of the TecPlot file format, though VisIt's reader does not handle all forms of the ASCII Tecplot file format. </td>
       <td bgcolor="#CCCCFF"><a href="http://www.tecplot.com/">TecPlot home page</a></td>
-    </tr>
-	<tr>
-      <td bgcolor="#CCCCFF">TSTT</td>
-      <td bgcolor="#CCCCFF">VisIt's TSTT (Tera-Scale Tools and Technologies) reader is one implementation
-of the <a href="http://www.tstt-scidac.org/" title="TSTT" target="_blank">TSTT interface</a>  for representing mesh
-and geometric data. The interface is experimental and is being actively
-developed and refined by a follow-on SciDAC project called ITAPS
-(Interoperable Technologies for Advanced Petascale Simulations). The interface
-is designed to be used 'in-situ' and so there is no well defined, persistent
-file format. VisIt's TSTT reader is currently designed around the
-<a href="http://cubit.sandia.gov/MOAB/" title="MOAB" target="_blank">MOAB implementation</a> of the TSTT interface.
-Presently, it reads unstructured, single-block meshes consisting of any
-combination of the finite element zoo of element types along with zone-
-and node-centered fields implemented as TSTT 'tags'.</td>
-      <td bgcolor="#CCCCFF"><a href="http://www.tstt-scidac.org/" title="TSTT" target="_blank">TSTT interface</a></td>
     </tr>
     <tr>
       <td bgcolor="#CCCCFF">VASP</td>
@@ -616,7 +638,7 @@ and node-centered fields implemented as TSTT 'tags'.</td>
 <h2><a name="22"></a>22. What's new in the latest version of VisIt?</h2>
 <p>Each version of VisIt contains on average 60 enhancements or bug-fixes. The first time that you run a new version of VisIt, the release notes for that version will be prominently displayed in the Help window. The release notes describe the enhancements and bug-fixes made in each version of the tool. After you have read the release notes for the new version of VisIt, they will not be automatically displayed again but you can view them at any time using VisIt's <strong>Help window</strong>. </p>
 <h2><a name="23"></a>23. Which compilers can be used to build VisIt? </h2>
-<p>The following compilers can be used to build VisIt on the listed platforms. </p>
+<p>The following compilers can be used to build VisIt on the listed platforms, though this is not an exhaustive list and newer versions of these compilers often work. </p>
 <table width="50%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
@@ -648,8 +670,8 @@ and node-centered fields implemented as TSTT 'tags'.</td>
       <td bgcolor="#CCCCFF">Microsoft Visual Studio 6.0 with service pack 5, Microsoft Visual Studio .Net 2003</td>
     </tr>
     <tr>
-      <td bgcolor="#CCCCFF">MacOS X 10.3 </td>
-      <td bgcolor="#CCCCFF">g++ 3.3 <em>(g++ 4.0 has not been tried)</em> </td>
+      <td bgcolor="#CCCCFF">MacOS X 10.4</td>
+      <td bgcolor="#CCCCFF">g++ 4.0 </td>
     </tr>
   </tbody>
 </table>
@@ -674,13 +696,13 @@ and node-centered fields implemented as TSTT 'tags'.</td>
 <h2><a name="24"></a>24. Is there a mailing list for VisIt users? </h2>
 <p>Yes. There is a mailing list for VisIt users. The VisIt development team uses the list to announce new versions of VisIt and To join the list, send an e-mail message to <strong>majordomo@lists.llnl.gov</strong> with no subject line and a message body containing: <strong>subscribe visit-users email-address</strong>. Be sure to substitute your actual e-mail address for <strong>email-address</strong>. The list is for the VisIt development team to make announcements to the VisIt user community. </p>
 <p>If you ever want to remove your e-mail address from the list, send an e-mail message to <strong>majordomo@lists.llnl.gov</strong> with no subject line and a message body containing: <strong>unsubscribe visit-users email-address</strong>. </p>
-<h2><a name="25"></a><a name="license"></a>25. Which license does VisIt use?</h2>
+<h2><a name="25"></a>25. Which license does VisIt use?</h2>
 <p>VisIt is released under the BSD license, which you can view on <a href="license.html" title="VisIt's BSD license" target="_blank">VisIt's license</a> page. </p>
 <H2>
   <CENTER>
   </CENTER>
 </H2>
-<h2><a name="26"></a><a name="license"></a>26. Why can't I connect to a remote computer?</h2>
+<h2><a name="26"></a>26. Why can't I connect to a remote computer?</h2>
 <p>Sometimes VisIt fails to connect to a remote computer while trying to access files in distributed mode. This can 
   happen for a variety of reasons and they are usually related to how your computer is configured to access the network.
   
@@ -733,15 +755,24 @@ contact your system administrator.</p>
     information about how you are trying to connect. Be sure to
     include the VisIt version and platform on which you are
   running in your e-mail. </p>
-<h2><a name="27"></a><a name="license"></a>27. Why is VisIt running slowly on my Linux system with an ATI graphics card?</h2>
+<h2><a name="27"></a>27. Why is VisIt running slowly on my Linux system with an ATI graphics card?</h2>
 <p> The default rendering performance of VisIt running on some ATI cards on Linux systems has been found to approximate that of software rendering. One solution we have found to this problem is to switch the rendering mode to always use display lists, which restores the rendering performance to what you would expect from hardware accelerated rendering. To change the rendering mode to use display lists, change the <strong>Use display lists</strong> mode to <strong>Always</strong> on the <strong>Rendering options window</strong> and press the <strong>Apply</strong> button. The <strong>Rendering options window</strong> can be brought up by selecting <strong>Rendering...</strong> from the <strong>Options</strong> pull down menu at the top of the main control panel. To make the change permanent, press the <strong>Dismiss</strong> button and save the settings by selecting <strong>Save Settings</strong> from the <strong>Options</strong> pull down menu. </p>
+<h2><a name="28"></a>28. Why do I get a runtime error when I use my custom plugin with a binary version of VisIt from your site?</h2>
+<p>If you install a binary from our Web site, you may be downloading a version of VisIt that uses a different C++ compiler from what may be installed on your system. Our binary distributions will often run just fine on such systems but once you create your own plugin using a C++ compiler that differs from the compiler used to build VisIt, you may experience problems. If you are running into this problem, you will often see runtime error messages similar to:</p>
+<p><em>*** glibc detected *** free(): invalid pointer: 0x095de9b8 ***<br>
+SIGABRT</em></p>
+<p>If you notice any runtime errors related to glibc because you're using a custom-built plugin with our binary distirbutions then you probably have a runtime library incompatibility. The best way to resolve this situation is to build VisIt on your platform using our build_visit script since it will automatically build VisIt. Once you've rebuilt VisIt using your C++ compiler, you should regenerate your plugin's Makefile using the your new VisIt's xml2makefile program. Once you have done that, rebuild your plugin to make it build against your new, natively built version of VisIt. </p>
+<h2><a name="29"></a>29. How do I get my HDF5 data into VisIt? </h2>
+<p> HDF5 is an array storage file format that supports a wide variety of data types and VisIt reads a lot of file formats from codes that use HDF5 as a storage layer. Unfortunately, VisIt cannot provide a plugin that can read all HDF5-based files because of the various conventions that codes invent when they store their files. VisIt's HDF5-enabled plugins are programmed to know about the conventions used to map array data from the file into meaningful constructs such as meshes with data. If you need to import HDF5 data into VisIt then you might be achieve satisfactory results if you choose <em>File-&gt;Open As...</em> and then open the file using the Pixie reader, which is VisIt's most generic HDF5 reader. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
+<h2><a name="30"></a><a name="license"></a>30. How do I get my NETCDF data into VisIt?</h2>
+<p> Like HDF5, NETCDF is just an array storage file format so the same problems tend to occur when you want to get NETCDF data into VisIt. However, VisIt's NETCDF reader will attempt to open NETCDF data with a variety of different readers that look for various simulation code conventions (CF support not implemented) and in the event that the file was not written using any discernable convention then a back up basic reader is used. The basic NETCDF reader exposes all of the arrays in the NETCDF file as data that can be plotted on rectilinear meshes corresponding to the size of each array. The common complaint is that the data looks okay but the mesh is not scaled accordingly. If this happens to you then VisIt is using its basic NETCDF reader, which does not support any conventions. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
 <p>&nbsp;</p>
 <!-- InstanceEndEditable -->
 <div align="center"> 
   <!-- InstanceBeginEditable name="Links" --><span class="links"><a href="executables.html">Executables</a> | <a href="source.html">Source Code</a> | <a href="datafiles.html">Data Files</a> | <a href="about.html" target="_top" class="links">About VisIt</a> | <a href="screens.html" class="links">Screen Shots</a> |&nbsp;<a href="gallery.html" class="links">Gallery</a> | FAQs | <a href="manuals.html">Manuals</a> | <a href="new.html" target="_top" class="links">What's New</a> | <a href="sitemap.html">Index</a></span><!-- InstanceEndEditable -->
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #BeginDate format:Am1 -->April 2, 2007<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->July 26, 2007<!-- #EndDate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
