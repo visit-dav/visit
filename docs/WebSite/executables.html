@@ -211,25 +211,16 @@ function MM_initTimelines() { //v4.0
 <!-- End ImageReady Slices -->
 <!-- InstanceBeginEditable name="body" -->
 <h1><a name="exe"></a>VisIt Executables</h1>
-<p>This page contains the current version of VisIt that you can download for Unix, Windows, and Mac OS X systems. Older versions can be downloaded directly from <a href="http://sourceforge.net/project/showfiles.php?group_id=169934">SourceForge.net</a>. For VisIt documentation, see the <a href="manuals.html">VisIt User Manuals</a>. To check the integrity of the executables, see the <a href="1.6/visit_md5_checksums">visit_md5_checksums</a>, the <a href="1.6/visit_sha1_checksums">visit_sha1_checksums</a>, or the <a href="1.6/visit_filesizes">visit_filesizes</a>.</p> 
-<ul>
-  <li><font color="#333366"><b>Unix</b></font>&#151;To install VisIt 
-    on a Unix system (including Linux, Solaris 2.7, AIX 5.1, Irix 6.5, Tru64
-    V5.1, and Mac OS X), you will need to download the appropriate distribution
-    file and the <a href="1.6/visit-install">visit-install</a> 
-    script. Instructions for installing VisIt on a Unix system can be found in
-     the <a href="1.6/INSTALL_NOTES" target="_blank">Install
-  Notes</a>.<br><br>
-  </li>
-  <li><b><font color="#333366">Windows</font></b>&#151;To install VisIt 
-    on a Windows system, you will need to download the Windows distribution file. 
-    Instructions for installing VisIt on a Windows system are also found in the 
-   <a href="1.6/INSTALL_NOTES" target="_blank">
-    Install Notes</a>.<br><br>
-  </li>
-</ul>
+<p>This page contains links to download VisIt executables for Unix, Windows, and Mac OS X systems. The page contains several versions of VisIt, organized from the most recent to the oldest. The unix and Mac OS X executables require downloading an install script along with the file containing the executable. The Windows executables are packaged in a self contained installer. Instructions for installing VisIt can be found in the install notes. Md5 and sha1 checksums, as well as file sizes are provided for checking that the files were properly downloaded if corruption of the files is suspected during the download process.</p> 
 <center><h1>VisIt 1.6.1</h1></center>
-<table width="70%" border="0" align="center" bgcolor="#9999cc">
+<ul>
+  <li> <a href="1.6.1/visit-install">VisIt install script</a> </li>
+  <li> <a href="1.6.1/INSTALL_NOTES">VisIt Install Notes</a> </li>
+  <li> <a href="1.6.1/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li> <a href="1.6.1/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li> <a href="1.6.1/visit_filesizes">VisIt file sizes</a><br><br> </li>
+</ul>
+<table width="95%" border="0" align="center" bgcolor="#9999cc">
   <tr> 
     <td> 
       <table width="100%" border="0" align="center" cellpadding="5" cellspacing="1">
@@ -238,47 +229,55 @@ function MM_initTimelines() { //v4.0
           <th bgcolor="#ccccff"><font color="#333366" face="verdana, arial, helvetica, sans-serif">executable</font></th>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Linux - Redhat Enterprise Linux 3 (works with most Linux distributions)</td>
+          <td>Linux - x86 32 bit<br>Redhat Enterprise Linux 3, hoth.llnl.gov 2.4.21-27.0.2.c.ELsmp, gcc 3.2.3</td>
           <td><a href="1.6.1/visit1_6_1.linux_rhel3.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Linux - Opteron 64 bit</td>
+          <td>Linux - x86 32 bit<br>Redhat Enterprise Linux 4, ellipse.uchicago.edu 2.6.9-42.0.10.ELsmp, icc 9.1 & gcc 3.4.6</td>
+          <td><a href="1.6.1/visit1_6_1.linux-ellipse.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
+        </tr>
+        <tr bgcolor="#ffffff">
+          <td>Linux - Opteron 64 bit<br>Redhat Enterprise Linux 4, yana.llnl.gov 2.6.9-70chaos, gcc 3.4.4</td>
           <td><a href="1.6.1/visit1_6_1.linux-x86_64.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Linux - Itanium</td>
+          <td>Linux - Opteron 64  bit<br>Fedora Core 4, xchem.llnl.gov 2.6.17-1.2142_FC4smp, gcc 4.0.2</td>
+          <td><a href="1.6.1/visit1_6_1.linux-x86_64-fedora4.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
+        </tr>
+        <tr bgcolor="#ffffff">
+          <td>Linux - Itanium 64 bit<br>Redhat Enterprise Linux 4, thunder.llnl.gov 2.6.9-70chaos, gcc 3.2.3</td>
           <td><a href="1.6.1/visit1_6_1.linux-ia64.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Linux - Altix</td>
+          <td>Linux - Altix 64 bit<br>SUSE Linux Enterprise Server 9, davinci.nersc.gov 2.6.5-7.283-sn2, gcc 3.3.3</td>
           <td><a href="1.6.1/visit1_6_1.linux-altix.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Windows SE/ME/2000/Xp</td>
+          <td>Windows SE/ME/2000/Xp<br>MSVC7, Visual Studio 2003</td>
           <td><a href="1.6.1/visit1.6.1.exe"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Mac OS X - PowerPC (10.3/10.4)</td>
+          <td>Mac OS X - PowerPC<br>Darwin 10.3.5, Darwin Kernel Version 7.5.0, gcc 3.3</td>
           <td><a href="1.6.1/visit1_6_1.darwin-ppc.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Mac OS X - Intel</td>
+          <td>Mac OS X - Intel<br>Darwin 10.4.9, Darwin Kernel Version 8.9.1, gcc 4.0.1</td>
           <td><a href="1.6.1/visit1_6_1.darwin-i386.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Solaris 2.7</td>
+          <td>Solaris<br>SunOS 5.7, sunspot.llnl.gov Generic_106541-23, gcc 3.2</td>
           <td><a href="1.6.1/visit1_6_1.sunos5.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>AIX 5.1 (32 bit)</td>
+          <td>AIX - 32 bit<br>AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
           <td><a href="1.6.1/visit1_6_1.aix.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>AIX 5.1 (64 bit)</td>
+          <td>AIX - 64 bit<br>AIX 5.3, up.llnl.gov 00C5D6DD4C00, xlc</td>
           <td><a href="1.6.1/visit1_6_1.aix64.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
-          <td>Irix 6.5</td>
+          <td>Irix<br>IRIX 64 6.5, quad.llnl.gov 07010238, MIPSpro 7.41</td>
           <td><a href="1.6.1/visit1_6_1.irix6.tar.gz"><img src="media/icon_download.gif" width="80" height="22" border="0"></a></td>
         </tr>
         <tr bgcolor="#ffffff">
@@ -291,7 +290,14 @@ function MM_initTimelines() { //v4.0
 </table>
 <p>&nbsp;</p>
 <center><h1>VisIt 1.6</h1></center>
-<table width="70%" border="0" align="center" bgcolor="#9999cc">
+<ul>
+  <li> <a href="1.6/visit-install">VisIt install script</a> </li>
+  <li> <a href="1.6/INSTALL_NOTES">VisIt Install Notes</a> </li>
+  <li> <a href="1.6/visit_md5_checksums">VisIt md5 checksums</a> </li>
+  <li> <a href="1.6/visit_sha1_checksums">VisIt sha1 checksums</a> </li>
+  <li> <a href="1.6/visit_filesizes">VisIt file sizes</a><br><br> </li>
+</ul>
+<table width="95%" border="0" align="center" bgcolor="#9999cc">
   <tr> 
     <td> 
       <table width="100%" border="0" align="center" cellpadding="5" cellspacing="1">
@@ -357,11 +363,11 @@ function MM_initTimelines() { //v4.0
   <!-- instancebegineditable name="links" --><span class="links">executables | <a href="source.html">source code</a> | <a href="datafiles.html">data files</a> | <a href="about.html" target="_top" class="links">about visit</a> | <a href="screens.html" class="links">screen shots</a> |&nbsp;<a href="gallery.html" class="links">gallery</a> |&nbsp;<a href="FAQ.html" class="links">FAQs</a> | <a href="manuals.html">manuals</a> | <a href="new.html" target="_top" class="links">what's new</a> | <a href="sitemap.html">index</a></span><!-- instanceendeditable -->
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">visit webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #begindate format:am1 -->April 2, 2007<!-- #enddate -->
+    <!-- #begindate format:am1 -->July 26, 2007<!-- #enddate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
-      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-229972, 
+      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-233207, 
         <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
         and legal notice</a></span></td>
       <td width="5">&nbsp;</td>

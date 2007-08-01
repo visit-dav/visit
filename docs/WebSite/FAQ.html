@@ -214,65 +214,68 @@ function MM_initTimelines() { //v4.0
 <h1>Frequently Asked Questions</h1>
 <table width="100%" border="0">
   <tr>
-    <td>1. <a href="#1">Contact information</a> </td>
-    <td>16. <a href="#16">Building VisIt on a Windows computer</a></td>
-  </tr>
-  <tr>
-    <td>2. <a href="#2">Supported platforms</a> </td>
+    <td>1. <a href="#1">Contact information</a></td>
     <td>17. <a href="#17">Installing VisIt on a MacOS X computer</a></td>
   </tr>
   <tr>
-    <td>3. <a href="#3">Optimal hardware/software</a> </td>
+    <td>2. <a href="#2">Supported platforms</a></td>
     <td>18. <a href="#18">Hanging at 12% on Windows computers</a></td>
   </tr>
   <tr>
-    <td>4. <a href="#4">Stereo rendering</a> </td>
+    <td>3. <a href="#3">Optimal hardware/software</a></td>
     <td>19. <a href="#19">Getting the Plugin Developer's Guide</a></td>
   </tr>
   <tr>
-    <td>5. <a href="#5">VisIt won't run on Linux</a> </td>
+    <td>4. <a href="#4">Stereo rendering</a></td>
     <td>20. <a href="#20">Writing a plugin for VisIt</a></td>
   </tr>
   <tr>
-    <td>6. <a href="#6">Slow performance on Linux</a> </td>
+    <td>5. <a href="#5">VisIt won't run on Linux</a></td>
     <td>21. <a href="#21">When new versions of VisIt are released</a></td>
   </tr>
   <tr>
-    <td>7. <a href="#7">Slow performance Using SSH</a> </td>
+    <td>6. <a href="#6">Slow performance on Linux</a></td>
     <td>22. <a href="#22">What is new in the latest version of VisIt</a></td>
   </tr>
   <tr>
-    <td>8. <a href="#8">No output in visualization window</a> </td>
+    <td>7. <a href="#7">Slow performance Using SSH</a></td>
     <td>23. <a href="#23">Compilers that can be used to build VisIt</a></td>
   </tr>
   <tr>
-    <td>9. <a href="#9">Accessing data on remote machine</a></td>
+    <td>8. <a href="#8">No output in visualization window</a></td>
     <td>24. <a href="#24">Joining the mailing list for VisIt users</a></td>
   </tr>
   <tr>
-    <td>10. <a href="#10">Running VisIt in parallel </a></td>
+    <td>9. <a href="#9">Accessing data on remote machine</a></td>
     <td>25. <a href="#25">VisIt's licensing agreement</a></td>
   </tr>
   <tr>
-    <td>11. <a href="#11">Supported data file formats</a> </td>
+    <td>10. <a href="#10">Running VisIt in parallel</a></td>
     <td>26. <a href="#26">Cannot connect to remote computer</a></td>
   </tr>
   <tr>
-    <td>12. <a href="#12">Getting your data into VisIt</a></td>
-    <td>27. <a href="#27">Slow performance with ATI cards on Linux</a> </td>
-  </tr>
-    <tr>
-    <td>13. <a href="#13">Making a movie of your data</a> </td>
-    <td>28. <a href="#28">Custom plugins with a downloaded VisIt binary</a></td>
+    <td>11. <a href="#11">Supported data file formats</a></td>
+    <td>27. <a href="#27">Slow performance with ATI cards on Linux</a></td>
   </tr>
   <tr>
-    <td>14. <a href="#14">Setting your user name to connect to a remote machine</a> </td>
-    <td>29. <a href="#29">Getting HDF5 data into VisIt </a> </td>
+    <td>12. <a href="#12">Getting your data into VisIt</a></td>
+    <td>28. <a href="#28">Custom plugins with a downloaded VisIt binary</a></td>
+  </tr>
+    <tr>
+    <td>13. <a href="#13">Making a movie of your data</a></td>
+    <td>29. <a href="#29">Getting HDF5 data into VisIt</a></td>
+  </tr>
+  <tr>
+    <td>14. <a href="#14">Setting your user name to connect to a remote machine</a></td>
+    <td>30. <a href="#30">Getting NETCDF data into VisIt</a></td>
   </tr>
   <tr>
     <td>15. <a href="#15">Distributed mode on a MacOS X computer</a></td>
+    <td>31. <a href="#31">When I run VisIt on my Linux machine, I get a black screen</a></td>
     <br>
-    <td>30. <a href="#30">Getting NETCDF data into VisIt </a></td>
+  </tr>
+  <tr>
+    <td>16. <a href="#16">Building VisIt on a Windows computer</a></td>
   </tr>
 </table>
 <p>&nbsp;</p>
@@ -766,6 +769,9 @@ SIGABRT</em></p>
 <p> HDF5 is an array storage file format that supports a wide variety of data types and VisIt reads a lot of file formats from codes that use HDF5 as a storage layer. Unfortunately, VisIt cannot provide a plugin that can read all HDF5-based files because of the various conventions that codes invent when they store their files. VisIt's HDF5-enabled plugins are programmed to know about the conventions used to map array data from the file into meaningful constructs such as meshes with data. If you need to import HDF5 data into VisIt then you might be achieve satisfactory results if you choose <em>File-&gt;Open As...</em> and then open the file using the Pixie reader, which is VisIt's most generic HDF5 reader. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
 <h2><a name="30"></a><a name="license"></a>30. How do I get my NETCDF data into VisIt?</h2>
 <p> Like HDF5, NETCDF is just an array storage file format so the same problems tend to occur when you want to get NETCDF data into VisIt. However, VisIt's NETCDF reader will attempt to open NETCDF data with a variety of different readers that look for various simulation code conventions (CF support not implemented) and in the event that the file was not written using any discernable convention then a back up basic reader is used. The basic NETCDF reader exposes all of the arrays in the NETCDF file as data that can be plotted on rectilinear meshes corresponding to the size of each array. The common complaint is that the data looks okay but the mesh is not scaled accordingly. If this happens to you then VisIt is using its basic NETCDF reader, which does not support any conventions. Note that it is possible to write a new database reader plugin to understand your data following the procedures provided in the <a href="manuals.html" title="Getting Data Into VisIt">Getting Data Into VisIt</a> manual. </p>
+<h2><a name="31"></a><a name="license"></a>31. When I run VisIt on my Linux machine, I get a black screen. When I try displaying to it from a remote machine, though, everything works fine. Other OpenGL applications also seem to work, even when run locally. What is wrong?</h2>
+<p> Under Linux, hardware-accelerated rendering can become a complicated problem because many hardware vendors have their own drivers which can conflict with the direct rendering infrastructure in XFree86.  We have had some success simply removing references to DRI in the XF86Config file.  For example, remove the line in the "Module" section of the file that reads:</p>
+<p> Load     "dri"</p>
 <p>&nbsp;</p>
 <!-- InstanceEndEditable -->
 <div align="center"> 
@@ -776,7 +782,7 @@ SIGABRT</em></p>
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
-      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-229972, 
+      <td background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-233207, 
         <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
         and legal notice</a></span></td>
       <td width="5">&nbsp;</td>
