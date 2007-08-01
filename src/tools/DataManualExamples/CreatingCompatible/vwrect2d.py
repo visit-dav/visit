@@ -4,7 +4,7 @@ NX = 4
 NY = 5
 x = (0., 1., 2.5, 5.)
 y = (0., 2., 2.25, 2.55,  5.)
-z = 0.
+z = [0.]
 
 # Create a zonal variable
 zonal = []
