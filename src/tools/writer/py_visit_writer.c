@@ -231,6 +231,9 @@ static PyObject *writeRegularMesh( PyObject *self, PyObject *args ) {
  *    Hank Childs, Fri Apr 22 09:39:52 PDT 2005
  *    Allow for empty variable lists.
  *
+ *    Brad Whitlock, Mon Jul 16 09:10:37 PDT 2007
+ *    Allow for 2D mesh.
+ *
  * ************************************************************************* */
 
 static char writeRectilinearMeshDoc[] = 
@@ -252,8 +255,10 @@ static PyObject *writeRectilinearMesh( PyObject *self, PyObject *args ) {
     if( ( dims[2] = checkMallocAndGetArrayOfNumbers( zmesh_py, &z, "z", doIt ) ) < 0 ) doIt = 0;
     if( doIt && ( dims[2] == 0 ) ) doIt = setErrorAndReturnInt( 0, "length of z is zero" );
     if( doIt ) {
+        int nz = dims[2] - 1;
+        if(nz < 1) nz = 1;
         npts = dims[0] * dims[1] * dims[2];
-        ncells = ( dims[0] - 1 ) * ( dims[1] - 1 ) * ( dims[2] - 1 );
+        ncells = ( dims[0] - 1 ) * ( dims[1] - 1 ) * nz;
         if( ( nvars = convertVarData( npts, ncells, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) < 0 ) doIt = 0;
     }
     if( !doIt ) {
