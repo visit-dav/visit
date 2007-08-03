@@ -277,6 +277,9 @@
 #   Dave Bremer, Thu Jun 14 20:15:04 PDT 2007
 #   Added Nek3D reader.
 #
+#   Dave Bremer, Fri Aug  3 12:03:21 PDT 2007
+#   Added SAS reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -335,6 +338,7 @@ REQUIRED=\
  ProteinDataBank \
  SAMI \
  SAR \
+ SAS \
  STL \
  Shapefile \
  Silo \
