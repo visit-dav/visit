@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+  <Plugin name="CCM" type="database" label="CCM" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(CCMIO_INCLUDE)
+    </CXXFLAGS>
+    <LIBS>
+      $(CCMIO_LIBS)
+    </LIBS>
+    <Extensions>
+      ccm
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

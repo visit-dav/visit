@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce configure.
 dnl 
 dnl 
 dnl 
-dnl                            Copyright 2000 - 2006
+dnl                            Copyright 2000 - 2007
 dnl                 The Regents of the University of California.
 dnl                             All rights reserved.
 dnl 
@@ -712,6 +712,9 @@ dnl    Added CREATE_H5PART_LINK for H5Part support.
 dnl
 dnl    Cyrus Harrison, Tue Jul 24 14:36:54 PDT 2007
 dnl    Added support to skip compile of mesa stub if not needed.
+dnl
+dnl    Brad Whitlock, Thu Aug 2 14:45:17 PST 2007
+dnl    Added support for libccmio for the GNEP Star-CD reader.
 dnl
 dnl --------------------------------------------------------------------------
 
@@ -2627,6 +2630,53 @@ AC_SUBST(ITAPS_LIB)
 AC_SUBST(CREATE_ITAPS_LINK)
 
 #
+# Look for CCMIO.
+#
+AC_MSG_CHECKING(for CCMIO)
+CCMIO=""
+CCMIO_INCLUDE=""
+CCMIO_LIBS=""
+CCMIO_LIBDIR=""
+AC_ARG_WITH(CCMIO,
+	    [  --with-ccmio=INC-DIR,LIB-DIR      Location of CCMIO header and library],
+           CCMIO_specified="yes",
+           CCMIO_specified="no"
+           )
+if test "$CCMIO_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      CCMIO_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      CCMIO_LIBS="-L`echo $withval |cut -f2 -d, -s`"
+      CCMIO_LIBDIR="`echo $withval |cut -f2 -d, -s`"
+   fi
+else
+   if test "$DEFAULT_CCMIO_INCLUDE" != "" ; then
+      CCMIO_INCLUDE="-I$DEFAULT_CCMIO_INCLUDE $CCMIO_INCLUDE"
+   fi
+   if test "$DEFAULT_CCMIO_LIB" != "" ; then
+      if test "$SHORT_UNAME" = "darwin"; then
+          CCMIO_LIBS="-L$DEFAULT_CCMIO_LIB -lccmio -ladf $CCMIO_LIBS"
+      else
+          CCMIO_LIBS="-L$DEFAULT_CCMIO_LIB -lccmio -ladf $CCMIO_LIBS"
+      fi
+      CCMIO_LIBDIR="$DEFAULT_CCMIO_LIB"
+   fi
+fi
+if test "$CCMIO_LIBS" != "" ; then
+   if test "$CCMIO_INCLUDE" != "" ; then
+      CCMIO="$""(CCMIO)"
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(CCMIO)
+AC_SUBST(CCMIO_INCLUDE)
+AC_SUBST(CCMIO_LIBS)
+AC_SUBST(CCMIO_LIBDIR)
+
+#
 # Add Some include paths to the engine's CPPFLAGS.
 #
 ENGINE_CPPFLAGS="$ENGINE_CPPFLAGS $VTK_INCLUDES"
@@ -3190,6 +3240,7 @@ CREATE_BOXLIB2D_LINK=""
 CREATE_BOXLIB3D_LINK=""
 CREATE_CFITSIO_LINK=""
 CREATE_H5PART_LINK=""
+CREATE_CCMIO_LINK=""
 case $SHORT_UNAME in
   darwin)
     if test "$SILO_LIB" != "" ; then
@@ -3231,6 +3282,9 @@ case $SHORT_UNAME in
     if test "$H5PART_LIB" != "" ; then
         CREATE_H5PART_LINK="create_h5part_link"
     fi
+    if test "$CCMIO_LIBS" != "" ; then
+        CREATE_CCMIO_LINK="create_ccmio_link"
+    fi
   ;;
 esac
 AC_SUBST(CREATE_SILO_LINK)
@@ -3245,6 +3299,7 @@ AC_SUBST(CREATE_BOXLIB2D_LINK)
 AC_SUBST(CREATE_BOXLIB3D_LINK)
 AC_SUBST(CREATE_CFITSIO_LINK)
 AC_SUBST(CREATE_H5PART_LINK)
+AC_SUBST(CREATE_CCMIO_LINK)
 
 #
 # Check for library functions that can work around, or that we have

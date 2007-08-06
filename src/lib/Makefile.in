@@ -155,6 +155,9 @@
 #    Thomas R. Treadway, Wed Jul 11 16:08:40 PDT 2007
 #    Added links for H5Part
 #
+#    Brad Whitlock, Thu Aug 2 17:55:41 PST 2007
+#    Added link for CCMIO.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -194,7 +197,8 @@ all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ \
      @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ \
      @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ \
-     @CREATE_CFITSIO_LINK@ @CREATE_ITAPS_LINK@ @CREATE_H5PART_LINK@
+     @CREATE_CFITSIO_LINK@ @CREATE_ITAPS_LINK@ @CREATE_H5PART_LINK@ \
+     @CREATE_CCMIO_LINK@
 
 libvtkcommon:
 	$(RM) $(LIBVTKCOMMON)*
@@ -349,6 +353,11 @@ create_gdal_link:
 create_exodus_link:
 	$(RM) libexoIIv2c.@SHLIB_LIBEXT@
 	ln -s @EXODUS_LIB@ .
+
+create_ccmio_link:
+	$(RM) libccmio.@SHLIB_LIBEXT@ libadf.@SHLIB_LIBEXT@
+	ln -s @CCMIO_LIBDIR@/libccmio.@SHLIB_LIBEXT@ .
+	ln -s @CCMIO_LIBDIR@/libadf.@SHLIB_LIBEXT@ .
 
 create_itaps_link:
 	libDirs=`echo "@ITAPS_LIB@" | tr -s ' ' | tr ' ' '\n' | grep '^-L' | sed -e 's|^-L\(.*\)|\1|'` ; \
