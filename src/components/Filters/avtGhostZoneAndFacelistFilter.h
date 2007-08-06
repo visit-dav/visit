@@ -81,6 +81,9 @@ class   avtFacelistFilter;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Hank Childs, Fri Aug  3 16:53:56 PDT 2007
+//    Added method SetGhostNodeTypesToRemove.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
@@ -99,6 +102,7 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
     void                  SetCreate3DCellNumbers(bool val);
     void                  SetForceFaceConsolidation(bool);
     void                  SetCreateEdgeListFor2DDatasets(bool val);
+    void                  SetGhostNodeTypesToRemove(unsigned char val);
     void                  GhostDataMustBeRemoved();
     void                  MustCreatePolyData();
 

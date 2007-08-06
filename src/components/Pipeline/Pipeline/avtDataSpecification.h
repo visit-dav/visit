@@ -184,6 +184,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Added method NeedAMRIndices and SetNeedAMRIndices.  The int represents
 //    level requested.
 //
+//    Hank Childs, Wed Jul 25 11:22:11 PDT 2007
+//    Add support for special representations of wireframe subset plots.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -237,12 +240,23 @@ class PIPELINE_API avtDataSpecification
     void                         TurnInternalSurfacesOff(void) 
                                      { needInternalSurfaces = false; };
 
-    bool                         NeedBoundarySurfaces(void) 
-                                     { return needBoundarySurfaces; };
-    void                         TurnBoundarySurfacesOn(void) 
-                                     { needBoundarySurfaces = true; };
-    void                         TurnBoundarySurfacesOff(void) 
-                                     { needBoundarySurfaces = false; };
+    //
+    // These methods change the nature of the data produced by the source
+    // (i.e the database).  So when this methods are called, it changes
+    // the type of data that comes down the pipeline.
+    //
+    bool                         GetBoundarySurfaceRepresentation(void) 
+                                     { return getBoundarySurfaceRep; };
+    void                         TurnBoundarySurfaceRepresentationOn(void) 
+                                     { getBoundarySurfaceRep = true; };
+    void                         TurnBoundarySurfaceRepresentationOff(void) 
+                                     { getBoundarySurfaceRep = false; };
+    bool                         GetSimplifiedNestingRepresentation(void)
+                                     { return getSimplifiedNestingRep; };
+    void                         TurnSimplifiedNestingRepresentationOn(void)
+                                     { getSimplifiedNestingRep = true; };
+    void                         TurnSimplifiedNestingRepresentationOff(void)
+                                     { getSimplifiedNestingRep = false; };
 
     bool                         NeedStructuredIndices(void)
                                      { return needStructuredIndices; };
@@ -411,7 +425,8 @@ class PIPELINE_API avtDataSpecification
     bool                         mayRequireNodes;
     bool                         mustDoMIR;
     bool                         needInternalSurfaces;
-    bool                         needBoundarySurfaces;
+    bool                         getBoundarySurfaceRep;
+    bool                         getSimplifiedNestingRep;
     bool                         needValidFaceConnectivity;
     bool                         needStructuredIndices;
     int                          needAMRIndices;

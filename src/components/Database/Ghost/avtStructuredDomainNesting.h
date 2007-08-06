@@ -89,6 +89,9 @@ class vtkDataArray;
 //    Kathleen Bonnell, Fri Jun 22 16:43:59 PDT 2007  
 //    Added GetRatiosForLevel.
 //
+//    Hank Childs, Fri Jul 27 13:15:21 PDT 2007
+//    Added GetNestingForDomain.
+//
 // ****************************************************************************
 
 typedef struct {
@@ -124,6 +127,8 @@ class DATABASE_API avtStructuredDomainNesting : public avtDomainNesting
                           { domainNesting[dom].level          = level;
                             domainNesting[dom].childDomains   = childDomains;
                             domainNesting[dom].logicalExtents = exts; } ;
+        void          GetNestingForDomain(int dom, vector<int> &exts,
+                            vector<int> &childDomains, vector<int> &childExts);
 
         vector<int>   GetRatiosForLevel(int level, int dom);
 

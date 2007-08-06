@@ -65,11 +65,15 @@
 //    Hank Childs, Wed Dec 20 09:25:42 PST 2006
 //    Initialize ghostDataMustBeRemoved.
 //
+//    Hank Childs, Fri Aug  3 13:27:27 PDT 2007
+//    Initialize ghostNodeTypesToRemove.
+//
 // ****************************************************************************
 
 avtGhostZoneFilter::avtGhostZoneFilter()
 {
     ghostDataMustBeRemoved = false;
+    ghostNodeTypesToRemove = 255;
 }
 
 
@@ -236,6 +240,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     debug5 << "Using vtkDataSetRemoveGhostCells" << endl;
 
     vtkDataSetRemoveGhostCells *filter = vtkDataSetRemoveGhostCells::New();
+    filter->SetGhostNodeTypesToRemove(ghostNodeTypesToRemove);
     filter->SetInput(in_ds);
 
     //
@@ -303,9 +308,29 @@ avtGhostZoneFilter::RefashionDataObjectInfo(void)
 //  Creation:    February 15, 2007
 //
 // ****************************************************************************
+
 bool
 avtGhostZoneFilter::FilterUnderstandsTransformedRectMesh()
 {
     return true;
 }
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneFilter::SetGhostNodeTypesToRemove
+//
+//  Purpose:
+//      Sets the field for which ghost node types to remove.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 3, 2007
+//
+// ****************************************************************************
+
+void
+avtGhostZoneFilter::SetGhostNodeTypesToRemove(unsigned char t)
+{
+    ghostNodeTypesToRemove = t;
+}
+
 

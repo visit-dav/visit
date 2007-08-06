@@ -60,11 +60,15 @@
 struct    avtDatasetCollection;
 class     avtMatSpeciesMetaData;
 class     avtDomainBoundaries;
+class     avtStructuredDomainBoundaries;
+class     avtStructuredDomainNesting;
 class     avtFileFormatInterface;
 class     avtMixedVariable;
 class     avtSILRestrictionTraverser;
 class     PickAttributes;
 class     PickVarInfo;
+class     vtkRectilinearGrid;
+class     vtkUnstructuredGrid;
 
 
 // ****************************************************************************
@@ -306,6 +310,9 @@ class     PickVarInfo;
 //    Kathleen Bonnell, Thu Jun 21 17:00:26 PDT 2007 
 //    Added method CreateAMRIndices.
 //
+//    Hank Childs, Thu Jul 26 16:32:50 PDT 2007
+//    Added method CreateSimplifiedNestingRepresentation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -502,6 +509,17 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                                    avtDataSpecification_p &);
     void                       CreateStructuredIndices(avtDatasetCollection &,
                                                        avtSourceFromDatabase*);
+    bool                       CreateSimplifiedNestingRepresentation(
+                                                   avtDatasetCollection &,
+                                                   intVector &, intVector &,
+                                                   avtSourceFromDatabase*,
+                                                   avtDataSpecification_p &);
+    vtkUnstructuredGrid       *CreateSimplifiedNestingRepresentation(
+                                              vtkRectilinearGrid *, int,
+                                              intVector &,
+                                              avtStructuredDomainNesting *,
+                                              avtStructuredDomainBoundaries *,
+                                              avtGhostDataType);
     void                       CreateAMRIndices(avtDatasetCollection &,
                                                 intVector &,
                                                 avtDataSpecification_p &, 

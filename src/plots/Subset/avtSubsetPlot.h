@@ -99,6 +99,10 @@ class     avtSmoothPolyDataFilter;
 //    Brad Whitlock, Thu Jul 21 15:38:31 PST 2005
 //    Added SetPointGlyphSize.
 //
+//    Hank Childs, Fri Aug  3 13:46:26 PDT 2007
+//    Added another ghost zone filter (gz2) for removing edges on the coarse
+//    fine boundary of AMR grids.
+//
 // ****************************************************************************
 
 class
@@ -128,6 +132,7 @@ avtSubsetPlot : public avtVolumeDataPlot
     avtFeatureEdgesFilter           *wf;
     avtGhostZoneAndFacelistFilter   *gzfl;
     avtGhostZoneFilter              *gz;
+    avtGhostZoneFilter              *gz2;
     avtFacelistFilter               *fl;
     avtSubsetFilter                 *sub;
     avtSmoothPolyDataFilter         *smooth;

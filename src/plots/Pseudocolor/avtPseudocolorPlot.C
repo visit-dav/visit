@@ -88,11 +88,20 @@
 //
 // ****************************************************************************
 
+#include <avtCompactTreeFilter.h>
+
+class avtNoOpFilter : public avtCompactTreeFilter
+{
+     virtual void Execute(void) { SetOutputDataTree(GetInputDataTree()); };
+};
+
+
 avtPseudocolorPlot::avtPseudocolorPlot()
 {
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Pseudocolor");
     glyphMapper = new avtVariablePointGlyphMapper;
+compactTreeFilter = new avtNoOpFilter;
 
     colorsInitialized = false;
     topoDim = 3;

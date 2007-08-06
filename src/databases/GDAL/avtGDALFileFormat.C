@@ -781,6 +781,9 @@ avtGDALFileFormat::CreateGhostZonesArray(int nCellsInX,
 //
 // Modifications:
 //   
+//    Hank Childs, Sat Aug  4 11:30:12 PDT 2007
+//    Initialize ghostVal to prevent UMR.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -855,7 +858,7 @@ avtGDALFileFormat::CreateElevatedMesh(const avtGDALFileFormat::MeshInfo &info,
     ghost_nodes->SetName("avtGhostNodes");
     ghost_nodes->SetNumberOfTuples(nnodes);
     unsigned char *gn = (unsigned char *)ghost_nodes->GetVoidPointer(0);
-    unsigned char ghostVal;
+    unsigned char ghostVal = 0;
     avtGhostData::AddGhostNodeType(ghostVal, DUPLICATED_NODE);
     int nrealnodes = nnodes;
     if(domain > 0)

@@ -358,8 +358,17 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Don't allow dynamic load balancing if we will need to communicate the
 //    point location.
 //
-//   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
-//   API change for avtIntervalTree.
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
+//
+//    Hank Childs, Wed Aug  1 11:54:51 PDT 2007
+//    Add special logic for simplified nesting representations (i.e AMR
+//    subset plots).  This is a very special case in that it is easy
+//    to get very speedy results, but VisIt's infrastructure makes it hard.
+//    Slice is turning on zone numbers by default.  If we are doing a wireframe
+//    subset plot, then I'm stopping these zone numbers.  I am having the
+//    output marked so that it is non-pickable ... so this should all still
+//    work fine.
 //
 // ****************************************************************************
 
@@ -373,8 +382,21 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // along boundary between zones.  So always turn on zone, node
     // numbers.  WE MAY WANT TO REVERT BACK IN THE FUTURE IF A
     // BETTER WAY CAN BE FOUND FOR PICK TO RETURN CORRECT RESULTS.  
-    rv->GetDataSpecification()->TurnZoneNumbersOn();
-    rv->GetDataSpecification()->TurnNodeNumbersOn();
+    bool needToTurnOnIds = true;
+
+    // 
+    // Add the zone and node numbers for subset plots of rectilinear/AMR
+    // grids blows up memory.  In this case, do not request IDs, since 
+    // the database can mark their output as non-pickable, which means
+    // that we don't need the IDs after all...
+    //
+    needToTurnOnIds = false;
+
+    if (needToTurnOnIds)
+    {
+        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataSpecification()->TurnNodeNumbersOn();
+    }
 
 
 #if 0
