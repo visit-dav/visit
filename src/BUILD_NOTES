@@ -47,7 +47,7 @@ build and install those libraries prior to building VisIt.
     CGNS     2.4      File I/O library       http://www.cgns.org
     GDAL     1.3.2    GIS reader library     http://www.gdal.org
     CFITSIO  3006     File I/O library       http://heasarc.gsfc.nasa.gov/docs/heasarc/fits.html
-
+    CCMIO    2.6.1    File I/O library       ftp://ftp.adapco.com/pub/outgoing/libccmio-2.6.1.tar.gz
 
 Most of the third party libraries necessary to build VisIt are available for
 download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
@@ -1227,6 +1227,44 @@ make
 # Install CFITSIO in the visit directory under the cfitsio directory
 #
 make install
+
+
+CCMIO (Optional)
+================
+libccmio is a library that can read Star-CD files.
+
+#
+# Unpack and build the code
+#
+tar zxvf libccmio-2.6.1.tar.gz
+cd libccmio-2.6.1
+make batch
+
+# Make the appropriate target directories.
+mkdir $VISITDIR/ccmio
+mkdir $VISITDIR/ccmio/2.6.1
+mkdir $VISITDIR/ccmio/2.6.1/$VISITARCH
+mkdir $VISITDIR/ccmio/2.6.1/$VISITARCH/lib
+mkdir $VISITDIR/ccmio/2.6.1/$VISITARCH/include
+pushd .
+cd $VISITDIR/ccmio/2.6.1/$VISITARCH/include
+ln -s . libccmio
+popd
+
+# Copy the libraries and includes into the target directories.
+cp `ls lib/*/release-static/libadf.a` $VISITDIR/ccmio/2.6.1/$VISITARCH/lib
+cp `ls lib/*/release-static/libccmio.a` $VISITDIR/ccmio/2.6.1/$VISITARCH/lib
+cp libccmio/ccmio*.h $VISITDIR/ccmio/2.6.1/$VISITARCH/include
+
+# Change the file permissions
+chgrp -R visit $VISITDIR/ccmio
+chmod -R go+r $VISITDIR/ccmio
+chmod -R g+w $VISITDIR/ccmio
+foreach d (`find $VISITDIR/ccmio -type d`)
+chmod go+x $d
+end
+cd ..
+
 
 VisIt
 ======
