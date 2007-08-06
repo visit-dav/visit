@@ -96,6 +96,9 @@ using std::pair;
 //    Make new method calls in response to changing behavior from facelist
 //    filters and ghost zone creation.
 //
+//    Hank Childs, Fri Aug  3 13:46:26 PDT 2007
+//    Initialized gz2.
+//
 // ****************************************************************************
 
 avtSubsetPlot::avtSubsetPlot()
@@ -125,6 +128,8 @@ avtSubsetPlot::avtSubsetPlot()
     gzfl->MustCreatePolyData();
     gz    = new avtGhostZoneFilter();
     gz->GhostDataMustBeRemoved();
+    gz2   = new avtGhostZoneFilter();
+    gz2->GhostDataMustBeRemoved();
     fl    = new avtFacelistFilter();
     fl->SetForceFaceConsolidation(true);
     fl->MustCreatePolyData();
@@ -146,6 +151,9 @@ avtSubsetPlot::avtSubsetPlot()
 //
 //    Jeremy Meredith, Tue Dec 10 10:00:09 PST 2002
 //    Added poly data smooth filter.
+//
+//    Hank Childs, Fri Aug  3 13:46:26 PDT 2007
+//    Deleted gz2.
 //
 // ****************************************************************************
 
@@ -176,6 +184,11 @@ avtSubsetPlot::~avtSubsetPlot()
     {
         delete gz;
         gz = NULL;
+    }
+    if (gz2 != NULL)
+    {
+        delete gz2;
+        gz2 = NULL;
     }
     if (fl != NULL)
     {
@@ -507,6 +520,10 @@ avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 //    No longer do face consolidation with feature edges because ghost nodes
 //    can screw it up.
 //
+//    Hank Childs, Fri Aug  3 13:46:26 PDT 2007
+//    Add a second ghost zone filter in the case of wireframe rendering.
+//    This addresses the coarse-fine boundary issues for AMR meshes.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -562,6 +579,10 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             //   - do the facelist and ghost zones in the needed order
             //   - do the subset (smoothing if needed)
             gzfl->SetInput(input);
+            unsigned char nodeType = 0;
+            nodeType |= (1 << DUPLICATED_NODE);
+            nodeType |= (1 << NODE_NOT_APPLICABLE_TO_PROBLEM);
+            gzfl->SetGhostNodeTypesToRemove(nodeType);
             if (atts.GetSmoothingLevel() > 0)
             {
                 smooth->SetInput(gzfl->GetOutput());
@@ -585,6 +606,10 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             //   - find the external faces of every domain
             //   - do the subset (smoothing if needed)
             //   - find feature edges
+            //   - remove edges that are on coarse-fine boundaries
+            //      (these are capture with avtGhostNodes.  The avtGhostNodes
+            //       are not removed by the first ghost zone filter, since
+            //       they only take effect with poly data.)
             gz->SetInput(input);
             fl->SetInput(gz->GetOutput());
             if (atts.GetSmoothingLevel() > 0)
@@ -597,7 +622,12 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
                 sub->SetInput(fl->GetOutput());
             }
             wf->SetInput(sub->GetOutput());
-            return wf->GetOutput();
+            gz2->SetInput(wf->GetOutput());
+            unsigned char nodeType = 0;
+            nodeType |= (1 << NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+            nodeType |= (1 << NODE_NOT_APPLICABLE_TO_PROBLEM);
+            gz2->SetGhostNodeTypesToRemove(nodeType);
+            return gz2->GetOutput();
         }
         else
         {

@@ -370,6 +370,10 @@ avtSubsetFilter::RefashionDataObjectInfo(void)
 //    size var secondary variable needs to be added to the pipeline, and
 //    whether or not we need to keep Node and Zone numbers around. 
 //
+//    Hank Childs, Tue Jul 31 08:28:18 PDT 2007
+//    Tell the contract that we want simplified nesting representations
+//    when possible.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -412,6 +416,8 @@ avtSubsetFilter::PerformRestriction(avtPipelineSpecification_p spec)
             keepNodeZone = false;
         }
     }
+
+    spec->GetDataSpecification()->TurnSimplifiedNestingRepresentationOn();
 
     return spec;
 }

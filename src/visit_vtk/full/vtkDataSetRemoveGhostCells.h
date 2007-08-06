@@ -47,6 +47,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <visit_vtk_exports.h>
 
 #include "vtkDataSetToDataSetFilter.h"
+#include <vtkSetGet.h>
 
 
 //  Modifications: 
@@ -66,9 +67,14 @@ public:
   vtkTypeMacro(vtkDataSetRemoveGhostCells, vtkDataSetToDataSetFilter);
   void PrintSelf(ostream& os, vtkIndent indent);
   
+  vtkSetMacro(GhostNodeTypesToRemove,unsigned char);
+  vtkGetMacro(GhostNodeTypesToRemove,unsigned char);
+
 protected:
   vtkDataSetRemoveGhostCells();
   ~vtkDataSetRemoveGhostCells() {};
+
+  unsigned char GhostNodeTypesToRemove;
 
   // Usual data generation method
   void Execute();

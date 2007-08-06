@@ -547,6 +547,9 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 //    Hank Childs, Fri Jan 20 17:11:59 PST 2006
 //    Add warning messages for failure.
 //
+//    Hank Childs, Wed Aug  1 13:01:40 PDT 2007
+//    Add warning for case where unstructured grid is sent in.
+//
 // ****************************************************************************
 
 bool
@@ -570,6 +573,13 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
         {
             vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) meshes[i];
             rgrid->GetDimensions(dims);
+        }
+        else
+        {
+            debug1 << "Got a non-structured mesh sent into "
+                   << "avtStructuredDomainNesting.  This should not "
+                   << "happen." << endl;
+            return false;
         }
          
         if (domains[i] >= domainNesting.size())
@@ -677,3 +687,54 @@ avtStructuredDomainNesting::GetRatiosForLevel(int level, int dom)
     
     return rv;
 }
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainNesting::GetNestingForDomain
+//
+//  Purpose:
+//      Returns the domains that nest inside this domain, as well as their
+//      indices of overlap.  The indices are relative to the domain of
+//      interest.  That is, if we are asking about domain 5, and domain 10
+//      nests inside domain 5, then we convert domain 10's extents to be
+//      relative to domain 5's indexing that is what is returned.
+//
+//  Arguments:
+//      domain      The domain we should get nesting information for.
+//      exts        The extents of domain (6 values).
+//      children    The domain IDs of its children.
+//      childExts   The [min|max][IJK] extents of each child domain (6 per)
+//
+//  Programmer: Hank Childs
+//  Creation:   July 27, 2007
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainNesting::GetNestingForDomain(int domain,
+              vector<int> &exts, vector<int> &children, vector<int> &childExts)
+{
+    if (domain < 0 || domain >= domainNesting.size())
+    {
+        EXCEPTION2(BadIndexException, domain, domainNesting.size());
+    }
+
+    avtNestedDomainInfo_t &info = domainNesting[domain];
+    exts     = info.logicalExtents;
+    children = info.childDomains;
+    childExts.clear();
+    childExts.resize(6*children.size());
+    for (int i = 0 ; i < children.size() ; i++)
+    {
+        vector<int> ratios = GetRatiosForLevel(info.level, children[i]);
+        vector<int> rawExts = domainNesting[children[i]].logicalExtents;
+        childExts[6*i+0] = rawExts[0] / ratios[0];
+        childExts[6*i+3] = rawExts[3] / ratios[0];
+        childExts[6*i+1] = rawExts[1] / ratios[1];
+        childExts[6*i+4] = rawExts[4] / ratios[1];
+        childExts[6*i+2] = rawExts[2] / ratios[2];
+        childExts[6*i+5] = rawExts[5] / ratios[2];
+    }
+}
+
+

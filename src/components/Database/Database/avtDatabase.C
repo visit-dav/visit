@@ -572,6 +572,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Kathleen Bonnell,  Fri Jun 22 13:41:14 PDT 2007
 //    Added meshType.
 //
+//    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
+//    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
+//
 // ****************************************************************************
 
 void
@@ -852,7 +855,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
     // an unfilled boundary.  The way this is handles (by directly
     // checking a data specification) needs to change.
     //
-    if (*spec && spec->NeedBoundarySurfaces())
+    if (*spec && spec->GetBoundarySurfaceRepresentation())
     {
         if (atts.GetTopologicalDimension() > 0)
         {

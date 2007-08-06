@@ -180,6 +180,9 @@ avtSourceFromDatabase::~avtSourceFromDatabase()
 //    will guarantee that the variable list coming to the database will 
 //    contain only variables that the database is familiar with.
 //
+//    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
+//    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
+//
 // ****************************************************************************
 
 bool
@@ -280,7 +283,7 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
 
     // '5723 BEGIN
     bool addBoundarySurf = false;
-    if (*lastSpec != NULL && lastSpec->NeedBoundarySurfaces() &&
+    if (*lastSpec != NULL && lastSpec->GetBoundarySurfaceRepresentation() &&
         strcmp(spec->GetVariable(), lastSpec->GetVariable()) == 0)
         addBoundarySurf = true;
     // '5723 END
@@ -295,7 +298,7 @@ avtSourceFromDatabase::FetchDataset(avtDataSpecification_p spec,
 
     // '5723 BEGIN
     if (addBoundarySurf)
-        lastSpec->TurnBoundarySurfacesOn();
+        lastSpec->TurnBoundarySurfaceRepresentationOn();
     // '5723 END
 
     return rv;
@@ -461,6 +464,9 @@ avtSourceFromDatabase::FetchSpeciesAuxiliaryData(const char *type, void *args,
 //    Return a data specification with the original variable.  This is the
 //    variable that the pipeline is plotting.
 //
+//    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
+//    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
+//
 // ****************************************************************************
 
 avtDataSpecification_p
@@ -485,8 +491,8 @@ avtSourceFromDatabase::GetFullDataSpecification(void)
 
     // '5723 BEGIN
     if (*lastSpec != NULL)
-        if (lastSpec->NeedBoundarySurfaces())
-            rv->TurnBoundarySurfacesOn();
+        if (lastSpec->GetBoundarySurfaceRepresentation())
+            rv->TurnBoundarySurfaceRepresentationOn();
     // '5723 END
 
     return rv;

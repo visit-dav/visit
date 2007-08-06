@@ -86,6 +86,8 @@
 #include <avtSILGenerator.h>
 #include <avtSILRestrictionTraverser.h>
 #include <avtSourceFromDatabase.h>
+#include <avtStructuredDomainBoundaries.h>
+#include <avtStructuredDomainNesting.h>
 #include <avtTransformManager.h>
 #include <avtTypes.h>
 #include <avtUnstructuredPointBoundaries.h>
@@ -423,6 +425,9 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Kathleen Bonnell, Thu Jun 21 17:09:42 PDT 2007 
 //    CreateAMRIndices when requested. 
 //
+//    Hank Childs, Tue Jul 31 08:23:22 PDT 2007
+//    Add support for a simplified representation of nesting information.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -586,6 +591,32 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
         spec->TurnNodeNumbersOn();
     }
 
+    bool alreadyDidNesting    = false;
+    bool alreadyDidGhosts     = false;
+    bool didSimplifiedNesting = false;
+    if (spec->GetSimplifiedNestingRepresentation())
+    {
+        if (!shouldDoMatSelect &&
+            !spec->NeedNodeNumbers() &&
+            !spec->NeedZoneNumbers() &&
+            !spec->NeedGlobalNodeNumbers() &&
+            !spec->MayRequireZones() &&
+            !spec->MayRequireNodes() &&
+            !spec->NeedStructuredIndices() &&
+            !(spec->NeedAMRIndices() >= 0) &&
+            (spec->GetDesiredGhostDataType() == NO_GHOST_DATA
+             || spec->GetDesiredGhostDataType() == GHOST_NODE_DATA))
+        {
+            if (CreateSimplifiedNestingRepresentation(datasetCollection, 
+                                     domains, allDomains, src, spec))
+            {
+                alreadyDidNesting    = true;
+                alreadyDidGhosts     = true;
+                didSimplifiedNesting = true;
+            }
+        }
+    }
+
     //
     // Add node numbers if requested.
     //
@@ -655,7 +686,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     //
     // Apply ghosting when domains nest within other domains (AMR meshes)
     //
-    ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec,
+    if (!alreadyDidNesting)
+        ApplyGhostForDomainNesting(datasetCollection, domains, allDomains, spec,
                                canDoCollectiveCommunication);
 
     //
@@ -672,7 +704,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     if (ghostType != NO_GHOST_DATA)
         ghostDataIsNeeded = true;
 
-    if (ghostDataIsNeeded)
+    if (ghostDataIsNeeded && !alreadyDidGhosts)
     {
         didGhosts = CommunicateGhosts(ghostType, datasetCollection, domains, 
                                       spec, src, allDomains, 
@@ -702,6 +734,8 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
     avtDataObject_p dob = src->GetOutput();
     if (nDomains == 0)
         dob->GetInfo().GetValidity().SetHasEverOwnedAnyDomain(false);
+    if (didSimplifiedNesting)
+        dob->GetInfo().GetAttributes().SetOrigElementsRequiredForPick(true);
     PopulateDataObjectInformation(dob, spec->GetVariable(), timeStep, 
         selectionsApplied, spec);
 
@@ -6724,6 +6758,9 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
+//    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
+//    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
+//
 // ****************************************************************************
 
 void
@@ -6790,7 +6827,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                 mvl, domains[i], var, ts,
                                 ds.matnames[i], ds.labels[i],
                                 spec->NeedInternalSurfaces(),
-                                spec->NeedBoundarySurfaces(),
+                                spec->GetBoundarySurfaceRepresentation(),
                                 spec->NeedValidFaceConnectivity(),
                                 spec->NeedSmoothMaterialInterfaces(),
                                 spec->NeedCleanZonesOnly(), 
@@ -6883,6 +6920,639 @@ avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds,
         src->DatabaseProgress(i, ds.GetNDomains(), progressString);
     }
     src->DatabaseProgress(1, 0, progressString);
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateSimplifiedNestingRepresentation
+//
+//  Purpose:
+//    Changes the data set to be a simplified version that represents the
+//    nesting relationship of the domain and domains inside it.
+//
+//  Arguments:
+//      ds          The dataset collection.
+//      domains     The domains being used.
+//      allDomains  All domains being used for this plot (on all processors).
+//      src         The source object.
+//      spec        The data specification.
+//
+//  Programmer:   Hank Childs
+//  Creation:     July 26, 2007
+//
+// ****************************************************************************
+
+bool
+avtGenericDatabase::CreateSimplifiedNestingRepresentation(
+                              avtDatasetCollection &ds, 
+                              intVector &domains, intVector &allDomains,
+                              avtSourceFromDatabase *src,
+                              avtDataSpecification_p &spec)
+{
+    int ts = spec->GetTimestep();
+    avtDatabaseMetaData *md = GetMetaData(ts);
+    string meshname = md->MeshForVar(spec->GetVariable());
+    
+    void_ref_ptr vr = cache.GetVoidRef(meshname.c_str(),
+                                   AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                                   ts, -1);
+    if (*vr == NULL)
+        vr = cache.GetVoidRef("any_mesh",
+                              AUXILIARY_DATA_DOMAIN_NESTING_INFORMATION,
+                              ts, -1);
+
+    if (*vr == NULL)
+    {
+        return false;
+    }
+
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        if (ds.GetDataset(i, 0)->GetDataObjectType() != VTK_RECTILINEAR_GRID)
+            return false;
+    }
+
+    avtStructuredDomainNesting *dn = (avtStructuredDomainNesting*)*vr;
+    
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, domains, spec);
+    avtStructuredDomainBoundaries *sdbi = (avtStructuredDomainBoundaries*)dbi;
+
+    char  progressString[1024] = "Simplifying nesting relationships";
+    src->DatabaseProgress(0, 0, progressString);
+    for (int i = 0 ; i < ds.GetNDomains() ; i++)
+    {
+        vtkUnstructuredGrid *ugrid = NULL;
+        if (spec->UsesAllDomains())
+        {
+            vector<int> emptyList;
+            ugrid = CreateSimplifiedNestingRepresentation(
+                   (vtkRectilinearGrid *) ds.GetDataset(i, 0), domains[i], 
+                   emptyList, dn, sdbi, spec->GetDesiredGhostDataType());
+        }
+        else
+        {
+            ugrid = CreateSimplifiedNestingRepresentation(
+                   (vtkRectilinearGrid *) ds.GetDataset(i, 0), domains[i], 
+                   allDomains, dn, sdbi, spec->GetDesiredGhostDataType());
+        }
+        ds.SetDataset(i, 0, ugrid);
+        ugrid->Delete();
+        src->DatabaseProgress(i, ds.GetNDomains(), progressString);
+    }
+
+    if (spec->GetDesiredGhostDataType() != NO_GHOST_DATA)
+        md->SetContainsGhostZones(meshname, AVT_CREATED_GHOSTS);
+
+    src->DatabaseProgress(1, 0, progressString);
+
+    return true;
+}
+
+
+// ****************************************************************************
+//  Method: avtGenericDatabase::CreateSimplifiedNestingRepresentation
+//
+//  Purpose:
+//      Takes a single rectilinear grid and turns it into an unstructured
+//      grid whose voxels demarcate the boundaries between the nested
+//      regions of the exterior of the grid.
+//
+//  Arguments:
+//      rgrid     A rectilinear grid that should be simplified.
+//      domain    The domain ID of rgrid.
+//      dl        The list of domains that are actually being used for
+//                this plot.  (If some domains are not being used, then
+//                we should not nest out the parts they affect.)
+//      dn        The structured domain nesting information.
+//      dn        The structured domain boundary information.
+//      gt        The desired ghost type.
+//
+//  Returns:    An unstructured grid.  The caller owns the memory associated
+//              with this object after calling.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 27, 2007
+//
+// ****************************************************************************
+
+vtkUnstructuredGrid *
+avtGenericDatabase::CreateSimplifiedNestingRepresentation(
+                        vtkRectilinearGrid *rgrid, int domain, 
+                        intVector &allDomains,
+                        avtStructuredDomainNesting *dn,
+                        avtStructuredDomainBoundaries *dbi,
+                        avtGhostDataType gt)
+{
+    int   d, i, j, k, l;
+
+    //
+    // This will retrieve:
+    //    my_exts: The extents of this patch with respect to the current
+    //             refinement level.  So my_exts[1]-my_exts[0] == dims[0]
+    //             but my_exts[0] will be the start of the patch in I
+    //             for this patch's refinement level.
+    //    child_domains: the patches nested inside this patch.
+    //    childExts: the extents of each child in the same indexing 
+    //             system as my_exts.  
+    //
+    // Example: my_exts = [10,     20,    5,   15,    0,    0]
+    //                =   [minI, maxI, minJ, maxJ, minK, maxK]
+    //  child_domains = [5, 6] (the child patches are #'s 5 and 6)
+    //  childExts = [12, 5, 0, 14, 8, 0, 15, 5, 0, 17, 8, 0]
+    //  meaning patch 5 blocks out I=12-14, J=5-8 & patch 6 blocks out
+    //                I=15-17, J=5-8
+    //
+    vector<int> my_exts;
+    vector<int> childDomains;
+    vector<int> childExts;
+    dn->GetNestingForDomain(domain, my_exts, childDomains, childExts);
+
+    //
+    // If the user has turned off some patches, then we shouldn't nest
+    // those areas out.  Below we calculate which patches are on and
+    // which are off.
+    //
+    vector<bool> usesDomain(childDomains.size());
+    for (i = 0 ; i < childDomains.size() ; i++)
+        usesDomain[i] = true;
+   
+    if (allDomains.size() > 0) // if it is 0, then all domains are on
+    {
+        std::set<int> myAllDomains;
+        for (i = 0 ; i < allDomains.size() ; i++)
+            myAllDomains.insert(allDomains[i]);
+        for (i = 0 ; i < childDomains.size() ; i++)
+        {
+            if (myAllDomains.find(childDomains[i]) == myAllDomains.end())
+                usesDomain[i] = false;
+        }
+    }
+
+    //
+    // This will get the dimensions for the grid.  This should be the same
+    // as (my_exts[1]-my_exts[0], my_exts[3]-my_exts[2], 
+    // my_exts[5]-my_exts[4]), but it seems extra safe to use what is
+    // actually on the mesh.
+    //
+    int dims[3];
+    rgrid->GetDimensions(dims);
+
+    int minIGlob = my_exts[0];
+    int maxIGlob = my_exts[0] + dims[0]-1; // -1 to have inclusive range.
+    int minJGlob = my_exts[1];
+    int maxJGlob = my_exts[1] + dims[1]-1;
+    int minKGlob = my_exts[2];
+    int maxKGlob = my_exts[2] + dims[2]-1; 
+    maxKGlob = (maxKGlob < 0 ? 0 : maxKGlob); // Just in case for 2D
+
+    //
+    // This array will keep track of all indices for the patch we are operating
+    // on and its children.  All entries in this array will be using 
+    // "local indices".
+    std::vector<int> Ilist;
+    std::vector<int> Jlist;
+    std::vector<int> Klist;
+
+    int minILocal = 0;
+    int maxILocal = dims[0]-1;
+    int minJLocal = 0;
+    int maxJLocal = dims[1]-1;
+    int minKLocal = 0;
+    int maxKLocal = dims[2]-1;
+    maxKLocal = (maxKLocal < 0 ? 0 : maxKLocal); // Just in case for 2D
+    Ilist.push_back(minILocal);
+    Ilist.push_back(maxILocal);
+    Jlist.push_back(minJLocal);
+    Jlist.push_back(maxJLocal);
+    Klist.push_back(minKLocal);
+    Klist.push_back(maxKLocal);
+
+    for (d = 0 ; d < childDomains.size() ; d++)
+    {
+        if (!usesDomain[d])
+            continue;
+
+        // A few confusing things here:
+        // 1) The childExts are in "global indices" are we are converting them
+        //    to "local indices" (by subtracting min[IJK]Glob).
+        // 2) The children might span outside the current patch.  If so, we
+        //    are truncating them to the current patch (with the ( C ? T : E ) ).
+        // 3) The childExts are [minI, minJ, minK, maxI, maxJ, maxK].
+        // 4) The extents are in cells that overlap.  But we want to focus on
+        //    nodes.  So we add one to the maximums, which effectively makes
+        //    them node IDs.
+
+        int boundExts[6];
+        boundExts[0] = (childExts[6*d+0]<minIGlob ? minIGlob 
+                                              : childExts[6*d+0])-minIGlob;
+        boundExts[1] = (childExts[6*d+1]<minJGlob ? minJGlob 
+                                              : childExts[6*d+1])-minJGlob;
+        boundExts[2] = (childExts[6*d+2]<minKGlob ? minKGlob 
+                                              : childExts[6*d+2])-minKGlob;
+        boundExts[3] = (childExts[6*d+3]+1>maxIGlob ? maxIGlob 
+                                              : childExts[6*d+3]+1)-minIGlob;
+        boundExts[4] = (childExts[6*d+4]+1>maxJGlob ? maxJGlob 
+                                              : childExts[6*d+4]+1)-minJGlob;
+        boundExts[5] = (childExts[6*d+5]+1>maxKGlob ? maxKGlob 
+                                              : childExts[6*d+5]+1)-minKGlob;
+
+        // Now add the indices to [IJK]list.  
+        // 1) We have local indices (from above), so we can add them directly.
+        // 2) The childExts are [minI, minJ, minK, maxI, maxJ, maxK], so the
+        //    indices [0&3, 1&4, 2&5] are a little funny.
+        Ilist.push_back(boundExts[0]);
+        Ilist.push_back(boundExts[3]);
+        Jlist.push_back(boundExts[1]);
+        Jlist.push_back(boundExts[4]);
+        Klist.push_back(boundExts[2]);
+        Klist.push_back(boundExts[5]);
+    }
+
+    // 
+    // Ghost nodes break down if you have a single cell. (If you have a cell that
+    // has a neighbor on the left and on the right, it will have all 8 nodes as
+    // ghost, so you don't see any of the faces.)  In this case, you really 
+    // want to have a 2x2x2 grid at least.  So insert an extra point in the middle.
+    //
+    if (Ilist.size() == 2)
+        if (maxILocal >= 2)
+            Ilist.push_back(maxILocal / 2);
+    if (Jlist.size() == 2)
+        if (maxJLocal >= 2)
+            Jlist.push_back(maxJLocal / 2);
+    if (Klist.size() == 2)
+        if (maxKLocal >= 2)
+            Klist.push_back(maxKLocal / 2);
+
+    //
+    // We want each of [IJK]list to have unique and sorted elements.
+    // Do that now.
+    //
+    vector<int>::iterator new_end;
+
+    std::sort(Ilist.begin(), Ilist.end());
+    new_end = std::unique(Ilist.begin(), Ilist.end());
+    Ilist.erase(new_end, Ilist.end());
+
+    std::sort(Jlist.begin(), Jlist.end());
+    new_end = std::unique(Jlist.begin(), Jlist.end());
+    Jlist.erase(new_end, Jlist.end());
+
+    std::sort(Klist.begin(), Klist.end());
+    new_end = std::unique(Klist.begin(), Klist.end());
+    Klist.erase(new_end, Klist.end());
+
+    //
+    // We will now divide the mesh into cells, with cell boundaries
+    // being at the elements of [IJK]list.  We choose these boundaries
+    // because we need to create a mesh with proper face/edge (3D/2D)
+    // connectivity for the wireframe subset option to work.
+    //
+    int numIlist = Ilist.size();
+    int numJlist = Jlist.size();
+    int numKlist = Klist.size(); // Will be "1" in 2D.
+    int numCells;
+    if (dims[2] == 1)
+        numCells = (numIlist-1)*(numJlist-1);
+    else
+        numCells = (numIlist-1)*(numJlist-1)*(numKlist-1); 
+
+    //
+    // We need to keep track of which cells are used and which are
+    // not.  We will start by declaring all cells as used, and then
+    // remove them as we find that they are nested out by children.
+    //
+    bool *useCell = new bool[numCells];
+    for (i = 0 ; i < numCells ; i++)
+        useCell[i] = true;
+
+    for (d = 0 ; d < childDomains.size() ; d++)
+    {
+        if (!usesDomain[d])
+            continue;
+
+        // Get the indices that bound the child patch.
+        // Again, a few confusing things here:
+        // 1) The childExts are in "global indices" are we are converting them
+        //    to "local indices" (by subtracting min[IJK]Glob).
+        // 2) The children might span outside the current patch.  If so, we
+        //    are truncating them to the current patch (with the ( C ? T : E ) ).
+        // 3) The childExts are [minI, minJ, minK, maxI, maxJ, maxK].
+        // 4) The extents are in cells that overlap.  But we want to focus on
+        //    nodes.  So we add one to the maximums, which effectively makes
+        //    them node IDs.
+        int boundExts[6];
+        boundExts[0] = (childExts[6*d+0]<minIGlob ? minIGlob 
+                                              : childExts[6*d+0]) - minIGlob;
+        boundExts[1] = (childExts[6*d+1]<minJGlob ? minJGlob 
+                                              : childExts[6*d+1]) - minJGlob;
+        boundExts[2] = (childExts[6*d+2]<minKGlob ? minKGlob 
+                                              : childExts[6*d+2]) - minKGlob;
+        boundExts[3] = (childExts[6*d+3]+1>maxIGlob ? maxIGlob 
+                                              : childExts[6*d+3]+1) - minIGlob;
+        boundExts[4] = (childExts[6*d+4]+1>maxJGlob ? maxJGlob 
+                                              : childExts[6*d+4]+1) - minJGlob;
+        boundExts[5] = (childExts[6*d+5]+1>maxKGlob ? maxKGlob 
+                                              : childExts[6*d+5]+1) - minKGlob;
+
+        //
+        // We have the bounds with respect to the "local index" space.  But
+        // we will not be using most of the "local index" space.  Instead,
+        // the mesh we are setting up is based on [IJK]list.  We will now
+        // convert our "local indices" to "list" indices.  I named them
+        // "list" indices because they are relative to [IJK]list.
+        //
+        int listIlo = -1;
+        for (l = 0 ; l < Ilist.size() ; l++)
+             if (boundExts[0] == Ilist[l])
+             {
+                 listIlo = l;
+                 break;
+             }
+        int listIhi = -1;
+        for (l = 0 ; l < Ilist.size() ; l++)
+             if (boundExts[3] == Ilist[l])
+             {
+                 listIhi = l;
+                 break;
+             }
+        int listJlo = -1;
+        for (l = 0 ; l < Jlist.size() ; l++)
+             if (boundExts[1] == Jlist[l])
+             {
+                 listJlo = l;
+                 break;
+             }
+        int listJhi = -1;
+        for (l = 0 ; l < Jlist.size() ; l++)
+             if (boundExts[4] == Jlist[l])
+             {
+                 listJhi = l;
+                 break;
+             }
+        int listKlo = -1;
+        for (l = 0 ; l < Klist.size() ; l++)
+             if (boundExts[2] == Klist[l])
+             {
+                 listKlo = l;
+                 break;
+             }
+        int listKhi = -1;
+        for (l = 0 ; l < Klist.size() ; l++)
+             if (boundExts[5] == Klist[l])
+             {
+                 listKhi = l;
+                 break;
+             }
+
+        //
+        // Now take out all cells (from our mesh that is made up of elements
+        // from [IJK]list).
+        //
+        for (i = listIlo ; i < listIhi ; i++)
+        {
+            for (j = listJlo ; j < listJhi ; j++)
+            {
+                if (dims[2] == 1)
+                {
+                    int idx = j*(numIlist-1) + i;
+                    useCell[idx] = false;
+                }
+                else
+                {
+                    for (k = listKlo ; k < listKhi ; k++)
+                    {
+                        int idx = k*(numJlist-1)*(numIlist-1) 
+                                + j*(numIlist-1) + i;
+                        useCell[idx] = false;
+                    }
+                }
+            }
+        }
+    }
+
+    bool addGhostZones = (gt != NO_GHOST_DATA);
+
+    // Now we have the voxels/quads, let's build the unstructured mesh.
+    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+    int nRealCells = 0;
+    for (i = 0 ; i < numCells ; i++)
+        if (useCell[i])
+            nRealCells++;
+    int cellSize = (dims[2] == 1 ? 5 : 9);
+    int ncellsToAllocate = (addGhostZones ? numCells : nRealCells);
+    ugrid->Allocate(cellSize*ncellsToAllocate);
+
+    //
+    // We previously broke up the old mesh into cells based on the
+    // elements of [IJK]list.  We will only keep some of these cells
+    // (the ones iwth useCell set to true).  So iterate all of
+    // the cells and add the keepers to the unstructured mesh.
+    //
+    vtkUnsignedCharArray *ghost_zones = NULL;
+    if (addGhostZones)
+    {
+        ghost_zones = vtkUnsignedCharArray::New();
+        ghost_zones->SetNumberOfTuples(numCells);
+        ghost_zones->SetName("avtGhostZones");
+    }
+
+    for (int c = 0 ; c < numCells ; c++)
+    {
+        if (useCell[c] || addGhostZones)
+        {
+            if (dims[2] == 1)
+            {
+                int I = c%(numIlist-1);
+                int J = c/(numIlist-1);
+                int map_to_quad[4] = { 0, 1, 3, 2 };
+                vtkIdType quad_pts[4];
+                for (int p = 0 ; p < 4 ; p++)
+                {
+                    int Ipt = (p&1 ? I+1 : I);
+                    int Jpt = (p&2 ? J+1 : J);
+                    int pt = Jpt*numIlist + Ipt;
+                    quad_pts[map_to_quad[p]] = pt;
+                }
+                ugrid->InsertNextCell(VTK_QUAD, 4, quad_pts);
+            }
+            else
+            {
+                int I = c%(numIlist-1);
+                int J = (c/(numIlist-1)) % (numJlist-1);
+                int K = c / ((numIlist-1)*(numJlist-1));
+                int map_to_hex[8] = { 0, 1, 3, 2, 4, 5, 7, 6 };
+                vtkIdType hex_pts[8];
+                for (int p = 0 ; p < 8 ; p++)
+                {
+                    int Ipt = (p&1 ? I+1 : I);
+                    int Jpt = (p&2 ? J+1 : J);
+                    int Kpt = (p&4 ? K+1 : K);
+                    int pt = Kpt*numJlist*numIlist + Jpt*numIlist + Ipt;
+                    hex_pts[map_to_hex[p]] = pt;
+                }
+                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, hex_pts);
+           }
+        }
+        if (addGhostZones)
+        {
+            unsigned char v = '\0';
+            if (!useCell[c])
+                avtGhostData::AddGhostZoneType(v, REFINED_ZONE_IN_AMR_GRID);
+            ghost_zones->SetValue(c, v);
+        }
+    }
+    if (addGhostZones)
+    {
+        ugrid->GetCellData()->AddArray(ghost_zones);
+        ghost_zones->Delete();
+    }
+
+    //
+    // We previously broke up the old mesh into cells based on the
+    // elements of [IJK]list.  We will now create a point list using
+    // all of these points.  Some of the points may not be incident
+    // to any ``keeper" cells.  Add those points anyway, since there
+    // won't be very many (so memory cost won't be high) and it makes
+    // our indexing so easy this way.
+    //
+    vtkPoints *pts = vtkPoints::New();
+    int nPts = numIlist*numJlist*numKlist;
+    pts->SetNumberOfPoints(nPts);
+    for (i = 0 ; i < numIlist ; i++)
+    {
+        for (j = 0 ; j < numJlist ; j++)
+        {
+            for (k = 0 ; k < numKlist ; k++)
+            {
+                //
+                // Get the point in the indexing scheme
+                // of the original rectilinear mesh.
+                //
+                int ptId = (Klist[k])*dims[1]*dims[0]
+                         + (Jlist[j])*dims[0] 
+                         + (Ilist[i]);
+                double pt[3];
+                rgrid->GetPoint(ptId, pt);
+
+                // 
+                // Now get the index for the point for
+                // our new unstructured mesh.
+                //
+                int idx = k*numJlist*numIlist + j*numIlist + i;
+                pts->SetPoint(idx, pt);
+            }
+        }
+    }
+
+    //
+    // Set up ghost node information.
+    //
+    if (dbi != NULL && gt != NO_GHOST_DATA)
+    {
+        bool hasNeighbor[6];
+        dbi->GetNeighborPresence(domain, hasNeighbor, allDomains);
+        vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+        ghost_nodes->SetName("avtGhostNodes");
+        ghost_nodes->SetNumberOfTuples(nPts);
+        unsigned char *gnp = ghost_nodes->GetPointer(0);
+        for (i = 0 ; i < nPts ; i++)
+            gnp[i] = 0;
+
+        const int dims[3] = { numIlist, numJlist, numKlist };
+
+        //
+        // Start by setting up all ghost nodes from abutting 
+        // neighboring patches.
+        //
+        if (hasNeighbor[0])
+            for (j = 0 ; j < dims[1] ; j++)
+                for (k = 0 ; k < dims[2] ; k++)
+                    avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+j*dims[0]], 
+                                                   DUPLICATED_NODE);
+        if (hasNeighbor[1])
+            for (j = 0 ; j < dims[1] ; j++)
+                for (k = 0 ; k < dims[2] ; k++)
+                    avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+j*dims[0]+dims[0]-1], 
+                                                   DUPLICATED_NODE);
+        if (hasNeighbor[2])
+            for (i = 0 ; i < dims[0] ; i++)
+                for (k = 0 ; k < dims[2] ; k++)
+                    avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+i], 
+                                                   DUPLICATED_NODE);
+        if (hasNeighbor[3])
+            for (i = 0 ; i < dims[0] ; i++)
+                for (k = 0 ; k < dims[2] ; k++)
+                    avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+(dims[1]-1)*dims[0]+i], 
+                                                   DUPLICATED_NODE);
+        if (hasNeighbor[4])
+            for (i = 0 ; i < dims[0] ; i++)
+                for (j = 0 ; j < dims[1] ; j++)
+                    avtGhostData::AddGhostNodeType(gnp[j*dims[0]+i], 
+                                                   DUPLICATED_NODE);
+        if (hasNeighbor[5])
+            for (i = 0 ; i < dims[0] ; i++)
+                for (j = 0 ; j < dims[1] ; j++)
+                    avtGhostData::AddGhostNodeType(gnp[(dims[2]-1)*dims[0]*dims[1]+j*dims[0]+i], 
+                                                   DUPLICATED_NODE);
+
+        //
+        // If we have ghost zones, then every face that abutted a ghost
+        // zone should be treated as a ghost face.  This is important for
+        // wireframe subset plots.
+        //
+        if (addGhostZones)
+        {
+            for (int c = 0 ; c < numCells ; c++)
+            {
+                unsigned char c2 = ghost_zones->GetValue(c);
+                if (avtGhostData::IsGhostZoneType(c2,REFINED_ZONE_IN_AMR_GRID))
+                {
+                    if (dims[2] == 1)
+                    {
+                        int I = c % (dims[0]-1);
+                        int J = c / (dims[0]-1);
+                        for (l = 0 ; l < 4 ; l++)
+                        {
+                            int I2 = (l & 1 ? I+1 : I);
+                            int J2 = (l & 2 ? J+1 : J);
+                            int pt = J2*dims[0]+I2;
+                            avtGhostData::AddGhostNodeType(gnp[pt], 
+                               NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+                        }
+                    }
+                    else
+                    {
+                        int I = c % (dims[0]-1);
+                        int J = (c / (dims[0]-1)) % (dims[1]-1);
+                        int K = c / ((dims[0]-1)*(dims[1]-1));
+                        for (l = 0 ; l < 8 ; l++)
+                        {
+                            int I2 = (l & 1 ? I+1 : I);
+                            int J2 = (l & 2 ? J+1 : J);
+                            int K2 = (l & 4 ? K+1 : K);
+                            int pt = K2*dims[1]*dims[0] + J2*dims[0] + I2;
+                            avtGhostData::AddGhostNodeType(gnp[pt], 
+                               NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+                        }
+                    }
+                }
+            }
+        }
+        ugrid->GetPointData()->AddArray(ghost_nodes);
+        ghost_nodes->Delete();
+    }
+    
+
+    //
+    // Clean up memory.  It is assumed that the calling function will
+    // delete "ugrid".
+    //
+    ugrid->SetPoints(pts);
+    pts->Delete();
+    delete [] useCell;
+
+    return ugrid;
 }
 
 

@@ -125,6 +125,9 @@ avtDatasetQuery::~avtDatasetQuery()
 //    Hank Childs, Fri Aug 25 17:47:21 PDT 2006
 //    Change error message with no data, as it is misleading.
 //
+//    Hank Childs, Sat Aug  4 12:31:43 PDT 2007
+//    Catch exceptions, as they lead to parallel hangs if we don't.
+//
 // ****************************************************************************
 
 void
@@ -161,26 +164,41 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
     }
 
     totalNodes = tree->GetNumberOfLeaves();
+    bool hadError = false;
     PreExecute();
-    Execute(tree);
+    TRY
+    {
+        Execute(tree);
+    }
+    CATCH2(VisItException, e)
+    {
+        debug1 << "Exception occurred in " << GetType() << endl;
+        debug1 << "Going to keep going to prevent a parallel hang." << endl;
+        queryAtts.SetResultsMessage(e.Message());
+        hadError = true;
+    }
+    ENDTRY
     PostExecute();
 
     validInputTree = UnifyMaximumValue(validInputTree);
 
-    if (validInputTree)
+    if (!hadError)
     {
-        //
-        // Retrieve the query results and set the message in the atts. 
-        //
-        queryAtts.SetResultsMessage(resMsg);
-        queryAtts.SetResultsValue(resValue);
-    }
-    else
-    {
-        queryAtts.SetResultsMessage("Query(" + queryAtts.GetName() + ")"
-                " was asked to execute on an empty data set.  The query "
-                "produced the following message: " + resMsg); 
-        queryAtts.SetResultsValue(resValue);
+        if (validInputTree)
+        {
+            //
+            // Retrieve the query results and set the message in the atts. 
+            //
+            queryAtts.SetResultsMessage(resMsg);
+            queryAtts.SetResultsValue(resValue);
+        }
+        else
+        {
+            queryAtts.SetResultsMessage("Query(" + queryAtts.GetName() + ")"
+                    " was asked to execute on an empty data set.  The query "
+                    "produced the following message: " + resMsg); 
+            queryAtts.SetResultsValue(resValue);
+        }
     }
 
     UpdateProgress(1, 0);

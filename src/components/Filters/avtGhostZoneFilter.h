@@ -77,6 +77,9 @@ class     vtkDataSetRemoveGhostCells;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Hank Childs, Fri Aug  3 13:27:27 PDT 2007
+//    Add support for removing only ghost data of a certain type.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
@@ -95,8 +98,15 @@ class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
     void                 GhostDataMustBeRemoved()
                              { ghostDataMustBeRemoved = true; };
 
+    // If you call this method, polygons with the specified ghost node types 
+    // will be removed.  The ghost node information will then be removed,
+    // meaning that other ghost nodes types will no longer be treated as 
+    // ghost.
+    void                 SetGhostNodeTypesToRemove(unsigned char);
+
   protected:
     bool                        ghostDataMustBeRemoved;
+    unsigned char               ghostNodeTypesToRemove;
 
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual void                RefashionDataObjectInfo(void);

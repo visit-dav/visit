@@ -56,7 +56,9 @@ typedef enum
 typedef enum
 {
     DUPLICATED_NODE = 0,
-    NODE_NOT_APPLICABLE_TO_PROBLEM = 1
+    NODE_NOT_APPLICABLE_TO_PROBLEM = 1,
+    NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY = 2,
+    NODE_IS_ON_FINE_SIDE_OF_COARSE_FINE_BOUNDARY = 3
 } avtGhostNodeTypes;
 
 typedef enum
@@ -76,6 +78,11 @@ typedef enum
 //
 //  Programmer: Hank Childs
 //  Creation:   August 10, 2004
+//
+//  Modifications:
+//
+//     Hank Childs, Fri Aug  3 13:22:40 PDT 2007
+//     Added ghost node types for coarse/fine boundaries.
 //
 // ****************************************************************************
 
@@ -191,7 +198,9 @@ class avtGhostData
     {
         unsigned char bit1 = (1 << DUPLICATED_NODE);
         unsigned char bit2 = (1 << NODE_NOT_APPLICABLE_TO_PROBLEM);
-        unsigned char bit = bit1 | bit2;
+        unsigned char bit3 = (1 << NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+        unsigned char bit4 = (1 << NODE_IS_ON_FINE_SIDE_OF_COARSE_FINE_BOUNDARY);
+        unsigned char bit = bit1 | bit2 | bit3 | bit4;
         return (u & bit);
     }
 
@@ -203,7 +212,10 @@ class avtGhostData
 
     static inline bool UseNodeForInterpolation(unsigned char &u)
     {
-        unsigned char bit = (1 << DUPLICATED_NODE);
+        unsigned char bit1 = (1 << DUPLICATED_NODE);
+        unsigned char bit2 = (1 << NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+        unsigned char bit3 = (1 << NODE_IS_ON_FINE_SIDE_OF_COARSE_FINE_BOUNDARY);
+        unsigned char bit = bit1 | bit2 | bit3;
         return (u & bit);
     }
 };

@@ -610,6 +610,10 @@ avtBehavior::GetRenderOrder(bool antialiased)
 //    Changed OrigNodesRequiredForPick to OrigElementsRequiredForPick, and
 //    check for presence of original nodes if !needZones.
 //
+//    Hank Childs, Sat Aug  4 13:05:51 PDT 2007
+//    Beef up test when we need original elements for pick and the points
+//    have been transformed.
+//
 // ****************************************************************************
 
 bool
@@ -665,6 +669,16 @@ avtBehavior::RequiresReExecuteForQuery(const bool needInvT,
         else  //  if (!needInvT && !needZones) 
         {
             retval = !xformAvailable && !nodesAvailable;
+        }
+
+        if (info.GetAttributes().OrigElementsRequiredForPick())
+        {
+            if (needZones)
+                retval = retval || (info.GetAttributes().CanUseOrigZones() &&
+                         !info.GetAttributes().GetContainsOriginalCells());
+            else 
+                retval = retval ||
+                         (!info.GetAttributes().GetContainsOriginalNodes());
         }
     }
     else if (info.GetAttributes().OrigElementsRequiredForPick())

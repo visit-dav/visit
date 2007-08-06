@@ -190,6 +190,24 @@ avtGhostZoneAndFacelistFilter::GhostDataMustBeRemoved(void)
 
 
 // ****************************************************************************
+//  Method: avtGhostZoneAndFacelistFilter::SetGhostNodeTypesToRemove
+//
+//  Purpose:
+//      Tell the ghost zone filter which ghost data should be removed.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 3, 2007
+//
+// ****************************************************************************
+
+void
+avtGhostZoneAndFacelistFilter::SetGhostNodeTypesToRemove(unsigned char val)
+{
+    ghostFilter->SetGhostNodeTypesToRemove(val);
+}
+
+
+// ****************************************************************************
 //  Method: avtGhostZoneAndFacelistFilter::MustCreatePolyData
 //
 //  Purpose:

@@ -154,6 +154,10 @@ using     std::map;
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
 //    Added member needAMRIndices.
 //
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -167,7 +171,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
     needGlobalNodes = false;
     needInternalSurfaces = false;
     mustDoMIR = false;
-    needBoundarySurfaces = false;
+    getBoundarySurfaceRep = false;
+    getSimplifiedNestingRep = false;
     needValidFaceConnectivity = false;
     needStructuredIndices = false;
     needAMRIndices = -1;
@@ -293,6 +298,10 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
 //    Added member needAMRIndices.
 //
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -305,7 +314,8 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     needGlobalNodes = false;
     mustDoMIR = false;
     needInternalSurfaces = false;
-    needBoundarySurfaces = false;
+    getBoundarySurfaceRep = false;
+    getSimplifiedNestingRep = false;
     needValidFaceConnectivity = false;
     needStructuredIndices = false;
     needAMRIndices = -1;
@@ -571,6 +581,10 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
 //    Added member needAMRIndices.
 //
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -611,7 +625,8 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     needGlobalZones                 = spec.needGlobalZones;
     needGlobalNodes                 = spec.needGlobalNodes;
     needInternalSurfaces            = spec.needInternalSurfaces;
-    needBoundarySurfaces            = spec.needBoundarySurfaces;
+    getBoundarySurfaceRep           = spec.getBoundarySurfaceRep;
+    getSimplifiedNestingRep         = spec.getSimplifiedNestingRep;
     needValidFaceConnectivity       = spec.needValidFaceConnectivity;
     needStructuredIndices           = spec.needStructuredIndices;
     needAMRIndices                  = spec.needAMRIndices;
@@ -734,6 +749,10 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
 //    Added member needAMRIndices.
 //
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
 // ****************************************************************************
 
 bool
@@ -801,7 +820,12 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
         return false;
     }
 
-    if (needBoundarySurfaces != ds.needBoundarySurfaces)
+    if (getBoundarySurfaceRep != ds.getBoundarySurfaceRep)
+    {
+        return false;
+    }
+
+    if (getSimplifiedNestingRep != ds.getSimplifiedNestingRep)
     {
         return false;
     }
@@ -1626,6 +1650,13 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Kathleen Bonnell, Thu Jun 21 16:31:59 PDT 2007 
 //    Added member needAMRIndices.
 //
+//    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
+//    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
+//    to getBoundarySurfaceRep for consistency.
+//
+//    Hank Childs, Tue Jul 31 09:21:25 PDT 2007
+//    Add missing entry: mayRequireZones.
+//
 // ****************************************************************************
 
 static const char *
@@ -1666,9 +1697,12 @@ avtDataSpecification::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("needGlobalZones", YesOrNo(needGlobalZones));
     webpage->AddTableEntry2("needGlobalNodes", YesOrNo(needGlobalNodes));
     webpage->AddTableEntry2("mayRequireNodes", YesOrNo(mayRequireNodes));
+    webpage->AddTableEntry2("mayRequireZones", YesOrNo(mayRequireZones));
     webpage->AddTableEntry2("mustDoMIR", YesOrNo(mustDoMIR));
     webpage->AddTableEntry2("needInternalSurfaces", YesOrNo(needInternalSurfaces));
-    webpage->AddTableEntry2("needBoundarySurfaces", YesOrNo(needBoundarySurfaces));
+    webpage->AddTableEntry2("Get data set as only material boundaries", YesOrNo(getBoundarySurfaceRep));
+    webpage->AddTableEntry2("Get data set in a simplified form for showing domain nesting", 
+                                    YesOrNo(getSimplifiedNestingRep));
     webpage->AddTableEntry2("needValidFaceConnectivity", YesOrNo(needValidFaceConnectivity));
     webpage->AddTableEntry2("needStructuredIndices", YesOrNo(needStructuredIndices));
     sprintf(str, "%d", needAMRIndices);

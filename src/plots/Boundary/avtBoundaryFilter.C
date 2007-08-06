@@ -343,6 +343,9 @@ avtBoundaryFilter::RefashionDataObjectInfo(void)
 //    size var secondary variable needs to be added to the pipeline, and
 //    whether or not we need to keep Node and Zone numbers around. 
 //
+//    Hank Childs, Wed Jul 25 14:44:14 PDT 2007
+//    Change name of method being called.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -352,7 +355,7 @@ avtBoundaryFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         spec->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
     }
-    spec->GetDataSpecification()->TurnBoundarySurfacesOn();
+    spec->GetDataSpecification()->TurnBoundarySurfaceRepresentationOn();
 
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {

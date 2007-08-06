@@ -57,6 +57,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vtkVisItUtility.h>
 
+#include <avtGhostData.h>
+
 //------------------------------------------------------------------------------
 // Modifications:
 //   Kathleen Bonnell, Wed Mar  6 13:48:48 PST 2002
@@ -71,11 +73,15 @@ vtkStandardNewMacro(vtkDataSetRemoveGhostCells);
 //   Hank Childs, Mon Aug 30 16:27:16 PDT 2004
 //   Remove references to ghost level, since it is no longer a data member.
 //
+//   Hank Childs, Fri Aug  3 16:56:36 PDT 2007
+//   Initialize GhostNodeTypesToRemove.
+//
 // ****************************************************************************
 
 // Construct with ghost level = 1.
 vtkDataSetRemoveGhostCells::vtkDataSetRemoveGhostCells()
 {
+    GhostNodeTypesToRemove = 255;
 }
 
 
@@ -313,6 +319,9 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 //    Hank Childs, Fri Aug 27 15:10:50 PDT 2004
 //    Use the new ghost data names.
 //
+//    Hank Childs, Fri Aug  3 13:34:38 PDT 2007
+//    Added support for GhostNodeTypesToRemove.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::PolyDataExecute()
@@ -359,7 +368,7 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
     {
     if (usingGhostZones)
       {
-      if (zone_ptr[i] > 0)
+      if (avtGhostData::IsGhostZone(zone_ptr[i]))
         {
         continue;
         }
@@ -369,16 +378,17 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
 
     if (usingGhostNodes)
       {
-      bool haveOneLevel0Node = false;
-      bool haveOneLevel2Node = false;
+      bool haveOneRealNode = false;
+      bool haveOneRemovedNode = false;
       for (int j = 0 ; j < npts ; j++)
         {
-        if (node_ptr[pts[j]] == 0)
-            haveOneLevel0Node = true;
-        if (node_ptr[pts[j]] == 2)
-            haveOneLevel2Node = true;
+        unsigned char effectiveVal = node_ptr[pts[j]] & GhostNodeTypesToRemove;
+        if (!avtGhostData::DiscardFaceIfAllNodesAreOfThisType(effectiveVal))
+            haveOneRealNode = true;
+        if (avtGhostData::DiscardFaceIfOneNodeIsOfThisType(effectiveVal))
+            haveOneRemovedNode = true;
         }
-      if (!haveOneLevel0Node || haveOneLevel2Node)
+      if (!haveOneRealNode || haveOneRemovedNode)
         continue;
       }
 

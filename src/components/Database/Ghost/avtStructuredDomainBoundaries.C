@@ -57,6 +57,7 @@
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
 
+#include <BadIndexException.h>
 #include <TimingsManager.h>
 #include <VisItException.h>
 
@@ -3152,4 +3153,56 @@ avtStructuredDomainBoundaries::GetExtents(int domain, int e[6])
     e[4] = wholeBoundary[domain].oldnextents[4];
     e[5] = wholeBoundary[domain].oldnextents[5];
 }
+
+
+// ****************************************************************************
+//  Method: avtStructuredDomainBoundaries::GetNeighborPresence
+//
+//  Purpose:
+//      Retrieves information about whether there are neighbors present
+//      on each side of the domain.
+//
+//  Programmer: Hank Childs
+//  Creation:   July 31, 2007
+//
+// ****************************************************************************
+
+void
+avtStructuredDomainBoundaries::GetNeighborPresence(int domain, bool *b,
+                                                  std::vector<int> &allDomains)
+{
+    int   i, j;
+    int   ntotaldomains = wholeBoundary.size();
+
+    if (domain < 0 || domain >= ntotaldomains)
+    {
+        EXCEPTION2(BadIndexException, domain, ntotaldomains);
+    }
+
+    Boundary &wbi = wholeBoundary[domain];
+    for (i = 0 ; i < 6 ; i++)
+         b[i] = false;
+    for (i = 0 ; i < wbi.neighbors.size() ; i++)
+    {
+        int neighbor = wbi.neighbors[i].domain;
+
+        bool foundIt = false;
+        if (allDomains.size() == 0)
+            foundIt = true;
+        for (j = 0 ; j < allDomains.size() ; j++)
+             if (allDomains[j] == neighbor)
+                 foundIt = true;
+        if (!foundIt)
+            continue;
+
+        int btype = wbi.neighbors[i].type;
+        b[0] |= (btype == Boundary::IMIN);
+        b[1] |= (btype == Boundary::IMAX);
+        b[2] |= (btype == Boundary::JMIN);
+        b[3] |= (btype == Boundary::JMAX);
+        b[4] |= (btype == Boundary::KMIN);
+        b[5] |= (btype == Boundary::KMAX);
+    }
+}
+
 

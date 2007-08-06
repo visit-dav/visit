@@ -222,6 +222,9 @@ class BoundaryHelperFunctions
 //    Hank Childs, Wed Jun 29 15:24:35 PDT 2005
 //    Added ResetCachedMembers, as well as domain2proc member.
 //
+//    Hank Childs, Tue Jul 31 15:41:17 PDT 2007
+//    Add support for getting boundary presence for individual domains.
+//
 // ****************************************************************************
 
 class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
@@ -243,6 +246,8 @@ class DATABASE_API avtStructuredDomainBoundaries :  public avtDomainBoundaries
     void  SetIndicesForRectGrid(int domain, int e[6]);
     void  SetIndicesForAMRPatch(int domain, int level, int e[6]);
     void  CalculateBoundaries(void);
+    void  GetNeighborPresence(int domain, bool *hasNeighbor, 
+                              std::vector<int> &);
 
     virtual vector<vtkDataArray*>     ExchangeScalar(vector<int>   domainNum,
                                              bool                  isPointData,
