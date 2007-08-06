@@ -646,6 +646,10 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
 //    Hank Childs, Wed Mar 28 10:19:18 PDT 2007
 //    Don't write a root file if there is only one block.
 //
+//    Cyrus Harrison, Fri Aug  3 20:53:34 PDT 2007
+//    Use first processor with data to write the root file.
+//    (processor 0 may not contain data and b/c of this have invalid metadata)
+//
 // ****************************************************************************
 
 void
@@ -667,8 +671,25 @@ avtSiloWriter::CloseFile(void)
         return;
     }
 
-    if (PAR_Rank() == 0)
+    int nprocs = PAR_Size();
+    int rootid = nprocs + 1;
+    int procid = PAR_Rank();
+
+    // get number of of datasets local to this processor
+    avtDataTree_p rootnode = GetInputDataTree();
+    int nchunks = rootnode->GetNumberOfLeaves();
+
+    // find the lowest ranked processor with data
+    if (nchunks > 0)
+        rootid = procid;
+
+    // find min rootid
+    bool root = ThisProcessorHasMinimumValue((double)rootid);
+
+    if (root)
     {
+        debug5 << "avtSiloWriter: proc " << procid << " writting silo root"
+               << "file" << endl;
         char filename[1024];
         sprintf(filename, "%s.silo", stem.c_str());
 #ifdef E_CHECKSUM
@@ -709,6 +730,9 @@ avtSiloWriter::CloseFile(void)
 //
 //    Hank Childs, Sun Feb 13 13:19:07 PST 2005
 //    Re-order nodes for pixels.
+//
+//    Cyrus Harrison, Fri Aug  3 20:46:47 PDT 2007
+//    Re-order nodes for tets.
 //
 // ****************************************************************************
 
@@ -781,7 +805,7 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         }
 
         //
-        // Wedges and pyramids have a different ordering in Silo and VTK.
+        // Wedges, pyramids, and tets have a different ordering in Silo and VTK.
         // Make the corrections for these cases.
         //
         if (dim == 2 && (cell->GetCellType() == VTK_PIXEL))
@@ -790,6 +814,13 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
             int tmp = zonelist[startOfZone+2];
             zonelist[startOfZone+2] = zonelist[startOfZone+3];
             zonelist[startOfZone+3] = tmp;
+        }
+        if (dim == 3 && (cell->GetCellType() == VTK_TETRA))
+        {
+            int startOfZone = zonelist.size() - 4;
+            int tmp = zonelist[startOfZone];
+            zonelist[startOfZone]   = zonelist[startOfZone+1];
+            zonelist[startOfZone+1] = tmp;
         }
         if (dim == 3 && (cell->GetNumberOfPoints() == 6))
         {
