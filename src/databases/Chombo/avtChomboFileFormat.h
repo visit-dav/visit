@@ -93,6 +93,9 @@ union
 //    Brad Whitlock, Mon Sep 25 13:54:59 PST 2006
 //    I added some fixes for getting cycle,time and for time-varying metadata.
 //
+//    Gunther H. Weber, Tue Aug  7 15:56:32 PDT 2007
+//    Added material support
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -113,12 +116,17 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     virtual void          *GetAuxiliaryData(const char *var, int,
                                             const char *type, void *args,
                                             DestructorFunction &);
+
+    void                  *GetMaterial(const char *var, int patch, 
+                                       const char *type,
+				       DestructorFunction &df);
   
   protected:
     bool                   initializedReader;
     int                    dimension;
     hid_t                  file_handle;
     std::vector<std::string>  varnames;
+    int                    nMaterials;
     double                 dtime;
     int                    cycle;
     int                    max_level;

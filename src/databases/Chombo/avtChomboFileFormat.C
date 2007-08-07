@@ -57,6 +57,7 @@
 #include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
+#include <avtMaterial.h>
 
 #include <Expression.h>
 
@@ -263,6 +264,10 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Brad Whitlock, Mon Sep 25 15:22:38 PST 2006
 //    I made it revert to cycles from the filename in the event that cycles
 //    are not in the file.
+//
+//    Gunther H. Weber, Tue Aug  7 15:58:03 PDT 2007
+//    Added check for variables specifying material fractions (variable name
+//    fraction-<i>)
 //
 // ****************************************************************************
 
@@ -647,6 +652,27 @@ avtChomboFileFormat::InitializeReader(void)
     }
 
     initializedReader = true;
+
+    //
+    // Find any materials
+    //
+    nMaterials = 0;
+    for (i = 0; i < varnames.size(); ++i)
+    {
+        int val = 0;
+        if (varnames[i].find("fraction-") == 0)
+        {
+            int val = atoi(varnames[i].c_str()+9) + 1;
+
+            if (val > nMaterials)
+                nMaterials = val;
+        }
+    }
+
+    if (nMaterials != 0)
+    {
+	++nMaterials; // There is always one extra material
+    }
 }
 
 
@@ -845,6 +871,10 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Fix problem with grouping vectors in 3D.  Also add support for U,V,W
 //    vectors.
 //
+//    Gunther H. Weber, Tue Aug  7 16:00:22 PDT 2007
+//    If material information was found in the file, add corresponding
+//    meta data
+//
 // ****************************************************************************
 
 void
@@ -995,6 +1025,25 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 md->AddExpression(&vec);
             }
         }
+    }
+
+    //
+    // If any materials were found, add them here
+    // 
+    if (nMaterials)
+    {
+        vector<string> mnames(nMaterials);
+
+        string matname;
+        matname = "materials";
+        
+        char str[32];
+        for (int m = 0; m < nMaterials; ++m)
+        {
+            sprintf(str, "mat%d", m+1);
+            mnames[m] = str;
+        }
+        AddMaterialToMetaData(md, matname, mesh_name, nMaterials, mnames);
     }
 
     md->SetTime(timestep, dtime);
@@ -1366,6 +1415,8 @@ avtChomboFileFormat::GetVectorVar(int domain, const char *varname)
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Gunther H. Weber, Tue Aug  7 16:01:28 PDT 2007
+//    Return material information
 // ****************************************************************************
 
 void *
@@ -1373,7 +1424,11 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
                                       const char * type, void *,
                                       DestructorFunction &df)
 {
-    if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
+    {
+        return GetMaterial(var, dom, type, df);
+    }
+    else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
     {
         int totalPatches = 0;
         for (int level = 0 ; level < num_levels ; level++)
@@ -1410,5 +1465,118 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
 
     return NULL;
 }
+
+// ****************************************************************************
+//  Method: avtChomboFileFormat::GetMaterial
+//
+//  Purpose:
+//      Gets an avtMaterial object for the specified patch
+//
+//  Notes:      This routine was largely taken from GetMaterial() of the
+//              BoxLib database written by Hank Childs and Akira Haddox.
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 8, 2007
+//
+// ****************************************************************************
+    
+void *
+avtChomboFileFormat::GetMaterial(const char *var, int patch, 
+                                   const char *type, DestructorFunction &df)
+{
+    if (!initializedReader)
+        InitializeReader();
+
+    int i;
+    vector<string> mnames(nMaterials);
+    char str[32];
+    for (i = 0; i < nMaterials; ++i)
+    {
+        sprintf(str, "mat%d", i+1);
+        mnames[i] = str;
+    }
+    
+    // Get the material fractions
+    vector<float *> mats(nMaterials);
+    int nCells = 0;
+    for (i = 0; i <= nMaterials - 2; ++i)
+    {
+	sprintf(str,"fraction-%d", i);
+        vtkFloatArray *floatArray = (vtkFloatArray *)(GetVar(patch, str));
+        mats[i] = floatArray->GetPointer(0);
+	nCells = floatArray->GetNumberOfTuples();
+    }
+
+    // Calculate fractions for additional "missing" material
+    float *addMatPtr =  new float[nCells];
+
+    for(unsigned int cellNo = 0; cellNo < nCells; ++cellNo)
+    {
+	float frac = 1.0;
+	for (int matNo = 0; matNo < nMaterials - 1; ++matNo)
+	    frac -= mats[matNo][cellNo];
+	addMatPtr[cellNo] = frac;
+    }
+
+    mats[nMaterials - 1] = addMatPtr;
+
+    // Build the appropriate data structures
+    vector<int> material_list(nCells);
+    vector<int> mix_mat;
+    vector<int> mix_next;
+    vector<int> mix_zone;
+    vector<float> mix_vf;
+
+    for (i = 0; i < nCells; ++i)
+    {
+        int j;
+
+        // First look for pure materials
+        int nmats = 0;
+        int lastMat = -1;
+        for (j = 0; j < nMaterials; ++j)
+        {
+            if (mats[j][i] > 0)
+            {
+                nmats++;
+                lastMat = j;
+            }
+        }
+
+        if (nmats == 1)
+        {
+            material_list[i] = lastMat;
+            continue;
+        }
+
+        // For unpure materials, we need to add entries to the tables.  
+        material_list[i] = -1 * (1 + mix_zone.size());
+        for (j = 0; j < nMaterials; ++j)
+        {
+            if (mats[j][i] <= 0)
+                continue;
+            // For each material that's present, add to the tables
+            mix_zone.push_back(i);
+            mix_mat.push_back(j);
+            mix_vf.push_back(mats[j][i]);
+            mix_next.push_back(mix_zone.size() + 1);
+        }
+
+        // When we're done, the last entry is a '0' in the mix_next
+        mix_next[mix_next.size() - 1] = 0;
+    }
+    
+    delete[] addMatPtr;
+
+    int mixed_size = mix_zone.size();
+    avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells,
+                                        &(material_list[0]), mixed_size,
+                                        &(mix_mat[0]), &(mix_next[0]),
+                                        &(mix_zone[0]), &(mix_vf[0]));
+     
+    df = avtMaterial::Destruct;
+    return (void*) mat;
+}
+
 
 
