@@ -283,6 +283,9 @@
 #   Brad Whitlock, Thu Aug 2 14:58:05 PST 2007
 #   Added CCM reader.
 #
+#   Mark C. Miller, Sun Aug  5 12:59:23 PDT 2007
+#   Added ZipWrapper plugin
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -358,7 +361,8 @@ REQUIRED=\
  VTK \
  WavefrontOBJ \
  Xmdv \
- XYZ
+ XYZ \
+ ZipWrapper
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve2D Silo VTK

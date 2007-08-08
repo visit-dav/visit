@@ -638,13 +638,18 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 //  Purpose: Guess cycle numbers from a filename optionally using a regular
 //  expression to find them.
 //
-//  Note: care must be taken we defining the string literal here for the RE
+//  Note: care must be taken when defining the string literal here for the RE
 //  as C/C++ compiler tries to interpret a backslash character in the string
 //  literal. So, two backslashes are required although the final compiled form
 //  of the string will have only one.
 //
 //  Programmer:    Mark C. Miller 
 //  Creation:      June 12, 2007 
+//
+//  Modifications:
+//
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Adjusted regular expression to first find characters not in [0-9].
 //
 // ****************************************************************************
 
@@ -655,7 +660,7 @@ avtFileFormat::GuessCycle(const char *fname, const char *re) const
     if (reToUse == "")
         reToUse = re ? re : "";
     if (reToUse == "")
-        reToUse = "<([0-9]+)\\..*> \\1";
+        reToUse = "<[^0-9]*([0-9]+)\\..*> \\1";
 
     double d = GuessCycleOrTime(fname, reToUse.c_str());
 
@@ -674,6 +679,10 @@ avtFileFormat::GuessCycle(const char *fname, const char *re) const
 //  Programmer:    Mark C. Miller 
 //  Creation:      June 12, 2007 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Adjusted regular expression to first find characters not in [0-9].
 // ****************************************************************************
 double
 avtFileFormat::GuessTime(const char *fname, const char *re) const
@@ -682,7 +691,7 @@ avtFileFormat::GuessTime(const char *fname, const char *re) const
     if (reToUse == "")
         reToUse = re ? re : "";
     if (reToUse == "")
-        reToUse = "<([0-9]*\\.?[0-9]*)\\..*> \\1";
+        reToUse = "<[^0-9]*([0-9]*\\.?[0-9]*)\\..*> \\1";
 
     return GuessCycleOrTime(fname, reToUse.c_str());
 }

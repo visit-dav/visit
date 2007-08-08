@@ -94,6 +94,11 @@ class DBOptionsAttributes;
 //    Hank Childs, Mon May 23 16:31:36 PDT 2005
 //    Add DBOptions.
 //
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Added GetDfltExtsFromGen and GetFilenamesFromGen as newer ways to
+//    obtain this information instead of GetDefaultExtensions and GetFilenames
+//    on CommonDatabasePluginInfo. Note, however, we will leave the older
+//    methods around for backward compatibility for plugins VisIt does not own.
 // ****************************************************************************
 
 class PLUGIN_API GeneralDatabasePluginInfo
@@ -105,6 +110,10 @@ class PLUGIN_API GeneralDatabasePluginInfo
     virtual char *GetID() const = 0;
     virtual bool  EnabledByDefault() const { return true; }
     virtual bool  HasWriter() const { return false; }
+    virtual std::vector<std::string>  GetDfltExtsFromGen() const
+                                   { std::vector<std::string> rv; return rv; };
+    virtual std::vector<std::string>  GetFilenamesFromGen() const
+                                   { std::vector<std::string> rv; return rv; };
 };
 
 class PLUGIN_API CommonDatabasePluginInfo : public virtual GeneralDatabasePluginInfo

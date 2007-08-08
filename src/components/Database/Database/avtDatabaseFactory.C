@@ -67,10 +67,8 @@
 
 #if !defined(_WIN32)
 #include <unistd.h>
-#else
-#include <snprintf.h>
 #endif
-
+#include <snprintf.h>
 
 using std::string;
 using std::vector;
@@ -181,6 +179,11 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Replaced sprintfs with SNPRINTFs. Adjusted to accomodate possible
+//    null return from GetCommonPluginInfo. Moved bulk of code to match
+//    on file extensions and filenames to DatabasePluginManager
 // ****************************************************************************
 
 avtDatabase *
@@ -219,24 +222,6 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     //
     CheckPermissions(filelist[fileIndex]);
 
-    //
-    // Parse out the path and get just the filename.
-    //
-    string file_and_path = filelist[fileIndex];
-    const char *fap = file_and_path.c_str();
-    int len = strlen(fap);
-    int lastSlash = -1;
-    for (i = len-1 ; i >= 0 ; i--)
-    {
-        if (fap[i] == SLASH_CHAR)
-        {
-            lastSlash = i;
-            break;
-        }
-    }
-    int start = lastSlash+1;
-    string file(fap + start);
-
     DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
 
     //
@@ -248,7 +233,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         if (formatindex < 0)
         {
             char msg[1000];
-            sprintf(msg,
+            SNPRINTF(msg, sizeof(msg),
                     "The DB factory was told to open a file of type %s, "
                     "but the engine had no plugin of that type.",
                     format);
@@ -259,7 +244,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         if (!dbmgr->PluginAvailable(formatid))
         {
             char msg[1000];
-            sprintf(msg,
+            SNPRINTF(msg, sizeof(msg),
                     "The DB factory was told to open a file of type %s, "
                     "but that format's plugin could not be loaded.",
                     format);
@@ -267,7 +252,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         }
         CommonDatabasePluginInfo *info = 
             dbmgr->GetCommonPluginInfo(formatid);
-        plugins.push_back(info->GetName());
+        plugins.push_back(info ? "" : info->GetName());
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                            nBlocks, forceReadAllCyclesAndTimes,
 			   treatAllDBsAsTimeVarying);
@@ -275,7 +260,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         if (rv == NULL)
         {
             char msg[1000];
-            sprintf(msg,
+            SNPRINTF(msg, sizeof(msg),
                     "The DB factory was told to open a file of type %s, but "
                     "that format is not a match for file %s",
                     format, filelist[0]);
@@ -284,62 +269,20 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     }
  
     //
-    // Try each database type looking for a match to the given extensions
+    // Check to see if there is an extension that matches.
     //
-    for (i=0; i<dbmgr->GetNEnabledPlugins() && rv == NULL; i++)
+    if (rv == 0)
     {
-        string id = dbmgr->GetEnabledID(i);
-        CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(id);
-        bool foundMatch = false;
-
-        //
-        // Check to see if there is an extension that matches.
-        //
-        vector<string> extensions = info->GetDefaultExtensions();
-        int nextensions = extensions.size();
-        for (j=0; j<nextensions && !foundMatch; j++)
+        string id = dbmgr->GetMatchingPluginId(filelist[fileIndex]);
+        if (id != "")
         {
-            string ext = extensions[j];
-            if (ext[0] != '.')
-            {
-                ext = string(".") + extensions[j];
-            }
-#if defined(_WIN32)
-            if (file.length() >= ext.length())
-            {
-                string fileExt(file.substr(file.length() - ext.length()));
-                foundMatch = (_stricmp(fileExt.c_str(), ext.c_str()) == 0);
-            }
-#else
-            if (file.length() >= ext.length() &&
-                file.substr(file.length() - ext.length()) == ext)
-            {
-                foundMatch = true;
-            }
-#endif
-        }
-
-        //
-        // Check to see if there is an exact name that matches.
-        //
-        vector<string> filenames = info->GetFilenames();
-        int nfiles = filenames.size();
-        for (j=0; j<nfiles; j++)
-        {
-            if (filenames[j] == file)
-            {
-                foundMatch = true;
-            }
-        }
-
-        if (foundMatch)
-        {
+            CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(id);
             TRY
             {
-                plugins.push_back(info->GetName());
+                plugins.push_back(info ? "" : info->GetName());
                 rv = SetupDatabase(info, filelist, filelistN, timestep,
                                    fileIndex, nBlocks, forceReadAllCyclesAndTimes,
-				   treatAllDBsAsTimeVarying);
+			           treatAllDBsAsTimeVarying);
             }
             CATCH2(InvalidDBTypeException, e)
             {
@@ -361,7 +304,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             string defaultid = dbmgr->GetAllID(defaultindex);
             CommonDatabasePluginInfo *info = 
                                          dbmgr->GetCommonPluginInfo(defaultid);
-            plugins.push_back(info->GetName());
+            plugins.push_back(info ? "" : info->GetName());
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
 			       treatAllDBsAsTimeVarying);
@@ -369,7 +312,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         else
         {
             char msg[1000];
-            sprintf(msg,
+            SNPRINTF(msg, sizeof(msg),
                     "The default file format plugin '%s' was not available.",
                     defaultDatabaseType.c_str());
             EXCEPTION1(ImproperUseException, msg);
@@ -412,6 +355,9 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Added logic to accomodate possible null info.
 // ****************************************************************************
 
 avtDatabase *
@@ -421,6 +367,13 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
                                   bool forceReadAllCyclesAndTimes,
 				  bool treatAllDBsAsTimeVarying)
 {
+    if (info == 0)
+    {
+        char msg[1024];
+        SNPRINTF(msg, 1024, "Attempted to setup a database with null info object");
+        EXCEPTION1(ImproperUseException, msg);
+    }
+
     avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
                                           filelistN-fileIndex, nBlocks);
 

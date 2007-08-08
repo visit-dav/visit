@@ -159,3 +159,12 @@ OpenFOAMGeneralPluginInfo::HasWriter() const
 {
     return false;
 }
+
+std::vector<std::string>
+OpenFOAMGeneralPluginInfo::GetFilenamesFromGen() const
+{
+   std::vector<std::string> filenames;
+   filenames.push_back("controlDict");
+
+   return filenames;
+}

@@ -113,6 +113,10 @@ using std::vector;
 //    templates.  See [temp.dep]/3 in the ANSI C++ Standard.  Using explicit
 //    this-> fixes it (as would adding explicit "using" declaration).
 //
+//    Mark C. Miller, Mon Jul 30 13:31:00 PDT 2007
+//    Made oldest method public.
+//    Added const operator[]
+//
 // ****************************************************************************
 
 // tags for which kind of delete to call on cache pre-emption
@@ -148,6 +152,7 @@ class MRUCacheBase {
       //    a. hit moves cached entry to mru,
       //    b. miss removes lru entry, moves new entry to mru
       vT& operator[](const kT& key);
+      const vT& operator[](const kT& key) const;
 
       // iterator (only allow const_iterator)
       typedef typename map<kT,vT>::const_iterator const_iterator;
@@ -189,7 +194,7 @@ class MRUCacheBase {
       }
 
       // get most recently used entry 
-      vT& mru(void) const;
+      const vT& mru(void) const;
 
       // return total memory used by all cached values
       size_t memsize(void) const { return cache.size() * sizeof(vT); };
@@ -201,10 +206,10 @@ class MRUCacheBase {
       // cache deletions if smaller than previous number
       size_t numslots(size_t newNumSlots);
 
-   private:
-
       // returns key of the oldest entry
       kT oldest(void);
+
+   private:
 
       // only method to be overridden based on item type 
       virtual void deleteit(vT& item)  = 0;
@@ -393,6 +398,25 @@ vT& MRUCacheBase<kT,vT,dM,nS>::operator[](const kT& key)
 }
 
 // ****************************************************************************
+//  Method: MRUCacheBase::operator[]
+//
+//  Purpose: const version of above 
+//
+//  Arguments:
+//     key: the key to the item
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 5, 2007 
+//
+// ****************************************************************************
+template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
+const vT& MRUCacheBase<kT,vT,dM,nS>::operator[](const kT& key) const
+{
+   typename map<kT,vT>::const_iterator mpos = cache.find(key);
+   return mpos->second;
+}
+
+// ****************************************************************************
 //  Method: MRUCacheBase::mru
 //
 //  Purpose: return most recently used entry in cache 
@@ -400,9 +424,13 @@ vT& MRUCacheBase<kT,vT,dM,nS>::operator[](const kT& key)
 //  Programmer: Mark C. Miller 
 //  Creation:   October 6, 2003 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    const qualified the return value
 // ****************************************************************************
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
-vT& MRUCacheBase<kT,vT,dM,nS>::mru(void) const
+const vT& MRUCacheBase<kT,vT,dM,nS>::mru(void) const
 {
    typename map<kT,int>::iterator i = age.begin();
    kT mruKey               = i->first;
@@ -428,18 +456,22 @@ vT& MRUCacheBase<kT,vT,dM,nS>::mru(void) const
 //  Programmer: Mark C. Miller 
 //  Creation:   October 6, 2003 
 //
+//  Modifications:
+//
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Fixed error in missing '()' on refernece to oldest
 // ****************************************************************************
 template<class kT, class vT, MRUCache_DeleteMethod dM, size_t nS>
 size_t MRUCacheBase<kT,vT,dM,nS>::numslots(size_t newNumSlots)
 {
    int oldNumSlots = numSlots;
 
-   if (newNumSlots = 0)
+   if (newNumSlots <= 0)
       return oldNumSlots;
 
    // remove entries if we're making it smaller
    while (newNumSlots < cache.size())
-      remove(oldest);
+      remove(oldest());
 
    numSlots = newNumSlots;
 

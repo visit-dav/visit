@@ -159,3 +159,11 @@ CCMGeneralPluginInfo::HasWriter() const
 {
     return false;
 }
+
+std::vector<std::string> CCMGeneralPluginInfo::GetDfltExtsFromGen() const
+{
+    std::vector<std::string> defaultExtensions;
+    defaultExtensions.push_back("ccm");
+
+    return defaultExtensions;
+}

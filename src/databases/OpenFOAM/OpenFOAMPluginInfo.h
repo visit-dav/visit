@@ -70,16 +70,15 @@ class OpenFOAMGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual char *GetID() const;
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
+    std::vector<std::string> GetFilenamesFromGen() const;
 };
 
 class OpenFOAMCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual OpenFOAMGeneralPluginInfo
 {
   public:
     virtual DatabaseType              GetDatabaseType();
-    virtual std::vector<std::string>  GetDefaultExtensions();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
-    virtual std::vector<std::string>  GetFilenames();
 };
 
 class OpenFOAMMDServerPluginInfo : public virtual MDServerDatabasePluginInfo, public virtual OpenFOAMCommonPluginInfo

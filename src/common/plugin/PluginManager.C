@@ -771,6 +771,23 @@ PluginManager::LoadPluginsNow()
 }
 
 // ****************************************************************************
+//  Method: PluginManager::LoadSinglePluginNow
+//
+//  Purpose: Load a specific plugin 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   August 5, 2007 
+//
+// ****************************************************************************
+
+bool
+PluginManager::LoadSinglePluginNow(const std::string& id)
+{
+    int index = GetAllIndex(id);
+    return LoadSinglePlugin(index);
+}
+
+// ****************************************************************************
 //  Method: PluginManager::LoadSinglePlugin
 //
 //  Purpose:
@@ -794,9 +811,12 @@ PluginManager::LoadPluginsNow()
 //    Hank Childs, Fri Jan 28 13:19:33 PST 2005
 //    Use catch return.
 //
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Changed return value to bool to indicate if it actually loaded
+//    the plugin.
 // ****************************************************************************
 
-void
+bool
 PluginManager::LoadSinglePlugin(int index)
 {
     if (!enabled[index])
@@ -804,7 +824,7 @@ PluginManager::LoadSinglePlugin(int index)
         debug1 << "Skipping disabled "<<managerName.c_str()<<" plugin "
                << names[index].c_str() << " version " << versions[index].c_str()
                << endl;
-        return;
+        return false;
     }
 
     if (PluginLoaded(ids[index]))
@@ -812,7 +832,7 @@ PluginManager::LoadSinglePlugin(int index)
         debug1 << "Skipping already loaded "<<managerName.c_str()<<" plugin "
                << names[index].c_str() << " version " << versions[index].c_str()
                << endl;
-        return;
+        return false;
     }
 
     // Open the plugin
@@ -835,7 +855,7 @@ PluginManager::LoadSinglePlugin(int index)
                    << names[index].c_str()
                    << " version " << versions[index].c_str()
                    << " because it failed to open." << endl;
-            CATCH_RETURN(1);
+            CATCH_RETURN2(1, false);
         }
     }
     ENDTRY
@@ -867,6 +887,8 @@ PluginManager::LoadSinglePlugin(int index)
     debug1 << "Loaded full "<<managerName.c_str()<<" plugin "
            << names[index].c_str() << " version " << versions[index].c_str()
            << endl;
+
+    return true;
 }
 
 // ****************************************************************************
