@@ -389,14 +389,14 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshname*
             }
             else  //size == 4
             {
-                vtkIdType pts[8] = { pType->aChannelPts[ii*4 + 0] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 1] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 2] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 3] + (jj+1)*pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 0] + jj    *pType->nUniquePts,
+                vtkIdType pts[8] = { pType->aChannelPts[ii*4 + 0] + jj    *pType->nUniquePts,
                                      pType->aChannelPts[ii*4 + 1] + jj    *pType->nUniquePts,
                                      pType->aChannelPts[ii*4 + 2] + jj    *pType->nUniquePts,
-                                     pType->aChannelPts[ii*4 + 3] + jj    *pType->nUniquePts
+                                     pType->aChannelPts[ii*4 + 3] + jj    *pType->nUniquePts,
+                                     pType->aChannelPts[ii*4 + 0] + (jj+1)*pType->nUniquePts,
+                                     pType->aChannelPts[ii*4 + 1] + (jj+1)*pType->nUniquePts,
+                                     pType->aChannelPts[ii*4 + 2] + (jj+1)*pType->nUniquePts,
+                                     pType->aChannelPts[ii*4 + 3] + (jj+1)*pType->nUniquePts
                                    };
                 grid->InsertNextCell(VTK_HEXAHEDRON, 8, pts);
             }
