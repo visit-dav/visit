@@ -45,6 +45,7 @@
 #include <DatabasePluginManager.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+#include <InvalidDBTypeException.h>
 #include <InvalidFilesException.h>
 #include <Init.h>
 #include <StringHelpers.h>
@@ -350,6 +351,10 @@ avtZipWrapperFileFormatInterface::Finalize()
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//    Mark C. Miller, Wed Aug  8 14:48:03 PDT 2007
+//    Changed it to loop over plugins until one correctly opens.
 // ****************************************************************************
 avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     const char *const *list, int nl, int nb) : 
@@ -378,9 +383,37 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     const char *bname = StringHelpers::Basename(inputFileList[0][0].c_str());
     string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.gz$|\\.bz$|\\.bz2$|\\.zip$> \\1");
     DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
-    const bool searchAllPlugins = true;
-    pluginId = dbmgr->GetMatchingPluginId(dcname.c_str(), searchAllPlugins);
-    realPluginWasLoadedByMe = dbmgr->LoadSinglePluginNow(pluginId);
+
+    //
+    // Find right plugin, load it and open the first file.
+    // Note: matching plugins that don't open the file get loaded
+    // and never unloaded.
+    //
+    pluginId = "";
+    dummyInterface = 0;
+    while (dummyInterface == 0)
+    {
+        const bool searchAllPlugins = true;
+        const bool dontCache = true;
+
+        pluginId = dbmgr->GetMatchingPluginId(dcname.c_str(), pluginId, searchAllPlugins);
+        realPluginWasLoadedByMe = dbmgr->LoadSinglePluginNow(pluginId);
+
+        TRY
+        {
+            // when creating the file format interface object for the dummy format
+            // don't cache it in the MRU cache.
+            dummyInterface = GetRealInterface(0, 0, dontCache);
+        }
+        CATCH2(InvalidDBTypeException, e)
+        {
+            dummyInterface = 0;
+        }
+        ENDTRY
+    }
+    debug5 << "Determined file \"" << dcname << "\" requires plugin id=\"" << pluginId << "\"" << endl;
+
+    // get the database type from the info
     CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(pluginId);
     if (info == 0)
     {
@@ -391,15 +424,9 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
         EXCEPTION1(InvalidFilesException, errMsg);
     }
     dbType = info->GetDatabaseType();
-    debug5 << "Determined file \"" << dcname << "\" requires plugin id=\"" << pluginId << "\"" << endl;
 
     // set cache size (number of files we can have decompressed at one time)
     decompressedFilesCache.numslots(maxDecompressedFiles);
-
-    // when creating the file format interface object for the dummy format
-    // don't cache it in the MRU cache.
-    const bool dontCache = true;
-    dummyInterface = GetRealInterface(0, 0, dontCache);
 
     // use temporary ZW format interface object to gain access to format object
     avtZWFileFormatInterface *realzwi = (avtZWFileFormatInterface *) dummyInterface;

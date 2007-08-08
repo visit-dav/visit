@@ -651,6 +651,8 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Adjusted regular expression to first find characters not in [0-9].
 //
+//    Mark C. Miller, Wed Aug  8 13:34:53 PDT 2007
+//    Adjusted regular expression to take last group of digits.
 // ****************************************************************************
 
 int
@@ -660,7 +662,7 @@ avtFileFormat::GuessCycle(const char *fname, const char *re) const
     if (reToUse == "")
         reToUse = re ? re : "";
     if (reToUse == "")
-        reToUse = "<[^0-9]*([0-9]+)\\..*> \\1";
+        reToUse = "<([0-9]+)[^0-9]*$> \\0";
 
     double d = GuessCycleOrTime(fname, reToUse.c_str());
 
@@ -683,6 +685,9 @@ avtFileFormat::GuessCycle(const char *fname, const char *re) const
 //
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Adjusted regular expression to first find characters not in [0-9].
+//
+//    Mark C. Miller, Wed Aug  8 13:34:53 PDT 2007
+//    Adjusted regular expression to take last group of digits.
 // ****************************************************************************
 double
 avtFileFormat::GuessTime(const char *fname, const char *re) const
@@ -691,7 +696,7 @@ avtFileFormat::GuessTime(const char *fname, const char *re) const
     if (reToUse == "")
         reToUse = re ? re : "";
     if (reToUse == "")
-        reToUse = "<[^0-9]*([0-9]*\\.?[0-9]*)\\..*> \\1";
+        reToUse = "<([0-9]+\\.?[0-9]+)[^0-9]*$> \\0";
 
     return GuessCycleOrTime(fname, reToUse.c_str());
 }
