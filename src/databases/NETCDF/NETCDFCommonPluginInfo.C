@@ -58,27 +58,6 @@ NETCDFCommonPluginInfo::GetDatabaseType()
 }
 
 // ****************************************************************************
-//  Method:  NETCDFCommonPluginInfo::GetDefaultExtensions
-//
-//  Purpose:
-//    Returns the default extensions for a NETCDF database.
-//
-//  Programmer:  Brad Whitlock
-//  Creation:    Fri Aug 12 09:46:51 PDT 2005
-//
-// ****************************************************************************
-std::vector<std::string>
-NETCDFCommonPluginInfo::GetDefaultExtensions()
-{
-    std::vector<std::string> defaultExtensions;
-    defaultExtensions.push_back("nc");
-    defaultExtensions.push_back("cdf");
-    defaultExtensions.push_back("elev");
-    defaultExtensions.push_back("ncd");
-
-    return defaultExtensions;
-}
-
 // ****************************************************************************
 //  Method: NETCDFCommonPluginInfo::SetupNETCDFDatabase
 //

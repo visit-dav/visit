@@ -44,6 +44,7 @@
 #include <DebugStream.h>
 #include <InvalidPluginException.h>
 #include <visitstream.h>
+#include <visit-config.h>
 #include <string>
 #include <vector>
 
@@ -161,11 +162,17 @@ DatabasePluginManager::Instance()
 //
 //  Modifications:
 //
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Fixed problem where calling this method in a situation where the given
+//    plugin had not already been loaded would result in defining it in
+//    loadedindexmap with an index of 0.
 // ****************************************************************************
 
 EngineDatabasePluginInfo *
 DatabasePluginManager::GetEnginePluginInfo(const string &id)
 {
+    if (!PluginLoaded(id))
+        return 0;
     return enginePluginInfo[loadedindexmap[id]];
 }
 
@@ -186,11 +193,17 @@ DatabasePluginManager::GetEnginePluginInfo(const string &id)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Fixed problem where calling this method in a situation where the given
+//    plugin had not already been loaded would result in defining it in
+//    loadedindexmap with an index of 0.
 // ****************************************************************************
 
 CommonDatabasePluginInfo *
 DatabasePluginManager::GetCommonPluginInfo(const string &id)
 {
+    if (!PluginLoaded(id))
+        return 0;
     return commonPluginInfo[loadedindexmap[id]];
 }
 
@@ -213,6 +226,8 @@ DatabasePluginManager::GetCommonPluginInfo(const string &id)
 //    Hank Childs, Tue Mar 22 16:06:15 PST 2005
 //    Fix memory leak.
 //
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Added code to update extensions and filenames.
 // ****************************************************************************
 
 bool
@@ -244,11 +259,13 @@ DatabasePluginManager::LoadGeneralPluginInfo()
 
     // Success!  Add it to the list.
     allindexmap[info->GetID()] = ids.size();
-    ids      .push_back(info->GetID());
-    names    .push_back(info->GetName());
-    versions .push_back(info->GetVersion());
-    enabled  .push_back(info->EnabledByDefault());
-    haswriter.push_back(info->HasWriter());
+    ids       .push_back(info->GetID());
+    names     .push_back(info->GetName());
+    versions  .push_back(info->GetVersion());
+    enabled   .push_back(info->EnabledByDefault());
+    haswriter .push_back(info->HasWriter());
+    extensions.push_back(info->GetDfltExtsFromGen());
+    filenames .push_back(info->GetFilenamesFromGen());
     delete info;
     return true;
 }
@@ -407,4 +424,185 @@ DatabasePluginManager::PluginHasWriter(const string &id)
     }
 
     return retval;
+}
+
+// ****************************************************************************
+//  Method:  DatabasePluginManager::PluginDefaultExtensions
+//
+//  Purpose: Returns file extensions for a plugin 
+//
+//  Arguments:
+//    id         the plugin id
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    August 3, 2007 
+//
+// ****************************************************************************
+vector<string>
+DatabasePluginManager::PluginFileExtensions(const string &id)
+{
+    vector<string> retval;
+    if(allindexmap.find(id) != allindexmap.end())
+    {
+        int index = allindexmap[id];
+        if(index < names.size())
+            retval = extensions[index];
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method:  DatabasePluginManager::PluginDefaultFilenames
+//
+//  Purpose: Returns filenames for a plugin 
+//
+//  Arguments:
+//    id         the plugin id
+//
+//  Programmer:  Mark C. Miller
+//  Creation:    August 3, 2007 
+//
+// ****************************************************************************
+vector<string>
+DatabasePluginManager::PluginFilenames(const string &id)
+{
+    vector<string> retval;
+    if(allindexmap.find(id) != allindexmap.end())
+    {
+        int index = allindexmap[id];
+        if(index < names.size())
+            retval = filenames[index];
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method:  DatabasePluginManager::GetMatchingPluginId
+//
+//  Purpose: Returns database plugin id matching extensions with given filename
+//
+//  Arguments:
+//    id         the filename to match with 
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    July 31, 2007 
+//
+// ****************************************************************************
+string
+DatabasePluginManager::GetMatchingPluginId(const char *filename, bool searchAll)
+{
+    int i;
+    string rv = "";
+
+    //
+    // Parse out the path and get just the filename.
+    //
+    string file_and_path = filename; 
+    const char *fap = file_and_path.c_str();
+    int len = strlen(fap);
+    int lastSlash = -1;
+    for (i = len-1 ; i >= 0 ; i--)
+    {
+        if (fap[i] == SLASH_CHAR)
+        {
+            lastSlash = i;
+            break;
+        }
+    }
+    int start = lastSlash+1;
+    string file(fap + start);
+
+    //
+    // Try each database type looking for a match to the given extensions
+    //
+    int iMax = searchAll ? GetNAllPlugins() : GetNEnabledPlugins();
+    for (i=0; i<iMax && rv == ""; i++)
+    {
+        string id = searchAll ? GetAllID(i) : GetEnabledID(i);
+        CommonDatabasePluginInfo *info = GetCommonPluginInfo(id);
+        bool foundMatch = false;
+
+        //
+        // Check to see if there is an extension that matches.
+	// Look first using GeneralPluginInfo via PluginFileExtensions
+	// call (the newer way). If that yields nothing, then try the
+	// CommonPluginInfo via the GetDefaultExtensions (the old way).
+        //
+	int j;
+        vector<string> extensions = PluginFileExtensions(id);
+        int nextensions = extensions.size();
+	bool shouldIssueObsoletePluginWarning = false;
+	if (nextensions == 0)
+	{
+	    if (info)
+                extensions = info->GetDefaultExtensions();
+            nextensions = extensions.size();
+	    shouldIssueObsoletePluginWarning = nextensions > 0;
+	}
+        for (j=0; j<nextensions && !foundMatch; j++)
+        {
+            string ext = extensions[j];
+            if (ext[0] != '.')
+            {
+                ext = string(".") + extensions[j];
+            }
+#if defined(_WIN32)
+            if (file.length() >= ext.length())
+            {
+                string fileExt(file.substr(file.length() - ext.length()));
+                foundMatch = (_stricmp(fileExt.c_str(), ext.c_str()) == 0);
+            }
+#else
+            if (file.length() >= ext.length() &&
+                file.substr(file.length() - ext.length()) == ext)
+            {
+                foundMatch = true;
+            }
+#endif
+        }
+
+        //
+        // Check to see if there is an exact name that matches.
+        // Again, get filenames first from GeneralPluginInfo and,
+	// failing that, then the older way (from CommonPluginInfo).
+	//
+        vector<string> filenames = PluginFilenames(id);
+        int nfiles = filenames.size();
+	if (nfiles == 0)
+	{
+	    if (info)
+                filenames = info->GetFilenames();
+            nfiles = filenames.size();
+	    shouldIssueObsoletePluginWarning |= nfiles > 0;
+        }
+        for (j=0; j<nfiles && !foundMatch; j++)
+        {
+            if (filenames[j] == file)
+            {
+                foundMatch = true;
+            }
+        }
+
+        if (foundMatch)
+            rv = id;
+
+        if (foundMatch and shouldIssueObsoletePluginWarning)
+	{
+	    static bool issuedWarning = false;
+	    if (!issuedWarning)
+            {
+                cerr << "Warning: For plugin id = \"" << id
+                     << "\", default file extensions/names found in" << endl;
+                cerr << "CommonPluginInfo indicating obsolete plugin code." << endl;
+                cerr << "Please re-generate the plugin info files using xml2info." << endl;
+                cerr << "This message will continue to appear, once per session," << endl;
+                cerr << "until the problem has been addressed." << endl;
+                issuedWarning = true;
+            }
+        }
+    }
+
+    return rv;
 }

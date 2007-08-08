@@ -70,13 +70,14 @@ class SASGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual char *GetID() const;
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
+    virtual std::vector<std::string> GetDfltExtsFromGen() const;
+
 };
 
 class SASCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual SASGeneralPluginInfo
 {
   public:
     virtual DatabaseType              GetDatabaseType();
-    virtual std::vector<std::string>  GetDefaultExtensions();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
 };

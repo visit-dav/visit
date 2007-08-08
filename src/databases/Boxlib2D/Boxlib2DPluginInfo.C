@@ -159,3 +159,22 @@ Boxlib2DGeneralPluginInfo::HasWriter() const
 {
     return false;
 }
+
+std::vector<std::string>
+Boxlib2DGeneralPluginInfo::GetDfltExtsFromGen() const
+{
+    std::vector<std::string> defaultExtensions;
+    defaultExtensions.push_back("boxlib2d");
+    defaultExtensions.push_back("boxlib2D");
+
+    return defaultExtensions;
+}
+
+std::vector<std::string>
+Boxlib2DGeneralPluginInfo::GetFilenamesFromGen() const
+{
+    std::vector<std::string> filenames;
+    filenames.push_back("Header");
+
+    return filenames;
+}

@@ -159,3 +159,14 @@ SASGeneralPluginInfo::HasWriter() const
 {
     return false;
 }
+
+std::vector<std::string>
+SASGeneralPluginInfo::GetDfltExtsFromGen() const
+{
+    std::vector<std::string> defaultExtensions;
+    defaultExtensions.push_back("sasgeom");
+    defaultExtensions.push_back("sasdata");
+    defaultExtensions.push_back("sas");
+
+    return defaultExtensions;
+}

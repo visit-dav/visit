@@ -251,7 +251,7 @@ def GetVarType(metadata, varname):
 # Date:       Wed Jul 18 18:12:28 PDT 2007 
 #
 ###############################################################################
-def MeshForVar(metadata, varname):
+def MeshForVar(metadata, varname, dontCheckExpressions=0):
     meshName = "Unknown"
     vInfo = GetVarInfo(metadata, varname)
     if vInfo != 0 and hasattr(vInfo, "meshName"):
@@ -259,9 +259,45 @@ def MeshForVar(metadata, varname):
         if tmpMeshName != None:
             meshName = tmpMeshName.group(1)
     else:
+        # look at meshes themselves
         for i in range(metadata.GetNumMeshes()):
             if metadata.GetMeshes(i).name == varname:
                 meshName = varname 
+		break
+
+        ttab = string.maketrans("()<>,:","@@@@@@")
+	# if we don't yet have an answer, look at current expressions
+        if meshName == "Unknown" and dontCheckExpressions == 0:
+	    exprList = Expressions() 
+	    i = 0;
+	    while i < len(exprList) and meshName == "Unknown":
+	        theExpr = exprList[i]
+		if theExpr[0] == varname:
+		    defnTmp = string.translate(theExpr[1],ttab)
+		    defnFields = defnTmp.split('@')
+		    for f in defnFields:
+		        meshNameTmp = MeshForVar(metadata, f, 1)
+			if meshNameTmp != "Unknown":
+			    meshName = meshNameTmp
+			    break
+                i = i + 1
+
+	# if we don't yet have an answer, look at expressions from database
+        if meshName == "Unknown" and dontCheckExpressions == 0:
+	    exprList = metadata.GetExprList()
+	    i = 0;
+	    while i < exprList.GetNumExpressions() and meshName == "Unknown":
+	        theExpr = exprList.GetExpressions(i)
+	        if theExpr.name == varname:
+		    defnTmp = string.translate(theExpr.definition,ttab)
+		    defnFields = defnTmp.split('@')
+		    for f in defnFields:
+		        meshNameTmp = MeshForVar(metadata, f, 1)
+			if meshNameTmp != "Unknown":
+			    meshName = meshNameTmp
+			    break
+                i = i + 1
+
     return meshName 
 
 ###############################################################################
@@ -367,8 +403,14 @@ def SyncTimeStates(srcWin):
         print "Updating time state to state 0"
         currentTimeState = 0
 
-    mdl = GetMetaData(dbl, currentTimeState)
-    mdr = GetMetaData(dbr, currentTimeState)
+    TimeSliderSetState(currentTimeState)
+
+    # There is a bug with correlations when time arg is used to GetMetaData.
+    # Without it, it  turns out we always get state zero.
+#    mdl = GetMetaData(dbl, currentTimeState)
+#    mdr = GetMetaData(dbr, currentTimeState)
+    mdl = GetMetaData(dbl)
+    mdr = GetMetaData(dbr)
 
     if mdl.numStates != mdr.numStates:
         print "Database \"%s\" has %d states"%(dbl, mdl.numStates)
@@ -378,17 +420,6 @@ def SyncTimeStates(srcWin):
 
     UpdateExpressions(mdl, mdr)
 
-    for win in (1,2,3,4):
-        if win == 2 and cmfeMode == 0:
-            continue
-        if win == srcWin:
-            continue
-        SetActiveWindow(win)
-        wi = GetWindowInformation()
-        if wi.activeTimeSlider != -1:
-            TimeSliderSetState(currentTimeState)
-
-    SetActiveWindow(1)
 
 ###############################################################################
 # Function: SyncTime... 
@@ -503,6 +534,9 @@ def UpdateThisExpression(exprName, expr, currentExpressions, addedExpressions,
 #   changes in timesteps along with adding new expressions for new variables,
 #   deleting old expressions and leaving unchanged expressions alone.
 #
+#   Mark C. Miller, Thu Jul 19 21:36:47 PDT 2007
+#   Inverted loops to identify pre-defined expressions coming from md.
+#
 ###############################################################################
 def UpdateExpressions(mdl, mdr):
     global forcePosCMFE
@@ -522,25 +556,26 @@ def UpdateExpressions(mdl, mdr):
 
     # remove any pre-defined expressions in currentExpressions
     # coming from the metadata
-    for expr_i in range(mdl.GetExprList().GetNumExpressions()):
+    for expr_i in range(len(currentExpressionsTmp)):
         foundIt = 0
-        for expr_j in range(len(currentExpressionsTmp)):
-	    if currentExpressionsTmp[expr_j][0] == \
-	       mdl.GetExprList().GetExpressions(expr_i).name:
+	# Look for it in the left db's metadata
+        for expr_j in range(mdl.GetExprList().GetNumExpressions()):
+	    if currentExpressionsTmp[expr_i][0] == \
+	       mdl.GetExprList().GetExpressions(expr_j).name:
 	        foundIt = 1
 		break
+        if foundIt == 0:
+	    # Look for it in the right db's metadata
+            for expr_j in range(mdr.GetExprList().GetNumExpressions()):
+	        if currentExpressionsTmp[expr_i][0] == \
+	           mdr.GetExprList().GetExpressions(expr_j).name:
+	            foundIt = 1
+		    break
+	# If we didn't find it in either left or right dbs md, it is 
+	# NOT a pre-defined expression. So, we can keep it.
         if foundIt == 0:
             currentExpressionsList.append(currentExpressionsTmp[expr_j])
 
-    for expr_i in range(mdr.GetExprList().GetNumExpressions()):
-        foundIt = 0
-        for expr_j in range(len(currentExpressionsTmp)):
-	    if currentExpressionsTmp[expr_j][0] == \
-	       mdr.GetExprList().GetExpressions(expr_i).name:
-	        foundIt = 1
-		break
-        if foundIt == 0:
-            currentExpressionsList.append(currentExpressionsTmp[expr_j])
     currentExpressions = tuple(currentExpressionsList)
 
     # Iterate over all the scalar variables in metadata.
@@ -685,20 +720,20 @@ def UpdateExpressions(mdl, mdr):
     # Print out some information about what we did
     if len(addedExpressions) > 0:
         print "    Added %d expressions..."%len(addedExpressions)
-#        for expr_i in range(len(addedExpressions)):
-#            print "       %s"%addedExpressions[expr_i]
+        for expr_i in range(len(addedExpressions)):
+            print "       %s"%addedExpressions[expr_i]
     if len(unchangedExpressions) > 0:
         print "    Unchanged %d expressioons..."%len(unchangedExpressions)
-#        for expr_i in range(len(unchangedExpressions)):
-#            print "       %s"%unchangedExpressions[expr_i]
+        for expr_i in range(len(unchangedExpressions)):
+            print "       %s"%unchangedExpressions[expr_i]
     if len(updatedExpressions) > 0:
         print "    Updated %d expressions..."%len(updatedExpressions)
-#        for expr_i in range(len(updatedExpressions)):
-#            print "       %s"%updatedExpressions[expr_i]
+        for expr_i in range(len(updatedExpressions)):
+            print "       %s"%updatedExpressions[expr_i]
     if len(deletedExpressions) > 0:
         print "    Deleted %d expressions"%len(deletedExpressions)
-#        for expr_i in range(len(deletedExpressions)):
-#            print "       %s"%deletedExpressions[expr_i]
+        for expr_i in range(len(deletedExpressions)):
+            print "       %s"%deletedExpressions[expr_i]
 
     print "Finished defining expressions"
 
@@ -718,36 +753,41 @@ def UpdateExpressions(mdl, mdr):
 def Initialize():
     global winDbMap 
     global cmfeMode
+    global oldw
+
+    #
+    # Open left and right database operands
+    #
+    if OpenDatabase(dbl) == 0:
+       print "VisIt could not open ", dbl
+       sys.exit(3)
+
+    if OpenDatabase(dbr) == 0:
+       print "VisIt could not open ", dbr
+       sys.exit(3)
 
     #
     # Make a 2x2 window layout as follows
     #   1: L-CMFE(R)  2: R-CMFE(L) -- only when cmfeMode==1
     #   3: L          4: R
-    SetWindowLayout(4)
-
-    # Lock in time so other windows will inherit time lock.
+    SetCloneWindowOnFirstRef(1)
     ToggleLockTime()
     ToggleLockViewMode()
-
-    # Open a database in each window.
-    winDbMap = {1 : dbl, 2 : dbr, 3 : dbl, 4 : dbr}
-    for win in (1,2,3,4):
-        SetActiveWindow(win)
-        if OpenDatabase(winDbMap[win]) == 0:
-            print "VisIt could not open ", winDbMap[win] 
-            sys.exit(3)
-
+    SetWindowLayout(4)
     SyncTimeStates(0)
 
     # If we were able to create any expressions, let's set up some plots based on the
     # first one. That way, we can also set up some annotations.
+    winDbMap = {1 : dbl, 2 : dbr, 3 : dbl, 4 : dbr}
     if len(diffVars) > 0:
         theVar = GetDiffVarNames(diffVars[0])
         windowsToVars = {1 : theVar[1], 2 : theVar[1], 3 : theVar[0], 4 : theVar[0]}
         for win in (1,2,3,4):
+            SetActiveWindow(win)
+	    DeleteAllPlots()
+            ActivateDatabase(winDbMap[win])
             if win == 2 and cmfeMode == 0:
                 continue
-            SetActiveWindow(win)
             AddPlot("Pseudocolor", windowsToVars[win])
     else:
         print "No plots are being set up by default since the databases did not have any scalars in common."
@@ -769,17 +809,17 @@ def Initialize():
         annot.textColor = (255,0,0,255)
         annot.fontBold = 1
 
+    SetActiveWindow(1)
+    CreateDatabaseCorrelation("DIFF", (dbl, dbr), 0)
+
     # Open the GUI
     OpenGUI()
 
     # Move the viewer's window area closer to the GUI.
     SetWindowArea(410,0,1100,1100)
 
-    # Draw the plots in the windows.
-    for win in (1,2,3,4):
-        SetActiveWindow(win)
-        DrawPlots()
-
+    # Register macro only seems to work from window 1
+    SetActiveWindow(1)
     RegisterMacro("DiffSummary", DiffSummary)
     RegisterMacro("ToggleMesh", ToggleMesh)
     RegisterMacro("ToggleBoundary", ToggleBoundary)
@@ -801,7 +841,9 @@ def Initialize():
     RegisterMacro("ToggleHidePlot4", ToggleHidePlot4)
     RegisterMacro("ToggleHidePlot5", ToggleHidePlot5)
 
-    # Back to window 1            
+    for win in (1,2,3,4):
+        SetActiveWindow(win)
+	DrawPlots()
     SetActiveWindow(1)
 
     print "Type 'help()' to get more information on using 'visit -diff'"
@@ -1228,8 +1270,10 @@ def SyncWindows(srcWin):
             else:
                 ChangeActivePlotsVar(theVar[0])
         DrawPlots()
-	SetActivePlots(tuple(hiddenPlotsList))
-	HideActivePlots()
+	hiddenPlotsTmp = tuple(hiddenPlotsList)
+	if len(hiddenPlotsTmp) > 0:
+	    SetActivePlots(tuple(hiddenPlotsList))
+	    HideActivePlots()
         SetActivePlots(tuple(activePlotsList))
 
     SetActiveWindow(srcWin)

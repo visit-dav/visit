@@ -3710,6 +3710,8 @@ NetworkManager::GetDDF(const char *name)
 //    Hank Childs, Wed Mar 28 10:01:24 PDT 2007
 //    Beef up error messages.
 //
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Accounted for possible null return from GetEnginePluginInfo
 // ****************************************************************************
 
 void
@@ -3760,6 +3762,13 @@ NetworkManager::ExportDatabase(int id, ExportDBAttributes *atts)
         EXCEPTION1(ImproperUseException, msg);
     }
     EngineDatabasePluginInfo *info = manager->GetEnginePluginInfo(db_type);
+    if (info == NULL)
+    {
+        char msg[1024];
+        SNPRINTF(msg, 1024, "Unable to get plugin info for \"%s\".", 
+                 db_type.c_str());
+        EXCEPTION1(ImproperUseException, msg);
+    }
     DBOptionsAttributes opts = atts->GetOpts();
     info->SetWriteOptions(&opts);
     avtDatabaseWriter *wrtr = info->GetWriter();

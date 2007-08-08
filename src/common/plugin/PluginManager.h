@@ -84,6 +84,8 @@
 //    Brad Whitlock, Wed Nov 22 16:26:54 PST 2006
 //    I added an argument to SetPluginDir.
 //
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Added LoadSinglePluginNow. Changed LoadSinglePlugin to return bool
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -107,6 +109,7 @@ class PLUGIN_API PluginManager
 
     virtual void                    LoadPluginsNow();
     virtual void                    LoadPluginsOnDemand();
+    virtual bool                    LoadSinglePluginNow(const std::string&);
     virtual void                    ReloadPlugins();
     virtual void                    UnloadPlugins();
 
@@ -145,7 +148,7 @@ class PLUGIN_API PluginManager
     char                           *PluginError() const;
     void                            PluginClose();
 
-    virtual void                    LoadSinglePlugin(int i);
+    virtual bool                    LoadSinglePlugin(int i);
 
     virtual bool                    LoadGeneralPluginInfo()    = 0;
     virtual void                    LoadGUIPluginInfo()        { }

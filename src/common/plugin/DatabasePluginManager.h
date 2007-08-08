@@ -70,6 +70,9 @@ class EngineDatabasePluginInfo;
 //    Jeremy Meredith, Tue Feb 22 15:20:03 PST 2005
 //    Added way to determine directly if a plugin has a writer.
 //
+//    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
+//    Added PluginFileExtensions, PluginFilenames and GetMatchingPluginId
+//    add supporting data members, extensions, filenames.
 // ****************************************************************************
 
 class PLUGIN_API DatabasePluginManager : public PluginManager
@@ -85,6 +88,11 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
     CommonDatabasePluginInfo       *GetCommonPluginInfo(const std::string&);
     EngineDatabasePluginInfo       *GetEnginePluginInfo(const std::string&);
     bool                            PluginHasWriter(const std::string&);
+    std::vector<std::string>        PluginFileExtensions(const std::string&);
+    std::vector<std::string>        PluginFilenames(const std::string&);
+
+    std::string                     GetMatchingPluginId(const char *fname,
+                                        bool searchAll = false);
 
   private:
                                     DatabasePluginManager();
@@ -100,6 +108,8 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
 
     // arrays containing all plugins (appends the ones in PluginManager.C)
     std::vector<bool>                       haswriter;
+    std::vector<std::vector<std::string> >  extensions;
+    std::vector<std::vector<std::string> >  filenames;
 
     // arrays containing enabled plugins
     std::vector<CommonDatabasePluginInfo*>      commonPluginInfo;

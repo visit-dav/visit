@@ -73,14 +73,14 @@ class Boxlib3DGeneralPluginInfo : public virtual GeneralDatabasePluginInfo
     virtual char *GetID() const;
     virtual bool  EnabledByDefault() const;
     virtual bool  HasWriter() const;
+    virtual std::vector<std::string> GetDfltExtsFromGen() const;
+    virtual std::vector<std::string> GetFilenamesFromGen() const;
 };
 
 class Boxlib3DCommonPluginInfo : public virtual CommonDatabasePluginInfo, public virtual Boxlib3DGeneralPluginInfo
 {
   public:
     virtual DatabaseType              GetDatabaseType();
-    virtual std::vector<std::string>  GetFilenames();
-    virtual std::vector<std::string>  GetDefaultExtensions();
     virtual avtDatabase              *SetupDatabase(const char * const *list,
                                                     int nList, int nBlock);
 };
