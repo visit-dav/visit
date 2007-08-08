@@ -109,16 +109,19 @@ LIBS=
 ## Files...
 ##
 SRC=AtomicProperties.C BJHash.C NamingConvention.C StringHelpers.C Utility.C\
-    void_ref_ptr.C MRUCache_test.C
+    void_ref_ptr.C
 HDR=AtomicProperties.h BJHash.h NamingConvention.h StringHelpers.h Utility.h\
     ref_ptr.h array_ref_ptr.h void_ref_ptr.h
 OBJ=$(SRC:.C=.o)
 LIB=libutility
 
+TESTSRC=MRUCache_test.C
+TESTOBJ=$(TESTSRC:.C=.o)
+
 ##
 ## Standard targets...
 ##
-all: message $(LIBSHARED)
+all: message $(LIBSHARED) $(tmpbin)/MRUCache_test
 
 clean:
 	$(RM) $(OBJ) $(LIBSHARED)
@@ -131,6 +134,9 @@ message:
 	@echo "****************************************************************************"
 	@echo "*** Building Utility Library ($(LIB))"
 	@echo "****************************************************************************"
+
+$(tmpbin)/MRUCache_test: $(TESTOBJ)
+	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) $(TESTOBJ)
 
 ##
 ## Automatic dependency stuff

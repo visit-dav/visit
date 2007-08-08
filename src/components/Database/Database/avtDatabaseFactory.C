@@ -252,7 +252,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         }
         CommonDatabasePluginInfo *info = 
             dbmgr->GetCommonPluginInfo(formatid);
-        plugins.push_back(info ? "" : info->GetName());
+        plugins.push_back(info ? info->GetName(): "");
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                            nBlocks, forceReadAllCyclesAndTimes,
 			   treatAllDBsAsTimeVarying);
@@ -271,15 +271,16 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     //
     // Check to see if there is an extension that matches.
     //
-    if (rv == 0)
+    string id = "";
+    while (rv == 0)
     {
-        string id = dbmgr->GetMatchingPluginId(filelist[fileIndex]);
+        id = dbmgr->GetMatchingPluginId(filelist[fileIndex], id);
         if (id != "")
         {
             CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(id);
             TRY
             {
-                plugins.push_back(info ? "" : info->GetName());
+                plugins.push_back(info ? info->GetName() : "");
                 rv = SetupDatabase(info, filelist, filelistN, timestep,
                                    fileIndex, nBlocks, forceReadAllCyclesAndTimes,
 			           treatAllDBsAsTimeVarying);
@@ -304,7 +305,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             string defaultid = dbmgr->GetAllID(defaultindex);
             CommonDatabasePluginInfo *info = 
                                          dbmgr->GetCommonPluginInfo(defaultid);
-            plugins.push_back(info ? "" : info->GetName());
+            plugins.push_back(info ? info->GetName() : "");
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
 			       treatAllDBsAsTimeVarying);

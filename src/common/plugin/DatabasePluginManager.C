@@ -491,7 +491,8 @@ DatabasePluginManager::PluginFilenames(const string &id)
 //
 // ****************************************************************************
 string
-DatabasePluginManager::GetMatchingPluginId(const char *filename, bool searchAll)
+DatabasePluginManager::GetMatchingPluginId(const char *filename, 
+    string lastIdTried, bool searchAll)
 {
     int i;
     string rv = "";
@@ -517,8 +518,14 @@ DatabasePluginManager::GetMatchingPluginId(const char *filename, bool searchAll)
     //
     // Try each database type looking for a match to the given extensions
     //
+    int iMin = 0;
+    if (lastIdTried != "")
+    {
+        iMin = searchAll ? GetAllIndex(lastIdTried) : GetEnabledIndex(lastIdTried);
+	iMin++;
+    }
     int iMax = searchAll ? GetNAllPlugins() : GetNEnabledPlugins();
-    for (i=0; i<iMax && rv == ""; i++)
+    for (i=iMin; i<iMax && rv == ""; i++)
     {
         string id = searchAll ? GetAllID(i) : GetEnabledID(i);
         CommonDatabasePluginInfo *info = GetCommonPluginInfo(id);

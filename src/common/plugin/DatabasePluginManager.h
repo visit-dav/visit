@@ -92,6 +92,7 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
     std::vector<std::string>        PluginFilenames(const std::string&);
 
     std::string                     GetMatchingPluginId(const char *fname,
+                                        std::string lastIdTried,
                                         bool searchAll = false);
 
   private:
