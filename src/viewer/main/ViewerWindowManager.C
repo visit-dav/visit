@@ -2202,6 +2202,8 @@ ViewerWindowManager::GetDataset(int windowIndex,
 //   Brad Whitlock, Mon Apr 28 10:24:27 PDT 2003
 //   I removed code to handle SIGPIPE since that signal is now ignored.
 //
+//   Mark C. Miller, Wed Aug  8 17:19:14 PDT 2007
+//   Handled null return from CreateSingleImage
 // ****************************************************************************
 
 void
@@ -2244,7 +2246,7 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     //
     char message[1000];
     int index = (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1);
-    SNPRINTF(message, 1000, "Printing window %d...", index);
+    SNPRINTF(message, sizeof(message), "Printing window %d...", index);
     Status(message, 6000000);
 
     //
@@ -2276,6 +2278,17 @@ ViewerWindowManager::PrintWindow(int windowIndex)
         saveWindowClientAtts->GetScreenCapture(), true);
 
     //
+    // Handle failure to obtain an image
+    //
+    if (*image == 0)
+    {
+        Error("Unable to obtain an image to print.");
+        SNPRINTF(message, sizeof(message), "Print from VisIt failed....", index);
+        Status(message, 6000000);
+        return;
+    }
+
+    //
     // Tell the imageWriter to use our writer to write the image. In this
     // case, the writer is an image printer.
     //
@@ -2294,13 +2307,13 @@ ViewerWindowManager::PrintWindow(int windowIndex)
     //
     if(printerAtts->GetOutputToFile())
     {
-        SNPRINTF(message, 1000, "Window %d saved to %s.", index,
+        SNPRINTF(message, sizeof(message), "Window %d saved to %s.", index,
                  printerAtts->GetOutputToFileName().c_str());
         Status(message);
     }
     else
     {
-        SNPRINTF(message, 1000, "Window %d sent to printer.", index);
+        SNPRINTF(message, sizeof(message), "Window %d sent to printer.", index);
         Status(message);
     }
 }
