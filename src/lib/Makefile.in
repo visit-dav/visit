@@ -158,6 +158,10 @@
 #    Brad Whitlock, Thu Aug 2 17:55:41 PST 2007
 #    Added link for CCMIO.
 #
+#    Kathleen Bonnell, Wed Aug  8 14:48:58 PDT 2007 
+#    Added '*' after $(LIBMESAGL) and $(LIBOSMESA) to pick up extensions that
+#    some versions of linux add.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -269,16 +273,16 @@ libvtkmpeg2encode:
 	ln -s @VTK_DIR@/lib/$(LIBVTKMPEG2ENCODE)*  .
 
 libmesagl:
-	$(RM) $(LIBMESAGL)
-	ln -s @MESA_DIR@/lib/$(LIBMESAGL)  .
+	$(RM) $(LIBMESAGL)*
+	ln -s @MESA_DIR@/lib/$(LIBMESAGL)*  .
 
 libGLU:
 	$(RM) $(LIBGLU)
 	ln -s @MESA_DIR@/lib/$(LIBGLU)  .
 
 libosmesa:
-	$(RM) $(LIBOSMESA)
-	ln -s @MESA_DIR@/lib/$(LIBOSMESA)  .
+	$(RM) $(LIBOSMESA)*
+	ln -s @MESA_DIR@/lib/$(LIBOSMESA)*  .
 
 libqt:
 	if test -n "@QT_LIB@"; then              \

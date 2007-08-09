@@ -905,7 +905,15 @@ inline double ffix(double value)
   return (double) ivalue;
 }
 
-inline double trunc(double v)
+// ****************************************************************************
+//  Modifications:
+//
+//    Kathleen Bonnell, Wed Aug  8 14:48:58 PDT 2007 
+//    Renamed to v_trunc to prevent name collisions on some systems. 
+//
+// ****************************************************************************
+
+inline double v_trunc(double v)
 {
   long iv;
   double rv;
@@ -1322,11 +1330,11 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     lv1 = floor(lv1);
     lv2 = floor(lv2 + 0.01); 
     }
-  double sp = trunc(log10(dlv));
+  double sp = v_trunc(log10(dlv));
   if (sp < 0.1)
       sp = 0.1; 
-  double va = sp*trunc(lv1/sp);
-  double vb = sp*trunc(lv2/sp);
+  double va = sp*v_trunc(lv1/sp);
+  double vb = sp*v_trunc(lv2/sp);
   if (v1 < v2)
     {
     if (va < lv1 - TOLERANCE)
