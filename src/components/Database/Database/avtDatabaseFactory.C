@@ -184,6 +184,9 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //    Replaced sprintfs with SNPRINTFs. Adjusted to accomodate possible
 //    null return from GetCommonPluginInfo. Moved bulk of code to match
 //    on file extensions and filenames to DatabasePluginManager
+//
+//    Mark C. Miller, Thu Aug  9 09:16:01 PDT 2007
+//    Made GetMatchingPluginIds return a vector of possible ids
 // ****************************************************************************
 
 avtDatabase *
@@ -193,8 +196,6 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                              bool forceReadAllCyclesAndTimes,
 			     bool treatAllDBsAsTimeVarying)
 {
-    int   i, j;
-
     if (filelistN <= 0)
     {
         EXCEPTION1(InvalidFilesException, filelistN);
@@ -271,26 +272,22 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     //
     // Check to see if there is an extension that matches.
     //
-    string id = "";
-    while (rv == 0)
+    vector<string> ids = dbmgr->GetMatchingPluginIds(filelist[fileIndex]);
+    for (int i = 0; i < ids.size() && rv == 0; i++)
     {
-        id = dbmgr->GetMatchingPluginId(filelist[fileIndex], id);
-        if (id != "")
+        CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(ids[i]);
+        TRY
         {
-            CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(id);
-            TRY
-            {
-                plugins.push_back(info ? info->GetName() : "");
-                rv = SetupDatabase(info, filelist, filelistN, timestep,
-                                   fileIndex, nBlocks, forceReadAllCyclesAndTimes,
-			           treatAllDBsAsTimeVarying);
-            }
-            CATCH2(InvalidDBTypeException, e)
-            {
-                rv = NULL;
-            }
-            ENDTRY
+            plugins.push_back(info ? info->GetName() : "");
+            rv = SetupDatabase(info, filelist, filelistN, timestep,
+                               fileIndex, nBlocks, forceReadAllCyclesAndTimes,
+			       treatAllDBsAsTimeVarying);
         }
+        CATCH2(InvalidDBTypeException, e)
+        {
+            rv = NULL;
+        }
+        ENDTRY
     }
 
     //

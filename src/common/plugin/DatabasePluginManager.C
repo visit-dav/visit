@@ -489,13 +489,15 @@ DatabasePluginManager::PluginFilenames(const string &id)
 //  Programmer:  Mark C. Miller 
 //  Creation:    July 31, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Thu Aug  9 09:16:01 PDT 2007
+//    Made it return a vector of strings
 // ****************************************************************************
-string
-DatabasePluginManager::GetMatchingPluginId(const char *filename, 
-    string lastIdTried, bool searchAll)
+vector<string>
+DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll)
 {
     int i;
-    string rv = "";
+    vector<string> rv;
 
     //
     // Parse out the path and get just the filename.
@@ -518,14 +520,8 @@ DatabasePluginManager::GetMatchingPluginId(const char *filename,
     //
     // Try each database type looking for a match to the given extensions
     //
-    int iMin = 0;
-    if (lastIdTried != "")
-    {
-        iMin = searchAll ? GetAllIndex(lastIdTried) : GetEnabledIndex(lastIdTried);
-	iMin++;
-    }
     int iMax = searchAll ? GetNAllPlugins() : GetNEnabledPlugins();
-    for (i=iMin; i<iMax && rv == ""; i++)
+    for (i=0; i<iMax; i++)
     {
         string id = searchAll ? GetAllID(i) : GetEnabledID(i);
         CommonDatabasePluginInfo *info = GetCommonPluginInfo(id);
@@ -593,7 +589,7 @@ DatabasePluginManager::GetMatchingPluginId(const char *filename,
         }
 
         if (foundMatch)
-            rv = id;
+            rv.push_back(id);
 
         if (foundMatch and shouldIssueObsoletePluginWarning)
 	{
