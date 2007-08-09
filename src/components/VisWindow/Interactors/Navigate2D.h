@@ -71,6 +71,9 @@ class VisWindowInteractorProxy;
 //    Eric Brugger, Fri Oct 10 08:52:11 PDT 2003
 //    I added OnTimer, PanCamera and ZoomCamera.
 //
+//    Gunther H. Weber, Tue Aug  7 13:46:29 PDT 2007
+//    Added methods for mouse wheel interactions
+//
 // ****************************************************************************
 
 class VISWINDOW_API Navigate2D : public VisitInteractor
@@ -84,6 +87,8 @@ class VISWINDOW_API Navigate2D : public VisitInteractor
     virtual void        EndLeftButtonAction();
     virtual void        StartMiddleButtonAction();
     virtual void        EndMiddleButtonAction();
+    virtual void        OnMouseWheelForward();
+    virtual void        OnMouseWheelBackward();
 
   private:
     void                PanCamera(const int x, const int y);

@@ -115,6 +115,11 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    Hank Childs, Thu Dec 29 10:30:53 PST 2005
 //    Added Boolean argument to IssueViewCallback.
 //
+//    Gunther H. Weber, Tue Aug  7 13:50:25 PDT 2007
+//    Split ZoomImage3D and ZoomCamera2D into two functions, one computing the
+//    zoom factor from the mouse move and one computing the zommed view so that
+//    mouse wheel events can make use of this function.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -181,9 +186,11 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     void                        StartBoundingBox(void);
     void                        EndBoundingBox(void);
 
+    void                        ZoomCamera2D(double);
     void                        ZoomCamera2D(const int, const int);
     void                        PanImage3D(const int, const int);
     void                        PanCamera3D(const int, const int);
+    void                        ZoomImage3D(double);
     void                        ZoomImage3D(const int, const int);
     void                        DollyCameraTowardFocus3D(const int, const int);
     void                        DollyCameraAndFocus3D(const int, const int);

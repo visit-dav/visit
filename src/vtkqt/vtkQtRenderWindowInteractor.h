@@ -78,6 +78,7 @@ protected slots:
 protected:
     void mousePressEvent(QMouseEvent*);
     void mouseReleaseEvent(QMouseEvent*);
+    void wheelEvent(QWheelEvent*);
     void keyPressEvent(QKeyEvent*);
 private:
     vtkQtRenderWindow *qtRenWin;

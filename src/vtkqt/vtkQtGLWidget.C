@@ -201,6 +201,29 @@ vtkQtGLWidget::mouseReleaseEvent(QMouseEvent *me)
 }
 
 // ****************************************************************************
+// Method: vtkQtGLWidget::wheelEvent
+//
+// Purpose: 
+//   Passes wheel events to the interactor.
+//
+// Arguments:
+//   we : A pointer to a wheel event.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Aug  3 17:56:01 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+vtkQtGLWidget::wheelEvent(QWheelEvent *we)
+{
+    if (interactor)
+        interactor->wheelEvent(we);
+}
+
+// ****************************************************************************
 // Method: vtkQtGLWidget::keyPressEvent
 //
 // Purpose: 

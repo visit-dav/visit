@@ -339,6 +339,45 @@ Navigate3D::EndMiddleButtonAction()
 }
 
 // ****************************************************************************
+//  Method: Navigate3D::OnMouseWheelForward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned backward.
+//
+//  Arguments:
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 07, 2007
+//
+// ****************************************************************************
+
+void
+Navigate3D::OnMouseWheelForward()
+{
+    ZoomImage3D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
+}
+
+
+// ****************************************************************************
+//  Method: Navigate3D::OnMouseWheelBackward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned forward.  
+//
+//  Arguments:
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 07, 2007
+//
+// ****************************************************************************
+
+void
+Navigate3D::OnMouseWheelBackward()
+{
+    ZoomImage3D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
+}
+
+// ****************************************************************************
 //  Method: Navigate3D::EnableSpinMode
 //
 //  Purpose:

@@ -940,7 +940,7 @@ VisitInteractor::EndBoundingBox(void)
 }
 
 // ****************************************************************************
-//  Method: Navigate2D::ZoomCamera
+//  Method: VisitInteractor::ZoomCamera2D(double) 
 //
 //  Purpose:
 //    Handle zooming the camera.
@@ -948,13 +948,113 @@ VisitInteractor::EndBoundingBox(void)
 //  Programmer: Eric Brugger
 //  Creation:   October 10, 2003
 //
+//  Modificatios:
+//    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
+//    Split into two functions, one computing the zoom factor from the
+//    mouse move and one computing the zommed view so that mouse wheel 
+//    events can make use of this function.
+//
+// ****************************************************************************
+
+void
+VisitInteractor::ZoomCamera2D(double f)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    //
+    // Calculate the zoom factor.
+    //
+    double zoomFactor = pow((double)1.1, f);
+
+    //
+    // Calculate the new parallel scale.
+    //
+    VisWindow *vw = proxy;
+    bool fillViewportOnZoom = vw->GetInteractorAtts()->GetFillViewportOnZoom();
+
+    avtView2D newView2D = vw->GetView2D();
+
+    double xDist = newView2D.window[1] - newView2D.window[0];
+    double yDist = newView2D.window[3] - newView2D.window[2];
+    double dX = ((1. / zoomFactor) - 1.) * (xDist / 2.);
+    double dY = ((1. / zoomFactor) - 1.) * (yDist / 2.);
+
+    //
+    // If fill viewport on zoom is enabled and we are zooming and not
+    // in fullframe mode then zoom so that we will fill the viewport.
+    //
+    if (fillViewportOnZoom && zoomFactor > 1. && !newView2D.fullFrame)
+    {
+	//
+	// Determine the y scale factor to account for the viewport
+	// and window size.
+	//
+	int       size[2];
+	double    yScale;
+
+	rwi->GetSize(size);
+
+	yScale = ((newView2D.viewport[3] - newView2D.viewport[2]) /
+		(newView2D.viewport[1] - newView2D.viewport[0])) *
+	    ((double) size[1] / (double) size[0]) ;
+
+	//
+	// We fill the viewport by only zooming one of the axes.  In
+	// the case where we will overshoot, we zoom the second axis a
+	// small amount so that we will just fill the viewport.
+	//
+	if ((yDist / xDist) < yScale)
+	{
+	    //
+	    // Handle the case where the x direction should be zoomed.
+	    //
+	    if ((xDist + 2.0 * dX) > (yDist / yScale))
+		dY = 0.;
+	    else
+		dY = ((xDist + 2.0 * dX) * yScale - yDist) / 2.0;
+	}
+	else
+	{
+	    //
+	    // Handle the case where the x direction should be zoomed.
+	    //
+	    if ((yDist + 2.0 * dY) > (xDist * yScale))
+		dX = 0.;
+	    else
+		dX = ((yDist + 2.0 * dY) / yScale - xDist) / 2.0;
+	}
+    }
+
+    newView2D.window[0] -= dX;
+    newView2D.window[1] += dX;
+    newView2D.window[2] -= dY;
+    newView2D.window[3] += dY;
+
+    vw->SetView2D(newView2D);
+
+    rwi->Render();
+}
+
+// ****************************************************************************
+//  Method: VisitInteractor::ZoomCamera2D(const int, const int)
+//    (was: Navigate2D::ZoomCamera)
+//
+//  Purpose:
+//    Handle zooming the camera.
+//
+//  Programmer: Eric Brugger
+//  Creation:   October 10, 2003
+//
+//    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
+//    Split into two functions, one computing the zoom factor from the
+//    mouse move and one computing the zommed view so that mouse wheel 
+//    events can make use of this function.
+//
 // ****************************************************************************
 
 void
 VisitInteractor::ZoomCamera2D(const int x, const int y)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
-
     if (OldY != y)
     {
         //
@@ -962,77 +1062,17 @@ VisitInteractor::ZoomCamera2D(const int x, const int y)
         //
         double dyf = MotionFactor * (double)(y - OldY) /
                          (double)(Center[1]);
-        double zoomFactor = pow((double)1.1, dyf);
 
-        //
-        // Calculate the new parallel scale.
-        //
-        VisWindow *vw = proxy;
-        bool fillViewportOnZoom = vw->GetInteractorAtts()->GetFillViewportOnZoom();
+	//
+	// Perform zoom
+	//
+	ZoomCamera2D(dyf);
 
-        avtView2D newView2D = vw->GetView2D();
-
-        double xDist = newView2D.window[1] - newView2D.window[0];
-        double yDist = newView2D.window[3] - newView2D.window[2];
-        double dX = ((1. / zoomFactor) - 1.) * (xDist / 2.);
-        double dY = ((1. / zoomFactor) - 1.) * (yDist / 2.);
-
-        //
-        // If fill viewport on zoom is enabled and we are zooming and not
-        // in fullframe mode then zoom so that we will fill the viewport.
-        //
-        if (fillViewportOnZoom && zoomFactor > 1. && !newView2D.fullFrame)
-        {
-            //
-            // Determine the y scale factor to account for the viewport
-            // and window size.
-            //
-            int       size[2];
-            double    yScale;
-
-            rwi->GetSize(size);
-
-            yScale = ((newView2D.viewport[3] - newView2D.viewport[2]) /
-                      (newView2D.viewport[1] - newView2D.viewport[0])) *
-                     ((double) size[1] / (double) size[0]) ;
-
-            //
-            // We fill the viewport by only zooming one of the axes.  In
-            // the case where we will overshoot, we zoom the second axis a
-            // small amount so that we will just fill the viewport.
-            //
-            if ((yDist / xDist) < yScale)
-            {
-                //
-                // Handle the case where the x direction should be zoomed.
-                //
-                if ((xDist + 2.0 * dX) > (yDist / yScale))
-                    dY = 0.;
-                else
-                    dY = ((xDist + 2.0 * dX) * yScale - yDist) / 2.0;
-            }
-            else
-            {
-                //
-                // Handle the case where the x direction should be zoomed.
-                //
-                if ((yDist + 2.0 * dY) > (xDist * yScale))
-                    dX = 0.;
-                else
-                    dX = ((yDist + 2.0 * dY) / yScale - xDist) / 2.0;
-            }
-        }
-
-        newView2D.window[0] -= dX;
-        newView2D.window[1] += dX;
-        newView2D.window[2] -= dY;
-        newView2D.window[3] += dY;
-
-        vw->SetView2D(newView2D);
-
+	//
+	// Update old mouse position
+	//
         OldX = x;
         OldY = y;
-        rwi->Render();
     }
 }
 
@@ -1199,7 +1239,7 @@ VisitInteractor::PanCamera3D(const int x, const int y)
 }
 
 // ****************************************************************************
-//  Method: VisitInteractor::ZoomImage3D
+//  Method: VisitInteractor::ZoomImage3D(double)
 //
 //  Purpose:
 //    Handle zooming the image in 3d.
@@ -1220,13 +1260,69 @@ VisitInteractor::PanCamera3D(const int x, const int y)
 //    I changed the zoom behavior so that it zooms the image and doesn't
 //    change the camera or focal point.
 //
+//    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
+//    Split into two functions, one computing the zoom factor from the
+//    mouse move and one computing the zommed view so that mouse wheel 
+//    events can make use of this function.
+//
+// ****************************************************************************
+
+void
+VisitInteractor::ZoomImage3D(double f)
+{
+    vtkRenderWindowInteractor *rwi = Interactor;
+
+    //
+    // Calculate the zoom factor.
+    //
+    double zoomFactor = pow((double)1.1, f);
+
+    //
+    // Calculate the new parallel scale.
+    //
+    VisWindow *vw = proxy;
+
+    avtView3D newView3D = vw->GetView3D();
+
+    newView3D.imageZoom = newView3D.imageZoom * zoomFactor;
+
+    vw->SetView3D(newView3D);
+
+    rwi->Render();
+}
+
+// ****************************************************************************
+//  Method: VisitInteractor::ZoomImage3D(const inst, const int)
+//
+//  Purpose:
+//    Handle zooming the image in 3d.
+//
+//  Programmer: Eric Brugger
+//  Creation:   August 10, 2001
+//
+//  Modifications:
+//    Hank Childs, Tue Feb 26 10:22:43 PST 2002
+//    Do not let the near plane be set to something very close to the camera,
+//    because the viewing transformation gets out of whack and we lose too
+//    much in depth buffering.
+//
+//    Eric Brugger, Tue Apr  2 11:28:11 PST 2002
+//    I modified the routine to make the viewing changes using an avtView3D.
+//
+//    Eric Brugger, Wed Jun 11 08:55:07 PDT 2003
+//    I changed the zoom behavior so that it zooms the image and doesn't
+//    change the camera or focal point.
+//
+//    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
+//    Split into two functions, one computing the zoom factor from the
+//    mouse move and one computing the zommed view so that mouse wheel 
+//    events can make use of this function.
+//
 // ****************************************************************************
 
 void
 VisitInteractor::ZoomImage3D(const int x, const int y)
 {
-    vtkRenderWindowInteractor *rwi = Interactor;
-
     if (OldY != y)
     {
         //
@@ -1234,22 +1330,9 @@ VisitInteractor::ZoomImage3D(const int x, const int y)
         //
         double dyf = MotionFactor * (double)(y - OldY) /
                          (double)(Center[1]);
-        double zoomFactor = pow((double)1.1, dyf);
-
-        //
-        // Calculate the new parallel scale.
-        //
-        VisWindow *vw = proxy;
-
-        avtView3D newView3D = vw->GetView3D();
-
-        newView3D.imageZoom = newView3D.imageZoom * zoomFactor;
-
-        vw->SetView3D(newView3D);
-
+        ZoomImage3D(dyf);
         OldX = x;
         OldY = y;
-        rwi->Render();
     }
 }
 

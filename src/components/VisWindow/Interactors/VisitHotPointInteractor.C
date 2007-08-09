@@ -996,6 +996,45 @@ VisitHotPointInteractor::OnTimer()
 }
 
 // ****************************************************************************
+//  Method: VisitHotPointInteractor::OnMouseWheelForward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned backward.
+//
+//  Arguments:
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 07, 2007
+//
+// ****************************************************************************
+
+void
+VisitHotPointInteractor::OnMouseWheelForward()
+{
+    currentInteractor->OnMouseWheelForward();
+}
+
+
+// ****************************************************************************
+//  Method: VisitHotPointInteractor::OnMouseWheelBackward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned forward.  
+//
+//  Arguments:
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 07, 2007
+//
+// ****************************************************************************
+
+void
+VisitHotPointInteractor::OnMouseWheelBackward()
+{
+    currentInteractor->OnMouseWheelBackward();
+}
+
+// ****************************************************************************
 //  Method: VisitHotPointInteractor::SetInteractor
 //
 //  Purpose:

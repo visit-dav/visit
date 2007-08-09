@@ -216,6 +216,43 @@ Navigate2D::EndMiddleButtonAction()
     IssueViewCallback();
 }
 
+// ****************************************************************************
+//  Method: Navigate2D::OnMouseWheelForward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned backward.
+//
+//  Arguments:
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 07, 2007
+//
+// ****************************************************************************
+
+void
+Navigate2D::OnMouseWheelForward()
+{
+    ZoomCamera2D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
+}
+
+// ****************************************************************************
+//  Method: Navigate2D::OnMouseWheelBackward()
+//
+//  Purpose:
+//    Handles the mouse wheel turned forward.  
+//
+//  Arguments:
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   August 07, 2007
+//
+// ****************************************************************************
+
+void
+Navigate2D::OnMouseWheelBackward()
+{
+    ZoomCamera2D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
+}
 
 // ****************************************************************************
 //  Method: Navigate2D::PanCamera

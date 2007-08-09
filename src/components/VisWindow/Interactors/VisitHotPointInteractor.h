@@ -112,6 +112,9 @@ public:
     virtual void      OnMouseMove();
     virtual void      OnTimer();
 
+    virtual void      OnMouseWheelForward();
+    virtual void      OnMouseWheelBackward();
+
     void              SetNullInteractor();
 
     void              Start2DMode(INTERACTION_MODE mode);
