@@ -56,10 +56,15 @@
 #include <avtFileFormatInterface.h>
 #include <avtGenericDatabase.h>
 #include <avtMTMDFileFormat.h>
+#include <avtParallel.h>
 
 #include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
 
 #include <string>
 #include <vector>
@@ -240,13 +245,13 @@ void
 avtZipWrapperFileFormatInterface::CleanUpAtExit()
 {
     // delete all the zip wrapper objects that still exist
-    debug5 << "At-Exiting, deleting " << objList.size() << " objects." << endl;
+    //debug5 << "At-Exiting, deleting " << objList.size() << " objects." << endl;
     atExiting = true;
     for (int i = 0; i < objList.size(); i++)
         delete objList.at(i);
     if (objList.size() != 0)
     {
-	debug5 << "ZipWrapper may have left decompressed files" << endl;
+	//debug5 << "ZipWrapper may have left decompressed files" << endl;
     }
     avtZipWrapperFileFormatInterface::Finalize();
 }
@@ -260,7 +265,7 @@ avtZipWrapperFileFormatInterface::CleanUpAtExit()
 //  Creation:   July 31, 2007 
 // ****************************************************************************
 void
-avtZipWrapperFileFormatInterface::Initialize()
+avtZipWrapperFileFormatInterface::Initialize(int procNum, int procCount)
 {
 
 #ifndef MDSERVER
@@ -286,10 +291,14 @@ avtZipWrapperFileFormatInterface::Initialize()
         username = getenv("USERNAME");
     string userName = username ? string(username) : "user";
 
+    char procNumStr[32];
+    SNPRINTF(procNumStr, sizeof(procNumStr), "_%04d", procNum);
     tmpDir = string(tmpdir) + "/visitzw_" + userName + "_" +
-             string(Init::GetComponentName());
+             string(Init::GetComponentName()) +
+	     (procCount > 1 ? string(procNumStr) : "");
 
     // Get maximum file count
+    maxDecompressedFiles /= procCount;
     char *maxfiles = getenv("VISIT_ZIPWRAPPER_MAXFILES");
     if (maxfiles)
     {
@@ -297,15 +306,21 @@ avtZipWrapperFileFormatInterface::Initialize()
         int tmpInt = (int) strtol(maxfiles, 0, 10);
 	if (errno == 0)
 	{
-            maxDecompressedFiles = tmpInt;
+	    if (tmpInt < 0)
+                maxDecompressedFiles = -tmpInt;
+	    else
+                maxDecompressedFiles = tmpInt / procCount;
         }
 	else
 	{
 	    cerr << "Unable to set maximum file count to \"" << maxfiles << "\"" << endl;
 	}
     }
+    debug5 << "ZipWrapper will maintain a maximum of " << maxDecompressedFiles
+           << " decompressed files " << (procCount > 1 ? "per-processor" : "")
+	   << " at any one time." << endl;
 
-    char *decomp_cmd = getenv("VISIT_ZIPWRAPPER_DECOMPCMD");
+    char *decomp_cmd = getenv("VISIT_ZIPWRAPPER_DCMD");
     if (decomp_cmd)
         decompCmd = string(decomp_cmd);
 
@@ -361,9 +376,16 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     inputFileListSize(nl), inputFileBlockCount(nb),
     decompressedFilesCache(FreeUpCacheSlot)
 {
+    procNum = 0;
+    procCount = 1;
+#ifdef PARALLEL
+    MPI_Comm_rank(VISIT_MPI_COMM, &procNum);
+    MPI_Comm_size(VISIT_MPI_COMM, &procCount);
+#endif
+
     // keep track of objects to cleanup in CleanUpAtExit
     if (objList.size() == 0)
-        avtZipWrapperFileFormatInterface::Initialize();
+        avtZipWrapperFileFormatInterface::Initialize(procNum, procCount);
     objList.push_back(this);
 
     // store list of files

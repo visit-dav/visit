@@ -94,9 +94,14 @@ class avtZipWrapperFileFormat;
 //
 //      VISIT_ZIPWRAPPER_MAXFILES specifies the maximum number of
 //                              decompressed files that can be in existance
-//                              at any one time. Default is 50.
+//                              at any one time. Default is 50. In
+//                              parallel, this is a total summed over
+//                              all processors unless a negative number
+//                              is specified in which case it is the
+//                              total per processor (useful for
+//                              processor local tmp directories).
 //
-//      VISIT_ZIPWRAPPER_DECOMPCMD specifies the decompression command
+//      VISIT_ZIPWRAPPER_DCMD   specifies the decompression command
 //                              to use to decompress files. Default is
 //                              to use extension to determine command.
 //
@@ -109,6 +114,9 @@ class avtZipWrapperFileFormat;
 //  Programmer: Mark C. Miller 
 //  Creation:   Thu Jul 26 08:34:49 PDT 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Aug  8 17:19:14 PDT 2007
+//    Added procNum/procCount args to Initialize
 // ****************************************************************************
 
 class avtZipWrapperFileFormatInterface : public avtFileFormatInterface 
@@ -140,7 +148,7 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
     virtual avtFileFormat  *GetFormat(int) const;
 
   private:
-      static void                  Initialize();
+      static void                  Initialize(int procNum, int procCount);
       static void                  Finalize();
       static void                  CleanUpAtExit();
       static vector<avtZipWrapperFileFormatInterface*>
@@ -148,6 +156,9 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
       static string                tmpDir;
       static string                decompCmd;
       static int                   maxDecompressedFiles;
+
+      int                          procNum;
+      int                          procCount;
 
       avtFileFormatInterface      *GetRealInterface(int ts, int dom, bool dontCache = false);
       void                         UpdateRealFileFormatInterface(avtFileFormatInterface *iface) const;
