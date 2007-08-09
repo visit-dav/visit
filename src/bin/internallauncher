@@ -214,6 +214,10 @@ $0 = shift @ARGV;
 #    For redrose at sandia, parse the launchargs for '-l vis', in order
 #    to add it correctly to the qsub args. 
 #
+#    Kathleen Bonnell, Thu Aug  9 10:40:04 PDT 2007 
+#    For redrose at sandia, added HACK to set the correct LD_LIBRARY_PATH,
+#    in case user's loaded modules don't match what VisIt was built with. 
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -851,6 +855,20 @@ if ($host =~ /^q\d+$/ || $host =~ /^qfe\d$/)
                           "/usr/local/opt/Compaq_MPI_64_2.6_r6/lib",
                           "/usr/local/opt/Compaq_MPI_64_2.6_r6/shlib",
                           "/lsfdir/Q_CD/4.2/alpha5-rms/lib");
+}
+
+# ----
+#  HACK for Sandia's redrose machine:
+#
+#  If we're on Sandia's redrose machine, then we need to make sure that 
+#  the correct the library path is correct.
+# ----
+if ($host eq "redrose1.sandia.gov" || $host eq "redrose2.sandia.gov")
+{
+    $ENV{LD_LIBRARY_PATH} = join ':' ,
+       ("/apps/x86_64/mpi/openmpi/intel-9.1/openmpi-1.1.2-ofed/lib",
+        "/projects/global/x86_64/compilers/intel/intel-9.1-cce-045/lib",
+        "/apps/torque/lib"); 
 }
 
 # ----
