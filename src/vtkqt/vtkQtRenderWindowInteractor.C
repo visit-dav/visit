@@ -197,6 +197,17 @@ void vtkQtRenderWindowInteractor::mouseReleaseEvent(QMouseEvent *me) {
     altshift = false;
 }
 
+// Modifications:
+//   Gunther H. Weber, Fri Aug  3 17:56:01 PDT 2007
+//   Added wheelEvent method
+void vtkQtRenderWindowInteractor::wheelEvent(QWheelEvent*we)
+{
+    if (we->delta() > 0) 
+	InvokeEvent(vtkCommand::MouseWheelForwardEvent, NULL);
+    else if (we->delta() < 0)
+	InvokeEvent(vtkCommand::MouseWheelBackwardEvent, NULL);
+}
+
 void vtkQtRenderWindowInteractor::timer() {
     if (!Enabled)
       return;

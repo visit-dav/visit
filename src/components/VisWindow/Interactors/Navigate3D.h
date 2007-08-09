@@ -87,6 +87,9 @@ class VisWindowInteractorProxy;
 //    Moved RotateCamera, PanCamera and ZoomCamera to the VisitInterator
 //    class as RotateAboutFocus3D, PanImage3D and ZoomImage3D.
 //
+//    Gunther H. Weber, Tue Aug  7 13:46:29 PDT 2007
+//    Added methods for mouse wheel interactions
+//
 // ****************************************************************************
 
 class VISWINDOW_API Navigate3D : public VisitInteractor
@@ -100,6 +103,8 @@ class VISWINDOW_API Navigate3D : public VisitInteractor
     virtual void        EndLeftButtonAction();
     virtual void        StartMiddleButtonAction();
     virtual void        EndMiddleButtonAction();
+    virtual void        OnMouseWheelForward();
+    virtual void        OnMouseWheelBackward();
 
   protected:
     bool                ctrlOrShiftPushed;

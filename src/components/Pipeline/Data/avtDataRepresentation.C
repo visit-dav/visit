@@ -43,6 +43,7 @@
 
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
+#include <vtkFieldData.h>
 #include <vtkDataSetReader.h>
 #include <vtkDataSetWriter.h>
 #include <vtkPolyData.h>
@@ -975,6 +976,31 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
                     type, nzones, nnodes);
     }
     
+    int remain = 1024 - strlen(str) - 1;
+
+    if (remain > 0) {
+	const char *appendStr = ", field_data_names = [ ";
+	strncat(str, appendStr, remain);
+	remain -= strlen(appendStr);	
+    }
+
+ 
+    for (int i=0; i<asVTK->GetFieldData()->GetNumberOfArrays() && remain>0; ++i)
+    {
+	strncat(str, asVTK->GetFieldData()->GetArray(i)->GetName(), remain); 
+	remain -= strlen(asVTK->GetFieldData()->GetArray(i)->GetName());
+	if (remain > 0)
+	{
+	    strncat(str, " ", remain); 
+	    remain--;
+	}
+    }
+
+    if (remain > 0) {
+	const char *appendStr = " ]";
+	strncat(str, appendStr, remain);
+	remain -= strlen(appendStr);	
+    }
 
     return str;
 }

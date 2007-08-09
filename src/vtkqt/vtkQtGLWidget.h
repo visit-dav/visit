@@ -60,6 +60,9 @@ class vtkQtRenderWindowInteractor;
 //   Brad Whitlock, Mon Apr 7 14:43:12 PST 2003
 //   I removed the minimumSizeHint method.
 //
+//   Gunther Weber, Fri Aug  3 17:56:01 PDT 2007
+//   Added wheelEvent method.
+//
 // ****************************************************************************
 
 class VTKQT_API vtkQtGLWidget : public QGLWidget
@@ -84,6 +87,7 @@ protected:
     virtual void focusOutEvent(QFocusEvent*) { }
     virtual void mousePressEvent(QMouseEvent*);
     virtual void mouseReleaseEvent(QMouseEvent*);
+    virtual void wheelEvent(QWheelEvent*);
     virtual void keyPressEvent(QKeyEvent*);
 private:
     bool                         lineSmoothing;
