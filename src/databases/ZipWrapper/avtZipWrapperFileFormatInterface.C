@@ -413,19 +413,18 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     //
     pluginId = "";
     dummyInterface = 0;
-    while (dummyInterface == 0)
+    const bool searchAllPlugins = true;
+    vector<string> ids = dbmgr->GetMatchingPluginIds(dcname.c_str(), searchAllPlugins);
+    for (int i = 0; i < ids.size() && dummyInterface == 0; i++)
     {
-        const bool searchAllPlugins = true;
-        const bool dontCache = true;
-
-        pluginId = dbmgr->GetMatchingPluginId(dcname.c_str(), pluginId, searchAllPlugins);
-        realPluginWasLoadedByMe = dbmgr->LoadSinglePluginNow(pluginId);
-
+        realPluginWasLoadedByMe = dbmgr->LoadSinglePluginNow(ids[i]);
         TRY
         {
             // when creating the file format interface object for the dummy format
             // don't cache it in the MRU cache.
+            const bool dontCache = true;
             dummyInterface = GetRealInterface(0, 0, dontCache);
+	    pluginId = ids[i];
         }
         CATCH2(InvalidDBTypeException, e)
         {

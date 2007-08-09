@@ -73,6 +73,9 @@ class EngineDatabasePluginInfo;
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Added PluginFileExtensions, PluginFilenames and GetMatchingPluginId
 //    add supporting data members, extensions, filenames.
+//
+//    Mark C. Miller, Thu Aug  9 09:16:01 PDT 2007
+//    Made GetMatchingPluginIds return a vector of strings
 // ****************************************************************************
 
 class PLUGIN_API DatabasePluginManager : public PluginManager
@@ -91,8 +94,7 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
     std::vector<std::string>        PluginFileExtensions(const std::string&);
     std::vector<std::string>        PluginFilenames(const std::string&);
 
-    std::string                     GetMatchingPluginId(const char *fname,
-                                        std::string lastIdTried,
+    std::vector<std::string>        GetMatchingPluginIds(const char *fname,
                                         bool searchAll = false);
 
   private:
