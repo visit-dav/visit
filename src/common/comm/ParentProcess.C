@@ -258,6 +258,9 @@ ParentProcess::SetVersion(const std::string &ver)
 //    of openmpi (mpirun translates the -host arg passed to visit, and sends
 //    out '-rawmap 1 <hostname>').
 //
+//    Kathleen Bonnell, Thu Aug  9 10:12:18 PDT 2007 
+//    Moved '-rawmap' test to just after '-host' test. 
+//
 // ****************************************************************************
 
 void
@@ -300,6 +303,17 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
                 deleteCount = 2;
             }
         }
+        else if (std::string(argv2[i]) == std::string("-rawmap"))
+        {
+            if(i + 1 < *argc)
+            {
+                rhostSpecified = true;
+                hostName = std::string(argv2[i + 2]);
+                debug5 << mName << "hostName = " << hostName.c_str() << endl;
+                GetHostInfo();
+                deleteCount = 3;
+            }
+        }
         else if(std::string(argv2[i]) == std::string("-port"))
         {
             if(rhostSpecified && (i + 1 < *argc))
@@ -322,17 +336,6 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
         {
             createSockets = false;
             deleteCount = 1;
-        }
-        else if (std::string(argv2[i]) == std::string("-rawmap"))
-        {
-            if(i + 1 < *argc)
-            {
-                rhostSpecified = true;
-                hostName = std::string(argv2[i + 2]);
-                debug5 << mName << "hostName = " << hostName.c_str() << endl;
-                GetHostInfo();
-                deleteCount = 3;
-            }
         }
 
         //
