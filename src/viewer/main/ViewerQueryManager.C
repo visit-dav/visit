@@ -3399,6 +3399,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Cyrus Harrison,  Thu Mar  1 16:16:58 PST 2007
 //    Added connected components summary query
 //
+//    Kathleen Bonnell, Thu Aug  9 08:40:56 PDT 2007 
+//    Made 'Revolved surface area' and 'Revolved volume' be time-enabled. 
+//
 // ****************************************************************************
 
 void
@@ -3470,8 +3473,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Expected Value", dq, cr, basic, 1, 0, qo);
     queryTypes->AddQuery("L2Norm Between Curves", dq, cr, basic, 2, 0, qo);
     queryTypes->AddQuery("Area Between Curves", dq, cr, basic, 2, 0, qo);
-    queryTypes->AddQuery("Revolved volume", dq, mr, basic, 1, 0, qo);
-    queryTypes->AddQuery("Revolved surface area", dq, mr, basic, 1, 0, qo);
+    queryTypes->AddQuery("Revolved volume", dq, mr, basic, 1, 0, qt);
+    queryTypes->AddQuery("Revolved surface area", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("2D area", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("3D surface area", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, qt);
