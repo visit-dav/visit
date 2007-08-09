@@ -40,7 +40,7 @@
 // ************************************************************************* //
 
 #include <avtGenericDatabase.h>
-
+#include <algorithm>
 #include <float.h>
 
 #ifdef PARALLEL
