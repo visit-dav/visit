@@ -253,6 +253,11 @@ ParentProcess::SetVersion(const std::string &ver)
 //    Brad Whitlock, Tue Jan 17 14:26:09 PST 2006
 //    Added debug logging.
 //
+//    Kathleen Bonnell, Wed Aug  8 14:48:58 PDT 2007 
+//    Search for '-rawmap' which can replace '-host' with some implementations
+//    of openmpi (mpirun translates the -host arg passed to visit, and sends
+//    out '-rawmap 1 <hostname>').
+//
 // ****************************************************************************
 
 void
@@ -317,6 +322,17 @@ ParentProcess::Connect(int numRead, int numWrite, int *argc, char **argv[],
         {
             createSockets = false;
             deleteCount = 1;
+        }
+        else if (std::string(argv2[i]) == std::string("-rawmap"))
+        {
+            if(i + 1 < *argc)
+            {
+                rhostSpecified = true;
+                hostName = std::string(argv2[i + 2]);
+                debug5 << mName << "hostName = " << hostName.c_str() << endl;
+                GetHostInfo();
+                deleteCount = 3;
+            }
         }
 
         //

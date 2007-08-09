@@ -210,6 +210,10 @@ $0 = shift @ARGV;
 #    'visit -diff <dbl> <dbr>' capability was added since June 28th, 2007
 #    modification comment.
 #
+#    Kathleen Bonnell, Wed Aug  8 14:34:50 PDT 2007 
+#    For redrose at sandia, parse the launchargs for '-l vis', in order
+#    to add it correctly to the qsub args. 
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1650,10 +1654,33 @@ if ($procs_set or ($parallel and $parlaunch_set))
             close(TFILE);
            
             @parcmd = ($plauncher);
-            push @parcmd, @launchargs if $launchargs_set;
+
+            # parse for '-l vis' so it can be separated from the
+            # launchargs
+            $use_vis = 0;
+            $newlaunchargs_set = 0; 
+            @newlaunchargs=();
+            while (scalar(@launchargs) > 0) {
+                $larg = shift @launchargs;
+                if ($larg eq "-l") {
+                    $nextarg = shift @launchargs;
+                    if ($nextarg eq "vis") {
+                        $use_vis = 1;
+                    } else {
+                        push @newlaunchargs, $larg;
+                        push @newlaunchargs, $nextarg;
+                        $newlaunchargs_set = 1;
+                    }
+                } else {
+                    push @newlaunchargs, $larg;
+                    $newlaunchargs_set = 1;
+                }
+            }
+            push @parcmd, @newlaunchargs if $newlaunchargs_set;
             $nodes = $procs if (!$nodes_set);
             $ppn = ceil($procs / $nodes);
-            push @parcmd, "-l", "nodes=$nodes:ppn=$ppn";
+            if ($use_vis) { push @parcmd, "-l", "nodes=$nodes:ppn=$ppn:vis";}
+            else { push @parcmd, "-l", "nodes=$nodes:ppn=$ppn"; }
             push @parcmd, "-l", "walltime=$time" if $time_set;
             push @parcmd, "-q",  $part  if $part_set;
             push @parcmd, "-A",  $bank  if $bank_set;

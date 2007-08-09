@@ -145,14 +145,16 @@
                 <Field name="host" type="string">redrose1.sandia.gov redrose2.sandia.gov</Field>
                 <Field name="hostAliases" type="string">redrose1 redrose2<\Field>
                 <Field name="numProcessors" type="int">2</Field>
+                <Field name="numNodesSet" type="bool">true</Field>
+                <Field name="numNodes" type="int">1</Field>
                 <Field name="timeLimitSet" type="bool">true</Field>
                 <Field name="timeLimit" type="string">7200</Field>
                 <Field name="launchMethodSet" type="bool">true</Field>
-                <Field name="launchMethod" type="string">qsub/mpiexec</Field>
+                <Field name="launchMethod" type="string">qsub/mpirun</Field>
                 <Field name="launchArgsSet" type="bool">true</Field>
                 <Field name="launchArgs" type="string">-l vis</Field>
                 <Field name="sublaunchArgsSet" type="bool">true</Field>
-                <Field name="sublaunchArgs" type="string">-pernode</Field>
+                <Field name="sublaunchArgs" type="string">-bynode</Field>
                 <Field name="active" type="bool">false</Field>
                 <Field name="parallel" type="bool">true</Field>
                 <Field name="arguments" type="stringVector">"-dir" "/projects/llnl/visit" </Field>
