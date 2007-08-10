@@ -420,11 +420,11 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
         realPluginWasLoadedByMe = dbmgr->LoadSinglePluginNow(ids[i]);
         TRY
         {
+	    pluginId = ids[i];
             // when creating the file format interface object for the dummy format
             // don't cache it in the MRU cache.
             const bool dontCache = true;
             dummyInterface = GetRealInterface(0, 0, dontCache);
-	    pluginId = ids[i];
         }
         CATCH2(InvalidDBTypeException, e)
         {
