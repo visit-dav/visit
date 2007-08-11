@@ -391,6 +391,10 @@ QvisFilePanel::~QvisFilePanel()
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
 //
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//   Propogated knowledge that item was updated with metadata that was forced
+//   to get accurate cycles/times.
+//
 // ****************************************************************************
 
 void
@@ -448,6 +452,8 @@ QvisFilePanel::SetTimeStateFormat(const TimeFormat &m)
                              it.current()->setText(0, CreateItemLabel(md, j,
                                  useVirtualDBInfo));
                         }
+			item->timeStateHasBeenForced =
+			    fileServer->GetForceReadAllCyclesTimes();
                     }
                 }
             }
@@ -1189,11 +1195,18 @@ QvisFilePanel::UpdateTimeFieldText(int timeState)
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
+//
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//   Checked to see if item has had its time/state forced and if not, but
+//   the file server is currently forcing, set showing correct file info to
+//   false. Also, Propogate knowledge that item was updated with metadata
+//   that was forced to get accurate cycles/times.
 // ****************************************************************************
 
 void
 QvisFilePanel::ExpandDatabases()
 {
+debug5 << "In QvisFilePanel::ExpandDatabases " << endl;
     // Count the number of items in the fileListView. I didn't see a way to
     // count them all without traversing them all.
     int i, count = 0;
@@ -1240,6 +1253,10 @@ QvisFilePanel::ExpandDatabases()
                                            !FileServerList::GET_NEW_MD);
                 if(md != 0 && md->GetNumStates() > 1)
                 {
+		    if (fileServer->GetForceReadAllCyclesTimes() &&
+		        !item->timeStateHasBeenForced)
+                        SetFileShowsCorrectData(item->file, false);
+
                     if(md->GetNumStates() != item->childCount())
                     {
                         //
@@ -1265,6 +1282,8 @@ QvisFilePanel::ExpandDatabases()
                         // Remember that the item now has the correct information
                         // displayed through its children.
                         SetFileShowsCorrectData(item->file, true);
+		        item->timeStateHasBeenForced =
+			    fileServer->GetForceReadAllCyclesTimes();
                     }
                 }
             }           
@@ -1361,6 +1380,10 @@ QvisFilePanel::ExpandDatabaseItem(QvisListViewFileItem *item)
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interface to FileServerList::GetMetaData
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//
+//   Propogated knowledge that item was updated with metadata that was forced
+//   to get accurate cycles/times.
 // ****************************************************************************
 
 void
@@ -1385,6 +1408,8 @@ QvisFilePanel::ExpandDatabaseItemUsingMetaData(QvisListViewFileItem *item)
                     item->file, QvisListViewFileItem::FILE_NODE, i);
                 fi->setOpen(false);
             }
+	    item->timeStateHasBeenForced =
+	        fileServer->GetForceReadAllCyclesTimes();
 
             // Set the database pixmap.
             item->setPixmap(0, *databasePixmap);

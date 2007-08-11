@@ -70,15 +70,21 @@ int QvisListViewFileItem::globalNodeNumber = 0;
 //   Brad Whitlock, Wed Mar 21 00:32:42 PDT 2001
 //   Added an argument.
 //
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//   Added timeStateHasBeenForced to keep track of whether item has
+//   been updated with cycle/time information from metadata that was
+//   forced to have accurate cycles/times.
 // *******************************************************************
 
 QvisListViewFileItem::QvisListViewFileItem(QListView *parent,
-    const QString &str, const QualifiedFilename &qf, int node, int state_) :
+    const QString &str, const QualifiedFilename &qf, int node, int state_,
+    bool tsForced) :
     QListViewItem(parent, str), file(qf)
 {
     nodeType = node;
     timeState = state_;
     nodeNumber = globalNodeNumber++;
+    timeStateHasBeenForced = tsForced;
 }
 
 // *******************************************************************
@@ -102,15 +108,21 @@ QvisListViewFileItem::QvisListViewFileItem(QListView *parent,
 //
 // Modifications:
 //   
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//   Added timeStateHasBeenForced to keep track of whether item has
+//   been updated with cycle/time information from metadata that was
+//   forced to have accurate cycles/times.
 // *******************************************************************
 
 QvisListViewFileItem::QvisListViewFileItem(QListViewItem *parent,
-    const QString &str, const QualifiedFilename &qf, int node, int state_) :
+    const QString &str, const QualifiedFilename &qf, int node, int state_,
+    bool tsForced) :
     QListViewItem(parent, str), file(qf)
 {
     nodeType = node;
     timeState = state_;
     nodeNumber = globalNodeNumber++;
+    timeStateHasBeenForced = tsForced;
 }
 
 // *******************************************************************
