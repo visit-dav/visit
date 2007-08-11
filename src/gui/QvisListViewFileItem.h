@@ -58,6 +58,11 @@
 //   Added an argument to the constructor and added some convenience
 //   functions.
 //
+//   Mark C. Miller, Fri Aug 10 23:11:55 PDT 2007
+//   Added timeStateHasBeenForced to keep track of whether item has been
+//   updated with cycle/time information from metadata that was forced to
+//   have accurate cycles/times.
+//
 // ****************************************************************************
 
 class GUI_API QvisListViewFileItem : public QListViewItem
@@ -69,9 +74,11 @@ public:
     static const int FILE_NODE;
 
     QvisListViewFileItem(QListView *parent, const QString &str,
-        const QualifiedFilename &qf, int nodeType = 3, int state = -1);
+        const QualifiedFilename &qf, int nodeType = 3, int state = -1,
+	bool tsForced = false);
     QvisListViewFileItem(QListViewItem *parent, const QString &str,
-        const QualifiedFilename &qf, int nodeType = 3, int state = -1);
+        const QualifiedFilename &qf, int nodeType = 3, int state = -1,
+	bool tsForced = false);
     virtual ~QvisListViewFileItem();
 
     virtual void paintCell(QPainter *p, const QColorGroup &cg,
@@ -90,6 +97,7 @@ public:
     QualifiedFilename file;
     int               nodeType;
     int               timeState;
+    bool              timeStateHasBeenForced;
 private:
     static int        globalNodeNumber;
     int               nodeNumber;
