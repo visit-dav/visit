@@ -256,8 +256,8 @@ $usage = "
     ---------------------------------------------------------------------------
         -movie               Run the CLI in a movie making mode. Must be
                              combined with -sessionfile. Will produce a simple
-			     movie by drawing all the plots in the specified
-			     session for every timestep of the database.
+                             movie by drawing all the plots in the specified
+                             session for every timestep of the database.
 
     Startup options
     ---------------------------------------------------------------------------
@@ -276,7 +276,7 @@ $usage = "
                              will be launched on the local host. If you wish
                              to launch an engine on a remote host, specify 
                              the host's name as the <host> parameter.
-	-nosplash            Do not display the splash screen at startup.
+        -nosplash            Do not display the splash screen at startup.
 
     Window options
     ---------------------------------------------------------------------------
@@ -298,7 +298,7 @@ $usage = "
         -background <color>  Background color for GUI.
         -foreground <color>  Foreground color for GUI.
         -nowin               Run with viewer windows off-screen (i.e. OSMesa).
-			     This is typically used with the -cli option.
+                             This is typically used with the -cli option.
         -stereo              Enable active stereo, also known as the
                              page-flipping, or 'CrystalEyes' mode.
         -nowindowmetrics     Prevents X11 from grabbing and moving a test
@@ -308,7 +308,7 @@ $usage = "
 
     Version options
     ---------------------------------------------------------------------------
-	-version             Do NOT run VisIt. Just print the current version.
+        -version             Do NOT run VisIt. Just print the current version.
         -beta                Run the current beta version.
         -v <version>         Run a specified version (e.g. '1.3.3').
 
@@ -329,9 +329,9 @@ $fullusage = "$usage
     Parallel launch options
     ---------------------------------------------------------------------------
         Notes: All of these options are ordinarily obtained from host profiles.
-	However, the command line options override anything in the profiles. 
+        However, the command line options override anything in the profiles. 
 
-	When parallel arguments are added but the engine is not the
+        When parallel arguments are added but the engine is not the
         component being launched, -launchengine is implied.  Explicitly
         add -launchengine to launch a remote parallel engine.
     ---------------------------------------------------------------------------
@@ -376,21 +376,21 @@ $fullusage = "$usage
 
     Load balance options
     ---------------------------------------------------------------------------
-	Note: Each time VisIt executes a pipeline the relevant domains for the
-	execution are assigned to processors. This list of domains is sorted in
-	increasing global domain number. The options below effect how domains
-	in this list are assigned to processors. Assuming there are D domains
-	and P processors...
+        Note: Each time VisIt executes a pipeline the relevant domains for the
+        execution are assigned to processors. This list of domains is sorted in
+        increasing global domain number. The options below effect how domains
+        in this list are assigned to processors. Assuming there are D domains
+        and P processors...
     ---------------------------------------------------------------------------
         -lb-block            Assign the first D/P domains to processor 0, the
                              next D/P domains to processor 1, etc.
         -lb-stride           Assign every Pth domain starting from the first
                              to processor 0, every Pth domain starting from the
                              second to processor 1, etc.
-	-lb-absolute         Assign domains by absolute domain number % P. This
-	                     guarentees a given domain is always processed
-			     by the same processor but can also lead to poor
-			     balance when only a subset of domains is selected.
+        -lb-absolute         Assign domains by absolute domain number % P. This
+                             guarentees a given domain is always processed
+                             by the same processor but can also lead to poor
+                             balance when only a subset of domains is selected.
         -lb-random           Randomly assign domains to processors.
         -allowdynamic        Dedicate one processor to spreading the work 
                              dynamically among the other processors.  This mode
@@ -424,7 +424,7 @@ $fullusage = "$usage
 
         Finally, be sure to bring up Controls->Macros in the GUI to find a set
         of useful operations specifically tailored to database differencing. Also,
-	typing 'help()' (including the '()') will generate a useful help message.
+        typing 'help()' (including the '()') will generate a useful help message.
 
         -diff <ldb> <rdb>    Indicate you wish to run VisIt in database
                              differencing mode and specify the two databases
@@ -448,8 +448,8 @@ $fullusage = "$usage
         -verbose             Prints status information during pipeline
                              execution.
         -default_format      Sets the database plugin format to use as a
-			     default if a file type cannot be determined
-			     from its extension.
+                             default if a file type cannot be determined
+                             from its extension.
         -dir <directory>     Run a version of VisIt in the specified directory.
                              The directory argument should specify the 
                              path to a visit installation directory.
@@ -460,55 +460,55 @@ $fullusage = "$usage
         -objectmode <mode>   Require a specific object file mode.
         -forceinteractivecli Force the CLI to behave interactively, even if run
                              with no terminal; similar to python's '-i' flag.
-        -fullscreen          Created the viewer window in full screen mode.
+        -fullscreen          Create the viewer window in full screen mode.
                              May not be compatible with all window managers.
-	-cycleregex <string> A regex-style regular expression to be used
-	                     in extracting cycle numbers from file names. It
+        -cycleregex <string> A regex-style regular expression to be used
+                             in extracting cycle numbers from file names. It
                              is best to bracket this string in single
                              quotes (') to avoid shell interpretation of
                              special characters such as star (*). The format
-			     of the string begins with an opening '<' character,
-			     followed by the regular expression itself followed
-			     by a closing '>' character, optionally followed by
-			     a space ' ' character and sub-expression reference
-			     to indicate which part of the regular expression is
-			     the cycle number.  Default behavior is as if
-			     -cycleregex '<([0-9]+)[^0-9]*$> \\0'
+                             of the string begins with an opening '<' character,
+                             followed by the regular expression itself followed
+                             by a closing '>' character, optionally followed by
+                             a space ' ' character and sub-expression reference
+                             to indicate which part of the regular expression is
+                             the cycle number.  Default behavior is as if
+                             -cycleregex '<([0-9]+)[^0-9]*$> \\0'
                              was specified meaning the last sequence of one
-			     or more digits before the end of the string found
-			     is used as the cycle number. Do a 'man 7 regex'
-			     to get more information on regular expression
-			     syntax.
+                             or more digits before the end of the string found
+                             is used as the cycle number. Do a 'man 7 regex'
+                             to get more information on regular expression
+                             syntax.
         -ui-bcast-thresholds <int1> <int2> 
-	                     Two integers controlling behavior of parallel
-			     engine waiting in a broadcast for the next RPC
-			     from the viewer. VisIt used to rely solely upon
-			     MPI_Bcast for this. However, many implementations
-			     of MPI_Bcast use a polling loop that winds up
-			     keeping all processors busy and can make them
-			     unuseable by other processes. This is particulary
-			     bad for SMPs. So, VisIt implemented its own
-			     broadcast using MPI's send/recv methods. <int1>
-			     specifies the number of nano-seconds a processor
-			     sleeps while polling for completion of the
-			     broadcast. Specifying a value of zero (0) for <int1>
-			     results in falling back to older behavior using
-			     MPI's MPI_Bcast. <int1> effectively controls how
-			     'busy' processors will be, polling for completion
-			     of the broadcast. <int2> specifies the number of
-			     seconds all processors should spin, polling as fast
-			     as possible, checking for completion of the
-			     broadcast BEFORE inserting sleeps into their
-			     polling loops. <int2> effectivey controls how
-			     many seconds VisIt's server will be maximally
-			     responsive (although also keeping all processors
-			     occupied) before becoming more 'friendly' to
-			     other processes on the same node. The defaults
-			     are <int1> = 50000000 nanoseconds (1/20th of a sec)
-			     and <int2> = 5 seconds meaning VisIt will spin
-			     processors maximally for 5 seconds before inserting
-			     sleeps such that polling happens at the rate of 20
-			     times per second.
+                             Two integers controlling behavior of parallel
+                             engine waiting in a broadcast for the next RPC
+                             from the viewer. VisIt used to rely solely upon
+                             MPI_Bcast for this. However, many implementations
+                             of MPI_Bcast use a polling loop that winds up
+                             keeping all processors busy and can make them
+                             unuseable by other processes. This is particulary
+                             bad for SMPs. So, VisIt implemented its own
+                             broadcast using MPI's send/recv methods. <int1>
+                             specifies the number of nano-seconds a processor
+                             sleeps while polling for completion of the
+                             broadcast. Specifying a value of zero (0) for <int1>
+                             results in falling back to older behavior using
+                             MPI's MPI_Bcast. <int1> effectively controls how
+                             'busy' processors will be, polling for completion
+                             of the broadcast. <int2> specifies the number of
+                             seconds all processors should spin, polling as fast
+                             as possible, checking for completion of the
+                             broadcast BEFORE inserting sleeps into their
+                             polling loops. <int2> effectivey controls how
+                             many seconds VisIt's server will be maximally
+                             responsive (although also keeping all processors
+                             occupied) before becoming more 'friendly' to
+                             other processes on the same node. The defaults
+                             are <int1> = 50000000 nanoseconds (1/20th of a sec)
+                             and <int2> = 5 seconds meaning VisIt will spin
+                             processors maximally for 5 seconds before inserting
+                             sleeps such that polling happens at the rate of 20
+                             times per second.
 
     Developer options
     ---------------------------------------------------------------------------
@@ -518,7 +518,7 @@ $fullusage = "$usage
         -noprint             Silence debugging output from xml2... tools
         -outputtoinputdir    Force xml2... tools to write output files to
                              the directory containing the input xml file
-	-arch                print supported architecture(s) and exit
+        -arch                print supported architecture(s) and exit
 
     Debugging options
     ---------------------------------------------------------------------------
@@ -526,7 +526,7 @@ $fullusage = "$usage
     ---------------------------------------------------------------------------
         -debug <level>       Run with <level> levels of output logging.
                              <level> must be between 1 and 5.
-	-pid                 Append process ids to the names of log files.
+        -pid                 Append process ids to the names of log files.
         -timing              Save timing data to files.
         -withhold-timing-output
                              Withhold timing output during execution. Prevents
@@ -536,8 +536,8 @@ $fullusage = "$usage
                              Have only every Nth processor output timing info.
                              Prevents overwhelming parallel file systems.
         -env                 Print env. variables VisIt will use when run.
-	-dump                Dump intermediate results from AVT filters and
-	                     scalably rendered images.
+        -dump                Dump intermediate results from AVT filters and
+                             scalably rendered images.
         -gdb                 Run under gdb.
         -gdb-gui             Run the gui under gdb.
         -gdb-cli             Run the cli under gdb.
@@ -548,18 +548,18 @@ $fullusage = "$usage
         -xterm               Run gdb in an xterm window.
         -newconsole          Run any VisIt component in a new console window.
         -totalview <args> <comp>
-	                     Run totalview with <args> on component <comp>.
-			     Default <args> is \"\".
+                             Run totalview with <args> on component <comp>.
+                             Default <args> is \"\".
         -valgrind <args> <comp>
-	                     Run valgrind with <args> on component <comp>.
-			     Default <args> is \"--tool=memcheck --error-limit=no
-			     --num-callers=64\".
-	-strace <args> <comp>
-	                     Run strace with <args> on component <comp>.
-			     Default <args> is \"-ttt -T\".
+                             Run valgrind with <args> on component <comp>.
+                             Default <args> is \"--tool=memcheck --error-limit=no
+                             --num-callers=64\".
+        -strace <args> <comp>
+                             Run strace with <args> on component <comp>.
+                             Default <args> is \"-ttt -T\".
 
-			     In the above, if <args> are present,
-			     wrap them in quotes (single or double).
+                             In the above, if <args> are present,
+                             wrap them in quotes (single or double).
 
         -numrestarts <#>     Number of attempts to restart a failed engine.
         -quiet               Don't print the Running message.
@@ -686,15 +686,15 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-s")         { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
     elsif ($arg eq "-publicpluginsonly"){ $publiconly = 1; push @visitargs, $arg; }
     elsif ($arg eq "-help")      { print STDERR "\nUSAGE: visit [options]
-				   $helpnote\n $usage\n"; exit(0); }
+                                   $helpnote\n $usage\n"; exit(0); }
     elsif ($arg eq "-h")         { print STDERR "\nUSAGE: visit [options]
-				   $helpnote\n $usage\n"; exit(0); }
+                                   $helpnote\n $usage\n"; exit(0); }
     elsif ($arg eq "--help")     { print STDERR "\nUSAGE: visit [options]
-				   $helpnote\n $usage\n"; exit(0); }
+                                   $helpnote\n $usage\n"; exit(0); }
     elsif ($arg eq "-fullhelp")  { print STDERR "\nUSAGE: visit [options]
-				   $fullusage\n"; exit(0); }
+                                   $fullusage\n"; exit(0); }
     elsif ($arg eq "--fullhelp") { print STDERR "\nUSAGE: visit [options]
-				   $fullusage\n"; exit(0); }
+                                   $fullusage\n"; exit(0); }
     elsif ($arg eq "-norun")     { $nr = shift; push @norun, $nr; push @visitargs, "-norun", $nr; }
     elsif ($arg eq "-arch")      { $print_arch = 1; } 
     elsif ($arg eq "-env")              { $envonly = 1; }
@@ -716,65 +716,65 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-objectmode")       { $req_object_mode = shift; push @visitargs, "-objectmode", $req_object_mode; }
     elsif ($arg eq "-totalview" )       {
                                           $debug_totalview = shift;
-					  if (!IsAVisItComponentName($debug_totalview))
-					  {
-					    $debug_totalview_args = $debug_totalview;
-					    $debug_totalview = shift;
-					  }
+                                          if (!IsAVisItComponentName($debug_totalview))
+                                          {
+                                            $debug_totalview_args = $debug_totalview;
+                                            $debug_totalview = shift;
+                                          }
                                           push @norun, $debug_totalview;
                                           push @visitargs, "-norun", $debug_totalview;
                                           if ($exe_name ne $debug_totalview)
                                           {
-					    if ($debug_totalview_args eq "")
-					    {
+                                            if ($debug_totalview_args eq "")
+                                            {
                                               push @visitargs, "-totalview", "\"\"", $debug_totalview;
-					    }
-					    else
-					    {
+                                            }
+                                            else
+                                            {
                                               push @visitargs, "-totalview", "$debug_totalview_args", $debug_totalview;
-					    }
+                                            }
                                           }
                                         }
     elsif ($arg eq "-valgrind" )       {
                                           $debug_valgrind = shift;
-					  if (!IsAVisItComponentName($debug_valgrind))
-					  {
-					    $debug_valgrind_args = $debug_valgrind;
-					    $debug_valgrind = shift;
-					  }
+                                          if (!IsAVisItComponentName($debug_valgrind))
+                                          {
+                                            $debug_valgrind_args = $debug_valgrind;
+                                            $debug_valgrind = shift;
+                                          }
                                           push @norun, $debug_valgrind;
                                           push @visitargs, "-norun", $debug_valgrind;
                                           if ($exe_name ne $debug_valgrind)
                                           {
-					    if ($debug_valgrind_args eq "")
-					    {
+                                            if ($debug_valgrind_args eq "")
+                                            {
                                               push @visitargs, "-valgrind", "\"\"", $debug_valgrind;
-					    }
-					    else
-					    {
+                                            }
+                                            else
+                                            {
                                               push @visitargs, "-valgrind", "$debug_valgrind_args", $debug_valgrind;
-					    }
+                                            }
                                           }
                                         }
     elsif ($arg eq "-strace" )       {
                                           $debug_strace = shift;
-					  if (!IsAVisItComponentName($debug_strace))
-					  {
-					    $debug_strace_args = $debug_strace;
-					    $debug_strace = shift;
-					  }
+                                          if (!IsAVisItComponentName($debug_strace))
+                                          {
+                                            $debug_strace_args = $debug_strace;
+                                            $debug_strace = shift;
+                                          }
                                           push @norun, $debug_strace;
                                           push @visitargs, "-norun", $debug_strace;
                                           if ($exe_name ne $debug_strace)
                                           {
-					    if ($debug_strace_args eq "")
-					    {
+                                            if ($debug_strace_args eq "")
+                                            {
                                               push @visitargs, "-strace", "\"\"", $debug_strace;
-					    }
-					    else
-					    {
+                                            }
+                                            else
+                                            {
                                               push @visitargs, "-strace", "$debug_strace_args", $debug_strace;
-					    }
+                                            }
                                           }
                                         }
     elsif ($arg eq "-guesshost" )       { $guesshost = 1; }
@@ -1451,7 +1451,7 @@ else
 
 $printonly = grep(/^$exe_name$/, @norun) unless ($debug_totalview or
                                                  $debug_valgrind or
-						 $debug_strace);
+                                                 $debug_strace);
 
 if ($procs_set or ($parallel and $parlaunch_set))
 {
@@ -1462,7 +1462,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         push @parcmd, @launchargs if $launchargs_set;
         push @parcmd, "-np", $procs if $procs_set;
         push @parcmd, "-p",  $part  if $part_set;
-	push @parcmd, "-machinefile", $machinefile if $machinefile_set;
+        push @parcmd, "-machinefile", $machinefile if $machinefile_set;
         push @parcmd, @visitcmd;
 
         @printcmd = @parcmd;
@@ -1538,7 +1538,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
         $sublauncher = "" if (!defined $sublauncher);
         $sublauncherargs = "";
         $sublauncherargs = "$sublaunchargs $sublauncherargs" if $sublaunchargs_set;
-	if ($sublauncher eq "srun" and $procs_set)
+        if ($sublauncher eq "srun" and $procs_set)
         {
             $sublauncherargs = "$sublauncherargs -n $procs";
         }
@@ -1745,11 +1745,11 @@ else
     {
         # Run totalview
         @debugcmd = ("totalview", "$visitbindir/$exe_name", "-a", "-dograb");
-	if ($debug_totalview_args ne "\"\"")
-	{
+        if ($debug_totalview_args ne "\"\"")
+        {
             push @debugcmd, split / /,$debug_totalview_args;
-	}
-	push @debugcmd, @visitargs;
+        }
+        push @debugcmd, @visitargs;
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n" if (! $quiet);
         $exec_totalview_failed = 0;
@@ -1762,15 +1762,15 @@ else
         #       and runs twice as fast, but it doesn't catch UMRs
         # Note: could add --leak-check=yes to either tool
         @debugcmd = ("valgrind");
-	if ($debug_valgrind_args ne "\"\"")
-	{
+        if ($debug_valgrind_args ne "\"\"")
+        {
           push @debugcmd, split / /,$debug_valgrind_args;
-	}
-	else
-	{
-	  push @debugcmd, "--tool=memcheck", "--error-limit=no", "--num-callers=64";
-	}
-	push @debugcmd, "$visitbindir/$exe_name", @visitargs;
+        }
+        else
+        {
+          push @debugcmd, "--tool=memcheck", "--error-limit=no", "--num-callers=64";
+        }
+        push @debugcmd, "$visitbindir/$exe_name", @visitargs;
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n" if (! $quiet);
         exec @debugcmd or die "Could not execute $exe_name under valgrind\n";
@@ -1778,16 +1778,16 @@ else
     elsif ($debug_strace eq $exe_name)
     {
         # Run strace with given args 
-	@debugcmd = ("strace");
-	if ($debug_strace_args ne "\"\"")
-	{
+        @debugcmd = ("strace");
+        if ($debug_strace_args ne "\"\"")
+        {
             push @debugcmd, split / /,$debug_strace_args;
-	}
-	else
-	{
-	    push @debugcmd, "-ttt", "-T";
-	}
-	push @debugcmd, "$visitbindir/$exe_name", @visitargs;
+        }
+        else
+        {
+            push @debugcmd, "-ttt", "-T";
+        }
+        push @debugcmd, "$visitbindir/$exe_name", @visitargs;
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
         print STDERR "Running: @debugcmd\n" if (! $quiet);
         exec @debugcmd or die "Could not execute $exe_name under strace\n";
