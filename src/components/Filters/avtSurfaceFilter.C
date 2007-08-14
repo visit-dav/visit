@@ -274,6 +274,9 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //
 //    Hank Childs, Wed Mar  9 15:45:44 PST 2005
 //    Fix memory leak.
+//    
+//    Sean Ahern, Tue Aug 14 11:51:00 EDT 2007
+//    Allowed us a quick use of a "zero" variable.
 //
 // ****************************************************************************
 
@@ -283,21 +286,24 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     vtkDataArray *inScalars = NULL;
     vtkFloatArray *outScalars  = vtkFloatArray::New();
     outScalars->SetNumberOfComponents(1);
+    bool zf = atts.GetZeroFlag();
+    bool usingDefaultVar = (atts.GetVariable() == "default");
   
     const char *varname = NULL;
-    if (atts.GetVariable() != "default")
+    if ((zf == false) && (!usingDefaultVar))
         varname = atts.GetVariable().c_str();
 
     vtkCellDataToPointData *cd2pd = NULL;
-    if (GetInput()->GetInfo().GetAttributes().GetCentering(varname) == 
-                                                                  AVT_ZONECENT)
+    if ((!usingDefaultVar) &&
+        (GetInput()->GetInfo().GetAttributes().GetCentering(varname) == 
+                                                                  AVT_ZONECENT))
     {
         //
         // The input is zone-centered, but this filter needs
-        // node-centered data, so put it through a filter.
+        // node-centered data, so put it through a cell-to-point filter.
         //
         cd2pd = vtkCellDataToPointData::New();
-        if (atts.GetVariable() != "default")
+        if ((zf == false) && (!usingDefaultVar))
         {
             vtkDataArray *tmp = inDS->GetCellData()->GetScalars();
             if (tmp != NULL && atts.GetVariable() != tmp->GetName())
@@ -318,19 +324,24 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     }
     else 
     {
-        if (atts.GetVariable() != "default")
-            inScalars = 
-                    inDS->GetPointData()->GetArray(atts.GetVariable().c_str());
-        else
-            inScalars = inDS->GetPointData()->GetScalars();
+        if (zf == false)
+        {
+            if (!usingDefaultVar)
+                inScalars = 
+                        inDS->GetPointData()->GetArray(atts.GetVariable().c_str());
+            else
+                inScalars = inDS->GetPointData()->GetScalars();
+        }
     }
 
-    if (inScalars == NULL)
+    if ((zf == false) && (inScalars == NULL))
     {
         if (!haveIssuedWarning)
         {
             avtCallback::IssueWarning("The data could not be elevated because "
-                                      "of an internal error in VisIt.");
+                                      "of an internal error in VisIt.  VisIt "
+                                      "was not able to retrieve the desired "
+                                      "variable.");
             haveIssuedWarning = true;
         }
         outScalars->Delete();
@@ -340,7 +351,11 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     // Convert the scalars point data based on the scaling factors
 
     double zVal;
-    int numScalars = inScalars->GetNumberOfTuples();
+    int numScalars;
+    if (zf == true)
+        numScalars = inDS->GetNumberOfPoints();
+    else
+        numScalars = inScalars->GetNumberOfTuples();
     outScalars->SetNumberOfTuples(numScalars);
 
     bool doLog = false;
@@ -352,8 +367,11 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     }
     for (int i = 0; i < numScalars; i++)
     {
-        // calculate  and store zVals
-        zVal = inScalars->GetTuple1(i);
+        // calculate and store zVals
+        if (zf == true)
+            zVal = 0.;
+        else
+            zVal = inScalars->GetTuple1(i);
          
         if (doLog)
         {
@@ -390,7 +408,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     filter->Update();
 
     outScalars->Delete();
-    if (atts.GetGenerateNodalOutput())
+    if ((zf == false) and (atts.GetGenerateNodalOutput()))
         outUG->GetPointData()->SetScalars(inScalars);
 
     if (cd2pd != NULL)

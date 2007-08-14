@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="SurfaceFilterAttributes" purpose="Attributes for the surface filter" persistent="true" exportAPI="STATE_API">
+  <Attribute name="SurfaceFilterAttributes" purpose="Attributes for the surface filter" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="">
     <Enum name="Scaling">
       Linear
       Log
@@ -30,7 +30,10 @@
     <Field name="max" label="Max" type="double" enabler="maxFlag:true">
       1.000000
     </Field>
-    <Field name="variable" label="Elevate by Variable" type="variablename" vartypes="010000000">
+    <Field name="zeroFlag" label="Use zero as the variable." type="bool">
+      false
+    </Field>
+    <Field name="variable" label="Elevate by Variable" type="variablename" enabler="zeroFlag:false" vartypes="01000000000">
       default
     </Field>
     <Field name="useXYLimits" label="Use XY Limits" type="bool">
