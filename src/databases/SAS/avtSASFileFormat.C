@@ -267,7 +267,8 @@ avtSASFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
     AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);
 
-    AddScalarVarToMetaData(md, "channel_id", meshname, AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "channel_id",   meshname, AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "channel_type", meshname, AVT_ZONECENT);
 
     if (!bDataFileIsMissing)
         AddScalarVarToMetaData(md, "temperature", meshname, AVT_ZONECENT);
@@ -431,7 +432,9 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshname*
 vtkDataArray *
 avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-    if (strcmp(varname, "temperature") != 0 && strcmp(varname, "channel_id") != 0)
+    if (strcmp(varname, "temperature")  != 0 && 
+        strcmp(varname, "channel_id")   != 0 && 
+        strcmp(varname, "channel_type") != 0)
         EXCEPTION1(InvalidVariableException, varname);
 
     if (!aAssemblyTypes)
@@ -485,22 +488,32 @@ avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
     {
         int iGlobalChannelID = iChannelOffset+pType->aChannelIDs[ii];
 
-        if (bDataFileIsMissing)  //must be reading channel ids, and some code below does not apply
+        // If the data file is missing, some code below to skip channels does not apply
+        if (bDataFileIsMissing)  
         {
-            for (jj = 0; jj < pType->nZVals-1; jj++)
-                rv->InsertNextValue( (float)iGlobalChannelID );
+            if (strcmp(varname, "channel_id") == 0)
+            {
+                for (jj = 0; jj < pType->nZVals-1; jj++)
+                    rv->InsertNextValue( (float)(iGlobalChannelID % 1000000));
+            }
+            else
+            {
+                for (jj = 0; jj < pType->nZVals-1; jj++)
+                    rv->InsertNextValue( (float)(iGlobalChannelID / 1000000) );
+            }
             continue;
         }
 
         int iChannelLen, iChannelPos;
-        //If data for a channel is missing, it's okay to continue
+        //If data for a channel is missing, it's okay to continue.  The corresponding piece of
+        //the mesh has also been left out.
         if (!FindChannel(iGlobalChannelID, &iChannelLen, &iChannelPos))
             continue;
 
         if (iChannelLen != pType->nZVals-1)
         {
             char msg[256];
-            sprintf(msg, "Mismatch between the size of channel %d, len=%d, and the size of channels in assembly %d, len=%d",
+            sprintf(msg, "Mismatch between the size of channel %d, len=%d, and the size of channels in assembly type %d, len=%d",
                     iGlobalChannelID, iChannelLen, pType->id, pType->nZVals-1);
 
             EXCEPTION1(InvalidDBTypeException, msg);
@@ -516,8 +529,16 @@ avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
         }
         else
         {
-            for (jj = 0; jj < iChannelLen; jj++)
-                rv->InsertNextValue( (float)iGlobalChannelID );
+            if (strcmp(varname, "channel_id") == 0)
+            {
+                for (jj = 0; jj < pType->nZVals-1; jj++)
+                    rv->InsertNextValue( (float)(iGlobalChannelID % 1000000));
+            }
+            else
+            {
+                for (jj = 0; jj < pType->nZVals-1; jj++)
+                    rv->InsertNextValue( (float)(iGlobalChannelID / 1000000) );
+            }
         }
     }
 
