@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Elevate" type="operator" label="Elevate" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="Elevate.xpm">
-    <Attribute name="ElevateAttributes" purpose="Attributes for the elevate operator" persistent="true">
+  <Plugin name="Elevate" type="operator" label="Elevate" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Elevate.xpm">
+    <Attribute name="ElevateAttributes" purpose="Attributes for the elevate operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="Scaling">
         Linear
         Log
@@ -34,7 +34,10 @@
       <Field name="max" label="Max" type="double" enabler="maxFlag:true">
         1.000000
       </Field>
-      <Field name="variable" label="Elevate by Variable" type="variablename" vartypes="01000000000">
+      <Field name="zeroFlag" label="Elevate with zero height?" type="bool">
+        false
+      </Field>
+      <Field name="variable" label="Elevate by Variable" type="variablename" enabler="zeroFlag:false" vartypes="01000000000">
         default
       </Field>
     </Attribute>

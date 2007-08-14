@@ -64,7 +64,7 @@ class QvisVariableButton;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Tue Feb 1 11:37:30 PDT 2005
+// Creation:   Tue Aug 14 12:09:26 PDT 2007
 //
 // Modifications:
 //   
@@ -93,6 +93,7 @@ class QvisElevateWindow : public QvisOperatorWindow
     void minProcessText();
     void maxFlagChanged(bool val);
     void maxProcessText();
+    void zeroFlagChanged(bool val);
     void variableChanged(const QString &varName);
   private:
     QCheckBox *useXYLimits;
@@ -103,6 +104,7 @@ class QvisElevateWindow : public QvisOperatorWindow
     QLineEdit *min;
     QCheckBox *maxFlag;
     QLineEdit *max;
+    QCheckBox *zeroFlag;
     QvisVariableButton *variable;
     QLabel *useXYLimitsLabel;
     QLabel *limitsModeLabel;
@@ -112,6 +114,7 @@ class QvisElevateWindow : public QvisOperatorWindow
     QLabel *minLabel;
     QLabel *maxFlagLabel;
     QLabel *maxLabel;
+    QLabel *zeroFlagLabel;
     QLabel *variableLabel;
 
     ElevateAttributes *atts;
