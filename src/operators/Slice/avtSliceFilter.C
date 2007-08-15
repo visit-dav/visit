@@ -370,6 +370,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    output marked so that it is non-pickable ... so this should all still
 //    work fine.
 //
+//    Hank Childs, Wed Aug 15 10:39:51 PDT 2007
+//    Whoops ... I added bad logic for the change above.  Fixed now.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -390,7 +393,8 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // the database can mark their output as non-pickable, which means
     // that we don't need the IDs after all...
     //
-    needToTurnOnIds = false;
+    if (spec->GetDataSpecification()->GetSimplifiedNestingRepresentation())
+        needToTurnOnIds = false;
 
     if (needToTurnOnIds)
     {
