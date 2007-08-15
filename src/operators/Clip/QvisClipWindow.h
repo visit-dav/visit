@@ -100,6 +100,7 @@ private slots:
     void processCenterText();
     void processRadiusText();
     void planeInverseToggled(bool);
+    void planeToolControlledClipPlaneChanged(int val);
     void sphereInverseToggled(bool);
     void plane1StatusToggled(bool);
     void plane2StatusToggled(bool);
@@ -134,6 +135,7 @@ private:
     QLineEdit    *centerLineEdit;
     QLineEdit    *radiusLineEdit;
     QCheckBox    *planeInverse;
+    QButtonGroup *planeToolControlledClipPlane;
     QCheckBox    *sphereInverse;
     QTabWidget   *tabWidget;
     QVBox        *planeBox;

@@ -11,6 +11,8 @@ Definition:
 // Creation:   Tue Oct 29 08:57:18 PDT 2002
 //
 // Modifications:
+//   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
+//   Plane tool can modify clip planes 
 //
 // ****************************************************************************
 
@@ -25,6 +27,41 @@ ClipAttributes::CopyAttributes(const AttributeGroup *atts)
         const ClipAttributes *tmp = (const ClipAttributes *)atts;
         *this = *tmp;
         retval = true;
+    }
+    else if(atts->TypeName() == "PlaneAttributes")
+    {
+        if(GetFuncType() == Plane && GetPlaneToolControlledClipPlane() != None)
+        {
+            const PlaneAttributes *tmp = (const PlaneAttributes *)atts;
+
+            switch (GetPlaneToolControlledClipPlane())
+            {
+                case Plane1:
+                    if(GetPlane1Status())
+                    {
+                        SetPlane1Origin(tmp->GetOrigin());
+                        SetPlane1Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+                case Plane2:
+                    if(GetPlane2Status())
+                    {
+                        SetPlane2Origin(tmp->GetOrigin());
+                        SetPlane2Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+                case Plane3:
+                    if(GetPlane3Status())
+                    {
+                        SetPlane3Origin(tmp->GetOrigin());
+                        SetPlane3Normal(tmp->GetNormal());
+                        retval = true;
+                    }
+                    break;
+            }
+        }
     }
     else if(atts->TypeName() == "BoxExtents")
     {
@@ -91,6 +128,8 @@ Definition:
 // Creation:   Tue Oct 29 08:57:46 PDT 2002
 //
 // Modifications:
+//   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
+//   Plane tool can modify clip planes 
 //   
 // ****************************************************************************
 
@@ -102,6 +141,43 @@ ClipAttributes::CreateCompatible(const std::string &tname) const
     if(TypeName() == tname)
     {
         retval = new ClipAttributes(*this);
+    }
+    else if(tname == "PlaneAttributes" && GetPlaneToolControlledClipPlane() != None)
+    {
+        PlaneAttributes *p = new PlaneAttributes;
+        const double *normal_arr;
+
+        switch (GetPlaneToolControlledClipPlane())
+        {
+            case Plane1:
+                p->SetOrigin(GetPlane1Origin());
+                normal_arr = GetPlane1Normal();
+                p->SetNormal(normal_arr);
+                break;
+            case Plane2:
+                p->SetOrigin(GetPlane2Origin());
+                normal_arr = GetPlane2Normal();
+                p->SetNormal(normal_arr);
+                break;
+            case Plane3:
+                p->SetOrigin(GetPlane3Origin());
+                normal_arr = GetPlane3Normal();
+                p->SetNormal(normal_arr);
+                break;
+        }
+
+        // Compute up vector
+        avtVector temp(0, 0, 1);
+        avtVector normal(normal_arr);
+        if (normal.x == 0 && normal.y == 0)
+            temp.y = 1;
+        avtVector up = normal % temp;
+        double up_a[3] = { up.x, up.y, up.z };
+
+        p->SetUpAxis(up_a);
+        p->SetThreeSpace(true);
+
+        retval = p;
     }
     else if(tname == "BoxExtents")
     {
@@ -128,3 +204,4 @@ ClipAttributes::CreateCompatible(const std::string &tname) const
 
     return retval;
 }
+

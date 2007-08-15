@@ -133,6 +133,9 @@ QvisClipWindow::~QvisClipWindow()
 //   also changed how the Inverse buttons are created so they are more in 
 //   line with how we create other check boxes.
 //
+//   Gunther H. Weber, Tue Aug 14 19:46:03 PDT 2007
+//   Added radio buttons to select clip plane manipulated by plane tool
+//
 // ****************************************************************************
 
 void
@@ -187,6 +190,23 @@ QvisClipWindow::CreateWindowContents()
     connect(planeInverse, SIGNAL(toggled(bool)),
             this, SLOT(planeInverseToggled(bool)));
 
+    // Plane tool controlls
+    QLabel *planeToolControlledClipPlaneLabel = new QLabel("Plane tool controls:", planeBox, "planeToolControlledClipPlaneLabel");
+    planeToolControlledClipPlane = new QButtonGroup(planeBox, "planeToolControlledClipPlane");
+    planeToolControlledClipPlane->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *planeToolControlledClipPlaneLayout = new QHBoxLayout(planeToolControlledClipPlane);
+    planeToolControlledClipPlaneLayout->setSpacing(10);
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlaneNone = new QRadioButton("Nothing", planeToolControlledClipPlane);
+    planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlaneNone);
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane1 = new QRadioButton("Plane 1", planeToolControlledClipPlane);
+    planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane1);
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane2 = new QRadioButton("Plane 2", planeToolControlledClipPlane);
+    planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane2);
+    QRadioButton *planeToolControlledClipPlaneWhichClipPlanePlane3 = new QRadioButton("Plane 3", planeToolControlledClipPlane);
+    planeToolControlledClipPlaneLayout->addWidget(planeToolControlledClipPlaneWhichClipPlanePlane3);
+    connect(planeToolControlledClipPlane, SIGNAL(clicked(int)),
+            this, SLOT(planeToolControlledClipPlaneChanged(int)));
+ 
     // 
     // Sphere tab
     // 
@@ -329,6 +349,11 @@ QvisClipWindow::CreatePlaneGroup(QWidget *parent, QWidget **planeStatus,
 //   Brad Whitlock, Tue Dec 21 09:54:20 PDT 2004
 //   I added code to block signals for checkboxes.
 //
+//   Gunther H. Weber, Tue Aug 14 19:46:03 PDT 2007
+//   Added code to handle radio buttons to select clip plane manipulated by
+//   plane tool
+//
+//
 // ****************************************************************************
 
 void
@@ -444,17 +469,22 @@ QvisClipWindow::UpdateWindow(bool doAll)
             planeInverse->setChecked(clipAtts->GetPlaneInverse());
             planeInverse->blockSignals(false);
             break;
-        case 11: // center
+	case 11: //planeToolControlledClipPlane
+            planeToolControlledClipPlane->blockSignals(true);
+            planeToolControlledClipPlane->setButton(clipAtts->GetPlaneToolControlledClipPlane());
+            planeToolControlledClipPlane->blockSignals(false);
+            break;
+        case 12: // center
             dptr = clipAtts->GetCenter();
             temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
             centerLineEdit->setText(temp);
             break;
-        case 12: // radius
+        case 13: // radius
             r = clipAtts->GetRadius();
             temp.setNum(r);
             radiusLineEdit->setText(temp);
             break;
-        case 13: // sphereInverse
+        case 14: // sphereInverse
             sphereInverse->blockSignals(true);
             sphereInverse->setChecked(clipAtts->GetSphereInverse());
             sphereInverse->blockSignals(false);
@@ -1057,6 +1087,35 @@ QvisClipWindow::planeInverseToggled(bool val)
 {
     clipAtts->SetPlaneInverse(val);
     Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisClipWindow::planeToolControlledClipPlaneChanged
+//
+// Purpose:
+//   This is a Qt slot function that is called when another radio button in the
+//   planeToolControlledClipPlane button group is selected.
+//
+// Arguments:
+//   val  :  Which button is now active.
+//
+// Programmer: Gunther H. Weber
+// Creation:   August 14, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisClipWindow::planeToolControlledClipPlaneChanged(int val)
+{
+    if(val != clipAtts->GetPlaneToolControlledClipPlane())
+    {
+        clipAtts->SetPlaneToolControlledClipPlane(ClipAttributes::WhichClipPlane(val));
+        SetUpdate(false);
+        Apply();
+    }
 }
 
 
