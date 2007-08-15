@@ -57,6 +57,9 @@ Definition:
 //   Mark C. Miller, Thu Mar 22 13:32:05 PDT 2007
 //   Added tryHarderCyclesTimes
 //
+//   Hank Childs, Wed Aug 15 18:42:46 CDT 2007
+//   Added treatAllDBsAsTimeVarying.
+//
 // ****************************************************************************
 
 bool
@@ -134,6 +137,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
             tryHarderCyclesTimes));
     }
 
+    if(completeSave || !FieldsEqual(15, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("treatAllDBsAsTimeVarying",
+                      treatAllDBsAsTimeVarying));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -191,6 +201,9 @@ Definition:
 //   Mark C. Miller, Thu Mar 22 13:32:05 PDT 2007
 //   Added tryHarderCyclesTimes
 //
+//   Hank Childs, Wed Aug 15 18:42:46 CDT 2007
+//   Added treatAllDBsAsTimeVarying.
+//
 // ****************************************************************************
 
 void
@@ -224,5 +237,7 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetAutomaticallyAddOperator(node->AsBool());
     if((node = searchNode->GetNode("tryHarderCyclesTimes")) != 0)
         SetTryHarderCyclesTimes(node->AsBool());
+    if((node = searchNode->GetNode("treatAllDBsAsTimeVarying")) != 0)
+        SetTreatAllDBsAsTimeVarying(node->AsBool());
 }
 
