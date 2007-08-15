@@ -39,6 +39,8 @@
 #include <DataNode.h>
 #include <BoxExtents.h>
 #include <SphereAttributes.h>
+#include <PlaneAttributes.h>
+#include <avtVector.h>
 
 //
 // Enum conversion methods for ClipAttributes::ClipStyle
@@ -381,6 +383,8 @@ ClipAttributes::TypeName() const
 // Creation:   Tue Oct 29 08:57:18 PDT 2002
 //
 // Modifications:
+//   Gunther H. Weber, Tue Aug 14 12:50:19 PDT 2007
+//   Plane tool can modify first clip plane
 //
 // ****************************************************************************
 
@@ -395,6 +399,19 @@ ClipAttributes::CopyAttributes(const AttributeGroup *atts)
         const ClipAttributes *tmp = (const ClipAttributes *)atts;
         *this = *tmp;
         retval = true;
+    }
+    else if(atts->TypeName() == "PlaneAttributes")
+    {
+	if(GetFuncType() == Plane)
+	{
+	    if(GetPlane1Status())
+	    {
+		const PlaneAttributes *tmp = (const PlaneAttributes *)atts;
+		SetPlane1Origin(tmp->GetOrigin());
+		SetPlane1Normal(tmp->GetNormal());
+		retval = true;
+	    }
+	}
     }
     else if(atts->TypeName() == "BoxExtents")
     {
@@ -469,6 +486,25 @@ ClipAttributes::CreateCompatible(const std::string &tname) const
     if(TypeName() == tname)
     {
         retval = new ClipAttributes(*this);
+    }
+    else if(tname == "PlaneAttributes")
+    {
+	PlaneAttributes *p = new PlaneAttributes;
+	p->SetOrigin(GetPlane1Origin());
+	p->SetNormal(GetPlane1Normal());
+
+	// Compute up vector
+	avtVector temp(0, 0, 1);
+	avtVector normal(GetPlane1Normal());
+	if (normal.x == 0 && normal.y == 0)
+	    temp.y = 1;
+	avtVector up = normal % temp;
+	double up_a[3] = { up.x, up.y, up.z };
+
+	p->SetUpAxis(up_a);
+	p->SetThreeSpace(true);
+
+	retval = p;
     }
     else if(tname == "BoxExtents")
     {
