@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-  <Plugin name="Slice" type="operator" label="Slice" version="1.0" enabled="true" iconFile="Slice.xpm">
-    <Attribute name="SliceAttributes" purpose="This class contains attributes for the arbitrary slice." persistent="true" codefile="SliceAttributes.code">
+  <Plugin name="Slice" type="operator" label="Slice" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Slice.xpm">
+    <Attribute name="SliceAttributes" purpose="This class contains attributes for the arbitrary slice." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="SliceAttributes.code">
       <Enum name="AxisType">
         XAxis
         YAxis
@@ -73,6 +73,9 @@
       </Function>
       <Include file="source" quoted="false">
         PlaneAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        cmath
       </Include>
     </Attribute>
   </Plugin>
