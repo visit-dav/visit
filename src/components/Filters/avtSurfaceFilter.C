@@ -288,15 +288,14 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     outScalars->SetNumberOfComponents(1);
     bool zf = atts.GetZeroFlag();
     bool usingDefaultVar = (atts.GetVariable() == "default");
-  
+
     const char *varname = NULL;
     if ((zf == false) && (!usingDefaultVar))
         varname = atts.GetVariable().c_str();
 
     vtkCellDataToPointData *cd2pd = NULL;
-    if ((!usingDefaultVar) &&
-        (GetInput()->GetInfo().GetAttributes().GetCentering(varname) == 
-                                                                  AVT_ZONECENT))
+    if (GetInput()->GetInfo().GetAttributes().GetCentering(varname) == 
+                                                                  AVT_ZONECENT)
     {
         //
         // The input is zone-centered, but this filter needs
