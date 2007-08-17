@@ -391,9 +391,9 @@ cleanlinks:
 
 clean: cleanlinks
 	$(RM) \
-	$(LIBMESAGL) \
+	$(LIBMESAGL)* \
 	$(LIBGLU) \
-	$(LIBOSMESA) \
+	$(LIBOSMESA)* \
 	$(LIBQT)* \
 	$(LIBQUI)* \
 	$(LIBVTKCOMMON)* \

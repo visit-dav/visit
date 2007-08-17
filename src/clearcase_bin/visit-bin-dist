@@ -187,7 +187,7 @@
 #    Added command to copy private Qt headers.
 #
 #    Jeremy Meredith, Tue Nov  9 14:31:08 PST 2004
-#    Allowed distinction of 64-bit objects on IBM AIX systems.
+#    Allowe distinction of 64-bit objects on IBM AIX systems.
 #
 #    Jeremy Meredith, Fri Dec 10 13:34:55 PST 2004
 #    Added support for version-specific visit scripts and the ability to
@@ -298,6 +298,10 @@
 #
 #    Eric Brugger, Tue Jul 24 16:12:06 PDT 2007
 #    Corrected the setting of the links for the multi-threaded qt library.
+#
+#    Kathleen Bonnell, Thu Aug 16 14:49:43 PDT 2007 
+#    Modified MesaOSMesaLibName and MesaMesaGLLibName to handle possible 
+#    version numbers on non-darwin platforms.
 #
 #------------------------------------------------------------------------------
 
@@ -530,8 +534,18 @@ endif
 #
 # Determine the names of the Mesa shared libraries.
 #
-set MesaOSMesaLibName = "libOSMesa.$SHLIB_SOEXT"
-set MesaMesaGLLibName = "libMesaGL.$SHLIB_SOEXT"
+if ("$os" == "darwin") then
+    set MesaOSMesaLibName = "libOSMesa.$SHLIB_SOEXT"
+    set MesaMesaGLLibName = "libMesaGL.$SHLIB_SOEXT"
+else 
+    set MesaOSMesaLibName = `cd $VisItDir/lib && ls libOSMesa.$SHLIB_SOEXT.?.?.??????`
+    set MesaMesaGLLibName = `cd $VisItDir/lib && ls libMesaGL.$SHLIB_SOEXT.?.?.??????`
+    if ("$MesaOSMesaLibName" == "") then
+        set MesaOSMesaLibName = "libOSMesa.$SHLIB_SOEXT"
+        set MesaMesaGLLibName = "libMesaGL.$SHLIB_SOEXT"
+    endif
+endif
+
 
 #
 # Check that the Mesa libraries exist.
@@ -905,7 +919,7 @@ endif
 #
 # Copy the VisIt libraries to the distribution.
 #
-cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libqui | grep -v libpython` $libdir
+cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libqui | grep -v libpython | grep -v libMesaGL | grep -v libOSMesa` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
 
@@ -952,6 +966,18 @@ endif
 #
 cp $VisItDir/lib/$MesaOSMesaLibName $libdir/$MesaOSMesaLibName
 cp $VisItDir/lib/$MesaMesaGLLibName $libdir/$MesaMesaGLLibName
+
+if ("$os" != "darwin") then
+    set OSMesaMajorVersion = `echo $MesaOSMesaLibName | awk '{printf substr($1, 14, 1)}'`
+    set MesaGLMajorVersion = `echo $MesaMesaGLLibName | awk '{printf substr($1, 14, 1)}'`
+
+    if ("$OSMesaMajorVersion" != "") then
+        ln -s $MesaOSMesaLibName $libdir/libOSMesa.so.$OSMesaMajorVersion
+        ln -s $MesaOSMesaLibName $libdir/libOSMesa.so
+        ln -s $MesaMesaGLLibName $libdir/libMesaGL.so.$MesaGLMajorVersion
+        ln -s $MesaMesaGLLibName $libdir/libMesaGL.so
+    endif
+endif
 
 #
 # Copy the GLEW library, if it exists, to the distribution.
