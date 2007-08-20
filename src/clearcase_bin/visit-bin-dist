@@ -303,6 +303,8 @@
 #    Modified MesaOSMesaLibName and MesaMesaGLLibName to handle possible 
 #    version numbers on non-darwin platforms.
 #
+#    Mark C. Miller, Mon Aug 20 14:42:56 PDT 2007
+#    Added visitdiff.py script.
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -851,6 +853,8 @@ cp $VisItDir/bin/movietemplates/*.mt  $bindir/movietemplates
 cp $VisItDir/bin/movietemplates/*.ui  $bindir/movietemplates
 cp $VisItDir/bin/movietemplates/*.py  $bindir/movietemplates
 cp $VisItDir/bin/movietemplates/*.{bmp,jpg,gif,tif} $bindir/movietemplates
+# Copy the visitdiff script
+cp $VisItDir/bin/visitdiff.py  $bindir
 
 #
 # Make symlinks for the programs
