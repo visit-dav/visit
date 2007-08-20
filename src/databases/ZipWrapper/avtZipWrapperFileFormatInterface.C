@@ -370,6 +370,9 @@ avtZipWrapperFileFormatInterface::Finalize()
 //  Modifications:
 //    Mark C. Miller, Wed Aug  8 14:48:03 PDT 2007
 //    Changed it to loop over plugins until one correctly opens.
+//
+//    Mark C. Miller, Mon Aug 20 12:48:37 PDT 2007
+//    Initialized dummyFileFormat to 0 before calling GetRealInterface
 // ****************************************************************************
 avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     const char *const *list, int nl, int nb) : 
@@ -405,6 +408,8 @@ avtZipWrapperFileFormatInterface::avtZipWrapperFileFormatInterface(
     const char *bname = StringHelpers::Basename(inputFileList[0][0].c_str());
     string dcname = StringHelpers::ExtractRESubstr(bname, "<(.*)\\.gz$|\\.bz$|\\.bz2$|\\.zip$> \\1");
     DatabasePluginManager *dbmgr = DatabasePluginManager::Instance();
+
+    dummyFileFormat = 0;
 
     //
     // Find right plugin, load it and open the first file.
@@ -536,10 +541,18 @@ avtZipWrapperFileFormatInterface::GetFormat(int i) const
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//    Mark C. Miller, Mon Aug 20 12:48:37 PDT 2007
+//    Added code to return early if dummyFileFormat is not already initialized.
 // ****************************************************************************
 void
-avtZipWrapperFileFormatInterface::UpdateRealFileFormatInterface(avtFileFormatInterface *iface) const
+avtZipWrapperFileFormatInterface::UpdateRealFileFormatInterface(
+    avtFileFormatInterface *iface) const
 {
+    if (dummyFileFormat == 0)
+        return;
+
     iface->SetCache(dummyFileFormat->GetCache());
     if (dummyFileFormat->GetDummiedMaterialSelection() != "")
         iface->TurnMaterialSelectionOn(dummyFileFormat->GetDummiedMaterialSelection().c_str());
@@ -563,6 +576,10 @@ avtZipWrapperFileFormatInterface::UpdateRealFileFormatInterface(avtFileFormatInt
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//    Mark C. Miller, Mon Aug 20 12:48:37 PDT 2007
+//    Added call to UpdateFileFormatInterface just before last return.
 // ****************************************************************************
 avtFileFormatInterface *
 avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCache)
@@ -643,6 +660,7 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     if (!dontCache)
         decompressedFilesCache[compressedName] = realInterface;
 
+    UpdateRealFileFormatInterface(realInterface);
     return realInterface;
 }
 
