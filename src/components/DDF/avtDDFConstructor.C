@@ -61,6 +61,8 @@
 #include <avtR2Fvariance.h>
 #include <avtUniformBinningScheme.h>
 
+#include <snprintf.h>
+
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -125,6 +127,10 @@ avtDDFConstructor::~avtDDFConstructor()
 //
 //    Hank Childs, Fri Jun  9 13:44:39 PDT 2006
 //    Fix problem with mixed centering. Also add "default" to switch statement.
+//
+//    Hank Childs, Mon Aug 20 10:07:01 PDT 2007
+//    Detect and report errors that happen upstream when getting the data ready
+//    to calculate the DDF.
 //
 // ****************************************************************************
 
@@ -285,6 +291,16 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                 dspec->AddSecondaryVariable(atts->GetVarnames()[i].c_str());
             dspec->SetTimestep(time);
             GetInput()->Update(spec2);
+            if (GetInput()->GetInfo().GetValidity().HasErrorOccurred())
+            {
+                char msg[1024];
+                SNPRINTF(msg, 1024, "The DDF could not be calculated because "
+                                    "an error occurred when generating "
+                                    "the data to construct it from.  The error"
+                                    " was \"%s\".",
+                GetInput()->GetInfo().GetValidity().GetErrorMessage().c_str());
+                EXCEPTION1(ImproperUseException, msg);
+            }
             //Execute(spec2);
 
             //
