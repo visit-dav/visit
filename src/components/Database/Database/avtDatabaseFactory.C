@@ -356,6 +356,13 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Added logic to accomodate possible null info.
+//
+//    Mark C. Miller, Mon Aug 20 18:20:37 PDT 2007
+//    Added logic to support a timestep specification of -2 indicating that
+//    methods to get information from the format (e.g. ActivateTimestep and
+//    GetMetaData) should NOT be called. The rationale for '-2' instead of
+//    '-1' is that a timestep of '-1' has typically been used throughout
+//    VisIt to mean 'any' timestep. This is primarily to support ZipWrapper.
 // ****************************************************************************
 
 avtDatabase *
@@ -386,9 +393,11 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
     //
     if (rv != NULL)
     {
-        rv->ActivateTimestep(timestep);
+        if (timestep != -2)
+            rv->ActivateTimestep(timestep);
         rv->SetFileFormat(info->GetID());
-        rv->GetMetaData(timestep, forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
+        if (timestep != -2)
+            rv->GetMetaData(timestep, forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
     }
 
     return rv;

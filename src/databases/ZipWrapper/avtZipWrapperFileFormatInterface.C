@@ -580,6 +580,12 @@ avtZipWrapperFileFormatInterface::UpdateRealFileFormatInterface(
 //  Modifications:
 //    Mark C. Miller, Mon Aug 20 12:48:37 PDT 2007
 //    Added call to UpdateFileFormatInterface just before last return.
+//
+//    Mark C. Miller, Mon Aug 20 18:25:57 PDT 2007
+//    Moved UpdateFileFormatInterface call to just before call to set
+//    metadata. Set timestep to construct database for real format at to
+//    '-2' telling VisIt not to make any calls on the interface during its
+//    construction.
 // ****************************************************************************
 avtFileFormatInterface *
 avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCache)
@@ -647,8 +653,9 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
     vector<string> dummyPlugins;
     bool forceReadAllCyclesAndTimes = false;
     bool treatAllDBsAsTimeVarying = false;
+    int  timeStepToConstructAt = -2;
     avtDatabase *dummyDatabaseWithRealInterface = avtDatabaseFactory::FileList(&tmpstr,
-        1, 0, dummyPlugins, pluginId.c_str(),
+        1, timeStepToConstructAt, dummyPlugins, pluginId.c_str(),
         forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
     avtZWGenericDatabase *dummyDatabaseWithRealInterface_tmp =
         (avtZWGenericDatabase *) dummyDatabaseWithRealInterface;
@@ -656,11 +663,12 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 
     delete dummyDatabaseWithRealInterface;
 
+    UpdateRealFileFormatInterface(realInterface);
     realInterface->SetDatabaseMetaData(&mdCopy, 0);
+
     if (!dontCache)
         decompressedFilesCache[compressedName] = realInterface;
 
-    UpdateRealFileFormatInterface(realInterface);
     return realInterface;
 }
 
