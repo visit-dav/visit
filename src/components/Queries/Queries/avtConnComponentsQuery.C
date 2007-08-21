@@ -81,11 +81,16 @@ avtConnComponentsQuery::avtConnComponentsQuery()
 //  Programmer: Cyrus Harrison
 //  Creation:   February 5, 2007
 //
+//  Modifications:
+// 
+//    Cyrus Harrison, Tue Aug  7 16:18:18 PDT 2007
+//     Fixed memory leak - added delete of cclFilter
+//
 // ****************************************************************************
 
 avtConnComponentsQuery::~avtConnComponentsQuery()
 {
-    ;
+    delete cclFilter;
 }
 
 
@@ -124,7 +129,7 @@ avtConnComponentsQuery::PreExecute(void)
 void
 avtConnComponentsQuery::PostExecute(void)
 {
-    // simply return the number of connected components 
+    // simply return the number of connected components
     std::string msg = "";
     char buff[2048];
 

@@ -41,8 +41,8 @@
 
 #include <avtLaplacianFilter.h>
 
-#include <stdio.h>
-
+#include <snprintf.h>
+#include <ExpressionException.h>
 
 // ****************************************************************************
 //  Method: avtLaplacianFilter constructor
@@ -82,14 +82,38 @@ avtLaplacianFilter::~avtLaplacianFilter()
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2004
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Sat Aug 11 18:45:53 PDT 2007
+//    Add second argument for gradient algorithm selection
+//
 // ****************************************************************************
 
 void
 avtLaplacianFilter::GetMacro(std::vector<std::string> &args, std::string &ne,
                              Expression::ExprType &type)
 {
-    char new_expr[1024];
-    sprintf(new_expr, "divergence(gradient(%s))", args[0].c_str());
+    char new_expr[2048];
+    int nargs = args.size();
+    if(nargs == 1)
+    {
+        SNPRINTF(new_expr, 2048,
+                "divergence(gradient(%s))", 
+                args[0].c_str());
+    }
+    else if(nargs ==2)
+    {
+        SNPRINTF(new_expr, 2048,
+                "divergence(gradient(%s,%s))", 
+                args[0].c_str(),args[1].c_str());
+    }
+    else
+    {
+        EXCEPTION1(ExpressionException, " invalid laplacian syntax. "
+                    "Expected arguments: "
+                    "var, gradient_algorithm\n"
+                    "[gradient_algorithm is optional]");
+    }
     ne = new_expr;
     type = Expression::ScalarMeshVar;
 }

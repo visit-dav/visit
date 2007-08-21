@@ -709,6 +709,11 @@ vtkVisItClipper::StructuredGridExecute(void)
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added code to adjust percent to new percent consistent with zero
 //    crossing of implicit func.
+//
+//    Cyrus Harrison, Tue Aug 21 08:34:29 PDT 2007
+//    Fixed case where new points were created but not required resulting
+//    in duplicate points and bad connectivity.
+//
 // ****************************************************************************
 
 void vtkVisItClipper::RectilinearGridExecute(void)
@@ -909,7 +914,12 @@ void vtkVisItClipper::RectilinearGridExecute(void)
                                 clipFunction, &percent);
                         }
 
-                        shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
+                        if( percent == 1.0)
+                            shape[p] = ptId1;
+                        else if( percent == 0.0)
+                            shape[p] = ptId2;
+                        else
+                            shape[p] = vfv.AddPoint(ptId1, ptId2, percent);
                     }
                     else if (pt >= N0 && pt <= N3)
                     {

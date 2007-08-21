@@ -76,7 +76,18 @@ class     vtkStructuredGrid;
 //    Add support for logical gradients.  Also add perform restriction, so we
 //    can request ghost zones.
 //
+//    Cyrus Harrison, Wed Aug  8 11:17:51 PDT 2007
+//    Add support for multiple gradient algorithms.
+//
 // ****************************************************************************
+
+typedef enum
+{
+    SAMPLE  =  0,
+    LOGICAL , /* 1 */
+    NODAL_TO_ZONAL_QUAD_HEX /* 2 */
+} GradientAlgorithmType;
+
 
 class EXPRESSION_API avtGradientFilter : public avtSingleInputExpressionFilter
 {
@@ -84,29 +95,42 @@ class EXPRESSION_API avtGradientFilter : public avtSingleInputExpressionFilter
                               avtGradientFilter();
     virtual                  ~avtGradientFilter();
 
-    void                      SetDoLogicalGradient(bool b)
-                               { doLogicalGradients = b; };
+    void                      SetAlgorithm(int algo)
+                               {gradientAlgo = algo;}
+
     virtual const char       *GetType(void)   { return "avtGradientFilter"; };
     virtual const char       *GetDescription(void)
                                { return "Calculating Gradient"; };
 
     virtual void              PreExecute(void);
+    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
 
   protected:
-    bool                      doLogicalGradients;
     bool                      haveIssuedWarning;
+    int                       gradientAlgo;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension() { return 3; }
 
     float                     EvaluateComponent(float, float, float, float,
-                                                float, float, float, 
+                                                float, float, float,
                                                 vtkDataSet *, vtkDataArray *,
-                                                vtkIdList *);    
+                                                vtkIdList *);
     float                     EvaluateValue(float, float, float, vtkDataSet *,
                                             vtkDataArray *,vtkIdList *,bool &);
     vtkDataArray             *RectilinearGradient(vtkRectilinearGrid *);
     vtkDataArray             *LogicalGradient(vtkStructuredGrid *);
+    
+    vtkDataArray             *NodalToZonalQuadHexGrad(vtkStructuredGrid *);
+    void                      CalculateNodalToZonalQuadGrad(vtkDataSet *,
+                                                            vtkDataArray *,
+                                                            int ,
+                                                            double *);
+
+    void                      CalculateNodalToZonalHexGrad(vtkDataSet *,
+                                                           vtkDataArray *,
+                                                           int ,
+                                                           double *);
     virtual avtPipelineSpecification_p
                                PerformRestriction(avtPipelineSpecification_p);
 };

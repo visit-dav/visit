@@ -64,6 +64,9 @@ class     avtIntervalTree;
 //    Cyrus Harrison, Fri Mar 16 15:52:47 PDT 2007
 //    Added variables to track progress. 
 //
+//    Cyrus Harrison, Sat Aug 11 14:41:01 PDT 2007
+//    Added LabelGhostNeighbors and PerformRestriction
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
@@ -203,7 +206,12 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
     int                       totalSteps;
 
     virtual void              Execute(void);
+    
+    virtual avtPipelineSpecification_p
+                               PerformRestriction(avtPipelineSpecification_p);
 
+    virtual void              LabelGhostNeighbors(vtkDataSet *);
+    
     virtual vtkIntArray      *SingleSetLabel(vtkDataSet *, int &);
 
     virtual int               MultiSetResolve(int,
