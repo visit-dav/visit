@@ -663,11 +663,13 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 
     delete dummyDatabaseWithRealInterface;
 
-    UpdateRealFileFormatInterface(realInterface);
-    realInterface->SetDatabaseMetaData(&mdCopy, 0);
 
     if (!dontCache)
+    {
+        UpdateRealFileFormatInterface(realInterface);
+        realInterface->SetDatabaseMetaData(&mdCopy, 0);
         decompressedFilesCache[compressedName] = realInterface;
+    }
 
     return realInterface;
 }
