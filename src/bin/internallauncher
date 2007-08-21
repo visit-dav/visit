@@ -444,6 +444,10 @@ $fullusage = "$usage
                              occuring *before* the '-diff' option are treated
                              as options to VisIt.
 
+	-diffsum <ldb> <rdb> Run only the DiffSummary() method of the
+	                     'visit -diff' script, in nowin mode so its fast,
+			     print the results, and immediatly exit.
+
         -force_pos_cmfe      Force use of position-based CMFE expressions.
 
     Advanced options
