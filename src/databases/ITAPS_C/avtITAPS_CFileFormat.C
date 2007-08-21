@@ -215,13 +215,18 @@ static int ITAPSEntityTopologyToVTKZoneType(int ttype)
 // ****************************************************************************
 //  Function: GetSetHierarchy 
 //
-//  Purpose: Very verbose description of the set hierarchy. Only
+//  Purpose: Very verbose description of the set hierarchy. Only used for
+//  debugging.
 //
 // ****************************************************************************
 static void
 GetSetHierarchy(iMesh_Instance aMesh, int level, int memberId, bool isEntitySet,
     iBase_EntitySetHandle esh)
 {
+#ifndef MDSERVER
+    return;
+#endif
+
     iBase_EntitySetHandle *sets = 0; int sets_allocated = 0;
     int sets_size = 0;
     iBase_EntityHandle *ents = 0; int ents_allocated = 0;

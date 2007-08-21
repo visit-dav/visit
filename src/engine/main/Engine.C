@@ -2077,6 +2077,9 @@ Engine::EngineInitializeProgressCallback(void *data, int nStages)
 //    Hank Childs, Fri Mar  3 14:17:40 PST 2006
 //    Changed name in exception to be correct.
 //
+//    Mark C. Miller, Mon Aug 20 18:30:24 PDT 2007
+//    Don't throw an exception if rpc is NOT set; just send to debug1 log
+//
 // ****************************************************************************
 
 void
@@ -2084,10 +2087,14 @@ Engine::EngineWarningCallback(void *data, const char *msg)
 {
     NonBlockingRPC *rpc = (NonBlockingRPC*)data;
     if (!rpc)
-        EXCEPTION1(VisItException,
-                   "EngineWarningCallback called with no RPC set.");
-
-    rpc->SendWarning(msg);
+    {
+        debug1 << "EngineWarningCallback called with no RPC set. Message was..." << endl;
+	debug1 << msg << endl;
+    }
+    else
+    {
+        rpc->SendWarning(msg);
+    }
 }
 
 // ****************************************************************************
