@@ -41,8 +41,7 @@
 
 #include <avtCurlFilter.h>
 
-#include <stdio.h>
-
+#include <snprintf.h>
 #include <ExpressionException.h>
 
 
@@ -95,6 +94,9 @@ avtCurlFilter::~avtCurlFilter()
 //    If we are creating a scalar, then make sure the expression type is a 
 //    scalar as well.
 //
+//    Cyrus Harrison, Sat Aug 11 18:15:50 PDT 2007
+//    Add second argument for gradient algorithm selection
+//
 // ****************************************************************************
 
 void
@@ -111,20 +113,66 @@ avtCurlFilter::GetMacro(std::vector<std::string> &args, std::string &ne,
         }
     }
 
-    char new_expr[1024];
+    int nargs = args.size();
+
+    char new_expr[2048];
     if (do3D)
     {
-        sprintf(new_expr, "{gradient(%s[2])[1]-gradient(%s[1])[2],"
-                          "gradient(%s[0])[2]-gradient(%s[2])[0],"
-                          "gradient(%s[1])[0]-gradient(%s[0])[1]}",
-                           args[0].c_str(), args[0].c_str(), args[0].c_str(),
-                           args[0].c_str(), args[0].c_str(), args[0].c_str());
+        if(nargs == 1)
+        {
+            SNPRINTF(new_expr,2048, 
+                    "{gradient(%s[2])[1]-gradient(%s[1])[2],"
+                    "gradient(%s[0])[2]-gradient(%s[2])[0],"
+                    "gradient(%s[1])[0]-gradient(%s[0])[1]}",
+                    args[0].c_str(), args[0].c_str(), args[0].c_str(),
+                    args[0].c_str(), args[0].c_str(), args[0].c_str());
+        }
+        else if(nargs > 1)
+        {
+            SNPRINTF(new_expr,2048, 
+                    "{gradient(%s[2],%s)[1]-gradient(%s[1],%s)[2],"
+                    "gradient(%s[0],%s)[2]-gradient(%s[2],%s)[0],"
+                    "gradient(%s[1],%s)[0]-gradient(%s[0],%s)[1]}",
+                    args[0].c_str(), args[1].c_str(),
+                    args[0].c_str(), args[1].c_str(),
+                    args[0].c_str(), args[1].c_str(),
+                    args[0].c_str(), args[1].c_str(),
+                    args[0].c_str(), args[1].c_str(),
+                    args[0].c_str(), args[1].c_str());
+        }
+        else
+        {
+            EXCEPTION1(ExpressionException, " invalid curl syntax. "
+                        "Expected arguments: "
+                        "vector_var, gradient_algorithm\n"
+                        "[gradient_algorithm is optional]");
+        }
+
         type = Expression::VectorMeshVar;
     }
     else
     {
-        sprintf(new_expr, "gradient(%s[1])[0]-gradient(%s[0])[1]",
-                           args[0].c_str(), args[0].c_str());
+        if(nargs == 1)
+        {
+            SNPRINTF(new_expr,2048,
+                    "gradient(%s[1])[0]-gradient(%s[0])[1]",
+                    args[0].c_str(), args[0].c_str());
+        }
+        else if(nargs > 1)
+        {
+            SNPRINTF(new_expr,2048,
+                    "gradient(%s[1],%s)[0]-gradient(%s[0],%s)[1]",
+                    args[0].c_str(), args[1].c_str(), 
+                    args[0].c_str(), args[1].c_str());
+        }
+        else
+        {
+            EXCEPTION1(ExpressionException, " invalid curl syntax. "
+                        "Expected arguments: "
+                        "vector_var, gradient_algorithm\n"
+                        "[gradient_algorithm is optional]");
+        }
+
         type = Expression::ScalarMeshVar;
     }
     ne = new_expr;

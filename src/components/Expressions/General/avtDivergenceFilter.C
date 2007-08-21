@@ -41,8 +41,8 @@
 
 #include <avtDivergenceFilter.h>
 
-#include <stdio.h>
-
+#include <snprintf.h>
+#include <ExpressionException.h>
 
 // ****************************************************************************
 //  Method: avtDivergenceFilter constructor
@@ -87,6 +87,9 @@ avtDivergenceFilter::~avtDivergenceFilter()
 //    Hank Childs, Mon Jun  6 11:21:23 PDT 2005
 //    Add support for 2D.
 //
+//    Cyrus Harrison, Sat Aug 11 18:34:41 PDT 2007
+//    Add second argument for gradient algorithm selection
+//
 // ****************************************************************************
 
 void
@@ -101,14 +104,59 @@ avtDivergenceFilter::GetMacro(std::vector<std::string> &args, std::string &ne,
         do3D   = (atts.GetTopologicalDimension() == 3);
     }
 
-    char new_expr[1024];
+    int nargs = args.size();
+
+    char new_expr[2048];
     if (do3D)
-        sprintf(new_expr, "gradient(%s[0])[0]+gradient(%s[1])[1]+"
-                          "gradient(%s[2])[2]",
-                           args[0].c_str(), args[0].c_str(), args[0].c_str());
+    {
+        if(nargs == 1)
+        {
+            SNPRINTF(new_expr, 2048,
+                    "gradient(%s[0])[0]+gradient(%s[1])[1]+"
+                    "gradient(%s[2])[2]",
+                    args[0].c_str(), args[0].c_str(), args[0].c_str());
+        }
+        else if(nargs > 1)
+        {
+            SNPRINTF(new_expr, 2048,
+                    "gradient(%s[0],%s)[0]+gradient(%s[1],%s)[1]+"
+                    "gradient(%s[2],%s)[2]",
+                    args[0].c_str(), args[1].c_str(),
+                    args[0].c_str(), args[1].c_str(),
+                    args[0].c_str(), args[1].c_str());            
+        }
+        else
+        {
+            EXCEPTION1(ExpressionException, " invalid divergence syntax. "
+                        "Expected arguments: "
+                        " vector_var, gradient_algorithm\n"
+                        " gradient_algorithm is optional");
+        }
+    }
     else
-        sprintf(new_expr, "gradient(%s[0])[0]+gradient(%s[1])[1]",
-                           args[0].c_str(), args[0].c_str());
+    {
+        if(nargs == 1)
+        {
+            SNPRINTF(new_expr, 2048,
+                    "gradient(%s[0])[0]+gradient(%s[1])[1]",
+                    args[0].c_str(), args[0].c_str());
+        }
+        else if(nargs > 1)
+        {
+            SNPRINTF(new_expr, 2048,
+                    "gradient(%s[0],%s)[0]+gradient(%s[1],%s)[1]",
+                    args[0].c_str(), args[1].c_str(), 
+                    args[0].c_str(), args[1].c_str()); 
+        }
+        else
+        {
+            EXCEPTION1(ExpressionException, " invalid divergence syntax. "
+                        "Expected arguments: "
+                        " vector_var, gradient_algorithm\n"
+                        " gradient_algorithm is optional");
+        }
+    }
+    
     ne = new_expr;
     type = Expression::ScalarMeshVar;
 }

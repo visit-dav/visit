@@ -59,6 +59,7 @@
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridRelevantPointsFilter.h>
 #include <vtkUnstructuredGridWriter.h>
@@ -143,6 +144,9 @@ avtConnComponentsExpression::GetNumberOfComponents()
 //    Cyrus Harrison, Fri Mar 16 10:46:28 PDT 2007
 //    Added progress update. 
 //
+//    Cyrus Harrison, Fri Mar 16 10:46:28 PDT 2007
+//    Added extraction of ghost zone neighbors for the parallel case
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::Execute()
@@ -154,8 +158,6 @@ avtConnComponentsExpression::Execute()
 
     // get input data tree to obtain datasets
     avtDataTree_p tree = GetInputDataTree();
-
-    
     // holds number of datasets
     int nsets;
 
@@ -166,18 +168,50 @@ avtConnComponentsExpression::Execute()
     vector<int> domain_ids;
     tree->GetAllDomainIds(domain_ids);
 
-    // filter out any ghost cells
-    vtkDataSetRemoveGhostCells **ghost_filters = 
-                          new vtkDataSetRemoveGhostCells*[nsets];
- 
-    for( i = 0 ; i < nsets ; i++)
+    // check for ghosts
+    bool have_ghosts = false;
+    if(nsets > 0)
+        have_ghosts = data_sets[0]->GetCellData()->GetArray("avtGhostZones");
+
+    // set progress related vars
+#ifdef PARALLEL
+    totalSteps = nsets *4;
+    if(have_ghosts)
+        totalSteps+= nsets;
+#else
+    totalSteps = nsets *2;
+#endif
+    currentProgress = 0;        
+
+#ifdef PARALLEL
+    if(have_ghosts)
     {
-        ghost_filters[i] = vtkDataSetRemoveGhostCells::New();
-        ghost_filters[i]->SetInput(data_sets[i]);
-        ghost_filters[i]->Update();
-        vtkDataSet *ds_filtered = ghost_filters[i]->GetOutput();
-        ds_filtered->Update();
-        data_sets[i] = ds_filtered;
+        // if we have ghosts, label ghost neighbors for reduced comm in global
+        // resolve
+        for( i = 0; i <nsets ; i++)
+        {
+            LabelGhostNeighbors(data_sets[i]);
+            UpdateProgress(currentProgress++,totalSteps);
+        }
+    }
+#endif
+    
+    // filter out any ghost cells
+    vtkDataSetRemoveGhostCells **ghost_filters = NULL;
+    
+    if(have_ghosts)
+    {
+        ghost_filters = new vtkDataSetRemoveGhostCells*[nsets];
+ 
+        for( i = 0 ; i < nsets ; i++)
+        {
+            ghost_filters[i] = vtkDataSetRemoveGhostCells::New();
+            ghost_filters[i]->SetInput(data_sets[i]);
+            ghost_filters[i]->Update();
+            vtkDataSet *ds_filtered = ghost_filters[i]->GetOutput();
+            ds_filtered->Update();
+            data_sets[i] = ds_filtered;
+        }
     }
 
     // array to hold output sets
@@ -196,27 +230,11 @@ avtConnComponentsExpression::Execute()
     int num_local_comps=0;
     int num_comps = 0;
 
-    // set progress related vars
-#ifdef PARALLEL
-    totalSteps = nsets *4;
-#else
-    totalSteps = nsets *2;
-#endif
-    currentProgress = 0;
-
     // process all local sets
     for(i = 0; i < nsets ; i++)
     {
         // get current set
         vtkDataSet *curr_set = data_sets[i];
-
-        // Make sure the input dataset is an unstructured grid
-        if(curr_set->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
-        {
-            EXCEPTION1(ExpressionException,
-          "Connected Components Expression requires unstructured mesh data");
-        }
-
 
         // perform connected components labeling on current set
         // (this only resolves components within the set)
@@ -232,7 +250,6 @@ avtConnComponentsExpression::Execute()
         // create a shallow copy of the current data set to add to output
         vtkDataSet *res_set = (vtkDataSet *) curr_set->NewInstance();
         res_set->ShallowCopy(curr_set);
-
 
         // add array to dataset
         res_set->GetCellData()->AddArray(res_array);
@@ -317,10 +334,12 @@ avtConnComponentsExpression::Execute()
        // dec ref pointer for each set's label array
        result_arrays[i]->Delete();
        // cleanup ghost filters
-       ghost_filters[i]->Delete();
+       if(have_ghosts)
+           ghost_filters[i]->Delete();
     }
     // cleanup ghost filters array
-    delete [] ghost_filters;
+    if(have_ghosts)
+        delete [] ghost_filters;
 
     // Set progress to complete
     UpdateProgress(totalSteps,totalSteps);
@@ -328,6 +347,79 @@ avtConnComponentsExpression::Execute()
     // set the final number of components
     nFinalComps  = num_comps;
 }
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::LabelGhostNeighbors
+//
+//  Purpose:
+//     Identifies cells that have ghost neighbors, storing the info in
+//     a vtkUnsignedCharArray named "avtGhostZoneNeighbors".
+//
+//  Arguments:
+//    data_set     Input mesh
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   August 11, 2007
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::LabelGhostNeighbors(vtkDataSet *data_set)
+{
+    // loop indices
+    int i,j,k;
+    vtkUnsignedCharArray *gz_array = (vtkUnsignedCharArray *) data_set
+                             ->GetCellData()->GetArray("avtGhostZones");
+
+    // if the data set does not have ghosts, we are done
+    if (!gz_array)
+        return;
+
+    unsigned char *gz_ptr = (unsigned char *)gz_array->GetPointer(0);
+    int ncells = data_set->GetNumberOfCells();
+
+    vtkUnsignedCharArray *gzn_array = vtkUnsignedCharArray::New();
+    gzn_array->SetName("avtGhostZoneNeighbors");
+    gzn_array->SetNumberOfComponents(1);
+    gzn_array->SetNumberOfTuples(ncells);
+
+    unsigned char *gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
+
+    // init the ghost zone neighbors array
+    memset(gzn_ptr,0,ncells * sizeof(unsigned char));
+
+    for ( i=0; i < ncells; i++)
+    {
+        // if this cell has ghost zones, label it's neighbors
+        if(gz_ptr[i])
+        {
+            // get cell neighbors
+            vtkIdList *gcell_pts = data_set->GetCell(i)->GetPointIds();
+            int ngcell_pts = gcell_pts->GetNumberOfIds();
+            for( j=0; j < ngcell_pts; j++)
+            {
+                // neighbors share points with the current cell
+                vtkIdList *gpt = vtkIdList::New();
+                gpt->SetNumberOfIds(1);
+                gpt->SetId(0,gcell_pts->GetId(j));
+                vtkIdList *nei_cells = vtkIdList::New();
+                data_set->GetCellNeighbors(i,gpt,nei_cells);
+                int nnei = nei_cells->GetNumberOfIds();
+
+                // tag neighbors
+                for ( k = 0; k < nnei; k++)
+                    gzn_array->SetTuple1(nei_cells->GetId(k),1);
+
+                gpt->Delete();
+                nei_cells->Delete();
+            }
+        }
+    }
+
+    data_set->GetCellData()->AddArray(gzn_array);
+    gzn_array->Delete();
+}
+
+
 
 // ****************************************************************************
 //  Method: avtConnComponentsExpression::SingleSetLabel
@@ -998,6 +1090,25 @@ avtConnComponentsExpression::ShiftLabels(vtkIntArray *labels, int shift)
 
 
 // ****************************************************************************
+//  Method: avtGradientFilter::PerformRestriction
+//
+//  Purpose:
+//      Request ghost zones.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   August 11, 2007
+//
+// ****************************************************************************
+avtPipelineSpecification_p
+avtConnComponentsExpression::PerformRestriction(avtPipelineSpecification_p in_spec)
+{
+    avtPipelineSpecification_p spec = 
+                            avtExpressionFilter::PerformRestriction(in_spec);
+    spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    return spec;
+}
+
+// ****************************************************************************
 //  Method: UnionFind constructor
 //
 //  Programmer: Cyrus Harrison
@@ -1516,7 +1627,6 @@ avtConnComponentsExpression::BoundarySet::GetBounds(double *bounds) const
 //  Creation:   February  16, 2007
 //
 //  Modifications:
-//
 //    Cyrus Harrison, Thu Mar  1 07:49:44 PST 2007
 //    Added case for empty input datasets.
 //
@@ -1781,6 +1891,10 @@ avtConnComponentsExpression::BoundarySet::GetBoundsIntersection
 //  Programmer: Cyrus Harrison
 //  Creation:   February 2, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Sat Aug 11 15:08:03 PDT 2007
+//    Added ghost neighbors optimization
+//
 // ****************************************************************************
 void
 avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
@@ -1821,7 +1935,14 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
         // find which cells from the current mesh to send
         vtkUnstructuredGrid *mesh = (vtkUnstructuredGrid*) meshes[i];
         int ncells = mesh->GetNumberOfCells();
-        vtkIntArray *labels = (vtkIntArray*)mesh->GetCellData()->GetArray("ccl");
+      
+        // get ghost zone neighbor info if available
+        vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) mesh
+                      ->GetCellData()->GetArray("avtGhostZoneNeighbors");
+
+        unsigned char *gzn_ptr = NULL;
+        if (gzn_array)
+            gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
       
         // initialize temporary mesh and cell count holder        
         for( j = 0; j < nprocs; j++)
@@ -1833,6 +1954,11 @@ avtConnComponentsExpression::BoundarySet::RelocateUsingPartition
         // for each cell
         for( j = 0; j < ncells; j++)
         {
+            // if we have ghost neighbors labeled, we only need to send them
+            if(gzn_ptr)
+                if(gzn_ptr[j] != 1)
+                    continue;
+            
             // find which processors need this cell
             vtkCell *cell = mesh->GetCell(j);
             spart.GetProcessorList(cell,proc_list);
@@ -2386,6 +2512,9 @@ PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
 //  Programmer: Cyrus Harrison
 //  Creation:   February 2, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Sat Aug 11 15:08:37 PDT 2007
+//    Added ghost neighbors optimization
 //
 // ****************************************************************************
 
@@ -2472,8 +2601,23 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
             const int ncells = meshes[i]->GetNumberOfCells();
             double bbox[6];
             double pt[3];
+            
+            // get ghost zone neighbor info if available
+            vtkUnsignedCharArray *gzn_array = (vtkUnsignedCharArray *) meshes[i]
+                         ->GetCellData()->GetArray("avtGhostZoneNeighbors");
+
+            unsigned char *gzn_ptr = NULL;
+            
+            if (gzn_array)
+                gzn_ptr = (unsigned char *)gzn_array->GetPointer(0);
+            
             for (j = 0 ; j < ncells ; j++)
             {
+                // if we have ghost neighbors labled, we only need to send them
+                if(gzn_ptr)
+                    if(gzn_ptr[j] !=1)
+                        continue;
+                
                 vtkCell *cell = meshes[i]->GetCell(j);
                 cell->GetBounds(bbox);
                 pt[0] = (bbox[0] + bbox[1]) / 2.;

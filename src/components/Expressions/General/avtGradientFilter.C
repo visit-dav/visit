@@ -47,7 +47,7 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
-#include <vtkCellDerivatives.h> 
+#include <vtkCellDerivatives.h>
 #include <vtkDataSet.h>
 #include <vtkFloatArray.h>
 #include <vtkIdList.h>
@@ -56,6 +56,7 @@
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 
+#include <avtExprNode.h>
 #include <avtCallback.h>
 
 #include <DebugStream.h>
@@ -79,11 +80,14 @@
 //    Hank Childs, Mon Feb 13 15:08:41 PST 2006
 //    Add support for logical gradients.
 //
+//    Cyrus Harrison, Wed Aug  8 11:19:10 PDT 2007
+//    Add support for multiple gradient algorithms.
+//
 // ****************************************************************************
 
 avtGradientFilter::avtGradientFilter()
 {
-    doLogicalGradients = false;
+     gradientAlgo = SAMPLE;
 }
 
 
@@ -107,6 +111,112 @@ avtGradientFilter::~avtGradientFilter()
 {
     ;
 }
+
+
+// ****************************************************************************
+//  Method: avtGradientFilter::ProcessArguments
+//
+//  Purpose:
+//      Parses optional algorithm argument.
+//
+//  Arguments:
+//      args      Expression arguments
+//      state     Expression pipeline state
+//
+//  Programmer:   Cyrus Harrison
+//  Creation:     August 8, 2007
+//
+// ****************************************************************************
+void
+avtGradientFilter::ProcessArguments(ArgsExpr *args,
+                                    ExprPipelineState *state)
+{
+    // get the argument list and # of arguments
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    int nargs = arguments->size();
+
+    // check for call with no args
+    if (nargs == 0)
+    {
+        EXCEPTION1(ExpressionException,
+                   "gradient() Incorrect syntax.\n"
+                   " usage: gradient(varname,algo)\n"
+                   " The algo parameter is optional "
+                   "and specifies which gradient algorithm is used.\n"
+                   "Valid Options:\n"
+                   " type: 0,1,2 or \"sample\",\"logical\",\"nzqh\"\n"
+                   "(Default: algo = sample)");
+    }
+
+    // first argument is the var name, let it do its own magic
+    ArgExpr *first_arg = (*arguments)[0];
+    avtExprNode *first_tree = dynamic_cast<avtExprNode*>(first_arg->GetExpr());
+    first_tree->CreateFilters(state);
+
+    // Check to see if the user passed in the 2nd argument (optional)
+    // that specifies the gradient algo
+
+    // Options:
+    //  sample  (0) - calc by sampling in x,y(,z) dir
+    //  logical (1) - calc on logical mesh
+    //  nzqh    (2) - nodal to zonal logical gradient for strucuted grids made
+    //                of quadrilaterals or hexahedrons
+    // Default: sample
+
+    if (nargs > 1 )
+    {
+        ArgExpr *second_arg= (*arguments)[1];
+        ExprParseTreeNode *second_tree= second_arg->GetExpr();
+        string second_type = second_tree->GetTypeName();
+
+        // check for arg passed as integer
+        if((second_type == "IntegerConst"))
+        {
+            gradientAlgo =
+                       dynamic_cast<IntegerConstExpr*>(second_tree)->GetValue();
+
+            if(gradientAlgo < 0 || gradientAlgo > 2)
+            {
+
+                EXCEPTION1(ExpressionException,
+                "avtGradientFilter: Invalid second argument.\n"
+                " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
+
+            }
+        }
+        // check for arg passed as string
+        else if((second_type == "StringConst"))
+        {
+            string sval =
+                        dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
+
+            if(sval == "sample")
+                gradientAlgo= SAMPLE;
+            else if(sval == "logical")
+                gradientAlgo= LOGICAL;
+            else if(sval == "nzqh")
+                gradientAlgo= NODAL_TO_ZONAL_QUAD_HEX;
+            else
+            {
+                EXCEPTION1(ExpressionException,
+                "avtGradientFilter: Invalid second argument.\n"
+                " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
+            }
+        }
+        else // invalid arg type
+        {
+
+            EXCEPTION1(ExpressionException,
+            "avtGradientFilter: Expects an integer or string second "
+            "argument.\n"
+            " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
+        }
+    }
+
+    debug5 << "avtGradientFilter: Gradient Algo = " << gradientAlgo << endl;
+
+}
+
 
 
 // ****************************************************************************
@@ -150,7 +260,7 @@ avtGradientFilter::PreExecute(void)
 //    and fixed memory leak.
 //
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002  
-//    Use NewInstance instead of MakeObject, new vtkapi. 
+//    Use NewInstance instead of MakeObject, new vtkapi.
 // 
 //    Akira Haddox, Wed Jun 18 13:03:23 PDT 2003
 //    Added proper error check for scalar data, and check for 2D data.
@@ -171,6 +281,9 @@ avtGradientFilter::PreExecute(void)
 //    Hank Childs, Mon Feb 13 15:08:41 PST 2006
 //    Add support for logical gradients ['4385].
 //
+//    Cyrus Harrison, Wed Aug  8 11:20:14 PDT 2007
+//    Add support for nzqh gradient
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -180,7 +293,8 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
     {
         return RectilinearGradient((vtkRectilinearGrid *) in_ds);
     }
-    if (doLogicalGradients)
+
+    if (gradientAlgo == LOGICAL)
     {
         if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID)
         {
@@ -204,8 +318,36 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
 
         return LogicalGradient((vtkStructuredGrid *) in_ds);
     }
+    else if(gradientAlgo == NODAL_TO_ZONAL_QUAD_HEX)
+    {
+        if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID)
+        {
+            if (!haveIssuedWarning)
+                avtCallback::IssueWarning("You can only do nzqh gradients "
+                                          "on structured grids.");
+            haveIssuedWarning = true;
+            int nvals = 0;
+            if (in_ds->GetPointData()->GetScalars() != NULL)
+                nvals = in_ds->GetNumberOfPoints();
+            else
+                nvals = in_ds->GetNumberOfCells();
+            vtkFloatArray *rv = vtkFloatArray::New();
+            rv->SetNumberOfComponents(3);
+            rv->SetNumberOfTuples(nvals);
+            float vals[3] = { 0., 0., 0. };
+            for (int i = 0 ; i < nvals ; i++)
+                rv->SetTuple(i, vals);
+            return rv;
+        }
 
-    vtkDataArray *scalarValues = in_ds->GetPointData()->GetScalars(); 
+        // recenter to nodal if necessary
+
+
+        return NodalToZonalQuadHexGrad((vtkStructuredGrid *) in_ds);
+
+    }
+
+    vtkDataArray *scalarValues = in_ds->GetPointData()->GetScalars();
     bool recentered = false;
     
     if (!scalarValues)
@@ -927,6 +1069,332 @@ avtGradientFilter::LogicalGradient(vtkStructuredGrid *sg)
         delete [] pts;
     return out_array;
 }
+
+
+// ****************************************************************************
+//  Method: avtGradientFilter::NodalToZonalQuadHexGrad
+//
+//  Purpose:
+//      Calculates a structured nodal to zonal gradient of a structured grid
+//      made of quadrilaterals or hexahedrons
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   August 8, 2007
+//
+// ****************************************************************************
+
+vtkDataArray *
+avtGradientFilter::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
+{
+    int topo_dim = -1;
+
+    if ( *(GetInput()) != NULL )
+    {
+        avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+        topo_dim = atts.GetTopologicalDimension();
+
+    }
+
+    const char *var = activeVariable;
+    bool own_values_array = false;
+    // get input value
+    vtkDataArray *val = in_ds->GetPointData()->GetArray(var);
+
+    if( val == NULL || val->GetNumberOfComponents() != 1 )
+    {
+        // nzqh only supports nodal data
+        // we may have zonal data, if so recenter
+        val = in_ds->GetCellData()->GetArray(var);
+        if( val != NULL)
+        {
+            vtkDataSet *new_ds = (vtkDataSet*) in_ds->NewInstance();
+            new_ds->CopyStructure(in_ds);
+            new_ds->GetCellData()->AddArray(
+                                      in_ds->GetCellData()->GetArray(var));
+            vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
+            cd2pd->SetInput(new_ds);
+            cd2pd->Update();
+            val = cd2pd->GetOutput()->GetPointData()->GetArray(var);
+            val->Register(NULL);
+            own_values_array =true;
+            new_ds->Delete();
+            cd2pd->Delete();
+        }
+        
+        if( val == NULL || val->GetNumberOfComponents() != 1 )      
+            EXCEPTION1(ExpressionException,
+                       "avtGradientFilter: Unable to find var.");
+    }
+
+    // get number of cells
+    int ncells = in_ds->GetNumberOfCells();
+
+    // create the result dataset
+    vtkFloatArray *res_vec= vtkFloatArray::New();
+    res_vec->SetNumberOfComponents(3);
+    res_vec->SetNumberOfTuples(ncells);
+
+    // loop index and grad values
+    int i=0;
+    double res_vals[3];
+
+    if(topo_dim == 2)
+    {
+        debug5 << "avtGradientFilter: NZQH 2D Case" << endl;
+
+        if(ncells>0)
+        {
+            // make sure we have VTK_PIXEL or VTK_QUAD cells
+            // for the 2d case
+            int ctype = in_ds->GetCell(0)->GetCellType();
+            if( !(ctype == VTK_PIXEL || ctype == VTK_QUAD) )
+                EXCEPTION1(ExpressionException,
+                           "avtGradientFilter: 2D NZQH Graident "
+                           " only supports quadrilateral cells.");
+
+            for( i = 0; i < ncells; i++)
+            {
+                CalculateNodalToZonalQuadGrad(in_ds,val,i,res_vals);
+                res_vec->SetTuple(i, res_vals);
+            }
+        }
+    }
+    else if(topo_dim == 3)
+    {
+        debug5 << "avtGradientFilter: NZQH 3D Case" << endl;
+
+        if(ncells>0)
+        {
+            // make sure we have VTK_VOXEL or VTK_HEXAHEDRON cells
+            // for the 2d case
+            int ctype = in_ds->GetCell(0)->GetCellType();
+            if( !(ctype == VTK_VOXEL || ctype == VTK_HEXAHEDRON) )
+                EXCEPTION1(ExpressionException,
+                           "avtGradientFilter: 3D NZQH Graident "
+                           " only supports hexahedral cells.");
+
+            for( i = 0; i < ncells; i++)
+            {
+                CalculateNodalToZonalHexGrad(in_ds,val,i,res_vals);
+                res_vec->SetTuple(i, res_vals);
+            }
+        }
+    }
+
+    if(own_values_array)
+        val->Delete();
+        
+    return res_vec;
+}
+
+// ****************************************************************************
+//  Method: avtGradientFilter::CalculateNodalToZonalQuadGrad
+//
+//  Purpose:
+//      Calculate 2D Gradient.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   July 19, 2007
+//
+// ****************************************************************************
+
+void
+avtGradientFilter::CalculateNodalToZonalQuadGrad(vtkDataSet *ds,
+                                                 vtkDataArray *val,
+                                                 int idx,
+                                                 double *grad)
+{
+    // loop index
+    int i;
+
+    double tiny = .00001;
+    double xi,xj;
+    double yi,yj;
+    double vi,vj;
+
+    double x[4];
+    double y[4];
+    double v[4];
+
+    // get the cell points
+    vtkCell   *cell = ds->GetCell(idx);
+    vtkIdList *cids = cell->GetPointIds();
+
+    // get ids that match the gradient template
+    /*
+        Gradient Template Order:
+
+        c (1,0)      b (1,1)
+           |----------|
+           |          |
+           |          |
+           |          |
+           |----------|
+        d (0,0)       a(1,0)
+
+        VisIt Order   |    Mapping:
+         0,0                0 = 1
+         1,0                1 = 2
+         1,1                2 = 3
+         0,1                3 = 0
+    */
+
+    int ids[4];
+    ids[3] = cids->GetId(0);
+    ids[0] = cids->GetId(1);
+    ids[1] = cids->GetId(2);
+    ids[2] = cids->GetId(3);
+
+    for( i = 0; i< 4; i++)
+    {
+        int     id = ids[i];
+        double *pt_val = ds->GetPoint(id);
+
+        v[i]  = val->GetTuple1(id);
+        x[i]  = pt_val[0];
+        y[i]  = pt_val[1];
+    }
+
+
+    xi = .5 * ( x[0] + x[1] - x[2] - x[3]);
+    xj = .5 * ( x[1] + x[2] - x[3] - x[0]);
+
+    yi = .5 * ( y[0] + y[1] - y[2] - y[3]);
+    yj = .5 * ( y[1] + y[2] - y[3] - y[0]);
+
+    vi = .5 * ( v[0] + v[1] - v[2] - v[3]);
+    vj = .5 * ( v[1] + v[2] - v[3] - v[0]);
+
+    // calc det
+
+    double area = xi * yj - xj * yi;
+    area = 1.0 / ( area + tiny);
+
+    grad[0] = area * (vi * yj - vj * yi);
+    grad[1] = area * (vj * xi - vi * xj);
+    grad[2] = 0;
+}
+
+
+// ****************************************************************************
+//  Method: avtGradientFilter::CalculateNodalToZonalHexGrad
+//
+//  Purpose:
+//      Calculate 3D Gradient.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   August 8, 2007
+//
+// ****************************************************************************
+
+void
+avtGradientFilter::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
+                                                vtkDataArray *val,
+                                                int idx,
+                                                double *grad)
+{
+    int i;
+
+    double tiny = .00001;
+    double xi,xj,xk;
+    double yi,yj,yk;
+    double zi,zj,zk;
+    double vi,vj,vk;
+
+    double x[8];
+    double y[8];
+    double z[8];
+    double v[8];
+
+    // get the cell points
+    vtkCell   *cell = ds->GetCell(idx);
+    vtkIdList *cids = cell->GetPointIds();
+
+    // get ids that match the gradient template
+    /*
+        Gradient Template Order:
+
+            Front Plane:                Back Plane:
+      c (1,0,0)      b (1,1,0)     g (1,0,1)      f (1,1,1)
+           |----------|                |----------|
+           |          |                |          |
+           |          |                |          |
+           |          |                |          |
+           |----------|                |----------|
+      d (0,0,0)      a (1,0,0)     h (0,0,1)      e (1,0,1)
+
+        VisIt Order   |    Mapping:
+         0,0,0               0 = 1
+         1,0,0               1 = 2
+         1,1,0               2 = 3
+         0,1,0               3 = 0
+         0,0,1               4 = 5
+         1,0,1               5 = 6
+         1,1,1               6 = 7
+         0,1,1               7 = 4
+    */
+    int ids[8];
+
+    ids[0] = cids->GetId(1);
+    ids[1] = cids->GetId(2);
+    ids[2] = cids->GetId(3);
+    ids[3] = cids->GetId(0);
+
+    ids[4] = cids->GetId(5);
+    ids[5] = cids->GetId(6);
+    ids[6] = cids->GetId(7);
+    ids[7] = cids->GetId(4);
+
+
+    for( i = 0; i< 8; i++)
+    {
+        int     id = ids[i];
+        double *pt_val = ds->GetPoint(id);
+
+        v[i]  = val->GetTuple1(id);
+        x[i]  = pt_val[0];
+        y[i]  = pt_val[1];
+        z[i]  = pt_val[2];
+    }
+
+    xi = .25 * ( (x[0] + x[1] + x[4] + x[5]) - (x[3] + x[2] + x[6] + x[7]) );
+    xj = .25 * ( (x[1] + x[2] + x[6] + x[5]) - (x[0] + x[3] + x[7] + x[4]) );
+    xk = .25 * ( (x[4] + x[5] + x[6] + x[7]) - (x[0] + x[1] + x[2] + x[3]) );
+
+    yi = .25 * ( (y[0] + y[1] + y[4] + y[5]) - (y[3] + y[2] + y[6] + y[7]) );
+    yj = .25 * ( (y[1] + y[2] + y[6] + y[5]) - (y[0] + y[3] + y[7] + y[4]) );
+    yk = .25 * ( (y[4] + y[5] + y[6] + y[7]) - (y[0] + y[1] + y[2] + y[3]) );
+
+    zi = .25 * ( (z[0] + z[1] + z[4] + z[5]) - (z[3] + z[2] + z[6] + z[7]) );
+    zj = .25 * ( (z[1] + z[2] + z[6] + z[5]) - (z[0] + z[3] + z[7] + z[4]) );
+    zk = .25 * ( (z[4] + z[5] + z[6] + z[7]) - (z[0] + z[1] + z[2] + z[3]) );
+
+    vi = .25 * ( (v[0] + v[1] + v[4] + v[5]) - (v[3] + v[2] + v[6] + v[7]) );
+    vj = .25 * ( (v[1] + v[2] + v[6] + v[5]) - (v[0] + v[3] + v[7] + v[4]) );
+    vk = .25 * ( (v[4] + v[5] + v[6] + v[7]) - (v[0] + v[1] + v[2] + v[3]) );
+
+    // calc det
+    double vol =   xi * ( yj * zk - yk * zj)
+                 - xj * ( yi * zk - yk * zi)
+                 + xk * ( yi * zj - yj * zi);
+
+    vol = 1.0 / ( vol + tiny);
+
+    grad[0] = vol * (  vi * (yj*zk - yk*zj)
+                     + vj * (yk*zi - yi*zk)
+                     + vk * (yi*zj - yj*zi));
+
+    grad[1] = vol * (  vi * (xk*zj - xj*zk)
+                     + vj * (xi*zk - xk*zi)
+                     + vk * (xj*zi - xi*zj));
+
+    grad[2] = vol * (  vi * (xj*yk - xk*yj)
+                     + vj * (xk*yi - xi*yk)
+                     + vk * (xi*yj - xj*yi));
+
+}
+
+
 
 
 // ****************************************************************************

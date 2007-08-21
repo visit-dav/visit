@@ -454,6 +454,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Cyrus Harrison, Fri Jun  1 14:43:59 PDT 2007
 //    Added contraction and viscous_stress
 //
+//    Cyrus Harrison, Wed Aug  8 14:15:06 PDT 2007
+//    Modified to support new unified gradient expression
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -580,11 +583,15 @@ avtFunctionExpr::CreateFilters(string functionName)
     if (functionName == "ijk_gradient" || functionName == "ij_gradient")
     {
         avtGradientFilter *g = new avtGradientFilter();
-        g->SetDoLogicalGradient(true);
+        g->SetAlgorithm(LOGICAL);
         return g;
     }
-    if (functionName == "conn_components")
-        return new avtConnComponentsExpression();
+    if (functionName == "agrad")
+    {
+        avtGradientFilter *g = new avtGradientFilter();
+        g->SetAlgorithm(NODAL_TO_ZONAL_QUAD_HEX);
+        return g;
+    }
     if (functionName == "gradient")
         return new avtGradientFilter();
     if (functionName == "curl")
@@ -593,6 +600,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtDivergenceFilter();
     if (functionName == "laplacian" || functionName == "Laplacian")
         return new avtLaplacianFilter();
+    if (functionName == "conn_components")
+        return new avtConnComponentsExpression();
     if (functionName == "resrad")
         return new avtResradFilter();
     if (functionName == "magnitude")
