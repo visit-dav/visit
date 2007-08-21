@@ -422,9 +422,17 @@ $fullusage = "$usage
         expressions will attempt to generate useful results regardless of the
         similarity of the underlying meshes.
 
+	Note that the differences VisIt will compute in this mode are single
+	precision. This is true regardless of whether the input data is itself
+	double precision. VisIt will convert double precision to single 
+	precision before processing it. Although this is a result of earlier
+	visualization-specific design requirements and constraints, the intention
+	is that eventually double precision will be supported.
+
         Finally, be sure to bring up Controls->Macros in the GUI to find a set
         of useful operations specifically tailored to database differencing. Also,
-        typing 'help()' (including the '()') will generate a useful help message.
+        typing 'help()' (including the '()') at the python prompt after starting
+	'visit -diff' will generate a more detailed help message.
 
         -diff <ldb> <rdb>    Indicate you wish to run VisIt in database
                              differencing mode and specify the two databases
@@ -641,6 +649,7 @@ $debug_strace   = "";
 $debug_strace_args = "";
 $add_movie_args = 0;
 $add_diff_args  = 0;
+$add_diffsum_args = 0;
 $envonly        = 0;
 $logging        = 0;
 $req_compiler   = "";
@@ -681,6 +690,8 @@ while (scalar(@ARGV) > 0) {
     elsif ($arg eq "-engine" )   { $exe_name = "engine"; $exe_name_passed = 1;}
     elsif ($arg eq "-vcl" )      { $exe_name = "vcl"; $exe_name_passed = 1;}
     elsif ($arg eq "-diff" )     { $exe_name = "cli"; $add_diff_args = 1; $exe_name_passed = 1;
+                                   $leftdb = shift; $rightdb = shift;}
+    elsif ($arg eq "-diffsum" )  { $exe_name = "cli"; $add_diffsum_args = 1; $exe_name_passed = 1;
                                    $leftdb = shift; $rightdb = shift;}
     elsif ($arg eq "-movie" )    { $exe_name = "cli"; $add_movie_args = 1; $exe_name_passed = 1;}
     elsif ($arg eq "-s")         { if($add_movie_args) { $sfile = shift; push @visitargs, "-scriptfile", $sfile;} else { push @visitargs, $arg;}}
@@ -1274,6 +1285,10 @@ if($add_movie_args)
 if($add_diff_args)
 {
     push @visitargs, "-s", "$visitscriptdir/visitdiff.py", "-vdiff", $leftdb, $rightdb;
+}
+if($add_diffsum_args)
+{
+    push @visitargs, "-nowin", "-s", "$visitscriptdir/visitdiff.py", "-vdiff", $leftdb, $rightdb, "-summary_only";
 }
 
 # -----------------------------------------------------------------------------

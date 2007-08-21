@@ -83,6 +83,13 @@ def help():
     expressions by adding '-force_pos_cmfe' to the command line when running
     'visit -diff'.
 
+    Note that the differences VisIt will compute in this mode are single
+    precision. This is true regardless of whether the input data is itself
+    double precision. VisIt will convert double precision to single 
+    precision before processing it. Although this is a result of earlier
+    visualization-specific design requirements and constraints, the intention
+    is that eventually double precision will be supported.
+
     Expressions for the differences for all scalar variables will be under the
     'diffs' submenu. For material volume fractions, the scalar volume fraction
     variables will be under the 'matvf_comps' submenu and their differences will
@@ -450,11 +457,16 @@ def SyncTimeRight():
 # Programmer: Mark C. Miller 
 # Date:       Wed Jul 18 18:12:28 PDT 2007 
 #
+# Modifications:
+#   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
+#   Added support for difference summary mode 
+#
 ###############################################################################
 def ProcessCLArgs():
     global dbl
     global dbr
     global forcePosCMFE
+    global diffSummaryOnly
     try:
         i = 1
         while i < len(sys.argv):
@@ -464,6 +476,8 @@ def ProcessCLArgs():
                 i = i + 2
             if sys.argv[i] == "-force_pos_cmfe":
                 forcePosCMFE = 1
+            if sys.argv[i] == "-summary_only":
+                diffSummaryOnly = 1
             i = i + 1
     except:
         print "The -vdiff flag takes 2 database names.", dbl, dbr
@@ -537,13 +551,17 @@ def UpdateThisExpression(exprName, expr, currentExpressions, addedExpressions,
 #   Mark C. Miller, Thu Jul 19 21:36:47 PDT 2007
 #   Inverted loops to identify pre-defined expressions coming from md.
 #
+#   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
+#   Added support for difference summary mode 
+#
 ###############################################################################
 def UpdateExpressions(mdl, mdr):
     global forcePosCMFE
     global cmfeMode
     global diffVars
 
-    print "Defining expressions for state %d"%currentTimeState
+    if diffSummaryOnly == 0:
+        print "Defining expressions for state %d"%currentTimeState
 
     cmfeModeNew = 0
     diffVarsNew = []
@@ -718,24 +736,24 @@ def UpdateExpressions(mdl, mdr):
             deletedExpressions.append(currentExpressions[expr_i][0])
 
     # Print out some information about what we did
-    if len(addedExpressions) > 0:
-        print "    Added %d expressions..."%len(addedExpressions)
-        for expr_i in range(len(addedExpressions)):
-            print "       %s"%addedExpressions[expr_i]
-    if len(unchangedExpressions) > 0:
-        print "    Unchanged %d expressioons..."%len(unchangedExpressions)
-        for expr_i in range(len(unchangedExpressions)):
-            print "       %s"%unchangedExpressions[expr_i]
-    if len(updatedExpressions) > 0:
-        print "    Updated %d expressions..."%len(updatedExpressions)
-        for expr_i in range(len(updatedExpressions)):
-            print "       %s"%updatedExpressions[expr_i]
-    if len(deletedExpressions) > 0:
-        print "    Deleted %d expressions"%len(deletedExpressions)
-        for expr_i in range(len(deletedExpressions)):
-            print "       %s"%deletedExpressions[expr_i]
-
-    print "Finished defining expressions"
+    if diffSummaryOnly == 0:
+        if len(addedExpressions) > 0:
+            print "    Added %d expressions..."%len(addedExpressions)
+            for expr_i in range(len(addedExpressions)):
+                print "       %s"%addedExpressions[expr_i]
+        if len(unchangedExpressions) > 0:
+            print "    Unchanged %d expressioons..."%len(unchangedExpressions)
+            for expr_i in range(len(unchangedExpressions)):
+                print "       %s"%unchangedExpressions[expr_i]
+        if len(updatedExpressions) > 0:
+            print "    Updated %d expressions..."%len(updatedExpressions)
+            for expr_i in range(len(updatedExpressions)):
+                print "       %s"%updatedExpressions[expr_i]
+        if len(deletedExpressions) > 0:
+            print "    Deleted %d expressions"%len(deletedExpressions)
+            for expr_i in range(len(deletedExpressions)):
+                print "       %s"%deletedExpressions[expr_i]
+        print "Finished defining expressions"
 
     cmfeMode = cmfeModeNew
     diffVarsNew.sort()
@@ -749,6 +767,9 @@ def UpdateExpressions(mdl, mdr):
 # Programmer: Mark C. Miller 
 # Date:       Wed Jul 18 18:12:28 PDT 2007 
 #
+# Modifications:
+#   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
+#   Added support for difference summary mode 
 ###############################################################################
 def Initialize():
     global winDbMap 
@@ -813,7 +834,8 @@ def Initialize():
     CreateDatabaseCorrelation("DIFF", (dbl, dbr), 0)
 
     # Open the GUI
-    OpenGUI()
+    if diffSummaryOnly == 0:
+        OpenGUI()
 
     # Move the viewer's window area closer to the GUI.
     SetWindowArea(410,0,1100,1100)
@@ -846,7 +868,8 @@ def Initialize():
 	DrawPlots()
     SetActiveWindow(1)
 
-    print "Type 'help()' to get more information on using 'visit -diff'"
+    if diffSummaryOnly == 0:
+        print "Type 'help()' to get more information on using 'visit -diff'"
 
 ###############################################################################
 # Function: ChangeVar 
@@ -1334,9 +1357,17 @@ def CompareMinMaxInfos(a1, a2):
 # Programmer: Mark C. Miller 
 # Date:       Wed Jul 18 18:12:28 PDT 2007 
 #
+# Modifications:
+#   Mark C. Miller, Tue Aug 21 10:03:35 PDT 2007
+#   Added calls to disable re-draws and then re-enable to accelerate
+#
+#   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
+#   Added support for difference summary mode 
+#
 ###############################################################################
 def DiffSummary():
     SetActiveWindow(1)
+    DisableRedraw()
     SuppressQueryOutputOn()
     diffSummary = []
     for v in diffVars:
@@ -1345,6 +1376,8 @@ def DiffSummary():
             vname = vname.group(1)
         else:
             vname = v
+        if diffSummaryOnly == 1:
+	    print "Processing variable \"%s\""%v
         AddPlot("Pseudocolor", v)
         DrawPlots()
         Query("MinMax")
@@ -1356,23 +1389,25 @@ def DiffSummary():
 #                 0     1/5                2/6                  3/7              4/8
         if mininfo != None and maxinfo != None:
             diffSummary.append( \
-                (vname, qv[0], mininfo.group(2), mininfo.group(3), mininfo.group(5), \
-                        qv[1], maxinfo.group(2), maxinfo.group(3), maxinfo.group(5), 0.0))
+                (vname[-12:], qv[0], mininfo.group(2), mininfo.group(3), mininfo.group(5), \
+                        qv[1], maxinfo.group(2), maxinfo.group(3), maxinfo.group(5)))
         else:
-            diffSummary.append((vname, 0.0, "Unknown", "Unknown", "Unknown", \
-                                       0.0, "Unknown", "Unknown", "Unknown", 0.0))
+            diffSummary.append((vname[-12:], 0.0, "Unknown", "Unknown", "Unknown", \
+                                       0.0, "Unknown", "Unknown", "Unknown"))
         #time.sleep(0.5)
         DeleteActivePlots()
     SuppressQueryOutputOff()
     print "Difference Summary sorted in decreasing difference magnitude...\n"
+    print "NOTE: Differences are computed in only single precision"
     print "    var     |max -diff   | max -elem  ; -dom  |max +diff   | max +elem  ;  +dom |"
     print "------------|------------|--------------------|------------|--------------------|"
     diffSummary.sort(CompareMinMaxInfos)
     for k in range(len(diffSummary)):
         if diffSummary[k][1] == 0.0 and diffSummary[k][5] == 0.0:
-            print "% 12s| NO DIFFERENCES"%diffSummary[k][0]
+            print "% 12.12s| NO DIFFERENCES"%diffSummary[k][0]
         else:
-            print "% 12s|%+12.9f|%4s % 7s;% 7s|%+12.9f|%4s % 7s;% 7s|%+12.9f"%diffSummary[k]
+            print "% 12.12s|%+12.7f|%4s % 7s;% 7s|%+12.7f|%4s % 7s;% 7s|"%diffSummary[k]
+    RedrawWindow()
 
 ###############################################################################
 # Main program and global variables 
@@ -1380,6 +1415,9 @@ def DiffSummary():
 # Programmer: Mark C. Miller 
 # Date:       Wed Jul 18 18:12:28 PDT 2007 
 #
+# Modifications:
+#   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
+#   Added support for difference summary mode 
 ###############################################################################
 diffVars = []
 dbl = "notset"
@@ -1387,8 +1425,12 @@ dbr = "notset"
 mdl = 0
 mdr = 0
 forcePosCMFE = 0
+diffSummaryOnly = 0
 cmfeMode = 0
 currentTimeState = -1
 
 ProcessCLArgs()
 Initialize()
+if diffSummaryOnly == 1:
+    DiffSummary()
+    sys.exit()
