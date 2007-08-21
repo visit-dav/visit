@@ -116,7 +116,7 @@ avtSiloWriter::~avtSiloWriter()
 //  Method: avtSiloWriter::OpenFile
 //
 //  Purpose:
-//      Does no actual work.  Just records the stem name for the files.
+//      Does no actual work.  Just records the Op name for the files.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 11, 2003
@@ -126,6 +126,10 @@ avtSiloWriter::~avtSiloWriter()
 //    Added nblocks to this function and save it so we don't have to 
 //    trust the meta data.
 //
+//    Cyrus Harrison, Thu Aug 16 20:26:28 PDT 2007
+//    Separate dir and file name, so only file name can be used as stem 
+//    for mesh and var names.
+//
 // ****************************************************************************
 
 void
@@ -133,6 +137,15 @@ avtSiloWriter::OpenFile(const string &stemname, int nb)
 {
     stem = stemname;
     nblocks = nb;
+    dir ="";
+    // find dir if provided
+    int idx = stem.rfind("/");
+    if ( idx != string::npos )
+    {
+        int stem_len = stem.size() - (idx+1) ;
+        dir  = stem.substr(0,idx+1);
+        stem = stem.substr(idx+1,stem_len);
+    }
 }
 
 
@@ -565,6 +578,9 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //    Hank Childs, Wed Mar 28 10:12:01 PDT 2007
 //    Name the file differently for single block.
 //
+//    Cyrus Harrison, Thu Aug 16 20:42:30 PDT 2007
+//    Use dir+stem to create filename.
+//
 // ****************************************************************************
 
 void
@@ -574,11 +590,12 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     // Now matter what mesh type we have, the file they should go into should
     // have the same name.  Set up that file now.
     //
+    string fname = dir + stem;
     char filename[1024];
     if (nblocks > 1)
-        sprintf(filename, "%s.%d.silo", stem.c_str(), chunk);
+        sprintf(filename, "%s.%d.silo", fname.c_str(), chunk);
     else
-        sprintf(filename, "%s.silo", stem.c_str(), chunk);
+        sprintf(filename, "%s.silo", fname.c_str(), chunk);
 
 #ifdef E_CHECKSUM
     int oldEnable = DBSetEnableChecksums(0);
@@ -691,7 +708,8 @@ avtSiloWriter::CloseFile(void)
         debug5 << "avtSiloWriter: proc " << procid << " writting silo root"
                << "file" << endl;
         char filename[1024];
-        sprintf(filename, "%s.silo", stem.c_str());
+        string fname = dir + stem;
+        sprintf(filename, "%s.silo", fname.c_str());
 #ifdef E_CHECKSUM
         int oldEnable = DBSetEnableChecksums(0);
 #endif

@@ -85,6 +85,9 @@ class avtMeshMetaData;
 //    Added numblocks to the OpenFile method, and save off the actual
 //    encountered mesh types, because we cannot trust the metadata.
 //
+//    Cyrus Harrison, Thu Aug 16 20:50:24 PDT 2007
+//    Added dir to hold output directory.
+//
 // ****************************************************************************
 
 class
@@ -96,6 +99,7 @@ avtSiloWriter : public virtual avtDatabaseWriter
 
   protected:
     string         stem;
+    string         dir;
     string         meshname;
     string         matname;
     int            nblocks;
