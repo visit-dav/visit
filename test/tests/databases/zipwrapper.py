@@ -83,5 +83,11 @@ silr=SILRestriction()
 silr.TurnOffSet(silr.SetsInCategory("mat1")[0])
 SetPlotSILRestriction(silr)
 Test("ZipWrapper_06")
+DeleteAllPlots()
+
+OpenDatabase("../data/sphere.2d.hdf5.gz")
+AddPlot("FilledBoundary","materials")
+DrawPlots()
+Test("ZipWrapper_07")
 
 Exit()
