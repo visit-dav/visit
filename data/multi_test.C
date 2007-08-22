@@ -97,6 +97,7 @@ static int dupMultiMatToo = 0;
 static int userDefZonelist = 0;
 static int noTimeInvariantMultimesh = 0;
 static int noHalfMesh = 0;
+static int noEmptys = 0;
 
 double varextents[MAXNUMVARS][2*MAXBLOCKS];
 int mixlens[MAXBLOCKS];
@@ -2621,6 +2622,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     int             one = 1;
 
     int             nblocks = nblocks_x * nblocks_y * nblocks_z;
+    int             nblocks_dup = noEmptys ? iteration : nblocks;
     int             extentssize;
     int            *tmpList;
     double         *tmpExtents;
@@ -2837,8 +2839,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
 
     free(tmpExtents);
 
-    if (!noDups && DBPutMultimesh(dbfile, "mesh1_dup", nblocks,
-                       meshnamesdup, meshtypes, NULL) == -1)
+    if (!noDups && nblocks_dup && DBPutMultimesh(dbfile, "mesh1_dup", nblocks_dup,
+         meshnamesdup, meshtypes, NULL) == -1)
     {
         fprintf(stderr, "Error creating multi mesh\n");
         return (-1);
@@ -2854,8 +2856,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         fprintf(stderr, "Error creating multi var d\n");
         return (-1);
     }
-    if (!noDups && DBPutMultivar(dbfile, "d_dup", nblocks, var1namesdup, vartypes, NULL)
-        == -1)
+    if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "d_dup", nblocks_dup,
+        var1namesdup, vartypes, NULL) == -1)
     {
         fprintf(stderr, "Error creating multi var d\n");
         return (-1);
@@ -2894,8 +2896,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         fprintf(stderr, "Error creating multi var u\n");
         return (-1);
     }
-    if (!noDups && DBPutMultivar(dbfile, "u_dup", nblocks, var3namesdup, vartypes, NULL)
-        == -1)
+    if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "u_dup", nblocks_dup,
+        var3namesdup, vartypes, NULL) == -1)
     {
         fprintf(stderr, "Error creating multi var u\n");
         return (-1);
@@ -2908,7 +2910,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
         fprintf(stderr, "Error creating multi var v\n");
         return (-1);
     }
-    if (!noDups && DBPutMultivar(dbfile, "v_dup", nblocks, var4namesdup, vartypes, NULL)
+    if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "v_dup", nblocks_dup,
+        var4namesdup, vartypes, NULL)
         == -1)
     {
         fprintf(stderr, "Error creating multi var v\n");
@@ -2917,8 +2920,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
 
     // create a hidden variable
     DBAddOption(optlist, DBOPT_HIDE_FROM_GUI, &one) ;
-    if (!noDups && DBPutMultivar(dbfile, "v_dup_hidden", nblocks, var4namesdup,
-        vartypes, optlist) == -1)
+    if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "v_dup_hidden", nblocks_dup,
+        var4namesdup, vartypes, optlist) == -1)
     {
         fprintf(stderr, "Error creating multi var v\n");
         return (-1);
@@ -2934,8 +2937,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
             fprintf(stderr, "Error creating multi var w\n");
             return (-1);
         }
-        if (!noDups && DBPutMultivar(dbfile, "w_dup", nblocks, var5namesdup, vartypes, NULL)
-            == -1)
+        if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "w_dup", nblocks_dup,
+	    var5namesdup, vartypes, NULL) == -1)
         {
             fprintf(stderr, "Error creating multi var w\n");
             return (-1);
@@ -2951,8 +2954,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
             fprintf(stderr, "Error creating multi var w\n");
             return (-1);
         }
-        if (!noDups && DBPutMultivar(dbfile, "hist_dup", nblocks, var6namesdup, vartypes, NULL)
-            == -1)
+        if (!noDups && nblocks_dup && DBPutMultivar(dbfile, "hist_dup", nblocks_dup,
+	    var6namesdup, vartypes, NULL) == -1)
         {
             fprintf(stderr, "Error creating multi var w\n");
             return (-1);
@@ -2977,8 +2980,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
             fprintf(stderr, "Error creating multi material\n");
             return (-1);
         }
-        if (dupMultiMatToo && !noDups &&
-            DBPutMultimat(dbfile, "mat1_dup", nblocks, matnamesdup, NULL) == -1)
+        if (dupMultiMatToo && !noDups && nblocks_dup &&
+            DBPutMultimat(dbfile, "mat1_dup", nblocks_dup, matnamesdup, NULL) == -1)
         {
             fprintf(stderr, "Error creating multi material\n");
             return (-1);
@@ -3086,6 +3089,10 @@ main(int argc, char **argv)
         else if (strcmp(argv[i], "-noHalfMesh") == 0)
         {
             noHalfMesh = 1;
+        }
+        else if (strcmp(argv[i], "-noEmptys") == 0)
+        {
+            noEmptys = 1;
         }
         else
         {
