@@ -334,7 +334,7 @@ CPPFLAGS=@CPPFLAGS@ -I. -I@DATA_REL_VISIT_PATH@/include -I@DATA_REL_VISIT_PATH@/
 SRC=bigsil.C curve_builder.C distribution_curves.C ghost.C global_node.C \
     globe.C multi_test.C noise.C noise2d.C specmix.C testall.C tire.C wave.C \
     degen_meshes.C quad_disk.C emptydomains.C galaxy.C csg.C lowfrac.C \
-    bov.C largefile.C one_quad.C fullframe.C thinplane.C $(PDBSRC)
+    bov.C largefile.C one_quad.C fullframe.C thinplane.C sid97.C $(PDBSRC)
 
 OBJ=$(SRC:.C=.o)
 
