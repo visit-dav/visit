@@ -72,6 +72,9 @@ class     ExprPipelineState;
 //    purpose (setting up the seed for the random number generator in a
 //    reproducible way).
 //
+//    Hank Childs, Wed Aug 22 09:50:06 PDT 2007
+//    Declare variable dimension to always be 1.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
@@ -87,6 +90,7 @@ class EXPRESSION_API avtRandomFilter : public avtSingleInputExpressionFilter
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return true; };
+    virtual int               GetVariableDimension() { return 1; }
 };
 
 

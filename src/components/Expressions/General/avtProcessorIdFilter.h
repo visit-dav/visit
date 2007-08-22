@@ -63,6 +63,9 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Wed Aug 22 09:50:06 PDT 2007
+//    Declare variable dimension to always be 1.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtProcessorIdFilter : public avtSingleInputExpressionFilter
@@ -77,6 +80,7 @@ class EXPRESSION_API avtProcessorIdFilter : public avtSingleInputExpressionFilte
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return true; };
+    virtual int               GetVariableDimension() { return 1; }
 };
 
 
