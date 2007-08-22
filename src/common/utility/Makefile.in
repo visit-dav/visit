@@ -124,7 +124,7 @@ TESTOBJ=$(TESTSRC:.C=.o)
 all: message $(LIBSHARED) $(tmpbin)/MRUCache_test
 
 clean:
-	$(RM) $(OBJ) $(LIBSHARED)
+	$(RM) $(OBJ) $(LIBSHARED) $(TESTOBJ)
 
 ##
 ## Other targets
