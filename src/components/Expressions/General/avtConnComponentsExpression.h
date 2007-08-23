@@ -67,6 +67,9 @@ class     avtIntervalTree;
 //    Cyrus Harrison, Sat Aug 11 14:41:01 PDT 2007
 //    Added LabelGhostNeighbors and PerformRestriction
 //
+//    Cyrus Harrison, Thu Aug 23 08:35:12 PDT 2007
+//    Added ProcessArguments and option to explicitly disable ghost neighbors
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
@@ -83,7 +86,7 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
     virtual int               GetVariableDimension() { return 1; };
     virtual bool              IsPointVariable(void) { return false; }
     virtual int               GetNumberOfComponents();
-
+    virtual void              ProcessArguments(ArgsExpr*, ExprPipelineState *);
 
     // ************************************************************************
     //  Class: avtConnComponentsExpression::UnionFind
@@ -121,7 +124,7 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
 
     };
 
-    class SpatialPartition; 
+    class SpatialPartition;
 
     // ************************************************************************
     //  Class: avtConnComponentsExpression::BoundarySet
@@ -205,8 +208,10 @@ class EXPRESSION_API avtConnComponentsExpression : public avtExpressionFilter
     int                       currentProgress;
     int                       totalSteps;
 
+    bool                      enableGhostNeighbors;
+
     virtual void              Execute(void);
-    
+
     virtual avtPipelineSpecification_p
                                PerformRestriction(avtPipelineSpecification_p);
 
