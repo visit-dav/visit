@@ -3090,10 +3090,6 @@ main(int argc, char **argv)
         {
             noHalfMesh = 1;
         }
-        else if (strcmp(argv[i], "-noEmptys") == 0)
-        {
-            noEmptys = 1;
-        }
         else
         {
             fprintf(stderr, "unrecognized argument \"%s\"\n", argv[i]);
@@ -3221,26 +3217,32 @@ main(int argc, char **argv)
     // Create time series of multi-block ucd 3d meshes with
     // variables whose SIL is changing with time
     //
-    for (iter = 0; iter < 10 && !noCycles; iter++)
+    for (noEmptys = 0; noEmptys < 2; noEmptys++)
     {
-        char tmpName[256];
-        sprintf(tmpName, "hist_ucd3d_%04d", iter);
-        fprintf(stderr, "creating %s\n", tmpName);
+        for (iter = 0; iter < 10 && !noCycles; iter++)
+        {
+            char tmpName[256];
+	    if (noEmptys)
+                sprintf(tmpName, "histne_ucd3d_%04d", iter);
+	    else
+                sprintf(tmpName, "hist_ucd3d_%04d", iter);
+            fprintf(stderr, "creating %s\n", tmpName);
 
-        if ((dbfile = DBCreate(tmpName, DB_CLOBBER, DB_LOCAL,
-                               "multi-block ucd 3d test file", driver))
-            == NULL)
-        {
-            fprintf(stderr, "Could not create '%s'.\n", tmpName);
-        }
-        else if (build_multi(dbfile, DB_UCDMESH, DB_UCDVAR, 3, 3, 4, 3, 0, 4*iter) == -1)
-        {
-            fprintf(stderr, "Error in creating '%s'.\n", tmpName);
-            DBClose(dbfile);
-        }
-        else
-        {
-            DBClose(dbfile);
+            if ((dbfile = DBCreate(tmpName, DB_CLOBBER, DB_LOCAL,
+                                   "multi-block ucd 3d test file", driver))
+                == NULL)
+            {
+                fprintf(stderr, "Could not create '%s'.\n", tmpName);
+            }
+            else if (build_multi(dbfile, DB_UCDMESH, DB_UCDVAR, 3, 3, 4, 3, 0, 4*iter) == -1)
+            {
+                fprintf(stderr, "Error in creating '%s'.\n", tmpName);
+                DBClose(dbfile);
+            }
+            else
+            {
+                DBClose(dbfile);
+            }
         }
     }
 
