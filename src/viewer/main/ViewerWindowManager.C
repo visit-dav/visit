@@ -9514,3 +9514,40 @@ ViewerWindowManager::UpdateInteractorAtts()
     interactorClientAtts->Notify();
 }
 
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetTryHarderCyclesTimes
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 22, 2007 
+//
+// ****************************************************************************
+
+bool ViewerWindowManager::SetTryHarderCyclesTimes(bool newVal)
+{
+    bool oldVal = clientAtts->GetTryHarderCyclesTimes();
+    if (oldVal != newVal)
+    {
+        clientAtts->SetTryHarderCyclesTimes(newVal);
+	clientAtts->Notify();
+    }
+    return oldVal;
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetTreatAllDBsAsTimeVarying
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   August 22, 2007 
+//
+// ****************************************************************************
+
+bool ViewerWindowManager::SetTreatAllDBsAsTimeVarying(bool newVal)
+{
+    bool oldVal = clientAtts->GetTreatAllDBsAsTimeVarying();
+    if (oldVal != newVal)
+    {
+        clientAtts->SetTreatAllDBsAsTimeVarying(newVal);
+	clientAtts->Notify();
+    }
+    return oldVal;
+}

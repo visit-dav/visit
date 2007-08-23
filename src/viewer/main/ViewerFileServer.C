@@ -35,7 +35,6 @@
 *
 *****************************************************************************/
 
-#include <stdio.h>   // for sprintf
 #include <stdlib.h>
 #include <snprintf.h>
 #include <ViewerFileServer.h>
@@ -49,6 +48,7 @@
 #include <DataNode.h>
 #include <DBPluginInfoAttributes.h>
 #include <GetMetaDataException.h>
+#include <GlobalAttributes.h>
 #include <HostProfileList.h>
 #include <HostProfile.h>
 #include <LostConnectionException.h>
@@ -73,6 +73,31 @@
 
 // A static pointer to the one and only instance of ViewerFileServer
 ViewerFileServer *ViewerFileServer::instance = NULL;
+
+
+// ****************************************************************************
+// Function: GetTreatAllDBsAsTimeVarying 
+//
+// Programmer: Mark C. Miller 
+// Creation:   August 22, 2007 
+// ****************************************************************************
+static bool GetTreatAllDBsAsTimeVarying()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    return wM->GetClientAtts()->GetTreatAllDBsAsTimeVarying();
+}
+
+// ****************************************************************************
+// Function: GetTreatAllDBsAsTimeVarying 
+//
+// Programmer: Mark C. Miller 
+// Creation:   August 22, 2007 
+// ****************************************************************************
+static bool GetTryHarderCyclesTimes()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    return wM->GetClientAtts()->GetTryHarderCyclesTimes();
+}
 
 // ****************************************************************************
 // Method: ViewerFileServer::ViewerFileServer
@@ -104,6 +129,10 @@ ViewerFileServer *ViewerFileServer::instance = NULL;
 //
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added initialization of tryHarderCyclesTimes
+//
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Replaced tryHarderCyclesTimes and treatAllDBsAsTimeVarying with
+//   static functions calling VWM
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
@@ -111,8 +140,6 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
 {
     databaseCorrelationList = new DatabaseCorrelationList;
     dbPluginInfoAtts = new DBPluginInfoAttributes;
-    tryHarderCyclesTimes = false;
-    treatAllDBsAsTimeVarying = false;
 }
 
 // ****************************************************************************
@@ -128,12 +155,14 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
 //   
 //   Mark C. Miller, Tue May 31 20:12:42 PDT 2005
 //   Added initialization of tryHarderCyclesTimes
+//
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Replaced tryHarderCyclesTimes and treatAllDBsAsTimeVarying with
+//   static functions calling VWM
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer(const ViewerFileServer &) : ViewerServerManager()
 {
-    tryHarderCyclesTimes = false;
-    treatAllDBsAsTimeVarying = false;
 }
 
 // ****************************************************************************
@@ -273,6 +302,8 @@ ViewerFileServer::Instance()
 //   Brad Whitlock, Fri Mar 26 10:47:51 PDT 2004
 //   I rewrote the method so it uses GetMetaDataForState.
 //
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Added logic for treatAllDBsAsTimeVarying
 // ****************************************************************************
 
 bool
@@ -283,6 +314,8 @@ ViewerFileServer::MetaDataIsInvariant(const std::string &host,
     // Get the metadata for the specified state and then return whether it
     // is invariant.
     //
+    if (GetTreatAllDBsAsTimeVarying())
+        return false;
     const avtDatabaseMetaData *md = GetMetaDataForState(host, filename, state);
     return (md != 0) ? (!md->GetMustRepopulateOnStateChange()) : true;
 }
@@ -474,7 +507,7 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
             // If the metadata does not change over time or if it does and
             // the time states match then return what we found.
             //
-            if((!treatAllDBsAsTimeVarying && 
+            if((!GetTreatAllDBsAsTimeVarying() && 
 	        !pos->second->GetMustRepopulateOnStateChange()) ||
                ts == timeState)
             {
@@ -522,6 +555,9 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   Hank Childs, Fri Jan 12 09:12:11 PST 2007
 //   Clean up error message a bit.
 //
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Changed refernce to treatAllDBsAsTimeVarying as a function call to
+//   the static method here. Likewise for TryHarderCyclesTimes.
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -555,9 +591,9 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                 const avtDatabaseMetaData *md =
                     servers[host]->proxy->GetMetaData(db, timeState,
                                               forceReadAllCyclesAndTimes ||
-                                              tryHarderCyclesTimes,
+                                              GetTryHarderCyclesTimes(),
                                               forcedFileType,
-					      treatAllDBsAsTimeVarying);
+					      GetTreatAllDBsAsTimeVarying());
 
                 if(md != NULL)
                 {
@@ -570,8 +606,9 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                     // into the name though if we got it using ANY_STATEs
                     //
                     std::string key(ComposeDatabaseName(host, db));
-                    if (mdCopy->GetMustRepopulateOnStateChange() &&
-                        timeState != ANY_STATE)
+                    if ((mdCopy->GetMustRepopulateOnStateChange() ||
+		                 GetTreatAllDBsAsTimeVarying()) &&
+                       timeState != ANY_STATE)
                     {
                         char timeStateString[20];
                         SNPRINTF(timeStateString, 20, ":%d", timeState);
@@ -750,6 +787,9 @@ ViewerFileServer::GetSIL(const std::string &host,
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Changed reference to treatAllDBsAsTimeVarying to a call to a static
+//   function.
 // ****************************************************************************
 
 const avtSIL *
@@ -795,7 +835,7 @@ ViewerFileServer::GetSILForState(const std::string &host,
             // If the metadata does not change over time or if it does and
             // the time states match then return what we found.
             //
-            if ((invariantMetaData || ts == timeState) && !treatAllDBsAsTimeVarying)
+            if ((invariantMetaData || ts == timeState) && !GetTreatAllDBsAsTimeVarying())
             {
                 return pos->second;
             }
@@ -825,6 +865,9 @@ ViewerFileServer::GetSILForState(const std::string &host,
 //
 // Modifications:
 //   
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Changed reference to treatAllDBsAsTimeVarying to a call to a static
+//   function.
 // ****************************************************************************
 
 const avtSIL *
@@ -856,7 +899,7 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
                 // Create a key to use when storing the SIL in the map.
                 //
                 std::string key(ComposeDatabaseName(host, db));
-                if(treatAllDBsAsTimeVarying ||
+                if(GetTreatAllDBsAsTimeVarying() ||
 		   (timeState != ANY_STATE &&
                     !MetaDataIsInvariant(host, db, timeState)))
                 {

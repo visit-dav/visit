@@ -313,6 +313,8 @@ class     vtkUnstructuredGrid;
 //    Hank Childs, Thu Jul 26 16:32:50 PDT 2007
 //    Added method CreateSimplifiedNestingRepresentation.
 //
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying to PopulateSIL
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -356,7 +358,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     static  bool               issuedOriginalConnectivityWarning;
 
-    virtual void               PopulateSIL(avtSIL *, int=0);
+    virtual void               PopulateSIL(avtSIL *, int=0,
+                                   bool treatAllDBsAsTimeVarying = false);
     virtual void               PopulateIOInformation(int ts, avtIOInformation &);
     virtual void               SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int timeState);
     virtual void               SetDatabaseMetaData(avtDatabaseMetaData *md,

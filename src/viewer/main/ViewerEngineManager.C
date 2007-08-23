@@ -56,6 +56,7 @@
 #include <AnnotationAttributes.h>
 #include <ConstructDDFAttributes.h>
 #include <ExportDBAttributes.h>
+#include <GlobalAttributes.h>
 #include <PickAttributes.h>
 #include <ProcessAttributes.h>
 #include <QueryAttributes.h>
@@ -1769,6 +1770,9 @@ ViewerEngineManager::ExternalRender(const ExternalRenderRequestInfo& reqInfo,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added mesh management attributes 
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Obtained treatAllDBsAsTimeVarying from VWM instead of VFS
 // ****************************************************************************
 
 avtDataObjectReader_p
@@ -1817,7 +1821,9 @@ ViewerEngineManager::GetDataObjectReader(ViewerPlot *const plot)
             }
 
             // Tell the engine to generate the plot
-	    bool treatAllDBsAsTimeVarying = ViewerFileServer::Instance()->GetTreatAllDBsAsTimeVarying();
+	    bool treatAllDBsAsTimeVarying =
+	        ViewerWindowManager::Instance()->GetClientAtts()->
+		    GetTreatAllDBsAsTimeVarying();
             engine->ReadDataObject(defaultFormat, 
                                    plot->GetDatabaseName(),
                                    plot->GetVariableName(),

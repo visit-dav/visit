@@ -52,11 +52,14 @@ using std::string;
 //
 // Modifications:
 //
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Added treatAllDBsAsTimeVarying
 // ****************************************************************************
 
-GetSILRPC::GetSILRPC() : BlockingRPC("si",&sil)
+GetSILRPC::GetSILRPC() : BlockingRPC("sib",&sil)
 {
     timeState = 0;
+    treatAllDBsAsTimeVarying = false;
 }
 
 // ****************************************************************************
@@ -114,16 +117,19 @@ GetSILRPC::TypeName() const
 //    Brad Whitlock, Tue May 13 15:33:32 PST 2003
 //    Added timeState.
 //
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying
 // ****************************************************************************
 
 const SILAttributes *
-GetSILRPC::operator()(const string &f, int ts)
+GetSILRPC::operator()(const string &f, int ts, bool treatAllDBsAsTimeVarying)
 {
     debug3 << "Executing GetSIL RPC on file " << f.c_str()
            << ", timestate = " << ts << endl;
 
     SetFile(f);
     SetTimeState(ts);
+    SetTreatAllDBsAsTimeVarying(treatAllDBsAsTimeVarying);
 
     // Try to execute the RPC.
     Execute();
@@ -152,6 +158,8 @@ GetSILRPC::operator()(const string &f, int ts)
 //   Brad Whitlock, Tue May 13 15:34:13 PST 2003
 //   Added timeState.
 //
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Added treatAllDBsAsTimeVarying
 // ****************************************************************************
 
 void
@@ -159,6 +167,7 @@ GetSILRPC::SelectAll()
 {
     Select(0, (void*)&file);
     Select(1, (void*)&timeState);
+    Select(2, (void*)&treatAllDBsAsTimeVarying);
 }
 
 // ****************************************************************************
@@ -202,6 +211,20 @@ GetSILRPC::SetTimeState(int ts)
 }
 
 // ****************************************************************************
+// Method: GetSILRPC::SetTreatAllDBsAsTimeVarying
+//
+// Programmer: Mark C. Miller 
+// Creation:   August 22, 2007 
+//   
+// ****************************************************************************
+void
+GetSILRPC::SetTreatAllDBsAsTimeVarying(bool val)
+{
+    treatAllDBsAsTimeVarying = val;
+    Select(2, (void*)&treatAllDBsAsTimeVarying);
+}
+
+// ****************************************************************************
 // Method: GetSILRPC::GetFile
 //
 // Purpose: 
@@ -237,4 +260,17 @@ int
 GetSILRPC::GetTimeState() const
 {
     return timeState;
+}
+
+// ****************************************************************************
+// Method: GetSILRPC::GetTreatAllDBsAsTimeVarying
+//
+// Programmer: Mark C. Miller 
+// Creation:   August 22, 2007 
+//   
+// ****************************************************************************
+bool
+GetSILRPC::GetTreatAllDBsAsTimeVarying() const
+{
+    return treatAllDBsAsTimeVarying;
 }

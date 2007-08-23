@@ -171,6 +171,9 @@ class SILAttributes;
 //    Brad Whitlock, Wed Mar 14 20:33:41 PST 2007
 //    Added overload of GetMetaDataForState.
 //
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Removed methods to Set/Get TryHarderCyclesTimes and
+//    TreatAllDBsAsTimeVarying
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -310,15 +313,6 @@ public:
                                                  const std::string &db,
                                                  int state);
 
-    void                       SetTryHarderCyclesTimes(bool val)
-                                   { tryHarderCyclesTimes = val; }
-    bool                       GetTryHarderCyclesTimes() const
-                                   { return tryHarderCyclesTimes; }
-    void                       SetTreatAllDBsAsTimeVarying(bool val)
-                                   { treatAllDBsAsTimeVarying = val; }
-    bool                       GetTreatAllDBsAsTimeVarying() const
-                                   { return treatAllDBsAsTimeVarying; }
-
     void                       CreateNode(DataNode *, 
                                           const std::map<std::string,std::string> &,
                                           bool detailed);
@@ -353,8 +347,6 @@ private:
     DBPluginInfoAttributes   *dbPluginInfoAtts;
     stringVector              declinedFiles;
     intVector                 declinedFilesLength;
-    bool                      tryHarderCyclesTimes;
-    bool                      treatAllDBsAsTimeVarying;
 };
 
 #endif

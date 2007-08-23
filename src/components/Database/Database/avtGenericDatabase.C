@@ -2983,13 +2983,17 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
 //    Brad Whitlock, Wed May 14 09:12:42 PDT 2003
 //    Added optional timeState argument.
 //
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying
+//
 // ****************************************************************************
 
 void
-avtGenericDatabase::PopulateSIL(avtSIL *sil, int timeState)
+avtGenericDatabase::PopulateSIL(avtSIL *sil, int timeState,
+    bool treatAllDBsAsTimeVarying)
 {
     int timerHandle = visitTimer->StartTimer();
-    avtDatabaseMetaData *md = GetMetaData(timeState);
+    avtDatabaseMetaData *md = GetMetaData(timeState, treatAllDBsAsTimeVarying);
     avtSILGenerator gen;
     gen.CreateSIL(md, sil);
     visitTimer->StopTimer(timerHandle, "Creating a SIL object.");
