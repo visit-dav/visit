@@ -7,6 +7,10 @@
 #  Programmer: Cyrus Harrison
 #  Date:       February 22, 2006
 #
+#  Modifications:
+#    Cyrus Harrison, Thu Aug 23 09:42:43 PDT 2007
+#    Turned off ghost neighbors optimization for exodus balls dataset.
+#
 # ----------------------------------------------------------------------------
 
 a = AnnotationAttributes()
@@ -70,7 +74,7 @@ TestText("conncomp_2d_weighted_var_sum",res)
 
 DeleteAllPlots()
 
-DefineScalarExpression("_ccl_test_3d", "conn_components(Mesh)")
+DefineScalarExpression("_ccl_test_3d", "conn_components(Mesh,0)")
 # exodus test
 OpenDatabase("../data/exodus_test_data/balls.exodus")
 
