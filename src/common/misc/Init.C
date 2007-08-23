@@ -55,7 +55,7 @@
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
-
+#include <visit-config.h>
 
 static void RemovePrependedDirs(const char *, char *); 
 static char executableName[256];
@@ -182,6 +182,10 @@ NewHandler(void)
 //    Added explicit call to SetFilename for TimingsManager. This is to
 //    handle cases where TimingsManager may have already been instanced
 //    before Initialize is called as in the engine.
+//
+//    Kathleen Bonnell, Wed Aug 22 18:00:57 PDT 2007 
+//    On Windows, write timings and log files to User's directory. 
+//
 // ****************************************************************************
 
 void
@@ -239,6 +243,20 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
     RemovePrependedDirs(argv[0], progname_wo_dir);
     strcpy(executableName, progname_wo_dir);
     strcpy(componentName, progname_wo_dir);
+#ifdef WIN32
+    // On windows, we want timings and log files to go in user's directory,
+    // not install directory, because users may not have write permissions.
+    const char *home = getenv("VISITUSERHOME");
+    std::string homedir;
+    if(home != 0)
+    {
+        homedir = std::string(home);
+        if(homedir[homedir.size() - 1] != SLASH_CHAR)
+            homedir += SLASH_STRING;
+        homedir += executableName;
+        strcpy(progname_wo_dir, homedir.c_str());
+    }
+#endif
     char progname[256];
     if (n > 1)
     {
@@ -476,6 +494,10 @@ Init::Finalize(void)
 //  Programmer:   Hank Childs
 //  Creation:     August 13, 2001
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Aug 22 18:00:57 PDT 2007
+//    Use SLASH_CHAR.
+//
 // ****************************************************************************
 
 static void
@@ -486,7 +508,7 @@ RemovePrependedDirs(const char *path, char *name)
     //
     int  len = strlen(path);
     int lastSlash;
-    for (lastSlash=len ; path[lastSlash]!='/' && lastSlash>=0 ; lastSlash--)
+    for (lastSlash=len ; path[lastSlash]!=SLASH_CHAR && lastSlash>=0 ; lastSlash--)
     {
         continue;
     }
@@ -501,7 +523,7 @@ RemovePrependedDirs(const char *path, char *name)
 
     //
     //
-    if (path[lastSlash] == '/')
+    if (path[lastSlash] == SLASH_CHAR)
     {
         strcpy(name, path + lastSlash + 1);
     }

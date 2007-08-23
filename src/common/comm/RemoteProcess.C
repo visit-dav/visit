@@ -878,6 +878,9 @@ static void *threaded_accept_callback(void *data)
 //   Brad Whitlock, Tue Jan 17 13:43:05 PST 2006
 //   Added some debug logging.
 //
+//   Kathleen Bonnell, Wed Aug 22 18:00:57 PDT 2007 
+//   Added 'Sleep' command to while-loop to speed up launch on Windows. 
+//
 // ****************************************************************************
 
 int
@@ -969,6 +972,9 @@ RemoteProcess::MultiThreadedAcceptSocket()
                 noDescriptor = (cb.desc == -1);
                 noProcessError = (cb.Errno == 0 && childDied[GetProcessId()] == false);
                 MUTEX_UNLOCK(cb.mutex);
+#ifdef WIN32
+                Sleep(1);
+#endif
             }
             while(noDescriptor && noProcessError && noCancel);
             debug5 << endl;

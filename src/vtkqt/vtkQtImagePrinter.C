@@ -115,6 +115,9 @@ vtkQtImagePrinter::vtkQtImagePrinter() : print()
 //   Brad Whitlock, Fri May 12 14:49:52 PST 2006
 //   Check for data == NULL just in case.
 //
+//   Kathleen Bonnell, Wed Aug 22 17:40:34 PDT 2007 
+//   Made scaling of viewport coords specific to WIN32 and QT version 3.0.2. 
+//
 // ****************************************************************************
 
 void
@@ -207,7 +210,7 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6])
     //
     int vptX = (metrics.width() - vptW) / 2;
     int vptY = (metrics.height() - vptH) / 2;
-#if defined(_WIN32)
+#if defined(_WIN32) && QT_VERSION == 302
     // At this point, I'm not sure whether this is because of Windows
     // or because of printing support in Qt 3.0.2. Just make the image's
     // viewport larger for now.
