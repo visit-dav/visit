@@ -279,4 +279,27 @@ DrawPlots()
 t = GetLastError()
 TestText("silo_29", t)
 
+#
+# Test that we get correct SIL behavior for a database
+# with a varying SIL and TreatAllDBsAsTimeVarying turned
+# on
+#
+DeleteAllPlots()
+OpenDatabase("../data/histne_ucd3d_* database", 2)
+AddPlot("Pseudocolor", "d_dup")
+DrawPlots()
+Test("silo_30")
+TimeSliderNextState()
+Test("silo_31")
+
+SetTreatAllDBsAsTimeVarying(1)
+TimeSliderNextState()
+Test("silo_32")
+TimeSliderNextState()
+Test("silo_33")
+TimeSliderPreviousState()
+TimeSliderPreviousState()
+TimeSliderPreviousState()
+Test("silo_34")
+
 Exit()
