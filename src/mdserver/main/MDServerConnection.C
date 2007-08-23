@@ -797,10 +797,13 @@ MDServerConnection::GetCurrentMetaData() const
 //   Hank Childs, Thu Jan 11 16:14:25 PST 2007
 //   Capture the list of plugins used to open a file.
 //
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Added treatAllDBsAsTimeVarying
 // ****************************************************************************
 
 void
-MDServerConnection::ReadSIL(std::string file, int timeState)
+MDServerConnection::ReadSIL(std::string file, int timeState,
+    bool treatAllDBsAsTimeVarying)
 {
     if(currentSIL != NULL)
     {
@@ -819,7 +822,7 @@ MDServerConnection::ReadSIL(std::string file, int timeState)
     avtDatabase *db = GetDatabase(file, ts, false, plugins);
     if (db != NULL)
     {
-        avtSIL *s  = db->GetSIL(ts);
+        avtSIL *s  = db->GetSIL(ts, treatAllDBsAsTimeVarying);
 
         // Delete the SIL attributes if they are not NULL.
         if(currentSIL != NULL)

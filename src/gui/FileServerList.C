@@ -2509,6 +2509,9 @@ FileServerList::GetTreatAllDBsAsTimeVarying() const
 //   
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Totally re-wrote to mimic metadata cache behavior 
+//
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Added use of treatAllDBsAsTimeVarying to GetSIL call to server.
 // ****************************************************************************
 
 const avtSIL *
@@ -2554,7 +2557,8 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
             return 0;
 
         MDServerProxy *mds = svit->second->server;
-        const SILAttributes *sil = mds->GetSIL(filename.PathAndFile(), timeState);
+        const SILAttributes *sil = mds->GetSIL(filename.PathAndFile(),
+	    timeState, treatAllDBsAsTimeVarying);
 
         // cache what we got
         if (sil)
@@ -2565,8 +2569,9 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
 
             // decide on the right key
             string useKey = mdKeys[0]; // non-state-qualified key
-            if (treatAllDBsAsTimeVarying || GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0)->
-                                            GetMustRepopulateOnStateChange())
+            if (treatAllDBsAsTimeVarying ||
+	        GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0)->
+                    GetMustRepopulateOnStateChange())
                 useKey = mdKeys[1];    // state-qualified key
 
             // cache it. Note MRU handles deletion

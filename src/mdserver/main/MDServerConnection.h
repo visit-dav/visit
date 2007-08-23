@@ -181,6 +181,9 @@ class Xfer;
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying to ReadSIL
 // ****************************************************************************
 
 class MDServerConnection
@@ -232,7 +235,8 @@ public:
 		      bool treatAllDBsAsTimeVarying);
     avtDatabaseMetaData *GetCurrentMetaData() const;
 
-    void ReadSIL(std::string file, int timeState);
+    void ReadSIL(std::string file, int timeState,
+        bool treatAllDBsAsTimeVarying);
     SILAttributes *GetCurrentSIL() const;
 
     DBPluginInfoAttributes *GetDBPluginInfo();

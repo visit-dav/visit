@@ -60,6 +60,8 @@
 //   Brad Whitlock, Tue May 13 15:31:25 PST 2003
 //   I added timeState.
 //
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Added treatAllDBsAsTimeVarying
 // ****************************************************************************
 
 class MDSERVER_RPC_API GetSILRPC : public BlockingRPC
@@ -71,15 +73,18 @@ public:
     virtual const std::string TypeName() const;
 
     // Invokation method
-    const SILAttributes *operator()(const std::string&, int ts = 0);
+    const SILAttributes *operator()(const std::string&, int ts = 0,
+        bool treatAllDBsAsTimeVarying = false);
 
     // Property setting methods
     void SetFile(const std::string&);
     void SetTimeState(int ts);
+    void SetTreatAllDBsAsTimeVarying(bool val);
 
     // Property getting methods
     std::string GetFile() const;
     int         GetTimeState() const;
+    bool        GetTreatAllDBsAsTimeVarying() const;
 
     // Property selection methods
     virtual void SelectAll();
@@ -87,6 +92,7 @@ private:
     SILAttributes    sil;
     std::string      file;
     int              timeState;
+    bool             treatAllDBsAsTimeVarying;
 };
 
 

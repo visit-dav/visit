@@ -1581,14 +1581,16 @@ avtDatabase::GetMetaData(int timeState, bool forceReadAllCyclesTimes,
 //    Mark C. Miller, 22Sep03, changed name to Get'New'SIL. Put result
 //    in MRU cache
 //
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying
 // ****************************************************************************
 
 void
-avtDatabase::GetNewSIL(int timeState)
+avtDatabase::GetNewSIL(int timeState, bool treatAllDBsAsTimeVarying)
 {
     // build a new sil for the given timestep
     avtSIL *newsil = new avtSIL;
-    PopulateSIL(newsil, timeState);
+    PopulateSIL(newsil, timeState, treatAllDBsAsTimeVarying);
 
     // put result in front of MRU cache
     CachedSILEntry tmp = {newsil, timeState};
@@ -1607,11 +1609,15 @@ avtDatabase::GetNewSIL(int timeState)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 30, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added logic for treatAllDBsAsTimeVarying
 // ****************************************************************************
 avtSIL *
-avtDatabase::GetSIL(int timeState)
+avtDatabase::GetSIL(int timeState, bool treatAllDBsAsTimeVarying)
 {
-    if (SILIsInvariant())
+    if (SILIsInvariant() && !treatAllDBsAsTimeVarying)
     {
 
         // since its invariant, get it at time 0
@@ -1646,7 +1652,7 @@ avtDatabase::GetSIL(int timeState)
                delete tmp.sil;
            }
 
-           GetNewSIL(timeState);
+           GetNewSIL(timeState, treatAllDBsAsTimeVarying);
        }
 
     }

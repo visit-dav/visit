@@ -8798,13 +8798,17 @@ ViewerSubject::InterpretCommands(const std::string &commands)
 //  Programmer:  Mark C. Miller 
 //  Creation:    May 25, 2005 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Moved storage for this state info to VWM which is managing
+//    GlobalAttributes.
 // ****************************************************************************
 
 void
 ViewerSubject::SetTryHarderCyclesTimes()
 {
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    fs->SetTryHarderCyclesTimes(GetViewerState()->GetViewerRPC()->GetIntArg1());
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetTryHarderCyclesTimes(GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
 
 
@@ -8816,13 +8820,17 @@ ViewerSubject::SetTryHarderCyclesTimes()
 //  Programmer:  Mark C. Miller 
 //  Creation:    June 11, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Moved storage for this state info to VWM which is managing
+//    GlobalAttributes.
 // ****************************************************************************
 
 void
 ViewerSubject::SetTreatAllDBsAsTimeVarying()
 {
-    ViewerFileServer *fs = ViewerFileServer::Instance();
-    fs->SetTreatAllDBsAsTimeVarying(GetViewerState()->GetViewerRPC()->GetIntArg1());
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetTreatAllDBsAsTimeVarying(GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
 
 

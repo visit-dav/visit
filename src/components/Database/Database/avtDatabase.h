@@ -269,6 +269,9 @@ typedef struct {
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying to SIL methods
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -292,7 +295,8 @@ class DATABASE_API avtDatabase
                                     bool forceReadAllCyclesTimes = false,
                                     bool forceReadThisStateCycleTime = false,
 				    bool treatAllDBsAsTimeVarying = false);
-    avtSIL                     *GetSIL(int stateIndex);
+    avtSIL                     *GetSIL(int stateIndex,
+                                    bool treatAllDBsAsTimeVarying = false);
     int                         GetMostRecentTimestep() const;
 
     virtual void                ActivateTimestep(int stateIndex) {;}; 
@@ -366,7 +370,8 @@ class DATABASE_API avtDatabase
 
     void                        GetNewMetaData(int stateIndex,
                                     bool forceReadAllCyclesTimes = false);
-    void                        GetNewSIL(int stateIndex);
+    void                        GetNewSIL(int stateIndex,
+                                    bool treatAllDBsAsTimeVarying = false);
     void                        AddMeshQualityExpressions(avtDatabaseMetaData *);
     void                        AddTimeDerivativeExpressions(avtDatabaseMetaData *);
 
@@ -377,7 +382,8 @@ class DATABASE_API avtDatabase
     virtual void                SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *, int) = 0;
     virtual void                SetDatabaseMetaData(avtDatabaseMetaData *,
                                     int=0, bool=false) = 0;
-    virtual void                PopulateSIL(avtSIL *, int=0) = 0;
+    virtual void                PopulateSIL(avtSIL *, int=0,
+                                    bool treatAllDBsAsTimeVarying = false) = 0;
 
     void                        PopulateDataObjectInformation(avtDataObject_p&,
                                                   const char *,

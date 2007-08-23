@@ -443,14 +443,18 @@ MDServerProxy::GetMetaData(const string &file, int timeState,
 //    Brad Whitlock, Tue May 13 15:36:51 PST 2003
 //    I added timeState.
 //
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying
 // ****************************************************************************
 
 const SILAttributes *
-MDServerProxy::GetSIL(const string &file, int timeState)
+MDServerProxy::GetSIL(const string &file, int timeState,
+    bool treatAllDBsAsTimeVarying)
 {
     // Try and get the SIL from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
-    const SILAttributes *s = getSILRPC(file, timeState);
+    const SILAttributes *s = getSILRPC(file, timeState,
+                                 treatAllDBsAsTimeVarying);
 
 #ifdef DEBUG
     // Write the metadata to stdout.

@@ -370,6 +370,10 @@ typedef struct {
 //    Brad Whitlock, Tue Mar 20 09:59:08 PDT 2007
 //    Name annotation objects.
 //
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added methods to SetTryHarderCyclesTimes and SetTreatAllDBsAsTimeVarying
+//    since it is the VWM that managers the GlobalAttributes where these
+//    are defined.
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -504,6 +508,9 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
 
     void DisableExternalRenderRequestsAllWindows(std::vector<bool>& oldAble);
     void EnableExternalRenderRequestsAllWindows(const std::vector<bool> oldAble);
+
+    bool SetTreatAllDBsAsTimeVarying(bool val);
+    bool SetTryHarderCyclesTimes(bool val);
 
     void ReplaceDatabase(const EngineKey &key,
                          const std::string &database,

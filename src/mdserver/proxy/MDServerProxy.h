@@ -158,6 +158,8 @@ class     DBPluginInfoAttributes;
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
 //
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying to GetSIL
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -219,7 +221,8 @@ public:
                                    bool forceReadAllCyclesTimes = false,
                                    const std::string &forcedFileType = "",
 				   bool treatAllDBsAsTimeVarying = false);
-    const SILAttributes       *GetSIL(const std::string &, int=0);
+    const SILAttributes       *GetSIL(const std::string &, int=0,
+                                   bool treatAllDBsAsTimeVarying = false);
     std::string                ExpandPath(const std::string &);
     void                       CloseDatabase();
     void                       CloseDatabase(const std::string &);

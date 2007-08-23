@@ -443,6 +443,9 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying to GetSIL call
 // ****************************************************************************
 
 NetnodeDB *
@@ -487,7 +490,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 	                                   forceReadAllCyclesAndTimes,
 					   forceReadThisCycleAndTime,
 	                                   treatAllDBsAsTimeVarying);
-            cachedDB->GetDB()->GetSIL(time);
+            cachedDB->GetDB()->GetSIL(time, treatAllDBsAsTimeVarying);
         }
 
         return cachedDB;
@@ -524,7 +527,7 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 	                    forceReadAllCyclesAndTimes,
 			    forceReadThisCycleAndTime,
 			    treatAllDBsAsTimeVarying);
-            db->GetSIL(time);
+            db->GetSIL(time, treatAllDBsAsTimeVarying);
         }
 
         netDB = new NetnodeDB(db);
@@ -689,6 +692,9 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//    Added treatAllDBsAsTimeVarying to GetSIL call.
 // ****************************************************************************
 
 void
@@ -735,7 +741,8 @@ NetworkManager::StartNetwork(const string &format,
 
     // Set up the data spec.
     avtSILRestriction_p silr =
-        new avtSILRestriction(workingNet->GetNetDB()->GetDB()->GetSIL(time), atts);
+        new avtSILRestriction(workingNet->GetNetDB()->GetDB()->
+	    GetSIL(time, treatAllDBsAsTimeVarying), atts);
     avtDataSpecification *dspec = new avtDataSpecification(var.c_str(), time, silr);
 
     // Set up some options from the data specification

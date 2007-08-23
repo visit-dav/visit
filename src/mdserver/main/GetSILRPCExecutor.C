@@ -105,6 +105,8 @@ GetSILRPCExecutor::~GetSILRPCExecutor()
 //   Handle errors through exceptions instead of error codes.   This allows
 //   real error messages to make it to the user.
 //
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Added treatAllDBsAsTimeVarying
 // ****************************************************************************
 
 void
@@ -118,7 +120,8 @@ GetSILRPCExecutor::Update(Subject *s)
     TRY
     {
         // Either send a successful reply or send an error.
-        parent->ReadSIL(rpc->GetFile(), rpc->GetTimeState());
+        parent->ReadSIL(rpc->GetFile(), rpc->GetTimeState(),
+	    rpc->GetTreatAllDBsAsTimeVarying());
 #ifdef DEBUG
         debug2 << "SIL=" << endl;
         parent->GetCurrentSIL()->Print(debug2);

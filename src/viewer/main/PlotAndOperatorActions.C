@@ -889,6 +889,10 @@ AddPlotAction::~AddPlotAction()
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added bool to treat all databases as time varying to call to
 //   PopulateVariableLists
+//
+//   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
+//   Changed how treatAllDBsAsTimeVarying to be obtained from
+//   ViewerWindowManager which manages the GlobalAttributes object
 // ****************************************************************************
 
 void
@@ -912,9 +916,11 @@ AddPlotAction::Update()
             // Repopulate the menu variable list using information from the
             // new file.
             //
+	    bool treatAllDBsAsTimeVarying =
+	        ViewerWindowManager::Instance()->GetClientAtts()->GetTreatAllDBsAsTimeVarying();
             if(menuPopulator.PopulateVariableLists(plotList->GetHostDatabaseName(),
                                                    md, sil, exprList,
-						   fileServer->GetTreatAllDBsAsTimeVarying()))
+						   treatAllDBsAsTimeVarying))
             {
                 // Print to the debug logs.
                 debug4 << "AddPlotAction::Update: Either the host or the database " << endl
