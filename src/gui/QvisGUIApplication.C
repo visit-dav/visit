@@ -5729,6 +5729,9 @@ QvisGUIApplication::SaveWindow()
 //   I added MacOS X specific coding that lets us handle the setting up of
 //   the printer options so we can actually print.
 //
+//   Kathleen Bonnell, Wed Aug 22 17:37:06 PDT 2007 
+//   If on WIN32 and user has set print options, tell viewer to PrintWindow. 
+//
 // ****************************************************************************
     
 void
@@ -5910,6 +5913,15 @@ QvisGUIApplication::SetPrinterOptions()
             p->SetCreator(GetViewerProxy()->GetLocalUserName());
             printerObserver->SetUpdate(false);
             p->Notify();
+#ifdef WIN32
+            //
+            // Tell the viewer to print the image because the Windows printer
+            // dialog has the word "Print" to click when you're done setting
+            // options. This says to me that Windows applications expect to
+            // print once the options are set.
+            //
+            PrintWindow();
+#endif
         }
 #if defined(Q_WS_MACX)
     }
