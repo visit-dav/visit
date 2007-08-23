@@ -44,6 +44,7 @@
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
+#include <avtExprNode.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
@@ -89,11 +90,16 @@
 //  Programmer: Hank Childs
 //  Creation:   January 22, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Thu Aug 23 08:35:12 PDT 2007
+//    Added init of enableGhostNeighbors
+//
 // ****************************************************************************
 
 avtConnComponentsExpression::avtConnComponentsExpression()
 {
     nFinalComps = 0;
+    enableGhostNeighbors = true;
 }
 
 
@@ -113,6 +119,112 @@ avtConnComponentsExpression::~avtConnComponentsExpression()
 {
     ;
 }
+
+
+// ****************************************************************************
+//  Method: avtConnComponentsExpression::ProcessArguments
+//
+//  Purpose:
+//      Parses optional arguments.
+//
+//  Arguments:
+//      args      Expression arguments
+//      state     Expression pipeline state
+//
+//  Programmer:   Cyrus Harrison
+//  Creation:     August 8, 2007
+//
+// ****************************************************************************
+void
+avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
+                                              ExprPipelineState *state)
+{
+    // get the argument list and # of arguments
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    int nargs = arguments->size();
+
+    // check for call with no args
+    if (nargs == 0)
+    {
+        EXCEPTION1(ExpressionException,
+                   "conn_components() Incorrect syntax.\n"
+                   " usage: conn_components(mesh_name,enable_ghost_neighbors)\n"
+                   "The enable_ghost_neighbors parameter is optional "
+                   "and specifies if the ghost neighbors should be used to "
+                   "reduce communication in the parallel case.\n"
+                   "Default: enable_ghost_neighbors = 1 "
+                   "( use ghost neighbors if available )");
+    }
+
+    // first argument is the mesh name, let it do its own magic
+    ArgExpr *first_arg = (*arguments)[0];
+    avtExprNode *first_tree = dynamic_cast<avtExprNode*>(first_arg->GetExpr());
+    first_tree->CreateFilters(state);
+
+    // Check to see if the user passed in the 2nd argument (optional)
+    // that enables/disables the ghost neighbors optimization
+
+    // Options:
+    //  false  (0)
+    //  true   (1)
+
+    if (nargs > 1 )
+    {
+        ArgExpr *second_arg= (*arguments)[1];
+        ExprParseTreeNode *second_tree= second_arg->GetExpr();
+        string second_type = second_tree->GetTypeName();
+
+        // check for arg passed as integer
+        if((second_type == "IntegerConst"))
+        {
+            int enable =
+                       dynamic_cast<IntegerConstExpr*>(second_tree)->GetValue();
+
+            if(enable < 0 || enable > 1)
+            {
+
+                EXCEPTION1(ExpressionException,
+                "avtConnComponents: Invalid second argument.\n"
+                " Valid options are: 1,0 or \"true\",\"false\"");
+
+            }
+            enableGhostNeighbors = enable;
+        }
+        // check for arg passed as string
+        else if((second_type == "StringConst"))
+        {
+            string sval =
+                        dynamic_cast<StringConstExpr*>(second_tree)->GetValue();
+
+            if(sval == "true")
+                enableGhostNeighbors = true;
+            else if(sval == "false")
+                enableGhostNeighbors = false;
+            else
+            {
+                EXCEPTION1(ExpressionException,
+                "avtConnComponents: Invalid second argument.\n"
+                " Valid options are: 1,0 or \"true\",\"false\"");
+            }
+        }
+        else // invalid arg type
+        {
+
+            EXCEPTION1(ExpressionException,
+            "avtGradientFilter: Expects an integer or string second "
+            "argument.\n"
+            " Valid options are: 1,0 or \"true\",\"false\"");
+        }
+    }
+
+    debug5 << "avtConnComponentsExpression: Enable Ghost Neighbors ? = "
+           << enableGhostNeighbors << endl;
+
+}
+
+
+
+
 
 // ****************************************************************************
 //  Method: avtConnComponentsExpression::GetNumberOfComponents
@@ -142,10 +254,13 @@ avtConnComponentsExpression::GetNumberOfComponents()
 //
 //  Modifications:
 //    Cyrus Harrison, Fri Mar 16 10:46:28 PDT 2007
-//    Added progress update. 
+//    Added progress update.
 //
 //    Cyrus Harrison, Fri Mar 16 10:46:28 PDT 2007
 //    Added extraction of ghost zone neighbors for the parallel case
+//
+//    Cyrus Harrison, Thu Aug 23 08:53:25 PDT 2007
+//    Support enable ghost neighbors option.
 //
 // ****************************************************************************
 void
@@ -184,7 +299,7 @@ avtConnComponentsExpression::Execute()
     currentProgress = 0;        
 
 #ifdef PARALLEL
-    if(have_ghosts)
+    if( enableGhostNeighbors && have_ghosts)
     {
         // if we have ghosts, label ghost neighbors for reduced comm in global
         // resolve
@@ -2617,7 +2732,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
                 if(gzn_ptr)
                     if(gzn_ptr[j] !=1)
                         continue;
-                
+
                 vtkCell *cell = meshes[i]->GetCell(j);
                 cell->GetBounds(bbox);
                 pt[0] = (bbox[0] + bbox[1]) / 2.;
