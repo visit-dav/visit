@@ -229,8 +229,8 @@ all: message
 OPTIONAL=Context ConnCompReduce MetricThreshold RemoveCells SiloDump \
          SubdivideQuads SurfCompPrep TraceHistory
 
-REQUIRED=Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder Decimate \
-         DeferExpression Displace Elevate ExternalSurface IndexSelect \
+REQUIRED=BoundaryOp Box Clip Cone CoordSwap CracksClipper CreateBonds Cylinder \
+         Decimate DeferExpression Displace Elevate ExternalSurface IndexSelect \
          InverseGhostZone Isosurface Isovolume Lineout Merge OnionPeel \
          PDF Project Reflect Replicate Resample Revolve Slice Smooth \
          SphereSlice ThreeSlice Threshold Transform Tube ZoneDump
