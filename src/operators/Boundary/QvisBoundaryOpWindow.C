@@ -35,7 +35,7 @@
 *
 *****************************************************************************/
 
-#include "QvisBoundaryWindow.h"
+#include "QvisBoundaryOpWindow.h"
 
 #include <BoundaryOpAttributes.h>
 #include <ViewerProxy.h>
@@ -61,7 +61,7 @@
 using std::string;
 
 // ****************************************************************************
-// Method: QvisBoundaryWindow::QvisBoundaryWindow
+// Method: QvisBoundaryOpWindow::QvisBoundaryOpWindow
 //
 // Purpose: 
 //   Constructor
@@ -73,7 +73,7 @@ using std::string;
 //   
 // ****************************************************************************
 
-QvisBoundaryWindow::QvisBoundaryWindow(const int type,
+QvisBoundaryOpWindow::QvisBoundaryOpWindow(const int type,
                          BoundaryOpAttributes *subj,
                          const char *caption,
                          const char *shortName,
@@ -85,7 +85,7 @@ QvisBoundaryWindow::QvisBoundaryWindow(const int type,
 
 
 // ****************************************************************************
-// Method: QvisBoundaryWindow::~QvisBoundaryWindow
+// Method: QvisBoundaryOpWindow::~QvisBoundaryOpWindow
 //
 // Purpose: 
 //   Destructor
@@ -97,13 +97,13 @@ QvisBoundaryWindow::QvisBoundaryWindow(const int type,
 //   
 // ****************************************************************************
 
-QvisBoundaryWindow::~QvisBoundaryWindow()
+QvisBoundaryOpWindow::~QvisBoundaryOpWindow()
 {
 }
 
 
 // ****************************************************************************
-// Method: QvisBoundaryWindow::CreateWindowContents
+// Method: QvisBoundaryOpWindow::CreateWindowContents
 //
 // Purpose: 
 //   Creates the widgets for the window.
@@ -116,7 +116,7 @@ QvisBoundaryWindow::~QvisBoundaryWindow()
 // ****************************************************************************
 
 void
-QvisBoundaryWindow::CreateWindowContents()
+QvisBoundaryOpWindow::CreateWindowContents()
 {
     // Create the smoothing level buttons
     smoothingLevelButtons = new QButtonGroup(0, "smoothingButtons");
@@ -139,7 +139,7 @@ QvisBoundaryWindow::CreateWindowContents()
 
 
 // ****************************************************************************
-// Method: QvisBoundaryWindow::UpdateWindow
+// Method: QvisBoundaryOpWindow::UpdateWindow
 //
 // Purpose: 
 //   Updates the widgets in the window when the subject changes.
@@ -152,7 +152,7 @@ QvisBoundaryWindow::CreateWindowContents()
 // ****************************************************************************
 
 void
-QvisBoundaryWindow::UpdateWindow(bool doAll)
+QvisBoundaryOpWindow::UpdateWindow(bool doAll)
 {
     QString temp;
     double r;
@@ -187,7 +187,7 @@ QvisBoundaryWindow::UpdateWindow(bool doAll)
 
 
 // ****************************************************************************
-// Method: QvisBoundaryWindow::GetCurrentValues
+// Method: QvisBoundaryOpWindow::GetCurrentValues
 //
 // Purpose: 
 //   Gets values from certain widgets and stores them in the subject.
@@ -200,7 +200,7 @@ QvisBoundaryWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 
 void
-QvisBoundaryWindow::GetCurrentValues(int which_widget)
+QvisBoundaryOpWindow::GetCurrentValues(int which_widget)
 {
 }
 
@@ -229,7 +229,7 @@ QvisBoundaryWindow::GetCurrentValues(int which_widget)
 // ****************************************************************************
 
 void
-QvisBoundaryWindow::smoothingLevelChanged(int level)
+QvisBoundaryOpWindow::smoothingLevelChanged(int level)
 {
     atts->SetSmoothingLevel(level);
     SetUpdate(false);
