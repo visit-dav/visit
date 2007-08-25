@@ -65,10 +65,8 @@ using std::istream;
 using std::ofstream;
 using std::streampos;
 
-// Include strstream and some using statements.
-#include <strstream>
+#include <sstream>
 
-using std::ostrstream;
 #endif
 
 #endif
