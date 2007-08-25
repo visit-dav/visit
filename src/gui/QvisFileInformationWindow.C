@@ -153,7 +153,7 @@ QvisFileInformationWindow::UpdateWindow(bool doAll)
         if(md != 0)
         {
 
-            ostrstream os;
+            std::ostringstream os;
             os << "File = " << fileServer->GetOpenFile().FullName().c_str()
                << endl;
             os << titleSeparator << endl;
