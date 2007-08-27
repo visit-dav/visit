@@ -184,6 +184,9 @@
 #     Modified sources path in VisIt tar file.
 #     Changed link options on Mac
 #
+#     Kathleen Bonnell, Mon Aug 27 08:42:06 PDT 2007
+#     Added -DMANGLED_OSMESA_INCLUDE_DIR to build_vtk. 
+#     
 # *****************************************************************************
 
 
@@ -2122,6 +2125,7 @@ EOF
         -DMANGLED_MESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_MESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libMesaGL.${SO_EXT}"\
         -DMANGLED_OSMESA_INCLUDE:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
+        -DMANGLED_OSMESA_INCLUDE_DIR:PATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/include"\
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
     elif [[ "$OPSYS" == "IRIX64" ]]; then
