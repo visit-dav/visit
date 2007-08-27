@@ -42,12 +42,13 @@
 #ifndef AVT_PARALLEL_AXIS_PLOT_H
 #define AVT_PARALLEL_AXIS_PLOT_H
 
-#include <avtPlot.h>
 #include <ParallelAxisAttributes.h>
 
+#include <avtPlot.h>
+#include <avtParallelAxisRenderer.h>
+
 class avtParallelAxisFilter;
-class avtLevelsMapper;
-class avtLookupTable;
+class avtUserDefinedMapper;
 
 
 // *****************************************************************************
@@ -63,45 +64,50 @@ class avtLookupTable;
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 //  Modifications:
-//    Jeremy Meredith, Mon Mar 19 11:28:57 EDT 2007
-//    Added background color so context will fade nicely into background.
+//      Jeremy Meredith, Mon Mar 19 11:28:57 EDT 2007
+//      Added background color so context will fade nicely into background.
 //   
-//    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007
-//    Set CanDo2DViewScaling to false.
+//      Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007
+//      Set CanDo2DViewScaling to false.
 //
+//      Mark Blair, Thu Jul  5 19:06:33 PDT 2007
+//      Set up to use custom renderer.  Also removed references to unused
+//      levels mapper and color lookup table.
+//   
 // ****************************************************************************
 
 class avtParallelAxisPlot : public avtSurfaceDataPlot
 {
 public:
-                             avtParallelAxisPlot();
-    virtual                 ~avtParallelAxisPlot();
+                                avtParallelAxisPlot();
+    virtual                    ~avtParallelAxisPlot();
 
-    static avtPlot          *Create();
+    static avtPlot             *Create();
 
-    virtual const char      *GetName(void) { return "ParallelAxisPlot"; };
+    virtual const char         *GetName(void) { return "ParallelAxisPlot"; };
 
-    virtual void             SetAtts(const AttributeGroup*);
-    virtual void             ReleaseData(void);
-    virtual bool             CanDo2DViewScaling(void) { return false;}
+    virtual void                SetAtts(const AttributeGroup*);
+    virtual void                ReleaseData(void);
+    virtual bool                CanDo2DViewScaling(void) { return false;}
 
 protected:
-    avtParallelAxisFilter   *parAxisFilter;
-    avtLevelsMapper         *levelsMapper;
+    avtParallelAxisFilter      *parAxisFilter;
+    avtUserDefinedMapper       *parAxisMapper;
+    avtParallelAxisRenderer_p   renderer;
 
-    avtLookupTable          *avtLUT;
-    ParallelAxisAttributes  atts;
-    double                   bgColor[3];
+    ParallelAxisAttributes      atts;
+    double                      bgColor[3];
 
-    virtual avtMapper       *GetMapper(void);
-    virtual avtDataObject_p  ApplyOperators(avtDataObject_p);
-    virtual avtDataObject_p  ApplyRenderingTransformation(avtDataObject_p);
-    virtual void             CustomizeBehavior(void);
-    virtual void             CustomizeMapper(avtDataObjectInformation &);
-    avtPipelineSpecification_p EnhanceSpecification(avtPipelineSpecification_p in_spec);
-    virtual avtLegend_p      GetLegend(void) { return NULL; };
-    void                     SetColors();
-    virtual bool             SetBackgroundColor(const double *);
+    virtual avtMapper          *GetMapper(void);
+    virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
+    virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
+    virtual void                CustomizeBehavior(void);
+    virtual void                CustomizeMapper(avtDataObjectInformation &);
+    avtPipelineSpecification_p  EnhanceSpecification(
+                                    avtPipelineSpecification_p in_spec);
+    virtual avtLegend_p         GetLegend(void) { return NULL; };
+    void                        SetColors();
+    virtual bool                SetBackgroundColor(const double *);
 };
 
 #endif

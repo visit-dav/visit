@@ -42,18 +42,14 @@
 #include <avtParallelAxisPlot.h>
 #include <avtParallelAxisFilter.h>
 
-
 #include <ColorAttribute.h>
 
-#include <avtColorTables.h>
-#include <avtLevelsMapper.h>
-#include <avtLookupTable.h>
+#include <avtCallback.h>
+#include <avtUserDefinedMapper.h>
+#include <avtMesaParallelAxisRenderer.h>
+#include <avtOpenGLParallelAxisRenderer.h>
 
-#include <math.h>
-#include <limits.h>
-#include <float.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <avtParallel.h>
 
 #include <DebugStream.h>
 
@@ -67,16 +63,28 @@
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 //  Modifications:
-//    Jeremy Meredith, Mon Mar 19 11:30:16 EDT 2007
-//    Added background color for fading with context.
+//
+//      Jeremy Meredith, Mon Mar 19 11:30:16 EDT 2007
+//      Added background color for fading with context.
+//   
+//      Mark Blair, Thu Jul  5 19:06:33 PDT 2007
+//      Set up to use custom renderer.  Also removed references to unused
+//      levels mapper and color lookup table.
 //   
 // ****************************************************************************
 
 avtParallelAxisPlot::avtParallelAxisPlot()
 {
-    levelsMapper  = new avtLevelsMapper;
-    avtLUT        = new avtLookupTable;
+    if (avtCallback::GetSoftwareRendering())
+        renderer = new avtMesaParallelAxisRenderer;
+    else
+        renderer = new avtOpenGLParallelAxisRenderer;
+
+    avtCustomRenderer_p ren;
+    CopyTo(ren, renderer);
+    parAxisMapper = new avtUserDefinedMapper(ren);
     parAxisFilter = NULL;
+ 
     bgColor[0] = bgColor[1] = bgColor[2] = 1.0;  // white
 }
 
@@ -90,27 +98,18 @@ avtParallelAxisPlot::avtParallelAxisPlot()
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 //  Modifications:
+//
+//      Mark Blair, Thu Jul  5 19:06:33 PDT 2007
+//      No longer deletes now-unused levels mapper and color lookup table.
 //   
 // ****************************************************************************
 
 avtParallelAxisPlot::~avtParallelAxisPlot()
 {
-    if (levelsMapper != NULL)
-    {
-        delete levelsMapper;
-        levelsMapper = NULL;
-    }
-
     if (parAxisFilter != NULL)
     {
         delete parAxisFilter;
         parAxisFilter = NULL;
-    }
-
-    if (avtLUT != NULL)
-    {
-        delete avtLUT;
-        avtLUT = NULL;
     }
 }
 
@@ -147,6 +146,9 @@ avtParallelAxisPlot::Create()
 //
 //  Modifications:
 //   
+//      Mark Blair, Thu Jul  5 19:06:33 PDT 2007
+//      Passes attributes to the custom renderer.
+//   
 // ****************************************************************************
 
 void
@@ -160,6 +162,8 @@ avtParallelAxisPlot::SetAtts(const AttributeGroup *a)
 
     behavior->SetRenderOrder(DOES_NOT_MATTER);
     behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
+
+    renderer->SetAtts(atts);
 }
 
 
@@ -173,21 +177,24 @@ avtParallelAxisPlot::SetAtts(const AttributeGroup *a)
 //
 //  Modifications:
 //   
-//    Jeremy Meredith, Fri Mar 16 17:47:02 EDT 2007
-//    Added colors for the "Context" portion of the plot.  Alas, these
-//    must come first so the Context is drawn behind the other data curve
-//    lines and annotations.
+//      Jeremy Meredith, Fri Mar 16 17:47:02 EDT 2007
+//      Added colors for the "Context" portion of the plot.  Alas, these
+//      must come first so the Context is drawn behind the other data curve
+//      lines and annotations.
 //
-//    Jeremy Meredith, Mon Mar 19 11:28:57 EDT 2007
-//    Fade context colors nicely into background color at low end.
+//      Jeremy Meredith, Mon Mar 19 11:28:57 EDT 2007
+//      Fade context colors nicely into background color at low end.
 //
+//      Mark Blair, Thu Jul  5 19:06:33 PDT 2007
+//      Now passes color attributes to custom renderer rather than levels mapper.
+//   
 // ****************************************************************************
 
 void
 avtParallelAxisPlot::SetColors()
 {
     int redID, red, green, blue;
-    int numColorEntries = 4 * (4+PCP_CTX_BRIGHTNESS_LEVELS);
+    int numColorEntries = 4 * (3+PCP_CTX_BRIGHTNESS_LEVELS);
     unsigned char *plotColors = new unsigned char[numColorEntries];
 
     ColorAttribute colorAtt;
@@ -211,11 +218,6 @@ avtParallelAxisPlot::SetColors()
             red   = (PCP_DEFAULT_AXIS_TITLE_COLOR >> 24) & 0xff;
             green = (PCP_DEFAULT_AXIS_TITLE_COLOR >> 16) & 0xff;
             blue  = (PCP_DEFAULT_AXIS_TITLE_COLOR >>  8) & 0xff;
-            break;
-          case PCP_CTX_BRIGHTNESS_LEVELS*4 +12:
-            red   = (PCP_DEFAULT_RANGE_BOUND_COLOR >> 24) & 0xff;
-            green = (PCP_DEFAULT_RANGE_BOUND_COLOR >> 16) & 0xff;
-            blue  = (PCP_DEFAULT_RANGE_BOUND_COLOR >>  8) & 0xff;
             break;
           default:
             {
@@ -242,8 +244,7 @@ avtParallelAxisPlot::SetColors()
         plotColors[redID+3] = 255;
     }
 
-    avtLUT->SetLUTColorsWithOpacity(plotColors, 4+PCP_CTX_BRIGHTNESS_LEVELS);
-    levelsMapper->SetColors(colorAttList);
+    renderer->SetColors(colorAttList);
 
     delete [] plotColors;
 }
@@ -262,12 +263,15 @@ avtParallelAxisPlot::SetColors()
 //
 //  Modifications:
 //   
+//      Mark Blair, Thu Jul  5 19:06:33 PDT 2007
+//      Now returns custom renderer's mapper rather than levels mapper.
+//   
 // ****************************************************************************
 
 avtMapper *
 avtParallelAxisPlot::GetMapper(void)
 {
-    return levelsMapper;
+    return parAxisMapper;
 }
 
 
@@ -301,7 +305,6 @@ avtParallelAxisPlot::ApplyOperators(avtDataObject_p input)
     parAxisFilter = new avtParallelAxisFilter(atts);
 
     parAxisFilter->SetInput(input);
-
     return parAxisFilter->GetOutput();
 }
 
@@ -525,6 +528,7 @@ avtParallelAxisPlot::SetBackgroundColor(const double *bg)
     bgColor[0] = bg[0];
     bgColor[1] = bg[1];
     bgColor[2] = bg[2];
+
     SetColors();
 
     return true;

@@ -96,6 +96,13 @@
 
 #define PCP_CTX_BRIGHTNESS_LEVELS         100
 
+#define PCP_RENDERER_DATA_CURVE_INPUT     PCP_CTX_BRIGHTNESS_LEVELS
+#define PCP_RENDERER_AXIS_LABEL_INPUT    (PCP_CTX_BRIGHTNESS_LEVELS + 1)
+#define PCP_RENDERER_AXIS_TITLE_INPUT    (PCP_CTX_BRIGHTNESS_LEVELS + 2)
+#define PCP_RENDERER_CONTEXT_INPUT       (PCP_CTX_BRIGHTNESS_LEVELS + 3)
+#define PCP_RENDERER_SAME_CACHED_INPUT    0x00000200
+#define PCP_END_OF_DRAWABLE_CURVE_LIST    0xffffffff
+
 
 class vtkDataSet;
 class vtkPolyData;
@@ -134,6 +141,17 @@ class vtkPoints;
 //      Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //      Now supports all variable axis spacing and axis group conventions.
 //
+//      Mark Blair, Thu Jul  5 19:06:33 PDT 2007
+//      Moved method DetermineAxisBoundsAndGroupNames to ParallelAxisAttributes
+//      class.
+//
+//      Mark Blair, Fri Aug  3 17:10:19 PDT 2007
+//      Added support for custom renderer.
+//
+//      Mark Blair, Tue Aug 14 16:20:25 PDT 2007
+//      Removed DrawDataSubrangeBounds and associated VTK data; these bounds
+//      are now drawn only by the Extents tool.
+//
 // ****************************************************************************
 
 class avtParallelAxisFilter : public avtDataTreeStreamer
@@ -165,7 +183,6 @@ protected:
 private:
     void                        SetupParallelAxis (int plotAxisNum);
     void                        ComputeCurrentDataExtentsOverAllDomains();
-    void                        DetermineAxisBoundsAndGroupNames();
     void                        StoreAxisAttributesForOutsideQueries();
 
     void                        InitializePlotAtts();
@@ -183,13 +200,14 @@ private:
     void                        DrawCoordinateAxes();
     void                        DrawCoordinateAxisLabels();
     void                        DrawCoordinateAxisTitles();
-    void                        DrawDataSubrangeBounds();
 
     ParallelAxisAttributes      parAxisAtts;
     
     bool                        sendNullOutput;
     
-    int                         parallelRank;
+    int                         processorRank;
+    int                         partitionSize;
+
     bool                        drewAnnotations;
 
     stringVector                curveAndAxisLabels;
@@ -274,11 +292,6 @@ private:
     vtkPoints                  *titlePoints;
     vtkCellArray               *titleLines;
     vtkCellArray               *titleVerts;
-
-    vtkPolyData                *subrangePolyData;
-    vtkPoints                  *subrangePoints;
-    vtkCellArray               *subrangeLines;
-    vtkCellArray               *subrangeVerts;
 
     PortableFont               *textPlotter;
 

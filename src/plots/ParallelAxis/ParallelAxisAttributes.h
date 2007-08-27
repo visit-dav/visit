@@ -197,7 +197,6 @@ public:
     void DeleteAxis(const std::string &axisName_, int minAxisCount);
     bool AttributesAreConsistent() const;
     bool ChangesRequireRecalculation(const ParallelAxisAttributes &obj);
-    void SwitchToLeftAxis(const std::string &axisName_);
     void ShowPreviousAxisVariableData();
     void ShowNextAxisVariableData();
     std::string &GetShownVariableAxisName();
@@ -208,6 +207,8 @@ public:
     void MarkShownAndSelectedAxisSequences(int leftShownAxisID, int rightShownAxisID, int leftSelectedAxisID, int rightSelectedAxisID);
     void RecalculateAxisXPositions(int leftShownAxisID, int rightShownAxisID);
     void IdentifyReasonableAxesToLabel();
+    void DetermineAxisBoundsAndGroupNames();
+    void ReconfigureAxes(int leftShownAxisID, int rightShownAxisID);
 private:
     stringVector   orderedAxisNames;
     int            shownVarAxisOrdinal;
