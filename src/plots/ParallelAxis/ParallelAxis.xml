@@ -6,10 +6,16 @@
     </Files>
     <Files components="V">
       avtParallelAxisFilter.C
+      avtParallelAxisRenderer.C
+      avtOpenGLParallelAxisRenderer.C
+      avtMesaParallelAxisRenderer.C
       PortableFont.C
     </Files>
     <Files components="E">
       avtParallelAxisFilter.C
+      avtParallelAxisRenderer.C
+      avtOpenGLParallelAxisRenderer.C
+      avtMesaParallelAxisRenderer.C
       PortableFont.C
     </Files>
     <Files components="W">
@@ -93,8 +99,6 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
-      <Function name="SwitchToLeftAxis" user="true" member="true">
-      </Function>
       <Function name="ShowPreviousAxisVariableData" user="true" member="true">
       </Function>
       <Function name="ShowNextAxisVariableData" user="true" member="true">
@@ -114,6 +118,10 @@
       <Function name="RecalculateAxisXPositions" user="true" member="true">
       </Function>
       <Function name="IdentifyReasonableAxesToLabel" user="true" member="true">
+      </Function>
+      <Function name="DetermineAxisBoundsAndGroupNames" user="true" member="true">
+      </Function>
+      <Function name="ReconfigureAxes" user="true" member="true">
       </Function>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

@@ -633,6 +633,10 @@ ParseExtendedArrayExpression(stringVector &axisVariableList,
 //      as a combination of default attributes and those attributes which are
 //      a function of the expression.
 //   
+//      Mark Blair, Mon Jul  2 17:34:26 PDT 2007
+//      Now ensures that all attributes related to axis layout and labeling
+//      are consistent before the engine runs.
+//   
 // ****************************************************************************
 
 void
@@ -753,6 +757,8 @@ ParallelAxisViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
         EXCEPTION1(ImproperUseException, 
                    "ParallelAxis plot is not set up correctly.");
     }
+
+    initAtts->ReconfigureAxes(0, initAtts->GetOrderedAxisNames().size()-1);
 
     *(ParallelAxisAttributes *)atts = *initAtts;
 }

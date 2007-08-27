@@ -101,8 +101,7 @@ VisitExtentsTool::VisitExtentsTool(VisWindowToolProxy &p) : VisitInteractiveTool
     stringVector initAxisGroupNames;
     intVector    initAxisInfoFlagSets;
     doubleVector initAxisXPositions;
-    
-    curTimeOrdinal = 1;
+
     activeAxisIndex = 0;
     gangedHPDeltaY = -1.0;
 
@@ -743,6 +742,14 @@ VisitExtentsTool::InitializeAxisSliderHotpoints()
 //    Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //    Now updates plot/tool mode flags.
 //
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    Does not update tool attributes with the PlotInfoAttributes object set by
+//    the plot's filter when the latter has not changed.  This prevents the tool
+//    attributes from being updated with plot attributes that do not reflect a
+//    change that the tool just made, such as a changed extent.  The plot uses
+//    a custom renderer which sometimes does not need a recalculation of its
+//    plottable data by the engine in order to correctly update the plot.
+//
 // ****************************************************************************
 
 void
@@ -753,6 +760,9 @@ VisitExtentsTool::UpdateToolAttributesWithPlotAttributes()
     if (parAxisAtts == NULL) return;
 
     doubleVector axisAttVals = parAxisAtts->GetOutputArray();
+
+    if (axisAttVals == lastAttsFromPlot) return;
+    lastAttsFromPlot = axisAttVals;
 
     if (axisAttVals.size() < 6)
     {
@@ -850,13 +860,16 @@ VisitExtentsTool::UpdateToolAttributesWithPlotAttributes()
 //    sent to the viewer by that plot's filter BEFORE the tool broadcasts its
 //    first set of attributes to the rest of the world.
 //
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    No longer uses BroadcastStateAndUpdate; now much simpler.
+//
 // ****************************************************************************
 
 void
 VisitExtentsTool::Enable()
 {
     bool toolWasEnabled = IsEnabled();
-    
+
     UpdateToolAttributesWithPlotAttributes();
 
     Interface.SetPlotToolModeFlags(
@@ -882,13 +895,19 @@ VisitExtentsTool::Enable()
 //    Mark Blair, Thu Nov  2 12:33:23 PST 2006
 //    Signals the plot that it must now draw all axis information.
 //
+//    Mark Blair, Mon May 14 10:36:16 PDT 2007
+//    Replaced ExecuteCallback call with BroadcastStateAndUpdate call.
+//
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    No longer uses BroadcastStateAndUpdate; now much simpler.
+//
 // ****************************************************************************
 
 void
 VisitExtentsTool::Disable()
 {
     bool toolWasEnabled = IsEnabled();
-
+    
     Interface.SetPlotToolModeFlags(Interface.GetPlotToolModeFlags() &
         (0xffffffff ^ EA_TOOL_DRAWS_AXIS_INFO_FLAG));
     Interface.ExecuteCallback();
@@ -2770,6 +2789,9 @@ VisitExtentsTool::DeleteAxisExtentsActors()
 //    Now adds all actors that support varaible axis spacing and axis group
 //    conventions.
 //   
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now treats all actors as VTK 2-D foreground actors.
+//
 // ****************************************************************************
 
 void
@@ -2824,6 +2846,9 @@ VisitExtentsTool::AddAllActors()
 //    Now removes all actors that support varaible axis spacing and axis group
 //    conventions.
 //   
+//    Mark Blair, Thu Jul 19 19:01:44 PDT 2007
+//    Now treats all actors as VTK 2-D foreground actors.
+//
 // ****************************************************************************
 
 void
@@ -3457,6 +3482,12 @@ VisitExtentsTool::UpdateGangedAxisSliderPositions(
 //    Mark Blair, Fri Feb 23 12:19:33 PST 2007
 //    Now supports buttons for all functions of the Extents tool.
 //   
+//    Mark Blair, Mon May 14 10:36:16 PDT 2007
+//    Replaced ExecuteCallback calls with BroadcastStateAndUpdate calls.
+//
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    No longer uses BroadcastStateAndUpdate; now much simpler.
+//
 // ****************************************************************************
 
 void
@@ -3604,6 +3635,12 @@ VisitExtentsTool::CallButtonCallback(int buttonID)
 //
 // Modifications:
 //   
+//    Mark Blair, Mon May 14 10:36:16 PDT 2007
+//    Replaced ExecuteCallback call with BroadcastStateAndUpdate call.
+//
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    No longer uses BroadcastStateAndUpdate; now much simpler.
+//
 // ****************************************************************************
 
 void
@@ -3635,6 +3672,12 @@ VisitExtentsTool::CallLeftMarkMoveCallback()
 //
 // Modifications:
 //   
+//    Mark Blair, Mon May 14 10:36:16 PDT 2007
+//    Replaced ExecuteCallback call with BroadcastStateAndUpdate call.
+//
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    No longer uses BroadcastStateAndUpdate; now much simpler.
+//
 // ****************************************************************************
 
 void
@@ -3665,6 +3708,12 @@ VisitExtentsTool::CallRightMarkMoveCallback()
 //
 // Modifications:
 //   
+//    Mark Blair, Mon May 14 10:36:16 PDT 2007
+//    Replaced ExecuteCallback call with BroadcastStateAndUpdate call.
+//
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    No longer uses BroadcastStateAndUpdate; now much simpler.
+//
 // ****************************************************************************
 
 void
@@ -3683,9 +3732,6 @@ VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
     
         newMinima[activeAxisIndex] =
             (hotPoints[activeMinHPID].pt.y - minSlidableY) / normToWorldYScale;
-        newMinTimeOrdinals[activeAxisIndex] = curTimeOrdinal;
-        
-        if (!sendMaxima) curTimeOrdinal++;
     
         Interface.SetMinima(newMinima);
         Interface.SetMinTimeOrdinals(newMinTimeOrdinals);
@@ -3704,7 +3750,6 @@ VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
     
         newMaxima[activeAxisIndex] = 1.0 -
             (maxSlidableY - hotPoints[activeMaxHPID].pt.y) / normToWorldYScale;
-        newMaxTimeOrdinals[activeAxisIndex] = curTimeOrdinal++;
 
         Interface.SetMaxima(newMaxima);
         Interface.SetMaxTimeOrdinals(newMaxTimeOrdinals);
@@ -3727,9 +3772,6 @@ VisitExtentsTool::CallExtentsCallback(bool sendMinima, bool sendMaxima)
 //   
 //     Mark Blair, Tue Jan 23 19:13:03 PST 2007
 //     Now supports toggle buttons via check marks (actually X marks).
-//
-//     Mark Blair, Wed May 30 12:20:33 PDT 2007
-//     Fixed incorrect sanity check for invalid check-mark button indices.
 //
 // ****************************************************************************
 
@@ -4019,6 +4061,12 @@ VisitExtentsTool::MoveRightMarkSliderArrow(int axisIndex)
 //
 // Modifications:
 //
+//    Mark Blair, Mon May 14 10:36:16 PDT 2007
+//    Replaced ExecuteCallback call with BroadcastStateAndUpdate call.
+//
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    No longer uses BroadcastStateAndUpdate; now much simpler.
+//
 // ****************************************************************************
 
 void
@@ -4045,6 +4093,7 @@ VisitExtentsTool::ExpandAxisSequenceBetweenSelectionMarks()
     Interface.SetPlotToolModeFlags(
         Interface.GetPlotToolModeFlags() | EA_SHOW_MARKED_AXES_ONLY_FLAG);
     Interface.SetAxisInfoFlagSets(axisInfoFlagSets);
+
     Interface.ExecuteCallback();
 }
 
@@ -4063,13 +4112,19 @@ VisitExtentsTool::ExpandAxisSequenceBetweenSelectionMarks()
 //
 // Modifications:
 //
+//    Mark Blair, Mon May 14 10:36:16 PDT 2007
+//    Replaced ExecuteCallback call with BroadcastStateAndUpdate call.
+//
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    No longer uses BroadcastStateAndUpdate; now much simpler.
+//
 // ****************************************************************************
 
 void
 VisitExtentsTool::UndoPreviousAxisSequenceExpansion()
 {
     int stackDepth = leftExpandAxisIDs.size();
-
+    
     if (stackDepth == 0) return;
     
     int plotToolModeFlags       = Interface.GetPlotToolModeFlags();
@@ -4091,6 +4146,7 @@ VisitExtentsTool::UndoPreviousAxisSequenceExpansion()
 
     Interface.SetPlotToolModeFlags(plotToolModeFlags);
     Interface.SetAxisInfoFlagSets(axisInfoFlagSets);
+
     Interface.ExecuteCallback();
 }
 

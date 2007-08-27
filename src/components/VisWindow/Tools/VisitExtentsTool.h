@@ -275,6 +275,10 @@ class vtkUnsignedCharArray;
 //    Now uses VTK 2-D foreground renderer for everything drawn by the tool.
 //    Also added ConvertPointsToPixelCoords.
 //
+//    Mark Blair, Fri Jul 27 19:11:04 PDT 2007
+//    Added lastAttsFromPlot plot attribute comparison vector.  Also removed
+//    BroadcastStateAndUpdate method.
+//   
 // ****************************************************************************
 
 class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
@@ -440,16 +444,17 @@ class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
     std::vector<vtkTextActor *> extentMaximaActors;
 
     avtExtentsToolInterface Interface;
+
+    doubleVector         lastAttsFromPlot;
     
     int                  plotListIndex;
-    
-    int                  curTimeOrdinal;
+
     int                  parallelAxisCount;
     bool                 labelsAreVertical;
 
     double               normToWorldYScale;
     double               windowHToWRatio;
-    
+
     double               bqHotpointRadius;
     double               buttonLogoRadius;
     double               buttonCheckRadius;
