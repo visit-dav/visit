@@ -55,6 +55,9 @@
 //    Jeremy Meredith, Fri Apr 19 15:32:51 PDT 2002
 //    Renamed some stuff.  Pulled most of the code into CodeFile.h.
 //
+//    Hank Childs, Tue Aug 28 14:36:10 PDT 2007
+//    Add a Boolean to indicate whether the function was used.
+//
 // ****************************************************************************
 class Function
 {
@@ -64,10 +67,12 @@ class Function
     QString def;
     bool    user;
     bool    member;
+    bool    usedThisFunction;
   public:
     Function(const QString &n, const QString &dc, const QString &df, bool u, bool m)
         : name(n), decl(dc), def(df), user(u), member(m)
     {
+        usedThisFunction = false;
     }
     void Print(ostream &out)
     {
