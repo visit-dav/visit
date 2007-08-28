@@ -173,6 +173,10 @@ using std::vector;
 //    Added support for some AVT enums and for public/protected/private members.
 //    I also changed the names of the generated access methods for attVectors.
 //
+//    Hank Childs, Tue Aug 28 14:46:34 PDT 2007
+//    Print out a warning if someone declares a builtin function that is
+//    being ignored.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1635,7 +1639,10 @@ class AttsGeneratorAttribute
     {
         for (int i=0; i<functions.size(); i++)
             if (functions[i]->name == f && functions[i]->user == false)
+            {
                 out << functions[i]->def;
+                functions[i]->usedThisFunction = true;
+            }
     }
     void DeleteFunction(ostream &out, const QString &f)
     {
@@ -2861,6 +2868,23 @@ class AttsGeneratorAttribute
             {
                 c << functions[i]->def;
                 c << endl;
+            }
+        }
+
+        for (i=0; i<functions.size(); i++) 
+        {
+            if (!functions[i]->user)
+            {
+                if (!functions[i]->usedThisFunction)
+                {
+                    cerr << "\n\n!!! WARNING !!!\n\n";
+                    cerr << "You declared the function \"" << functions[i]->name
+                         << "\" as replacing a builtin.  But the xml2atts\n"
+                         << "program could not find a builtin to replace it "
+                         << "with.  It is being ignored.\n\n"
+                         << "You might want to declare it as a \"New Function"
+                         << "\" instead.\n\n" << endl;
+                }
             }
         }
     }
