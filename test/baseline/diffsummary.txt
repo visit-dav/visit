@@ -1,0 +1,31 @@
+       tkelv|  -0.9869385|zone       3;      0| +30.7297058|zone       8;      0|
+         eps|  -0.0460426|zone      52;      1|  +0.1097713|zone       8;      0|
+           v|  -0.0204113|zone      27;      1|  +0.0380325|zone      53;      1|
+      arealg|  -0.0263891|zone      15;      2|  +0.0160536|zone      15;      1|
+          xd|  -0.0163730|node      10;      2|  +0.0083164|node      75;      1|
+        elmu|  -0.0085256|zone       8;      0|  +0.0036048|zone       0;      0|
+          yd|  -0.0078505|node      13;      2|  +0.0044551|node      14;      1|
+          zd|  -0.0078197|node       5;      2|  +0.0029238|node       5;      1|
+         txz|  -0.0066931|zone      12;      0|  +0.0034914|zone      10;      0|
+           p|  -0.0033683|zone      18;      0|  +0.0058465|zone      13;      0|
+          sy|  -0.0006313|zone      17;      0|  +0.0056025|zone       0;      0|
+          sx|  -0.0052108|zone      35;      0|  +0.0034451|zone       4;      0|
+         tyz|  -0.0022531|zone       8;      0|  +0.0039078|zone       4;      0|
+         txy|  -0.0027423|zone       6;      0|  +0.0033127|zone      13;      0|
+          ss|  -0.0019793|zone      52;      1|  +0.0024968|zone       7;      1|
+           e|  -0.0000351|zone       3;      0|  +0.0010940|zone       8;      0|
+       yield|  -0.0000153|zone      60;      0|  +0.0007041|zone       8;      0|
+           q|  -0.0000359|zone     184;      1|  +0.0000259|zone       3;      1|
+mps/1_case_1| NO DIFFERENCES
+comps/2_c4_2| NO DIFFERENCES
+ufferplate_3| NO DIFFERENCES
+mps/4_ptfe_4| NO DIFFERENCES
+_fragment1_5| NO DIFFERENCES
+_fragment1_6| NO DIFFERENCES
+_fragment1_7| NO DIFFERENCES
+regionNumber| NO DIFFERENCES
+        volo| NO DIFFERENCES
+          x0| NO DIFFERENCES
+          y0| NO DIFFERENCES
+          z0| NO DIFFERENCES
+       zmass| NO DIFFERENCES
