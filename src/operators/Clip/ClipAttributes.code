@@ -205,3 +205,93 @@ ClipAttributes::CreateCompatible(const std::string &tname) const
     return retval;
 }
 
+Function: EqualTo
+Declaration: virtual bool EqualTo(const AttributeGroup *atts) const;
+Definition:
+// ****************************************************************************
+// Method: ClipAttributes::EqualTo
+//
+// Purpose:
+//     Determines if the clip attributes are equal to another attributes
+//     object.
+//
+// Arguments:
+//   atts : An attribute group.
+//
+// Returns:    True if this object is equal to atts, false otherwise.
+//
+// Note:
+//
+// Programmer: Hank Childs
+// Creation:   August 28, 2007
+//
+// ****************************************************************************
+
+bool
+ClipAttributes::EqualTo(const AttributeGroup *atts) const
+{
+    if ((atts->TypeName() != "PlaneAttributes") || 
+        GetPlaneToolControlledClipPlane() == None)
+        return AttributeSubject::EqualTo(atts);
+
+    const PlaneAttributes *tmp = (const PlaneAttributes *) atts;
+
+    switch (GetPlaneToolControlledClipPlane())
+    {
+      case Plane1:
+        if (GetPlane1Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane1Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane1Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane1Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane1Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane1Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+      case Plane2:
+        if (GetPlane2Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane2Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane2Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane2Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane2Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane2Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+      case Plane3:
+        if (GetPlane3Origin()[0] != tmp->GetOrigin()[0])
+            return false;
+        if (GetPlane3Origin()[1] != tmp->GetOrigin()[1])
+            return false;
+        if (GetPlane3Origin()[2] != tmp->GetOrigin()[2])
+            return false;
+
+        if (GetPlane3Normal()[0] != tmp->GetNormal()[0])
+            return false;
+        if (GetPlane3Normal()[1] != tmp->GetNormal()[1])
+            return false;
+        if (GetPlane3Normal()[2] != tmp->GetNormal()[2])
+            return false;
+
+        break;
+
+    }
+
+
+    return true;
+}
+

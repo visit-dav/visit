@@ -71,6 +71,8 @@
       </Function>
       <Function name="UpdateOrthogonalAxes" user="true" member="true">
       </Function>
+      <Function name="EqualTo" user="true" member="true">
+      </Function>
       <Include file="source" quoted="false">
         PlaneAttributes.h
       </Include>

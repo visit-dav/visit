@@ -249,3 +249,62 @@ SliceAttributes::UpdateOrthogonalAxes()
     Select(8, (void *)upAxis, 3);
 }
 
+Function: EqualTo
+Declaration: virtual bool EqualTo(const AttributeGroup *atts) const;
+Definition:
+// ****************************************************************************
+// Method: SliceAttributes::EqualTo
+//
+// Purpose: 
+//     Determines if the slice attributes are equal to another attributes
+//     object.
+//
+// Arguments:
+//   atts : An attribute group.
+//
+// Returns:    True if this object is equal to atts, false otherwise.
+//
+// Note:       
+//
+// Programmer: Hank Childs
+// Creation:   August 28, 2007
+//
+// ****************************************************************************
+
+bool
+SliceAttributes::EqualTo(const AttributeGroup *atts) const
+{
+    if ((atts->TypeName() != "PlaneAttributes") || !interactive)
+        return AttributeSubject::EqualTo(atts);
+
+    if (GetAxisType() != Arbitrary)
+        return false;
+    if (GetOriginType() != Point)
+        return false;
+
+    const PlaneAttributes *tmp = (const PlaneAttributes *) atts;
+
+    if (GetOriginPoint()[0] != tmp->GetOrigin()[0])
+        return false;
+    if (GetOriginPoint()[1] != tmp->GetOrigin()[1])
+        return false;
+    if (GetOriginPoint()[2] != tmp->GetOrigin()[2])
+        return false;
+
+    if (GetNormal()[0] != tmp->GetNormal()[0])
+        return false;
+    if (GetNormal()[1] != tmp->GetNormal()[1])
+        return false;
+    if (GetNormal()[2] != tmp->GetNormal()[2])
+        return false;
+
+    if (GetUpAxis()[0] != tmp->GetUpAxis()[0])
+        return false;
+    if (GetUpAxis()[1] != tmp->GetUpAxis()[1])
+        return false;
+    if (GetUpAxis()[2] != tmp->GetUpAxis()[2])
+        return false;
+
+    return true;
+}
+

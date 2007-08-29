@@ -74,6 +74,8 @@
       </Function>
       <Function name="CreateCompatible" user="false" member="true">
       </Function>
+      <Function name="EqualTo" user="true" member="true">
+      </Function>
       <Include file="source" quoted="false">
         BoxExtents.h
       </Include>

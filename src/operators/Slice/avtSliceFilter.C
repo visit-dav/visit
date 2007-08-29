@@ -587,6 +587,9 @@ avtSliceFilter::PreExecute(void)
 //    Hank Childs, Fri Aug 13 09:07:31 PDT 2004
 //    Only use 4-tuples with VTK's multiply point method to prevent UMRs.
 //
+//    Jeremy Meredith, Thu Aug 16 12:17:28 EDT 2007
+//    Rewrote all the matrix stuff.
+//
 // ****************************************************************************
 
 void
@@ -651,76 +654,48 @@ avtSliceFilter::SetUpProjection(void)
                                 // "third" are orthogonal
 
     //
-    // Because it is easier to find the Frame-to-Cartesian-Frame conversion
-    // matrix and invert it than to calculate the Cartesian-Frame-To-Frame
-    // conversion matrix, we will calculate the former matrix.
+    // It's easier to create the matrix going from the projected system
+    // to the original, then inverting it to find the matrix that
+    // actually performs the projection.  Note VTK's matrix convention
+    // is transposed from what we're used to.
     //
-    vtkMatrix4x4 *ftcf = vtkMatrix4x4::New();
-    ftcf->SetElement(0, 0, third[0]);
-    ftcf->SetElement(0, 1, third[1]);
-    ftcf->SetElement(0, 2, third[2]);
-    ftcf->SetElement(0, 3, 0.);
-    ftcf->SetElement(1, 0, upaxis[0]);
-    ftcf->SetElement(1, 1, upaxis[1]);
-    ftcf->SetElement(1, 2, upaxis[2]);
-    ftcf->SetElement(1, 3, 0.);
-    ftcf->SetElement(2, 0, normal[0]);
-    ftcf->SetElement(2, 1, normal[1]);
-    ftcf->SetElement(2, 2, normal[2]);
-    ftcf->SetElement(2, 3, 0.);
-    ftcf->SetElement(3, 0, 0.);
-    ftcf->SetElement(3, 1, 0.);
-    ftcf->SetElement(3, 2, 0.);
-    ftcf->SetElement(3, 3, 1.);
+    vtkMatrix4x4 *xformToOriginalSpace = vtkMatrix4x4::New();
+    xformToOriginalSpace->SetElement(0, 0, third[0]);
+    xformToOriginalSpace->SetElement(1, 0, third[1]);
+    xformToOriginalSpace->SetElement(2, 0, third[2]);
+    xformToOriginalSpace->SetElement(3, 0, 0.);
+    xformToOriginalSpace->SetElement(0, 1, upaxis[0]);
+    xformToOriginalSpace->SetElement(1, 1, upaxis[1]);
+    xformToOriginalSpace->SetElement(2, 1, upaxis[2]);
+    xformToOriginalSpace->SetElement(3, 1, 0.);
+    xformToOriginalSpace->SetElement(0, 2, normal[0]);
+    xformToOriginalSpace->SetElement(1, 2, normal[1]);
+    xformToOriginalSpace->SetElement(2, 2, normal[2]);
+    xformToOriginalSpace->SetElement(3, 2, 0.);
+    xformToOriginalSpace->SetElement(0, 3, origin[0]);
+    xformToOriginalSpace->SetElement(1, 3, origin[1]);
+    xformToOriginalSpace->SetElement(2, 3, origin[2]);
+    xformToOriginalSpace->SetElement(3, 3, 1.);
 
-    //
-    //  ftcf Transpose can be used as the inverse transform to take 
-    //  a point back to its original location, so save it. 
-    //
-    vtkMatrix4x4::Transpose(ftcf, invTrans);
+    // And now invert to get the needed projection matrix.
+    vtkMatrix4x4 *xformToXYPlane = vtkMatrix4x4::New();
+    vtkMatrix4x4::Invert(xformToOriginalSpace, xformToXYPlane);
 
-    vtkMatrix4x4 *cftf = vtkMatrix4x4::New();
-    vtkMatrix4x4::Invert(ftcf, cftf);
-
-    vtkMatrix4x4 *projTo2D = vtkMatrix4x4::New();
-    projTo2D->Identity();
-    projTo2D->SetElement(2, 2, 0.);
-
-    vtkMatrix4x4 *result = vtkMatrix4x4::New();
-    vtkMatrix4x4::Multiply4x4(cftf, projTo2D, result);
-    projTo2D->Delete();
-
-    //
-    // VTK right-multiplies the points, so we need transpose the matrix.
-    //
-    vtkMatrix4x4 *result_transposed = vtkMatrix4x4::New();
-    vtkMatrix4x4::Transpose(result, result_transposed);
-    origTrans->DeepCopy(result_transposed); 
-    result->Delete();
-
+    // Set the projection matrix for the transform.
     vtkMatrixToLinearTransform *mtlt = vtkMatrixToLinearTransform::New();
-    mtlt->SetInput(result_transposed);
-
-    result_transposed->Delete();
-
+    mtlt->SetInput(xformToXYPlane);
     transform->SetTransform(mtlt);
     mtlt->Delete();
 
-    //
-    // Finish setting up the inverse transform.
-    //
-    float zdim[4];
-    float zdim2[4];
-    ftcf->MultiplyPoint(origin, zdim); 
-    zdim[0] = 0;
-    zdim[1] = 0;
-    cftf->MultiplyPoint(zdim, zdim2);
-    invTrans->SetElement(0, 3, zdim2[0]);
-    invTrans->SetElement(1, 3, zdim2[1]);
-    invTrans->SetElement(2, 3, zdim2[2]);
+    // Save the original and inverse matrix.  We probably could have
+    // created these in-place and used them instead of the temporary
+    // ones, but this makes the memory management a little clearer.
+    invTrans->DeepCopy(xformToOriginalSpace);
+    origTrans->DeepCopy(xformToXYPlane);
 
-    ftcf->Delete();
-    cftf->Delete();
+    // Free the temporary matrices
+    xformToOriginalSpace->Delete();
+    xformToXYPlane->Delete();
 }
 
 
