@@ -239,6 +239,11 @@ def GetVarInfo(metadata, varname):
 # Programmer: Mark C. Miller 
 # Date:       Wed Jul 18 18:12:28 PDT 2007 
 #
+# Modifications:
+#
+#   Mark C. Miller, Tue Aug 28 16:25:05 PDT 2007
+#   Added logic to check defined expressions and expressions in metadata
+#
 ###############################################################################
 def GetVarType(metadata, varname):
     theType = "Unknown"
@@ -247,6 +252,29 @@ def GetVarType(metadata, varname):
         tmpType = re.search("<type 'avt([A-Z][a-z]*)MetaData'>", str(type(vInfo)))
         if tmpType != None:
             theType = tmpType.group(1)
+
+    # if we don't have an answer, look at currently defined expressions 
+    if theType == "Unknown":
+        el = Expressions()
+	i = 0
+	while i < len(el) and theType == "Unknown":
+	    exp = el[i]
+            if exp[0] == varname:
+	        theType = "Scalar" # assume its a scalar
+		break
+            i = i + 1
+
+    # if we don't have an answer, look at expressions from the database
+    if theType == "Unknown":
+        el = metadata.GetExprList()
+        for i in range(el.GetNumExpressions()):
+	    exp = el.GetExpressions(i)
+            if exp.name == varname:
+                tmpType = re.search("\ntype = ([A-Z][a-z]*)MeshVar", str(exp))
+                if tmpType != None:
+                    theType = tmpType.group(1)
+		    break
+
     return theType
 
 ###############################################################################
@@ -461,12 +489,15 @@ def SyncTimeRight():
 #   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
 #   Added support for difference summary mode 
 #
+#   Mark C. Miller, Tue Aug 28 16:25:05 PDT 2007
+#   Added logic to set noWinMode
 ###############################################################################
 def ProcessCLArgs():
     global dbl
     global dbr
     global forcePosCMFE
     global diffSummaryOnly
+    global noWinMode
     try:
         i = 1
         while i < len(sys.argv):
@@ -478,6 +509,8 @@ def ProcessCLArgs():
                 forcePosCMFE = 1
             if sys.argv[i] == "-summary_only":
                 diffSummaryOnly = 1
+            if sys.argv[i] == "-nowin":
+                noWinMode = 1
             i = i + 1
     except:
         print "The -vdiff flag takes 2 database names.", dbl, dbr
@@ -770,11 +803,15 @@ def UpdateExpressions(mdl, mdr):
 # Modifications:
 #   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
 #   Added support for difference summary mode 
+#
+#   Mark C. Miller, Tue Aug 28 16:25:05 PDT 2007
+#   Added logic to return early when in nowin mode; for testing
 ###############################################################################
 def Initialize():
     global winDbMap 
     global cmfeMode
     global oldw
+    global noWinMode
 
     #
     # Open left and right database operands
@@ -834,14 +871,16 @@ def Initialize():
     CreateDatabaseCorrelation("DIFF", (dbl, dbr), 0)
 
     # Open the GUI
-    if diffSummaryOnly == 0:
+    if noWinMode == 0:
         OpenGUI()
+    else:
+        return
 
-    # Move the viewer's window area closer to the GUI.
     SetWindowArea(410,0,1100,1100)
 
     # Register macro only seems to work from window 1
     SetActiveWindow(1)
+
     RegisterMacro("DiffSummary", DiffSummary)
     RegisterMacro("ToggleMesh", ToggleMesh)
     RegisterMacro("ToggleBoundary", ToggleBoundary)
@@ -879,8 +918,19 @@ def Initialize():
 # Programmer: Mark C. Miller 
 # Date:       Wed Jul 18 18:12:28 PDT 2007 
 #
+# Modifications:
+#
+#  Mark C. Miller, Tue Aug 28 16:25:05 PDT 2007
+#  Added logic to detect use of var from 'diff/' menu and issue warning
+#
 ###############################################################################
 def ChangeVar(new_var):
+    leadingDiff = re.search("^diff/(.*)", new_var)
+    if leadingDiff != None:
+        print "Passed variable from 'diff/' menu to ChangeVar()."
+        print "Pass only the original name of the variable to ChangeVar()."
+	print "Removing leading 'diff/' and using name \"%s\""%leadingDiff.group(1)
+	new_var = leadingDiff.group(1)
     varType = GetVarType(mdl, new_var)
     if varType == "Unknown":
         print "Unable to find variable type for variable \"%s\""%new_var
@@ -924,6 +974,42 @@ def ChangeVar(new_var):
         else:
             print "Unable to find an existing plot compatible with the variable \"%s\""%new_var
     SetActiveWindow(1)
+
+###############################################################################
+# Function: HideAllUnHiddenPlots 
+#
+# Purpose:  Hides all plots that are currently NOT hidden in the specified
+#           window 
+#
+# Programmer: Mark C. Miller 
+# Date:       Mon Aug 27 16:58:29 PDT 2007 
+#
+###############################################################################
+def HideAllUnHiddenPlots(winId):
+    SetActiveWindow(winId)
+    pl = GetPlotList()
+    plotsToHide = []
+    for p in range(pl.GetNumPlots()):
+        plot = pl.GetPlots(p)
+	if plot.hiddenFlag == 0:
+	    plotsToHide.append(p)
+    SetActivePlots(tuple(plotsToHide))
+    HideActivePlots()
+    return tuple(plotsToHide)
+
+###############################################################################
+# Function: UnHideAllUnHiddenPlots 
+#
+# Purpose:  Undoes the effect of HideAllUnHiddenPlots.
+#
+# Programmer: Mark C. Miller 
+# Date:       Mon Aug 27 16:58:29 PDT 2007 
+#
+###############################################################################
+def UnHideAllUnHiddenPlots(winId, plotsToUnHide):
+    SetActiveWindow(winId)
+    SetActivePlots(plotsToUnHide)
+    HideActivePlots()
 
 ###############################################################################
 # Function: ToggleHidePlot 
@@ -1364,12 +1450,22 @@ def CompareMinMaxInfos(a1, a2):
 #   Mark C. Miller, Tue Aug 21 11:17:20 PDT 2007
 #   Added support for difference summary mode 
 #
+#   Mark C. Miller, Mon Aug 27 17:00:24 PDT 2007
+#   Added calls to Hide/UnHide all unhidden plots so we don't get a
+#   "plot dimensions don't match" error message from VisIt when displaying
+#   each variable in the list.
+#
+#   Mark C. Miller, Tue Aug 28 16:25:05 PDT 2007
+#   Added return of result string to facilitate testing.
+#
 ###############################################################################
 def DiffSummary():
     SetActiveWindow(1)
+    plotsToUnHide = HideAllUnHiddenPlots(1)
     DisableRedraw()
     SuppressQueryOutputOn()
     diffSummary = []
+    resultStr=""
     for v in diffVars:
         vname = re.search("diff/(.*)",v)
         if vname != None:
@@ -1405,9 +1501,13 @@ def DiffSummary():
     for k in range(len(diffSummary)):
         if diffSummary[k][1] == 0.0 and diffSummary[k][5] == 0.0:
             print "% 12.12s| NO DIFFERENCES"%diffSummary[k][0]
+	    resultStr = resultStr + "% 12.12s| NO DIFFERENCES\n"%diffSummary[k][0]
         else:
             print "% 12.12s|%+12.7f|%4s % 7s;% 7s|%+12.7f|%4s % 7s;% 7s|"%diffSummary[k]
+	    resultStr = resultStr + "% 12.12s|%+12.7f|%4s % 7s;% 7s|%+12.7f|%4s % 7s;% 7s|\n"%diffSummary[k]
+    UnHideAllUnHiddenPlots(1, plotsToUnHide)
     RedrawWindow()
+    return resultStr
 
 ###############################################################################
 # Main program and global variables 
@@ -1428,6 +1528,7 @@ forcePosCMFE = 0
 diffSummaryOnly = 0
 cmfeMode = 0
 currentTimeState = -1
+noWinMode = 0
 
 ProcessCLArgs()
 Initialize()
