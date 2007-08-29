@@ -188,6 +188,16 @@
 #     Changed -DMANGLED_OSMESA_INCLUDE to -DMANGLED_OSMESA_INCLUDE_DIR 
 #     in build_vtk. 
 #     
+#     Gunther H. Weber, Wed Aug 29 12:34:58 PDT 2007
+#     - Added rv=0 to beginning of check_parallel to fix error when trying
+#       to build a parallel version of VisIt.
+#     - Added missing VISITARCH component to path that is used for checking
+#       if Mili was already built.
+#     - Add processor architecture for Linux builds to VISITARCH
+#     - Do not specify a username for svn checkout if SVN_NERSC_USERNAME is
+#       not set, so that one can use .ssh/config for that purpose
+#     - Fix gcc version detection if ./configure line containts "version"
+#     
 # *****************************************************************************
 
 
@@ -215,7 +225,7 @@ if [[ "$OPSYS" == "Darwin" ]]; then
    export MESA_TARGET="darwin"
    export QT_PLATFORM=${QT_PLATFORM-"macx-g++"}
 elif [[ "$OPSYS" == "Linux" ]]; then
-   export ARCH=${ARCH-"linux"} # You can change this to say RHEL, SuSE, Fedora.
+   export ARCH=${ARCH-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
    if [[ "$(uname -m)" == "i686" ]] ; then
       export MESA_TARGET=${MESA_TARGET-"linux-x86"}
@@ -264,7 +274,7 @@ elif [[ "$OPSYS" == "SunOS" ]]; then
    export MAKE=${MAKE-"gmake"}
    export MESA_TARGET="solaris-x86-gcc"
 else
-   export ARCH=${ARCH-"linux"} # You can change this to say RHEL, SuSE, Fedora.
+   export ARCH=${ARCH-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
    if [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
@@ -337,7 +347,7 @@ PAR_LIBS=""
 
 # Setup svn path: use SVN_NERSC_NAME if set
 if test -z "$SVN_NERSC_NAME" ; then
-   export SVN_ROOT_PATH="svn+ssh://$(whoami)@svn.nersc.gov/svn/visit"
+   export SVN_ROOT_PATH="svn+ssh://svn.nersc.gov/svn/visit"
 else
    export SVN_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@svn.nersc.gov/svn/visit"
 fi
@@ -971,6 +981,7 @@ function check_3rdparty
 
 function check_parallel
 {
+    rv=0
 
     #
     # Parallelization
@@ -5498,7 +5509,7 @@ fi
 if [[ $VISITARCH == "" ]] ; then
     export VISITARCH=${ARCH}_${C_COMPILER}
     if [[ "$CXX_COMPILER" == "g++" ]] ; then
-       VERSION=$(g++ -v 2>&1 | grep version | cut -d' ' -f3)
+       VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3)
        if [[ ${#VERSION} == 5 ]] ; then
           VISITARCH=${VISITARCH}-${VERSION}
        fi
@@ -5718,7 +5729,7 @@ if [[ "$DO_HDF5" == "yes" ]] ; then
 fi
 cd "$START_DIR"
 if [[ "$DO_MILI" == "yes" ]] ; then
-   if [[ -d "$VISITDIR/mili" ]] ; then
+   if [[ -d "$VISITDIR/mili/$VISITARCH" ]] ; then
       echo "Skipping Mili build.  Mili is already installed."
    else
       echo "Building Mili (~2 minutes)"
