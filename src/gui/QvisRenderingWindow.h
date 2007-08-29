@@ -50,6 +50,7 @@ class QSpinBox;
 class RenderingAttributes;
 class WindowInformation;
 class QvisOpacitySlider;
+class QLineEdit;
 
 // ****************************************************************************
 // Class: QvisRenderingWindow
@@ -97,6 +98,10 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Mon Sep 18 10:44:21 PDT 2006
 //   Added color texturing check box.
 //
+//   Jeremy Meredith, Wed Aug 29 15:23:19 EDT 2007
+//   Added depth cueing support.  Improved some other thing in the
+//   window (like sensitivities and layout).
+//
 // ****************************************************************************
 
 class GUI_API QvisRenderingWindow : public QvisPostableWindowSimpleObserver
@@ -120,6 +125,8 @@ protected:
     void UpdateInformation(bool doAll);
     void Apply(bool ignore = false);
     void InterpretScalableAutoThreshold(int,int*,QString*,int*) const;
+    void GetCurrentValues();
+    void UpdateWindowSensitivity();
 private slots:
     void antialiasingToggled(bool);
     void objectRepresentationChanged(int);
@@ -135,6 +142,9 @@ private slots:
     void specularPowerChanged(int, const void*);
     void shadowToggled(bool);
     void shadowStrengthChanged(int, const void*);
+    void depthCueingToggled(bool);
+    void depthCueingStartChanged();
+    void depthCueingEndChanged();
     void colorTexturingToggled(bool);
 private:
     RenderingAttributes *renderAtts;
@@ -167,6 +177,11 @@ private:
     QCheckBox         *shadowToggle;
     QLabel            *shadowStrengthLabel;
     QvisOpacitySlider *shadowStrengthSlider;
+    QCheckBox         *depthCueingToggle;
+    QLabel            *depthCueingStartLabel;
+    QLineEdit         *depthCueingStartEdit;
+    QLabel            *depthCueingEndLabel;
+    QLineEdit         *depthCueingEndEdit;
     QCheckBox    *colorTexturingToggle;
 
     // Labels to display renderer information.

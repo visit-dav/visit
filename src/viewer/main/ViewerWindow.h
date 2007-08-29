@@ -425,6 +425,9 @@ class ViewerToolbar;
 //    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
 //    Added fullscreen support.
 //
+//    Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
+//    Added depth cueing properties.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -650,6 +653,10 @@ public:
     void SetShadingProperties(bool,double);
     bool GetDoShading() const;
     double GetShadingStrength() const;
+    void SetDepthCueingProperties(bool,const double[3],const double[3]);
+    bool GetDoDepthCueing() const;
+    const double *GetStartCuePoint() const;
+    const double *GetEndCuePoint() const;
     void SetColorTexturingFlag(bool);
     bool GetColorTexturingFlag() const;
     int GetCompressionActivationMode() const;
@@ -776,6 +783,10 @@ private:
     // should be removed.
     bool            doShading;
     double          shadingStrength;
+    // Same for depth cueing
+    bool            doDepthCueing;
+    double          startCuePoint[3];
+    double          endCuePoint[3];
 };
 
 #endif

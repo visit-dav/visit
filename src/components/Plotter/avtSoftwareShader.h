@@ -54,7 +54,7 @@ struct  avtView3D;
 //  Class: avtSoftwareShader
 //
 //  Purpose:
-//      Does shadows in software.
+//      Does shadows in software.  Also handles depth cueing.
 //
 //  Programmer: Hank Childs
 //  Creation:   October 24, 2004
@@ -63,6 +63,9 @@ struct  avtView3D;
 //    Jeremy Meredith, Fri Oct 29 16:49:43 PDT 2004
 //    Added FindLightView.  Removed the "aspect" argument from AddShadows
 //    because we can just calculate it based on the image passed in.
+//
+//    Jeremy Meredith, Wed Aug 29 13:11:37 EDT 2007
+//    Added depth cueing.
 //
 // ****************************************************************************
 
@@ -73,6 +76,11 @@ class PLOTTER_API avtSoftwareShader
                                    double *);
     static void  AddShadows(avtImage_p, avtImage_p, avtView3D &, avtView3D &,
                             double);
+    static void  AddDepthCueing(avtImage_p current_image,
+                                avtView3D &current_view, 
+                                const double startPoint[3],
+                                const double endPoint[3],
+                                unsigned char cuecolor[3]);
     static avtView3D  FindLightView(avtImage_p,avtView3D &,double*,double);
 };
 
