@@ -593,6 +593,8 @@ avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
     double mag = (direction[0]*direction[0] +
                   direction[1]*direction[1] +
                   direction[2]*direction[2]);
+    if (mag == 0)
+        return;
 
     //
     // Set up the buffers we will be reading from and writing to.
