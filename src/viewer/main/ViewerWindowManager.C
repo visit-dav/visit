@@ -2909,6 +2909,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //   Brad Whitlock, Mon Sep 18 10:42:40 PDT 2006
 //   Added a flag for color texturing.
 //
+//   Jeremy Meredith, Wed Aug 29 15:23:19 EDT 2007
+//   Added depth cueing properties.
+//
 // ****************************************************************************
 
 void
@@ -2970,6 +2973,20 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         {
             windows[index]->SetShadingProperties(renderAtts->GetDoShadowing(),
                                                  renderAtts->GetShadowStrength());
+        }
+
+        if (windows[index]->GetDoDepthCueing() != renderAtts->GetDoDepthCueing() ||
+            windows[index]->GetStartCuePoint()[0] != renderAtts->GetStartCuePoint()[0] ||
+            windows[index]->GetStartCuePoint()[1] != renderAtts->GetStartCuePoint()[1] ||
+            windows[index]->GetStartCuePoint()[2] != renderAtts->GetStartCuePoint()[2] ||
+            windows[index]->GetEndCuePoint()[0] != renderAtts->GetEndCuePoint()[0] ||
+            windows[index]->GetEndCuePoint()[1] != renderAtts->GetEndCuePoint()[1] ||
+            windows[index]->GetEndCuePoint()[2] != renderAtts->GetEndCuePoint()[2])
+        {
+            windows[index]->SetDepthCueingProperties(
+                                               renderAtts->GetDoDepthCueing(),
+                                               renderAtts->GetStartCuePoint(),
+                                               renderAtts->GetEndCuePoint());
         }
 
         if (windows[index]->GetColorTexturingFlag() != 
@@ -4527,6 +4544,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Brad Whitlock, Mon Sep 18 10:43:28 PDT 2006
 //   Added update for color texturing.
 //
+//   Jeremy Meredith, Wed Aug 29 15:23:19 EDT 2007
+//   Added depth cueing properties.
+//
 // ****************************************************************************
 
 void
@@ -4559,6 +4579,9 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         renderAtts->SetSpecularColor(win->GetSpecularColor());
         renderAtts->SetDoShadowing(win->GetDoShading());
         renderAtts->SetShadowStrength(win->GetShadingStrength());
+        renderAtts->SetDoDepthCueing(win->GetDoDepthCueing());
+        renderAtts->SetStartCuePoint(win->GetStartCuePoint());
+        renderAtts->SetEndCuePoint(win->GetEndCuePoint());
         renderAtts->SetColorTexturingFlag(win->GetColorTexturingFlag());
 
         // Tell the client about the new rendering information.
@@ -7560,6 +7583,9 @@ ViewerWindowManager::CreateVisWindow(const int windowIndex,
 //    Hank Childs, Sun Oct 24 13:39:57 PDT 2004
 //    Added shading properties.
 //
+//    Jeremy Meredith, Wed Aug 29 15:23:19 EDT 2007
+//    Added depth cueing properties.
+//
 // ****************************************************************************
 
 void
@@ -7598,6 +7624,9 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
                              renderAtts->GetSpecularColor());
     w->SetShadingProperties(renderAtts->GetDoShadowing(),
                             renderAtts->GetShadowStrength());
+    w->SetDepthCueingProperties(renderAtts->GetDoDepthCueing(),
+                                renderAtts->GetStartCuePoint(),
+                                renderAtts->GetEndCuePoint());
 }
 
 // ****************************************************************************

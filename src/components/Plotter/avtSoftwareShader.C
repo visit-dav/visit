@@ -110,7 +110,7 @@ static double CalculateShadow_Hard(int l_width, int l_height,
 }
 
 // ****************************************************************************
-//  Function:  CalculateShadow_Hard
+//  Function:  CalculateShadow_Antialiased
 //
 //  Purpose:
 //    Calculates shadows, with antialiased edges.
@@ -559,6 +559,141 @@ avtSoftwareShader::AddShadows(avtImage_p light_image, avtImage_p current_image,
     cur_inverse->Delete();
     light_cam->Delete();
     light_inverse->Delete();
+}
+
+
+
+// ****************************************************************************
+//  Method:  avtSoftwareShader::AddDepthCueing
+//
+//  Purpose:
+//    Apply depth cueing to the scene.  Note that this can be
+//    applied independent of the view angle, so "fog" is not
+//    quite the right implementation.
+//
+//  Arguments:
+//    current_image        the image to apply depth cueing to
+//    current_view         the view used to create that image
+//    start                the point at which depth cueing begins
+//    end                  the point at which depth cueing ends
+//    cuecolor             typically the background color
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 29, 2007
+//
+// ****************************************************************************
+void
+avtSoftwareShader::AddDepthCueing(avtImage_p current_image,
+                                  avtView3D &current_view, 
+                                  const double start[3],
+                                  const double end[3],
+                                  unsigned char cuecolor[3])
+{
+    double direction[3] = {end[0]-start[0], end[1]-start[1], end[2]-start[2]};
+    double mag = (direction[0]*direction[0] +
+                  direction[1]*direction[1] +
+                  direction[2]*direction[2]);
+
+    //
+    // Set up the buffers we will be reading from and writing to.
+    //
+    unsigned char *rgb = current_image->GetImage().GetRGBBuffer();
+    float *cur_image_zbuff = current_image->GetImage().GetZBuffer();
+    int rs, cs;
+    current_image->GetImage().GetSize(&rs, &cs);
+ 
+    //
+    // Calculate aspect ratios
+    //
+    double aspect = double(cs)/double(rs);
+
+    //
+    // Set up VTK camera objects corresponding to the current view.  This will
+    // give us the matrix to use to transform our points.
+    //
+    avtViewInfo ccvi;
+    current_view.SetViewInfoFromView(ccvi);
+    vtkCamera *cur_cam = vtkCamera::New();
+    ccvi.SetCameraFromView(cur_cam);
+    double cur_clip_range[2];
+    cur_cam->GetClippingRange(cur_clip_range);
+    vtkMatrix4x4 *cur_trans =
+                       cur_cam->GetCompositePerspectiveTransformMatrix(aspect,
+                                       cur_clip_range[0], cur_clip_range[1]);
+    vtkMatrix4x4 *cur_inverse = vtkMatrix4x4::New();
+    vtkMatrix4x4::Invert(cur_trans, cur_inverse);
+
+    //
+    // Now iterate over every pixel in the scene and see if the light can
+    // see the same spots as the camera.
+    //
+    int j;
+    for (j = 0 ; j < rs ; j++)
+    {
+        for (int i = 0 ; i < cs ; i++)
+        {
+            int idx = j*cs + i;
+
+            //
+            // If there is nothing in the real image, then there is nothing
+            // to cross-reference against -- return now before doing any work.
+            //
+            if (cur_image_zbuff[idx] > 0.9999)
+                continue;
+
+            //
+            // Convert from "display"/screen space to view space.
+            //
+            double view[4];
+            view[0] = (i - cs/2.)/(cs/2.);
+            view[1] = (j - rs/2.)/(rs/2.);
+            // I expected the z to be from 0 to 1, but the VTK matrices
+            // require you to perform this manipulation with the clipping
+            // range.
+            view[2] = cur_image_zbuff[idx]*
+                                   (cur_clip_range[1]-cur_clip_range[0])
+                       + cur_clip_range[0] ;
+            view[3] = 1.;
+
+            // And then to world space.
+            double world[4];
+            cur_inverse->MultiplyPoint(view, world);
+            if (world[3] != 0.)
+            {
+                world[0] /= world[3];
+                world[1] /= world[3];
+                world[2] /= world[3];
+            }
+            world[3] = 1.;
+
+            // Get the distance factor (in terms of the direction vec length)
+            double scale = (direction[0]*(world[0]-start[0]) +
+                            direction[1]*(world[1]-start[1]) +
+                            direction[2]*(world[2]-start[2])) / mag;
+            // must be between 0 and 1
+            if (scale > 1)
+                scale = 1;
+            if (scale < 0)
+                scale = 0;
+
+            // fade it to the cue color
+            unsigned char r = rgb[3*idx+0];
+            unsigned char g = rgb[3*idx+1];
+            unsigned char b = rgb[3*idx+2];
+
+            r = (unsigned char)((1.-scale) * double(r) + (scale) * double(cuecolor[0]));
+            g = (unsigned char)((1.-scale) * double(g) + (scale) * double(cuecolor[1]));
+            b = (unsigned char)((1.-scale) * double(b) + (scale) * double(cuecolor[2]));
+
+            // and set it back
+            rgb[3*idx+0] = r;
+            rgb[3*idx+1] = g;
+            rgb[3*idx+2] = b;
+        }
+    }
+
+    cur_cam->Delete();
+    cur_inverse->Delete();
 }
 
 

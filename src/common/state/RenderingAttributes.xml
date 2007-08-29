@@ -61,6 +61,19 @@
     <Field name="shadowStrength" label="Shadow Strength" type="double">
       0.500000
     </Field>
+    <Field name="doDepthCueing" label="Do Depth Cueing" type="bool">
+      false
+    </Field>
+    <Field name="startCuePoint" type="doubleArray" length="3">
+      -10.
+      0.
+      0.
+    </Field>
+    <Field name="endCuePoint" type="doubleArray" length="3">
+      10.
+      0.
+      0.
+    </Field>
     <Field name="compressionActivationMode" label="compressionActivationMode" type="enum" subtype="TriStateMode">
       Never
     </Field>
@@ -69,9 +82,9 @@
     </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
-    <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="false">
+    <Constant name="DEFAULT_SCALABLE_AUTO_THRESHOLD" member="true">
     </Constant>
-    <Constant name="DEFAULT_SCALABLE_ACTIVATION_MODE" member="false">
+    <Constant name="DEFAULT_SCALABLE_ACTIVATION_MODE" member="true">
     </Constant>
     <Include file="header" quoted="false">
       float.h

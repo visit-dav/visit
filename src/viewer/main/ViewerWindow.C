@@ -248,6 +248,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Jeremy Meredith, Tue Jul 17 16:37:04 EDT 2007
 //    Added fullscreen support to the QtVisWindow.
 //
+//    Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
+//    Added initialization of depth cueing properties.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
@@ -371,6 +374,10 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
 
     doShading = false;
     shadingStrength = 0.5;
+
+    doDepthCueing = false;
+    startCuePoint[0] = -10;  startCuePoint[0] = 0;  startCuePoint[0] = 0;
+    endCuePoint[0]   =  10;  endCuePoint[0]   = 0;  endCuePoint[0]   = 0;
 }
 
 // ****************************************************************************
@@ -2239,6 +2246,9 @@ ViewerWindow::InvertBackgroundColor()
 //   Brad Whitlock, Mon Sep 18 10:56:09 PDT 2006
 //   Added color texturing.
 //
+//    Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
+//    Added copying of depth cueing properties.
+//
 // ****************************************************************************
 
 void
@@ -2259,6 +2269,9 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
                           source->GetSpecularPower(),
                           source->GetSpecularColor());
     SetShadingProperties(source->GetDoShading(), source->GetShadingStrength());
+    SetDepthCueingProperties(source->GetDoDepthCueing(),
+                             source->GetStartCuePoint(),
+                             source->GetEndCuePoint());
     SetColorTexturingFlag(source->GetColorTexturingFlag());
 
     //
@@ -5816,6 +5829,9 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Brad Whitlock, Mon Sep 18 10:57:15 PDT 2006
 //   Added color texturing flag.
 //
+//   Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
+//   Added depth cueing properties.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -5901,6 +5917,10 @@ ViewerWindow::GetWindowAttributes() const
 
     renderAtts.SetDoShadowing(GetDoShading());
     renderAtts.SetShadowStrength(GetShadingStrength());
+
+    renderAtts.SetDoDepthCueing(GetDoDepthCueing());
+    renderAtts.SetStartCuePoint(GetStartCuePoint());
+    renderAtts.SetEndCuePoint(GetEndCuePoint());
 
     renderAtts.SetColorTexturingFlag(GetColorTexturingFlag());
 
@@ -6782,6 +6802,93 @@ ViewerWindow::SetShadingProperties(bool flag, double str)
 }
 
 // ****************************************************************************
+//  Method:  ViewerWindow::GetDoDepthCueing
+//
+//  Purpose:
+//    Returns the window's depth cueing flag.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Hank Childs
+//  Creation:    August 29, 2007
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetDoDepthCueing() const
+{
+    return doDepthCueing;
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::GetStartCuePoint
+//
+//  Purpose:
+//    returns the 3D world space point at which depth cueing starts
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 29, 2007
+//
+// ****************************************************************************
+const double*
+ViewerWindow::GetStartCuePoint() const
+{
+    return startCuePoint;
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::GetEndCuePoint
+//
+//  Purpose:
+//    returns the 3D world space point at which depth cueing ends
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 29, 2007
+//
+// ****************************************************************************
+const double*
+ViewerWindow::GetEndCuePoint() const
+{
+    return endCuePoint;
+}
+
+// ****************************************************************************
+//  Method:  ViewerWindow::SetDepthCueingProperties
+//
+//  Purpose:
+//    Set all depth cueing properties at once.
+//
+//  Arguments:
+//    flag       the depth cueing flag
+//    start      the depth cueing start point in world space
+//    end        the depth cueing end point in world space
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    August 29, 2007
+//
+// ****************************************************************************
+void
+ViewerWindow::SetDepthCueingProperties(bool flag,
+                                       const double start[3],
+                                       const double end[3])
+{
+    doDepthCueing = flag;
+    startCuePoint[0] = start[0];
+    startCuePoint[1] = start[1];
+    startCuePoint[2] = start[2];
+    endCuePoint[0] = end[0];
+    endCuePoint[1] = end[1];
+    endCuePoint[2] = end[2];
+}
+
+// ****************************************************************************
 //  Method:  ViewerWindow::GetSpecularFlag
 //
 //  Purpose:
@@ -7380,6 +7487,9 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   a specific name.  This forces ViewerWindow::SetFromNode to pick up
 //   the correct ColorAttribute values.
 //
+//   Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
+//   Added depth cueing properties.
+//
 // ****************************************************************************
 
 void
@@ -7468,6 +7578,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(specularColorNode);
         windowNode->AddNode(new DataNode("doShading", GetDoShading()));
         windowNode->AddNode(new DataNode("shadingStrength", GetShadingStrength()));
+        windowNode->AddNode(new DataNode("doDepthCueing", GetDoDepthCueing()));
+        windowNode->AddNode(new DataNode("startCuePoint", GetStartCuePoint(), 3));
+        windowNode->AddNode(new DataNode("endCuePoint", GetEndCuePoint(), 3));
         windowNode->AddNode(new DataNode("colorTexturingFlag", GetColorTexturingFlag()));
 
         //
@@ -7606,6 +7719,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Jeremy Meredith, Wed Jun 20 16:54:14 EDT 2007
 //   Made specularColor be written underneath a new object data node with
 //   a specific name.  This ensures we pick up the correct ColorAttribute.
+//
+//   Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
+//   Added depth cueing properties.
 //
 // ****************************************************************************
 
@@ -7887,6 +8003,36 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     if (numParamsSaved == 2)
     {
         SetShadingProperties(tmpDoShading, tmpShadingStrength);
+    }
+
+    numParamsSaved = 0;
+    bool tmpDoDepthCueing = false;
+    double tmpStartCuePoint[3];
+    double tmpEndCuePoint[3];
+    if((node = windowNode->GetNode("doDepthCueing")) != 0)
+    {
+        tmpDoDepthCueing = node->AsBool();
+        numParamsSaved++;
+    }
+    if((node = windowNode->GetNode("startCuePoint")) != 0)
+    {
+        tmpStartCuePoint[0] = node->AsDoubleArray()[0];
+        tmpStartCuePoint[1] = node->AsDoubleArray()[1];
+        tmpStartCuePoint[2] = node->AsDoubleArray()[2];
+        numParamsSaved++;
+    }
+    if((node = windowNode->GetNode("endCuePoint")) != 0)
+    {
+        tmpEndCuePoint[0] = node->AsDoubleArray()[0];
+        tmpEndCuePoint[1] = node->AsDoubleArray()[1];
+        tmpEndCuePoint[2] = node->AsDoubleArray()[2];
+        numParamsSaved++;
+    }
+    if (numParamsSaved == 3)
+    {
+        SetDepthCueingProperties(tmpDoDepthCueing,
+                                 tmpStartCuePoint,
+                                 tmpEndCuePoint);
     }
 
     // Set the color texturing properties.

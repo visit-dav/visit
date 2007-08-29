@@ -1939,6 +1939,9 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Set the actor's name to that of the plot so legend attributes can be
 //    set via the annotation object list.
 //
+//    Jeremy Meredith, Wed Aug 29 15:24:13 EDT 2007
+//    Added depth cueing.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2236,6 +2239,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             // Determine if we need to go for two passes
             //
             bool doShadows = windowAttributes.GetRenderAtts().GetDoShadowing();
+            bool doDepthCueing =
+                windowAttributes.GetRenderAtts().GetDoDepthCueing();
             bool two_pass_mode = false;
             if (viswin->GetWindowMode() == WINMODE_3D)
             {
@@ -2245,10 +2250,14 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 #endif
             }
             else
+            {
                 doShadows = false;
+                doDepthCueing = false;
+            }
 
             int nstages = 3;  // Rendering + Two for Compositing
             nstages += (doShadows ? 2 : 0);
+            nstages += (doDepthCueing ? 1 : 0);
             nstages += (two_pass_mode ? 1 : 0);
             for (int ss = 0 ; ss < imageBasedPlots.size() ; ss++)
             {
@@ -2291,6 +2300,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 imageCompositer->SetShouldOutputZBuffer(getZBuffer ||
                                                         two_pass_mode ||
                                                         doShadows || 
+                                                        doDepthCueing ||
                                                         haveImagePlots);
             }
             else
@@ -2322,6 +2332,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             imageCompositer->AddImageInput(theImage, 0, 0);
             imageCompositer->SetAllProcessorsNeedResult(two_pass_mode || 
                                                         doShadows ||
+                                                        doDepthCueing ||
                                                         haveImagePlots);
 
             //
@@ -2475,6 +2486,41 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                     delete wic;
                 }
                 CallProgressCallback("NetworkManager", "Creating shadows",1,1);
+            }
+
+            //
+            // Do depth cueing if appropriate.
+            //
+            if (doDepthCueing)
+            {
+                CallProgressCallback("NetworkManager", "Applying depth cueing",0,1);
+                avtView3D cur_view = viswin->GetView3D();
+
+                //
+                // Get the image attributes
+                //
+                avtImage_p compositedImage;
+                CopyTo(compositedImage, compositedImageAsDataObject);
+
+                int width, height;
+                viswin->GetSize(width, height);
+
+#ifdef PARALLEL
+                if (PAR_Rank() == 0)
+#endif
+                {
+                    const double *start =
+                        windowAttributes.GetRenderAtts().GetStartCuePoint();
+                    const double *end   =
+                        windowAttributes.GetRenderAtts().GetEndCuePoint();
+                    unsigned char color[] =
+                        {annotationAttributes.GetBackgroundColor().Red(),
+                         annotationAttributes.GetBackgroundColor().Green(),
+                         annotationAttributes.GetBackgroundColor().Blue()};
+                    avtSoftwareShader::AddDepthCueing(compositedImage,cur_view,
+                                                      start, end, color);
+                }
+                CallProgressCallback("NetworkManager", "Applying depth cueing",1,1);
             }
 
             //
