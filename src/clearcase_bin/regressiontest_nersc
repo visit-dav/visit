@@ -7,16 +7,6 @@
 #  Date:       May 16, 2007 
 #
 #  Modifications:
-#    Mark C. Miller, Wed May 23 09:43:39 PDT 2007
-#    Fixed uniqing of email recipient addrs. Add -publicpluginsonly to visit
-#    startup
-#
-#    Mark C. Miller, Tue May 29 14:10:11 PDT 2007
-#    Added 'make clean' before make 
-#    Fixed problem with grep filter to identify changed files
-#    Added smarts to not re-test if nothing has changed
-#    Added CL arg parsing and -force option to force testing even if nothing
-#    has changed since last run
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -104,7 +94,7 @@ checkAndHandleError() {
     # at the end of a run
     emailSubject=$shortSubject
     if test -n "`echo $handlerBehavior | grep flush`"; then
-        if test `wc -l $errorLogFile` -eq 0; then
+        if test `wc -l $errorLogFile | tr -s ' ' | cut -d' ' -f2` -eq 0; then
             return
 	else
 	    emailSubject="Message(s) from VisIt's Automatic Test Run"
@@ -195,23 +185,36 @@ checkAndHandleError "`nezero $pingWorks`" fatal "dropped packets to $svnHost"
 
 # Update our current 'checkout' of visit trunk from NERSC
 pushd $rootTestDir 1> /dev/null 2>&1
+rm -f nersc_repo_update_$dateTag
+rm -f nersc_repo_modifiers_$dateTag
 touch nersc_repo_update_$dateTag
 touch nersc_repo_modifiers_$dateTag
 for dir in src src/data src/test; do
     pushd $dir 1> /dev/null 2>&1
-    svn status -u -v >> $rootTestDir/svn_status.out 2> $rootTestDir/stderr.txt
-    checkAndHandleError $? warning "svn status on $dir failed" $rootTestDir/stderr.txt
-    rm -f $rootTestDir/stderr.txt
-    cat $rootTestDir/svn_status.out | grep '^ *\*' | tr -s ' ' | cut -d' ' -f5 >> $rootTestDir/nersc_repo_modifiers_$dateTag
-    rm -rf $rootTestDir/svn_status.out
+#    svn status -u -v >> $rootTestDir/svn_status.out 2> $rootTestDir/stderr.txt
+#    checkAndHandleError $? warning "svn status on $dir failed" $rootTestDir/stderr.txt
+#    rm -f $rootTestDir/stderr.txt
+#    cat $rootTestDir/svn_status.out | grep '^ *\*' | tr -s ' ' | cut -d' ' -f5 >> $rootTestDir/nersc_repo_modifiers_$dateTag
+#    rm -rf $rootTestDir/svn_status.out
+#    svn update >> $rootTestDir/nersc_repo_update_$dateTag 2> $rootTestDir/stderr.txt
+#    checkAndHandleError $? warning "svn update on $dir failed" $rootTestDir/stderr.txt
+#    rm -f stderr.txt
+
     svn update >> $rootTestDir/nersc_repo_update_$dateTag 2> $rootTestDir/stderr.txt
     checkAndHandleError $? warning "svn update on $dir failed" $rootTestDir/stderr.txt
     rm -f stderr.txt
+    cat $rootTestDir/nersc_repo_update_$dateTag | grep '^[ADUCG]' | grep -v revision | tr -d 'ADUCG ' > files_to_status
+    svn status -u -v >> $rootTestDir/nersc_repo_status_$dateTag 2> $rootTestDir/stderr.txt
+    checkAndHandleError $? warning "svn status on $dir failed" $rootTestDir/stderr.txt
+    rm -f $rootTestDir/stderr.txt
+    grep -f files_to_status $rootTestDir/nersc_repo_status_$dateTag | tr -s ' ' | cut -d' ' -f4 > $rootTestDir/nersc_repo_modifiers_$dateTag
+    rm -f files_to_status stderr.txt
+
     popd 1> /dev/null 2>&1
 done
 
 # build list of modifiers email addresses
-cat $modifiersFile nersc_repo_modifiers_$dateTag | sort | uniq > ${modifiersFile}_tmp
+cat $modifiersFile nersc_repo_modifiers_$dateTag | grep -v '^[0-9]*$' | sort | uniq > ${modifiersFile}_tmp
 rm -f $modifiersFile
 mv ${modifiersFile}_tmp $modifiersFile 
 for u in `cat $modifiersFile`; do
@@ -220,7 +223,7 @@ for u in `cat $modifiersFile`; do
 done
 
 # See if any files actually changed
-numChangedFiles=`grep '^[ADUCG]' nersc_repo_update_$dateTag | grep -v '^At revision' | wc -l | tr -d ' '`
+numChangedFiles=`grep '^[ADUCG]' nersc_repo_update_$dateTag | grep -v '^At revision' | wc -l | tr -s ' ' | cut -d' ' -f2`
 if test $numChangedFiles -eq 0; then
     if test $skipIfNoChanges -eq 1; then
         checkAndHandleError 1 flush "No Changes Found. Skipping Tests"
@@ -239,21 +242,36 @@ checkAndHandleError "`eqzero $conflictFiles`" fatal "conflicting files" "$confli
 # build visit
 cd src
 rm -f config.log config.status config.cache config_log.txt make_log.txt
-find . -name '*.so' -exec rm {} \;
+#find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*.d' -exec rm {} \;
 echo -e "LD_LIBRARY_PATH = $LD_LIBRARY_PATH" 1> config_log.txt 2>&1
 echo -e "Forcing LD_LIBRARY_PATH to /usr/local/lib" 1>> config_log.txt 2>&1
 LD_LIBRARY_PATH=/usr/local/lib
 export LD_LIBRARY_PATH
 env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel 1>> config_log.txt 2>&1
-checkAndHandleError $? fatal "configure failed" config_log.txt 
-gmake clean
+checkAndHandleError $? fatal "FIRST configure failed" config_log.txt 
+cd data
+gmake clean 1> /dev/null 2>&1
+cd ..
+gmake clean 1> /dev/null 2>&1
+rm -f uncleaned_files_log.txt
+find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*_moc.[Ch]' -o -name 'moc_*.[Ch]' 1> uncleaned_files_log.txt
+uncleanedFilesCount=`wc -l uncleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
+checkAndHandleError $uncleanedFilesCount warning "make clean left files; removing manually" uncleaned_files_log.txt
+if test $uncleanedFilesCount -ne 0; then
+    find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*_moc.[Ch]' -o -name 'moc_*.[Ch]' -exec rm {} \;
+fi
+env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel 1>> config_log.txt 2>&1
+checkAndHandleError $? fatal "SECOND configure failed" config_log.txt 
 gmake -j 4 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in src" make_log.txt
 
+# short term fix for repo src tree changes
+sed -i -e 's|../src/exe/visitconvert_ser|../exe/visitconvert_ser|' data/Makefile
+sed -i -e 's|../src/bin/visitconvert|../bin/visitconvert|' data/Makefile
 # build data
 cd data
-gmake clean
 rm -f make_log.txt
+gmake clean 1> /dev/null 2>&1
 gmake -j 4 test 1>> make_log.txt 2>&1
 checkAndHandleError $? fatal "gmake -j 4 failed in data" make_log.txt 
 cd ..
@@ -285,7 +303,9 @@ skipList="nersc,scalable,parallel:tests/databases/boxlib.py \
 	  nersc,parallel:tests/plots/label.py \
 	  nersc,parallel:tests/plots/ray_trace.py \
 	  nersc,parallel:tests/rendering/renderpoints.py \
-	  nersc,scalable,parallel:tests/databases/netcdf.py"
+	  nersc,scalable,parallel:tests/databases/netcdf.py \
+	  nersc,parallel:tests/databases/diff.py \
+	  nersc,scalable,parallel:tests/databases/diff.py"
 
 #
 # Make directory for where to store core files
@@ -302,7 +322,7 @@ cd test
 # Short term fix for path to VisIt in 'runtest' script
 #
 sed -i -e 's|^exepath="../src/bin/visit"|exepath="../bin/visit"|' runtest
-#rm -f ~miller/.visit/linux-intel/plugins/databases/*.so
+rm -f ~miller/.visit/linux-intel/plugins/databases/*.so
 
 for m in $modes; do
 
@@ -310,9 +330,9 @@ for m in $modes; do
     /home/visit/clearcase_bin/cleanipcs 1> /dev/null 2>&1
 
     if test "$skipList" = ""; then
-        ./runtest -vargs "-publicpluginsonly" -q -p -m "$m" -d "$curdate" -notrackmem
+        ./runtest -q -p -m "$m" -d "$curdate" -notrackmem
     else
-        ./runtest -vargs "-publicpluginsonly" -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
+        ./runtest -q -s "$skipList" -p -m "$m" -d "$curdate" -notrackmem
     fi
     curerror=$?
     theMode=`echo $m | tr ',' '_'`
@@ -360,6 +380,8 @@ for m in $modes; do
 
     if test ! "$curerror" = "0"; then
         error=1
+    else
+        checkAndHandleError 1 warning "test mode $m succeeded"
     fi
 done
 
@@ -369,8 +391,13 @@ done
 if test $error -eq 0; then
     rm -f $modifiersFile
     touch $modifiersFile
+    if test "$skipList" = ""; then
+        checkAndHandleError 1 flush "Complete Pass -- All tests Passed!!!"
+    else
+        checkAndHandleError 1 flush "Partial Pass - Some tests skipped"
+    fi
+    exit 0
+else
+    checkAndHandleError 1 flush "Tests failed"
+    exit 1
 fi
-
-checkAndHandleError 1 flush "Tests completed"
-
-exit
