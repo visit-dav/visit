@@ -759,6 +759,11 @@ VisitSphereTool::Translate(CB_ENUM e, int, int, int x, int y)
 //  Programmer:  Brad Whitlock
 //  Creation:    Thu May 2 16:59:02 PST 2002
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Aug 28 17:00:44 PDT 2007
+//    Fix divide by zero.
+//
 // ****************************************************************************
 
 void
@@ -793,6 +798,8 @@ VisitSphereTool::Resize(CB_ENUM e, int, int, int x, int y)
         dX = originScreen.x - double(x);
         dY = originScreen.y - double(y);
         double dist = sqrt(dX * dX + dY * dY);
+        if (originalDistance == 0.)
+            originalDistance = dist;
         double scale = dist / originalDistance;
 
         // Do the hotpoint and actor transformations
