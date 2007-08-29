@@ -3910,6 +3910,10 @@ ViewerPlot::HandleTool(const avtToolInterface &ti)
 //   initialized something) if the attributes are different than what we
 //   already had.
 //
+//   Hank Childs, Wed Aug 29 15:10:34 PDT 2007
+//   Make sure SelectAll has been called on the attributes before calling
+//   EqualTo.
+//
 // ****************************************************************************
 
 bool
@@ -3928,6 +3932,10 @@ ViewerPlot::InitializeTool(avtToolInterface &ti)
     AttributeSubject *atts = plotAtts->CreateCompatible(tname);
     if(atts != 0)
     {
+        ti.GetAttributes()->SelectAll();
+        atts->SelectAll(); // We need the addresses to be assigned for
+                           // EqualTo
+
         if (! ti.GetAttributes()->EqualTo(atts))
             retval |= ti.GetAttributes()->CopyAttributes(atts);
         delete atts;
@@ -3944,9 +3952,12 @@ ViewerPlot::InitializeTool(avtToolInterface &ti)
         //
         const AttributeSubject *operatorAtts = operators[i]->GetOperatorAtts();
         AttributeSubject *atts = operatorAtts->CreateCompatible(tname);
-
         if(atts != 0)
         {
+            ti.GetAttributes()->SelectAll();
+            atts->SelectAll(); // We need the addresses to be assigned for
+                               // EqualTo
+
             // If the plot is expanded, only attempt to use the 
             if(expandedFlag)
             {
