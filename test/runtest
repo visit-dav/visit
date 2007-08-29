@@ -222,6 +222,14 @@
 #    and re-created.  (This was previously unsafe because they were
 #    clearcase elements, but I have removed them from SVN control.)
 #
+#    Mark C. Miller, Mon Aug 27 18:00:06 PDT 2007
+#    Change handling to test-specific enviornment to instead of creating
+#    a file for each test, put the relevant strings into a shell var that
+#    is expanded on the test line.
+#
+#    Mark C. Miller, Tue Aug 28 16:23:20 PDT 2007
+#    Added ability for test to specify how to invoke VisIt to run itself.
+#    Added setting of $nowin="" for interactive mode
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -359,6 +367,7 @@ do
 	 ;;
       -i|-interactive)
          interactive="-interactive"
+         nowin=""
          shift
          ;;
       -pixdiff)
@@ -723,9 +732,26 @@ for t in $testcases; do
 	fi
     done
 
-    # handle specialized env. for this test
-    rm -f $name.env
-    cat $t | grep '^# *ENV:' | cut -d':' -f2 > $name.env
+    # handle specialized settings for this test such as enviornment
+    # or how the test is invoked
+    theEnv=
+    theEnv=`cat $t | grep '^# *ENV:' | cut -d':' -f2`
+    theArgs=
+    theArgs=`cat $t | grep '^# *CLARGS:' | cut -d':' -f2 | sed -e 's/^ //'`
+
+    # If we have special args for this test, we're going to assume
+    # we can't start VisIt 'normally' and that the test has specified
+    # all the 'essential' args to start it from runtest including
+    # possibility of its own '-s' option. So, to accomdate that
+    # possibility, we modify the test script that gets run to
+    # include the contents of $testpyfile by cat'ing them together
+    torig=$t
+    if test -n "$theArgs"; then
+        tbase=`basename $t .py`
+        rm -f ${tbase}_clargs.py
+	cat $testpyfile $t > ${tbase}_clargs.py 
+	t=${tbase}_clargs.py
+    fi
 
     purifyoptions=""
     if test $purify -eq 1; then
@@ -751,14 +777,28 @@ for t in $testcases; do
         testProcId=0
 	starttime=`date +%s`
         if test "$interactive" = "-interactive"; then
-            env PURIFYOPTIONS="$purifyoptions" `cat $name.env` $exepath $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile
+            if test -n "$theArgs"; then
+                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry
+	    else
+                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile
+	    fi
 	else
             if test -n "$verbose"; then
-                env PURIFYOPTIONS="$purifyoptions" `cat $name.env` $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t &
-	        testProcId=$!
+	        if test -n "$theArgs"; then
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing $configoptions < $t &
+    	            testProcId=$!
+		else
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t &
+    	            testProcId=$!
+		fi
 	    else
-                env PURIFYOPTIONS="$purifyoptions" `cat $name.env` $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t 2> /dev/null &
-	        testProcId=$!
+	        if test -n "$theArgs"; then
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing $configoptions < $t 2> /dev/null & 
+	            testProcId=$!
+		else
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t 2> /dev/null &
+	            testProcId=$!
+		fi
             fi
         fi
 	limitProcId=0
@@ -787,6 +827,7 @@ for t in $testcases; do
 	endtime=`date +%s`
 	runtime=`expr $endtime - $starttime`
     fi
+    t=$torig
 
     # Make the timings
     touch html/${category}_${base}_timings.html
