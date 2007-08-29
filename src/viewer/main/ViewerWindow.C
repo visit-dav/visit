@@ -942,8 +942,12 @@ ViewerWindow::HandleTool(const avtToolInterface &ti, bool applyToAll)
 //
 // Modifications:
 //   Kathleen Bonnell, Sat Jul 13 18:03:18 PDT 2002 
-//   ViewerQueryManager may also udpate a tool.
+//   ViewerQueryManager may also update a tool.
 //   
+//   Hank Childs, Tue Aug 28 16:06:11 PDT 2007
+//   If we initialize the tool to be something different, then call 
+//   HandleTool as well, so that the operators are up to date.
+//
 // ****************************************************************************
 
 void
@@ -962,6 +966,14 @@ ViewerWindow::UpdateTools()
             {
                 redrawWindow = true;
                 visWindow->UpdateTool(toolId, false);
+
+                // The invocation below makes all of the operators that subscribe 
+                // to that tool update.  So you change a slice operator's
+                // attributes and the clip operator also snaps to the 
+                // same position.  The call below is what makes this
+                // happen.  This is the mechanism where the attributes are 
+                // sent to (for example) the clip operator.
+                HandleTool(visWindow->GetToolInterface(toolId), true);
             }
             if(ViewerQueryManager::Instance()->
                InitializeTool(this, visWindow->GetToolInterface(toolId)))

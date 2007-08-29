@@ -3893,6 +3893,8 @@ ViewerPlot::HandleTool(const avtToolInterface &ti)
 // Arguments:
 //   ti : The tool interface that we're initializing.
 //
+// Returns:    true if the tool attributes changed, false otherwise.
+//
 // Programmer: Brad Whitlock
 // Creation:   Mon Feb 11 14:20:46 PST 2002
 //
@@ -3902,6 +3904,11 @@ ViewerPlot::HandleTool(const avtToolInterface &ti)
 //
 //   Brad Whitlock, Thu Apr 17 08:55:25 PDT 2003
 //   I changed the code to take the active operator into account.
+//
+//   Hank Childs, Tue Aug 28 16:33:16 PDT 2007
+//   Only copy over the attributes (and more importantly claim that we
+//   initialized something) if the attributes are different than what we
+//   already had.
 //
 // ****************************************************************************
 
@@ -3921,7 +3928,8 @@ ViewerPlot::InitializeTool(avtToolInterface &ti)
     AttributeSubject *atts = plotAtts->CreateCompatible(tname);
     if(atts != 0)
     {
-        retval |= ti.GetAttributes()->CopyAttributes(atts);
+        if (! ti.GetAttributes()->EqualTo(atts))
+            retval |= ti.GetAttributes()->CopyAttributes(atts);
         delete atts;
     }
 
@@ -3943,11 +3951,13 @@ ViewerPlot::InitializeTool(avtToolInterface &ti)
             if(expandedFlag)
             {
                 if(!retval || (i == activeOperatorIndex))
-                    retval |= ti.GetAttributes()->CopyAttributes(atts);
+                    if (! ti.GetAttributes()->EqualTo(atts))
+                        retval |= ti.GetAttributes()->CopyAttributes(atts);
             }
             else if(!retval)
             {
-                retval |= ti.GetAttributes()->CopyAttributes(atts);
+                if (! ti.GetAttributes()->EqualTo(atts))
+                    retval |= ti.GetAttributes()->CopyAttributes(atts);
             }
 
             delete atts;
