@@ -354,6 +354,10 @@ avtResampleFilter::BypassResample(void)
 //    Add support for vector variables.  Also add support for cell-centered
 //    data.
 //
+//    Hank Childs, Thu Aug 30 09:24:11 PDT 2007
+//    Fix problem where parallel resamples could not get values less than
+//    the default value.
+//
 // ****************************************************************************
 
 void
@@ -478,7 +482,7 @@ avtResampleFilter::ResampleInput(void)
         int effectiveVars = samples->GetNumberOfRealVariables();
         float *ptrtmp = new float[width*height*depth];
         for (int jj = 0; jj < width*height*depth; jj++)
-            ptrtmp[jj] = atts.GetDefaultVal();
+            ptrtmp[jj] = -FLT_MAX;
         for (i = 0 ; i < effectiveVars ; i++)
             Collect(ptrtmp, width*height*depth);
         delete [] ptrtmp;
@@ -603,7 +607,14 @@ avtResampleFilter::ResampleInput(void)
     avtImagePartition *ip = NULL;
     if (doDistributedResample)
         ip = &partition;
-    samples->GetVolume()->GetVariables(atts.GetDefaultVal(), vars, 
+
+    // We want all uncovered regions to get the default value.  That is
+    // what the first argument of GetVariables is for.  But if the
+    // default value is large, then it will screw up the collect call below,
+    // which uses MPI_MAX for an all reduce.  So give uncovered regions very
+    // small values now (-FLT_MAX) and then replace them later.
+    float defaultPlaceholder = -FLT_MAX;
+    samples->GetVolume()->GetVariables(defaultPlaceholder, vars, 
                                        numArrays, ip);
 
     if (!doDistributedResample)
@@ -619,6 +630,17 @@ avtResampleFilter::ResampleInput(void)
         }
     }
     
+    // Now replace the -FLT_MAX's with the default value.  (See comment above.)
+    for (i = 0 ; i < numArrays ; i++)
+    {
+        float *ptr = (float *) vars[i]->GetVoidPointer(0);
+        int numTups = width*height*depth*vars[i]->GetNumberOfComponents();
+        for (j = 0 ; j < numTups ; j++)
+            ptr[j] = (ptr[j] == defaultPlaceholder 
+                             ? atts.GetDefaultVal() 
+                             : ptr[j]);
+    }
+   
     bool iHaveData = false;
     if (doDistributedResample)
         iHaveData = true;
