@@ -204,6 +204,9 @@
 #   Cyrus Harrison, Fri Jun  1 14:37:42 PDT 2007
 #   Added avtTensorContractionFilter.C and avtViscousStressFilter.C
 #
+#   Jeremy Meredith, Thu Aug 30 16:04:41 EDT 2007
+#   Added avtHSVColorComposeFilter.C.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -280,6 +283,7 @@ General_src= \
   General/avtExpressionComponentMacro.C \
   General/avtExternalNodeExpression.C \
   General/avtGradientFilter.C \
+  General/avtHSVColorComposeFilter.C \
   General/avtLaplacianFilter.C \
   General/avtMIRvfFilter.C \
   General/avtMatvfFilter.C \
