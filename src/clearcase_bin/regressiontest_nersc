@@ -331,9 +331,10 @@ error=0
 cd test
 
 #
-# Short term fix for path to VisIt in 'runtest' script
+# Short term fixes for differences in old/new directory structure
 #
 sed -i -e 's|^exepath="../src/bin/visit"|exepath="../bin/visit"|' runtest
+sed -i -e 's|^#  CLARGS: -cli -s ../src/bin/visitdiff.py \(.*\)|#  CLARGS: -cli -s ../bin/visitdiff.py \1|' tests/databases/diff.py
 rm -f ~miller/.visit/linux-intel/plugins/databases/*.so
 
 for m in $modes; do
