@@ -47,6 +47,7 @@
 #include <avtBinaryPowerFilter.h>
 #include <avtCeilingFilter.h>
 #include <avtColorComposeFilter.h>
+#include <avtHSVColorComposeFilter.h>
 #include <avtFloorFilter.h>
 #include <avtModuloFilter.h>
 #include <avtRoundFilter.h>
@@ -457,6 +458,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Cyrus Harrison, Wed Aug  8 14:15:06 PDT 2007
 //    Modified to support new unified gradient expression
 //
+//    Jeremy Meredith, Thu Aug 30 16:02:01 EDT 2007
+//    Added hsvcolor.
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -852,6 +856,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtColorComposeFilter(3);
     if (functionName == "color4")
         return new avtColorComposeFilter(4);
+    if (functionName == "hsvcolor")
+        return new avtHSVColorComposeFilter;
 
     return NULL;
 }

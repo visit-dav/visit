@@ -65,8 +65,7 @@
 //
 //  Purpose:
 //    Categorized expression lists data.  These structures are self-contained
-//    and require the terminating nulls to be parsed correctly.  Keep in mind
-//    that 
+//    and to be parsed correctly require only the terminating nulls.
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 23, 2004
@@ -123,6 +122,9 @@
 //
 //    Cyrus Harrison, Fri Jun  1 14:49:49 PDT 2007
 //    Added contraction and viscous_stress
+//
+//    Jeremy Meredith, Thu Aug 30 16:02:58 EDT 2007
+//    Added hsvcolor.
 //
 // ****************************************************************************
 
@@ -220,6 +222,7 @@ const char *expr_vector[] = {
     "color4",
     "cross",
     "dot",
+    "hsvcolor",
     "magnitude",
     "normalize",
     NULL
