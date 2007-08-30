@@ -162,6 +162,11 @@
 #    Added '*' after $(LIBMESAGL) and $(LIBOSMESA) to pick up extensions that
 #    some versions of linux add.
 #
+#   Jeremy Meredith, Thu Aug 30 12:55:30 EDT 2007
+#   Made the 'clean' target not remove things needed to correctly
+#   generate dependencies.  That's now reserved for distclean.
+#   In this case, it means removing the symbolic links only in 'distclean'.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -389,7 +394,9 @@ create_h5part_link:
 cleanlinks:
 	find . -type l -maxdepth 1 -exec $(RM) {} \;
 
-clean: cleanlinks
+clean:
+
+distclean: cleanlinks
 	$(RM) \
 	$(LIBMESAGL)* \
 	$(LIBGLU) \

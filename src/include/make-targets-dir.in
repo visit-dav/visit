@@ -35,13 +35,22 @@ clean:
 ##   Jeremy Meredith (via Hank Childs), Thu May 17 08:20:46 PDT 2007
 ##   Remove .pardepend file.
 ##
-distclean: clean
+##   Jeremy Meredith, Thu Aug 30 12:58:48 EDT 2007
+##   The distclean should not reference the clean target here since
+##   we're descending into subdirectories; this would mean the clean
+##   target gets executed for all directories, then the distclean target
+##   for all directories.  We just want the latter, so I copied the
+##   non-subdir referencing stuff from the clean target to distclean.
+##
+distclean:
 	if test -n "$(SUBDIRS)"; then \
 		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
 		for dir in $$rev; do (cd $$dir && $(MAKE) $@); done \
 	fi
 	-$(RM) $(DISTCLEAN_FILES) *~ .depend .pardepend core
 	-$(RM) Makefile
+	-$(RM) $(LIB)
+	-$(RM) $(CLEAN_FILES)
 
 depend:
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
