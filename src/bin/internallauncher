@@ -218,6 +218,15 @@ $0 = shift @ARGV;
 #    For redrose at sandia, added HACK to set the correct LD_LIBRARY_PATH,
 #    in case user's loaded modules don't match what VisIt was built with. 
 #
+#    Hank Childs, Wed Aug 29 17:14:57 PDT 2007
+#    For non-Darwin, when the "-newconsole" command starts an xterm, have
+#    it call the VisIt script, not the program directly.  This is because some 
+#    "xterm" programs have the sticky bit set for the group.  If the
+#    sticky bit is set, then the LD_LIBRARY_PATH is unset to prevent a Trojan
+#    horse attack ... meaning that the program wouldn't be able to run,
+#    since it depends on a valid LD_LIBRARY_PATH.  So, always have the xterm 
+#    call the VisIt script, which can then set up the environment again.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -2024,16 +2033,13 @@ else
             }
             else
             {
-                if($os eq "aix")
+                push @newcmd, $visitlauncher;
+                push @newcmd, "-$exe_name";
+                if("$ver" ne "")
                 {
-                    push @newcmd, $visitlauncher;
-                    push @newcmd, "-$exe_name";
-                    if("$ver" ne "")
-                    {
-                        push @newcmd, "-v", "$ver";
-                    }
-                    splice @visitcmd, 0, 1, @newcmd;
+                    push @newcmd, "-v", "$ver";
                 }
+                splice @visitcmd, 0, 1, @newcmd;
 
                 @tmpcmd = @visitcmd;
                 @visitcmd = ("xterm", "-title", "VisIt $exe_name$ver", "-fn", "fixed", "-e");
