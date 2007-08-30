@@ -64,6 +64,7 @@ using std::string;
 #include <Line.h>
 #include <LineoutInfo.h>
 #include <PickAttributes.h>
+#include <GlobalAttributes.h>
 #include <PickPointInfo.h>
 #include <RenderingAttributes.h>
 #include <ViewerActionManager.h>
@@ -955,6 +956,10 @@ ViewerWindow::HandleTool(const avtToolInterface &ti, bool applyToAll)
 //   If we initialize the tool to be something different, then call 
 //   HandleTool as well, so that the operators are up to date.
 //
+//   Gunther H. Weber, Wed Aug 29 17:39:39 PDT 2007
+//   Make the HandleTool call added by Hank respect the setting of the
+//   "Apply operators and selection to all plots" check box.
+//
 // ****************************************************************************
 
 void
@@ -980,7 +985,9 @@ ViewerWindow::UpdateTools()
                 // same position.  The call below is what makes this
                 // happen.  This is the mechanism where the attributes are 
                 // sent to (for example) the clip operator.
-                HandleTool(visWindow->GetToolInterface(toolId), true);
+                ViewerWindowManager *wM = ViewerWindowManager::Instance();
+                bool applyOps = wM->GetClientAtts()->GetApplyOperator();
+                HandleTool(visWindow->GetToolInterface(toolId), applyOps);
             }
             if(ViewerQueryManager::Instance()->
                InitializeTool(this, visWindow->GetToolInterface(toolId)))
