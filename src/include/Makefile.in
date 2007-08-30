@@ -62,6 +62,11 @@
 #   Eric Brugger, Tue Oct  5 10:48:56 PDT 2004
 #   I replaced QTDIR with QT_INCLUDE.
 #
+#   Jeremy Meredith, Thu Aug 30 12:55:30 EDT 2007
+#   Made the 'clean' target not remove things needed to correctly
+#   generate dependencies.  That's now reserved for distclean.
+#   In this case, it means removing the symlinks only in 'distclean'.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -89,7 +94,9 @@ incqt:
 	    ln -s @QT_INCLUDE@ qt        ;   \
 	fi
 
-clean distclean:
+clean:
+
+distclean:
 	$(RM) python vtk mesa qt
 
 install:

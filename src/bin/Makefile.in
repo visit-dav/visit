@@ -75,6 +75,11 @@
 #   Eric Brugger, Fri Jun 29 09:17:48 PDT 2007
 #   Removed the setting of the DISTRIB and NOT_DISTRIB variables.
 #
+#   Jeremy Meredith, Thu Aug 30 12:55:30 EDT 2007
+#   Made the 'clean' target not remove things needed to correctly
+#   generate dependencies.  That's now reserved for distclean.
+#   In this case, it means removing moc only in 'distclean'.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -89,7 +94,7 @@ mocprogram:
 	fi
 
 clean:
-	$(RM) moc *.log *.timings
+	$(RM) *.log *.timings
 
 distclean: clean
-
+	$(RM) moc

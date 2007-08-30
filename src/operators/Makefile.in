@@ -219,6 +219,13 @@
 #    Jeremy Meredith, Tue Jun  5 14:15:10 EDT 2007
 #    Removed reference to .depend.  Nothing is built in this directory.
 #
+#    Jeremy Meredith, Thu Aug 30 12:58:48 EDT 2007
+#    The distclean should not reference the clean target here since
+#    we're descending into subdirectories; this would mean the clean
+#    target gets executed for all directories, then the distclean target
+#    for all directories.  We just want the latter, so I copied the
+#    non-subdir referencing stuff from the clean target to distclean.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -264,13 +271,15 @@ clean:
 	for dir in $(SUBDIRS); do (cd $$dir && test ! -f Makefile || $(MAKE) $@) || exit 1; done
 	-$(RM) $(CLEAN_FILES)
 
-distclean: clean
+distclean:
 	if test -n "$(SUBDIRS)"; then \
 		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
 		for dir in $$rev; do (cd $$dir && test ! -f Makefile || $(MAKE) $@); done \
 	fi
 	-$(RM) $(DISTCLEAN_FILES) *~ core
 	-$(RM) Makefile
+	-$(RM) $(LIB)
+	-$(RM) $(CLEAN_FILES)
 
 depend: dirmakefiles
 	for dir in $(SUBDIRS); do (cd $$dir && $(MAKE) $@) || exit 1; done
