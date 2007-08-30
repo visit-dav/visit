@@ -7,6 +7,9 @@
 #  Date:       May 16, 2007 
 #
 #  Modifications:
+#    Mark C. Miller, Thu Aug 30 06:07:23 PDT 2007
+#    Added logging of 'changed' message when script itself is changed. 
+#   
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -144,6 +147,7 @@ export PATH
 
 optError=0
 skipIfNoChanges=1
+scriptWasChanged=0
 for options
 do
    case $1 in
@@ -152,6 +156,10 @@ do
          ;;
       -force)
          skipIfNoChanges=0;
+	 shift
+	 ;;
+      -changed)
+         scriptWasChanged=1;
 	 shift
 	 ;;
       -help)
@@ -171,6 +179,7 @@ if test $optError -eq 1; then
     echo "Available options:"
     echo "        -help             display this help message"
     echo "        -force            force a test even if no files have changed since last run."
+    echo "        -changed          Used to tell this script to issue the 'changed' log message."
     exit 1
 fi
 
@@ -182,6 +191,9 @@ ping -c 1 $svnHost 1> /dev/null 2>&1
 checkAndHandleError $? fatal "ping of $svnHost failed"
 pingWorks=`ping -c 5 $svnHost | grep "0% packet loss"`
 checkAndHandleError "`nezero $pingWorks`" fatal "dropped packets to $svnHost"
+
+# check if this script itself has been changed 
+checkAndHandleError $scriptWasChanged warning "regressiontest_nersc was changed"
 
 # Update our current 'checkout' of visit trunk from NERSC
 pushd $rootTestDir 1> /dev/null 2>&1
