@@ -564,6 +564,9 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    load.
 //    Also, dump warning messages into the debug logs as well.
 //
+//    Hank Childs, Thu Aug 30 08:45:02 PDT 2007
+//    Clean up debug statements.
+//
 // ****************************************************************************
 
 void
@@ -720,8 +723,11 @@ PluginManager::ReadPluginInfo()
         pluginInitErrors += "\n";
     }
 
-    debug1 << "Going to print the following message to the user: " << endl;
-    debug1 << pluginInitErrors;
+    if (pluginInitErrors != "")
+    {
+         debug1 << "Going to print the following message to the user: " << endl;
+         debug1 << pluginInitErrors;
+    }
 }
 
 // ****************************************************************************
