@@ -169,6 +169,12 @@ typedef struct
 //    Mark C. Miller, Mon Jul  9 14:23:22 PDT 2007
 //    Added data member codeNameGuess which is to store a guess of the name
 //    of the code that produced the data.
+//
+//    Mark C. Miller, Tue Aug 28 19:17:44 PDT 2007
+//    Made it deal with case where multimesh and blocks are all in same
+//    dir in the file. Added args to DetermineFile[name]AndDirectory to
+//    support this.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -300,8 +306,10 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     void                  GetQuadGhostZones(DBquadmesh *, vtkDataSet *);
     void                  VerifyQuadmesh(DBquadmesh *, const char *);
-    void                  DetermineFileAndDirectory(char *, DBfile *&,char *&);
-    void                  DetermineFilenameAndDirectory(char *,char *,char *&);
+    void                  DetermineFileAndDirectory(char *, DBfile *&, const char *, char *&,
+                              bool *alloc=0);
+    void                  DetermineFilenameAndDirectory(char *, const char *,
+                              char *, char *&, bool *alloc=0);
     void                  GetRelativeVarName(const char *,const char *,char *);
     char                 *AllocAndDetermineMeshnameForUcdmesh(int, const char *);
 

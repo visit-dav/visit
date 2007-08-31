@@ -81,6 +81,7 @@
 
 #include <Utility.h>
 #include <Expression.h>
+#include <StringHelpers.h>
 
 #include <BadDomainException.h>
 #include <BadIndexException.h>
@@ -1387,7 +1388,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 char   *realvar;
                 DBfile *correctFile = dbfile;
                 DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
-                                          realvar);
+                                          0, realvar);
                 DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
                 if (um == NULL)
                 {
@@ -1427,7 +1428,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 char   *realvar;
                 DBfile *correctFile = dbfile;
                 DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
-                                          realvar);
+                                          0, realvar);
                 DBpointmesh *pm = DBGetPointmesh(correctFile, realvar);
                 if (pm == NULL)
                 {
@@ -1462,7 +1463,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 char   *realvar;
                 DBfile *correctFile = dbfile;
                 DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
-                                          realvar);
+                                          0, realvar);
                 DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
                 if (qm == NULL)
                 {
@@ -1502,7 +1503,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 char   *realvar;
                 DBfile *correctFile = dbfile;
                 DetermineFileAndDirectory(mm->meshnames[meshnum], correctFile,
-                                          realvar);
+                                          0, realvar);
                 DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
                 if (qm == NULL)
                 {
@@ -1580,7 +1581,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBfile *correctFile = dbfile;
         bool valid_var = true;
 
-        DetermineFileAndDirectory(qmesh_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(qmesh_names[i], correctFile, 0, realvar);
         DBquadmesh *qm = DBGetQuadmesh(correctFile, realvar);
         if (qm == NULL)
         {
@@ -1668,7 +1669,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBfile *correctFile = dbfile;
         bool valid_var = true;
 
-        DetermineFileAndDirectory(ucdmesh_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(ucdmesh_names[i], correctFile, 0, realvar);
         DBucdmesh *um = DBGetUcdmesh(correctFile, realvar);
         if (um == NULL)
         {
@@ -1741,7 +1742,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBfile *correctFile = dbfile;
         bool valid_var = true;
 
-        DetermineFileAndDirectory(ptmesh_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(ptmesh_names[i], correctFile, 0, realvar);
         DBpointmesh *pm = DBGetPointmesh(correctFile, realvar);
         if (pm == NULL)
         {
@@ -1784,7 +1785,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBfile *correctFile = dbfile;
         bool valid_var = true;
 
-        DetermineFileAndDirectory(curve_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(curve_names[i], correctFile, 0, realvar);
         DBcurve *cur = DBGetCurve(correctFile, realvar);
         if (cur == NULL)
         {
@@ -1820,7 +1821,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         DBfile *correctFile = dbfile;
         bool valid_var = true;
 
-        DetermineFileAndDirectory(csgmesh_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(csgmesh_names[i], correctFile, 0, realvar);
 
         // We want to read the header for the csg zonelist too
         // so we can serve up the "zones" of a csg mesh as "blocks"
@@ -1959,7 +1960,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         int nvals = 1;
         if (valid_var)
         {
-            DetermineFileAndDirectory(mv->varnames[meshnum], correctFile, realvar);
+            DetermineFileAndDirectory(mv->varnames[meshnum], correctFile, 0, realvar);
 
             switch (mv->vartypes[meshnum])
             {
@@ -2082,7 +2083,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
         bool valid_var = true;
-        DetermineFileAndDirectory(qvar_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(qvar_names[i], correctFile, 0, realvar);
         DBquadvar *qv = DBGetQuadvar(correctFile, realvar);
         if (qv == NULL)
         {
@@ -2142,7 +2143,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
         bool valid_var = true;
-        DetermineFileAndDirectory(ucdvar_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(ucdvar_names[i], correctFile, 0, realvar);
         DBucdvar *uv = DBGetUcdvar(correctFile, realvar);
         if (uv == NULL)
         {
@@ -2202,7 +2203,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
         bool valid_var = true;
-        DetermineFileAndDirectory(ptvar_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(ptvar_names[i], correctFile, 0, realvar);
         DBmeshvar *pv = DBGetPointvar(correctFile, realvar);
         if (pv == NULL)
         {
@@ -2257,7 +2258,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
         bool valid_var = true;
-        DetermineFileAndDirectory(csgvar_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(csgvar_names[i], correctFile, 0, realvar);
         DBcsgvar *csgv = DBGetCsgvar(correctFile, realvar);
         if (csgv == NULL)
         {
@@ -2319,7 +2320,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
         bool valid_var = true;
-        DetermineFileAndDirectory(mat_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(mat_names[i], correctFile, 0, realvar);
         DBmaterial *mat = DBGetMaterial(correctFile, realvar);
         if (mat == NULL)
         {
@@ -2425,7 +2426,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         if (valid_var)
         {
-            DetermineFileAndDirectory(material, correctFile, realvar);
+            DetermineFileAndDirectory(material, correctFile, 0, realvar);
             mat = DBGetMaterial(correctFile, realvar);
         }
 
@@ -2520,7 +2521,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         char   *realvar = NULL;
         DBfile *correctFile = dbfile;
         bool valid_var = true;
-        DetermineFileAndDirectory(matspecies_names[i], correctFile, realvar);
+        DetermineFileAndDirectory(matspecies_names[i], correctFile, 0, realvar);
 
         DBmatspecies *spec = DBGetMatspecies(correctFile, realvar);
         if (spec == NULL)
@@ -2629,7 +2630,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
             char   *realvar = NULL;
             DBfile *correctFile = dbfile;
-            DetermineFileAndDirectory(species, correctFile, realvar);
+            DetermineFileAndDirectory(species, correctFile, 0, realvar);
 
             DBShowErrors(DB_NONE, NULL);
             spec = DBGetMatspecies(correctFile, realvar);
@@ -3857,7 +3858,7 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
 
         char   *realvar;
         DBfile *correctFile = dbfile;
-        DetermineFileAndDirectory(mm->meshnames[i], correctFile, realvar);
+        DetermineFileAndDirectory(mm->meshnames[i], correctFile, 0, realvar);
         DBcsgmesh *csgm = DBGetCsgmesh(correctFile, realvar);
         if (csgm == NULL)
             EXCEPTION1(InvalidVariableException, multimesh_name);
@@ -4002,6 +4003,11 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added code to convert domain id for CSG meshes; no-op for other meshes.
 //    Added support for CSG variables.
+//
+//    Mark C. Miller, Tue Aug 28 19:17:44 PDT 2007
+//    Made it deal with case where multimesh and blocks are all in same
+//    dir in the file. In this case, the location return had to be constructed
+//    and allocated. So, needed to add bool indicating that.
 // ****************************************************************************
 
 vtkDataArray *
@@ -4085,7 +4091,10 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     //
     DBfile *domain_file = dbfile;
     char   *directory_var = NULL;
-    DetermineFileAndDirectory(varLocation, domain_file, directory_var);
+    const char *varDirname = StringHelpers::Dirname(var);
+    bool allocated_directory_var;
+    DetermineFileAndDirectory(varLocation, domain_file, varDirname, directory_var,
+        &allocated_directory_var);
 
     //
     // We only need to worry about quadvars, ucdvars, and pointvars, since we
@@ -4114,6 +4123,8 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     // I'll live.
     //
     delete [] varLocation;
+    if (allocated_directory_var)
+        delete [] directory_var;
 
     return rv;
 }
@@ -4160,6 +4171,12 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added code to convert domain id for CSG meshes; no-op for other meshes.
 //    Added support for CSG variables.
+//
+//    Mark C. Miller, Tue Aug 28 19:17:44 PDT 2007
+//    Made it deal with case where multimesh and blocks are all in same
+//    dir in the file. In this case, the location return had to be constructed
+//    and allocated. So, needed to add bool indicating that.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -4243,7 +4260,10 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     //
     DBfile *domain_file = dbfile;
     char   *directory_var = NULL;
-    DetermineFileAndDirectory(varLocation, domain_file, directory_var);
+    const char *varDirname = StringHelpers::Dirname(var);
+    bool allocated_directory_var;
+    DetermineFileAndDirectory(varLocation, domain_file, varDirname, directory_var,
+        &allocated_directory_var);
 
     //
     // We only need to worry about quadvars, ucdvars, and pointvars, since we
@@ -4272,6 +4292,8 @@ avtSiloFileFormat::GetVectorVar(int domain, const char *v)
     // I'll live.
     //
     delete [] varLocation;
+    if (allocated_directory_var)
+        delete [] directory_var;
 
     return rv;
 }
@@ -4557,6 +4579,12 @@ avtSiloFileFormat::GetCsgVectorVar(DBfile *dbfile, const char *vname)
 //
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added code convert domain id for CSG meshes; no-op for other meshes.
+//
+//    Mark C. Miller, Tue Aug 28 19:17:44 PDT 2007
+//    Made it deal with case where multimesh and blocks are all in same
+//    dir in the file. In this case, the location return had to be constructed
+//    and allocated. So, needed to add bool indicating that.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -4643,7 +4671,10 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     //
     DBfile *domain_file = dbfile;
     char   *directory_mesh = NULL;
-    DetermineFileAndDirectory(meshLocation, domain_file, directory_mesh);
+    const char *meshDirname = StringHelpers::Dirname(mesh);
+    bool allocated_directory_mesh;
+    DetermineFileAndDirectory(meshLocation, domain_file, meshDirname, directory_mesh,
+        &allocated_directory_mesh);
 
     //
     // We only need to worry about quadmeshes, ucdmeshes, and pointmeshes,
@@ -4682,6 +4713,8 @@ avtSiloFileFormat::GetMesh(int domain, const char *m)
     // I'll live.
     //
     delete [] meshLocation;
+    if (allocated_directory_mesh)
+        delete [] directory_mesh;
 
     return rv;
 }
@@ -6645,12 +6678,22 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 //  Programmer: Hank Childs
 //  Creation:   May 11, 2001
 //
+//  Modifications:
+//    Mark C. Miller, Tue Aug 28 19:17:44 PDT 2007
+//    Made it deal with case where multimesh and blocks are all in same
+//    dir in the file. In this case, the location return had to be constructed
+//    and allocated. So, needed to add bool indicating that.
+//
 // ****************************************************************************
 
 void
-avtSiloFileFormat::DetermineFilenameAndDirectory(char *input, char *filename,
-                                                 char *&location)
+avtSiloFileFormat::DetermineFilenameAndDirectory(char *input,
+    const char *mdirname, char *filename, char *&location,
+    bool *allocated_location)
 {
+    if (allocated_location)
+        *allocated_location = false;
+
     //
     // Figure out if there is a ':' in the string.
     //
@@ -6663,7 +6706,19 @@ avtSiloFileFormat::DetermineFilenameAndDirectory(char *input, char *filename,
         // Leave the file handle alone.
         //
         strcpy(filename, ".");
-        location = input;
+	if (mdirname == 0 || strcmp(input, "EMPTY") == 0 || input[0] == '/' ||
+	   (input[0] == '.' && input[1] == '/'))
+        {
+           location = input;
+	}
+        else
+	{
+	    char tmp[1024];
+	    sprintf(tmp, "%s/%s", mdirname, input);
+	    location = CXX_strdup(tmp);
+	    if (allocated_location)
+	        *allocated_location = true;
+	}
     }
     else
     {
@@ -6711,14 +6766,21 @@ avtSiloFileFormat::DetermineFilenameAndDirectory(char *input, char *filename,
 //    winding up attempting to engage in collective communication for global
 //    information that other processors can't be guarenteed of reaching.
 //
+//    Mark C. Miller, Tue Aug 28 19:17:44 PDT 2007
+//    Made it deal with case where multimesh and blocks are all in same
+//    dir in the file. In this case, the location return had to be constructed
+//    and allocated. So, needed to add bool indicating that.
+//
 // ****************************************************************************
 
 void
 avtSiloFileFormat::DetermineFileAndDirectory(char *input, DBfile *&cFile,
-                                             char *&location)
+    const char *meshDirname, char *&location, bool *allocated_location)
 {
     char filename[1024];
-    DetermineFilenameAndDirectory(input, filename, location);
+    char cwd[1024];
+    DetermineFilenameAndDirectory(input, meshDirname, filename, location,
+        allocated_location);
     if (strcmp(filename, ".") != 0)
     {
         //
@@ -7018,7 +7080,7 @@ avtSiloFileFormat::GetMeshtype(DBfile *dbfile, char *mesh)
 {
     char   *dirvar;
     DBfile *correctFile = dbfile;
-    DetermineFileAndDirectory(mesh, correctFile, dirvar);
+    DetermineFileAndDirectory(mesh, correctFile, 0, dirvar);
     int rv = DBInqMeshtype(correctFile, dirvar);
     if (rv < 0)
     {
@@ -7062,7 +7124,7 @@ avtSiloFileFormat::GetMeshname(DBfile *dbfile, char *var, char *meshname)
 {
     char   *dirvar;
     DBfile *correctFile = dbfile;
-    DetermineFileAndDirectory(var, correctFile, dirvar);
+    DetermineFileAndDirectory(var, correctFile, 0, dirvar);
     int rv = DBInqMeshname(correctFile, dirvar, meshname);
     if (rv < 0)
     {
@@ -7102,7 +7164,7 @@ avtSiloFileFormat::GetComponent(DBfile *dbfile, char *var, char *compname)
 {
     char   *dirvar;
     DBfile *correctFile = dbfile;
-    DetermineFileAndDirectory(var, correctFile, dirvar);
+    DetermineFileAndDirectory(var, correctFile, 0, dirvar);
     void *rv = DBGetComponent(correctFile, dirvar, compname);
     if (rv == NULL && strcmp(compname, "facelist") != 0)
     {
@@ -7312,7 +7374,7 @@ avtSiloFileFormat::GetMaterial(int dom, const char *mat)
     //
     DBfile *domain_file = dbfile;
     char   *directory_mat = NULL;
-    DetermineFileAndDirectory(matname, domain_file, directory_mat);
+    DetermineFileAndDirectory(matname, domain_file, 0, directory_mat);
 
     avtMaterial *rv = CalcMaterial(domain_file, directory_mat, mat, dom);
 
@@ -7422,7 +7484,7 @@ avtSiloFileFormat::GetSpecies(int dom, const char *spec)
     //
     DBfile *domain_file = dbfile;
     char   *directory_spec = NULL;
-    DetermineFileAndDirectory(specname, domain_file, directory_spec);
+    DetermineFileAndDirectory(specname, domain_file, 0, directory_spec);
 
     avtSpecies *rv = CalcSpecies(domain_file, directory_spec);
 
@@ -7559,7 +7621,7 @@ avtSiloFileFormat::GetExternalFacelist(int dom, const char *mesh)
     //
     DBfile *domain_file = dbfile;
     char   *directory_mesh = NULL;
-    DetermineFileAndDirectory(meshname, domain_file, directory_mesh);
+    DetermineFileAndDirectory(meshname, domain_file, 0, directory_mesh);
 
     avtFacelist *rv = CalcExternalFacelist(domain_file, directory_mesh);
 
@@ -7618,7 +7680,7 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     //
     DBfile *domain_file = dbfile;
     char   *directory_mesh = NULL;
-    DetermineFileAndDirectory(meshname, domain_file, directory_mesh);
+    DetermineFileAndDirectory(meshname, domain_file, 0, directory_mesh);
 
     // We want to get just the global node ids.  So we need to get the ReadMask,
     // set it to read global node ids, then set it back.
@@ -7691,7 +7753,7 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     //
     DBfile *domain_file = dbfile;
     char   *directory_mesh = NULL;
-    DetermineFileAndDirectory(meshname, domain_file, directory_mesh);
+    DetermineFileAndDirectory(meshname, domain_file, 0, directory_mesh);
 
     // We want to get just the global node ids.  So we need to get the ReadMask,
     // set it to read global node ids, then set it back.
@@ -8087,7 +8149,7 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, char *mesh)
 {
     char   *realvar = NULL;
     DBfile *correctFile = dbfile;
-    DetermineFileAndDirectory(mesh, correctFile, realvar);
+    DetermineFileAndDirectory(mesh, correctFile, 0, realvar);
 
     // We want to get just the facelist.  So we need to get the ReadMask,
     // set it to read facelists, then set it back.
@@ -8213,7 +8275,7 @@ avtSiloFileFormat::PopulateIOInformation(avtIOInformation &ioInfo)
     {
         char filename[1024];
         char *location = NULL;
-        DetermineFilenameAndDirectory(mm->meshnames[i], filename, location);
+        DetermineFilenameAndDirectory(mm->meshnames[i], 0, filename, location);
         int index = -1;
         for (j = 0 ; j < filenames.size() ; j++)
         {
@@ -8778,7 +8840,6 @@ PrepareDirName(const char *dirvar, const char *curdir)
     if (*last != '/')
     {
         debug1 << "Unexpected case -- no dirs what-so-ever." << endl;
-        return string("");
     }
 
     char str[1024];
