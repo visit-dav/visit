@@ -285,6 +285,7 @@ TestText("silo_29", t)
 # on
 #
 DeleteAllPlots()
+CloseDatabase("../data/multi_ucd3d.silo")
 OpenDatabase("../data/histne_ucd3d_* database", 2)
 AddPlot("Pseudocolor", "d_dup")
 DrawPlots()
@@ -301,5 +302,17 @@ TimeSliderPreviousState()
 TimeSliderPreviousState()
 TimeSliderPreviousState()
 Test("silo_34")
+
+#
+# Test a database with some odd multi-block structure
+#
+DeleteAllPlots()
+CloseDatabase("../data/histne_ucd3d_* database")
+SetTreatAllDBsAsTimeVarying(0)
+OpenDatabase("../data/odd_multi.silo")
+AddPlot("Pseudocolor","cyc_00000/den")
+DrawPlots()
+ResetView()
+Test("silo_35")
 
 Exit()
