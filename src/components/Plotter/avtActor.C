@@ -490,6 +490,31 @@ avtActor::GetWindowMode(void)
 
 
 // ****************************************************************************
+//  Method: avtActor::AdaptsToAnyWindowMode
+//
+//  Purpose:
+//      Tells whether the actor can adapt to any window mode.
+//
+//  Returns:    true if the actor can adapt to any window mode, false otherwise
+//
+//  Programmer: Hank Childs
+//  Creation:   August 30, 2007
+//
+// ****************************************************************************
+
+bool
+avtActor::AdaptsToAnyWindowMode(void)
+{
+    if (*behavior == NULL)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    return behavior->AdaptsToAnyWindowMode();
+}
+
+
+// ****************************************************************************
 //  Method: avtActor::GetRenderOrder
 //
 //  Purpose:

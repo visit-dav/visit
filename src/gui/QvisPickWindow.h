@@ -116,6 +116,9 @@ class PickAttributes;
 //   Ellen Tarwater, Fri May 18, 2007
 //   Added saveCount and SavePickText to write pick text to a file.
 //
+//   Hank Childs, Thu Aug 30 14:15:11 PDT 2007
+//   Added spreadsheetCheckBox.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -155,6 +158,7 @@ private slots:
     void autoShowToggled(bool);
     void savePicksToggled(bool);
     void timeCurveToggled(bool);
+    void spreadsheetToggled(bool);
     void conciseOutputToggled(bool);
     void showMeshNameToggled(bool);
     void showTimestepToggled(bool);
@@ -185,6 +189,7 @@ private:
     QCheckBox          *autoShowCheckBox;
     QCheckBox          *savePicksCheckBox;
     QCheckBox          *timeCurveCheckBox;
+    QCheckBox          *spreadsheetCheckBox;
     QCheckBox          *conciseOutputCheckBox;
     QCheckBox          *showMeshNameCheckBox;
     QCheckBox          *showTimestepCheckBox;

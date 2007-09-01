@@ -99,6 +99,9 @@ class  vtkRenderer;
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added GetPlotInfoAtts.
 //
+//    Hank Childs, Fri Aug 31 10:28:10 PDT 2007
+//    Added AdaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtBehavior
@@ -120,6 +123,7 @@ class PLOTTER_API avtBehavior
 
     int                        GetDimension(void);
     WINDOW_MODE                GetWindowMode(void);
+    bool                       AdaptsToAnyWindowMode(void);
     bool                       RequiresReExecuteForQuery(const bool,
                                                          const bool);
 

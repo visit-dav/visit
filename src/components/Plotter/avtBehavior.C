@@ -315,6 +315,24 @@ avtBehavior::GetWindowMode(void)
 
 
 // ****************************************************************************
+//  Method: avtBehavior::AdaptsToAnyWindowMode
+//
+//  Purpose:
+//      Determines if this actor can adapt to any window mode.
+//
+//  Programmer: Hank Childs
+//  Creation:   August 31, 2007
+//
+// ****************************************************************************
+
+bool
+avtBehavior::AdaptsToAnyWindowMode(void)
+{
+    return info.GetAttributes().GetAdaptsToAnyWindowMode();
+}
+
+
+// ****************************************************************************
 //  Method: avtBehavior::SetLegend
 //
 //  Purpose:

@@ -152,6 +152,9 @@ using     std::sort;
 //    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
 //    Added meshType.
 //
+//    Hank Childs, Fri Aug 31 08:48:40 PDT 2007
+//    Added adaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -201,6 +204,7 @@ avtDataAttributes::avtDataAttributes()
     canUseTransform = true;
 
     windowMode = WINMODE_NONE;
+    adaptsToAnyWindowMode = false;
 
     numStates = 1;
     mirOccurred = false;
@@ -427,6 +431,9 @@ avtDataAttributes::DestructSelf(void)
 //    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
 //    Added meshType.
 //
+//    Hank Childs, Fri Aug 31 08:48:40 PDT 2007
+//    Added adaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 void
@@ -510,6 +517,8 @@ avtDataAttributes::Print(ostream &out)
         out << "The window mode is none" << endl;
         break;
     }
+    if (adaptsToAnyWindowMode)
+        out << "This plot can adapt to any window mode" << endl;
 
     if (labels.size() > 0)
     {
@@ -881,6 +890,9 @@ avtDataAttributes::Print(ostream &out)
 //    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
 //    Added meshType.
 //
+//    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
+//    Added adaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 void
@@ -962,6 +974,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
     CopyTransform(di.transform);
     canUseTransform = di.canUseTransform;
     windowMode = di.windowMode;
+    adaptsToAnyWindowMode = di.adaptsToAnyWindowMode;
     selectionsApplied = di.selectionsApplied;
     numStates = di.numStates;
     mirOccurred = di.mirOccurred;
@@ -1094,6 +1107,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
 //    Added meshType.
 //
+//    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
+//    Added adaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 void
@@ -1222,6 +1238,11 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     if (windowMode != da.windowMode)
     {
         EXCEPTION2(InvalidMergeException, windowMode, da.windowMode);
+    }
+    if (adaptsToAnyWindowMode != da.adaptsToAnyWindowMode)
+    {
+        EXCEPTION2(InvalidMergeException, adaptsToAnyWindowMode, 
+                                          da.adaptsToAnyWindowMode);
     }
     if (numStates != da.numStates)
     {
@@ -2434,6 +2455,9 @@ avtDataAttributes::SetTime(double d)
 //    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
 //    Added meshType.
 //
+//    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
+//    Added adaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 void
@@ -2443,7 +2467,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     int   i, j;
 
     int varSize = 6;
-    int numVals = 29 + varSize*variables.size();
+    int numVals = 30 + varSize*variables.size();
     int *vals = new int[numVals];
     i = 0;
     vals[i++] = topologicalDimension;
@@ -2465,6 +2489,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = (canUseTransform ? 1 : 0);
     vals[i++] = (canUseCumulativeAsTrueOrCurrent ? 1 : 0);
     vals[i++] = windowMode;
+    vals[i++] = (adaptsToAnyWindowMode ? 1 : 0);
     vals[i++] = numStates;
     vals[i++] = mirOccurred;
     vals[i++] = canUseOrigZones;
@@ -2701,6 +2726,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
 //    Added meshType.
 //
+//    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
+//    Added adaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 int
@@ -2786,6 +2814,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     windowMode = (WINDOW_MODE) tmp;
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetAdaptsToAnyWindowMode(tmp != 0 ? true : false);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);

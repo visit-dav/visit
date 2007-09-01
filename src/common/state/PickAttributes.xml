@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="PickAttributes" purpose="This class contains attributes used for pick." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PickAttributes.code">
+  <Attribute name="PickAttributes" purpose="This class contains attributes used for pick." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="PickAttributes.code">
     <Enum name="PickType">
       Zone
       Node
@@ -190,6 +190,12 @@
     </Field>
     <Field name="meshCoordType" label="meshCoordType" type="int">
       0
+    </Field>
+    <Field name="createSpreadsheet" label="Create Spreadsheet of Pick" type="bool">
+      false
+    </Field>
+    <Field name="subsetName" label="Subset name" type="string" internal="true">
+      ""
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>

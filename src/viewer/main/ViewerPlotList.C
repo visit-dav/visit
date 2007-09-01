@@ -5860,6 +5860,10 @@ CreatePlot(void *info)
 //    Mark C. Miller, Thu Jun 21 00:12:28 PDT 2007
 //    Added support to overlay curve plots on 2D plots.
 //    Added more logic to setting globalWindowMode
+//
+//    Hank Childs, Fri Aug 31 16:44:34 PDT 2007
+//    Allow for plots that can be added to any window, regardless of dimension.
+//
 // ****************************************************************************
 
 void
@@ -5937,6 +5941,7 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
             avtActor_p &actor = plots[i].plot->GetActor();
             WINDOW_MODE plotWindowMode = actor->GetWindowMode();
             int plotDimension = plots[i].plot->GetSpatialDimension();
+            bool adaptsToAny = plots[i].plot->AdaptsToAnyWindowMode();
 
             if (globalWindowMode == WINMODE_NONE)
                 globalWindowMode = plotWindowMode;
@@ -5950,9 +5955,17 @@ ViewerPlotList::UpdateWindow(bool immediateUpdate)
 		    globalWindowMode = WINMODE_2D;
 	    }
 
-            if (plotWindowMode != globalWindowMode &&
-	       !(globalWindowMode == WINMODE_2D && 
-	         plotWindowMode == WINMODE_CURVE))
+            bool dimMismatch = false;
+            if (plotWindowMode != globalWindowMode)
+            {
+                dimMismatch = true;
+	        if (globalWindowMode == WINMODE_2D && 
+	            plotWindowMode == WINMODE_CURVE)
+                    dimMismatch = false;
+                if (adaptsToAny)
+                    dimMismatch = false;
+            }
+            if (dimMismatch)
             {
 		if (errorCount == 0)
                 {
