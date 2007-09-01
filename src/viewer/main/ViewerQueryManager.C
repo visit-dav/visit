@@ -1838,6 +1838,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Due to changes in NoWin rendering, certain glyphPicks must alwasy be
 //    performed on the engine, add test for this. 
 //
+//    Hank Childs, Mon Aug 27 13:52:56 PDT 2007
+//    Add support for picking creating a spreadsheet.
+//
 // ****************************************************************************
 
 bool
@@ -2196,9 +2199,120 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         }
         else
         {
+            // If there was an error, then there's no need to go on.
+            if (pickAtts->GetError())
+                return retval;
+
+            // 
+            // See if we are supposed to make a spreadsheet when we pick.
+            // If so, detect to see if there is a spreadsheet plot in the 
+            // current window.  If so, use it.  If not, create it.
             //
-            // See if we got an array variable.  If so, create a histogram plot.
-            // Note we will only create one histogram.  So if there are multiple
+            bool doSpreadsheet = (pickAtts->GetCreateSpreadsheet());
+            if (doSpreadsheet)
+            {
+                int  i;
+
+                if (!PlotPluginManager::Instance()->PluginAvailable(
+                                                            "Spreadsheet_1.0"))
+                {
+                    static bool issuedWarning = false;
+                    Error("Could not create a spreadsheet with the pick, "
+                          "because the spreadsheet plugin is not available.");
+                    issuedWarning = true;
+                    return retval;
+                }
+    
+                // Get a reference to the plot we picked on.
+                intVector plotIds;
+                plist->GetActivePlotIDs(plotIds);
+                ViewerPlot *plotWePicked = plist->GetPlot(plotIds[0]);
+                if (plotWePicked->IsMesh() || plotWePicked->IsLabel())
+                    return retval;
+
+                // Decide if we should add a new spreadsheet, or re-use
+                // an existing one.
+                ViewerPlot *spreadsheet = NULL;
+                for (i = 0 ; i < plist->GetNumPlots() ; i++)
+                {
+                     ViewerPlot *plot = plist->GetPlot(i);
+                     if (strcmp(plot->GetPlotTypeName(), "Spreadsheet") != 0)
+                         continue;
+                     if (plot->GetHostName() != plotWePicked->GetHostName())
+                         continue;
+                     if (plot->GetDatabaseName() != 
+                                               plotWePicked->GetDatabaseName())
+                         continue;
+                     if (plot->GetVariableName() != 
+                                               plotWePicked->GetVariableName())
+                         continue;
+
+                     // It is a spreadsheet plot of the same variable for
+                     // same database from the same host.  Re-use it.
+                     spreadsheet = plot;
+                }
+
+                ViewerWindow *win = (ViewerWindow *)pd.callbackData;
+                ViewerPlotList *plotList =  win->GetPlotList();
+                if (spreadsheet == NULL)
+                {
+                    int plotType = PlotPluginManager::Instance()
+                                          ->GetEnabledIndex("Spreadsheet_1.0");
+                    bool replacePlots = false;
+                    int pid = plotList->AddPlot(plotType,
+                                                plot->GetVariableName(),
+                                                replacePlots, false);
+                    vector<int> opListBogus;
+                    vector<int> exListBogus;
+                    bool shouldUseBogusInfo = false;
+                    plist->SetActivePlots(plotIds, opListBogus, exListBogus,
+                                          shouldUseBogusInfo);
+                    spreadsheet = plotList->GetPlot(pid);
+                }
+
+                if (spreadsheet == NULL)
+                {
+                    // There was an error somewhere else ... varname not valid?
+                    return retval;
+                }
+
+                // The spreadsheet plot can orient its normal to fit the
+                // plot we picked.  So, for example, if we picked on a slice,
+                // have the normal of the spreadsheet be the same as that
+                // slice.
+                for (int i = 0 ; i < plotWePicked->GetNOperators() ; i++)
+                {
+                     ViewerOperator *op = plotWePicked->GetOperator(i);
+                     const AttributeSubject *atts = op->GetOperatorAtts();
+                     AttributeSubject *s = 
+                                     atts->CreateCompatible("PlaneAttributes");
+                     if (s != NULL)
+                         spreadsheet->SetPlotAtts(s);
+                }
+
+                // Now send in the pick attributes.
+                spreadsheet->SetPlotAtts(pickAtts);
+
+                TRY
+                {
+                    plotList->RealizePlots();
+                    //
+                    // If there was an error, the bad plot should not be left
+                    // around muddying up the waters.
+                    //
+                    if (spreadsheet->GetErrorFlag())
+                        plotList->DeletePlot(spreadsheet, false);
+                }
+                CATCH2(VisItException, e)
+                {
+                    plotList->DeletePlot(spreadsheet, false);
+                }
+                ENDTRY
+            }
+
+            //
+            // See if we got an array variable. If so, create a histogram plot.
+            // Note we will only create one histogram. So if there are multiple
             // array variables, just choose the last one.
             //
             int np = pickAtts->GetNumVarInfos();
@@ -2213,76 +2327,78 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     arrayname = info.GetVariableName();
                 }
             }
-            if (!haveArray)
-                return retval;
-    
-            int winId = win->GetWindowId();
-            ViewerWindow *resWin =
-                    ViewerWindowManager::Instance()->GetTimeQueryWindow(-1);
-            if (resWin == NULL)
+            if (haveArray)
             {
-                Error("Please choose a different window to place the histogram"
-                      " of the array variable into.");
-                return retval;
-            }
-    
-            if (!PlotPluginManager::Instance()->PluginAvailable(
+                int winId = win->GetWindowId();
+                ViewerWindow *resWin =
+                       ViewerWindowManager::Instance()->GetTimeQueryWindow(-1);
+                if (resWin == NULL)
+                {
+                    Error("Please choose a different window to place the "
+                          "histogram of the array variable into.");
+                    return retval;
+                }
+        
+                if (!PlotPluginManager::Instance()->PluginAvailable(
                                                               "Histogram_1.0"))
-            {
-                static bool issuedWarning = false;
-                Error("Could not create a histogram of the array variable, "
-                      "because the Histogram plugin is not available.");
-                issuedWarning = true;
-                return retval;
-            }
-
-            int plotType = 
-               PlotPluginManager::Instance()->GetEnabledIndex("Histogram_1.0");
-            ViewerPlotList *plotList =  resWin->GetPlotList();
+                {
+                    static bool issuedWarning = false;
+                    Error("Could not create a histogram of the array variable,"
+                          " because the Histogram plugin is not available.");
+                    issuedWarning = true;
+                    return retval;
+                }
     
-            string hdbName = plot->GetSource();
-            plotList->SetHostDatabaseName(hdbName);
-            plotList->SetEngineKey(engineKey);
-            bool replacePlots = true;
-            if (plist->TimeSliderExists(hdbName))
-            {
-                int state, nStates;
-                plist->GetTimeSliderStates(hdbName, state, nStates);
-                plotList->CreateTimeSlider(hdbName, state);
-                plotList->SetActiveTimeSlider(hdbName);
-            }
-            int pid = plotList->AddPlot(plotType,arrayname,replacePlots,false);
-            ViewerPlot *resultsPlot = plotList->GetPlot(pid);
-
-            // This is a bit subtle.  We are sending the pick attributes in
-            // as the plot attributes.  Normally, plot plugins blindly copy
-            // the attributes from this method.  But the histogram plot is
-            // smart enough to check to see if the atts are histogram atts.
-            // If they are not histogram atts, and they *are* pick atts, then
-            // it will pull out the zone and domain.  Note that this is a very
-            // similar game plan to what lineout does for the curve plot.
-            resultsPlot->SetPlotAtts(pickAtts);
-
-            if (resultsPlot == NULL)
-            {
-                // There was an error somewhere else ... arrayname not valid?
-                return retval;
-            }
-            TRY
-            {
-                plotList->RealizePlots();
-                //
-                // If there was an error, the bad curve plot should not be left
-                // around muddying up the waters.
-                //
-                if (resultsPlot->GetErrorFlag())
+                int plotType = PlotPluginManager::Instance()
+                                            ->GetEnabledIndex("Histogram_1.0");
+                ViewerPlotList *plotList =  resWin->GetPlotList();
+        
+                string hdbName = plot->GetSource();
+                plotList->SetHostDatabaseName(hdbName);
+                plotList->SetEngineKey(engineKey);
+                bool replacePlots = true;
+                if (plist->TimeSliderExists(hdbName))
+                {
+                    int state, nStates;
+                    plist->GetTimeSliderStates(hdbName, state, nStates);
+                    plotList->CreateTimeSlider(hdbName, state);
+                    plotList->SetActiveTimeSlider(hdbName);
+                }
+                int pid = plotList->AddPlot(plotType,arrayname,
+                                            replacePlots,false);
+                ViewerPlot *resultsPlot = plotList->GetPlot(pid);
+    
+                // This is a bit subtle.  We are sending the pick attributes in
+                // as the plot attributes.  Normally, plot plugins blindly copy
+                // the attributes from this method.  But the histogram plot is
+                // smart enough to check to see if the atts are histogram atts.
+                // If they are not histogram atts, and they *are* pick atts, 
+                // then it will pull out the zone and domain.  Note that this 
+                // is a very similar game plan to what lineout does for the 
+                // curve plot.
+                resultsPlot->SetPlotAtts(pickAtts);
+    
+                if (resultsPlot == NULL)
+                {
+                    // There was an error somewhere else...arrayname not valid?
+                    return retval;
+                }
+                TRY
+                {
+                    plotList->RealizePlots();
+                    //
+                    // If there was an error, the bad curve plot should not be 
+                    // left around muddying up the waters.
+                    //
+                    if (resultsPlot->GetErrorFlag())
+                        plotList->DeletePlot(resultsPlot, false);
+                }
+                CATCH2(VisItException, e)
+                {
                     plotList->DeletePlot(resultsPlot, false);
+                }
+                ENDTRY
             }
-            CATCH2(VisItException, e)
-            {
-                plotList->DeletePlot(resultsPlot, false);
-            }
-            ENDTRY
         }
     }
     else

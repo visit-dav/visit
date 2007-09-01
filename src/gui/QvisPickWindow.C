@@ -194,6 +194,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Ellen Tarwater, Fri May 18, 2007
 //   Added "Save Picks as..." button
 //
+//   Hank Childs, Thu Aug 30 14:13:43 PDT 2007
+//   Added spreadsheetCheckBox.
+//
 // ****************************************************************************
 
 void
@@ -220,7 +223,7 @@ QvisPickWindow::CreateWindowContents()
     }
     
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 12, 4);
+    QGridLayout *gLayout = new QGridLayout(topLayout, 13, 4);
 
     userMaxPickTabs = new QSpinBox(MIN_PICK_TABS, MAX_PICK_TABS, 1, central, "userMaxPickTabs");
     userMaxPickTabs->setButtonSymbols(QSpinBox::PlusMinus);
@@ -353,6 +356,12 @@ QvisPickWindow::CreateWindowContents()
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
     gLayout->addMultiCellWidget(timeCurveCheckBox, 11, 11, 0, 3);
+
+    spreadsheetCheckBox = new QCheckBox("Create spreadsheet with next pick.", central,
+                                     "spreadsheetCheckBox");
+    connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(spreadsheetToggled(bool)));
+    gLayout->addMultiCellWidget(spreadsheetCheckBox, 12, 12, 0, 3);
 }
 
 // ****************************************************************************
@@ -404,6 +413,9 @@ QvisPickWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Tue Dec 28 16:23:43 PST 2004 
 //   Added 'displayPickLetter'. 
+//
+//   Hank Childs, Thu Aug 30 14:16:57 PDT 2007
+//   Added CreateSpreadsheet.
 //
 // ****************************************************************************
 
@@ -560,13 +572,22 @@ QvisPickWindow::UpdateWindow(bool doAll)
         displayGlobalIds->setChecked(pickAtts->GetDisplayGlobalIds());
         displayGlobalIds->blockSignals(false);
     }
+
     // displayPickLetter
     if (pickAtts->IsSelected(53) || doAll)
     {
         displayPickLetter->blockSignals(true);
         displayPickLetter->setChecked(pickAtts->GetDisplayPickLetter());
         displayPickLetter->blockSignals(false);
-   }
+    }
+
+    // createSpreadsheet
+    if (pickAtts->IsSelected(62) || doAll)
+    {
+        spreadsheetCheckBox->blockSignals(true);
+        spreadsheetCheckBox->setChecked(pickAtts->GetCreateSpreadsheet());
+        spreadsheetCheckBox->blockSignals(false);
+    }
 }
 
 
@@ -1186,6 +1207,31 @@ void
 QvisPickWindow::timeCurveToggled(bool val)
 {
     pickAtts->SetDoTimeCurve(val);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::spreadsheetToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the next pick should create a spreadsheet.
+//
+// Arguments:
+//   val : The new spreadsheet value.
+//
+// Programmer: Hank Childs
+// Creation:   August 30, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::spreadsheetToggled(bool val)
+{
+    pickAtts->SetCreateSpreadsheet(val);
     Apply();
 }
 

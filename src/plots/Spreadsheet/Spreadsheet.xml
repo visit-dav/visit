@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Spreadsheet" type="plot" label="Spreadsheet" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar" iconFile="Spreadsheet.xpm">
+  <Plugin name="Spreadsheet" type="plot" label="Spreadsheet" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar" iconFile="Spreadsheet.xpm">
     <Files components="V">
       SpreadsheetViewerPluginInfo_Custom.C
       avtSpreadsheetFilter.C
@@ -12,10 +12,6 @@
       SpreadsheetTable.C
       SpreadsheetTabWidget.C
     </Files>
-    <Files components="VW">
-      SpreadsheetViewer.h
-      SpreadsheetTable.h
-    </Files>
     <Files components="E">
       avtSpreadsheetFilter.C
       avtSpreadsheetRenderer.C
@@ -24,7 +20,11 @@
       avtOpenGLSpreadsheetTraceRenderer.C
       avtMesaSpreadsheetTraceRenderer.C
     </Files>
-    <Attribute name="SpreadsheetAttributes" purpose="Contains the attributes for the visual spreadsheet." persistent="true" exportAPI="" exportInclude="" codefile="Spreadsheet.code">
+    <Files components="VW">
+      SpreadsheetViewer.h
+      SpreadsheetTable.h
+    </Files>
+    <Attribute name="SpreadsheetAttributes" purpose="Contains the attributes for the visual spreadsheet." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Spreadsheet.code">
       <Enum name="NormalAxis">
         X
         Y
@@ -45,7 +45,7 @@
       <Field name="showTracerPlane" label="Show tracer plane" type="bool">
         true
       </Field>
-      <Field name="tracerColor" label="Tracer color" type="color" enabler="showTracerPlane:true">
+      <Field name="tracerColor" label="Tracer color" type="color" length="4" enabler="showTracerPlane:true">
         255
         0
         0
@@ -57,7 +57,25 @@
       <Field name="sliceIndex" label="Slice index" type="int">
         0
       </Field>
+      <Field name="currentPick" label="Current pick" type="doubleArray" length="3" internal="true">
+      </Field>
+      <Field name="currentPickValid" label="Current pick valid" type="bool" internal="true">
+        false
+      </Field>
+      <Field name="pastPicks" label="Past picks" type="doubleVector" internal="true">
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        PlaneAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        PickAttributes.h
+      </Include>
+      <Include file="header" quoted="false">
+        math.h
+      </Include>
     </Attribute>
   </Plugin>

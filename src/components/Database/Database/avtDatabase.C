@@ -60,6 +60,7 @@
 #include <avtIntervalTree.h>
 #include <avtSIL.h>
 
+#include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidFilesException.h>
 #include <InvalidDimensionsException.h>
@@ -1613,17 +1614,17 @@ avtDatabase::GetNewSIL(int timeState, bool treatAllDBsAsTimeVarying)
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added logic for treatAllDBsAsTimeVarying
+//
 // ****************************************************************************
+
 avtSIL *
 avtDatabase::GetSIL(int timeState, bool treatAllDBsAsTimeVarying)
 {
     if (SILIsInvariant() && !treatAllDBsAsTimeVarying)
     {
-
         // since its invariant, get it at time 0
         if (sil.size() == 0)
             GetNewSIL(0);
-
     }
     else
     {
@@ -1654,11 +1655,11 @@ avtDatabase::GetSIL(int timeState, bool treatAllDBsAsTimeVarying)
 
            GetNewSIL(timeState, treatAllDBsAsTimeVarying);
        }
-
     }
 
     return sil.front().sil;
 }
+
 
 // ****************************************************************************
 //  Method: avtDatabase::ClearMetaDataAndSILCache
@@ -1972,6 +1973,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Brad Whitlock, Tue Mar 13 11:14:03 PDT 2007
 //    Updated due to code generation changes.
 //
+//    Hank Childs, Fri Aug 31 15:53:23 PDT 2007
+//    Add support for getting the subset name if we are creating a spreadsheet.
+//
 // ****************************************************************************
 
 void               
@@ -1997,6 +2001,45 @@ avtDatabase::Query(PickAttributes *pa)
     //  Ensure that the timestep being queried is the active one. 
     //
     ActivateTimestep(ts);
+
+    if (pa->GetCreateSpreadsheet()) 
+    {
+        avtSIL *sil = GetSIL(ts);
+        string mesh = GetMetaData(ts)->MeshForVar(pa->GetActiveVariable());
+        const vector<int> &wholes = sil->GetWholes();
+        avtSILSet_p top = NULL;
+        for (int i = 0 ; i < wholes.size() ; i++)
+        {
+            avtSILSet_p candidate = sil->GetSILSet(wholes[i]);
+            if (candidate->GetName() == mesh)
+                top = candidate;
+        }
+        if (*top == NULL)
+        {
+            debug1 << "SERIOUS PROBLEM: unable to identify a top set that "
+                   << "goes along with mesh " << mesh << endl;
+        }
+        else
+        {
+            const std::vector<int> &mapsOut = top->GetMapsOut();
+            for (int j = 0; j < mapsOut.size() ; j++)
+            {
+                int cIndex = mapsOut[j];
+                avtSILCollection_p collection = sil->GetSILCollection(cIndex);
+                if (*collection != NULL && collection->GetRole() == SIL_DOMAIN)
+                {
+                    const std::vector<int> &setIds = 
+                                                   collection->GetSubsetList();
+                    if (foundDomain >= 0 && foundDomain < setIds.size())
+                    {
+                        pa->SetSubsetName(
+                               sil->GetSILSet(setIds[foundDomain])->GetName());
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     //
     //  Filling the incidentElements is usually done by PickQuery,

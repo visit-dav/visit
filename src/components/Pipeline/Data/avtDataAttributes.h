@@ -222,6 +222,9 @@ class     PlotInfoAttributes;
 //    Kathleen Bonnell, Fri Jun 22 13:41:14 PDT 2007 
 //    Added meshType.
 //
+//    Hank Childs, Fri Aug 31 08:48:40 PDT 2007
+//    Added adaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -401,6 +404,11 @@ class PIPELINE_API avtDataAttributes
     WINDOW_MODE              GetWindowMode(void) const { return windowMode;} ;
     void                     SetWindowMode(WINDOW_MODE m) { windowMode = m;} ;
 
+    bool                     GetAdaptsToAnyWindowMode(void) const 
+                                           { return adaptsToAnyWindowMode;} ;
+    void                     SetAdaptsToAnyWindowMode(bool b) 
+                                           { adaptsToAnyWindowMode = b; };
+
     void                     SetSelectionsApplied(std::vector<bool> &selsApplied);
     bool                     GetSelectionApplied(int selID) const;
     const std::vector<bool> &GetSelectionsApplied() const;
@@ -534,6 +542,7 @@ class PIPELINE_API avtDataAttributes
     int                      activeVariable;
 
     WINDOW_MODE              windowMode;
+    bool                     adaptsToAnyWindowMode;
 
     std::vector<std::string> labels;
     std::string              meshname;

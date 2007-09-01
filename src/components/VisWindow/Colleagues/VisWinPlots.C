@@ -427,6 +427,10 @@ VisWinPlots::TriggerPlotListUpdate(void)
 //
 //    Mark C. Miller, Thu Jun 21 00:12:28 PDT 2007
 //    Added support to overlay curve plots on 2D plots.
+//
+//    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
+//    Add support for plots that adapt to any window mode.
+//
 // ****************************************************************************
 
 void
@@ -446,6 +450,9 @@ VisWinPlots::CheckPlot(avtActor_p &p)
         //
         if (mediator.GetMode() == p->GetWindowMode())
 	    return;
+
+        if (p->AdaptsToAnyWindowMode())
+            return;
 
         if (mediator.GetMode() == WINMODE_2D &&
 	    p->GetWindowMode() == WINMODE_CURVE)

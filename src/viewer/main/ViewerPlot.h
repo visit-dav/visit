@@ -274,6 +274,9 @@ class avtToolInterface;
 //    Kathleen Bonnell, Fri May 11 15:06:40 PDT 2007 
 //    Added WINDOW_MODE arg to SetScaleMode, Add CanDoLogViewScaling().
 //
+//    Hank Childs, Thu Aug 30 15:57:55 PDT 2007
+//    Added AdaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerPlot : public ViewerBase
@@ -437,6 +440,7 @@ class VIEWER_API ViewerPlot : public ViewerBase
     bool           IsMesh();
     bool           IsLabel();
     avtMeshType    GetMeshType() const;
+    bool           AdaptsToAnyWindowMode();
 
     //
     // Let the plot manage its custom display, if one exists.

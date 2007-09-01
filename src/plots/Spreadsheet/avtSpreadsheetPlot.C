@@ -178,11 +178,16 @@ avtSpreadsheetPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Method: avtSpreadsheetPlot::CustomizeBehavior
 //
 //  Purpose:
-//      Customizes the behavior as appropriate for a Spreadsheet plot.  This includes
-//      behavior like shifting towards or away from the screen.
+//      Customizes the behavior as appropriate for a Spreadsheet plot.  This 
+//      includes behavior like shifting towards or away from the screen.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Tue Feb 6 12:08:42 PDT 2007
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Aug 31 11:22:41 PDT 2007
+//    Declare that the plot can adapt to any window mode.
 //
 // ****************************************************************************
 
@@ -190,6 +195,7 @@ void
 avtSpreadsheetPlot::CustomizeBehavior(void)
 {
     behavior->SetRenderOrder(MUST_GO_LAST);
+    behavior->GetInfo().GetAttributes().SetAdaptsToAnyWindowMode(true);
 }
 
 

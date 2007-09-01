@@ -137,6 +137,9 @@ class     avtTransparencyActor;
 //    Brad Whitlock, Mon Mar 19 17:44:19 PST 2007
 //    Added actorName.
 //
+//    Hank Childs, Fri Aug 31 10:28:10 PDT 2007
+//    Added AdaptsToAnyWindowMode.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -161,6 +164,7 @@ class PLOTTER_API avtActor
     void                          GetDataExtents(double &dmin, double &dmax);
     int                           GetDimension(void);
     WINDOW_MODE                   GetWindowMode(void);
+    bool                          AdaptsToAnyWindowMode(void);
     int                           GetRenderOrder(bool aa);
     avtLegend_p                   GetLegend(void);
 

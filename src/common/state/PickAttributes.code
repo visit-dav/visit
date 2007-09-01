@@ -36,6 +36,12 @@ Definition:
 //   Kathleen Bonnell, Tue Feb 13 12:41:28 PST 2007 
 //   If meshCoordType not XY, add (Z,R) or (R,Z) to point info.
 //
+//   Hank Childs, Mon Aug 27 13:59:12 PDT 2007
+//   Print out createSpreadsheet.
+//
+//   Hank Childs, Fri Aug 31 15:35:28 PDT 2007
+//   Print out subset name.
+//
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
@@ -62,6 +68,8 @@ PickAttributes::PrintSelf(ostream &os)
     {
         os << "\n" << meshInfo.c_str() << "\n";
     }
+    if (subsetName != "")
+        os << "The subset name is " << subsetName << "\n";
     os << "active variable:   " << activeVariable.c_str() << "\n";
     os << "selected variables: ";
     for (i = 0; i < variables.size(); i++)
@@ -194,6 +202,9 @@ PickAttributes::PrintSelf(ostream &os)
 
     if (doTimeCurve)
         os << "Set up to create a time-curve.\n";
+
+    if (createSpreadsheet)
+        os << "Create a spreadsheet with this pick.\n";
 
     if (conciseOutput)
         os << "Set up to create concise Output.\n";
@@ -675,6 +686,9 @@ Definition:
 //   Kathleen Bonnell, Wed Jun  9 07:54:02 PDT 2004
 //   Add doTimeCurve and conciseOutput, showTimeStep, showMeshName.
 //   
+//   Hank Childs, Mon Aug 27 13:59:12 PDT 2007
+//   Add createSpreadsheet.
+//
 // ****************************************************************************
 
 void
@@ -713,6 +727,8 @@ PickAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("doTimeCurve")) != 0)
         SetDoTimeCurve(node->AsBool());
+    if((node = searchNode->GetNode("createSpreadsheet")) != 0)
+        SetCreateSpreadsheet(node->AsBool());
 
     if((node = searchNode->GetNode("conciseOutput")) != 0)
         SetConciseOutput(node->AsBool());
@@ -743,6 +759,9 @@ Definition:
 //   Kathleen Bonnell, Wed Jun  9 07:54:02 PDT 2004
 //   Add doTimeCurve and conciseOutput, showTimeStep, showMeshName.
 //   
+//   Hank Childs, Mon Aug 27 13:59:12 PDT 2007
+//   Add createSpreadsheet.
+//
 // ****************************************************************************
 
 bool
@@ -821,6 +840,13 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         addToParent = true;
         node->AddNode(new DataNode("doTimeCurve", 
                                     doTimeCurve));
+    }
+
+    if(completeSave || !FieldsEqual(62, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("createSpreadsheet", 
+                                    createSpreadsheet));
     }
 
     if(completeSave || !FieldsEqual(42, &defaultObject))

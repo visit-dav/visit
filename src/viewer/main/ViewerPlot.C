@@ -5440,7 +5440,7 @@ ViewerPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 
 
 // ****************************************************************************
-// Method: ViewerPlotxist::CanDoLogViewScaling
+// Method: ViewerPlot::CanDoLogViewScaling
 //
 // Purpose: 
 //   Returns whether or not this plot supports log view scaling.
@@ -5476,3 +5476,33 @@ ViewerPlot::CanDoLogViewScaling(WINDOW_MODE wm)
     }
     return rv;
 }
+
+
+// ****************************************************************************
+// Method: ViewerPlot::AdaptsToAnyWindowMode
+//
+// Purpose: 
+//   Returns whether or not this plot can adapt to any window mode.
+//
+// Returns:    true if it can, false otherwise
+//
+// Programmer: Hank Childs 
+// Creation:   August 30, 2007
+//
+// Modifications:
+//  
+// ****************************************************************************
+
+bool 
+ViewerPlot::AdaptsToAnyWindowMode(void)
+{
+    bool rv = false;
+
+    if (*plotList[cacheIndex] != NULL)
+    {
+        rv = actorList[cacheIndex]->AdaptsToAnyWindowMode();
+    }
+    return rv;
+}
+
+
