@@ -1677,6 +1677,12 @@ RemoteProcess::SecureShellArgs() const
 //    then picking arbitrary random ports on the remote machine is
 //    liable to run into collisions with other users more quickly.
 //
+//    Jeremy Meredith, Tue Sep  4 16:40:32 EDT 2007
+//    Changed "localhost" in -R port forwarding specification to
+//    "127.0.0.1".  Still investigating, but apparently OS X seems to
+//    fail with localhost, but works with 127.0.0.1.  Since other platforms
+//    still work with 127.0.0.1, this should be a safe change.
+//
 // ****************************************************************************
 
 void
@@ -1769,7 +1775,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 
                     char forwardSpec[256];
                     sprintf(forwardSpec, "%d:%s:%d",
-                            remotePort, "localhost", localPort);
+                            remotePort, "127.0.0.1", localPort);
                     debug5 << "RemoteProcess::CreateCommandLine -- "
                            << "forwarding ("<< forwardSpec << ")" << endl;
                     args.push_back("-R");
