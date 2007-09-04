@@ -206,6 +206,11 @@
 //    Thomas R. Treadway, Thu Jul 26 15:28:07 PDT 2007
 //    Added more Mac dependences for plugins
 //
+//    Jeremy Meredith, Tue Sep  4 10:23:25 EDT 2007
+//    .c extensions didn't work.  Added a bit of a fix, though we should
+//    still probably change it so the user specifies the object files,
+//    not the source files.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -772,13 +777,21 @@ class MakefileGeneratorPlugin
         out << "##" << endl;
         out << "## Derived objects" << endl;
         out << "##" << endl;
-        out << "IOBJ=$(ISRC:.C=.o)" << endl;
-        out << "GOBJ=$(COMMONSRC:.C=.o) $(GSRC:.C=.o)" << endl;
-        out << "SOBJ=$(COMMONSRC:.C=.o) $(SSRC:.C=.o)" << endl;
-        out << "VOBJ=$(COMMONSRC:.C=.o) $(VSRC:.C=.o)" << vGraphicsObjects << endl;
-        out << "MOBJ=$(COMMONSRC:.C=.o) $(MSRC:.C=.o) $(MSPECIFICSRC:.C=_mds.o)" << endl;
-        out << "ESEROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=.o)     $(ESPECIFICSRC:.C=_eng.o)" << eserGraphicsObjects << endl;
-        out << "EPAROBJ=$(COMMONSRC:.C=.o) $(ESRC:.C=_par.o) $(ESPECIFICSRC:.C=_par_eng.o)" << eparGraphicsObjects << endl;
+        out << "IOBJ_tmp=$(ISRC:.C=.o)" << endl;
+        out << "GOBJ_tmp=$(COMMONSRC:.C=.o) $(GSRC:.C=.o)" << endl;
+        out << "SOBJ_tmp=$(COMMONSRC:.C=.o) $(SSRC:.C=.o)" << endl;
+        out << "VOBJ_tmp=$(COMMONSRC:.C=.o) $(VSRC:.C=.o)" << vGraphicsObjects << endl;
+        out << "MOBJ_tmp=$(COMMONSRC:.C=.o) $(MSRC:.C=.o) $(MSPECIFICSRC:.C=_mds.o)" << endl;
+        out << "ESEROBJ_tmp=$(COMMONSRC:.C=.o) $(ESRC:.C=.o)     $(ESPECIFICSRC:.C=_eng.o)" << eserGraphicsObjects << endl;
+        out << "EPAROBJ_tmp=$(COMMONSRC:.C=.o) $(ESRC:.C=_par.o) $(ESPECIFICSRC:.C=_par_eng.o)" << eparGraphicsObjects << endl;
+        out << "" << endl;
+        out << "IOBJ=$(IOBJ_tmp:.c=.o)" << endl;
+        out << "GOBJ=$(GOBJ_tmp:.c=.o)" << endl;
+        out << "SOBJ=$(SOBJ_tmp:.c=.o)" << endl;
+        out << "VOBJ=$(VOBJ_tmp:.c=.o)" << endl;
+        out << "MOBJ=$(MOBJ_tmp:.c=.o)" << endl;
+        out << "ESEROBJ=$(ESEROBJ_tmp:.c=.o)" << endl;
+        out << "EPAROBJ=$(EPAROBJ_tmp:.c=.o)" << endl;
         out << "" << endl;
         out << "MOCSRC = $(WIDGETS:.h=_moc.C)" << endl;
         out << "MOCOBJ = $(MOCSRC:.C=.o)" << endl;
