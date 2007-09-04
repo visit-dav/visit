@@ -61,6 +61,7 @@ const char *avtVariableCache::LABELS_NAME = "LABELS";
 const char *avtVariableCache::ARRAYS_NAME = "ARRAYS";
 const char *avtVariableCache::DATASET_NAME = "DATASET";
 const char *avtVariableCache::DATA_SPECIFICATION = "DATA_SPECIFICATION";
+bool        avtVariableCache::vtkDebugMode = false;
 
 // ****************************************************************************
 //  Method: avtVariableCache::DestructVTKObject 
@@ -185,6 +186,9 @@ avtCachableItem::~avtCachableItem()
 //    Hank Childs, Fri Oct  5 17:31:30 PDT 2001
 //    Added argument material.
 //
+//    Cyrus Harrison, Sat Aug 11 19:28:13 PDT 2007
+//    Add call to DebugOn() for vtk-debug mode
+//
 // ****************************************************************************
 
 vtkObject *
@@ -202,6 +206,8 @@ avtVariableCache::GetVTKObject(const char *var, const char *type, int timestep,
             if (item != NULL)
             {
                 avtCachedVTKObject *vo = (avtCachedVTKObject *) item;
+                if(vtkDebugMode)
+                    vo->GetVTKObject()->DebugOn();
                 return vo->GetVTKObject();
             }
         }

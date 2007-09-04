@@ -51,6 +51,8 @@ public:
   static void   Initialize(void);
 
   virtual void  DisplayText(const char *);
+  
+  static void   FrequentEventsFilter(bool on){filterFrequentEvents = on;}
 
 protected:
   vtkDebugStream() {};
@@ -59,6 +61,8 @@ protected:
 private:
   vtkDebugStream(const vtkDebugStream&); 
   void operator=(const vtkDebugStream&);
+  static bool filterFrequentEvents;
+
 };
 
 #endif

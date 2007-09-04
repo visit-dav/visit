@@ -72,6 +72,7 @@
 #include <SimulationCommand.h>
 #include <SocketConnection.h>
 #include <TimingsManager.h>
+#include <vtkDebugStream.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectReader.h>
@@ -85,6 +86,8 @@
 #include <avtTypes.h>
 #include <avtVariableMapper.h>
 #include <vtkDataSetWriter.h>
+#include <avtDataObjectToDatasetFilter.h>
+#include <avtVariableCache.h>
 
 #include <string>
 using std::string;
@@ -1038,6 +1041,10 @@ Engine::ProcessInput()
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added CL argument to specify cycle number regular expression 
+//
+//    Cyrus Harrison, Sat Aug 11 19:58:55 PDT 2007
+//    Added -vtk-debug option
+//
 // ****************************************************************************
 
 void
@@ -1167,6 +1174,12 @@ Engine::ProcessCommandLine(int argc, char **argv)
             avtOriginatingSink::DebugDump(true);
             avtDataRepresentation::DatasetDump(false);
             shouldDoDashDump = true;
+        }
+        else if (strcmp(argv[i], "-vtk-debug") == 0)
+        {
+            avtDataObjectToDatasetFilter::SetVTKDebugMode(true);
+            avtVariableCache::SetVTKDebugMode(true);
+            vtkDebugStream::FrequentEventsFilter(true);
         }
         else if (strcmp(argv[i], "-lb-block") == 0)
         {

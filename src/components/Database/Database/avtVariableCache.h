@@ -101,6 +101,9 @@ class   vtkObject;
 //    impl. single GetItem method for both classes (maybe should have
 //    implemented separately for each cacheable item type)
 //
+//    Cyrus Harrison, Sat Aug 11 19:32:44 PDT 2007
+//    Add support for vtk-debug mode
+//
 // ****************************************************************************
 
 class DATABASE_API avtVariableCache
@@ -154,6 +157,8 @@ class DATABASE_API avtVariableCache
                                                 vtkObject *o2);
     bool                   RemoveObjectPointerPair(vtkObject *o1);
     vtkObject             *FindObjectPointerPair(vtkObject *o1) const;
+    
+    static void            SetVTKDebugMode(bool on){vtkDebugMode = on;}
 
   protected:
 
@@ -241,6 +246,8 @@ class DATABASE_API avtVariableCache
     std::vector<OneVar *>            voidRefVars;
 
     std::map<vtkObject*, vtkObject*> objectPointerMap;
+    
+    static bool                      vtkDebugMode;
 };
 
 
