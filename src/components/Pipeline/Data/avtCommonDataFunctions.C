@@ -447,7 +447,7 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
 //
 //  Arguments:
 //    data      The data from which to calculate number of cells.
-//    <unused>
+//    arg       optional bool pointer for enabling debug mode
 //    <unused> 
 //
 //  Notes:
@@ -457,21 +457,46 @@ CConvertUnstructuredGridToPolyData(avtDataRepresentation &data, void *, bool &)
 //  Programmer: Hank Childs
 //  Creation:   January 16, 2007
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Sat Aug 11 19:44:59 PDT 2007
+//    Add support for vtk-debug mode.
+//
 // ****************************************************************************
 
 void
-CBreakVTKPipelineConnections(avtDataRepresentation &data, void *, bool &)
+CBreakVTKPipelineConnections(avtDataRepresentation &data, void *arg, bool &)
 {
     if (!data.Valid())
     {
         return; // This is a problem, but no need to flag it for this...
     }
 
+    // loop index
+    int i;
+
     vtkDataSet *ds = data.GetDataVTK();
     vtkDataSet *newDS = (vtkDataSet *) ds->NewInstance();
     newDS->ShallowCopy(ds);
     avtDataRepresentation new_data(newDS, data.GetDomain(),
                                    data.GetLabel());
+                                   
+    // If vtk-debug turn on debug for the new dataset and its vars
+    if(arg != NULL &&  *((bool*)arg))
+    {
+        newDS->DebugOn();
+        vtkCellData  *cell_data  = newDS->GetCellData();
+        vtkPointData *point_data = newDS->GetPointData();
+
+        int ncell_arrays = cell_data->GetNumberOfArrays();
+        for( i=0; i < ncell_arrays; i++)
+            cell_data->GetArray(i)->DebugOn();
+
+        int npoint_arrays = point_data->GetNumberOfArrays();
+        for( i=0; i < npoint_arrays; i++)
+            point_data->GetArray(i)->DebugOn();
+    }
+    
     data = new_data;
     newDS->Delete();
 }

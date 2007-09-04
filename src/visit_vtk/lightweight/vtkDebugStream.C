@@ -50,6 +50,12 @@
 
 vtkStandardNewMacro(vtkDebugStream);
 
+// *****************************************************
+// Modifications:
+//   Cyrus Harrison, Sat Aug 11 20:37:23 PDT 2007
+//   Added init of filterFrequentEvents
+// *****************************************************
+bool vtkDebugStream::filterFrequentEvents = false;
 
 // *****************************************************
 // Modifications:
@@ -64,8 +70,24 @@ void vtkDebugStream::Initialize(void)
   ds->Delete();
 }
 
-
+// *****************************************************
+// Modifications:
+//   Cyrus Harrison, Sat Aug 11 20:37:23 PDT 2007
+//   Added a filter for frequent events to reduce
+//   strain on file system.
+// *****************************************************
 void vtkDebugStream::DisplayText(const char *txt)
 {
-  debug1 << txt << endl;
+    // exclude very frequent events to spare the fs
+  if(filterFrequentEvents)
+  {
+      bool ok = true;
+      ok = ok && strstr(txt,"Returning cell type") == NULL;
+      
+      if(ok)
+      {debug1 << txt << endl;}
+  }
+  else
+  {debug1 << txt << endl;}
+
 }

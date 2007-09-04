@@ -186,6 +186,10 @@ NewHandler(void)
 //    Kathleen Bonnell, Wed Aug 22 18:00:57 PDT 2007 
 //    On Windows, write timings and log files to User's directory. 
 //
+//    Cyrus Harrison, Tue Sep  4 10:54:59 PDT 2007
+//    If -vtk-debug is specified make sure the debug level is at least 1
+//    for the engine
+//
 // ****************************************************************************
 
 void
@@ -197,7 +201,7 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
 #else
     bool usePid = false;
 #endif
-
+    bool vtk_debug = false;
     bool enableTimings = false;
     for (i=1; i<argc; i++)
     {
@@ -231,6 +235,10 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
         else if (strcmp("-pid", argv[i]) == 0)
         {
             usePid = true;
+        }
+        else if (strcmp("-vtk-debug", argv[i]) == 0)
+        {
+            vtk_debug = true;
         }
         else if (strcmp("-timing",  argv[i]) == 0 ||
                  strcmp("-timings", argv[i]) == 0)
@@ -277,6 +285,11 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
         sprintf(progname2, "%s.%d", progname, pid);
         strcpy(progname, progname2);
     }
+
+    // if this is the engine and -vtk-debug is enabled, make sure the
+    // debuglevel is at least 1
+    if(vtk_debug && strstr(progname,"engine") != NULL  && debuglevel < 1)
+        debuglevel = 1;
 
     // Initialize the debug streams and also add the command line arguments
     // to the debug logs.

@@ -68,6 +68,9 @@
 //    Convert unstructured data that could be stored as poly data to poly
 //    data.
 //
+//    Cyrus Harrison, Sat Aug 11 19:53:13 PDT 2007
+//    Added support for vtk-debug mode.
+//    
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectToDatasetFilter
@@ -80,6 +83,10 @@ class PIPELINE_API avtDataObjectToDatasetFilter
     void               OutputSetActiveVariable(const char *);
 
     virtual void       PostExecute(void);
+    
+    static void        SetVTKDebugMode(bool on){vtkDebugMode = on;}
+ private:
+    static bool        vtkDebugMode;
 };
 
 

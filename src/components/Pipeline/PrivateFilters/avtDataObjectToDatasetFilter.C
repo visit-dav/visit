@@ -43,6 +43,7 @@
 
 #include <avtCommonDataFunctions.h>
 
+bool avtDataObjectToDatasetFilter::vtkDebugMode = false;
 
 // ****************************************************************************
 //  Method: avtDataObjectToDatasetFilter constructor
@@ -147,6 +148,9 @@ avtDataObjectToDatasetFilter::OutputSetActiveVariable(const char *varname)
 //    Hank Childs, Tue Jan 16 11:24:53 PST 2007
 //    Break all VTK pipeline connections.
 //
+//    Cyrus Harrison, Sat Aug 11 19:48:30 PDT 2007
+//    Add support for vtk-debug mode.
+//
 // ****************************************************************************
 
 void
@@ -162,7 +166,7 @@ avtDataObjectToDatasetFilter::PostExecute(void)
         tree->Traverse(CConvertUnstructuredGridToPolyData, NULL, dummy);
     }
 
-    tree->Traverse(CBreakVTKPipelineConnections, NULL, dummy);
+    tree->Traverse(CBreakVTKPipelineConnections, (void*)&vtkDebugMode, dummy);
 }
 
 
