@@ -6080,6 +6080,9 @@ ViewerWindow::Pick(int x, int y, const INTERACTION_MODE pickMode)
 //    will perform an intersection-only pick, less complex than an ordinary
 //    pick. 
 //   
+//    Hank Childs, Tue Sep  4 15:03:48 PDT 2007
+//    Add better error handling.
+//
 // ****************************************************************************
 
 bool
@@ -6116,9 +6119,17 @@ ViewerWindow::GetPickAttributesForScreenPoint(double sx, double sy,
             retval = pick.GetFulfilled();
         }
     }
-    CATCHALL(...)
+    CATCH2(VisItException, e)
     {
-        RETHROW;
+        char msg[1024];
+        SNPRINTF(msg, 1024, "An error occurred while trying to take a pick."
+                 "\nThis happens most often when trying to do a choose center"
+                 " while the engine times out or otherwise has problems."
+                 "\n\nThe type of exception was: %s"
+                 "\nThe error message was: %s",
+                 e.GetExceptionType().c_str(),
+                 e.Message().c_str());
+        Error(msg);
     }
     ENDTRY
 
