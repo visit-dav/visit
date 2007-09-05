@@ -108,7 +108,7 @@ Doxygenator::RegisterDirectives(DoxygenDirective* (*dg)(int), int nd)
 // ****************************************************************************
 
 void
-Doxygenator::RegisterLexRoutines(int (*yylex)(void), char *yytext)
+Doxygenator::RegisterLexRoutines(int (*yylex)(void), char **yytext)
 {
     LexLexer  = yylex;
     lexString = yytext;
@@ -291,6 +291,12 @@ Doxygenator::FindStream(int numTokens, DoxToken *tokens, char **exprs)
 //  Programmer: Hank Childs
 //  Creation:   March 24, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Sep  5 08:41:47 PDT 2007
+//    Dereference the lexString, since we now how its address as a member,
+//    not its value.
+//
 // ****************************************************************************
 
 DoxToken
@@ -312,7 +318,7 @@ Doxygenator::GetNextToken(char **expr)
     //  yytext == lexString
     //
     int  token = LexLexer();
-    *expr      = lexString;
+    *expr      = *lexString;
 
     //
     // Must determine if we are inside a method so that we can figure out

@@ -60,6 +60,9 @@
 #    Eric Brugger, Fri Jun 29 09:10:39 PDT 2007
 #    Removed the setting of the DISTRIB and NOT_DISTRIB variables.
 #
+#    Hank Childs, Wed Sep  5 08:57:30 PDT 2007
+#    Add include for visitstream.h.
+#
 ##############################################################################
 
 ##
@@ -69,7 +72,7 @@
 @VARIABLES@
 
 LIBS=-ll @LIBS@
-CPPFLAGS=-I. @CPPFLAGS@
+CPPFLAGS=-I. @CPPFLAGS@ -I../../include/visit
 
 ##
 ## Files...

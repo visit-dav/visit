@@ -61,6 +61,11 @@ class DoxygenDirective;
 //  Programmer: Hank Childs
 //  Creation:   August 7, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Sep  5 08:41:47 PDT 2007
+//    Work with the address of yytext, not yytext itself.
+//
 // ****************************************************************************
 
 class Doxygenator
@@ -69,7 +74,7 @@ class Doxygenator
                           Doxygenator();
 
     void                  RegisterDirectives(DoxygenDirective* (*)(int), int);
-    void                  RegisterLexRoutines(int (*)(void), char *);
+    void                  RegisterLexRoutines(int (*)(void), char **);
 
     void                  Execute(void);
 
@@ -81,7 +86,7 @@ class Doxygenator
     bool                  reachedEnd;
 
     int                 (*LexLexer)(void);
-    char                 *lexString;
+    char                **lexString;
 
     DoxygenDirective     *FindStream(int, DoxToken *, char **);
     DoxToken              GetNextToken(char **);
