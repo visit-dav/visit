@@ -1120,8 +1120,8 @@ avtGradientFilter::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
             new_ds->Delete();
             cd2pd->Delete();
         }
-        
-        if( val == NULL || val->GetNumberOfComponents() != 1 )      
+
+        if( val == NULL || val->GetNumberOfComponents() != 1 )
             EXCEPTION1(ExpressionException,
                        "avtGradientFilter: Unable to find var.");
     }
@@ -1183,7 +1183,7 @@ avtGradientFilter::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
 
     if(own_values_array)
         val->Delete();
-        
+
     return res_vec;
 }
 
@@ -1196,6 +1196,11 @@ avtGradientFilter::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
 //  Programmer: Cyrus Harrison
 //  Creation:   July 19, 2007
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep  4 09:10:28 PDT 2007
+//    Changed tiny to much smaller value.
+//
 // ****************************************************************************
 
 void
@@ -1207,7 +1212,7 @@ avtGradientFilter::CalculateNodalToZonalQuadGrad(vtkDataSet *ds,
     // loop index
     int i;
 
-    double tiny = .00001;
+    double tiny = 1.e-80;
     double xi,xj;
     double yi,yj;
     double vi,vj;
@@ -1282,8 +1287,10 @@ avtGradientFilter::CalculateNodalToZonalQuadGrad(vtkDataSet *ds,
 //  Purpose:
 //      Calculate 3D Gradient.
 //
-//  Programmer: Cyrus Harrison
-//  Creation:   August 8, 2007
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep  4 09:10:28 PDT 2007
+//    Changed tiny to much smaller value.
 //
 // ****************************************************************************
 
@@ -1295,7 +1302,7 @@ avtGradientFilter::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
 {
     int i;
 
-    double tiny = .00001;
+    double tiny = 1.e-80;
     double xi,xj,xk;
     double yi,yj,yk;
     double zi,zj,zk;
@@ -1411,10 +1418,10 @@ avtGradientFilter::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
 avtPipelineSpecification_p
 avtGradientFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 {
-    avtPipelineSpecification_p spec2 = 
+    avtPipelineSpecification_p spec2 =
                    avtSingleInputExpressionFilter::PerformRestriction(in_spec);
     spec2->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
     return spec2;
 }
- 
+
 
