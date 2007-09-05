@@ -4352,6 +4352,9 @@ GetDDFCallbackBridge(void *arg, const char *name)
 //
 //  Modifications:
 //
+//    Hank Childs, Tue Sep  4 14:21:18 PDT 2007
+//    Added parallel logic.
+//
 // ****************************************************************************
 
 void
@@ -4402,7 +4405,28 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
     x = (int)pa->GetRayPoint1()[0];
     y = (int)pa->GetRayPoint1()[1];
     VisWindow *viswin = viswinMap[winId].viswin;
-    if (viswin->FindIntersection(x, y, isect))
+    bool  gotOne = viswin->FindIntersection(x, y, isect);
+
+    //
+    // Communicate the data to processor 0.
+    //
+    int   rank   = PAR_Rank();
+    int   tmp    = (gotOne ? rank : -1);
+    tmp = UnifyMaximumValue(tmp);
+    bool dataAlreadyOnProc0 = (tmp == 0);
+    bool dataNotOnProc0 = (tmp > 0);
+    bool validPick = dataAlreadyOnProc0 || dataNotOnProc0;
+
+    if (dataNotOnProc0)
+    {
+        bool iHaveTheData = (tmp == rank ? true : false);
+        GetDoubleArrayToRootProc(isect, 3, iHaveTheData);
+    }
+
+    // 
+    // Have processor 0 put the information into the pick attributes.
+    //
+    if (rank == 0 && validPick)
     {
         pa->SetPickPoint(isect);
         pa->SetFulfilled(true);
