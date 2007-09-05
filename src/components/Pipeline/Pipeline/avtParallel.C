@@ -1529,6 +1529,11 @@ UnifyMaximumValue(vector<int> &mymax, vector<int> &results)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
+//    Hank Childs, Tue Sep  4 17:00:21 PDT 2007
+//    Cast a Boolean to an int, to make sure that a cast to a pointer was
+//    correctly word aligned.
+//
 // ****************************************************************************
 
 void
@@ -1559,7 +1564,8 @@ GetDoubleArrayToRootProc(double *da, int nd, bool &success)
     }
     else
     {
-        MPI_Send(&success, 1, MPI_INT, 0, mpiGoodTag, VISIT_MPI_COMM);
+        int val = (int) success;
+        MPI_Send(&val, 1, MPI_INT, 0, mpiGoodTag, VISIT_MPI_COMM);
         if (success)
         {
             MPI_Send(da, nd, MPI_DOUBLE, 0, mpiDoubleArrayTag, VISIT_MPI_COMM);
