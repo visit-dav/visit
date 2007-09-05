@@ -69,7 +69,7 @@ const int numStreams = 4;
 //
 //  Purpose:
 //      Uses tokenizer from lex to create doxygen directive streams and
-//      transform standard MeshTV headers into doxygen directives.
+//      transform standard VisIt headers into doxygen directives.
 //
 //  Programmer: Hank Childs
 //  Creation:   March 24, 2000
@@ -79,6 +79,9 @@ const int numStreams = 4;
 //    Hank Childs, Mon Aug  7 08:30:56 PDT 2000
 //    Rewrote function to use doxygenator module, which makes the lex file
 //    more easily customizable.
+//
+//    Hank Childs, Wed Sep  5 08:41:47 PDT 2007
+//    Pass an address to yytext, not yytext itselt.
 //
 // ****************************************************************************
 
@@ -96,7 +99,7 @@ main()
     // Register the lex routines that are apparently symbols that are 
     // unavailable to other (non-lex) files.
     //
-    doxygenator.RegisterLexRoutines(yylex, yytext);
+    doxygenator.RegisterLexRoutines(yylex, &yytext);
 
     doxygenator.Execute();
 }
