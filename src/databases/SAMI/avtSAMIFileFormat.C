@@ -321,6 +321,10 @@ avtSAMIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Mon Oct 16 13:20:06 PDT 2006
 //    Made it more tolerant of Silo read errors and more descriptive error
 //    messages.
+//
+//    Hank Childs, Thu Sep  6 13:23:20 PDT 2007
+//    Fix indexing problem.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -447,7 +451,7 @@ avtSAMIFileFormat::GetMesh(const char *meshname)
         }
 
         for (j = 0; j < (1<<(ndims-1)); j++)
-            if (nd[i]) free(nd[j]);
+            if (nd[j]) free(nd[j]);
 
         return ugrid;
     }
