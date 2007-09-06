@@ -60,6 +60,10 @@
 #    Eric Brugger, Fri Jun 29 09:22:02 PDT 2007
 #    Removed the setting of the DISTRIB and NOT_DISTRIB variables.
 #
+#    Jeremy Meredith, Thu Sep  6 16:07:44 EDT 2007
+#    Only remove files needed to generate dependencies when we execute
+#    the 'distclean' target, not the 'clean' target.
+#
 ##############################################################################
 
 ##
@@ -88,8 +92,8 @@ all: message $(LIBSHARED)
 
 clean:
 	$(RM) $(OBJ) $(LIBSHARED) credits.html
-	$(RM) -rf glew
-	$(RM) -R ../../include/glew
+
+DISTCLEAN_FILES=-rf glew ../../include/glew
 
 credits.html:
 	gunzip < glew-1.3.4-src.tgz | tar xvf - > /dev/null

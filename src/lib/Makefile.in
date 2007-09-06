@@ -162,10 +162,16 @@
 #    Added '*' after $(LIBMESAGL) and $(LIBOSMESA) to pick up extensions that
 #    some versions of linux add.
 #
-#   Jeremy Meredith, Thu Aug 30 12:55:30 EDT 2007
-#   Made the 'clean' target not remove things needed to correctly
-#   generate dependencies.  That's now reserved for distclean.
-#   In this case, it means removing the symbolic links only in 'distclean'.
+#    Jeremy Meredith, Thu Aug 30 12:55:30 EDT 2007
+#    Made the 'clean' target not remove things needed to correctly
+#    generate dependencies.  That's now reserved for distclean.
+#    In this case, it means removing the symbolic links only in 'distclean'.
+#
+#    Jeremy Meredith, Thu Sep  6 16:03:21 EDT 2007
+#    Allowed make clean to remove symlinks to library files, since these
+#    are not needed for dependencies.  I left the python link for distclean,
+#    though, since it is to a directory which contains include files.
+#    Also, don't forget to remove the Makefile in distclean.
 #
 ##############################################################################
 
@@ -195,6 +201,7 @@ LIBOSMESA=libOSMesa.@SHLIB_LIBEXT@
 LIBQT=@LIBQT@.@SHLIB_LIBEXT@
 LIBQUI=libqui.@SHLIB_LIBEXT@
 LIBSILO=libsilo.@SHLIB_LIBEXT@
+LIBPYTHON=lib@PYVERSION@.@SHLIB_LIBEXT@
 
 # The following targets were split up so that they would work properly
 # with the make on AIX systems.
@@ -313,7 +320,7 @@ pythondir:
 	if test -n "@PYDIR@"; then                                     \
 	    $(RM) python lib@PYVERSION@.@SHLIB_LIBEXT@              ;  \
 	    ln -s @PYDIR@ python                                    ;  \
-	    ln -s python/lib/@PYVERSION@/config/lib@PYVERSION@.@SHLIB_LIBEXT@ . ;  \
+	    ln -s python/lib/@PYVERSION@/config/$(LIBPYTHON) . ;  \
 	fi
 
 create_silo_link:
@@ -395,8 +402,6 @@ cleanlinks:
 	find . -type l -maxdepth 1 -exec $(RM) {} \;
 
 clean:
-
-distclean: cleanlinks
 	$(RM) \
 	$(LIBMESAGL)* \
 	$(LIBGLU) \
@@ -422,10 +427,11 @@ distclean: cleanlinks
 	$(LIBVTKGRAPHICS)* \
 	$(LIBVTKRENDERING)* \
 	$(LIBSILO) \
-	python \
-	lib@PYVERSION@.@SHLIB_LIBEXT@ \
-	$(LIBQT) \
-	$(LIBQUI)
+	libqt.a \
+	libqui.a
+
+distclean: cleanlinks
+	$(RM) python Makefile
 
 install:
 install_bin:

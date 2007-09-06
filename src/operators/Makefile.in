@@ -226,6 +226,9 @@
 #    for all directories.  We just want the latter, so I copied the
 #    non-subdir referencing stuff from the clean target to distclean.
 #
+#    Jeremy Meredith, Thu Sep  6 16:53:41 EDT 2007
+#    Use ALLSUBDIRS for distclean.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -272,8 +275,8 @@ clean:
 	-$(RM) $(CLEAN_FILES)
 
 distclean:
-	if test -n "$(SUBDIRS)"; then \
-		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
+	if test -n "$(ALLSUBDIRS)"; then \
+		rev=""; for dir in $(ALLSUBDIRS); do rev="$$dir $$rev"; done; \
 		for dir in $$rev; do (cd $$dir && test ! -f Makefile || $(MAKE) $@); done \
 	fi
 	-$(RM) $(DISTCLEAN_FILES) *~ core

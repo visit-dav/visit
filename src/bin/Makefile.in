@@ -80,6 +80,9 @@
 #   generate dependencies.  That's now reserved for distclean.
 #   In this case, it means removing moc only in 'distclean'.
 #
+#   Jeremy Meredith, Thu Sep  6 16:53:41 EDT 2007
+#   Don't forget to remove the Makefile in distclean.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -97,4 +100,4 @@ clean:
 	$(RM) *.log *.timings
 
 distclean: clean
-	$(RM) moc
+	$(RM) moc Makefile

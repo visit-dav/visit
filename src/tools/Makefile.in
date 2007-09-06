@@ -96,6 +96,10 @@
 #    Brad Whitlock, Tue Sep 19 17:37:36 PST 2006
 #    Added mpeg2encode and imagetools.
 #
+#    Jeremy Meredith, Thu Sep  6 17:00:22 EDT 2007
+#    Add missing dirs to the OPTIONAL variable.  Create ALLSUBDIRS.  This
+#    will help distclean fix things up.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -104,10 +108,13 @@
 
 MILI=makemili
 
-OPTIONAL=avtprep classwriter doxygenate prep windowmaker
+OPTIONAL=avtprep classwriter doxygenate prep windowmaker \
+	 escan mpeg_encode clidriver DataManualExamples clipeditor
 
 SUBDIRS=imagetools annotations convert curv3dprep @MILI@ mpeg2encode silex \
         surfcomp writer xml xmledit
+
+ALLSUBDIRS=$(SUBDIRS) $(MILI) $(OPTIONAL)
 
 message:
 	@echo
