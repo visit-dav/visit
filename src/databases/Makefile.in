@@ -293,6 +293,15 @@
 #   for all directories.  We just want the latter, so I copied the
 #   non-subdir referencing stuff from the clean target to distclean.
 #
+#   Jeremy Meredith, Thu Sep  6 16:50:53 EDT 2007
+#   Having all thirdparty-dependent in ALLSUBDIRS is useless: we wind up
+#   generating a Makefile for a directory that we know we will not be
+#   able to build.  And, in fact, we cannot even generate dependencies for
+#   it since we don't even have include files, and as such, even a make
+#   distclean will fail.  Thus, I changed ALLSUBDIRS to ignore third-party-
+#   dependent libraries we cannot build.
+#   Also, use ALLSUBDIRS for distclean.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -377,7 +386,7 @@ MINIMAL=Curve2D Silo VTK
 THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS_C@ @ITAPS_S@ @H5PART@ @CCMIO@
 
 SUBDIRS=@DB_BUILD_DIRS@
-ALLSUBDIRS=$(REQUIRED) $(EXODUS) $(HDF4) $(HDF5) $(MILI) $(PDB) $(BOXLIB2D) $(BOXLIB3D) $(VISUS) $(NETCDF) $(CGNS) $(GDAL) $(CFITSIO) $(ITAPS_C) $(ITAPS_S) $(H5PART) $(CCMIO) $(SAMPLES) $(OPTIONAL)
+ALLSUBDIRS=$(REQUIRED) $(THIRDPARTY_DEPENDENT) $(SAMPLES) $(OPTIONAL)
 
 message:
 	@echo
@@ -403,8 +412,8 @@ clean:
 	-$(RM) $(CLEAN_FILES)
 
 distclean:
-	if test -n "$(SUBDIRS)"; then \
-		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
+	if test -n "$(ALLSUBDIRS)"; then \
+		rev=""; for dir in $(ALLSUBDIRS); do rev="$$dir $$rev"; done; \
 		for dir in $$rev; do (cd $$dir && test ! -f Makefile || $(MAKE) $@); done \
 	fi
 	-$(RM) $(DISTCLEAN_FILES) *~ core

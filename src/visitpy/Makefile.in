@@ -56,6 +56,8 @@
 #    endorsement purposes.
 #
 # Modifications:
+#    Jeremy Meredith, Thu Sep  6 17:03:24 EDT 2007
+#    Added an ALLSUBDIRS variable to help distclean.
 #
 ##############################################################################
 
@@ -69,6 +71,8 @@ PY_BUILD_VISITMODULE=@PY_BUILD_VISITMODULE@
 
 # subdirectory `visitpy' must be first.
 SUBDIRS=visitpy cli $(PY_BUILD_VISITMODULE)
+
+ALLSUBDIRS=$(SUBDIRS) visitmodule
 
 message:
 	@echo

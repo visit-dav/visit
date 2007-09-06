@@ -42,8 +42,14 @@ clean:
 ##   for all directories.  We just want the latter, so I copied the
 ##   non-subdir referencing stuff from the clean target to distclean.
 ##
+##   Jeremy Meredith, Thu Sep  6 17:04:36 EDT 2007
+##   Try ALLSUBDIRS for distclean before resorting to SUBDIRS.
+##
 distclean:
-	if test -n "$(SUBDIRS)"; then \
+	if test -n "$(ALLSUBDIRS)"; then \
+		rev=""; for dir in $(ALLSUBDIRS); do rev="$$dir $$rev"; done; \
+		for dir in $$rev; do (cd $$dir && $(MAKE) $@); done \
+	elif test -n "$(SUBDIRS)"; then \
 		rev=""; for dir in $(SUBDIRS); do rev="$$dir $$rev"; done; \
 		for dir in $$rev; do (cd $$dir && $(MAKE) $@); done \
 	fi

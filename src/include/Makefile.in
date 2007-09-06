@@ -67,6 +67,9 @@
 #   generate dependencies.  That's now reserved for distclean.
 #   In this case, it means removing the symlinks only in 'distclean'.
 #
+#   Jeremy Meredith, Thu Sep  6 16:53:41 EDT 2007
+#   Don't forget to remove the Makefile in distclean.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -97,7 +100,7 @@ incqt:
 clean:
 
 distclean:
-	$(RM) python vtk mesa qt
+	$(RM) python vtk mesa qt Makefile
 
 install:
 install_bin:
