@@ -175,6 +175,10 @@ typedef struct
 //    dir in the file. Added args to DetermineFile[name]AndDirectory to
 //    support this.
 //
+//    Cyrus Harrison, Fri Sep  7 15:24:27 PDT 2007
+//    Added FindMultiMeshAdjConnectivity to support the Silo MultiMesh
+//    Adjacency object.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -292,6 +296,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                              int *&, int &, int *&, int &, int *&, bool, bool);
     void                  FindGmapConnectivity(DBfile *, int &, int *&, int *&,
                                      int &, int *&, int &, int *&, bool, bool);
+    void                  FindMultiMeshAdjConnectivity(DBfile *, int &, int *&,
+                                     int *&, int &, int *&, int &, int *&,
+                                     bool, bool);
 
     void                  GetMultivarToMultimeshMap(DBfile *);
 
