@@ -60,6 +60,9 @@
 #    Eric Brugger, Fri Jun 29 09:19:23 PDT 2007
 #    Removed the setting of the DISTRIB variable.
 #
+#    Jeremy Meredith, Fri Sep  7 13:18:56 EDT 2007
+#    Don't remove the boost header files in make clean, just distclean.
+#
 ##############################################################################
 ##
 ## Programs and options...
@@ -76,8 +79,8 @@ LIBS=
 all: message bilib.installed
 
 clean:
-	$(RM) bilib.installed
-	$(RM) -r boost-interval 
+
+DISTCLEAN_FILES=-rf boost-interval bilib.installed
 
 bilib.installed: boost-interval.tar.bz2
 	bunzip2 < boost-interval.tar.bz2 | tar xf -
