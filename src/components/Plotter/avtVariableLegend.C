@@ -84,6 +84,10 @@
 //    Brad Whitlock, Wed Mar 21 11:26:58 PDT 2007
 //    Added labelVisibility and scale.
 //
+//    Mark C. Miller, Fri Sep  7 10:18:38 PDT 2007
+//    Moved call(s) to class methods to *after* all members have been
+//    initialized.
+//
 // ****************************************************************************
 
 avtVariableLegend::avtVariableLegend()
@@ -102,8 +106,6 @@ avtVariableLegend::avtVariableLegend()
     size[1] = 0.26;
     sBar->SetPosition2(size[0], size[1]);
 
-    SetLegendPosition(0.05, 0.72);
-
     barVisibility = 1;
     rangeVisibility = 1;
     titleVisibility = true;
@@ -115,6 +117,8 @@ avtVariableLegend::avtVariableLegend()
     //
     legend = sBar;
     legend->Register(NULL);
+
+    SetLegendPosition(0.05, 0.72);
 }
 
 
