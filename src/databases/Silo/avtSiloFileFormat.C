@@ -3252,6 +3252,9 @@ avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
 //    Mark C. Miller, Tue Nov 22 13:28:31 PST 2005
 //    Added alternative group information
 //
+//    Cyrus Harrison, Fri Sep  7 10:58:11 PDT 2007
+//    Added option for connectivity from the MultiMeshadj object.
+//
 // ****************************************************************************
 
 void
@@ -3331,6 +3334,13 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
                 FindGmapConnectivity(dbfile, ndomains, nneighbors, extents,
                                      lneighbors, neighbors, numGroups,groupIds,
                                      needConnectivityInfo, needGroupInfo);
+            }
+            else if(DBInqVarType(dbfile,"Domain_Decomposition") == DB_MULTIMESHADJ)
+            {
+                FindMultiMeshAdjConnectivity(dbfile, ndomains, nneighbors,
+                                             extents, lneighbors, neighbors,
+                                             numGroups, groupIds,
+                                             needConnectivityInfo, needGroupInfo);
             }
             else
             {
@@ -3556,6 +3566,132 @@ avtSiloFileFormat::FindStandardConnectivity(DBfile *dbfile, int &ndomains,
             }
         }
     }
+}
+
+// ****************************************************************************
+//  Method: avtSiloFileFormat::FindMultiMeshAdjConnectivity
+//
+//  Purpose:
+//      Finds the connectivity using the silo MultiMeshadj object.
+//      Currently only supports structured meshes.
+//      Assumes that we are already in the appropriate 'Decomposition'
+//      when this routine is called, and the name of the MultiMeshAdj object
+//      is "Domain_Decomposition"
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   September 7, 2007
+//
+// ****************************************************************************
+
+void
+avtSiloFileFormat::FindMultiMeshAdjConnectivity(DBfile *dbfile, int &ndomains,
+            int *&nneighbors, int *&extents, int &lneighbors, int *&neighbors,
+            int &numGroups, int *&groupIds, bool needConnectivityInfo,
+            bool needGroupInfo)
+{
+    debug1 << "avtSiloFileFormat: using MultiMeshadj Object" <<endl;
+    // loop indices
+    int i,j;
+
+    // Get the MultiMeshAdjacency object
+    DBmultimeshadj *mmadj_obj = DBGetMultimeshadj(dbfile,
+                                                  "Domain_Decomposition",
+                                                  0,NULL);
+    bool ok = true;
+    // Make sure we only have structured meshes.
+    DBReadVar(dbfile, "NumDomains", &ndomains);
+    for( i =0; i < ndomains && ok ; i++)
+    {
+        if(mmadj_obj->meshtypes[i] != DB_QUADMESH)
+            ok = false;
+    }
+
+    // make sure we have node lists
+    if( mmadj_obj->lnodelists == 0 || mmadj_obj->nodelists == NULL)
+        ok = false;
+
+    if(!ok)
+    {
+        // Clean the  multi mesh adj object and throw an exception
+        DBFreeMultimeshadj(mmadj_obj);
+        EXCEPTION1(InvalidVariableException,
+                "VisIt only supports MultiMeshadj objects with "
+                "structured meshes");
+    }
+
+    if (needConnectivityInfo)
+    {
+        extents = new int[ndomains*6];
+        nneighbors = new int[ndomains];
+        lneighbors = 0;
+
+        memcpy(nneighbors,mmadj_obj->nneighbors,ndomains*sizeof(int));
+
+        // for each neighbor visit expects the following packed info:
+        // neighbor domain id  (from the mmadj neighbors - 1 value )
+        // index of current domain in the neighbor's neighbor list
+        // (from the mmadj back array - 1 value)
+        // orientation relationship (from nodelist - 3 values)
+        // overlap extents (from the nodelist - 6 values)
+        // (total of 11 values)
+
+        // we need to properly pack "neighbors" from the multimesh
+        // adj object neighbors array, back array and the node lists,
+        // and fill "extents" from extents info from the node lists.
+
+        // Note: Silo's MultiMesh Adjacency Object supports unstructured 
+        // and point meshes - but so far we only support structured meshes.
+
+        lneighbors = mmadj_obj->lneighbors * 11;
+        neighbors  = new int[lneighbors];
+
+        int *extents_ptr = extents;
+        int *neighbors_ptr = neighbors;
+
+        int idx = 0;
+        for( i =0; i < ndomains; i++)
+        {
+            // the node list provides the overlap region between
+            // the current domain and each neighbor and an orientation
+            memcpy(extents_ptr, mmadj_obj->nodelists[idx],6*sizeof(int));
+            extents_ptr += 6;
+            for( j =0; j < nneighbors[i]; j++)
+            {
+                neighbors_ptr[0] = mmadj_obj->neighbors[idx];
+                neighbors_ptr[1] = mmadj_obj->back[idx];
+                memcpy(&neighbors_ptr[2],&mmadj_obj->nodelists[idx][12],3*sizeof(int));
+                memcpy(&neighbors_ptr[5],&mmadj_obj->nodelists[idx][6],6*sizeof(int));
+                idx++;
+                neighbors_ptr+=11;
+            }
+        }
+    }
+
+    if (needGroupInfo)
+    {
+         DBReadVar(dbfile, "NumBlocks", &numGroups);
+         if (numGroups > 1)
+         {
+             groupIds = new int[ndomains];
+             DBReadVar(dbfile,"Domains_BlockNums",groupIds);
+         }
+         else if (numGroups == 1)
+         {
+             groupIds = new int[ndomains];
+             for (int i = 0 ; i < ndomains ; i++)
+             {
+                 groupIds[i] = 0;
+             }
+             needGroupInfo = false;
+         }
+         else
+         {
+             needGroupInfo = false;  // What else to do?!?
+         }
+    }
+
+    // Free the  multi mesh adjacnecy object.
+    DBFreeMultimeshadj(mmadj_obj);
 }
 
 
