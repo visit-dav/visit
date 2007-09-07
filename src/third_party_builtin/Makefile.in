@@ -65,6 +65,9 @@
 #   Cyrus Harrison, Tue Jul 24 14:32:07 PDT 2007
 #   Added support for conditional compile of mesa_stub lib
 #
+#   Jeremy Meredith, Fri Sep  7 11:01:36 EDT 2007
+#   Added ALLSUBDIRS so make distclean does a better job.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -72,6 +75,7 @@
 @DIRTARGETS@
 
 SUBDIRS=@BUILD_MESA_STUB@ @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@
+ALLSUBDIRS=mesa_stub bzip2 glew bilib
 
 message:
 	@echo
