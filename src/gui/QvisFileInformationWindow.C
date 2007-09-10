@@ -137,7 +137,17 @@ QvisFileInformationWindow::CreateWindowContents()
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Changed interfaces to GetMetaData and GetSIL
+//
+//   Tom Fogal, Sat Aug 25 11:11:14 PDT 2007
+//   Changed ostrstream to ostringstream
+//
+//   Cyrus Harrison, Mon Sep 10 10:08:31 PDT 2007
+//   Added call to c_str() from ostringstream output to fix std:string
+//   to QString linking error on AIX. 
+//   (Also added modification message for Tom's recent change above)
 // ****************************************************************************
+
+
 
 void
 QvisFileInformationWindow::UpdateWindow(bool doAll)
@@ -158,7 +168,7 @@ QvisFileInformationWindow::UpdateWindow(bool doAll)
                << endl;
             os << titleSeparator << endl;
             md->Print(os);
-            outputText->setText(os.str());
+            outputText->setText(os.str().c_str());
         }
         else if(fileServer->GetOpenFile().Empty())
         {
