@@ -198,6 +198,10 @@
 #       not set, so that one can use .ssh/config for that purpose
 #     - Fix gcc version detection if ./configure line containts "version"
 #     
+#     Hank Childs, Mon Sep 10 12:33:06 PDT 2007
+#     If you are building only an optional third party library, then don't
+#     download Qt, VTK, Mesa, VisIt source, etc.
+#
 # *****************************************************************************
 
 
@@ -302,7 +306,7 @@ export LOG_FILE=${LOG_FILE-"build_visit_log"}
 #
 export DO_VISIT="yes"   # "yes" or "no"
 export ON_VISIT="on"   # "yes" or "no"
-export DO_THIRD_PARTY="yes"
+export DO_REQUIRED_THIRD_PARTY="yes"
 export ON_THIRD_PARTY="on"
 export DO_SVN="no"
 export ON_SVN="off"
@@ -572,13 +576,44 @@ function info_box
 }
 
 # *************************************************************************** #
-#                         Function 1, check_files                             #
+#                         Function 1.0, check_files                           #
 # --------------------------------------------------------------------------- #
 # This function will check to make sure that all of the necessary files       #
 # actually exist.                                                             #
 # *************************************************************************** #
 
 function check_files
+{
+    if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
+       check_required_3rdparty
+       if [[ $? != 0 ]]; then
+           return 1
+       fi
+    fi
+
+    if [[ "$DO_VISIT" == "yes" ]] ;  then
+       check_visit_source_code
+       if [[ $? != 0 ]]; then
+           return 1
+       fi
+    fi
+
+    check_optional_3rdparty
+    if [[ $? != 0 ]]; then
+        return 1
+    fi
+    return 0
+}
+
+
+# *************************************************************************** #
+#                    Function 1.1, check_required_3rdparty                    #
+# --------------------------------------------------------------------------- #
+# This function will check to make sure that all of the necessary files       #
+# for the required third party libraries actually exist.                      #
+# *************************************************************************** #
+
+function check_required_3rdparty
 {
     rv=0
 
@@ -704,59 +739,64 @@ function check_files
             return 1
         fi
     fi
+}
 
-    #
-    # VisIt source code
-    #
-    if [[ "$DO_VISIT" == "yes" ]] ; then
-# Check-out the latest svn sources, before building VisIt
-        if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-            if [[ -d src ]] ; then
-               echo "Found VisIt SVN src directory, using that . . ."
-            else
-               # Print a dialog screen
-               if [[ "$GRAPHICAL" == "yes" ]] ; then
-                   $DLG --backtitle "$DLG_BACKTITLE" --infobox \
-"SVN check-out of VisIt . . ." $DLG_HEIGHT $DLG_WIDTH
-               else
-                   echo "SVN check-out of VisIt . . ." 
-               fi
-               svn co --quiet --non-interactive $SVN_ROOT_PATH/trunk/src
-               if [[ $? != 0 ]] ; then
-                   echo "Unable to build VisIt.  SVN download failed."
-                   return 1
-               fi
-            fi
-# Build using (the assumed) existing VisIt svn "src" directory
-        elif [[ -d src ]] ; then
-               echo "Found VisIt SVN src directory found, using it."
-# Build using a VisIt source tarball
+# *************************************************************************** #
+#                   Function 1.2, check_visit_source_code                     #
+# --------------------------------------------------------------------------- #
+# This function will check to make sure that the VisIt source code            #
+# actually exists.                                                            #
+# *************************************************************************** #
+
+function check_visit_source_code
+{
+    # Check-out the latest svn sources, before building VisIt
+    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
+        if [[ -d src ]] ; then
+           echo "Found VisIt SVN src directory, using that . . ."
         else
-            if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
-                echo \
+           # Print a dialog screen
+           if [[ "$GRAPHICAL" == "yes" ]] ; then
+               $DLG --backtitle "$DLG_BACKTITLE" --infobox \
+"SVN check-out of VisIt . . ." $DLG_HEIGHT $DLG_WIDTH
+           else
+               echo "SVN check-out of VisIt . . ." 
+           fi
+           svn co --quiet --non-interactive $SVN_ROOT_PATH/trunk/src
+           if [[ $? != 0 ]] ; then
+               echo "Unable to build VisIt.  SVN download failed."
+               return 1
+           fi
+        fi
+
+    # Build using (the assumed) existing VisIt svn "src" directory
+    elif [[ -d src ]] ; then
+           echo "Found VisIt SVN src directory found, using it."
+
+    # Build using a VisIt source tarball
+    else
+        if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
+            echo \
 "Got VisIt. Lets look for 3rd party libraries."
-            else
-                download_file "${VISIT_VERSION}" "$VISIT_FILE"
-                if [[ $? == 0 ]] ; then
-                   echo \
+        else
+            download_file "${VISIT_VERSION}" "$VISIT_FILE"
+            if [[ $? == 0 ]] ; then
+               echo \
 "Unable to build VisIt.  Can't find source code: ${VISIT_FILE}."
-                   return 1
-                fi
+               return 1
             fi
         fi
     fi
-
-    check_3rdparty
-    return 0
 }
+
 # *************************************************************************** #
-#                         Function 1.1, check_3rdparty                        #
+#                   Function 1.3, check_optional_3rdparty                     #
 # --------------------------------------------------------------------------- #
-# This function will check to make sure that all of the necessary 3rd party   #
-# source files actually exist.                                                #
+# This function will check to make sure that all of the necessary source      #
+# files for the optional 3rd party libraries actually exist.                  #
 # *************************************************************************** #
 
-function check_3rdparty
+function check_optional_3rdparty
 {
     #
     # Boxlib
@@ -2595,7 +2635,7 @@ function build_hdf5
     #
     # Build HDF5
     #
-    info_box "Building HDF5 . . . (~2 minutes)" 1>&3
+    info_box "Building HDF5 . . . (~5 minutes)" 1>&3
     echo "Building HDF5"
     $MAKE
     if [[ $? != 0 ]] ; then
@@ -5376,7 +5416,7 @@ do
            ON_ABS_PATH="on";;
       j|J) DO_VISIT="no"
            ON_VISIT="off";;
-      k|K) DO_THIRD_PARTY="no"
+      k|K) DO_REQUIRED_THIRD_PARTY="no"
            ON_THIRD_PARTY="off";;
       l|L) DO_GROUP="yes"
            GROUP="$OPTARG"
@@ -5549,6 +5589,9 @@ DO_QT="yes"
 if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" ]] ; then
    DO_QT="no"
 fi
+if [[ "$DO_REQUIRED_THIRD_PARTY" = "no" ]] ; then
+   DO_QT="no"
+fi
 
 if [[ "$DO_QT" == "yes" ]] ; then
    if [[ "$GRAPHICAL" == "yes" ]] ; then
@@ -5626,7 +5669,7 @@ cd "$START_DIR"
 #
 # We are now ready to build.  Start with Mesa.
 #
-if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
    if [[ -d "$VISITDIR/mesa/$MESA_VERSION/$VISITARCH" ]] ; then
       echo "Skipping Mesa build.  Mesa is already installed."
    else
@@ -5649,7 +5692,7 @@ fi
 # Build Qt
 #
 cd "$START_DIR"
-if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
    if [[ "$DO_QT" == "no" ]]; then
       echo "Skipping Qt build.  Qt is already installed."
    else
@@ -5671,7 +5714,7 @@ fi
 # Build VTK
 #
 cd "$START_DIR"
-if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
    if [[ -d "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping VTK build.  VTK is already installed."
    else
@@ -5693,7 +5736,7 @@ fi
 # Build Python
 #
 cd "$START_DIR"
-if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
    if [[ -d "$VISITDIR/python/${PYTHON_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping Python build.  Python is already installed."
    else
@@ -5881,7 +5924,7 @@ fi
 # Build Silo
 #
 cd "$START_DIR"
-if [[ "$DO_THIRD_PARTY" == "yes" ]] ; then
+if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
    if [[ -d "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping Silo build.  Silo is already installed."
    else
