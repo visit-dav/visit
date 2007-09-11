@@ -105,6 +105,7 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     bool                 bHasVelocity;
     bool                 bHasPressure;
     bool                 bHasTemperature;
+    int                  iHeaderSize;
 
     // This info is distributed through all the dumps, and only
     // computed on demand
