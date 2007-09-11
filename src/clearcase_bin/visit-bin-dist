@@ -305,6 +305,10 @@
 #
 #    Mark C. Miller, Mon Aug 20 14:42:56 PDT 2007
 #    Added visitdiff.py script.
+#
+#    Thomas R. Treadway, Tue Sep 11 10:33:03 PDT 2007
+#    Modified the visitmodule naming for the Mac
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -926,6 +930,18 @@ endif
 cp `ls $VisItDir/lib/*.$SHLIB_SOEXT | grep -v libvtk | grep -v libqt | grep -v libqui | grep -v libpython | grep -v libMesaGL | grep -v libOSMesa` $libdir
 cp $VisItDir/lib/libvtkqt.$SHLIB_SOEXT $libdir
 cp $VisItDir/lib/libqtviswindow.$SHLIB_SOEXT $libdir
+if("$os" == "darwin") then
+# include the python libraries, visit.so and visitmodule.so
+   if (-e $VisItDir/lib/visit.so) then
+      cp $VisItDir/lib/visit.so $libdir
+   endif
+   if (-e $VisItDir/lib/visitmodule.so) then
+      cp $VisItDir/lib/visitmodule.so $libdir
+   endif
+# include the non-shared
+   cp `ls $VisItDir/lib/*.a` $libdir
+endif
+
 
 #
 # Copy the Qt libraries to the distribution.
@@ -1045,19 +1061,6 @@ if ("$VTKLibs" == "TRUE") then
            cp $VisItDir/lib/$vtklib.dylib $libdir/$vtklib.dylib
        endif
     end
-endif
-
-#
-# If we're on MacOS X, copy some libraries that are statically linked on
-# other platforms but not on MacOS X
-#
-if("$os" == "darwin") then
-    cp $VisItDir/lib/libmili.$SHLIB_SOEXT $libdir
-# not needed in mili build
-    if(-e $VisItDir/lib/libgahl.$SHLIB_SOEXT) then
-      cp $VisItDir/lib/libgahl.$SHLIB_SOEXT $libdir
-    endif
-    cp $VisItDir/lib/libhdf5.$SHLIB_SOEXT $libdir
 endif
 
 #
