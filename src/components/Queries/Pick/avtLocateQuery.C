@@ -237,6 +237,9 @@ avtLocateQuery::GetPickAtts()
 //    Kathleen Bonnell, Mon Jun 27 15:46:29 PDT 2005
 //    Made method return int, removed ijk from arguments.  Test for ghosts.
 //
+//    Hank Childs, Tue Sep 11 13:11:17 PDT 2007
+//    Code around VTK bug with ComputeCellId.
+//
 // ****************************************************************************
 
 int                            
@@ -285,7 +288,18 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
     }
     if (success)
     {
-        cellId = rgrid->ComputeCellId(ijk);
+        // vtkRectilinearGrid::ComputeCellId is buggy for dimensions
+        // of type 1xYxZ or Xx1xZ.  
+        int dims[3];
+        rgrid->GetDimensions(dims);
+        if (dims[0] == 1 && dims[1] == 1)
+            cellId = ijk[2];
+        else if (dims[0] == 1)
+            cellId = ijk[2]*(dims[1]-1) + ijk[1];
+        else if (dims[1] == 1)
+            cellId = ijk[2]*(dims[0]-1) + ijk[0];
+        else
+            cellId = rgrid->ComputeCellId(ijk);
         vtkDataArray *ghosts = rgrid->GetCellData()->GetArray("avtGhostZones");
         if (ghosts && ghosts->GetTuple1(cellId) > 0)
         {
