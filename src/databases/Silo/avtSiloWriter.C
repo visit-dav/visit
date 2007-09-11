@@ -752,6 +752,9 @@ avtSiloWriter::CloseFile(void)
 //    Cyrus Harrison, Fri Aug  3 20:46:47 PDT 2007
 //    Re-order nodes for tets.
 //
+//    Cyrus Harrison, Tue Sep 11 10:16:11 PDT 2007
+//    Fixed node order for wedges.
+//
 // ****************************************************************************
 
 void
@@ -843,11 +846,11 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
         if (dim == 3 && (cell->GetNumberOfPoints() == 6))
         {
             int startOfZone = zonelist.size() - 6;
-            int tmp = zonelist[startOfZone];
-            zonelist[startOfZone]   = zonelist[startOfZone+5];
-            zonelist[startOfZone+5] = zonelist[startOfZone+1];
-            zonelist[startOfZone+1] = zonelist[startOfZone+2];
-            zonelist[startOfZone+2] = tmp;
+            int tmp = zonelist[startOfZone+5];
+            zonelist[startOfZone+5] = zonelist[startOfZone+2];
+            zonelist[startOfZone+2] = zonelist[startOfZone];
+            zonelist[startOfZone]   = zonelist[startOfZone+4];
+            zonelist[startOfZone+4] = tmp;
         }
         if (dim == 3 && (cell->GetNumberOfPoints() == 5))
         {
