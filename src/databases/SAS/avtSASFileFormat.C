@@ -74,6 +74,7 @@ using namespace std;
 #define WRITE   ::_write
 
 #else
+#include <unistd.h>
 
 #define O_BINARY 0
 #define OPEN  ::open
