@@ -735,6 +735,10 @@ avtSliceFilter::SetUpProjection(void)
 //    Mark C. Miller, Tue Mar 27 08:39:07 PDT 2007
 //    Added support for nodeOrigin offsets in node numbers
 //
+//    Hank Childs, Wed Sep 12 09:13:20 PDT 2007
+//    Choose origin more carefully since the project code now depends more
+//    heavily on it.
+//
 // ****************************************************************************
 
 void
@@ -916,7 +920,26 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           break;
       }
     }
+
+    // If we are doing a projection to 2D, then we want the units to make
+    // sense.  The project code will project the origin of the plane to
+    // be at (0,0).  If the origin of the plane is (X0,Y0,Z0), and we are 
+    // slicing by Y=Y0, then the project code would place X0 and X=0 and
+    // Z0 at Y=0.  This is confusing.  Instead, we would like X0 to be at
+    // X=X0 and Z0 to be at Y=Z0.  We can do this by adjusting the origin.
+    // If we have an axis-aligned slice, then we can set some components of
+    // the origin to 0 and it will project like the user expects.
+    if (atts.GetOriginType() != SliceAttributes::Point)
+    {
+        if (nx == 0.)
+            ox = 0.;
+        if (ny == 0.)
+            oy = 0.;
+        if (nz == 0.)
+            oz = 0.;
+    }
 }
+
 
 // ****************************************************************************
 //  Method: avtSliceFilter::ExecuteData
@@ -1172,6 +1195,9 @@ avtSliceFilter::OutputCanBeRectilinear(vtkRectilinearGrid *rg)
 //    Gunther H. Weber, Wed May 23 17:41:28 PDT 2007
 //    Added Hank's bug fix for copying field data.
 //
+//    Hank Childs, Wed Sep 12 09:33:50 PDT 2007
+//    Change project behavior to be consistent with Jeremy's changes.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -1216,6 +1242,35 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
     vtkPointData *newPD = output->GetPointData();
     vtkPointData *oldPD = rg->GetPointData();
 
+    vtkDataArray *oldX = rg->GetXCoordinates();
+    vtkDataArray *oldY = rg->GetYCoordinates();
+    vtkDataArray *oldZ = rg->GetZCoordinates();
+    vtkDataArray *transX = oldX;
+    vtkDataArray *transY = oldY;
+    vtkDataArray *transZ = oldZ;
+    if (atts.GetOriginType() == SliceAttributes::Point)
+    {
+        int ntups = 0;
+
+        transX = vtkDataArray::CreateDataArray(oldX->GetDataType());
+        ntups = oldX->GetNumberOfTuples();
+        transX->SetNumberOfTuples(ntups);
+        for (j = 0 ; j < ntups ; j++)
+            transX->SetTuple1(j, oldX->GetTuple1(j)-cachedOrigin[0]);
+
+        transY = vtkDataArray::CreateDataArray(oldY->GetDataType());
+        ntups = oldY->GetNumberOfTuples();
+        transY->SetNumberOfTuples(ntups);
+        for (j = 0 ; j < ntups ; j++)
+            transY->SetTuple1(j, oldY->GetTuple1(j)-cachedOrigin[1]);
+
+        transZ = vtkDataArray::CreateDataArray(oldZ->GetDataType());
+        ntups = oldZ->GetNumberOfTuples();
+        transZ->SetNumberOfTuples(ntups);
+        for (j = 0 ; j < ntups ; j++)
+            transZ->SetTuple1(j, oldZ->GetTuple1(j)-cachedOrigin[2]);
+    }
+
     if (normal[0] != 0.)
     {
         //
@@ -1254,16 +1309,16 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
             if (up[0] == 0. && up[1] == 1. && up[2] == 0.)
             {
                 yVariesFastest = false;
-                output->SetXCoordinates(rg->GetZCoordinates());
-                output->SetYCoordinates(rg->GetYCoordinates());
+                output->SetXCoordinates(transZ);
+                output->SetYCoordinates(transY);
                 new_dims[0] = pt_dims[2];
                 new_dims[1] = pt_dims[1];
             }
             else if (up[0] == 0. && up[1] == 0. && up[2] == 1.)
             {
                 yVariesFastest = true;
-                output->SetXCoordinates(rg->GetYCoordinates());
-                output->SetYCoordinates(rg->GetZCoordinates());
+                output->SetXCoordinates(transY);
+                output->SetYCoordinates(transZ);
                 new_dims[0] = pt_dims[1];
                 new_dims[1] = pt_dims[2];
             }
@@ -1274,8 +1329,8 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         {
             yVariesFastest = true;
             output->SetXCoordinates(flat_dim);
-            output->SetYCoordinates(rg->GetYCoordinates());
-            output->SetZCoordinates(rg->GetZCoordinates());
+            output->SetYCoordinates(oldY);
+            output->SetZCoordinates(oldZ);
             new_dims[0] = 1;
             new_dims[1] = pt_dims[1];
             new_dims[2] = pt_dims[2];
@@ -1357,16 +1412,16 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
             if (up[0] == 1. && up[1] == 0. && up[2] == 0.)
             {
                 xVariesFastest = false;
-                output->SetXCoordinates(rg->GetZCoordinates());
-                output->SetYCoordinates(rg->GetXCoordinates());
+                output->SetXCoordinates(transZ);
+                output->SetYCoordinates(transX);
                 new_dims[0] = pt_dims[2];
                 new_dims[1] = pt_dims[0];
             }
             else if (up[0] == 0. && up[1] == 0. && up[2] == 1.)
             {
                 xVariesFastest = true;
-                output->SetXCoordinates(rg->GetXCoordinates());
-                output->SetYCoordinates(rg->GetZCoordinates());
+                output->SetXCoordinates(transX);
+                output->SetYCoordinates(transZ);
                 new_dims[0] = pt_dims[0];
                 new_dims[1] = pt_dims[2];
             }
@@ -1376,9 +1431,9 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         else
         {
             xVariesFastest = true;
-            output->SetXCoordinates(rg->GetXCoordinates());
+            output->SetXCoordinates(oldX);
             output->SetYCoordinates(flat_dim);
-            output->SetZCoordinates(rg->GetZCoordinates());
+            output->SetZCoordinates(oldZ);
             new_dims[0] = pt_dims[0];
             new_dims[1] = 1;
             new_dims[2] = pt_dims[2];
@@ -1460,16 +1515,16 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
             if (up[0] == 1. && up[1] == 0. && up[2] == 0.)
             {
                 xVariesFastest = false;
-                output->SetXCoordinates(rg->GetYCoordinates());
-                output->SetYCoordinates(rg->GetXCoordinates());
+                output->SetXCoordinates(transY);
+                output->SetYCoordinates(transX);
                 new_dims[0] = pt_dims[1];
                 new_dims[1] = pt_dims[0];
             }
             else if (up[0] == 0. && up[1] == 1. && up[2] == 0.)
             {
                 xVariesFastest = true;
-                output->SetXCoordinates(rg->GetXCoordinates());
-                output->SetYCoordinates(rg->GetYCoordinates());
+                output->SetXCoordinates(transX);
+                output->SetYCoordinates(transY);
                 new_dims[0] = pt_dims[0];
                 new_dims[1] = pt_dims[1];
             }
@@ -1479,8 +1534,8 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
         else
         {
             xVariesFastest = true;
-            output->SetXCoordinates(rg->GetXCoordinates());
-            output->SetYCoordinates(rg->GetYCoordinates());
+            output->SetXCoordinates(oldX);
+            output->SetYCoordinates(oldY);
             output->SetZCoordinates(flat_dim);
             new_dims[0] = pt_dims[0];
             new_dims[1] = pt_dims[1];
@@ -1530,6 +1585,13 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
     delete [] Y;
     delete [] Z;
     flat_dim->Delete();
+
+    if (atts.GetOriginType() == SliceAttributes::Point)
+    {
+        transX->Delete();
+        transY->Delete();
+        transZ->Delete();
+    }
 
     output->GetFieldData()->ShallowCopy(rg->GetFieldData());
     return output;
