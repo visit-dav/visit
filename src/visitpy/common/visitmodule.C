@@ -4296,19 +4296,29 @@ visit_RestoreSessionWithDifferentSources(PyObject *self, PyObject *args)
 //
 // Modifications:
 //   
+//    Cyrus Harrison, Wed Sep 12 15:22:13 PDT 2007
+//    Automatically append ".session" to the session file name if not 
+//    included by the user. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
 visit_SaveSession(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
-
+   
     char *filename;    
     if(!PyArg_ParseTuple(args, "s", &filename))
         return NULL;
 
+    std::string session_file(filename);
+    // check for ".session" extension
+    int rpos = session_file.rfind(".session");
+    if( rpos  == std::string::npos || rpos != session_file.size() - 8)
+        session_file += ".session";
+        
     MUTEX_LOCK();
-        GetViewerMethods()->ExportEntireState(filename);
+        GetViewerMethods()->ExportEntireState(session_file.c_str());
     MUTEX_UNLOCK();
 
     // Return the success value.
