@@ -81,7 +81,11 @@ using namespace std;
 #define CLOSE ::close
 #define READ  ::read
 #define WRITE ::write
+#ifdef __APPLE__
+#define LSEEK64 ::lseek
+#else
 #define LSEEK64 ::lseek64
+#endif
 
 #endif
 
