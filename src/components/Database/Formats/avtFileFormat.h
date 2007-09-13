@@ -182,6 +182,9 @@ class DATABASE_API avtFileFormat
     static const int      INVALID_CYCLE;
     static const double   INVALID_TIME;
 
+    static int        GuessCycle(const char *fname, const char *re = 0);
+    static double     GuessTime(const char *fname, const char *re = 0);
+
   protected:
     avtVariableCache     *cache;
     avtDatabaseMetaData  *metadata;
@@ -257,11 +260,8 @@ class DATABASE_API avtFileFormat
     virtual void  CloseFile(int);
     void          CloseFileDescriptor(int);
 
-    int        GuessCycle(const char *fname, const char *re = 0) const;
-    double     GuessTime(const char *fname, const char *re = 0) const;
-
   private:
-    double     GuessCycleOrTime(const char *, const char *re = 0) const;
+    static double     GuessCycleOrTime(const char *, const char *re = 0);
 
 };
 

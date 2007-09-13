@@ -416,12 +416,12 @@ StringHelpers::FindRE(const char *strToSearch, const char *re)
 //
 //  Purpose: Extract the (sub)string matched by the regular expression. 
 //
-//  The format of RE string passed here is an opening '<' followed by the actual
-//  regular expression string followed by a closing '>', optionally followed
-//  by a ' ' (space) and a backslashed reference to the specific substring
-//  containing the cycle digits. For example, to extract the cycle digits
-//  from strings looking like 'run_23_0010_yana.silo' where '0010' is the cycle
-//  digits, the string to pass here would look like...
+//  The format of RE string passed here is an opening '<' followed by the
+//  actual regular expression string followed by a closing '>', optionally
+//  followed by a ' ' (space) and a backslashed substring reference. For
+//  example, to extract the cycle digits from strings looking like
+//  'run_23_0010_yana.silo' where '0010' is the cycle digits, the string to
+//   pass here would look like...
 //
 //                                               V--substring reference
 //                      "<.*_([0-9]{4})_.*\\..*> \1"

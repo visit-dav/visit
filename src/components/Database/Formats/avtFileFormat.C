@@ -656,7 +656,7 @@ avtFileFormat::AddSpeciesToMetaData(avtDatabaseMetaData *md, string name,
 // ****************************************************************************
 
 int
-avtFileFormat::GuessCycle(const char *fname, const char *re) const
+avtFileFormat::GuessCycle(const char *fname, const char *re)
 {
     string reToUse = avtDatabaseMetaData::GetCycleFromFilenameRegex();
     if (reToUse == "")
@@ -690,7 +690,7 @@ avtFileFormat::GuessCycle(const char *fname, const char *re) const
 //    Adjusted regular expression to take last group of digits.
 // ****************************************************************************
 double
-avtFileFormat::GuessTime(const char *fname, const char *re) const
+avtFileFormat::GuessTime(const char *fname, const char *re)
 {
     string reToUse = avtDatabaseMetaData::GetCycleFromFilenameRegex();
     if (reToUse == "")
@@ -735,7 +735,7 @@ avtFileFormat::GuessTime(const char *fname, const char *re) const
 // ****************************************************************************
 
 double
-avtFileFormat::GuessCycleOrTime(const char *fname, const char *re) const
+avtFileFormat::GuessCycleOrTime(const char *fname, const char *re)
 {
     double ret = INVALID_TIME;
 
