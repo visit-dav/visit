@@ -1402,8 +1402,6 @@ for mode in modes:
    if mode == "silo":
       silo = 1
 
-print "modeStr=\"%s\""%modeStr
-
 # find tif to rgb image convert utility
 if os.environ.has_key('VISIT_TEST_CONVERT'):
     imgConverter = os.environ['VISIT_TEST_CONVERT']
