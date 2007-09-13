@@ -3832,10 +3832,16 @@ avtSAMRAIFileFormat::ReadSpeciesInfo(hid_t &h5_file)
 //     Brad Whitlock, Fri Mar 5 10:19:32 PDT 2004
 //     Changed for Windows compiler.
 //
+//     Mark C. Miller, Thu Sep 13 11:33:09 PDT 2007
+//     Skip this work if we're on the mdserver
+//
 // ****************************************************************************
 void 
 avtSAMRAIFileFormat::BuildDomainAuxiliaryInfo()
 {
+#ifdef MDSERVER
+    return;
+#endif
 
     // first, look to see if we don't already have it cached
     void_ref_ptr vrTmp = cache->GetVoidRef("any_mesh",

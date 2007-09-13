@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+  <Plugin name="Claw" type="database" label="Claw" version="1.0" enabled="true" mdspecificcode="true" engspecificcode="false" onlyengine="false" noengine="false" dbtype="MTMD" haswriter="false" hasoptions="false">
+    <Extensions>
+      claw
+    </Extensions>
+    <Attribute name="" purpose="" persistent="false" keyframe="false" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>

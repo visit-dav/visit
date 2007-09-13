@@ -336,6 +336,7 @@ REQUIRED=\
  AUXFile \
  BOV \
  BOW \
+ Claw \
  CMAT \
  CTRL \
  Curve2D \
