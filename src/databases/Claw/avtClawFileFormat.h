@@ -95,7 +95,7 @@ class avtClawFileFormat : public avtMTMDFileFormat
     void                   BuildDomainAuxiliaryInfo(int timeState);
 
     virtual int            GetNTimesteps(void);
-    //void                   ActivateTimestep(int ts);
+    virtual double         GetTime(int ts);
 
     virtual const char    *GetType(void)   { return "Claw"; };
     virtual void           FreeUpResources(void); 
