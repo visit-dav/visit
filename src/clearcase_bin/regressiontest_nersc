@@ -12,6 +12,9 @@
 #
 #    Mark C. Miller, Thu Aug 30 13:32:54 PDT 2007
 #    Added testing of 'make distclean' target
+#
+#    Mark C. Miller, Thu Sep 13 10:20:08 PDT 2007
+#    Added filtering of distclean for known special cases
 #   
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
@@ -267,9 +270,9 @@ checkAndHandleError $? fatal "FIRST configure failed" config_log.txt
 
 # test 'make clean' acts as expected
 cd data
-gmake clean 1> /dev/null 2>&1
+gmake clean 1> ./make_clean.out 2>&1
 cd ..
-gmake clean 1> /dev/null 2>&1
+gmake clean 1>> ./make_clean.out 2>&1
 rm -f uncleaned_files_log.txt
 find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*_moc.[Ch]' -o -name 'moc_*.[Ch]' 1> uncleaned_files_log.txt
 uncleanedFilesCount=`wc -l uncleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
@@ -279,18 +282,24 @@ if test $uncleanedFilesCount -ne 0; then
 fi
 
 # test 'make distclean' acts as expected
-gmake distclean 1> /dev/null 2>&1
+cd data
+gmake distclean 1> ./make_distclean.out 2>&1
+cd ..
+make distclean 1>> ./make_distclean.out 2>&1
 rm -f undistcleaned_files_log.txt
 find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.pardepend' 1> undistcleaned_files_log.txt
 # The 2nd find, below, finds only those Makefiles for which there is also
 # a coorsponding Makefile.in. 'make distclean' should have removed these
-find . -name .svn -prune -false -o \( -name 'Makefile' -exec test -e \{\}.in \; \) -print 1>> undistcleaned_files_log.txt
+# It also includes some special grep filtering for special cases of some
+# Makefiles that aren't easy for distclean to clean
+find . -name .svn -prune -false -o \( -name 'Makefile' -exec test -e \{\}.in \; \) -print | grep -v ./components/Preprocessor/Makefile\\\|./tools/windowmaker/Makefile\\\|./tools/prep/Makefile\\\|./sim/examples/Makefile\\\|./common/siloobj/Makefile\\\|./common/siloobj_vtk_db/Makefile\\\|./cqscore/Makefile 1>> undistcleaned_files_log.txt
 undistcleanedFilesCount=`wc -l undistcleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
 checkAndHandleError $undistcleanedFilesCount warning "make distclean left files; removing manually" undistcleaned_files_log.txt
 if test $undistcleanedFilesCount -ne 0; then
-    find . -name .svn -prune -false -o -name '*.d' -o -name '.depend' -o -name '.pardepend' -exec rm {} \;
+    cat undistcleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2 | xargs -n 1 rm -f
 fi
 
+# ok, now really go ahead and configure and build VisIt
 env CXXFLAGS="-g" MAKE=gmake ./configure --enable-parallel 1>> config_log.txt 2>&1
 checkAndHandleError $? fatal "SECOND configure failed" config_log.txt 
 gmake -j 4 1>> make_log.txt 2>&1
