@@ -202,6 +202,10 @@
 #     If you are building only an optional third party library, then don't
 #     download Qt, VTK, Mesa, VisIt source, etc.
 #
+#     Hank Childs, Thu Sep 13 06:15:07 PDT 2007
+#     If you are building Exodus, then build NetCDF too.  Otherwise the build
+#     will fail.  Also, install Exodus using relative paths for its symlinks.
+#
 # *****************************************************************************
 
 
@@ -4245,10 +4249,10 @@ function build_exodus
         cp libexoIIv2c.${SO_EXT} \
            "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
         cp ../include/*.h "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        ln -s  "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
+        ln -s  "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
            "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h"
         ln -s  \
-        "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}" \
+        "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}" \
         "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}"
     else
         ar -cr libexoIIv2c.a *.o
@@ -4261,10 +4265,10 @@ function build_exodus
         "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
         cp ../include/exodusII_ext.h \
         "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        ln -s  "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
+        ln -s  "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
         "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h"
         ln -s  \
-        "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.a" \
+        "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.a" \
         "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib/libnetcdf.a"
     fi
 
@@ -5544,6 +5548,11 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
 fi
 if [[ -e "tmp$$" ]] ; then
     rm tmp$$
+fi
+
+if [[ "$DO_EXODUS" = "yes" && "$DO_NETCDF" = "no" ]] ; then
+    DO_NETCDF="yes"
+    echo "NetCDF required to build Exodus.  Adding NetCDF..."
 fi
 
 if [[ $VISITARCH == "" ]] ; then
