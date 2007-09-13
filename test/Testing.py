@@ -1386,7 +1386,8 @@ for mode in modes:
    if modeStr == "":
       modeStr = mode
    else:
-      modeStr = modeStr + "_" + mode
+      if mode != "":
+          modeStr = modeStr + "_" + mode
    if mode == "scalable":
       scalable = 1
    if mode == "parallel":
@@ -1400,6 +1401,8 @@ for mode in modes:
       optimized = 1
    if mode == "silo":
       silo = 1
+
+print "modeStr=\"%s\""%modeStr
 
 # find tif to rgb image convert utility
 if os.environ.has_key('VISIT_TEST_CONVERT'):
