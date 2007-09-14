@@ -113,6 +113,11 @@
 //    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
 //    Eliminated numTimings. Fixed bug where DumpTimings would ClearValues
 //    but not also reset numTimings.
+// 
+//    Hank Childs, Fri Sep 14 12:58:59 PDT 2007
+//    Overhauled the handling of the "values" array, since it has been
+//    mis-used for over a year and been giving incorrect results.
+//
 // ****************************************************************************
 
 class MISC_API TimingsManager
@@ -153,9 +158,11 @@ class MISC_API TimingsManager
 
     std::vector<double>        times;
     std::vector<std::string>   summaries;
+    std::vector<bool>          usedEntry;
 
     static double              DiffTime(const struct TIMEINFO &startTime,
                                         const struct TIMEINFO &endTime);
+    int                        FindFirstUnusedEntry(void);
 
     void                       StopAllUnstoppedTimers();
 
