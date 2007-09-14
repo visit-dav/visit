@@ -7,7 +7,7 @@
 #              plots     - pc
 #
 #  Defect ID:  '3939 + '4008 + '4022 + '4162 + '4417 + '4435 + '5790 + '5672
-#            + '5763 + '5767 + '5874 + '7473
+#            + '5763 + '5767 + '5874 + '7465 + '7473
 #
 #  Programmer: Hank Childs
 #  Date:       November 18, 2002
@@ -42,6 +42,9 @@
 #
 #    Hank Childs, Fri Aug 25 17:34:13 PDT 2006
 #    Add test for resrad when arguments are missing ['7473].
+#
+#    Hank Childs, Fri Sep 14 11:52:39 PDT 2007
+#    Add test for identify filters and meshes ['7465].
 #
 # ----------------------------------------------------------------------------
 
@@ -369,5 +372,11 @@ AddPlot("Pseudocolor", "resrad2")
 DrawPlots()
 txt = GetLastError()
 TestText("resrad_error", txt)
+
+DeleteAllPlots()
+DefineScalarExpression("ident_mesh", "quadmesh2d")
+AddPlot("Pseudocolor", "ident_mesh")
+DrawPlots()
+Test("ident_mesh")
 
 Exit()
