@@ -4232,12 +4232,6 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     DetermineFileAndDirectory(varLocation, domain_file, varDirname, directory_var,
         &allocated_directory_var);
 
-    cerr << "v = " << v << endl;
-    cerr << "var = " << var << endl;
-    cerr << "varLocation = " << varLocation << endl;
-    cerr << "varDirname = " << varDirname << endl;
-    cerr << "directory_var = " << directory_var << endl;
-
     //
     // We only need to worry about quadvars, ucdvars, and pointvars, since we
     // have reduced the multivar case to one of those.
