@@ -54,6 +54,7 @@
 #endif
 
 #include <DebugStream.h>
+#include <ImproperUseException.h>
 
 
 #if defined(_WIN32)
@@ -396,6 +397,32 @@ TimingsManager::OutputAllTimings(void)
 
 
 // ****************************************************************************
+//  Method: TimingsManager::FindFirstUnusedEntry
+//
+//  Purpose:
+//      Looks through the "usedEntry" array to find the first entry that can
+//      be used.
+//
+//  Returns:   the index of the first unused entry, <0 if a new entry has to
+//             be created.
+//
+//  Programmer: Hank Childs
+//  Creation:   September 14, 2007
+//
+// ****************************************************************************
+
+int
+TimingsManager::FindFirstUnusedEntry(void)
+{
+    for (unsigned int i = 0 ; i < usedEntry.size() ; i++)
+        if (!usedEntry[i])
+            return i;
+
+    return -1;
+}
+
+
+// ****************************************************************************
 //  Method: TimingsManager::StartTimer
 //
 //  Purpose:
@@ -420,6 +447,11 @@ TimingsManager::OutputAllTimings(void)
 //
 //    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
 //    Eliminated numTimings. Made code a little more robust.
+//
+//    Hank Childs, Fri Sep 14 13:01:08 PDT 2007
+//    Change handling of values so that returned values will be valid
+//    indefinitely.
+//
 // ****************************************************************************
 
 int
@@ -428,7 +460,21 @@ TimingsManager::StartTimer(bool forced)
     if (!enabled && !forced)
         return -1;
     numCurrentTimings += 1;
-    return PlatformStartTimer();
+    int rv = PlatformStartTimer();
+    if (rv == usedEntry.size())
+    {
+        usedEntry.push_back(true);
+    }
+    else if (rv > usedEntry.size())
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    else
+    {
+        usedEntry[rv] = true;
+    }
+
+    return rv;
 }
 
 
@@ -464,6 +510,11 @@ TimingsManager::StartTimer(bool forced)
 //    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
 //    Eliminated numTimings. Moved error message to PlatformStopTimer. Made
 //    a little more robust.
+//
+//    Hank Childs, Fri Sep 14 13:01:08 PDT 2007
+//    Change handling of values so that the handles given to calling functions
+//    will be valid indefinitely.
+//
 // ****************************************************************************
 
 double
@@ -473,6 +524,8 @@ TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
 
     if (enabled || forced)
     {
+        if (index >= 0 && index < usedEntry.size())
+            usedEntry[index] = false;
         t = PlatformStopTimer(index);
         times.push_back(t);
         numCurrentTimings -= 1;
@@ -506,6 +559,7 @@ TimingsManager::StopTimer(int index, const std::string &summary, bool forced)
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //    Added test for emtpy filename. Added missing call to close ofile
+//
 // ****************************************************************************
 
 void
@@ -564,6 +618,12 @@ TimingsManager::DumpTimings(void)
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   August 4, 2006
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 14 13:01:08 PDT 2007
+//    Changed to reflect new handling of values.
+//
 // ****************************************************************************
 
 void
@@ -572,8 +632,9 @@ TimingsManager::StopAllUnstoppedTimers()
     //
     // Stop all un-stopped timers
     //
-    for (int i = times.size(); i < visitTimer->GetNValues(); i++)
-        visitTimer->StopTimer(i, "Unknown");
+    for (int i = 0 ; i < visitTimer->GetNValues(); i++)
+        if (usedEntry[i])
+            visitTimer->StopTimer(i, "Unknown");
 }
 
 // ****************************************************************************
@@ -594,6 +655,13 @@ TimingsManager::StopAllUnstoppedTimers()
 //
 //    Mark C. Miller, Thu Aug  3 13:33:20 PDT 2006
 //    Added call to ClearValues()
+//
+//    Hank Childs, Fri Sep 14 12:44:55 PDT 2007
+//    Removed the call to ClearValues.  Handles are returned outside this
+//    module.  Those handles were indices into "values".  Calling ClearValues
+//    made those handles "dangling pointers".  So the timing information
+//    was frequently wrong.
+//
 // ****************************************************************************
 
 void
@@ -618,10 +686,10 @@ TimingsManager::DumpTimings(ostream &out)
     //
     // The next time we dump timings, don't use these values.
     //
-    ClearValues();
     times.clear();
     summaries.clear();
 }
+
 
 // ****************************************************************************
 //  Method: TimingsManager::DiffTime
@@ -697,6 +765,11 @@ TimingsManager::DiffTime(const struct TIMEINFO &startTime,
 //
 //    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
 //    Made it return current length of values array 
+//
+//    Hank Childs, Fri Sep 14 13:01:08 PDT 2007
+//    Change the way the index is obtained, so that it will be valid 
+//    indefinitely.
+//
 // ****************************************************************************
 
 int
@@ -704,9 +777,18 @@ SystemTimingsManager::PlatformStartTimer(void)
 {
     struct TIMEINFO t;
     GetCurrentTimeInfo(t);
-    values.push_back(t);
-    return values.size()-1;
+    int idx = FindFirstUnusedEntry();
+    if (idx >= 0)
+        values[idx] = t;
+    else
+    {
+        values.push_back(t);
+        idx = values.size()-1;
+    }
+
+    return idx;
 }
+
 
 // ****************************************************************************
 //  Method: SystemTimingsManager::PlatformStopTimer
@@ -774,6 +856,11 @@ SystemTimingsManager::PlatformStopTimer(int index)
 //
 //    Mark C. Miller, Tue Aug 15 20:20:58 PDT 2006
 //    Made it return current length of values array 
+//
+//    Hank Childs, Fri Sep 14 13:01:08 PDT 2007
+//    Change the way the index is obtained, so that it will be valid 
+//    indefinitely.
+//
 // ****************************************************************************
 
 int
@@ -783,8 +870,16 @@ MPITimingsManager::PlatformStartTimer(void)
 #ifdef PARALLEL
     t = MPI_Wtime();
 #endif
-    values.push_back(t);
-    return values.size()-1;
+    int idx = FindFirstUnusedEntry();
+    if (idx >= 0)
+        values[idx] = t;
+    else
+    {
+        values.push_back(t);
+        idx = values.size()-1;
+    }
+
+    return idx;
 }
 
 
