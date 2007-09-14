@@ -71,7 +71,7 @@
 @SET_MAKE@
 @VARIABLES@
 
-LIBS=-lvclrpc -lstate -lcomm -lmisc -lutility @LIBS@ @PTHREAD_LIB@
+LIBS=-lvclrpc -lstate -lcomm -lmisc -lutility -lavtexceptions @LIBS@ @PTHREAD_LIB@
 LIBDEP=
 CPPFLAGS=@CPPFLAGS@ @PLATFORM_CPPFLAGS@
 CXXFLAGS=@CXXFLAGS@ -I. -I../../include -I../../include/visit
