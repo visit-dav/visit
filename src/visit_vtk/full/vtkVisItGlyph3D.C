@@ -51,6 +51,7 @@ vtkVisItGlyph3D::vtkVisItGlyph3D()
   this->IndexMode = VTK_INDEXING_OFF;
   this->NumberOfRequiredInputs = 1;
   this->GeneratePointIds = 0;
+  this->TreatVectorsAs2D = 0;
   this->PointIdsName = NULL;
   this->SetPointIdsName("InputPointIds");
   this->InputScalarsSelection = NULL;
@@ -100,6 +101,9 @@ vtkVisItGlyph3D::~vtkVisItGlyph3D()
 //
 //    Kathleen Bonnell, Fri Nov 12 11:50:33 PST 2004
 //    Retrieve VectorsForScaling. 
+//
+//    Hank Childs, Fri Sep 14 09:54:13 PDT 2007
+//    Add support for treating vectors as 2D.
 //
 //*****************************************************************************
 void vtkVisItGlyph3D::Execute()
@@ -442,6 +446,10 @@ void vtkVisItGlyph3D::Execute()
       else 
         {
         inVectors->GetTuple(inPtId, v);
+        }
+      if (this->TreatVectorsAs2D)
+        {
+        v[2] = 0.;
         }
       vMag = vtkMath::Norm(v);
       if ( this->ScaleMode == VTK_SCALE_BY_VECTORCOMPONENTS )

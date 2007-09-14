@@ -211,6 +211,12 @@ public:
   vtkBooleanMacro(GeneratePointIds,int);
 
   // Description:
+  // Enable/disable the 2D treatment of vectors.
+  vtkSetMacro(TreatVectorsAs2D,int);
+  vtkGetMacro(TreatVectorsAs2D,int);
+  vtkBooleanMacro(TreatVectorsAs2D,int);
+
+  // Description:
   // Set/Get the name of the PointIds array if generated. By default the Ids
   // are named "InputPointIds", but this can be changed with this function.
   vtkSetStringMacro(PointIdsName);
@@ -276,6 +282,7 @@ protected:
   int Clamping; // whether to clamp scale factor
   int IndexMode; // what to use to index into glyph table
   int GeneratePointIds; // produce input points ids for each output point
+  int TreatVectorsAs2D; // glyph only the 2D portions of vectors
   char *PointIdsName;
 
   char *InputScalarsSelection;
