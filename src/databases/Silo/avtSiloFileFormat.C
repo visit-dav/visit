@@ -4232,6 +4232,12 @@ avtSiloFileFormat::GetVar(int domain, const char *v)
     DetermineFileAndDirectory(varLocation, domain_file, varDirname, directory_var,
         &allocated_directory_var);
 
+    cerr << "v = " << v << endl;
+    cerr << "var = " << var << endl;
+    cerr << "varLocation = " << varLocation << endl;
+    cerr << "varDirname = " << varDirname << endl;
+    cerr << "directory_var = " << directory_var << endl;
+
     //
     // We only need to worry about quadvars, ucdvars, and pointvars, since we
     // have reduced the multivar case to one of those.
@@ -6820,6 +6826,12 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 //    dir in the file. In this case, the location return had to be constructed
 //    and allocated. So, needed to add bool indicating that.
 //
+//    Mark C. Miller, Thu Sep 13 20:51:56 PDT 2007
+//    Take care not to preprend mdirname if it 'looks' like it already has
+//    it. This logic isn't foolproof. Its a heuristic that should work 'most'
+//    of the time. We have no way of knowing for sure if the string
+//    'foo/foo/bar' is really intended or not.
+//
 // ****************************************************************************
 
 void
@@ -6849,11 +6861,18 @@ avtSiloFileFormat::DetermineFilenameAndDirectory(char *input,
 	}
         else
 	{
-	    char tmp[1024];
-	    sprintf(tmp, "%s/%s", mdirname, input);
-	    location = CXX_strdup(tmp);
-	    if (allocated_location)
-	        *allocated_location = true;
+	    if (!strncmp(mdirname, input, strlen(mdirname)) == 0)
+	    {
+	        char tmp[1024];
+	        sprintf(tmp, "%s/%s", mdirname, input);
+	        location = CXX_strdup(tmp);
+	        if (allocated_location)
+	            *allocated_location = true;
+	    }
+	    else
+	    {
+	        location = input;
+	    }
 	}
     }
     else
