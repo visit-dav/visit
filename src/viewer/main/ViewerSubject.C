@@ -5130,6 +5130,8 @@ ViewerSubject::ResetPlotOptions()
 //  Creation:   Tue May 8 16:54:36 PST 2007
 //
 //  Modifications:
+//    Kathleen Bonnell, Fri Sep 14 16:28:38 PDT 2007
+//    Lineout needs a different path.
 //
 // ****************************************************************************
 
@@ -5141,12 +5143,23 @@ ViewerSubject::AddInitializedOperator()
     //
     int type = GetViewerState()->GetViewerRPC()->GetOperatorType();
 
+    OperatorPluginManager *opMgr = OperatorPluginManager::Instance();
+    bool lineout = (opMgr->GetPluginName(opMgr->GetEnabledID(type))
+                    == "Lineout");
+
     //
     // Perform the rpc.
     //
     ViewerWindowManager *wM=ViewerWindowManager::Instance();
-    bool applyToAll = wM->GetClientAtts()->GetApplyOperator();
-    wM->GetActiveWindow()->GetPlotList()->AddOperator(type, applyToAll, false);
+    if (!lineout)
+    {
+        bool applyToAll = wM->GetClientAtts()->GetApplyOperator();
+        wM->GetActiveWindow()->GetPlotList()->AddOperator(type, applyToAll, false);
+    }
+    else
+    {
+        wM->GetActiveWindow()->Lineout(false);
+    }
 }
 
 // ****************************************************************************
