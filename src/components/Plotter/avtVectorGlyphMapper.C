@@ -196,6 +196,9 @@ avtVectorGlyphMapper::~avtVectorGlyphMapper()
 //    Kathleen Bonnell, Wed Dec 22 16:42:35 PST 2004 
 //    Added code for setting min and max.
 //
+//    Hank Childs, Fri Sep 14 09:56:07 PDT 2007
+//    Tell the glyph filter to treat 2D vectors as 2D.
+//
 // ****************************************************************************
 
 void
@@ -236,6 +239,9 @@ avtVectorGlyphMapper::CustomizeMappers(void)
                     glyphFilter[i]->SetScaleModeToScaleByVector();
                 else
                     glyphFilter[i]->SetScaleModeToDataScalingOff();
+
+                if (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() == 2)
+                    glyphFilter[i]->SetTreatVectorsAs2D(1);
             }
             if (normalsFilter[i] != NULL)
             {
