@@ -97,6 +97,13 @@ avtIdentityFilter::~avtIdentityFilter()
 //  Programmer: Hank Childs
 //  Creation:   December 9, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 14 11:45:55 PDT 2007
+//    Do not assume that the input variable is valid.  If someone makes
+//    the expression "d = quadmesh2d", we will end up here with a NULL
+//    input.
+//
 // ****************************************************************************
  
 void
@@ -107,7 +114,9 @@ avtIdentityFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
     {
         for (int j = 0 ; j < ncomponents ; j++)
         {
-            float val = in->GetComponent(i, j);
+            float val = 0.;
+            if (in != NULL)
+                val = in->GetComponent(i, j);
             out->SetComponent(i, j, val);
         }
     }
