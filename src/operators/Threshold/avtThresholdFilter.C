@@ -402,15 +402,25 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     const stringVector curVariables = atts.GetListedVarNames();
     int curVarCount = curVariables.size();
     int curVarNum;
+    vtkPointData *inPointData = in_ds->GetPointData();
     vtkDataArray *dataArray;
     float *valueArray;
+
+    if (atts.GetDefaultVarIsScalar())
+    {
+	if (inPointData->GetArray(atts.GetDefaultVarName().c_str()) == NULL)
+	{
+            EXCEPTION1(VisItException,
+                "Default scalar variable must be a nodal quantity "
+                "when point mesh output is requested.");
+	}
+    }
 
     std::vector<float *> valueArrays;
 
     for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
     {
-        dataArray =
-            in_ds->GetPointData()->GetArray(curVariables[curVarNum].c_str());
+        dataArray = inPointData->GetArray(curVariables[curVarNum].c_str());
 
         if (dataArray == NULL)
         {
@@ -448,7 +458,6 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
 
     vtkUnstructuredGrid *outputMesh = vtkUnstructuredGrid::New();
     vtkPoints *outMeshPoints = vtkPoints::New();
-    vtkPointData *inPointData = in_ds->GetPointData();
     vtkPointData *outPointData = outputMesh->GetPointData();
     int outPointID = 0;
     vtkIdType vertexIDs[1];
