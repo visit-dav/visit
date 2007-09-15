@@ -2523,6 +2523,7 @@ function build_silo
     if [[ "$DO_HDF5" == "yes" ]] ; then
        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
+       SILO_HDF5LINK_OPT="-L$HDF5LIB -lhdf5"
        WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
     else
        WITHHDF5ARG="--without-hdf5"
@@ -2560,7 +2561,8 @@ function build_silo
            -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libsilo.${SO_EXT} \
            -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
-           -Wl,-current_version,${SILO_VERSION}
+           -Wl,-current_version,${SILO_VERSION} $SILO_HDF5LINK_OPT
+
         if [[ $? != 0 ]] ; then
            echo "Silo dynamic library build failed.  Giving up"
            return 1
