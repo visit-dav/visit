@@ -6341,6 +6341,10 @@ ViewerWindow::PickFunctionSetSuccessFlag(void *data, bool success,
 //    Kathleen Bonnell, Fri Nov 15 09:07:36 PST 2002 
 //    Let ViewerQueryManager handle clearing the PickWindow. 
 //
+//    Hank Childs, Wed Sep 12 20:53:11 PDT 2007
+//    Tell all the plots in the window that the pick points were cleared.
+//    (This is important for the spreadsheet.)
+//
 // ****************************************************************************
 
 void
@@ -6348,6 +6352,15 @@ ViewerWindow::ClearPickPoints()
 {
     visWindow->ClearPickPoints();
     ViewerQueryManager::Instance()->ClearPickPoints();
+
+    // Tell each plot in the window that the pick points have been cleared.
+    // This is important for the spreadsheet plot.
+    PickAttributes pickAtts;
+    pickAtts.SetClearWindow(true);
+    ViewerPlotList *plist = GetPlotList();
+    int numPlots = plist->GetNumPlots();
+    for (int i = 0 ; i < numPlots ; i++)
+        plist->GetPlot(i)->SetPlotAtts(&pickAtts);
 }
 
 

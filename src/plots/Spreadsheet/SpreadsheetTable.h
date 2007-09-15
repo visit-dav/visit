@@ -55,7 +55,8 @@ class vtkDataArray;
 // Creation:   Tue Feb 20 11:15:35 PDT 2007
 //
 // Modifications:
-//   
+//   Gunther H. Weber,  Fri Sep 14 11:39:24 PDT 2007
+//   Added list of pick letters to be displayed for selected cells
 // ****************************************************************************
 
 class SpreadsheetTable : public QTable
@@ -79,6 +80,10 @@ public:
     QString selectedCellsAsText() const;
     double  selectedCellsSum() const;
     double  selectedCellsAverage() const;
+
+    void addSelectedCellLabel(int, int, const std::string&);
+    void clearSelectedCellLabels();
+
 public slots:
     void selectAll();
     void selectNone();
@@ -98,6 +103,17 @@ protected:
     int             dims[3];
     DisplayMode     displayMode;
     int             sliceIndex;
+
+    struct SelectedCellLabel
+    {
+        int row;
+        int col;
+        std::string label;
+        
+        SelectedCellLabel(int r, int c, const std::string& l)
+            : row(r), col(c), label(l) {}
+    };
+    std::list<SelectedCellLabel> selectedCellLabels;
 };
 
 #endif

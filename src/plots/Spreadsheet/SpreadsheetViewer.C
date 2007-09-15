@@ -36,6 +36,9 @@
 *****************************************************************************/
 #include <SpreadsheetViewer.h>
 
+#include <float.h>
+#include <cassert>
+
 #include <qapplication.h>
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
@@ -75,6 +78,9 @@
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+
+#include <vtkVisItUtility.h>
+#include <vtkVisItCellLocator.h>
 
 #include <ViewerPlot.h>
 #include <ViewerMethods.h>
@@ -354,7 +360,11 @@ SpreadsheetViewer::setAllowRender(bool val)
 // Creation:   Tue Feb 20 14:02:09 PST 2007
 //
 // Modifications:
-//   
+//
+//   Gunther H. Weber, Fri Sep 14 14:04:10 PDT 2007
+//   Select appropriate picks the first time a data set is rendered (i.e.,
+//   input is NULL).
+// 
 // ****************************************************************************
 
 void
@@ -367,9 +377,42 @@ SpreadsheetViewer::render(vtkDataSet *ds)
         show();
         raise();
 
-        // Set the input pointer and populate the spreadsheet.
+        // If input is NULL then there may be picks in the attributes that need
+        // to be highlgihted 
+        bool needPickUpdate = !input; 
+        bool sliceIndexSet = false;
+
+        // Set the input pointer
         input = ds;
+
+        // Move slive (before updateSpreadsheet so that the it builds the table
+        // for the proper slice
+        if (needPickUpdate)
+            sliceIndexSet = moveSliceToCurrentPick();
+
+        // Populate the spreadsheet.
         updateSpreadsheet();
+
+        // Update selections in table now that it is built
+        if (needPickUpdate)
+            selectPickPoints();
+
+        // Now that we've updated, change the slice index if that was changed too.
+        if(sliceIndexSet)
+        {
+            if (plotAtts->GetSliceIndex() < nTables)
+            {
+                zTabs->blockSignals(true);
+                zTabs->showPage(tables[plotAtts->GetSliceIndex()]);
+                zTabs->blockSignals(false);
+            }
+
+            kSlider->blockSignals(true);
+            kSlider->setValue(plotAtts->GetSliceIndex());
+            kSlider->blockSignals(false);
+
+            updateSliderLabel();
+        }
 
         // Save the current plot attributes so we can compare them
         // against the ones when Update is called to see if we need
@@ -522,6 +565,55 @@ SpreadsheetViewer::setColorTable(const char *ctName)
 }
 
 // ****************************************************************************
+// Method: SpreadsheetViewer::PickPointsChanged()
+//
+// Purpose: 
+//    Determine based on current plotAtts and cached attributes if the list
+//    of pick points changed.
+//
+// Returns:    Return true, if pick points changed and false otherwise.
+//
+// Programmer: Hank Childs
+// Creation:   Mon Sep 10 15:05:01 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SpreadsheetViewer::PickPointsChanged() const
+{
+    bool changed = false;
+
+    if (cachedAtts.GetCurrentPickValid() != plotAtts->GetCurrentPickValid())
+    {
+        changed = true;
+    }
+    else if (cachedAtts.GetPastPicks().size()!=plotAtts->GetPastPicks().size())
+    {
+        changed = true;
+    }
+    else
+    {
+        if (cachedAtts.GetCurrentPick()[0] != plotAtts->GetCurrentPick()[0] ||
+            cachedAtts.GetCurrentPick()[1] != plotAtts->GetCurrentPick()[1] ||
+            cachedAtts.GetCurrentPick()[2] != plotAtts->GetCurrentPick()[2])
+        {
+            changed = true;
+        }
+        int nvals = cachedAtts.GetPastPicks().size();
+        for (int i = 0 ; i < nvals ; i++)
+        {
+            if (cachedAtts.GetPastPicks()[i] != plotAtts->GetPastPicks()[i])
+            {
+                changed = true;
+            }
+        }
+    }
+    return changed;
+}
+
+// ****************************************************************************
 // Method: SpreadsheetViewer::Update
 //
 // Purpose: 
@@ -535,6 +627,12 @@ SpreadsheetViewer::setColorTable(const char *ctName)
 //   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
 //   Support using a single tab of values.
 //   
+//   Hank Childs, Tue Sep  4 10:53:55 PDT 2007
+//   Highlight and label pick points in spreadsheet. This functionality
+//   required changes to handling other events as well (such as invalidating
+//   the input pointer if the sub set name changes) to make the pick transfer
+//   work properly.
+//
 // ****************************************************************************
 
 void
@@ -546,6 +644,7 @@ SpreadsheetViewer::Update(Subject *)
     bool needsUpdate = false;
     bool needsRebuild = false;
     bool sliceIndexSet = false;
+    bool needsPickUpdate = false;
     for(int i = 0; i < plotAtts->NumAttributes(); ++i)
     {
         if(!plotAtts->IsSelected(i))
@@ -554,6 +653,12 @@ SpreadsheetViewer::Update(Subject *)
         switch(i)
         {
         case 0: //subsetName
+            if (cachedAtts.GetSubsetName() != plotAtts->GetSubsetName())
+            {
+                // Invalidate pointer to data set so that pick information
+                // is not applied to the incorrect subset
+                input = 0; 
+            }
             break;
         case 1: //formatString
             formatLineEdit->setText(plotAtts->GetFormatString().c_str());
@@ -604,15 +709,27 @@ SpreadsheetViewer::Update(Subject *)
             needsRebuild = true;
 #endif
             break;
+        case 8: //currentPick
+        case 9: //currentPickValid
+        case 10: //pastPicks
+            // Check to see if the pick points changed.
+            pickPt.clear();
+            cellId.clear();
+            needsPickUpdate |= PickPointsChanged();
+            break;
         }
     }
+
+    // Move slice if there is a pick update. The moveSliceToCurrentPick method
+    // returns true if it needed to set the slice index in the plot attributes.
+    if(needsPickUpdate)
+        sliceIndexSet |= moveSliceToCurrentPick();
 
     // Update the spreadsheet if we've changed attributes that have caused it
     // to need to be redrawn.
     if(needsRebuild)
     {
         updateSpreadsheet();
-        cachedAtts = *plotAtts;
     }
     else if(needsUpdate)
     {
@@ -630,15 +747,31 @@ SpreadsheetViewer::Update(Subject *)
         // Update the min/max buttons.
         updateMinMaxButtons();
 
-        cachedAtts = *plotAtts;
+    }
+
+    // Cache attributes
+    cachedAtts = *plotAtts;
+
+    // Update pick point selections.
+#ifndef SINGLE_TAB_WINDOW
+    if(needsPickUpdate)
+#else
+    // In single slice mode, we need to update selections if the slice changed
+    if(needsPickUpdate || sliceIndexSet)
+#endif
+    {
+        selectPickPoints();
     }
 
     // Now that we've updated, change the slice index if that was changed too.
-    if(sliceIndexSet && plotAtts->GetSliceIndex() < nTables)
+    if(sliceIndexSet)
     {
-        zTabs->blockSignals(true);
-        zTabs->showPage(tables[plotAtts->GetSliceIndex()]);
-        zTabs->blockSignals(false);
+        if(plotAtts->GetSliceIndex() < nTables)
+        {
+            zTabs->blockSignals(true);
+            zTabs->showPage(tables[plotAtts->GetSliceIndex()]);
+            zTabs->blockSignals(false);
+        }
    
         kSlider->blockSignals(true);
         kSlider->setValue(plotAtts->GetSliceIndex());
@@ -665,7 +798,7 @@ SpreadsheetViewer::Update(Subject *)
 void
 SpreadsheetViewer::updateSpreadsheet()
 {
-    const char *mName = "SpreadsheetViewer::updateSpreadsheet: ";
+    const char *mName = "SpreadsheetViewer::updateSpreadsheet(): ";
     if(input == 0)
     {
         debug1 << mName << "input is NULL" << endl;
@@ -1350,6 +1483,284 @@ SpreadsheetViewer::updateMenuEnabledState(QTable *table)
     }
 }
 
+// ****************************************************************************
+// Method: SpreadSheetViewer::moveSliceToCurrentPick()
+//
+// Purpose: 
+//   Moves the displayed slice to the current pick point
+//
+// Arguments:
+//
+// Returns:    
+//;   Whether the slice was moved
+//
+// Note:       
+//
+// Programmer: Gunther H. Weber
+// Creation:   Mon Sep 10 15:05:01 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SpreadsheetViewer::moveSliceToCurrentPick()
+{
+    const char *mName = "SpreadSheetViewer::moveSliceToCurrentPick: ";
+    bool retval = false;
+
+    if(input == NULL)
+        return false;
+
+    debug1 << "In " << mName << std::endl;
+
+    // ... Calculate position (slice, row, column) of current pick
+    if (plotAtts->GetCurrentPickValid())
+    {
+        int sliceAxis = -1;
+        int rowAxis, columnAxis;
+        switch (plotAtts->GetNormal())
+        {
+            case SpreadsheetAttributes::X:
+                sliceAxis = 0;
+                rowAxis = 1;
+                columnAxis = 2;
+                break;
+            case SpreadsheetAttributes::Y:
+                sliceAxis = 1;
+                rowAxis = 0;
+                columnAxis = 2;
+                break;
+            case SpreadsheetAttributes::Z:
+                sliceAxis = 2;
+                rowAxis = 1;
+                columnAxis = 0;
+                break;
+            default:
+                debug1 << mName << "Invalid normal specified in plot attributes.";
+                debug1<< std::endl;
+                break;
+        }
+
+        if (sliceAxis != -1)
+        {
+            int ijk[3];
+
+            double *currentPick = plotAtts->GetCurrentPick();
+            int cellId = GetCell(currentPick[0], currentPick[1], currentPick[2]);
+
+            vtkVisItUtility::GetLogicalIndices(input, true, cellId, ijk);
+            debug5 << mName << "ijk=" << ijk[0] << " " << ijk[1] << " " << ijk[2] << std::endl;
+
+            if (ijk[0] == -1)
+            {
+                debug1 << mName << "Cannot compute logical index for cell ";
+                debug1 << cellId << std::endl;
+            }
+            // ... Select appropriate slice
+            else if (ijk[0] != -1)
+            {
+                // If the slice index is not the current slice index then
+                // change the current slice index to match that of the pick.
+                if(ijk[sliceAxis] != plotAtts->GetSliceIndex())
+                {
+                    debug1 << mName << "Setting slice index to: " << ijk[sliceAxis] << endl;
+                    // Set the slice index that we calculated into the plotAtts.
+                    plotAtts->SetSliceIndex(ijk[sliceAxis]);
+ 
+                    // Issue a Notify from the main event loop.
+                    QTimer::singleShot(0, this, SLOT(postNotify()));
+                    retval = true;
+                }
+            }
+        }
+    }
+    return retval;
+}
+
+// ****************************************************************************
+// Method: SpreadSheetViewer::selectPickPoints
+//
+// Purpose: 
+//   Updates pick points in spreadsheet.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Gunther H. Weber
+// Creation:   Mon Sep 10 15:05:01 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::selectPickPoints()
+{
+    const char *mName = "SpreadSheetViewer::selectPickPoints: ";
+
+    if(input == NULL)
+        return;
+
+    debug5 << mName << "Clearing old pick selections." << std::endl;
+    for(int t = 0; t < nTables; ++t)
+    {
+        tables[t]->setCurrentCell(-1,-1);
+        tables[t]->clearSelectedCellLabels();
+        tables[t]->clearSelection(true);
+    }
+
+    // ... Calculate position (slice, row, column) of current pick
+    if (plotAtts->GetCurrentPickValid())
+    {
+        int sliceAxis = -1;
+        int rowAxis, columnAxis;
+        switch (plotAtts->GetNormal())
+        {
+            case SpreadsheetAttributes::X:
+                sliceAxis = 0;
+                rowAxis = 1;
+                columnAxis = 2;
+                break;
+            case SpreadsheetAttributes::Y:
+                sliceAxis = 1;
+                rowAxis = 0;
+                columnAxis = 2;
+                break;
+            case SpreadsheetAttributes::Z:
+                sliceAxis = 2;
+                rowAxis = 1;
+                columnAxis = 0;
+                break;
+            default:
+                debug1 << mName << "Invalid normal specified in plot attributes.";
+                debug1<< std::endl;
+                break;
+        }
+
+        if (sliceAxis != -1)
+        {
+            int ijk[3];
+
+            double *currentPick = plotAtts->GetCurrentPick();
+            int cellId = GetCell(currentPick[0], currentPick[1], currentPick[2]);
+
+            vtkVisItUtility::GetLogicalIndices(input, true, cellId, ijk);
+
+            debug5 << mName << "CP: ijk=" << ijk[0] << " " << ijk[1] << " " << ijk[2] << std::endl;
+
+            if (ijk[0] == -1)
+            {
+                debug1 << mName << "Cannot compute logical index for cell ";
+                debug1 << cellId << std::endl;
+            }
+            // ... Select current cell in table
+#ifndef SINGLE_TAB_WINDOW
+            else if (ijk[0] != -1)
+#else
+            // In single slice mode we only need to handle the current 
+            // pick if the spreadsheet is visible
+            else if (ijk[0] != -1 && ijk[sliceAxis] == plotAtts->GetSliceIndex())
+#endif
+            {
+#ifdef SINGLE_TAB_WINDOW
+                int activeTable = 0;
+#else
+                int activeTable = ijk[sliceAxis];
+#endif
+                int col = ijk[columnAxis];
+                // Convert logical index row to spreadsheet row
+                int row = tables[activeTable]->numRows() - ijk[rowAxis] - 1;
+
+                // Select the new cell in the active table.
+                debug1 << mName << "Selecting current cell (" << row << ", "
+                       << col << ")" << std::endl;
+                QTableSelection sel;
+                sel.init(row, col);
+                sel.expandTo(row, col);
+                tables[activeTable]->addSelection(sel);
+                tables[activeTable]->ensureCellVisible(row, col);
+                tables[activeTable]->addSelectedCellLabel(row, col, plotAtts->GetCurrentPickLetter());
+
+#ifndef SINGLE_TAB_WINDOW
+                debug1 << mName << "Setting current cell (" << row << ", " << col << ")"
+                       << std::endl;
+                tables[activeTable]->setCurrentCell(row, col);
+#else
+                if (ijk[sliceAxis] == plotAtts->GetSliceIndex())
+                {
+                    debug1 << mName << "Setting current cell (" << row << ", " << col << ")"
+                           << std::endl;
+                    tables[activeTable]->setCurrentCell(row, col);
+                }
+                else
+                {
+                    debug1 << mName << "Current pick is not visible." << std::endl;
+                }
+#endif
+            }
+
+            // Now, go through the old picks 
+            const vector<double>& pastPicks = plotAtts->GetPastPicks();
+            const vector<string>& pastPickLetters = plotAtts->GetPastPickLetters();
+            int numOldPicks = pastPicks.size() / 3;
+            int old_ijk[3];
+            for (int i = 0 ; i < numOldPicks ; i++)
+            {
+                int cellId = GetCell(pastPicks[3*i], pastPicks[3*i+1], pastPicks[3*i+2]);
+                vtkVisItUtility::GetLogicalIndices(input, true, cellId, old_ijk);
+
+                // If old pick is same cell as current pick then skip it
+                if (old_ijk[0] == ijk[0] && old_ijk[1] == ijk[1] && old_ijk[2] == ijk[2])
+                    continue;
+
+                debug5 << mName << "OP: ijk=" << old_ijk[0] << " " << old_ijk[1] << " " << old_ijk[2] << std::endl;
+
+#ifdef SINGLE_TAB_WINDOW
+                // Get row and column of old pick
+                int oldRow = tables[0]->numRows() - old_ijk[rowAxis] - 1;
+                int oldCol = old_ijk[columnAxis];
+
+                // If old pick is in same slice as current pick -> highlight it
+                if (old_ijk[sliceAxis] == plotAtts->GetSliceIndex())
+                {
+                    debug1 << mName << "Highlight cell (" << oldRow << ", "
+                        << oldCol << ") in single slice" << endl;
+                    QTableSelection sel;
+                    sel.init(oldRow, oldCol);
+                    sel.expandTo(oldRow, oldCol);
+                    tables[0]->addSelection(sel);
+                    tables[0]->addSelectedCellLabel(oldRow, oldCol, pastPickLetters[i]);
+                }
+#else
+                // Get row and column of old pick
+                int oldRow = tables[old_ijk[sliceAxis]]->numRows() - old_ijk[rowAxis] - 1;
+                int oldCol = old_ijk[columnAxis];
+
+                // In multi-tab mode highlight selections in all tables
+                if (old_ijk[sliceAxis] <nTables)
+                {
+                    debug1 << mName << "Highlight cell (" << oldRow << ", "
+                           << oldCol << ") in table " << old_ijk[sliceAxis] << endl;
+                    QTableSelection sel;
+                    sel.init(oldRow, oldCol);
+                    sel.expandTo(oldRow, oldCol);
+                    tables[old_ijk[sliceAxis]]->addSelection(sel);
+                    tables[old_ijk[sliceAxis]]->addSelectedCellLabel(oldRow, oldCol, pastPickLetters[i]);
+                }
+#endif
+            }
+        }
+    }
+    else
+    {
+        debug1 << mName << "Current pick not valid. " << std::endl;
+    }
+}
+
 //
 // Qt slot functions
 //
@@ -1452,7 +1863,7 @@ SpreadsheetViewer::sliderPressed()
 // Creation:   Thu Feb 22 13:43:02 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1971,5 +2382,84 @@ void
 SpreadsheetViewer::tableSelectionChanged()
 {
     updateMenuEnabledState((QTable *)sender());
+}
+
+// ****************************************************************************
+// Method: SpreadsheetViewer::GetCell
+//
+// Purpose: 
+//     Given a pick location, this determines which cell the pick location lies
+//     in.
+//
+// Arguments:
+//     X       The x location of the pick.
+//     Y       The y location of the pick.
+//     Z       The z location of the pick.
+//
+// Returns:    The index of the cell that was picked.  <0 for errors.
+//
+// Programmer: Hank Childs
+// Creation:   September 4, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+SpreadsheetViewer::GetCell(double X, double Y, double Z)
+{
+    int  i, j;
+    int  cell = -1;
+
+    if (input == NULL)
+        return -1;
+
+    double pt[3] = { X, Y, Z };
+
+    int prevPicks = cellId.size();
+    for (i = 0 ; i < prevPicks ; i++)
+    {
+        if (pickPt[3*i] == X && pickPt[3*i+1] == Y && pickPt[3*i+2] == Z)
+            return cellId[i];
+    }
+
+    if (input->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        vtkRectilinearGrid *rgrid = (vtkRectilinearGrid *) input;
+        int ijk[3];
+        bool success =
+                 vtkVisItUtility::ComputeStructuredCoordinates(rgrid, pt, ijk);
+        if (!success)
+            return -1;
+        int dims[3];
+        rgrid->GetDimensions(dims);
+        cell = ijk[2]*(dims[0]-1)*(dims[1]-1) + ijk[1]*(dims[0]-1) + ijk[0];
+    }
+    else
+    {
+        vtkVisItCellLocator *loc = vtkVisItCellLocator::New();
+        loc->SetDataSet(input);
+        loc->BuildLocator();
+       
+        int subId = 0;
+        double cp[3] = {0., 0., 0.};
+        int foundCell;
+        double dist;
+        int success = loc->FindClosestPointWithinRadius(pt, FLT_MAX, cp,
+                                                   foundCell, subId, dist);
+        loc->Delete();
+
+        if (foundCell < 0)
+            cell = -1;
+        else
+            cell = foundCell;
+    }
+
+    pickPt.push_back(X);
+    pickPt.push_back(Y);
+    pickPt.push_back(Z);
+    cellId.push_back(cell);
+
+    return cell;
 }
 

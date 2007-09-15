@@ -41,6 +41,7 @@
 #include <Observer.h>
 #include <SpreadsheetAttributes.h>
 #include <VariableMenuPopulator.h>
+#include <vector>
 
 class QButtonGroup;
 class QCheckBox;
@@ -81,6 +82,9 @@ class vtkDataSet;
 // Modifications:
 //   Brad Whitlock, Wed Mar 28 18:48:43 PST 2007
 //   Override closeEvent.
+//
+//   Gunther H. Weber (with help from Hank Childs & Brad Whitlock), Mon Sep 10 18:31:13 PDT 2007
+//   Show picks in spreadsheet 
 //
 // ****************************************************************************
 
@@ -126,6 +130,8 @@ private slots:
 
 private:
     void updateSpreadsheet();
+    bool moveSliceToCurrentPick();
+    void selectPickPoints();
     void displayStructuredGrid(int dims[3]);
     void displayUnstructuredGrid();
     void setNumberOfTabs(int, int, bool);
@@ -137,6 +143,8 @@ private:
     void updateSliderLabel();
     void updateVariableMenus();
     void updateMenuEnabledState(QTable *);
+    int  GetCell(double, double, double);
+    bool PickPointsChanged() const;
 
     // Cached plot attributes that are used to see if the Qt display needs
     // to update when the Update() method is called.
@@ -204,6 +212,10 @@ private:
     int                   editMenuId;
     int                   editMenu_CopyId;
     int                   operationMenuId;
+
+    // A cache for previous picks, to prevent cell lookups again.
+    std::vector<double>   pickPt;
+    std::vector<int>      cellId;
 };
 
 #endif

@@ -57,6 +57,9 @@
 // Creation:   Tue Feb 20 15:32:53 PST 2007
 //
 // Modifications:
+//   Gunther H. Weber, Fri Sep 14 11:40:18 PDT 2007
+//   Changed focus style due to display problems of current cell when set
+//   from pick attributes.
 //   
 // ****************************************************************************
 
@@ -72,6 +75,8 @@ SpreadsheetTable::SpreadsheetTable(QWidget *parent, const char *name) :
     dims[0] = dims[1] = dims[2] = 0;
     displayMode = SliceZ;
     sliceIndex = 0;
+
+    setFocusStyle(QTable::FollowStyle);
 }
 
 // ****************************************************************************
@@ -455,6 +460,64 @@ SpreadsheetTable::selectedCellsAverage() const
 }
 
 // ****************************************************************************
+// Method: SpreadsheetTable::addSelectedCellLabel()
+//
+// Purpose: 
+//   Add a label (pick letter) for a cell, which will be displayed if the
+//   cell is selected.
+//
+// Arguments:
+//   row : The row of the cell.
+//   col : The column of the cell.
+//   label: The label, i.e., pick letter
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Sep 14 11:44:31 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetTable::addSelectedCellLabel(int row, int col, const std::string &label)
+{
+    // If there is already a previous pick for the same cell, replace the letter
+    // for it with the new one ...
+    for (std::list<SelectedCellLabel>::iterator it = selectedCellLabels.begin();
+           it != selectedCellLabels.end(); ++it)
+    {
+        if ((it->row == row) && (it->col == col))
+        {
+            it->label=label;
+            return;
+        }
+
+    } 
+    // ... otherwise add new pick letter
+    selectedCellLabels.push_back(SelectedCellLabel(row, col, label));
+}
+
+// ****************************************************************************
+// Method: SpreadsheetTable::clearSelectedCellLabels()
+//
+// Purpose: 
+//   Clear the list of cell labels (pick letters for cells).
+//
+// Programmer: Gunther H. Weber
+// Creation:   Fri Sep 14 11:44:31 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetTable::clearSelectedCellLabels()
+{
+    selectedCellLabels.clear();
+}
+
+
+// ****************************************************************************
 // Method: SpreadsheetTable::rowColToIndex
 //
 // Purpose: 
@@ -572,6 +635,9 @@ SpreadsheetTable::displayValue(int row, int col, bool &ghost) const
 // Creation:   Tue Feb 20 15:40:16 PST 2007
 //
 // Modifications:
+//   Gunther H. Weber, Fri Sep 14 11:41:13 PDT 2007
+//   Draw background of current cell in different color from other selected
+//   cells. Show pick letters for selected cells.
 //   
 // ****************************************************************************
 
@@ -597,6 +663,18 @@ SpreadsheetTable::paintCell(QPainter *p, int row, int col,
         double dataVal = displayValue(row, col, ghost);
         QString s; s.sprintf(formatString.latin1(), dataVal);
 
+        if (selected)
+        {
+            for (std::list<SelectedCellLabel>::const_iterator it = selectedCellLabels.begin();
+                    it != selectedCellLabels.end(); ++it)
+            {
+                if (row == it-> row && col == it->col)
+                {
+                    s = QString(it->label.c_str()) + QString("=") + s;
+                }
+            }
+        }
+
         // Paint the background of the cell.
         if(ghost)
         {
@@ -605,8 +683,13 @@ SpreadsheetTable::paintCell(QPainter *p, int row, int col,
         }
         else
         {
+            bool current = (col == currentColumn() && row == currentRow());
+
             p->fillRect(0, 0, w, h, 
-                selected ? cg.brush(QColorGroup::Highlight) : cg.brush(QColorGroup::Base));
+                selected ?
+                    (current ? cg.brush(QColorGroup::Highlight) : // Selected and current
+                     QColor(128,128,128)) : // Selected, not current
+                    cg.brush(QColorGroup::Base)); // Not selected
         }
 
 
