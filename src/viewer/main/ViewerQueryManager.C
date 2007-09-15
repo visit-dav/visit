@@ -1841,6 +1841,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Hank Childs, Mon Aug 27 13:52:56 PDT 2007
 //    Add support for picking creating a spreadsheet.
 //
+//    Gunther H. Weber, Fri Sep 14 11:20:07 PDT 2007
+//    Modification of Hank's code for creating a spreadsheet. Do not switch
+//    the domain of an existing spreadsheet. Create a new one instead.
+//
 // ****************************************************************************
 
 bool
@@ -2247,8 +2251,16 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                                                plotWePicked->GetVariableName())
                          continue;
 
-                     // It is a spreadsheet plot of the same variable for
-                     // same database from the same host.  Re-use it.
+                     // Make sure they are operating on the same domain.
+                     const AttributeSubject *plotAtts = plot->GetPlotAtts();
+                     PickAttributes *p = (PickAttributes *)
+                         plotAtts->CreateCompatible("PickAttributes");
+                     if (p != NULL)
+                         if (p->GetSubsetName() != pickAtts->GetSubsetName())
+                             continue;
+
+                     // It is a spreadsheet plot of the same variable and the same
+                     // domain for the same database from the same host. Re-use it.
                      spreadsheet = plot;
                 }
 

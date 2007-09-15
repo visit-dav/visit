@@ -64,9 +64,17 @@
       </Field>
       <Field name="pastPicks" label="Past picks" type="doubleVector" internal="true">
       </Field>
+      <Field name="currentPickLetter" label="Current pick letter" type="string">
+      </Field>
+      <Field name="pastPickLetters" label="Past pick letters" type="stringVector">
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
+      <Function name="SetSubsetName" user="false" member="true">
       </Function>
       <Include file="header" quoted="false">
         PlaneAttributes.h
