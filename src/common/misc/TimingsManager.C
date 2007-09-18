@@ -54,8 +54,6 @@
 #endif
 
 #include <DebugStream.h>
-#include <ImproperUseException.h>
-
 
 #if defined(_WIN32)
 #include <direct.h>
@@ -467,7 +465,9 @@ TimingsManager::StartTimer(bool forced)
     }
     else if (rv > usedEntry.size())
     {
-        EXCEPTION0(ImproperUseException);
+	debug1 << "TimingsManager::StartTimer: Cannot start timer. "
+	       << "Returning -1 as if timing was disabled." << std::endl;
+	return -1;
     }
     else
     {
