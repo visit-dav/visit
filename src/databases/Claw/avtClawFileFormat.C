@@ -82,6 +82,25 @@ using std::string;
 using std::vector;
 
 // ****************************************************************************
+//  Function: InitTimeHeader 
+//
+//  Purpose: Initializes a time header 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 18, 2007 
+//
+// ****************************************************************************
+static void
+InitTimeHeader(TimeHeader_t *hdr)
+{
+    hdr->time = -1.0;
+    hdr->meqn = -1;
+    hdr->ngrids = -1;
+    hdr->naux = -1;
+    hdr->ndims = -1;
+}
+
+// ****************************************************************************
 //  Function: GetFilenames
 //
 //  Purpose: Given a directory to search and either a scanf style pattern or
@@ -279,6 +298,10 @@ SortFilenames(vector<string> &fnames, string cycleRegex)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 13, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
+//    Added support for 'ndims' header info
+//
 // ****************************************************************************
 static bool
 ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
@@ -297,17 +320,15 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
     close(fd);
     buf[nread+1] = '\0';
 
-    hdr->time = -1.0;
-    hdr->meqn = -1;
-    hdr->ngrids = -1;
-    hdr->naux = -1;
+    InitTimeHeader(hdr);
 
-    int nscan = sscanf(buf, " %lf time\n %d meqn\n %d ngrids\n %d naux",
-                         &(hdr->time), &(hdr->meqn), &(hdr->ngrids), &(hdr->naux));
-    if (nscan != 4)
+    int nscan = sscanf(buf, " %lf time\n %d meqn\n %d ngrids\n %d naux\n %d ndims",
+                         &(hdr->time), &(hdr->meqn), &(hdr->ngrids), &(hdr->naux),
+			 &(hdr->ndims));
+    if (nscan != 5)
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "scanf() matched only %d of 4 "
+	SNPRINTF(msg, sizeof(msg), "scanf() matched only %d of 5 "
 	    "items in time header", nscan);
         EXCEPTION1(ImproperUseException, msg);
     }
@@ -317,6 +338,7 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
     debug1 << "   meqn = " << hdr->meqn << endl;
     debug1 << "   ngrids = " << hdr->ngrids << endl;
     debug1 << "   naux = " << hdr->naux << endl;
+    debug1 << "   ndims = " << hdr->ndims << endl;
 }
 
 // ****************************************************************************
@@ -329,9 +351,12 @@ ReadTimeStepHeader(string rootDir, string fileName, TimeHeader_t *hdr)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 13, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
+//    Changed naux to ndims 
 // ****************************************************************************
 static int
-DataSegmentLengthInChars(const GridHeader_t *ghdr, int naux)
+DataSegmentLengthInChars(const GridHeader_t *ghdr, int ndims)
 {
     // Compute the offset of next grid header.
     //
@@ -346,7 +371,7 @@ DataSegmentLengthInChars(const GridHeader_t *ghdr, int naux)
     //        there is a 'blank' line consisting of 3 characters,
     //        two spaces and a '\n', hence the 3*my term.
     //     
-    if (naux == 2)
+    if (ndims == 2)
         return ghdr->my * (ghdr->mx * ghdr->charsPerLine + 3);
     else
         return ghdr->mz * (ghdr->my * (ghdr->mx * ghdr->charsPerLine + 3) + 3);
@@ -362,6 +387,9 @@ DataSegmentLengthInChars(const GridHeader_t *ghdr, int naux)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 13, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
+//    Changed naux to ndims 
 // ****************************************************************************
 static bool
 ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr, int *nextoff)
@@ -374,7 +402,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     buf[nread+1] = '\0';
 
     // scan the buffer using sscanf for grid header information
-    if (thdr->naux == 2)
+    if (thdr->ndims == 2)
     {
         sscanf(buf, " %d grid_number\n %d AMR_level\n"
 	            " %d mx\n %d my\n"
@@ -385,7 +413,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
 		    &(ghdr->xlow), &(ghdr->ylow),
 		    &(ghdr->dx), &(ghdr->dy));
     }
-    else if (thdr->naux == 3)
+    else if (thdr->ndims == 3)
     {
         sscanf(buf, " %d grid_number\n %d AMR_level\n"
 	            " %d mx\n %d my\n %d mz\n"
@@ -399,14 +427,14 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     else
     {
         char msg[256];
-	SNPRINTF(msg, sizeof(msg), "Unsupported value of %d for 'naux' "
-            "in time header", thdr->naux);
+	SNPRINTF(msg, sizeof(msg), "Unsupported value of %d for 'ndims' "
+            "in time header", thdr->ndims);
         EXCEPTION1(InvalidFilesException, msg);
     }
 
     // scan forward throug buf to just after end
     // of header to start of data
-    char c = thdr->naux == 2 ? 'y' : 'z';
+    char c = thdr->ndims == 2 ? 'y' : 'z';
     int i = 0;
     while (buf[i+0] != 'd' ||
            buf[i+1] != c ||
@@ -423,7 +451,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     ghdr->charsPerLine = charsPerLine;
 
     // compute offset to next grid header
-    *nextoff = offset + i + 4 + DataSegmentLengthInChars(ghdr, thdr->naux);
+    *nextoff = offset + i + 4 + DataSegmentLengthInChars(ghdr, thdr->ndims);
 
     // some useful debuggin output
     debug5 << "Grid header..." << endl;
@@ -431,15 +459,15 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     debug5 << "   AMR_level = " << ghdr->AMR_level << endl;
     debug5 << "   mx = " << ghdr->mx << endl;
     debug5 << "   my = " << ghdr->my << endl;
-    if (thdr->naux == 3)
+    if (thdr->ndims == 3)
         debug5 << "   mz = " << ghdr->mz << endl;
     debug5 << "   xlow = " << ghdr->xlow << endl;
     debug5 << "   ylow = " << ghdr->ylow << endl;
-    if (thdr->naux == 3)
+    if (thdr->ndims == 3)
         debug5 << "   zlow = " << ghdr->zlow << endl;
     debug5 << "   dx = " << ghdr->dx << endl;
     debug5 << "   dy = " << ghdr->dy << endl;
-    if (thdr->naux == 3)
+    if (thdr->ndims == 3)
         debug5 << "   dz = " << ghdr->dz << endl;
     debug5 << "   charsPerLine = " << ghdr->charsPerLine << endl;
     debug5 << "   dataOffset = " << ghdr->dataOffset << endl;
@@ -633,7 +661,8 @@ avtClawFileFormat::GetFilenames()
     // sort the lists if we just created them, above
     if (sortTime)
     {
-        TimeHeader_t thdr = {0., -1, -1, -1};
+        TimeHeader_t thdr;
+	InitTimeHeader(&thdr);
 	SortFilenames(timeFilenames, cycleRegex);
 	timeHeaders.resize(timeFilenames.size(), thdr);
     }
@@ -700,6 +729,9 @@ avtClawFileFormat::FreeUpResources(void)
 //  Programmer: miller -- generated by xml2avt
 //  Creation:   Mon Sep 10 23:24:53 PST 2007
 //
+//  Modifications:
+//    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
+//    Changed naux to ndims 
 // ****************************************************************************
 
 void
@@ -708,7 +740,7 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     GetFilenames();
 
     // get the time header for this timestep if we don't already have it
-    if (timeHeaders[timeState].naux == -1)
+    if (timeHeaders[timeState].ndims == -1)
     {
         TimeHeader_t thdr;
         ReadTimeStepHeader(rootDir, timeFilenames[timeState], &thdr);
@@ -736,8 +768,8 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "claw_mesh";
     mesh->meshType = AVT_AMR_MESH;
-    mesh->topologicalDimension = timeHdr.naux; 
-    mesh->spatialDimension = timeHdr.naux; 
+    mesh->topologicalDimension = timeHdr.ndims; 
+    mesh->spatialDimension = timeHdr.ndims; 
     mesh->hasSpatialExtents = false;
 
     // spoof a group/domain mesh
@@ -824,6 +856,9 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
 //  Programmer: Mark C. Miller 
 //  Creation:   Wed Sep 12 09:20:22 PDT 2007
 //
+//  Modifications:
+//    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
+//    Changed naux to ndims 
 // ****************************************************************************
 void
 avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
@@ -836,7 +871,7 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
     const vector<GridHeader_t> &gridHdrs = gridHeaders[timeState];
     map<int, GridHeader_t> levelsMap = gridHeaderMaps[timeState];
 
-    int num_dims = timeHdr.naux;
+    int num_dims = timeHdr.ndims;
     int num_levels = levelsMap.size();
     int num_patches = gridHdrs.size();
 
@@ -972,12 +1007,15 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
 //  Programmer: miller -- generated by xml2avt
 //  Creation:   Mon Sep 10 23:24:53 PST 2007
 //
+//  Modifications:
+//    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
+//    Changed naux to ndims 
 // ****************************************************************************
 
 vtkDataSet *
 avtClawFileFormat::GetMesh(int timeState, int domain, const char *meshname)
 {
-    if (timeHeaders[timeState].naux == -1)
+    if (timeHeaders[timeState].ndims == -1)
     {
         TimeHeader_t thdr;
         ReadTimeStepHeader(rootDir, timeFilenames[timeState], &thdr);
@@ -996,7 +1034,7 @@ avtClawFileFormat::GetMesh(int timeState, int domain, const char *meshname)
     int dims[3];
     dims[0] = gridHdr.mx+1;
     dims[1] = gridHdr.my+1;
-    dims[2] = timeHdr.naux == 2 ? 1 : gridHdr.mz+1;
+    dims[2] = timeHdr.ndims == 2 ? 1 : gridHdr.mz+1;
 
     vtkFloatArray *xcoords = vtkFloatArray::New();
     xcoords->SetNumberOfTuples(dims[0]);
@@ -1009,7 +1047,7 @@ avtClawFileFormat::GetMesh(int timeState, int domain, const char *meshname)
         ycoords->SetComponent(i, 0, gridHdr.ylow + i * gridHdr.dy);
 
     vtkFloatArray *zcoords = vtkFloatArray::New();
-    if (timeHdr.naux == 3)
+    if (timeHdr.ndims == 3)
     {
         zcoords->SetNumberOfTuples(dims[2]);
         for (int i = 0; i < dims[2]; i++)
@@ -1054,12 +1092,15 @@ avtClawFileFormat::GetMesh(int timeState, int domain, const char *meshname)
 //  Programmer: miller -- generated by xml2avt
 //  Creation:   Mon Sep 10 23:24:53 PST 2007
 //
+//  Modifications:
+//    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
+//    Changed naux to ndims 
 // ****************************************************************************
 
 vtkDataArray *
 avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
 {
-    if (timeHeaders[timeState].naux == -1)
+    if (timeHeaders[timeState].ndims == -1)
     {
         TimeHeader_t thdr;
         ReadTimeStepHeader(rootDir, timeFilenames[timeState], &thdr);
@@ -1085,7 +1126,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
 
     // compute total length of data segment in characters
     int dsOffset = gridHdr.dataOffset;
-    int dsLength = DataSegmentLengthInChars(&gridHdr, timeHdr.naux);
+    int dsLength = DataSegmentLengthInChars(&gridHdr, timeHdr.ndims);
 
     // open grid file, seek to correct offset and read the data there
     char *buf = new char[dsLength+1];
@@ -1129,7 +1170,7 @@ avtClawFileFormat::GetVar(int timeState, int domain, const char *varname)
 	    break;
     }
 
-    int nz = timeHdr.naux == 3 ? gridHdr.mz : 1;
+    int nz = timeHdr.ndims == 3 ? gridHdr.mz : 1;
     int nvals = gridHdr.mx * gridHdr.my * nz; 
 
     vtkFloatArray *data = vtkFloatArray::New();
