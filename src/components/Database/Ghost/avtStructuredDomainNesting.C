@@ -736,5 +736,3 @@ avtStructuredDomainNesting::GetNestingForDomain(int domain,
         childExts[6*i+5] = rawExts[5] / ratios[2];
     }
 }
-
-
