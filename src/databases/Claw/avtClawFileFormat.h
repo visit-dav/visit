@@ -58,6 +58,7 @@ struct TimeHeader_t
     int meqn;
     int ngrids;
     int naux;
+    int ndims;
 };
 
 struct GridHeader_t
