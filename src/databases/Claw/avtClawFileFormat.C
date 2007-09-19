@@ -365,11 +365,12 @@ DataSegmentLengthInChars(const GridHeader_t *ghdr, int ndims)
     //        of the first line of a grid header
     //     b) the value of i is 4 charcters *before* the
     //        first data line following grid header
-    //     c) the loop above computes how many characters there
-    //        are in a single data line. There will be mx * my
-    //        of these. However, between each 'row' of mx data lines 
+    //     c) There are ghdr->charsPerLine characters in a single data line
+    //        There will be mx * my (2d) or mx * my * mz (3d) of these.
+    //        However, between each 'row' of mx data lines 
     //        there is a 'blank' line consisting of 3 characters,
-    //        two spaces and a '\n', hence the 3*my term.
+    //        two spaces and a '\n', hence the 3*my term. For 3d, there
+    //        is similar 'blank' line between each slice henc the 3*mz term.
     //     
     if (ndims == 2)
         return ghdr->my * (ghdr->mx * ghdr->charsPerLine + 3);
@@ -433,7 +434,8 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     }
 
     // scan forward throug buf to just after end
-    // of header to start of data
+    // of header to start of data. Last 2 lines are
+    // either "dy\n\n" (2d) or "dz\n\n" (3d)
     char c = thdr->ndims == 2 ? 'y' : 'z';
     int i = 0;
     while (buf[i+0] != 'd' ||
@@ -441,7 +443,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
            buf[i+2] != '\n' ||
            buf[i+3] != '\n')
         i++;
-    int j = i + 4;
+    int j = i + 4; // the above while loop stops 4 before first data line
     ghdr->dataOffset = offset + j;
 
     // size of a data line 
@@ -453,7 +455,7 @@ ReadGridHeader(int fd, int offset, const TimeHeader_t* thdr, GridHeader_t *ghdr,
     // compute offset to next grid header
     *nextoff = offset + i + 4 + DataSegmentLengthInChars(ghdr, thdr->ndims);
 
-    // some useful debuggin output
+    // some useful debugging output
     debug5 << "Grid header..." << endl;
     debug5 << "   grid_number = " << ghdr->grid_number << endl;
     debug5 << "   AMR_level = " << ghdr->AMR_level << endl;
