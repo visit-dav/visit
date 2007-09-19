@@ -15,6 +15,10 @@
 #
 #    Mark C. Miller, Thu Sep 13 10:20:08 PDT 2007
 #    Added filtering of distclean for known special cases
+#
+#    Mark C. Miller, Fri Sep 14 08:53:32 PDT 2007
+#    Fixed poor use of 'tr -d' in construction of 'files_to_status' input
+#    to generating list of modifiers.
 #   
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
@@ -221,7 +225,7 @@ for dir in src src/data src/test; do
     svn update >> $rootTestDir/nersc_repo_update_$dateTag 2> $rootTestDir/stderr.txt
     checkAndHandleError $? warning "svn update on $dir failed" $rootTestDir/stderr.txt
     rm -f stderr.txt
-    cat $rootTestDir/nersc_repo_update_$dateTag | grep '^[ADUCG]' | grep -v revision | tr -d 'ADUCG ' > files_to_status
+    cat $rootTestDir/nersc_repo_update_$dateTag | grep '^[ADUCG]' | grep -v revision | tr -s ' ' | cut -d' ' -f2 > files_to_status
     svn status -u -v >> $rootTestDir/nersc_repo_status_$dateTag 2> $rootTestDir/stderr.txt
     checkAndHandleError $? warning "svn status on $dir failed" $rootTestDir/stderr.txt
     rm -f $rootTestDir/stderr.txt
