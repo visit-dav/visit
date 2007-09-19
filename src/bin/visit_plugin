@@ -65,6 +65,9 @@
 #   comparisons (e.g. -eq -ne -lt -gt, etc.). Added logic to deal with
 #   possibility that xml2plugin may not be in path. Fixed up the instructions
 #   a bit. I added verbose message regarding email attempts.
+#
+#   Mark C. Miller, Tue Sep 18 17:57:50 PDT 2007
+#   Added -list command line option to list plugins installed
 # ----------------------------------------------------------------------------
 #
 
@@ -503,6 +506,15 @@ do
          dontRemoveTarball=1
          shift
          ;;
+      -l|-list)
+         if test -n "$action"; then
+             echo "Action has already been specified as \"$action\""
+             optError=1
+         else
+             action="list"
+         fi
+         shift
+         ;;
       -help)
          optError=1
          shift
@@ -534,7 +546,7 @@ if test "$optError" = "0" && test -z "$action"; then
     echo "************************************************"
 fi
 
-if test "$optError" = "0" && test -z "$pluginName"; then
+if test "$action" != "list" && test "$optError" = "0" && test -z "$pluginName"; then
     optError=1
     echo "************************"
     echo "************************"
@@ -552,6 +564,7 @@ if test "$optError" = "1"; then
     echo "        -p  | -pack       Pack up the plugin into a tarball for email."
     echo "        -i  | -install    Install the plugin from a .tar.gz file."
     echo "        -u  | -uninstall  Uninstall the plugin."
+    echo "        -l  | -list       List privately installed plugins."
     echo "        -tb | -testbuild  After packing up, test that it will build."
     echo "        -tr | -testrun <Filename:PlotType:VarName>"
     echo "                          After packing up, test that it will run with"
@@ -774,6 +787,19 @@ elif test $action = uninstall; then
             exit 1
         fi
     fi
+
+elif test $action = list; then
+
+    filesToList=`ls ~/.visit/*/plugins/databases/libI${pluginName}* 2>/dev/null`
+    if test "$?" != "0" || test -z "$filesToList"; then
+        echo "Unable to find any installed plugin files"
+        exit 1
+    fi
+    echo "Names of privately installed plugins..." 
+    for f in $filesToList; do
+        theName=`basename $f | sed -e 's/libI\(.*\)Database.so/\1/'`
+        echo "    $theName"
+    done
 fi
 
 exit 0

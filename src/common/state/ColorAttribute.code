@@ -1118,6 +1118,11 @@ Definition:
 //
 // Programmer: Mark C. Miller
 // Creation:   July 13, 2006
+//
+// Modifications:
+//
+//   Mark C. Miller, Tue Sep 18 17:16:16 PDT 2007
+//   Made color name comparison case-INsensitive
 // **************************************************************************
 
 bool ColorAttribute::SetByName(const char *const colorName)
@@ -1147,7 +1152,11 @@ bool ColorAttribute::SetByName(const char *const colorName)
     //
     for (int i = 0; i < numNamedColors; i++)
     {
-        if (!strcmp(colorName, namedColors[i].n))
+#if defined(_WIN32)
+        if (!stricmp(colorName, namedColors[i].n))
+#else
+        if (!strcasecmp(colorName, namedColors[i].n))
+#endif
         {
             SetRed(namedColors[i].r);
             SetGreen(namedColors[i].g);
