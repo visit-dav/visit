@@ -1942,6 +1942,10 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Jeremy Meredith, Wed Aug 29 15:24:13 EDT 2007
 //    Added depth cueing.
 //
+//    Hank Childs, Wed Sep 19 16:41:53 PDT 2007
+//    Have visual cues be added after adding the plots.  Otherwise, they won't
+//    know if the window is 2D or 3D and whether they should offset themselves.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1977,6 +1981,7 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         bool needToSetUpWindowContents = false;
         int *cellCounts = new int[2 * plotIds.size()];
         bool handledAnnotations = false;
+        bool handledCues = false;
         int stereoType = -1;
 
         //
@@ -2018,9 +2023,11 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             // that depend on the plot list being updated in order to change their
             // text with respect to time can update.
             //
+            // However: visual cues (i.e. reflines) need to be added after the plots
+            // are added.
+            //
             if(annotMode == 2)
             {
-                UpdateVisualCues(windowID);
                 SetAnnotationAttributes(annotationAttributes,
                                         annotationObjectList, visualCueList,
                                         frameAndState, windowID, annotMode);
@@ -2124,6 +2131,12 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 visitTimer->StopTimer(t7, "Setting up one plot");
             }
 
+            if (annotMode == 2)
+            {
+                UpdateVisualCues(windowID);
+                handledCues = true;
+            }
+
             //
             // Update any cell counts for the associated networks.
             // This involves global communication. Since we're going to
@@ -2223,12 +2236,17 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             //
             // Add annotations if necessary 
             //
-            if(!handledAnnotations)
+            if (!handledAnnotations)
             {
-                UpdateVisualCues(windowID);
                 SetAnnotationAttributes(annotationAttributes,
                                         annotationObjectList, visualCueList,
                                         frameAndState, windowID, annotMode);
+                handledAnnotations = true;
+            }
+            if (!handledCues)
+            {
+                UpdateVisualCues(windowID);
+                handledCues = true;
             }
 
             debug5 << "Rendering " << viswin->GetNumPrimitives() 
