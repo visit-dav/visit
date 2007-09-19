@@ -211,6 +211,9 @@
 //    still probably change it so the user specifies the object files,
 //    not the source files.
 //
+//    Gunther H. Weber, Wed Sep 19 16:37:20 PDT 2007
+//    Added dependecies for parallel builds on Macs.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -468,6 +471,7 @@ class MakefileGeneratorPlugin
             out << "ELIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=" << endl;
+            out << "EPARLIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=" << endl;
 #else
             out << "ELIBS_FOR_MACOSX_PREBINDING=$(BZIP2_LIBS) $(GLEW_LIBS) "
@@ -480,6 +484,8 @@ class MakefileGeneratorPlugin
                    "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser "
                    "-ldatabase_ser -lmir_ser -lplugin" << endl;
+            out << "EPARLIBS_FOR_MACOSX_PREBINDING=-lavtddf_par "
+                   "-ldatabase_par -lmir_par -lplugin" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions "
                    "-ldbatts -lplugin -lexpr -lparser" << endl;
 #endif
@@ -529,8 +535,8 @@ class MakefileGeneratorPlugin
                    "-lstate -lmisc -lcomm -lexpr -lparser -lutility "
                    "-lvisit_vtk -llightweight_visit_vtk "
                    "-lparallel_visit_vtk_par -lexpressions_par "
-                   "-lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) "
-                   "$(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+                   "-lI$(PLUGINNAME)  $(EPARLIBS_FOR_MACOSX_PREBINDING) "
+		   "$(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/operators/libI"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/operators/libG"<<name<<"Operator" << PLUGIN_EXTENSION << endl;
@@ -666,6 +672,7 @@ class MakefileGeneratorPlugin
             out << "ELIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "VLIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=" << endl;
+            out << "EPARLIBS_FOR_MACOSX_PREBINDING=" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=" << endl;
 #else
             out << "ELIBS_FOR_MACOSX_PREBINDING=$(GLEW_LIBS) $(BZIP2_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
@@ -676,6 +683,7 @@ class MakefileGeneratorPlugin
                    "-lproxybase $(QT_LDFLAGS) $(QT_LIBS) $(BZIP2_LIBS) "
                    "$(GLEW_LIBS) $(MESA_LIBS) $(GL_LIBS)" << endl;
             out << "ESERLIBS_FOR_MACOSX_PREBINDING=-lavtddf_ser -ldatabase_ser -lmir_ser -lplugin" << endl;
+            out << "EPARLIBS_FOR_MACOSX_PREBINDING=-lavtddf_par -ldatabase_par -lmir_par -lplugin" << endl;
             out << "SLIBS_FOR_MACOSX_PREBINDING=-lavtexceptions -lplugin -ldbatts -lparser -lexpr" << endl;
 #endif
             out << "ILIBS=" << endl;
@@ -688,7 +696,7 @@ class MakefileGeneratorPlugin
                    "-lparallel_visit_vtk_ser -lI$(PLUGINNAME) "
                    "$(VLIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
             out << "ESERLIBS=-lpipeline_ser -lplotter_ser -lavtfilters_ser -lavtmath_ser -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser -lexpressions_ser -lI$(PLUGINNAME) $(ESERLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS)" << endl;
-            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par -lI$(PLUGINNAME) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
+            out << "EPARLIBS=-lpipeline_par -lplotter_par -lavtfilters_par -lavtmath_par -lavtview -lavtexceptions -ldbatts -lstate -lmisc -lcomm -lexpr -lparser -lutility -lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_par -lexpressions_par -lI$(PLUGINNAME) $(EPARLIBS_FOR_MACOSX_PREBINDING) $(ELIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(SHLIB_MPI_LIBS)" << endl;
             out << "" << endl;
             out << "IDSO="<<visitplugininstall<<"/plots/libI"<<name<<"Plot" << PLUGIN_EXTENSION << endl;
             out << "GDSO="<<visitplugininstall<<"/plots/libG"<<name<<"Plot" << PLUGIN_EXTENSION << endl;

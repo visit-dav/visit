@@ -77,6 +77,10 @@
 #    Thomas R. Treadway, Thu Jul 26 16:07:56 PDT 2007
 #    Added -lplotter_ser for avtColorTables reference
 #
+#    Gunther H. Weber, Wed Sep 19 16:36:14 PDT 2007
+#    Add -lplotter_ser for serial engine and -lplotter_ser for
+#    parallel engine.
+#
 ##############################################################################
 
 ##
@@ -96,9 +100,11 @@ CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@
 SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libavtwriter
-LIBS_FOR_MACOSX_PREBINDING=-lplotter_ser $(MESA_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS)
-SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
-PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
+LIBS_FOR_MACOSX_PREBINDING=$(MESA_LIBS) $(BZIP2_LIBS) $(GLEW_LIBS)
+SER_LIBS_FOR_MACOSX_PREBINDING=-lplotter_ser
+PAR_LIBS_FOR_MACOSX_PREBINDING=-lplotter_par
+SERLIBS=-ldbatts -lpipeline_ser -lavtmath_ser -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(SER_LIBS_FOR_MACOSX_PREBINDING) $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
+PARLIBS=-ldbatts -lpipeline_par -lavtmath_par -lavtexceptions -lvisit_vtk -llightweight_visit_vtk -lmisc -lstate -lcomm -lexpr -lparser -lutility $(PAR_LIBS_FOR_MACOSX_PREBINDING) $(LIBS_FOR_MACOSX_PREBINDING) $(VTK_LIBS) $(X_LIBS)
 
 ##
 ## Standard targets...
