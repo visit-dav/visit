@@ -122,6 +122,8 @@ QvisLabelPlotWindow::~QvisLabelPlotWindow()
 //   zbuffering and additional controls for changing label color and height
 //   for meshes.
 //
+//   Dave Bremer, Wed Sep 19 19:39:40 PDT 2007
+//   I added a line for specifying a printf-style template.
 // ****************************************************************************
 
 void
@@ -213,7 +215,8 @@ QvisLabelPlotWindow::CreateWindowContents()
     fmtLayout->addWidget(labelDisplayFormatComboBox, 0, 1);
     fmtLayout->addWidget(new QLabel(labelDisplayFormatComboBox,
         "Label display format", formattingGroupBox, "labelDisplayLabel"), 0, 0);
-    
+
+
     specifyTextColor1Toggle = new QCheckBox("Specify label color",
         formattingGroupBox, "specifyTextColor1Toggle");
     connect(specifyTextColor1Toggle, SIGNAL(toggled(bool)),
@@ -278,7 +281,20 @@ QvisLabelPlotWindow::CreateWindowContents()
     fmtLayout->addWidget(new QLabel(verticalJustificationComboBox,
         "Vertical justification", formattingGroupBox, "vjustLabel"), 6, 0);
 
-    // Lagend toggle
+    
+    formatTemplate = new QLineEdit(
+        QString(labelAtts->GetFormatTemplate().c_str()), 
+        formattingGroupBox, "formatTemplate");
+    connect(formatTemplate, SIGNAL(returnPressed()), 
+            this, SLOT(formatTemplateChanged()));
+
+    fmtLayout->addWidget(formatTemplate, 7, 1);
+    fmtLayout->addWidget(new QLabel(formatTemplate,
+        "Format template", formattingGroupBox, "formatTemplateLabel"), 7, 0);
+
+
+
+    // Legend toggle
     legendToggle = new QCheckBox("Legend", central, "legendFlag");
     connect(legendToggle, SIGNAL(toggled(bool)),
             this, SLOT(legendToggled(bool)));
@@ -300,6 +316,8 @@ QvisLabelPlotWindow::CreateWindowContents()
 //   Changed field ordering. Added widgets that allow for setting colors for
 //   node and cell labels.
 //
+//   Dave Bremer, Wed Sep 19 19:39:40 PDT 2007
+//   I added a code for updating a printf-style template.
 // ****************************************************************************
 
 void
@@ -434,6 +452,11 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             depthTestButtonGroup->blockSignals(true);
             depthTestButtonGroup->setButton(int(labelAtts->GetDepthTestMode()));
             depthTestButtonGroup->blockSignals(false);
+            break;
+        case 17: //formatTemplate
+            formatTemplate->blockSignals(true);
+            formatTemplate->setText(QString(labelAtts->GetFormatTemplate()));
+            formatTemplate->blockSignals(false);
             break;
         }
     }
@@ -780,4 +803,33 @@ QvisLabelPlotWindow::depthTestButtonGroupChanged(int val)
     SetUpdate(false);
     Apply();
 }
+
+
+void 
+QvisLabelPlotWindow::formatTemplateChanged()
+{
+    std::string newval = formatTemplate->displayText().stripWhiteSpace();
+
+    //Test the new value and don't apply it if it's an invalid printf string.
+    //In practice snprintf never throws an error for wrong type or number
+    //of %f slots.
+    char test[36];
+    int len = snprintf(test, 36, newval.c_str(), 0.0f);
+    if (len < 0)
+    {
+        Message( "Must enter a printf-style template that would be valid for a single floating point number." );
+        return;
+    }
+    else if (len >= 35)
+    {
+        Message( "The template produces values that are too long.  36 character limit." );
+        return;
+    }
+
+    labelAtts->SetFormatTemplate(newval);
+    SetUpdate(false);
+    Apply();
+}
+
+
 
