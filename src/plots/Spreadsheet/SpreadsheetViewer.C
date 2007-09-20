@@ -67,6 +67,9 @@
 #include <QvisVariableButton.h>
 #include <plugin_vartypes.h>
 
+#include <PlotList.h>
+#include <Plot.h>
+
 #include <SpreadsheetTable.h>
 #include <SpreadsheetTabWidget.h>
 #include <avtLookupTable.h>
@@ -378,15 +381,15 @@ SpreadsheetViewer::render(vtkDataSet *ds)
         raise();
 
         // If input is NULL then there may be picks in the attributes that need
-        // to be highlgihted 
+        // to be highlighted 
         bool needPickUpdate = !input; 
         bool sliceIndexSet = false;
 
         // Set the input pointer
         input = ds;
 
-        // Move slive (before updateSpreadsheet so that the it builds the table
-        // for the proper slice
+        // Move slice (before updateSpreadsheet so that the it builds the table
+        // for the proper slice)
         if (needPickUpdate)
             sliceIndexSet = moveSliceToCurrentPick();
 
@@ -2128,12 +2131,39 @@ SpreadsheetViewer::maxClicked()
 //
 // Modifications:
 //   
+//    Hank Childs, Thu Sep 20 11:18:18 PDT 2007
+//    Make sure the active plots stay the same.
+//
 // ****************************************************************************
 
 void
 SpreadsheetViewer::postNotify()
 {
+    //
+    // See what was active before we update the attributes.
+    //
+    vector<int> activePlots;
+    PlotList *plist = plot->GetViewerState()->GetPlotList();
+    int nplots = plist->GetNumPlots();
+    for (int i = 0 ; i < nplots ; i++)
+    {
+        const Plot &p = plist->GetPlots(i);
+        if (p.GetActiveFlag())
+           activePlots.push_back(i);
+    }
+
+    //
+    // Update the attributes.  This will change the active plots.
+    //
     plotAtts->Notify();
+
+    if (activePlots.size() > 0)
+    {
+        //
+        // Set the active plots to be what they originally were.
+        //
+        plot->GetViewerMethods()->SetActivePlots(activePlots);
+    }
 }
 
 // ****************************************************************************
