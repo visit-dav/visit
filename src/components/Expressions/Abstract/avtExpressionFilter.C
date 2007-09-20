@@ -404,6 +404,11 @@ avtExpressionFilter::RefashionDataObjectInfo(void)
 //  Programmer: Hank Childs
 //  Creation:   August 29, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 20 11:39:28 PDT 2007
+//    Vectors of size 2 were being tagged as scalars.  Make them be vectors.
+//
 // ****************************************************************************
 
 void
@@ -443,7 +448,7 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
     {
         if (dim == 1)
             outAtts.SetVariableType(AVT_SCALAR_VAR);
-        else if (dim == 3)
+        else if (dim == 2 || dim == 3)
             outAtts.SetVariableType(AVT_VECTOR_VAR);
         else if (dim == 9)
             outAtts.SetVariableType(AVT_TENSOR_VAR);
