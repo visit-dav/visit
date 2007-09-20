@@ -105,6 +105,7 @@ private slots:
 
     void horizontalJustificationChanged(int val);
     void verticalJustificationChanged(int val);
+    void formatTemplateChanged();
 
     void legendToggled(bool val);
 private:
@@ -131,6 +132,7 @@ private:
     QSpinBox        *textHeight2SpinBox;
     QComboBox       *horizontalJustificationComboBox;
     QComboBox       *verticalJustificationComboBox;
+    QLineEdit       *formatTemplate;
 
     QCheckBox       *legendToggle;
 };

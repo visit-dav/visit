@@ -812,6 +812,8 @@ avtLabelRenderer::DepthTestPoint(float screenPoint[3]) const
 //    Brad Whitlock, Tue Aug 2 15:26:23 PST 2005
 //    I removed the single cell/node stuff.
 //
+//    Dave Bremer, Wed Sep 19 19:39:40 PDT 2007
+//    Clear the cache of label strings if the printf template is changed.
 // ****************************************************************************
 
 void
@@ -822,9 +824,9 @@ avtLabelRenderer::SetAtts(const AttributeGroup *a)
     //
     // See if the label display format changed.
     //
-    bool labelDisplayFormatChanged = atts.GetLabelDisplayFormat() !=
-                                     newAtts->GetLabelDisplayFormat();
-
+    bool labelDisplayFormatChanged = 
+        (atts.GetLabelDisplayFormat() != newAtts->GetLabelDisplayFormat()) ||
+        (atts.GetFormatTemplate()     != newAtts->GetFormatTemplate());
     atts = *newAtts;
 
     //

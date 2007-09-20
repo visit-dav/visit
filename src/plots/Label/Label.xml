@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="mesh,scalar,vector,material,subset,tensor,symmetrictensor,label,array" iconFile="Label.xpm">
+  <Plugin name="Label" type="plot" label="Label" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="mesh,scalar,vector,material,subset,tensor,symmetrictensor,label,array" iconFile="Label.xpm">
     <Files components="V">
       avtLabelFilter.C
       avtLabelSubsetsFilter.C
@@ -16,7 +16,7 @@
       avtMesaLabelRenderer.C
       avtOpenGLLabelRenderer.C
     </Files>
-    <Attribute name="LabelAttributes" purpose="This class contains the fields that we need to set the attributes for the Label plot." persistent="true" exportAPI="" exportInclude="" codefile="LabelAttributes.code">
+    <Attribute name="LabelAttributes" purpose="This class contains the fields that we need to set the attributes for the Label plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LabelAttributes.code">
       <Enum name="LabelIndexDisplay">
         Natural
         LogicalIndex
@@ -81,7 +81,7 @@
       <Field name="specifyTextColor1" label="Specify text color1" type="bool">
         false
       </Field>
-      <Field name="textColor1" label="Text color1" type="color" enabler="specifyTextColor1:true">
+      <Field name="textColor1" label="Text color1" type="color" length="4" enabler="specifyTextColor1:true">
         255
         0
         0
@@ -93,7 +93,7 @@
       <Field name="specifyTextColor2" label="Specify text color2" type="bool">
         false
       </Field>
-      <Field name="textColor2" label="Text color2" type="color" enabler="specifyTextColor2:true">
+      <Field name="textColor2" label="Text color2" type="color" length="4" enabler="specifyTextColor2:true">
         0
         0
         255
@@ -110,6 +110,9 @@
       </Field>
       <Field name="depthTestMode" label="Depth test mode" type="enum" subtype="DepthTestMode">
         LABEL_DT_AUTO
+      </Field>
+      <Field name="formatTemplate" label="Format template" type="string">
+        "%g"
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

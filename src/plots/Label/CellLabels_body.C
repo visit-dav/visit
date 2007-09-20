@@ -178,7 +178,7 @@
                     // float *vert = cellCenters->GetTuple3(id);
                     BEGIN_LABEL
                         float scalarVal = data->GetTuple1(id);
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%g", scalarVal);
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, atts.GetFormatTemplate().c_str(), scalarVal);
                     END_LABEL
                 }
             }
@@ -189,45 +189,68 @@
             // leave it as a 3D vector.  Should we be using the spatial dim
             // of the input?
             debug3 << "Labelling cells with 2d vector data" << endl;
+            char *tmp = (char *)malloc(strlen(atts.GetFormatTemplate().c_str())*2 + 5);
+            sprintf(tmp, "<%s, %s>", atts.GetFormatTemplate().c_str(), atts.GetFormatTemplate().c_str());
+
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     double *vectorVal = data->GetTuple2(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "<%g, %g>",
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
                              vectorVal[0], vectorVal[1]);
                 END_LABEL
             }
+            free(tmp);
         }
         else if(data->GetNumberOfComponents() == 3)
         {
             debug3 << "Labelling cells with 3d vector data" << endl;
+            char *tmp = (char *)malloc(strlen(atts.GetFormatTemplate().c_str())*3 + 7);
+            sprintf(tmp, "<%s, %s, %s>", 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str());
+
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     double *vectorVal = data->GetTuple3(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "<%g, %g, %g>",
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
                              vectorVal[0], vectorVal[1], vectorVal[2]);
                 END_LABEL
             }
+            free(tmp);
         }
         else if(data->GetNumberOfComponents() == 9)
         {
             debug3 << "Labelling cells with 3d tensor data" << endl;
+            char *tmp = (char *)malloc(strlen(atts.GetFormatTemplate().c_str())*9 + 23);
+            sprintf(tmp, "(%s, %s, %s)\n(%s, %s, %s)\n(%s, %s, %s)", 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str(), 
+                atts.GetFormatTemplate().c_str());
+
             maxLabelRows = 3;
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     double *tensorVal = data->GetTuple9(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, 
-                      "(%g, %g, %g)\n(%g, %g, %g)\n(%g, %g, %g)",
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
                              tensorVal[0], tensorVal[1], tensorVal[2],
                              tensorVal[3], tensorVal[4], tensorVal[5],
                              tensorVal[6], tensorVal[7], tensorVal[8]);
                 END_LABEL
             }
+            free(tmp);
         }
         else
         {
@@ -237,10 +260,17 @@
             while (row_size*row_size < nComps)
                 row_size++;
             maxLabelRows = row_size;
-            char formatStringStart[8] = "(%g, ";
-            char formatStringMiddle[8] = "%g, ";
-            char formatStringEnd[8] = "%g)\n";
-            char formatStringLast[8] = "%g)";
+
+            char *formatStringStart  = (char *)malloc( strlen(atts.GetFormatTemplate().c_str())+4 );
+            char *formatStringMiddle = (char *)malloc( strlen(atts.GetFormatTemplate().c_str())+3 );
+            char *formatStringEnd    = (char *)malloc( strlen(atts.GetFormatTemplate().c_str())+4 );
+            char *formatStringLast   = (char *)malloc( strlen(atts.GetFormatTemplate().c_str())+2 );
+
+            sprintf(formatStringStart,  "(%s, ", atts.GetFormatTemplate().c_str());
+            sprintf(formatStringMiddle, "%s, ",  atts.GetFormatTemplate().c_str());
+            sprintf(formatStringEnd,    "%s)\n", atts.GetFormatTemplate().c_str());
+            sprintf(formatStringLast,   "%s)",   atts.GetFormatTemplate().c_str());
+
             for (vtkIdType id = 0 ; id < nCells ; id += skipIncrement)
             {
                 BEGIN_LABEL
@@ -264,6 +294,10 @@
                     }
                 END_LABEL
             }
+            free(formatStringStart);
+            free(formatStringMiddle);
+            free(formatStringEnd);
+            free(formatStringLast);
         }
     }
     else if(originalCells != 0)

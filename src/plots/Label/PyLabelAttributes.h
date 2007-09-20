@@ -45,13 +45,15 @@
 //
 void            PyLabelAttributes_StartUp(LabelAttributes *subj, void *data);
 void            PyLabelAttributes_CloseDown();
-PyMethodDef    *PyLabelAttributes_GetMethodTable(int *nMethods);
+ PyMethodDef *   PyLabelAttributes_GetMethodTable(int *nMethods);
 bool            PyLabelAttributes_Check(PyObject *obj);
-LabelAttributes *PyLabelAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyLabelAttributes_NewPyObject();
-PyObject       *PyLabelAttributes_WrapPyObject(const LabelAttributes *attr);
-std::string     PyLabelAttributes_GetLogString();
+ LabelAttributes *  PyLabelAttributes_FromPyObject(PyObject *obj);
+ PyObject *      PyLabelAttributes_New();
+ PyObject *      PyLabelAttributes_Wrap(const LabelAttributes *attr);
+void            PyLabelAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyLabelAttributes_SetDefaults(const LabelAttributes *atts);
+std::string     PyLabelAttributes_GetLogString();
+std::string     PyLabelAttributes_ToString(const LabelAttributes *, const char *);
 
 #endif
 
