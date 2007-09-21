@@ -309,6 +309,9 @@
 #    Thomas R. Treadway, Tue Sep 11 10:33:03 PDT 2007
 #    Modified the visitmodule naming for the Mac
 #
+#    Hank Childs, Thu Sep 20 22:09:43 PDT 2007
+#    Distribute visit_writer.so if it exists.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -845,6 +848,9 @@ if(-e $VisItDir/exe/visitconvert_par) then
 endif
 if(-e $VisItDir/exe/makemili_ser) then
    cp $VisItDir/exe/makemili_ser $bindir/makemili_ser
+endif
+if(-e $VisItDir/exe/visit_writer.so) then
+   cp $VisItDir/exe/visit_writer.so $bindir/visit_writer.so
 endif
 # Copy the MPEG encoder and the makemovie script.
 cp $VisItDir/exe/mpeg2encode   $bindir
