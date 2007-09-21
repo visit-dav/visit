@@ -181,6 +181,11 @@ avtMomentOfInertiaQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   May 17, 2005
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -195,13 +200,22 @@ avtMomentOfInertiaQuery::PostExecute(void)
     //  That is all that is required of this query.
     //
     char msg[4096];
-    SNPRINTF(msg, 4096,
-             "Moment of inertia tensor = \n"
-             "(%f,\t%f,\t%f)\n"
-             "(%f,\t%f,\t%f)\n"
-             "(%f,\t%f,\t%f)\n",
-             I_tmp[0], I_tmp[1], I_tmp[2], I_tmp[3], I_tmp[4],
-             I_tmp[5], I_tmp[6], I_tmp[7], I_tmp[8]);
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format = "Moment of inertia tensor = \n("
+                      + floatFormat + ",\t" 
+                      + floatFormat + ",\t" 
+                      + floatFormat + ")\n(" 
+                      + floatFormat + ",\t" 
+                      + floatFormat + ",\t" 
+                      + floatFormat + ")\n("
+                      + floatFormat + ",\t" 
+                      + floatFormat + ",\t" 
+                      + floatFormat + ")\n";
+                    
+    SNPRINTF(msg, 4096,format.c_str(),
+             I_tmp[0], I_tmp[1], I_tmp[2], 
+             I_tmp[3], I_tmp[4], I_tmp[5], 
+             I_tmp[6], I_tmp[7], I_tmp[8]);
     SetResultMessage(msg);
     doubleVector I_vec(9);
     for (int i = 0 ; i < 9 ; i++)

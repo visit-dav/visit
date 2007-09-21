@@ -45,6 +45,7 @@
 #include <query_exports.h>
 
 #include <avtGeneralQuery.h>
+#include <QueryAttributes.h>
 
 
 // ****************************************************************************
@@ -62,6 +63,9 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Cyrus Harrison, Tue Sep 18 13:57:12 PDT 2007
+//    Added queryAtts
+//
 // ****************************************************************************
 
 class QUERY_API avtTimeQuery : public avtGeneralQuery
@@ -76,6 +80,10 @@ class QUERY_API avtTimeQuery : public avtGeneralQuery
 
     virtual void               PerformQuery(QueryAttributes *);
     virtual std::string        GetResultMessage(void);
+  
+  private:
+    QueryAttributes            queryAtts;
+  
 };
 
 

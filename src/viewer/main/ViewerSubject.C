@@ -7280,6 +7280,9 @@ ViewerSubject::SendKeepAlives()
 //    Brad Whitlock, Tue May 8 16:57:00 PST 2007
 //    Added AddInitializedOperator.
 //
+//    Cyrus Harrison, Tue Sep 18 11:14:37 PDT 2007
+//    Added SetQueryFloatFormat()
+//
 // ****************************************************************************
 
 void
@@ -7603,6 +7606,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SuppressQueryOutputRPC:
         SuppressQueryOutput();
+        break;
+   case ViewerRPC::SetQueryFloatFormatRPC:
+        SetQueryFloatFormat();
         break;
     case ViewerRPC::SetMeshManagementAttributesRPC:
         SetMeshManagementAttributes();
@@ -8866,6 +8872,27 @@ ViewerSubject::SuppressQueryOutput()
     ViewerQueryManager::Instance()->
         SuppressQueryOutput(GetViewerState()->GetViewerRPC()->GetBoolFlag());
 }
+
+// ****************************************************************************
+// Method: ViewerSubject::SetQueryFloatFormat
+//
+// Purpose: 
+//   Sets the floating point format string used for queries.
+//
+// Programmer: Cyrus Harrison
+// Creation:   September 18, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetQueryFloatFormat()
+{
+    ViewerQueryManager::Instance()->
+        SetQueryFloatFormat(GetViewerState()->GetViewerRPC()->GetStringArg1());
+}
+
 
 // ****************************************************************************
 // Method: ViewerSubject::MoveWindow

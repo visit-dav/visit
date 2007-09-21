@@ -144,11 +144,15 @@ avtBestFitLineQuery::PreExecute(void)
 //
 //  Modifications:
 //
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
 avtBestFitLineQuery::PostExecute(void)
 {
+
     double d[6];
     SumDoubleArrayAcrossAllProcessors(sums, d, 6);
 
@@ -165,16 +169,19 @@ avtBestFitLineQuery::PostExecute(void)
     double dX = (d[N_SUM] * d[X2_SUM] - d[X_SUM] * d[X_SUM]);
     double m, b, r;
     std::string s;
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format;
+    char buf[1024];
 
     if(dX == 0.)
     {
         double x = d[X_SUM] / d[N_SUM];
         m = DBL_MAX;
         r = 1.;
-
-        char buf[1024];
-        SNPRINTF(buf, 1024, "The best fit line is: X = %g with a "
-                 "correlation coefficient of: %g", x, r);
+       
+        format = "The best fit line is: X = " + floatFormat 
+                  + " with a correlation coefficient of: "+ floatFormat;
+        SNPRINTF(buf, 1024, format.c_str(), x, r);
         s = std::string(buf);
     }
     else
@@ -190,26 +197,32 @@ avtBestFitLineQuery::PostExecute(void)
             r = rtop / sqrt(rbottom);
 
         // Create a return message.
-        char buf[1024];
-        SNPRINTF(buf, 1024, "The best fit line is: Y = %gX ", m);
+        format = "The best fit line is: Y = " + floatFormat  + "X ";
+        SNPRINTF(buf, 1024,format.c_str(), m);
         s = std::string(buf);
         if(b < 0.)
         {
-            SNPRINTF(buf, 1024, "-%g ", b);
+            format = "-" + floatFormat + " "; 
+            SNPRINTF(buf, 1024, format.c_str(), b);
             buf[1] = ' ';
             s += buf;
         }
         else if(b > 0.)
         {
-            SNPRINTF(buf, 1024, "+ %g ", b);
+            format = "+ " + floatFormat + " "; 
+            SNPRINTF(buf, 1024, format.c_str(), b);
             s += buf;
         }
 
         if (rbottom > 0.)
-            SNPRINTF(buf, 1024, "with a correlation coefficient of: %g", r);
+        {
+            format = "with a correlation coefficient of: " + floatFormat;
+            SNPRINTF(buf, 1024, format.c_str(), r);
+            s += buf;
+        }
         else
-            SNPRINTF(buf, 1024, "with an undefined correlation coefficient.");
-        s += buf;
+            s += "with an undefined correlation coefficient.";
+
     }
   
     //

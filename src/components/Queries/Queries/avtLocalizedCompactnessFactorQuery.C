@@ -141,6 +141,11 @@ avtLocalizedCompactnessFactorQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   April 29, 2006
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -157,7 +162,9 @@ avtLocalizedCompactnessFactorQuery::PostExecute(void)
     double factor = (totalNumEntries > 0 ? fullSum / totalNumEntries : 0);
 
     char buff[1024];
-    SNPRINTF(buff, 1024, "The localized compactness factor is %f\n", factor);
+    string format = "The localized compactness factor is "
+                    + queryAtts.GetFloatFormat() + "\n";
+    SNPRINTF(buff, 1024,format.c_str() , factor);
     SetResultMessage(buff);
     SetResultValue(factor);
 }

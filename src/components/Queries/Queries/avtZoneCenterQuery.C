@@ -109,6 +109,9 @@ avtZoneCenterQuery::~avtZoneCenterQuery()
 //    Kathleen Bonnell, Tue Dec 28 14:52:22 PST 2004 
 //    Add 'global' to output string as necessary. 
 //
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -117,6 +120,9 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     queryAtts = *qA;
     Init(); 
 
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format = "";
+    
     UpdateProgress(0, 0);
 
     bool singleDomain = false;
@@ -162,12 +168,17 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
                 global = "global";
             if (dim == 2)
             {
-                SNPRINTF(msg, 120, "The center of %s zone %d is (%g, %g).", 
+                format = "The center of %s zone %d is (" + floatFormat + ", " 
+                                                         + floatFormat + ").";
+                SNPRINTF(msg, 120, format.c_str(), 
                          global.c_str(), qA->GetElement(), coord[0], coord[1]);
             }
             else 
             {
-                SNPRINTF(msg, 120, "The center of %s zone %d is (%g, %g, %g).", 
+                format = "The center of %s zone %d is (" + floatFormat + ", " 
+                                                         + floatFormat + ", " 
+                                                         + floatFormat + ").";
+                SNPRINTF(msg, 120, format.c_str(), 
                          global.c_str(), qA->GetElement(), 
                          coord[0], coord[1], coord[2]);
             }
@@ -183,13 +194,18 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
             src->GetDomainName(var, ts, domain, domainName);
             if (dim == 2)
             {
-                SNPRINTF(msg, 120, "The center of zone %d (%s) is (%g, %g).", 
+                format = "The center of zone %d (%s) is (" + floatFormat + ", " 
+                                                         + floatFormat + ").";
+                SNPRINTF(msg, 120, format.c_str(),
                          qA->GetElement(), domainName.c_str(),
                          coord[0], coord[1]);
             }
             else 
             {
-                SNPRINTF(msg, 120, "The center of zone %d (%s) is (%g, %g, %g).", 
+                format = "The center of zone %d (%s) is (" + floatFormat + ", " 
+                                                           + floatFormat + ", " 
+                                                           + floatFormat + ").";
+                SNPRINTF(msg, 120, format.c_str(), 
                          qA->GetElement(), domainName.c_str(),
                          coord[0], coord[1], coord[2]);
             }

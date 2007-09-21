@@ -290,6 +290,9 @@ avtSummationQuery::PreExecute(void)
 //    Hank Childs, Tue May 16 09:18:41 PDT 2006
 //    Added support for averaging.
 //
+//    Cyrus Harrison, Tue Sep 18 09:41:09 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -308,17 +311,21 @@ avtSummationQuery::PostExecute(void)
             sum /= denomSum;
     }
 
+    // get floating point format string 
+    string floatFormat = queryAtts.GetFloatFormat();
+
     char buf[1024];
     std::string str;
     if (CalculateAverage())
         str += "The average ";
     else
         str += "The total ";
-    SNPRINTF(buf, 1024, "%s", sumType.c_str());
-    str += buf;
-    str += " is ";
-    SNPRINTF(buf, 1024,  "%f", sum);
+    
+    str += sumType + " is " ;
+    
+    SNPRINTF(buf, 1024,  floatFormat.c_str(), sum);
     str += buf; 
+    
     if (!units.empty())
     {
         SNPRINTF(buf, 1024, " %s%s", units.c_str(), unitsAppend.c_str());

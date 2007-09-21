@@ -4902,6 +4902,34 @@ ViewerMethods::SuppressQueryOutput(bool onOff)
 
 
 // ****************************************************************************
+// Method: ViewerMethods::SetQueryFloatFormat
+//
+// Purpose: 
+//   Sets the floating point format string used by queries. 
+//
+// Programmer: Cyrus Harrison
+// Creation:   September 18, 2007 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerMethods::SetQueryFloatFormat(const std::string &format)
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetQueryFloatFormatRPC);
+    state->GetViewerRPC()->SetStringArg1(format);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerMethods::UpdatePlotInfoAtts
 //
 // Purpose: 

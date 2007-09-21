@@ -8939,6 +8939,34 @@ visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetQueryFloatFormat()
+//
+// Purpose:
+//   Sets the floating point format string used to generate query output.
+//
+// Programmer: Cyrus Harrison
+// Creation:   September 19, 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetQueryFloatFormat(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    char *format_string;
+    if(!PyArg_ParseTuple(args, "s", &format_string))
+        return NULL;
+    MUTEX_LOCK();
+        GetViewerMethods()->SetQueryFloatFormat(format_string);
+    MUTEX_UNLOCK();
+    
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+// ****************************************************************************
 // Function: visit_QueryOverTime
 //
 // Purpose:
@@ -11647,6 +11675,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Tue Jul 3 16:28:39 PST 2007
 //   Added ColorTable function.
 //
+//   Cyrus Harrison, Wed Sep 19 08:43:42 PDT 2007
+//   Added SetQueryFloatFormat function.
+//
 // ****************************************************************************
 
 static void
@@ -11949,6 +11980,7 @@ AddDefaultMethods()
     AddMethod("ShowToolbars", visit_ShowToolbars, visit_ShowToolbars_doc);
     AddMethod("SuppressQueryOutputOn", visit_SuppressQueryOutputOn, visit_SuppressQueryOutput_doc);
     AddMethod("SuppressQueryOutputOff", visit_SuppressQueryOutputOff, visit_SuppressQueryOutput_doc);
+    AddMethod("SetQueryFloatFormat", visit_SetQueryFloatFormat, visit_SetQueryFloatFormat_doc);
     AddMethod("TimeSliderGetNStates", visit_TimeSliderGetNStates,
                                                visit_TimeSliderGetNStates_doc);
     AddMethod("TimeSliderNextState", visit_TimeSliderNextState,

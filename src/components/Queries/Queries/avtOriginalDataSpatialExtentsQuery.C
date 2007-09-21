@@ -125,6 +125,9 @@ avtOriginalDataSpatialExtentsQuery::ApplyFilters(avtDataObject_p inData)
 //    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
 //    Remove unused variable.
 //
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string 
+//
 // ****************************************************************************
 
 void
@@ -133,6 +136,8 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
     queryAtts = *qA;
     Init(); 
 
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format ="";
     UpdateProgress(0, 0);
 
     avtDataObject_p dob = ApplyFilters(GetInput());
@@ -148,17 +153,29 @@ avtOriginalDataSpatialExtentsQuery::PerformQuery(QueryAttributes *qA)
     int dim = input->GetInfo().GetAttributes().GetSpatialDimension();
     if (dim == 1)
     {
-        SNPRINTF(msg, 1024, "The original extents are (%g, %g)", 
+        format = "The original extents are (" + floatFormat + ", " 
+                                              + floatFormat + ")";
+        SNPRINTF(msg, 1024,format.c_str(), 
                 extents[0], extents[1]);
     }
     else if (dim == 2)
     {
-        SNPRINTF(msg, 1024, "The original extents are (%g, %g, %g, %g)", 
+        format = "The original extents are (" + floatFormat + ", " 
+                                              + floatFormat + ", " 
+                                              + floatFormat + ", " 
+                                              + floatFormat + ")";
+        SNPRINTF(msg, 1024, format.c_str(), 
             extents[0], extents[1], extents[2], extents[3]);
     }
     else if (dim == 3)
     {
-       SNPRINTF(msg, 1024, "The original extents are (%g, %g, %g, %g, %g, %g)", 
+        format = "The original extents are (" + floatFormat + ", " 
+                                              + floatFormat + ", " 
+                                              + floatFormat + ", " 
+                                              + floatFormat + ", " 
+                                              + floatFormat + ", " 
+                                              + floatFormat + ")";
+       SNPRINTF(msg, 1024, format.c_str(),
         extents[0], extents[1], extents[2], extents[3], extents[4], extents[5]);
     }
     doubleVector d;

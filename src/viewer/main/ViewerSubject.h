@@ -429,6 +429,9 @@ class avtDefaultPlotMetaData;
 //    Brad Whitlock, Mon Jun 11 11:56:37 PDT 2007
 //    Added InterpretCommands method and some helper methods.
 //
+//    Cyrus Harrison, Tue Sep 18 11:13:27 PDT 2007
+//    Added SetQueryFloatFormat
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -572,6 +575,7 @@ private:
     void CopyPlotsToWindow();
     void SetRenderingAttributes();
     void SuppressQueryOutput();
+    void SetQueryFloatFormat();
     void DatabaseQuery();
     void PointQuery();
     void LineQuery();

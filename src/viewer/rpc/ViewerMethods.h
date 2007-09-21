@@ -78,6 +78,9 @@ class ViewerState;
 //   Kathleen Bonnell, Tue May 15 10:39:58 PDT 2007 
 //   Added optional bool arg to Lineout, LineQuery.
 //
+//   Cyrus Harrison, Tue Sep 18 11:05:50 PDT 2007
+//   Added SetQueryFloatFormat
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -288,6 +291,8 @@ public:
 
     // Methods for querying
     void SuppressQueryOutput(bool onOff);
+    void SetQueryFloatFormat(const std::string &format);
+    
     void DatabaseQuery(const std::string &queryName, const stringVector &vars,
                        const bool = false, const int arg1 = 0, const int arg2 = 0,
                        const bool = false,

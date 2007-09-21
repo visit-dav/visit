@@ -107,6 +107,10 @@ avtNodeCoordsQuery::~avtNodeCoordsQuery()
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -114,6 +118,9 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
 {
     queryAtts = *qA;
     Init(); 
+    
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format ="";
 
     UpdateProgress(0, 0);
 
@@ -166,12 +173,17 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
                 global = "global";
             if (dim == 2)
             {
-                SNPRINTF(msg, 120, "The coords of %s node %d are (%g, %g).", 
+                format = "The coords of %s node %d are (" + floatFormat + ", " 
+                                                          + floatFormat + ").";
+                SNPRINTF(msg, 120, format.c_str(), 
                          global.c_str(), qA->GetElement()+nodeOrigin, coord[0], coord[1]);
             }
             else 
             {
-                SNPRINTF(msg, 120, "The coords of %s node %d are (%g, %g, %g).", 
+                format = "The coords of %s node %d are (" + floatFormat + ", " 
+                                                          + floatFormat + ", " 
+                                                          + floatFormat + ").";
+                SNPRINTF(msg, 120, format.c_str(), 
                          global.c_str(), qA->GetElement()+nodeOrigin, 
                          coord[0], coord[1], coord[2]);
             }
@@ -187,13 +199,19 @@ avtNodeCoordsQuery::PerformQuery(QueryAttributes *qA)
             src->GetDomainName(var, ts, domain, domainName);
             if (dim == 2)
             {
-                SNPRINTF(msg, 120, "The coords of node %d (%s) are (%g, %g).", 
+                format = "The coords of node %d (%s) are (" + floatFormat +", " 
+                                                            + floatFormat +").";
+                SNPRINTF(msg, 120, format.c_str(), 
                          qA->GetElement()+nodeOrigin, domainName.c_str(),
                          coord[0], coord[1]);
             }
             else 
             {
-                SNPRINTF(msg, 120, "The coords of node %d (%s) are (%g, %g, %g).", 
+                format = "The coords of node %d (%s) are (" + floatFormat +", " 
+                                                            + floatFormat +", " 
+                                                            + floatFormat +").";
+
+                SNPRINTF(msg, 120, format.c_str(), 
                          qA->GetElement()+nodeOrigin, domainName.c_str(),
                          coord[0], coord[1], coord[2]);
             }

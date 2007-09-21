@@ -172,6 +172,9 @@ QvisQueryWindow::~QvisQueryWindow()
 //   Change mechanism for handling query groups so that this code doesn't need
 //   to be modified every time a new group is added.
 //
+//   Cyrus Harrison, Tue Sep 18 08:13:05 PDT 2007
+//   Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -287,12 +290,26 @@ QvisQueryWindow::CreateWindowContents()
     qbLayout->addStretch(5);
     gLayout->addSpacing(10);
 
+    
+    QWidget     *resultTitle = new QWidget(central,"resultTitle");
+    QHBoxLayout *resTitleLayout = new QHBoxLayout(resultTitle);
+    
     // Create the results list.
     resultText = new QMultiLineEdit(central, "resultText");
     resultText->setReadOnly(true);
-    QLabel *resultLabel = new QLabel(resultText, "Query results",
-        central, "resultLabel");
-    topLayout->addWidget(resultLabel);
+    QLabel *resultLabel = new QLabel("Query results", 
+                                     resultTitle, "resultLabel");
+    
+    QLabel *floatFormatLabel = new QLabel("Float Format:",
+                                          resultTitle, "floatFormatLabel");
+    floatFormatText = new QLineEdit("%g",resultTitle,"floatFormatText");
+    
+    resTitleLayout->addWidget(resultLabel);
+    resTitleLayout->addStretch(5);
+    resTitleLayout->addWidget(floatFormatLabel);
+    resTitleLayout->addWidget(floatFormatText);
+    
+    topLayout->addWidget(resultTitle);
     topLayout->addWidget(resultText);
 }
 
@@ -976,6 +993,8 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 void
 QvisQueryWindow::Apply(bool ignore, bool doTime)
 {
+    GetViewerMethods()->SetQueryFloatFormat(floatFormatText->text().latin1());
+    
     if(AutoUpdate() || ignore)
     {
         int useActualData = dataOpts->id(dataOpts->selected());

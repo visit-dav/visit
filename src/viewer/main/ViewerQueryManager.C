@@ -141,7 +141,10 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
               stringVector &uniqueVars,
               const avtDatabaseMetaData *md = NULL);
 string
-CreateExtentsString(const double * extents, const int dim, const char *type);
+CreateExtentsString(const double * extents, 
+                    const int dim,
+                    const char *type,
+                    const string &float_format);
 
 // ****************************************************************************
 //  Method: ViewerQueryManager constructor
@@ -214,6 +217,9 @@ CreateExtentsString(const double * extents, const int dim, const char *type);
 //    Brad Whitlock, Mon Feb 12 17:45:24 PST 2007
 //    Added ViewerBase base class.
 //
+//    Cyrus Harrison, Tue Sep 18 11:01:57 PDT 2007
+//    Added init of floatFormat.
+//
 // ****************************************************************************
 
 ViewerQueryManager::ViewerQueryManager() : ViewerBase(0, "ViewerQueryManager")
@@ -246,6 +252,7 @@ ViewerQueryManager::ViewerQueryManager() : ViewerBase(0, "ViewerQueryManager")
 
     suppressQueryOutput = false;
     activePlotsChanged = true;
+    floatFormat = "%g";
 }
 
 
@@ -1155,7 +1162,7 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
     }
 
     QueryAttributes qa;
-
+    qa.SetFloatFormat(floatFormat);
     qa.SetName(qName);
     qa.SetUseGlobalId(elementIsGlobal);
 
@@ -3705,34 +3712,54 @@ ViewerQueryManager::VerifyQueryVariables(const string &qName,
 //    A string listing the extents.
 //
 //  Arguments:
-//    extents   The extents array to be converted to a string.
-//    dim       The dimension of the extents.
-//    type      The type of the extents.
+//    extents       The extents array to be converted to a string.
+//    dim           The dimension of the extents.
+//    type          The type of the extents.
+//    float_format  Floating point format string.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   November 26, 2003 
 //
 //  Modifications:
 //
+//    Cyrus Harrison, Wed Sep 19 08:34:46 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 string
-CreateExtentsString(const double * extents, const int dim, const char *type)
+CreateExtentsString(const double * extents, 
+                    const int dim, 
+                    const char *type,
+                    const string &float_format)
 {
+    string format ="";
     char msg[1024];
     if (dim == 1)
     {
-        SNPRINTF(msg, 1024, "The %s extents are (%g, %g)", type,
+        format = "The %s extents are (" + float_format + ", "
+                                        + float_format  +")";
+        
+        SNPRINTF(msg, 1024, format.c_str(), type,
                 extents[0], extents[1]);
     }
     else if (dim == 2)
     {
-        SNPRINTF(msg, 1024, "The %s extents are (%g, %g, %g, %g)", type,
+        format = "The %s extents are (" + float_format + ", "
+                                        + float_format + ", "
+                                        + float_format + ", "
+                                        + float_format  +")";
+        SNPRINTF(msg, 1024, format.c_str(), type,
             extents[0], extents[1], extents[2], extents[3]);
     }
     else if (dim == 3)
     {
-        SNPRINTF(msg, 1024, "The %s extents are (%g, %g, %g, %g, %g, %g)", type,
+        format = "The %s extents are (" + float_format + ", "
+                                        + float_format + ", "
+                                        + float_format + ", "
+                                        + float_format + ", "
+                                        + float_format + ", "                                                                          + float_format  +")";
+        SNPRINTF(msg, 1024, format.c_str(), type,
             extents[0], extents[1], extents[2], extents[3], extents[4], extents[5]);
     }
     string msg2 = msg;
@@ -4659,6 +4686,9 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
 //    Hank Childs, Tue Jun 28 09:39:14 PDT 2005
 //    Create the correct return type so CLI's GetQueryOutputValue will work.
 //
+//    Cyrus Harrison, Wed Sep 19 08:40:27 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -4672,12 +4702,12 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
         if (!actualData)
         {
             ext = oplot->GetSpatialExtents(AVT_ORIGINAL_EXTENTS);
-            s = CreateExtentsString(ext, dim, "original");
+            s = CreateExtentsString(ext, dim, "original",floatFormat);
         }
         else
         {
             ext = oplot->GetSpatialExtents(AVT_ACTUAL_EXTENTS);
-            s = CreateExtentsString(ext, dim, "actual");
+            s = CreateExtentsString(ext, dim, "actual",floatFormat);
         }
 
         queryClientAtts->SetResultsMessage(s);

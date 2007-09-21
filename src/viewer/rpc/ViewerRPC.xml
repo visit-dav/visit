@@ -159,6 +159,7 @@
       SetTryHarderCyclesTimesRPC
       OpenClientRPC
       SuppressQueryOutputRPC
+      SetQueryFloatFormatRPC
       SetMeshManagementAttributesRPC
       SetDefaultMeshManagementAttributesRPC
       ResetMeshManagementAttributesRPC
@@ -170,6 +171,7 @@
       UpdatePlotInfoAttsRPC
       RequestMetaDataRPC
       MaxRPC
+      SetTreatAllDBsAsTimeVaryingRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
       CloseRPC
