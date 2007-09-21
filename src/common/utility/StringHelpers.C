@@ -39,17 +39,20 @@
 
 #include <errno.h>
 #include <sys/types.h>
+#include <stdarg.h>
 #if defined(_WIN32)
 #include <win32-regex.h>
 #else
 #include <regex.h>
 #endif
 #include <stdlib.h>
+#include <map>
 #include <string>
 #include <vector>
 
 #include <visit-config.h>
 
+using std::map;
 using std::string;
 using std::vector;
 
@@ -616,4 +619,84 @@ StringHelpers::Dirname(const char *path)
             StaticStringBuf[i] = '\0';
         return StaticStringBuf;
     }
+}
+
+// ****************************************************************************
+//  Function: InitTypeNameToFmtREMap
+//
+//  Purpose: Support routine to build map of regular expressions for different
+//  data type names.
+//
+//  Do a 'man 7 regex' for information on format of the regular expression.
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 20, 2007 
+//
+// ****************************************************************************
+static map<string,string> typeNameToFmtREMap;
+static void InitTypeNameToFmtREMap()
+{
+    if (typeNameToFmtREMap.size())
+        return;
+
+    typeNameToFmtREMap["float"]                   = "[^%]*%#?0?-? ?+?'?[1-9]?[0-9]*(\\.[0-9]*)?[eEfFgGaA]{1}";
+    typeNameToFmtREMap["double"]                  = "[^%]*%#?0?-? ?+?'?[1-9]?[0-9]*(\\.[0-9]*)?[eEfFgGaA]{1}";
+    typeNameToFmtREMap["long double"]             = "[^%]*%#?0?-? ?+?'?[1-9]?[0-9]*(\\.[0-9]*)?L[eEfFgGaA]{1}";
+    typeNameToFmtREMap["int"]                     = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?[di]{1}";
+    typeNameToFmtREMap["long int"]                = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?l[di]{1}";
+    typeNameToFmtREMap["long long int"]           = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?ll[di]{1}";
+    typeNameToFmtREMap["unsigned int"]            = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?[ouxX]{1}";
+    typeNameToFmtREMap["unsigned long int"]       = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?l[ouxX]{1}";
+    typeNameToFmtREMap["unsigned long long int"]  = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?ll[ouxX]{1}";
+    typeNameToFmtREMap["short int"]               = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?h[di]{1}";
+    typeNameToFmtREMap["unsigned short int"]      = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?h[ouxX]{1}";
+    typeNameToFmtREMap["char"]                    = "[^%]*%c{1}";
+    typeNameToFmtREMap["unsigned char"]           = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?hh[ouxX]{1}";
+    typeNameToFmtREMap["char*"]                   = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?s{1}";
+    typeNameToFmtREMap["void*"]                   = "[^%]*%p{1}";
+    typeNameToFmtREMap["size_t"]                  = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?z[ouxX]{1}";
+
+    // aliases
+    typeNameToFmtREMap["long"]                    = typeNameToFmtREMap["long int"]; 
+    typeNameToFmtREMap["long long"]               = typeNameToFmtREMap["long long int"]; 
+    typeNameToFmtREMap["unsigned"]                = typeNameToFmtREMap["unsigned int"]; 
+    typeNameToFmtREMap["unsigned long"]           = typeNameToFmtREMap["unsigned long int"]; 
+    typeNameToFmtREMap["unsigned long long"]      = typeNameToFmtREMap["unsigned long long int"]; 
+    typeNameToFmtREMap["short"]                   = typeNameToFmtREMap["short int"]; 
+    typeNameToFmtREMap["unsigned short"]          = typeNameToFmtREMap["unsigned short int"];
+}
+
+// ****************************************************************************
+//  Function: ValidatePrintfFormatString
+//
+//  Purpose: Validates a printf style format string against a variable length
+//  list of argument type names. 
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   September 20, 2007 
+//
+// ****************************************************************************
+bool
+StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Type, ... )
+{
+    string re = "^"; // anchor first char to beginning of line
+
+    InitTypeNameToFmtREMap();
+
+    // start processing the varargs list
+    va_list ap;
+    va_start(ap, arg1Type);
+    const char *currentArgTypeName = arg1Type; 
+
+    // loop adding RE terms for each argument type
+    while (string(currentArgTypeName) != "EOA")
+    {
+        re += typeNameToFmtREMap[string(currentArgTypeName)];
+	currentArgTypeName = va_arg(ap, const char *);
+    }
+    va_end(ap);
+
+    re += "$"; // anchor last char to end of line
+
+    return StringHelpers::FindRE(fmtStr, re.c_str()) >= 0;
 }

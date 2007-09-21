@@ -76,6 +76,8 @@ namespace StringHelpers
    int UTILITY_API FindRE(const char *stringToSearch, const char *re);
    string UTILITY_API ExtractRESubstr(const char *stringToSearch, const char *re);
 
+   bool UTILITY_API ValidatePrintfFormatString(const char *fmtStr, const char *arg1Type, ... );
+
    const char UTILITY_API *Basename(const char *path);
    const char UTILITY_API *Dirname(const char *path);
 }
