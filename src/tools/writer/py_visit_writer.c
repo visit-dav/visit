@@ -91,6 +91,9 @@ static void setError( char *Msg, ... );
  *    Hank Childs, Fri Apr 22 09:39:52 PDT 2005
  *    Allow for empty variable lists.
  *
+ *    Hank Childs, Thu Sep 20 22:50:55 PDT 2007
+ *    Allow for data to be "cell centered".
+ *
  * ************************************************************************* */
 
 static char writePointMeshDoc[] = 
@@ -107,7 +110,7 @@ static PyObject *writePointMesh( PyObject *self, PyObject *args ) {
 
     if( ( npts = convertPts( -1, pts_py, &pts ) ) <= 0 ) return( NULL );
     npts = npts / 3;
-    if( ( nvars = convertVarData( npts, 0, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) < 0 ) {
+    if( ( nvars = convertVarData( npts, npts, nameDimAndVarList, &varnames, &vardim, &centering, &vars ) ) < 0 ) {
         free( pts );
         return( NULL );
     }
@@ -483,7 +486,7 @@ static int convertVarDatum( int npts, int ncells, int n, PyObject *nameDimVar, c
                             np = getArrayOfNumbers( vardim[n] * nptsOrncells, item, vars[n], "nameDimensionAndVariables[Variables]" );
                         } }
                     else {
-                        setError( "varible element for nameDimensionAndVariables element at index %d has wrong number of data values", n );
+                        setError( "variable element for nameDimensionAndVariables element at index %d has wrong number of data values", n );
                     }
                 }
             }
