@@ -315,40 +315,4 @@ DrawPlots()
 ResetView()
 Test("silo_35")
 
-
-#
-# Test a database using MultiMeshadj
-#
-DeleteAllPlots()
-CloseDatabase("../data/histne_ucd3d_* database")
-SetTreatAllDBsAsTimeVarying(0)
-OpenDatabase("../data/zrad3dnew00002.root")
-AddPlot("Pseudocolor","p")
-# recenter so we can test ghost zones
-atts = PseudocolorAttributes()
-atts.centering = atts.Nodal  
-SetPlotOptions(atts)
-AddOperator("InverseGhostZone")
-DrawPlots()
-ResetView()
-Test("silo_36")
-
-#
-# Test a database using Packed decomp
-#
-DeleteAllPlots()
-CloseDatabase("../data/zrad3dnew00002.root")
-SetTreatAllDBsAsTimeVarying(0)
-OpenDatabase("../data/zrad3dcomp00002.root")
-AddPlot("Pseudocolor","p")
-# recenter so we can test ghost zones
-atts = PseudocolorAttributes()
-atts.centering = atts.Nodal  
-SetPlotOptions(atts)
-AddOperator("InverseGhostZone")
-DrawPlots()
-ResetView()
-Test("silo_37")
-
-
 Exit()
