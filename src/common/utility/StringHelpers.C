@@ -675,6 +675,9 @@ static void InitTypeNameToFmtREMap()
 //  Programmer: Mark C. Miller 
 //  Creation:   September 20, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Fri Sep 21 07:31:02 PDT 2007
+//    Fixed end anchor to be any chars not a '%'
 // ****************************************************************************
 bool
 StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Type, ... )
@@ -696,7 +699,7 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     }
     va_end(ap);
 
-    re += "$"; // anchor last char to end of line
+    re += "[^%]*$"; // anchor last char to end of line
 
     return StringHelpers::FindRE(fmtStr, re.c_str()) >= 0;
 }
