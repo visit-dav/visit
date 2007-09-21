@@ -1,7 +1,7 @@
 
 A:  m_plot.mili  timestep 77
 mesh1 
-Point: <9.473753, -2.848061, -8.888563>
+Point: <9.47375, -2.84806, -8.88856>
 Zone:  166
 Incident Nodes:  751  761  762  752  
 derived/nodpos/x:  <nodal> 
@@ -13,7 +13,7 @@ derived/nodpos/x:  <nodal>
 
 B:  m_plot.mili  timestep 77
 mesh1 
-Point: <9.678444, -3.474208, -8.189428>
+Point: <9.67844, -3.47421, -8.18943>
 Node:  753
 Incident Zones:  164  165  173  174  666  668  684  686  
 derived/nodpos/x:  <nodal> = 9.67844
@@ -21,7 +21,7 @@ derived/nodpos/x:  <nodal> = 9.67844
 
 C:  m_plot.mili  timestep 77
 mesh1 
-Point: <8.000000, 8.558079, -7.111174>
+Point: <8, 8.55808, -7.11117>
 Zone:  535
 Incident Nodes:  502  602  612  512  503  603  613  513  
 derived/nodpos/x:  <nodal> 
@@ -37,7 +37,7 @@ derived/nodpos/x:  <nodal>
 
 D:  m_plot.mili  timestep 77
 mesh1 
-Point: <8.109039, 7.753746, -7.754091>
+Point: <8.10904, 7.75375, -7.75409>
 Node:  603
 Incident Zones:  88  89  97  98  514  516  532  534  675  677  693  695  
 derived/nodpos/x:  <nodal> = 8.10904

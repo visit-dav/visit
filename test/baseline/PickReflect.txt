@@ -2,7 +2,7 @@
 A:  curv2d.silo  timestep 0
 curvmesh2d 
 Point: (in transformed space)
-        <-1.045609, 2.589349>
+        <-1.04561, 2.58935>
 Zone:  318
 Incident Nodes:  328  329  360  359  
 u:  <nodal> 
@@ -15,7 +15,7 @@ u:  <nodal>
 B:  curv2d.silo  timestep 0
 curvmesh2d 
 Point: (in transformed space)
-        <-1.045609, -2.388429>
+        <-1.04561, -2.38843>
 Zone:  408
 Incident Nodes:  421  422  453  452  
 u:  <nodal> 

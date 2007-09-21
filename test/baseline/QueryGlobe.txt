@@ -1,20 +1,20 @@
 Eulerian for domain 0 is 2
 
 
-u -- Min = -10.000000 (node 872 at coord <0.000000, -10.000000, 0.000000>)
-u -- Max = 10.000000 (node 332 at coord <0.000000, 10.000000, 0.000000>)
+u -- Min = -10 (node 872 at coord <0, -10, 7.10543e-14>)
+u -- Max = 10 (node 332 at coord <0, 10, 7.10543e-14>)
 
 
-The total Surface Area is 1685.627284
-The total Volume is 4019.397395
+The total Surface Area is 1685.63
+The total Volume is 4019.4
 The original extents are (-10, 10, -10, 10, -10, 10)
 The actual extents are (-10, 10, -10, 10, -10, 10)
 The actual number of nodes is 1093.
 The actual number of zones is 1200.
 
 AFTER CLIPPING:
-The total Surface Area is 952.841618
-The total Volume is 2168.541121
+The total Surface Area is 952.842
+The total Volume is 2168.54
 The original extents are (-10, 10, -10, 10, -10, 10)
 The actual extents are (-10, 8.33085, -10, 8.33085, -10, 8.36281)
 The original number of nodes is 1093.
@@ -23,18 +23,18 @@ The original number of zones is 1200.
 The actual number of zones is 1269.
 
 MinMax Actual:
-vel -- Min = 0.000000 (node 12 at coord <0.000000, 0.000000, -10.000000>)
-vel -- Max = 9.510570 (node 63 at coord <9.510570, 0.000000, -3.090170>)
+vel -- Min = 0 (node 12 at coord <0, 0, -10>)
+vel -- Max = 9.51057 (node 63 at coord <9.51057, 0, -3.09017>)
 
 
 MinMax Original:
-vel -- Min = 0.000000 (node 11 at coord <0.000000, 0.000000, 10.000000>)
-vel -- Max = 10.000004 (node 116 at coord <9.510570, 3.090170, 0.000000>)
+vel -- Min = 0 (node 11 at coord <0, 0, 10>)
+vel -- Max = 10 (node 116 at coord <9.51057, 3.09017, 7.10543e-14>)
 
 MinMAx Actual:
-disp -- Min = 0.019894 (node 823 at coord <0.039788, -0.251212, 1.209228>)
-disp -- Max = 4.361754 (node 52 at coord <8.723507, 1.381669, 1.416337>)
+disp -- Min = 0.0198941 (node 823 at coord <0.0397882, -0.251212, 1.20923>)
+disp -- Max = 4.36175 (node 52 at coord <8.72351, 1.38167, 1.41634>)
 
 
-The total t is 3153223.204847
-The total neg_t is -3153223.204847
+The total t is 3.15322e+06
+The total neg_t is -3.15322e+06

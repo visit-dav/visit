@@ -39,19 +39,19 @@ Distance to front:  <nodal>
 
 E:  summary.samrai  timestep 0
 amr_mesh level 1 patch level1,patch4 
-Point: <0.781250, 0.562500>
+Point: <0.78125, 0.5625>
 Node:  115
 Incident Zones:  94  95  
 
 F:  summary.samrai  timestep 0
 amr_mesh level 1 patch level1,patch4 
-Point: <0.781250, 0.562500>
+Point: <0.78125, 0.5625>
 Node:  115
 Incident Zones:  94  95  
 
 G:  summary.samrai  timestep 0
 amr_mesh level 1 patch level1,patch4 
-Point: <0.781250, 0.562500>
+Point: <0.78125, 0.5625>
 Node:  115
 Incident Zones:  94  95  
 Distance to front:  <nodal> = 0.357787
@@ -59,7 +59,7 @@ Distance to front:  <nodal> = 0.357787
 
 H:  summary.samrai  timestep 0
 amr_mesh level 1 patch level1,patch4 
-Point: <0.781250, 0.562500>
+Point: <0.78125, 0.5625>
 Node:  115
 Incident Zones:  94  95  
 Distance to front:  <nodal> = 0.357787
@@ -103,19 +103,19 @@ Distance to front:  <nodal>
 
 M:  summary.samrai  timestep 0
 amr_mesh level 0 patch level0,patch0 
-Point: <0.812500, 0.562500>
+Point: <0.8125, 0.5625>
 Node:  166
 Incident Zones:  156  157  141  
 
 N:  summary.samrai  timestep 0
 amr_mesh level 0 patch level0,patch0 
-Point: <0.812500, 0.562500>
+Point: <0.8125, 0.5625>
 Node:  166
 Incident Zones:  156  157  141  
 
 O:  summary.samrai  timestep 0
 amr_mesh level 0 patch level0,patch0 
-Point: <0.812500, 0.562500>
+Point: <0.8125, 0.5625>
 Node:  166
 Incident Zones:  156  157  141  
 Distance to front:  <nodal> = 0.389037
@@ -123,7 +123,7 @@ Distance to front:  <nodal> = 0.389037
 
 P:  summary.samrai  timestep 0
 amr_mesh level 0 patch level0,patch0 
-Point: <0.812500, 0.562500>
+Point: <0.8125, 0.5625>
 Node:  166
 Incident Zones:  156  157  141  
 Distance to front:  <nodal> = 0.389037

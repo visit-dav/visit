@@ -1,7 +1,7 @@
 
 A:  bigsil.silo  timestep 0
 mesh block 2 domain 25 
-Point: <0.192539, 0.817222, 1.000000>
+Point: <0.192539, 0.817222, 1>
 Zone:  319
 Incident Nodes:  
     412   <0.190476, 0.809524, 0.952381>
@@ -18,7 +18,7 @@ mat:  13
 
 B:  bigsil.silo  timestep 0
 mesh block 2 domain 25 
-Point: <0.190476, 0.809524, 1.000000>
+Point: <0.190476, 0.809524, 1>
 Node:  476 <0.190476, 0.809524, 1>
 Incident Zones:  311  318  312  319  
 mat:  
@@ -30,7 +30,7 @@ mat:
 
 C:  bigsil.silo  timestep 0
 mesh block 2 domain 23 
-Point: <0.495120, 0.480479, 1.000000>
+Point: <0.49512, 0.480479, 1>
 Zone:  318
 Incident Nodes:  
     411   <0.47619, 0.47619, 0.952381>
@@ -47,7 +47,7 @@ mat:  1
 
 D:  bigsil.silo  timestep 0
 mesh block 2 domain 23 
-Point: <0.476190, 0.476190, 1.000000>
+Point: <0.47619, 0.47619, 1>
 Node:  475 <0.47619, 0.47619, 1>
 Incident Zones:  310  317  311  318  
 mat:  
@@ -59,7 +59,7 @@ mat:
 
 E:  bigsil.silo  timestep 0
 mesh block 2 domain 19 
-Point: <0.202299, 0.031487, 1.000000>
+Point: <0.202299, 0.0314875, 1>
 Zone:  298
 Incident Nodes:  
     388   <0.190476, 0, 0.952381>
@@ -76,7 +76,7 @@ mat:  22
 
 F:  bigsil.silo  timestep 0
 mesh block 2 domain 19 
-Point: <0.190476, 0.047619, 1.000000>
+Point: <0.190476, 0.047619, 1>
 Node:  460 <0.190476, 0.047619, 1>
 Incident Zones:  297  304  298  305  
 mat:  
@@ -88,7 +88,7 @@ mat:
 
 G:  bigsil.silo  timestep 0
 mesh block 2 domain 21 
-Point: <0.826983, 0.129094, 1.000000>
+Point: <0.826983, 0.129094, 1>
 Zone:  311
 Incident Nodes:  
     403   <0.809524, 0.0952381, 0.952381>
@@ -105,7 +105,7 @@ mat:  18
 
 H:  bigsil.silo  timestep 0
 mesh block 2 domain 21 
-Point: <0.809524, 0.142857, 1.000000>
+Point: <0.809524, 0.142857, 1>
 Node:  475 <0.809524, 0.142857, 1>
 Incident Zones:  310  317  311  318  
 mat:  
@@ -117,7 +117,7 @@ mat:
 
 I:  bigsil.silo  timestep 0
 mesh block 2 domain 27 
-Point: <0.817222, 0.905068, 1.000000>
+Point: <0.817222, 0.905068, 1>
 Zone:  332
 Incident Nodes:  
     427   <0.809524, 0.904762, 0.952381>
@@ -134,7 +134,7 @@ mat:  18
 
 J:  bigsil.silo  timestep 0
 mesh block 2 domain 27 
-Point: <0.809524, 0.904762, 1.000000>
+Point: <0.809524, 0.904762, 1>
 Node:  491 <0.809524, 0.904762, 1>
 Incident Zones:  324  331  325  332  
 mat:  
@@ -146,7 +146,7 @@ mat:
 
 K:  bigsil.silo  timestep 0
 mesh block 2 domain 27 
-Point: <0.675692, 0.709855, 1.000000>
+Point: <0.675692, 0.709855, 1>
 Zone:  294
 Incident Nodes:  
     384   <0.666667, 0.666667, 0.952381>
@@ -163,7 +163,7 @@ mat:  4
 
 L:  bigsil.silo  timestep 0
 mesh block 2 domain 27 
-Point: <0.666667, 0.714286, 1.000000>
+Point: <0.666667, 0.714286, 1>
 Node:  456 <0.666667, 0.714286, 1>
 Incident Zones:  294  301  
 mat:  
@@ -173,7 +173,7 @@ mat:
 
 M:  bigsil.silo  timestep 0
 mesh block 2 domain 21 
-Point: <0.695214, 0.285265, 1.000000>
+Point: <0.695214, 0.285265, 1>
 Zone:  329
 Incident Nodes:  
     424   <0.666667, 0.238095, 0.952381>
@@ -190,7 +190,7 @@ mat:  6
 
 N:  bigsil.silo  timestep 0
 mesh block 2 domain 21 
-Point: <0.714286, 0.285714, 1.000000>
+Point: <0.714286, 0.285714, 1>
 Node:  497 <0.714286, 0.285714, 1>
 Incident Zones:  329  336  330  337  
 mat:  
@@ -202,7 +202,7 @@ mat:
 
 O:  bigsil.silo  timestep 0
 mesh block 2 domain 23 
-Point: <0.338949, 0.612248, 1.000000>
+Point: <0.338949, 0.612248, 1>
 Zone:  329
 Incident Nodes:  
     424   <0.333333, 0.571429, 0.952381>
@@ -219,7 +219,7 @@ mat:  1
 
 P:  bigsil.silo  timestep 0
 mesh block 2 domain 23 
-Point: <0.333333, 0.619048, 1.000000>
+Point: <0.333333, 0.619048, 1>
 Node:  496 <0.333333, 0.619048, 1>
 Incident Zones:  329  336  
 mat:  
@@ -229,7 +229,7 @@ mat:
 
 Q:  bigsil.silo  timestep 0
 mesh block 2 domain 19 
-Point: <0.246222, 0.187658, 1.000000>
+Point: <0.246222, 0.187658, 1>
 Zone:  320
 Incident Nodes:  
     413   <0.238095, 0.142857, 0.952381>
@@ -246,7 +246,7 @@ mat:  13
 
 R:  bigsil.silo  timestep 0
 mesh block 2 domain 19 
-Point: <0.238095, 0.190476, 1.000000>
+Point: <0.238095, 0.190476, 1>
 Node:  485 <0.238095, 0.190476, 1>
 Incident Zones:  319  326  320  327  
 mat:  
@@ -258,7 +258,7 @@ mat:
 
 S:  bigsil.silo  timestep 0
 mesh block 2 domain 24 
-Point: <0.670812, 0.334068, 1.000000>
+Point: <0.670812, 0.334068, 1>
 Zone:  294
 Incident Nodes:  
     384   <0.666667, 0.333333, 0.952381>
@@ -275,7 +275,7 @@ mat:  4
 
 T:  bigsil.silo  timestep 0
 mesh block 2 domain 24 
-Point: <0.666667, 0.333333, 1.000000>
+Point: <0.666667, 0.333333, 1>
 Node:  448 <0.666667, 0.333333, 1>
 Incident Zones:  294  
 mat:  (294) 4 
@@ -283,7 +283,7 @@ mat:  (294) 4
 
 U:  bigsil.silo  timestep 0
 mesh block 2 domain 25 
-Point: <0.214286, 0.833333, 0.976190>
+Point: <0.214286, 0.833333, 0.97619>
 Zone:  319
 Incident Nodes:  
     412   <0.190476, 0.809524, 0.952381>
@@ -300,7 +300,7 @@ mat:  13
 
 V:  bigsil.silo  timestep 0
 mesh block 2 domain 25 
-Point: <0.190476, 0.809524, 1.000000>
+Point: <0.190476, 0.809524, 1>
 Node:  476 <0.190476, 0.809524, 1>
 Incident Zones:  311  318  312  319  
 mat:  
@@ -312,7 +312,7 @@ mat:
 
 W:  bigsil.silo  timestep 0
 mesh block 2 domain 23 
-Point: <0.500000, 0.500000, 0.976190>
+Point: <0.5, 0.5, 0.97619>
 Zone:  318
 Incident Nodes:  
     411   <0.47619, 0.47619, 0.952381>
@@ -329,7 +329,7 @@ mat:  1
 
 X:  bigsil.silo  timestep 0
 mesh block 2 domain 23 
-Point: <0.476190, 0.476190, 1.000000>
+Point: <0.47619, 0.47619, 1>
 Node:  475 <0.47619, 0.47619, 1>
 Incident Zones:  310  317  311  318  
 mat:  
@@ -341,7 +341,7 @@ mat:
 
 Y:  bigsil.silo  timestep 0
 mesh block 2 domain 21 
-Point: <0.833333, 0.119048, 0.976190>
+Point: <0.833333, 0.119048, 0.97619>
 Zone:  311
 Incident Nodes:  
     403   <0.809524, 0.0952381, 0.952381>
@@ -358,7 +358,7 @@ mat:  18
 
 Z:  bigsil.silo  timestep 0
 mesh block 2 domain 21 
-Point: <0.809524, 0.142857, 1.000000>
+Point: <0.809524, 0.142857, 1>
 Node:  475 <0.809524, 0.142857, 1>
 Incident Zones:  310  317  311  318  
 mat:  
@@ -370,7 +370,7 @@ mat:
 
 a:  bigsil.silo  timestep 0
 mesh block 2 domain 27 
-Point: <0.833333, 0.928571, 0.976190>
+Point: <0.833333, 0.928571, 0.97619>
 Zone:  332
 Incident Nodes:  
     427   <0.809524, 0.904762, 0.952381>
@@ -387,7 +387,7 @@ mat:  18
 
 b:  bigsil.silo  timestep 0
 mesh block 2 domain 27 
-Point: <0.809524, 0.904762, 1.000000>
+Point: <0.809524, 0.904762, 1>
 Node:  491 <0.809524, 0.904762, 1>
 Incident Zones:  324  331  325  332  
 mat:  
@@ -399,7 +399,7 @@ mat:
 
 c:  bigsil.silo  timestep 0
 mesh block 2 domain 27 
-Point: <0.690476, 0.690476, 0.976190>
+Point: <0.690476, 0.690476, 0.97619>
 Zone:  294
 Incident Nodes:  
     384   <0.666667, 0.666667, 0.952381>
@@ -416,7 +416,7 @@ mat:  4
 
 d:  bigsil.silo  timestep 0
 mesh block 2 domain 27 
-Point: <0.666667, 0.714286, 1.000000>
+Point: <0.666667, 0.714286, 1>
 Node:  456 <0.666667, 0.714286, 1>
 Incident Zones:  294  301  
 mat:  
@@ -426,7 +426,7 @@ mat:
 
 e:  bigsil.silo  timestep 0
 mesh block 2 domain 21 
-Point: <0.690476, 0.261905, 0.976190>
+Point: <0.690476, 0.261905, 0.97619>
 Zone:  329
 Incident Nodes:  
     424   <0.666667, 0.238095, 0.952381>
@@ -443,7 +443,7 @@ mat:  6
 
 f:  bigsil.silo  timestep 0
 mesh block 2 domain 21 
-Point: <0.714286, 0.285714, 1.000000>
+Point: <0.714286, 0.285714, 1>
 Node:  497 <0.714286, 0.285714, 1>
 Incident Zones:  329  336  330  337  
 mat:  
@@ -455,7 +455,7 @@ mat:
 
 g:  bigsil.silo  timestep 0
 mesh block 2 domain 23 
-Point: <0.357143, 0.595238, 0.976190>
+Point: <0.357143, 0.595238, 0.97619>
 Zone:  329
 Incident Nodes:  
     424   <0.333333, 0.571429, 0.952381>
@@ -472,7 +472,7 @@ mat:  1
 
 h:  bigsil.silo  timestep 0
 mesh block 2 domain 23 
-Point: <0.333333, 0.619048, 1.000000>
+Point: <0.333333, 0.619048, 1>
 Node:  496 <0.333333, 0.619048, 1>
 Incident Zones:  329  336  
 mat:  
@@ -482,7 +482,7 @@ mat:
 
 i:  bigsil.silo  timestep 0
 mesh block 2 domain 19 
-Point: <0.023810, 0.261905, 0.976190>
+Point: <0.0238095, 0.261905, 0.97619>
 Zone:  329
 Incident Nodes:  
     424   <0, 0.238095, 0.952381>
@@ -499,7 +499,7 @@ mat:  18
 
 j:  bigsil.silo  timestep 0
 mesh block 2 domain 19 
-Point: <0.238095, 0.190476, 1.000000>
+Point: <0.238095, 0.190476, 1>
 Node:  485 <0.238095, 0.190476, 1>
 Incident Zones:  319  326  320  327  
 mat:  
@@ -511,7 +511,7 @@ mat:
 
 k:  bigsil.silo  timestep 0
 mesh block 2 domain 24 
-Point: <0.690476, 0.357143, 0.976190>
+Point: <0.690476, 0.357143, 0.97619>
 Zone:  294
 Incident Nodes:  
     384   <0.666667, 0.333333, 0.952381>
@@ -528,7 +528,7 @@ mat:  4
 
 l:  bigsil.silo  timestep 0
 mesh block 2 domain 24 
-Point: <0.666667, 0.333333, 1.000000>
+Point: <0.666667, 0.333333, 1>
 Node:  448 <0.666667, 0.333333, 1>
 Incident Zones:  294  
 mat:  (294) 4 

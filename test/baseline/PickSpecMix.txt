@@ -1,7 +1,7 @@
 
 A:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <0.040000, 0.408889>
+Point: <0.04, 0.408889>
 Zone:  233
 Incident Nodes:  244  245  266  265  
 Species:  <zonal> 
@@ -21,7 +21,7 @@ Species:  <zonal>
 
 B:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 Species:  <zonal> 
@@ -89,7 +89,7 @@ Species:  <zonal>
 
 D:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 Species:  <zonal> 
@@ -157,7 +157,7 @@ Species:  <zonal>
 
 F:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <0.080000, 0.133333>
+Point: <0.08, 0.133333>
 Zone:  232
 Incident Nodes:  243  244  265  264  
 Species:  <zonal> 
@@ -193,7 +193,7 @@ Species:  <zonal>
 
 H:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <0.034618, 0.903125>
+Point: <0.0346176, 0.903125>
 Zone:  233
 Incident Nodes:  244  245  266  265  
 Species:  <zonal> 
@@ -213,7 +213,7 @@ Species:  <zonal>
 
 I:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 Species:  <zonal> 
@@ -261,7 +261,7 @@ Species:  <zonal>
 
 J:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 Species:  <zonal> 
@@ -309,7 +309,7 @@ Species:  <zonal>
 
 K:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <0.840000, 0.297778>
+Point: <0.84, 0.297778>
 Zone:  233
 Incident Nodes:  244  245  266  265  
 Species:  <zonal> 
@@ -329,7 +329,7 @@ Species:  <zonal>
 
 L:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 Species:  <zonal> 
@@ -397,7 +397,7 @@ Species:  <zonal>
 
 N:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 d:  <zonal> 
@@ -473,7 +473,7 @@ Species:  <zonal>
 
 P:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 d:  <zonal> 
@@ -549,7 +549,7 @@ Species:  <zonal>
 
 R:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 d:  <zonal> 
@@ -603,7 +603,7 @@ Species:  <zonal>
 
 S:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 d:  <zonal> 
@@ -679,7 +679,7 @@ Species:  <zonal>
 
 U:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 d:  <zonal> 
@@ -755,7 +755,7 @@ Species:  <zonal>
 
 W:  specmix_quad.silo  timestep 0
 Mesh 
-Point: <1.006903, 0.587500>
+Point: <1.0069, 0.5875>
 Node:  266
 Incident Zones:  253  233  254  234  
 d:  <zonal> 

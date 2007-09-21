@@ -1,4 +1,4 @@
-The total Surface Area is 5566155.058181
-The total Volume is 32762281.400600
+The total Surface Area is 5.56616e+06
+The total Volume is 3.27623e+07
 The actual number of nodes is 17890.
 The actual number of zones is 15003.

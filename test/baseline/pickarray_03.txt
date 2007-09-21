@@ -1,7 +1,7 @@
 
 B:  rect2d.silo  timestep 0
 quadmesh2d 
-Point: <0.500000, 1.000000>
+Point: <0.5, 1>
 Zone:  884
 Incident Nodes:  913  914  944  945  
 arr:  <zonal> 

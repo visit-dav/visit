@@ -1,7 +1,7 @@
 
 A:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.068116, 0.131349, 0.726715>
+Point: <-2.06812, 0.131349, 0.726715>
 Zone:  0
 Incident Nodes:  0  1  32  31  1271  1272  1303  1302  
 d:  <zonal> = 2.03471
@@ -9,7 +9,7 @@ d:  <zonal> = 2.03471
 
 B:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.042227, 0.000000, 0.070110>
+Point: <-2.04223, 2.75929e-17, 0.0701101>
 Zone:  0
 Incident Nodes:  0  1  32  31  1271  1272  1303  1302  
 d:  <zonal> = 2.03471
@@ -17,7 +17,7 @@ d:  <zonal> = 2.03471
 
 C:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.029085, 0.000000, 0.391586>
+Point: <-2.02909, 1.03324e-16, 0.391586>
 Zone:  0
 Incident Nodes:  0  1  32  31  1271  1272  1303  1302  
 d:  <zonal> = 2.03471
@@ -25,7 +25,7 @@ d:  <zonal> = 2.03471
 
 D:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.071169, 0.073101, 0.047833>
+Point: <-2.07117, 0.0731007, 0.0478327>
 Zone:  0
 Incident Nodes:  0  1  32  31  1271  1272  1303  1302  
 d:  <zonal> = 2.03471
@@ -33,7 +33,7 @@ d:  <zonal> = 2.03471
 
 E:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.044237, -0.000000, 0.976426>
+Point: <-2.04424, -1.94614e-17, 0.976426>
 Zone:  0
 Incident Nodes:  0  1  32  31  1271  1272  1303  1302  
 d:  <zonal> = 2.03471
@@ -41,7 +41,7 @@ d:  <zonal> = 2.03471
 
 F:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.034046, 0.090405, 1.000000>
+Point: <-2.03405, 0.0904046, 1>
 Zone:  0
 Incident Nodes:  0  1  32  31  1271  1272  1303  1302  
 d:  <zonal> = 2.03471
@@ -49,7 +49,7 @@ d:  <zonal> = 2.03471
 
 G:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.066203, 0.167849, 0.045287>
+Point: <-2.0662, 0.167849, 0.0452874>
 Zone:  0
 Incident Nodes:  0  1  32  31  1271  1272  1303  1302  
 d:  <zonal> = 2.03471
@@ -57,7 +57,7 @@ d:  <zonal> = 2.03471
 
 H:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.115231, 0.369896, 0.096814>
+Point: <-2.11523, 0.369896, 0.0968145>
 Zone:  31
 Incident Nodes:  32  33  64  63  1303  1304  1335  1334  
 d:  <zonal> = 2.1096
@@ -65,7 +65,7 @@ d:  <zonal> = 2.1096
 
 I:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.022324, -0.000000, 0.185913>
+Point: <-2.02232, -6.48353e-17, 0.185913>
 Zone:  0
 Incident Nodes:  0  1  32  31  1271  1272  1303  1302  
 d:  <zonal> = 2.03471
@@ -73,7 +73,7 @@ d:  <zonal> = 2.03471
 
 J:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.086019, 0.219249, 0.066890>
+Point: <-2.08602, 0.219249, 0.0668896>
 Zone:  31
 Incident Nodes:  32  33  64  63  1303  1304  1335  1334  
 d:  <zonal> = 2.1096
@@ -81,7 +81,7 @@ d:  <zonal> = 2.1096
 
 K:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.032020, 0.213574, 1.930092>
+Point: <-2.03202, 0.213574, 1.93009>
 Zone:  1201
 Incident Nodes:  1272  1273  1304  1303  2543  2544  2575  2574  
 d:  <zonal> = 2.03471
@@ -89,7 +89,7 @@ d:  <zonal> = 2.03471
 
 L:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-2.051087, 0.296109, 1.219743>
+Point: <-2.05109, 0.296109, 1.21974>
 Zone:  1201
 Incident Nodes:  1272  1273  1304  1303  2543  2544  2575  2574  
 d:  <zonal> = 2.03471
@@ -97,7 +97,7 @@ d:  <zonal> = 2.03471
 
 M:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <0.814803, 2.624782, 0.041277>
+Point: <0.814803, 2.62478, 0.0412771>
 Zone:  317
 Incident Nodes:  327  328  359  358  1598  1599  1630  1629  
 d:  <zonal> = 2.78368
@@ -105,7 +105,7 @@ d:  <zonal> = 2.78368
 
 N:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <0.577206, 2.715539, 0.073346>
+Point: <0.577206, 2.71554, 0.0733459>
 Zone:  317
 Incident Nodes:  327  328  359  358  1598  1599  1630  1629  
 d:  <zonal> = 2.78368
@@ -113,7 +113,7 @@ d:  <zonal> = 2.78368
 
 O:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <0.576109, 2.710379, 0.486464>
+Point: <0.576109, 2.71038, 0.486464>
 Zone:  317
 Incident Nodes:  327  328  359  358  1598  1599  1630  1629  
 d:  <zonal> = 2.78368
@@ -121,7 +121,7 @@ d:  <zonal> = 2.78368
 
 P:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <0.806246, 2.627075, 0.937222>
+Point: <0.806246, 2.62707, 0.937222>
 Zone:  317
 Incident Nodes:  327  328  359  358  1598  1599  1630  1629  
 d:  <zonal> = 2.78368
@@ -129,7 +129,7 @@ d:  <zonal> = 2.78368
 
 Q:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <1.264183, 2.185621, 0.340723>
+Point: <1.26418, 2.18562, 0.340723>
 Zone:  230
 Incident Nodes:  237  238  269  268  1508  1509  1540  1539  
 d:  <zonal> = 2.55899
@@ -137,7 +137,7 @@ d:  <zonal> = 2.55899
 
 R:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <-0.295502, 2.811516, 0.314743>
+Point: <-0.295502, 2.81152, 0.314743>
 Zone:  344
 Incident Nodes:  355  356  387  386  1626  1627  1658  1657  
 d:  <zonal> = 2.85858
@@ -145,7 +145,7 @@ d:  <zonal> = 2.85858
 
 S:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <1.012196, 2.312389, 1.008800>
+Point: <1.0122, 2.31239, 1.0088>
 Zone:  1428
 Incident Nodes:  1506  1507  1538  1537  2777  2778  2809  2808  
 d:  <zonal> = 2.55899
@@ -153,7 +153,7 @@ d:  <zonal> = 2.55899
 
 T:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <0.645088, 2.437639, 1.745753>
+Point: <0.645088, 2.43764, 1.74575>
 Zone:  1427
 Incident Nodes:  1505  1506  1537  1536  2776  2777  2808  2807  
 d:  <zonal> = 2.55899
@@ -161,7 +161,7 @@ d:  <zonal> = 2.55899
 
 U:  curv3d.silo  timestep 0
 curvmesh3d 
-Point: <1.464754, 2.434088, 4.000000>
+Point: <1.46475, 2.43409, 4>
 Zone:  3950
 Incident Nodes:  4174  4175  4206  4205  5445  5446  5477  5476  
 d:  <zonal> = 2.85858

@@ -1,11 +1,11 @@
 Eulerian for domain 0 is 2
 
 
-p -- Min = 0.201784 (zone 1170 at coord <-4.948907, 0.259361, 0.500000>)
-p -- Max = 0.491447 (zone 0 at coord <-2.031919, 0.106488, 0.500000>)
+p -- Min = 0.201784 (zone 1170 at coord <-4.94891, 0.259361, 0.5>)
+p -- Max = 0.491447 (zone 0 at coord <-2.03192, 0.106488, 0.5>)
 
 
-The total Surface Area is 905.285981 cm^2
-The total Volume is 987.793973 cm^3
+The total Surface Area is 905.286 cm^2
+The total Volume is 987.794 cm^3
 The actual number of nodes is 39401.
 The actual number of zones is 36000.

@@ -1,29 +1,29 @@
-Total cross sectional area (XSA): 1.333333
-Total rotated (x=0) volume (VOL): 5.585054
+Total cross sectional area (XSA): 1.33333
+Total rotated (x=0) volume (VOL): 5.58505
 
 Distance to boundary WRT dA / XSA = 0.220328
-Distance to boundary WRT dA / VOL = 0.052599
+Distance to boundary WRT dA / VOL = 0.0525993
 Distance to boundary WRT dV / XSA = 0.817964
 Distance to boundary WRT dV / VOL = 0.195275
-Distance to origin   WRT dA       = 1.197586
+Distance to origin   WRT dA       = 1.19759
 
 
 Density-based queries:
 NOTE -- these assume the current variable is 'density'!
 
-Total rotated (x=0) mass (MASS): 2.992020
-Center of mass = (0.500000 , 0.992678)
+Total rotated (x=0) mass (MASS): 2.99202
+Center of mass = (0.5 , 0.992678)
 
-Density-weighted distance to boundary  WRT dV / MASS = 0.154350
+Density-weighted distance to boundary  WRT dV / MASS = 0.15435
 Density-weighted distance to cent mass WRT dV / MASS = 0.385815
 
 Eulerian for domain 0 is 1
 
-The total RevolvedVolume is 5.585054 cm^3
-The total Surface Area is 1.333333 cm^2
+The total RevolvedVolume is 5.58505 cm^3
+The total Surface Area is 1.33333 cm^2
 
-d -- Min = 0.023570 (zone 434 at coord <0.483333, 0.483333>)
-d -- Max = 0.948976 (zone 1170 at coord <0.016667, 1.316667>)
+d -- Min = 0.0235702 (zone 434 at coord <0.483333, 0.483333>)
+d -- Max = 0.948976 (zone 1170 at coord <0.0166667, 1.31667>)
 
 
 The original extents are (0, 1, 0, 1.33333)

@@ -2,24 +2,24 @@ For noise.silo(haryglobal)
 Eulerian for domain 0 is 2
 
 
-hardyglobal -- Min = 1.095543 (node 105026 at coord <0.612245, -10.000000, 7.142858>)
-hardyglobal -- Max = 5.889652 (node 83943 at coord <7.551021, 1.428572, 3.469387>)
+hardyglobal -- Min = 1.09554 (node 105026 at coord <0.612245, -10, 7.14286>)
+hardyglobal -- Max = 5.88965 (node 83943 at coord <7.55102, 1.42857, 3.46939>)
 
 
-The total Surface Area is 2400.000058 parsec^2
-The total Volume is 8000.000145 parsec^3
+The total Surface Area is 2400 parsec^2
+The total Volume is 8000 parsec^3
 The actual number of nodes is 125000.
 The actual number of zones is 117649.
 
 For noise.silo(hgslice)
-Total cross sectional area (XSA): 400.000010
-Total rotated (x=0) volume (VOL): -0.000007
+Total cross sectional area (XSA): 400
+Total rotated (x=0) volume (VOL): -6.85453e-06
 
-Distance to boundary WRT dA / XSA = 5.569172
-Distance to boundary WRT dA / VOL = 2227.668787
-Distance to boundary WRT dV / XSA = -100.807271
-Distance to boundary WRT dV / VOL = -40322.909278
-Distance to origin   WRT dA       = 3060.277897
+Distance to boundary WRT dA / XSA = 5.56917
+Distance to boundary WRT dA / VOL = 2227.67
+Distance to boundary WRT dV / XSA = -100.807
+Distance to boundary WRT dV / VOL = -40322.9
+Distance to origin   WRT dA       = 3060.28
 
 NOTE -- additional calculations are available if
         a density plot is selected for this query.
@@ -27,30 +27,30 @@ NOTE -- additional calculations are available if
 Eulerian for domain 0 is 1
 
 
-hgslice -- Min = 1.204454 (node 42 at coord <7.142858, -10.000000>)
-hgslice -- Max = 5.024092 (node 670 at coord <-1.836734, -4.693878>)
+hgslice -- Min = 1.20445 (node 42 at coord <7.14286, -10>)
+hgslice -- Max = 5.02409 (node 670 at coord <-1.83673, -4.69388>)
 
 
-The total RevolvedVolume is 12565.498357 parsec^3
-The total Surface Area is 400.000010 parsec^2
+The total RevolvedVolume is 12565.5 parsec^3
+The total Surface Area is 400 parsec^2
 The actual number of nodes is 2500.
 The actual number of zones is 2401.
 
 MinMax Actual:
-airVfGradient -- Min = 0.004000 (node 96814 at coord <-4.489796, 4.489796, 5.306122>)
-airVfGradient -- Max = 0.734716 (node 44289 at coord <5.714285, 4.081633, -3.265306>)
+airVfGradient -- Min = 0.004 (node 96814 at coord <-4.4898, 4.4898, 5.30612>)
+airVfGradient -- Max = 0.734716 (node 44289 at coord <5.71429, 4.08163, -3.26531>)
 
 
 MinMax Original:
-airVfGradient -- Min = 0.004000 (zone 18341 at coord <-3.673470, 2.857143, -6.938776>)
-airVfGradient -- Max = 0.781298 (zone 13361 at coord <3.673469, 1.224490, -7.755102>)
+airVfGradient -- Min = 0.004 (zone 18341 at coord <-3.67347, 2.85714, -6.93878>)
+airVfGradient -- Max = 0.781298 (zone 13361 at coord <3.67347, 1.22449, -7.7551>)
 
 MinMax Actual:
-grad -- Min = 0.016781 (node 69799 at coord <10.000000, 8.367347, 1.020408>)
-grad -- Max = 0.710979 (node 88892 at coord <7.142858, 1.020408, 4.285715>)
+grad -- Min = 0.0167807 (node 69799 at coord <10, 8.36735, 1.02041>)
+grad -- Max = 0.710979 (node 88892 at coord <7.14286, 1.02041, 4.28571>)
 
 
 MinMax Original:
-grad -- Min = 0.001453 (node 69914 at coord <-4.285714, 9.591837, 1.020408>)
-grad -- Max = 1.237541 (node 98491 at coord <6.734694, -2.244898, 5.918367>)
+grad -- Min = 0.00145272 (node 69914 at coord <-4.28571, 9.59184, 1.02041>)
+grad -- Max = 1.23754 (node 98491 at coord <6.73469, -2.2449, 5.91837>)
 

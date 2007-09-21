@@ -3,13 +3,13 @@ Testing sliced SAMRAI:
 
 A:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.748043, 7.821070, 4.000000>
+Point: <5.74804, 7.82107, 4>
 Zone:  1863
 Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
 
 B:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.748043, 7.821070, 4.000000>
+Point: <5.74804, 7.82107, 4>
 Zone:  1863
 Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
 Primitive Var _number_0:  <zonal> = 80
@@ -17,13 +17,13 @@ Primitive Var _number_0:  <zonal> = 80
 
 C:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.748043, 7.821070, 4.000000>
+Point: <5.74804, 7.82107, 4>
 Zone:  1863
 Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
 
 D:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.748043, 7.821070, 4.000000>
+Point: <5.74804, 7.82107, 4>
 Zone:  1863
 Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
 Primitive Var _number_0:  <zonal> = 80
@@ -31,13 +31,13 @@ Primitive Var _number_0:  <zonal> = 80
 
 E:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <6.000000, 8.000000, 4.000000>
+Point: <6, 8, 4>
 Node:  2442
 Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
 
 F:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <6.000000, 8.000000, 4.000000>
+Point: <6, 8, 4>
 Node:  2442
 Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
 Primitive Var _number_0:  <zonal> 
@@ -53,13 +53,13 @@ Primitive Var _number_0:  <zonal>
 
 G:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <6.000000, 8.000000, 4.000000>
+Point: <6, 8, 4>
 Node:  2442
 Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
 
 H:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <6.000000, 8.000000, 4.000000>
+Point: <6, 8, 4>
 Node:  2442
 Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
 Primitive Var _number_0:  <zonal> 
@@ -75,13 +75,13 @@ Primitive Var _number_0:  <zonal>
 
 I:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.500000, 7.500000, 4.000000>
+Point: <5.5, 7.5, 4>
 Node:  2422
 Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
 
 J:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.500000, 7.500000, 4.000000>
+Point: <5.5, 7.5, 4>
 Node:  2422
 Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
 Primitive Var _number_0:  <zonal> 
@@ -97,13 +97,13 @@ Primitive Var _number_0:  <zonal>
 
 K:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.500000, 7.500000, 4.000000>
+Point: <5.5, 7.5, 4>
 Node:  2422
 Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
 
 L:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.500000, 7.500000, 4.000000>
+Point: <5.5, 7.5, 4>
 Node:  2422
 Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
 Primitive Var _number_0:  <zonal> 
@@ -119,13 +119,13 @@ Primitive Var _number_0:  <zonal>
 
 M:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.750000, 7.750000, 3.750000>
+Point: <5.75, 7.75, 3.75>
 Zone:  1863
 Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
 
 N:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.750000, 7.750000, 3.750000>
+Point: <5.75, 7.75, 3.75>
 Zone:  1863
 Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
 Primitive Var _number_0:  <zonal> = 80
@@ -133,13 +133,13 @@ Primitive Var _number_0:  <zonal> = 80
 
 O:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.750000, 7.750000, 3.750000>
+Point: <5.75, 7.75, 3.75>
 Zone:  1863
 Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
 
 P:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.750000, 7.750000, 3.750000>
+Point: <5.75, 7.75, 3.75>
 Zone:  1863
 Incident Nodes:  2061  2062  2080  2081  2422  2423  2441  2442  
 Primitive Var _number_0:  <zonal> = 80
@@ -147,13 +147,13 @@ Primitive Var _number_0:  <zonal> = 80
 
 Q:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <6.000000, 8.000000, 4.000000>
+Point: <6, 8, 4>
 Node:  2442
 Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
 
 R:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <6.000000, 8.000000, 4.000000>
+Point: <6, 8, 4>
 Node:  2442
 Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
 Primitive Var _number_0:  <zonal> 
@@ -169,13 +169,13 @@ Primitive Var _number_0:  <zonal>
 
 S:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <6.000000, 8.000000, 4.000000>
+Point: <6, 8, 4>
 Node:  2442
 Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
 
 T:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <6.000000, 8.000000, 4.000000>
+Point: <6, 8, 4>
 Node:  2442
 Incident Zones:  2205  2187  1863  1881  2206  2188  1864  1882  
 Primitive Var _number_0:  <zonal> 
@@ -191,13 +191,13 @@ Primitive Var _number_0:  <zonal>
 
 U:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.500000, 7.500000, 4.000000>
+Point: <5.5, 7.5, 4>
 Node:  2422
 Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
 
 V:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.500000, 7.500000, 4.000000>
+Point: <5.5, 7.5, 4>
 Node:  2422
 Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
 Primitive Var _number_0:  <zonal> 
@@ -213,13 +213,13 @@ Primitive Var _number_0:  <zonal>
 
 W:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.500000, 7.500000, 4.000000>
+Point: <5.5, 7.5, 4>
 Node:  2422
 Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
 
 X:  summary.samrai  timestep 0
 amr_mesh level 2 patch level2,patch0 
-Point: <5.500000, 7.500000, 4.000000>
+Point: <5.5, 7.5, 4>
 Node:  2422
 Incident Zones:  2186  2168  1844  1862  2187  2169  1845  1863  
 Primitive Var _number_0:  <zonal> 

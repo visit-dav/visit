@@ -1,7 +1,7 @@
 
 C:  wave0000.silo  timestep 0
 quadmesh 
-Point: <0.290000, 0.470000, 5.000000>
+Point: <0.29, 0.47, 5>
 Zone:  14602
 Incident Nodes:  16162  16163  16264  16263  17273  17274  17375  17374  
 arr2:  <nodal> 

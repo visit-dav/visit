@@ -1,14 +1,14 @@
 
 A:  curve.visit  timestep 72
-Point: <0.020202, 0.057582>
+Point: <0.020202, 0.0575823>
 
 
 B:  curve.visit  timestep 72
-Point: <0.020202, 0.057582>
+Point: <0.020202, 0.0575823>
 
 
 C:  curve.visit  timestep 72
-Point: <0.080808, 0.216082>
+Point: <0.0808081, 0.216082>
 
 
 D:  curve.visit  timestep 72
@@ -16,7 +16,7 @@ Point: <0.666667, 0.646465>
 
 
 E:  curve.visit  timestep 72
-Point: <0.282828, 0.590070>
+Point: <0.282828, 0.59007>
 
 
 F:  curve.visit  timestep 72

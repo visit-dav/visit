@@ -1,7 +1,7 @@
 
 A:  emptydomains.silo  timestep 0
 mesh domain 2 
-Point: <10.500000, 1.500000, 3.500000>
+Point: <10.5, 1.5, 3.5>
 Zone:  120
 Incident Nodes:  166  167  178  179  214  215  226  227  
 density:  <nodal> 

@@ -1,7 +1,7 @@
 
 A:  wave0310.silo  timestep 31
 quadmesh 
-Point: <7.205850, 0.099664, 2.500000>
+Point: <7.20585, 0.099664, 2.5>
 Zone:  7072
 Incident Nodes:  7849  7850  7951  7950  8960  8961  9062  9061  
 Material:  3 dirt 
@@ -9,7 +9,7 @@ Material:  3 dirt
 
 B:  wave0640.silo  timestep 64
 quadmesh 
-Point: <7.205850, 0.099664, 2.378386>
+Point: <7.20585, 0.099664, 2.37839>
 Zone:  7072
 Incident Nodes:  7849  7850  7951  7950  8960  8961  9062  9061  
 Material:  2 water 
@@ -17,7 +17,7 @@ Material:  2 water
 
 C:  wave0310.silo  timestep 31
 quadmesh 
-Point: <5.867554, 0.264801, 3.566963>
+Point: <5.86755, 0.264801, 3.56696>
 Zone:  10058
 Incident Nodes:  11168  11169  11270  11269  12279  12280  12381  12380  
 Material:  
@@ -27,7 +27,7 @@ Material:
 
 D:  wave0640.silo  timestep 64
 quadmesh 
-Point: <5.867554, 0.039652, 3.566963>
+Point: <5.86755, 0.039652, 3.56696>
 Zone:  10058
 Incident Nodes:  11168  11169  11270  11269  12279  12280  12381  12380  
 Material:  
@@ -37,7 +37,7 @@ Material:
 
 E:  wave0310.silo  timestep 31
 quadmesh 
-Point: <7.205850, 0.099664, 2.500000>
+Point: <7.20585, 0.099664, 2.5>
 Zone:  7072
 Incident Nodes:  7849  7850  7951  7950  8960  8961  9062  9061  
 v:  <nodal> 
@@ -53,7 +53,7 @@ v:  <nodal>
 
 F:  wave0310.silo  timestep 31
 quadmesh 
-Point: <5.867554, 0.264801, 3.566963>
+Point: <5.86755, 0.264801, 3.56696>
 Zone:  10058
 Incident Nodes:  11168  11169  11270  11269  12279  12280  12381  12380  
 v:  <nodal> 
@@ -69,7 +69,7 @@ v:  <nodal>
 
 G:  wave0640.silo  timestep 64
 quadmesh 
-Point: <7.205850, 0.099664, 2.378386>
+Point: <7.20585, 0.099664, 2.37839>
 Zone:  7072
 Incident Nodes:  7849  7850  7951  7950  8960  8961  9062  9061  
 pressure:  <nodal> 
@@ -85,7 +85,7 @@ pressure:  <nodal>
 
 H:  wave0640.silo  timestep 64
 quadmesh 
-Point: <5.867554, 0.039652, 3.566963>
+Point: <5.86755, 0.039652, 3.56696>
 Zone:  10058
 Incident Nodes:  11168  11169  11270  11269  12279  12280  12381  12380  
 pressure:  <nodal> 
