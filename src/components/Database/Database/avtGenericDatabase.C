@@ -3295,6 +3295,11 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //
 //    Mark C. Miller, Sun Dec  3 11:32:07 PST 2006
 //    Fixed possible reference through nil pointer during Exception
+//
+//    Hank Childs, Thu Sep 20 12:58:17 PDT 2007
+//    If the material object has been reordered (due to simplifying heavily
+//    mixed zones), then reorder the mixed variable as well ['8082].
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3364,6 +3369,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     }
     int topoDim = mmd->topologicalDimension;
 
+    avtMaterial *material_used = NULL;
     void_ref_ptr vr_mir = GetMIR(dom, var, ts, ds, mat, topoDim,
                                  needValidConnectivity,
                                  needSmoothMaterialInterfaces,
@@ -3371,7 +3377,8 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                                  maxMatsPerZone, mirAlgorithm, isovolumeMIRVF,
                                  didGhosts,
                                  subdivisionOccurred,
-                                 notAllCellsSubdivided, reUseMIR);
+                                 notAllCellsSubdivided, reUseMIR, 
+                                 material_used);
     MIR *mir = (MIR *) (*vr_mir);
 
     int numSelected = mindex.size();
@@ -3404,7 +3411,6 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
         origDims->SetValue(1, dims[1]);
         origDims->SetValue(2, dims[2]);
     }
-   
 
     for (int d=0; d<numOutput; d++)
     {
@@ -3424,8 +3430,25 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             setUpMaterialVariable = true;
         }
 
-        out_ds[d] = mir->GetDataset(selMats, ds, mvl, setUpMaterialVariable,
+        vector<avtMixedVariable *> mvl2 = mvl;
+        if (material_used->ReorderedMaterials())
+        {
+            for (int i = 0 ; i < mvl2.size() ; i++)
+                mvl2[i] = material_used->ReorderMixedVariable(mvl[i]);
+        }
+        out_ds[d] = mir->GetDataset(selMats, ds, mvl2, setUpMaterialVariable,
                                     mat);
+        if (material_used->ReorderedMaterials())
+        {
+            for (int i = 0 ; i < mvl2.size() ; i++)
+                delete mvl2[i];
+        }
+        if (material_used != mat)
+        {
+            // The GetMIR applied SimplifyHeavilyMixed and gave us this
+            // object to deal with.  Clean it up.
+            delete material_used;
+        }
 
         if (out_ds != NULL && out_ds[d]->GetNumberOfCells() == 0)
         {
@@ -4096,7 +4119,12 @@ avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc,
 //    Jeremy Meredith, Thu Aug 18 17:54:51 PDT 2005
 //    Added a new isovolume algorithm, with adjustable VF cutoff.
 //
+//    Hank Childs, Thu Sep 20 17:19:20 PDT 2007
+//    Do not delete the new material if we do "simplify heavily mixed",
+//    since it might be used later.
+//
 // ****************************************************************************
+
 void_ref_ptr
 avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            vtkDataSet *ds, avtMaterial *mat, int topoDim,
@@ -4108,8 +4136,11 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
                            float isovolumeMIRVF,
                            bool didGhosts,
                            bool &subdivisionOccurred,
-                           bool &notAllCellsSubdivided, bool reUseMIR)
+                           bool &notAllCellsSubdivided, bool reUseMIR,
+                           avtMaterial *&mat_to_use)
 {
+    mat_to_use = mat;
+
     char cacheLbl[1000];
     sprintf(cacheLbl, "MIR_%s_%s_%s_%s_%s_%d_%f_%s",
             needValidConnectivity        ? "FullSubdiv" : "MinimalSubdiv",
@@ -4143,11 +4174,8 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             EXCEPTION0(NoInputException);
         }
 
-        avtMaterial *mat_to_use = mat;
         if (simplifyHeavilyMixedZones)
-        {
             mat_to_use = mat->SimplifyHeavilyMixedZones(maxMatsPerZone);
-        }
 
         MIR *mir = NULL;
 
@@ -4190,10 +4218,7 @@ avtGenericDatabase::GetMIR(int domain, const char *varname, int timestep,
             cache.CacheVoidRef(matname.c_str(), cacheLbl, timestep, domain,vr);
         }
 
-        // By deleting this new material, we are assuming that the MIR is
-        // not caching a copy of the material.
-        if (mat != mat_to_use)
-            delete mat_to_use;
+        // We are not deleting mat_to_use.  The calling function must do this.
     }
 
     MIR *rv = (MIR *) *vr;
@@ -5199,6 +5224,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+//
 // ****************************************************************************
 
 bool
