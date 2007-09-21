@@ -41,7 +41,7 @@
 
 #include <avtIntegrateQuery.h>
 
-#include <stdio.h>
+#include <snprintf.h>
 
 
 // ****************************************************************************
@@ -127,13 +127,20 @@ avtIntegrateQuery::CurveQuery(int n1, const float *x1, const float *y1)
 //  Programmer: Hank Childs
 //  Creation:   October 3, 2003
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 std::string
 avtIntegrateQuery::CreateMessage(double integral)
 {
     char msg[1024];
-    sprintf(msg, "The area under the curve is %g.", integral);
+    string format =  "The area under the curve is " 
+                         + queryAtts.GetFloatFormat() + ".";
+    SNPRINTF(msg,1024, format.c_str(),integral);
     std::string m = msg;
     return m;
 }

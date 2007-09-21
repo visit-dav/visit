@@ -199,6 +199,7 @@ extern const char *visit_ShowAllWindows_doc;
 extern const char *visit_ShowToolbars_doc;
 extern const char *visit_Source_doc;
 extern const char *visit_SuppressQueryOutput_doc;
+extern const char *visit_SetQueryFloatFormat_doc;
 extern const char *visit_TimeSliderGetNStates_doc;
 extern const char *visit_TimeSliderNextState_doc;
 extern const char *visit_TimeSliderPrevState_doc;

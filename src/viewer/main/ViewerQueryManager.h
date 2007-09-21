@@ -231,6 +231,9 @@ typedef struct {
 //    Added optional bool arg to StartLineQuery, AddQuery, added bool
 //    to CachedLineout struct.
 //
+//    Cyrus Harrison, Tue Sep 18 11:01:57 PDT 2007
+//    Added floatFormat 
+//
 // ****************************************************************************
     
 class VIEWER_API ViewerQueryManager : public ViewerBase
@@ -336,6 +339,9 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
 
     void            SuppressQueryOutput(bool onOff)
                         { suppressQueryOutput = onOff; } ;
+    
+    void            SetQueryFloatFormat(const std::string format)
+                        { floatFormat = format; } ;
 
     void            CloneQuery(ViewerQuery *, int, int);
 
@@ -387,6 +393,7 @@ class VIEWER_API ViewerQueryManager : public ViewerBase
     bool                  suppressQueryOutput; 
     bool                  activePlotsChanged; 
 
+    std::string           floatFormat;
 
     static QueryAttributes    *queryClientAtts;
     static PickAttributes     *pickAtts;

@@ -137,6 +137,10 @@ avtConnComponentsCentroidQuery::PreExecute(void)
 //  Programmer: Cyrus Harrison
 //  Creation:   February 7, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Tue Sep 18 09:41:09 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -202,11 +206,17 @@ avtConnComponentsCentroidQuery::PostExecute(void)
         result_vec[i*3 + 2] = zCentroidPerComp[i];
     }
 
+    
+    string format  =  "Component %d [%d cells] Centroid = (" 
+                        + queryAtts.GetFloatFormat()  +","
+                        + queryAtts.GetFloatFormat()  +","
+                        + queryAtts.GetFloatFormat()  +")\n";
+    
     // prepare the output message
     for(int i=0;i<nComps;i++)
     {
         SNPRINTF(buff,1024,
-                 "Component %d [%d cells] Centroid = (%f,%f,%f)\n",
+                 format.c_str(),
                  i,
                  nCellsPerComp[i],
                  xCentroidPerComp[i],

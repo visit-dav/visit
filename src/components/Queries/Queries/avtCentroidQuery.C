@@ -159,6 +159,11 @@ avtCentroidQuery::PreExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   May 19, 2005
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -180,7 +185,11 @@ avtCentroidQuery::PostExecute(void)
     //  That is all that is required of this query.
     //
     char msg[4096];
-    SNPRINTF(msg, 4096, "Centroid = (%f, %f, %f)",C_tmp[0],C_tmp[1],C_tmp[2]);
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format = "Centroid = (" + floatFormat + ", "
+                                   + floatFormat + ", "
+                                   + floatFormat + ")";
+    SNPRINTF(msg, 4096, format.c_str(),C_tmp[0],C_tmp[1],C_tmp[2]);
     SetResultMessage(msg);
     doubleVector C_vec(3);
     for (int i = 0 ; i < 3 ; i++)

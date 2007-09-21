@@ -188,6 +188,11 @@ avtSphericalCompactnessFactorQuery::MidExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   July 14, 2005
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -205,12 +210,17 @@ avtSphericalCompactnessFactorQuery::PostExecute(void)
     //  That is all that is required of this query.
     //
     char msg[4096];
-    SNPRINTF(msg, 4096, "Spherical Compactness Factor = %f.  Using centroid "
-                        "for sphere origin.  Centroid used was (%f, %f, %f)."
-                        "  Radius was %f",
-                         volume_inside / total_volume, 
-                         sphere_center[0], sphere_center[1], sphere_center[2],
-                         radius);
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format = "Spherical Compactness Factor = " + floatFormat 
+                    + ".  Using centroid for sphere origin.  Centroid used "
+                      "was (" + floatFormat + ", "
+                              + floatFormat + ", "
+                              + floatFormat + ")"
+                      "  Radius was " + floatFormat;
+    SNPRINTF(msg, 4096,format.c_str(),
+                       volume_inside / total_volume, 
+                       sphere_center[0], sphere_center[1], sphere_center[2],
+                       radius);
     SetResultMessage(msg);
     SetResultValue(volume_inside / total_volume);
 }

@@ -41,7 +41,7 @@
 
 #include <avtAreaBetweenCurvesQuery.h>
 
-#include <stdio.h>
+#include <snprintf.h>
 
 
 // ****************************************************************************
@@ -121,13 +121,20 @@ avtAreaBetweenCurvesQuery::CompareCurves(int n1, const float *x1, const float *y
 //  Programmer: Hank Childs
 //  Creation:   October 3, 2003
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 std::string
 avtAreaBetweenCurvesQuery::CreateMessage(double area)
 {
     char msg[1024];
-    sprintf(msg, "The area between the curves is %g.", area);
+    string format = "The area between the curves is " 
+                     + queryAtts.GetFloatFormat() +".";
+    SNPRINTF(msg,1024,format.c_str(), area);
     std::string m = msg;
     return m;
 }

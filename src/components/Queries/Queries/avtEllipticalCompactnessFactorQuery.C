@@ -246,6 +246,11 @@ avtEllipticalCompactnessFactorQuery::MidExecute(void)
 //  Programmer: Hank Childs
 //  Creation:   May 8, 2006
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -270,12 +275,19 @@ avtEllipticalCompactnessFactorQuery::PostExecute(void)
     //  That is all that is required of this query.
     //
     char msg[4096];
-    SNPRINTF(msg, 4096, "Elliptical Compactness Factor = %f.  Using centroid "
-                        "for ellipse origin.  Centroid used was (%f, %f, %f)."
-                        "  Best fitting axes were %f,%f,%f.",
-                         biggestVal / total_volume, 
-                         ellipse_center[0], ellipse_center[1], ellipse_center[2],
-                         x_radius[biggest], y_radius[biggest], z_radius[biggest]);
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format = "Elliptical Compactness Factor = " + floatFormat
+                      + ".  Using centroid for ellipse origin."
+                      "  Centroid used was (" + floatFormat + ", "
+                                              + floatFormat + ", "
+                                              + floatFormat + ")."
+                      "  Best fitting axes were "  + floatFormat + ","
+                                                   + floatFormat + ","
+                                                   + floatFormat + ".";
+    SNPRINTF(msg, 4096,format.c_str(),
+                       biggestVal / total_volume, 
+                       ellipse_center[0], ellipse_center[1], ellipse_center[2],
+                       x_radius[biggest], y_radius[biggest], z_radius[biggest]);
     SetResultMessage(msg);
     SetResultValue(biggestVal / total_volume);
 }

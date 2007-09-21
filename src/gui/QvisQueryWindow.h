@@ -104,6 +104,9 @@ class QueryList;
 //   Ellen Tarwater, Tues May 15 2006
 //   Added saveResultText and saveCount
 //
+//   Cyrus Harrison, Tue Sep 18 08:09:53 PDT 2007
+//   Added floatFormatText
+//
 // ****************************************************************************
 
 class GUI_API QvisQueryWindow : public QvisPostableWindowSimpleObserver
@@ -162,6 +165,8 @@ private:
     QLineEdit       *textFields[4];
     QCheckBox       *useGlobal;
   
+    QLineEdit       *floatFormatText;
+    
     QButtonGroup    *dataOpts;
     
     int		    saveCount;

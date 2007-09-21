@@ -41,7 +41,7 @@
 
 #include <avtKurtosisQuery.h>
 
-#include <stdio.h>
+#include <snprintf.h>
 #include <math.h>
 
 
@@ -184,13 +184,20 @@ avtKurtosisQuery::CurveQuery(int n1, const float *x1, const float *y1)
 //  Programmer: Hank Childs
 //  Creation:   August 5, 2005
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 std::string
 avtKurtosisQuery::CreateMessage(double kurtosis)
 {
     char msg[1024];
-    sprintf(msg, "The kurtosis of the distribution is %g.", kurtosis);
+    string format = "The kurtosis of the distribution is " 
+                      + queryAtts.GetFloatFormat() + ".";
+    SNPRINTF(msg,1024, format.c_str(), kurtosis);
     std::string m = msg;
     return m;
 }

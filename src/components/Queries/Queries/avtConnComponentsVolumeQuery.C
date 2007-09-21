@@ -136,6 +136,10 @@ avtConnComponentsVolumeQuery::PreExecute(void)
 //  Programmer: Cyrus Harrison
 //  Creation:   February 7, 2007
 //
+//  Modifications:
+//    Cyrus Harrison, Tue Sep 18 09:41:09 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -160,10 +164,13 @@ avtConnComponentsVolumeQuery::PostExecute(void)
 
     msg += buff;
 
+    string format  =  "Component %d Volume = (" 
+                              + queryAtts.GetFloatFormat() +")\n";
+    
     for(int i=0;i<nComps;i++)
     {
         SNPRINTF(buff,1024,
-                 "Component %d Volume = (%f)\n",
+                 format.c_str(),
                  i,
                  volPerComp[i]);
 

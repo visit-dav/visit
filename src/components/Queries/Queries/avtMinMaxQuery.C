@@ -798,12 +798,16 @@ avtMinMaxQuery::CreateResultMessage(const int n)
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Cyrus Harrison, Tue Sep 18 15:26:32 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 string 
 avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
 {
-    ostrstream os;
+    string res = "";
     int elNum = info.GetElementNum();
 
     if (nodeCentered)
@@ -811,14 +815,18 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
     else
         elNum += cellOrigin;
   
-    os.setf(ios::fixed);
-    os.setf(ios::showpoint);
+    char buf[256];
+    string floatFormat = queryAtts.GetFloatFormat();
+    
+    SNPRINTF(buf,256,floatFormat.c_str(),info.GetValue());
  
-    os << info.GetValue() << " (" << elementName.c_str() << " " << elNum << " ";
-
+    res += buf;
+    res += " (" + elementName;
+    SNPRINTF(buf,256," %d ",elNum);
+    res +=buf;
 
     if (info.GetMatName() != "NO_MAT")
-        os << "for material " << info.GetMatName().c_str() << " ";
+        res += "for material " + info.GetMatName() + " ";
 
     if (!singleDomain)
     {
@@ -828,35 +836,38 @@ avtMinMaxQuery::InfoToString(const MinMaxInfo &info)
      
         if (domainName.size() > 0)
         { 
-            os << "in " << domainName.c_str() << " " ;
+            res += "in " + domainName + " " ;
         }
         else 
         { 
-            os << "in domain " <<  info.GetDomain()+blockOrigin << " ";
+            SNPRINTF(buf,256,"in domain %d ",info.GetDomain()+blockOrigin);
+            res += buf;
         }
     }
 
-    os << "at coord <";
-
+    res +="at coord <"; 
+    string format ="";
     const double *c = info.GetCoord();
     if (queryAtts.GetVarTypes()[0] == QueryAttributes::Curve || scalarCurve)
     { 
-        os << c[0];
+        SNPRINTF(buf,256,floatFormat.c_str(),c[0]);
+        res += buf;
     }
     else if (dimension == 2 && !invTransform)
     {
-        os << c[0] << ", " << c[1];
+        format = floatFormat + ", " + floatFormat;
+        SNPRINTF(buf,256,format.c_str(),c[0],c[1]);
+        res += buf;
     }
     else
     {
-        os << c[0] << ", " << c[1] << ", " << c[2];
+        format = floatFormat + ", " + floatFormat + ", " + floatFormat;
+        SNPRINTF(buf,256,format.c_str(),c[0],c[1],c[2]);
+        res += buf;
     }
-    os << ">)" << ends;
-    string str(os.str());
-#if !defined(_WIN32)
-    os.freeze(false);
-#endif
-    return str;
+    res +=  ">)";
+
+    return res;
 }
 
 

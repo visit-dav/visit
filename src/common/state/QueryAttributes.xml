@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="QueryAttributes" purpose="This class contains attributes used for query." persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryAttributes.code">
+  <Attribute name="QueryAttributes" purpose="This class contains attributes used for query." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="QueryAttributes.code">
     <Enum name="ElementType">
       Zone
       Node
@@ -68,6 +68,9 @@
     </Field>
     <Field name="darg2" label="darg2" type="doubleVector">
       0.000000
+    </Field>
+    <Field name="floatFormat" label="floatFormat" type="string">
+      %g
     </Field>
     <Function name="Reset" user="true" member="true">
     </Function>

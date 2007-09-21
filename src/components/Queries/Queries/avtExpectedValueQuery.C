@@ -41,7 +41,7 @@
 
 #include <avtExpectedValueQuery.h>
 
-#include <stdio.h>
+#include <snprintf.h>
 
 
 // ****************************************************************************
@@ -123,13 +123,20 @@ avtExpectedValueQuery::CurveQuery(int n1, const float *x1, const float *y1)
 //  Programmer: Hank Childs
 //  Creation:   August 25, 2006
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 std::string
 avtExpectedValueQuery::CreateMessage(double ev)
 {
     char msg[1024];
-    sprintf(msg, "The expected value is %g.", ev);
+    std::string format = "The expected value is " + queryAtts.GetFloatFormat()
+                         + ".";
+    SNPRINTF(msg,1024, format.c_str(), ev);
     std::string m = msg;
     return m;
 }

@@ -348,18 +348,20 @@ avtCompactnessQuery::PostExecute(void)
     //  That is all that is required of this query.
     //
     char msg[4096];
-    SNPRINTF(msg, 4096,
-             "%s"
-             "Total cross sectional area (XSA): %f\n"
-             "Total rotated (x=0) volume (VOL): %f\n"
-             "\n"
-             "Distance to boundary WRT dA / XSA = %f\n"
-             "Distance to boundary WRT dA / VOL = %f\n"
-             "Distance to boundary WRT dV / XSA = %f\n"
-             "Distance to boundary WRT dV / VOL = %f\n"
-             "Distance to origin   WRT dA       = %f\n",
-             (numDomains > 1) ?
-                   "Warning: multiple domains -- accuracy will suffer.\n" : "",
+    string floatFormat = queryAtts.GetFloatFormat();
+    string format =
+              "Total cross sectional area (XSA): "   + floatFormat + "\n"
+              "Total rotated (x=0) volume (VOL): "   + floatFormat + "\n\n"
+              "Distance to boundary WRT dA / XSA = " + floatFormat + "\n"
+              "Distance to boundary WRT dA / VOL = " + floatFormat + "\n"
+              "Distance to boundary WRT dV / XSA = " + floatFormat + "\n"
+              "Distance to boundary WRT dV / VOL = " + floatFormat + "\n"
+              "Distance to origin   WRT dA       = " + floatFormat + "\n";
+    
+    if(numDomains > 1)
+        format = "Warning: multiple domains -- accuracy will suffer.\n" + format;
+
+    SNPRINTF(msg, 4096,format.c_str(),
              totalXSectArea,
              totalRotVolume,
              distBound_da_xsa,
@@ -390,22 +392,25 @@ avtCompactnessQuery::PostExecute(void)
     else
     {
         char msg2[8192];
-        SNPRINTF(msg2, 8192,
-                 "%s\n\n"
+        format = "%s\n\n"
                  "Density-based queries:\n"
                  "NOTE -- these assume the current variable is 'density'!\n"
                  "\n"
-                 "Total rotated (x=0) mass (MASS): %f\n"
-                 "Center of mass = (%f , %f)\n"
+                 "Total rotated (x=0) mass (MASS): " + floatFormat + "\n"
+                 "Center of mass = (" + floatFormat + " , "+ floatFormat + ")\n"
                  "\n"
-                 "Density-weighted distance to boundary  WRT dV / MASS = %f\n"
-                 "Density-weighted distance to cent mass WRT dV / MASS = %f\n",
-
+                 "Density-weighted distance to boundary  WRT dV / MASS = "
+                  + floatFormat + "\n"
+                 "Density-weighted distance to cent mass WRT dV / MASS = "
+                 + floatFormat + "\n";
+                 
+        SNPRINTF(msg2, 8192,format.c_str(),
                  msg,
                  totalRotMass,
                  centMassX, centMassY,
                  distBound_dv_den_vol,
                  distCMass_dv_den_vol);
+
         SetResultMessage(msg2);
         values.push_back(totalRotMass);
         values.push_back(centMassX);

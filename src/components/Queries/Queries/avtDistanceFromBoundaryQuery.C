@@ -41,7 +41,7 @@
 
 #include <avtDistanceFromBoundaryQuery.h>
 
-#include <stdio.h>
+#include <snprintf.h>
 #include <math.h>
 
 #include <vtkCellData.h>
@@ -134,6 +134,9 @@ avtDistanceFromBoundaryQuery::PreExecute(void)
 //    Hank Childs, Fri Sep 15 17:03:39 PDT 2006
 //    Add support for RZ meshes.
 //
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -207,11 +210,13 @@ avtDistanceFromBoundaryQuery::PostExecute(void)
     const char *mass_string = (didVolume ? "volume" : 
                               (didRVolume ? "revolved volume" : 
                               (didSA ? "area" : "mass")));
-    sprintf(msg, "The distribution of %s over distance from the boundary "
-                 "has been outputted as an "
-                 "Ultra file (%s), which can then be imported into VisIt.  The"
-                 " total %s considered was %f\n", 
-                 mass_string, name, mass_string, totalMass);
+    string format =  "The distribution of %s over distance from the boundary "
+                     "has been outputted as an "
+                     "Ultra file (%s), which can then be imported into VisIt."
+                     "  The total %s considered was " 
+                     + queryAtts.GetFloatFormat() + "\n";
+    SNPRINTF(msg,1024,format.c_str(),
+                      mass_string, name, mass_string, totalMass);
     SetResultMessage(msg);
     SetResultValue(0.);
 

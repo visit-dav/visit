@@ -45,6 +45,7 @@
 #include <vectortypes.h>
 
 #include <visitstream.h>
+#include <snprintf.h>
 
 // ****************************************************************************
 //  Method: avtHohlraumFluxQuery::avtHohlraumFluxQuery
@@ -190,6 +191,10 @@ avtHohlraumFluxQuery::SetThetaPhi(float thetaInDegrees, float phiInDegrees)
 //    Dave Bremer, Tue Jun 19 18:33:26 PDT 2007
 //    Added code to query for the widths of bins.  If they are available, they
 //    will be used later to compute temperature from flux.
+//
+//    Cyrus Harrison, Tue Sep 18 16:17:57 PDT 2007
+//    Changed sprintf to SNPRINTF
+//
 // ****************************************************************************
 
 void
@@ -227,13 +232,13 @@ avtHohlraumFluxQuery::ExecuteLineScan(vtkPolyData *pd)
     if (absorbtivityBins == NULL)
     {
         char msg[256];
-        sprintf(msg, "Variable %s not found.", absVarName.c_str());
+        SNPRINTF(msg,256, "Variable %s not found.", absVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
     if (emissivityBins == NULL)
     {
         char msg[256];
-        sprintf(msg, "Variable %s not found.", emisVarName.c_str());
+        SNPRINTF(msg, 256, "Variable %s not found.", emisVarName.c_str());
         EXCEPTION1(VisItException, msg);
     }
     if ( emissivityBins->GetNumberOfComponents() != 
@@ -453,6 +458,10 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
 //    Dave Bremer, Tue Jun 19 18:33:26 PDT 2007
 //    Added code to use bin widths, if they are available, to compute 
 //    temperature from flux.
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string 
+//
 // ****************************************************************************
 
 void
@@ -486,7 +495,7 @@ avtHohlraumFluxQuery::PostExecute(void)
     if (PAR_Rank() == 0)
     {
         int times = 0;
-        sprintf(name, "hf%d.ult", times++);
+        SNPRINTF(name,256, "hf%d.ult", times++);
 
         for (times = 0 ; times < 10000 ; times++)
         {
@@ -515,34 +524,44 @@ avtHohlraumFluxQuery::PostExecute(void)
             else
             {
                 ifile.close();
-                sprintf(name, "hf%d.ult", times);
+                SNPRINTF(name,256, "hf%d.ult", times);
             }
         }
     }
 
-    int   msgBufSize = 512;
-    char *msg = (char *)malloc(msgBufSize);
-    sprintf(msg, "The hohlraum flux query over %d energy groups "
+   
+    string msg    = "";
+    string format ="";
+    string floatFormat = queryAtts.GetFloatFormat();
+    char buf[512];
+        
+    SNPRINTF(buf,512,"The hohlraum flux query over %d energy groups "
                  "was written to %s.\n", numBins, name);
-    sprintf(msg + strlen(msg), "Sum is %g.\n", resultSum);
-    if (binWidths.size() != 0)
-        sprintf(msg + strlen(msg), "Temperature is %g.\n", temperature);
-    strcat(msg, "Energy group values are: ");
+    msg += buf;
+    format = "Sum is " + floatFormat + ".\n";
+    SNPRINTF(buf,512,format.c_str(), resultSum);
+    msg+=buf;
     
+    if (binWidths.size() != 0)
+    {
+        format = "Temperature is " + floatFormat + ".\n";
+        SNPRINTF(buf,512,format.c_str(),temperature);
+        msg+=buf;
+    }
+    
+    msg += "Energy group values are: ";
+   
     for (ii = 0 ; ii < numBins ; ii++)
     {
-        if (strlen(msg) > (msgBufSize - 20))
-        {
-            msg = (char *)realloc(msg, msgBufSize + 256);
-            msgBufSize += 256;
-        }
-        sprintf(msg + strlen(msg), " %g", result[ii]);
+       
+        format = " " + floatFormat;
+        SNPRINTF(buf,512, format.c_str(), result[ii]);
+        msg+=buf;
         
         if (ii < numBins-1)
-            strcat(msg, ",");
+            msg+=",";
     }
     SetResultMessage(msg);
-    free(msg);
 
     SetResultValue(resultSum);
 }

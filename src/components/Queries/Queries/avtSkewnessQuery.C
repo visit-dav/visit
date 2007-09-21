@@ -41,7 +41,7 @@
 
 #include <avtSkewnessQuery.h>
 
-#include <stdio.h>
+#include <snprintf.h>
 #include <math.h>
 
 
@@ -186,13 +186,21 @@ avtSkewnessQuery::CurveQuery(int n1, const float *x1, const float *y1)
 //  Programmer: Hank Childs
 //  Creation:   August 5, 2005
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 std::string
 avtSkewnessQuery::CreateMessage(double skewness)
 {
     char msg[1024];
-    sprintf(msg, "The skewness of the distribution is %g.", skewness);
+    string format = "The skewness of the distribution is "
+                    + queryAtts.GetFloatFormat() + ".";
+                    
+    SNPRINTF(msg,1024,format.c_str(), skewness);
     std::string m = msg;
     return m;
 }
