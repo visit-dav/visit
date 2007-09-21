@@ -166,6 +166,10 @@ Definition:
 //   Mark C. Miller, Mon Jan  8 20:48:30 PST 2007
 //   Initialized buff at top to avoid possible creation of code blocks where
 //   buff is uninitialized (as for tensor/array variables)
+//
+//   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
+//   Added support for user settable floating point format string 
+//
 // ****************************************************************************
 void
 PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
@@ -178,6 +182,7 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
     os = variableName;
     os +=  ":  ";
     bool centeringsMatch = false;
+    std::string format="";
     switch (centering)
     {
         case Nodal:  os += "<nodal> " ; 
@@ -212,7 +217,8 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 os += buff;
                 if (mixValues[mixOffset] < 1.)
                 {
-                    SNPRINTF(buff, 256, "= %g", mixValues[mixOffset]);
+                    format = "= " + floatFormat;
+                    SNPRINTF(buff, 256, format.c_str(), mixValues[mixOffset]);
                     os += buff;
                 }
                 os += "\n";
@@ -243,7 +249,8 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                         os += buff;
                         if (mixValues[j+mixOffset] < 1.)
                         {
-                            SNPRINTF(buff, 256, "= %g", mixValues[j+mixOffset]);
+                            format = "= " + floatFormat;
+                            SNPRINTF(buff, 256, format.c_str(), mixValues[j+mixOffset]);
                             os += buff;
                         }
                         os += "\n";
@@ -265,7 +272,8 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 {
                     if (values.size() > 0)
                     {
-                        SNPRINTF(buff, 256, "    %s = %g\n", names[i].c_str(),
+                        format = "    %s = " + floatFormat + "\n";
+                        SNPRINTF(buff, 256, format.c_str(), names[i].c_str(),
                                  values[i]);
                     }
                     else
@@ -293,7 +301,8 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                         SNPRINTF(buff, 256, "%s%s  ", spacing2.c_str(), 
                                  mixNames[k+mixOffset].c_str());
                         os += buff;
-                        SNPRINTF(buff, 256, "= %g\n", mixValues[k+mixOffset]);
+                        format = "= " + floatFormat + "\n";
+                        SNPRINTF(buff, 256, format.c_str(), mixValues[k+mixOffset]);
                         os += buff;
                     }
                     os += "\n";
@@ -317,21 +326,25 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                 if (variableType == "vector")
                 {
                     int stride = values.size() / names.size();
-                    SNPRINTF(buff, 256, "= (%g", values[i*stride]);
+                    format = "= (" + floatFormat;
+                    SNPRINTF(buff, 256, format.c_str(), values[i*stride]);
                     os += buff;
                     for (int j = 1; j < stride-1; j++) 
                     {
-                        SNPRINTF(buff, 256, ",%g", values[i*stride+j]);
+                        format = "," + floatFormat;
+                        SNPRINTF(buff, 256, format.c_str(), values[i*stride+j]);
                         os += buff;
                     }
-                    SNPRINTF(buff, 256, ") mag = %g\n", values[i*stride+stride-1]);
+                    format = ") mag = " + floatFormat + "\n";
+                    SNPRINTF(buff, 256, format.c_str(), values[i*stride+stride-1]);
                     os += buff; 
                 }
                 else if (variableType == "scalar")
                 {
                     if (!treatAsASCII)
                     {
-                        SNPRINTF(buff, 256, "= %g\n", values[i]);
+                        format = "= " + floatFormat + "\n";
+                        SNPRINTF(buff, 256, format.c_str(), values[i]);
                     }
                     else 
                     {
@@ -383,7 +396,8 @@ PickVarInfo::CreateOutputString(std::string &os, const std::string &type)
                         SNPRINTF(buff, 256, "        material %s = ", 
                                  mixNames[j+mixOffset].c_str());
                         os += buff;
-                        SNPRINTF(buff, 256, "%g\n", mixValues[j+mixOffset]);
+                        format = floatFormat + "\n";
+                        SNPRINTF(buff, 256, format.c_str(), mixValues[j+mixOffset]);
                         os += buff;
                     }
                     mixOffset += nMats;
@@ -420,6 +434,12 @@ Definition:
 //   Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
 //   Print major eigenvalue.  Change how offset is computed.
 //
+//   Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
+//   Print major eigenvalue.  Change how offset is computed.
+//
+//   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
+//   Added support for user settable floating point format string 
+//
 // ****************************************************************************
 
 void
@@ -427,6 +447,7 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
                          int tuple, int ncomps, int buff_len)
 {
     int  j;
+    std::string format="";
 
     int offset = tuple*(ncomps+1);
     if (ncomps == 2)  // 2D tensor
@@ -434,20 +455,21 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
         char line[256];
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
-
-        sprintf(line, "(%g, %g)\n", values[offset], values[offset+1]);
-
-        os += line;
-        for (j = 0 ; j < buff_len ; j++)
-            os += " ";
-
-        sprintf(line, "(%g, %g)\n", values[offset+2], values[offset+3]);
+        format = "(" + floatFormat + ", "  + floatFormat + ")\n";
+        sprintf(line, format.c_str(), values[offset], values[offset+1]);
 
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "Major Eigenvalue: %g\n", values[offset+4]);
+        sprintf(line, format.c_str(), values[offset+2], values[offset+3]);
+
+        os += line;
+        for (j = 0 ; j < buff_len ; j++)
+            os += " ";
+
+        format = "Major Eigenvalue: " + floatFormat + "\n";
+        sprintf(line, format.c_str(), values[offset+4]);
         os += line;
     }
     else if (ncomps == 9) // 3D tensor
@@ -456,25 +478,29 @@ PickVarInfo::PrintTensor(std::string &os, const std::vector<double> &values,
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "(%g, %g, %g)\n", values[offset], values[offset+1],
+        format = "(" + floatFormat + ", "  
+                     + floatFormat + ", "
+                     + floatFormat + ")\n";
+        sprintf(line, format.c_str(), values[offset], values[offset+1],
                                         values[offset+2]);
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "(%g, %g, %g)\n", values[offset+3], values[offset+4],
+        sprintf(line, format.c_str(), values[offset+3], values[offset+4],
                                         values[offset+5]);
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "(%g, %g, %g)\n", values[offset+6], values[offset+7],
+        sprintf(line, format.c_str(), values[offset+6], values[offset+7],
                                         values[offset+8]);
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "Major Eigenvalue: %g\n", values[offset+9]);
+        format = "Major Eigenvalue: " + floatFormat + "\n";
+        sprintf(line, floatFormat.c_str(), values[offset+9]);
         os += line;
     }
 }
@@ -496,6 +522,9 @@ Definition:
 //   Kathleen Bonnell, Tue Aug 30 09:35:44 PDT 2005
 //   Print major eigenvalue.  Change how offset is computed.
 //
+//   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
+//   Added support for user settable floating point format string 
+//
 // ****************************************************************************
 
 void
@@ -503,7 +532,7 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
          const std::vector<double> &values, int tuple, int ncomps, int buff_len)
 {
     int  j;
-
+    std::string format="";
     int offset = tuple*ncomps;
     if (ncomps == 2)  // 2D tensor
     {
@@ -511,19 +540,21 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "(%g, %g)\n", values[offset], values[offset+1]);
+        format = "(" + floatFormat + ", "  + floatFormat + ")\n";
+        sprintf(line, format.c_str(), values[offset], values[offset+1]);
 
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "(%g, %g)\n", values[offset+2], values[offset+3]);
+        sprintf(line, format.c_str(), values[offset+2], values[offset+3]);
 
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "Major Eigenvalue: %g\n", values[offset+4]);
+        format = "Major Eigenvalue: " + floatFormat + "\n";
+        sprintf(line, format.c_str(), values[offset+4]);
         os += line;
     }
     else if (ncomps == 9) // 3D tensor
@@ -532,25 +563,29 @@ PickVarInfo::PrintSymmetricTensor(std::string &os,
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "(%g, %g, %g)\n", values[offset], values[offset+1],
+        format = "(" + floatFormat + ", "  
+                     + floatFormat + ", "
+                     + floatFormat + ")\n";
+        sprintf(line, format.c_str(), values[offset], values[offset+1],
                                         values[offset+2]);
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "(%g, %g, %g)\n", values[offset+3], values[offset+4],
+        sprintf(line, format.c_str(), values[offset+3], values[offset+4],
                                         values[offset+5]);
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "(%g, %g, %g)\n", values[offset+6], values[offset+7],
+        sprintf(line, format.c_str(), values[offset+6], values[offset+7],
                                         values[offset+8]);
         os += line;
         for (j = 0 ; j < buff_len ; j++)
             os += " ";
 
-        sprintf(line, "Major Eigenvalue: %g\n", values[offset+9]);
+        format = "Major Eigenvalue: " + floatFormat + "\n";
+        sprintf(line, format.c_str(), values[offset+9]);
         os += line;
     }
 }
@@ -593,6 +628,9 @@ Definition:
 //   Hank Childs, Tue Sep  5 17:05:32 PDT 2006
 //   Fix indexing bug.
 //
+//   Cyrus Harrison, Mon Sep 17 08:57:13 PDT 2007
+//   Added support for user settable floating point format string 
+//
 // ****************************************************************************
 
 void
@@ -600,18 +638,18 @@ PickVarInfo::PrintArray(std::string &os,
          const std::vector<double> &values, int tuple, int ncomps, int buff_len)
 {
     int j;
-
+    std::string format="";
     int offset = tuple*(ncomps+1);
     char line[2048];
     for (j = 0 ; j < buff_len ; j++)
         os += " ";
     sprintf(line, "(");
+    format = floatFormat + ", ";
     for (j = 0 ; j < ncomps ; j++)
     {
         if (j == ncomps-1)
-            sprintf(line+strlen(line), "%g)\n", values[offset+j]);
-        else
-            sprintf(line+strlen(line), "%g, ", values[offset+j]);
+            format = floatFormat + ")\n";
+        sprintf(line+strlen(line), format.c_str(), values[offset+j]);
     }
     os += line;
 }

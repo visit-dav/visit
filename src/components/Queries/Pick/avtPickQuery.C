@@ -560,7 +560,12 @@ avtPickQuery::DeterminePickedNode(vtkDataSet *ds, int &foundEl)
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Cyrus Harrison, Mon Sep 17 11:35:32 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
+
 
 void
 avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
@@ -616,14 +621,20 @@ avtPickQuery::GetNodeCoords(vtkDataSet *ds, const int nodeId)
    }
    if (pickAtts.GetShowNodePhysicalCoords())
    {
+       std::string format = ""; 
+       std::string floatFormat = pickAtts.GetFloatFormat();
        nodeCoords.clear();
        if (pickAtts.GetDimension() == 2)
        {
-           SNPRINTF(buff, 80, "<%g, %g>", coord[0], coord[1]);
+           format = "<" + floatFormat + ", " + floatFormat + ">";
+           SNPRINTF(buff, 80, format.c_str(), coord[0], coord[1]);
        }
        else 
        {
-           SNPRINTF(buff, 80, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+           format = "<" + floatFormat + ", " 
+                        + floatFormat + ", "  
+                        + floatFormat + ">";
+           SNPRINTF(buff, 80, format.c_str(), coord[0], coord[1], coord[2]);
        }
        nodeCoords.push_back(buff);
        pickAtts.SetPnodeCoords(nodeCoords);
@@ -1033,6 +1044,10 @@ avtPickQuery::RetrieveVarInfo(vtkDataSet* ds, const int findElement,
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Cyrus Harrison, Mon Sep 17 11:35:32 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 bool
@@ -1157,14 +1172,22 @@ avtPickQuery::RetrieveNodes(vtkDataSet *ds, int zone)
             }
             if (pickAtts.GetShowNodePhysicalCoords())
             {
+                std::string format = "";
+                std::string floatFormat = pickAtts.GetFloatFormat();
+                
                 ds->GetPoint(ptIds->GetId(i), coord); 
                 if (pickAtts.GetDimension() == 2)
                 {
-                    SNPRINTF(buff, 80, "<%g, %g>", coord[0], coord[1]);
+                
+                    format = "<" + floatFormat + ", " + floatFormat + ">";
+                    SNPRINTF(buff, 80, format.c_str(), coord[0], coord[1]);
                 }
                 else 
                 {
-                    SNPRINTF(buff, 80, "<%g, %g, %g>", 
+                    format = "<" + floatFormat + ", " 
+                                 + floatFormat + ", "  
+                                 + floatFormat + ">";
+                    SNPRINTF(buff, 80, format.c_str(), 
                              coord[0], coord[1], coord[2]);
                 }
                 pnodeCoords.push_back(buff);

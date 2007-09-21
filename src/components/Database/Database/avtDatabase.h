@@ -272,6 +272,10 @@ typedef struct {
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added treatAllDBsAsTimeVarying to SIL methods
+//
+//    Cyrus Harrison, Fri Sep 14 13:59:30 PDT 2007
+//    Added floating point format argument to QueryNodes and QueryZones
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -435,6 +439,7 @@ class DATABASE_API avtDatabase
                                              PickVarInfo &, const bool) 
                                                   {return false; };
     virtual bool                QueryNodes(const std::string &, const int, 
+                                           const std::string &,
                                            const int, bool &, const int,
                                            intVector &, intVector &, 
                                            const bool, double [3],
@@ -447,7 +452,8 @@ class DATABASE_API avtDatabase
     virtual bool                QueryMesh(const std::string &, const int, const int, 
                                           std::string &, const bool) {return false; };
 
-    virtual bool                QueryZones(const std::string &, const int,int &,
+    virtual bool                QueryZones(const std::string &, const int,
+                                           const std::string &, int &,
                                            bool &, const int, intVector &, 
                                            intVector &, const bool,
                                            double [3], const int, const bool, 

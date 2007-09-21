@@ -42,12 +42,19 @@ Definition:
 //   Hank Childs, Fri Aug 31 15:35:28 PDT 2007
 //   Print out subset name.
 //
+//   Cyrus Harrison, Mon Sep 17 10:41:25 PDT 200
+//   Added support for user settable floating point format string
+//
 // ****************************************************************************
 void
 PickAttributes::PrintSelf(ostream &os)
 {
     int i;
+    
+    char buff[512];
+    
     std::string fileName;
+    std::string format;
     int pos = databaseName.find_last_of('/');
     if (pos >= databaseName.size())
         fileName = databaseName;
@@ -77,18 +84,30 @@ PickAttributes::PrintSelf(ostream &os)
     os << "\n";
     if (pickType == CurveNode)
     {
-        os << "PickedPoint: <" << nodePoint[0] << ", " 
-                               << nodePoint[1] << ", " 
-                               << nodePoint[2] << ">\n";
+        format = "PickedPoint: <" + floatFormat + ", "
+                                  + floatFormat + ", "
+                                  + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(),nodePoint[0],
+                                           nodePoint[1],
+                                           nodePoint[2]);
+        os << buff;
     }
     else if (pickType == CurveZone)
     {
-        os << "EndPoint1: <" << nodePoint[0] << ", " 
-                             << nodePoint[1] << ", " 
-                             << nodePoint[2] << ">\n";
-        os << "EndPoint2: <" << cellPoint[0] << ", " 
-                             << cellPoint[1] << ", " 
-                             << cellPoint[2] << ">\n";
+        format = "EndPoint1: <" + floatFormat + ", "
+                                + floatFormat + ", "
+                                + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(),nodePoint[0],
+                                           nodePoint[1],
+                                           nodePoint[2]);
+        os << buff;
+        format = "EndPoint2: <" + floatFormat + ", "
+                                + floatFormat + ", "
+                                + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(),cellPoint[0],
+                                           cellPoint[1],
+                                           cellPoint[2]);
+        os << buff;    
     }
     else if (cellPoint[0] != FLT_MAX)
     {
@@ -101,9 +120,14 @@ PickAttributes::PrintSelf(ostream &os)
         {
             os << " (in transformed space) " ;
         }
-        os << "<" << cellPoint[0] << ", " 
-                  << cellPoint[1] << ", " 
-                  << cellPoint[2] << ">\n";
+        
+        format = "<" + floatFormat + ", "
+                     + floatFormat + ", "
+                     + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(),cellPoint[0],
+                                           cellPoint[1],
+                                           cellPoint[2]);
+        os << buff;
     }
     if (pickType == Zone || pickType == DomainZone)
     {
@@ -193,12 +217,21 @@ PickAttributes::PrintSelf(ostream &os)
     for (i = 0; i < varInfo.size(); i++)
         ((PickVarInfo*)varInfo[i])->PrintSelf(os);
 
-    os << "RayPoint 1: <" << rayPoint1[0] << ", " 
-                          << rayPoint1[1] << ", " 
-                          << rayPoint1[2] << ">\n";
-    os << "RayPoint 2: <" << rayPoint2[0] << ", " 
-                          << rayPoint2[1] << ", " 
-                          << rayPoint2[2] << ">\n";
+    format = "RayPoint 1: <" + floatFormat + ", "
+                             + floatFormat + ", "
+                             + floatFormat + ">\n";
+
+    SNPRINTF(buff, 512, format.c_str(),rayPoint1[0],
+                                       rayPoint1[1],
+                                       rayPoint1[2]);            
+    os << buff;
+    format = "RayPoint 2: <" + floatFormat + ", "
+                             + floatFormat + ", "
+                             + floatFormat + ">\n";
+    SNPRINTF(buff, 512, format.c_str(),rayPoint2[0],
+                                       rayPoint2[1],
+                                       rayPoint2[2]);            
+    os << buff;
 
     if (doTimeCurve)
         os << "Set up to create a time-curve.\n";
@@ -264,6 +297,9 @@ Definition:
 //   Add support for blockPieceName as a template string, into which
 //   we print the domain.
 //
+//   Cyrus Harrison, Mon Sep 17 10:13:18 PDT 2007
+//   Add support for user settable floating point format string
+//
 // ****************************************************************************
 void
 PickAttributes::CreateOutputString(std::string &os, bool withLetter)
@@ -287,6 +323,7 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
     char buff[512];
    
     std::string fileName; 
+    std::string format; 
     int pos = databaseName.find_last_of('/');
     if (pos >= databaseName.size())
         fileName = databaseName;
@@ -341,12 +378,16 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
 
     if (pickType == CurveNode)
     {
-        SNPRINTF(buff, 512, "Point: <%f, %f>\n", nodePoint[0], nodePoint[1]);
+        format = "Point: <" + floatFormat + ", " + floatFormat + ">\n";
+        SNPRINTF(buff, 512, format.c_str(), nodePoint[0], nodePoint[1]);
         os += buff;
     }
     else if (pickType == CurveZone)
     {
-        SNPRINTF(buff, 512, "Point1: <%f, %f>\nPoint2: <%f, %f>\n", 
+        format = "Point1: <" + floatFormat + ", " + floatFormat + ">\n"
+                +"Point2: <" + floatFormat + ", " + floatFormat + ">\n";
+
+        SNPRINTF(buff, 512, format.c_str(),
                   nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
         os += buff;
     }
@@ -356,12 +397,15 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         {
             if (!needTransformMessage)
             {
-                SNPRINTF(buff, 512, "%s: <%f, %f>\n",
+                format = "%s: <" + floatFormat + ", " + floatFormat + ">\n";
+                SNPRINTF(buff, 512, format.c_str(),
                         point.c_str(), cellPoint[0], cellPoint[1]);
             }
             else 
             {
-                SNPRINTF(buff, 512, "%s: (in transformed space)\n        <%f, %f>\n",
+                format = "%s: (in transformed space)\n        <"  
+                            + floatFormat + ", " + floatFormat + ">\n";
+                SNPRINTF(buff, 512, format.c_str(),
                         point.c_str(), cellPoint[0], cellPoint[1]);
             }
         }
@@ -369,12 +413,19 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         {
             if (!needTransformMessage)
             {
-                SNPRINTF(buff, 512, "%s: <%f, %f, %f>\n",
+                format = "%s: <" + floatFormat + ", " 
+                                 + floatFormat + ", " 
+                                 + floatFormat + ">\n";
+                SNPRINTF(buff, 512, format.c_str(),
                         point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
             }
             else 
             {
-                SNPRINTF(buff, 512, "%s: (in transformed space) \n       <%f, %f, %f>\n",
+                format = "%s: (in transformed space) \n       <" 
+                                 + floatFormat + ", " 
+                                 + floatFormat + ", " 
+                                 + floatFormat + ">\n";
+                SNPRINTF(buff, 512, format.c_str(),
                         point.c_str(), cellPoint[0], cellPoint[1], cellPoint[2]);
             }
         }
@@ -540,7 +591,9 @@ PickAttributes::CreateOutputString(std::string &os, bool withLetter)
         //
         // VarInfo does not append a newline char, but we need one here
         //
-        ((PickVarInfo*)varInfo[i])->CreateOutputString(iv, pt);
+        PickVarInfo* info = (PickVarInfo*)varInfo[i];
+        info->SetFloatFormat(floatFormat);
+        info->CreateOutputString(iv, pt);
         os += iv;
         os += "\n";
     }
@@ -689,6 +742,9 @@ Definition:
 //   Hank Childs, Mon Aug 27 13:59:12 PDT 2007
 //   Add createSpreadsheet.
 //
+//   Cyrus Harrison, Mon Sep 17 14:12:30 PDT 2007
+//   Add floatFormat
+// 
 // ****************************************************************************
 
 void
@@ -741,6 +797,11 @@ PickAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("displayGlobalIds")) != 0)
         SetDisplayGlobalIds(node->AsBool());
+        
+    if((node = searchNode->GetNode("floatFormat")) != 0)
+    {
+        SetFloatFormat(node->AsString());
+    }
 
     // Clear all the PickVarInfos.
     ClearVarInfos();
@@ -762,6 +823,9 @@ Definition:
 //   Hank Childs, Mon Aug 27 13:59:12 PDT 2007
 //   Add createSpreadsheet.
 //
+//   Cyrus Harrison, Mon Sep 17 14:12:30 PDT 2007
+//   Add floatFormat
+//
 // ****************************************************************************
 
 bool
@@ -769,7 +833,7 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
 {
     if(parentNode == 0)
         return false;
-
+        
     PickAttributes defaultObject;
     bool addToParent = false;
     // Create a node for PickAttributes.
@@ -872,7 +936,13 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         addToParent = true;
         node->AddNode(new DataNode("displayGlobalIds", displayGlobalIds));
     }
-
+    
+    if(completeSave || !FieldsEqual(64, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("floatFormat", floatFormat));
+    }
+    
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -908,6 +978,9 @@ Definition:
 //   Add support for blockPieceName as a template string, into which
 //   we print the domain.
 //
+//   Cyrus Harrison, Mon Sep 17 10:41:25 PDT 200
+//   Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void
@@ -916,7 +989,8 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     int i;
     char buff[512];
    
-    std::string fileName; 
+    std::string fileName;
+    std::string format;
     int pos = databaseName.find_last_of('/');
     if (pos >= databaseName.size())
         fileName = databaseName;
@@ -963,12 +1037,15 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     }
     if (pickType == CurveNode)
     {
-        SNPRINTF(buff, 512, " at <%f, %f>\n", nodePoint[0], nodePoint[1]);
+        format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
+        SNPRINTF(buff, 512, format.c_str() , nodePoint[0], nodePoint[1]);
         os += buff;
     }
     else if (pickType == CurveZone)
     {
-        SNPRINTF(buff, 512, " at <%f, %f> & <%f, %f>\n", 
+        format = " at <" + floatFormat + ", " + floatFormat +  ">"
+                 +" & <" + floatFormat + ", " + floatFormat +  ">\b";
+        SNPRINTF(buff, 512, format.c_str(), 
                   nodePoint[0], nodePoint[1], cellPoint[0], cellPoint[1]);
         os += buff;
     }
@@ -976,11 +1053,15 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
     {
         if (dimension == 2)
         {
-            SNPRINTF(buff, 512, " at <%f, %f>\n", cellPoint[0], cellPoint[1]);
+            format = " at <" + floatFormat + ", " + floatFormat +  ">\n";
+            SNPRINTF(buff, 512, format.c_str(), cellPoint[0], cellPoint[1]);
         }
         else 
         {
-            SNPRINTF(buff, 512, " at <%f, %f, %f>\n",
+            format = " at <" + floatFormat + ", " 
+                             + floatFormat + ", " 
+                             + floatFormat +  ">\n";
+            SNPRINTF(buff, 512, format.c_str(),
                         cellPoint[0], cellPoint[1], cellPoint[2]);
         }
         os += buff;
@@ -1121,7 +1202,9 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         //
         // VarInfo does not append a newline char, but we need one here
         //
-        ((PickVarInfo*)varInfo[i])->CreateOutputString(iv, pt);
+        PickVarInfo* info = (PickVarInfo*)varInfo[i];
+        info->SetFloatFormat(floatFormat);
+        info->CreateOutputString(iv, pt);
         os += iv;
         os += "\n";
     }

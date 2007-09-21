@@ -1976,6 +1976,9 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Hank Childs, Fri Aug 31 15:53:23 PDT 2007
 //    Add support for getting the subset name if we are creating a spreadsheet.
 //
+//    Cyrus Harrison, Fri Sep 14 13:59:30 PDT 2007
+//    Added support for user settable floating point format string
+//
 // ****************************************************************************
 
 void               
@@ -1986,6 +1989,8 @@ avtDatabase::Query(PickAttributes *pa)
     int foundEl     = pa->GetElementNumber();
     int zonePick    = pa->GetPickType() == PickAttributes::Zone ||
                       pa->GetPickType() == PickAttributes::DomainZone;
+    string floatFormat = pa->GetFloatFormat();
+
     double *PPT, *CPT, ppt[3], cpt[3];
     intVector incEls  = pa->GetIncidentElements();
     intVector ghostEls  = pa->GetGhosts();
@@ -2077,7 +2082,8 @@ avtDatabase::Query(PickAttributes *pa)
 
         if (zonePick)
         {
-            success = QueryNodes(vName, foundDomain, foundEl, elIsGhost, ts, 
+            success = QueryNodes(vName, foundDomain, floatFormat , 
+                          foundEl, elIsGhost, ts, 
                           incEls, ghostEls, includeGhosts, ppt, 
                           pa->GetDimension(), physicalNodes, logicalDNodes,
                           logicalBNodes, pnodeCoords, dnodeCoords, bnodeCoords,
@@ -2085,7 +2091,8 @@ avtDatabase::Query(PickAttributes *pa)
         }
         else       
         {
-            success = QueryZones(vName, foundDomain, foundEl, elIsGhost, ts, 
+            success = QueryZones(vName, foundDomain, floatFormat,
+                          foundEl, elIsGhost, ts, 
                           incEls, ghostEls, includeGhosts, cpt, pa->GetDimension(), 
                           physicalNodes, logicalDNodes, logicalBNodes, pnodeCoords, 
                           dnodeCoords, bnodeCoords, logicalDZones, logicalBZones, 
@@ -2125,6 +2132,7 @@ avtDatabase::Query(PickAttributes *pa)
         {
             PickVarInfo varInfo;
             varInfo.SetVariableName(userVars[j]);
+            varInfo.SetFloatFormat(pa->GetFloatFormat());
             pa->AddVarInfo(varInfo); 
         }
     }

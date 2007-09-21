@@ -197,6 +197,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Hank Childs, Thu Aug 30 14:13:43 PDT 2007
 //   Added spreadsheetCheckBox.
 //
+//   Cyrus Harrison, Mon Sep 17 15:18:50 PDT 2007
+//   Added floatFormat
+//
 // ****************************************************************************
 
 void
@@ -250,49 +253,59 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(variableProcessText()));
     gLayout->addMultiCellWidget(varsLineEdit, 1, 1, 1, 3);
 
+    
+    QLabel *floatFormatLabel = new QLabel("Float Format:",central,"floatFormatLabel");
+    gLayout->addWidget(floatFormatLabel, 2, 0);
+    
+    floatFormatLineEdit= new QLineEdit(central, "floatFormatLineEdit");
+    floatFormatLineEdit->setText("%g"); 
+    gLayout->addMultiCellWidget(floatFormatLineEdit, 2, 2, 1, 3);
+    connect(floatFormatLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(floatFormatProcessText()));
+        
     conciseOutputCheckBox = new QCheckBox("Concise Output.", central,
                                      "conciseOutputCheckBox");
     connect(conciseOutputCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(conciseOutputToggled(bool)));
-    gLayout->addMultiCellWidget(conciseOutputCheckBox, 2, 2, 0, 1);
+    gLayout->addMultiCellWidget(conciseOutputCheckBox, 3, 3, 0, 1);
 
 
     showMeshNameCheckBox = new QCheckBox("Show Mesh Name", central, 
                                   "showMeshNameCheckBox");
     connect(showMeshNameCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showMeshNameToggled(bool)));
-    gLayout->addMultiCellWidget(showMeshNameCheckBox, 3, 3, 0, 1);
+    gLayout->addMultiCellWidget(showMeshNameCheckBox, 4, 4, 0, 1);
 
     showTimestepCheckBox = new QCheckBox("Show Timestep", central, 
                                   "showTimestepCheckBox");
     connect(showTimestepCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showTimestepToggled(bool)));
-    gLayout->addMultiCellWidget(showTimestepCheckBox, 3, 3, 2, 3);
+    gLayout->addMultiCellWidget(showTimestepCheckBox, 4, 4, 2, 3);
 
     displayIncEls = new QCheckBox("Display incident nodes/zones.", central, 
                                   "displayIncEls");
     connect(displayIncEls, SIGNAL(toggled(bool)),
             this, SLOT(displayIncElsToggled(bool)));
-    gLayout->addMultiCellWidget(displayIncEls, 4, 4, 0, 1);
+    gLayout->addMultiCellWidget(displayIncEls, 5, 5, 0, 1);
 
     displayGlobalIds = new QCheckBox("Display global nodes/zones.", central, 
                                   "displayGlobalIds");
     connect(displayGlobalIds, SIGNAL(toggled(bool)),
             this, SLOT(displayGlobalIdsToggled(bool)));
-    gLayout->addMultiCellWidget(displayGlobalIds, 5, 5, 0, 1);
+    gLayout->addMultiCellWidget(displayGlobalIds, 6, 6, 0, 1);
 
     displayPickLetter = new QCheckBox("Display reference pick letter.", central, 
                                   "displayPickLetter");
     connect(displayPickLetter, SIGNAL(toggled(bool)),
             this, SLOT(displayPickLetterToggled(bool)));
-    gLayout->addMultiCellWidget(displayPickLetter, 6, 6, 0, 1);
+    gLayout->addMultiCellWidget(displayPickLetter, 7, 7, 0, 1);
 
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(central, "nodeGroupBox");
     nodeGroupBox->setTitle("Display for Nodes:");
     nodeGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(nodeGroupBox, 7, 7, 0, 3);
+    gLayout->addMultiCellWidget(nodeGroupBox, 8, 8, 0, 3);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox, 3, 4);
     nLayout->setMargin(10);
     nLayout->setSpacing(10);
@@ -319,7 +332,7 @@ QvisPickWindow::CreateWindowContents()
     QGroupBox *zoneGroupBox = new QGroupBox(central, "zoneGroupBox");
     zoneGroupBox->setTitle("Display for Zones:");
     zoneGroupBox->setMargin(10);
-    gLayout->addMultiCellWidget(zoneGroupBox, 8, 8, 0, 3);
+    gLayout->addMultiCellWidget(zoneGroupBox, 9, 9, 0, 3);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox, 3, 4);
     zLayout->setMargin(10);
     zLayout->setSpacing(10);
@@ -343,25 +356,25 @@ QvisPickWindow::CreateWindowContents()
                                      "autoShowCheckBox");
     connect(autoShowCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(autoShowToggled(bool)));
-    gLayout->addMultiCellWidget(autoShowCheckBox, 9, 9, 0, 3);
+    gLayout->addMultiCellWidget(autoShowCheckBox, 10, 10, 0, 3);
 
     savePicksCheckBox = new QCheckBox("Don't clear this window", central,
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 10, 10, 0, 3);
+    gLayout->addMultiCellWidget(savePicksCheckBox, 11, 11, 0, 3);
 
     timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", central,
                                      "timeCurveCheckBox");
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
-    gLayout->addMultiCellWidget(timeCurveCheckBox, 11, 11, 0, 3);
+    gLayout->addMultiCellWidget(timeCurveCheckBox, 12, 12, 0, 3);
 
     spreadsheetCheckBox = new QCheckBox("Create spreadsheet with next pick.", central,
                                      "spreadsheetCheckBox");
     connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(spreadsheetToggled(bool)));
-    gLayout->addMultiCellWidget(spreadsheetCheckBox, 12, 12, 0, 3);
+    gLayout->addMultiCellWidget(spreadsheetCheckBox, 13, 13, 0, 3);
 }
 
 // ****************************************************************************
@@ -416,6 +429,9 @@ QvisPickWindow::CreateWindowContents()
 //
 //   Hank Childs, Thu Aug 30 14:16:57 PDT 2007
 //   Added CreateSpreadsheet.
+//
+//   Cyrus Harrison,  Mon Sep 17 15:15:47 PDT 2007
+//   Added floatFormat
 //
 // ****************************************************************************
 
@@ -588,6 +604,14 @@ QvisPickWindow::UpdateWindow(bool doAll)
         spreadsheetCheckBox->setChecked(pickAtts->GetCreateSpreadsheet());
         spreadsheetCheckBox->blockSignals(false);
     }
+    
+    // floatFormat
+    if (pickAtts->IsSelected(63) || doAll)
+    {
+        floatFormatLineEdit->blockSignals(true);
+        floatFormatLineEdit->setText(pickAtts->GetFloatFormat());
+        floatFormatLineEdit->blockSignals(false);
+    }
 }
 
 
@@ -700,6 +724,9 @@ QvisPickWindow::UpdatePage()
 //   Kathleen Bonnell, Mon Oct 31 10:44:07 PST 2005 
 //   Added call to ResizeTabs.
 //
+//   Cyrus Harrison, Thu Sep 13 12:21:05 PDT 2007
+//   Added logic for floaing point format string 
+//
 // ****************************************************************************
 
 void
@@ -731,6 +758,12 @@ QvisPickWindow::GetCurrentValues(int which_widget)
         }
  
         pickAtts->SetVariables(userVars);
+    }
+    if (which_widget == 1 || doAll)
+    {
+        QString format = floatFormatLineEdit
+                               ->displayText().simplifyWhiteSpace();
+        pickAtts->SetFloatFormat(format.latin1());
     }
 
     if (doAll)
@@ -863,6 +896,7 @@ QvisPickWindow::Apply(bool ignore)
     else
     {
         pickAtts->Notify();
+        GetViewerMethods()->SetPickAttributes();
     }
 }
 
@@ -887,12 +921,43 @@ QvisPickWindow::apply()
     Apply(true);
 }
 
+// ****************************************************************************
+// Method: QvisPickWindow::variableProcessText
+//
+// Purpose: 
+//   Qt slot function that propagates changes of the variable list to the
+//   pick attributes. 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   ?
+//
+// ****************************************************************************
 void
 QvisPickWindow::variableProcessText()
 {
     GetCurrentValues(0);
     Apply();
 }
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::floatFormatProcessText
+//
+// Purpose: 
+//   Qt slot function that propagates changes of the floating point format 
+//   string to the pick attributes.
+//
+// Programmer: Cyrus Harrison
+// Creation:   September 13, 2007
+//
+// ****************************************************************************
+void
+QvisPickWindow::floatFormatProcessText()
+{
+    GetCurrentValues(1);
+    Apply();
+}
+
 
 
 // ****************************************************************************
@@ -1470,25 +1535,25 @@ QvisPickWindow::savePickText()
     if(!fileName.isNull())
     {
         ++saveCount;
-	QFile file( fileName );
-	if ( file.open(IO_WriteOnly) )
-	{
-	    QTextStream stream( &file );
-	    int i;
+    QFile file( fileName );
+    if ( file.open(IO_WriteOnly) )
+    {
+        QTextStream stream( &file );
+        int i;
             for ( i = 0; i < tabWidget->count(); i++ )
             {
                 QString txt( infoLists[i]->text() );
-	        if ( txt.length() > 0 )
-	            stream << txt;
+                if ( txt.length() > 0 )
+                    stream << txt;
             }
-		
-	    file.close();
-	}
-	else
-	    Error( "VisIt could not save the pick results"
-	           "to the selected file" ) ;
-		
-	
+   
+        file.close();
+    }
+    else
+        Error( "VisIt could not save the pick results"
+               "to the selected file" ) ;
+
+
    }
 
 }
