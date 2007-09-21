@@ -195,7 +195,9 @@
       false
     </Field>
     <Field name="subsetName" label="Subset name" type="string" internal="true">
-      ""
+    </Field>
+    <Field name="floatFormat" label="Float Format" type="string">
+      %g
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>

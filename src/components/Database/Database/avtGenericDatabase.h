@@ -315,6 +315,10 @@ class     vtkUnstructuredGrid;
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added treatAllDBsAsTimeVarying to PopulateSIL
+//
+//    Cyrus Harrison, Fri Sep 14 13:59:30 PDT 2007
+//    Added floating point format argument to QueryNodes and QueryZones
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -564,7 +568,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                             const intVector &, 
                                             PickVarInfo &, const bool);
     virtual bool               QueryNodes(const std::string &, const int, 
-                                          const int, bool &, const int, 
+                                          const std::string &, const int, 
+                                          bool &, const int, 
                                           intVector &, intVector &, 
                                           const bool, double [3], 
                                           const int, const bool, const bool,
@@ -576,7 +581,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     virtual bool               QueryMesh(const std::string &, const int, const int, 
                                          std::string &, const bool);
 
-    virtual bool               QueryZones(const std::string&, const int, int &,
+    virtual bool               QueryZones(const std::string&, const int, 
+                                          const std::string &, int &,
                                           bool &, const int, intVector &, 
                                           intVector &, const bool,
                                           double [3], const int, const bool, 

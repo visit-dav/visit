@@ -119,6 +119,10 @@ class PickAttributes;
 //   Hank Childs, Thu Aug 30 14:15:11 PDT 2007
 //   Added spreadsheetCheckBox.
 //
+//   Cyrus Harrison, Thu Sep 13 12:12:32 PDT 2007
+//   Added floatFormatLineEdit and floatFormatProcessText to support
+//   user settable floating point format string.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -145,6 +149,7 @@ protected:
     void Apply(bool ignore = false);
 private slots:
     void variableProcessText();
+    void floatFormatProcessText();
     void displayIncElsToggled(bool val);
     void displayGlobalIdsToggled(bool val);
     void displayPickLetterToggled(bool val);
@@ -196,6 +201,8 @@ private:
 
     QvisVariableButton *varsButton;
     QLineEdit          *varsLineEdit;
+    
+    QLineEdit          *floatFormatLineEdit;
 
     PickAttributes     *pickAtts;
     QCheckBox          *displayGlobalIds;

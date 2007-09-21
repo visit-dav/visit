@@ -8905,11 +8905,16 @@ avtGenericDatabase::QueryMaterial(const string &varName, const int dom,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Fri Sep 14 14:16:38 PDT 2007
+//    Added floating point format argument
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryNodes(const string &varName, const int dom, 
-                               const int zone, bool &zoneIsGhost, const int ts, 
+                               const string &floatFormat, const int zone, 
+                               bool &zoneIsGhost, const int ts, 
                                intVector &nodes, intVector &ghostNodes, 
                                const bool includeGhosts, double ppt[3],
                                const int dim, const bool physicalNodes, 
@@ -8926,6 +8931,8 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
     bool rv = false; 
     if (ds)
     {
+        string format=""; 
+        
         vtkIdList *ptIds = vtkIdList::New();
         ds->GetCellPoints(zone, ptIds);
         double coord[3];
@@ -9048,11 +9055,16 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
                 ds->GetPoint(ptIds->GetId(i), coord);
                 if (dim == 2)
                 {
-                    sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                    format = "<" + floatFormat + ", " 
+                                 + floatFormat + ">";
+                    sprintf(buff, format.c_str(), coord[0], coord[1]);
                 }
                 else 
                 {
-                    sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                    format = "<" + floatFormat + ", " 
+                                 + floatFormat + ", "
+                                 + floatFormat + ">";
+                    sprintf(buff, format.c_str(), coord[0], coord[1], coord[2]);
                 }
                 pnCoords.push_back(buff);
             }
@@ -9248,10 +9260,15 @@ avtGenericDatabase::QueryMesh(const string &varName, const int ts,
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Changed dummy args for type conversion to dummy arg for data spec
+//
+//    Cyrus Harrison, Fri Sep 14 14:16:38 PDT 2007
+//    Added floating point format argument
+//
 // ****************************************************************************
 
 bool
 avtGenericDatabase::QueryZones(const string &varName, const int dom, 
+                               const string &floatFormat, 
                                int &foundEl, bool &elIsGhost, 
                                const int ts, intVector &zones, 
                                intVector &ghostZ, bool includeGhosts,
@@ -9274,6 +9291,8 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
     bool rv = false; 
     if (ds)
     {
+        string format = "";
+
         vtkIdList *ids = vtkIdList::New();
         vtkIdType *idptr; 
         vtkIdType minId = foundEl;
@@ -9325,11 +9344,16 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                 ds->GetPoint(minId, coord); 
                 if (dimension  == 2)
                 {
-                    sprintf(buff, "<%g, %g>", coord[0], coord[1]);
+                    format  = "<" + floatFormat + ", " 
+                                  + floatFormat + ">";
+                    sprintf(buff, format.c_str(), coord[0], coord[1]);
                 }
                 else 
                 {
-                    sprintf(buff, "<%g, %g, %g>", coord[0], coord[1], coord[2]);
+                    format  = "<" + floatFormat + ", " 
+                                  + floatFormat + ", " 
+                                  + floatFormat + ">";
+                    sprintf(buff, format.c_str(), coord[0], coord[1], coord[2]);
                 }
                 pnodeCoords.push_back(buff);
             }
