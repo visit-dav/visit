@@ -9,7 +9,7 @@ d:  <zonal> = 0.682838
 
 B:  multi_rect3d.silo  timestep 0
 mesh1 domain 34 
-Point: <0.133333, 0.900000, 0.900000>
+Point: <0.133333, 0.9, 0.9>
 Node:  917
 Incident Zones:  763  753  653  663  764  754  654  664  
 d:  <zonal> 
@@ -33,7 +33,7 @@ d:  <zonal> = 0.513853
 
 D:  multi_rect3d.silo  timestep 0
 mesh1 domain 34 
-Point: <0.300000, 0.925000, 0.700000>
+Point: <0.3, 0.925, 0.7>
 Node:  207
 Incident Zones:  178  168  68  78  179  169  69  79  
 d:  <zonal> 
@@ -57,7 +57,7 @@ d:  <zonal> = 0.353381
 
 F:  multi_rect3d.silo  timestep 0
 mesh1 domain 23 
-Point: <0.633333, 0.800000, 0.400000>
+Point: <0.633333, 0.8, 0.4>
 Node:  273
 Incident Zones:  228  218  118  128  229  219  119  129  
 d:  <zonal> 

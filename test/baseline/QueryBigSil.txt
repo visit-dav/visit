@@ -27,11 +27,11 @@ Eulerian for domain 26 is 1
 Eulerian for domain 27 is 1
 
 
-dist -- Min = 0.041239 (node 219 in domain 14 at coord <0.476190, 0.476190, 0.476190>)
-dist -- Max = 0.866025 (node 0 in domain 1 at coord <0.000000, 0.000000, 0.000000>)
+dist -- Min = 0.0412393 (node 219 in domain 14 at coord <0.47619, 0.47619, 0.47619>)
+dist -- Max = 0.866025 (node 0 in domain 1 at coord <0, 0, 0>)
 
 
-The total Surface Area is 6.000000
-The total Volume is 1.000000
+The total Surface Area is 6
+The total Volume is 1
 The actual number of nodes is 13824.
 The actual number of zones is 9261.

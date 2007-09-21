@@ -1,7 +1,7 @@
 
 A:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.395530, 2.898330, 7.582197>
+Point: <2.39553, 2.89833, 7.5822>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -11,7 +11,7 @@ mat1:
 
 B:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.324296, 2.898330, 7.961974>
+Point: <2.3243, 2.89833, 7.96197>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -21,7 +21,7 @@ mat1:
 
 C:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.439367, 2.898330, 7.389556>
+Point: <2.43937, 2.89833, 7.38956>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -31,7 +31,7 @@ mat1:
 
 D:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.422928, 2.898330, 7.516148>
+Point: <2.42293, 2.89833, 7.51615>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -41,7 +41,7 @@ mat1:
 
 E:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.390051, 2.898330, 7.730805>
+Point: <2.39005, 2.89833, 7.73081>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -51,7 +51,7 @@ mat1:
 
 F:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.428408, 2.898330, 7.972982>
+Point: <2.42841, 2.89833, 7.97298>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -61,7 +61,7 @@ mat1:
 
 G:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.324296, 2.898330, 7.829877>
+Point: <2.3243, 2.89833, 7.82988>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -71,7 +71,7 @@ mat1:
 
 H:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.401010, 2.898330, 7.362036>
+Point: <2.40101, 2.89833, 7.36204>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -81,7 +81,7 @@ mat1:
 
 I:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.329775, 2.898330, 7.395060>
+Point: <2.32978, 2.89833, 7.39506>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -91,7 +91,7 @@ mat1:
 
 J:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.379092, 2.898330, 7.604213>
+Point: <2.37909, 2.89833, 7.60421>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -101,7 +101,7 @@ mat1:
 
 K:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.379092, 2.898330, 7.835381>
+Point: <2.37909, 2.89833, 7.83538>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -111,7 +111,7 @@ mat1:
 
 L:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.450326, 2.898330, 7.989494>
+Point: <2.45033, 2.89833, 7.98949>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -121,7 +121,7 @@ mat1:
 
 M:  multi_ucd3d.silo  timestep 0
 mesh1 domain 17 
-Point: <2.319811, 2.942667, 7.666666>
+Point: <2.31981, 2.94267, 7.66667>
 Zone:  320
 Incident Nodes:  386  373  542  555  385  372  541  554  
 mat1:  
@@ -131,31 +131,31 @@ mat1:
 
 N:  globe.silo  timestep 0
 mesh1 
-Point: <6.622222, 0.000000, 2.711111>
+Point: <6.62222, 0, 2.71111>
 Zone:  679
 Incident Nodes:  1077  1078  1069  1068  51  52  43  42  
 
 O:  globe.silo  timestep 0
 mesh1 
-Point: <6.340380, 0.000000, 2.060110>
+Point: <6.34038, 6.77239e-31, 2.06011>
 Node:  43
 Incident Zones:  640  659  660  679  740  759  760  779  
 
 P:  globe.silo  timestep 0
 mesh1 
-Point: <6.622222, 0.000000, 2.711111>
+Point: <6.62222, 0, 2.71111>
 Zone:  679
 Incident Nodes:  1077  1078  1069  1068  51  52  43  42  
 
 Q:  globe.silo  timestep 0
 mesh1 
-Point: <6.340380, 0.000000, 2.060110>
+Point: <6.34038, 6.77239e-31, 2.06011>
 Node:  43
 Incident Zones:  640  659  660  679  740  759  760  779  
 
 R:  globe.silo  timestep 0
 mesh1 
-Point: <6.622222, 0.000000, 2.711111>
+Point: <6.62222, 0, 2.71111>
 Zone:  679
 Incident Nodes:  1077  1078  1069  1068  51  52  43  42  
 mat1:  4 
@@ -163,7 +163,7 @@ mat1:  4
 
 S:  globe.silo  timestep 0
 mesh1 
-Point: <6.340380, 0.000000, 2.060110>
+Point: <6.34038, 6.77239e-31, 2.06011>
 Node:  43
 Incident Zones:  640  659  660  679  740  759  760  779  
 mat1:  

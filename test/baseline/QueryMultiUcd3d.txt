@@ -36,12 +36,12 @@ Eulerian for domain 35 is 1
 Eulerian for domain 36 is 1
 
 
-u -- Min = 0.993591 (node 132 in domain 10 at coord <-2.000000, -0.000002, 0.000000>)
-u -- Max = 1.000000 (node 0 in domain 1 at coord <2.000000, 0.000000, 0.000000>)
+u -- Min = 0.993591 (node 132 in domain 10 at coord <-2, -2.08219e-06, 0>)
+u -- Max = 1 (node 0 in domain 1 at coord <2, 0, 0>)
 
 
-The total Surface Area is 625.615305 cm^2
-The total Volume is 659.055664 cm^3
+The total Surface Area is 625.615 cm^2
+The total Volume is 659.056 cm^3
 The original extents are (-5, 5, -5.20548e-06, 5, 0, 20)
 The actual extents are (-5, 5, -5.20548e-06, 5, 0, 20)
 Exts from vector are [-4.999997-4.999997, -0.000005-4.999997, 0.000000-19.999998]
@@ -53,8 +53,8 @@ The actual number of zones is 36000.
 The number of ghost zones is 17176.
 
 AFTER APPLYING SIL RESTRICTION:
-The total Surface Area is 77.311418 cm^2
-The total Volume is 67.997803 cm^3
+The total Surface Area is 77.3114 cm^2
+The total Volume is 67.9978 cm^3
 The original extents are (-5, 5, -5.20548e-06, 5, 0, 20)
 The actual extents are (-3, 5, -3.12329e-06, 4, 0, 6.66667)
 The original number of nodes is 68450.

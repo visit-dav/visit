@@ -1,7 +1,7 @@
 
 D:  globe.silo  timestep 0
 mesh1 
-Point: <-2.202752, -4.305379, 8.590231>
+Point: <-2.20275, -4.30538, 8.59023>
 Zone:  493
 Incident Nodes:  760  761  752  751  814  815  806  805  
 u:  <nodal> 
@@ -21,7 +21,7 @@ Pick could not retrieve the requested information, possibly due to a bad express
 
 E:  globe_temp.vtk  timestep 0
 mesh 
-Point: <-2.202752, -4.305379, 8.590231>
+Point: <-2.20275, -4.30538, 8.59023>
 Zone:  493
 Incident Nodes:  760  761  752  751  814  815  806  805  
 u:  <nodal> 

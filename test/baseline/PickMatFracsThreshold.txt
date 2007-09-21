@@ -1,7 +1,7 @@
 
 A:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.501210, 0.526618, 0.600000>
+Point: <0.50121, 0.526618, 0.6>
 Zone:  21045 domain <15, 21, 17>
 Incident Nodes:  
     22273   domain <15, 21, 17>
@@ -59,7 +59,7 @@ vel:  <nodal>
 
 C:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.412887, 0.503630, 0.566667>
+Point: <0.412887, 0.50363, 0.566667>
 Zone:  19812 domain <12, 20, 16>
 Incident Nodes:  
     20968   domain <12, 20, 16>
@@ -88,7 +88,7 @@ vel:  <nodal>
 
 D:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.500000, 0.468543, 0.600000>
+Point: <0.5, 0.468543, 0.6>
 Zone:  20954 domain <14, 18, 17>
 Incident Nodes:  
     22179   domain <14, 18, 17>
@@ -117,7 +117,7 @@ vel:  <nodal>
 
 E:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.516667, 0.537500, 0.583333>
+Point: <0.516667, 0.5375, 0.583333>
 Zone:  21045 domain <15, 21, 17>
 Incident Nodes:  
     22273   domain <15, 21, 17>
@@ -146,7 +146,7 @@ vel:  <nodal>
 
 F:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.583333, 0.537500, 0.516667>
+Point: <0.583333, 0.5375, 0.516667>
 Zone:  18647 domain <17, 21, 15>
 Incident Nodes:  
     19733   domain <17, 21, 15>
@@ -175,7 +175,7 @@ vel:  <nodal>
 
 G:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.416667, 0.512500, 0.550000>
+Point: <0.416667, 0.5125, 0.55>
 Zone:  19812 domain <12, 20, 16>
 Incident Nodes:  
     20968   domain <12, 20, 16>
@@ -204,7 +204,7 @@ vel:  <nodal>
 
 H:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.483333, 0.462500, 0.583333>
+Point: <0.483333, 0.4625, 0.583333>
 Zone:  20954 domain <14, 18, 17>
 Incident Nodes:  
     22179   domain <14, 18, 17>
@@ -233,7 +233,7 @@ vel:  <nodal>
 
 I:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.412887, 0.503630, 1.000000>
+Point: <0.412887, 0.50363, 1>
 Zone:  35412
 Incident Nodes:  37491  37492  37522  37523  38762  38763  38793  38794  
 vel:  <nodal> 
@@ -249,7 +249,7 @@ vel:  <nodal>
 
 J:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.500000, 0.468543, 1.000000>
+Point: <0.5, 0.468543, 1>
 Zone:  35354
 Incident Nodes:  37431  37432  37462  37463  38702  38703  38733  38734  
 vel:  <nodal> 
@@ -265,7 +265,7 @@ vel:  <nodal>
 
 K:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.416667, 0.512500, 0.983333>
+Point: <0.416667, 0.5125, 0.983333>
 Zone:  35412
 Incident Nodes:  37491  37492  37522  37523  38762  38763  38793  38794  
 vel:  <nodal> 
@@ -281,7 +281,7 @@ vel:  <nodal>
 
 L:  rect3d.silo  timestep 0
 quadmesh3d 
-Point: <0.483333, 0.462500, 0.983333>
+Point: <0.483333, 0.4625, 0.983333>
 Zone:  35354
 Incident Nodes:  37431  37432  37462  37463  38702  38703  38733  38734  
 vel:  <nodal> 

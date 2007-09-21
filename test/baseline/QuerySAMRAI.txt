@@ -3,12 +3,12 @@ Eulerian for patch level1,patch0 is 2
 Eulerian for patch level2,patch0 is 2
 
 
-Primitive Var _number_0 -- Min = 10.000000 (zone 6 in patch level0,patch0 at coord <13.000000, 1.000000, 1.000000>)
-Primitive Var _number_0 -- Max = 80.000000 (zone 1106 in patch level2,patch0 at coord <5.250000, 4.750000, 2.750000>)
+Primitive Var _number_0 -- Min = 10 (zone 6 in patch level0,patch0 at coord <13, 1, 1>)
+Primitive Var _number_0 -- Max = 80 (zone 1106 in patch level2,patch0 at coord <5.25, 4.75, 2.75>)
 
 
-The total Surface Area is 4118.000000
-The total Volume is 12000.000000
+The total Surface Area is 4118
+The total Volume is 12000
 The original extents are (0, 30, 0, 20, 0, 20)
 The actual extents are (0, 30, 0, 20, 0, 20)
 The actual number of nodes is 10992.

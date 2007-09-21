@@ -1,2 +1,2 @@
 Found 1 connected component
-Component 0 [6912 cells] Centroid = (1.274608,0.551184,1.256590)
+Component 0 [6912 cells] Centroid = (1.27461,0.551184,1.25659)
