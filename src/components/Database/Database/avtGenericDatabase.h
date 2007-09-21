@@ -440,7 +440,8 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,
                                       avtMaterial *, int, bool, bool, bool,
-                                      bool, int, int, float, bool, bool&, bool&,bool);
+                                      bool, int, int, float, bool, bool&, bool&,bool, 
+                                      avtMaterial *&);
     avtMaterial               *GetMaterial(int, const char *, int, const avtDataSpecification_p = 0);
     avtSpecies                *GetSpecies(int, const char *, int);
     void                       GetMaterialIndices(avtMaterial *,

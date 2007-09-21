@@ -45,6 +45,7 @@
 #include <snprintf.h>
 
 #include <avtCallback.h>
+#include <avtMixedVariable.h>
 
 #include <BadDomainException.h>
 #include <UnexpectedValueException.h>
@@ -1163,8 +1164,19 @@ avtMaterial::CreatePackedMaterial() const
 //    Create a clone of this material, but simplify zones that are heavily 
 //    mixed.
 //    
+//  Arguments:
+//     maxMats   The maximum number of material permitted per zone.
+//
+//  Returns:     A new avtMaterial object.  The calling function must
+//               free this object.
+//
 //  Programmer:  Hank Childs
 //  Creation:    August 16, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Sep 20 13:14:46 PDT 2007
+//    Maintain reordering information for mixed variables.
 //
 // ****************************************************************************
 
@@ -1205,6 +1217,8 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
         }
     }
 
+    vector<int> reorderingInfo(new_mixlen);
+
     //
     // Now that we know their sizes, let's construct the mixed arrays.
     //
@@ -1215,6 +1229,7 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
     int    cur_offset   = 0;
     int   *top_mat      = new int[maxMats];
     float *top_vf       = new float[maxMats];
+    int   *top_orig_idx = new int[maxMats];
     for (i = 0 ; i < nZones ; i++)
     {
         if (new_ml[i] >= 0)
@@ -1243,11 +1258,13 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
                     {
                         top_vf[k] = top_vf[k-1];
                         top_mat[k] = top_mat[k-1];
+                        top_orig_idx[k] = top_orig_idx[k-1];
                     }
                     if (nValid < maxMats)
                         nValid++;
                     top_vf[j] = mix_vf[current];
                     top_mat[j] = mix_mat[current];
+                    top_orig_idx[j] = current;
                     madeCut = true;
                     break;
                 }
@@ -1256,6 +1273,7 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
             {
                 top_vf[nValid] = mix_vf[current];
                 top_mat[nValid] = mix_mat[current];
+                top_orig_idx[nValid] = current;
                 nValid++;
             }
             current = mix_next[current]-1;
@@ -1266,6 +1284,10 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
             else
                 nmats++;
         }
+
+        // 
+        // Make sure the VF still sums to 1.
+        //
         if (nmats > maxMats)
         {
             nmats = maxMats;
@@ -1277,6 +1299,10 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
                      top_vf[j] /= sum;
           
         }
+
+        //
+        // Now load up the new information.
+        //
         for (j = 0 ; j < nValid ; j++)
         {
             new_mix_zone[cur_offset+j] = i;
@@ -1286,6 +1312,7 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
                 new_mix_next[cur_offset+j] = cur_offset+j+2;
             new_mix_mat[cur_offset+j] = top_mat[j];
             new_mix_vf[cur_offset+j] = top_vf[j];
+            reorderingInfo[cur_offset+j] = top_orig_idx[j];
         }
         cur_offset += nmats;
     }
@@ -1293,6 +1320,7 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
     avtMaterial *rv = new avtMaterial(nMaterials, materials, nZones,
                                       new_ml, new_mixlen, new_mix_mat,
                                       new_mix_next, new_mix_zone, new_mix_vf);
+    rv->SetOriginalMaterialOrdering(reorderingInfo);
 
     delete [] new_ml;
     delete [] new_mix_mat;
@@ -1303,6 +1331,42 @@ avtMaterial::SimplifyHeavilyMixedZones(int maxMats) const
     delete [] top_vf;
 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtMaterial::ReorderMixedVariable
+//
+//  Purpose:
+//      If a material is reordered, then this will take a mixed variable and
+//      reorder its values in the same way.
+//
+//  Arguments:
+//      in     The original mixed variable.
+//
+//  Returns:   A new mixed variable that has been reordered.  The calling
+//             function must free this variable.
+//
+//  Notes: As of now, the only way to reorder a material is through 
+//         "simplify heavily mixed".
+//
+//  Programmer: Hank Childs
+//  Creation:   September 20, 2007
+//
+// ****************************************************************************
+
+avtMixedVariable *
+avtMaterial::ReorderMixedVariable(avtMixedVariable *in)
+{
+    int mixlen = GetMixlen(); // use this material's mixlen, not the mixlen
+                              // of the mixed variable.
+    float       *new_buff = new float[mixlen];
+    const float *in_buff  = in->GetBuffer();
+
+    for (int i = 0 ; i < mixlen ; i++)
+        new_buff[i] = in_buff[originalMaterialOrdering[i]];
+    
+    return new avtMixedVariable(new_buff, mixlen, in->GetVarname());
 }
 
 
@@ -1680,8 +1744,8 @@ avtMaterial::Print(ostream& out, int nzones , const int *matlist, int mixlen,
     for (pos = matNumsUsed.begin(); pos != matNumsUsed.end(); pos++)
         out << ", " << pos->first;
     out << endl;
-
 }
+
 
 // ****************************************************************************
 //  Method: avtMultiMaterial constructor

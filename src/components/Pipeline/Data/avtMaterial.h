@@ -49,6 +49,10 @@
 #include <string>
 #include <vector>
 
+
+class avtMixedVariable;
+
+
 // ****************************************************************************
 //  Class:  CellMatInfo
 //
@@ -139,6 +143,12 @@ struct MatZoneMap
 //    Thomas R. Treadway, Tue Aug 22 15:58:53 PDT 2006
 //    Added allowmat0
 //
+//    Hank Childs, Thu Sep 20 12:58:17 PDT 2007
+//    Added tracking of "reordering materials", which currently only happens
+//    when we do simplify heavily mixed zones.  Also added methods for
+//    doing the same reordering to mixed variables, since they will get out
+//    of synch otherwise ['8082].
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -205,6 +215,12 @@ class PIPELINE_API avtMaterial
     std::vector<int>           GetMapUsedMatToMat() { return mapUsedMatToMat; }
     std::vector<int>           GetMapMatToUsedMat() { return mapMatToUsedMat; }
 
+    void                       SetOriginalMaterialOrdering(std::vector<int> &mo)
+                                      { originalMaterialOrdering = mo; };
+    bool                       ReorderedMaterials(void)
+                                      { return (originalMaterialOrdering.size() > 0); } ;
+    avtMixedVariable          *ReorderMixedVariable(avtMixedVariable *);
+
     static void                      Print(ostream &out, int numZones,
                                          const int *matlist,
                                          int mixlen,
@@ -228,6 +244,11 @@ class PIPELINE_API avtMaterial
     int                        nUsedMats;
     std::vector<int>           mapMatToUsedMat;
     std::vector<int>           mapUsedMatToMat;
+
+    // This is only used after SimplifyHeavilyMixedZones.
+    // If it has length 0, then it should be ignored.
+    // It will have length 0 most of the time.
+    std::vector<int>           originalMaterialOrdering;
 
                                avtMaterial(const avtMaterial*, int,
                                            std::vector<int>,
