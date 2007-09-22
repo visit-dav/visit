@@ -712,14 +712,19 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     va_start(ap, arg1Type);
     const char *currentArgTypeName = arg1Type; 
     // loop adding RE terms for each argument type
-    for (int i = 0; i < ncspecs; i++)
+    int i;
+    for (i = 0; i < ncspecs; i++)
     {
 	if (typeNameToFmtREMap.find(string(currentArgTypeName)) == typeNameToFmtREMap.end())
-	    return false;
+	    break;
         re += typeNameToFmtREMap[string(currentArgTypeName)];
 	currentArgTypeName = va_arg(ap, const char *);
     }
     va_end(ap);
+
+    // if we broke out of loop early, a bad type name was encountered
+    if (i < ncspecs)
+        return false;
 
     re += "[^%]*$"; // anchor last char to end of line
 
