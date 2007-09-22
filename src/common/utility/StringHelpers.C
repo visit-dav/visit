@@ -632,6 +632,10 @@ StringHelpers::Dirname(const char *path)
 //  Programmer: Mark C. Miller 
 //  Creation:   September 20, 2007 
 //
+//  Modifications:
+//    Mark C. Miller, Fri Sep 21 20:26:18 PDT 2007
+//    Fixed bug(s) in RE's allowing bad width/precision flags
+//
 // ****************************************************************************
 static map<string,string> typeNameToFmtREMap;
 static void InitTypeNameToFmtREMap()
@@ -639,22 +643,22 @@ static void InitTypeNameToFmtREMap()
     if (typeNameToFmtREMap.size())
         return;
 
-    typeNameToFmtREMap["float"]                   = "[^%]*%#?0?-? ?+?'?[1-9]?[0-9]*(\\.[0-9]*)?[eEfFgGaA]{1}";
-    typeNameToFmtREMap["double"]                  = "[^%]*%#?0?-? ?+?'?[1-9]?[0-9]*(\\.[0-9]*)?[eEfFgGaA]{1}";
-    typeNameToFmtREMap["long double"]             = "[^%]*%#?0?-? ?+?'?[1-9]?[0-9]*(\\.[0-9]*)?L[eEfFgGaA]{1}";
-    typeNameToFmtREMap["int"]                     = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?[di]{1}";
-    typeNameToFmtREMap["long int"]                = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?l[di]{1}";
-    typeNameToFmtREMap["long long int"]           = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?ll[di]{1}";
-    typeNameToFmtREMap["unsigned int"]            = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?[ouxX]{1}";
-    typeNameToFmtREMap["unsigned long int"]       = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?l[ouxX]{1}";
-    typeNameToFmtREMap["unsigned long long int"]  = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?ll[ouxX]{1}";
-    typeNameToFmtREMap["short int"]               = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?h[di]{1}";
-    typeNameToFmtREMap["unsigned short int"]      = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?h[ouxX]{1}";
+    typeNameToFmtREMap["float"]                   = "[^%]*%#?0?-? ?+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?[eEfFgGaA]{1}";
+    typeNameToFmtREMap["double"]                  = "[^%]*%#?0?-? ?+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?[eEfFgGaA]{1}";
+    typeNameToFmtREMap["long double"]             = "[^%]*%#?0?-? ?+?'?(([1-9][0-9]*)?(\\.[0-9]*)?)?L[eEfFgGaA]{1}";
+    typeNameToFmtREMap["int"]                     = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?[di]{1}";
+    typeNameToFmtREMap["long int"]                = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?l[di]{1}";
+    typeNameToFmtREMap["long long int"]           = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?ll[di]{1}";
+    typeNameToFmtREMap["unsigned int"]            = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?[ouxX]{1}";
+    typeNameToFmtREMap["unsigned long int"]       = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?l[ouxX]{1}";
+    typeNameToFmtREMap["unsigned long long int"]  = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?ll[ouxX]{1}";
+    typeNameToFmtREMap["short int"]               = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?h[di]{1}";
+    typeNameToFmtREMap["unsigned short int"]      = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?h[ouxX]{1}";
     typeNameToFmtREMap["char"]                    = "[^%]*%c{1}";
-    typeNameToFmtREMap["unsigned char"]           = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?hh[ouxX]{1}";
-    typeNameToFmtREMap["char*"]                   = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?s{1}";
+    typeNameToFmtREMap["unsigned char"]           = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?hh[ouxX]{1}";
+    typeNameToFmtREMap["char*"]                   = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?s{1}";
     typeNameToFmtREMap["void*"]                   = "[^%]*%p{1}";
-    typeNameToFmtREMap["size_t"]                  = "[^%]*%#?0?-? ?+?'?I?[1-9]?[0-9]*(\\.[0-9]*)?z[ouxX]{1}";
+    typeNameToFmtREMap["size_t"]                  = "[^%]*%#?0?-? ?+?'?I?(([1-9][0-9]*)?(\\.[0-9]*)?)?z[ouxX]{1}";
 
     // aliases
     typeNameToFmtREMap["long"]                    = typeNameToFmtREMap["long int"]; 
@@ -684,16 +688,34 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
 {
     string re = "^"; // anchor first char to beginning of line
 
+    // compute length up to max of 4096
+    int n = 0;
+    while (n < 4096 && fmtStr[n] != '\0')
+        n++;
+    if (n == 4096)
+        return false;
+
+    // count conversion specs.
+    int ncspecs = 0;
+    for (int i = 0; i < n-1; i++)
+    {
+        if (fmtStr[i] == '%' && fmtStr[i+1] != '%')
+	    ncspecs++;
+    }
+    if (ncspecs == 0)
+        return true;
+
     InitTypeNameToFmtREMap();
 
     // start processing the varargs list
     va_list ap;
     va_start(ap, arg1Type);
     const char *currentArgTypeName = arg1Type; 
-
     // loop adding RE terms for each argument type
-    while (string(currentArgTypeName) != "EOA")
+    for (int i = 0; i < ncspecs; i++)
     {
+	if (typeNameToFmtREMap.find(string(currentArgTypeName)) == typeNameToFmtREMap.end())
+	    return false;
         re += typeNameToFmtREMap[string(currentArgTypeName)];
 	currentArgTypeName = va_arg(ap, const char *);
     }
