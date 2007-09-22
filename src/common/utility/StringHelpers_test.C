@@ -53,31 +53,52 @@ int main(int argc, char **argv)
     // conversions that should succeed
     //
 
-    if (!ValidatePrintfFormatString("%d %d %d", "int", "int", "int", "EOA"))
+    if (!ValidatePrintfFormatString("%d %d %d", "int", "int", "int"))
         falseNegatives.push_back(__LINE__);
-    if (!ValidatePrintfFormatString("%.3f %#0d", "float", "int", "EOA"))
+    if (!ValidatePrintfFormatString("%.3f %#0d", "float", "int"))
         falseNegatives.push_back(__LINE__);
-    if (!ValidatePrintfFormatString("%4.f %#0d", "float", "int", "EOA"))
+    if (!ValidatePrintfFormatString("%4.f %#0d", "float", "int"))
         falseNegatives.push_back(__LINE__);
-    if (!ValidatePrintfFormatString("%.3f %#0d", "float", "int", "EOA"))
+    if (!ValidatePrintfFormatString("%f", "float"))
         falseNegatives.push_back(__LINE__);
-    if (!ValidatePrintfFormatString("%f", "float", "EOA"))
+    if (!ValidatePrintfFormatString("%12.7Lf %d %c", "long double", "int", "char"))
         falseNegatives.push_back(__LINE__);
-    if (!ValidatePrintfFormatString("%12.7Lf %d %c", "long double", "int", "char", "EOA"))
+    // Below is valid. It will use %4.A as the conv. spec and print the 'f' explicitly
+    if (!ValidatePrintfFormatString("%4.Af", "float"))
+        falseNegatives.push_back(__LINE__);
+    if (!ValidatePrintfFormatString("%.f", "float"))
+        falseNegatives.push_back(__LINE__);
+    if (!ValidatePrintfFormatString("%4.4hd:%.12zX", "short", "size_t"))
+        falseNegatives.push_back(__LINE__);
+    if (!ValidatePrintfFormatString("hello world %d", "int"))
+        falseNegatives.push_back(__LINE__);
+    // more args that conversion specifiers is ok
+    if (!ValidatePrintfFormatString("%d %d %d", "int", "int", "int", "int"))
+        falseNegatives.push_back(__LINE__);
+    if (!ValidatePrintfFormatString("hello world", "dummy"))
         falseNegatives.push_back(__LINE__);
 
     //
     // conversions that should fail
     //
 
-    // bad precision
-    if (ValidatePrintfFormatString("%4.Af", "float", "EOA"))
-        falsePositives.push_back(__LINE__);
-    // more args than conversion specifiers
-    if (ValidatePrintfFormatString("%d %d %d", "int", "int", "int", "int", "EOA"))
-        falsePositives.push_back(__LINE__);
     // fewer args than conversion specifiers
-    if (ValidatePrintfFormatString("%d %d %d", "int", "int", "EOA"))
+    if (ValidatePrintfFormatString("%d %d %d", "int", "int"))
+        falsePositives.push_back(__LINE__);
+    // use of special format for width 
+    if (ValidatePrintfFormatString("%0+*d", "int", "int"))
+        falsePositives.push_back(__LINE__);
+    // use of special format for width 
+    if (ValidatePrintfFormatString("%0+*2$d", "int", "int"))
+        falsePositives.push_back(__LINE__);
+    // attempt to use %n
+    if (ValidatePrintfFormatString("%s%n", "char*", "int"))
+        falsePositives.push_back(__LINE__);
+    // attempt to use %m
+    if (ValidatePrintfFormatString("%s%m", "char*", "int"))
+        falsePositives.push_back(__LINE__);
+    // bad data type name
+    if (ValidatePrintfFormatString("%d", "foo"))
         falsePositives.push_back(__LINE__);
 
     if (falseNegatives.size())
