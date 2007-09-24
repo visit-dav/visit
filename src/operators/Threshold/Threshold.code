@@ -267,11 +267,11 @@ ThresholdAttributes::ForceAttributeConsistency()
 }
 
 
-Function: SwitchDefaultToTrueVariableNameIfScalar
-Declaration: void SwitchDefaultToTrueVariableNameIfScalar();
+Function: SwitchDefaultVariableNameToTrueName
+Declaration: void SwitchDefaultVariableNameToTrueName();
 Definition:
 // ****************************************************************************
-// Method: ThresholdAttributes::SwitchDefaultToTrueVariableNameIfScalar
+// Method: ThresholdAttributes::SwitchDefaultVariableNameToTrueName
 //
 // Purpose: Replaces the anonymous "default" variable name with its true name
 //          if the default variable is scalar.
@@ -287,10 +287,14 @@ Definition:
 //   Mark Blair, Tue Apr 17 16:24:42 PDT 2007
 //   Rewritten to support new Threshold GUI; no more "shown variable".
 //
+//   Mark Blair, Tue Sep 18 17:06:28 PDT 2007
+//   No longer deletes variable from threshold variable list if not scalar.
+//   Also changed method name to reflect this.
+//
 // ****************************************************************************
 
 void
-ThresholdAttributes::SwitchDefaultToTrueVariableNameIfScalar()
+ThresholdAttributes::SwitchDefaultVariableNameToTrueName()
 {
     int varPosition;
     bool changedTheList;
@@ -310,27 +314,10 @@ ThresholdAttributes::SwitchDefaultToTrueVariableNameIfScalar()
     
         if (varPosition < listedVarNames.size())
         {
-            if (defaultVarIsScalar)
+            if (listedVarName == std::string("default"))
             {
-                if (listedVarName == std::string("default"))
-                {
-                    listedVarNames[varPosition] = defaultVarName;
-                    Select(1, (void *)&listedVarNames);
-                    
-                    changedTheList = true;
-                }
-            }
-            else
-            {
-                listedVarNames.erase(listedVarNames.begin() + varPosition);
-                zonePortions.erase(zonePortions.begin() + varPosition);
-                lowerBounds.erase(lowerBounds.begin() + varPosition);
-                upperBounds.erase(upperBounds.begin() + varPosition);
-        
+                listedVarNames[varPosition] = defaultVarName;
                 Select(1, (void *)&listedVarNames);
-                Select(2, (void *)&zonePortions);
-                Select(3, (void *)&lowerBounds);
-                Select(4, (void *)&upperBounds);
 
                 changedTheList = true;
             }

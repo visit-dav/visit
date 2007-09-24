@@ -35,7 +35,7 @@
       </Function>
       <Function name="ForceAttributeConsistency" user="true" member="true">
       </Function>
-      <Function name="SwitchDefaultToTrueVariableNameIfScalar" user="true" member="true">
+      <Function name="SwitchDefaultVariableNameToTrueName" user="true" member="true">
       </Function>
       <Include file="header" quoted="false">
         ExtentsAttributes.h

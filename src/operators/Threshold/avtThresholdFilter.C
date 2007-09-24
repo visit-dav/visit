@@ -53,6 +53,7 @@
 #include <vtkThreshold.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtDataAttributes.h>
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtStructuredMeshChunker.h>
@@ -306,7 +307,7 @@ avtThresholdFilter::ProcessOneChunk(
         threshold = vtkThreshold::New();
 
         curVarName = curVariables[curVarNum].c_str();
-
+        
         threshold->SetInput(curOutDataSet);
 
         threshold->SetInputArrayToProcess(
@@ -405,7 +406,7 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     vtkPointData *inPointData = in_ds->GetPointData();
     vtkDataArray *dataArray;
     float *valueArray;
-
+    
     if (atts.GetDefaultVarIsScalar())
     {
 	if (inPointData->GetArray(atts.GetDefaultVarName().c_str()) == NULL)
@@ -421,7 +422,7 @@ avtThresholdFilter::ThresholdToPointMesh(vtkDataSet *in_ds)
     for (curVarNum = 0; curVarNum < curVarCount; curVarNum++)
     {
         dataArray = inPointData->GetArray(curVariables[curVarNum].c_str());
-
+        
         if (dataArray == NULL)
         {
             EXCEPTION1(VisItException,
@@ -710,7 +711,7 @@ avtThresholdFilter::RefashionDataObjectInfo(void)
 }
 
 
-// ****************************************************************************
+// *****************************************************************************
 //  Method: avtThresholdFilter::PreExecute
 //
 //  Purpose: Determine if there is a "default" variable to work with.
@@ -736,31 +737,87 @@ avtThresholdFilter::RefashionDataObjectInfo(void)
 //    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //    Now accommodates an empty list of threshold variables; does pass-through.
 //
-// ****************************************************************************
+//    Mark Blair, Tue Sep 18 17:06:28 PDT 2007
+//    Removes any variable from the threshold list that's not a scalar or not in
+//    the input.  Also determines whether or not default variable is a scalar.
+//
+// *****************************************************************************
 
 void
 avtThresholdFilter::PreExecute(void)
 {
     avtPluginStructuredChunkStreamer::PreExecute();
 
-/*  Since the list of threshold variables can now be empty, this check is no
-    longer necessary.  If a plot has no scalar default variable, like in the
-    case of a Material or Vector plot, and if no other scalar variable has been
-    selected for thresholding, the threshold variable list will be empty and
-    the input data to the Threshold operator will simply be passed through as
-    its output.  (mb)
-
-    if (GetInput()->GetInfo().GetAttributes().GetVariableName() == "<unknown>")
+    int inputVarCount = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
+    int inputVarNum;
+    std::string inputVarName;
+    stringVector inputVarNames;
+    
+    for (inputVarNum = 0; inputVarNum < inputVarCount; inputVarNum++)
     {
-        //
-        // Somehow the variable we asked for didn't make it down far enough.
-        // This often happens when we are doing a plot that doesn't have a
-        // variable (say a material plot) and then we apply the threshold
-        // operator.
-        //
-        EXCEPTION1(NoDefaultVariableException, "Threshold");
+        inputVarName =
+            GetInput()->GetInfo().GetAttributes().GetVariableName(inputVarNum);
+        
+        if (GetInput()->GetInfo().GetAttributes().GetVariableType(inputVarName.c_str())
+            == AVT_SCALAR_VAR)
+            inputVarNames.push_back(inputVarName);
     }
-*/
+    
+    inputVarCount = inputVarNames.size();
+    
+    for (inputVarNum = 0; inputVarNum < inputVarCount; inputVarNum++)
+    {
+        if (inputVarNames[inputVarNum] == atts.GetDefaultVarName()) break;
+    }
+    
+    if (inputVarNum >= inputVarCount)
+        atts.SetDefaultVarIsScalar(false);
+
+    stringVector curListedVarNames = atts.GetListedVarNames();
+    intVector    curZonePortions   = atts.GetZonePortions();
+    doubleVector curLowerBounds    = atts.GetLowerBounds();
+    doubleVector curUpperBounds    = atts.GetUpperBounds();
+
+    std::string listVarName;
+    int listVarNum;
+    bool changedTheList;
+    bool atLeast1Change = false;
+    
+    do
+    {
+        changedTheList = false;
+    
+        for (listVarNum = 0; listVarNum < curListedVarNames.size(); listVarNum++)
+        {
+            listVarName = curListedVarNames[listVarNum];
+    
+            for (inputVarNum = 0; inputVarNum < inputVarCount; inputVarNum++)
+            {
+                if (inputVarNames[inputVarNum] == listVarName) break;
+            }
+            
+            if (inputVarNum >= inputVarCount)
+            {
+                curListedVarNames.erase(curListedVarNames.begin() + listVarNum);
+                curZonePortions.erase  (curZonePortions.begin()   + listVarNum);
+                curLowerBounds.erase   (curLowerBounds.begin()    + listVarNum);
+                curUpperBounds.erase   (curUpperBounds.begin()    + listVarNum);
+                
+                changedTheList = true; atLeast1Change = true;
+                
+                break;
+            }
+        }
+    }
+    while (changedTheList);
+    
+    if (atLeast1Change)
+    {
+        atts.SetListedVarNames(curListedVarNames);
+        atts.SetZonePortions(curZonePortions);
+        atts.SetLowerBounds(curLowerBounds);
+        atts.SetUpperBounds(curUpperBounds);
+    }
 }
 
 
@@ -792,8 +849,8 @@ avtThresholdFilter::PreExecute(void)
 //    Mark Blair, Tue Aug  8 17:47:00 PDT 2006
 //    Now accommodates an empty list of threshold variables; does pass-through.
 //
-//   Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
-//   API change for avtIntervalTree.
+//    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
+//    API change for avtIntervalTree.
 //
 //    Mark Blair, Thu Sep 28 12:07:05 PDT 2006
 //    Checks attributes for consistency.
@@ -810,6 +867,9 @@ avtThresholdFilter::PreExecute(void)
 //
 //    Mark Blair, Tue Apr 17 16:24:42 PDT 2007
 //    Rewritten to support new Threshold GUI; no more "shown variable".
+//
+//    Mark Blair, Tue Sep 18 17:06:28 PDT 2007
+//    API change: New method name "SwitchDefaultVariableNameToTrueName".
 //
 // ****************************************************************************
 
@@ -828,7 +888,7 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         
     atts.SetDefaultVarName(std::string(pipelineVar));
 
-    atts.SwitchDefaultToTrueVariableNameIfScalar();
+    atts.SwitchDefaultVariableNameToTrueName();
     
     if (atts.GetListedVarNames().size() == 0) return in_spec;
 
