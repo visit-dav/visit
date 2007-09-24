@@ -413,6 +413,9 @@ avtZoneDumpFilter::PerformRestriction(avtPipelineSpecification_p pspec)
 //    Cyrus Harrison, Mon Apr 30 10:50:12 PDT 2007
 //    Fixed spelling mistake. 
 //
+//    Cyrus Harrison, Mon Sep 24 07:59:55 PDT 2007
+//    Fixed error with j index for the 2d case.
+//
 // ****************************************************************************
 
 void 
@@ -453,7 +456,7 @@ avtZoneDumpFilter::GetOriginalLogicalIndices(vtkDataSet *ds,
     if (dims[2] == 1)
     {
         ijk[0] = (zone % dims[0]) + base[0];
-        ijk[1] = (zone / dims[1]) + base[1];
+        ijk[1] = ((zone / dims[0]) % dims[1]) + base[1];
         ijk[2] = 0;
     }
     else 
