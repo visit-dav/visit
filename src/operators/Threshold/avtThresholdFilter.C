@@ -57,6 +57,7 @@
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtStructuredMeshChunker.h>
+#include <avtDataRangeSelection.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -260,6 +261,9 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Mark Blair, Tue Apr 17 16:24:42 PDT 2007
 //    Rewritten to support new Threshold GUI; no more "shown variable".
 //
+//    Markus Glatter, Fri Aug 10 10:41:07 EDT 2007
+//    Added avtDataRangeSelection entries to support contract-based filtering.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -306,55 +310,72 @@ avtThresholdFilter::ProcessOneChunk(
     {
         threshold = vtkThreshold::New();
 
-        curVarName = curVariables[curVarNum].c_str();
+        std::map<std::string,int>::iterator iterFind;
+        bool bypassThreshold = false;
+        iterFind = selIDs.find(curVariables[curVarNum]);
+        if (iterFind != selIDs.end())
+        {
+            int selID = iterFind->second;
+            if (GetInput()->GetInfo().GetAttributes().GetSelectionApplied(selID))
+            {
+                debug1 << "Bypassing Threshold operator because database plugin claims"
+                    "to have applied selection on " << curVariables[curVarNum] << endl;
+                bypassThreshold = true;
+            }
+        }
+
+        if (bypassThreshold == false)
+        {
+            curVarName = curVariables[curVarNum].c_str();
+            
+            threshold->SetInput(curOutDataSet);
+
+            threshold->SetInputArrayToProcess(
+                0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
+                vtkDataSetAttributes::SCALARS);
+
+            if (curZonePortions[curVarNum] == (int)ThresholdAttributes::PartOfZone)
+            {
+                threshold->AllScalarsOff();
+            }
+            else if (curZonePortions[curVarNum] == (int)ThresholdAttributes::EntireZone)
+            {
+                threshold->AllScalarsOn();
+            }
+            else
+            {
+                debug1 << "Invalid zone inclusion option encountered "
+                    << "in Threshold operator attributes." << endl;
+                threshold->AllScalarsOff();
+            }
+
+            threshold->ThresholdBetween(
+                curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
         
-        threshold->SetInput(curOutDataSet);
+            if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
+            {
+                threshold->SetInputArrayToProcess(
+                    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, curVarName);
+            }
+            else if (curOutDataSet->GetCellData()->GetArray(curVarName) != NULL)
+            {
+                threshold->SetInputArrayToProcess(
+                    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, curVarName);
+            }
+            else
+            {
+                curOutDataSet->Register(NULL);
+                threshold->Delete();
+        
+                sprintf (errMsg, "Data for variable \"%s\" is not currently available.",
+                        curVarName);
+                debug1 << errMsg << endl;
+                EXCEPTION1(VisItException, errMsg);
+            }
 
-        threshold->SetInputArrayToProcess(
-            0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS,
-            vtkDataSetAttributes::SCALARS);
-
-        if (curZonePortions[curVarNum] == (int)ThresholdAttributes::PartOfZone)
-        {
-            threshold->AllScalarsOff();
+            curOutDataSet = threshold->GetOutput();
+            curOutDataSet->Update();
         }
-        else if (curZonePortions[curVarNum] == (int)ThresholdAttributes::EntireZone)
-        {
-            threshold->AllScalarsOn();
-        }
-        else
-        {
-            debug1 << "Invalid zone inclusion option encountered "
-                   << "in Threshold operator attributes." << endl;
-            threshold->AllScalarsOff();
-        }
-
-        threshold->ThresholdBetween(
-            curLowerBounds[curVarNum], curUpperBounds[curVarNum]);
-    
-        if (curOutDataSet->GetPointData()->GetArray(curVarName) != NULL)
-        {
-            threshold->SetInputArrayToProcess(
-                0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, curVarName);
-        }
-        else if (curOutDataSet->GetCellData()->GetArray(curVarName) != NULL)
-        {
-            threshold->SetInputArrayToProcess(
-                0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, curVarName);
-        }
-        else
-        {
-            curOutDataSet->Register(NULL);
-            threshold->Delete();
-    
-            sprintf (errMsg, "Data for variable \"%s\" is not currently available.",
-                     curVarName);
-            debug1 << errMsg << endl;
-            EXCEPTION1(VisItException, errMsg);
-        }
-
-        curOutDataSet = threshold->GetOutput();
-        curOutDataSet->Update();
 
         if (curOutDataSet->GetNumberOfCells() <= 0)
         {
@@ -871,6 +892,9 @@ avtThresholdFilter::PreExecute(void)
 //    Mark Blair, Tue Sep 18 17:06:28 PDT 2007
 //    API change: New method name "SwitchDefaultVariableNameToTrueName".
 //
+//    Sean Ahern (Markus Glatter), Tue Sep 25 10:21:40 EDT 2007
+//    Added avtDataRangeSelections for each variable.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -990,6 +1014,26 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         // user switches between zone and node pick.
         outSpec->GetDataSpecification()->TurnZoneNumbersOn();
         outSpec->GetDataSpecification()->TurnNodeNumbersOn();
+    }
+
+    // Add avtDataRangeSelection entries to data specs
+    // (Enables contract-based filtering if supported by db)
+    for (listedVarNum = 0; listedVarNum < curListedVars.size(); listedVarNum++)
+    {
+        lowerBound = curLowerBounds[listedVarNum];
+        upperBound = curUpperBounds[listedVarNum];
+
+        selIDs[std::string(curListedVars[listedVarNum])] =
+            outSpec->GetDataSpecification()->AddDataSelection(
+                new avtDataRangeSelection(
+                    std::string(curListedVars[listedVarNum]),
+                    lowerBound, upperBound
+                )
+            );
+
+        debug1 << "Added variable " << curListedVar[listedVarNum]
+            << " as Data Selection with range ("
+            << lowerBound << ", " << upperBound << ")" << endl;
     }
 
     return outSpec;
