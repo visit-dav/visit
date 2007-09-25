@@ -39,6 +39,7 @@
 
 #include <LabelAttributes.h>
 #include <ViewerProxy.h>
+#include <StringHelpers.h>
 
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
@@ -813,14 +814,15 @@ QvisLabelPlotWindow::formatTemplateChanged()
     //Test the new value and don't apply it if it's an invalid printf string.
     //In practice snprintf never throws an error for wrong type or number
     //of %f slots.
-    char test[36];
-    int len = snprintf(test, 36, newval.c_str(), 0.0f);
-    if (len < 0)
+    if (!StringHelpers::ValidatePrintfFormatString(newval.c_str(), "float"))
     {
         Message( "Must enter a printf-style template that would be valid for a single floating point number." );
         return;
     }
-    else if (len >= 35)
+    
+    char test[36];
+    int len = snprintf(test, 36, newval.c_str(), 0.0f);
+    if (len >= 35)
     {
         Message( "The template produces values that are too long.  36 character limit." );
         return;
