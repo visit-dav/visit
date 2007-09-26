@@ -94,4 +94,19 @@ DeleteExpression("e2")
 
 TestOne(3, "../data/multi_rect2d.silo", "d", "mesh1", "d", "p", 500, 0.5,0.5,0, 1,45,45)
 
+
+DefineArrayExpression("a3", "array_compose_with_bins(<mesh_quality/mesh/jacobian>, \
+                      <mesh_quality/mesh/area>, <mesh_quality/mesh/oddy>,  [0, 2, 4, 8])")
+DefineArrayExpression("e3", "array_compose_with_bins(<mesh_quality/mesh/aspect>, \
+                      <mesh_quality/mesh/shape>, <mesh_quality/mesh/skew>, [0, 2, 4, 8])")
+TestOne(4, "../data/KullLite_test_data/tagtest_rz_3.pdb", "mesh_quality/mesh/area", "mesh", 
+        "a3", "e3", 333, 0,0,1, 0.5,0,0)
+DeleteExpression("a3")
+DeleteExpression("e3")
+
+
+
+
+
+
 Exit()
