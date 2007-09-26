@@ -59,6 +59,7 @@
 #include <DebugStream.h>
 #include <PickVarInfo.h>
 #include <DataNode.h>
+#include <StringHelpers.h>
 
 using std::string;
 using std::vector;
@@ -727,6 +728,9 @@ QvisPickWindow::UpdatePage()
 //   Cyrus Harrison, Thu Sep 13 12:21:05 PDT 2007
 //   Added logic for floaing point format string 
 //
+//   Cyrus Harrison, Wed Sep 26 09:50:46 PDT 2007
+//   Added validation of the floating point format string.
+//
 // ****************************************************************************
 
 void
@@ -761,9 +765,13 @@ QvisPickWindow::GetCurrentValues(int which_widget)
     }
     if (which_widget == 1 || doAll)
     {
-        QString format = floatFormatLineEdit
-                               ->displayText().simplifyWhiteSpace();
-        pickAtts->SetFloatFormat(format.latin1());
+        string format = floatFormatLineEdit
+                               ->displayText().simplifyWhiteSpace().latin1();
+        if(!StringHelpers::ValidatePrintfFormatString(format.c_str(),
+                                                      "float","EOA"))
+            Error("Invalid pick floating point format string.");
+        else
+            pickAtts->SetFloatFormat(format);
     }
 
     if (doAll)

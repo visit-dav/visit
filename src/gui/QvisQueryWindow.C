@@ -56,7 +56,7 @@
 #include <PickAttributes.h>
 #include <PlotList.h>
 #include <QueryList.h>
-
+#include <StringHelpers.h>
 #include <DebugStream.h>
 
 #include <ViewerProxy.h>
@@ -988,12 +988,26 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Cyrus Harrison, Fri Mar 16 14:05:34 PDT 2007
 //   Added argument parsing for connected components summary.
 //
+//   Cyrus Harrison, Wed Sep 26 09:15:13 PDT 2007
+//   Added check for valid floating point format string before executing
+//   query.
+//
 // ****************************************************************************
 
 void
 QvisQueryWindow::Apply(bool ignore, bool doTime)
 {
-    GetViewerMethods()->SetQueryFloatFormat(floatFormatText->text().latin1());
+    string format = floatFormatText
+                         ->displayText().simplifyWhiteSpace().latin1();
+    
+    if(!StringHelpers::ValidatePrintfFormatString(format.c_str(),
+                                                  "float","EOA"))
+    {
+        Error("Invalid query floating point format string.");
+        return;
+    }
+    
+    GetViewerMethods()->SetQueryFloatFormat(format);
     
     if(AutoUpdate() || ignore)
     {
@@ -1604,23 +1618,23 @@ QvisQueryWindow::saveResultText()
     if(!fileName.isNull())
     {
         ++saveCount;
-	QFile file( fileName );
-	if ( file.open(IO_WriteOnly) )
-	{
-	    QTextStream stream( &file );
+    QFile file( fileName );
+    if ( file.open(IO_WriteOnly) )
+    {
+        QTextStream stream( &file );
             QString txt( resultText->text() );
-	    if ( txt.length() > 0 )
-	        stream << txt;
-	    else
-	        file.remove();
-		
-	    file.close();
-	}
-	else
-	    Error( "VisIt could not save the query results"
-	           "to the selected file" ) ;
-		
-	
+        if ( txt.length() > 0 )
+            stream << txt;
+        else
+            file.remove();
+        
+        file.close();
+    }
+    else
+        Error( "VisIt could not save the query results"
+               "to the selected file" ) ;
+        
+    
    }
 
 }

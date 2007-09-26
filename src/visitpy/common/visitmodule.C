@@ -74,6 +74,7 @@
 #include <QueryList.h>
 #include <Init.h>
 #include <DebugStream.h>
+#include <StringHelpers.h>
 #include <Logging.h>
 
 //
@@ -8948,6 +8949,8 @@ visit_SuppressQueryOutputOff(PyObject *self, PyObject *args)
 // Creation:   September 19, 2007
 //
 // Modifications:
+//    Cyrus Harrison, Mon Sep 24 15:25:18 PDT 2007
+//    Added check for valid format string
 //
 // ****************************************************************************
 
@@ -8958,9 +8961,17 @@ visit_SetQueryFloatFormat(PyObject *self, PyObject *args)
     char *format_string;
     if(!PyArg_ParseTuple(args, "s", &format_string))
         return NULL;
+    if(! StringHelpers::ValidatePrintfFormatString(format_string,
+                                                    "float","EOA"))
+    {
+        VisItErrorFunc("Invalid floating point format string.");
+        return NULL;
+    }
+        
     MUTEX_LOCK();
         GetViewerMethods()->SetQueryFloatFormat(format_string);
     MUTEX_UNLOCK();
+    
     
     Py_INCREF(Py_None);
     return Py_None;
