@@ -77,6 +77,8 @@ int main(int argc, char **argv)
         falseNegatives.push_back(__LINE__);
     if (!ValidatePrintfFormatString("hello world", "dummy"))
         falseNegatives.push_back(__LINE__);
+    if (!ValidatePrintfFormatString("firstInt = %d\nsecondFlt=%G\n", "int", "float"))
+        falseNegatives.push_back(__LINE__);
 
     //
     // conversions that should fail
@@ -84,6 +86,14 @@ int main(int argc, char **argv)
 
     // fewer args than conversion specifiers
     if (ValidatePrintfFormatString("%d %d %d", "int", "int"))
+        falsePositives.push_back(__LINE__);
+    // incompatible types and conversion specs
+    if (ValidatePrintfFormatString("%d %d", "short", "unsigned"))
+        falsePositives.push_back(__LINE__);
+    if (ValidatePrintfFormatString("%g %A", "float", "long"))
+        falsePositives.push_back(__LINE__);
+    // invalid conversion specifiers
+    if (ValidatePrintfFormatString("%y %w", "int", "double"))
         falsePositives.push_back(__LINE__);
     // use of special format for width 
     if (ValidatePrintfFormatString("%0+*d", "int", "int"))
