@@ -75,6 +75,45 @@ bool      avtDatabase::onlyServeUpMetaData = false;
 
 
 // ****************************************************************************
+// The following methods are convenience methods to help database plugins
+// do dynamic domain decomposion for rectilinear grids...
+//
+//   DetermineRectilinearDecomposition: Used to compute domain a decomposition
+//   ComputeDomainLogicalCoords: Used to compute the logical indices of a domain 
+//   ComputeDomainBounds: Used to compute spatial bounds of a domain
+//   RectilinearDecompCost: Used *internally* to help compute domain decomp.
+//
+//   DetermineRectilinearDecomposition determines the number of domains in
+//   each dimension to decompose the mesh into. For example, for a mesh that
+//   is 100 zones in X and 50 zones in Y and a total number of domains (e.g.
+//   processor count) of 6, it would return (3,2,0) meaning 3 domains in X
+//   by 2 domains in Y by zero domains in Z like so...
+//   
+//      +---------+---------+---------+
+//   1  |    3    |    4    |    5    |    
+//      +---------+---------+---------+
+//   0  |    0    |    1    |    2    |    
+//      +---------+---------+---------+
+//           0         1         2
+//
+//   The numbers inside each box above are the MPI ranks associated with the
+//   domains or, in other words, the domain numbers.
+//
+//   ComputeDomainLogicalCoords is used to map an MPI rank into a set of 
+//   logical domain indices. It would be called, for example, on processor of
+//   rank 5 to return the indices (2,1,0) meaning that domain '5' has logical
+//   indices 2,1,0.
+//
+//   ComputeDomainBounds is used to compute the logical bounds of a domain
+//   'slot' along a given axis. For example, for the case above, slot 0's
+//   domain in the Y axis would go from 0 to 49 while slot 1 would go from
+//   50 to 99.
+//
+//   This routines could be improved to support simple ghosting.
+//
+// ****************************************************************************
+
+// ****************************************************************************
 //  Function: RectilinearDecompCost 
 //
 //  Purpose:
@@ -120,9 +159,24 @@ avtDatabase::RectilinearDecompCost(int i, int j, int k, int nx, int ny, int nz)
 //  Function: DetermineRectilinearDecomposition 
 //
 //  Purpose:
-//      Decides how to decompose the problem into numbers of processors along
-//      each independent axis. This code was taken from Matt O'Brien's domain
-//      decomposition library
+//      Decides how to decompose a rectilinear mesh into numbers of processors
+//      along each independent axis. This code was taken from Matt O'Brien's
+//      domain decomposition library. 
+//
+//      ndims : is the number of logical dimensions in the mesh
+//      n     : is the number of desired domains
+//      nx    : size of global, logical mesh in x
+//      ny    : size of global, logical mesh in y
+//      nz    : size of global, logical mesh in z
+//      imin  : (named consistent with orig. code) domain count along x axis
+//      jmin  : (named consistent with orig. code) domain count along y axis
+//      kmin  : (named consistent with orig. code) domain count along z axis
+//
+//      After calling, it should be the case that imin * jmin * kmin = n;
+//      Therefore, one can decompose the mesh into an array of 'domains' that
+//      is imin x jmin x kmin.
+//
+//      If n is a prime number, I think the result is imin = n, jmin = kmin = 1
 //      
 //  Programmer: Mark C. Miller (plagerized from Matt O'Brien)
 //  Creation:   September 20, 2004 
@@ -194,7 +248,26 @@ avtDatabase::ComputeRectilinearDecomposition(int ndims, int n, int nx, int ny, i
 //
 //  Purpose: Given the number of domains along each axis in a decomposition
 //  and the rank of a processor, this routine will determine the domain logical
-//  coordinates of the processor's domain
+//  coordinates of the processor's domain.
+//
+//  dataDim            : number of logical dimensions in the mesh
+//  domCount[]         : array of counts of domains in each of x, y, z axes
+//  rank               : zero-origin rank of calling processors
+//  domLogicalCoords[] : returned logical indices of the domain associated
+//                       with this rank.
+//
+//  For example, in a 6 processor case decomposed in a 3 x 2 array of domains
+//  like so...
+//
+//      +---------+---------+---------+
+//   1  |    3    |    4    |    5    |    
+//      +---------+---------+---------+
+//   0  |    0    |    1    |    2    |    
+//      +---------+---------+---------+
+//           0         1         2
+//
+//   Calling this method on processor of rank 5 would return
+//   domLogicalCoords = {2,1,0}
 //      
 //  Programmer: Mark C. Miller
 //  Creation:   September 20, 2004 
@@ -233,6 +306,22 @@ avtDatabase::ComputeDomainLogicalCoords(int dataDim, int domCount[3], int rank,
 //  the same axis and a domain's logical index along the same axis, compute
 //  the starting global zone index along this axis and the count of zones
 //  along this axis for the associated domain.
+//
+//  For example, in the case a 2D mesh that is globally 100 zones in X by
+//  100 zones in Y, if we want to obtain the bounds in X of domains (1,0)
+//  (rank 1) or (1,1) (rank 4)...
+//
+//      +---------+---------+---------+
+//   1  |    3    |    4    |    5    |    
+//      +---------+---------+---------+
+//   0  |    0    |    1    |    2    |    
+//      +---------+---------+---------+
+//           0         1         2
+//
+//   We would call this method with globalZoneCount = 100, domCount = 3
+//   because there are 3 domains along the X axis, domLogicalCoord = 1
+//   because we are dealing with the domain whose index is 1 along the
+//   X axis.
 //      
 //  Programmer: Mark C. Miller
 //  Creation:   September 20, 2004 
