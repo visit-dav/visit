@@ -462,6 +462,9 @@ avtHohlraumFluxQuery::IntegrateLine(int oneSide, int otherSide,
 //    Cyrus Harrison, Tue Sep 18 13:45:35 PDT 2007
 //    Added support for user settable floating point format string 
 //
+//    Dave Bremer, Wed Sep 26 14:50:57 PDT 2007
+//    Modified the return value, to return temperature if available, 
+//    returning flux otherwise.
 // ****************************************************************************
 
 void
@@ -563,7 +566,10 @@ avtHohlraumFluxQuery::PostExecute(void)
     }
     SetResultMessage(msg);
 
-    SetResultValue(resultSum);
+    if (binWidths.size() != 0)
+        SetResultValue(temperature);
+    else
+        SetResultValue(resultSum);
 }
 
 
