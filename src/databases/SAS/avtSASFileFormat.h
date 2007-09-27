@@ -47,6 +47,11 @@
 #include <vector>
 class vtkUnstructuredGrid;
 struct AssemblyType;
+struct Assembly
+{
+    int                  iDomain;
+    vtkUnstructuredGrid *grid;
+};
 
 
 #ifdef WIN32
@@ -99,6 +104,8 @@ class avtSASFileFormat : public avtMTMDFileFormat
     AssemblyType          *aAssemblyTypes;
     int                    nAssemblys;
     int64_t                iAssemblyDiskLoc;   //location of first assembly
+
+    std::vector<Assembly>  aCachedAssemblies;
 
     std::vector<double>    aTimes;
     int                    nChannels;          //number of channels written into each timestep
@@ -156,6 +163,9 @@ struct AssemblyType
     int    *aChannelSizes; // Either 3 or 4.  Num points in base of channel
     int    *aChannelPts;   // Indices into aXYPts.  4 elements alloced for each channel.
 };
+
+
+
 
 
 #endif
