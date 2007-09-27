@@ -350,11 +350,16 @@ class DATABASE_API avtDatabase
     static double               ComputeRectilinearDecomposition(int ndims,
                                     int n, int nx, int ny, int nz,
                                     int *imin, int *jmin, int *kmin);
+    static double               ComputeRectilinearSpatialDecomposition(int ndims,
+                                    int n, double wx, double wy, double wz,
+                                    int *imin, int *jmin, int *kmin);
     static void                 ComputeDomainLogicalCoords(int dataDim,
                                     int domCount[3], int rank,
                                     int domLogicalCoords[3]);
     static void                 ComputeDomainBounds(int globalZoneCount, int domCount,
                                     int domLogicalCoord, int *globalZoneStart, int *zoneCount);
+    static void                 ComputeDomainSpatialBounds(double globalWidth, int domCount,
+                                    int domLogicalCoord, double *globalStart, double *width);
 
   protected:
     std::list<CachedMDEntry>               metadata;
