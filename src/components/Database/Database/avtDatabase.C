@@ -244,6 +244,45 @@ avtDatabase::ComputeRectilinearDecomposition(int ndims, int n, int nx, int ny, i
 }
 
 // ****************************************************************************
+//  Function: ComputeRectilinearSpatialDecomposition
+//
+//  Purpose: Just like ComputeRectilinearDecomposition except it is intended
+//  to compute a decomposition of a spatial bounding box instead of a logical
+//  one.
+//
+//      ndims : is the number of logical dimensions in the mesh
+//      n     : is the number of desired domains
+//      wx    : size of global, mesh in x
+//      wy    : size of global, mesh in y
+//      wz    : size of global, mesh in z
+//      imin  : (named consistent with orig. code) domain count along x axis
+//      jmin  : (named consistent with orig. code) domain count along y axis
+//      kmin  : (named consistent with orig. code) domain count along z axis
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 27, 2007 
+// 
+// ****************************************************************************
+double
+avtDatabase::ComputeRectilinearSpatialDecomposition(int ndims, int n, double wx,
+    double wy, double wz, int *imin, int *jmin, int *kmin)
+{
+    double xscale = 1000.0 / wx;
+    double yscale = 1000.0 / wy;
+    double zscale = ndims == 3 ? (1000.0 / wz ) : xscale;
+    double scale = xscale;
+    if (yscale > xscale)
+        scale = yscale;
+    if (zscale > scale)
+        scale = zscale;
+
+    int nx = (int) (scale * wx);
+    int ny = (int) (scale * wy);
+    int nz = (int) (scale * wz);
+    return ComputeRectilinearDecomposition(ndims, n, nx, ny, nz, imin, jmin, kmin);
+}
+
+// ****************************************************************************
 //  Function: ComputeDomainLogicalCoords
 //
 //  Purpose: Given the number of domains along each axis in a decomposition
@@ -355,6 +394,24 @@ avtDatabase::ComputeDomainBounds(int globalZoneCount, int domCount, int domLogic
         stepSize = domZoneCountPlus1;
     *zoneCount = stepSize;
 }
+
+// ****************************************************************************
+//  Function: ComputeDomainSpatialBounds 
+//
+//  Purpose: Just like ComputeDomainBounds but for sptial case. 
+//
+//  Programmer: Mark C. Miller
+//  Creation:   September 20, 2004 
+// ****************************************************************************
+void
+avtDatabase::ComputeDomainSpatialBounds(double globalWidth, int domCount, int domLogicalCoord,
+    double *globalStart, double *width)
+{
+    double domWidth = globalWidth / domCount;
+    *globalStart = domLogicalCoord * domWidth;
+    *width = domWidth;
+}
+
 
 // ****************************************************************************
 //  Method: avtDatabase constructor
