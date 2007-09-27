@@ -195,6 +195,12 @@ avtSASFileFormat::~avtSASFileFormat()
         delete[] aChannels;
         aChannels = NULL;
     }
+    int ii;
+    for (ii = 0; ii < aCachedAssemblies.size(); ii++)
+    {
+        aCachedAssemblies[ii].grid->Delete();
+    }
+    aCachedAssemblies.clear();
 }
 
 
@@ -369,7 +375,19 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
     if (!aAssemblyTypes)
         ReadAssemblyTypes();
 
-    vtkUnstructuredGrid *grid = vtkUnstructuredGrid::New();
+    int ii, jj;
+    vtkUnstructuredGrid *grid = NULL;
+
+    for (ii = 0; ii < aCachedAssemblies.size(); ii++)
+    {
+        if (aCachedAssemblies[ii].iDomain == domain)
+        {
+            aCachedAssemblies[ii].grid->Register(NULL);
+            return aCachedAssemblies[ii].grid;
+        }
+    }
+
+    grid = vtkUnstructuredGrid::New();
     
     int f = OPEN(geomFileName.c_str(), O_RDONLY | O_BINARY);
 
@@ -390,7 +408,6 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
 
     // Find the assembly type
     AssemblyType *pType = NULL;
-    int ii, jj;
     for (ii = 0; ii < nAssemblyTypes; ii++)
     {
         if (iAssemblyType == aAssemblyTypes[ii].id)
@@ -467,6 +484,13 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
             }
         }
     }
+
+    // Cache the grid
+    Assembly a;
+    a.iDomain = domain;
+    a.grid    = grid;
+    a.grid->Register(NULL);
+    aCachedAssemblies.push_back(a);
 
     return grid;
 }
