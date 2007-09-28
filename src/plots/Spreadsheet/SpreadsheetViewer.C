@@ -119,6 +119,9 @@
 //   Brad Whitlock, Wed Mar 28 17:30:31 PST 2007
 //   Changed layout of window so the tracer plane can be turned off.
 //
+//   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
+//   Add support for setting spreadsheet font
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent, 
@@ -235,6 +238,10 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     tables[0]->setNumCols(20);
     tables[0]->setReadOnly(true);
     tables[0]->setLUT(colorLUT);
+    QFont spreadsheetFont;
+    if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont()))
+        tables[0]->setFont(spreadsheetFont);
+
     connect(tables[0], SIGNAL(selectionChanged()),
             this, SLOT(tableSelectionChanged()));
     zTabs->addTab(tables[0], "k=1");
@@ -636,6 +643,9 @@ SpreadsheetViewer::PickPointsChanged() const
 //   the input pointer if the sub set name changes) to make the pick transfer
 //   work properly.
 //
+//   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
+//   Add support for setting spreadsheet font
+//
 // ****************************************************************************
 
 void
@@ -720,7 +730,18 @@ SpreadsheetViewer::Update(Subject *)
             cellId.clear();
             needsPickUpdate |= PickPointsChanged();
             break;
+        case 13: // fontName
+            QFont spreadsheetFont;
+            if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont()))
+            {
+                for (int i=0; i<nTables; ++i)
+                {
+                    tables[i]->setFont(spreadsheetFont);
+                }
+            }
+            break;
         }
+
     }
 
     // Move slice if there is a pick update. The moveSliceToCurrentPick method
@@ -1264,6 +1285,9 @@ SpreadsheetViewer::updateMinMaxButtons()
 //   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
 //   Support using a single tab of values.
 //   
+//   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
+//   Add support for setting spreadsheet font
+//
 // ****************************************************************************
 
 void
@@ -1295,6 +1319,9 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
                 t[i] = new SpreadsheetTable(0, name.latin1());
                 t[i]->setUpdatesEnabled(false);
                 t[i]->setLUT(colorLUT);
+                QFont spreadsheetFont;
+                if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont()))
+                    t[i]->setFont(spreadsheetFont);
                 connect(t[i], SIGNAL(selectionChanged()),
                         this, SLOT(tableSelectionChanged()));
                 zTabs->addTab(t[i], name);

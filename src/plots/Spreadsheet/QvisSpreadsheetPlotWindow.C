@@ -55,6 +55,7 @@
 #include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
+#include <QvisDialogLineEdit.h>
 
 #include <stdio.h>
 #include <string>
@@ -128,6 +129,8 @@ QvisSpreadsheetPlotWindow::~QvisSpreadsheetPlotWindow()
 // Creation:   Thu Feb 15 11:37:49 PDT 2007
 //
 // Modifications:
+//   Gunther H. Weber, Thu Sep 27 12:05:14 PDT 2007
+//   Added font selection for spreadsheet
 //   
 // ****************************************************************************
 
@@ -172,34 +175,41 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
             this, SLOT(formatStringProcessText()));
     mainLayout->addWidget(formatString, 3,1);
 
+    fontName = new QvisDialogLineEdit(central, "fontName");
+    fontName->setDialogMode(QvisDialogLineEdit::ChooseFont);
+    connect(fontName, SIGNAL(textChanged(const QString &)),
+            this, SLOT(fontNameChanged(const QString &)));
+    mainLayout->addWidget(fontName, 4, 1);
+    mainLayout->addWidget(new QLabel(fontName,"Spreadsheet font", central), 4, 0);
+
     useColorTable = new QCheckBox("Use color table", central, "useColorTable");
     connect(useColorTable, SIGNAL(toggled(bool)),
             this, SLOT(useColorTableChanged(bool)));
-    mainLayout->addWidget(useColorTable, 4,0);
+    mainLayout->addWidget(useColorTable, 5,0);
 
     colorTableName = new QvisColorTableButton(central, "colorTableName");
     connect(colorTableName, SIGNAL(selectedColorTable(bool, const QString&)),
             this, SLOT(colorTableNameChanged(bool, const QString&)));
-    mainLayout->addWidget(colorTableName, 4,1);
+    mainLayout->addWidget(colorTableName, 5,1);
 
     showTracerPlane = new QCheckBox("Show tracer plane", central, "showTracerPlane");
     connect(showTracerPlane, SIGNAL(toggled(bool)),
             this, SLOT(showTracerPlaneChanged(bool)));
-    mainLayout->addWidget(showTracerPlane, 5,0);
+    mainLayout->addWidget(showTracerPlane, 6,0);
 
     tracerColorLabel = new QLabel("Tracer color", central, "tracerColorLabel");
-    mainLayout->addWidget(tracerColorLabel,6,0);
+    mainLayout->addWidget(tracerColorLabel,7,0);
     tracerColor = new QvisColorButton(central, "tracerColor");
     connect(tracerColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(tracerColorChanged(const QColor&)));
-    mainLayout->addWidget(tracerColor, 6,1);
+    mainLayout->addWidget(tracerColor, 7,1);
 
     tracerOpacity = new QvisOpacitySlider(central, "tracerOpacity");
     tracerOpacity->setMinValue(0);
     tracerOpacity->setMaxValue(255);
     connect(tracerOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(tracerOpacityChanged(int)));
-    mainLayout->addWidget(tracerOpacity, 7,1);
+    mainLayout->addWidget(tracerOpacity, 8,1);
 }
 
 
@@ -215,6 +225,9 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
 // Modifications:
 //   Brad Whitlock, Wed Mar 28 18:16:03 PST 2007
 //   Made UpdateSubsetNames take place more often.
+//
+//   Gunther H. Weber, Thu Sep 27 12:05:14 PDT 2007
+//   Added font selection for spreadsheet
 //
 // ****************************************************************************
 
@@ -306,6 +319,11 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
             normal->blockSignals(false);
             break;
         case 7: //sliceIndex
+            break;
+        case 13: // fontName
+            fontName->blockSignals(true);
+            fontName->setText(atts->GetSpreadsheetFont().c_str());
+            fontName->blockSignals(false);
             break;
         }
     }
@@ -651,3 +669,24 @@ QvisSpreadsheetPlotWindow::normalChanged(int val)
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisSpreadsheetPlotWindow::fontNameChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the Font... button is
+//   clicked.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Thu Sep 27 12:15:37 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSpreadsheetPlotWindow::fontNameChanged(const QString &newFont)
+{
+    atts->SetSpreadsheetFont(newFont.latin1());
+    SetUpdate(false);
+    Apply();
+}
