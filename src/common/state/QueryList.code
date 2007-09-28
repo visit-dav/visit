@@ -21,6 +21,9 @@ Definition:
 //    Kathleen Bonnell,  Sat Sep  4 11:41:18 PDT 2004 
 //    Made all parameters required, added Groups. 
 //
+//    Kathleen Bonnell, Fri Sep 28 14:43:50 PDT 2007 
+//    Aded 'canBePublic' which defaults to '1'. 
+//
 // ****************************************************************************
  
 void
@@ -34,6 +37,7 @@ QueryList::AddQuery(const std::string &name, QueryType t, Groups g, WindowType w
     queryMode.push_back(qMode);
     winType.push_back((int)w);
     numVars.push_back(num_vars);
+    canBePublic.push_back(1);
 }
 
 Function: QueryExists

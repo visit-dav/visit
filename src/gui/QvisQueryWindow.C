@@ -486,6 +486,10 @@ QvisQueryWindow::UpdateTimeQueryButton()
 //   Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //   Reflect changes in queryList -- timeQuery is now queryMode.
 //
+//   Kathleen Bonnell, Fri Sep 28 14:46:09 PDT 2007 
+//   Added 'canBePublic' which when false, allows queries to NOT be added
+//   to this window. 
+//
 // ****************************************************************************
 
 void
@@ -494,6 +498,7 @@ QvisQueryWindow::UpdateQueryList()
     const stringVector &names = queries->GetNames();
     const intVector &mode = queries->GetQueryMode();
     const intVector &groups = queries->GetGroups();
+    const intVector &canBePublic = queries->GetCanBePublic();
 
     // Add the arguments to the query list.
     queryList->blockSignals(true);
@@ -504,6 +509,8 @@ QvisQueryWindow::UpdateQueryList()
     int i;
     for(i = 0; i < names.size(); ++i)
     {
+        if (!canBePublic[i])
+            continue;
         if (displayMode->currentText() == "All")
         {
             queryList->insertItem(QString(names[i].c_str()));

@@ -50,6 +50,8 @@
     </Field>
     <Field name="numVars" label="numVars" type="intVector">
     </Field>
+    <Field name="canBePublic" label="canBePublic" type="intVector">
+    </Field>
     <Function name="AddQuery" user="true" member="true">
     </Function>
     <Function name="QueryExists" user="true" member="true">
