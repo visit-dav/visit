@@ -3537,6 +3537,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kathleen Bonnell, Thu Aug  9 08:40:56 PDT 2007 
 //    Made 'Revolved surface area' and 'Revolved volume' be time-enabled. 
 //
+//    Kathleen Bonnell, Fri Sep 28 14:52:09 PDT 2007 
+//    Made 'Volume2' be a non-public query (won't be available in window).
+//
 // ****************************************************************************
 
 void
@@ -3614,6 +3617,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("3D surface area", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Volume", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Volume2", dq, mr, basic, 1, 0, qt);
+    intVector &cbp = queryTypes->GetCanBePublic();
+    cbp[cbp.size()-1] = 0;
     queryTypes->AddQuery("Total Length", dq, mr, basic, 1, 0, qt);
     queryTypes->AddQuery("Moment of Inertia", dq, mr, basic, 1, 0, qo);
     queryTypes->AddQuery("Centroid", dq, mr, basic, 1, 0, qo);
