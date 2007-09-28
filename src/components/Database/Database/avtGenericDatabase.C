@@ -428,6 +428,10 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    Hank Childs, Tue Jul 31 08:23:22 PDT 2007
 //    Add support for a simplified representation of nesting information.
 //
+//    Hank Childs, Fri Sep 28 10:36:39 PDT 2007
+//    If we have a subset plot with secondary variables defined on it, we can't
+//    do simplified nesting.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -603,6 +607,7 @@ avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
             !spec->MayRequireZones() &&
             !spec->MayRequireNodes() &&
             !spec->NeedStructuredIndices() &&
+            (spec->GetSecondaryVariables().size() == 0) &&
             !(spec->NeedAMRIndices() >= 0) &&
             (spec->GetDesiredGhostDataType() == NO_GHOST_DATA
              || spec->GetDesiredGhostDataType() == GHOST_NODE_DATA))
