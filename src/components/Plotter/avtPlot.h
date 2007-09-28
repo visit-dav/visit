@@ -229,6 +229,10 @@ class     WindowAttributes;
 //    Added WindowMode arg to SetScaleMode. Added virtual method
 //    CanDo2DViewScaling.
 //
+//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
+//    Removed unused method GetScaleMode, added separate scale modes for 2D
+//    and curve.  Added ScaleModeRequiresUpdate.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -293,10 +297,9 @@ class PLOTTER_API avtPlot
     float                      GetCellCountMultiplierForSRThreshold() const;
     const PlotInfoAttributes  *GetPlotInfoAtts(); 
 
-    bool                      SetScaleMode(ScaleMode, ScaleMode, WINDOW_MODE wm);
-    void                      GetScaleMode(ScaleMode &ds, ScaleMode &rs)
-                                {ds = xScaleMode, rs = yScaleMode; }
-
+    bool                      SetScaleMode(ScaleMode, ScaleMode, WINDOW_MODE);
+    bool                      ScaleModeRequiresUpdate(WINDOW_MODE, ScaleMode,
+                                                      ScaleMode rs);
     virtual bool              CanDoCurveViewScaling(void) { return false; } 
     virtual bool              CanDo2DViewScaling(void)    { return true; } 
 
@@ -340,7 +343,9 @@ class PLOTTER_API avtPlot
     avtDataObject_p            ReduceGeometry(avtDataObject_p);
     avtDataObject_p            CompactTree(avtDataObject_p);
     avtDataObject_p            SetCurrentExtents(avtDataObject_p);
-    avtDataObject_p            SetScaleMode(avtDataObject_p);
+    avtDataObject_p            SetScaleMode(avtDataObject_p,
+                                            ScaleMode, ScaleMode,
+                                            bool &, bool &);
 
     avtDataObject_p            intermediateDataObject;
 
@@ -352,10 +357,14 @@ class PLOTTER_API avtPlot
     virtual void               SetCellCountMultiplierForSRThreshold(
                                    const avtDataObject_p dob);
 
-    ScaleMode xScaleMode;
-    ScaleMode yScaleMode;
-    bool havePerformedLogX;
-    bool havePerformedLogY;
+    ScaleMode xScaleMode2D;
+    ScaleMode yScaleMode2D;
+    bool havePerformedLogX2D;
+    bool havePerformedLogY2D;
+    ScaleMode xScaleModeCurve;
+    ScaleMode yScaleModeCurve;
+    bool havePerformedLogXCurve;
+    bool havePerformedLogYCurve;
 };
 
 typedef ref_ptr<avtPlot> avtPlot_p;

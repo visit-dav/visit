@@ -104,6 +104,9 @@
 //    Added AddFilterNodeAfterExpressionEveluator that adds node directly
 //    after expression evaluator
 //
+//    Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007
+//    Added optional bool arg to GetActor to force rexecution. 
+//
 // ****************************************************************************
 class DataNetwork
 {
@@ -135,7 +138,7 @@ public:
     int GetWinID(void) const { return wid; };
     Netnode* GetTerminalNode(void) { return terminalNode; };
     virtual avtPlot_p GetPlot(void) { return plot; };
-    avtActor_p GetActor(avtDataObject_p dob);
+    avtActor_p GetActor(avtDataObject_p dob, bool force = false);
     bool ActorIsNull(void) { return (*plotActor == NULL); };
     void SetNetDB(NetnodeDB *d) { netdb = d; };
     NetnodeDB* GetNetDB(void) { return netdb; };

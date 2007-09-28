@@ -271,6 +271,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007 
 //    Added GetScaleMode, CanDoLogViewScaling.
 //
+//    Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007 
+//    Added scaleModeSet.
+//
 // ****************************************************************************
 
 
@@ -485,6 +488,7 @@ public:
 
     ScaleMode              xScaleMode;
     ScaleMode              yScaleMode;
+    bool                   scaleModeSet;
 
     bool                   keyframeMode;
     bool                   nKeyframesWasUserSet;

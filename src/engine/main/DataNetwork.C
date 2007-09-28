@@ -204,15 +204,21 @@ DataNetwork::GetWriter(avtDataObject_p dob, avtPipelineSpecification_p pspec,
 //     Allow dob arg to be NULL, but test for it and throw Exception when
 //     necessary. 
 //
+//     Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007
+//     Added option bool arg to force rexecution. 
+//
 // ****************************************************************************
 avtActor_p
-DataNetwork::GetActor(avtDataObject_p dob)
+DataNetwork::GetActor(avtDataObject_p dob, bool force)
 {
-    if (*plotActor == NULL) 
+    if (*plotActor == NULL || force) 
     {
         if (*dob != NULL)
         {
             // do the part of the execute we'd do in the viewer
+            if (*plotActor != NULL)
+                plotActor = (avtActor *) 0;
+                
             plotActor = GetPlot()->Execute(NULL, dob);
         }
         else 

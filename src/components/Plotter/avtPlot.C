@@ -152,10 +152,14 @@ avtPlot::avtPlot()
     cellCountMultiplierForSRThreshold = 0.0; // an invalid value
     topologicalDim = -1;
     spatialDim = -1;
-    xScaleMode = LINEAR;
-    yScaleMode = LINEAR;
-    havePerformedLogX = false;
-    havePerformedLogY = false;
+    xScaleMode2D = LINEAR;
+    yScaleMode2D = LINEAR;
+    havePerformedLogX2D = false;
+    havePerformedLogY2D = false;
+    xScaleModeCurve = LINEAR;
+    yScaleModeCurve = LINEAR;
+    havePerformedLogXCurve = false;
+    havePerformedLogYCurve = false;
 }
 
 
@@ -619,6 +623,10 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
 //    Added Call to SetScaleMode(performs log scale on mesh when requested).
 //
+//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
+//    Added separate calls to SetScaleMode, based on spatial/topo dims, so
+//    that correct scale modes get used.
+//
 // ****************************************************************************
 
 avtActor_p
@@ -667,7 +675,13 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         avtPipelineSpecification_p ds = 
               new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
 
-        avtDataObject_p sd = SetScaleMode(geo);
+        avtDataObject_p sd;
+        if (spatialDim == 2 && topologicalDim == 0)  
+            sd = SetScaleMode(geo, xScaleModeCurve, yScaleModeCurve,
+                              havePerformedLogXCurve, havePerformedLogYCurve);
+        else 
+            sd = SetScaleMode(geo, xScaleMode2D, yScaleMode2D,
+                              havePerformedLogX2D, havePerformedLogY2D);
         sd->Update(ds);
 
         mapper->SetInput(sd);
@@ -1201,10 +1215,14 @@ avtPlot::SetCurrentExtents(avtDataObject_p curDS)
 //  Method: avtPlot::SetScaleMode
 //
 //  Purpose: 
-//    This method sets the mesh scaleing using the MeshLog filter. 
+//    This method sets the mesh scaling using the MeshLog filter. 
 //
 //  Arguments:
-//    curDS     The data object. 
+//    curDS             The data object to be scaled. 
+//    xScaleMode        The scale mode for the x-axis.
+//    yScaleMode        The scale mode for the y-axis.
+//    havePerformedLogX Has this data object already been log scaled in x?
+//    havePerformedLogY Has this data object already been log scaled in y?
 //
 //  Returns:    The data object with (possibly) log scaling applied.
 //
@@ -1215,10 +1233,16 @@ avtPlot::SetCurrentExtents(avtDataObject_p curDS)
 //    Kathleen Bonnell, Tue Apr  3 16:06:54 PDT 2007
 //    Made execution dependent upon this plot allowing curve view scaling.
 //
+//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
+//    Added ScaleMode and bool args so this method could be used for 2d or
+//    curve, depending on the args passed in. 
+//
 // ****************************************************************************
 
 avtDataObject_p
-avtPlot::SetScaleMode(avtDataObject_p curDS)
+avtPlot::SetScaleMode(avtDataObject_p curDS, ScaleMode xScaleMode, 
+                      ScaleMode yScaleMode,
+                      bool &havePerformedLogX, bool &havePerformedLogY)
 {
     if (!havePerformedLogX && !havePerformedLogY && 
         xScaleMode == LINEAR && yScaleMode == LINEAR)
@@ -1286,7 +1310,6 @@ avtPlot::SetScaleMode(avtDataObject_p curDS)
     rv = logMeshFilter->GetOutput();
     havePerformedLogX = (xScaleMode == LOG);
     havePerformedLogY = (yScaleMode == LOG);
-    
     return rv;
 }
 
@@ -1464,6 +1487,11 @@ avtPlot::GetPlotInfoAtts()
 //  Purpose: 
 //    Sets the scale modes. 
 //
+//  Arguments:
+//    ds        The scale mode for the x-axis.
+//    rs        The scale mdoe for the y-axis.
+//    wm        The window mode to which the scaling applies.
+//
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 6, 2007 
 //
@@ -1474,6 +1502,9 @@ avtPlot::GetPlotInfoAtts()
 //    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007 
 //    Added support for 2D log scaling.
 //
+//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
+//    2D and Curve modes now stored separately.
+//
 // ****************************************************************************
 
 bool
@@ -1482,16 +1513,50 @@ avtPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
     bool retval = false;
     if (wm == WINMODE_CURVE && CanDoCurveViewScaling()) 
     {
-        xScaleMode = ds;
-        yScaleMode = rs;
+        xScaleModeCurve = ds;
+        yScaleModeCurve = rs;
         retval = true;
     }
     else if (wm == WINMODE_2D && CanDo2DViewScaling())
     {
-        xScaleMode = ds;
-        yScaleMode = rs;
+        xScaleMode2D = ds;
+        yScaleMode2D = rs;
         retval = true;
     }
     return retval;
 }
 
+
+// ****************************************************************************
+//  Method: avtPlot::ScaleModeRequiresUpdate
+//
+//  Purpose: 
+//    Determines if changing to passed scale modes would require this
+//    plot to reexecute (viewer). 
+//
+//  Arguments:
+//    wm    The windowmode that the scale modes apply to.
+//    ds    The scale mode for the x-axis.
+//    rs    The scale mode for the y-axis.
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   September 27, 2007 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtPlot::ScaleModeRequiresUpdate(WINDOW_MODE wm, ScaleMode ds, ScaleMode rs)
+{
+    if (wm == WINMODE_CURVE)
+    {
+        return ( (havePerformedLogXCurve != (ds == LOG)) ||
+                 (havePerformedLogYCurve != (rs == LOG)) ); 
+    }
+    else 
+    {
+        return ( (havePerformedLogX2D != (ds == LOG)) ||
+                 (havePerformedLogY2D != (rs == LOG)) ); 
+    }
+}
