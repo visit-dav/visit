@@ -227,12 +227,18 @@ Navigate2D::EndMiddleButtonAction()
 //  Programmer: Gunther H. Weber
 //  Creation:   August 07, 2007
 //
+//  Modifications:
+//    Gunther H. Weber, Fri Sep 28 13:48:04 PDT 2007
+//    Added missing StartZoom() / EndZoom()
+//
 // ****************************************************************************
 
 void
 Navigate2D::OnMouseWheelForward()
 {
+    StartZoom();
     ZoomCamera2D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
 }
 
 // ****************************************************************************
@@ -246,12 +252,18 @@ Navigate2D::OnMouseWheelForward()
 //  Programmer: Gunther H. Weber
 //  Creation:   August 07, 2007
 //
+//  Modifications:
+//    Gunther H. Weber, Fri Sep 28 13:48:04 PDT 2007
+//    Added missing StartZoom() / EndZoom()
+//
 // ****************************************************************************
 
 void
 Navigate2D::OnMouseWheelBackward()
 {
+    StartZoom();
     ZoomCamera2D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
 }
 
 // ****************************************************************************
