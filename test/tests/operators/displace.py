@@ -8,7 +8,7 @@
 #                          2D/3D curvilinear, single domain.
 #              plots     - pc, mesh
 #
-#  Defect ID:  '5921, '7486
+#  Defect ID:  '5921, '7486, '8160, '8259, '8265
 #
 #  Programmer: Hank Childs
 #  Date:       May 6, 2004
@@ -20,6 +20,9 @@
 #
 #    Hank Childs, Tue Sep  5 16:39:40 PDT 2006
 #    Added test for when users put in non-vectors ['7486].
+#
+#    Hank Childs, Fri Sep 28 12:28:30 PDT 2007
+#    Add tests for three recent bugs ['8160, '8259, '8265]
 #
 # ----------------------------------------------------------------------------
 
@@ -98,5 +101,28 @@ disp.variable = "t"
 SetOperatorOptions(disp)
 error = GetLastError()
 TestText("ops_disp08", error)
+
+DeleteAllPlots()
+
+OpenDatabase("../data/boxlib_test_data/2D/plt0822/Header")
+
+#   8265: cell-centered vector with rectilinear mesh 
+# + 8259: file format the declares itself having 2D vectors + displace
+AddPlot("Pseudocolor", "density")
+AddOperator("Displace")
+disp.variable = "mom"
+disp.factor = 1e-12 # this way the quads won't overlap each other.
+SetOperatorOptions(disp)
+DrawPlots()
+Test("ops_disp09")
+
+DeleteAllPlots()
+
+# '8160: subset plot displaced by a vector
+AddPlot("Subset", "patches")
+AddOperator("Displace")
+SetOperatorOptions(disp)
+DrawPlots()
+Test("ops_disp10")
 
 Exit()
