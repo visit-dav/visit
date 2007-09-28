@@ -153,6 +153,9 @@ avtDisplaceFilter::SetVariable(const std::string &v)
 //    Hank Childs, Thu Oct  6 16:50:11 PDT 2005
 //    Added support for displacing by a default variable ['6654]
 //
+//    Hank Childs, Fri Sep 28 07:40:16 PDT 2007
+//    Fix bug with cell centered data and rectilinear grids.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -190,8 +193,8 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
         tmp_ds = (vtkDataSet *) in_ds->NewInstance();
         tmp_ds->ShallowCopy(in_ds);
-        tmp_ds->GetPointData()->AddArray(
-          pt_one_var_ds->GetPointData()->GetArray(displace_var));
+        vecs = pt_one_var_ds->GetPointData()->GetArray(displace_var);
+        tmp_ds->GetPointData()->AddArray(vecs);
         tmp_ds->GetPointData()->SetActiveVectors(displace_var);
 
         in_ds = tmp_ds;
@@ -286,6 +289,9 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //    Call avtStreamer's PostExecute, not avtPluginStreamer, since the 
 //    inheritance changed.
 //
+//    Hank Childs, Fri Sep 28 07:14:14 PDT 2007
+//    Allow for 2D vectors.
+//
 // ****************************************************************************
 
 void
@@ -300,9 +306,15 @@ avtDisplaceFilter::PreExecute(void)
     avtDataAttributes &inAtts = GetInput()->GetInfo().GetAttributes();
     if (inAtts.ValidVariable(displace_var))
     {
-        if (inAtts.GetVariableDimension() != 3)
+        if (inAtts.GetVariableDimension(displace_var) != 3)
         {
-            EXCEPTION2(InvalidDimensionsException, "The displace operator",
+            bool valid2D = false;
+            if (inAtts.GetVariableDimension(displace_var) == 2 &&
+                inAtts.GetSpatialDimension() == 2)
+                valid2D = true;
+
+            if (!valid2D)
+                EXCEPTION2(InvalidDimensionsException, "The displace operator",
                         "vector");
         }
     }
