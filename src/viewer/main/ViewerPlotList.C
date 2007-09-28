@@ -200,6 +200,9 @@ PlaybackMode_FromString(const std::string &s,
 //    Kathleen Bonnell, Thu Mar 22 19:36:05 PDT 2007
 //    Added xScaleMode, yScaleMode.
 //
+//    Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007
+//    Added scaleModeSet. 
+//
 // ****************************************************************************
 
 ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) : 
@@ -225,6 +228,7 @@ ViewerPlotList::ViewerPlotList(ViewerWindow *const viewerWindow) :
     pipelineCaching = false;
     xScaleMode = LINEAR;
     yScaleMode = LINEAR;
+    scaleModeSet = false;
 }
 
 // ****************************************************************************
@@ -8499,6 +8503,9 @@ ViewerPlotList::AlternateDisplayChangedPlotAttributes(ViewerPlot *plot)
 //   Kathleen Bonnell, Wed May  9 17:33:41 PDT 2007 
 //   Added WINDOW_MODE arg.
 //  
+//   Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007 
+//   Added scaleModeSet. 
+//  
 // ****************************************************************************
 
 void 
@@ -8506,6 +8513,7 @@ ViewerPlotList::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 {
     xScaleMode = ds;
     yScaleMode = rs;
+    scaleModeSet = true;
     for (int i = 0; i < nPlots; ++i)
     {
         plots[i].plot->SetScaleMode(ds, rs, wm);
@@ -8528,15 +8536,19 @@ ViewerPlotList::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 // Creation:   May 9, 2007
 //
 // Modifications:
-//  
+//   Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007
+//   Added scaleModeSet.
+//
 // ****************************************************************************
 
 void 
 ViewerPlotList::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
 {
-    window->GetScaleMode(ds, rs, wm);
+    if (!scaleModeSet)
+        window->GetScaleMode(ds, rs, wm);
     xScaleMode = ds;
     yScaleMode = rs;
+    scaleModeSet = true;
 }
 
 

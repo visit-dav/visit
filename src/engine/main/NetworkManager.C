@@ -1946,6 +1946,10 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Have visual cues be added after adding the plots.  Otherwise, they won't
 //    know if the window is 2D or 3D and whether they should offset themselves.
 //
+//    Kathleen Bonnell, Tue Sep 25 10:38:27 PDT 2007 
+//    Retrieve scaling modes from 2d and curve view atts and set them in the
+//    plot before it executes so the plot will be created with correct scaling. 
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -1979,10 +1983,18 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
         int t1 = visitTimer->StartTimer();
         avtDataObjectWriter_p writer;
         bool needToSetUpWindowContents = false;
+        bool forceViewerExecute = false;
         int *cellCounts = new int[2 * plotIds.size()];
         bool handledAnnotations = false;
         bool handledCues = false;
         int stereoType = -1;
+
+        ViewCurveAttributes vca = windowAttributes.GetViewCurve();
+        View2DAttributes v2a = windowAttributes.GetView2D();
+        ScaleMode ds = (ScaleMode)vca.GetDomainScale();
+        ScaleMode rs = (ScaleMode)vca.GetRangeScale();
+        ScaleMode xs = (ScaleMode)v2a.GetXScale();
+        ScaleMode ys = (ScaleMode)v2a.GetYScale();
 
         //
         // Explicitly specify left or right eye for stereo 
@@ -2004,9 +2016,36 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             needToSetUpWindowContents = true;
         else
         {
+            DataNetwork *wm = workingNet;
             for (int p = 0 ; p < plotIds.size() ; p++)
+            {
                 if (plotIds[p] != plotsCurrentlyInWindow[p])
                     needToSetUpWindowContents = true;
+
+                if (viswin->GetWindowMode() == WINMODE_2D)
+                {
+                    workingNet = NULL;
+                    UseNetwork(plotIds[p]);
+                    if (workingNet->GetPlot()->ScaleModeRequiresUpdate(
+                        WINMODE_2D, xs, ys))
+                    {
+                        needToSetUpWindowContents = true;
+                        forceViewerExecute = true;
+                    }
+                }
+                else if (viswin->GetWindowMode() == WINMODE_CURVE)
+                {
+                    workingNet = NULL;
+                    UseNetwork(plotIds[p]);
+                    if (workingNet->GetPlot()->ScaleModeRequiresUpdate(
+                        WINMODE_CURVE, ds, rs))
+                    {
+                        needToSetUpWindowContents = true;
+                        forceViewerExecute = true;
+                    }
+                }
+            }
+            workingNet = wm;
         }
 
         if (needToSetUpWindowContents)
@@ -2019,12 +2058,12 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 
             //
             // If we're doing all annotations on the engine then we need to add
-            // the annotations to the window before we add plots so the annotations
-            // that depend on the plot list being updated in order to change their
-            // text with respect to time can update.
+            // the annotations to the window before we add plots so the 
+            // annotations that depend on the plot list being updated in order 
+            // to change their text with respect to time can update.
             //
-            // However: visual cues (i.e. reflines) need to be added after the plots
-            // are added.
+            // However: visual cues (i.e. reflines) need to be added after the 
+            // plots are added.
             //
             if(annotMode == 2)
             {
@@ -2064,14 +2103,18 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 if (hasNonMeshPlots &&
                     string(workingNetSaved->GetPlot()->GetName()) == "MeshPlot")
                 {
-                   const AttributeSubject *meshAtts = workingNetSaved->GetPlot()->
-                                                      SetOpaqueMeshIsAppropriate(false);
+                   const AttributeSubject *meshAtts = workingNetSaved->
+                         GetPlot()->SetOpaqueMeshIsAppropriate(false);
                    if (meshAtts != 0)
                        workingNetSaved->GetPlot()->SetAtts(meshAtts);
                 }
 
+                workingNetSaved->GetPlot()->SetScaleMode(ds,rs,WINMODE_CURVE);
+                workingNetSaved->GetPlot()->SetScaleMode(xs,ys,WINMODE_2D);
+
                 int t5 = visitTimer->StartTimer();
-                avtActor_p anActor = workingNetSaved->GetActor(dob);
+                avtActor_p anActor = workingNetSaved->GetActor(dob, 
+                                     forceViewerExecute);
                 visitTimer->StopTimer(t5, "Calling GetActor for DOB");
 
                 // Make sure that the actor's name is set to the plot's name so
