@@ -349,12 +349,18 @@ Navigate3D::EndMiddleButtonAction()
 //  Programmer: Gunther H. Weber
 //  Creation:   August 07, 2007
 //
+//  Modifications:
+//    Gunther H. Weber, Fri Sep 28 13:48:04 PDT 2007
+//    Added missing StartZoom() / EndZoom()
+//
 // ****************************************************************************
 
 void
 Navigate3D::OnMouseWheelForward()
 {
+    StartZoom();
     ZoomImage3D(MotionFactor * 0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
 }
 
 
@@ -369,12 +375,18 @@ Navigate3D::OnMouseWheelForward()
 //  Programmer: Gunther H. Weber
 //  Creation:   August 07, 2007
 //
+//  Modifications:
+//    Gunther H. Weber, Fri Sep 28 13:48:04 PDT 2007
+//    Added missing StartZoom() / EndZoom()
+//
 // ****************************************************************************
 
 void
 Navigate3D::OnMouseWheelBackward()
 {
+    StartZoom();
     ZoomImage3D(MotionFactor * -0.2 * this->MouseWheelMotionFactor);
+    EndZoom();
 }
 
 // ****************************************************************************

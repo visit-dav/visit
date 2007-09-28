@@ -43,6 +43,7 @@
 
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkRenderWindow.h>
 
 #include <VisWindow.h>
 
@@ -954,6 +955,10 @@ VisitInteractor::EndBoundingBox(void)
 //    mouse move and one computing the zommed view so that mouse wheel 
 //    events can make use of this function.
 //
+//    Gunther H. Weber, Fri Sep 28 14:05:10 PDT 2007
+//    Added a fix suggested by Brad Whitlock to fix the problem that 
+//    zooming in with a mouse wheel can result in an invalid view
+//
 // ****************************************************************************
 
 void
@@ -992,7 +997,8 @@ VisitInteractor::ZoomCamera2D(double f)
 	int       size[2];
 	double    yScale;
 
-	rwi->GetSize(size);
+        size[0] = rwi->GetRenderWindow()->GetSize()[0];
+        size[1] = rwi->GetRenderWindow()->GetSize()[1]; 
 
 	yScale = ((newView2D.viewport[3] - newView2D.viewport[2]) /
 		(newView2D.viewport[1] - newView2D.viewport[0])) *
