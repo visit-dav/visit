@@ -5,10 +5,15 @@
 #
 #  Tests:      plots     - filled boundary
 #
-#  Defect ID:  '4363, '6464, '6504
+#  Defect ID:  '4363, '6464, '6504, '8082
 #
 #  Programmer: Hank Childs
 #  Date:       August 19, 2005
+#
+#  Modifications:
+# 
+#    Hank Childs, Fri Sep 28 12:48:54 PDT 2007
+#    Add testing for mixvars with simplify heavily mixed ['8082].
 #
 # ----------------------------------------------------------------------------
 
@@ -61,5 +66,28 @@ AddPlot("FilledBoundary", "materials")
 DrawPlots()
 
 Test("simplify_mixed03")
+
+DeleteAllPlots()
+
+OpenDatabase("../data/thinplane.silo")
+
+m.forceMIR = 1
+SetMaterialAttributes(m)
+AddPlot("Pseudocolor", "den")
+p = PseudocolorAttributes()
+p.limitsMode = p.CurrentPlot
+SetPlotOptions(p)
+DrawPlots()
+Test("simplify_mixed04")
+
+m.maxMaterialsPerZone = 2
+SetMaterialAttributes(m)
+ReOpenDatabase("../data/thinplane.silo")
+Test("simplify_mixed05")
+
+m.maxMaterialsPerZone = 3
+SetMaterialAttributes(m)
+ReOpenDatabase("../data/thinplane.silo")
+Test("simplify_mixed06")
 
 Exit()
