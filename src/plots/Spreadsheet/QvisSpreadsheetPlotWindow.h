@@ -50,6 +50,7 @@ class QButtonGroup;
 class QvisColorTableButton;
 class QvisOpacitySlider;
 class QvisColorButton;
+class QvisDialogLineEdit;
 
 // ****************************************************************************
 // Class: QvisSpreadsheetPlotWindow
@@ -63,6 +64,8 @@ class QvisColorButton;
 // Creation:   Wed Feb 21 12:02:25 PDT 2007
 //
 // Modifications:
+//   Gunther H. Weber, Thu Sep 27 12:05:14 PDT 2007
+//   Added font selection for spreadsheet
 //   
 // ****************************************************************************
 
@@ -95,10 +98,12 @@ private slots:
     void tracerOpacityChanged(int);
     void normalChanged(int val);
     void subsetNameChanged(const QString &);
+    void fontNameChanged(const QString &newFont);
 private:
     int plotType;
     QComboBox *subsetName;
     QLineEdit *formatString;
+    QvisDialogLineEdit *fontName;
     QCheckBox *useColorTable;
     QvisColorTableButton *colorTableName;
     QCheckBox *showTracerPlane;

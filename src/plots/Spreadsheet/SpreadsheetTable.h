@@ -57,6 +57,10 @@ class vtkDataArray;
 // Modifications:
 //   Gunther H. Weber,  Fri Sep 14 11:39:24 PDT 2007
 //   Added list of pick letters to be displayed for selected cells
+//
+//   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
+//   Add support for updating column width after changing the font
+//
 // ****************************************************************************
 
 class SpreadsheetTable : public QTable
@@ -84,6 +88,8 @@ public:
     void addSelectedCellLabel(int, int, const std::string&);
     void clearSelectedCellLabels();
 
+    void setFont(QFont&);
+
 public slots:
     void selectAll();
     void selectNone();
@@ -93,6 +99,7 @@ protected:
                            const QColorGroup &cg);
     int rowColToIndex(int row, int col) const;
     double displayValue(int row, int col, bool &ghost) const;
+    void updateColumnWidths();
 
     bool            renderInColor;
     avtLookupTable *lut;

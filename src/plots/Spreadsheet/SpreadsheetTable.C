@@ -39,6 +39,7 @@
 #include <qpainter.h>
 #include <qpalette.h>
 #include <qstyle.h>
+#include <qfontmetrics.h>
 
 #include <avtLookupTable.h>
 #include <vtkLookupTable.h>
@@ -157,6 +158,8 @@ SpreadsheetTable::setRenderInColor(bool ric)
 // Creation:   Tue Feb 20 15:34:46 PST 2007
 //
 // Modifications:
+//   Gunther H. Weber, Thu Sep 27 11:37:18 PDT 2007
+//   Adapt column width to fit displayed values
 //   
 // ****************************************************************************
 
@@ -166,6 +169,7 @@ SpreadsheetTable::setFormatString(const QString &fmt)
     if(fmt != formatString)
     {
         formatString = fmt;
+        updateColumnWidths();
         update();
     }
 }
@@ -190,6 +194,8 @@ SpreadsheetTable::setFormatString(const QString &fmt)
 // Creation:   Tue Feb 20 15:35:22 PST 2007
 //
 // Modifications:
+//   Gunther H. Weber, Thu Sep 27 11:37:18 PDT 2007
+//   Adapt column width to fit displayed values
 //   
 // ****************************************************************************
 
@@ -287,6 +293,13 @@ SpreadsheetTable::setDataArray(vtkDataArray *arr, vtkDataArray *ghosts,
             verticalHeader()->setLabel(i, label);
         }
     }
+
+    // Adjust column width
+    QFontMetrics fm(font());
+    QString lengthProbeString;
+    lengthProbeString.sprintf(formatString, -1.11111111111111111111);
+    for (int i=0; i<numCols(); ++i)
+        setColumnWidth(i, fm.width(" AA=") + fm.width(lengthProbeString));
 }
 
 // ****************************************************************************
@@ -516,6 +529,25 @@ SpreadsheetTable::clearSelectedCellLabels()
     selectedCellLabels.clear();
 }
 
+// ****************************************************************************
+// Method: SpreadsheetTable::setFont()
+//
+// Purpose: 
+//   Update column widths after a font change
+//
+// Programmer: Gunther H. Weber
+// Creation:   Thu Sep 27 13:37:40 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetTable::setFont(QFont&f)
+{
+    QTable::setFont(f);
+    updateColumnWidths();
+}
 
 // ****************************************************************************
 // Method: SpreadsheetTable::rowColToIndex
@@ -792,4 +824,28 @@ SpreadsheetTable::selectNone()
     horizontalHeader()->update();
     verticalHeader()->update();
     emit selectionChanged();
+}
+
+// ****************************************************************************
+// Method: SpreadsheetTable::updateColumnWidths
+//
+// Purpose: 
+//   Change table column width so that numeric values (and labels) displayed
+//   in cells are not truncated
+//
+// Programmer: Gunther H. Weber
+// Creation:   Thu Sep 27 13:43:05 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetTable::updateColumnWidths()
+{
+    QFontMetrics fm(font());
+    QString lengthProbeString;
+    lengthProbeString.sprintf(formatString, -1.11111111111111111111);
+    for (int i=0; i<numCols(); ++i)
+        setColumnWidth(i, fm.width(" AA=") + fm.width(lengthProbeString));
 }
