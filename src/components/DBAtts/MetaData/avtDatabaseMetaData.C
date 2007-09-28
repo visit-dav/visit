@@ -5391,6 +5391,9 @@ avtDatabaseMetaData::GetNDomains(const std::string &var) const
 //    For expression variables, return the type of the expression, not the
 //    type of a real variable in that expression.
 //
+//    Kathleen Bonnell, Fri Sep 28 13:34:13 PDT 2007 
+//    Use 'VariableNamesEqual' instead of '=='. 
+//
 // ****************************************************************************
 
 avtVarType
@@ -5421,9 +5424,9 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int nmeshes = GetNumMeshes();
     for (i = 0 ; i < nmeshes ; i++)
     {
-        if ((GetMeshes(i).name == var) || 
-            (GetMeshes(i).blockTitle == var) ||
-            (GetMeshes(i).groupTitle == var))
+        if ((VariableNamesEqual(GetMeshes(i).name, var)) || 
+            (VariableNamesEqual(GetMeshes(i).blockTitle, var)) ||
+            (VariableNamesEqual(GetMeshes(i).groupTitle, var)))
         {
             return AVT_MESH;
         }
@@ -5432,7 +5435,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int nvectors = GetNumVectors();
     for (i = 0 ; i < nvectors ; i++)
     {
-        if (GetVectors(i).name == var)
+        if (VariableNamesEqual(GetVectors(i).name, var))
         {
             return AVT_VECTOR_VAR;
         }
@@ -5441,7 +5444,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int ntensors = GetNumTensors();
     for (i = 0 ; i < ntensors ; i++)
     {
-        if (GetTensors(i).name == var)
+        if (VariableNamesEqual(GetTensors(i).name, var))
         {
             return AVT_TENSOR_VAR;
         }
@@ -5450,7 +5453,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int nsymmtensors = GetNumSymmTensors();
     for (i = 0 ; i < nsymmtensors ; i++)
     {
-        if (GetSymmTensors(i).name == var)
+        if (VariableNamesEqual(GetSymmTensors(i).name, var))
         {
             return AVT_SYMMETRIC_TENSOR_VAR;
         }
@@ -5459,7 +5462,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int narrays = GetNumArrays();
     for (i = 0 ; i < narrays ; i++)
     {
-        if (GetArrays(i).name == var)
+        if (VariableNamesEqual(GetArrays(i).name, var))
         {
             return AVT_ARRAY_VAR;
         }
@@ -5468,7 +5471,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int nscalars = GetNumScalars();
     for (i = 0 ; i < nscalars ; i++)
     {
-        if (GetScalars(i).name == var)
+        if (VariableNamesEqual(GetScalars(i).name, var))
         {
             return AVT_SCALAR_VAR;
         }
@@ -5477,7 +5480,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int nmats = GetNumMaterials();
     for (i = 0 ; i < nmats ; i++)
     {
-        if (GetMaterials(i).name == var)
+        if (VariableNamesEqual(GetMaterials(i).name, var))
         {
             return AVT_MATERIAL;
         }
@@ -5486,7 +5489,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int nspecies = GetNumSpecies();
     for (i = 0 ; i < nspecies ; i++)
     {
-        if (GetSpecies(i).name == var)
+        if (VariableNamesEqual(GetSpecies(i).name, var))
         {
             return AVT_MATSPECIES;
         }
@@ -5495,7 +5498,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int ncurves = GetNumCurves();
     for (i = 0 ; i < ncurves ; i++)
     {
-        if (GetCurves(i).name == var)
+        if (VariableNamesEqual(GetCurves(i).name, var))
         {
             return AVT_CURVE;
         }
@@ -5504,7 +5507,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     int nlabels = GetNumLabels();
     for (i = 0 ; i < nlabels ; i++)
     {
-        if (GetLabels(i).name == var)
+        if (VariableNamesEqual(GetLabels(i).name, var))
         {
             return AVT_LABEL_VAR;
         }
