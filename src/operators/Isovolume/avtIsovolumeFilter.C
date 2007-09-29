@@ -164,7 +164,13 @@ avtIsovolumeFilter::Equivalent(const AttributeGroup *a)
 //  Programmer:  Jeremy Meredith
 //  Creation:    May  6, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Sat Sep 29 11:24:12 PDT 2007
+//    Pass in vtkDataArrays to the clipper, not "float *".
+//
 // ****************************************************************************
+
 vtkDataSet *
 avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
 {
@@ -178,7 +184,7 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
     if (in_ds->GetPointData()->GetScalars())
     {
         vtkDataArray *s = in_ds->GetPointData()->GetScalars();
-        clipper->SetClipScalars((float*)(s->GetVoidPointer(0)), val);
+        clipper->SetClipScalars(s, val);
     }
     else if (in_ds->GetCellData()->GetScalars())
     {
@@ -197,7 +203,7 @@ avtIsovolumeFilter::ExecuteSingleClip(vtkDataSet *in_ds, float val, bool flip)
 
         // Now tell the clipper about it....
         vtkDataArray *s = temporary->GetPointData()->GetScalars();
-        clipper->SetClipScalars((float*)(s->GetVoidPointer(0)), val);
+        clipper->SetClipScalars(s, val);
 
         // Wait until after the clipping is done to delete 'cd2pd' (which
         // will take 'temporary' with it)
