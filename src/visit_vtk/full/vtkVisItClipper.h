@@ -73,7 +73,14 @@ class vtkUnstructuredGrid;
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added flag to use zero-crossings of the implicit function. 
 //    Added flat to compute inside and out in single execute.
+//
+//    Hank Childs, Sat Sep 29 11:14:58 PDT 2007
+//    Make change to argument of function (SetClipScalars), which is necessary
+//    for non-traditional cell types (hex-20).  Also add support for data
+//    types beyond floats.
+//
 // ****************************************************************************
+
 class VISIT_VTK_API vtkVisItClipper
     : public vtkDataSetToUnstructuredGridFilter
 {
@@ -85,7 +92,7 @@ class VISIT_VTK_API vtkVisItClipper
 
     virtual void SetRemoveWholeCells(bool);
     virtual void SetClipFunction(vtkImplicitFunction*);
-    virtual void SetClipScalars(float*, float);
+    virtual void SetClipScalars(vtkDataArray *, float);
     virtual void SetInsideOut(bool);
     virtual void SetComputeInsideAndOut(bool);
     virtual void SetUseZeroCrossings(bool);
@@ -113,7 +120,9 @@ class VISIT_VTK_API vtkVisItClipper
     bool   removeWholeCells;
     bool   insideOut;
     vtkImplicitFunction *clipFunction;
+    bool   iOwnData;
     float *scalarArray;
+    vtkDataArray *scalarArrayAsVTK;
     float  scalarCutoff;
     bool   scalarFlip;
     bool   useZeroCrossings;
