@@ -682,6 +682,12 @@ void vtkVisItCutter::CreateDefaultLocator()
 //    fix still doesn't handle out-of-order cells.  Pass an empty cell array 
 //    when appropriate, to work around their 'fix' (and prevent possible MSE). 
 // 
+//    Hank Childs, Sat Sep 29 07:42:27 PDT 2007
+//    Previously, each of the known VTK cell types were enumerated.  This
+//    created problems when new cell types were encountered (specifically for
+//    me with a hex-20).  Instead of enumerating cell types, focus on their
+//    cell dimension.
+//
 // ***************************************************************************
 void
 CellContour(vtkCell *cell, double value, 
@@ -697,40 +703,45 @@ CellContour(vtkCell *cell, double value,
                             vtkCellData *poly_outCD)
 {
   vtkCellArray *empty = vtkCellArray::New();
-  switch (cell->GetCellType())
+  int nP = newPolys->GetNumberOfCells();
+  switch (cell->GetCellDimension())
     {
-    case VTK_VERTEX:
-    case VTK_POLY_VERTEX:
-    case VTK_LINE:
-    case VTK_POLY_LINE:
+    case 0:
+    case 1:
       // These cell types only create verts when contoured, so
       // pass the contour method the outCD for verts.
       cell->Contour(value, cellScalars, locator, newVerts, empty, 
                     empty, inPD, outPD, inCD, cellId, vert_outCD);
       break;
-    case VTK_TRIANGLE:
-    case VTK_TRIANGLE_STRIP:
-    case VTK_POLYGON:
-    case VTK_PIXEL:
-    case VTK_QUAD:
+
+    case 2:
       // These cell types only create lines when contoured, so
       // pass the contour method the outCD for lines.
       cell->Contour(value, cellScalars, locator, empty, newLines, 
                     empty, inPD, outPD, inCD, cellId, line_outCD);
       break;
-    case VTK_TETRA:
-    case VTK_VOXEL:
-    case VTK_HEXAHEDRON:
-    case VTK_WEDGE:
-    case VTK_PYRAMID:
+
+    case 3:
       // These cell types only create polys when contoured, so
       // pass the contour method the outCD for polys.
       cell->Contour(value, cellScalars, locator, empty, empty, 
                     newPolys, inPD, outPD, inCD, cellId, poly_outCD);
       break;
+
     default:
       break;
     } // switch cell-type
+
+    // Work around bug in VTK 5.0.  You should be able to remove this code
+    // when VTK is upgraded.
+    if (cell->GetCellType() == VTK_QUADRATIC_HEXAHEDRON)
+    {
+      int newNP = newPolys->GetNumberOfCells();
+      for (int i = nP ; i < newNP ; i++)
+        poly_outCD->CopyData(inCD, cellId, i);
+    }
+    // End work around
+
     empty->Delete();
 }
 
