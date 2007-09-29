@@ -160,7 +160,7 @@ std::string java_copyright_str =
 #endif
 #ifdef GENERATE_PROJECTFILE
 #include "GenerateProjectFile.h"
-bool generateVersion7Projects = false;
+bool generateVersion7Projects = true;
 #endif
 
 #include "XMLParser.h"
@@ -174,7 +174,8 @@ PrintUsage(const char *prog)
     cerr << "        -noprint       no debug output" << endl;
     cerr << "        -public        (xml2makefile only) install publicly" << endl;
     cerr << "        -private       (xml2makefile only) install privately" << endl;
-    cerr << "        -version7      (xml2projectfile only)" << endl;
+    cerr << "        -version6      (xml2projectfile only) make MSVC 6.0 projects" << endl;
+    cerr << "        -version7      (xml2projectfile only) make MSVC .Net 2003 projects (default)" << endl;
 }
 
 class ErrorHandler : public QXmlErrorHandler
@@ -394,6 +395,14 @@ int main(int argc, char *argv[])
             i--;
         }
 #ifdef GENERATE_PROJECTFILE
+        else if (strcmp(argv[i], "-version6") == 0)
+        {
+            generateVersion7Projects = false;
+            argc--;
+            for (int j=i; j<argc; j++)
+                argv[j] = argv[j+1];
+            i--;
+        }
         else if (strcmp(argv[i], "-version7") == 0)
         {
             generateVersion7Projects = true;
