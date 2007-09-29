@@ -183,7 +183,11 @@ AdjustPercentToZeroCrossing(const float *const pts, int ptId1, int ptId2,
 //    Jeremy Meredith, Tue Aug 29 13:38:08 EDT 2006
 //    Added support for leaving cells whole.
 //
+//    Hank Childs, Sat Sep 29 11:14:58 PDT 2007
+//    Initialize new data members.
+//
 // ****************************************************************************
+
 vtkVisItClipper::vtkVisItClipper()
 {
     CellList = NULL;
@@ -194,6 +198,8 @@ vtkVisItClipper::vtkVisItClipper()
     useZeroCrossings = false;
     computeInsideAndOut = false;
     otherOutput = NULL;
+    scalarArrayAsVTK = NULL;
+    iOwnData = false;
 }
 
 // ****************************************************************************
@@ -204,11 +210,18 @@ vtkVisItClipper::vtkVisItClipper()
 //
 //  Modifications:
 //
+//    Hank Childs, Sat Sep 29 11:14:58 PDT 2007
+//    Clean up new data members.
+//
 // ****************************************************************************
 vtkVisItClipper::~vtkVisItClipper()
 {
     if (otherOutput)
         otherOutput->Delete();
+    if (iOwnData)
+        delete [] scalarArray;
+    if (scalarArrayAsVTK != NULL)
+        scalarArrayAsVTK->Delete();
 }
 
 void
@@ -271,19 +284,51 @@ vtkVisItClipper::SetClipFunction(vtkImplicitFunction *func)
 //  Creation:    January 30, 2004
 //
 //  Modifications:
+//
 //    Jeremy Meredith, Wed May  5 14:48:23 PDT 2004
 //    Made it allow only a single cutoff, and use the "insideOut"
 //    value to determine if this is a min or max value.
 //
+//    Hank Childs, Sat Sep 29 11:14:58 PDT 2007
+//    Change the array argument to be a vtk data type.  Also added support
+//    for data types besides "float".
+//
 // ****************************************************************************
+
 void
-vtkVisItClipper::SetClipScalars(float *array, float cutoff)
+vtkVisItClipper::SetClipScalars(vtkDataArray *array, float cutoff)
 {
+    if (iOwnData)
+    {
+        delete [] scalarArray;
+        iOwnData = false;
+    }
+    if (scalarArrayAsVTK != NULL)
+    {
+        scalarArrayAsVTK->Delete();
+        scalarArrayAsVTK = NULL;
+    }
+
     // Clear the clip function so we know to use scalars
     clipFunction = NULL;
 
     // Set the scalar array
-    scalarArray = array;
+    scalarArrayAsVTK = array;
+    scalarArrayAsVTK->Register(NULL);
+    if (array->GetDataType() == VTK_FLOAT)
+    {
+        scalarArray = (float *) array->GetVoidPointer(0);
+    }
+    else
+    {
+        iOwnData = true;
+        int nTuples = array->GetNumberOfTuples();
+        scalarArray = new float[nTuples];
+        for (int i = 0 ; i < nTuples ; i++)
+        {
+            scalarArray[i] = array->GetTuple1(i);
+        }
+    }
 
     // Set the cutoff
     scalarCutoff     = cutoff;
@@ -1021,7 +1066,9 @@ void vtkVisItClipper::RectilinearGridExecute(void)
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added code to compute both sides of clip in one execute. Added code
 //    to adjust percent to zero crossings if requested.
+//
 // ****************************************************************************
+
 void vtkVisItClipper::UnstructuredGridExecute(void)
 {
     // The routine here is a bit trickier than for the Rectilinear or
@@ -1450,7 +1497,9 @@ void vtkVisItClipper::UnstructuredGridExecute(void)
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added code to adjust percent to new percent consistent with zero
 //    crossing of implicit func.
+//
 // ****************************************************************************
+
 void vtkVisItClipper::PolyDataExecute(void)
 {
     // The routine here is a bit trickier than for the Rectilinear or
@@ -1813,9 +1862,18 @@ void vtkVisItClipper::ClipDataset(vtkDataSet *in_ds,
 {
     vtkClipDataSet *clipData = vtkClipDataSet::New();
     clipData->SetInput(in_ds);
-    //if (clipFunction 
-    clipData->SetClipFunction(clipFunction);
-    clipData->GenerateClipScalarsOff();
+    if (clipFunction)
+    {
+        clipData->SetClipFunction(clipFunction);
+        clipData->GenerateClipScalarsOff();
+    }
+    else
+    {
+        clipData->SetClipFunction(NULL);
+        in_ds->GetPointData()->SetScalars(scalarArrayAsVTK);
+        clipData->GenerateClipScalarsOff();
+        clipData->SetValue(scalarCutoff);
+    }
     clipData->SetInsideOut(insideOut);
     clipData->Update();
     out_ds->ShallowCopy(clipData->GetOutput());
