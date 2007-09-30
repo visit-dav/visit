@@ -302,6 +302,9 @@
 #   dependent libraries we cannot build.
 #   Also, use ALLSUBDIRS for distclean.
 #
+#   Brad Whitlock, Sat Sep 29 15:26:06 PST 2007
+#   Added RAW reader/writer.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -360,6 +363,7 @@ REQUIRED=\
  PLOT3D \
  Point3D \
  ProteinDataBank \
+ RAW \
  SAMI \
  SAR \
  SAS \
