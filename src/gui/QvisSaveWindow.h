@@ -49,6 +49,8 @@ class QLineEdit;
 class QPushButton;
 class QSlider;
 class SaveWindowAttributes;
+class QRadioButton;
+class QButtonGroup;
 
 // ****************************************************************************
 // Class: QvisSaveWindow
@@ -108,7 +110,7 @@ protected slots:
     void familyToggled(bool);
     void stereoToggled(bool);
     void fileFormatChanged(int);
-    void maintainAspectToggled(bool);
+    void resConstraintToggled(bool);
     void processWidthText();
     void processHeightText();
     void progressiveToggled(bool);
@@ -137,7 +139,10 @@ private:
     QCheckBox           *progressiveCheckBox;
     QCheckBox           *binaryCheckBox;
     QGroupBox           *resolutionBox;
-    QCheckBox           *maintainAspectCheckBox;
+    QButtonGroup        *resConstraintButtonGroup;
+    QRadioButton        *noResButton;
+    QRadioButton        *oneToOneResButton;
+    QRadioButton        *screenResButton;
     QLineEdit           *widthLineEdit;
     QLineEdit           *heightLineEdit;
     QCheckBox           *screenCaptureCheckBox;

@@ -1601,6 +1601,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    can cause it to drop data arrays, and many file types correctly
 //    save multiple chunk data sets anyway.
 //
+//    Dave Bremer, Fri Sep 28 17:13:56 PDT 2007
+//    Added support for a new SaveWindow option.  The user can request
+//    that the window be saved with a width they specify, and the same
+//    proportions that their window currently has.
 // ****************************************************************************
 
 void
@@ -1752,6 +1756,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     // status message display for 10 minutes.
     //
     char message[1000];
+    int  iCurrWindow = (windowIndex == -1) ? activeWindow : windowIndex;
     if(saveWindowClientAtts->GetSaveTiled())
     {
         strcpy(message, "Saving tiled image...");
@@ -1759,7 +1764,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     else
     {
         SNPRINTF(message, sizeof(message), "Rendering window %d...",
-                (windowIndex == -1) ? (activeWindow + 1) : (windowIndex + 1));
+                 iCurrWindow+1);
     }
     Status(message, 6000000);
     Message(message);
@@ -1774,35 +1779,40 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
         TRY
         {
+            int w = saveWindowClientAtts->GetWidth(), 
+                h = saveWindowClientAtts->GetHeight();
+
+            if (saveWindowClientAtts->GetResConstraint() == 
+                SaveWindowAttributes::ScreenProportions)
+            {
+                int winx, winy;
+                windows[iCurrWindow]->GetWindowSize(winx, winy);
+
+                h = (int)((double)w * (double)winy / (double)winx);
+            }
+
             if (saveWindowClientAtts->GetSaveTiled())
             {
                 // Create a tiled image for the left eye.
-                image = CreateTiledImage(saveWindowClientAtts->GetWidth(),
-                                         saveWindowClientAtts->GetHeight(),
-                                         true);
+                image = CreateTiledImage(w, h, true);
+
                 // Create a tiled image for the right eye.
                 if (saveWindowClientAtts->GetStereo())
                 {
-                    image2 = CreateTiledImage(saveWindowClientAtts->GetWidth(),
-                                              saveWindowClientAtts->GetHeight(),
-                                              false);
+                    image2 = CreateTiledImage(w, h, false);
                 }
             }
             else 
             {
                 // Create the left eye.
-                image = CreateSingleImage(windowIndex,
-                                          saveWindowClientAtts->GetWidth(),
-                                          saveWindowClientAtts->GetHeight(),
+                image = CreateSingleImage(windowIndex, w, h,
                                           saveWindowClientAtts->GetScreenCapture(),
                                           true);
 
                 // Create the right eye.
                 if (saveWindowClientAtts->GetStereo())
                 {
-                    image2 = CreateSingleImage(windowIndex,
-                                               saveWindowClientAtts->GetWidth(),
-                                               saveWindowClientAtts->GetHeight(),
+                    image2 = CreateSingleImage(windowIndex, w, h,
                                                saveWindowClientAtts->GetScreenCapture(),
                                                false);
                 }
