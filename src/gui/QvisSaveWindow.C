@@ -47,6 +47,8 @@
 #include <qlineedit.h>
 #include <qpushbutton.h>
 #include <qslider.h>
+#include <qbuttongroup.h>
+#include <qradiobutton.h>
 
 #include <QvisSaveWindow.h>
 #include <SaveWindowAttributes.h>
@@ -154,6 +156,10 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Added the ".pov" (POVRay) file type.
 //   Added button to force a merge of parallel geometry.
 //
+//   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
+//   Changed the "maintain aspect" checkbox to radio buttons that either
+//   constrain to a 1:1 ratio, constrain to the screen proportions, or
+//   use unconstrained resolution.
 // ****************************************************************************
 
 void
@@ -261,32 +267,53 @@ QvisSaveWindow::CreateWindowContents()
     resolutionBox->setTitle("Resolution");
     topLayout->addWidget(resolutionBox);
 
-    QGridLayout *resolutionLayout = new QGridLayout(resolutionBox, 3, 4);
+    QGridLayout *resolutionLayout = new QGridLayout(resolutionBox, 5, 4);
     resolutionLayout->setMargin(10);
     resolutionLayout->setSpacing(5);
     resolutionLayout->addRowSpacing(0, 10);
 
-    maintainAspectCheckBox = new QCheckBox("Maintain 1:1 aspect", resolutionBox,
-                                           "maintainAspectCheckBox");
-    connect(maintainAspectCheckBox, SIGNAL(toggled(bool)),
-            this, SLOT(maintainAspectToggled(bool)));
-    resolutionLayout->addMultiCellWidget(maintainAspectCheckBox, 1, 1, 0, 3);
+    resConstraintButtonGroup = new QButtonGroup(NULL, "resConstraintButtonGroup");
+    screenResButton   = new QRadioButton("Screen ratio",             
+                                         resolutionBox, 
+                                         "screenResButton");
+    oneToOneResButton = new QRadioButton("1:1 aspect ratio",         
+                                         resolutionBox, 
+                                         "oneToOneResButton");
+    noResButton       = new QRadioButton("No resolution constraint", 
+                                         resolutionBox, 
+                                         "noResButton");
+    screenResButton->setChecked(true);
+
+    resConstraintButtonGroup->insert(screenResButton);
+    resConstraintButtonGroup->insert(oneToOneResButton);
+    resConstraintButtonGroup->insert(noResButton);
+
+    connect(screenResButton, SIGNAL(toggled(bool)),
+            this, SLOT(resConstraintToggled(bool)));
+    connect(oneToOneResButton, SIGNAL(toggled(bool)),
+            this, SLOT(resConstraintToggled(bool)));
+    connect(noResButton, SIGNAL(toggled(bool)),
+            this, SLOT(resConstraintToggled(bool)));
+
+    resolutionLayout->addMultiCellWidget(screenResButton,   1, 1, 0, 3);
+    resolutionLayout->addMultiCellWidget(oneToOneResButton, 2, 2, 0, 3);
+    resolutionLayout->addMultiCellWidget(noResButton,       3, 3, 0, 3);
 
     // Create the width lineedit and label.
     widthLineEdit = new QLineEdit(resolutionBox, "widthLineEdit");
     connect(widthLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processWidthText()));
     QLabel *widthLabel = new QLabel(widthLineEdit, "Width", resolutionBox, "widthLabel");
-    resolutionLayout->addWidget(widthLabel, 2, 0);
-    resolutionLayout->addWidget(widthLineEdit, 2, 1);
+    resolutionLayout->addWidget(widthLabel, 4, 0);
+    resolutionLayout->addWidget(widthLineEdit, 4, 1);
 
     // Create the height lineedit and label.
     heightLineEdit = new QLineEdit(resolutionBox, "heightLineEdit");
     connect(heightLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processHeightText()));
     QLabel *heightLabel = new QLabel(heightLineEdit, "Height", resolutionBox, "heightLabel");
-    resolutionLayout->addWidget(heightLabel, 2, 2);
-    resolutionLayout->addWidget(heightLineEdit, 2, 3);
+    resolutionLayout->addWidget(heightLabel, 4, 2);
+    resolutionLayout->addWidget(heightLineEdit, 4, 3);
 
     // The family toggle.
     QGridLayout *toggleLayout = new QGridLayout(topLayout, 2, 3);
@@ -383,6 +410,9 @@ QvisSaveWindow::CreateWindowContents()
 //   Jeremy Meredith, Thu Apr  5 17:25:40 EDT 2007
 //   Added button to force a merge of parallel geometry.
 //
+//   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
+//   bool field for "maintain aspect" was changed to an enum 
+//   to constrain resolution.
 // ****************************************************************************
 
 void
@@ -459,20 +489,15 @@ QvisSaveWindow::UpdateWindow(bool doAll)
                 forceMergeCheckBox->setEnabled(true);
             }
             break;
-        case 5: // maintain aspect
-            maintainAspectCheckBox->blockSignals(true);
-            maintainAspectCheckBox->setChecked(saveWindowAtts->GetMaintainAspect());
-            maintainAspectCheckBox->blockSignals(false);
-            break;
-        case 6: // width
+        case 5: // width
             temp.sprintf("%d", saveWindowAtts->GetWidth());
             widthLineEdit->setText(temp);
             break;
-        case 7: // height
+        case 6: // height
             temp.sprintf("%d", saveWindowAtts->GetHeight());
             heightLineEdit->setText(temp);
             break;
-        case 8: // screen capture
+        case 7: // screen capture
             screenCaptureCheckBox->blockSignals(true);
             screenCaptureCheckBox->setChecked(saveWindowAtts->GetScreenCapture());
             screenCaptureCheckBox->blockSignals(false);
@@ -480,40 +505,71 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             // Set the enabled state of the resolution widgets.
             resolutionBox->setEnabled(!saveWindowAtts->GetScreenCapture());
             break;
-        case 9: // save tiled
+        case 8: // save tiled
             saveTiledCheckBox->blockSignals(true);
             saveTiledCheckBox->setChecked(saveWindowAtts->GetSaveTiled());
             saveTiledCheckBox->blockSignals(false);
             break;
-        case 10: // quality
+        case 9: // quality
             qualitySlider->blockSignals(true);
             qualitySlider->setValue(saveWindowAtts->GetQuality());
             qualitySlider->blockSignals(false);
             break;
-        case 11: // progressive
+        case 10: // progressive
             progressiveCheckBox->blockSignals(true);
             progressiveCheckBox->setChecked(saveWindowAtts->GetProgressive());
             progressiveCheckBox->blockSignals(false);
             break;
-        case 12: // binary
+        case 11: // binary
             binaryCheckBox->blockSignals(true);
             binaryCheckBox->setChecked(saveWindowAtts->GetBinary());
             binaryCheckBox->blockSignals(false);
             break;
-        case 14: // stereo
+        case 13: // stereo
             stereoCheckBox->blockSignals(true);
             stereoCheckBox->setChecked(saveWindowAtts->GetStereo());
             stereoCheckBox->blockSignals(false);
             break;
-        case 15: // tiffCompression
+        case 14: // tiffCompression
             compressionTypeComboBox->blockSignals(true);
             compressionTypeComboBox->setCurrentItem(saveWindowAtts->GetCompression());
             compressionTypeComboBox->blockSignals(false);
             break;
-        case 16: // forceMerge
+        case 15: // forceMerge
             forceMergeCheckBox->blockSignals(true);
             forceMergeCheckBox->setChecked(saveWindowAtts->GetForceMerge());
             forceMergeCheckBox->blockSignals(false);
+            break;
+        case 16: // resConstraint
+            noResButton->blockSignals(true);
+            oneToOneResButton->blockSignals(true);
+            screenResButton->blockSignals(true);
+            heightLineEdit->blockSignals(true);
+            if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::NoConstaint)
+            {
+                noResButton->setChecked(true);
+                oneToOneResButton->setChecked(false);
+                screenResButton->setChecked(false);
+                heightLineEdit->setEnabled(true);
+            }
+            else if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::EqualWidthHeight)
+            {
+                noResButton->setChecked(false);
+                oneToOneResButton->setChecked(true);
+                screenResButton->setChecked(false);
+                heightLineEdit->setEnabled(false);
+            }
+            else if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::ScreenProportions)
+            {
+                noResButton->setChecked(false);
+                oneToOneResButton->setChecked(false);
+                screenResButton->setChecked(true);
+                heightLineEdit->setEnabled(false);
+            }
+            noResButton->blockSignals(false);
+            oneToOneResButton->blockSignals(false);
+            screenResButton->blockSignals(false);
+            heightLineEdit->blockSignals(false);
             break;
         }
     } // end for
@@ -521,11 +577,12 @@ QvisSaveWindow::UpdateWindow(bool doAll)
     // Make sure that the height text field is not enabled when we're saving
     // a tiled image.
     bool shouldBeEnabled = !saveWindowAtts->GetSaveTiled();
-    if(maintainAspectCheckBox->isEnabled() != shouldBeEnabled)
+    if (resConstraintButtonGroup->isEnabled() != shouldBeEnabled)
     {
-        maintainAspectCheckBox->setEnabled(shouldBeEnabled);
+        resConstraintButtonGroup->setEnabled(shouldBeEnabled);
         heightLineEdit->setEnabled(shouldBeEnabled);
     }
+
 
     // Make sure that the output directory text field is not enabled if we are
     // outputting to the current directory.
@@ -561,6 +618,8 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Fri Jul 30 15:50:30 PST 2004
 //   I changed the host text field to output directory.
 //
+//   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
+//   Enum in SaveWindowAttributes changed.
 // ****************************************************************************
 
 void
@@ -667,7 +726,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
     // should update the width or height with the value that was set last in
     // case the user never hit the Enter key after typing a new width or height.
     //
-    if(doAll && saveWindowAtts->GetMaintainAspect() &&
+    if(doAll && saveWindowAtts->GetResConstraint() == SaveWindowAttributes::EqualWidthHeight &&
        saveWindowAtts->GetWidth() != saveWindowAtts->GetHeight())
     {
         if(setWidth)
@@ -888,43 +947,54 @@ QvisSaveWindow::compressionTypeChanged(int index)
 }
 
 // ****************************************************************************
-// Method: QvisSaveWindow::maintainAspectToggled
+// Method: QvisSaveWindow::resConstraintToggled
 //
 // Purpose: 
-//   This is a Qt slot function that sets the flag indicating whether
-//   or not the image resolution should be a square.
+//   This is a Qt slot function that sets an enum indicating whether the
+//   resolution should be constrained to have 1:1 proportions, to match
+//   the current screen proportions, or be unconstrained.
 //
 // Arguments:
 //   val : The state of the toggle button.
 //
-// Programmer: Brad Whitlock
-// Creation:   Fri Feb 9 17:27:07 PST 2001
-//
-// Modifications:
-//   
-//   Hank Childs, Fri May 24 13:36:05 PDT 2002
-//   Renamed saveImageAtts to saveWindowAtts.
+// Programmer: Dave Bremer
+// Creation:   Thu Sep 27 19:35:42 PDT 2007
 //
 // ****************************************************************************
 
 void
-QvisSaveWindow::maintainAspectToggled(bool val)
+QvisSaveWindow::resConstraintToggled(bool val)
 {
-    saveWindowAtts->SetMaintainAspect(val);
+    // Ignore the "toggled off" signal
+    if (!val)
+        return;
 
-    // Make sure the height and width are equal if we're turning on maintain
-    // 1:1 aspect ratio.
-    if(val)
+    if (noResButton->isOn())
     {
-        saveWindowAtts->SetWidth(saveWindowAtts->GetWidth());
+        saveWindowAtts->SetResConstraint(SaveWindowAttributes::NoConstaint);
+        heightLineEdit->setEnabled(true);
+    }
+    else if (oneToOneResButton->isOn())
+    {
+        saveWindowAtts->SetResConstraint(SaveWindowAttributes::EqualWidthHeight);
+        heightLineEdit->setEnabled(false);
+
         saveWindowAtts->SetHeight(saveWindowAtts->GetWidth());
+        QString temp;
+        temp.sprintf("%d", saveWindowAtts->GetHeight());
+        heightLineEdit->setText(temp);
+    }
+    else if (screenResButton->isOn())
+    {
+        saveWindowAtts->SetResConstraint(SaveWindowAttributes::ScreenProportions);
+        heightLineEdit->setEnabled(false);
     }
 
     Apply();
 }
 
 // ****************************************************************************
-// Method: QvisSaveWindow::processwidthLineEdit
+// Method: QvisSaveWindow::processWidthText
 //
 // Purpose: 
 //   This is a Qt slot function that is called when the image width changes.
@@ -936,6 +1006,8 @@ QvisSaveWindow::maintainAspectToggled(bool val)
 //   Brad Whitlock, Fri Jul 16 14:37:13 PST 2004
 //   Moved some code out of GetCurrentValues.
 //
+//   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
+//   Enum in SaveWindowAttributes changed.
 // ****************************************************************************
 
 void
@@ -944,7 +1016,7 @@ QvisSaveWindow::processWidthText()
     GetCurrentValues(2);
     // If we're maintaining the 1:1 aspect ratio, udpate
     // the height too.
-    if(saveWindowAtts->GetMaintainAspect())
+    if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::EqualWidthHeight)
         saveWindowAtts->SetHeight(saveWindowAtts->GetWidth());
     QString temp;
     temp.sprintf("%d", saveWindowAtts->GetHeight());
@@ -966,6 +1038,8 @@ QvisSaveWindow::processWidthText()
 //   Brad Whitlock, Fri Jul 16 14:37:13 PST 2004
 //   Moved some code out of GetCurrentValues.
 //   
+//   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
+//   Enum in SaveWindowAttributes changed.
 // ****************************************************************************
 
 void
@@ -974,7 +1048,7 @@ QvisSaveWindow::processHeightText()
     GetCurrentValues(3);
     // If we're maintaining the 1:1 aspect ratio, udpate
     // the width too.
-    if(saveWindowAtts->GetMaintainAspect())
+    if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::EqualWidthHeight)
         saveWindowAtts->SetWidth(saveWindowAtts->GetHeight());
     QString temp;
     temp.sprintf("%d", saveWindowAtts->GetWidth());
