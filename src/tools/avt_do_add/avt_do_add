@@ -1,0 +1,76 @@
+#!/bin/sh
+
+if [[ $# != 1 ]] ; then
+    echo "Usage: $0 <data object name>"
+    echo "Example: to generate avtMyDataObject, you would invoke $0 MyDataObject"
+    exit 1
+fi
+
+if [[ ! -d components ]] ; then
+    echo "This script must be run from the /src directory"
+    exit 1
+fi
+
+#
+# Define the replacement strings.
+#
+export DO_REPL_STRING=$1
+export DATE_REPL_STRING=$(date)
+export AUTHOR_REPL_STRING=$(whoami)
+
+function replace_file
+{
+   if [[ ! -f $1 ]] ; then
+       echo "Cannot locate template file $1"
+       exit 1
+   fi
+   #if [[ -f $2 ]] ; then
+       #echo "Refusing to write over output file $2.  Bailing out"
+       #exit 1
+   #fi
+
+   cat $1 \
+     | sed "s/DO_REPL_STRING/$DO_REPL_STRING/g" \
+     | sed "s/DATE_REPL_STRING/$DATE_REPL_STRING/g" \
+     | sed "s/AUTHOR_REPL_STRING/$AUTHOR_REPL_STRING/g" \
+    > $2
+}
+
+function do_src_hdr_pair
+{
+   replace_file tools/avt_do_add/${1}.h ${2}.h
+   cd include/visit
+   ln -s ../../${2}.h .
+   cd ../..
+   replace_file tools/avt_do_add/${1}.C ${2}.C
+}
+
+do_src_hdr_pair avtDODefn components/Pipeline/Data/avt${1}
+do_src_hdr_pair avtDOSource components/Pipeline/Sources/avt${1}Source
+do_src_hdr_pair avtDOSink components/Pipeline/Sinks/avt${1}Sink
+do_src_hdr_pair avtDO2Generic components/Pipeline/PrivateFilters/avt${1}ToDataObjectFilter
+do_src_hdr_pair avtGeneric2DO components/Pipeline/PrivateFilters/avtDataObjectTo${1}Filter
+do_src_hdr_pair avtDO2DO components/Pipeline/PrivateFilters/avt${1}To${1}Filter
+do_src_hdr_pair avtDO2DS components/Pipeline/PrivateFilters/avt${1}ToDatasetFilter
+do_src_hdr_pair avtDS2DO components/Pipeline/PrivateFilters/avtDatasetTo${1}Filter
+
+
+echo "The following files were created.  Each of them was made a Subversion object."
+echo "	Data/avt${1}"
+echo "	Sources/avt${1}Source"
+echo "	Sinks/avt${1}Sink"
+echo "	PrivateFilters/avt${1}ToDataObjectFilter"
+echo "	PrivateFilters/avtDataObjectTo${1}Filter"
+echo "	PrivateFilters/avt${1}To${1}Filter"
+echo "	PrivateFilters/avtDatasetTo${1}Filter"
+echo "	PrivateFilters/avt${1}ToDatasetFilter"
+echo ""
+echo "There are places in the code that require your attention."
+echo "These places will not compile, forcing you to address them."
+echo ""
+echo "You will need to manually add each of the new files to the /components/Pipeline/Makefile.in file."
+echo "Then re-run configure and make."
+echo "You will also have to make Subversion objects out of all the new files."
+echo "This includes the symlinks in /include/visit"
+
+exit 0
