@@ -638,6 +638,10 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
 //    Brad Whitlock, Thu Dec 9 14:04:22 PST 2004
 //    Added a button to insert variable names.
 //
+//    Cyrus Harrison,  Mon Oct  1 16:24:32 PDT 2007
+//    Changed definitionEdit to be readOnly instead of disabled
+//    for database expressions so users can select/copy them.
+//
 // ****************************************************************************
 
 void
@@ -659,7 +663,7 @@ QvisExpressionsWindow::UpdateWindowSensitivity()
     delButton->setEnabled(enable);
     notHidden->setEnabled(enable);
     typeList->setEnabled(enable);
-    definitionEdit->setEnabled(enable);
+    definitionEdit->setReadOnly(!enable);
     insertFunctionButton->setEnabled(enable);
     insertVariableButton->setEnabled(enable);
 }
