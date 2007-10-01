@@ -1,0 +1,3 @@
+If you want to add a new data object to VisIt, you have to add quite a few
+classes.  The script in this directory does code generation for this.  The
+rest of the files are stubs that it uses.
