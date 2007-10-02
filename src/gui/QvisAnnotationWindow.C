@@ -318,28 +318,90 @@ QvisAnnotationWindow::SubjectRemoved(Subject *TheRemovedSubject)
 //   Cyrus Harrison, Mon Jun 18 08:57:46 PDT 2007
 //   Added database info path expansion mode label and combo box.
 //
+//   Cyrus Harrison, Tue Sep 25 10:44:04 PDT 2007
+//   Moved general options to a new tab
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::CreateWindowContents()
 {
-    QGridLayout *glayout = new QGridLayout(topLayout, 3, 2);
+    // Create the tab widget.
+    tabs = new QTabWidget(central, "tabs");
+    connect(tabs, SIGNAL(selected(const QString &)),
+            this, SLOT(tabSelected(const QString &)));
 
+    topLayout->addWidget(tabs);    
+
+    //
+    // Create the window's tabs.
+    ///
+    CreateGeneralTab();
+    Create2DTab();
+    Create3DTab();
+    CreateColorTab();
+    CreateObjectsTab();
+
+    // Show the appropriate page based on the activeTab setting.
+    tabs->blockSignals(true);
+    if(activeTab == 0)
+        tabs->showPage(pageGeneral);
+    else if(activeTab == 1)
+        tabs->showPage(page2D);
+    else if(activeTab == 2)
+        tabs->showPage(page3D);
+    else if(activeTab == 3)
+        tabs->showPage(pageColor);
+    else
+        tabs->showPage(pageObjects);
+
+    tabs->blockSignals(false);
+}
+
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::CreateGeneralTab
+//
+// Purpose: 
+//   Creates the general options tab.
+//
+// Note:       I moved this code from CreateWindowContents.
+//
+// Programmer: Cyrus Harrison
+// Creation:   Tue Oct  2 09:29:53 PDT 2007
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::CreateGeneralTab()
+{
+    //
+    // Create the group of widgets that control general annotation options
+    //
+    pageGeneral = new QWidget(central, "pageGeneral");
+    tabs->addTab(pageGeneral, "General");
+
+    // use two layouts, so we can have a compact look
+    QVBoxLayout *general_layout = new QVBoxLayout(pageGeneral);
+    QGridLayout *glayout = new QGridLayout(pageGeneral, 3, 2);
+    glayout->setSpacing(5);
+    glayout->setMargin(10);
+    
     // Create a toggle for the user information.
-    userInfo = new QCheckBox("User information", central, "userInfo");
+    userInfo = new QCheckBox("User information", pageGeneral, "userInfo");
     connect(userInfo, SIGNAL(toggled(bool)),
             this, SLOT(userInfoChecked(bool)));
     glayout->addWidget(userInfo, 0, 0);
 
     // Create a toggle for the database information.
-    databaseInfo = new QCheckBox("Database", central, "databaseInfo");
+    databaseInfo = new QCheckBox("Database", pageGeneral, "databaseInfo");
     connect(databaseInfo, SIGNAL(toggled(bool)),
             this, SLOT(databaseInfoChecked(bool)));
     glayout->addWidget(databaseInfo, 0, 1);
 
 
     // use parent widget to hold path expansion mode combo box w/ label.
-    databasePathExpansionModeParent = new QWidget(central,
+    databasePathExpansionModeParent = new QWidget(pageGeneral,
                                             "databasePathExpansionModeParent");
     QHBoxLayout *pem_layout = new QHBoxLayout(databasePathExpansionModeParent);
 
@@ -351,9 +413,12 @@ QvisAnnotationWindow::CreateWindowContents()
     // create path expansion mode combo box
     databasePathExpansionMode = new QComboBox(databasePathExpansionModeParent,
                                                "databasePathExpansionMode");
-    databasePathExpansionMode->insertItem("None",  0);
-    databasePathExpansionMode->insertItem("Smart", 1);
-    databasePathExpansionMode->insertItem("Full",  2);
+    databasePathExpansionMode->insertItem("File", 0);
+    databasePathExpansionMode->insertItem("Directory", 1);
+    databasePathExpansionMode->insertItem("Full", 2);
+    databasePathExpansionMode->insertItem("Smart", 3);
+    databasePathExpansionMode->insertItem("Smart Directory", 4);
+        
     connect(databasePathExpansionMode, SIGNAL(activated(int)),
             this, SLOT(databasePathExpansionModeChanged(int)));
 
@@ -365,45 +430,22 @@ QvisAnnotationWindow::CreateWindowContents()
     glayout->addWidget(databasePathExpansionModeParent, 1, 1);
 
     // Create a toggle for the legend.
-    legendInfo = new QCheckBox("Legend", central, "legendInfo");
+    legendInfo = new QCheckBox("Legend", pageGeneral, "legendInfo");
     connect(legendInfo, SIGNAL(toggled(bool)),
             this, SLOT(legendChecked(bool)));
     glayout->addWidget(legendInfo, 1, 0);
 
     // Create a button that can turn off all annotations.
-    turnOffAllButton = new QPushButton("No annotations", central,
+    turnOffAllButton = new QPushButton("No annotations", pageGeneral,
         "turnOffAllButton");
     connect(turnOffAllButton, SIGNAL(clicked()),
             this, SLOT(turnOffAllAnnotations()));
     glayout->addWidget(turnOffAllButton, 2, 1);
-
-    // Create the tab widget.
-    tabs = new QTabWidget(central, "tabs");
-    connect(tabs, SIGNAL(selected(const QString &)),
-            this, SLOT(tabSelected(const QString &)));
-    topLayout->addWidget(tabs);    
-
-    //
-    // Create the window's tabs.
-    //
-    Create2DTab();
-    Create3DTab();
-    CreateColorTab();
-    CreateObjectsTab();
-
-    // Show the appropriate page based on the activeTab setting.
-    tabs->blockSignals(true);
-    if(activeTab == 0)
-        tabs->showPage(page2D);
-    else if(activeTab == 1)
-        tabs->showPage(page3D);
-    else if(activeTab == 2)
-        tabs->showPage(pageColor);
-    else
-        tabs->showPage(pageObjects);
-
-    tabs->blockSignals(false);
+    general_layout->addLayout(glayout);
+    general_layout->addStretch(10);
+    
 }
+
 
 // ****************************************************************************
 // Method: QvisAnnotationWindow::Create2DTab
@@ -4133,18 +4175,25 @@ QvisAnnotationWindow::databaseInfoChecked(bool val)
 //   Cyrus Harrison, Tue Jun 19 09:36:24 PDT 2007
 //   Removed cout debug print.
 //
+//   Cyrus Harrison, Thu Sep 27 09:10:25 PDT 2007
+//   Added support for new path expansion options
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::databasePathExpansionModeChanged(int index)
 {
     if (index == 0)
-    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::None);}
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::File);}
     else if (index == 1)
-    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Smart);}
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Directory);}
     else if (index == 2)
     {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Full);}
-
+    else if (index == 3)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Smart);}
+    else if (index == 4)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::SmartDirectory);}
+    
     SetUpdate(false);
     Apply();
 }

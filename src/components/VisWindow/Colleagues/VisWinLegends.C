@@ -221,8 +221,11 @@ VisWinLegends::SetForegroundColor(double fr, double fg, double fb)
 //    Brad Whitlock, Thu Mar 22 02:16:37 PDT 2007
 //    Renamed to UpdateLegendInfo and removed all positioning code.
 //
-//    Cyrus Harrison,Sun Jun 17 21:46:50 PDT 2007
+//    Cyrus Harrison, Sun Jun 17 21:46:50 PDT 2007
 //    Added support for path expansion mode.
+//
+//    Cyrus Harrison, Tue Sep 25 09:32:50 PDT 2007
+//    Added additional path expansion mode options
 //
 // ****************************************************************************
 
@@ -250,15 +253,25 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
                 {
                     char info[2048];
                     std::string dbname;
-                    if(pathExpansionMode == 0 )
+                    if(pathExpansionMode == 0 ) // file
                     { dbname = atts.GetFilename(); }
-                    else if( pathExpansionMode == 1 )
+                    if(pathExpansionMode == 1 ) // directory
+                    { 
+                        dbname = VisWinPathTracker::Instance()
+                                    ->GetDirectory(atts.GetFullDBName());
+                    }
+                    if(pathExpansionMode == 2 ) // full
+                    { dbname = atts.GetFullDBName(); }
+                    else if( pathExpansionMode == 3 ) // smart
                     {
                         dbname = VisWinPathTracker::Instance()
                                         ->GetSmartPath(atts.GetFullDBName());
                     }
-                    else if( pathExpansionMode == 2 )
-                    { dbname = atts.GetFullDBName(); }
+                    else if( pathExpansionMode == 4 ) // smart parent
+                    { 
+                        dbname = VisWinPathTracker::Instance()
+                                   ->GetSmartDirectory(atts.GetFullDBName());
+                    }
 
                     CreateDatabaseInfo(info,dbname,atts);
                     legend->SetDatabaseInfo(info);
@@ -307,6 +320,10 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 //
 //    Cyrus Harrison,Sun Jun 17 21:46:50 PDT 2007
 //    Added support for path expansion mode.
+//
+//    Cyrus Harrison, Tue Sep 25 09:32:50 PDT 2007
+//    Added additional path expansion mode options and adjusted db info actor
+//    width to better display long text.
 //
 // ****************************************************************************
 
@@ -360,16 +377,25 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         char info[2048];
         std::string dbname;
 
-        if(pathExpansionMode == 0 )
+        if(pathExpansionMode == 0 ) // file
         { dbname = atts.GetFilename(); }
-        else if( pathExpansionMode == 1 )
+        if(pathExpansionMode == 1 ) // directory
+        { 
+            dbname = VisWinPathTracker::Instance()
+                        ->GetDirectory(atts.GetFullDBName());
+        }
+        if(pathExpansionMode == 2 ) // full
+        { dbname = atts.GetFullDBName(); }
+        else if( pathExpansionMode == 3 ) // smart
         {
             dbname = VisWinPathTracker::Instance()
-                                        ->GetSmartPath(atts.GetFullDBName());
+                       ->GetSmartPath(atts.GetFullDBName());
         }
-        else if( pathExpansionMode == 2 )
-        { dbname = atts.GetFullDBName(); }
-
+        else if( pathExpansionMode == 4 ) // smart parent
+        { 
+            dbname = VisWinPathTracker::Instance()
+                        ->GetSmartDirectory(atts.GetFullDBName());
+        }
         bool hasTime = CreateDatabaseInfo(info,dbname,atts);
 
         dbInfoActor->SetInput(info);
@@ -377,15 +403,23 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         //
         //  If we are adding time, we need a larger width
         //
+        
+        float info_width = dbInfoWidth; 
         if (hasTime)
+            info_width += 0.03;
+        
+        // scale text width if necessary when path expansion is enabled
+        if(pathExpansionMode > 0)
         {
-            dbInfoActor->SetWidth(dbInfoWidth+0.03);
+            if(info_width < dbname.size() * .01)
+                info_width = dbname.size() * .01;
+            if(info_width  > .8)
+                info_width = .8;
         }
-        else 
-        {
-            dbInfoActor->SetWidth(dbInfoWidth);
-        }
-        dbInfoActor->SetHeight(dbInfoHeight+0.04);
+        
+        dbInfoActor->SetHeight(dbInfoHeight+0.04);        
+        dbInfoActor->SetWidth(info_width);   
+        
         double x = leftColumnPosition;
         double y = 0.98 - dbInfoHeight;
         vtkCoordinate *c = dbInfoActor->GetPositionCoordinate();

@@ -106,6 +106,9 @@ class QvisLineWidthWidget;
 //   Cyrus Harrison, Mon Jun 18 14:48:54 PDT 2007
 //   Added path expansion mode widgets
 //
+//   Cyrus Harrison, Tue Oct  2 09:07:52 PDT 2007
+//   Added create general tab
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -133,6 +136,7 @@ protected:
     void ApplyObjectList(bool dontIgnore = false);
     void SetButtonGroup(QButtonGroup *bg, bool *vals);
     void GetCurrentValues(int which_widget);
+    void CreateGeneralTab();
     void Create2DTab();
     QWidget *Create2DTabForGridAndTicks(QWidget *);
     QWidget *Create2DTabForTitleAndLabels(QWidget *);
@@ -232,6 +236,8 @@ private:
     int                             nObjectInterfaces;
     QvisAnnotationObjectInterface  *displayInterface;
 
+    // General Tab widgets
+    QWidget         *pageGeneral;
     QCheckBox       *userInfo;
     QCheckBox       *databaseInfo;
     QWidget         *databasePathExpansionModeParent;

@@ -31,9 +31,11 @@
       Gradient
     </Enum>
     <Enum name="PathExpansionMode">
-      None
-      Smart
+      File
+      Directory
       Full
+      Smart
+      SmartDirectory
     </Enum>
     <Field name="axesFlag2D" label="axesFlag2D" type="bool">
       true
@@ -325,7 +327,7 @@
       true
     </Field>
     <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:true">
-      None
+      File
     </Field>
     <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
       true
