@@ -51,6 +51,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkVisItPointLocator.h>
 
+#include <avtGhostData.h>
 #include <DebugStream.h>
 
 #include <math.h>
@@ -258,6 +259,9 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Mon Jun 27 15:54:52 PDT 2005
 //    Match new interface for RGridIsect. 
 //
+//    Kathleen Bonnell, Tue Oct  2 08:30:04 PDT 2007 
+//    Don't throw away a 'duplicated node' ghost node. 
+//
 // ****************************************************************************
 
 int
@@ -273,7 +277,9 @@ avtLocateNodeQuery::RGridFindNode(vtkDataSet *ds, double &dist, double *isect)
 
         vtkUnsignedCharArray *ghostNodes = (vtkUnsignedCharArray *)ds->
                      GetPointData()->GetArray("avtGhostNodes");
-        if (ghostNodes && ghostNodes->GetValue(nodeId) > 0)
+        unsigned char gn = ghostNodes ? ghostNodes->GetValue(nodeId): 0;
+        if (ghostNodes && gn > 0 && 
+            !avtGhostData::IsGhostNodeType(gn, DUPLICATED_NODE))
         {
             nodeId = -1;
         }
