@@ -165,6 +165,59 @@ VisWinPathTracker::RemovePath(const std::string &path)
 }
 
 // ****************************************************************************
+//  Method: VisWinPathTracker::GetFileName
+//
+//  Purpose:
+//    Gets the file name of the input path
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sunday June 17, 2007
+//
+// ****************************************************************************
+
+std::string
+VisWinPathTracker::GetFileName(const std::string &path)
+{
+    // get the path's entry
+    std::map<std::string, Entry>::iterator itr;
+    itr = entires.find(path);
+    if(itr != entires.end())
+    {
+        // return the smart path
+        return entires[path].GetFileName();
+    }
+    // if the path does not have an entry, simply return the full path
+    return path;
+}
+
+// ****************************************************************************
+//  Method: VisWinPathTracker::GetDirectory
+//
+//  Purpose:
+//    Gets the directory of the input path
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Sunday June 17, 2007
+//
+// ****************************************************************************
+
+std::string
+VisWinPathTracker::GetDirectory(const std::string &path)
+{
+    // get the path's entry
+    std::map<std::string, Entry>::iterator itr;
+    itr = entires.find(path);
+    if(itr != entires.end())
+    {
+        // return the smart path
+        return entires[path].GetDirectory();
+    }
+    // if the path does not have an entry, simply return the full path
+    return path;
+}
+
+
+// ****************************************************************************
 //  Method: VisWinPathTracker::GetSmartPath
 //
 //  Purpose:
@@ -192,6 +245,32 @@ VisWinPathTracker::GetSmartPath(const std::string &path)
 
 
 // ****************************************************************************
+//  Method: VisWinPathTracker::GetSmartDirectory
+//
+//  Purpose:
+//    Gets the smart expanded directory for the input path
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Tuesday September 25, 2007
+//
+// ****************************************************************************
+
+std::string
+VisWinPathTracker::GetSmartDirectory(const std::string &path)
+{
+    // get the path's entry
+    std::map<std::string, Entry>::iterator itr;
+    itr = entires.find(path);
+    if(itr != entires.end())
+    {
+        // return the smart path
+        return entires[path].GetSmartDirectory();
+    }
+    // if the path does not have an entry, simply return the full path
+    return path;
+}
+
+// ****************************************************************************
 //  Method: VisWinPathTracker::UpdatePaths
 //
 //  Purpose:
@@ -200,45 +279,84 @@ VisWinPathTracker::GetSmartPath(const std::string &path)
 //  Programmer: Cyrus Harrison
 //  Creation:   Sunday June 17, 2007
 //
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Sep 25 09:54:17 PDT 2007
+//    Added construction of the smart directory
+//
 // ****************************************************************************
 
 void
 VisWinPathTracker::UpdatePaths()
 {
     std::map<std::string, Entry>::iterator itr;
+    
     std::string spath;
+    std::string sdir;
+    
     stringVector paths;
+    stringVector dirs;
 
     // construct a list of paths
     for ( itr = entires.begin(); itr != entires.end(); ++itr)
-    {paths.push_back(itr->second.GetPath());}
+        paths.push_back(itr->second.GetPath());
 
+    // construct a list of paths
+    for ( itr = entires.begin(); itr != entires.end(); ++itr)
+        dirs.push_back(itr->second.GetDirectory());
+
+    
+    std::string path_common = GetCommonPath(paths);
+    std::string dir_common = GetCommonPath(dirs);
+    
+    int path_common_size = path_common.size();
+    int dir_common_size  = dir_common.size();
+    
     // compute the smart paths
     for ( itr = entires.begin(); itr != entires.end(); ++itr)
     {
-        spath = GetUniquePath(itr->second.GetPath(),paths);
+        if( path_common == itr->second.GetPath())
+            spath = itr->second.GetFileName();
+        else
+            spath = itr->second.GetPath().substr(path_common_size+1);
+
+
         itr->second.SetSmartPath(spath);
     }
-
+    
+    // compute the smart paths
+    for ( itr = entires.begin(); itr != entires.end(); ++itr)
+    {
+        if( dir_common == itr->second.GetDirectory())
+            sdir = dir_common.substr(dir_common.rfind("/")+1);
+        else
+            sdir = itr->second.GetDirectory().substr(dir_common_size+1);
+        
+        itr->second.SetSmartDirectory(sdir);
+    }
 }
 
 /****************************************************************************
 //  Method: VisWinPathTracker::GetSubPath
 //
 //  Purpose:
-//    Gets the a path string has a given "depth". Starts from the right
-//    end of the string and uses ith '/' to terminate the subpath.
+//    Gets the a path string at a given "depth". Starts at the beginning
+//    of the string and uses ith '/' to terminate the subpath.
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   June 14, 2007
+//
+//  Modifications:
+//
+//    Cyrus Harrison, Mon Oct  1 11:39:47 PDT 2007
+//    Switched from right path to left path to support GetCommonPath.
 //
 // *************************************************************************/
 
 std::string VisWinPathTracker::GetSubPath(const std::string &path,
                                           int depth)
 {
-    // loop index
-    int i     = 0;
+    int i = 0;
     // start depth
     int cdepth = -1;
     // current string pos
@@ -246,8 +364,7 @@ std::string VisWinPathTracker::GetSubPath(const std::string &path,
     // string pause
     int size = path.size();
 
-    // loop through string in reverse
-    for ( i = size; i > 0 && cdepth != depth; i--)
+    for ( i = 0; i < size && cdepth != depth; i++)
     {
         // if we encounter a /, update depth
         if(path[i] == '/')
@@ -257,71 +374,71 @@ std::string VisWinPathTracker::GetSubPath(const std::string &path,
         }
     }
     // return result
-    return path.substr(pos+1,size - pos);
+    if(cdepth != depth)
+        return path;
+    else
+        return path.substr(0,pos);
 }
 
-// ****************************************************************************
-//  Method: VisWinPathTracker::GetUniquePath
+/****************************************************************************
+//  Method: VisWinPathTracker::GetCommonPath
 //
 //  Purpose:
-//      Finds a unique path string give a full path name and a list of other
-//      active paths.
+//    Gets the common path prefix from a list of paths
 //
 //  Programmer: Cyrus Harrison
-//  Creation:   June 14, 2007
+//  Creation:   October 1, 2007
 //
-// ****************************************************************************
+// *************************************************************************/
 
-std::string
-VisWinPathTracker::GetUniquePath(const std::string &path,
-                                 stringVector &test_paths)
+std::string VisWinPathTracker::GetCommonPath(stringVector &paths)
 {
-    // loop index
-    int i;
-    // get number of test paths
-    int ntst = test_paths.size();
-    // used to keep track of path depth
-    int cur_depth = 0;
-    int tst_depth = 0;
-    // strings to hold current subpaths
-    std::string cur_path ="";
-    std::string tst_path ="";
 
-    for ( i = 0; i < ntst; i++)
+    // loop indices
+    int i = 0;
+    int j = 0;
+    // get # of paths
+    int npaths = paths.size();
+    
+    // handle simple cases
+    if(npaths == 0)
+        return "";
+    if(npaths == 1)
+        return paths[0];
+        
+    std::string res = paths[0];
+    std::string r_sub,p_sub;
+    
+    for( i=1; i<npaths; i++)
     {
-        // make sure the an not the same path
-        if (path == test_paths[i])
-        {continue;}
-
-        tst_depth = cur_depth;
-        // make sure path is unique with test path
+        // if paths are exactly the same skip
+        if(paths[i] == res)
+            continue;
+        
+        int depth = 1;
+            
         bool done = false;
         while( !done )
         {
-            // get the subpaths
-            cur_path = GetSubPath(path,cur_depth);
-            tst_path = GetSubPath(test_paths[i],tst_depth);
+            // get subpaths
+            r_sub = GetSubPath(res,depth);
+            p_sub = GetSubPath(paths[i],depth);
 
-            if(cur_path == tst_path)
+            // if they are equal continue
+            if(r_sub == p_sub)
             {
-                // inc depth if not unique
-                tst_depth++;
-                cur_depth++;
+                depth++;
             }
             else
-            {done = true;}
+            {
+                // the common path the last sucessful depth
+                done = true;
+                res = GetSubPath(res,depth-1);
+            }
         }
     }
-
-    // construct result
-    std::string res = GetSubPath(path,cur_depth);
-    // if full path is necessary, prepend final '/'
-    if(path == "/" + res)
-    {return path;}
-    else
-    {return res;}
+    return res;
 }
-
 
 // ****************************************************************************
 //  Method: VisWinPathTracker::Entry constructor
@@ -345,6 +462,9 @@ VisWinPathTracker::Entry::Entry()
 //  Programmer: Cyrus Harrison
 //  Creation:   Sunday June 17, 2007
 //
+//    Cyrus Harrison, Tue Sep 25 10:57:57 PDT 2007
+//    Added init of fileName and directory
+//
 // ****************************************************************************
 
 
@@ -353,6 +473,16 @@ VisWinPathTracker::Entry::Entry(const std::string &path)
     refCount  = 1;
     fullPath  = path;
     smartPath = path;
+    directory = path;
+    fileName  = path;
+    
+    int idx = directory.rfind("/");
+    if(idx != string::npos)
+    {
+        fileName  = directory.substr(idx+1);
+        directory = directory.substr(0,idx);
+    }   
+    smartDir  = directory;
 }
 
 // ****************************************************************************
