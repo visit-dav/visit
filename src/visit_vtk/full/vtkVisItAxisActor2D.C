@@ -1290,6 +1290,10 @@ vtkVisItAxisActor2D::GetMTime()
 //   Kathleen Bonnell, Wed May  9 09:31:42 PDT 2007 
 //   Calculate number of decades needed. 
 //
+//   Hank Childs, Mon Oct  1 18:50:14 PDT 2007
+//   Add a little defensive coding for when bad ranges are fed in.  Also cap
+//   the number of ticks at 10,000, which is hopefully a reasonable thing to do
+//
 // ----------------------------------------------------------------------------
 
 void 
@@ -1359,6 +1363,10 @@ vtkVisItAxisActor2D::ComputeLogTicks(double inRange[2],
     }
   dlv = fabs(va-vb);
   int n = (int)( 1.0 + dlv/sp + EPSILON);
+  if (n < 0 || n > 10000)
+  {
+    n = 10000;
+  }
 
   va = pow(10., va);
   vb = pow(10., vb);
