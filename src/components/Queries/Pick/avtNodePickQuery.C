@@ -52,6 +52,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkVisItUtility.h>
 
+#include <avtGhostData.h>
 #include <avtMatrix.h>
 #include <avtParallel.h>
 #include <avtTerminatingSource.h>
@@ -368,6 +369,9 @@ avtNodePickQuery::Execute(vtkDataSet *ds, const int dom)
 //    Move currently unused variable into section removed by preprocessor
 //    directive.  Purpose is to remove compiler warning.
 //
+//    Kathleen Bonnell, Tue Oct  2 08:30:04 PDT 2007 
+//    Don't throw away a 'duplicated node' ghost node. 
+//
 // ****************************************************************************
 
 int
@@ -399,7 +403,8 @@ avtNodePickQuery::DeterminePickedNode(vtkDataSet *ds)
     int node = ds->FindPoint(pickAtts.GetPickPoint());
     vtkUnsignedCharArray *ghostNodes = vtkUnsignedCharArray::SafeDownCast(
         ds->GetPointData()->GetArray("avtGhostNodes"));
-    if (ghostNodes && ghostNodes->GetValue(node) > 0)
+    unsigned char gn = ghostNodes ? ghostNodes->GetValue(node): 0;
+    if (ghostNodes && gn > 0 && !avtGhostData::IsGhostNodeType(gn, DUPLICATED_NODE))
     {
         return -1;
     }
