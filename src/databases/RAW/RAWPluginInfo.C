@@ -173,7 +173,7 @@ std::vector<std::string>
 RAWGeneralPluginInfo::GetDfltExtsFromGen() const
 {
     std::vector<std::string> defaultExtensions;
-    defaultExtensions.push_back(".raw");
+    defaultExtensions.push_back("raw");
 
     return defaultExtensions;
 }
