@@ -8565,6 +8565,10 @@ ViewerWindow::UpdateLastExternalRenderRequestInfo(
 //
 //    Mark C. Miller, Wed Aug  9 16:29:43 PDT 2006
 //    Removed optimization to skip second eye for non-crystal-eyes stereo mode
+//
+//    Hank Childs, Tue Oct  2 17:16:45 PDT 2007
+//    Don't check to see if the annotation objects have changed.
+//
 // ****************************************************************************
 
 bool
@@ -8610,8 +8614,28 @@ ViewerWindow::CanSkipExternalRender(const ExternalRenderRequestInfo& thisRequest
     if (thisRequest.lastChangedCtName != lastRequest.lastChangedCtName)
         return false;
 
+/*
+ * We have decided not to check annotation objects.  We only run this function
+ * when we are doing an SR for a window (i.e. not a SaveWindow).  In this case,
+ * the annotation objects are rendered locally.  So doing an SR is not necessary.
+ *
+ * Worse, it is hard to test if the annotation objects have really changed.
+ * If you add a new plot (without click Draw), then a new legend annotation
+ * object gets added.  There does not appear to be an easy way of determining
+ * if this new annotation object should actually be drawn.  (It appears to be
+ * done in the VisWindow by checking to see if there is a drawn plot associated
+ * with the legend.)
+ *
+ * So, since determining if the annotation objects is hard, the easiest thing is
+ * to just not check ... because they are rendered here on the viewer instead
+ * of on the engine ... except for the SaveWindow case, which does not call
+ * this function.
+ *
     if (thisRequest.annotObjs != lastRequest.annotObjs)
+    {
         return false;
+    }
+ */
 
     if (thisRequest.visCues != lastRequest.visCues)
         return false;
