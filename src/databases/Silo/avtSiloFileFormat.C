@@ -8103,6 +8103,11 @@ avtSiloFileFormat::GetDataExtents(const char *varName)
 //    Added code to remove entries from matlist array for arb. zones that
 //    were removed from the mesh
 //
+//    Cyrus Harrison, Thu Oct  4 11:11:26 PDT 200
+//    Removed limit of 128 characters for material names. I increased the 
+//    limit to 256 + room for the material number - to safely handle valid 
+//    silo material names. This resolves '8257.
+//
 // ****************************************************************************
 
 avtMaterial *
@@ -8127,11 +8132,22 @@ avtSiloFileFormat::CalcMaterial(DBfile *dbfile, char *matname, const char *tmn,
     if (silomat->matnames != NULL)
     {
         int nmat = silomat->nmat;
-        matnames = new char*[nmat];
-        buffer = new char[nmat*128];
+        
+        
+        int max_dlen = 0;
         for (int i = 0 ; i < nmat ; i++)
         {
-            matnames[i] = buffer + 128*i;
+            int dlen =int(log10(float(silomat->matnos[i]+1))) + 1;
+            if(dlen>max_dlen)
+                max_dlen = dlen;
+        }
+        
+        matnames = new char*[nmat];
+        buffer = new char[nmat*256 + max_dlen];
+        
+        for (int i = 0 ; i < nmat ; i++)
+        {
+            matnames[i] = buffer + (256+max_dlen)*i;
             sprintf(matnames[i], "%d %s", silomat->matnos[i],
                                           silomat->matnames[i]);
         }
