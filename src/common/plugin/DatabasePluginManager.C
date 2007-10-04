@@ -492,6 +492,10 @@ DatabasePluginManager::PluginFilenames(const string &id)
 //  Modifications:
 //    Mark C. Miller, Thu Aug  9 09:16:01 PDT 2007
 //    Made it return a vector of strings
+//
+//    Kathleen Bonnell, Tue Sep 11 08:56:42 PDT 2007 
+//    Replace 'and' with '&&' for compilation on windows. 
+// 
 // ****************************************************************************
 vector<string>
 DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll)
@@ -591,7 +595,7 @@ DatabasePluginManager::GetMatchingPluginIds(const char *filename, bool searchAll
         if (foundMatch)
             rv.push_back(id);
 
-        if (foundMatch and shouldIssueObsoletePluginWarning)
+        if (foundMatch && shouldIssueObsoletePluginWarning)
 	{
 	    static bool issuedWarning = false;
 	    if (!issuedWarning)
