@@ -275,20 +275,6 @@ foreach configdir (MSVC7.Net/Debug MSVC7.Net/Release)
     echo "Directory for plot plugins." > bin/$configdir/plots/README.txt
 end
 
-#
-# We don't maintain all DLLs for the MSVC7.Net distribution so add the rest 
-# of the DLLs from the MSVC 6 distribution into the MSVC7.Net directory.
-#
-foreach buildmode (Debug Release)
-    cd $VisItDev/bin/$buildmode
-    foreach DLL (MesaGL.dll osmesa.dll)
-        cp $DLL ../MSVC7.Net/$buildmode
-    end
-    cd $VisItDev/bin/
-    rm -rf $buildmode
-end
-cd $VisItDev
-
 # Unzip the Python tar file in bin/MSVC7.Net/Release so we have Python modules
 # available when we try to distribute VisIt on Windows.
 echo "Extracting python modules.... "
@@ -309,16 +295,17 @@ rm $VISITSRC/help/*.{html,helpml}
 # Move windowsbuild/lib directory up to $VisItDev.
 echo "Creating lib directory..."
 cp -R $TOPDIR/windowsbuild/lib .
-foreach buildmode (Debug Release)
-    # Copy import libraries
-    cd $VisItDev/lib/$buildmode
-    foreach DLL (MesaGL.lib osmesa.lib)
-        cp $DLL ../MSVC7.Net/$buildmode
-    end
-    cd $VisItDev/lib
-    rm -rf $buildmode
-end
 cd $VisItDev
+
+#
+# We don't maintain debug DLLs and libs so copy from the Release to Debug
+#
+cd $VisItDev/bin/MSVC7.Net/Release
+cp *.dll ../Debug/
+cd $VisItDev/lib/MSVC7.Net/Release
+cp *.lib ../Debug/
+cd $VisItDev
+
 
 # Move windowsbuild/resources directory up to $VisItDev.
 echo "Creating resources directory..."

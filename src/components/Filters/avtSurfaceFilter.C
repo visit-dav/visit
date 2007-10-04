@@ -278,6 +278,9 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Sean Ahern, Tue Aug 14 11:51:00 EDT 2007
 //    Allowed us a quick use of a "zero" variable.
 //
+//    Kathleen Bonnell, Tue Sep 11 08:52:45 PDT 2007 
+//    Changed 'and' to '&&' for compilation on Windows. 
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -407,7 +410,7 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     filter->Update();
 
     outScalars->Delete();
-    if ((zf == false) and (atts.GetGenerateNodalOutput()))
+    if ((zf == false) && (atts.GetGenerateNodalOutput()))
         outUG->GetPointData()->SetScalars(inScalars);
 
     if (cd2pd != NULL)
