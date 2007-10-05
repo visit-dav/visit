@@ -337,7 +337,7 @@ create_mili_link:
 	ln -s @MILI_DIR@/libmili.@SHLIB_LIBEXT@ .
 
 create_szip_link:
-	$(RM) libszip.@SHLIB_LIBEXT@
+	$(RM) libsz.@SHLIB_LIBEXT@
 	ln -s @SZIP_LIBDIR@/libsz.@SHLIB_LIBEXT@ .
 
 create_hdf5_link:
