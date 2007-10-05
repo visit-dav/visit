@@ -2727,6 +2727,10 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 //
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Only add object pointer pair if interface can cache the variable 
+//
+//    Kathleen Bonnell, Wed Oct  3 11:28:11 PDT 2007 
+//    Keep avtOriginalCellNumbers if present.
+// 
 // ****************************************************************************
 
 vtkDataSet *
@@ -2836,6 +2840,12 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
         rv->GetPointData()->AddArray(
             mesh->GetPointData()->GetArray("avtGhostNodes"));
         GetMetaData(ts)->SetContainsGhostZones(meshname, AVT_HAS_GHOSTS);
+    }
+    if (mesh->GetCellData()->GetArray("avtOriginalCellNumbers"))
+    {
+        rv->GetCellData()->AddArray(
+            mesh->GetCellData()->GetArray("avtOriginalCellNumbers"));
+        GetMetaData(ts)->SetContainsOriginalCells(meshname, true);
     }
     rv->GetFieldData()->ShallowCopy(mesh->GetFieldData());
 

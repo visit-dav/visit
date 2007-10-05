@@ -5,6 +5,7 @@
     </CXXFLAGS>
     <LIBS>
       $(CCMIO_LIBS)
+      -lGLU
     </LIBS>
     <Extensions>
       ccm
