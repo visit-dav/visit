@@ -64,17 +64,20 @@
 #           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
 #           Mili     1.09     mili-1.10a.tar.gz      -m
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
+#           szip     2.1      szip-2.1.tar.gz
 #
 #   Layout:
 #     Section 1:                    setting up inputs/environment variables
 #     Function 1, check_files:      ensures input files are available
-#     Function 2, check_parallel:   parallel build information
-#     Function 2.1, check_variables:edit variable build information
+#     Function 2.0, check_more_options:edit option parameters
+#     Function 2.1, check_parallel: parallel build information
+#     Function 2.2, check_variables:edit variable build information
 #     Function 3, build_mesa:       build mangled Mesa
 #     Function 4, build_qt:         build Qt
 #     Function 5, build_cmake:      build CMake (like configure, for VTK)
 #     Function 6, build_vtk:        build VTK
 #     Function 7, build_python:     build Python
+#     Function 8.0, build_szip:     build SZIP
 #     Function 8.1, build_hdf5:     build HDF5
 #     Function 8.2, build_mili:     build Mili
 #     Function 8.3, build_hdf4:     build HDF4
@@ -206,6 +209,10 @@
 #     If you are building Exodus, then build NetCDF too.  Otherwise the build
 #     will fail.  Also, install Exodus using relative paths for its symlinks.
 #
+#     Thomas R. Treadway, Thu Jul 26 14:53:18 PDT 2007
+#     szip library now required with HDF4 and HDF5
+#     Modified parallel options handeling, allowing non-GUI setting
+#
 # *****************************************************************************
 
 
@@ -308,48 +315,67 @@ export LOG_FILE=${LOG_FILE-"build_visit_log"}
 #
 # OPTIONS
 #
-export DO_VISIT="yes"   # "yes" or "no"
-export ON_VISIT="on"   # "yes" or "no"
-export DO_REQUIRED_THIRD_PARTY="yes"
-export ON_THIRD_PARTY="on"
-export DO_SVN="no"
-export ON_SVN="off"
-export DO_GROUP="no"
-export ON_GROUP="off"
-export DO_MODULE="no"
-export ON_MODULE="on"
-export DO_JAVA="no"
-export ON_JAVA="on"
-export DO_SILO="yes"
-export ON_SILO="on"
-export DO_BOXLIB="no"
-export ON_BOXLIB="off"
-export DO_CFITSIO="no"
-export ON_CFITSIO="off"
-export DO_CGNS="no"
-export ON_CGNS="off"
-export DO_EXODUS="no"
-export ON_EXODUS="off"
-export DO_GDAL="no"
-export ON_GDAL="off"
 export DO_HDF4="no"
 export ON_HDF4="off"
 export DO_HDF5="no"
 export ON_HDF5="off"
+export DO_BOXLIB="no"
+export ON_BOXLIB="off"
+export DO_CGNS="no"
+export ON_CGNS="off"
+export DO_DEBUG="no"
+export ON_DEBUG="off"
+export DO_EXODUS="no"
+export ON_EXODUS="off"
+export DO_CFITSIO="no"
+export ON_CFITSIO="off"
+export DO_GDAL="no"
+export ON_GDAL="off"
+export ABS_PATH="no"
+export ON_ABS_PATH="off"
+export DO_VISIT="yes"
+export ON_VISIT="on"
+export DO_REQUIRED_THIRD_PARTY="yes"
+export ON_THIRD_PARTY="on"
+export DO_GROUP="no"
+export ON_GROUP="off"
 export DO_MILI="no"
 export ON_MILI="off"
 export DO_NETCDF="no"
 export ON_NETCDF="off"
+export DO_LOG="no"
+export ON_LOG="off"
+parallel="no"
+ON_parallel="off"
 export DO_H5PART="no"
 export ON_H5PART="off"
-export ABS_PATH="no"
-export ON_ABS_PATH="off"
-parallel="no"          # "yes" or "no"
-ON_parallel="off"          # "yes" or "no"
+export DO_SVN="no"
+export ON_SVN="off"
+USE_VISIT_FILE="no"
+ON_USE_VISIT_FILE="off"
+export DO_PATH="no"
+export ON_PATH="off"
+export DO_VERSION="no"
+export ON_VERSION="off"
+export DO_MODULE="no"
+export ON_MODULE="off"
+export DO_VERBOSE="no"
+export ON_VERBOSE="off"
+export DO_JAVA="no"
+export ON_JAVA="off"
+export DO_SILO="yes"
+export ON_SILO="on"
+export DO_SZIP="no"
+export ON_SZIP="off"
+GRAPHICAL="yes"
+ON_GRAPHICAL="on"
 verify="no"
 ON_verify="off"
-PAR_INCLUDE=""
-PAR_LIBS=""
+export DO_OPTIONAL="yes"
+export ON_OPTIONAL="on"
+export DO_MORE="no"
+export ON_MORE="off"
+
 #PAR_INCLUDE="-I/usr/lib/mpi/gcc/mvapich-gen2/include"
 #PAR_LIBS="-L/usr/lib/mpi/gcc/mvapich-gen2/lib -Wl,-rpath=/usr/lib/mpi/gcc/mvapich-gen2/lib/shared -lmpich -libverbs -lpthread -lsysfs -ldl"
 
@@ -363,8 +389,6 @@ fi
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
-USE_VISIT_FILE="no"
-ON_USE_VISIT_FILE="off"
 if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
@@ -399,6 +423,10 @@ fi
 export SILO_FILE=${SILO_FILE-"silo060605.sh"}
 export SILO_VERSION=${SILO_VERSION-"4.5.1"}
 export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.5"}
+
+export SZIP_FILE=${SZIP_FILE-"szip-2.1.tar.gz"}
+export SZIP_VERSION=${SZIP_VERSION-"2.1"}
+export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION-"2.0"}
 
 export HDF5_FILE=${HDF5_FILE-"hdf5-1.6.5.tar.gz"}
 export HDF5_VERSION=${HDF5_VERSION-"1.6.5"}
@@ -447,8 +475,6 @@ DLG_BACKTITLE="VisIt $VISIT_VERSION Build Process"
 DLG_HEIGHT="5"
 DLG_WIDTH="60"
 DLG_WIDTH_WIDE="80"
-GRAPHICAL="yes"
-ON_GRAPHICAL="on"
 
 # *************************************************************************** #
 # Function: uncompress_untar
@@ -746,7 +772,7 @@ function check_required_3rdparty
 }
 
 # *************************************************************************** #
-#                   Function 1.2, check_visit_source_code                     #
+#                   Function 1.0, check_visit_source_code                     #
 # --------------------------------------------------------------------------- #
 # This function will check to make sure that the VisIt source code            #
 # actually exists.                                                            #
@@ -781,7 +807,7 @@ function check_visit_source_code
     else
         if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
             echo \
-"Got VisIt. Lets look for 3rd party libraries."
+"Got VisIt source code. Lets look for 3rd party libraries."
         else
             download_file "${VISIT_VERSION}" "$VISIT_FILE"
             if [[ $? == 0 ]] ; then
@@ -1013,11 +1039,114 @@ function check_optional_3rdparty
         fi
     fi
     #
+    # SZIP
+     #
+     if [[ "$DO_SZIP" == "yes" ]] ; then
+         HAVE_SZIP_ALREADY="NO"
+         HAVE_SZIP_TARBALL="NO"
+         if [[ -d "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ]] ; then
+            HAVE_SZIP_ALREADY="YES"
+        fi
+        if [[ -e ${SZIP_FILE%.gz} || -e ${SZIP_FILE} ]] ; then
+           HAVE_SZIP_TARBALL="YES"
+        fi
+        if [[ "$HAVE_SZIP_ALREADY" = "NO" && \
+              "$HAVE_SZIP_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${SZIP_FILE}
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build SZIP.  ${SZIP_FILE} not found."
+                DO_SZIP="no"
+            fi
+        fi
+    fi
+    #
+    return 0
+}
+  
+# *************************************************************************** #
+#                         Function 2.0, check_more_options                    #
+# --------------------------------------------------------------------------- #
+# This function will display variables and optionally allow changing          #
+# *************************************************************************** #
+
+function check_more_options
+{
+
+    # Override variable settings dialog
+    #
+    if [[ "$DO_VERSION" == "yes" || "$USE_VISIT_FILE" == "yes" || \
+          "$DO_GROUP" == "yes" || "$DO_PATH" == "yes" ]] ; then
+        if [[ "$GRAPHICAL" == "yes" ]] ; then
+            $DLG --backtitle "$DLG_BACKTITLE" \
+            --title "Variable setting" \
+            --checklist \
+"These variables use these system dependent defaults, but can be overridden \"
+through this interface or using environment varaibles\n\n"\
+"Version, is the VisIt version number to build\n"\
+"Tarball, is the name of the distribution tarball\n"\
+"Group, is the group name for installed libraries\n"\
+"Path, is the location for 3rd party libraries\n"\
+"Select the variables you wish to modify" 20 $DLG_WIDTH 5 \
+           "Version"  "$VISIT_VERSION"     "off" \
+           "Tarball"  "$VISIT_FILE"        "off" \
+           "Group"    "$GROUP"             "off" \
+           "Path"     "$THIRD_PARTY_PATH"  "off" 2> tmp$$
+           retval=$?
+
+           # Remove the extra quoting, new dialog has --single-quoted
+           choice="$(cat tmp$$ | sed 's/"//g' )"
+           case $retval in
+             0)
+               for OPTION in $choice
+               do
+                   case $OPTION in
+                     Version)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_VERSION" 2> tmp$$
+                        VISIT_VERSION="$(cat tmp$$)"
+                        ;;
+                     Tarball)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_FILE" 2> tmp$$
+                        VISIT_FILE="$(cat tmp$$)"
+                        ;;
+                     Group)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$GROUP" 2> tmp$$
+                        GROUP="$(cat tmp$$)"
+                        ;;
+                     Path)
+                        $DLG --backtitle "$DLG_BACKTITLE" \
+                           --no-cancel --inputbox \
+"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 2> tmp$$
+                        THIRD_PARTY_PATH="$(cat tmp$$)"
+                        ABS_PATH="yes"
+                        ;;
+                   esac
+               done
+               ;;
+             1)
+               echo "Cancel pressed."
+               ;;
+             255)
+               echo "ESC pressed.";;
+             *)
+               echo "Unexpected return code: $retval";;
+           esac
+       fi
+       if [[ -e "tmp$$" ]] ; then
+           rm tmp$$
+       fi
+    fi
+
     return 0
 }
 
 # *************************************************************************** #
-#                         Function 2, check_parallel                          #
+#                         Function 2.1, check_parallel                        #
 # --------------------------------------------------------------------------- #
 # This function will check to make sure that parallel options have been setup #
 # if we're going to build a parallel version of VisIt.                        #
@@ -1055,27 +1184,27 @@ function check_parallel
             index=$(($index+1))
         done
 
-        if [[ "$GRAPHICAL" == "yes" ]] ; then
-            if [[ "$PAR_INCLUDE" == "" ]] ; then
-                PAR_CPPFLAGS=$MPICC_CPPFLAGS
-            else
-                PAR_CPPFLAGS=$PAR_INCLUDE
-            fi
-            if [[ "$PAR_LIBS" == "" ]] ; then
-                PAR_LDFLAGS=$MPICC_LDFLAGS
-            else
-                PAR_LDFLAGS=$PAR_LIBS
-            fi
+        if [[ "$PAR_INCLUDE" == "" ]] ; then
+            PAR_CPPFLAGS=$MPICC_CPPFLAGS
+        else
+            PAR_CPPFLAGS=$PAR_INCLUDE
+        fi
+        if [[ "$PAR_LIBS" == "" ]] ; then
+            PAR_LDFLAGS=$MPICC_LDFLAGS
+        else
+            PAR_LDFLAGS=$PAR_LIBS
+        fi
 
-            if [[ "$PAR_CPPFLAGS" == "" ]] ; then
-                echo \
+        if [[ "$PAR_CPPFLAGS" == "" ]] ; then
+            echo \
 "We have no guesses as to where MPI might reside. Look for it..."
-                if [[ -e /usr/include/mpi.h ]] ; then
-                    PAR_CPPFLAGS="-I/usr/include"
-                    PAR_LDFLAGS="-L/usr/lib -lmpi"
-                fi
+            if [[ -e /usr/include/mpi.h ]] ; then
+                PAR_CPPFLAGS="-I/usr/include"
+                PAR_LDFLAGS="-L/usr/lib -lmpi"
             fi
+        fi
 
+        if [[ "$GRAPHICAL" == "yes" ]] ; then
             # We have suggestions from the user or mpicc as to where mpi might
             # be located. See what the user thinks of the options.
             tryagain=1
@@ -1139,7 +1268,7 @@ function check_parallel
 }
 
 # *************************************************************************** #
-#                         Function 2.1, check_variables                       #
+#                         Function 2.2, check_variables                       #
 # --------------------------------------------------------------------------- #
 # This function will display variables and optionally allow changing          #
 # *************************************************************************** #
@@ -1162,7 +1291,7 @@ through this interface or using environment varaibles\n\n"\
 "C_OPT_FLAGS and CXX_OPT_FLAGS, are the CFLAGS and CXXFLAGS to use\n"\
 "THIRD_PARTY_PATH, is the location for 3rd party libraries\n"\
 "VISITARCH, unique architecure info, appended to library path installation\n"\
-"Select the variables you wish to modify" 30 $DLG_WIDTH 10 \
+"Select the variables you wish to modify" 28 $DLG_WIDTH 8 \
            "OPSYS"            "$OPSYS"             "off" \
            "ARCH"             "$ARCH"              "off" \
            "C_COMPILER"       "$C_COMPILER"        "off" \
@@ -1221,6 +1350,7 @@ through this interface or using environment varaibles\n\n"\
                            --no-cancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 2> tmp$$
                         THIRD_PARTY_PATH="$(cat tmp$$)"
+                        ABS_PATH="yes"
                         ;;
                      VISITARCH)
                         $DLG --backtitle "$DLG_BACKTITLE" \
@@ -1796,6 +1926,14 @@ function build_qt
        mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
     fi
 
+    if [[ "$DO_DEBUG" == "yes" ]]; then
+       cat mkspecs/${QT_PLATFORM}/qmake.conf | \
+       sed '/^QMAKE_CFLAGS_RELEASE/s/$/ -g/' > tmp.conf
+       mv -f mkspecs/${QT_PLATFORM}/qmake.conf \
+       mkspecs/${QT_PLATFORM}/qmake.conf.orig
+       mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
+    fi
+
     #
     # Call configure
     #
@@ -1996,10 +2134,14 @@ function build_vtk
     # CMake is the build system for VTK.  Call another script that will build
     # that program.
     #
-    build_cmake
-    if [[ $? != 0 ]] ; then
-       echo "Unable to build cmake.  Giving up"
-       return 1
+    if [[ -e ../${CMAKE_FILE%.tar*}/bin/cmake ]] ; then
+       echo "cmake found"
+    else
+       build_cmake
+       if [[ $? != 0 ]] ; then
+          echo "Unable to build cmake.  Giving up"
+          return 1
+       fi
     fi
     
     #
@@ -2157,6 +2299,83 @@ EOF
        if [[ $? != 0 ]] ; then
           echo "Unable to patch VTK. Wrong version?"
           return 1
+       fi
+    fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # Check for version 6.x.x (MacOS 10.2, Jaguar)
+        VER=$(uname -r)
+        if (( ${VER%%.*} < 7 )) ; then
+           info_box "Patching VTK . . ." 1>&3
+           patch -p0 << \EOF
+diff -rp VTK.orig/Rendering/vtkCarbonRenderWindow.cxx VTK/Rendering/vtkCarbonRenderWindow.cxx
+*** VTK.orig/Rendering/vtkCarbonRenderWindow.cxx      Wed Aug 31 11:39:33 2005
+--- VTK/Rendering/vtkCarbonRenderWindow.cxx   Wed Aug 15 17:57:10 2007
+*************** void vtkCarbonRenderWindow::CreateAWindo
+*** 737,743 ****
+        ShowWindow(this->RootWindow);
+      }
+  
+- 
+    // install event handler for updating gl region
+    // this works for a supplied HIView and an HIView made here
+    if(this->WindowId && !this->RegionEventHandler)
+--- 737,742 ----
+*************** void vtkCarbonRenderWindow::CreateAWindo
+*** 745,751 ****
+      EventTypeSpec region_events [] = 
+        {
+          { kEventClassControl, kEventControlOwningWindowChanged},
+!         { kEventClassControl, kEventControlVisibilityChanged },
+          { kEventClassControl, kEventControlBoundsChanged }
+        };
+      this->RegionEventHandlerUPP = NewEventHandlerUPP(vtkCarbonRenderWindow::RegionEventProcessor);
+--- 744,750 ----
+      EventTypeSpec region_events [] = 
+        {
+          { kEventClassControl, kEventControlOwningWindowChanged},
+!         { kEventClassControl, 157 },
+          { kEventClassControl, kEventControlBoundsChanged }
+        };
+      this->RegionEventHandlerUPP = NewEventHandlerUPP(vtkCarbonRenderWindow::RegionEventProcessor);
+*************** WindowPtr vtkCarbonRenderWindow::GetRoot
+*** 1145,1151 ****
+    // if not, then WindowId is set and we're using HIViews.
+    // Instead of storing the RootWindow, we ask for it in case of a dynamic 
+    // GUI where the root window can change
+!   return this->RootWindow ? this->RootWindow : HIViewGetWindow(this->WindowId);
+  }
+  
+  //----------------------------------------------------------------------------
+--- 1144,1150 ----
+    // if not, then WindowId is set and we're using HIViews.
+    // Instead of storing the RootWindow, we ask for it in case of a dynamic 
+    // GUI where the root window can change
+!   return this->RootWindow ? this->RootWindow : (WindowPtr)this->WindowId;
+  }
+  
+  //----------------------------------------------------------------------------
+*************** OSStatus vtkCarbonRenderWindow::RegionEv
+*** 1183,1189 ****
+        {
+        switch (event_kind)
+          {
+!         case kEventControlVisibilityChanged:
+          case kEventControlOwningWindowChanged:
+          case kEventControlBoundsChanged:
+            vtk_win->UpdateGLRegion();
+--- 1182,1188 ----
+        {
+        switch (event_kind)
+          {
+!         case 157:
+          case kEventControlOwningWindowChanged:
+          case kEventControlBoundsChanged:
+            vtk_win->UpdateGLRegion();
+EOF
+          if [[ $? != 0 ]] ; then
+             echo "Unable to patch VTK. Wrong version?"
+             return 1
+          fi
        fi
     fi
 
@@ -2397,6 +2616,32 @@ function build_python
 "Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
        return 1
     fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # Check for version >= 7.0.0 (MacOS 10.3, Panther)
+        VER=$(uname -r)
+        if (( ${VER%%.*} < 7 )) ; then
+           info_box "Patching VTK . . ." 1>&3
+           patch -p0 << \EOF
+diff -rp Python-2.5.orig/Modules/getpath.c Python-2.5/Modules/getpath.c
+*** Python-2.5.orig/Modules/getpath.c Sun Jul  9 18:18:57 2006
+--- Python-2.5/Modules/getpath.c      Wed Aug 15 18:25:14 2007
+***************
+*** 3,8 ****
+--- 3,9 ----
+  #include "Python.h"
+  #include "osdefs.h"
+  
++ #include <stdint.h>
+  #include <sys/types.h>
+  #include <string.h>
+  
+EOF
+          if [[ $? != 0 ]] ; then
+             echo "Unable to patch VTK. Wrong version?"
+             return 1
+          fi
+       fi
+    fi
 
     #
     # Call configure
@@ -2451,17 +2696,20 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
-        echo "char **environ=0;" > environhack.c
-        gcc -c environhack.c -fno-common
+        if (( ${VER%%.*} > 6 )) ; then
+           UNDEFINED="-Wl,-twolevel_namespace,-undefined,dynamic_lookup"
+        else
+           UNDEFINED="-Wl,-flat_namespace,-undefined,suppress"
+        fi
         mkdir tmpdir
         cd tmpdir
         ar x ../libpython${PYTHON_VERSION}.a
-        $C_COMPILER -o ../libpython${PYTHON_VERSION}.$SO_EXT -dynamiclib \
-          ../environhack.o *.o -lSystem $USESTUBS \
+        $C_COMPILER -o ../libpython${PYTHON_VERSION}.$SO_EXT \
+          -dynamiclib *.o -lSystem $USESTUBS \
           -framework Carbon -Wl,-headerpad_max_install_names \
           -Wl,-install_name,$INSTALLNAMEPATH/libpython$PYTHON_VERSION.$SO_EXT \
           -Wl,-compatibility_version,${PYTHON_COMPATIBILITY_VERSION} \
-          -Wl,-current_version,${PYTHON_VERSION}
+          -Wl,-current_version,${PYTHON_VERSION} $UNDEFINED
         if [[ $? != 0 ]] ; then
           echo "Python dynamic library build failed.  Giving up"
           return 1
@@ -2520,11 +2768,16 @@ function build_silo
     SILO_DIR=${SILO_FILE%.sh}
     cd ${SILO_DIR}
     echo "Invoking command to configure Silo"
+    MAKEOPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
-       SILO_HDF5LINK_OPT="-L$HDF5LIB -lhdf5"
+       SILO_HDF5LINK_OPT="-L$HDF5LIB -lhdf5 -lsz"
        WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
+       cat configure | sed 's/-lhdf5/-lhdf5 -lsz/' > tmp.conf
+       mv configure configure.orig
+       mv tmp.conf configure
+       chmod +x configure
     else
        WITHHDF5ARG="--without-hdf5"
     fi
@@ -2540,9 +2793,13 @@ function build_silo
     #
     # Build Silo
     #
+    if [[ "$OPSYS" == "Darwin" ]]; then
+       # Darwin make fails during link
+       MAKEOPT="-i"
+    fi
     info_box "Building Silo . . . (~2 minutes)" 1>&3
     echo "Building Silo"
-    $MAKE
+    $MAKE $MAKEOPT
     if [[ $? != 0 ]] ; then
        echo "Silo build failed.  Giving up"
        return 1
@@ -2597,6 +2854,109 @@ function build_silo
     return 0
 }
 
+# *************************************************************************** #
+#                          Function 8.0, build_szip                           
+ #
+# *************************************************************************** 
+#
+
+function build_szip
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -f ${SZIP_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${SZIP_FILE} . . ." 1>&3
+       uncompress_untar ${SZIP_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $SZIP_FILE  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${SZIP_FILE%.*} ]] ; then
+       info_box "Tarring ${SZIP_FILE%.*} . . ." 1>&3
+       tar xf ${SZIP_FILE%.*}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${SZIP_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring SZIP . . ." 1>&3
+    SZIP_DIR=${SZIP_FILE%.tar*}
+    cd ${SZIP_DIR}
+    echo "Invoking command to configure SZIP"
+    ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+    if [[ $? != 0 ]] ; then
+       echo "SZIP configure failed.  Giving up"
+       return 1
+    fi
+
+    #
+    # Build SZIP
+    #
+    info_box "Building SZIP . . . (~1 minutes)" 1>&3
+    echo "Building SZIP"
+    $MAKE
+    if [[ $? != 0 ]] ; then
+       echo "SZIP build failed.  Giving up"
+       return 1
+    fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing SZIP . . ." 1>&3
+    echo "Installing SZIP"
+    $MAKE install
+    if [[ $? != 0 ]] ; then
+       echo "SZIP install failed.  Giving up"
+       return 1
+    fi
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        #
+        # Make dynamic executable, need to patch up the install path and
+        # version information.
+        #
+        info_box "Creating dynamic libraries for SZIP . . ." 1>&3
+        echo "Creating dynamic libraries for SZIP"
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+## go back to gcc bacause if "external relocation entries" restFP saveFP
+##      /usr/bin/libtool -o libsz.${SO_EXT} -dynamic src/.libs/libsz.a \
+##      -lSystem -lz -headerpad_max_install_names \
+##      -install_name $INSTALLNAMEPATH/libsz.${SO_EXT} \
+##      -compatibility_version $SZIP_COMPATIBILITY_VERSION \
+##      -current_version $SZIP_VERSION
+        $C_COMPILER -dynamiclib -o libsz.${SO_EXT} src/*.o \
+           -Wl,-headerpad_max_install_names \
+           -Wl,-twolevel_namespace,-undefined,dynamic_lookup \
+           -Wl,-install_name,$INSTALLNAMEPATH/libsz.${SO_EXT} \
+           -Wl,-compatibility_version,$SZIP_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$SZIP_VERSION -lSystem 
+        if [[ $? != 0 ]] ; then
+           echo "SZIP dynamic library build failed.  Giving up"
+           return 1
+        fi
+        rm -f "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.${SO_EXT}"
+        cp libsz.${SO_EXT} "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib"
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+r "$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH"
+       chgrp -R ${GROUP} "$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH"
+    fi
+    cd "$START_DIR"
+    echo "Done with SZIP"
+    return 0
+}
 
 # *************************************************************************** #
 #                          Function 8.1, build_hdf5                            #
@@ -2629,10 +2989,14 @@ function build_hdf5
     info_box "Configuring HDF5 . . ." 1>&3
     HDF5_DIR=${HDF5_FILE%.tar*}
     cd ${HDF5_DIR}
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
+    fi
     echo "Invoking command to configure HDF5"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+        --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
+        --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        echo "HDF5 configure failed.  Giving up"
        return 1
@@ -2641,7 +3005,7 @@ function build_hdf5
     #
     # Build HDF5
     #
-    info_box "Building HDF5 . . . (~5 minutes)" 1>&3
+    info_box "Building HDF5 . . . (~2 minutes)" 1>&3
     echo "Building HDF5"
     $MAKE
     if [[ $? != 0 ]] ; then
@@ -2659,6 +3023,9 @@ function build_hdf5
        return 1
     fi
 
+    # Put a copy SZIP into HDF5 directory for convenience
+    ln -s "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.a" \
+        "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libsz.a"
     if [[ "$OPSYS" == "Darwin" ]]; then
         #
         # Make dynamic executable, need to patch up the install path and
@@ -2672,8 +3039,8 @@ function build_hdf5
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
 ## go back to gcc bacause if "external relocation entries" restFP saveFP
-##      libtool -o libhdf5.${SO_EXT} -dynamic src/.libs/libhdf5.a -lSystem -lz \
-##      -headerpad_max_install_names \
+##      /usr/bin/libtool -o libhdf5.${SO_EXT} -dynamic src/.libs/libhdf5.a \
+##      -lSystem -lz -headerpad_max_install_names \
 ##      -install_name $INSTALLNAMEPATH/libhdf5.${SO_EXT} \
 ##      -compatibility_version $HDF5_COMPATIBILITY_VERSION \
 ##      -current_version $HDF5_VERSION
@@ -2681,14 +3048,16 @@ function build_hdf5
            -Wl,-headerpad_max_install_names \
            -Wl,-install_name,$INSTALLNAMEPATH/libhdf5.${SO_EXT} \
            -Wl,-compatibility_version,$HDF5_COMPATIBILITY_VERSION \
-           -Wl,-current_version,$HDF5_VERSION -lSystem -lz
+           -Wl,-current_version,$HDF5_VERSION \
+           -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" -lSystem -lsz -lz
         if [[ $? != 0 ]] ; then
            echo "HDF5 dynamic library build failed.  Giving up"
            return 1
         fi
         rm -f "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libhdf5.${SO_EXT}"
         cp libhdf5.${SO_EXT} "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
-
+        ln -s "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib/libsz.${SO_EXT}" \
+        "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib/libsz.${SO_EXT}"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
@@ -3715,7 +4084,8 @@ EOF
         -I$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/Utilities/vtkjpeg" \
         --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
         --with-jpeg="$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH" \
-        --with-szlib=no --disable-fortran --disable-dependency-tracking
+        --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" \
+        --disable-fortran --disable-dependency-tracking
         if [[ $? != 0 ]] ; then
            echo "HDF4 configure failed.  Giving up"
            return 1
@@ -3724,7 +4094,8 @@ EOF
     else
         ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" LIBS="-lm" --disable-fortran \
-        --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH"
+        --prefix="$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" \
+        --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
         if [[ $? != 0 ]] ; then
            echo "HDF4 configure failed.  Giving up"
            return 1
@@ -3769,7 +4140,9 @@ EOF
            -Wl,-install_name,$INSTALLNAMEPATH/libdf.${SO_EXT} \
            -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
            -Wl,-current_version,$HDF4_VERSION \
-           -L"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib" -lvtkjpeg -lz
+           -L"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib" \
+           -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
+           -lvtkjpeg -lsz -lz
         if [[ $? != 0 ]] ; then
            echo \
 "HDF4 dynamic library build failed for libdf.${SO_EXT}.  Giving up"
@@ -3784,8 +4157,9 @@ EOF
            -Wl,-compatibility_version,$HDF4_COMPATIBILITY_VERSION \
            -Wl,-current_version,$HDF4_VERSION \
            -L"$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH/lib" \
+           -L"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib" \
            -L"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib" \
-           -lvtkjpeg -ldf -lz
+           -lvtkjpeg -ldf -lsz -lz
         if [[ $? != 0 ]] ; then
            echo \
 "HDF4 dynamic library build failed for libmfhdf.${SO_EXT}.  Giving up"
@@ -4053,8 +4427,8 @@ function build_cgns
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
-        libtool -o libcgns.${SO_EXT} -dynamic DARWIN/libcgns.a -lSystem \
-           $USESTUBS -headerpad_max_install_names \
+        /usr/bin/libtool -o libcgns.${SO_EXT} -dynamic DARWIN/libcgns.a \
+           -lSystem $USESTUBS -headerpad_max_install_names \
            -install_name $INSTALLNAMEPATH/libcgns.${SO_EXT} \
            -compatibility_version $CGNS_COMPATIBILITY_VERSION \
            -current_version $CGNS_VERSION
@@ -4111,6 +4485,56 @@ function build_gdal
        EXTRA_FLAGS="F77=\"\""
     else
        EXTRA_FLAGS=""
+    fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        # Check for version 6.x.x (MacOS 10.2, Jaguar)
+        VER=$(uname -r)
+        if (( ${VER%%.*} < 7 )) ; then
+            cat frmts/gtiff/libtiff/GNUmakefile | \
+               sed 's/tif_zip.o/tif_zip.o lfind.o/' > tmp.make
+            mv frmts/gtiff/libtiff/GNUmakefile \
+               frmts/gtiff/libtiff/GNUmakefile.orig
+            mv tmp.make frmts/gtiff/libtiff/GNUmakefile
+
+            echo > frmts/gtiff/libtiff/lfind.c
+            cat >> frmts/gtiff/libtiff/lfind.c << EOF
+#include <sys/types.h>
+#include <string.h>
+#include <unistd.h>
+
+static char *linear_base();
+
+char *
+lfind(key, base, nelp, width, compar)
+      char *key, *base;
+      u_int *nelp, width;
+      int (*compar)();
+{
+      return(linear_base(key, base, nelp, width, compar, 0));
+}
+
+static char *
+linear_base(key, base, nelp, width, compar, add_flag)
+      char *key, *base;
+      u_int *nelp, width;
+      int (*compar)(), add_flag;
+{
+      register char *element, *end;
+
+      end = base + *nelp * width;
+      for (element = base; element < end; element += width)
+              if (!compar(element, key))              /* key found */
+                      return(element);
+
+      if (!add_flag)                                  /* key not found */
+              return(NULL);
+
+      ++*nelp;
+      bcopy(key, end, (int)width);
+      return(end);
+}
+EOF
+        fi
     fi
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" $EXTRA_FLAGS \
        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
@@ -4251,10 +4675,10 @@ function build_exodus
         cp libexoIIv2c.${SO_EXT} \
            "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib"
         cp ../include/*.h "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc"
-        ln -s  "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h" \
+        ln -s  "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/include/netcdf.h"\
            "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/inc/netcdf.h"
         ln -s  \
-        "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}" \
+        "../../../../netcdf/$NETCDF_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}"\
         "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH/lib/libnetcdf.${SO_EXT}"
     else
         ar -cr libexoIIv2c.a *.o
@@ -4886,7 +5310,7 @@ function build_cfitsio
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
 ## switch back to gcc "external relocation entries" restFP saveFP
-##      libtool -o libcfitsio.$SO_EXT -dynamic libcfitsio.a -lSystem \
+##      /usr/bin/libtool -o libcfitsio.$SO_EXT -dynamic libcfitsio.a -lSystem \
 ##      -headerpad_max_install_names \
 ##      -install_name $INSTALLNAMEPATH/libcfitsio.$SO_EXT \
 ##      -compatibility_version $CFITSIO_COMPATIBILITY_VERSION \
@@ -4957,8 +5381,9 @@ function build_h5part
     cd ${H5PART_DIR}
     if [[ "$DO_HDF5" == "yes" ]] ; then
        export HDF5ROOT="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH"
+       export SZIPROOT="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
        WITHHDF5ARG="--with-hdf5path=$HDF5ROOT"
-       HDF5DYLIB="-L$HDF5ROOT/lib -lhdf5 -lz"
+       HDF5DYLIB="-L$HDF5ROOT/lib -L$SZIPROOT/lib -lhdf5 -lsz -lz"
     else
        WITHHDF5ARG="--without-hdf5path"
        HDF5DYLIB=""
@@ -4967,6 +5392,11 @@ function build_h5part
        OPTIONAL="--enable-parallel"
     else
        OPTIONAL="--disable-parallel"
+    fi
+    if [[ "$OPSYS" == "Darwin" ]]; then
+       export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
+"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
+$DYLD_LIBRARY_PATH
     fi
     echo "Invoking command to configure H5Part"
     ./configure ${WITHHDF5ARG} ${OPTIONAL} \
@@ -5007,11 +5437,17 @@ function build_h5part
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
-        libtool -o libH5Part.$SO_EXT -dynamic src/libH5Part.a -lSystem \
-        -headerpad_max_install_names \
+        VER=$(uname -r)
+        if (( ${VER%%.*} > 7 )) ; then
+           USEGCC=""
+        else
+           USEGCC="-lgcc"
+        fi
+        /usr/bin/libtool -o libH5Part.$SO_EXT -dynamic src/libH5Part.a \
+        -lSystem -headerpad_max_install_names \
         -install_name $INSTALLNAMEPATH/libH5Part.$SO_EXT \
         -compatibility_version $H5PART_COMPATIBILITY_VERSION \
-        -current_version $H5PART_VERSION ${HDF5DYLIB}
+        -current_version $H5PART_VERSION ${HDF5DYLIB} ${USEGCC}
 ##      gcc -o libH5Part.$SO_EXT -dynamiclib src/*.o -lSystem \
 ##         -Wl,-headerpad_max_install_names \
 ##         -Wl,-install_name,$INSTALLNAMEPATH/libH5Part.$SO_EXT \
@@ -5242,6 +5678,18 @@ function build_hostconf
         >> $HOSTCONF
     fi
     echo "##" >> $HOSTCONF
+    echo "## SZIP" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+        echo \
+"DEFAULT_SZIP_INCLUDE=\$VISITHOME/szip/$SZIP_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_SZIP_LIB=\$VISITHOME/szip/$SZIP_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
     cd "$START_DIR"
     echo "Done with host.conf"
     return 0
@@ -5326,6 +5774,36 @@ function build_visit
            mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
            mv -f Make.tmp databases/Fluent/Makefile
         fi
+        if (( ${VER%%.*} < 7 )) ; then
+           cat third_party_builtin/mesa_stub/Makefile | \
+              sed 's/glx.c glxext.c//' > Make.tmp
+           mv -f ithird_party_builtin/mesa_stub/Makefile \
+              third_party_builtin/mesa_stub/Makefile.orig
+           mv -f Make.tmp third_party_builtin/mesa_stub/Makefile
+        fi
+        if (( ${VER%%.*} > 6 )) ; then
+           cat databases/SimV1/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+           mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
+           mv -f Make.tmp databases/SimV1/Makefile
+           cat databases/SimV1Writer/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+           mv -f databases/SimV1Writer/Makefile \
+             databases/SimV1Writer/Makefile.orig
+           mv -f Make.tmp databases/SimV1Writer/Makefile
+        else
+           cat databases/SimV1/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+              Make.tmp
+           mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
+           mv -f Make.tmp databases/SimV1/Makefile
+           cat databases/SimV1Writer/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+              Make.tmp
+           mv -f databases/SimV1Writer/Makefile \
+             databases/SimV1Writer/Makefile.orig
+           mv -f Make.tmp databases/SimV1Writer/Makefile
+        fi
     fi
     #
     # Build VisIt
@@ -5401,9 +5879,13 @@ do
     argcur=$ARG
     case $ARG in
       4) DO_HDF4="yes"
-         ON_HDF4="on";;
+         ON_HDF4="on"
+         DO_SZIP="yes"
+         ON_SZIP="on";;
       5) DO_HDF5="yes"
-         ON_HDF5="on";;
+         ON_HDF5="on"
+         DO_SZIP="yes"
+         ON_SZIP="on";;
       a|A) VISITARCH="$OPTARG";;
       b|B) DO_BOXLIB="yes"
            ON_BOXLIB="on";;
@@ -5412,7 +5894,9 @@ do
       d|D) C_OPT_FLAGS="$C_OPT_FLAGS -g"
            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g";;
       e|E) DO_EXODUS="yes"
-           ON_EXODUS="on";;
+           ON_EXODUS="on"
+           DO_NETCDF="yes" 
+           ON_NETCDF="on";;
       f|F) DO_CFITSIO="yes"
            ON_CFITSIO="on";;
       g|G) DO_GDAL="yes"
@@ -5435,7 +5919,11 @@ do
       p|P) parallel="yes"
            ON_parallel="on";;
       r|R) DO_H5PART="yes"
-           ON_H5PART="on";;
+           ON_H5PART="on"
+           DO_HDF5="yes"
+           ON_HDF5="on"
+           DO_SZIP="yes"
+           ON_SZIP="on";;
       s|S) DO_SVN="yes"
            ON_SVN="on";;
       t|T) VISIT_FILE="$OPTARG"
@@ -5461,10 +5949,17 @@ done
 #
 
 if [[ "$GRAPHICAL" == "yes" ]] ; then
-    GRAPHICAL="no" # This will be set back to "yes" if we find dialog
-    for DLG in dialog whiptail; do
+    DLG=$(which dialog)
+    if [[ "$DLG" == "" ]] ; then
+        DLG=$(which whiptail)
+        if [[ "$DLG" == "" ]] ; then
+            GRAPHICAL="no"
+    fi
+        fi
+fi
+if [[ "$GRAPHICAL" == "yes" ]] ; then
     $DLG --backtitle "$DLG_BACKTITLE" \
-    --title "Build options and 3rd party libraries" \
+    --title "Build options" \
     --checklist \
 "Welcome to the VisIt $VISIT_VERSION build process.\n\n"\
 "This program will build VisIt and its required "\
@@ -5473,8 +5968,71 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
 "are built and installed before VisIt is built so please be patient. "\
 "Note that you can build a parallel version of VisIt by "\
 "specifying the location of your MPI installation when prompted.\n"\
-"Select the build options and optional 3rd party libraries "\
-"to be built and installed" 30 $DLG_WIDTH 12 \
+"Select the build options" 0 0 0 \
+           "Optional"   "select optional 3rd party libraries"  $ON_OPTIONAL \
+           "SVN"        "get sources from SVN server"          $ON_SVN\
+           "Tarball"    "specify VisIt tarball name"      $ON_USE_VISIT_FILE \
+           "Parallel"   "specify parallel build flags"    $ON_parallel \
+           "Python"     "enable VisIt python module"      $ON_MODULE \
+           "Java"       "enable java client library"      $ON_JAVA \
+           "Variables"  "specify build variable values"   $ON_verify \
+           "More"       "select more options"             $ON_MORE  2> tmp$$
+    retval=$?
+
+    # Remove the extra quoting, new dialog has --single-quoted
+    choice="$(cat tmp$$ | sed 's/"//g' )"
+    case $retval in
+      0)
+        DO_OPTIONAL="no"
+        DO_SVN="no"
+        USE_VISIT_FILE="no"
+        parallel="no"
+        DO_MODULE="no"
+        DO_JAVA="no"
+        verify="no"
+        DO_MORE="no"
+        for OPTION in $choice
+        do
+            case $OPTION in
+              Optional)
+                 DO_OPTIONAL="yes";;
+              SVN)
+                 DO_SVN="yes";;
+              Tarball)
+                 USE_VISIT_FILE="yes";;
+              Parallel)
+                 parallel="yes";;
+              Python)
+                 DO_MODULE="yes";;
+              Java)
+                 DO_JAVA="yes";;
+              Variables)
+                 verify="yes";;
+              More)
+                 DO_MORE="yes";;
+            esac
+        done
+        break
+        ;;
+      1)
+        echo "Cancel pressed."
+        exit 1;;
+      255)
+        echo "ESC pressed.";;
+      *)
+        echo "Unexpected return code: $retval";;
+    esac
+fi
+if [[ -e "tmp$$" ]] ; then
+    rm tmp$$
+fi
+
+if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
+    $DLG --backtitle "$DLG_BACKTITLE" \
+    --title "Select 3rd party libraries" \
+    --checklist \
+"Select the optional 3rd party libraries "\
+"to be built and installed" 0 0 0 \
            "Boxlib"   "2.5    $BOXLIB_FILE"    $ON_BOXLIB \
            "CFITSIO"  "3006   $CFITSIO_FILE"   $ON_CFITSIO \
            "CGNS"     "2.4.3  $CGNS_FILE"      $ON_CGNS \
@@ -5484,9 +6042,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
            "HDF4"     "2.4.1  $HDF4_FILE"      $ON_HDF4 \
            "HDF5"     "1.6.5  $HDF5_FILE"      $ON_HDF5 \
            "Mili"     "1.10   $MILI_FILE"      $ON_MILI \
-           "NetCDF"   "3.6.0  $NETCDF_FILE"    $ON_NETCDF \
-           "parallel" "enable parallel"        $ON_parallel \
-           "verify"   "check/change arguments" $ON_verify  2> tmp$$
+           "NetCDF"   "3.6.0  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
     retval=$?
 
     # Remove the extra quoting, new dialog has --single-quoted
@@ -5503,8 +6059,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         DO_HDF5="no"
         DO_MILI="no"
         DO_NETCDF="no"
-        parallel="no"
-        verify="no"
+        DO_SZIP="no"
         for OPTION in $choice
         do
             case $OPTION in
@@ -5515,46 +6070,114 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
               CGNS)
                  DO_CGNS="yes";;
               ExodusII)
-                 DO_EXODUS="yes";;
+                 DO_EXODUS="yes"
+                 DO_NETCDF="yes";;
               GDAL)
                  DO_GDAL="yes";;
               H5Part)
-                 DO_H5PART="yes";;
+                 DO_H5PART="yes"
+                 DO_HDF5="yes"
+                 DO_SZIP="yes";;
               HDF4)
-                 DO_HDF4="yes";;
+                 DO_HDF4="yes"
+                 DO_SZIP="yes";;
               HDF5)
-                 DO_HDF5="yes";;
+                 DO_HDF5="yes"
+                 DO_SZIP="yes";;
               Mili)
                  DO_MILI="yes";;
               NetCDF)
                  DO_NETCDF="yes";;
-              parallel)
-                 parallel="yes";;
-              verify)
-                 verify="yes";;
             esac
         done
-        GRAPHICAL="yes"
-        break
         ;;
       1)
         echo "Cancel pressed."
-        GRAPHICAL="yes"
         exit 1;;
       255)
         echo "ESC pressed.";;
       *)
         echo "Unexpected return code: $retval";;
     esac
-  done
 fi
 if [[ -e "tmp$$" ]] ; then
     rm tmp$$
 fi
 
-if [[ "$DO_EXODUS" = "yes" && "$DO_NETCDF" = "no" ]] ; then
-    DO_NETCDF="yes"
-    echo "NetCDF required to build Exodus.  Adding NetCDF..."
+if [[ "$DO_MORE" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
+    $DLG --backtitle "$DLG_BACKTITLE" \
+    --title "More build options" \
+    --checklist \
+"Version, specify version of VisIt to download and build\n"\
+"Build, build VisIt, disable to build 3rd party only\n"\
+"Required, build required 3rd party libraries\n"\
+"Logging, display build log to stdout not\n"\
+"Symbol, turn on -g, debugging flag\n"\
+"Group, specify the group name for install\n"\
+"Path, specify the root directory for libraries\n"\
+"Absolute, Change the install name path for Darwin dynamic libraries "\
+"to used the above Path not the default [@executable_path/../lib]\n"\
+"Trace, print a trace of commands and arguments\n"\
+"Select built and installed options" 0 0 0 \
+           "Version"   "specify VisIt version [$VISIT_VERSION]" $ON_VERSION \
+           "Build"     "enable building VisIt"                  $ON_VISIT \
+           "Required"  "enable required 3rd party libraries"    $ON_THIRD_PARTY\
+           "Logging"   "disable logging to file"                $ON_LOG \
+           "Symbol"    "enable compiling with symbol tables"    $ON_DEBUG \
+           "Group"     "specify group name for install"         $ON_GROUP \
+           "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
+           "Absolute"  "change the behavior of install name"    $ON_ABS_PATH \
+           "Trace"     "enable SHELL debugging"      $ON_VERBOSE 2> tmp$$
+    retval=$?
+
+    # Remove the extra quoting, new dialog has --single-quoted
+    choice="$(cat tmp$$ | sed 's/"//g' )"
+    case $retval in
+      0)
+        DO_VERSION="no"
+        DO_VISIT="no"
+        DO_REQUIRED_THIRD_PARTY="no"
+        DO_LOG="no"
+        DO_DEBUG="no"
+        DO_GROUP="no"
+        DO_PATH="no"
+        ABS_PATH="no"
+        DO_VERBOSE="no"
+        for OPTION in $choice
+        do
+            case $OPTION in
+              Version)
+                 DO_VERSION="yes";;
+              Build)
+                 DO_VISIT="yes";;
+              Required)
+                 DO_REQUIRED_THIRD_PARTY="yes";;
+              Logging)
+                 DO_LOG="yes";;
+              Symbol)
+                 DO_DEBUG="yes";;
+              Group)
+                 DO_GROUP="yes";;
+              Path)
+                 DO_PATH="yes";;
+              Absolute)
+                 ABS_PATH="yes";;
+              Trace)
+                 DO_VERBOSE="yes";;
+            esac
+        done
+        ;;
+      1)
+        echo "Cancel pressed."
+        exit 1;;
+      255)
+        echo "ESC pressed.";;
+      *)
+        echo "Unexpected return code: $retval";;
+    esac
+fi
+if [[ -e "tmp$$" ]] ; then
+    rm tmp$$
 fi
 
 if [[ $VISITARCH == "" ]] ; then
@@ -5611,12 +6234,12 @@ if [[ "$DO_QT" == "yes" ]] ; then
 "built, this script confirms that you accept their license. "\
 "So please choose \"Yes\" to accept (in advance) their license "\
 "offer for the Qt/X11 Free Edition, licensed under the Q Public License"\
-"(QPL) or the GNU General Public License (GPL)" 12 $DLG_WIDTH
+"(QPL) or the GNU General Public License (GPL)" 0 0
        if [[ $? == 1 ]] ; then
            choice=`$DLG --backtitle "$DLG_BACKTITLE" --radiolist \
 "You chose not to accept Qt\'s license. VisIt requires Qt. "\
 "What would you like to do?" \
-    12 60 5 1 "Accept Qt's license" on 2 "Quit VisIt\'s build process" off 2>&1`
+    0 0 0 1 "Accept Qt's license" on 2 "Quit VisIt\'s build process" off 2>&1`
            if [[ $? == 1 || "$choice" == "2" ]] ; then
                echo "You declined the Qt license and stopped building VisIt."
                exit 1
@@ -5636,6 +6259,15 @@ if [[ "$DO_QT" == "yes" ]] ; then
          read RESPONSE
       done
    fi
+fi
+
+#
+# See if the used needs to modify some variables
+#
+check_more_options
+if [[ $? != 0 ]] ; then
+   echo "Stopping build because of bad variable option setting error."
+   exit 1
 fi
 
 #
@@ -5688,8 +6320,10 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
       build_mesa 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Mesa.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building Mesa"
@@ -5711,8 +6345,10 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
       build_qt 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Qt.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building Qt"
@@ -5733,8 +6369,10 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
       build_vtk 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install VTK.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building VTK"
@@ -5755,8 +6393,10 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
       build_python 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Python.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building Python"
@@ -5766,6 +6406,24 @@ else
 fi
 
 cd "$START_DIR"
+if [[ "$DO_SZIP" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH" ]] ; then
+      echo "Skipping SZIP build.  SZIP is already installed."
+   else
+      echo "Building SZIP (~2 minutes)"
+      build_szip 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install SZIP.  Bailing out."
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
+         exit 1
+      fi
+      echo "Done building SZIP"
+   fi
+fi
+cd "$START_DIR"
 if [[ "$DO_HDF5" == "yes" ]] ; then
    if [[ -d "$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping HDF5 build.  HDF5 is already installed."
@@ -5774,8 +6432,10 @@ if [[ "$DO_HDF5" == "yes" ]] ; then
       build_hdf5 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install HDF5.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building HDF5"
@@ -5783,15 +6443,17 @@ if [[ "$DO_HDF5" == "yes" ]] ; then
 fi
 cd "$START_DIR"
 if [[ "$DO_MILI" == "yes" ]] ; then
-   if [[ -d "$VISITDIR/mili/$VISITARCH" ]] ; then
+   if [[ -d "$VISITDIR/mili/${MILI_VERSION}/$VISITARCH" ]] ; then
       echo "Skipping Mili build.  Mili is already installed."
    else
       echo "Building Mili (~2 minutes)"
       build_mili 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Mili.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building Mili"
@@ -5806,8 +6468,10 @@ if [[ "$DO_HDF4" == "yes" ]] ; then
       build_hdf4 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install HDF4.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building HDF4"
@@ -5822,8 +6486,10 @@ if [[ "$DO_NETCDF" == "yes" ]] ; then
       build_netcdf 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install NetCDF.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building NetCDF"
@@ -5858,8 +6524,10 @@ if [[ "$DO_GDAL" == "yes" ]] ; then
          build_gdal 3>&1 >> ${LOG_FILE} 2>&1
          if [[ $? != 0 ]] ; then
             echo "Unable to build or install GDAL.  Bailing out."
-            echo \
+            if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+               echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+            fi
             exit 1
          fi
          echo "Done building GDAL"
@@ -5875,8 +6543,10 @@ if [[ "$DO_EXODUS" == "yes" ]] ; then
       build_exodus 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install EXODUS.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+           echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building EXODUS"
@@ -5891,8 +6561,10 @@ if [[ "$DO_BOXLIB" == "yes" ]] ; then
       build_boxlib 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Boxlib.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building Boxlib"
@@ -5907,8 +6579,10 @@ if [[ "$DO_CFITSIO" == "yes" ]] ; then
       build_cfitsio 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install CFITSIO.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building CFITSIO"
@@ -5923,8 +6597,10 @@ if [[ "$DO_H5PART" == "yes" ]] ; then
       build_h5part 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install H5Part.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building H5Part"
@@ -5943,8 +6619,10 @@ if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
       build_silo 3>&1 >> ${LOG_FILE} 2>&1
       if [[ $? != 0 ]] ; then
          echo "Unable to build or install Silo.  Bailing out."
-         echo \
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
 "More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
          exit 1
       fi
       echo "Done building Silo"

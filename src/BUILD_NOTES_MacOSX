@@ -1,90 +1,142 @@
                          Building VisIt on MacOS X
                          =========================
 
-   This document describes how to build VisIt on MacOS X under at least 10.4.x 
-on Intel and 10.3.9 on PPC. Building a universal binary MacOS X, while similar,
-has significant differences requiring special instructions. 
-Most of the differences arise from how MacOS X provides support for compiling
-and linking of multiple architectures. A good reference of the issues involved
-is: http://developer.apple.com/technotes/tn2005/tn2137.html. The creation of
-universal binaries adds a significant degree of difficulty to the VisIt build.
-For this reason only 2-way universal binaries will be considered in this
-document. Some of the reasons for this complexity include:
-1) MacOS X dynamic shared libraries use the .dylib extension. The later GNU
-autotools, and libtool know about this, but the library must be built using 
-these later versions. If the package is a few years old there's a good chance
-it doesn't know how to build dynamic libraries for the Mac.
-2) Universal binaries require gcc/g++-4.x. Quite a few of the third-party 
-libraries are a few years old, and even though they use configure, they were
-released before MacOS X and gcc-4.x.
-3) The Intel Mac is not the same architecture as the PPC Mac. Some packages 
-even if they do support the MacOS X, assume that MacOS X = PowerPC (32-bit
-only). This gets even more complex, when 4-way universal binaries (ppc, i386,
-ppc_64, and x86_64) are desired.
-4) The configure file are created with older autoconf scripts which don't 
-support either: Mac OS X, gcc-4.x, or cross-compiling. In the worse case
-configure can't determine that a cross compile is required, and configure can't 
-determine the target machines characteristics by running code the build machine.
-5) The third-pary configure  doesn't support the building universal 
-binaries. Problems develop when configure determines the endianness or word
-size for compiling. Universal binaries must make this determination during the 
-compile. Each architecture in a universal binary requires it's own separate
-compile.
+This document describes how to build VisIt on MacOS X under at least 10.4.x 
+on Intel and 10.3.9 on PPC. 
 
-Supporting and building universal binaries requires that the PowerPC Mac be
-running at least MacOS X10.3.9, and the Intel Mac run MacOS X10.4.x (Tiger).
-This document used C/C++ compiler (gcc-4.0.1) from Xcode 2.4.1.
+build_visit
+  The recomended method for building VisIt on MacOS X is to use the 
+  build_visit script available at:
+    http://www.llnl.gov/VisIt/1.6.1/build_visit 
+  Note: you may need to restore the execute permissions after downloading
+  with, chmod +x build_visit
+  Using build_visit a basic build for the Mac can be initiated with:
+     ./build_visit -z
+  The above command will download the required VisIt and 3rd party source code,
+  configuring, and building it all using your C++ compiler. The full-blown
+  version of VisIt (same as the binary distribution minus Mili) use:
+    ./build_visit -45bcefgnrwz 
+  Some users are more comfortable with a GUI interface. The build_visit script
+  optionally uses dialog, a script-interpreter which providing a set of curses
+  widgets, similar to the what is used in Linux kernel configuration. Dialog
+  is not include in the distribution of MacOS X. A source distribution of
+  dialog is available at: http://invisible-island.net/dialog/dialog.tar.gz,
+  and a Universal binary is available at:
+    http://www.llnl.gov/VisIt/1.6.1/dialog
+  Note: you may need to restore the execute permissions after downloading
+  with, chmod +x dialog
 
-VisIt relies on several external libraries which must be built and installed
-prior to building VisIt.  This document provides detailed step by step
-instructions for building VisIt and each of the dependent libraries.  The
-instructions have been designed so that you can cut and paste most of the
-commands needed to build the libraries and VisIt from this file into your
-shell prompt.
+Universal binary
+  The single step building of a universal binary for MacOS X is impossible
+  at this point. The resulting binary using diables exceptions on the PowerPC
+  Mac, and most of the third pary libraries can't perform the required
+  cross-compile. A good reference for some of the issues involved
+  is: http://developer.apple.com/technotes/tn2005/tn2137.html. 
+  The Mac binaries adds a significant degree of difficulty to the VisIt build.
+  Some of the reasons for this complexity include:
+  1) MacOS X dynamic shared libraries use the .dylib extension. The later GNU
+  autotools, and libtool know about this, but the library must be built using 
+  these later versions. If the package is a few years old there's a good chance
+  it doesn't know how to build dynamic libraries for the Mac.
+  2) Intel Mac binaries require gcc/g++-4.x. Quite a few of the third-party 
+  libraries are a few years old, and even though they use configure, they were
+  released before MacOS X and gcc-4.x.
+  3) The Intel Mac is not the same architecture as the PPC Mac. Some packages 
+  even if they do support the MacOS X, assume that MacOS X = PowerPC (32-bit
+  only). This gets even more complex, when 4-way universal binaries (ppc, i386,
+  ppc_64, and x86_64) are desired.
+  4) The configure file are created with older autoconf scripts which don't 
+  support either: Mac OS X, gcc-4.x, or cross-compiling. In the worse case
+  configure can't determine that a cross compile is required, and configure
+  can't determine the target machines characteristics by running code the build
+  machine.
+  5) The third-pary configure  doesn't support the building universal 
+  binaries. Problems develop when configure determines the endianness or word
+  size for compiling. Universal binaries must make this determination during
+  the compile. Each architecture in a universal binary requires it's own
+  separate compile.
+  Building of a universal install target requires 2 independent builds of VisIt
+  and its supporting libraries. The PowerPC Mac be running at least MacOS
+  X10.3.9, and the Intel Mac running MacOS X10.4.x (Tiger). Each build is put
+  into a binary distribution tarball (e.g., visit1_6_1.darwin-ppc.tar.gz or
+  visit1_6_1.darwin-i386.tar.gz) by the clearcase_bin/visit-bin-dist step.
+  Each of these tarballs can be installed in a executable distributions,
+  see: http://www/visit/1.6.1/INSTALL_NOTES.
+
+Build Notes (if you still want to do it by hand)s
+  VisIt relies on several external libraries which must be built and installed
+  prior to building VisIt.  This document provides detailed step by step
+  instructions for building VisIt and each of the dependent libraries.  The
+  instructions have been designed so that you can cut and paste most of the
+  commands needed to build the libraries and VisIt from this file into your
+  shell prompt.
 
     Library  Version  Description           For More Information
     =======  =======  ===========           ====================
-    Mesa     6.5.2    3-D Graphics Library  http://www.mesa3d.org/
+    Mesa     6.4.2    3-D Graphics Library  http://www.mesa3d.org/
+                   http://www.llnl.gov/visit/3rd_party/Mesalib-6.4.2.tar.gz
     Python   2.5      Scripting Language    http://www.python.org
+                   http://www.llnl.gov/visit/3rd_party/Python-2.5.tar.gz
     Qt       3.3.8    GUI Toolkit           http://www.trolltech.com
+                   http://www.llnl.gov/visit/3rd_partyqt-/mac-free-3.3.8.tar.gz
     VTK      5.0.0c   Visualization Toolkit http://www.vtk.org
-                      ftp://ftp.llnl.gov/pub/visit/3rd_party/vtk-5.0.0c.tar.gz
+                   http://www.llnl.gov/visit/3rd_party/vtk-5.0.0c.tar.gz
     cmake    2.4.5    Make file generation  http://www.cmake.org
+                   http://www.llnl.gov/visit/3rd_party/cmake-2.4.5.tar.gz
     Silo     4.5.1    File I/O library       
-                            ftp://ftp.llnl.gov/pub/visit/3rd_party/silo060605.sh
+                   http://www.llnl.gov/visit/3rd_party/silo060605.sh
     
     Optional Version  Description           For More Information
     ======== =======  ===========           ====================
-    Boxlib   ???      An AMR I/O library    ???
+    Boxlib   2.5      An AMR I/O library    
+                   http://www.llnl.gov/visit/3rd_party/boxlib.tar.rz
     CFITSIO  3006     File I/O library       
                              http://heasarc.gsfc.nasa.gov/docs/heasarc/fits.html
+                   http://www.llnl.gov/visit/3rd_party/cfitsio3006.tar.gz
     CGNS     2.4.3    File I/O library      http://www.cgns.org    
+                   http://www.llnl.gov/visit/3rd_party/cgnslib_2.4-3.tar.gz
     ExodusII 4.46     File I/O library      http://www.sourceforge.net/projects/
+                   http://www.llnl.gov/visit/3rd_party/exodusii-4.46.tar.gz
     GDAL     1.3.2    GIS reader library    http://www.gdal.org
-    HDF4     2.4.1    I/O library           http://hdf.ncsa.uiuc.edu/hdf4.html
-    HDF5     1.6.5    I/O library           http://hdf.ncsa.uiuc.edu/HDF5/    
+                   http://www.llnl.gov/visit/3rd_party/gdal-1.3.2.tar.gz
+    H5Part   1.3.3    I/O library           
+                             https://codeforge.lbl.gov/projects/h5part
+                   http://www.llnl.gov/visit/3rd_party/H5Part-20070711.tar.gz
+    HDF4     2.4.1    I/O library           
+                             http://hdfgroup.org/products/hdf4/index.html
+                   http://www.llnl.gov/visit/3rd_party/HDF4.2r1.tar.gz
+    HDF5     1.6.5    I/O library           
+                             http://hdfgroup.org/products/hdf5/index.html
+                   http://www.llnl.gov/visit/3rd_party/hdf5-1.6.5.tar.gz
     Mili     1.09     I/O library           (none)    
+                   NOT RELEASED
     netCDF   3.6.0    File I/O library       
-                                    http://www.unidata.ucar.edu/packages/netcdf/
+                             http://www.unidata.ucar.edu/packages/netcdf/
+                   http://www.llnl.gov/visit/3rd_party/netcdf.tar.gz
+    szip     2.1      szip-2.1.tar.gz         
+                             http://hdfgroup.org/doc_resource/SZIP/
+                   http://www.llnl.gov/visit/3rd_party/szip-2.1.tar.gz
     
-The public version of VisIt has been built with the above listed versions
-of the libraries, so it is known to work properly with those versions.  For
-all the packages except VTK and Qt, you can probably use newer versions of the
-packages and VisIt should work properly. For VTK, you must use the 5.0.0c
-distribution provided on the VisIt Web site, because extensions/fixes have been
-added to the VTK-5.x library. The version of Qt used to build VisIt on MacOS X
-must be greater than or equal to 3.3.6 to support gcc-4.x and Intel Mac. For 
-Mesa, you must build a mangled version of Mesa.  
+  The public version of VisIt has been built with the above listed versions
+  of the libraries, so it is known to work properly with those versions.  For
+  all the packages except VTK and Qt, you can probably use newer versions of
+  the packages and VisIt should work properly. For VTK, you must use the 5.0.0c
+  distribution provided on the VisIt Web site, because extensions/fixes have
+  been added to the VTK-5.x library. The version of Qt used to build VisIt on
+  MacOS X must be greater than or equal to 3.3.6 to support gcc-4.x and Intel
+  Mac. For Mesa, you must build a mangled version of Mesa.  
 
-Most of the third party libraries necessary to build VisIt are available for
-download from ftp://ftp.llnl.gov/pub/visit/3rd_party.  It is suggested that
-you start there and then go to the "For More Information" web sites for
-any remaining libraries.
+  All of the third party libraries necessary to build VisIt (except Mili,
+  whose sources hasn't been released) are available for download from:
+  http://www.llnl.gov/visit/3rd_party/.  It is suggested that you start there
+  and then go to the "For More Information" web sites for any remaining
+  libraries.
 
-It is essential that you build all the dependent packages and VisIt using
-the same c++ compiler or you will encounter linking problems because different
-compilers or different versions of the same compiler may use different name
-mangling schemes. For MacOS X, we recommend using at least Xcode 2.4.1.
+  It is essential that you build all the dependent packages and VisIt using
+  the same c++ compiler or you will encounter linking problems because
+  different compilers or different versions of the same compiler may use
+  different name mangling schemes. For MacOS X, we recommend using at least
+  Xcode 2.4.1.
 
 
 ==============================================================================
@@ -158,11 +210,10 @@ Creating dynamic libraries
 Use gxx/g++ in place of the link editor on the specified input object files to
 creates the dynamic library.  The library's name  is specified  by  output  
 (the argument to the -o flag).  The input object files may be in any correct
-format that contains universal object files, or plain object files. The options:
--install_name, -compatibility_version, current_version, -undefined dynamic_lookup, 
-and -header-pad_max_install_names must be embedded in the -Wl, option for 
-passage
-to the linker.
+format that contains universal object files, or plain object files. The 
+options: -install_name, -compatibility_version, -current_version, 
+-undefined dynamic_lookup, and -header-pad_max_install_names must be embedded
+in the -Wl, option for passage to the linker.
 
 Example:
 gcc -dynamiclib -o libfoo.dylib src/*.o \
@@ -184,8 +235,8 @@ Creating dynamic libraries from static libraries
 
 Using Apple's custom libtool command takes the specified input object files and
 creates dynamic a library for use with the link editor, ld(1).  The library's 
-name  is specified  by  output  (the argument to the -o flag).  The input object
-files may be in any correct format that contains universal object files,
+name  is specified  by  output  (the argument to the -o flag).  The input
+object files may be in any correct format that contains universal object files,
 archives, object files. The options: -install_name, -compatibility_version, 
 current_version, -multiply_defined, and -header-pad_max_install_names are
 commonly used.
@@ -196,6 +247,21 @@ libtool -o libfoo.dylib-i386 -dynamic libfoo.a -lSystem \
 -headerpad_max_install_names \
 -install_name @executable_path/../lib/libfoo.dylib \
 -compatibility_version 1.0 -current_version 1.1.5
+
+However it's been found that some third party libraries fail to produce working
+dynamic libraries using the above method. So a relinking of the object files is
+required to create a dynamic library.
+
+Example:
+mkdir tmpdir
+cd tmpdir
+ar x ../libfoo.a
+gcc -dynamiclib -o ../libfoo.dylib *.o \
+-Wl,-headerpad_max_install_names,\
+-compatibility_version,2.0,-current_version,2.2.1,\
+-install_name,@executable_path/../lib/libfoo.dylib
+cd ..
+rm -rf tmpdir
 
 ==============================================================================
 Building an application that can run on multiple versions of MacOS X
@@ -317,7 +383,7 @@ directory.
 export MACOSX_DEPLOYMENT_TARGET=10.3
 
 ==============================================================================
-Building Qt as a universal library
+Building Qt library
 ==============================================================================
 
 Qt actually builds as a prebound dynamic library but we need to make sure
@@ -332,7 +398,7 @@ cd qt-mac-free-3.3.8
 #
 export QTDIR=$(pwd)
 export DYLD_LIBRARY_PATH=$QTDIR/lib:$DYLD_LIBRARY_PATH
-./configure -thread -platform macx-g++ --prefix=$VISITPATH/qt
+./configure -thread -platform macx-g++ -prefix=$VISITPATH/qt
 make
 
 # Install headers Qt
@@ -352,21 +418,17 @@ cp libqt.dylib libqui.dylib $VISITPATH/qt/lib
 cd ../..
 
 ==============================================================================
-Building Mesa as a universal library
+Building Mesa 
 ==============================================================================		    
 
 Mesa is a 3-D graphics library with an API which is very similar to that of
 OpenGL.  It is used for performing off-screen rendering.
-I'm using the 6.5.2 version in place of the VisIt third-party 5.0
-because of better support for universal binaries.
-This distribution however would not build as 2-way universal binary without
-building on separate machines.
 
 #
 # Build Mesa
 #
-tar zxf MesaLib-6.5.2.tar.gz
-cd Mesa-6.5.2
+tar zxf MesaLib-6.4.2.tar.gz
+cd Mesa-6.4.2
 
 #
 # Special instructions for building Mesa on MacOS X
@@ -411,7 +473,7 @@ vi configs/darwin-x86ppc
 #      APP_LIB_DEPS = -L$(TOP)/lib -l$(GLUT_LIB) -l$(GLU_LIB) -l$(GL_LIB) \
 #      -L/usr/X11R6/lib -lX11 -lXmu -lXt -lXi -lm
 #      to
-#      GL_LIB_NAME = libiMesaGL.dylib
+#      GL_LIB_NAME = libMesaGL.dylib
 #      GL_LIB_DEPS = -lm -lpthread
 #      OSMESA_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lMesaGL
 #      GLU_LIB_DEPS = -L$(TOP)/$(LIB_DIR) -lMesaGL
@@ -430,9 +492,9 @@ vi src/mesa/sources
 #       X11_DRIVER_SOURCES =
 
 #
-# Build Mesa by typing in the Mesa-6.5.2 directory.
+# Build Mesa by typing in the Mesa-6.4.2 directory.
 #
-make darwin-x86ppc
+make darwin
 
 #
 # Install Mesa
@@ -484,13 +546,13 @@ Source code and build modifications:
 ====================================
 
 The above VTK distribution must be modified a little to support features that
-VisIt needs in order to run properly. For example, VisIt requires VTK to be built
-with support for mangled mesa in order to support offscreen rendering. VisIt
-uses offscreen rendering to save images, do scalable rendering in parallel, and
-to render images when the CLI is run in -nowin mode. VTK cannot be built with 
-mangled mesa support on MacOS X without some modifications to its source code 
-and build system. Follow each of the next instructions before building VTK to
-ensure that you produce VTK libraries that meet VisIt's needs.
+VisIt needs in order to run properly. For example, VisIt requires VTK to be
+built with support for mangled mesa in order to support offscreen rendering.
+VisIt uses offscreen rendering to save images, do scalable rendering in 
+parallel, and to render images when the CLI is run in -nowin mode. VTK cannot
+be built with mangled mesa support on MacOS X without some modifications to 
+its source code and build system. Follow each of the next instructions before
+building VTK to ensure that you produce VTK libraries that meet VisIt's needs.
 
 vi CMakeLists.txt
 # Look for the 2 lines containing: 
@@ -522,7 +584,7 @@ vi Rendering/CMakeLists.txt
 # remove the line that contains:
    vtkXMesaRenderWindow.cxx.
 
-vi Open Rendering/vtkGraphicsFactory.cxx
+vi Rendering/vtkGraphicsFactory.cxx
 # wrap the
    #include "vtkXMesaRenderWindow.h"
 # with:
@@ -531,7 +593,7 @@ vi Open Rendering/vtkGraphicsFactory.cxx
    #endif
 # to prevent that header from being included.
 
-vi Rendering/vtkMesaRenderWindow.cxx
+vi Rendering/vtkXMesaRenderWindow.cxx
 # change:
    #include "vtkXMesaRenderWindow.h"
 # to:
@@ -634,21 +696,20 @@ you can build VTK.
     CMAKE_MODULE_LINKER_FLAGS_RELEASE  -Wl,-headerpad_max_install_names
     CMAKE_SHARED_LINKER_FLAGS_RELEASE  -Wl,-headerpad_max_install_names,\
 -compatibility_version,5.0,-current_version,5.0.0
-    CMAKE_VERBOSE_MAKEFILE             TRUE
-    VTK_OPENGL_HAS_OSMESA              OFF
+    CMAKE_VERBOSE_MAKEFILE             ON
     VTK_USE_MANGLED_MESA               ON
 
 3. Type "c" to make ccmake configure. When it is done there are more options 
    to fill in. The use of $VISITPATH in this case is for illustration purposes
    only. Since you are inside of ccmake, substitute the actual value for
-   $VISITPATH instead of using the $VISTIPATH environment variable.
+   $VISITPATH instead of using the $VISITPATH environment variable.
 
    Option                              Value
    =================================================
    MANGLED_MESA_INCLUDE_DIR            $VISITPATH/mesa/include
    MANGLED_MESA_LIBRARY                $VISITPATH/mesa/lib/libMesaGL.dylib
-   MANGLED_OSMESA_INCLUDE              $VISITPATH/mesa/include
-   MANGLED_OSMESA_LIB                  $VISITPATH/mesa/lib/libOSMesa.dylib
+   MANGLED_OSMESA_INCLUDE_DIR          $VISITPATH/mesa/include
+   MANGLED_OSMESA_LIBRARY              $VISITPATH/mesa/lib/libOSMesa.dylib
 
 4. Type "c" to configure
 5. Type "g" to generate and quit
@@ -744,14 +805,13 @@ Building Python as a dynamic library
 
 Python is a powerful, free scripting language that is used to drive VisIt's
 viewer when running VisIt without a GUI. Python is cross platform and runs on
-many UNIXes as well as MS Windows and other platforms. VisIt can be configured
-to run without Python if scripting features are not desired.  Follow the
-directions listed below to build Python.  If you have any problems building
-or installing Python, read the README file in the Python distribution for more
-information.
-Python currently can't be built as a 4-way universal binary, because it
-depends on the Carbon framework, which is currently 32-bit, a 2-way build
-appears to supported now.
+many UNIXes as well as MS Windows. VisIt can be configured to run without
+Python if scripting features are not desired.  Follow the directions listed
+below to build Python.  If you have any problems building or installing Python,
+read the README file in the Python distribution for more information.  Python
+currently can't be built as a 4-way universal binary, because it depends on
+the Carbon framework, which is currently 32-bit, a 2-way build appears to
+supported now.
 
 tar zxf Python-2.5.tgz
 cd Python-2.5
@@ -780,6 +840,36 @@ cp libpython2.5.dylib $VISITPATH/python/lib/python2.5/config/libpython2.5.dylib
 cd ..
 
 ===============================================================================
+Building SZIP as a dynamic library (optional, required with HDF5 or HDF4)
+===============================================================================
+
+Szip compression software, providing lossless compression of scientific data,
+support is provided with HDF software products as of HDF5 Release 1.6.0
+and HDF4 Release 2.0.
+
+tar zxf szip-2.1.tar.gz
+cd szip-2.1
+
+# Configure
+./configure --prefix=$VISITPATH/szip CFLAGS="-O2 -fno-common"
+
+# make will bomb, but gets far enough
+make
+# Install SZIP headers
+make install
+
+# Create and install dynamic library
+gcc -dynamiclib -o libsz.dylib src/*.o \
+-Wl,-headerpad_max_install_names,-twolevel_namespace \
+-Wl,-install_name @executable_path/../lib/libsz.dylib \
+-Wl,-compatibility_version,2.0 \
+-Wl,-current_version,2.1 -lSystem
+
+cp libsz.dylib $VISITPATH/szip/lib
+
+cd ..
+
+===============================================================================
 Building HDF5 as a dynamic library (optional)
 ===============================================================================
 
@@ -793,6 +883,7 @@ attempt to build Silo with support for HDF5. HDF5 uses configure to
 determine endianness and configure doesn't support cross-compiling. Therefore
 HDF5 meeded to be built on both an Intel machine and a PPC machine. These 
 resulting libraries are then merged together to get a universal binary.
+HDF5 is now dependent on SZIP (above).
 
 tar zxf hdf5-1.6.5.tar.gz
 cd hdf5-1.6.5
@@ -805,7 +896,8 @@ autoreconf -vif
 
 # Build a library for each architecure, on the PPC machine:
 ./configure --prefix=$VISITPATH/hdf5 CFLAGS="-O2 -fno-common" \
-LDFLAGS="-Wl,-headerpad_max_install_names"
+LDFLAGS="-Wl,-headerpad_max_install_names" \
+--with-szlib=$VISITPATH/szip
 
 # make will bomb, but gets far enough
 make
@@ -813,11 +905,16 @@ make
 make install
 
 # Create and install dynamic library
-libtool -o libhdf5.dylib -dynamic src/.libs/libhdf5.a -lSystem -lz \
--twolevel_namespace -undefined dynamic_lookup \
--headerpad_max_install_names \
--install_name @executable_path/../lib/libhdf5.dylib \
--compatibility_version 1.6 -current_version 1.6.5
+##libtool -o libhdf5.dylib -dynamic src/.libs/libhdf5.a -lSystem -lz \
+##-twolevel_namespace -undefined dynamic_lookup \
+##-headerpad_max_install_names \
+##-install_name @executable_path/../lib/libhdf5.dylib \
+##-compatibility_version 1.6 -current_version 1.6.5
+gcc -dynamiclib -o libhdf5.dylib src/*.o \
+-Wl,-headerpad_max_install_names,-twolevel_namespace \
+-Wl,-install_name @executable_path/../lib/libhdf5.dylib \
+-Wl,-compatibility_version,1.6 -Wl,-current_version,1.6.5 \
+-L"$VISITDIR/szip/lib" -lSystem -lsz -lz
 
 cp libhdf5.dylib $VISITPATH/hdf5/lib
 
@@ -927,7 +1024,7 @@ vi hdf/src/hdfi.h
 CPPFLAGS="-I$VISITPATH/vtk/Utilities -I$VISITPATH/vtk/Utilities/vtkjpeg" \
 CFLAGS="-O2 -fno-common" \
 LDFLAGS="-Wl,-headerpad_max_install_names" --with-jpeg=$VISITPATH/vtk/lib \
---with-szlib=no --disable-fortran --disable-dependency-tracking
+--with-szlib=$VISITPATH/szip --disable-fortran --disable-dependency-tracking
 
 # The build, and install will bomb during test, just ignore
 make
@@ -940,7 +1037,7 @@ gcc -dynamiclib -o libdf.dylib hdf/src/*.o \
 -Wl,-headerpad_max_install_names,\
 -install_name,@executable_path/../lib/libdf.dylib,\
 -compatibility_version,4.0,-current_version,4.2.1 \
--L$VISITPATH/vtk/lib -ljpeg -lz
+-L$VISITPATH/vtk/lib -L$VISITPATH/szip/lib -ljpeg -lsz -lz
 
 cp libdf.dylib $VISITPATH/hdf4/lib
 
@@ -949,7 +1046,8 @@ gcc -dynamiclib -o libmfhdf.dylib mfhdf/libsrc/*.o \
 -Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,\
 -install_name,@executable_path/../lib/libmfhdf.dylib,\
 -compatibility_version,4.0,-current_version,4.2.1 \
--L$VISITPATH/vtk/lib -L$VISITPATH/hdf4/lib -ljpeg -ldf -lz
+-L$VISITPATH/vtk/lib -L$VISITPATH/szip/lib -L$VISITPATH/hdf4/lib \
+-ljpeg -ldf -lsz -lz
 
 cp libmfhdf.dylib $VISITPATH/hdf4/lib
 
@@ -1161,6 +1259,14 @@ cp include/make-depend-std.in include/make-depend-gnu.in
 # Set the values of some helper variables
 export HDF5INCLUDE=$VISITPATH/hdf5/include
 export HDF5LIB=$VISITPATH/hdf5/lib
+ln -s $VISITPATH/szip/lib/libsz.dylib $VISITPATH/hdf5/lib/libsz.dylib
+
+# Edit configure, replacing all occurences of "-lhdf5" with "-lhdf5 -lsz".
+cat configure | sed 's/-lhdf5/-lhdf5 -lsz/' > tmp.conf
+mv configure configure.orig
+mv tmp.conf configure
+chmod +x configure
+
 ./configure --prefix=$VISITPATH/silo CFLAGS="-O2 -fno-common" \
 CXXFLAGS="-O2 -fno-common" \
 LDFLAGS="-Wl,-headerpad_max_install_names,-undefined,dynamic_lookup" \
@@ -1168,14 +1274,14 @@ LDFLAGS="-Wl,-headerpad_max_install_names,-undefined,dynamic_lookup" \
 --without-exodus --without-python --with-hdf5=$HDF5INCLUDE,$HDF5LIB
 
 # Compile the needed subroutines. Force make to ignore errors from
-# archive creation, it should get ous to where we want to be.
+# archive creation, it should get us to where we want to be.
 make -i
 
 gcc -dynamiclib -o libsilo.dylib silo/*/*.o \
--Wl,-headerpad_max_install_names,-undefined,dynamic_lookup,\
+-Wl,-headerpad_max_install_names,\
 -install_name,@executable_path/../lib/libsilo.dylib,\
 -compatibility_version,4.5,-current_version,4.5.1 \
--L$HDF5LIB -lhdf5
+-L$HDF5LIB -lhdf5 -lsz -lz
 
 # Install headers. Ignore archive creation errors.
 make -i install
@@ -1323,7 +1429,7 @@ env CFLAGS="-O2 -fno-common" LDFLAGS="-Wl,-headerpad_max_install_names" \
 make
 # Build a dynamic library
 libtool -o libcfitsio.dylib -dynamic libcfitsio.a -lSystem \
--twolevel_namespace -undefined dynamic_lookup -headerpad_max_install_names \
+-twolevel_namespace -headerpad_max_install_names \
 -install_name @executable_path/../lib/libcfits.dylib \
 -compatibility_version 3.0 -current_version 3.006
 
@@ -1332,6 +1438,33 @@ mkdir $VISITPATH/cfitsio
 make install
 cd ..
 #
+
+===============================================================================
+Building H5Part as a dynamic library (optional)
+===============================================================================
+
+H5Part is a very simple data storage schema and provides an API that simplifies the reading/writing of the data to the HDF5 file format.
+
+tar zxf H5Part-1.4.0.tar.gz
+cd H5Part-1.4.0
+
+# Configure
+./configure --prefix=$VISITPATH/H5Part CFLAGS="-O2 -fno-common"
+
+# build
+make
+# Install headers
+make install
+
+# Create and install dynamic library
+libtool -o libH5Part.dylib -dynamic libH5Part.a -lSystem \
+-twolevel_namespace -headerpad_max_install_names \
+-install_name @executable_path/../lib/libH5Part.dylib \
+-compatibility_version 1.4 -current_version 1.4.0
+
+cp libH5Part.dylib $VISITPATH/H5Part/lib
+
+cd ..
 
 ===============================================================================
 Building VisIt
@@ -1346,8 +1479,8 @@ More information about building VisIt follows after that.
 #
 # Unzipping VisIt's source code distribution
 #
-tar zxf visit070330.tar.gz
-cd visit070330
+tar zxf visit070702.tar.gz
+cd visit070702/src
 
 #
 # HDF5 and Silo
@@ -1364,7 +1497,7 @@ ln -s $VISITPATH/hdf5/lib/libhdf5.dylib $VISITPATH/silo/lib/libhdf5.dylib
 # config-site/tread.local.conf
 #
 cd config-site
-echo VISITHOME=`cat ../../visitpath` > `hostname`.conf
+echo VISITHOME=`cat ../../../visitpath` > `hostname`.conf
 cat Template.conf >> `hostname`.conf
 # Edit `hostname`.conf so that:
 QT_BIN=$VISITHOME/qt/bin
@@ -1386,6 +1519,8 @@ DEFAULT_EXODUS_INCLUDES=$VISITHOME/exodusII/include
 DEFAULT_EXODUS_LIBRARY=$VISITHOME/exodusII/lib
 DEFAULT_GDAL_INCLUDE=$VISITHOME/gdal/1.3.2/include                            
 DEFAULT_GDAL_LIB=$VISITHOME/gdal/1.3.2/lib                            
+DEFAULT_H5PART_INCLUDE=$VISITHOME/h5part/include
+DEFAULT_H5PART_LIB=$VISITHOME/h5part/lib
 DEFAULT_HDF4_FLAGS=$VISITHOME/hdf4/include                                
 DEFAULT_HDF4_LIBS=$VISITHOME/hdf4/lib
 DEFAULT_HDF5_INCLUDE=$VISITHOME/hdf5/include             
@@ -1395,10 +1530,12 @@ DEFAULT_NETCDF_INCLUDE=$VISITHOME/netcdf/3.6.0/include
 DEFAULT_NETCDF_LIB=$VISITHOME/netcdf/3.6.0/lib
 DEFAULT_SILO_INCLUDES=$VISITHOME/silo/include
 DEFAULT_SILO_LIBRARY=$VISITHOME/silo/lib
+DEFAULT_SZIP_INCLUDE=$VISITHOME/szip/include
+DEFAULT_SZIP_LIB=$VISITHOME/szip/lib
 
 cd ..
 
-./configure
+./configure --enable-visitmodule
 #
 # If VisIt failed to configure properly, check the contents of the
 # `hostname`.conf file to make sure that it points to the libraries that
@@ -1406,6 +1543,18 @@ cd ..
 # for another MacOS X computer, if you want an example file that works.
 #
 
+# Patch some problems with some make files
+cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
+mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
+mv -f Make.tmp databases/Fluent/Makefile
+cat databases/SimV1/Makefile | \
+  sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
+mv -f Make.tmp databases/SimV1/Makefile
+cat databases/SimV1Writer/Makefile | \
+  sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+mv -f databases/SimV1Writer/Makefile databases/SimV1Writer/Makefile.orig
+mv -f Make.tmp databases/SimV1Writer/Makefile
 # Build VisIt
 make
 
@@ -1413,8 +1562,11 @@ make
 # a visit1_6.darwin-i386.tar.gz file of about 60Mbytes.
 clearcase_bin/visit-bin-dist
 
-# To install the binaries in a directory called "INSTALL_DIR_PATH", and 
-# create a disk image file called Visit-1.6.dmg use:
-clearcase_bin/visit-install -dmg 1.6 darwin-i386 INSTALL_DIR_PATH
+# To install the binaries in a directory called "INSTALL_DIR_PATH"
+clearcase_bin/visit-install 1.6 darwin-i386 INSTALL_DIR_PATH
+
+# To install the PPC binaries in a directory called "INSTALL_DIR_PATH", and
+# create a disk image file called Visit-1.6.dmg containing both images, use:
+clearcase_bin/visit-install -dmg 1.6 darwin-ppc INSTALL_DIR_PATH
 
 If you have any problems send e-mail to visit-help@llnl.gov.
