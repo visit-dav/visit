@@ -363,6 +363,12 @@ avtProjectFilter::ProjectRectilinearGrid(vtkRectilinearGrid *in_ds)
 //  Programmer:  Jeremy Meredith
 //  Creation:    September  6, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct  5 08:55:01 PDT 2007
+//    In the special case where we have a curvilinear mesh with dimensions
+//    1xYxZ or Xx1xZ, then change the projected mesh to be XxYx1.
+//
 // ****************************************************************************
 vtkPointSet *
 avtProjectFilter::ProjectPointSet(vtkPointSet *in_ds)
@@ -379,13 +385,36 @@ avtProjectFilter::ProjectPointSet(vtkPointSet *in_ds)
     float *points = (float*)new_pts->GetVoidPointer(0); // Assume float
     for (int i = 0 ; i < npoints ; i++)
     {
-        
         ProjectPoint(points[i*3+0],
                      points[i*3+1],
                      points[i*3+2]);
     }
     out_ds->SetPoints(new_pts);
     new_pts->Delete();
+
+    //
+    // If we are projecting a funny 2D curvilinear grid, then make it
+    // be a normal 2D curvilinear grid.
+    //
+    if (out_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *) out_ds;
+        int dims[3];
+        sgrid->GetDimensions(dims);
+        if (dims[0] == 1 && dims[1] != 1 && dims[2] != 1)
+        {
+            dims[0] = dims[1];
+            dims[1] = dims[2];
+            dims[2] = 1;
+            sgrid->SetDimensions(dims);
+        }
+        if (dims[0] != 1 && dims[1] == 1 && dims[2] != 1)
+        {
+            dims[1] = dims[2];
+            dims[2] = 1;
+            sgrid->SetDimensions(dims);
+        }
+    }
 
     ManageMemory(out_ds);
     out_ds->Delete();
