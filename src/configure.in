@@ -716,6 +716,10 @@ dnl
 dnl    Brad Whitlock, Thu Aug 2 14:45:17 PST 2007
 dnl    Added support for libccmio for the GNEP Star-CD reader.
 dnl
+dnl    Thomas R. Treadway, Tue Sep 18 15:48:47 PDT 2007
+dnl    Added szip library.
+dnl    Created a HDF5_LIBDIR variable
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -1730,6 +1734,67 @@ esac
 AC_SUBST(ZLIB_INCLUDE)
 AC_SUBST(ZLIB_LIB)
 
+dnl  Is szip present?
+dnl
+dnl  It's required if hdf5 or hdf4 was compiled with szip support. 
+dnl  Normally check for szlib.h and libisz.a but skip the test 
+dnl  if `--without-zlib' is specified.
+dnl  Alternate directories can be specified for the header and library by
+dnl  giving names like this `--with-szip=INC,LIB' (if only the LIB directory
+dnl  is supplied then it must still be preceded by a comma).
+dnl
+
+#
+AC_MSG_CHECKING(for szip)
+SZIP=""
+SZIP_INCLUDE=""
+SZIP_LIB=""
+SZIP_LIBDIR=""
+AC_ARG_WITH(szip,
+            [  --with-szip=INC-DIR,LIB-DIR       Location of szip headers and library],
+           szip_specified="yes",
+           szip_specified="no",
+           )
+if test "$szip_specified" = "yes"; then
+   if test "$withval" != "no"; then
+      SZIP_INCLUDE="-I`echo $withval |cut -f1 -d,`"
+      if test "$SHORT_UNAME" = "darwin"; then
+         SZIP_LIB="-L`echo $withval |cut -f2 -d, -s` -lsz"
+      else
+         SZIP_LIB="`echo $withval |cut -f2 -d, -s`/libsz.a"
+      fi
+      SZIP_LIBDIR="`echo $withval |cut -f2 -d, -s`"
+   fi
+else
+   if test "$DEFAULT_SZIP_INCLUDE" != "" ; then
+      SZIP_INCLUDE="-I$DEFAULT_SZIP_INCLUDE $SZIP_INCLUDE"
+   fi
+   if test "$DEFAULT_SZIP_LIB" != "" ; then
+      SZIP_LIBDIR="$DEFAULT_SZIP_LIB"
+      if test "$SHORT_UNAME" = "darwin"; then
+         SZIP_LIB="-L$DEFAULT_SZIP_LIB -lsz"
+      else
+         SZIP_LIB="$DEFAULT_SZIP_LIB/libsz.a"
+      fi
+   fi
+fi
+if test "$SZIP_LIB" != "" ; then
+   if test "$SZIP_INCLUDE" != "" ; then
+      SZIP="$""(SZIP)"
+      AC_DEFINE(HAVE_SZLIB_H, [1], [Define if you have the <szlib.h> header file.])
+      AC_DEFINE(HAVE_LIBSZ, [1], [Define if you have the sz library.])
+      AC_MSG_RESULT(yes)
+   else
+      AC_MSG_RESULT(no)
+   fi
+else
+   AC_MSG_RESULT(no)
+fi
+AC_SUBST(SZIP)
+AC_SUBST(SZIP_INCLUDE)
+AC_SUBST(SZIP_LIB)
+AC_SUBST(SZIP_LIBDIR)
+
 dnl
 dnl  Is HDF5 present?
 dnl
@@ -1753,6 +1818,7 @@ AC_MSG_CHECKING(for HDF5)
 HDF5=""
 HDF5_INCLUDE=""
 HDF5_LIB=""
+HDF5_LIBDIR=""
 AC_ARG_WITH(hdf5,
 	    [  --with-hdf5=INC-DIR,LIB-DIR     Location of HDF5 header and library],
            hdf5_specified="yes",
@@ -1766,14 +1832,24 @@ fi
 if test "$hdf5_specified" = "yes"; then
    if test "$withval" != "no"; then
       HDF5_INCLUDE="-I`echo $withval |cut -f1 -d,`"
-      HDF5_LIB="`echo $withval |cut -f2 -d, -s`/libhdf5.$H5_LIBEXT"
+      if test "$SHORT_UNAME" = "darwin"; then
+         HDF5_LIB="-L`echo $withval |cut -f2 -d, -s` -lhdf5 $SZIP_LIB"
+      else
+         HDF5_LIB="`echo $withval |cut -f2 -d, -s`/libhdf5.$H5_LIBEXT $SZIP_LIB"
+      fi
+      HDF5_LIBDIR="`echo $withval |cut -f2 -d, -s`"
    fi
 else
    if test "$DEFAULT_HDF5_INCLUDE" != "" ; then
       HDF5_INCLUDE="-I$DEFAULT_HDF5_INCLUDE $HDF5_INCLUDE"
    fi
    if test "$DEFAULT_HDF5_LIB" != "" ; then
-      HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT $HDF5_LIB"
+      if test "$SHORT_UNAME" = "darwin"; then
+         HDF5_LIB="-L$DEFAULT_HDF5_LIB -lhdf5 $SZIP_LIB $HDF5_LIB"
+      else
+         HDF5_LIB="$DEFAULT_HDF5_LIB/libhdf5.$H5_LIBEXT $SZIP_LIB $HDF5_LIB"
+      fi
+      HDF5_LIBDIR="$DEFAULT_HDF5_LIB"
    fi
 fi
 if test "$HDF5_LIB" != "" ; then
@@ -1791,6 +1867,7 @@ fi
 AC_SUBST(HDF5)
 AC_SUBST(HDF5_INCLUDE)
 AC_SUBST(HDF5_LIB)
+AC_SUBST(HDF5_LIBDIR)
 
 dnl
 #
@@ -2176,9 +2253,9 @@ else
    fi
    if test "$DEFAULT_HDF4_LIBS" != "" ; then
       if test "$SHORT_UNAME" = "darwin"; then
-          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -lvtkjpeg -lz $HDF4_LIBS"
+          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -lvtkjpeg $SZIP_LIB -lz $HDF4_LIBS"
       else
-          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg -lz $HDF4_LIBS"
+          HDF4_LIBS="-L$DEFAULT_HDF4_LIBS -lmfhdf -ldf -ljpeg $SZIP_LIB -lz $HDF4_LIBS"
       fi
       HDF4_LIBDIR="$DEFAULT_HDF4_LIBS"
    fi
@@ -3230,6 +3307,7 @@ AC_SUBST(ENGINEWRAPPAR)
 #
 CREATE_SILO_LINK=""
 CREATE_MILI_LINK=""
+CREATE_SZIP_LINK=""
 CREATE_HDF4_LINK=""
 CREATE_HDF5_LINK=""
 CREATE_NETCDF_LINK=""
@@ -3248,6 +3326,9 @@ case $SHORT_UNAME in
     fi
     if test "$MILI_LIBS" != "" ; then
         CREATE_MILI_LINK="create_mili_link"
+    fi
+    if test "$SZIP_LIB" != "" ; then
+        CREATE_SZIP_LINK="create_szip_link"
     fi
     if test "$HDF4_LIBS" != "" ; then
         CREATE_HDF4_LINK="create_hdf4_link"
@@ -3289,6 +3370,7 @@ case $SHORT_UNAME in
 esac
 AC_SUBST(CREATE_SILO_LINK)
 AC_SUBST(CREATE_MILI_LINK)
+AC_SUBST(CREATE_SZIP_LINK)
 AC_SUBST(CREATE_HDF4_LINK)
 AC_SUBST(CREATE_HDF5_LINK)
 AC_SUBST(CREATE_NETCDF_LINK)
