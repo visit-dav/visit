@@ -6801,7 +6801,7 @@ avtSiloFileFormat::GetCSGMesh(DBfile *dbfile, const char *mn, int dom)
 //  Method: avtSiloFileFormat::DetermineFilenameAndDirectory
 //
 //  Purpose:
-//      Parses a string from a Sile file that has form "filename:directory/var"
+//      Parses a string from a Silo file that has form "filename:directory/var"
 //      and determines which part is "filename" and which is "directory/var".
 //
 //      input       The input string ("filename:directory/var")
@@ -9445,6 +9445,11 @@ avtSiloFileFormat::GetMultivarToMultimeshMap(DBfile *dbfile)
 //  Programmer: Mark C. Miller 
 //  Creation:   July 9, 2007 
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Oct  5 09:16:29 PDT 2007
+//    Fix typo in print statement.
+//
 // ****************************************************************************
 static string
 GuessCodeNameFromTopLevelVars(DBfile *dbfile)
@@ -9459,7 +9464,7 @@ GuessCodeNameFromTopLevelVars(DBfile *dbfile)
     else
         retval = "Unknown";
 
-    debug5 << "Looks like this Sile file was produced by code \"" << retval << "\"" << endl;
+    debug5 << "Looks like this Silo file was produced by code \"" << retval << "\"" << endl;
     return retval;
 }
 
