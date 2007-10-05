@@ -173,6 +173,11 @@
 #    though, since it is to a directory which contains include files.
 #    Also, don't forget to remove the Makefile in distclean.
 #
+#    Thomas R. Treadway, Fri Sep 21 13:33:37 PDT 2007
+#    Added szip support
+#    Using HDF5_LIBDIR now
+#    Added visit.so and visitmodule.so to clean rule
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -209,7 +214,7 @@ all: libvtkcommon libvtkdicom libvtkfiltering libvtkgraphics libvtkhybrid \
      libvtkio libvtkimaging libvtkrendering libvtkzlib libvtkpng libvtkjpeg \
      libvtkexpat libvtktiff libvtkfreetype libvtkftgl libvtksys \
      libvtkmpeg2encode libosmesa libmesagl libGLU libqt libqui pythondir \
-     @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ \
+     @CREATE_SILO_LINK@ @CREATE_MILI_LINK@ @CREATE_SZIP_LINK@ \
      @CREATE_HDF4_LINK@ @CREATE_HDF5_LINK@ @CREATE_NETCDF_LINK@ \
      @CREATE_CGNS_LINK@ @CREATE_GDAL_LINK@ @CREATE_EXODUS_LINK@ \
      @CREATE_BOXLIB2D_LINK@ @CREATE_BOXLIB3D_LINK@ \
@@ -331,9 +336,13 @@ create_mili_link:
 	$(RM) libmili.@SHLIB_LIBEXT@ libgahl.@SHLIB_LIBEXT@
 	ln -s @MILI_DIR@/libmili.@SHLIB_LIBEXT@ .
 
+create_szip_link:
+	$(RM) libszip.@SHLIB_LIBEXT@
+	ln -s @SZIP_LIBDIR@/libsz.@SHLIB_LIBEXT@ .
+
 create_hdf5_link:
 	$(RM) libhdf5.@SHLIB_LIBEXT@
-	ln -s @HDF5_LIB@ .
+	ln -s @HDF5_LIBDIR@/libhdf5.@SHLIB_LIBEXT@ .
 
 create_hdf4_link:
 	$(RM) libdf.@SHLIB_LIBEXT@ libmfhdf.@SHLIB_LIBEXT@
@@ -428,7 +437,9 @@ clean:
 	$(LIBVTKRENDERING)* \
 	$(LIBSILO) \
 	libqt.a \
-	libqui.a
+	libqui.a \
+	visit.so \
+	visitmodule.so
 
 distclean: cleanlinks
 	$(RM) python Makefile

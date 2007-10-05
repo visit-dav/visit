@@ -45,6 +45,9 @@
 /* Define if you have the netcdf library. */
 #undef HAVE_LIBNETCDF
 
+/* Define if you have the sz library. */
+#undef HAVE_LIBSZ
+
 /* Define if you have the z library. */
 #undef HAVE_LIBZ
 
@@ -92,6 +95,9 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
+
+/* Define if you have the <szlib.h> header file. */
+#undef HAVE_SZLIB_H
 
 /* Define if you have the pthread library. */
 #undef HAVE_THREADS
