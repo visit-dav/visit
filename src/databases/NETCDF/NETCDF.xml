@@ -23,6 +23,7 @@
       avtFVCOMParticleFileFormat.C
       avtFVCOM_MTSDFileFormat.C
       avtFVCOM_MTMDFileFormat.C
+      avtCCSMFileFormat.C
       NETCDFFileObject.C
     </Files>
     <Files components="E">
@@ -36,6 +37,7 @@
       avtFVCOMParticleFileFormat.C
       avtFVCOM_MTSDFileFormat.C
       avtFVCOM_MTMDFileFormat.C
+      avtCCSMFileFormat.C
       NETCDFFileObject.C
     </Files>
     <Attribute name="" purpose="" persistent="true">
