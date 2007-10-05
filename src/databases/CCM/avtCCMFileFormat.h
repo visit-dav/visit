@@ -43,8 +43,14 @@
 #define AVT_CCM_FILE_FORMAT_H
 
 #include <avtSTMDFileFormat.h>
-#include <vector>
 #include <ccmio.h>
+#include <vectortypes.h>
+#include <map>
+
+class vtkCellArray;
+class vtkIdList;
+class vtkPoints;
+class vtkUnstructuredGrid;
 
 // ****************************************************************************
 //  Class: avtCCMFileFormat
@@ -87,19 +93,76 @@ public:
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
 protected:
-    CCMIOID               &GetRoot();
-    bool                   GetIDsForDomain(int dom, CCMIOID &state, 
-                                           CCMIOID &processor,
-                                           CCMIOID &vertices,
-                                           CCMIOID &topology,
-                                           CCMIOID &solution,
-                                           bool &hasSolution);
+    class FaceInfo
+    {
+    public:
+        FaceInfo();
+        FaceInfo(const FaceInfo &);
+        virtual ~FaceInfo();
+        void operator = (const FaceInfo &);
+        int id;
+        int cells[2];
+        intVector nodes;
+    };
+    typedef std::vector<FaceInfo> FaceInfoVector;
+    class CellInfo
+    {
+    public:
+        CellInfo();
+        CellInfo(const CellInfo &);
+        virtual ~CellInfo();
+        void operator = (const CellInfo &);
+        int id;
+        // Important for knowing how face nodes are ordered. 
+        // 0 = boundary
+        // 1 = internal, first cell
+        // 2 = internal, second cell 
+        intVector faceTypes; 
+        FaceInfoVector faces; 
+    };
+    typedef std::vector<CellInfo> CellInfoVector;
+    typedef std::map<std::string, CCMIOID> VarFieldMap;
+    typedef std::vector<vtkDataArray*> DataArrayVector;
 
-    bool                   ccmOpened;
-    CCMIOID                ccmRoot;
-    CCMIOError             ccmErr;
+    CCMIOID          &GetRoot();
+    CCMIOID          &GetState();
+    bool              GetIDsForDomain(int dom, 
+                                      CCMIOID &processor,
+                                      CCMIOID &vertices,
+                                      CCMIOID &topology,
+                                      CCMIOID &solution,
+                                      bool &hasSolution);
+    void              GetFaces(CCMIOID faceID, CCMIOEntity faceType,
+                               unsigned int nFaces, int &minSize, 
+                               int &maxSize, CellInfoVector &ci);
+    void              ReadScalar(CCMIOID field, intVector &mapData, 
+                                 floatVector &data, bool readingVector = false);
+    void              BuildHex(const CellInfo &ci, 
+                               vtkCellArray *cellArray, 
+                               intVector &cellTypes);
+    void              BuildTet(const CellInfo &ci, 
+                               vtkCellArray *cellArray, 
+                               intVector &cellTypes);
+    void              BuildWedge(const CellInfo &ci, 
+                                 vtkCellArray *cellArray, 
+                                 intVector &cellTypes);
+    void              BuildPyramid(const CellInfo &ci, 
+                                   vtkCellArray *cellArray, 
+                                   intVector &cellTypes);
+    void              TesselateCell(const int, const CellInfoVector &civ, 
+                                    vtkPoints *points, 
+                                    vtkUnstructuredGrid *ugrid);
 
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    bool              ccmOpened;
+    bool              ccmStateFound;
+    CCMIOID           ccmRoot;
+    CCMIOID           ccmState;
+    CCMIOError        ccmErr;
+    VarFieldMap       varsToFields;
+
+    DataArrayVector   originalCells; 
+
+    virtual void      PopulateDatabaseMetaData(avtDatabaseMetaData *);
 };
 
 

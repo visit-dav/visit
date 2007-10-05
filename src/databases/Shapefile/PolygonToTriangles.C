@@ -81,6 +81,9 @@ private:
 //   Kathleen Bonnell, Thu Mar 29 09:01:59 PDT 2007 
 //   Added WIN32 specific code.
 //   
+//   Kathleen Bonnell, Mon Oct  1 07:50:46 PDT 2007 
+//   Added SetNormal and ClearTriangles methods. 
+//   
 // ****************************************************************************
 
 class PolygonToTriangles
@@ -123,6 +126,11 @@ public:
         vertexAllocs.clear();
 
         gluDeleteTess(tess);
+    }
+
+    void SetNormal(const double*n)
+    {
+        gluTessNormal(tess, n[0], n[1], n[2]);
     }
 
     void BeginPolygon()
@@ -175,6 +183,13 @@ public:
             c = triangles[t*3+2];
         }
         return ret;
+    }
+
+    void ClearTriangles()
+    {
+        nTrianglesInPolygon = 0;
+        triangles.clear();
+        intermediateVertexIds.clear();
     }
 private:
     // Allocates vertex memory and logs it for deletion later.
