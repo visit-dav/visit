@@ -49,7 +49,7 @@
 #include <avtFVCOM_MTSDFileFormat.h>
 #include <avtFVCOMParticleFileFormat.h>
 #include <avtFVCOM_MTMDFileFormat.h>
-
+#include <avtCCSMFileFormat.h>
 
 // ****************************************************************************
 // Method: NETCDF_CreateFileFormatInterface
@@ -72,6 +72,9 @@
 // Modifications:
 //   Brad Whitlock, Fri Dec 9 17:39:52 PST 2005
 //   I renamed the method to avoid namespace conflicts on Tru64.
+//
+//   Brad Whitlock, Fri Oct 5 11:41:05 PDT 2007
+//   Added CCSM file format.
 //
 // ****************************************************************************
 
@@ -129,6 +132,12 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
                 debug4 << "Database is avtFVCOMParticleFileFormat" << endl;
             }
 
+            if(flavor == -1 && avtCCSMFileFormat::Identify(f))
+            {
+                flavor = 7;
+                debug4 << "Database is avtFVCOMCCSMFileFormat" << endl;
+            }
+
             if(flavor == -1)
                 debug4 << "Database is avtBasicNETCDFFileFormat" << endl;
         }
@@ -161,6 +170,9 @@ NETCDF_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
             break;
         case 6:
             ffi = avtFVCOMParticleFileFormat::CreateInterface(f, list, nList, nBlock);
+            break;
+        case 7:
+            ffi = avtCCSMFileFormat::CreateInterface(f, list, nList, nBlock);
             break;
         default:
             ffi = avtBasicNETCDFFileFormat::CreateInterface(f, list, nList, nBlock);
