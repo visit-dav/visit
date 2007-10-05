@@ -86,6 +86,10 @@
 //
 //    Mark C. Miller, Mon Aug  6 13:36:16 PDT 2007
 //    Added LoadSinglePluginNow. Changed LoadSinglePlugin to return bool
+//
+//    Hank Childs, Fri Oct  5 13:10:38 PDT 2007
+//    Changed argument for ReadPluginDir.
+//
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -135,8 +139,9 @@ class PLUGIN_API PluginManager
     void                            ReadPluginInfo();
     void                            SetPluginDir(const char *);
     void                            ReadPluginDir(std::vector<
-                                                  std::pair<std::string,
-                                                            std::string> > &);
+                                                   std::vector<
+                                                    std::pair<std::string,
+                                                          std::string> > > &);
     void                            GetPluginList(std::vector<
                                                   std::pair<std::string,
                                                              std::string> >&);

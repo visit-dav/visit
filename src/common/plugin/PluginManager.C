@@ -479,44 +479,62 @@ PluginManager::EnablePlugin(const string &id)
 //    Allow for duplicates.  Throwing out duplicates means that a bad private
 //    plugin disallows the public one from getting loaded.
 //
+//    Hank Childs, Fri Oct  5 15:42:58 PDT 2007
+//    Honor the precedence of the plugin directories, rather than just throwing
+//    them in a giant list.
+//
 // ****************************************************************************
 
 void
 PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 {
+    int dir, f;
+
     // Read the files in the plugin directory.
-    vector<pair<string,string> > files;
+    vector< vector<pair<string,string> > > files;
     ReadPluginDir(files);
 
     // Add each file that is a library to the list.
     string ext(PLUGIN_EXTENSION);
     int extLen = ext.size();
 
-    for(int i = 0; i < files.size(); ++i)
+    vector< vector<pair<string,string> > > tmp;
+    tmp.resize(files.size());
+    for (dir = 0 ; dir < files.size() ; dir++)
     {
-        const string &filename = files[i].second;
+        for (f = 0; f < files[dir].size(); f++)
+        {
+            const string &filename = files[dir][f].second;
 
-        // Ignore dot directories
-        if (filename == "." || filename == "..")
-            continue;
+            // Ignore dot directories
+            if (filename == "." || filename == "..")
+                continue;
 
 #define PLUGIN_MAX(A,B) (((A) < (B)) ? (B) : (A))
 
-        // Ignore it if it does not end in the correct extension
-        if (filename.length() < PLUGIN_MAX(5,extLen) ||
-            !(filename.substr(filename.length()-extLen,extLen) == ext))
-        {
-            continue;
-        }
+            // Ignore it if it does not end in the correct extension
+            if (filename.length() < PLUGIN_MAX(5,extLen) ||
+                !(filename.substr(filename.length()-extLen,extLen) == ext))
+            {
+                continue;
+            }
 
 #undef PLUGIN_MAX
-        // It is a valid library name so add it to the list.
-        libs.push_back(files[i]);
+            // It is a valid library name so add it to the list.
+            tmp[dir].push_back(files[dir][f]);
+        }
     }
 
-    // Sort the library filename list.
-    sort(libs.begin(), libs.end());
+    // Sort the file names, but keep the precedence of the directory
+    // they came from preserved.
+    for (dir = 0 ; dir < files.size() ; dir++)
+    {
+        sort(files[dir].begin(), files[dir].end());
+        for (f = 0 ; f < files[dir].size() ; f++)
+            libs.push_back(files[dir][f]);
+    }
 }
+
 
 // ****************************************************************************
 //  Method: PluginManager::ReadPluginInfo
@@ -1449,11 +1467,15 @@ PluginManager::SetPluginDir(const char *PluginDir)
 //    Brad Whitlock, Mon Jul 15 16:41:59 PST 2002
 //    I fixed the win32 implementation.
 //
+//    Hank Childs, Fri Oct  5 13:08:55 PDT 2007
+//    Changed argument to make separation of directories easier.
+//
 // ****************************************************************************
 
 void
-PluginManager::ReadPluginDir(vector<pair<string,string> > &files)
+PluginManager::ReadPluginDir(vector< vector<pair<string,string> > > &files)
 {
+    files.resize(pluginDirs.size());
     for (int i=0; i<pluginDirs.size(); i++)
     {
         string pluginDir(pluginDirs[i]);
@@ -1478,7 +1500,7 @@ PluginManager::ReadPluginDir(vector<pair<string,string> > &files)
             // Add each file in the directory to the list.
             dirent  *ent;
             while ((ent = readdir(dir)) != NULL)
-                files.push_back(pair<string,string>(pluginDir,ent->d_name));
+                files[i].push_back(pair<string,string>(pluginDir,ent->d_name));
             closedir(dir);
         }
         //else
