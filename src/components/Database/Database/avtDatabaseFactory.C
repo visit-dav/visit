@@ -94,6 +94,7 @@ void CheckPermissions(const char *);
 //
 //  Arguments:
 //      format  The name of the format to use (example: "Silo")
+//
 //  Programmer: Hank Childs
 //  Creation:   May 9, 2004
 //
@@ -187,6 +188,10 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //
 //    Mark C. Miller, Thu Aug  9 09:16:01 PDT 2007
 //    Made GetMatchingPluginIds return a vector of possible ids
+//
+//    Hank Childs, Fri Oct  5 16:28:42 PDT 2007
+//    Catch any type of exception that a file format may throw.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -283,7 +288,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                                fileIndex, nBlocks, forceReadAllCyclesAndTimes,
 			       treatAllDBsAsTimeVarying);
         }
-        CATCH2(InvalidDBTypeException, e)
+        CATCHALL(...)
         {
             rv = NULL;
         }
@@ -363,6 +368,10 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //    GetMetaData) should NOT be called. The rationale for '-2' instead of
 //    '-1' is that a timestep of '-1' has typically been used throughout
 //    VisIt to mean 'any' timestep. This is primarily to support ZipWrapper.
+//
+//    Hank Childs, Fri Oct  5 16:35:54 PDT 2007
+//    Added debug statements.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -378,6 +387,9 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
         SNPRINTF(msg, 1024, "Attempted to setup a database with null info object");
         EXCEPTION1(ImproperUseException, msg);
     }
+
+    debug4 << "Trying to open the file with the "
+           << info->GetName() << " file format." << endl;
 
     avtDatabase *rv = info->SetupDatabase(filelist+fileIndex,
                                           filelistN-fileIndex, nBlocks);
@@ -398,7 +410,10 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
         rv->SetFileFormat(info->GetID());
         if (timestep != -2)
             rv->GetMetaData(timestep, forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
+        debug4 << "File open appears to be successful." << endl;
     }
+    else
+        debug4 << "File open resulted in NULL database" << endl;
 
     return rv;
 }
