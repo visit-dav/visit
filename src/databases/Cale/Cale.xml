@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+  <Plugin name="Cale" type="database" label="Visit Plugin to read Cale PDB dumps" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STSD" haswriter="false" hasoptions="false">
+    <CXXFLAGS>
+      $(PDB_FLAGS)
+    </CXXFLAGS>
+    <LIBS>
+      $(PDB_LIBS)
+    </LIBS>
+    <Extensions>
+      pdb
+      cale
+    </Extensions>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
