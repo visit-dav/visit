@@ -902,9 +902,13 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
 //  Creation:   September 11, 2003
 //
 //  Modifications:
+//
 //    Mark C. Miller, Tue Mar  9 09:31:21 PST 2004
 //    Added code to compute and store spatial extents and zone counts
 //    for this chunk
+//
+//    Hank Childs, Fri Oct  5 09:13:56 PDT 2007
+//    Fix some logic in setting up zone count.
 //
 // ****************************************************************************
 
@@ -944,7 +948,8 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
     sg->GetDimensions(dims);
     int nzones = 1;
     for (i = 0 ; i < ndims ; i++)
-        nzones *= (dims[i]-1);
+        if (dims[i] > 1)
+            nzones *= (dims[i]-1);
     zoneCounts.push_back(nzones);
 
     //
@@ -978,9 +983,13 @@ avtSiloWriter::WriteCurvilinearMesh(DBfile *dbfile, vtkStructuredGrid *sg,
 //  Creation:   September 12, 2003
 //
 //  Modifications:
+//
 //    Mark C. Miller, Tue Mar  9 09:31:21 PST 2004
 //    Added code to compute and store spatial extents and zone counts
 //    for this chunk
+//
+//    Hank Childs, Fri Oct  5 09:13:56 PDT 2007
+//    Fix some logic in setting up zone count.
 //
 // ****************************************************************************
 
@@ -1029,7 +1038,8 @@ avtSiloWriter::WriteRectilinearMesh(DBfile *dbfile, vtkRectilinearGrid *rg,
 
     int nzones = 1;
     for (i = 0 ; i < ndims ; i++)
-        nzones *= (dims[i]-1);
+        if (dims[i] > 1)
+            nzones *= (dims[i]-1);
     zoneCounts.push_back(nzones);
 
     //
