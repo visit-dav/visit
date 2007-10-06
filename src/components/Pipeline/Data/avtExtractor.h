@@ -72,6 +72,9 @@
 //    Hank Childs, Wed Jan 23 11:03:08 PST 2002
 //    Add support for cells that do not intersect sample points.
 //
+//    Hank Childs, Sat Oct  6 14:02:06 PDT 2007
+//    Check in Timo Bremer's changes.  New virtual method StoreRay.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtExtractor
@@ -101,6 +104,9 @@ class PIPELINE_API avtExtractor
     void                   ExtractLine(int, int, float, float, 
                                        float[AVT_VARIABLE_LIMIT],
                                        float[AVT_VARIABLE_LIMIT], int);
+    virtual void           StoreRay(int, int, int, int,
+				    const float (*)[AVT_VARIABLE_LIMIT]);
+    
 
     void                   OrientTriangle(float [3], float [3],
                                           float [3][AVT_VARIABLE_LIMIT], int);

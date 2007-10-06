@@ -344,6 +344,10 @@ avtExtractor::ExtractTriangle(int xi, const float const_y[3],
 //    Hank Childs, Tue Nov 13 16:54:47 PST 2001
 //    Allow for multiple variables.
 //
+//    Timo Bremer / Hank Childs, Sat Oct  6 14:05:15 PDT 2007
+//    Call virtual method StoreRay to store the values.  This allows derived
+//    types to override the behavior.
+//
 // ****************************************************************************
 
 void
@@ -411,9 +415,30 @@ avtExtractor::ExtractLine(int xi, int yi, float z1, float z2,
 
     if (count > 0)
     {
-        avtRay *ray = volume->GetRay(xi, yi);
-        ray->SetSamples(frontZ, backZ, tmpSampleList);
+        StoreRay(xi,yi,frontZ,backZ,tmpSampleList);
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtExtractor::StoreRay
+//
+//  Purpose:
+//     Sets the values for this ray into the volume.  This method is a hook
+//     for derived types to override if they want to change the behavior.
+//     (e.g. quadratic extractor)
+//
+//  Programmer: Timo Bremer
+//  Creation:   October 6, 2007
+//
+// ****************************************************************************
+
+void  
+avtExtractor::StoreRay(int x, int y, int frontZ, int backZ,
+		       const float (*samples)[AVT_VARIABLE_LIMIT])
+{
+    avtRay *ray = volume->GetRay(x, y);
+    ray->SetSamples(frontZ, backZ, samples);
 }
 
 
