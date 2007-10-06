@@ -57,6 +57,7 @@ class vtkVoxel;
 class vtkHexahedron;
 class vtkWedge;
 class vtkPyramid;
+class vtkQuadraticHexahedron;
 
 class VISIT_VTK_LIGHT_API vtkCellIntersections : public vtkObject
 {
@@ -131,6 +132,9 @@ private:
 
   int PyramidIntersectWithLine(vtkPyramid *, double [3], double [3], 
                                 double&, double [3]);
+
+  int QuadraticHexahedronIntersectWithLine(vtkQuadraticHexahedron *, 
+                                double [3], double [3], double&, double [3]);
 
   vtkTriangle *triangle;
   vtkQuad *quad;
