@@ -54,6 +54,7 @@
 #include <vtkPolyVertex.h>
 #include <vtkPyramid.h>
 #include <vtkQuad.h>
+#include <vtkQuadraticHexahedron.h>
 #include <vtkTetra.h>
 #include <vtkTriangle.h>
 #include <vtkTriangleStrip.h>
@@ -129,6 +130,15 @@ void vtkCellIntersections::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 
+// ****************************************************************************
+//  Modifications:
+//
+//    Hank Childs, Sat Oct  6 09:45:02 PDT 2007
+//    Add case for hex20.  Also change debug macro to error macro, since debug
+//    macros don't get put into the VisIt debug logs and error macros do ...and 
+//    I believe the debug statement *should* be in the VisIt debug logs.
+//
+// ****************************************************************************
 
 int
 vtkCellIntersections::CellIntersectWithLine(vtkCell *cell, 
@@ -165,8 +175,11 @@ vtkCellIntersections::CellIntersectWithLine(vtkCell *cell,
       return WedgeIntersectWithLine((vtkWedge*)cell, p1, p2, t, x);
     case VTK_PYRAMID : 
       return PyramidIntersectWithLine((vtkPyramid*)cell, p1, p2, t, x);
+    case VTK_QUADRATIC_HEXAHEDRON : 
+      return QuadraticHexahedronIntersectWithLine((vtkQuadraticHexahedron*)cell,
+                                                  p1, p2, t, x);
     default:
-      vtkDebugMacro( << "CellType  " << cell->GetCellType() 
+      vtkErrorMacro( << "CellType  " << cell->GetCellType() 
                      << "not yet supported for CellIntersectWithLine ..." );
       return 0;
     }
@@ -709,6 +722,47 @@ vtkCellIntersections::HexIntersectWithLine(vtkHexahedron *cell, double p1[3],
     {
     tTemp = VTK_DOUBLE_MAX;
     faceIds = cell->GetFaceArray(faceNum);
+    cell->Points->GetPoint(faceIds[0], pt0);
+    cell->Points->GetPoint(faceIds[1], pt1);
+    cell->Points->GetPoint(faceIds[2], pt2);
+    cell->Points->GetPoint(faceIds[3], pt3);
+    this->quad->Points->SetPoint(0, pt0);
+    this->quad->Points->SetPoint(1, pt1);
+    this->quad->Points->SetPoint(2, pt2);
+    this->quad->Points->SetPoint(3, pt3);
+    if (this->QuadIntersectWithLine(quad, p1, p2, tTemp, xTemp))
+      {
+      if (tTemp < t)
+        {
+        intersection = 1;
+        t = tTemp;
+        for (i = 0; i < 3; i++)
+          {
+          x[i] = xTemp[i];
+          }
+        }
+      }
+    }
+  return intersection;  
+}
+
+int
+vtkCellIntersections::QuadraticHexahedronIntersectWithLine(
+                             vtkQuadraticHexahedron *cell, double p1[3], 
+                             double p2[3], double& t, double x[3])
+{
+  int  i, intersection = 0, faceNum, *faceIds;
+  double tTemp, xTemp[3];
+  double pt0[3], pt1[3], pt2[3], pt3[3];
+  t = VTK_DOUBLE_MAX;
+
+  int allFaces[6][4] = { { 0, 1, 5, 4 }, { 1, 2, 6, 5 },
+                    { 4, 5, 6, 7 }, { 3, 0, 4, 7 },
+                    { 0, 1, 2, 3 }, { 2, 3, 7, 6 } };
+  for (faceNum = 0; faceNum < 6; faceNum++)
+    {
+    tTemp = VTK_DOUBLE_MAX;
+    int *faceIds = allFaces[faceNum];
     cell->Points->GetPoint(faceIds[0], pt0);
     cell->Points->GetPoint(faceIds[1], pt1);
     cell->Points->GetPoint(faceIds[2], pt2);
