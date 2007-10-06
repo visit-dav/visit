@@ -1855,6 +1855,9 @@ void vtkVisItClipper::GeneralExecute(void)
 //    Work-around some funniness with VTK memory management.  (the funniness
 //    is a bug with the vtkClipDataSet filter.)
 //
+//    Hank Childs, Sat Oct  6 15:37:11 PDT 2007
+//    Fix bug with setting "inverse" for isovoluming.
+//
 // ****************************************************************************
 
 void vtkVisItClipper::ClipDataset(vtkDataSet *in_ds,
@@ -1866,6 +1869,7 @@ void vtkVisItClipper::ClipDataset(vtkDataSet *in_ds,
     {
         clipData->SetClipFunction(clipFunction);
         clipData->GenerateClipScalarsOff();
+        clipData->SetInsideOut(insideOut);
     }
     else
     {
@@ -1873,8 +1877,8 @@ void vtkVisItClipper::ClipDataset(vtkDataSet *in_ds,
         in_ds->GetPointData()->SetScalars(scalarArrayAsVTK);
         clipData->GenerateClipScalarsOff();
         clipData->SetValue(scalarCutoff);
+        clipData->SetInsideOut(!insideOut);
     }
-    clipData->SetInsideOut(insideOut);
     clipData->Update();
     out_ds->ShallowCopy(clipData->GetOutput());
     clipData->Delete();
