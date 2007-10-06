@@ -158,6 +158,9 @@ avtVerdictFilter::~avtVerdictFilter()
 //    Allow for sub-types to speed up execution by operating directly on the
 //    mesh.
 //
+//    Hank Childs, Sat Oct  6 15:10:10 PDT 2007
+//    Turn hex-20s into hex-8s.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -227,6 +230,13 @@ avtVerdictFilter::DeriveVariable(vtkDataSet *in_ds)
             {
                 Swap3(coordinates, 2, 3);
                 cellType = VTK_QUAD;
+            }
+    
+            // Convert Pixel format into quad format.
+            if (cellType == VTK_QUADRATIC_HEXAHEDRON)
+            {
+                cellType = VTK_HEXAHEDRON;
+                // Leave points 9-20 in place; they are ignored.
             }
     
             float result = Metric(coordinates, cellType);
@@ -340,6 +350,9 @@ avtVerdictFilter::MetricForWholeMesh(vtkDataSet *ds, vtkDataArray *rv)
 //    Akira Haddox, Wed Jul  2 08:26:30 PDT 2003
 //    Added conversion from pixel cell type.
 //
+//    Hank Childs, Sat Oct  6 15:20:25 PDT 2007
+//    Add support for hex-20s.
+//
 // ****************************************************************************
 
 void SumSize(avtDataRepresentation &adr, void *, bool &)
@@ -391,6 +404,7 @@ void SumSize(avtDataRepresentation &adr, void *, bool &)
         {
             case VTK_VOXEL:
             case VTK_HEXAHEDRON:
+            case VTK_QUADRATIC_HEXAHEDRON:
                 ++VerdictSizeData.hexCount;
                 VerdictSizeData.hexSize+=v_hex_volume(8, coordinates);
                 break;
