@@ -52,6 +52,7 @@
 class  vtkDataArray;
 class  vtkDataSet;
 class  vtkHexahedron;
+class  vtkQuadraticHexahedron;
 class  vtkPixel;
 class  vtkPyramid;
 class  vtkQuad;
@@ -61,6 +62,7 @@ class  vtkVoxel;
 class  vtkWedge;
 
 class  avtHexahedronExtractor;
+class  avtHexahedron20Extractor;
 class  avtMassVoxelExtractor;
 class  avtPointExtractor;
 class  avtPyramidExtractor;
@@ -116,6 +118,9 @@ class  avtRayFunction;
 //    Hank Childs, Fri Jun  1 11:47:56 PDT 2007
 //    Add method GetLoadingInfoForArrays.
 //
+//    Hank Childs, Thu Sep 13 14:02:40 PDT 2007
+//    Added support for hex-20s.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSamplePointExtractor 
@@ -153,6 +158,7 @@ class AVTFILTERS_API avtSamplePointExtractor
     double                    point_radius;
 
     avtHexahedronExtractor   *hexExtractor;
+    avtHexahedron20Extractor *hex20Extractor;
     avtMassVoxelExtractor    *massVoxelExtractor;
     avtPointExtractor        *pointExtractor;
     avtPyramidExtractor      *pyramidExtractor;
@@ -183,6 +189,8 @@ class AVTFILTERS_API avtSamplePointExtractor
     } LoadingInfo;
 
     inline void               ExtractHex(vtkHexahedron*,vtkDataSet*, int,
+                                           LoadingInfo &);
+    inline void               ExtractHex20(vtkQuadraticHexahedron*,vtkDataSet*, int,
                                            LoadingInfo &);
     inline void               ExtractVoxel(vtkVoxel *, vtkDataSet *, int,
                                            LoadingInfo &);

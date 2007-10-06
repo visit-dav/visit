@@ -51,6 +51,7 @@
 #include <vtkPoints.h>
 #include <vtkPyramid.h>
 #include <vtkQuad.h>
+#include <vtkQuadraticHexahedron.h>
 #include <vtkTetra.h>
 #include <vtkTriangle.h>
 #include <vtkUnsignedCharArray.h>
@@ -60,6 +61,7 @@
 #include <avtCellList.h>
 #include <avtDatasetExaminer.h>
 #include <avtHexahedronExtractor.h>
+#include <avtHexahedron20Extractor.h>
 #include <avtMassVoxelExtractor.h>
 #include <avtParallel.h>
 #include <avtPointExtractor.h>
@@ -113,6 +115,9 @@
 //    Hank Childs, Tue Jan 24 16:42:40 PST 2006
 //    Added point extractor.
 //
+//    Timo Bremer, Thu Sep 13 14:02:40 PDT 2007
+//    Added hex20 extractor.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
@@ -125,6 +130,7 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     totalNodes  = 0;
 
     hexExtractor        = NULL;
+    hex20Extractor      = NULL;
     massVoxelExtractor  = NULL;
     pointExtractor      = NULL;
     pyramidExtractor    = NULL;
@@ -162,6 +168,9 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
 //    Hank Childs, Tue Jan 24 16:42:40 PST 2006
 //    Deleted pointExtractor.
 //
+//    Timo Bremer, Thu Sep 13 14:02:40 PDT 2007
+//    Deleted hex20Extractor.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::~avtSamplePointExtractor()
@@ -170,6 +179,11 @@ avtSamplePointExtractor::~avtSamplePointExtractor()
     {
         delete hexExtractor;
         hexExtractor = NULL;
+    }
+    if (hex20Extractor != NULL)
+    {
+        delete hex20Extractor;
+        hex20Extractor = NULL;
     }
     if (massVoxelExtractor != NULL)
     {
@@ -338,6 +352,9 @@ avtSamplePointExtractor::Execute(void)
 //    Hank Childs, Sun Dec  4 19:12:42 PST 2005
 //    Add support for kernel based sampling.
 //
+//    Timo Bremer, Thu Sep 13 14:02:40 PDT 2007
+//    Added hex20 extractor.
+//
 // ****************************************************************************
 
 void
@@ -363,6 +380,10 @@ avtSamplePointExtractor::SetUpExtractors(void)
     if (hexExtractor != NULL)
     {
         delete hexExtractor;
+    }
+    if (hex20Extractor != NULL)
+    {
+        delete hex20Extractor;
     }
     if (massVoxelExtractor != NULL)
     {
@@ -390,6 +411,7 @@ avtSamplePointExtractor::SetUpExtractors(void)
     //
     avtCellList *cl = output->GetCellList();
     hexExtractor = new avtHexahedronExtractor(width, height, depth, volume,cl);
+    hex20Extractor = new avtHexahedron20Extractor(width, height, depth, volume,cl);
     massVoxelExtractor = new avtMassVoxelExtractor(width, height, depth, volume,cl);
     tetExtractor = new avtTetrahedronExtractor(width, height, depth,volume,cl);
     wedgeExtractor = new avtWedgeExtractor(width, height, depth, volume, cl);
@@ -397,6 +419,7 @@ avtSamplePointExtractor::SetUpExtractors(void)
     pyramidExtractor = new avtPyramidExtractor(width, height, depth,volume,cl);
 
     hexExtractor->SendCellsMode(sendCells);
+    hex20Extractor->SendCellsMode(sendCells);
     massVoxelExtractor->SendCellsMode(sendCells);
     tetExtractor->SendCellsMode(sendCells);
     wedgeExtractor->SendCellsMode(sendCells);
@@ -407,6 +430,8 @@ avtSamplePointExtractor::SetUpExtractors(void)
     {
         hexExtractor->Restrict(width_min, width_max-1, 
                                height_min, height_max-1);
+        hex20Extractor->Restrict(width_min, width_max-1, 
+                                 height_min, height_max-1);
         massVoxelExtractor->Restrict(width_min, width_max-1,
                                      height_min, height_max-1);
         tetExtractor->Restrict(width_min, width_max-1,
@@ -693,6 +718,9 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
 //    Hank Childs, Fri Jun  1 12:50:45 PDT 2007
 //    Added support for non-scalars.
 //
+//    Timo Bremer, Thu Sep 13 14:02:40 PDT 2007
+//    Added support for hex-20s.
+//
 // ****************************************************************************
 
 void
@@ -743,6 +771,10 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds)
         {
           case VTK_HEXAHEDRON:
             ExtractHex((vtkHexahedron *) cell, ds, j, li);
+            break;
+
+          case VTK_QUADRATIC_HEXAHEDRON:
+            ExtractHex20((vtkQuadraticHexahedron *) cell, ds, j, li);
             break;
 
           case VTK_VOXEL:
@@ -887,6 +919,96 @@ avtSamplePointExtractor::ExtractHex(vtkHexahedron *hex, vtkDataSet *ds,
     // Have the extractor extract the sample points from this hexahedron.
     //
     hexExtractor->Extract(h);
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::ExtractHex20
+//
+//  Purpose:
+//      Sets up the data and call the extract method for a hexahedron-20.
+//
+//  Arguments:
+//      hex20    The hexahedron-20 cell.
+//      ds       The dataset the hex-20 came from (needed to find the var).
+//      hexind   The index of hex-20 in ds.
+//
+//  Programmer:  Hank Childs
+//  Creation:    September 13, 2007
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::ExtractHex20(vtkQuadraticHexahedron *hex20, 
+                                      vtkDataSet *ds, int hexind, 
+                                      LoadingInfo &li)
+{
+    int   i, j, v;
+
+    avtHexahedron20 h;
+    h.nVars = li.nVars;
+
+    //
+    // Retrieve all of the zonal variables.
+    //
+    int ncd = li.cellArrays.size();
+    for (v = 0 ; v < ncd ; v++)
+    {
+        if (li.cellDataIndex[v] < 0)
+            continue;
+        vtkDataArray *arr = li.cellArrays[v];
+        int idx = li.cellDataIndex[v];
+        for (j = 0 ; j < li.cellDataSize[v] ; j++)
+        {
+             float val = arr->GetComponent(hexind, j);
+             for (i = 0 ; i < 20 ; i++)
+                  h.val[i][idx+j] = val;
+        }
+    }
+
+    //
+    // Retrieve all of the nodal variables.
+    //
+    int npd = li.pointArrays.size();
+    for (v = 0 ; v < npd ; v++)
+    {
+        if (li.pointDataIndex[v] < 0)
+            continue;
+        vtkDataArray *arr = li.pointArrays[v];
+        int idx = li.pointDataIndex[v];
+
+        vtkIdList *ids = hex20->GetPointIds();
+
+        for (j = 0 ; j < li.pointDataSize[v] ; j++)
+            for (i = 0 ; i < 20 ; i++)
+             h.val[i][idx+j] = arr->GetComponent(ids->GetId(i), j);
+    }
+
+    if (rayfoo != NULL)
+    {
+        if (!rayfoo->CanContributeToPicture(20, h.val))
+        {
+            return;
+        }
+    }
+
+    //
+    // Get the points for the hexahedron in our own data structure.
+    //
+    vtkPoints *pts = hex20->GetPoints();
+    for (i = 0 ; i < 20 ; i++)
+    {
+        double pt[3];
+        pts->GetPoint(i, pt);
+        h.pts[i][0] = pt[0];
+        h.pts[i][1] = pt[1];
+        h.pts[i][2] = pt[2];
+    }
+
+    //
+    // Have the extractor extract the sample points from this hexahedron.
+    //
+    hex20Extractor->Extract(h);
 }
 
 
