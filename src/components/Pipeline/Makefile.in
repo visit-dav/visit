@@ -243,6 +243,9 @@
 #    Thomas R. Treadway, Wed Feb  7 17:53:04 PST 2007
 #    Added $(GLEW_LIBS) for MacOS X.
 #
+#    Timo Bremer, Thu Sep 13 13:53:31 PDT 2007
+#    Added avtHexahedron2[07]Extractor.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -276,6 +279,8 @@ Data_src= \
   Data/avtFlatLighting.C \
   Data/avtGradients.C \
   Data/avtHexahedronExtractor.C \
+  Data/avtHexahedron20Extractor.C \
+  Data/avtHexahedron27Extractor.C \
   Data/avtImage.C \
   Data/avtImagePartition.C \
   Data/avtImageRepresentation.C \

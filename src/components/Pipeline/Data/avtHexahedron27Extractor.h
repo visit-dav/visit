@@ -36,91 +36,79 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                avtCellTypes.h                             //
+//                          avtHexahedron27Extractor.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_CELL_TYPES_H
-#define AVT_CELL_TYPES_H
+#ifndef AVT_HEXAHEDRON27_EXTRACTOR_H
+#define AVT_HEXAHEDRON27_EXTRACTOR_H
 
+#include <pipeline_exports.h>
 
-#define AVT_VARIABLE_LIMIT 10
-
+#include <avtHexahedronExtractor.h>
 
 // ****************************************************************************
-//  Modifications:
+//  Class: avtHexahedron27Extractor
 //
-//    Hank Childs, Tue Nov 13 15:18:18 PST 2001
-//    Allowed for cells to have multiple variables.
+//  Purpose:
+//      Extracts sample points from a higher order hexahedron.  It assumes 
+//      that the hexahedrons it has been given are in camera space and 
+//      does not try to populate points that are not in the cube 
+//      [-1, 1], [-1, 1], [-1, 1].
 //
-//    Hank Childs, Tue Jan 24 16:25:58 PST 2006
-//    Added avtPoint.
-//
-//    Timo Bremer, Thu Sep 13 13:53:31 PDT 2007
-//    Added avtHexahedron2[07].
+//  Programmer: Timo Bremer
+//  Creation:   September 13, 2007
 //
 // ****************************************************************************
 
-typedef struct
+class PIPELINE_API avtHexahedron27Extractor : public avtHexahedronExtractor
 {
-    float  pts[8][3];
-    float  val[8][AVT_VARIABLE_LIMIT];
-    int    nVars;
-}  avtHexahedron;
+  public:
+    //
+    // Typedef for the different method of treating the domain. The
+    // domain can be 
+    //
+    // avtHex27Constant:  Approximate the domain using a single linear hex 
+    //                    with vertices 0-7 as corners
+    // avtHex27Lienar:    Approximate the domain using eight linear hexes 
+    //                    where the face vertices are the average of the 
+    //                    appropriate edges and the center the average of the 
+    //                    size face centers
+    // avtHex27Quadratic: Compute the correct quadratic domain for sampling
+    //
+    enum DomainAppStyle 
+    {
+        avtHex27Constant = 0,
+        avtHex27Linear,
+        avtHex27Quadratic,
+    };
+
+  
+    static const DomainAppStyle DEFAULT_DOMAIN_APPROXIMATION;
+  
 
 
-typedef struct
-{
-    float  pts[20][3];
-    float  val[20][AVT_VARIABLE_LIMIT];
-    int    nVars;
-}  avtHexahedron20;
+                     avtHexahedron27Extractor(int, int, int, avtVolume *,
+                                             avtCellList *);
+    virtual         ~avtHexahedron27Extractor();
 
-typedef struct
-{
-    float  pts[27][3];
-    float  val[27][AVT_VARIABLE_LIMIT];
-    int    nVars;
-}  avtHexahedron27;
+    void             Extract(const avtHexahedron27 &);
+    void             ConstantHexExtract(const avtHexahedron27 &);
+    void             LinearHexExtract(const avtHexahedron27 &);
+    void             QuadraticHexExtract(const avtHexahedron27 &);
 
 
-typedef struct
-{
-    float  pts[4][3];
-    float  val[4][AVT_VARIABLE_LIMIT];
-    int    nVars;
-}  avtTetrahedron;
+    virtual void      StoreRay(int, int, int, int,
+			       const float (*)[AVT_VARIABLE_LIMIT]);
+    float             TriLinearWeight(int, float, float, float);
+    float             QuadraticWeight(int, float, float, float);
+    float             ClosestParametricNeighbor(float, float, float);
 
-
-//
-// The four vertices that form the base are 0, 1, 2, 3 and the top vertex is
-// vertex 4.
-//
-typedef struct
-{
-    float  pts[5][3];
-    float  val[5][AVT_VARIABLE_LIMIT];
-    int    nVars;
-}  avtPyramid;
-
-
-//
-// Vertices 0, 1, 2 form one side of the wedge and 3, 4, and 5 form the other.
-// (This is stored as two triangles, not as a quad with two more points)
-//
-typedef struct
-{
-    float  pts[6][3];
-    float  val[6][AVT_VARIABLE_LIMIT];
-    int    nVars;
-}  avtWedge;
-
-
-typedef struct
-{
-    float bbox[6];
-    float val[AVT_VARIABLE_LIMIT];
-    int   nVars;
-}  avtPoint;
+  protected:
+    static const int              sControlPointParam[27][3];
+    static const unsigned char    sSubHexCorners[8][8];
+    const avtHexahedron27        *currentHex;
+    DomainAppStyle                domainApproximation;
+};
 
 
 #endif
