@@ -89,9 +89,9 @@ SEROBJ=$(SRC:.C=.o)
 PAROBJ=$(SRC:.C=_par.o)
 LIB=libparallel_visit_vtk
 LIBS_FOR_MACOSX_PREBINDING=@MESA_LIBS@ $(GLEW_LIBS) $(GL_LIBS)
-LIBS=-lpipeline_par -ldbatts -lstate -lcomm -lutility -lexpr -lparser -lavtmath_par -lbz2 -lmisc -lvisit_vtk -llightweight_visit_vtk -lavtexceptions $(LIBS_FOR_MACOSX_PREBINDING)
+LIBS=-lmisc -lvisit_vtk -llightweight_visit_vtk -lavtexceptions $(LIBS_FOR_MACOSX_PREBINDING)
 SERLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
-PARLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
+PARLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS) -lpipeline_par -ldbatts -lstate -lcomm -lutility -lexpr -lparser -lavtmath_par -lbz2
 
 ##
 ## Standard targets...
