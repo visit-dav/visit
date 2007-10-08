@@ -3032,6 +3032,10 @@ const char *const name_w_dir, int meshnum, const DBmultimesh *const mm)
 //    Removed explicit support for vector defvars -- it is all now handled
 //    correctly at a higher level.
 //
+//    Hank Childs, Mon Oct  8 13:11:06 PDT 2007
+//    Code around the case where 'treatAllDBsAsTimeVarying' is turned on
+//    and we need to produce a good SIL, but haven't gotten the group info.
+//
 // ****************************************************************************
 
 void
@@ -3041,11 +3045,27 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
     // We should only add the defvars if we are at the 'root' level.
     // Ditto adding group information.
     //
-    if (groupInfo.haveGroups)
+
+    void_ref_ptr vr = cache->GetVoidRef("any_mesh",
+                            AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1);
+    if (*vr != NULL && !groupInfo.haveGroups)
     {
+        // The only way to get into this state is if we have selected 
+        // "treatAllDBsAsTimeVarying".  If that's the case, the domain boundary
+        // info is being re-used (incorrectly) and we decide not to use
+        // the group info.
+        //
+        // Correct that now.
+        DBfile *dbfile = OpenFile(tocIndex);
+        debug1 << "Forcing re-read of connectivity information." << endl;
+        debug1 << "This should only occur when treatAllDBsAsTimeVarying "
+               << "is on." << endl;
+        GetConnectivityAndGroupInformation(dbfile, true);
+    }
+
+    if (groupInfo.haveGroups)
         md->AddGroupInformation(groupInfo.numgroups, groupInfo.ndomains,
                                 groupInfo.ids);
-    }
 }
 
 
@@ -3084,16 +3104,21 @@ avtSiloFileFormat::DoRootDirectoryWork(avtDatabaseMetaData *md)
 //
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
+// 
+//    Hank Childs, Mon Oct  8 13:01:31 PDT 2007
+//    Added an argument to force the operation.
+//
 // ****************************************************************************
 
 void
-avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile)
+avtSiloFileFormat::GetConnectivityAndGroupInformation(DBfile *dbfile, 
+                                                      bool force)
 {
-    int ts = connectivityIsTimeVarying ? timestep : -1;
+    int ts = (connectivityIsTimeVarying || force) ? timestep : -1;
 
     void_ref_ptr vr = cache->GetVoidRef("any_mesh",
                             AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, ts, -1);
-    if (*vr != NULL)
+    if (*vr != NULL && !force)
     {
         // We've already got it from a previous time step;
         // don't re-read it for later time steps.
