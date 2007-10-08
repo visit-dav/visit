@@ -559,6 +559,9 @@ AttributeGroup::InterpolateLinear(const AttributeGroup *atts1,
 //    Kathleen Bonnell, Thu Mar 22 16:43:38 PDT 2007 
 //    Added scalemode type. 
 //
+//    Hank Childs, Mon Oct  8 13:44:09 PDT 2007
+//    Make sure the method works for nested attribute groups.
+//
 // ****************************************************************************
 
 bool
@@ -664,6 +667,8 @@ AttributeGroup::EqualTo(const AttributeGroup *atts) const
             break;
           case FieldType_color:
           case FieldType_att:
+            ((AttributeGroup*)addr1)->SelectAll();
+            ((AttributeGroup*)addr2)->SelectAll();
             if (!(((AttributeGroup*)addr1)->EqualTo((AttributeGroup*)addr2)))
                return false;
             break;
