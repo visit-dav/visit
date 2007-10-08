@@ -213,6 +213,10 @@
 #     szip library now required with HDF4 and HDF5
 #     Modified parallel options handeling, allowing non-GUI setting
 #
+#     Thomas R. Treadway, Sun Oct  7 19:21:48 PDT 2007
+#     Modify H5Part dynamic library build for PPC Mac
+#     Fixed a few typos
+#
 # *****************************************************************************
 
 
@@ -5439,20 +5443,20 @@ $DYLD_LIBRARY_PATH
         fi
         VER=$(uname -r)
         if (( ${VER%%.*} > 7 )) ; then
-           USEGCC=""
+           USEGCC="-lSystemStubs"
         else
            USEGCC="-lgcc"
         fi
-        /usr/bin/libtool -o libH5Part.$SO_EXT -dynamic src/libH5Part.a \
-        -lSystem -headerpad_max_install_names \
-        -install_name $INSTALLNAMEPATH/libH5Part.$SO_EXT \
-        -compatibility_version $H5PART_COMPATIBILITY_VERSION \
-        -current_version $H5PART_VERSION ${HDF5DYLIB} ${USEGCC}
-##      gcc -o libH5Part.$SO_EXT -dynamiclib src/*.o -lSystem \
-##         -Wl,-headerpad_max_install_names \
-##         -Wl,-install_name,$INSTALLNAMEPATH/libH5Part.$SO_EXT \
-##         -Wl,-compatibility_version,$H5PART_COMPATIBILITY_VERSION \
-##         -Wl,-current_version,$H5PART_VERSION ${HDF5DYLIB}
+##        /usr/bin/libtool -o libH5Part.$SO_EXT -dynamic src/libH5Part.a \
+##        -lSystem -headerpad_max_install_names \
+##        -install_name $INSTALLNAMEPATH/libH5Part.$SO_EXT \
+##        -compatibility_version $H5PART_COMPATIBILITY_VERSION \
+##        -current_version $H5PART_VERSION ${HDF5DYLIB} ${USEGCC}
+        gcc -o libH5Part.$SO_EXT -dynamiclib src/*.o -lSystem \
+           -Wl,-headerpad_max_install_names \
+           -Wl,-install_name,$INSTALLNAMEPATH/libH5Part.$SO_EXT \
+           -Wl,-compatibility_version,$H5PART_COMPATIBILITY_VERSION \
+           -Wl,-current_version,$H5PART_VERSION ${HDF5DYLIB}
         if [[ $? != 0 ]] ; then
            echo "Creating dynamic H5Part library failed.  Giving up"
            return 1
