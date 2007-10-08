@@ -74,7 +74,9 @@ rmlist = ("../../common/comm/PipeConnection.C",
 "../../common/state/test1.C",
 "../../common/state/test2.C",
 "../../common/state/test3.C",
-"../../common/state/SimulationCommand.C")
+"../../common/state/SimulationCommand.C",
+"../../common/utility/MRUCache_test.C",
+"../../common/utility/StringHelpers_test.C")
 
 for rm in rmlist:
    visitmod_sources = RemoveFileFromList(visitmod_sources, os.path.realpath(rm))
