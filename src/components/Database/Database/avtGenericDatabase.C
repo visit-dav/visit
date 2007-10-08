@@ -3001,6 +3001,10 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added treatAllDBsAsTimeVarying
 //
+//    Hank Childs, Mon Oct  8 11:19:58 PDT 2007
+//    Added missing default arguments.  treatAllDBsAsTimeVarying was not
+//    getting put in the correct argument position.
+//
 // ****************************************************************************
 
 void
@@ -3008,7 +3012,12 @@ avtGenericDatabase::PopulateSIL(avtSIL *sil, int timeState,
     bool treatAllDBsAsTimeVarying)
 {
     int timerHandle = visitTimer->StartTimer();
-    avtDatabaseMetaData *md = GetMetaData(timeState, treatAllDBsAsTimeVarying);
+    bool forceReadAllCyclesTimes = false;
+    bool forceReadThisStateCycleTime = false;
+    avtDatabaseMetaData *md = GetMetaData(timeState, 
+                                          forceReadAllCyclesTimes,
+                                          forceReadThisStateCycleTime,
+                                          treatAllDBsAsTimeVarying);
     avtSILGenerator gen;
     gen.CreateSIL(md, sil);
     visitTimer->StopTimer(timerHandle, "Creating a SIL object.");
