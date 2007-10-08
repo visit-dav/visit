@@ -372,6 +372,10 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
 //    Hank Childs, Fri Oct  5 16:35:54 PDT 2007
 //    Added debug statements.
 //
+//    Hank Childs, Mon Oct  8 11:17:56 PDT 2007
+//    Correct default argument usage.  A missing argument caused 
+//    treatAllDBsAsTimeVarying to be interpreted as forceReadThisStateCycleTime
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -408,8 +412,11 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
         if (timestep != -2)
             rv->ActivateTimestep(timestep);
         rv->SetFileFormat(info->GetID());
+        bool forceReadThisStateCycleTime = false;
         if (timestep != -2)
-            rv->GetMetaData(timestep, forceReadAllCyclesAndTimes, treatAllDBsAsTimeVarying);
+            rv->GetMetaData(timestep, forceReadAllCyclesAndTimes, 
+                            forceReadThisStateCycleTime,
+                            treatAllDBsAsTimeVarying);
         debug4 << "File open appears to be successful." << endl;
     }
     else
