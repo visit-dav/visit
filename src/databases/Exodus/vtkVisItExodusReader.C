@@ -751,6 +751,9 @@ void vtkVisItExodusReader::ReadGeometry(int exoid, vtkUnstructuredGrid *output)
 //
 //   Mark C. Miller, Wed Aug  9 19:40:30 PDT 2006
 //   Changed new[] of ids to malloc to be consistent with VTK's use of free 
+//
+//   Mark C. Miller, Mon Oct  8 11:50:38 PDT 2007
+//   Changed delete [] of ids to free(ids); Doh!
 //----------------------------------------------------------------------------
 void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
 {
@@ -975,7 +978,7 @@ void vtkVisItExodusReader::ReadCells(int exoid, vtkUnstructuredGrid *output)
       }
     else
       {
-      delete [] ids;
+      free(ids);
       }
     }
 }
