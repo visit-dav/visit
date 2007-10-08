@@ -94,6 +94,11 @@ GetDBPluginInfoRPCExecutor::~GetDBPluginInfoRPCExecutor()
 // Programmer: Hank Childs
 // Creation:   May 23, 2005
 //
+// Modifications:
+//   Mark C. Miller, Mon Oct  8 13:44:36 PDT 2007
+//   Put resulting atts from GetDBPluginInfo into local var so we could
+//   properly delete it -- fixed leak.
+//
 // ****************************************************************************
 
 void
@@ -107,7 +112,9 @@ GetDBPluginInfoRPCExecutor::Update(Subject *s)
     TRY
     {
         // Either send a successful reply or send an error.
-        rpc->SendReply(parent->GetDBPluginInfo());
+	DBPluginInfoAttributes *atts = parent->GetDBPluginInfo();
+        rpc->SendReply(atts);
+	delete atts;
     }
     CATCH2(DatabaseException, dbe)
     {
