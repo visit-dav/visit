@@ -179,6 +179,9 @@ typedef struct
 //    Added FindMultiMeshAdjConnectivity to support the Silo MultiMesh
 //    Adjacency object.
 //
+//    Hank Childs, Mon Oct  8 13:01:31 PDT 2007
+//    Added optional argument to GetConnectivityAndGroupInformation.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -289,7 +292,7 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  ReadInConnectivity(vtkUnstructuredGrid *,
                                              DBzonelist *, int,
                                              std::vector<int>&);
-    void                  GetConnectivityAndGroupInformation(DBfile *);
+    void                  GetConnectivityAndGroupInformation(DBfile *, bool = false);
     void                  GetConnectivityAndGroupInformationFromFile(DBfile *,
                                int &, int *&,int *&,int &,int *&,int &,int *&);
     void                  FindStandardConnectivity(DBfile *, int &, int *&,
