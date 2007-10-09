@@ -76,6 +76,9 @@ union
 } typedef box;
 
 
+class DBOptionsAttributes;
+
+
 // ****************************************************************************
 //  Class: avtChomboFileFormat
 //
@@ -96,12 +99,15 @@ union
 //    Gunther H. Weber, Tue Aug  7 15:56:32 PDT 2007
 //    Added material support
 //
+//    Hank Childs, Mon Oct  8 17:17:24 PDT 2007
+//    Added options for reading.
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
 {
   public:
-                       avtChomboFileFormat(const char *);
+                       avtChomboFileFormat(const char *, DBOptionsAttributes*);
     virtual           ~avtChomboFileFormat();
 
     virtual const char    *GetType(void)   { return "Chombo"; };
@@ -135,6 +141,7 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     std::vector<int>       patchesPerLevel;
     std::vector<int>       refinement_ratio;
     std::vector<double>    dx;
+    bool                   useGhosts;
 
     std::vector<int>       lowI;
     std::vector<int>       hiI;
