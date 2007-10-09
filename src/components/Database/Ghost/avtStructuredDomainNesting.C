@@ -328,7 +328,11 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //    Mark C. Miller, Wed Feb 16 14:44:17 PST 2005
 //    Added check to skip over patches with no mesh
 //
+//    Hank Childs, Tue Oct  9 07:43:43 PDT 2007
+//    Add support for avtRealDims.
+//
 // ****************************************************************************
+
 bool
 avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                                        vector<int> allDomainList,
@@ -338,7 +342,6 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 
     for (int i = 0; i < domainList.size(); i++)
     {
-
         unsigned char *ghostData = 0;
 
         if (meshes[i] == NULL)
@@ -357,17 +360,27 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
         {
             ghostData = (unsigned char *) ghostArray->GetVoidPointer(0);
 
-            //
-            // because number of ghost layers may vary from one variable to the
-            // next, we have a strange problem here in that we know we have
-            // ghost layers but don't know precisely how many in each 
-            // dimension.  So, we detect it from knowledge of the non-ghosted
-            // size (in the nesting info's logical extents of the parent) of 
-            // the patch and the actual ghost data array
-            //
-            DetectBoundaryGhostLayers(numDimensions, ghostData, numCells,
-                domainNesting[parentDom].logicalExtents, ghostLayers);
-
+            if (meshes[i]->GetFieldData()->GetArray("avtRealDims") != NULL)
+            {
+                vtkIntArray *realDims = (vtkIntArray *) 
+                            meshes[i]->GetFieldData()->GetArray("avtRealDims");
+                ghostLayers[0] = realDims->GetValue(0);
+                ghostLayers[1] = realDims->GetValue(2);
+                ghostLayers[2] = realDims->GetValue(4);
+            }
+            else
+            {
+                //
+                // because number of ghost layers may vary from one variable to
+                // the next, we have a strange problem here in that we know we 
+                // have ghost layers but don't know precisely how many in each 
+                // dimension.  So, we detect it from knowledge of the non-
+                // ghosted size (in the nesting info's logical extents of the 
+                // parent) of the patch and the actual ghost data array
+                //
+                DetectBoundaryGhostLayers(numDimensions, ghostData, numCells,
+                    domainNesting[parentDom].logicalExtents, ghostLayers);
+            }
         }
         else
         {
@@ -550,6 +563,9 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 //    Hank Childs, Wed Aug  1 13:01:40 PDT 2007
 //    Add warning for case where unstructured grid is sent in.
 //
+//    Hank Childs, Tue Oct  9 07:43:43 PDT 2007
+//    Add support for avtRealDims.
+//
 // ****************************************************************************
 
 bool
@@ -582,6 +598,15 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
             return false;
         }
          
+        if (meshes[i]->GetFieldData()->GetArray("avtRealDims") != NULL)
+        {
+            vtkIntArray *realDims = (vtkIntArray *) 
+                            meshes[i]->GetFieldData()->GetArray("avtRealDims");
+            dims[0] = realDims->GetValue(1)-realDims->GetValue(0);
+            dims[1] = realDims->GetValue(3)-realDims->GetValue(2);
+            dims[2] = realDims->GetValue(5)-realDims->GetValue(4);
+        }
+
         if (domains[i] >= domainNesting.size())
         {
             debug1 << "Warning: avtStructuredDomainNesting failing ConfirmMesh"
