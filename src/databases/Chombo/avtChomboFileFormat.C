@@ -53,6 +53,8 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <DBOptionsAttributes.h>
+
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
 #include <avtIntervalTree.h>
@@ -73,7 +75,6 @@
 
 using     std::string;
 
-#define STRIP_OUT_GHOST_DATA
 
 // ****************************************************************************
 //  Method: avtChomboFileFormat constructor
@@ -85,12 +86,19 @@ using     std::string;
 //    Brad Whitlock, Mon Sep 25 13:59:20 PST 2006
 //    Initialize the cycle and time.
 //
+//    Hank Childs, Mon Oct  8 17:17:24 PDT 2007
+//    Initialized atts.
+//
 // ****************************************************************************
 
-avtChomboFileFormat::avtChomboFileFormat(const char *filename)
+avtChomboFileFormat::avtChomboFileFormat(const char *filename, 
+                                         DBOptionsAttributes *atts)
     : avtSTMDFileFormat(&filename, 1)
 {
     initializedReader = false;
+    useGhosts = true;
+    if (atts != NULL)
+        useGhosts = atts->GetBool("Use ghost data (if present)");
     file_handle = -1;
     dtime = 0.;
     cycle = 0;
@@ -1112,6 +1120,10 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Do not strip ghost zones from file and instead add appropriate
 //    ghost zone field data.
 //
+//    Hank Childs, Mon Oct  8 17:22:26 PDT 2007
+//    Make Gunther's code go live using DB options.  Also correct bug with
+//    setting coordinate positions with ghost zones.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1139,19 +1151,23 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
     }
 
     int dims[3];
-#ifdef STRIP_OUT_GHOST_DATA
-    dims[0] = hiI[patch]-lowI[patch]+1;
-    dims[1] = hiJ[patch]-lowJ[patch]+1;
-    dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1 : 1);
-#else
-    int numGhostI = numGhosts[3*level];
-    int numGhostJ = numGhosts[3*level+1];
-    int numGhostK = numGhosts[3*level+2];
- 
-    dims[0] = hiI[patch]-lowI[patch]+1+2*numGhostI;
-    dims[1] = hiJ[patch]-lowJ[patch]+1+2*numGhostJ;
-    dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1+2*numGhostK : 1);
-#endif
+    int numGhostI = 0, numGhostJ = 0, numGhostK = 0;
+    if (!useGhosts)
+    {
+        dims[0] = hiI[patch]-lowI[patch]+1;
+        dims[1] = hiJ[patch]-lowJ[patch]+1;
+        dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1 : 1);
+    }
+    else
+    {
+        numGhostI = numGhosts[3*level];
+        numGhostJ = numGhosts[3*level+1];
+        numGhostK = numGhosts[3*level+2];
+     
+        dims[0] = hiI[patch]-lowI[patch]+1+2*numGhostI;
+        dims[1] = hiJ[patch]-lowJ[patch]+1+2*numGhostJ;
+        dims[2] = (dimension == 3 ? hiK[patch]-lowK[patch]+1+2*numGhostK : 1);
+    }
 
     vtkRectilinearGrid *rg = vtkRectilinearGrid::New();
     rg->SetDimensions(dims);
@@ -1165,31 +1181,31 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
     zcoord->SetNumberOfTuples(dims[2]);
 
     float *ptr = xcoord->GetPointer(0);
-#ifdef STRIP_OUT_GHOST_DATA
-    ptr[0] = lowI[patch]*dx[level];
-#else
-    ptr[0] = lowI[patch]*dx[level]-numGhostI;
-#endif
+    if (!useGhosts)
+        ptr[0] = lowI[patch]*dx[level];
+    else
+        ptr[0] = (lowI[patch]-numGhostI)*dx[level];
+
     for (i = 1; i < dims[0]; i++)
         ptr[i] = ptr[0] + i*dx[level];
 
     ptr = ycoord->GetPointer(0);
-#ifdef STRIP_OUT_GHOST_DATA
-    ptr[0] = lowJ[patch]*dx[level];
-#else
-    ptr[0] = lowJ[patch]*dx[level]-numGhostJ;
-#endif
+    if (!useGhosts)
+        ptr[0] = lowJ[patch]*dx[level];
+    else
+        ptr[0] = (lowJ[patch]-numGhostJ)*dx[level];
+
     for (i = 1; i < dims[1]; i++)
         ptr[i] = ptr[0] + i*dx[level];
 
     if (dimension == 3)
     {
         ptr = zcoord->GetPointer(0);
-#ifdef STRIP_OUT_GHOST_DATA
-        ptr[0] = lowK[patch]*dx[level];
-#else
-        ptr[0] = lowK[patch]*dx[level]-numGhostK;
-#endif
+        if (!useGhosts)
+            ptr[0] = lowK[patch]*dx[level];
+        else
+            ptr[0] = (lowK[patch]-numGhostK)*dx[level];
+
         for (i = 1; i < dims[2]; i++)
             ptr[i] = ptr[0] + i*dx[level];
     }
@@ -1217,47 +1233,64 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
     rg->GetFieldData()->AddArray(arr);
     arr->Delete();
 
-#ifndef STRIP_OUT_GHOST_DATA
-    //
-    // Store real dims so that pick reports correct indices
-    arr = vtkIntArray::New();
-    arr->SetNumberOfTuples(6);
-    arr->SetValue(0, numGhostI);
-    arr->SetValue(1, dims[0]-numGhostI);
-    arr->SetValue(2, numGhostJ);
-    arr->SetValue(3, dims[1]-numGhostJ);
-    arr->SetValue(4, numGhostK);
-    arr->SetValue(5, dims[2]-numGhostK);
-    arr->SetName("avtRealDims");
-    rg->GetFieldData()->AddArray(arr);
-    arr->Delete();
-
-    //
-    // Generate ghost zone information
-    //
-    if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
+    if (useGhosts)
     {
-        unsigned char realVal = 0, ghost = 0;
-        avtGhostData::AddGhostZoneType(ghost, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-
-        vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
-        ghostCells->SetName("avtGhostZones");
-
-        ghostCells->Allocate(rg->GetNumberOfCells());
-
-        int nI = hiI[patch] - lowI[patch] + 2*numGhostI;
-        int nJ = hiJ[patch] - lowJ[patch] + 2*numGhostJ;
-
-        if (dimension == 3)
+        //
+        // Store real dims so that pick reports correct indices
+        arr = vtkIntArray::New();
+        arr->SetNumberOfTuples(6);
+        arr->SetValue(0, numGhostI);
+        arr->SetValue(1, dims[0]-numGhostI);
+        arr->SetValue(2, numGhostJ);
+        arr->SetValue(3, dims[1]-numGhostJ);
+        arr->SetValue(4, numGhostK);
+        arr->SetValue(5, dims[2]-numGhostK);
+        arr->SetName("avtRealDims");
+        rg->GetFieldData()->AddArray(arr);
+        arr->Delete();
+    
+        //
+        // Generate ghost zone information
+        //
+        if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
         {
-            int nK = hiK[patch] - lowK[patch] + 2*numGhostK;
-            for (int k=0; k<nK; ++k)
+            unsigned char realVal = 0, ghost = 0;
+            avtGhostData::AddGhostZoneType(ghost, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+    
+            vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
+            ghostCells->SetName("avtGhostZones");
+    
+            ghostCells->Allocate(rg->GetNumberOfCells());
+    
+            int nI = hiI[patch] - lowI[patch] + 2*numGhostI;
+            int nJ = hiJ[patch] - lowJ[patch] + 2*numGhostJ;
+    
+            if (dimension == 3)
+            {
+                int nK = hiK[patch] - lowK[patch] + 2*numGhostK;
+                for (int k=0; k<nK; ++k)
+                    for (int j=0; j<nJ; ++j)
+                        for (int i=0; i<nI; ++i)
+                        {
+                            if (i>=numGhostI && i<nI - numGhostI &&
+                                j>=numGhostJ && j<nJ - numGhostJ && 
+                                k>=numGhostK && k<nK - numGhostK)  
+                            {
+                                ghostCells->InsertNextValue(realVal);
+                            }
+                            else
+                            {
+                                ghostCells->InsertNextValue(ghost);
+                            }
+                        }
+            }
+            else
+            {
                 for (int j=0; j<nJ; ++j)
                     for (int i=0; i<nI; ++i)
                     {
                         if (i>=numGhostI && i<nI - numGhostI &&
-                            j>=numGhostJ && j<nJ - numGhostJ && 
-                            k>=numGhostK && k<nK - numGhostK)  
+                            j>=numGhostJ && j<nJ - numGhostJ)
                         {
                             ghostCells->InsertNextValue(realVal);
                         }
@@ -1266,29 +1299,13 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
                             ghostCells->InsertNextValue(ghost);
                         }
                     }
-        }
-        else
-        {
-            for (int j=0; j<nJ; ++j)
-                for (int i=0; i<nI; ++i)
-                {
-                    if (i>=numGhostI && i<nI - numGhostI &&
-                        j>=numGhostJ && j<nJ - numGhostJ)
-                    {
-                        ghostCells->InsertNextValue(realVal);
-                    }
-                    else
-                    {
-                        ghostCells->InsertNextValue(ghost);
-                    }
-                }
-        }
+            }
 
-        rg->GetCellData()->AddArray(ghostCells);
-        rg->SetUpdateGhostLevel(0);
-        ghostCells->Delete();
+            rg->GetCellData()->AddArray(ghostCells);
+            rg->SetUpdateGhostLevel(0);
+            ghostCells->Delete();
+        }
     }
-#endif
 
     return rg;
 }
@@ -1322,6 +1339,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Gunther H. Wever, Wed Oct  3 17:34:56 PDT 2007
 //    Do not strip ghost zones from file and instead add appropriate
 //    ghost zone field data (in GetMesh()).
+//
+//    Hank Childs, Mon Oct  8 17:22:26 PDT 2007
+//    Make Gunther's code go live using DB options.
 //
 // ****************************************************************************
 
@@ -1423,59 +1443,60 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
     H5Dclose(data);
     H5Gclose(level_id);
 
-#ifdef STRIP_OUT_GHOST_DATA
-    //
-    // Strip out the ghost information.  Note: this is probably an inefficient
-    // path.  We would probably be better served leaving the ghost information
-    // and not creating ghost zones later in the process.  But that requires
-    // handling for external boundaries to the problem, which are not in place
-    // yet.  
-    //
-    if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
+    if (!useGhosts)
     {
-        vtkFloatArray *new_farr = vtkFloatArray::New();
-        int new_amt = (hiI[patch]-lowI[patch])
-                    * (hiJ[patch]-lowJ[patch]);
-        if (dimension == 3)
-            new_amt *= (hiK[patch]-lowK[patch]);
-        new_farr->SetNumberOfTuples(new_amt);
-
-        int nJ = hiJ[patch] - lowJ[patch];
-        int nI = hiI[patch] - lowI[patch];
-
-        int nJ2 = nJ + 2*numGhostJ;
-        int nI2 = nI + 2*numGhostI;
-
-        float *new_ptr = new_farr->GetPointer(0);
-        float *old_ptr = farr->GetPointer(0);
-        if (dimension == 3)
+        //
+        // Strip out the ghost information.  Note: this is probably an inefficient
+        // path.  We would probably be better served leaving the ghost information
+        // and not creating ghost zones later in the process.  But that requires
+        // handling for external boundaries to the problem, which are not in place
+        // yet.  
+        //
+        if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
         {
-            int nK = hiK[patch] - lowK[patch];
-            int nK2 = nK + 2*numGhostK;
-            for (int k = 0 ; k < nK ; k++)
+            vtkFloatArray *new_farr = vtkFloatArray::New();
+            int new_amt = (hiI[patch]-lowI[patch])
+                        * (hiJ[patch]-lowJ[patch]);
+            if (dimension == 3)
+                new_amt *= (hiK[patch]-lowK[patch]);
+            new_farr->SetNumberOfTuples(new_amt);
+    
+            int nJ = hiJ[patch] - lowJ[patch];
+            int nI = hiI[patch] - lowI[patch];
+    
+            int nJ2 = nJ + 2*numGhostJ;
+            int nI2 = nI + 2*numGhostI;
+    
+            float *new_ptr = new_farr->GetPointer(0);
+            float *old_ptr = farr->GetPointer(0);
+            if (dimension == 3)
+            {
+                int nK = hiK[patch] - lowK[patch];
+                int nK2 = nK + 2*numGhostK;
+                for (int k = 0 ; k < nK ; k++)
+                    for (int j = 0 ; j < nJ ; j++)
+                        for (int i = 0 ; i < nI ; i++)
+                        {
+                            int idx_new = k*nJ*nI + j*nI + i;
+                            int idx_old = (k+numGhostK)*nJ2*nI2 + (j+numGhostJ)*nI2
+                                        + (i+numGhostI);
+                            new_ptr[idx_new] = old_ptr[idx_old];
+                        }
+            }
+            else
+            {
                 for (int j = 0 ; j < nJ ; j++)
                     for (int i = 0 ; i < nI ; i++)
                     {
-                        int idx_new = k*nJ*nI + j*nI + i;
-                        int idx_old = (k+numGhostK)*nJ2*nI2 + (j+numGhostJ)*nI2
-                                    + (i+numGhostI);
+                        int idx_new = j*nI + i;
+                        int idx_old = (j+numGhostJ)*nI2 + (i+numGhostI);
                         new_ptr[idx_new] = old_ptr[idx_old];
                     }
+            }
+            farr->Delete();
+            farr = new_farr;
         }
-        else
-        {
-            for (int j = 0 ; j < nJ ; j++)
-                for (int i = 0 ; i < nI ; i++)
-                {
-                    int idx_new = j*nI + i;
-                    int idx_old = (j+numGhostJ)*nI2 + (i+numGhostI);
-                    new_ptr[idx_new] = old_ptr[idx_old];
-                }
-        }
-        farr->Delete();
-        farr = new_farr;
     }
-#endif
 
     return farr;
 }
