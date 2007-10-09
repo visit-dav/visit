@@ -322,7 +322,7 @@ CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
 HDF4=Cosmos Enzo ZeusMP
-HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC H5Nimrod
+HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC H5Nimrod  M3D
 MILI=Mili
 NETCDF=NETCDF S3D
 PDB=KullLite PDB
@@ -355,7 +355,6 @@ REQUIRED=\
  Fluent \
  Image \
  Lines \
- M3D \
  MFIX \
  Miranda \
  MM5 \
