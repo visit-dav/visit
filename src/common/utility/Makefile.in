@@ -94,6 +94,9 @@
 #    Eric Brugger, Fri Jun 29 09:33:06 PDT 2007
 #    Removed the setting of the NOT_DISTRIB variable.
 #
+#    Jeremy Meredith, Tue Oct  9 14:08:56 EDT 2007
+#    Added dependency on the library for the test programs.
+#
 ##############################################################################
 
 ##
@@ -135,10 +138,10 @@ message:
 	@echo "*** Building Utility Library ($(LIB))"
 	@echo "****************************************************************************"
 
-$(tmpbin)/MRUCache_test: MRUCache_test.o 
+$(tmpbin)/MRUCache_test: MRUCache_test.o $(LIBSHARED)
 	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) MRUCache_test.o
 
-$(tmpbin)/StringHelpers_test: StringHelpers_test.o
+$(tmpbin)/StringHelpers_test: StringHelpers_test.o $(LIBSHARED)
 	$(CXX) $(INCLUDE) -o $@ $(LDFLAGS) StringHelpers_test.o -lutility
 
 ##
