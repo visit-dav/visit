@@ -129,6 +129,10 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Kathleen Bonnell, Mon Oct  8 18:54:53 PDT 2007 
+//    Completed support for node origin. 
+//
 // ****************************************************************************
 
 void
@@ -156,6 +160,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     }
 
     int nodeid = pickAtts.GetElementNumber();
+    int usernodeid = nodeid;
     int maxEls = ds->GetNumberOfPoints(); 
 
     // Verify the node number is in range.
@@ -169,12 +174,12 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     {
         if (pickAtts.GetElementIsGlobal())
         {
-            nodeid = vtkVisItUtility::GetLocalElementForGlobal(ds, nodeid, 
-                                                               false);
-            if (nodeid == -1)
+            usernodeid = vtkVisItUtility::GetLocalElementForGlobal(ds, 
+                          usernodeid, false);
+            if (usernodeid == -1)
                 return;
+            nodeid = usernodeid;
             pickAtts.SetGlobalElement(pickAtts.GetElementNumber());
-            pickAtts.SetElementNumber(nodeid+nodeOrigin);
             DBsuppliedNodeId = false;
         }
         GetNodeCoords(ds, nodeid);    
@@ -212,9 +217,10 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     if (pickAtts.GetElementIsGlobal() && DBsuppliedNodeId)
     {
         nodeid = GetCurrentNodeForOriginal(ds, pickAtts.GetElementNumber());
+        usernodeid = nodeid;
         ConvertElNamesToGlobal();
     }
-
+    pickAtts.SetElementNumber(usernodeid + nodeOrigin);
     if (pickAtts.GetMatSelected())
     {
         //
@@ -318,6 +324,9 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added avtDatAttributes arg.
 //
+//    Kathleen Bonnell, Mon Oct  8 18:54:53 PDT 2007 
+//    Add support for node origin. 
+//
 // ****************************************************************************
 
 void
@@ -327,6 +336,8 @@ avtPickByNodeQuery::Preparation(const avtDataAttributes &)
     {
         int dom = pickAtts.GetDomain() - blockOrigin;
         pickAtts.SetDomain(dom < 0 ? 0 : dom);
+        int node = pickAtts.GetElementNumber() - nodeOrigin;
+        pickAtts.SetElementNumber(node < 0 ? 0 : node);
     }
     else 
     {
