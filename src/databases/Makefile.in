@@ -305,6 +305,9 @@
 #   Brad Whitlock, Sat Sep 29 15:26:06 PST 2007
 #   Added RAW reader/writer.
 #
+#   Eric Brugger, Tue Oct  9 08:29:26 PDT 2007
+#   Added DDCMD reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -343,6 +346,7 @@ REQUIRED=\
  CMAT \
  CTRL \
  Curve2D \
+ DDCMD \
  Dune \
  Dyna3D \
  EnSight \
