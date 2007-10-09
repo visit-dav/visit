@@ -1852,6 +1852,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Modification of Hank's code for creating a spreadsheet. Do not switch
 //    the domain of an existing spreadsheet. Create a new one instead.
 //
+//    Hank Childs, Mon Oct  8 19:51:21 PDT 2007
+//    If the pick is of a mesh plot, make a spreadsheet anyway.
+//
 // ****************************************************************************
 
 bool
@@ -2238,8 +2241,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                 intVector plotIds;
                 plist->GetActivePlotIDs(plotIds);
                 ViewerPlot *plotWePicked = plist->GetPlot(plotIds[0]);
+
+                std::string varname = plotWePicked->GetVariableName();
+                bool useAnyVar = false;
                 if (plotWePicked->IsMesh() || plotWePicked->IsLabel())
-                    return retval;
+                {
+                    useAnyVar = true;
+                    varname = "";
+                }
 
                 // Decide if we should add a new spreadsheet, or re-use
                 // an existing one.
@@ -2254,7 +2263,11 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                      if (plot->GetDatabaseName() != 
                                                plotWePicked->GetDatabaseName())
                          continue;
-                     if (plot->GetVariableName() != 
+            
+                     // If we have a mesh or label plot, then accept any
+                     // variable.  Otherwise require that the variables match.
+                     if (!useAnyVar)
+                         if (plot->GetVariableName() != 
                                                plotWePicked->GetVariableName())
                          continue;
 
@@ -2264,11 +2277,50 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                          plotAtts->CreateCompatible("PickAttributes");
                      if (p != NULL)
                          if (p->GetSubsetName() != pickAtts->GetSubsetName())
+                         {
+                            // Special logic for one domain meshes, which
+                            // use the special keyword "Whole", which comes
+                            // from the spreadsheet attributes.
+                            if ((p->GetSubsetName() != "Whole")
+                                || (pickAtts->GetSubsetName() != ""))
                              continue;
+                         }
 
                      // It is a spreadsheet plot of the same variable and the same
                      // domain for the same database from the same host. Re-use it.
                      spreadsheet = plot;
+                }
+
+                if (spreadsheet == NULL && useAnyVar)
+                {
+                    // If we have a mesh plot or label plot, then find a 
+                    // suitable variable to plot.  Choose the variable of 
+                    // any PC or contour plot.
+                    for (i = 0 ; i < plist->GetNumPlots() ; i++)
+                    {
+                         ViewerPlot *plot = plist->GetPlot(i);
+                         if (plot->GetHostName() !=plotWePicked->GetHostName())
+                             continue;
+                         if (plot->GetDatabaseName() != 
+                                               plotWePicked->GetDatabaseName())
+                             continue;
+                         if (strcmp(plot->GetPlotTypeName(), "Pseudocolor")==0)
+                         {
+                             varname = plot->GetVariableName();
+                             break;
+                         }
+                         if (strcmp(plot->GetPlotTypeName(), "Contour")==0)
+                         {
+                             varname = plot->GetVariableName();
+                         }
+                    }
+                }
+
+                if (spreadsheet == NULL && varname == "")
+                {
+                    // We didn't find a candidate spreadsheet and we couldn't
+                    // come up with a candidate variable name.  Give up.
+                    return retval;
                 }
 
                 ViewerWindow *win = (ViewerWindow *)pd.callbackData;
@@ -2278,8 +2330,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     int plotType = PlotPluginManager::Instance()
                                           ->GetEnabledIndex("Spreadsheet_1.0");
                     bool replacePlots = false;
-                    int pid = plotList->AddPlot(plotType,
-                                                plot->GetVariableName(),
+                    int pid = plotList->AddPlot(plotType, varname,
                                                 replacePlots, false);
                     vector<int> opListBogus;
                     vector<int> exListBogus;
