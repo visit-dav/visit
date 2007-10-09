@@ -57,6 +57,49 @@
 #include <DebugStream.h>
 #endif
 
+//
+// Brad Whitlock, Mon Oct 8 18:32:18 PST 2007
+// -- Move these to misc or util someday...
+//
+
+static bool
+GetVersionFromString(const char *v0, int &major, int &minor, int &patch)
+{
+    bool ret = false;
+    major = minor = patch = 0;
+
+    if(sscanf(v0, "%d.%d.%d", &major, &minor, &patch) != 3)
+    {
+        if(sscanf(v0, "%d.%d", &major, &minor) != 2)
+        {
+            if(sscanf(v0, "%d", &major) == 1)
+                ret = true;
+        }
+        else
+            ret = true;
+    }
+    else
+        ret = true;
+
+    return ret;
+}
+
+static bool
+VersionsCompatible(const char *v0, const char *v1)
+{
+    bool ret = false;
+    int major0=0, minor0=0, patch0=0;
+    int major1=0, minor1=0, patch1=0;
+
+    if(GetVersionFromString(v0, major0, minor0, patch0) &&
+       GetVersionFromString(v1, major1, minor1, patch1))
+    {
+        ret = (major0 == major1) && (minor0 == minor1);
+    }
+
+    return ret;
+}
+
 // ****************************************************************************
 // Method: CommunicationHeader::CommunicationHeader
 //
@@ -204,6 +247,9 @@ CommunicationHeader::WriteHeader(Connection *conn, const std::string &version,
 //    Brad Whitlock, Mon Dec 16 15:27:52 PST 2002
 //    I added security code.
 //
+//    Brad Whitlock, Mon Oct 8 18:31:49 PST 2007
+//    Made it use VersionsCompatible function.
+//
 // ****************************************************************************
 
 void
@@ -237,8 +283,8 @@ CommunicationHeader::ReadHeader(Connection *conn, const std::string &version,
     debug1 << "}\n";
 #endif
 
-    // Check to see if the version numbers are the same.
-    if(strcmp((const char *)(buffer+5), version.c_str()) != 0)
+    // Check to see if the version numbers are compatible.
+    if(!VersionsCompatible((const char *)(buffer+5), version.c_str()))
     {
         EXCEPTION0(IncompatibleVersionException);
     }
