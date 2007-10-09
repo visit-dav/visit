@@ -16,9 +16,14 @@
 #    Hank Childs, Thu Jul  5 16:13:57 PDT 2007
 #    Suppress SVN noise.
 #
+#    Hank Childs, Tue Oct  9 09:03:35 PDT 2007
+#    Fix typo with filename for keeping track of merge.
+#
 # *****************************************************************************
 
 issueHelp="no"
+
+export CDPATH=""
 
 P=$(whence $0)
 P2=${P%/*}
@@ -38,8 +43,8 @@ if [[ "$issueHelp" == "yes" ]] ; then
    echo ""
    echo "Usage:   $0 <version>"
    echo ""
-   echo "Example: $0 1.6.1"
-   echo "\twill create a release candidate branch under REPO/branches/1.6.1RC"
+   echo "Example: $0 1.7"
+   echo "\twill create a release candidate branch under REPO/branches/1.7RC"
    echo ""
    exit 1
 fi
@@ -54,16 +59,16 @@ svn_cp_dir $SRC $DEST
 svn co --quiet $DEST/svninfo
 cd svninfo
 REV=$(get_latest_rev)
-echo $REV > Rev_fromTrunk
-svn add Rev_fromRCTrunk
+echo $REV > Rev_fromRCTrunk
+svn add --quiet Rev_fromRCTrunk
 echo $REV > Rev_toRCTrunk
-svn add Rev_toRCTrunk
-svn delete Rev_fromTrunk
+svn add --quiet Rev_toRCTrunk
+svn delete --quiet Rev_fromTrunk
 if [[ -f Rev_initial ]] ; then
    echo $REV > Rev_initial
 else
    echo $REV > Rev_initial
-   svn add Rev_initial
+   svn add --quiet Rev_initial
 fi
 
 svn commit --quiet -m "Add RC revision tracking files"
