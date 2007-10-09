@@ -8,7 +8,6 @@
     </LIBS>
     <Extensions>
       m3d
-      h5
     </Extensions>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
