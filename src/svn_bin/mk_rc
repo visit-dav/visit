@@ -19,6 +19,9 @@
 #    Hank Childs, Tue Oct  9 09:03:35 PDT 2007
 #    Fix typo with filename for keeping track of merge.
 #
+#    Hank Childs, Tue Oct  9 09:44:43 PDT 2007
+#    Fix a problem with setting up the first release to merge from.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -69,6 +72,12 @@ if [[ -f Rev_initial ]] ; then
 else
    echo $REV > Rev_initial
    svn add --quiet Rev_initial
+fi
+if [[ -f Rev_toTrunk ]] ; then
+   echo $REV > Rev_toTrunk
+else
+   echo $REV > Rev_toTrunk
+   svn add --quiet Rev_toTrunk
 fi
 
 svn commit --quiet -m "Add RC revision tracking files"
