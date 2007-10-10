@@ -161,12 +161,15 @@ avtCCSMFileFormat::Identify(NETCDFFileObject *fileObject)
     int tmp = 0;
     if(GetDimensionInfo(fileObject, "time", &sz))
     {
-        bool hasLongitude = fileObject->GetVarId("lon", &tmp) ||
-                            fileObject->GetVarId("longitude", &tmp);
-        bool hasLatitude = fileObject->GetVarId("lat", &tmp) ||
-                           fileObject->GetVarId("latitude", &tmp);
+        size_t latSize = 0, lonSize = 0;
+        bool hasLongitude = GetDimensionInfo(fileObject, "lon", &lonSize) ||
+                            GetDimensionInfo(fileObject, "longitude", &lonSize);
+        bool hasLatitude = GetDimensionInfo(fileObject, "lat", &latSize) ||
+                           GetDimensionInfo(fileObject, "latitude", &latSize);
 
-        isCCSM = (sz > 1 && hasLongitude && hasLatitude);
+        isCCSM = (sz > 1 && 
+                  (hasLongitude && lonSize > 1) &&
+                  (hasLatitude && latSize > 1));
     }
     return isCCSM;
 }
@@ -353,6 +356,9 @@ avtCCSMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
         fileObject->HandleError(status);
         return;
     }
+
+    if(md != 0)
+         md->SetDatabaseComment("Read as CCSM data");
 
     // Get the size of all of the dimensions in the file.
     size_t *dimSizes = new size_t[nDims];
