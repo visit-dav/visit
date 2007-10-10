@@ -61,6 +61,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/wait.h>  // for WIFEXITED and WEXITSTATUS
 
 #ifdef PARALLEL
 #include <mpi.h>
