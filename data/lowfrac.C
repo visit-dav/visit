@@ -284,7 +284,7 @@ public:
         DBoptlist *optList = DBMakeOptlist(2);
 
         // Add material names.
-        char **matnames = new char *[4];
+        char **matnames = new char *[5];
         for(i = 0; i < matNames.size(); ++i)
             matnames[i] = (char *)matNames[i].c_str();
         DBAddOption(optList, DBOPT_MATNAMES, matnames);
@@ -673,8 +673,8 @@ main(int argc, char *argv[])
     //
     // Create the mesh.
     //
-    float *xc = new float[w];
-    float *yc = new float[h];
+    float *xc = new float[w+1];
+    float *yc = new float[h+1];
     float *coords[3] = {0,0,0};
     coords[0] = xc;
     coords[1] = yc;
