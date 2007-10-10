@@ -109,6 +109,9 @@ class     vtkDataArray;
 //    Hank Childs, Thu May 31 13:49:59 PDT 2007
 //    Added varsizes to VarList structure.
 //
+//    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
+//    Added ignoreGhost as an argument to GetDataRange.
+//
 // ****************************************************************************
 
 //
@@ -144,7 +147,8 @@ PIPELINE_API void CInsertRectilinearTransformInfoIntoDataset(
                                                   avtDataRepresentation &,
                                                   void *, bool &);
 
-PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *);
+PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *, 
+                               bool ignoreGhost = false);
 PIPELINE_API double MajorEigenvalue(float *);
 PIPELINE_API double MajorEigenvalue(double *);
 

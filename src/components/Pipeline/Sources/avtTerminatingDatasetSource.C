@@ -199,6 +199,9 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 //    fixes a UMR in avtExtents, where it copies 6 values due to legacy reasons
 //    (but still only uses 2).
 //
+//    Hank Childs, Wed Oct 10 16:12:11 PDT 2007
+//    Only look at non-ghost data when calculating extents.
+//
 // ****************************************************************************
 
 void
@@ -253,7 +256,8 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
             continue;
         }
 
-        GetDataRange(ds, dextents, vname);
+        bool ignoreGhost = true;
+        GetDataRange(ds, dextents, vname, true);
         atts.GetCumulativeTrueDataExtents(vname)->Merge(dextents);
     }
 }

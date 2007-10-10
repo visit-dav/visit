@@ -82,11 +82,9 @@ using std::vector;
 using std::string;
 
 
-void GetDataScalarRange(vtkDataSet *, double *, const char *);
-void GetDataMagnitudeRange(vtkDataSet *, double *, const char *);
-void GetDataMajorEigenvalueRange(vtkDataSet *, double *, const char *);
-
-
+void GetDataScalarRange(vtkDataSet *, double *, const char *, bool);
+void GetDataMagnitudeRange(vtkDataSet *, double *, const char *, bool);
+void GetDataMajorEigenvalueRange(vtkDataSet *, double *, const char *, bool);
 
 
 // ****************************************************************************
@@ -277,6 +275,9 @@ CGetSpatialExtents(avtDataRepresentation &data, void *info, bool &success)
 //    Call appropriate Get*Range method for the number of tuples in the
 //    data array.   DataExtents now always have only 2 components.
 //
+//    Hank Childs, Wed Oct 10 16:03:59 PDT 2007
+//    Add argument for whether or not we should ignore ghost zones.
+//
 // ****************************************************************************
 
 void 
@@ -302,12 +303,13 @@ CGetDataExtents(avtDataRepresentation &data, void *g, bool &success)
 
             int dim = da->GetNumberOfComponents();
             double range[2] = {+DBL_MAX, -DBL_MAX};
+            bool ignoreGhost = false; // legacy behavior
             if (dim == 1)
-                GetDataScalarRange(ds, range, vname);
+                GetDataScalarRange(ds, range, vname, ignoreGhost);
             else if (dim <= 3)
-                GetDataMagnitudeRange(ds, range, vname);
+                GetDataMagnitudeRange(ds, range, vname, ignoreGhost);
             else if (dim == 9)
-                GetDataMajorEigenvalueRange(ds, range, vname);
+                GetDataMajorEigenvalueRange(ds, range, vname, ignoreGhost);
 
             //
             // If we have gotten extents from another data rep, then merge the
@@ -1068,6 +1070,8 @@ CRemoveVariable(avtDataRepresentation &data, void *arg, bool &success)
 //      ds      The dataset to determine the range for.
 //      exts    The extents in <min, max> form.  There may be many 3 sets of
 //              extents for vector data.
+//      vname   The variable name to get the range for.
+//      ignoreGhost  A Boolean.  True if we should ignore ghosts, else false.
 //
 //  Returns:    True if retrieving the range was successful, false otherwise.
 //   
@@ -1076,10 +1080,14 @@ CRemoveVariable(avtDataRepresentation &data, void *arg, bool &success)
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
+//    Added argument for ignoring values from ghost zones.
+//
 // ****************************************************************************
 
 void
-GetDataRange(vtkDataSet *ds, double *de, const char *vname)
+GetDataRange(vtkDataSet *ds, double *de, const char *vname,
+             bool ignoreGhost)
 {
     if (ds->GetNumberOfCells() > 0 && ds->GetNumberOfPoints() > 0)
     {
@@ -1094,11 +1102,11 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname)
 
         int dim = da->GetNumberOfComponents();
         if (dim == 1)
-            GetDataScalarRange(ds, de, vname);
+            GetDataScalarRange(ds, de, vname, ignoreGhost);
         else if (dim <= 3)
-            GetDataMagnitudeRange(ds, de, vname);
+            GetDataMagnitudeRange(ds, de, vname, ignoreGhost);
         else if (dim == 9)
-            GetDataMajorEigenvalueRange(ds, de, vname);
+            GetDataMajorEigenvalueRange(ds, de, vname, ignoreGhost);
     }
 }
 
@@ -1113,6 +1121,10 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname)
 //      ds      The dataset to determine the range for.
 //      exts    The extents in <min, max> form.  There may be many 3 sets of
 //              extents for vector data.
+//      vname   The variable name to get the range for.
+//      ignoreGhost  A Boolean.  True if we should ignore ghosts, else false.
+//
+//  Returns:    true if it found real data, false otherwise.
 //
 //  Programmer: Hank Childs
 //  Creation:   September 7, 2001
@@ -1133,15 +1145,31 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname)
 //
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Templatized it to support all array types.
+// 
+//    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
+//    Added argument for ignoring values from ghost zones.
+//
 // ****************************************************************************
 
-template <class T> static void
-GetScalarRange(T *buf, int n, double *exts)
+template <class T> static bool
+GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts)
 {
-    T min = *buf++; // buf[0] sets min/max
-    T max = min;    // so, start loop @ 1
-    for (int i = 1; i < n; i++, buf++)
+    T min; 
+    T max;
+    bool setOne = false;
+    for (int i = 0; i < n; i++, buf++)
     {
+        if ((ghosts != NULL) && (ghosts[i] != '\0'))
+            continue;
+
+        if (!setOne)
+        {
+            min = *buf;
+            max = *buf;
+            setOne = true;
+            continue;
+        }
+
         if (*buf < min)
         {
             min = *buf;
@@ -1154,12 +1182,16 @@ GetScalarRange(T *buf, int n, double *exts)
     }
     exts[0] = (double) min;
     exts[1] = (double) max;
+
+    return setOne;
 }
 
 void
-GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
+GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname,
+                   bool ignoreGhost)
 {
     vtkDataArray *da = NULL;
+    unsigned char *ghosts = NULL;
     if (ds->GetPointData()->GetArray(vname))
     {
         da = ds->GetPointData()->GetArray(vname);
@@ -1167,6 +1199,13 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
     else
     {
         da = ds->GetCellData()->GetArray(vname);
+        if (ignoreGhost)
+        {
+            vtkUnsignedCharArray *ga = (vtkUnsignedCharArray *)
+                                  ds->GetCellData()->GetArray("avtGhostZones");
+            if (ga != NULL)
+                ghosts = ga->GetPointer(0);
+        }
     }
 
     if (da == NULL)
@@ -1180,37 +1219,48 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
     switch (da->GetDataType())
     {
         case VTK_CHAR:
-            GetScalarRange((char*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((char*) da->GetVoidPointer(0), nvals, exts, 
+                           ghosts);
             break;
         case VTK_UNSIGNED_CHAR:
-            GetScalarRange((unsigned char*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((unsigned char*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
         case VTK_SHORT:
-            GetScalarRange((short*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((short*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
         case VTK_UNSIGNED_SHORT:
-            GetScalarRange((unsigned short*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((unsigned short*) da->GetVoidPointer(0), nvals,exts,
+                           ghosts);
             break;
         case VTK_INT:           
-            GetScalarRange((int*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((int*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
         case VTK_UNSIGNED_INT:  
-            GetScalarRange((unsigned int*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((unsigned int*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
         case VTK_LONG:          
-            GetScalarRange((long*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((long*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
         case VTK_UNSIGNED_LONG: 
-            GetScalarRange((unsigned long*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((unsigned long*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
         case VTK_FLOAT:         
-            GetScalarRange((float*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((float*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
         case VTK_DOUBLE:        
-            GetScalarRange((double*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((double*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
         case VTK_ID_TYPE:       
-            GetScalarRange((vtkIdType*) da->GetVoidPointer(0), nvals, exts);
+            GetScalarRange((vtkIdType*) da->GetVoidPointer(0), nvals, exts,
+                           ghosts);
             break;
     }
 }
@@ -1225,6 +1275,8 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
 //  Arguments:
 //      ds      The dataset to determine the range for.
 //      exts    The extents in <min, max> form.
+//      vname   The variable name to get the range for.
+//      ignoreGhost  A Boolean.  True if we should ignore ghosts, else false.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Wed Dec 4 11:56:08 PDT 2002
@@ -1239,13 +1291,21 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname)
 //
 //    Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //    Templatized it to support all array types.
+//
+//    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
+//    Added argument for ignoring values from ghost zones.
+//
 // ****************************************************************************
 
 template <class T> static void
-GetMagnitudeRange(T *buf, int n, int ncomps, double *exts)
+GetMagnitudeRange(T *buf, int n, int ncomps, double *exts, 
+                  unsigned char *ghosts)
 {
     for (int i = 0; i < n; i++)
     {
+        if ((ghosts != NULL) && (ghosts[i] != '\0'))
+            continue;
+
         double mag = 0.0;
         for (int j = 0; j < ncomps; j++, buf++)
             mag += *buf * *buf;
@@ -1265,12 +1325,14 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts)
 }
 
 void
-GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname)
+GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
+                      bool ignoreGhost)
 {
     exts[0] = +FLT_MAX;
     exts[1] = 0;
 
     vtkDataArray *da = NULL;
+    unsigned char *ghosts = NULL;
     if (ds->GetPointData()->GetArray(vname))
     {
         da = ds->GetPointData()->GetArray(vname);
@@ -1278,6 +1340,13 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname)
     else
     {
         da = ds->GetCellData()->GetArray(vname);
+        if (ignoreGhost)
+        {
+            vtkUnsignedCharArray *ga = (vtkUnsignedCharArray *)
+                                  ds->GetCellData()->GetArray("avtGhostZones");
+            if (ga != NULL)
+                ghosts = ga->GetPointer(0);
+        }
     }
 
     if (da == NULL)
@@ -1289,37 +1358,48 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname)
     switch (da->GetDataType())
     {
         case VTK_CHAR:
-            GetMagnitudeRange((char*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((char*) da->GetVoidPointer(0), nvals, 
+                              ncomps, exts, ghosts);
             break;
         case VTK_UNSIGNED_CHAR:
-            GetMagnitudeRange((unsigned char*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((unsigned char*) da->GetVoidPointer(0), nvals, 
+                              ncomps, exts, ghosts);
             break;
         case VTK_SHORT:
-            GetMagnitudeRange((short*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((short*) da->GetVoidPointer(0), nvals, 
+                              ncomps, exts, ghosts);
             break;
         case VTK_UNSIGNED_SHORT:
-            GetMagnitudeRange((unsigned short*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((unsigned short*) da->GetVoidPointer(0), nvals, 
+                              ncomps, exts, ghosts);
             break;
         case VTK_INT:           
-            GetMagnitudeRange((int*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((int*) da->GetVoidPointer(0), nvals, 
+                              ncomps, exts, ghosts);
             break;
         case VTK_UNSIGNED_INT:  
-            GetMagnitudeRange((unsigned int*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((unsigned int*) da->GetVoidPointer(0), nvals, 
+                              ncomps, exts, ghosts);
             break;
         case VTK_LONG:          
-            GetMagnitudeRange((long*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((long*) da->GetVoidPointer(0), nvals, 
+                              ncomps, exts, ghosts);
             break;
         case VTK_UNSIGNED_LONG: 
-            GetMagnitudeRange((unsigned long*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((unsigned long*) da->GetVoidPointer(0), nvals,
+                              ncomps, exts, ghosts);
             break;
         case VTK_FLOAT:         
-            GetMagnitudeRange((float*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((float*) da->GetVoidPointer(0), nvals,
+                              ncomps, exts, ghosts);
             break;
         case VTK_DOUBLE:        
-            GetMagnitudeRange((double*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((double*) da->GetVoidPointer(0), nvals,
+                              ncomps, exts, ghosts);
             break;
         case VTK_ID_TYPE:       
-            GetMagnitudeRange((vtkIdType*) da->GetVoidPointer(0), nvals, ncomps, exts);
+            GetMagnitudeRange((vtkIdType*) da->GetVoidPointer(0), nvals,
+                              ncomps, exts, ghosts);
             break;
     }
 }
@@ -1334,18 +1414,25 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname)
 //  Arguments:
 //      ds      The dataset to determine the range for.
 //      exts    The extents in <min, max> form.
+//      vname   The variable name to get the range for.
+//      ignoreGhost  A Boolean.  True if we should ignore ghosts, else false.
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   March 11, 2004 
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
+//    Added argument for ignoring values from ghost zones.
+//
 // ****************************************************************************
 
 void
-GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname)
+GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
+                            bool ignoreGhost)
 {
     vtkDataArray *da = NULL;
+    unsigned char *ghosts = NULL;
     if (ds->GetPointData()->GetArray(vname))
     {
         da = ds->GetPointData()->GetArray(vname);
@@ -1353,6 +1440,13 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname)
     else
     {
         da = ds->GetCellData()->GetArray(vname);
+        if (ignoreGhost)
+        {
+            vtkUnsignedCharArray *ga = (vtkUnsignedCharArray *)
+                                  ds->GetCellData()->GetArray("avtGhostZones");
+            if (ga != NULL)
+                ghosts = ga->GetPointer(0);
+        }
     }
 
     if (da == NULL)
@@ -1378,6 +1472,9 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname)
     float *ptr = (float *) da->GetVoidPointer(0);
     for (int i = 0 ; i < nvals ; i++)
     {
+        if ((ghosts != NULL) && (ghosts[i] != '\0'))
+            continue;
+
         double val = MajorEigenvalue(ptr);
         exts[0] = (exts[0] < val ? exts[0] : val);
         exts[1] = (exts[1] > val ? exts[1] : val);
