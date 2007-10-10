@@ -13,6 +13,9 @@
 #    Hank Childs, Thu Jul  5 16:13:57 PDT 2007
 #    Suppress some SVN noise.
 #
+#    Hank Childs, Wed Oct 10 09:45:14 PDT 2007
+#    If the user is not in the trunk, then exit immediately.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -31,57 +34,65 @@ if [[ $# != 1 ]] ; then
 elif [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
    issueHelp="yes"
 elif [[ ! -f .branchname ]] ; then
-   echo "ERROR: You must run this script at the top of your checkout directory"
+   echo ""
+   echo "ERROR: You must run this script at the root of the trunk directory"
    echo ""
    issueHelp="yes"
 elif [[ ! -f .rootpath ]] ; then
-   echo "ERROR: You must run this script at the top of your checkout directory"
+   echo ""
+   echo "ERROR: You must run this script at the root of the trunk directory"
    echo ""
    issueHelp="yes"
 else
    TRUNKNAME=$(cat .branchname)
    if [[ "$TRUNKNAME" != "trunk" ]] ; then
+      echo ""
       echo "You must be in the trunk when you run this script"
+      echo "(Not the RC trunk.)"
+      echo "This is so SVN has a place to put the modified files from the "
+      echo "merge."
       echo ""
       issueHelp="yes"
    fi
-   WHOLE_TRUNK="yes"
-   ROOTPATH=$(cat .rootpath)
-   if [[ "$ROOTPATH" != "/" ]] ; then
-      WHOLE_TRUNK="no"
-   else
-      if [[ ! -d src || ! -d data || ! -d docs || ! -d test || ! -d third_party || ! -d windowsbuild ]] ; then
-      WHOLE_TRUNK="no"
-      fi
-   fi
-   if [[ "$WHOLE_TRUNK" == "no" ]]; then
-      echo "Your checkout is not of the entire trunk.  The merge will only "
-      echo "take place over your checkout.  If you continue, any changes that "
-      echo "are on directories not in your current checkout of the trunk will be lost!"
-      stop="no"
-      while [[ "$stop" == "no" ]] ; do
-           echo "Do you want to continue? [yes/no]"
-           read answer
-           if [[ "$answer" == "yes" ]] ; then
-              stop="yes"
-           fi
-           if [[ "$answer" == "no" ]] ; then
-              stop="yes"
-           fi
-       done
-       if [[ "$answer" == "no" ]] ; then
-           exit 1
+   if [[ "$issueHelp" != "yes" ]] ; then
+       WHOLE_TRUNK="yes"
+       ROOTPATH=$(cat .rootpath)
+       if [[ "$ROOTPATH" != "/" ]] ; then
+          WHOLE_TRUNK="no"
+       else
+          if [[ ! -d src || ! -d data || ! -d docs || ! -d test || ! -d third_party || ! -d windowsbuild ]] ; then
+          WHOLE_TRUNK="no"
+          fi
        fi
-   fi
+       if [[ "$WHOLE_TRUNK" == "no" ]]; then
+          echo "Your checkout is not of the entire trunk.  The merge will only "
+          echo "take place over your checkout.  If you continue, any changes that "
+          echo "are on directories not in your current checkout of the trunk will be lost!"
+          stop="no"
+          while [[ "$stop" == "no" ]] ; do
+               echo "Do you want to continue? [yes/no]"
+               read answer
+               if [[ "$answer" == "yes" ]] ; then
+                  stop="yes"
+               fi
+               if [[ "$answer" == "no" ]] ; then
+                  stop="yes"
+               fi
+           done
+           if [[ "$answer" == "no" ]] ; then
+               exit 1
+           fi
+       fi
 
-   RCTRUNKNAME=$1
-   BRANCH=${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}${ROOTPATH}
-   svn ls $BRANCH 2>/dev/null > /dev/null
-   if [[ $? != 0 ]] ; then
-      echo "The RC TRUNK $1 does not appear to exist."
-      echo "(Looking for it at $BRANCH)"
-      echo "Try using the script ls_branches to locate the RC trunk."
-      issueHelp="yes"
+       RCTRUNKNAME=$1
+       BRANCH=${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}${ROOTPATH}
+       svn ls $BRANCH 2>/dev/null > /dev/null
+       if [[ $? != 0 ]] ; then
+          echo "The RC TRUNK $1 does not appear to exist."
+          echo "(Looking for it at $BRANCH)"
+          echo "Try using the script ls_branches to locate the RC trunk."
+          issueHelp="yes"
+       fi
    fi
 fi
 
