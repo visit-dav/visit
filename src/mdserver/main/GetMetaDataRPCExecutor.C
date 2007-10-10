@@ -124,6 +124,11 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added support to treat all databases as time varying
+//
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Send flags from rpc for controlling creation of MeshQuality and 
+//   TimeDerivative expressions to the ReadMetaData call.
+//
 // ****************************************************************************
 
 void
@@ -142,7 +147,9 @@ GetMetaDataRPCExecutor::Update(Subject *s)
         parent->ReadMetaData(rpc->GetFile(), rpc->GetTimeState(),
                              rpc->GetForceReadAllCyclesAndTimes(),
                              rpc->GetForcedFileType(),
-			     rpc->GetTreatAllDBsAsTimeVarying());
+                             rpc->GetTreatAllDBsAsTimeVarying(),
+                             rpc->GetCreateMeshQualityExpressions(),
+                             rpc->GetCreateTimeDerivativeExpressions());
 
         debug5 << "MetaData=" << endl;
         if(debug5_real)

@@ -275,6 +275,8 @@ public:
 
     void SetTryHarderCyclesTimes(int flag);
     void SetTreatAllDBsAsTimeVarying(int flag);
+    void SetCreateMeshQualityExpressions(int flag);
+    void SetCreateTimeDerivativeExpressions(int flag);
 
     void SetMeshManagementAttributes();
     void SetDefaultMeshManagementAttributes();

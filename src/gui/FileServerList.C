@@ -145,6 +145,10 @@ MDCacheKeys(const string& stateLessName, int timeState)
 //
 //   Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //   Initialized openFileTimeState 
+//
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Added flags for creation of MeshQuality and TimeDerivative expressions.
+//
 // ****************************************************************************
 
 FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
@@ -169,6 +173,9 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
 
     forceReadAllCyclesTimes = false;
     treatAllDBsAsTimeVarying = false;
+
+    createMeshQualityExpressions = true;
+    createTimeDerivativeExpressions = true;
 
     // Initialize some callback functions.
     connectCallback = 0;
@@ -1241,6 +1248,41 @@ void
 FileServerList::SetTreatAllDBsAsTimeVarying(bool set)
 {
     treatAllDBsAsTimeVarying = set;
+}
+
+
+// ****************************************************************************
+// Method: FileServerList::SetCreateMeshQualityExpressions
+//
+// Purpose: Set flag indicating if mesh quality expressions should be 
+// automatically created during GetMetaData calls
+//
+// Programmer: Kathleen Bonnell
+// Creation:   October 8, 2007
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetCreateMeshQualityExpressions(bool set)
+{
+    createMeshQualityExpressions = set;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetCreateTimeDerivativeExpressions
+//
+// Purpose: Set flag indicating if time derivative expressions should be 
+// automatically created during GetMetaData calls
+//
+// Programmer: Kathleen Bonnell
+// Creation:   October 8, 2007
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetCreateTimeDerivativeExpressions(bool set)
+{
+    createTimeDerivativeExpressions = set;
 }
 
 // ****************************************************************************
@@ -2374,6 +2416,12 @@ FileServerList::GetOpenFile() const
 //
 // Programmer: Mark C. Miller (totally re-wrote)
 // Creation:   July 25, 2006 
+//
+// Modifications:
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Send flags for creation of MeshQuality and TimeDerivative expressions
+//   in GetMetaData call.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -2425,7 +2473,9 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
         const avtDatabaseMetaData *md =
             mds->GetMetaData(filename.PathAndFile(), timeState,
                              forceReadAllCyclesTimes, "",
-			     treatAllDBsAsTimeVarying);
+                             treatAllDBsAsTimeVarying,
+                             createMeshQualityExpressions,
+                             createTimeDerivativeExpressions);
 
         // cache what we got
         if (md)
@@ -2487,6 +2537,18 @@ bool
 FileServerList::GetTreatAllDBsAsTimeVarying() const
 {
     return treatAllDBsAsTimeVarying;
+}
+
+bool
+FileServerList::GetCreateMeshQualityExpressions() const
+{
+    return createMeshQualityExpressions;
+}
+
+bool
+FileServerList::GetCreateTimeDerivativeExpressions() const
+{
+    return createTimeDerivativeExpressions;
 }
 
 // ****************************************************************************
@@ -2558,7 +2620,7 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
 
         MDServerProxy *mds = svit->second->server;
         const SILAttributes *sil = mds->GetSIL(filename.PathAndFile(),
-	    timeState, treatAllDBsAsTimeVarying);
+            timeState, treatAllDBsAsTimeVarying);
 
         // cache what we got
         if (sil)
@@ -2570,7 +2632,7 @@ FileServerList::GetSIL(const QualifiedFilename &filename, int timeState,
             // decide on the right key
             string useKey = mdKeys[0]; // non-state-qualified key
             if (treatAllDBsAsTimeVarying ||
-	        GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0)->
+                GetMetaData(filename, timeState, ANY_STATE, !GET_NEW_MD, 0)->
                     GetMustRepopulateOnStateChange())
                 useKey = mdKeys[1];    // state-qualified key
 

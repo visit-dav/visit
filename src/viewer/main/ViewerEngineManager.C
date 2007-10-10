@@ -2095,6 +2095,9 @@ ViewerEngineManager::EndEngineExecute()
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Added meshquality/timederivative creation flags.
+//
 // ****************************************************************************
 
 bool
@@ -2102,7 +2105,11 @@ ViewerEngineManager::OpenDatabase(const EngineKey &ek, const char *format,
                                   const char *filename, int time)
 {
     ENGINE_PROXY_RPC_BEGIN("OpenDatabase");
-    engine->OpenDatabase(format, filename, time);
+    bool cmq = ViewerWindowManager::Instance()->GetClientAtts()->
+		    GetCreateMeshQualityExpressions();
+    bool ctd = ViewerWindowManager::Instance()->GetClientAtts()->
+		    GetCreateTimeDerivativeExpressions();
+    engine->OpenDatabase(format, filename, time, cmq, ctd);
     ENGINE_PROXY_RPC_END;
 }
 
@@ -2122,6 +2129,9 @@ ViewerEngineManager::OpenDatabase(const EngineKey &ek, const char *format,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Added meshquality/timederivative creation flags.
+//
 // ****************************************************************************
 
 bool
@@ -2130,7 +2140,11 @@ ViewerEngineManager::DefineVirtualDatabase(const EngineKey &ek,
                       const stringVector &files, int time)
 {
     ENGINE_PROXY_RPC_BEGIN("DefineVirtualDatabase");
-    engine->DefineVirtualDatabase(format, dbName, path, files, time);
+    bool cmq = ViewerWindowManager::Instance()->GetClientAtts()->
+		    GetCreateMeshQualityExpressions();
+    bool ctd = ViewerWindowManager::Instance()->GetClientAtts()->
+		    GetCreateTimeDerivativeExpressions();
+    engine->DefineVirtualDatabase(format, dbName, path, files, time, cmq, ctd);
     ENGINE_PROXY_RPC_END;
 }
 

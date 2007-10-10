@@ -54,23 +54,30 @@ using std::string;
 //   Brad Whitlock, Tue May 13 15:23:52 PST 2003
 //   I added timeState.
 //
-//    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
-//    Added forceReadAllCyclesAndTimes
+//   Mark C. Miller, Tue May 17 18:48:38 PDT 2005
+//   Added forceReadAllCyclesAndTimes
 //
-//    Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
-//    Added ability to force using a specific plugin when reading
-//    the metadata from a file (if it causes the file to be opened).
+//   Jeremy Meredith, Mon Aug 28 16:48:30 EDT 2006
+//   Added ability to force using a specific plugin when reading
+//   the metadata from a file (if it causes the file to be opened).
 //
-//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
-//    Added support to treat all databases as time varying
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added support to treat all databases as time varying
+//
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Added support for controlling creation of MeshQuality and TimeDerivative 
+//   expressions.
+//
 // ****************************************************************************
 
-GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sibsb",&metaData)
+GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sibsbbb",&metaData)
 {
     timeState = 0;
     forceReadAllCyclesAndTimes = false;
     forcedFileType="";
     treatAllDBsAsTimeVarying = false;
+    createMeshQualityExpressions = true;
+    createTimeDerivativeExpressions = true;
 }
 
 // ****************************************************************************
@@ -140,17 +147,24 @@ GetMetaDataRPC::TypeName() const
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Added support for controlling creation of MeshQuality and TimeDerivative 
+//    expressions.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 GetMetaDataRPC::operator()(const string &f, int ts, bool force,
-                           const string &fft, bool tv)
+                           const string &fft, bool tv, bool acmq, bool actd)
 {
     debug3 << "Executing GetMetaData RPC on file " << f.c_str()
            << ", timestate=" << ts
            << ", forceReadAllCyclesAndTimes = " << force
            << ", forcedFileType = " << fft
-	   << ", treatAllDBsAsTimeVarying = " << tv
+           << ", treatAllDBsAsTimeVarying = " << tv
+           << ", createMeshQualityExpressions = " << acmq
+           << ", createTimeDerivativeExpressions = " << actd
            << endl;;
 
     SetFile(f);
@@ -158,6 +172,8 @@ GetMetaDataRPC::operator()(const string &f, int ts, bool force,
     SetForceReadAllCyclesAndTimes(force);
     SetForcedFileType(fft);
     SetTreatAllDBsAsTimeVarying(tv);
+    SetCreateMeshQualityExpressions(acmq);
+    SetCreateTimeDerivativeExpressions(actd);
 
     // Try to execute the RPC.
     Execute();
@@ -195,6 +211,11 @@ GetMetaDataRPC::operator()(const string &f, int ts, bool force,
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Added support for controlling creation of MeshQuality and TimeDerivative 
+//    expressions.
+//
 // ****************************************************************************
 
 void
@@ -205,6 +226,8 @@ GetMetaDataRPC::SelectAll()
     Select(2, (void*)&forceReadAllCyclesAndTimes);
     Select(3, (void*)&forcedFileType);
     Select(4, (void*)&treatAllDBsAsTimeVarying);
+    Select(5, (void*)&createMeshQualityExpressions);
+    Select(6, (void*)&createTimeDerivativeExpressions);
 }
 
 // ****************************************************************************
@@ -303,6 +326,45 @@ GetMetaDataRPC::SetTreatAllDBsAsTimeVarying(bool set)
     Select(4, (void*)&treatAllDBsAsTimeVarying);
 }
 
+
+// ****************************************************************************
+// Method: GetMetaDataRPC::SetCreateMeshQualityExpressions
+//
+// Purpose: This sets the bool for whether to automatically create MeshQuality 
+//          expressions.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 8, 2007 
+//
+// ****************************************************************************
+
+void
+GetMetaDataRPC::SetCreateMeshQualityExpressions(bool set)
+{
+    createMeshQualityExpressions = set;
+    Select(5, (void*)&createMeshQualityExpressions);
+}
+
+
+// ****************************************************************************
+// Method: GetMetaDataRPC::SetCreateTimeDerivativeExpressions
+//
+// Purpose: This sets the bool for whether to automatically create 
+//          TimeDerivative expressions.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 8, 2007 
+//
+// ****************************************************************************
+
+void
+GetMetaDataRPC::SetCreateTimeDerivativeExpressions(bool set)
+{
+    createTimeDerivativeExpressions = set;
+    Select(6, (void*)&createTimeDerivativeExpressions);
+}
+
+
 // ****************************************************************************
 // Method: GetMetaDataRPC::GetFile
 //
@@ -393,4 +455,40 @@ bool
 GetMetaDataRPC::GetTreatAllDBsAsTimeVarying() const
 {
     return treatAllDBsAsTimeVarying;
+}
+
+
+// ****************************************************************************
+// Method: GetMetaDataRPC::GetCreateMeshQualityExpressions
+//
+// Purpose: This gets the bool for whether to automatically create MeshQuality
+//          expressions. 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   October 8, 2007 
+//
+// ****************************************************************************
+
+bool
+GetMetaDataRPC::GetCreateMeshQualityExpressions() const
+{
+    return createMeshQualityExpressions;
+}
+
+
+// ****************************************************************************
+// Method: GetMetaDataRPC::GetCreateTimeDerivativeExpressions
+//
+// Purpose: This gets the bool for whether to automatically create
+//          TimeDerivative expressions. 
+//
+// Programmer: Kathleen Bonnell
+// Creation:   October 8, 2007 
+//
+// ****************************************************************************
+
+bool
+GetMetaDataRPC::GetCreateTimeDerivativeExpressions() const
+{
+    return createTimeDerivativeExpressions;
 }

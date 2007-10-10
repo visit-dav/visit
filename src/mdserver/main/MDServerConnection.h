@@ -184,6 +184,11 @@ class Xfer;
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added treatAllDBsAsTimeVarying to ReadSIL
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Added flags to ReadMetaData for controlling creation of MeshQuality 
+//    and TimeDerivative expressions.
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -232,7 +237,9 @@ public:
     void ReadMetaData(std::string file, int timeState,
                       bool forceReadAllCyclesAndTimes,
                       std::string forcedFileType,
-		      bool treatAllDBsAsTimeVarying);
+                      bool treatAllDBsAsTimeVarying,
+                      bool createMeshQualityExpressions,
+                      bool createTimeDerivativeExpressions);
     avtDatabaseMetaData *GetCurrentMetaData() const;
 
     void ReadSIL(std::string file, int timeState,
@@ -330,7 +337,7 @@ private:
                                            bool forceReadAllCyclesAndTimes,
                                            std::vector<std::string> &,
                                            std::string forcedFileType="",
-					   bool treatAllDBsAsTimeVarying=false);
+                                           bool treatAllDBsAsTimeVarying=false);
 };
 
 #endif

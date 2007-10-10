@@ -160,6 +160,11 @@ class     DBPluginInfoAttributes;
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added treatAllDBsAsTimeVarying to GetSIL
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Added flags to GetMetaData for controlling creation of MeshQuality 
+//    and TimeDerivative expressions.
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -218,9 +223,11 @@ public:
     const FileList            *GetFileList(const std::string &filter, bool,
                                            bool=true);
     const avtDatabaseMetaData *GetMetaData(const std::string &, int=0,
-                                   bool forceReadAllCyclesTimes = false,
-                                   const std::string &forcedFileType = "",
-				   bool treatAllDBsAsTimeVarying = false);
+                               bool forceReadAllCyclesTimes = false,
+                               const std::string &forcedFileType = "",
+                               bool treatAllDBsAsTimeVarying = false,
+                               bool createMeshQualityExpressions = true,
+                               bool createTimeDerivativeExpressions = true);
     const SILAttributes       *GetSIL(const std::string &, int=0,
                                    bool treatAllDBsAsTimeVarying = false);
     std::string                ExpandPath(const std::string &);

@@ -432,6 +432,10 @@ class avtDefaultPlotMetaData;
 //    Cyrus Harrison, Tue Sep 18 11:13:27 PDT 2007
 //    Added SetQueryFloatFormat
 //
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//    Added SetCreateMeshQualityExpressions and
+//    SetCreateTimeDerivativeExpressions
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -603,6 +607,9 @@ private:
 
     void SetTryHarderCyclesTimes();
     void SetTreatAllDBsAsTimeVarying();
+
+    void SetCreateMeshQualityExpressions();
+    void SetCreateTimeDerivativeExpressions();
 
     void MoveWindow();
     void MoveAndResizeWindow();

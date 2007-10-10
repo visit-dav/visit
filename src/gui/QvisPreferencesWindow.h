@@ -77,6 +77,11 @@ class QSpinBox;
 //
 //   Mark C. Miller, Mon Jun 11 17:45:24 PDT 2007
 //   Added treatAllDBsAsTimeVarying check box
+// 
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Added 'Update' method, as this class now observes GlobalAttributes.
+//   Added createMeshQuality, createTimeDerivative buttons.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -89,6 +94,7 @@ public:
                           QvisNotepadArea *notepad = 0);
     virtual ~QvisPreferencesWindow();
     virtual void CreateWindowContents();
+    virtual void Update(Subject *);
 
     void SetTimeStateFormat(const TimeFormat &fmt);
     void SetShowSelectedFiles(bool val);
@@ -113,6 +119,8 @@ private slots:
     void selectedFilesToggled(bool);
     void allowFileSelectionChangeToggled(bool);
     void treatAllDBsAsTimeVaryingToggled(bool);
+    void createMeshQualityToggled(bool);
+    void createTimeDerivativeToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -124,6 +132,8 @@ private:
     QCheckBox        *treatAllDBsAsTimeVaryingToggle;
     QButtonGroup     *timeStateDisplayMode;
     QSpinBox         *timeStateNDigits;
+    QCheckBox        *createMeshQualityToggle;
+    QCheckBox        *createTimeDerivativeToggle;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;

@@ -255,10 +255,10 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     for (int i = 0; i < *argc; i++)
     {
         if (strcmp((*argv)[i], "-cycleregex") == 0)
-	{
-	    avtDatabaseMetaData::SetCycleFromFilenameRegex((*argv)[i+1]);
-	    i++;
-	}
+        {
+            avtDatabaseMetaData::SetCycleFromFilenameRegex((*argv)[i+1]);
+            i++;
+        }
     }
 
     // Initialize some static members.
@@ -645,13 +645,20 @@ MDServerConnection::GetPluginErrors()
 //
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added support to treat all databases as time varying
+//
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Added flags controlling creation of MeshQuality and TimeDerivative 
+//   expressions. Send the flags to the database factory.
+//
 // ****************************************************************************
 
 void
 MDServerConnection::ReadMetaData(std::string file, int timeState,
                                  bool forceReadAllCyclesAndTimes,
                                  std::string forcedFileType,
-				 bool treatAllDBsAsTimeVarying)
+                                 bool treatAllDBsAsTimeVarying,
+                                 bool createMeshQualityExpressions,
+                                 bool createTimeDerivativeExpressions)
 {
     currentMetaData = NULL;
 
@@ -660,8 +667,17 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
            << ", timeState=" << ts
            << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
            << ", forcedFileType=" << forcedFileType
-	   << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
+           << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
+           << ", createMeshQualityExpressions = " 
+           << createMeshQualityExpressions
+           << ", createTimeDerivativeExpressions = " 
+           << createTimeDerivativeExpressions
            << endl;
+
+    avtDatabaseFactory::SetCreateMeshQualityExpressions(
+        createMeshQualityExpressions);
+    avtDatabaseFactory::SetCreateTimeDerivativeExpressions(
+        createTimeDerivativeExpressions);
 
     //
     // Try and read the database. This could throw an exception.
@@ -685,7 +701,7 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
         TRY
         {
             currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes,
-	                              treatAllDBsAsTimeVarying);
+                                  treatAllDBsAsTimeVarying);
         }
         CATCHALL(...)
         {
@@ -2618,7 +2634,7 @@ MDServerConnection::GetDatabase(string file, int timeState,
                                 bool forceReadAllCyclesAndTimes,
                                 std::vector<std::string> &plugins,
                                 string forcedFileType,
-				bool treatAllDBsAsTimeVarying)
+                                bool treatAllDBsAsTimeVarying)
 {
     //
     // Make sure that the plugins are loaded.
@@ -2632,7 +2648,7 @@ MDServerConnection::GetDatabase(string file, int timeState,
 
     if (currentDatabase == NULL ||
         file != currentDatabaseName ||
-	treatAllDBsAsTimeVarying ||
+        treatAllDBsAsTimeVarying ||
         (timeState != currentDatabaseTimeState && currentDatabaseHasInvariantMD))
     {
         string timerMessage(string("Time to open ") + file);
@@ -2642,8 +2658,8 @@ MDServerConnection::GetDatabase(string file, int timeState,
                << ", timeState=" << timeState
                << ", forceReadAllCyclesAndTimes=" << forceReadAllCyclesAndTimes
                << ", forcedFileType=" << forcedFileType
-	       << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
-	       << endl;
+               << ", treatAllDBsAsTimeVarying = " << treatAllDBsAsTimeVarying
+               << endl;
 
         if (currentDatabase != NULL)
         {
@@ -2711,7 +2727,7 @@ MDServerConnection::GetDatabase(string file, int timeState,
                     fileNames.size(), timeState, plugins,
                     forcedFileType=="" ? NULL : forcedFileType.c_str(),
                     forceReadAllCyclesAndTimes,
-		    treatAllDBsAsTimeVarying);
+                    treatAllDBsAsTimeVarying);
 
                 // Free the memory that we used.
                 for(i = 0; i < fileNames.size(); ++i)
@@ -2754,7 +2770,7 @@ MDServerConnection::GetDatabase(string file, int timeState,
                 avtDatabaseFactory::VisitFile(fn, timeState, plugins,
                                               forcedFileType=="" ? NULL : forcedFileType.c_str(),
                                               forceReadAllCyclesAndTimes,
-					      treatAllDBsAsTimeVarying);
+                                              treatAllDBsAsTimeVarying);
         }
         else
         {
@@ -2762,7 +2778,7 @@ MDServerConnection::GetDatabase(string file, int timeState,
                 avtDatabaseFactory::FileList(&fn, 1, timeState, plugins,
                                              forcedFileType=="" ? NULL : forcedFileType.c_str(),
                                              forceReadAllCyclesAndTimes,
-					     treatAllDBsAsTimeVarying);
+                                             treatAllDBsAsTimeVarying);
         }
 
         visitTimer->StopTimer(timeid, timerMessage);

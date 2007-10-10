@@ -37,10 +37,15 @@
 
 #include <QvisApplication.h>
 
+#include <qmenubar.h>
+
 #ifdef Q_WS_MACX
 // Include some MacOS X stuff
 #include <Carbon/Carbon.h>
 #include <visit-config.h>
+// Include extra Qt stuff.
+#include <qeventloop.h>
+#include <qtimer.h>
 #endif
 
 // ****************************************************************************
@@ -59,11 +64,17 @@
 QvisApplication::QvisApplication( int &argc, char **argv) :
     QApplication(argc, argv)
 {
+#ifdef Q_WS_MACX
+    needToMakeActive = false;
+#endif
 }
 
 QvisApplication::QvisApplication( int &argc, char **argv, bool GUIenabled ) :
     QApplication(argc, argv, GUIenabled)
 {
+#ifdef Q_WS_MACX
+    needToMakeActive = false;
+#endif
 }
 
 // ****************************************************************************
@@ -105,14 +116,19 @@ QvisApplication::~QvisApplication()
 // Creation:   Thu Sep 4 10:18:57 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Tue Oct 9 15:16:34 PST 2007
+//   Changed signature for macEventFilter to match newer Qt method. Fixed
+//   focus click problem for the menus.
 //   
 // ****************************************************************************
+static EventRef request_make_app_active = NULL;
 
 bool
-QvisApplication::macEventFilter(EventRef event)
+QvisApplication::macEventFilter(EventHandlerCallRef er, EventRef event)
 {
     UInt32 ekind = GetEventKind(event), eclass = GetEventClass(event);
-    
+    bool ret = false;
+
     switch(eclass)
     {
     case kEventClassWindow:
@@ -138,13 +154,67 @@ QvisApplication::macEventFilter(EventRef event)
                     emit hideApplication();            
                 //qDebug("ekind = kEventWindowHidden");
             }
+#ifdef PRINT_CARBON_EVENTS
+            else if(ekind == kEventWindowClose)
+                qDebug("\tkEventWindowClose");
+            else if(ekind == kEventWindowDrawContent)
+                qDebug("\tkEventWindowDrawContent");
+            else if(ekind == kEventWindowBoundsChanged)
+                qDebug("\tkEventWindowBoundsChanged");
+#endif
         }        
         break;
       }
-#if 0
     // Trap for other Carbon events.
     case kEventClassApplication:
-        qDebug("kEventClassApplication");
+        if(ekind == kEventAppDeactivated)
+        {
+            //qDebug("\tkEventAppDeactivated");
+
+            // We're deactivating the application so the next time we activate it
+            // via the menu, we need to make it active.
+            needToMakeActive = true;
+        }
+        else if(ekind == kEventAppActivated)
+        {
+            //qDebug("\tkEventAppActivated");
+            needToMakeActive = false;
+        }
+#ifdef PRINT_CARBON_EVENTS
+        else if(ekind == kEventAppQuit)
+            qDebug("\tkEventAppQuit");
+        else if(ekind == kEventAppLaunchNotification)
+            qDebug("\tkEventAppLaunchNotification");
+        else if(ekind == kEventAppLaunched)
+            qDebug("\tkEventAppLaunched");
+        else if(ekind == kEventAppTerminated)
+            qDebug("\tkEventAppTerminated");
+        else if(ekind == kEventAppFrontSwitched)
+            qDebug("\tkEventAppFrontSwitched");
+        else if(ekind == kEventAppFocusMenuBar)
+            qDebug("\tkEventAppFocusMenuBar");
+        else if(ekind == kEventAppFocusNextDocumentWindow)
+            qDebug("\tkEventAppFocusNextDocumentWindow");
+        else if(ekind == kEventAppFocusNextFloatingWindow)
+            qDebug("\tkEventAppFocusNextFloatingWindow");
+        else if(ekind == kEventAppFocusToolbar)
+            qDebug("\tkEventAppFocusToolbar");
+        else if(ekind == kEventAppFocusDrawer)
+            qDebug("\tkEventAppFocusDrawer");
+        else if(ekind == kEventAppGetDockTileMenu)
+            qDebug("\tkEventAppGetDockTileMenu");
+        else if(ekind == kEventAppIsEventInInstantMouser)
+            qDebug("\tkEventAppIsEventInInstantMouser");
+        else if(ekind == kEventAppHidden)
+            qDebug("\tkEventAppHidden");
+        else if(ekind == kEventAppShown)
+            qDebug("\tkEventAppShown");
+        else if(ekind == kEventAppSystemUIModeChanged)
+            qDebug("\tkEventAppSystemUIModeChanged");
+        else if(ekind == kEventAppAvailableWindowBoundsChanged)
+            qDebug("\tkEventAppAvailableWindowBoundsChanged");
+        else if(ekind == kEventAppActiveWindowChanged)
+            qDebug("\tkEventAppActiveWindowChanged");
         break;
     case kEventClassCommand:
         qDebug("kEventClassCommand");
@@ -155,15 +225,76 @@ QvisApplication::macEventFilter(EventRef event)
     case kEventClassKeyboard:
         qDebug("kEventClassKeyboard");
         break;
+#endif
     case kEventClassMenu:
+#ifdef PRINT_CARBON_EVENTS
         qDebug("kEventClassMenu");
+        if(ekind == kEventMenuBeginTracking)
+            qDebug("\tkEventMenuBeginTracking");
+        else if(ekind == kEventMenuEndTracking)
+            qDebug("\tkEventMenuEndTracking");
+        else if(ekind == kEventMenuChangeTrackingMode)
+            qDebug("\tkEventMenuChangeTrackingMode");
+        else if(ekind == kEventMenuClosed)
+            qDebug("\tkEventMenuClosed");
+        else if(ekind == kEventMenuTargetItem)
+            qDebug("\tkEventMenuTargetItem");
+        else if(ekind == kEventMenuMatchKey)
+            qDebug("\tkEventMenuMatchKey");
+        else if(ekind == kEventMenuEnableItems)
+            qDebug("\tkEventMenuEnableItems");
+        else
+#endif
+        if(ekind == kEventMenuOpening)
+        {
+            //qDebug("\tkEventMenuOpening");
+
+            if(needToMakeActive)
+            {
+                // If we got here then it's from making the menu active after having
+                // left the application for the viewer. In this case, we pull some 
+                // tricks on Qt to make it execute the AppActivated event before the
+                // current event.
+                needToMakeActive = false;
+
+                // Inject a Carbon event to make the application active.
+                CreateEvent(NULL, kEventClassApplication, kEventAppActivated, GetCurrentEventTime(),
+		     NULL, &request_make_app_active);
+                PostEventToQueue(GetCurrentEventQueue(), request_make_app_active, kEventPriorityHigh);
+                // Inject a directive to exit a sub-event loop that we'll be creating.
+                QTimer::singleShot(10, this, SLOT(exitTheLoop()));
+
+                // Start a new event loop to make the app active and then quit
+                // the sub-event loop.
+                eventLoop()->enterLoop();
+            }
+        }
         break;
+#ifdef PRINT_CARBON_EVENTS
     case kEventClassMouse:
         qDebug("kEventClassMouse");
         break;
 #endif
     }
 
-    return false;
+    return ret;
 }
 #endif
+
+// ****************************************************************************
+// Method: QvisApplication::exitTheLoop
+//
+// Purpose: 
+//   Exits a sub-event loop.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Oct 9 18:28:34 PST 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisApplication::exitTheLoop()
+{
+    eventLoop()->exitLoop();
+}

@@ -53,11 +53,17 @@
 //   Hank Childs, Fri Mar  5 11:13:32 PST 2004
 //   Added string for 'format'
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//   Added createMeshQualityExpressions and 
+//   createTimeDerivativeExpresisons. 
+//
 // ****************************************************************************
 
-OpenDatabaseRPC::OpenDatabaseRPC() : NonBlockingRPC("ssi"), databaseName("")
+OpenDatabaseRPC::OpenDatabaseRPC() : NonBlockingRPC("ssibb"), databaseName("")
 {
     time = 0;
+    createMeshQualityExpressions = true;
+    createTimeDerivativeExpressions = true;
 }
 
 // ****************************************************************************
@@ -91,15 +97,23 @@ OpenDatabaseRPC::~OpenDatabaseRPC()
 //   Hank Childs, Fri Mar  5 11:13:32 PST 2004
 //   Added 'format'.
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//   Added createMeshQualityExpressions and 
+//   createTimeDerivativeExpresisons. 
+//
 // ****************************************************************************
 
 void
 OpenDatabaseRPC::operator()(const std::string &f,
-                            const std::string &dbName, int timestep)
+                            const std::string &dbName, int timestep,
+                            bool cmqe, bool ctde)
 {
     fileFormat = f;
     databaseName = dbName;
     time = timestep;
+    createMeshQualityExpressions = cmqe;
+    createTimeDerivativeExpressions = ctde;
+    
     SelectAll();
     Execute();
 }
@@ -114,6 +128,9 @@ OpenDatabaseRPC::operator()(const std::string &f,
 // Creation:   Tue Dec 10 14:06:55 PST 2002
 //
 // Modifications:
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//   Added createMeshQualityExpressions and 
+//   createTimeDerivativeExpresisons. 
 //   
 // ****************************************************************************
 
@@ -123,5 +140,7 @@ OpenDatabaseRPC::SelectAll()
     Select(0, (void*)&fileFormat);
     Select(1, (void*)&databaseName);
     Select(2, (void*)&time);
+    Select(3, (void*)&createMeshQualityExpressions);
+    Select(4, (void*)&createTimeDerivativeExpressions);
 }
 

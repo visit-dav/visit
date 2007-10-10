@@ -69,6 +69,11 @@
 //
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added support to treat all databases as time varying
+//
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Added support for controlling creation of MeshQuality and TimeDerivative 
+//   expressions.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API GetMetaDataRPC : public BlockingRPC
@@ -81,9 +86,11 @@ public:
 
     // Invokation method
     const avtDatabaseMetaData *operator()(const std::string&, int timeState=0,
-                                          bool forceReadAllCyclesAndTimes=false,
-                                          const std::string &forcedFileType="",
-					  bool treatAllDBsAsTimeVarying=false);
+                                 bool forceReadAllCyclesAndTimes=false,
+                                 const std::string &forcedFileType="",
+                                 bool treatAllDBsAsTimeVarying=false,
+                                 bool createMeshQualityExpressions=true,
+                                 bool createTimeDerivativeExpressions=true);
 
     // Property setting methods
     void SetFile(const std::string&);
@@ -91,6 +98,8 @@ public:
     void SetForceReadAllCyclesAndTimes(bool force);
     void SetForcedFileType(const std::string&);
     void SetTreatAllDBsAsTimeVarying(bool set);
+    void SetCreateMeshQualityExpressions(bool set);
+    void SetCreateTimeDerivativeExpressions(bool set);
 
 
     // Property getting methods
@@ -99,6 +108,8 @@ public:
     bool GetForceReadAllCyclesAndTimes() const;
     std::string GetForcedFileType() const;
     bool GetTreatAllDBsAsTimeVarying() const;
+    bool GetCreateMeshQualityExpressions() const;
+    bool GetCreateTimeDerivativeExpressions() const;
 
     // Property selection methods
     virtual void SelectAll();
@@ -109,6 +120,8 @@ private:
     bool                 forceReadAllCyclesAndTimes;
     std::string          forcedFileType;
     bool                 treatAllDBsAsTimeVarying;
+    bool                 createMeshQualityExpressions;
+    bool                 createTimeDerivativeExpressions;
 };
 
 

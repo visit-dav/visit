@@ -52,6 +52,7 @@
 #include <PickVarInfo.h>
 #include <Utility.h>
 
+#include <avtDatabaseFactory.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDataObjectSource.h>
 #include <avtDataset.h>
@@ -1141,6 +1142,10 @@ avtDatabase::GetMostRecentTimestep(void) const
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added bool to force reading of all cycles and times 
 //
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Only create MeshQuality and TimeDerivative expressions if the option
+//    hasn't been turned off. 
+//
 // ****************************************************************************
 
 void
@@ -1167,8 +1172,11 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
     md->SetMustRepopulateOnStateChange(!MetaDataIsInvariant() ||
                                        !SILIsInvariant());
 
-    AddMeshQualityExpressions(md);
-    AddTimeDerivativeExpressions(md);
+    if (avtDatabaseFactory::GetCreateMeshQualityExpressions())
+        AddMeshQualityExpressions(md);
+
+    if (avtDatabaseFactory::GetCreateTimeDerivativeExpressions())
+        AddTimeDerivativeExpressions(md);
 
     if (! OnlyServeUpMetaData())
     {

@@ -404,20 +404,29 @@ MDServerProxy::GetFileList(const std::string &filter,
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Added flags for controlling creation of MeshQuality and 
+//    TimeDerivative expressions.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 MDServerProxy::GetMetaData(const string &file, int timeState,
                            bool forceReadAllCyclesTimes,
                            const string &forcedFileType,
-			   bool treatAllDBsAsTimeVarying)
+                           bool treatAllDBsAsTimeVarying,
+                           bool createMeshQualityExpressions,
+                           bool createTimeDerivativeExpressions)
 {
     // Try and get the meta data from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
     const avtDatabaseMetaData *md = getMetaDataRPC(file, timeState,
-                                                   forceReadAllCyclesTimes,
-                                                   forcedFileType,
-						   treatAllDBsAsTimeVarying);
+                                         forceReadAllCyclesTimes,
+                                         forcedFileType,
+                                         treatAllDBsAsTimeVarying,
+                                         createMeshQualityExpressions,
+                                         createTimeDerivativeExpressions);
 
 #ifdef DEBUG
     // Write the metadata to stdout.

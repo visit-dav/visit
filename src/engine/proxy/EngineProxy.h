@@ -289,6 +289,11 @@ class ExportDBAttributes;
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support to treat all databases as time varying
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//    Added two bool args to OpenDatabase and DefineVirtualDatabase to support 
+//    turning on/off creation of MeshQuality and TimeDerivative expressions.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -321,12 +326,14 @@ public:
 
     // RPCs to access functionality on the engine.
     void                     OpenDatabase(const std::string &, 
-                                          const std::string &, int = 0);
+                                          const std::string &, int = 0,
+                                          bool=true, bool=true);
     void                     DefineVirtualDatabase(const std::string &,
                                                    const std::string &,
                                                    const std::string &,
                                                    const stringVector &,
-                                                   int = 0);
+                                                   int = 0, bool=true,
+                                                   bool=true);
     void                     ReadDataObject(const std::string&,
                                             const std::string&,
                                             const std::string&, const int,

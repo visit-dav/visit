@@ -56,6 +56,7 @@
 #include <VisItException.h>
 #include <avtCallback.h>
 #include <avtColorTables.h>
+#include <avtDatabaseFactory.h>
 #include <avtDataObjectQuery.h>
 #include <avtNullData.h>
 
@@ -1211,6 +1212,10 @@ RPCExecutor<ReleaseDataRPC>::Execute(ReleaseDataRPC *rpc)
 //    Hank Childs, Wed May 17 16:14:56 PDT 2006
 //    Added exception handling.
 //
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Use rpc flags for creation of MeshQuality and TimeDerivative 
+//    expressions to set same flags in the DatabaseFactory. 
+//
 // ****************************************************************************
 template<>
 void
@@ -1226,7 +1231,12 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
                << ", time=" << rpc->GetTime() << endl;
         DatabasePluginManager::Instance()
                                        ->PluginAvailable(rpc->GetFileFormat());
-    
+   
+        avtDatabaseFactory::SetCreateMeshQualityExpressions(
+                            rpc->GetCreateMeshQualityExpressions()); 
+        avtDatabaseFactory::SetCreateTimeDerivativeExpressions(
+                            rpc->GetCreateTimeDerivativeExpressions()); 
+
         netmgr->GetDBFromCache(rpc->GetDatabaseName(), rpc->GetTime(),
                                rpc->GetFileFormat().c_str());
 
@@ -1260,6 +1270,10 @@ RPCExecutor<OpenDatabaseRPC>::Execute(OpenDatabaseRPC *rpc)
 //    Explicitly tell NetworkManager what file format type to open the file 
 //    with.
 //
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//    Use rpc flags for creation of MeshQuality and TimeDerivative 
+//    expressions to set same flags in the DatabaseFactory. 
+//
 // ****************************************************************************
 template<>
 void
@@ -1277,6 +1291,11 @@ RPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *rpc)
     for (int i = 0; i < rpc->GetDatabaseFiles().size(); ++i)
         debug5 << "file["<<i<<"]="<<rpc->GetDatabaseFiles()[i].c_str() << endl;
     DatabasePluginManager::Instance()->PluginAvailable(rpc->GetFileFormat());
+
+    avtDatabaseFactory::SetCreateMeshQualityExpressions(
+                            rpc->GetCreateMeshQualityExpressions()); 
+    avtDatabaseFactory::SetCreateTimeDerivativeExpressions(
+                            rpc->GetCreateTimeDerivativeExpressions()); 
 
     netmgr->DefineDB(rpc->GetDatabaseName(), rpc->GetDatabasePath(),
                 rpc->GetDatabaseFiles(), rpc->GetTime(), rpc->GetFileFormat());
