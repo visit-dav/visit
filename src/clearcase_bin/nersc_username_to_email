@@ -42,6 +42,9 @@ case $1 in
     "brugger")
         emaddr=brugger1@llnl.gov
         ;;
+    "pugmire")
+        emaddr=pugmire@ornl.gov
+        ;;
     *)
         emaddr=visit@llnl.gov
         ;;
