@@ -9567,7 +9567,7 @@ bool ViewerWindowManager::SetTryHarderCyclesTimes(bool newVal)
     if (oldVal != newVal)
     {
         clientAtts->SetTryHarderCyclesTimes(newVal);
-	clientAtts->Notify();
+        clientAtts->Notify();
     }
     return oldVal;
 }
@@ -9586,7 +9586,47 @@ bool ViewerWindowManager::SetTreatAllDBsAsTimeVarying(bool newVal)
     if (oldVal != newVal)
     {
         clientAtts->SetTreatAllDBsAsTimeVarying(newVal);
-	clientAtts->Notify();
+        clientAtts->Notify();
+    }
+    return oldVal;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetCreateMeshQualityExpressions
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 9, 2007 
+//
+// ****************************************************************************
+
+bool ViewerWindowManager::SetCreateMeshQualityExpressions(bool newVal)
+{
+    bool oldVal = clientAtts->GetCreateMeshQualityExpressions();
+    if (oldVal != newVal)
+    {
+        clientAtts->SetCreateMeshQualityExpressions(newVal);
+        clientAtts->Notify();
+    }
+    return oldVal;
+}
+
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetCreateExpressions
+//
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 9, 2007 
+//
+// ****************************************************************************
+
+bool ViewerWindowManager::SetCreateTimeDerivativeExpressions(bool newVal)
+{
+    bool oldVal = clientAtts->GetCreateTimeDerivativeExpressions();
+    if (oldVal != newVal)
+    {
+        clientAtts->SetCreateTimeDerivativeExpressions(newVal);
+        clientAtts->Notify();
     }
     return oldVal;
 }

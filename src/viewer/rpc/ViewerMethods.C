@@ -4957,3 +4957,44 @@ ViewerMethods::UpdatePlotInfoAtts(int plotID, int winID)
     //
     state->GetViewerRPC()->Notify();
 }
+
+// ****************************************************************************
+//  Method: ViewerMethods::SetCreateMeshQualityExpressions
+//
+//  Purpose: Tells viewer to turn on/off automatic creation of MeshQuality
+//           expressions. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 9, 2007 
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetCreateMeshQualityExpressions(int flag)
+{
+    state->GetViewerRPC()->SetRPCType(
+        ViewerRPC::SetCreateMeshQualityExpressionsRPC);
+    state->GetViewerRPC()->SetIntArg1(flag);
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+//  Method: ViewerMethods::SetCreateTimeDerivativeExpressions
+//
+//  Purpose: Tells viewer to turn on/off automatic creation of TimeDerivative
+//           expressions. 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 9, 2007 
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetCreateTimeDerivativeExpressions(int flag)
+{
+    state->GetViewerRPC()->SetRPCType(
+        ViewerRPC::SetCreateTimeDerivativeExpressionsRPC);
+    state->GetViewerRPC()->SetIntArg1(flag);
+    state->GetViewerRPC()->Notify();
+}
+

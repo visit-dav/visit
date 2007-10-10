@@ -81,6 +81,9 @@
 #    Eric Brugger, Mon Jul 26 14:20:50 PDT 2004
 #    Added -I../../include/visit to pick up visitstream.h.
 #
+#    Brad Whitlock, Tue Oct 9 12:07:23 PDT 2007
+#    Added header file dependencies.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -127,28 +130,28 @@ clean:
 $(PROGRAM1): $(SRC)
 	$(CXX) main1.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES1)
 
-$(PROGRAM2): $(SRC)
+$(PROGRAM2): $(SRC) GenerateAtts.h
 	$(CXX) main2.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES2)
 
-$(PROGRAM3): $(SRC)
+$(PROGRAM3): $(SRC) GenerateWindow.h
 	$(CXX) main3.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES3)
 
-$(PROGRAM4): $(SRC)
+$(PROGRAM4): $(SRC) GenerateInfo.h
 	$(CXX) main4.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES4)
 
-$(PROGRAM5): $(SRC)
+$(PROGRAM5): $(SRC) GenerateMakefile.h
 	$(CXX) main5.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES5)
 
-$(PROGRAM6): $(SRC)
+$(PROGRAM6): $(SRC) GenerateAVT.h
 	$(CXX) main6.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES6)
 
-$(PROGRAM7): $(SRC)
+$(PROGRAM7): $(SRC) GeneratePython.h
 	$(CXX) main7.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES7)
 
-$(PROGRAM8): $(SRC)
+$(PROGRAM8): $(SRC) GenerateJava.h
 	$(CXX) main8.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES8)
 
-$(PROGRAM9): $(SRC)
+$(PROGRAM9): $(SRC) GenerateProjectFile.h
 	$(CXX) main9.C -o $@ $(CXXFLAGS) $(LDFLAGS) $(DEFINES9)
 
 @TARGETS@

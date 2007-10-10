@@ -193,6 +193,11 @@ class MessageAttributes;
 //
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added support to treat all databases as time varying
+//
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Added support for turning on/off automatic creation of MeshQuality and
+//   TimeDerivative expressions.
+//
 // ****************************************************************************
 class GUI_API FileServerList : public AttributeSubject
 {
@@ -236,6 +241,9 @@ public:
     void SetForceReadAllCyclesTimes(bool set);
     void SetTreatAllDBsAsTimeVarying(bool set);
 
+    void SetCreateMeshQualityExpressions(bool set);
+    void SetCreateTimeDerivativeExpressions(bool set);
+
     void OpenFile(const QualifiedFilename &filename, int timeState);
     void ReplaceFile(const QualifiedFilename &filename);
     void OverlayFile(const QualifiedFilename &filename);
@@ -259,6 +267,9 @@ public:
 
     bool GetForceReadAllCyclesTimes() const;
     bool GetTreatAllDBsAsTimeVarying() const;
+
+    bool GetCreateMeshQualityExpressions() const;
+    bool GetCreateTimeDerivativeExpressions() const;
 
     const stringVector &GetRecentPaths(const string &host) const;
     void AddPathToRecentList(const string &host, const string &path);
@@ -338,6 +349,9 @@ private:
     string      filter;
     bool        forceReadAllCyclesTimes;
     bool        treatAllDBsAsTimeVarying;
+
+    bool        createMeshQualityExpressions;
+    bool        createTimeDerivativeExpressions;
 
     // The file list for the current host.
     MDServerProxy::FileList fileList;

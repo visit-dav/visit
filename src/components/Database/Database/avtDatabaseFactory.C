@@ -77,6 +77,8 @@ using std::vector;
 // Static data members
 //
 char    *avtDatabaseFactory::defaultFormat = "Silo";
+bool    avtDatabaseFactory::createMeshQualityExpressions = true;
+bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 
 
 //
@@ -199,7 +201,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                              int timestep, vector<string> &plugins,
                              const char *format,
                              bool forceReadAllCyclesAndTimes,
-			     bool treatAllDBsAsTimeVarying)
+                             bool treatAllDBsAsTimeVarying)
 {
     if (filelistN <= 0)
     {
@@ -261,7 +263,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         plugins.push_back(info ? info->GetName(): "");
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                            nBlocks, forceReadAllCyclesAndTimes,
-			   treatAllDBsAsTimeVarying);
+                           treatAllDBsAsTimeVarying);
 
         if (rv == NULL)
         {
@@ -286,7 +288,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             plugins.push_back(info ? info->GetName() : "");
             rv = SetupDatabase(info, filelist, filelistN, timestep,
                                fileIndex, nBlocks, forceReadAllCyclesAndTimes,
-			       treatAllDBsAsTimeVarying);
+                               treatAllDBsAsTimeVarying);
         }
         CATCHALL(...)
         {
@@ -310,7 +312,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             plugins.push_back(info ? info->GetName() : "");
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,
-			       treatAllDBsAsTimeVarying);
+                               treatAllDBsAsTimeVarying);
         }
         else
         {
@@ -383,7 +385,7 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
                                   const char * const *filelist, int filelistN, 
                                   int timestep, int fileIndex, int nBlocks,
                                   bool forceReadAllCyclesAndTimes,
-				  bool treatAllDBsAsTimeVarying)
+                                  bool treatAllDBsAsTimeVarying)
 {
     if (info == 0)
     {
@@ -483,8 +485,9 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 avtDatabase *
 avtDatabaseFactory::VisitFile(const char *visitFile, int timestep,
                               vector<string> &plugins,
-                              const char *format, bool forceReadAllCyclesAndTimes,
-			      bool treatAllDBsAsTimeVarying)
+                              const char *format, 
+                              bool forceReadAllCyclesAndTimes,
+                              bool treatAllDBsAsTimeVarying)
 {
     //
     // Make sure we can read the file before we proceed.

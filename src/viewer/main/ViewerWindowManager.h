@@ -374,6 +374,11 @@ typedef struct {
 //    Added methods to SetTryHarderCyclesTimes and SetTreatAllDBsAsTimeVarying
 //    since it is the VWM that managers the GlobalAttributes where these
 //    are defined.
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//    Added methods to SetCreateMeshQualityExpressions and 
+//    SetCreateTimeDerivativeExpressions. 
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -511,6 +516,9 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
 
     bool SetTreatAllDBsAsTimeVarying(bool val);
     bool SetTryHarderCyclesTimes(bool val);
+
+    bool SetCreateMeshQualityExpressions(bool val);
+    bool SetCreateTimeDerivativeExpressions(bool val);
 
     void ReplaceDatabase(const EngineKey &key,
                          const std::string &database,

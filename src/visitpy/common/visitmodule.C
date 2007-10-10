@@ -1560,6 +1560,7 @@ visit_SetTreatAllDBsAsTimeVarying(PyObject *self, PyObject *args)
     return IntReturnValue(Synchronize());
 }
 
+
 // ****************************************************************************
 // Function: visit_SetTryHarderCyclesTimes
 //
@@ -1581,6 +1582,62 @@ visit_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 
     MUTEX_LOCK();
         GetViewerMethods()->SetTryHarderCyclesTimes(flag);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetCreateMeshQualityExpressions
+//
+// Purpose: Tells the viewer to turn on/off automatic creation
+//          of mesh quality expressions.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   October 9, 2007 
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetCreateMeshQualityExpressions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int flag;
+    if (!PyArg_ParseTuple(args, "i", &flag))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetCreateMeshQualityExpressions(flag);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetCreateTimeDerivativeExpressions
+//
+// Purpose: Tells the viewer to turn on/off automatic creation
+//          of time derivative expressions.
+//
+// Programmer: Kathleen Bonnell
+// Creation:   October 9, 2007 
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetCreateTimeDerivativeExpressions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int flag;
+    if (!PyArg_ParseTuple(args, "i", &flag))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetCreateTimeDerivativeExpressions(flag);
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -11689,6 +11746,10 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Cyrus Harrison, Wed Sep 19 08:43:42 PDT 2007
 //   Added SetQueryFloatFormat function.
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//   Added methods to control automatic creation of MeshQuality and
+//   TimeDerivative expressions. 
+//
 // ****************************************************************************
 
 static void
@@ -11920,6 +11981,12 @@ AddDefaultMethods()
                                                 visit_SetAnimationTimeout_doc);
     AddMethod("SetAnnotationAttributes", visit_SetAnnotationAttributes,
                                             visit_SetAnnotationAttributes_doc);
+    AddMethod("SetCreateMeshQualityExpressions", 
+               visit_SetCreateMeshQualityExpressions,
+               visit_SetCreateMeshQualityExpressions_doc);
+    AddMethod("SetCreateTimeDerivativeExpressions", 
+               visit_SetCreateTimeDerivativeExpressions,
+               visit_SetCreateTimeDerivativeExpressions_doc);
     AddMethod("SetCenterOfRotation", visit_SetCenterOfRotation,
                                                 visit_SetCenterOfRotation_doc);
     AddMethod("SetCloneWindowOnFirstRef", visit_SetCloneWindowOnFirstRef);
@@ -11947,7 +12014,7 @@ AddDefaultMethods()
     AddMethod("SetMaterialAttributes", visit_SetMaterialAttributes,
                                             visit_SetMaterialAttributes_doc);
     AddMethod("SetMeshManagementAttributes", visit_SetMeshManagementAttributes,
-                                            visit_SetMeshManagementAttributes_doc);
+                                        visit_SetMeshManagementAttributes_doc);
     AddMethod("SetOperatorOptions", visit_SetOperatorOptions,
                                                  visit_SetOperatorOptions_doc);
     AddMethod("SetPickAttributes", visit_SetPickAttributes,
@@ -11972,7 +12039,7 @@ AddDefaultMethods()
     AddMethod("SetTimeSliderState", visit_SetTimeSliderState,
                                                  visit_SetTimeSliderState_doc);
     AddMethod("SetTreatAllDBsAsTimeVarying", visit_SetTreatAllDBsAsTimeVarying,
-                                             visit_SetTreatAllDBsAsTimeVarying_doc);
+                                        visit_SetTreatAllDBsAsTimeVarying_doc);
     AddMethod("SetTryHarderCyclesTimes", visit_SetTryHarderCyclesTimes,
                                          visit_SetTryHarderCyclesTimes_doc);
     AddMethod("SetViewExtentsType", visit_SetViewExtentsType,

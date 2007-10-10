@@ -51,12 +51,17 @@
 //   Hank Childs, Fri Mar  5 17:27:41 PST 2004
 //   Added file format.
 //
+//   Kathleen Bonnell, Wed Oct 10 08:18:49 PDT 2007 
+//   Added createMeshQualityExpressions and createTimeDerivativeExpressions.
+//
 // ****************************************************************************
 
-DefineVirtualDatabaseRPC::DefineVirtualDatabaseRPC() : NonBlockingRPC("ssss*i"),
+DefineVirtualDatabaseRPC::DefineVirtualDatabaseRPC() : NonBlockingRPC("ssss*ibb"),
     fileFormat(), databaseName(), databasePath(), databaseFiles()
 {
     time = 0;
+    createMeshQualityExpressions = true;
+    createTimeDerivativeExpressions = true;
 }
 
 // ****************************************************************************
@@ -90,18 +95,23 @@ DefineVirtualDatabaseRPC::~DefineVirtualDatabaseRPC()
 //   Hank Childs, Fri Mar  5 17:27:41 PST 2004
 //   Added file format.
 //
+//   Kathleen Bonnell, Wed Oct 10 08:18:49 PDT 2007 
+//   Added createMeshQualityExpressions and createTimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 void
 DefineVirtualDatabaseRPC::operator()(const std::string &fileFormatType,
     const std::string &wholeDBName, const std::string &pathToTimesteps, 
-    const stringVector &dbFiles, int timestep)
+    const stringVector &dbFiles, int timestep, bool cmqe, bool ctde)
 {
     fileFormat = fileFormatType;
     databaseName = wholeDBName;
     databasePath = pathToTimesteps;
     databaseFiles = dbFiles;
     time = timestep;
+    createMeshQualityExpressions = cmqe;
+    createTimeDerivativeExpressions = ctde;
     SelectAll();
     Execute();
 }
@@ -120,6 +130,9 @@ DefineVirtualDatabaseRPC::operator()(const std::string &fileFormatType,
 //   Hank Childs, Fri Mar  5 17:27:41 PST 2004
 //   Added file format.
 //
+//   Kathleen Bonnell, Wed Oct 10 08:18:49 PDT 2007 
+//   Added createMeshQualityExpressions and createTimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 void
@@ -130,5 +143,7 @@ DefineVirtualDatabaseRPC::SelectAll()
     Select(2, (void*)&databasePath);
     Select(3, (void*)&databaseFiles);
     Select(4, (void*)&time);
+    Select(5, (void*)&createMeshQualityExpressions);
+    Select(6, (void*)&createTimeDerivativeExpressions);
 }
 

@@ -87,27 +87,43 @@ class CommonDatabasePluginInfo;
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added bool to support to treat all databases as time varying to various
 //    methods
+//
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//    Added support for turning on/off automatic creation of MeshQuality and
+//    TimeDerivative expressions. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
 {
   public:
-    static avtDatabase           *FileList(const char * const *, int, int,
+    static avtDatabase          *FileList(const char * const *, int, int,
+                                          std::vector<std::string> &,
+                                          const char * = NULL, bool = false,
+                                          bool = false);
+    static avtDatabase          *VisitFile(const char *, int,
                                            std::vector<std::string> &,
                                            const char * = NULL, bool = false,
-					   bool = false);
-    static avtDatabase           *VisitFile(const char *, int,
-                                           std::vector<std::string> &,
-                                            const char * = NULL, bool = false,
-					    bool = false);
-    static void                   SetDefaultFormat(const char *);
+                                           bool = false);
+    static void                  SetDefaultFormat(const char *);
+
+    static void                  SetCreateMeshQualityExpressions(bool f)
+                                     {createMeshQualityExpressions = f;}
+    static void                  SetCreateTimeDerivativeExpressions(bool f)
+                                     {createTimeDerivativeExpressions = f;}
+    static bool                  GetCreateMeshQualityExpressions(void)
+                                  {return createMeshQualityExpressions;}
+    static bool                  GetCreateTimeDerivativeExpressions(void)
+                                  {return createTimeDerivativeExpressions;}
 
   protected:
-    static avtDatabase           *SetupDatabase(CommonDatabasePluginInfo *,
-                                                const char * const *, int,
-                                                int, int, int, bool, bool);
+    static avtDatabase          *SetupDatabase(CommonDatabasePluginInfo *,
+                                               const char * const *, int,
+                                               int, int, int, bool, bool);
 
-    static char                  *defaultFormat;
+    static char                 *defaultFormat;
+    static bool                  createMeshQualityExpressions;
+    static bool                  createTimeDerivativeExpressions;
 };
 
 

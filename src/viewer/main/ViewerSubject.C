@@ -7283,6 +7283,9 @@ ViewerSubject::SendKeepAlives()
 //    Cyrus Harrison, Tue Sep 18 11:14:37 PDT 2007
 //    Added SetQueryFloatFormat()
 //
+//    Kathleen Bonnell, Tue Oct  9 17:04:58 PDT 2007 
+//    Add SetCreateMeshQualityExpressions, SetCreateTimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 void
@@ -7639,6 +7642,12 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SetTreatAllDBsAsTimeVaryingRPC:
         SetTreatAllDBsAsTimeVarying();
+	break;
+    case ViewerRPC::SetCreateMeshQualityExpressionsRPC:
+        SetCreateMeshQualityExpressions();
+	break;
+    case ViewerRPC::SetCreateTimeDerivativeExpressionsRPC:
+        SetCreateTimeDerivativeExpressions();
 	break;
     case ViewerRPC::MaxRPC:
         break;
@@ -9026,4 +9035,43 @@ ViewerSubject::UpdatePlotInfoAtts()
         Warning("Invalid WindowId");
     }
     GetViewerState()->GetPlotInfoAttributes()->Notify();
+}
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SetCreateMeshQualityExpressions
+//
+//  Purpose: Handle a SetCreateMeshQualityExpressions RPC
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    October 9, 2007 
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+ViewerSubject::SetCreateMeshQualityExpressions()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetCreateMeshQualityExpressions(
+        GetViewerState()->GetViewerRPC()->GetIntArg1());
+}
+
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SetCreateTimeDerivativeExpressions
+//
+//  Purpose: Handle a SetCreateTimeDerivativeExpressions RPC
+//
+//  Programmer:  Kathleen Bonnell 
+//  Creation:    October 9, 2007 
+//
+//  Modifications:
+// ****************************************************************************
+
+void
+ViewerSubject::SetCreateTimeDerivativeExpressions()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetCreateTimeDerivativeExpressions(
+        GetViewerState()->GetViewerRPC()->GetIntArg1());
 }

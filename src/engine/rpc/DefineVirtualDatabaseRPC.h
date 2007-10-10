@@ -58,6 +58,9 @@
 //   Hank Childs, Fri Mar  5 17:27:41 PST 2004
 //   Added file format.
 //
+//   Kathleen Bonnell, Wed Oct 10 08:18:49 PDT 2007 
+//   Added createMeshQualityExpressions and createTimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API DefineVirtualDatabaseRPC : public NonBlockingRPC
@@ -71,7 +74,8 @@ public:
     void operator()(const std::string &fileFormat,
                     const std::string &wholeName,
                     const std::string &pathToTimesteps,
-                    const stringVector &timeSteps, int);
+                    const stringVector &timeSteps, int,
+                    bool, bool);
 
     virtual void SelectAll();
 
@@ -80,12 +84,18 @@ public:
     const std::string  &GetDatabasePath() const { return databasePath; };
     const stringVector &GetDatabaseFiles() const { return databaseFiles; };
     int                GetTime() const { return time; };
+    bool               GetCreateMeshQualityExpressions() const 
+                           { return createMeshQualityExpressions; };
+    bool               GetCreateTimeDerivativeExpressions() const 
+                           { return createTimeDerivativeExpressions; };
 private:
     std::string  fileFormat;
     std::string  databaseName;
     std::string  databasePath;
     stringVector databaseFiles;
     int          time;
+    bool         createMeshQualityExpressions;
+    bool         createTimeDerivativeExpressions;
 };
 
 #endif

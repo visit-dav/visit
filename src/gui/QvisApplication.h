@@ -52,7 +52,9 @@
 // Creation:   Thu Sep 4 10:17:21 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Oct 9 15:16:34 PST 2007
+//   Changed signature for macEventFilter to match newer Qt method.
+//
 // ****************************************************************************
 
 class QvisApplication : public QApplication
@@ -66,10 +68,13 @@ public:
 signals:
     void showApplication();
     void hideApplication();
+private slots:
+    void exitTheLoop();
 
 #ifdef Q_WS_MACX
 public:
-    virtual bool macEventFilter(EventRef);
+    virtual bool macEventFilter(EventHandlerCallRef, EventRef);
+    bool needToMakeActive;
 #endif
 };
 #endif

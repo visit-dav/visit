@@ -100,6 +100,30 @@ static bool GetTryHarderCyclesTimes()
 }
 
 // ****************************************************************************
+// Function: GetCreateMeshQualityExpressions()
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 9, 2007 
+// ****************************************************************************
+static bool GetCreateMeshQualityExpressions()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    return wM->GetClientAtts()->GetCreateMeshQualityExpressions();
+}
+
+// ****************************************************************************
+// Function: GetCreateTimeDerivativeExpressions()
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 9, 2007 
+// ****************************************************************************
+static bool GetCreateTimeDerivativeExpressions()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    return wM->GetClientAtts()->GetCreateTimeDerivativeExpressions();
+}
+
+// ****************************************************************************
 // Method: ViewerFileServer::ViewerFileServer
 //
 // Purpose: 
@@ -406,7 +430,7 @@ ViewerFileServer::GetMetaData(const std::string &host,
                                      pos->second->AreAllCyclesAccurateAndValid();
 
         if (name == dbName && (!forceReadAllCyclesAndTimes || cyclesAndTimesAreGood))
-	{
+        {
             return pos->second;
         }
     }
@@ -508,7 +532,7 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
             // the time states match then return what we found.
             //
             if((!GetTreatAllDBsAsTimeVarying() && 
-	        !pos->second->GetMustRepopulateOnStateChange()) ||
+                !pos->second->GetMustRepopulateOnStateChange()) ||
                ts == timeState)
             {
                 return pos->second;
@@ -558,6 +582,10 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //   Changed refernce to treatAllDBsAsTimeVarying as a function call to
 //   the static method here. Likewise for TryHarderCyclesTimes.
+//
+//   Kathleen Bonnell, Tue Oct  9 16:59:39 PDT 2007 
+//   Added GetCreateMeshQuality/TimeDerivativeExpressions to GetMetaData call. 
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -590,10 +618,12 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
             {
                 const avtDatabaseMetaData *md =
                     servers[host]->proxy->GetMetaData(db, timeState,
-                                              forceReadAllCyclesAndTimes ||
-                                              GetTryHarderCyclesTimes(),
-                                              forcedFileType,
-					      GetTreatAllDBsAsTimeVarying());
+                                        forceReadAllCyclesAndTimes ||
+                                        GetTryHarderCyclesTimes(),
+                                        forcedFileType,
+                                        GetTreatAllDBsAsTimeVarying(),
+                                        GetCreateMeshQualityExpressions(),
+                                        GetCreateTimeDerivativeExpressions());
 
                 if(md != NULL)
                 {
@@ -607,7 +637,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                     //
                     std::string key(ComposeDatabaseName(host, db));
                     if ((mdCopy->GetMustRepopulateOnStateChange() ||
-		                 GetTreatAllDBsAsTimeVarying()) &&
+                                 GetTreatAllDBsAsTimeVarying()) &&
                        timeState != ANY_STATE)
                     {
                         char timeStateString[20];
@@ -900,7 +930,7 @@ ViewerFileServer::GetSILHelper(const std::string &host, const std::string &db,
                 //
                 std::string key(ComposeDatabaseName(host, db));
                 if(GetTreatAllDBsAsTimeVarying() ||
-		   (timeState != ANY_STATE &&
+                    (timeState != ANY_STATE &&
                     !MetaDataIsInvariant(host, db, timeState)))
                 {
                     char state_str[64];

@@ -68,6 +68,9 @@
 //   Brad Whitlock, Fri Apr 9 14:14:09 PST 2004
 //   Added allowFileSelectionChangeToggle.
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Attach the global attributes.
+// 
 // ****************************************************************************
 
 QvisPreferencesWindow::QvisPreferencesWindow(
@@ -80,6 +83,7 @@ QvisPreferencesWindow::QvisPreferencesWindow(
     tsFormat()
 {
     atts = subj;
+    atts->Attach(this);
     timeStateDisplayMode = 0;
     showSelFiles = true;
     selectedFilesToggle = 0;
@@ -101,11 +105,16 @@ QvisPreferencesWindow::QvisPreferencesWindow(
 //   Brad Whitlock, Mon Oct 13 16:54:32 PST 2003
 //   Added timeStateDisplayMode.
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Detach from  the global attributes.
+// 
 // ****************************************************************************
 
 QvisPreferencesWindow::~QvisPreferencesWindow()
 {
     delete timeStateDisplayMode;
+    if (atts)
+        atts->Detach(this);
 }
 
 
@@ -138,6 +147,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Mark C. Miller, Wed Jun  1 11:12:25 PDT 2005
 //   I added toggles for setTryHarderCyclesTimes
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Added toggles for createMeshQuality, createTimeDerivative.
+// 
 // ****************************************************************************
 
 void
@@ -184,6 +196,20 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(treatAllDBsAsTimeVaryingToggle, SIGNAL(toggled(bool)),
             this, SLOT(treatAllDBsAsTimeVaryingToggled(bool)));
     topLayout->addWidget(treatAllDBsAsTimeVaryingToggle);
+
+    createMeshQualityToggle =
+        new QCheckBox("Automatically create mesh quality expressions",
+                      central, "createMeshQualityToggle");
+    connect(createMeshQualityToggle, SIGNAL(toggled(bool)),
+            this, SLOT(createMeshQualityToggled(bool)));
+    topLayout->addWidget(createMeshQualityToggle);
+
+    createTimeDerivativeToggle =
+        new QCheckBox("Automatically create time derivative expressions",
+                      central, "createTimeDerivativeToggle");
+    connect(createTimeDerivativeToggle, SIGNAL(toggled(bool)),
+            this, SLOT(createTimeDerivativeToggled(bool)));
+    topLayout->addWidget(createTimeDerivativeToggle);
 
     //
     // Create group box for time controls.
@@ -252,6 +278,37 @@ QvisPreferencesWindow::CreateWindowContents()
 }
 
 // ****************************************************************************
+// Method: QvisPreferencesWindow::Update
+//
+// Purpose: 
+//   This method is called when the GlobalAttributes that this window
+//   is updated.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 9, 2007 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::Update(Subject *TheChangedSubject)
+{
+    if (atts == 0)
+        return;
+
+    if (TheChangedSubject == atts)
+    {
+        if(atts->IsSelected(16))
+            fileServer->SetCreateMeshQualityExpressions(
+                atts->GetCreateMeshQualityExpressions());
+        if(atts->IsSelected(17))
+            fileServer->SetCreateTimeDerivativeExpressions(
+                atts->GetCreateTimeDerivativeExpressions());
+    }
+}
+
+// ****************************************************************************
 // Method: QvisPreferencesWindow::UpdateWindow
 //
 // Purpose: 
@@ -276,6 +333,9 @@ QvisPreferencesWindow::CreateWindowContents()
 //   Mark C. Miller, Wed Jun  1 11:12:25 PDT 2005
 //   I added toggles for setTryHarderCyclesTimes
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
+//   Added toggles for createMeshQuality, createTimeDerivative.
+// 
 // ****************************************************************************
 
 void
@@ -331,6 +391,22 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         treatAllDBsAsTimeVaryingToggle->setChecked(
             atts->GetTreatAllDBsAsTimeVarying());
         treatAllDBsAsTimeVaryingToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(16))
+    {
+        createMeshQualityToggle->blockSignals(true);
+        createMeshQualityToggle->setChecked(
+            atts->GetCreateMeshQualityExpressions());
+        createMeshQualityToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(17))
+    {
+        createTimeDerivativeToggle->blockSignals(true);
+        createTimeDerivativeToggle->setChecked(
+            atts->GetCreateTimeDerivativeExpressions());
+        createTimeDerivativeToggle->blockSignals(false);
     }
 
     if(doAll)
@@ -699,6 +775,48 @@ QvisPreferencesWindow::treatAllDBsAsTimeVaryingToggled(bool val)
 {
     atts->SetTreatAllDBsAsTimeVarying(val);
     fileServer->SetTreatAllDBsAsTimeVarying(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::createMeshQualityToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the
+//   createMeshQualityToggle is clicked.
+//
+// Programmer: Mark C. Miller 
+// Creation:   June 11, 2007 
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::createMeshQualityToggled(bool val)
+{
+    atts->SetCreateMeshQualityExpressions(val);
+    fileServer->SetCreateMeshQualityExpressions(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::createTimeDerivativeToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the
+//   createTimeDerivativeToggle is clicked.
+//
+// Programmer: Mark C. Miller 
+// Creation:   June 11, 2007 
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::createTimeDerivativeToggled(bool val)
+{
+    atts->SetCreateTimeDerivativeExpressions(val);
+    fileServer->SetCreateTimeDerivativeExpressions(val);
     SetUpdate(false);
     Apply();
 }

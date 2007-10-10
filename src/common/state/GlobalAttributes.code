@@ -60,6 +60,9 @@ Definition:
 //   Hank Childs, Wed Aug 15 18:42:46 CDT 2007
 //   Added treatAllDBsAsTimeVarying.
 //
+//   Kathleen Bonnell, Mon Oct  8 18:17:24 PDT 2007 
+//   Added createMeshQuality/TimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 bool
@@ -143,6 +146,18 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("treatAllDBsAsTimeVarying",
                       treatAllDBsAsTimeVarying));
     }
+    if(completeSave || !FieldsEqual(16, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("createMeshQualityExpressions",
+                      createMeshQualityExpressions));
+    }
+    if(completeSave || !FieldsEqual(17, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("createTimeDerivativeExpressions",
+                      createTimeDerivativeExpressions));
+    }
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -204,6 +219,9 @@ Definition:
 //   Hank Childs, Wed Aug 15 18:42:46 CDT 2007
 //   Added treatAllDBsAsTimeVarying.
 //
+//   Kathleen Bonnell, Mon Oct  8 18:17:24 PDT 2007 
+//   Added createMeshQuality/TimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 void
@@ -239,5 +257,9 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetTryHarderCyclesTimes(node->AsBool());
     if((node = searchNode->GetNode("treatAllDBsAsTimeVarying")) != 0)
         SetTreatAllDBsAsTimeVarying(node->AsBool());
+    if((node = searchNode->GetNode("createMeshQualityExpressions")) != 0)
+        SetCreateMeshQualityExpressions(node->AsBool());
+    if((node = searchNode->GetNode("createTimeDerivativeExpressions")) != 0)
+        SetCreateTimeDerivativeExpressions(node->AsBool());
 }
 

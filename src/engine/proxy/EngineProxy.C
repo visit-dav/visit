@@ -813,13 +813,18 @@ EngineProxy::ClearCache(const std::string &filename)
 //    Hank Childs, Fri Mar  5 11:41:12 PST 2004
 //    Add file format type.
 //
+//    Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//    Added createMeshQualityExpressions, createTimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 void
 EngineProxy::OpenDatabase(const std::string &format, const std::string &file,
-                          int time)
+                          int time, bool createMeshQualityExpressions,
+                          bool createTimeDerivativeExpressions)
 {
-    openDatabaseRPC(format, file, time);
+    openDatabaseRPC(format, file, time, createMeshQualityExpressions,
+                    createTimeDerivativeExpressions);
 }
 
 // ****************************************************************************
@@ -842,14 +847,19 @@ EngineProxy::OpenDatabase(const std::string &format, const std::string &file,
 //   Hank Childs, Fri Mar  5 16:03:46 PST 2004
 //   Added fileFormat argument.
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//   Added createMeshQualityExpressions, createTimeDerivativeExpressions.
+//
 // ****************************************************************************
 
 void
 EngineProxy::DefineVirtualDatabase(const std::string &fileFormat,
     const std::string &wholeDBName, const std::string &pathToFiles, 
-    const stringVector &files, int time)
+    const stringVector &files, int time, bool createMeshQualityExpressions,
+    bool createTimeDerivativeExpressions)
 {
-    defineVirtualDatabaseRPC(fileFormat,wholeDBName, pathToFiles, files, time);
+    defineVirtualDatabaseRPC(fileFormat,wholeDBName, pathToFiles, files, time,
+        createMeshQualityExpressions, createTimeDerivativeExpressions);
 }
 
 // ****************************************************************************

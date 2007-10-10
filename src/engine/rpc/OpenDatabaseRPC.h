@@ -57,6 +57,10 @@
 //   Hank Childs, Fri Mar  5 11:13:32 PST 2004
 //   Added a format as an argument.
 //
+//   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007 
+//   Added args for createMeshQualityExpressions and 
+//   createTimeDerivativeExpresisons. 
+//
 // ****************************************************************************
 
 class ENGINE_RPC_API OpenDatabaseRPC : public NonBlockingRPC
@@ -67,17 +71,24 @@ public:
 
     const std::string TypeName() const { return "OpenDatabaseRPC";};
 
-    void operator()(const std::string &, const std::string &, int);
+    void operator()(const std::string &, const std::string &, int, 
+                    bool, bool);
 
     virtual void SelectAll();
 
     const std::string &GetFileFormat() const { return fileFormat; };
     const std::string &GetDatabaseName() const { return databaseName; };
     int                GetTime() const { return time; };
+    bool               GetCreateMeshQualityExpressions() const 
+                           { return createMeshQualityExpressions; };
+    bool               GetCreateTimeDerivativeExpressions() const 
+                           { return createTimeDerivativeExpressions; };
 private:
     std::string fileFormat;
     std::string databaseName;
     int         time;
+    bool        createMeshQualityExpressions;
+    bool        createTimeDerivativeExpressions;
 };
 
 #endif

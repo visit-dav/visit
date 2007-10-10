@@ -172,6 +172,8 @@
       RequestMetaDataRPC
       MaxRPC
       SetTreatAllDBsAsTimeVaryingRPC
+      SetCreateMeshQualityExpressionsRPC
+      SetCreateTimeDerivativeExpressionsRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
       CloseRPC
