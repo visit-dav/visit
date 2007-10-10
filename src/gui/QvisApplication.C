@@ -296,5 +296,7 @@ QvisApplication::macEventFilter(EventHandlerCallRef er, EventRef event)
 void
 QvisApplication::exitTheLoop()
 {
+#ifdef Q_WS_MACX
     eventLoop()->exitLoop();
+#endif
 }
