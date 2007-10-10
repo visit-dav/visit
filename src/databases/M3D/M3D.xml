@@ -4,7 +4,7 @@
       $(HDF5_INCLUDE)
     </CXXFLAGS>
     <LIBS>
-      $(HDF5_LIB)
+      $(HDF5_LIB) $(ZLIB_LIB)
     </LIBS>
     <Extensions>
       m3d
