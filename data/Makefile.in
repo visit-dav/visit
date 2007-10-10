@@ -288,6 +288,9 @@
 #   Eric Brugger, Tue Oct  9 14:28:43 PDT 2007
 #   Added ddcMD test data.
 #
+#   Brad Whitlock, Wed Oct 10 11:44:03 PDT 2007
+#   Added Cale, RAW test data files.
+#
 ##############################################################################
 
 ##
@@ -321,7 +324,7 @@ BINSRC=samrai_test_data ANALYZE_test_data Vista_test_data Image_test_data \
        FITS_test_data GGCM_test_data Chombo_test_data Enzo_test_data \
        csg_test_data miranda_raw FLASH_test_data iTaps_test_data \
        nek3d_test_data visitdiff_test_data odd_multi.silo claw_test_data \
-       ddcmd_test_data
+       ddcmd_test_data Cale_test_data RAW_test_data
 
 
 ##
