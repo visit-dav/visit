@@ -71,14 +71,14 @@ slice.project2d = 1
 SetDefaultOperatorOptions(slice)
 AddOperator("Slice")
 
-Test("ops_slice01")
+Test("ops_sliceop01")
 
 RemoveAllOperators()
 slice.project2d = 0
 SetDefaultOperatorOptions(slice)
 AddOperator("Slice")
 
-Test("ops_slice02")
+Test("ops_sliceop02")
 
 # Clip
 clip = ClipAttributes()
