@@ -11,6 +11,8 @@
 #  Date:       Mon Aug 22 11:37:35 PDT 2005
 #
 #  Modifications:
+#    Brad Whitlock, Wed Oct 10 11:20:44 PDT 2007
+#    Added tests for CCSM data.
 #
 # ----------------------------------------------------------------------------
 
@@ -310,6 +312,26 @@ def test3(datapath):
     Test("netcdf_3_06")
     DeleteAllPlots()
 
+def test4(datapath):
+    TestSection("CCSM reader")
+    db = "tas_mean_T63.nc"
+    OpenDatabase(datapath + db)
+    AddPlot("Pseudocolor", "tas")
+    DrawPlots()
+    ResetView()
+    Test("netcdf_4_00")
+
+    # Change to the last time state
+    SetTimeSliderState(1187)
+    Test("netcdf_4_01")
+
+    # Change to the global representation of the data
+    ChangeActivePlotsVar("global/tas")
+    ResetView()
+    Test("netcdf_4_02")
+    DeleteAllPlots()
+    CloseDatabase(datapath + db)
+
 def main():
     a = GetAnnotationAttributes()
     a.databaseInfoFlag = 0
@@ -324,6 +346,7 @@ def main():
     test1(datapath)
     test2(datapath)
     test3(datapath)
+    test4(datapath)
 
 main()
 Exit()
