@@ -108,6 +108,7 @@ wizard_page_info pageInfo[] = {
     {"Save new template as", "Enter the information that will be saved with your template."},
     {"Settings check", "Do these movie settings look okay?"},
     {"Choose format", "Choose movie formats and resolutions."},
+    {"Choose length", "Choose movie start/end time and frames per second."},
     {"Choose filename", "Choose the output directory and base filename for your movie(s)."},
     {"E-mail notification", "Do you want to be notified by E-mail when your movie completes?"},
     {"Choose method", "Choose when and how you would like VisIt to create your movies."}
@@ -323,6 +324,8 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
 //   Brad Whitlock, Fri Sep 22 16:38:06 PST 2006
 //   Added support for movie templates.
 //
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Added num frames page.
 // ****************************************************************************
 
 QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent, 
@@ -331,6 +334,7 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
 {
     default_movie_size[0] = 400;
     default_movie_size[1] = 400;
+    default_num_frames = 1;
     removingPages = false;
 
     //
@@ -369,6 +373,7 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
     CreateSaveTemplateAsPage();
     CreateSettingsOkayPage();
     CreateFormatPage();
+    CreateNumFramesPage();
     CreateFilenamePage();
     CreateEmailPage();
     CreateGenerationMethodPage();
@@ -388,7 +393,6 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
 // Creation:   Thu Jun 23 11:18:08 PDT 2005
 //
 // Modifications:
-//   
 // ****************************************************************************
 
 QvisSaveMovieWizard::~QvisSaveMovieWizard()
@@ -400,8 +404,8 @@ QvisSaveMovieWizard::~QvisSaveMovieWizard()
     delete page6_buttongroup;
     delete page8_buttongroup;
     delete page9_sizeTypeButtonGroup;
-    delete page11_buttongroup;
     delete page12_buttongroup;
+    delete page13_buttongroup;
 
     // Delete any custom pages that may be loaded.
     for(int i = 0; i < sequencePages.size(); ++i)
@@ -812,6 +816,42 @@ QvisSaveMovieWizard::SetDefaultMovieSize(int w, int h)
         aspect = double(default_movie_size[1]) / double(default_movie_size[0]);
     page4_viewportDisplay->setAspect(aspect);
 }
+
+
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::SetDefaultNumFrames
+//
+// Purpose: 
+//   Sets the default number of movie frames
+//
+// Programmer: Dave Bremer
+// Creation:   Fri Oct  5 15:41:01 PDT 2007
+// ****************************************************************************
+
+void
+QvisSaveMovieWizard::SetDefaultNumFrames(int nFrames)
+{
+    default_num_frames = nFrames;
+}
+
+
+
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::GetDefaultNumFrames
+//
+// Purpose: 
+//   Gets the default number of movie frames
+//
+// Programmer: Dave Bremer
+// Creation:   Fri Oct  5 15:41:01 PDT 2007
+// ****************************************************************************
+
+int  
+QvisSaveMovieWizard::GetDefaultNumFrames()
+{
+    return default_num_frames;
+}
+
 
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateMovieTypePage
@@ -1282,7 +1322,7 @@ QvisSaveMovieWizard::CreateSequencesPage()
 // Method: QvisSaveMovieWizard::CreateSaveTemplatePage
 //
 // Purpose: 
-//   Creates page 5, which is currently unused.
+//   Creates page 6, which is currently unused.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 23 11:21:37 PDT 2005
@@ -1394,7 +1434,7 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
 // Method: QvisSaveMovieWizard::CreateSettingsOkayPage
 //
 // Purpose: 
-//   Creates page 7.
+//   Creates page 8.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 23 11:21:37 PDT 2005
@@ -1470,7 +1510,7 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 // Method: QvisSaveMovieWizard::CreateFormatPage
 //
 // Purpose: 
-//   Creates page 8.
+//   Creates page 9.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 23 11:21:37 PDT 2005
@@ -1648,23 +1688,21 @@ QvisSaveMovieWizard::CreateFormatPage()
     addPage(page9, pageInfo[9].title);
 }
 
+
+
 // ****************************************************************************
-// Method: QvisSaveMovieWizard::CreateFilenamePage
+// Method: QvisSaveMovieWizard::CreateNumFramesPage
 //
 // Purpose: 
-//   Creates page 9.
+//   Creates page 10.
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu Jun 23 11:21:37 PDT 2005
-//
-// Modifications:
-//   Brad Whitlock, Thu Jul 14 13:51:20 PST 2005
-//   Prevented the "..." button width from being set on MacOS X.
+// Programmer: Dave Bremer
+// Creation:   Mon Oct  8 12:15:33 PDT 2007
 //
 // ****************************************************************************
 
 void
-QvisSaveMovieWizard::CreateFilenamePage()
+QvisSaveMovieWizard::CreateNumFramesPage()
 {
     QFrame *frame = new QFrame(this, pageInfo[10].title);
     frame->setFrameStyle(QFrame::NoFrame);
@@ -1675,6 +1713,73 @@ QvisSaveMovieWizard::CreateFilenamePage()
     QVBoxLayout *pageLayout = new QVBoxLayout(frameinnerLayout);
     pageLayout->setSpacing(10);
     QLabel *prompt = new QLabel(SplitPrompt(pageInfo[10].description), frame, "prompt");
+    pageLayout->addWidget(prompt);
+    pageLayout->addSpacing(10);
+
+    QGridLayout *gLayout = new QGridLayout(pageLayout, 3, 2);
+    gLayout->setSpacing(5);
+    pageLayout->addStretch(20);
+
+    page10_fpsLabel = new QLabel("Frames per second", frame, "fpsLabel");
+    gLayout->addWidget(page10_fpsLabel, 0, 0);
+
+    page10_fpsLineEdit = new QLineEdit(frame, "fpsLineEdit");
+    gLayout->addWidget(page10_fpsLineEdit, 0, 1);
+    connect(page10_fpsLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(page10_fpsChanged(const QString &)));    
+
+    page10_startIndexLabel = new QLabel("First frame", frame, "startIndexLabel");
+    gLayout->addWidget(page10_startIndexLabel, 1, 0);
+
+    page10_startIndexLineEdit = new QLineEdit(frame, "startIndexLineEdit");
+    gLayout->addWidget(page10_startIndexLineEdit, 1, 1);
+    connect(page10_startIndexLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(page10_startIndexChanged(const QString &)));    
+
+    page10_endIndexLabel = new QLabel("Last frame", frame, "endIndexLabel");
+    gLayout->addWidget(page10_endIndexLabel, 2, 0);
+
+    page10_endIndexLineEdit = new QLineEdit(frame, "endIndexLineEdit");
+    gLayout->addWidget(page10_endIndexLineEdit, 2, 1);
+    connect(page10_endIndexLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(page10_endIndexChanged(const QString &)));    
+
+    // Add the page.
+    page10 = frame;
+    addPage(page10, pageInfo[10].title);
+}
+
+
+
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::CreateFilenamePage
+//
+// Purpose: 
+//   Creates page 11.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun 23 11:21:37 PDT 2005
+//
+// Modifications:
+//   Brad Whitlock, Thu Jul 14 13:51:20 PST 2005
+//   Prevented the "..." button width from being set on MacOS X.
+//
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Moved pages 10-12 to 11-13.
+// ****************************************************************************
+
+void
+QvisSaveMovieWizard::CreateFilenamePage()
+{
+    QFrame *frame = new QFrame(this, pageInfo[11].title);
+    frame->setFrameStyle(QFrame::NoFrame);
+    QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
+    frameinnerLayout->setMargin(0);
+    frameinnerLayout->addSpacing(10);
+
+    QVBoxLayout *pageLayout = new QVBoxLayout(frameinnerLayout);
+    pageLayout->setSpacing(10);
+    QLabel *prompt = new QLabel(SplitPrompt(pageInfo[11].description), frame, "prompt");
     pageLayout->addWidget(prompt);
     pageLayout->addSpacing(10);
 
@@ -1690,10 +1795,10 @@ QvisSaveMovieWizard::CreateFilenamePage()
     gLayout->addWidget(outputDirectoryLabel, 0, 0);
 
     QHBox *outputDirectoryParent = new QHBox(frame, "outputDirectoryParent");    
-    page10_outputDirectoryLineEdit = new QLineEdit(outputDirectoryParent,
+    page11_outputDirectoryLineEdit = new QLineEdit(outputDirectoryParent,
         "outputDirectoryLineEdit");
-    connect(page10_outputDirectoryLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page10_processOutputDirectoryText(const QString &)));
+    connect(page11_outputDirectoryLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(page11_processOutputDirectoryText(const QString &)));
     QPushButton *outputSelectButton = new QPushButton("...", outputDirectoryParent,
         "outputSelectButton");
 #ifndef Q_WS_MACX
@@ -1703,9 +1808,9 @@ QvisSaveMovieWizard::CreateFilenamePage()
     outputSelectButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed,
          QSizePolicy::Minimum));
     connect(outputSelectButton, SIGNAL(clicked()),
-            this, SLOT(page10_selectOutputDirectory()));
+            this, SLOT(page11_selectOutputDirectory()));
     outputDirectoryParent->setSpacing(0);
-    outputDirectoryParent->setStretchFactor(page10_outputDirectoryLineEdit, 100);
+    outputDirectoryParent->setStretchFactor(page11_outputDirectoryLineEdit, 100);
     outputDirectoryLabel->setBuddy(outputDirectoryParent);
     gLayout->addWidget(outputDirectoryParent, 0, 1);
 
@@ -1715,14 +1820,14 @@ QvisSaveMovieWizard::CreateFilenamePage()
     QLabel *filebaseLabel = new QLabel("Base filename",
         frame, "filebaseLabel");
     gLayout->addWidget(filebaseLabel, 1, 0);
-    page10_filebaseLineEdit = new QLineEdit(frame, "page10_filebaseLineEdit");
-    connect(page10_filebaseLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page10_processFilebaseText(const QString &)));    
-    gLayout->addWidget(page10_filebaseLineEdit, 1, 1);
+    page11_filebaseLineEdit = new QLineEdit(frame, "page11_filebaseLineEdit");
+    connect(page11_filebaseLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(page11_processFilebaseText(const QString &)));    
+    gLayout->addWidget(page11_filebaseLineEdit, 1, 1);
 
     // Add the page.
-    page10 = frame;
-    addPage(page10, pageInfo[10].title);
+    page11 = frame;
+    addPage(page11, pageInfo[11].title);
 }
 
 // ****************************************************************************
@@ -1735,13 +1840,15 @@ QvisSaveMovieWizard::CreateFilenamePage()
 // Creation:   Tue Oct 10 10:59:06 PDT 2006
 //
 // Modifications:
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Moved pages 10-12 to 11-13.
 //   
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateEmailPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[11].title);
+    QFrame *frame = new QFrame(this, pageInfo[12].title);
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1749,43 +1856,43 @@ QvisSaveMovieWizard::CreateEmailPage()
 
     QVBoxLayout *pageLayout = new QVBoxLayout(frameinnerLayout);
     pageLayout->setSpacing(10);
-    QLabel *prompt = new QLabel(SplitPrompt(pageInfo[11].description), frame, "prompt");
+    QLabel *prompt = new QLabel(SplitPrompt(pageInfo[12].description), frame, "prompt");
     pageLayout->addWidget(prompt);
     pageLayout->addSpacing(10);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout(pageLayout);
     buttonLayout->addStretch(5);
     buttonLayout->setSpacing(5);
-    page11_buttongroup = new QButtonGroup(0, "page11_buttongroup");
-    connect(page11_buttongroup, SIGNAL(clicked(int)),
-            this, SLOT(page11_emailNotificationChanged(int)));
+    page12_buttongroup = new QButtonGroup(0, "page12_buttongroup");
+    connect(page12_buttongroup, SIGNAL(clicked(int)),
+            this, SLOT(page12_emailNotificationChanged(int)));
     QRadioButton *r1 = new QRadioButton("Yes", frame, "r1");
-    page11_buttongroup->insert(r1);
+    page12_buttongroup->insert(r1);
     buttonLayout->addWidget(r1);
 
     QRadioButton *r2 = new QRadioButton("No", frame, "r2");
-    page11_buttongroup->insert(r2);
+    page12_buttongroup->insert(r2);
     buttonLayout->addWidget(r2);
     buttonLayout->addStretch(5);
 
     pageLayout->addSpacing(20);
 
     QHBoxLayout *emailLayout = new QHBoxLayout(pageLayout);
-    page11_emailLineEdit = new QLineEdit(frame, "page11_emailLineEdit");
-    connect(page11_emailLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page11_emailAddressChanged(const QString &)));
-    page11_emailLabel = new QLabel(page11_emailLineEdit, "E-mail address",
-        frame, "page11_emailLabel");
+    page12_emailLineEdit = new QLineEdit(frame, "page12_emailLineEdit");
+    connect(page12_emailLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(page12_emailAddressChanged(const QString &)));
+    page12_emailLabel = new QLabel(page12_emailLineEdit, "E-mail address",
+        frame, "page12_emailLabel");
     emailLayout->addStretch(5);
-    emailLayout->addWidget(page11_emailLabel);
-    emailLayout->addWidget(page11_emailLineEdit, 10);
+    emailLayout->addWidget(page12_emailLabel);
+    emailLayout->addWidget(page12_emailLineEdit, 10);
     emailLayout->addStretch(5);
 
     pageLayout->addStretch(10);
 
     // Add the page.
-    page11 = frame;
-    addPage(page11, pageInfo[11].title);
+    page12 = frame;
+    addPage(page12, pageInfo[12].title);
 }
 
 // ****************************************************************************
@@ -1801,12 +1908,14 @@ QvisSaveMovieWizard::CreateEmailPage()
 //   Brad Whitlock, Thu Sep 28 10:59:48 PDT 2006
 //   Made it be page 12 instead.
 //
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Moved pages 10-12 to 11-13.
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::CreateGenerationMethodPage()
 {
-    QFrame *frame = new QFrame(this, pageInfo[12].title);
+    QFrame *frame = new QFrame(this, pageInfo[13].title);
     frame->setFrameStyle(QFrame::NoFrame);
     QVBoxLayout *frameinnerLayout = new QVBoxLayout(frame);
     frameinnerLayout->setMargin(0);
@@ -1814,7 +1923,7 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
 
     QVBoxLayout *pageLayout = new QVBoxLayout(frameinnerLayout);
     pageLayout->setSpacing(10);
-    QLabel *prompt = new QLabel(SplitPrompt(pageInfo[12].description), frame, "prompt");
+    QLabel *prompt = new QLabel(SplitPrompt(pageInfo[13].description), frame, "prompt");
     pageLayout->addWidget(prompt);
     pageLayout->addSpacing(10);
 
@@ -1823,29 +1932,29 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
     QVBoxLayout *buttonLayout = new QVBoxLayout(hCenterLayout);
     hCenterLayout->addStretch(5);
     buttonLayout->setSpacing(5);
-    page12_buttongroup = new QButtonGroup(0, "page12_buttongroup");
-    connect(page12_buttongroup, SIGNAL(clicked(int)),
-            this, SLOT(page12_generationMethodChanged(int)));
+    page13_buttongroup = new QButtonGroup(0, "page13_buttongroup");
+    connect(page13_buttongroup, SIGNAL(clicked(int)),
+            this, SLOT(page13_generationMethodChanged(int)));
     QRadioButton *r1 = new QRadioButton("Now, use currently allocated processors",
         frame, "r1");
-    page12_buttongroup->insert(r1);
+    page13_buttongroup->insert(r1);
     buttonLayout->addWidget(r1);
 
     QRadioButton *r2 = new QRadioButton("Now, use a new instance of VisIt",
         frame, "r2");
-    page12_buttongroup->insert(r2);
+    page13_buttongroup->insert(r2);
     buttonLayout->addWidget(r2);
 
     QRadioButton *r3 = new QRadioButton("Later, tell me the command to run",
         frame, "r3");
-    page12_buttongroup->insert(r3);
+    page13_buttongroup->insert(r3);
     buttonLayout->addWidget(r3);
     pageLayout->addSpacing(10);
     pageLayout->addStretch(10);
 
     // Add the page.
-    page12 = frame;
-    addPage(page12, pageInfo[12].title);
+    page13 = frame;
+    addPage(page13, pageInfo[13].title);
 }
 
 // ****************************************************************************
@@ -1995,6 +2104,8 @@ QvisSaveMovieWizard::SplitPrompt(const QString &s) const
 // Creation:   Mon Nov 13 13:54:10 PST 2006
 //
 // Modifications:
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Moved pages 10-12 to 11-13.
 //   
 // ****************************************************************************
 
@@ -2030,6 +2141,8 @@ QvisSaveMovieWizard::CurrentPageToStaticPageIndex() const
         pageIndex = 11;
     else if(currentPage() == page12)
         pageIndex = 12;
+    else if(currentPage() == page13)
+        pageIndex = 13;
 
     return pageIndex;
 }
@@ -2062,12 +2175,16 @@ QvisSaveMovieWizard::CurrentPageToStaticPageIndex() const
 //   Move expansion of '.' outputDir to new method 'GetMovieAttsOutputDir'.
 //   Use new method to get the outputdirectory from movie atts.
 //   
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Added an update for the new num frames page, and 
+//   moved pages 10-12 to 11-13.
 // ****************************************************************************
 
 void
 QvisSaveMovieWizard::UpdatePage()
 {
     int pageIndex = CurrentPageToStaticPageIndex();
+    char tmp[100];
 
     // The page must be a dynamic template page. We don't need to 
     // update those.
@@ -2161,37 +2278,45 @@ QvisSaveMovieWizard::UpdatePage()
                                    (int)(default_movie_size[1]), 0);
         }
         break;
-    case 10: // filename, output dir.
-        //qDebug("Update the filename, output dir page.");
-        page10_outputDirectoryLineEdit->blockSignals(true);
-        page10_outputDirectoryLineEdit->setText(GetMovieAttsOutputDir().c_str());
-        page10_outputDirectoryLineEdit->blockSignals(false);
-        page10_filebaseLineEdit->blockSignals(true);
-        page10_filebaseLineEdit->setText(movieAtts->
-            GetOutputName().c_str());
-        page10_filebaseLineEdit->blockSignals(false);
-        page10_UpdateButtons();
+    case 10: // fps, start/end index
+        page10_fpsLineEdit->blockSignals(true);
+        SNPRINTF(tmp, 100, "%d", movieAtts->GetFps());
+        page10_fpsLineEdit->setText(tmp);
+        page10_fpsLineEdit->blockSignals(false);
+
+        page10_UpdateStartEndIndex();
         break;
-    case 11:
-        //qDebug("Update the email page.");
-        page11_buttongroup->blockSignals(true);
-        page11_buttongroup->setButton(movieAtts->GetSendEmailNotification()?0:1);
-        page11_buttongroup->blockSignals(false);
-        page11_emailLineEdit->blockSignals(true);
-        page11_emailLineEdit->setText(movieAtts->GetEmailAddress().c_str());
-        page11_emailLineEdit->blockSignals(false);
+    case 11: // filename, output dir.
+        //qDebug("Update the filename, output dir page.");
+        page11_outputDirectoryLineEdit->blockSignals(true);
+        page11_outputDirectoryLineEdit->setText(GetMovieAttsOutputDir().c_str());
+        page11_outputDirectoryLineEdit->blockSignals(false);
+        page11_filebaseLineEdit->blockSignals(true);
+        page11_filebaseLineEdit->setText(movieAtts->
+            GetOutputName().c_str());
+        page11_filebaseLineEdit->blockSignals(false);
         page11_UpdateButtons();
         break;
     case 12:
-        //qDebug("Update the generation method page.");
+        //qDebug("Update the email page.");
         page12_buttongroup->blockSignals(true);
-        if(movieAtts->GetGenerationMethod() == MovieAttributes::NowCurrentInstance)
-            page12_buttongroup->setButton(0);
-        else if(movieAtts->GetGenerationMethod() == MovieAttributes::NowNewInstance)
-            page12_buttongroup->setButton(1);
-        else
-            page12_buttongroup->setButton(2);
+        page12_buttongroup->setButton(movieAtts->GetSendEmailNotification()?0:1);
         page12_buttongroup->blockSignals(false);
+        page12_emailLineEdit->blockSignals(true);
+        page12_emailLineEdit->setText(movieAtts->GetEmailAddress().c_str());
+        page12_emailLineEdit->blockSignals(false);
+        page12_UpdateButtons();
+        break;
+    case 13:
+        //qDebug("Update the generation method page.");
+        page13_buttongroup->blockSignals(true);
+        if(movieAtts->GetGenerationMethod() == MovieAttributes::NowCurrentInstance)
+            page13_buttongroup->setButton(0);
+        else if(movieAtts->GetGenerationMethod() == MovieAttributes::NowNewInstance)
+            page13_buttongroup->setButton(1);
+        else
+            page13_buttongroup->setButton(2);
+        page13_buttongroup->blockSignals(false);
 #if defined(Q_WS_WIN) || defined(Q_WS_MACX)
         nextButton()->setEnabled(false);
 #endif
@@ -2200,8 +2325,8 @@ QvisSaveMovieWizard::UpdatePage()
         ;//qDebug("Update page: pageIndex=%d", pageIndex);
     }
 
-    // Enable the finish button on page 12.
-    finishButton()->setEnabled(pageIndex == 12);
+    // Enable the finish button on page 13.
+    finishButton()->setEnabled(pageIndex == 13);
 }
 
 // ****************************************************************************
@@ -3008,12 +3133,65 @@ QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w
         page9_aspect = 1.;
 }
 
+
+
 // ****************************************************************************
-// Method: QvisSaveMovieWizard::page10_UpdateButtons
+// Method: QvisSaveMovieWizard::page10_UpdateStartEndIndex
+//
+// Purpose: 
+//   This method sets the text in the start/end frame widgets.
+//   For templated movies, the number of frames is set by the template.
+//   So, if a template is used, I want to disable the start/end index,
+//   and clear the values, because they could be misleading.  I could
+//   hide the widgets instead, but perhaps that would be more confusing.
+//
+// Programmer: Dave Bremer
+// Creation:   Wed Oct 10 16:31:09 PDT 2007
+//
+// ****************************************************************************
+
+void
+QvisSaveMovieWizard::page10_UpdateStartEndIndex()
+{
+    if (movieAtts->GetMovieType() == MovieAttributes::UsingTemplate)
+    {
+        page10_startIndexLineEdit->blockSignals(true);
+        page10_startIndexLineEdit->setText("set in template");
+        page10_startIndexLineEdit->blockSignals(false);
+
+        page10_endIndexLineEdit->blockSignals(true);
+        page10_endIndexLineEdit->setText("set in template");
+        page10_endIndexLineEdit->blockSignals(false);
+
+        page10_startIndexLineEdit->setEnabled(false);
+        page10_endIndexLineEdit->setEnabled(false);
+    }
+    else
+    {
+        page10_startIndexLineEdit->setEnabled(true);
+        page10_endIndexLineEdit->setEnabled(true);
+
+        char tmp[100];
+        page10_startIndexLineEdit->blockSignals(true);
+        SNPRINTF(tmp, 100, "%d", movieAtts->GetStartIndex());
+        page10_startIndexLineEdit->setText(tmp);
+        page10_startIndexLineEdit->blockSignals(false);
+
+        page10_endIndexLineEdit->blockSignals(true);
+        SNPRINTF(tmp, 100, "%d", movieAtts->GetEndIndex());
+        page10_endIndexLineEdit->setText(tmp);
+        page10_endIndexLineEdit->blockSignals(false);
+    }
+}
+
+
+
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::page11_UpdateButtons
 //
 // Purpose: 
 //   This method sets the enabled state for the next button when we're on
-//   page 9.
+//   page 11.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 23 11:32:49 PDT 2005
@@ -3025,7 +3203,7 @@ QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w
 // ****************************************************************************
 
 void
-QvisSaveMovieWizard::page10_UpdateButtons()
+QvisSaveMovieWizard::page11_UpdateButtons()
 {
     bool e = (movieAtts->GetOutputName().size() > 0) &&
              (GetMovieAttsOutputDir().size() > 0);
@@ -3033,21 +3211,23 @@ QvisSaveMovieWizard::page10_UpdateButtons()
 }
 
 // ****************************************************************************
-// Method: QvisSaveMovieWizard::page11_UpdateButtons
+// Method: QvisSaveMovieWizard::page12_UpdateButtons
 //
 // Purpose: 
 //   This method sets the enabled state for the next button when we're on
-//   page 10.
+//   page 12.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Sep 28 11:08:57 PDT 2006
 //
 // Modifications:
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Moved pages 10-12 to 11-13.
 //   
 // ****************************************************************************
 
 void
-QvisSaveMovieWizard::page11_UpdateButtons()
+QvisSaveMovieWizard::page12_UpdateButtons()
 {
     if(!movieAtts->GetSendEmailNotification())
         nextButton()->setEnabled(true);
@@ -3058,8 +3238,8 @@ QvisSaveMovieWizard::page11_UpdateButtons()
         nextButton()->setEnabled(e);
     }
 
-    page11_emailLabel->setEnabled(movieAtts->GetSendEmailNotification());
-    page11_emailLineEdit->setEnabled(movieAtts->GetSendEmailNotification());
+    page12_emailLabel->setEnabled(movieAtts->GetSendEmailNotification());
+    page12_emailLineEdit->setEnabled(movieAtts->GetSendEmailNotification());
 }
 
 // ****************************************************************************
@@ -3079,6 +3259,8 @@ QvisSaveMovieWizard::page11_UpdateButtons()
 //   Brad Whitlock, Thu Sep 28 12:10:31 PDT 2006
 //   Added support for movie templates, etc.
 //
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Moved pages 10-12 to 11-13.
 // ****************************************************************************
 
 void
@@ -3299,6 +3481,10 @@ QvisSaveMovieWizard::UpdatePageLinking(int pageIndex)
         setAppropriate(page12, true);
     }
     else if(pageIndex == 12)
+    {
+        setAppropriate(page13, true);
+    }
+    else if(pageIndex == 13)
     {
         // This should have a finish button.
     }
@@ -3726,7 +3912,9 @@ QvisSaveMovieWizard::pageChanged(const QString &title)
 // Creation:   Fri Nov 17 17:21:58 PST 2006
 //
 // Modifications:
-//   
+//   Dave Bremer, Wed Oct 10 15:50:03 PDT 2007
+//   Added code to disable the start/end index fields if a template is 
+//   used to make the movie.
 // ****************************************************************************
 
 void
@@ -3749,6 +3937,7 @@ QvisSaveMovieWizard::page0_movieTypeChanged(int val)
     {
         debug1 << mName << "Chose last movie settings." << endl;
     }
+    page10_UpdateStartEndIndex();
 
     UpdatePageLinking(0);
 }
@@ -4601,23 +4790,101 @@ QvisSaveMovieWizard::page9_stereoTypeChanged(int val)
 
 }
 
-
 //
 // Page 10 slots
 //
 
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::page10_fpsChanged
+//
+// Purpose: 
+//   This is a Qt slot function invoked when any change occurs in the FPS field
+//
+// Programmer: Dave Bremer
+// Creation:   Tue Oct  9 18:40:06 PDT 2007
+//
+// ****************************************************************************
+
 void
-QvisSaveMovieWizard::page10_processOutputDirectoryText(const QString &s)
+QvisSaveMovieWizard::page10_fpsChanged(const QString &s)
+{
+    bool okay = true;
+    int newFPS = s.toInt(&okay);
+    if (okay)
+        movieAtts->SetFps(newFPS);
+    else
+        movieAtts->SetFps(10);
+}
+
+
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::page10_startIndexChanged
+//
+// Purpose: 
+//   This is a Qt slot function invoked when any change occurs in the 
+//   start index field.
+//
+// Programmer: Dave Bremer
+// Creation:   Tue Oct  9 18:40:06 PDT 2007
+//
+// ****************************************************************************
+
+void
+QvisSaveMovieWizard::page10_startIndexChanged(const QString &s)
+{
+    bool okay = true;
+    int newStartIndex = s.toInt(&okay);
+
+    if (okay)
+        movieAtts->SetStartIndex(newStartIndex);
+    else
+        movieAtts->SetStartIndex(0);
+}
+
+
+// ****************************************************************************
+// Method: QvisSaveMovieWizard::page10_endIndexChanged
+//
+// Purpose: 
+//   This is a Qt slot function invoked when any change occurs in the 
+//   end index field.
+//
+// Programmer: Dave Bremer
+// Creation:   Tue Oct  9 18:40:06 PDT 2007
+//
+// ****************************************************************************
+
+void
+QvisSaveMovieWizard::page10_endIndexChanged(const QString &s)
+{
+    bool okay = true;
+    int newEndIndex = s.toInt(&okay);
+
+    if (okay)
+        movieAtts->SetEndIndex(newEndIndex);
+    else
+        movieAtts->SetEndIndex(default_num_frames - 1);
+}
+
+
+
+
+//
+// Page 11 slots
+//
+
+void
+QvisSaveMovieWizard::page11_processOutputDirectoryText(const QString &s)
 {
     std::string outDir(s.latin1());
     if(outDir.size() > 0 && outDir[outDir.size() - 1] != SLASH_CHAR)
         outDir += SLASH_STRING;
     movieAtts->SetOutputDirectory(outDir);
-    page10_UpdateButtons();
+    page11_UpdateButtons();
 }
 
 // ****************************************************************************
-// Method: QvisSaveMovieWizard::page10_selectOutputDirectory
+// Method: QvisSaveMovieWizard::page11_selectOutputDirectory
 //
 // Purpose: 
 //   This is a Qt slot function that is called when we want to select a new
@@ -4630,10 +4897,12 @@ QvisSaveMovieWizard::page10_processOutputDirectoryText(const QString &s)
 //   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
 //   Use new method to get the outputdirectory from movie atts.
 //   
+//   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
+//   Moved pages 10-12 to 11-13.
 // ****************************************************************************
 
 void
-QvisSaveMovieWizard::page10_selectOutputDirectory()
+QvisSaveMovieWizard::page11_selectOutputDirectory()
 {
     //
     // Try and get a directory using a file dialog.
@@ -4652,34 +4921,16 @@ QvisSaveMovieWizard::page10_selectOutputDirectory()
             outDir += SLASH_STRING;
 
         movieAtts->SetOutputDirectory(outDir);
-        page10_outputDirectoryLineEdit->blockSignals(true);
-        page10_outputDirectoryLineEdit->setText(outDir.c_str());
-        page10_outputDirectoryLineEdit->blockSignals(false);
+        page11_outputDirectoryLineEdit->blockSignals(true);
+        page11_outputDirectoryLineEdit->setText(outDir.c_str());
+        page11_outputDirectoryLineEdit->blockSignals(false);
     }
 }
 
 void
-QvisSaveMovieWizard::page10_processFilebaseText(const QString &s)
+QvisSaveMovieWizard::page11_processFilebaseText(const QString &s)
 {
     movieAtts->SetOutputName(s.latin1());
-    page10_UpdateButtons();
-}
-
-//
-// Page 11 slots
-//
-
-void
-QvisSaveMovieWizard::page11_emailNotificationChanged(int val)
-{
-    movieAtts->SetSendEmailNotification(val==0);
-    page11_UpdateButtons();
-}
-
-void
-QvisSaveMovieWizard::page11_emailAddressChanged(const QString &val)
-{
-    movieAtts->SetEmailAddress(std::string(val.latin1()));
     page11_UpdateButtons();
 }
 
@@ -4688,7 +4939,25 @@ QvisSaveMovieWizard::page11_emailAddressChanged(const QString &val)
 //
 
 void
-QvisSaveMovieWizard::page12_generationMethodChanged(int val)
+QvisSaveMovieWizard::page12_emailNotificationChanged(int val)
+{
+    movieAtts->SetSendEmailNotification(val==0);
+    page12_UpdateButtons();
+}
+
+void
+QvisSaveMovieWizard::page12_emailAddressChanged(const QString &val)
+{
+    movieAtts->SetEmailAddress(std::string(val.latin1()));
+    page12_UpdateButtons();
+}
+
+//
+// Page 13 slots
+//
+
+void
+QvisSaveMovieWizard::page13_generationMethodChanged(int val)
 {
     movieAtts->SetGenerationMethod((MovieAttributes::GenerationMethodEnum)val);
 }

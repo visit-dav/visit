@@ -385,6 +385,7 @@ private:
     static void ClientMethodCallback(Subject *subj, void *data);
 
     void RestoreSessionFile(const QString &, const stringVector &);
+    int  GetNumMovieFrames();
 
 public slots:
     void newExpression();
