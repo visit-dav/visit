@@ -40,6 +40,15 @@
     </Field>
     <Field name="emailAddress" label="Email address" type="string">
     </Field>
+    <Field name="fps" label="fps" type="int">
+      10
+    </Field>
+    <Field name="startIndex" label="startIndex" type="int">
+      0
+    </Field>
+    <Field name="endIndex" label="endIndex" type="int">
+      1000000000
+    </Field>
     <Function name="ValidateFormats" user="true" member="true">
     </Function>
   </Attribute>

@@ -105,6 +105,9 @@
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
 #include <WindowInformation.h>
+#include <DatabaseCorrelation.h>
+#include <DatabaseCorrelationList.h>
+#include <KeyframeAttributes.h>
 
 #include <QvisApplication.h>
 #include <FileServerList.h>
@@ -6847,9 +6850,9 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
     const intVector &w = movieAtts->GetWidths();
     const intVector &h = movieAtts->GetHeights();
     std::string G;
+    char tmp[100];
     for(i = 0; i < w.size(); ++i)
     {
-        char tmp[100];
         SNPRINTF(tmp, 100, "%dx%d", w[i], h[i]);
         G += tmp;
         if(i < (w.size() - 1))
@@ -6891,6 +6894,21 @@ GetMovieCommandLine(const MovieAttributes *movieAtts, stringVector &args)
         dirFile += SLASH_STRING;
     dirFile += movieAtts->GetOutputName();
     args.push_back(QuoteSpaces(dirFile));
+
+    args.push_back("-fps");
+    SNPRINTF(tmp, 100, "%d", movieAtts->GetFps());
+    args.push_back(tmp);
+
+    args.push_back("-start");
+    SNPRINTF(tmp, 100, "%d", movieAtts->GetStartIndex());
+    args.push_back(tmp);
+
+    if (movieAtts->GetEndIndex() != 1000000000)
+    {
+        args.push_back("-end");
+        SNPRINTF(tmp, 100, "%d", movieAtts->GetEndIndex());
+        args.push_back(tmp);
+    }
 }
 
 // ****************************************************************************
@@ -6938,6 +6956,58 @@ UpdateCurrentWindowSizes(MovieAttributes *movieAtts, int currentWidth,
     movieAtts->SetWidths(widths);
     movieAtts->SetHeights(heights);
 }
+
+
+// ****************************************************************************
+// Function: GetNumMovieFrames
+//
+// Purpose: 
+//   This function returns the number of frames that could be generated 
+//   by a movie.  It is taken from QvisFilePanel::UpdateAnimationControls().
+//
+// Programmer: Dave Bremer
+// Creation:   Fri Oct  5 15:22:56 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+QvisGUIApplication::GetNumMovieFrames()
+{
+    WindowInformation *windowInfo = GetViewerState()->GetWindowInformation();
+    int activeTS = windowInfo->GetActiveTimeSlider();
+
+    DatabaseCorrelationList *cL = GetViewerState()->GetDatabaseCorrelationList();
+    DatabaseCorrelation *activeTSCorrelation = 0;
+    if(activeTS >= 0)
+    {
+        // Try and find a correlation for the active time slider so we
+        // can get the number of states in the correlation.
+        const std::string &activeTSName = windowInfo->GetTimeSliders()[activeTS];
+        activeTSCorrelation = cL->FindCorrelation(activeTSName);
+    }
+
+    int nTotalStates = 1;
+    if(activeTSCorrelation)
+    {
+        nTotalStates = activeTSCorrelation->GetNumStates();
+    }
+    else if(GetViewerState()->GetKeyframeAttributes()->GetEnabled())
+    {
+        //
+        // Keyframing is enabled so we must be using the keyframing time
+        // slider if we didn't find a correlation for the active time
+        // slider. Get the number of keyframes and use that as the
+        // length of the time slider.
+        //
+        nTotalStates = GetViewerState()->GetKeyframeAttributes()->GetNFrames();
+    }
+
+    return nTotalStates;
+}
+
+
 
 // ****************************************************************************
 // Function: MakeCodeSlashes
@@ -7056,15 +7126,31 @@ QvisGUIApplication::SaveMovieMain()
     int ch = winInfo->GetWindowSize()[1];
     UpdateCurrentWindowSizes(movieAtts, cw, ch);
 
+    // The idea here is that I want set the start/end indices on the first
+    // call, and if the default number of frames changes.  But I want those
+    // parameters to stay the same otherwise, like when there are multiple
+    // executions of the save movie wizard on the same data.  movieAtts 
+    // holds the user-requested data, and I store the default (max) run length
+    // in the wizard class.
+    int nMovieFrames = GetNumMovieFrames();
+    if (saveMovieWizard == NULL ||
+        nMovieFrames != saveMovieWizard->GetDefaultNumFrames())
+    {
+        movieAtts->SetStartIndex(0);
+        movieAtts->SetEndIndex(nMovieFrames-1);
+    }
+
     if(saveMovieWizard == 0)
     {
         saveMovieWizard = new QvisSaveMovieWizard(movieAtts,
             mainWin, "Save movie wizard");
         saveMovieWizard->SetDefaultMovieSize(cw, ch);
+        saveMovieWizard->SetDefaultNumFrames(nMovieFrames);
     }
     else
     {
         saveMovieWizard->SetDefaultMovieSize(cw, ch);
+        saveMovieWizard->SetDefaultNumFrames(nMovieFrames);
         saveMovieWizard->UpdateAttributes();
     }
 
@@ -7138,6 +7224,20 @@ QvisGUIApplication::SaveMovieMain()
             }
             else
                 code += "    movie.usesCurrentPlots = 1\n";
+
+            // Add fps and start/end index
+            QString tmp;
+            tmp.sprintf("%d", movieAtts->GetFps());
+            code += "    movie.fps = " + tmp + "\n";
+
+            tmp.sprintf("%d", movieAtts->GetStartIndex());
+            code += "    movie.frameStart = " + tmp + "\n";
+
+            if (movieAtts->GetEndIndex() != 1000000000)
+            {
+                tmp.sprintf("%d", movieAtts->GetEndIndex());
+                code += "    movie.frameEnd = " + tmp + "\n";
+            }
 
             // If we want e-mail notification, add that info here.
             if(movieAtts->GetSendEmailNotification())

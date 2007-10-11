@@ -88,6 +88,9 @@ class MovieTemplateConfig;
 //   Kathleen Bonnell, Fri Jul 20 10:59:28 PDT 2007 
 //   Added GetMovieAttsOutputDir(). 
 //
+//   Dave Bremer, Tue Oct  9 14:13:12 PDT 2007
+//   Added a new page to set fps and start/end index, moved pages 
+//   10-12 to 11-13, and added a methods to set/get the number of frames
 // ****************************************************************************
 
 class QvisSaveMovieWizard : public QvisWizard
@@ -100,6 +103,8 @@ public:
 
     int Exec();
     void SetDefaultMovieSize(int,int);
+    void SetDefaultNumFrames(int);
+    int  GetDefaultNumFrames();
 
     virtual void showPage(QWidget *page);
 protected:
@@ -164,14 +169,18 @@ private slots:
     void page9_stereoChanged(bool);
     void page9_stereoTypeChanged(int);
 
-    void page10_processOutputDirectoryText(const QString &);
-    void page10_selectOutputDirectory();
-    void page10_processFilebaseText(const QString &);
+    void page10_fpsChanged(const QString &s);
+    void page10_startIndexChanged(const QString &s);
+    void page10_endIndexChanged(const QString &s);
 
-    void page11_emailNotificationChanged(int);
-    void page11_emailAddressChanged(const QString &);
+    void page11_processOutputDirectoryText(const QString &);
+    void page11_selectOutputDirectory();
+    void page11_processFilebaseText(const QString &);
 
-    void page12_generationMethodChanged(int);
+    void page12_emailNotificationChanged(int);
+    void page12_emailAddressChanged(const QString &);
+
+    void page13_generationMethodChanged(int);
 
 private:
     struct MovieTemplateData
@@ -222,9 +231,11 @@ private:
     void page9_UpdateResolution(bool, double, int w, int h, int s);
     bool page9_UpdateFormat(const QString &format);
 
-    void page10_UpdateButtons();
+    void page10_UpdateStartEndIndex();
 
     void page11_UpdateButtons();
+
+    void page12_UpdateButtons();
 
     void CreateMovieTypePage();         // page0
     void CreateNewTemplatePromptPage(); // page1
@@ -236,9 +247,10 @@ private:
     void CreateSaveTemplateAsPage();    // page7
     void CreateSettingsOkayPage();      // page8
     void CreateFormatPage();            // page9
-    void CreateFilenamePage();          // page10
-    void CreateEmailPage();             // page11
-    void CreateGenerationMethodPage();  // page12
+    void CreateNumFramesPage();         // page10
+    void CreateFilenamePage();          // page11
+    void CreateEmailPage();             // page12
+    void CreateGenerationMethodPage();  // page13
 
     QString SplitPrompt(const QString &s) const;
 
@@ -260,6 +272,7 @@ private:
     float                   page9_aspect;
 
     float                   default_movie_size[2];
+    int                     default_num_frames;
 
     // Custom sequence pages.
     SequenceUIVector        sequencePages;
@@ -343,20 +356,29 @@ private:
     QPushButton            *page9_removeOutputButton;
     QListView              *page9_outputFormats;
 
-    // Choose filenames
+    // Choose movie length
     QWidget                *page10;
-    QLineEdit              *page10_outputDirectoryLineEdit;
-    QLineEdit              *page10_filebaseLineEdit;
+    QLabel                 *page10_fpsLabel;
+    QLineEdit              *page10_fpsLineEdit;
+    QLabel                 *page10_startIndexLabel;
+    QLineEdit              *page10_startIndexLineEdit;
+    QLabel                 *page10_endIndexLabel;
+    QLineEdit              *page10_endIndexLineEdit;
+
+    // Choose filenames
+    QWidget                *page11;
+    QLineEdit              *page11_outputDirectoryLineEdit;
+    QLineEdit              *page11_filebaseLineEdit;
 
     // Email
-    QWidget                *page11;
-    QButtonGroup           *page11_buttongroup;
-    QLabel                 *page11_emailLabel;
-    QLineEdit              *page11_emailLineEdit;
-
-    // How to generate?
     QWidget                *page12;
     QButtonGroup           *page12_buttongroup;
+    QLabel                 *page12_emailLabel;
+    QLineEdit              *page12_emailLineEdit;
+
+    // How to generate?
+    QWidget                *page13;
+    QButtonGroup           *page13_buttongroup;
 };
 
 #endif
