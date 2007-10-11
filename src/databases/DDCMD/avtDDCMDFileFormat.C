@@ -497,6 +497,10 @@ avtDDCMDFileFormat::CopyExchangeDataToBlocks()
 //  Programmer: Eric Brugger
 //  Creation:   Fri Aug 31 15:27:59 PST 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Thu Oct 11 10:11:20 PDT 2007
+//    Add the 'b' designation to fopen commands.
+// 
 // ****************************************************************************
 
 void
@@ -524,7 +528,7 @@ avtDDCMDFileFormat::ReadProcessorChunk()
     //
     sprintf(string, "%s/cgrid#%6.6d", fname.c_str(), fileNumber);
     debug1 << "Opening " << string << endl;
-    file = fopen(string, "r");
+    file = fopen(string, "rb");
     fseek(file, fileOffset, SEEK_SET);
     debug1 << "fileOffset=" << fileOffset << ",nRecords=" << nRecords << endl;
 
@@ -542,7 +546,7 @@ avtDDCMDFileFormat::ReadProcessorChunk()
             {
                 sprintf(string, "%s/cgrid#%6.6d", fname.c_str(), fileNumber);
                 debug1 << "Opening " << string << endl;
-                file = fopen(string, "r");
+                file = fopen(string, "rb");
             }
         }
         int cnt = fread(buffer, lRec, nRecords, file);

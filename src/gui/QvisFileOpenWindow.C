@@ -61,7 +61,6 @@
 #include <HostProfileList.h>
 #include <HostProfile.h>
 #include <ViewerProxy.h>
-#include <DBPluginInfoAttributes.h>
 
 #include <visit-config.h>
 

@@ -178,6 +178,9 @@ avtViscousStressFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Cyrus Harrison, Mon Jun 18 13:41:51 PDT 2007
 //    Added explicit check for quad cells
 //
+//    Cyrus Harrison, Thu Oct 11 09:21:36 PDT 2007
+//    Changed 'i' to 'idx' in ds->GetCellType calls. 
+//
 // ****************************************************************************
 
 void
@@ -205,8 +208,8 @@ avtViscousStressFilter::CalculateVStress2D(vtkDataSet *ds,
     double *ve_val = NULL;
 
     // make sure the cell is a quad (assumed for proper vel gradients)
-    if ( ( ds->GetCellType(i) != VTK_QUAD ) &&
-         ( ds->GetCellType(i) != VTK_PIXEL ) )
+    if ( ( ds->GetCellType(idx) != VTK_QUAD ) &&
+         ( ds->GetCellType(idx) != VTK_PIXEL ) )
     {
         // if cell is not a quad, ignore
         memset(vstress,0,sizeof(double)*9);
