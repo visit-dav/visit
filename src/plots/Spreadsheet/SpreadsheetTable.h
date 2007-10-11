@@ -38,6 +38,7 @@
 #define SPREADSHEET_TABLE_H
 
 #include <qtable.h>
+#include <list>
 
 class avtLookupTable;
 class vtkDataArray;

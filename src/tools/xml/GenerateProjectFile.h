@@ -93,6 +93,10 @@
 //    Cyrus Harrison, Wed Mar  7 09:50:01 PST 2007
 //    Allow for engine-specific code in a plugin's source files.
 //
+//    Kathleen Bonnell, Wed Oct 10 12:08:03 PDT 2007 
+//    Change Python include to version 2.5.  Changed %QTDIR% to $(QTDIR),
+//    and qt-mt302.lib to $(QTLIB).
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -705,7 +709,7 @@ protected:
         out << "\t\t\t\tInlineFunctionExpansion=\"1\"" << endl;
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
-        out << "\t\t\t\tAdditionalIncludeDirectories=\"%QTDIR%\\include;..\\..\\visit\\" << pluginType << "\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\mesa;..\\..\\include\\Python-2.3.4;..\\..\\include\\zlib\"" << endl;
+        out << "\t\t\t\tAdditionalIncludeDirectories=\"$(QTDIR)\\include;..\\..\\visit\\" << pluginType << "\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\mesa;..\\..\\include\\Python-2.5;..\\..\\include\\zlib\"" << endl;
         out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS";
         if (exports != "")
             out << ";" << exports;
@@ -729,7 +733,7 @@ protected:
         out << "\t\t\t\tLinkIncremental=\"1\"" << endl;
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Release\\" << name << pluginComponent << "\\" << name << pluginComponent << ".pdb\"" << endl;
-        out << "\t\t\t\tAdditionalLibraryDirectories=\"%QTDIR%\\lib;..\\..\\lib\\MSVC7.Net\\Release\"" << endl;
+        out << "\t\t\t\tAdditionalLibraryDirectories=\"$(QTDIR)\\lib;..\\..\\lib\\MSVC7.Net\\Release\"" << endl;
         out << "\t\t\t\tImportLibrary=\".\\Release\\" << name << pluginComponent << "\\lib" << pluginComponent << name << pType << suffix << ".lib\"" << endl;
         out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
         out << "\t\t\t<Tool" << endl;
@@ -750,7 +754,7 @@ protected:
                 winType = "Window";
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCPreBuildEventTool\"" << endl;
-            out << "\t\t\t\tCommandLine=\"%QTDIR%\\bin\\moc.exe ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << ".h -o ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
+            out << "\t\t\t\tCommandLine=\"$(QTDIR)\\bin\\moc.exe ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << ".h -o ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
         }
         else
         {
@@ -788,7 +792,7 @@ protected:
         out << "\t\t\t\tOptimization=\"0\"" << endl;
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
-        out << "\t\t\t\tAdditionalIncludeDirectories=\"%QTDIR%\\include;..\\..\\visit\\" << pluginType << "\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\mesa;..\\..\\include\\Python-2.3.4;..\\..\\include\\zlib\"" << endl;
+        out << "\t\t\t\tAdditionalIncludeDirectories=\"$(QTDIR)\\include;..\\..\\visit\\" << pluginType << "\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\mesa;..\\..\\include\\Python-2.5;..\\..\\include\\zlib\"" << endl;
         out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS";
         if (exports != "")
             out << ";" << exports;
@@ -813,7 +817,7 @@ protected:
         out << "\t\t\t\tSuppressStartupBanner=\"TRUE\"" << endl;
         out << "\t\t\t\tGenerateDebugInformation=\"TRUE\"" << endl;
         out << "\t\t\t\tProgramDatabaseFile=\".\\Debug\\" << name << pluginComponent << "\\" << name << pluginComponent << ".pdb\"" << endl;
-        out << "\t\t\t\tAdditionalLibraryDirectories=\"%QTDIR%\\lib;..\\..\\lib\\MSVC7.Net\\Debug\"" << endl;
+        out << "\t\t\t\tAdditionalLibraryDirectories=\"$(QTDIR)\\lib;..\\..\\lib\\MSVC7.Net\\Debug\"" << endl;
         out << "\t\t\t\tImportLibrary=\".\\Debug\\" << name << pluginComponent << "\\lib" << pluginComponent << name << pType << suffix << ".lib\"" << endl;
         out << "\t\t\t\tTargetMachine=\"1\"/>" << endl;
         out << "\t\t\t<Tool" << endl;
@@ -834,7 +838,7 @@ protected:
                 winType = "Window";
             out << "\t\t\t<Tool" << endl;
             out << "\t\t\t\tName=\"VCPreBuildEventTool\"" << endl;
-            out << "\t\t\t\tCommandLine=\"%QTDIR%\\bin\\moc.exe ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << ".h -o ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
+            out << "\t\t\t\tCommandLine=\"$(QTDIR)\\bin\\moc.exe ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << ".h -o ..\\..\\visit\\" << pluginType << "\\" << name << "\\Qvis" << name << winType << "_moc.C\"/>" << endl;
         }
         else
         {
@@ -976,7 +980,7 @@ protected:
             AddElements(srcFiles, defaultgfiles);
 
         WriteProjectHelper(out, "plots", 'G', "GUI_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib viewerrpc.lib qt-mt302.lib",
+            "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib viewerrpc.lib $(QTLIB)",
             srcFiles, version7);
     }
 
@@ -1188,7 +1192,7 @@ protected:
             AddElements(srcFiles, defaultgfiles);
 
         WriteProjectHelper(out, "operators", 'G', "GUI_PLUGIN_EXPORTS",
-            "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib viewerrpc.lib qt-mt302.lib",
+            "state.lib misc.lib plugin.lib gui.lib viewerproxy.lib viewerrpc.lib $(QTLIB)",
             srcFiles, version7);
     }
 

@@ -42,6 +42,7 @@
 #include <QvisDelayedWindowSimpleObserver.h>
 #include <QualifiedFilename.h>
 #include <maptypes.h>
+#include <DBPluginInfoAttributes.h>
 
 // Forward declarations.
 class FileServerList;
@@ -55,7 +56,6 @@ class QListBoxItem;
 class QPixmap;
 class QPushButton;
 class QvisRecentPathRemovalWindow;
-class DBPluginInfoAttributes;
 
 // ****************************************************************************
 // Class: QvisFileOpenWindow

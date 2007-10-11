@@ -239,7 +239,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     tables[0]->setReadOnly(true);
     tables[0]->setLUT(colorLUT);
     QFont spreadsheetFont;
-    if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont()))
+    if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
         tables[0]->setFont(spreadsheetFont);
 
     connect(tables[0], SIGNAL(selectionChanged()),
@@ -732,7 +732,7 @@ SpreadsheetViewer::Update(Subject *)
             break;
         case 13: // fontName
             QFont spreadsheetFont;
-            if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont()))
+            if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
             {
                 for (int i=0; i<nTables; ++i)
                 {
@@ -1320,7 +1320,7 @@ SpreadsheetViewer::setNumberOfTabs(int nt, int base, bool structured)
                 t[i]->setUpdatesEnabled(false);
                 t[i]->setLUT(colorLUT);
                 QFont spreadsheetFont;
-                if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont()))
+                if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
                     t[i]->setFont(spreadsheetFont);
                 connect(t[i], SIGNAL(selectionChanged()),
                         this, SLOT(tableSelectionChanged()));
@@ -2465,7 +2465,7 @@ SpreadsheetViewer::tableSelectionChanged()
 int
 SpreadsheetViewer::GetCell(double X, double Y, double Z)
 {
-    int  i, j;
+    int  i;
     int  cell = -1;
 
     if (input == NULL)

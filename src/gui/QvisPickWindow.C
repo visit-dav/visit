@@ -610,7 +610,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     if (pickAtts->IsSelected(63) || doAll)
     {
         floatFormatLineEdit->blockSignals(true);
-        floatFormatLineEdit->setText(pickAtts->GetFloatFormat());
+        floatFormatLineEdit->setText(pickAtts->GetFloatFormat().c_str());
         floatFormatLineEdit->blockSignals(false);
     }
 }

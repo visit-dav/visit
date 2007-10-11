@@ -52,6 +52,7 @@
 #include <qradiobutton.h>
 #include <qspinbox.h>
 #include <QvisColorButton.h>
+#include <snprintf.h>
 
 #include <stdio.h>
 
@@ -456,7 +457,7 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             break;
         case 17: //formatTemplate
             formatTemplate->blockSignals(true);
-            formatTemplate->setText(QString(labelAtts->GetFormatTemplate()));
+            formatTemplate->setText(QString(labelAtts->GetFormatTemplate().c_str()));
             formatTemplate->blockSignals(false);
             break;
         }
@@ -821,7 +822,7 @@ QvisLabelPlotWindow::formatTemplateChanged()
     }
     
     char test[36];
-    int len = snprintf(test, 36, newval.c_str(), 0.0f);
+    int len = SNPRINTF(test, 36, newval.c_str(), 0.0f);
     if (len >= 35)
     {
         Message( "The template produces values that are too long.  36 character limit." );
