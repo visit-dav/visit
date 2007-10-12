@@ -57,6 +57,8 @@
 #include <FileServerList.h>
 #include <ViewerProxy.h>
 
+#include <QvisDBOptionsDialog.h>
+
 // ****************************************************************************
 // Method: QvisExportDBWindow::QvisExportDBWindow
 //
@@ -289,6 +291,10 @@ QvisExportDBWindow::CreateWindowContents()
 //   Changed to observe dbPluginInfoAtts and update file format combo
 //   box as necessary.
 //
+//   Jeremy Meredith, Fri Oct 12 10:35:42 EDT 2007
+//   Added trigger of the full file format update when we have to choose
+//   one for the user (because none was selected).
+//
 // ****************************************************************************
 
 void
@@ -340,8 +346,11 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
                     }
                 if (curItem >= 0)
                     fileFormatComboBox->setCurrentItem(curItem);
-                else
+                else if (nItems > 0)
+                {
                     fileFormatComboBox->setCurrentItem(0);
+                    fileFormatChanged(0);
+                }
                 fileFormatComboBox->blockSignals(false);
 
                 // This isn't so clean since we should not be doing things
@@ -445,13 +454,13 @@ QvisExportDBWindow::GetCurrentValues(int which_widget)
 // Method: QvisExportDBWindow::Apply
 //
 // Purpose: 
-//   This method applies the save image attributes and optionally tells
+//   This method applies the export attributes and optionally tells
 //   the viewer to apply them.
 //
 // Arguments:
 //   ignore : This flag, when true, tells the code to ignore the
 //            AutoUpdate function and tell the viewer to apply the
-//            aslice attributes.
+//            export attributes.
 //
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
@@ -463,7 +472,7 @@ QvisExportDBWindow::Apply(bool ignore)
 {
     if(AutoUpdate() || ignore)
     {
-        // Get the current aslice attributes and tell the other
+        // Get the current export attributes and tell the other
         // observers about them.
         GetCurrentValues(-1);
         exportDBAtts->Notify();
@@ -543,7 +552,6 @@ QvisExportDBWindow::processDirectoryNameText()
 //   is selected.
 //
 // Arguments:
-//   index : The index of the file format that was selected.
 //
 // Programmer: Hank Childs
 // Creation:   May 25, 2005
@@ -554,10 +562,14 @@ QvisExportDBWindow::processDirectoryNameText()
 //    file format combo box.  Assume we're directly observing the DB
 //    plugin info atts.
 //
+//    Jeremy Meredith, Fri Oct 12 10:38:02 EDT 2007
+//    Enhancements to attribute groups allowed separate vectors for the
+//    read and write options, so I switched to this simpler organization.
+//
 // ****************************************************************************
 
 void
-QvisExportDBWindow::fileFormatChanged(int index)
+QvisExportDBWindow::fileFormatChanged(int)
 {
     if (dbPluginInfoAtts == 0 || exportDBAtts == 0)
         return;
@@ -575,10 +587,8 @@ QvisExportDBWindow::fileFormatChanged(int index)
         {
             exportDBAtts->SetDb_type_fullname(
                                      dbPluginInfoAtts->GetTypesFullNames()[i]);
-            // The atts have the array as [R, W, R, W, ...], so for plugin I,
-            // its write atts are 2*I+1.
             DBOptionsAttributes &atts = 
-                               dbPluginInfoAtts->GetDbOptions(2*i+1);
+                               dbPluginInfoAtts->GetDbWriteOptions(i);
             exportDBAtts->SetOpts(atts);
         }
     }
@@ -618,6 +628,8 @@ QvisExportDBWindow::exportDB()
 // Creation:   May 25, 2005
 //
 // Modifications:
+//    Jeremy Meredith, Fri Oct 12 10:38:24 EDT 2007
+//    Added a modal dialog to get the options for exporting.
 //
 // ****************************************************************************
 
@@ -625,7 +637,26 @@ void
 QvisExportDBWindow::exportButtonClicked()
 {
     apply();
-    exportDB();
+
+    int result = QDialog::Accepted;
+    if (exportDBAtts->GetOpts().GetNumberOfOptions() > 0)
+    {
+        QvisDBOptionsDialog *optsdlg =
+            new QvisDBOptionsDialog(&(exportDBAtts->GetOpts()), NULL, "opts");
+        QString caption = "Export options for " +
+            exportDBAtts->GetDb_type() + " writer";
+        optsdlg->setCaption(caption);
+        result = optsdlg->exec();
+        delete optsdlg;
+    }
+    if (result == QDialog::Accepted)
+    {
+        exportDB();
+    }
+    else
+    {
+        // rejected
+    }
 }
 
 // ****************************************************************************

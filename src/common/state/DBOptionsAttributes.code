@@ -296,6 +296,11 @@ Definition:
 //  Programmer: Hank Childs
 //  Creation:   May 23, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Oct 12 10:40:26 EDT 2007
+//    Fixed a bug where the string size array wasn't kept conformant with
+//    the other arrays.
+//
 // ****************************************************************************
 
 void
@@ -307,6 +312,7 @@ DBOptionsAttributes::SetEnum(const std::string &name, int defaultValue)
         names.push_back(name);
         types.push_back(Enum);
         optEnums.push_back(defaultValue);
+        enumStringsSizes.push_back(0);
     }
     else
         optEnums[bIndex] = defaultValue;

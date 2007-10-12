@@ -891,6 +891,10 @@ MDServerConnection::GetCurrentSIL() const
 //   Hank Childs, Wed Jul  6 07:19:03 PDT 2005
 //   Fix memory leak.
 //
+//   Jeremy Meredith, Thu Oct 11 14:54:13 EDT 2007
+//   Enhancements to attribute groups allowed separate vectors for the
+//   read and write options, so I switched to this simpler organization.
+//
 // ****************************************************************************
 
 DBPluginInfoAttributes *
@@ -914,10 +918,10 @@ MDServerConnection::GetDBPluginInfo()
         hasWriter[i] = manager->PluginHasWriter(fullname);
         CommonDatabasePluginInfo *info =manager->GetCommonPluginInfo(fullname);
         DBOptionsAttributes *a = info->GetReadOptions();
-        rv->AddDbOptions(*a);
+        rv->AddDbReadOptions(*a);
         delete a;
         a = info->GetWriteOptions();
-        rv->AddDbOptions(*a);
+        rv->AddDbWriteOptions(*a);
         delete a;
     }
     rv->SetTypes(types);
