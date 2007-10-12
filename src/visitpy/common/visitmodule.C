@@ -805,6 +805,187 @@ GetDoubleArrayFromPyObject(PyObject *obj, double *array, int maxLen)
     return retval;
 }
 
+
+// ****************************************************************************
+//  Method:  FillDBOptionsFromDictionary
+//
+//  Purpose:
+//    Take a dictionary of key-value pairs, ("boolval":1, "stringval":"foobar")
+//    and applies it to a DBOptionsAttributes structure.  The error
+//    reporting should hopefully be sufficient to guide users.
+//
+//  Arguments:
+//    obj        the dictionary
+//    opts       the DBOptionsAttributes to fill
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 11, 2007
+//
+// ****************************************************************************
+bool
+FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
+{
+    if (!obj)
+        return false;
+
+    char msg[256];
+    bool isdict = PyDict_Check(obj);
+    if (!isdict)
+    {
+        VisItErrorFunc("Expected a dictionary for DB Options");
+        return false;
+    }
+
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+
+    while (PyDict_Next(obj, &pos, &key, &value))
+    {
+        std::string name;
+        if (PyString_Check(key))
+            name = PyString_AS_STRING(key);
+        else
+        {
+            VisItErrorFunc("The key for an option must be a string.");
+            return false;
+        }
+
+        int index = -1;
+        for (int j=0; j<opts.GetNumberOfOptions(); j++)
+        {
+            if (name == opts.GetName(j))
+            {
+                index = j;
+                break;
+            }
+        }
+        if (index == -1)
+        {
+            sprintf(msg, "There was no '%s' in the DB options.", name.c_str());
+            VisItErrorFunc(msg);
+            return false;
+        }
+
+        switch (opts.GetType(index))
+        {
+          case DBOptionsAttributes::Bool:
+            if (PyInt_Check(value))
+                opts.SetBool(name, PyInt_AS_LONG(value));
+            else
+            {
+                sprintf(msg, "Expected int to set boolean '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
+          case DBOptionsAttributes::Int:
+            if (PyInt_Check(value))
+                opts.SetInt(name, PyInt_AS_LONG(value));
+            else
+            {
+                sprintf(msg, "Expected integer to set '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
+          case DBOptionsAttributes::Float:
+            if (PyFloat_Check(value))
+                opts.SetFloat(name, PyFloat_AS_DOUBLE(value));
+            else if (PyInt_Check(value))
+                opts.SetFloat(name, PyInt_AS_LONG(value));
+            else
+            {
+                sprintf(msg, "Expected float to set '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
+          case DBOptionsAttributes::Double:
+            if (PyFloat_Check(value))
+                opts.SetDouble(name, PyFloat_AS_DOUBLE(value));
+            else if (PyInt_Check(value))
+                opts.SetDouble(name, PyInt_AS_LONG(value));
+            else
+            {
+                sprintf(msg, "Expected float to set '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
+          case DBOptionsAttributes::String:
+            if (PyString_Check(value))
+                opts.SetString(name, PyString_AS_STRING(value));
+            else
+            {
+                sprintf(msg, "Expected string to set '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
+          case DBOptionsAttributes::Enum:
+            if (PyInt_Check(value))
+                opts.SetEnum(name, PyInt_AS_LONG(value));
+            else
+            {
+                sprintf(msg, "Expected int to set enum '%s'", name.c_str());
+                VisItErrorFunc(msg);
+                return false;
+            }
+            break;
+        }
+    }
+
+    return true;
+}
+
+// ****************************************************************************
+//  Method:  CreateDictionaryFromDBOptions
+//
+//  Purpose:
+//    Create a dictionary of key-value pairs ("boolval":1,"stringval":"foobar")
+//    from a DBOptionsAttributes structure.
+//
+//  Arguments:
+//    opts       the DBOptionsAttributes to convert
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    October 11, 2007
+//
+// ****************************************************************************
+PyObject *
+CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
+{
+    PyObject *dict = PyDict_New();
+    for (int j=0; j<opts.GetNumberOfOptions(); j++)
+    {
+        const char *name = opts.GetName(j).c_str();
+        switch (opts.GetType(j))
+        {
+          case DBOptionsAttributes::Bool:
+            PyDict_SetItemString(dict,name,PyInt_FromLong(opts.GetBool(name)));
+            break;
+          case DBOptionsAttributes::Int:
+            PyDict_SetItemString(dict,name,PyInt_FromLong(opts.GetInt(name)));
+            break;
+          case DBOptionsAttributes::Float:
+            PyDict_SetItemString(dict,name,PyFloat_FromDouble(opts.GetFloat(name)));
+            break;
+          case DBOptionsAttributes::Double:
+            PyDict_SetItemString(dict,name,PyFloat_FromDouble(opts.GetDouble(name)));
+            break;
+          case DBOptionsAttributes::String:
+            PyDict_SetItemString(dict,name,PyString_FromString(opts.GetString(name).c_str()));
+            break;
+          case DBOptionsAttributes::Enum:
+            PyDict_SetItemString(dict,name,PyInt_FromLong(opts.GetEnum(name)));
+            break;
+        }
+    }
+    return dict;
+}
+
+
+
 //
 // Python callbacks for VisIt
 //
@@ -5001,6 +5182,13 @@ visit_GetSaveWindowAttributes(PyObject *self, PyObject *args)
 // Programmer: Hank Childs
 // Creation:   June 30, 2005
 //
+// Modifications:
+//   Jeremy Meredith, Thu Oct 11 14:54:13 EDT 2007
+//   I added an optional third argument containing a dictionary of key-value
+//   pairs for passing database export options to the file format writer.
+//   Also, enhancements to attribute groups allowed separate vectors for the
+//   read and write options, so I switched to this simpler organization.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -5008,25 +5196,26 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    PyObject *annot = NULL;
-    // Try and get the annotation pointer.
-    if(!PyArg_ParseTuple(args,"O",&annot))
+    PyObject *exportatts = NULL;
+    PyObject *optsdict = NULL;
+    // Try and get the export attributes and database options.
+    if(!PyArg_ParseTuple(args,"O|O",&exportatts,&optsdict))
     {
         VisItErrorFunc("ExportDatabase: Cannot parse object!");
         return NULL;
     }
-    if(!PyExportDBAttributes_Check(annot))
+    if(!PyExportDBAttributes_Check(exportatts))
     {
         VisItErrorFunc("Argument is not a ExportDBAttributes object");
         return NULL;
     }
 
-    ExportDBAttributes *va = PyExportDBAttributes_FromPyObject(annot);
+    ExportDBAttributes *va = PyExportDBAttributes_FromPyObject(exportatts);
     const std::string &db_type = va->GetDb_type();
 
     MUTEX_LOCK();
         DBPluginInfoAttributes *dbplugininfo = 
-                                          GetViewerState()->GetDBPluginInfoAttributes();
+                        GetViewerState()->GetDBPluginInfoAttributes();
     MUTEX_UNLOCK();
 
     const stringVector &types = dbplugininfo->GetTypes();
@@ -5039,7 +5228,15 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
             foundMatch = true;
             va->SetDb_type_fullname(dbplugininfo->GetTypesFullNames()[i]);
             DBOptionsAttributes *opts = (DBOptionsAttributes *)
-                                           dbplugininfo->GetDbOptions()[2*i+1];
+                                         dbplugininfo->GetDbWriteOptions()[i];
+            if (optsdict)
+            {
+                DBOptionsAttributes newopts(*opts);
+                bool ok = FillDBOptionsFromDictionary(optsdict, newopts);
+                if (!ok)
+                    return NULL;
+                *opts = newopts;
+            }
             va->SetOpts(*opts);
             if (dbplugininfo->GetHasWriter()[i] != 0)
                 hasWriter = true;
@@ -5072,6 +5269,82 @@ visit_ExportDatabase(PyObject *self, PyObject *args)
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_GetExportOptions
+//
+// Purpose:
+//   Gets the write options for a DB plugin as a Dictionary.
+//
+// Notes:      
+//
+// Programmer: Jeremy Meredith
+// Creation:   October 11, 2007
+//
+// ****************************************************************************
+STATIC PyObject *
+visit_GetExportOptions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *plugin = NULL;
+    // Try and get the export attributes and database options.
+    if(!PyArg_ParseTuple(args,"s",&plugin))
+        return NULL;
+
+    MUTEX_LOCK();
+        DBPluginInfoAttributes *dbplugininfo = 
+                        GetViewerState()->GetDBPluginInfoAttributes();
+    MUTEX_UNLOCK();
+
+    PyObject *dict = NULL;
+    const stringVector &types = dbplugininfo->GetTypes();
+    bool foundMatch = false;
+    bool hasWriter = false;
+    for (int i = 0 ; i < types.size() ; i++)
+    {
+        if (types[i] == plugin)
+        {
+            foundMatch = true;
+            if (dbplugininfo->GetHasWriter()[i] == 0)
+                break;
+            hasWriter = true;
+            DBOptionsAttributes *opts = (DBOptionsAttributes *)
+                                         dbplugininfo->GetDbWriteOptions()[i];
+            if (opts)
+            {
+                dict = CreateDictionaryFromDBOptions(*opts);
+            }
+            break;
+        }
+    }
+
+    if (!foundMatch)
+    {
+        char msg[1024];
+        sprintf(msg, "\"%s\" is not a valid plugin type.", plugin);
+        VisItErrorFunc(msg);
+        return NULL;
+    }
+    if (!hasWriter)
+    {
+        char msg[1024];
+        sprintf(msg, "\"%s\" is a valid plugin type.  But it does *not* have\n"
+                "a database writer", plugin);
+        VisItErrorFunc(msg);
+        return NULL;
+    }
+    if (!dict)
+    {
+        char msg[1024];
+        sprintf(msg, "\"%s\" is a valid plugin with export capability, but "
+                "appears to have no options.", plugin);
+        VisItErrorFunc(msg);
+        return NULL;
+    }
+
+    return dict;
 }
 
 // ****************************************************************************
@@ -11750,6 +12023,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Added methods to control automatic creation of MeshQuality and
 //   TimeDerivative expressions. 
 //
+//   Jeremy Meredith, Fri Oct 12 10:32:05 EDT 2007
+//   Added GetExportOptions.
+//
 // ****************************************************************************
 
 static void
@@ -11876,6 +12152,7 @@ AddDefaultMethods()
     AddMethod("GetDatabaseNStates", visit_GetDatabaseNStates,
                                                  visit_GetDatabaseNStates_doc);
     AddMethod("GetEngineList", visit_GetEngineList, visit_GetEngineList_doc);
+    AddMethod("GetExportOptions", visit_GetExportOptions, NULL);
     AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes,
                                                 visit_GetGlobalAttributes_doc);
     AddMethod("GetGlobalLineoutAttributes", visit_GetGlobalLineoutAttributes,
