@@ -308,6 +308,9 @@
 #   Eric Brugger, Tue Oct  9 08:29:26 PDT 2007
 #   Added DDCMD reader.
 #
+#   Kathleen Bonnell, Fri Oct 12 09:56:21 PDT 2007
+#   Added Cale reader.
+#
 ##############################################################################
 
 @SET_MAKE@
