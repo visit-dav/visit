@@ -57,7 +57,6 @@
 #include <InvalidCellTypeException.h>
 #include <InvalidDimensionsException.h>
 
-
 static void GetRotationMatrix(double angle, double axis[3], vtkMatrix4x4 *mat, 
                               avtMeshCoordType mt);
 
@@ -253,6 +252,9 @@ avtRevolveFilter::GetAxis(avtMeshCoordType mt, double *axis)
 //    Hank Childs, Sun Mar 18 10:12:57 PDT 2007
 //    Add support for RZ and ZR meshes.
 //
+//    Brad Whitlock, Fri Oct 12 14:43:23 PST 2007
+//    Added support for revolving lines.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -327,9 +329,10 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
     {
          vtkCell *cell = in_ds->GetCell(i);
          int c = cell->GetCellType();
-         if (c != VTK_QUAD && c != VTK_TRIANGLE && c != VTK_PIXEL)
+         if (c != VTK_QUAD && c != VTK_TRIANGLE && c != VTK_PIXEL &&
+             c != VTK_LINE)
          {
-             EXCEPTION1(InvalidCellTypeException, "anything but quads and"
+             EXCEPTION1(InvalidCellTypeException, "anything but lines, quads, and"
                                                   " tris.");
          }
          vtkIdList *list = cell->GetPointIds();
@@ -355,6 +358,32 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
                      wedge[5] = pt2;
                  }
                  ugrid->InsertNextCell(VTK_WEDGE, 6, wedge);
+             }
+         }
+         else if(c == VTK_LINE)
+         {
+             int pt0 = list->GetId(0);
+             int pt1 = list->GetId(1);
+             int npts_times_j = 0;
+             for(j = 0; j < nsteps - 1; ++j)
+             {
+                 vtkIdType quad[4];
+                 if(j < nsteps-2)
+                 {
+                     quad[0] = npts_times_j + pt0;
+                     quad[1] = npts_times_j + pt1;
+                     quad[2] = npts_times_j + pt1 + npts;
+                     quad[3] = npts_times_j + pt0 + npts;
+                 }
+                 else
+                 {
+                     quad[0] = npts_times_j + pt0;
+                     quad[1] = npts_times_j + pt1;
+                     quad[2] = pt1;
+                     quad[3] = pt0;
+                 }
+                 ugrid->InsertNextCell(VTK_QUAD, 4, quad);
+                 npts_times_j += npts;
              }
          }
          else
