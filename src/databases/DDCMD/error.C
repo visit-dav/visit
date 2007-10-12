@@ -9,7 +9,6 @@ void error_action(char *start, ...)
 	va_list ap;
 	enum ACTION action;
 	int line; 
-	void **ptr;
 	char *string;
 	strncpy(message, start, 1024);
 	va_start(ap, start);

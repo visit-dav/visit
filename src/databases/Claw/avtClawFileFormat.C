@@ -146,6 +146,11 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
     struct dirent *theDirEnt;
     while ((theDirEnt = readdir(theDir)) != 0)
     {
+        //
+        // Some compilers don't support NAME_MAX. Specifically gcc 3.2
+        // and xlC.
+        //
+#ifdef NAME_MAX
 	// check we didn't exceed name length
         if (strlen(theDirEnt->d_name) >= NAME_MAX) 
 	{
@@ -154,6 +159,7 @@ GetFilenames(string scanfStr, string regexStr, string rootDir,
 	        "of dirent struct for entry...\n   \"%s\"", theDirEnt->d_name);
 	    EXCEPTION1(ImproperUseException, msg);
 	}
+#endif
 
 	// use either scanf pattern or regex pattern to match the entry
         if (scanfStr != "")
