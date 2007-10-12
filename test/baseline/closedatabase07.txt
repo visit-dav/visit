@@ -14,3 +14,5 @@ maintainData = 0
 automaticallyAddOperator = 0
 tryHarderCyclesTimes = 0
 treatAllDBsAsTimeVarying = 0
+createMeshQualityExpressions = 1
+createTimeDerivativeExpressions = 1
