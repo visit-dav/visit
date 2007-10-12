@@ -54,6 +54,11 @@
 #include <SaveWindowAttributes.h>
 #include <ViewerProxy.h>
 
+//Max size window Mesa 5.0 can handle
+#define MAX_WINDOW_SIZE 4096
+
+
+
 // ****************************************************************************
 // Method: QvisSaveWindow::QvisSaveWindow
 //
@@ -620,6 +625,10 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 //
 //   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
 //   Enum in SaveWindowAttributes changed.
+//
+//   Dave Bremer, Thu Oct 11 18:56:56 PDT 2007
+//   Added a check for windows larger than the max Mesa can handle, and
+//   revert the value if it's too high.
 // ****************************************************************************
 
 void
@@ -678,8 +687,13 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             okay = (sscanf(temp.latin1(), "%d", &w) == 1);
             if(okay)
             {
-                setWidth = (saveWindowAtts->GetWidth() != w);
-                saveWindowAtts->SetWidth(w);
+                okay = (w <= MAX_WINDOW_SIZE);
+                
+                if(okay)
+                {
+                    setWidth = (saveWindowAtts->GetWidth() != w);
+                    saveWindowAtts->SetWidth(w);
+                }
             }
         }
 
@@ -705,8 +719,13 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
             okay = (sscanf(temp.latin1(), "%d", &h) == 1);
             if(okay)
             {
-                setHeight = (saveWindowAtts->GetHeight() != h);
-                saveWindowAtts->SetHeight(h);
+                okay = (h <= MAX_WINDOW_SIZE);
+                
+                if(okay)
+                {
+                    setHeight = (saveWindowAtts->GetHeight() != h);
+                    saveWindowAtts->SetHeight(h);
+                }
             }
         }
 

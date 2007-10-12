@@ -138,6 +138,10 @@ RenderingAttributes *ViewerWindowManager::renderAtts=0;
 AnnotationObjectList *ViewerWindowManager::annotationObjectList = 0;
 AnnotationObjectList *ViewerWindowManager::defaultAnnotationObjectList = 0;
 
+//Max size window Mesa 5.0 can handle
+#define MAX_WINDOW_SIZE 4096
+
+
 //
 // Global variables.  These should be removed.
 //
@@ -1605,6 +1609,10 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Added support for a new SaveWindow option.  The user can request
 //    that the window be saved with a width they specify, and the same
 //    proportions that their window currently has.
+//
+//    Dave Bremer, Thu Oct 11 18:56:56 PDT 2007
+//    Added a check for windows larger than the max Mesa can handle, and
+//    reduced the resolution proportionally.
 // ****************************************************************************
 
 void
@@ -1789,6 +1797,23 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                 windows[iCurrWindow]->GetWindowSize(winx, winy);
 
                 h = (int)((double)w * (double)winy / (double)winx);
+            }
+
+            // if w or h are greated than the max window size, 
+            // reduce them proportionally
+            if (w >= h && w > MAX_WINDOW_SIZE)
+            {
+                h = (int)((double)h * (double)MAX_WINDOW_SIZE / (double)w);
+                w = MAX_WINDOW_SIZE;
+                Message("The window was too large to save at the requested resolution.  "
+                        "The resolution has been automatically reduced.");
+            }
+            else if (h >= w && h > MAX_WINDOW_SIZE)
+            {
+                w = (int)((double)w * (double)MAX_WINDOW_SIZE / (double)h);
+                h = MAX_WINDOW_SIZE;
+                Message("The window was too large to save at the requested resolution.  "
+                        "The resolution has been automatically reduced.");
             }
 
             if (saveWindowClientAtts->GetSaveTiled())
