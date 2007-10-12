@@ -619,7 +619,7 @@ configure as given.  (2) Look at the Makefile and find the value of the
 variable OPT.  (3) Re-execute configure with OPT specified through the env
 command, with the additional flags added to OPT.  For example:
 
-env OPT="-fPIC -O2" ./configure --prefix=$VISITDIR/python/$VISITARCH
+env OPT="-fPIC -O2" ./configure --prefix=$VISITDIR/python/2.5/$VISITARCH
 
 where the "-O2" was the value of OPT in the makefile.  (4) Continue with
 the commands below as given.
@@ -628,20 +628,20 @@ On irix systems, if you want to build a 64 bit version will need to override
 the default compiler and linker options.  This is done in a similar fashion
 as described above but -64 is added to OPT and LDFLAGS.  For example:
 
-env OPT="-64 -O2" LDFLAGS="-64" ./configure --prefix=$VISITDIR/python/$VISITARCH
+env OPT="-64 -O2" LDFLAGS="-64" ./configure --prefix=$VISITDIR/python/2.5/$VISITARCH
 
 When you need to specify a C compiler other than the default gcc compiler 
 that Python's configure process will detect, you should also specify a 
 compatible C++ compiler so you can build C++ Python extensions. You can
 specify compilers using the following example command lines:
 
-env CXX=CC ./configure --with-gcc=cc --with-cxx=CC --prefix=$VISITDIR/python/$VISITARCH     # irix
-env CXX=xlC ./configure --with-gcc=xlc --with-cxx=xlC --prefix=$VISITDIR/python/$VISITARCH  # aix
+env CXX=CC ./configure --with-gcc=cc --with-cxx=CC --prefix=$VISITDIR/python/2.5/$VISITARCH     # irix
+env CXX=xlC ./configure --with-gcc=xlc --with-cxx=xlC --prefix=$VISITDIR/python/2.5/$VISITARCH  # aix
 
 On AIX systems, you may want to build using the vendor xlc compiler in 64 bit mode.
 Use the following command line to do so:
 
-env CXX=xlC ./configure --with-gcc="xlc -q64 -O2" --with-cxx="xlC -q64 -O2" --disable-ipv6 AR="ar -X64" --prefix=$VISITDIR/python/$VISITARCH 
+env CXX=xlC ./configure --with-gcc="xlc -q64 -O2" --with-cxx="xlC -q64 -O2" --disable-ipv6 AR="ar -X64" --prefix=$VISITDIR/python/2.5/$VISITARCH 
 
 #
 # Build and install it in the visit directory under the python directory.
@@ -649,7 +649,7 @@ env CXX=xlC ./configure --with-gcc="xlc -q64 -O2" --with-cxx="xlC -q64 -O2" --di
 gunzip Python-2.5.tgz
 tar xf Python-2.5.tar
 cd Python-2.5
-./configure --prefix=$VISITDIR/python/$VISITARCH
+./configure --prefix=$VISITDIR/python/2.5/$VISITARCH
 make
 make install
 
@@ -672,7 +672,7 @@ g++ -Wl,-G -o ../libpython2.5.so *.o                                 # solaris
 g++ -Wl,-expect_unresolved -Wl,'*' -shared -o ../libpython2.5.so *.o # tru64
 cd ..
 rm -rf tmpdir
-cp libpython2.5.so $VISITDIR/python/$VISITARCH/lib/python2.5/config/libpython2.5.so
+cp libpython2.5.so $VISITDIR/python/2.5/$VISITARCH/lib/python2.5/config/libpython2.5.so
 cd ..
 
 
@@ -1278,9 +1278,9 @@ More information about building VisIt follows after that.
 #
 # Build and install it in the visit directory.
 #
-gunzip visit070702.tar.gz
-tar xf visit070702.tar
-cd visit070702/src/config-site
+gunzip visit1.7.tar.gz
+tar xf visit1.7.tar
+cd visit1.7/src/config-site
 echo VISITHOME=$VISITDIR > `hostname`.conf
 sed "s/ARCH/$VISITARCH/" Template.conf >> `hostname`.conf
 cd ..
@@ -1298,15 +1298,15 @@ clearcase_bin/visit-bin-dist
 # Use the appropriate install command based on the operating system on
 # which you built VisIt.
 #
-clearcase_bin/visit-install 1.6.1 aix $VISITDIR
-clearcase_bin/visit-install 1.6.1 aix64 $VISITDIR
-clearcase_bin/visit-install 1.6.1 darwin $VISITDIR
-clearcase_bin/visit-install 1.6.1 irix6 $VISITDIR
-clearcase_bin/visit-install 1.6.1 linux $VISITDIR
-clearcase_bin/visit-install 1.6.1 linux-ia64 $VISITDIR
-clearcase_bin/visit-install 1.6.1 linux-x86_64 $VISITDIR
-clearcase_bin/visit-install 1.6.1 osf1 $VISITDIR
-clearcase_bin/visit-install 1.6.1 sunos5 $VISITDIR
+clearcase_bin/visit-install 1.7 aix $VISITDIR
+clearcase_bin/visit-install 1.7 aix64 $VISITDIR
+clearcase_bin/visit-install 1.7 darwin $VISITDIR
+clearcase_bin/visit-install 1.7 irix6 $VISITDIR
+clearcase_bin/visit-install 1.7 linux $VISITDIR
+clearcase_bin/visit-install 1.7 linux-ia64 $VISITDIR
+clearcase_bin/visit-install 1.7 linux-x86_64 $VISITDIR
+clearcase_bin/visit-install 1.7 osf1 $VISITDIR
+clearcase_bin/visit-install 1.7 sunos5 $VISITDIR
 
 When running the configure script you can enable or disable certain dependent
 packages.  All the configure options are listed at the beginning of the

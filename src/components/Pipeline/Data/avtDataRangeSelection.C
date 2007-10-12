@@ -36,70 +36,68 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtDataRangeSelection.h                           //
+//                            avtDataRangeSelection.C                          //
 // ************************************************************************* //
 
-#ifndef AVT_DATA_RANGE_SELECTION_H
-#define AVT_DATA_RANGE_SELECTION_H
-#include <float.h>
-#include <string>
- 
-#include <pipeline_exports.h>
+#include <limits.h>
 
-#include <ref_ptr.h>
-
-#include <avtDataSelection.h>
+#include <avtDataRangeSelection.h>
 
 // ****************************************************************************
-//  Class: avtDataRangeSelection
+//  Method: avtDataRangeSelection constructor
 //
-//  Purpose: Specify a data selection by a scalar range for a named variable.
-// 
-//  The default is a range from -FLT_MAX to +FLT_MAX for variable "default"
-//
-//  Programmer: Markus Glatter
-//  Creation:   July 27, 2007
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 11, 2007 
 //
 // ****************************************************************************
 
-class PIPELINE_API avtDataRangeSelection : public avtDataSelection 
+avtDataRangeSelection::avtDataRangeSelection()
 {
-  public:
-
-                            avtDataRangeSelection();
-                            avtDataRangeSelection(const std::string _var, 
-                                                  const double _min, 
-                                                  const double _max);
-    virtual                ~avtDataRangeSelection();
-
-    virtual const char *    GetType() const
-                                { return "Data Range Selection"; }; 
-
-    void                    SetVariable(const std::string _var)
-                                { var = _var; };
-    void                    SetMin(const double _min)
-                                { min = _min; };
-    void                    SetMax(const double _max)
-                                { max = _max; };
-
-    std::string             GetVariable() const
-                                { return var; };
-    double                  GetMin() const
-                                { return min; };
-    double                  GetMax() const
-                                { return max; };
-
-    bool                    operator==(const avtDataRangeSelection &s) const;
-
-  private:
-
-    std::string var;
-    double min;
-    double max;
-
-};
-
-typedef ref_ptr<avtDataRangeSelection> avtDataRangeSelection_p;
+    var = "default";
+    min = -FLT_MAX;
+    max = +FLT_MAX; 
+}
 
 
-#endif
+// ****************************************************************************
+//  Method: avtDataRangeSelection constructor
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 11, 2007 
+//
+// ****************************************************************************
+
+avtDataRangeSelection::avtDataRangeSelection(const std::string _var, 
+    const double _min, const double _max)
+{ 
+    var = _var; 
+    min = _min; 
+    max = _max; 
+}
+
+
+// ****************************************************************************
+//  Method: avtDataRangeSelection destructor
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 11, 2007 
+//
+// ****************************************************************************
+
+avtDataRangeSelection::~avtDataRangeSelection()
+{ 
+}
+
+// ****************************************************************************
+//  Method: operator== 
+//
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 11, 2007 
+//
+// ****************************************************************************
+bool
+avtDataRangeSelection::operator==(const avtDataRangeSelection &s) const
+{
+    return ( (min == s.min) && (max == s.max) && (var == s.var) ); 
+}
+

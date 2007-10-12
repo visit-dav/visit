@@ -14,6 +14,12 @@
 #include <ctype.h>
 #include "object.h"
 #include "error.h"
+
+#ifdef WIN32
+#define strtok_r(s,sep,lasts) (*(lasts)=strtok((s),(sep)))
+#define strcasecmp stricmp
+#endif
+
 static char *filenames[] = { "object.data", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 static int nfiles = 1;
 static int nobject = 0, mobject = 0;
@@ -68,11 +74,10 @@ int object_get(OBJECT*object, char *name, void *ptr, int type, int length, char 
 {
 	int l;
 	FIELD f;
-	char **sptr, *cptr;
 	f = object_parse(object, name, type, dvalue);
 	if (f.n == 0 || length <= 0) return 0;
 	l = MIN(f.n, length);
-	bcopy(f.v, ptr, l*f.element_size);
+	memmove(ptr, f.v, l*f.element_size);
 	return f.n;
 }
 
@@ -82,7 +87,7 @@ int object_getv(OBJECT*object, char *name, void **pptr, int type)
 	void *ptr;
 	f = object_parse(object, name, type, NULL);
 	ptr = malloc(f.size);
-	bcopy(f.v, ptr, f.size);
+	memmove(ptr, f.v, f.size);
 	*pptr = (void *)ptr;
 	return f.n;
 }
@@ -95,7 +100,7 @@ int object_getv1(OBJECT*object, char *name, void **pptr, int type)
 	if (f.n > 0)
 	{
 		ptr = malloc(f.size);
-		bcopy(f.v, ptr, f.size);
+		memmove(ptr, f.v, f.size);
 		*pptr = (void *)ptr;
 	}
 	else
@@ -189,7 +194,7 @@ FILE *object_fileopen(char *filename)
 	FILE *file;
 	int first, last;
 	name = strdup(filename);
-	ptr = index(name, '@');	/* filename */
+	ptr = strchr(name, '@');	/* filename */
 	if (ptr != NULL)
 	{
 		*ptr = 0x0;	/* add a string termination to filename */
@@ -439,7 +444,7 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
 			element_size = sizeof(char *);
 			break;
 		case FILETYPE:
-			ptr = index(vptr, '@');	/* filename */
+			ptr = strchr(vptr, '@');	/* filename */
 			if (ptr != NULL)
 			{
 				*ptr = 0x0;	/* add a string termination to filename */
@@ -455,7 +460,7 @@ FIELD object_parse(OBJECT*object, char *name, int type, char *dvalue)
 			v.file[nv] = file;
 			break;
 		case FILELIST:
-			ptr = index(vptr, '@');	/* filename */
+			ptr = strchr(vptr, '@');	/* filename */
 			if (ptr != NULL)
 			{
 				*ptr = 0x0;	/* add a string termination to filename */
@@ -495,7 +500,7 @@ void object_compileSectionedFile(char *filename, int section)
 	OBJECT obj, obj_delim;
 	char *line;
 	OBJECTFILE file;
-	int rc, i, l, id, sec;
+	int rc, i, l, sec;
 	obj.name = obj_delim.name = NULL;
 	file = object_fopen(filename, "r");
 	sec = -1;
@@ -559,7 +564,7 @@ void object_compilefilesubset(char *filename, int first, int last)
 	OBJECT obj;
 	char *line;
 	OBJECTFILE file;
-	int rc, i, l, n,id;
+	int rc, i, l, n;
 	file = object_fopen(filename, "r");
 	n=0; 
 	if (file.file != NULL)
@@ -627,10 +632,10 @@ void object_compile()
 
 void object_reset(OBJECT*target)
 {
-	OBJECT obj, *objshort;
+	OBJECT obj;
 	char *line;
 	OBJECTFILE file;
-	int rc, i, l, k;
+	int rc, l, k;
 	if (target->name == NULL || target->_class == NULL) return;
 	*(target->value) = '\0';
 	for (k = 0; k < nfiles; k++)
@@ -766,7 +771,7 @@ char *object_read(OBJECTFILE ofile)
 	FILE *file;
 	static char *line = NULL;
 	static int nline = 0;
-	int n, c, first, last, len, i, nitems, offset, l;
+	int n, c, first, last, len, nitems, offset;
 	file = ofile.file;
 	n = 0;
 	c = getc(file);
@@ -902,7 +907,7 @@ int object_lineparse(char *line, OBJECT*object)
 	char *tok;
 	int rc, l;
 	trim(line);
-	tok = index(line,'{');
+	tok = strchr(line,'{');
 	*tok = '\0';
 	tok++; 
 	l = strlen(tok);

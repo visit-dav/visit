@@ -1488,7 +1488,7 @@ PluginManager::ReadPluginDir(vector< vector<pair<string,string> > > &files)
         {
             while(FindNextFile(dirHandle, &fd))
             {
-                files.push_back(pair<string,string>(pluginDir,fd.cFileName));
+                files[i].push_back(pair<string,string>(pluginDir,fd.cFileName));
             }
             FindClose(dirHandle);
         }
