@@ -246,6 +246,9 @@
 #    Timo Bremer, Thu Sep 13 13:53:31 PDT 2007
 #    Added avtHexahedron2[07]Extractor.
 #
+#    Kathleen Bonnell, Mon Oct 15 13:55:20 PDT 2007 
+#    Added avtDataRangeSelection.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -264,6 +267,7 @@ Data_src= \
   Data/avtDataAttributes.C \
   Data/avtDataObject.C \
   Data/avtDataObjectInformation.C \
+  Data/avtDataRangeSelection.C \
   Data/avtDataRepresentation.C \
   Data/avtDataTree.C \
   Data/avtDataValidity.C \
