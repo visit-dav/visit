@@ -164,6 +164,11 @@ void alert(char *cmd)
     printf( "sim >>>>  ALERT ALERT ALERT .... \n");
 }
 
+void enableStripChartCallback(char *cmd)
+{
+    printf( "sim >>>>  ALERT ALERT ALERT .... \n");
+}
+
 /*****************************************************************************
 * Function: visit_broadcast_int_callback
 *
@@ -843,6 +848,9 @@ main(int argc, char *argv[])
     VisItAddConnection("CheckBox1", "clicked()" , testSlot2);
 
     VisItAddConnection("StripChart","ALERT" , alert);
+    VisItAddConnection( "Enable_Strip_Chart", "clicked()", enableStripChartCallback);
+    VisItAddConnection( "STRIP_MIN_WIDGET_NAME", "returnedPressed()", testSlot);
+
 
     if (par_rank == 0)
     {
@@ -851,7 +859,7 @@ main(int argc, char *argv[])
                                             "/no/useful/path",
                                             NULL,
                                             "SimGUI_1.ui",
-					    "/g/g0/shelly/.visit/test.sim1");
+					    NULL);
         printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
 
         printf("Known Commands:\n"

@@ -44,6 +44,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <SimWidgetNames.h>
+
 VisIt_SimulationMetaData *md = NULL; 
 void Update_UI_Commands();
 
@@ -223,7 +225,7 @@ void
 Update_UI_Commands()
 {
       /* put updated UI information here. */
-      static int timeStep = 0;
+      static int timeStep = 10;
       static double dataValue = 0;
       char value[MAX_CMD_STR_LEN];
       char modValue[MAX_CMD_STR_LEN];
@@ -250,7 +252,7 @@ Update_UI_Commands()
       VisItSetCMDText(*md, "MainTextLabel", value);
       VisItSetCMDText(*md, "CheckBox1", "New Label");
       VisItSetCMDText(*md, "timeEdit1", "11:06:03");
-      VisItSetCMDText(*md, "dateEdit1", "Mon Jan 23 2006");
+      VisItSetCMDText(*md, "dateEdit1", "Mon Jan 23 2006"); 
 
       /* move the slider and dial */
       VisItSetCMDValue(*md, "ShellySlider_1",(timeStep * 10) % 100);
@@ -261,12 +263,24 @@ Update_UI_Commands()
       if ( !(timeStep % 11)) VisItSetStatusMessage( *md,"My Error Message","red");
       if ( !(timeStep % 5)) VisItSetStatusMessage( *md,"My Warning Message","yellow");
       if ( !(timeStep % 6)) VisItSetStatusMessage( *md,"My Sim Message","black");
-       VisItSetCMDText(*md, "ShellyText_2",modValue);
-      
+      VisItSetCMDText(*md, "ShellyText_2",modValue);
+    
+      VisItSetStripChartTabName(*md, STRIP_CHART_1_TAB_NAME, "Density");
+      VisItSetStripChartTabName(*md, STRIP_CHART_2_TAB_NAME, "Pressure"); 
+      VisItSetStripChartTabName(*md, STRIP_CHART_3_TAB_NAME, "Temp");
+      VisItSetStripChartTabName(*md, STRIP_CHART_4_TAB_NAME, "Volume");
+
       // send a data point to the strip chart
       if (timeStep > 0 )
-          VisItAddStripChartDataPoint( *md, timeStep, dataValue+355.3, enable);
- 
+      { 
+          VisItAddStripChartDataPointByName( *md, STRIP_CHART_1_WIDGET_NAME, timeStep, dataValue+355.3, enable);
+          VisItAddStripChartDataPointByName( *md, STRIP_CHART_2_WIDGET_NAME, timeStep, dataValue, enable);
+          VisItAddStripChartDataPointByName( *md, STRIP_CHART_3_WIDGET_NAME, timeStep, dataValue+ (-0.3), enable);
+          VisItAddStripChartDataPointByName( *md, STRIP_CHART_4_WIDGET_NAME, timeStep, dataValue+5.3, enable);
+          VisItAddStripChartDataPointByName( *md, STRIP_CHART_5_WIDGET_NAME, timeStep, dataValue+0.3, enable);
+      }
+      
+      
       md->currentCycle = cycle;
       md->currentTime  = timeStep;
       md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
