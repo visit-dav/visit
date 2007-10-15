@@ -45,7 +45,7 @@
 #include <SimWidgetNames.h>
 
 
-/* current number of active channels to the custom
+/* current number of active channels to the custom 
    UI update information in the meta data. */
 int VisIt_CurrentIndex = 0;
 const int true = 1;
@@ -161,7 +161,45 @@ void VisItAddStripChartDataPoint( VisIt_SimulationMetaData mdd, double dataX,dou
     char dataXStr[MAX_CMD_STR_LEN];
     char dataYStr[MAX_CMD_STR_LEN];
     
-    index = VisItFindCMD (mdd, STRIP_CHART_WIDGET_NAME, false);
+    index = VisItFindCMD (mdd, STRIP_CHART_1_WIDGET_NAME, false);
+
+    if ( (index >= 0) && ( index < mdd.numGenericCommands))
+    {
+      sprintf (mdd.genericCommands[index].text, "%10f", dataX);     
+      sprintf (mdd.genericCommands[index].value, "%10f", dataY); 
+      if ( enable != -1 )
+         mdd.genericCommands[index].enabled = enable;   
+    }
+}
+
+
+/*****************************************************************************
+** Function: void VisItAddStripChartDataPoint( VisIt_SimulationMetaData mdd, 
+**                                             double dataX, double dataY, int enable )
+**
+** Purpose:
+**   Searches for a match between name and a name in the metat data GENERIC
+**   command array. If it does not find no data is set.
+**   If it does find a match the text field is updated
+**
+** Arguments:
+**   mdd  : meta data structure holding the commands arrays
+**   name : name of the ui component to search for.
+**
+** Programmer: Shelly Prevost
+** Creation:   Wed Nov 29 16:02:29 PST 2006
+**
+** Modifications:
+**
+** **************************************************************************** */
+
+void VisItAddStripChartDataPointByName( VisIt_SimulationMetaData mdd,char *name, double dataX,double dataY, int enable )
+{
+    int index;
+    char dataXStr[MAX_CMD_STR_LEN];
+    char dataYStr[MAX_CMD_STR_LEN];
+    
+    index = VisItFindCMD (mdd, name, false);
 
     if ( (index >= 0) && ( index < mdd.numGenericCommands))
     {
@@ -366,6 +404,36 @@ void VisItSetCMDText (VisIt_SimulationMetaData mdd, char *name, char *text )
 }
 
 /*****************************************************************************
+** Function: void VisItSetCMDText (VisIt_SimulationMetaData mdd, char *name, char *text )
+**
+** Purpose:
+**   Searches for a match between name and a name in the metat data custom
+**   command array. If it does not find a match it sets the text value for
+**   that ui entry too text.
+**
+** Arguments:
+**   mdd  : meta data structure holding the commands arrays
+**   name : name of the ui component to search for.
+**   text : the text to change it too.
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Dec 6 2005
+**
+** Modifications:
+**
+** *****************************************************************************/
+void VisItSetCMDStripChartTabName (VisIt_SimulationMetaData mdd, char *name, char *text )
+{
+    int index;
+
+    index = VisItFindCMD (mdd, name,true);
+    if ( (index >= 0) && ( index < mdd.numGenericCommands))
+    {
+      strncpy(mdd.genericCommands[index].text, text,  MAX_CMD_STR_LEN-1);
+    }
+}
+
+/*****************************************************************************
 ** Function: void VisItInitGenericCMD (VisIt_SimulationMetaData &mdd, int index,char *name, char
 **                                     *text,char *value, int enable )
 **
@@ -498,7 +566,33 @@ void VisItSetCMD ( VisIt_SimulationMetaData mdd, VisIt_SimulationControlCommand 
     }
 }
 
+/*****************************************************************************
+** Function: void VisItSetStripChartTabName
+**
+** Purpose:
+**   Sets the strip chart tab name for the specified strip chart.
+**
+** Arguments:
+**   mdd  : meta data structure holding the commands arrays
+**   name : name of the ui component to search for.
+**   text : the text to change it too.
+**
+** Programmer: Shelly Prevost
+** Creation:   Tue Oct  9 14:38:00 PDT 2007
+**
+** Modifications:
+**
+** *****************************************************************************/
+void VisItSetStripChartTabName (VisIt_SimulationMetaData mdd, char *name, char *text )
+{
+    int index;
 
+    index = VisItFindCMD (mdd, name,false);
+    if ( (index >= 0) && ( index < mdd.numGenericCommands))
+    {
+      strncpy(mdd.genericCommands[index].text, text,  MAX_CMD_STR_LEN-1);
+    }
+}
 
 /*****************************************************************************
 ** Function: void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  )
@@ -521,7 +615,7 @@ void VisItSetCMD ( VisIt_SimulationMetaData mdd, VisIt_SimulationControlCommand 
 ** **************************************************************************** */
 void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  )
 {
-   const int MaxNumGenericCommands = 20;
+   const int MaxNumGenericCommands = 30;
    int i;
    int index =0;
    /* These are the definitions for the           */
@@ -543,13 +637,23 @@ void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  )
    VisItInitGenericCMD (*mdd, index++,"StopLabel", "Stop","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,MESSAGE_WIDGET_NAME, "","black", 1 );
    VisItInitGenericCMD (*mdd, index++,"MessageViewerLabel", "Message Viewer","NONE", 1 );
-   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_WIDGET_NAME, "0.0","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_1_WIDGET_NAME, "0.0","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_2_WIDGET_NAME, "0.0","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_3_WIDGET_NAME, "0.0","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_4_WIDGET_NAME, "0.0","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_5_WIDGET_NAME, "0.0","0.0", 0 );
+   
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_1_TAB_NAME, "Unused","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_2_TAB_NAME, "Unused","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_3_TAB_NAME, "Unused","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_4_TAB_NAME, "Unused","0.0", 0 );
+   VisItInitGenericCMD (*mdd, index++,STRIP_CHART_5_TAB_NAME, "Unused","0.0", 0 );
+
    /*
    VisItInitGenericCMD (*mdd, index++,STRIP_MAX_WIDGET_NAME, "0.0","0.0", 0 );
    VisItInitGenericCMD (*mdd, index++,STRIP_MIN_WIDGET_NAME, "0.0","0.0", 0 );
    VisItInitGenericCMD (*mdd, index++,STRIP_MAX_LIMIT_WIDGET_NAME, "0.0","0.0", 0 );
    VisItInitGenericCMD (*mdd, index++,STRIP_MIN_LIMIT_WIDGET_NAME, "0.0","0.0", 0 );
-   
    VisItInitGenericCMD (*mdd, index++,"StartLineEdit", "0.0000","10", 1 );
    VisItInitGenericCMD (*mdd, index++,"StepLineEdit", "1.0000","NONE", 1 );
    VisItInitGenericCMD (*mdd, index++,"StopLineEdit", "10.0000","NONE", 1 );  */
