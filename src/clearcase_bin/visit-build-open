@@ -13,6 +13,13 @@
 #   Brad Whitlock, Fri Dec 15 09:51:55 PDT 2006
 #   Added --enable-visitmodule for some platforms.
 #
+#   Hank Childs, Mon Oct 15 09:04:12 PDT 2007
+#   Add some print statements for usability.  Also make sure that 
+#   /usr/bin/X11 is in the path for yana and prism.  If you are a ksh
+#   user, your environment will not get sourced and xmkmf will not be
+#   found, leading configure to not find the right X libraries, which 
+#   will lead to a compile error.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -184,6 +191,18 @@ done
 if [ $dist = undefined ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
+   echo "Valid machine names:"
+   echo "    hoth (B-Div, Linux),"
+   echo "    sunspot (B-Div, Solaris),"
+   echo "    quad (LC, SGI),"
+   echo "    up (LC, AIX),"
+   echo "    pengra (LC, Linux, x86_64),"
+   echo "    thunder (LC, Linux, ia64),"
+   echo "    prism (LC, Linux, x86_64),"
+   echo "    yana (LC, Linux, x86_64),"
+   echo "    xchem (HEAF, Linux),"
+   echo "    davinci (LBNL, Altix),"
+   echo "    ellipse (UChicago, Linux)"
    exit
 fi
 
@@ -241,6 +260,7 @@ if [ $hoth = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on hoth"
       scp hoth hoth:hoth_buildit
       scp $dist.tar.gz hoth:hoth_$dist.tar.gz
       ssh hoth "chmod 750 hoth_buildit;./hoth_buildit" &
@@ -294,6 +314,7 @@ if [ $sunspot = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on sunspot"
       scp sunspot sunspot:sunspot_buildit
       scp $dist.tar.gz sunspot:sunspot_$dist.tar.gz
       ssh sunspot "chmod 750 sunspot_buildit;./sunspot_buildit" &
@@ -344,6 +365,7 @@ if [ $quad = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on quad"
       scp quad quad:quad_buildit
       scp $dist.tar.gz quad:quad_$dist.tar.gz
       ssh quad "chmod 750 quad_buildit;./quad_buildit" &
@@ -417,6 +439,7 @@ if [ $up = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on up"
       scp up up:up_buildit
       scp $dist.tar.gz up:up_$dist.tar.gz
       ssh up "chmod 750 up_buildit;./up_buildit" &
@@ -467,6 +490,7 @@ if [ $pengra = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on pengra"
       scp pengra pengra1:pengra_buildit
       scp $dist.tar.gz pengra1:pengra_$dist.tar.gz
       ssh pengra1 "chmod 750 pengra_buildit;./pengra_buildit" &
@@ -517,6 +541,7 @@ if [ $thunder = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on thunder"
       scp thunder thunder2:thunder_buildit
       scp $dist.tar.gz thunder2:thunder_$dist.tar.gz
       ssh thunder2 "chmod 750 thunder_buildit;./thunder_buildit" &
@@ -543,6 +568,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
+export PATH=$PATH:/usr/bin/X11
 env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
 make -j 3 >> ../../buildlog 2>&1
 clearcase_bin/visit-bin-dist -switch ib >> ../../buildlog 2>&1
@@ -567,6 +593,7 @@ if [ $prism = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on prism"
       scp prism prism0:prism_buildit
       scp $dist.tar.gz prism0:prism_$dist.tar.gz
       ssh prism0 "chmod 750 prism_buildit;./prism_buildit" &
@@ -593,6 +620,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
+export PATH=$PATH:/usr/bin/X11
 env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../../buildlog 2>&1
@@ -617,6 +645,7 @@ if [ $yana = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on yana"
       scp yana yana3:yana_buildit
       scp $dist.tar.gz yana3:yana_$dist.tar.gz
       ssh yana3 "chmod 750 yana_buildit;./yana_buildit" &
@@ -671,6 +700,7 @@ if [ $xchem = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on xchem"
       scp xchem xchem:xchem_buildit
       scp $dist.tar.gz xchem:xchem_$dist.tar.gz
       ssh xchem "chmod 750 xchem_buildit;./xchem_buildit" &
@@ -724,6 +754,7 @@ if [ $davinci = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on davinci"
       scp davinci davinci.nersc.gov:davinci_buildit
       scp $dist.tar.gz davinci.nersc.gov:davinci_$dist.tar.gz
       ssh davinci.nersc.gov "chmod 750 davinci_buildit;./davinci_buildit" &
@@ -777,6 +808,7 @@ if [ $ellipse = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on ellipse"
       scp ellipse ellipse.uchicago.edu:ellipse_buildit
       scp $dist.tar.gz ellipse.uchicago.edu:ellipse_$dist.tar.gz
       ssh ellipse.uchicago.edu "chmod 750 ellipse_buildit;./ellipse_buildit" &
