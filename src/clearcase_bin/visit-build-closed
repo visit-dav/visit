@@ -10,6 +10,12 @@
 # Usage:
 #    visit-build-closed -d <distribution>
 #
+#
+# Modifications:
+#
+#   Hank Childs, Mon Oct 15 09:04:12 PDT 2007
+#   Add some print statements for usability.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -116,6 +122,14 @@ done
 if [ $dist = undefined ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
+   echo "Valid machine names:"
+   echo "    crier (B-Div, Linux),"
+   echo "    sunset (B-Div, Solaris),"
+   echo "    sc (LC, OSF1),"
+   echo "    purple (LC, AIX),"
+   echo "    lilac (LC, Linux),"
+   echo "    gauss (LC, x86_64),"
+   echo "    hopi (LC, x86_64)"
    exit
 fi
 
@@ -174,6 +188,7 @@ if [ $crier = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on crier"
       scp -P 22 crier crier:crier_buildit
       scp -P 22 $dist.tar.gz crier:crier_$dist.tar.gz
       ssh -p 22 crier "chmod 750 crier_buildit;./crier_buildit" &
@@ -229,6 +244,7 @@ if [ $sunset = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on sunset"
       scp -P 22 sunset sunset:sunset_buildit
       scp -P 22 $dist.tar.gz sunset:sunset_$dist.tar.gz
       ssh -p 22 sunset "chmod 750 sunset_buildit;./sunset_buildit" &
@@ -280,6 +296,7 @@ if [ $sc = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on sc"
       scp sc sc8:sc_buildit
       scp $dist.tar.gz sc8:sc_$dist.tar.gz
       ssh sc8 "chmod 750 sc_buildit;./sc_buildit" &
@@ -352,6 +369,7 @@ if [ $purple = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on purple"
       scp purple purple:purple_buildit
       scp $dist.tar.gz purple:purple_$dist.tar.gz
       ssh purple "chmod 750 purple_buildit;./purple_buildit" &
@@ -400,6 +418,7 @@ if [ $lilac = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on lilac"
       scp lilac lilac3:lilac_buildit
       scp $dist.tar.gz lilac3:lilac_$dist.tar.gz
       ssh lilac3 "chmod 750 lilac_buildit;./lilac_buildit" &
@@ -451,6 +470,7 @@ if [ $gauss = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on gauss"
       scp gauss gauss2:gauss_buildit
       scp $dist.tar.gz gauss2:gauss_$dist.tar.gz
       ssh gauss2 "chmod 750 gauss_buildit;./gauss_buildit" &
@@ -502,6 +522,7 @@ if [ $hopi = true ]
 then
    if [ $test = no ]
    then
+      echo "Building on hopi"
       scp hopi hopi3:hopi_buildit
       scp $dist.tar.gz hopi3:hopi_$dist.tar.gz
       ssh hopi3 "chmod 750 hopi_buildit;./hopi_buildit" &

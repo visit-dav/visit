@@ -720,6 +720,9 @@ dnl    Thomas R. Treadway, Tue Sep 18 15:48:47 PDT 2007
 dnl    Added szip library.
 dnl    Created a HDF5_LIBDIR variable
 dnl
+dnl    Hank Childs, Mon Oct 15 08:24:44 PDT 2007
+dnl    Make change to 'tr' syntax pointed out by Matt Wheeler.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -821,7 +824,7 @@ fi
 
 # Load the OS configuration file if present.
 UNAME="`uname 2>/dev/null`"
-SHORT_UNAME=`uname -s | tr A-Z a-z | tr -d 0-9`
+SHORT_UNAME=`uname -s | tr '[A-Z]' '[a-z]' | tr -d '[0-9]'`
 AC_MSG_CHECKING(for OS configuration file)
 site_conf=config-site/$UNAME.conf
 if test -r $site_conf; then

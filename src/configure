@@ -2114,7 +2114,7 @@ fi
 
 # Load the OS configuration file if present.
 UNAME="`uname 2>/dev/null`"
-SHORT_UNAME=`uname -s | tr A-Z a-z | tr -d 0-9`
+SHORT_UNAME=`uname -s | tr '[A-Z]' '[a-z]' | tr -d '[0-9]'`
 { echo "$as_me:$LINENO: checking for OS configuration file" >&5
 echo $ECHO_N "checking for OS configuration file... $ECHO_C" >&6; }
 site_conf=config-site/$UNAME.conf
