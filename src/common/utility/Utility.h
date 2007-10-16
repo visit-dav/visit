@@ -49,6 +49,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 //
 // Type definitions
@@ -114,8 +117,12 @@ void        UTILITY_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
 int         UTILITY_API VisItStat(const char *filename, VisItStat_t *buf);
 int         UTILITY_API VisItFstat(int fd, VisItStat_t *buf);
 
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
 bool        UTILITY_API ConvertArgsToTunneledValues(const std::map<int,int>&,
                                                     std::vector<std::string>&);
+#endif
 
 inline char *C_strdup(char const * const);
 inline char *CXX_strdup(char const * const);

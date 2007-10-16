@@ -45,6 +45,9 @@
 #include <ConnectSimRPC.h>
 #include <RPCExecutor.h>
 #include <map>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 // ****************************************************************************
 // Class: LauncherApplication
@@ -74,6 +77,9 @@
 //   tunnel origination (on the login node) and the compute node
 //   where a parallel engine might run.
 //
+//   Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//   Backout SSH tunneling changes for Panther (MacOS X 10.3)
+//
 // ****************************************************************************
 
 class LauncherApplication
@@ -95,9 +101,12 @@ protected:
     bool ProcessInput();
     void TurnOnAlarm();
     void TurnOffAlarm();
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+    void TerminateConnectionRequest(int, char **);
+#else
     void TerminateConnectionRequest(int, char **);
     void SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs);
-
+#endif
     static void AlarmHandler(int);
     static void DeadChildHandler(int);
 private:

@@ -47,6 +47,9 @@
 #include <vectortypes.h>
 #include <HostProfile.h>
 #include <map>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 class Connection;
 
@@ -114,6 +117,9 @@ class Connection;
 //    Added support for SSH port tunneling.  Also made CreateCommandLine
 //    non-const; we need to store the port forwarding map at that time.
 //
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
 
 class COMM_API RemoteProcess
@@ -138,7 +144,11 @@ public:
     Connection *GetWriteConnection(int i=0) const;
     int  GetProcessId() const;
     void SetProgressCallback(bool (*)(void *, int), void *);
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     std::map<int,int> GetPortTunnelMap() { return portTunnelMap; }
+#endif
 
     static void SetAuthenticationCallback(void (*)(const char *, const char *, int));    
     static void DisablePTY();
@@ -182,7 +192,11 @@ private:
     int                      nReadConnections, nWriteConnections;
     bool                   (*progressCallback)(void *, int);
     void                    *progressCallbackData;
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     std::map<int,int>        portTunnelMap;
+#endif
 
     static void            (*getAuthentication)(const char *, const char *, int);
     static bool              disablePTY;

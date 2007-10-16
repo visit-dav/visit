@@ -42,6 +42,9 @@
 #include <LaunchRPC.h>
 #include <ConnectSimRPC.h>
 #include <map>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 // ****************************************************************************
 // Class: LauncherProxy
@@ -64,6 +67,9 @@
 //    Jeremy Meredith, Thu May 24 10:21:48 EDT 2007
 //    Added method to retrieve the SSH tunneling local-to-remote port map.
 //
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
 
 class LAUNCHER_PROXY_API LauncherProxy : public RemoteProxyBase
@@ -74,7 +80,11 @@ public:
 
     virtual std::string GetComponentName() const;
 
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     std::map<int,int> GetPortTunnelMap();
+#endif
 
     // RPCs to access functionality on the visit component launcher.
     void LaunchProcess(const stringVector &programArgs);

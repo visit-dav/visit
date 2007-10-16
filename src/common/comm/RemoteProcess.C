@@ -69,6 +69,9 @@
 #include <snprintf.h>
 #include <map>
 #include <set>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 #ifdef HAVE_THREADS
 #if !defined(_WIN32)
@@ -1683,6 +1686,9 @@ RemoteProcess::SecureShellArgs() const
 //    fail with localhost, but works with 127.0.0.1.  Since other platforms
 //    still work with 127.0.0.1, this should be a safe change.
 //
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
 
 void
@@ -1738,6 +1744,9 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 
         // If we're tunneling, add the arguments to SSH to 
         // forward a bunch of remote ports to our local ports.
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
         if (useTunneling)
         {
             int numRemotePortsPerLocalPort = 1;
@@ -1783,6 +1792,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
                 }
             }
         }
+#endif
     
         // Set the name of the host to run on.
         args.push_back(remoteHost.c_str());
@@ -1809,6 +1819,9 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     //
     // Add the local hostname and the ports we'll be talking on.
     //
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     if (useTunneling)
     {
         // If we're tunneling, we know that the VCL must attempt to
@@ -1832,6 +1845,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
         args.push_back(tmp);
     }
     else
+#endif
     {
         // If we're not tunneling, we must choose a method of determining
         // the host name, and use the actual listen port number.

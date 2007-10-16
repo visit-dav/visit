@@ -34,6 +34,9 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
 #include "SocketBridge.h"
 
 #if defined(_WIN32)
@@ -78,6 +81,10 @@ static void CloseSocket(int fd);
 //
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
+//
+//  Modifications:
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
 // ****************************************************************************
 SocketBridge::SocketBridge(int from, int to)
@@ -603,3 +610,4 @@ CloseSocket(int fd)
     close(fd);
 #endif
 }
+#endif

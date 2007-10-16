@@ -38,6 +38,9 @@
 #include <LauncherProxy.h>
 #include <RemoteProcess.h>
 #include <Utility.h>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 // ****************************************************************************
 // Method: LauncherProxy::LauncherProxy
@@ -134,6 +137,9 @@ LauncherProxy::SetupComponentRPCs()
 //    When sending a launch command, if we're doing ssh port tunneling,
 //    map the local host/port to the remote one.
 //   
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3) 
+//   
 // ****************************************************************************
 
 void
@@ -141,6 +147,9 @@ LauncherProxy::LaunchProcess(const stringVector &origProgramArgs)
 {
     stringVector programArgs(origProgramArgs);
 
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     if (!GetPortTunnelMap().empty())
     {
         // If we're doing ssh tunneling, map the local host/port to the
@@ -154,6 +163,7 @@ LauncherProxy::LaunchProcess(const stringVector &origProgramArgs)
                        "tunneled ports may need to be increased.");
         }
     }
+#endif
 
     launchRPC(programArgs);
 }
@@ -200,9 +210,17 @@ LauncherProxy::ConnectSimulation(const stringVector &programArgs,
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
 //
+//  Modifications:
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3) 
+//   
 // ****************************************************************************
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
 std::map<int,int>
 LauncherProxy::GetPortTunnelMap()
 {
     return component->GetPortTunnelMap();
 }
+#endif
