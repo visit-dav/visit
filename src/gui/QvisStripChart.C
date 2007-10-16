@@ -61,6 +61,9 @@
 //    added pointSize to update font size. Also added a variable for
 //    zoomOutLimit to prevent to small of zooms.
 //   
+//    Shelly Prevost Fri Oct 12 15:43:38 PDT 2007
+//    added enableLogScale flag initialization
+//
 // ****************************************************************************
 
 
@@ -79,10 +82,12 @@ VisItSimStripChart::VisItSimStripChart( QWidget *parent, const char *name, int w
     minData = HUGE_VAL;
     maxData = -HUGE_VAL;
     resize(winX,winY);
+    enableLogScale = FALSE;
+     
     // set the timeshift offset to start at the right side of the 
     // window.
     timeShift = width();
-    setOutOfBandLimits( HUGE_VAL,-HUGE_VAL);
+    setOutOfBandLimits( -HUGE_VAL,HUGE_VAL);
     // create in disabled mode
     enabled = false;
     outOfBandLimitsEnabled = 0;
@@ -324,7 +329,10 @@ void VisItSimStripChart::mousePressEvent( QMouseEvent * )
 //    Shelly Prevost, Wed Mar 21 18:31:17 PDT 2007
 //    Modified to use doubles for data type.
 //  
-//   
+//    Shelly Prevost Fri Oct 12 15:43:38 PDT 2007
+//    added additional start up scaling to reduce big differences
+//    due to abnormal start up values.
+// 
 // ****************************************************************************
 
 
@@ -332,8 +340,13 @@ bool VisItSimStripChart::addDataPoint( double x, double y )
 {
     float additionalMargin;
     bool outOfBounds = FALSE;
+    currentData = y;
     if (points.size() < 2)
+    {
         additionalMargin =0.3f;
+        maxData = y;
+        minData = y - ( y * 0.1);
+    }
         else
             additionalMargin = 0.2f;
 
@@ -398,13 +411,34 @@ void VisItSimStripChart::mouseReleaseEvent( QMouseEvent * )
 // Creation:   Oct. 27, 2006
 //
 // Modifications:
-//  
+//    Shelly Prevost Fri Oct 12 15:43:38 PDT 2007
+//    made parameter positions consitent with other functions
 //   
 // ****************************************************************************
-void VisItSimStripChart::setOutOfBandLimits( double maxY, double minY )
+void VisItSimStripChart::setOutOfBandLimits( double minY, double maxY )
 {
    minYLimit = minY;
    maxYLimit = maxY;
+}
+
+// ****************************************************************************
+// Method: VisItSimStripChart::getOutOfBandLimits
+//
+// Purpose: 
+//   This method gets the range that data should remain inside of.
+//
+// Programmer: Shelly Prevost
+// Creation:   Oct. 27, 2006
+//
+// Modifications:
+//    Shelly Prevost Fri Oct 12 15:43:38 PDT 2007
+//    made parameter positions consitent with other functions
+//   
+// ****************************************************************************
+void VisItSimStripChart::getOutOfBandLimits( double &minY, double &maxY )
+{
+   minY = minYLimit;
+   maxY = maxYLimit;
 }
 
 // ****************************************************************************
@@ -426,6 +460,24 @@ void VisItSimStripChart::getMinMaxData( double &minY, double &maxY )
    maxY = maxData;
 }
 // ****************************************************************************
+// Method: VisItSimStripChart::getCurrentData
+//
+// Purpose:
+//   This method returns the last value to be added to the strip chart.
+//
+// Programmer: Shelly Prevost
+// Creation:  Wed Oct 10 11:27:08 PDT 2007 
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+double VisItSimStripChart::getCurrentData( )
+{
+   return currentData;
+}
+
+// ****************************************************************************
 // Method: VisItSimStripChart::enableOutOfBandLimits
 //
 // Purpose: 
@@ -443,6 +495,59 @@ void VisItSimStripChart::enableOutOfBandLimits( bool enable )
    outOfBandLimitsEnabled = enable;
 }
 
+// ****************************************************************************
+// Method: VisItSimStripChart::getEnableOutOfBandLimits
+//
+// Purpose: 
+//   This method gets the enables out of bounds checking flag.
+//
+// Programmer: Shelly Prevost
+// Creation:   Thu Nov 30 18:15:11 PST 2006
+//
+// Modifications:
+//  
+//   
+// ****************************************************************************
+bool VisItSimStripChart::getEnableOutOfBandLimits()
+{
+    return outOfBandLimitsEnabled;
+}
+
+// ****************************************************************************
+// Method: VisItSimStripChart::enableLogScale
+//
+// Purpose: 
+//   This method enables enableLogScale drawing.
+//
+// Programmer: Shelly Prevost
+// Creation:   Thu Nov 30 18:15:11 PST 2006
+//
+// Modifications:
+//  
+//   
+// ****************************************************************************
+void VisItSimStripChart::setEnableLogScale( bool enable )
+{
+   enableLogScale = enable;
+}
+
+// ****************************************************************************
+// Method: VisItSimStripChart::getEnableLogScale
+//
+// Purpose: 
+//   This method gets the enables enableLogScale flag.
+//
+// Programmer: Shelly Prevost
+// Creation:   Thu Nov 30 18:15:11 PST 2006
+//
+// Modifications:
+//  
+//   
+// ****************************************************************************
+bool VisItSimStripChart::getEnableLogScale()
+{
+    return enableLogScale;
+}
 
 // ****************************************************************************
 // Method: VisItSimStripChart::mouseMoveEvent
@@ -460,8 +565,6 @@ void VisItSimStripChart::enableOutOfBandLimits( bool enable )
 //  
 //   
 // ****************************************************************************
-
-
 void VisItSimStripChart::mouseMoveEvent( QMouseEvent *e )
 {
     QPainter paint( this );
@@ -595,6 +698,55 @@ void VisItSimStripChart::zoomOut()
     setFontSize();
 
 }
+
+// ****************************************************************************
+// Method: VisItSimStripChart::reset
+//
+// Purpose:
+//   This function is to reset the strip chart back to
+//   it's original state.
+//
+// Arguments:
+//
+// Programmer: Shelly Prevost
+// Creation:   Wed Oct 10 11:27:08 PDT 2007
+//
+// Modifications:
+//  
+// ****************************************************************************
+void VisItSimStripChart::reset()
+{
+
+    delta = 0;
+    vdelta = 0;
+    QPainter paint( this );
+    maxPoint = 1.0;
+    minPoint =-1.0;
+    minData = HUGE_VAL;
+    maxData = -HUGE_VAL;
+    currentData = 0.0;
+    
+    //enableLogScale = FALSE;
+    
+    // set the timeshift offset to start at the right side of the 
+    // window.
+    timeShift = width();
+    
+    setOutOfBandLimits( -HUGE_VAL,HUGE_VAL);
+    points.clear();
+    // create in disabled mode
+    enabled = false;
+    outOfBandLimitsEnabled = 0;
+    // Used to scale up and down the y axis in the strip chart
+    zoom =1.0;
+    center = FALSE;
+    // controls maximum amount you can zoom out.
+    zoomOutLimit = 0.001;
+    pointSize = 14;
+    gridFont = new QFont("Helvetica",pointSize);
+    setFont(*gridFont);
+}
+
 
 // ****************************************************************************
 // Method: VisItSimStripChart::ZoomIn

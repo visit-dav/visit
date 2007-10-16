@@ -61,7 +61,7 @@ class QScrollView;
 class QColor;
         
 class QHBoxLayout;
-class VisItSimStripChart;
+class QvisStripChartMgr;
 
 class avtSimulationCommandSpecification;
 
@@ -87,7 +87,7 @@ public:
     void SetNewMetaData(const QualifiedFilename &qf,
                         const avtDatabaseMetaData *md);
     void SpecialWidgetUpdate(avtSimulationCommandSpecification *cmd);
-    void setMinMaxStripChartDataDisplay (double minY, double maxY);
+    //void setMinMaxStripChartDataDisplay (double minY, double maxY);
 private:
     void UpdateWindow(bool doAll);
     void UpdateCustomUI(avtDatabaseMetaData *md);
@@ -127,13 +127,11 @@ private slots:
     void executeSpinBoxStartCommand();
     void executeSpinBoxStopCommand();
     void executeSpinBoxStepCommand();
-    void executeEnableStripChartLimits();
-    void executeMinLimitStripChart();
-    void executeMaxLimitStripChart();
     void zoomOut();
     void zoomIn();
     void focus();
-
+    void postStripChartWindow();
+    
 private:
     EngineList           *engines;
     StatusAttributes     *statusAtts;
@@ -164,23 +162,8 @@ private:
     QWidget            *DynamicCommandsWin;
     QPushButton        *cmdButtons[9];
     QMap<int,int>      simulationToEngineListMap;
-    // Strip Chart widgets
-    VisItSimStripChart *stripChart;
-    QCheckBox          *enableStripChartLimits;
-    QLineEdit          *maxLimitEdit;
-    QLabel             *maxLimitLabel;
-    QLineEdit          *minLimitEdit;
-    QLabel             *minLimitLabel;
-    QLineEdit          *maxEdit;
-    QLabel             *maxLabel;
-    QLineEdit          *minEdit;
-    QLabel             *minLabel;
-    QGridLayout        *chartLayout;
-    QPushButton        *plusButton;
-    QPushButton        *minusButton;
-    QPushButton        *focusButton;
-    QScrollView        *sc;
- 
+    QvisStripChartMgr  *stripCharts;
+    
 };
 
 #endif
