@@ -53,6 +53,9 @@
 
 #include <DebugStream.h>
 #include <avtCallback.h>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 //
 // Global variables.
@@ -385,6 +388,8 @@ ViewerServerManager::GetSSHPortOptions(const std::string &host,
 // Creation:   May 22, 2007
 //
 // Modifications:
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //   
 // ****************************************************************************
 
@@ -396,6 +401,10 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
     // Check for a host profile for the hostName. If one exists, 
     // return the ssh tunneling options.
     //
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+        tunnelSSH = false;
+#else
     const HostProfile *profile =
          clientAtts->FindMatchingProfileForHost(host.c_str());
     if(profile != 0)
@@ -406,6 +415,7 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
     {
         tunnelSSH = false;
     }
+#endif
 }
 
 // ****************************************************************************
@@ -964,7 +974,14 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
 //
+//  Modifications:
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
 std::map<int,int>
 ViewerServerManager::GetPortTunnelMap(const std::string &host)
 {
@@ -973,4 +990,4 @@ ViewerServerManager::GetPortTunnelMap(const std::string &host)
         ret = launchers[host]->GetPortTunnelMap();
     return ret;
 }
-
+#endif

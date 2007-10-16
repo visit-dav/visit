@@ -43,6 +43,9 @@
 #include <map>
 
 #include <HostProfile.h>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 class HostProfileList;
 class LauncherProxy;
@@ -78,6 +81,9 @@ class ViewerConnectionProgressDialog;
 //
 //    Jeremy Meredith, Tue May 22 13:00:38 EDT 2007
 //    Added SSH tunneling option.
+//
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
 // ****************************************************************************
 
@@ -124,7 +130,11 @@ protected:
 
     const char *RealHostName(const char *hostName) const;
 
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     static std::map<int,int> GetPortTunnelMap(const std::string &host);
+#endif
 
     static HostProfileList         *clientAtts;
 private:

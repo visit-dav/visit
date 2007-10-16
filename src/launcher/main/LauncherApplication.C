@@ -39,7 +39,14 @@
 #include <LauncherApplication.h>
 #include <ConnectionGroup.h>
 #include <SocketConnection.h>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
 #include <SocketBridge.h>
+#endif
 #include <DebugStream.h>
 #include <IncompatibleVersionException.h>
 #include <CouldNotConnectException.h>
@@ -85,13 +92,21 @@ std::map<int, bool> LauncherApplication::childDied;
 //  Programmer:  Jeremy Meredith
 //  Creation:    June  5, 2007
 //
+//  Modifications:
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
 static void CreateSocketBridge(void *ports)
 {
     int newlocalport = ((int*)ports)[0];
     int oldlocalport = ((int*)ports)[1];
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     SocketBridge bridge(newlocalport,oldlocalport);
     bridge.Bridge();
+#endif
 }
 
 
@@ -609,7 +624,14 @@ LauncherApplication::ProcessInput()
 //  Programmer:  Jeremy Meredith
 //  Creation:    May 24, 2007
 //
+//  Modifications:
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
 void
 LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
 {
@@ -718,6 +740,7 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
                << "skipping gateway port bridge." << endl;
     }
 }
+#endif
 
 // ****************************************************************************
 // Method: LauncherApplication::LaunchProcess
@@ -732,6 +755,8 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
 // Creation:   Mon May 5 11:23:56 PDT 2003
 //
 // Modifications:
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //   
 // ****************************************************************************
 
@@ -749,7 +774,11 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
     // launching a parallel engine.  SSH port forwarding
     // is typically restricted to forwarding from localhost
     // which doesn't work if we're on a compute node.
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     SetupGatewaySocketBridgeIfNeeded(launchArgs);
+#endif
 
     std::string remoteProgram(launchArgs[0]);
     debug2 << "LaunchRPC command = " << remoteProgram.c_str() << ", args=(";

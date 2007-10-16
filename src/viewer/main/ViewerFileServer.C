@@ -68,6 +68,9 @@
 #include <DebugStream.h>
 
 #include <algorithm>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 #define ANY_STATE -1
 
@@ -1645,6 +1648,9 @@ ViewerFileServer::SendKeepAlives()
 //   Brad Whitlock, Mon Jun 16 13:06:43 PST 2003
 //   I made it capable of using pipes.
 //
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
 
 void
@@ -1718,6 +1724,10 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
     {
         // If we're doing ssh tunneling, map the local host/port to the
         // remote one.
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+            servers[mdServerHost]->proxy->Connect(args);
+#else
         std::map<int,int> portTunnelMap = GetPortTunnelMap(mdServerHost);
         if (!portTunnelMap.empty())
         {
@@ -1738,6 +1748,7 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
             // Not tunneling through SSH; just go ahead and connect
             servers[mdServerHost]->proxy->Connect(args);
         }
+#endif
     }
 }
 

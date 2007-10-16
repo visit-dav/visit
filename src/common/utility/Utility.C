@@ -62,6 +62,9 @@ using std::vector;
 #include <sys/stat.h>
 #include <pwd.h>
 #endif
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 //
 // Static vars.
@@ -1526,7 +1529,13 @@ VisItFstat(int fd, VisItStat_t *buf)
 //    instead of -host <hostname>.  I also added the -sshtunneling argument
 //    just incase downstream calls need to know this.
 //
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
 bool
 ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
                             std::vector<std::string> &args)
@@ -1574,3 +1583,4 @@ ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
     args.push_back("-sshtunneling");
     return true;
 }
+#endif

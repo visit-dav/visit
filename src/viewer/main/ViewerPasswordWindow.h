@@ -39,6 +39,9 @@
 #define VIEWERPASSWORDWINDOW_H
 #include <qdialog.h>
 #include <set>
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 // Forward declarations
 class QLineEdit;
@@ -65,6 +68,9 @@ class ViewerConnectionProgressDialog;
 //    Jeremy Meredith, Thu May 24 10:57:02 EDT 2007
 //    Added support for checking failed SSH tunneling (port forwards).
 //
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
 
 class ViewerPasswordWindow : public QDialog
@@ -80,9 +86,14 @@ class ViewerPasswordWindow : public QDialog
     {
         dialog = d;
     }
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+  private:
+#else
     static std::set<int> GetFailedPortForwards();
   private:
     static std::set<int> failedPortForwards;
+#endif
     QLineEdit *passedit;
     QLabel    *label;
     static ViewerConnectionProgressDialog *dialog;

@@ -52,11 +52,18 @@
 #include <ViewerSubject.h>
 extern ViewerSubject *viewerSubject;
 #endif
+#if __APPLE__
+#include <AvailabilityMacros.h>
+#endif
 
 // Static members
 ViewerPasswordWindow *ViewerPasswordWindow::instance = NULL;
 ViewerConnectionProgressDialog *ViewerPasswordWindow::dialog = NULL;
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
 std::set<int> ViewerPasswordWindow::failedPortForwards;
+#endif
 
 // ****************************************************************************
 //  Constructor:  ViewerPasswordWindow::ViewerPasswordWindow
@@ -173,6 +180,9 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    Jeremy Meredith, Thu May 24 10:57:02 EDT 2007
 //    Added support for checking failed port forward messages.
 //
+//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
 // ****************************************************************************
 
 void
@@ -184,7 +194,11 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
     char *buffer = new char[20000];
     char *pbuf   = buffer;
 
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
     failedPortForwards.clear();
+#endif
 
     for (;;)
     {
@@ -258,6 +272,9 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         {
             // Check for failed port forwards; this will be
             // in the buffer after the password was accepted.
+#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+// Broken on Panther
+#else
             char failedStr[]  = "forwarding failed for listen port ";
             if (strstr(buffer, failedStr))
             {
@@ -272,6 +289,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
                     }
                 }
             }
+#endif
 
             // Success!  Just return.
             delete[] buffer;
