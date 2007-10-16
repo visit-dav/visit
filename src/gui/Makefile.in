@@ -393,16 +393,13 @@
 #    Eric Brugger, Fri Jun 29 09:25:16 PDT 2007
 #    Removed the setting of the DISTRIB variable.
 #
-<<<<<<< .working
 #    Jeremy Meredith, Fri Oct 12 10:39:35 EDT 2007
 #    Added a database options dialog.
 #
-=======
 #    Shelly Prevost, Fri Oct 12 15:43:38 PDT 2007
 #    added  QvisStripChartTabWidget
 #    added  QvisStripChartMgr
 #
->>>>>>> .merge-right.r2262
 ##############################################################################
 
 ##
