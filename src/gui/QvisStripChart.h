@@ -35,6 +35,8 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef QVIS_STRIPCHART
+#define QVIS_STRIPCHART
 #include <qwidget.h>
 #include <qpainter.h>
 #include <qscrollview.h>
@@ -108,16 +110,22 @@ class VisItSimStripChart : public QWidget
 public:
             VisItSimStripChart( QWidget *parent=0, const char *name=0 , int winX=4000, int winY=1000 );
             ~VisItSimStripChart();
-    void    setOutOfBandLimits( double maxY, double minY );
+    void    setOutOfBandLimits( double minY, double miaxY );
+    void    getOutOfBandLimits( double &minY, double &maxY );
     void    enableOutOfBandLimits( bool enable);
+    bool    getEnableOutOfBandLimits();
     bool    addDataPoint( double x, double y );
     void    setEnable( bool enable );
     bool    getEnable();
-    void    getMinMaxData( double &maxY, double &minY);
+    void    getMinMaxData( double &minY, double &maxY);
     void    zoomOut();
     void    zoomIn();
+    void    reset();
     void    focus(QScrollView *sc);
     void    setFontSize();
+    void    setEnableLogScale( bool enable );
+    bool    getEnableLogScale();
+    double  getCurrentData();
        
 protected:
     void    paintEvent( QPaintEvent * );
@@ -139,10 +147,12 @@ private:
     double  maxYLimit;
     double  minData;
     double  maxData;
+    double  currentData;
     int     winXSize;
 
     int     winYSize;
     bool    enabled;
+    bool    enableLogScale;
     bool    outOfBandLimitsEnabled;
     float   zoom;
     bool    center;
@@ -150,4 +160,4 @@ private:
     QFont   *gridFont;
     int     pointSize;
 };
-
+#endif /* QVIS_STRIPCHART_MGR */
