@@ -780,16 +780,17 @@ QvisParallelAxisPlotWindow::moveAxisDown()
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 16, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Oct 16 16:16:34 PDT 2007
+//    Remove reference to powf.  Always use pow.
+//
 // ****************************************************************************
 
 void
 QvisParallelAxisPlotWindow::contextGammaSliderChanged(int val)
 {
-#if defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 2) || (__GNUC__ == 3 && __GNUC_MINOR__ == 2 && __GNUC_PATCHLEVEL__ == 0))
     float gamma = pow(10.,double(val/50.)-1);
-#else
-    float gamma = powf(10.f,float(val/50.)-1);
-#endif
     //old: gamma = 0.1 * float(val);
 
     // round:

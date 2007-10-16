@@ -42,6 +42,8 @@ the files before opening them in VisIt.</li>
 <li>The Python wrappings for the visit_writer module are now installed with VisIt.</li>
 <li>The simulation steering window was updated with a new strip chart tab window. This is a postable/unpostable window that allows the simulation writer to monitor up to five simulation variables in separate strip charts. The ability to reset a strip chart was add so
 that a user could restarted the strip chart without spurious start up values interfering with the interpretation of the data. The tab labels can set via the running simulation to identify the variable being plotted. The current value of the last data is now display in addition to the min and max data. </li>
+<li>A custom renderer was implemented for the ParallelAxis plot that, among other things, obviates the need to recalculate the plot when only an Extents slider or axis selector slider is moved.</li>
+<li>The Threshold operator was improved to be more forgiving when incomplete attributes are input to it in the CLI.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.7</font></b></p>
 <ul>
@@ -52,6 +54,7 @@ database once.</li>
 <li>A bug that prevented VisIt's command line interface to be brought up simultaneously with the gui was fixed.  One form of this bug was the inability to use macros or any of the features from Controls->Command.</li>
 <li>A bug was fixed where the resample operator <i>sometimes</i> created bad data when executing in parallel.</li>
 <li>A bug was fixed where adding a new plot could cause VisIt to re-render.</li>
+<li>A bug was fixed that could cause the Threshold operator to output nothing when point mesh output is requested.</li>
 <li>Made attempts to match colors read from a database with known color names to be case IN-sensitive. Previous versions would
 fail resulting in all black material plots.</li>
 <li>Made SAMRAI plugin more mdserver friendly by avoiding building engine-specific objects there.</li>
