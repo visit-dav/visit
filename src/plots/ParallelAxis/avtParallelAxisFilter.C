@@ -1907,6 +1907,9 @@ avtParallelAxisFilter::DrawCoordinateAxisTitles()
 //     Mark Blair, Wed Aug 22 15:56:42 PDT 2007
 //     Modified to correct an oversight in parallel rendering.
 //
+//     Hank Childs, Tue Oct 16 16:16:34 PDT 2007
+//     Remove reference to powf.  Always use pow.
+//
 // ****************************************************************************
 
 void
@@ -1995,11 +1998,7 @@ avtParallelAxisFilter::DrawContext()
                 alpha = float(binnedAxisCounts[axis][a*nparts+b]) /
                         float(maxcount);
 
-#if defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 2) || (__GNUC__ == 3 && __GNUC_MINOR__ == 2 && __GNUC_PATCHLEVEL__ == 0))
                 alpha = pow(alpha,1./gamma);
-#else
-                alpha = powf(alpha,1.f/gamma);
-#endif
 
                 int c = int(float(PCP_CTX_BRIGHTNESS_LEVELS-1) * alpha);
 
