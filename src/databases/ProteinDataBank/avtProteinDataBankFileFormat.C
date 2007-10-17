@@ -151,6 +151,9 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Mon Aug 28 17:49:30 EDT 2006
 //    Exposed models through directories instead of time steps.
 //
+//    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
+//    Added compound support.
+//
 // ****************************************************************************
 
 void
@@ -177,6 +180,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char name_mesh[80];
         char name_el[80],name_rt[80],name_rs[80],name_bk[80];
         char name_nm[80],name_rn[80],name_lr[80],name_en[80];
+        char name_cmp[80];
         sprintf(name_mesh, "%smesh",        prefix, i);
         sprintf(name_el,   "%selement",     prefix, i);
         sprintf(name_rt,   "%srestype",     prefix, i);
@@ -186,6 +190,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         sprintf(name_rn,   "%sresname",     prefix, i);
         sprintf(name_lr,   "%slongresname", prefix, i);
         sprintf(name_en,   "%selementname", prefix, i);
+        sprintf(name_cmp,  "%scompound",    prefix, i);
 
         avtMeshMetaData *mmd = new avtMeshMetaData(name_mesh, 1, 0,0,0,
                                                    3, 0,
@@ -202,6 +207,21 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             el_smd->enumValues.push_back(a+1);
         }
         md->Add(el_smd);
+
+        if (compoundNames.size() > 0)
+        {
+            avtScalarMetaData *cmp_smd =
+                new avtScalarMetaData(name_cmp, name_mesh, AVT_NODECENT);
+            cmp_smd->isEnumeration = true;
+            cmp_smd->enumNames.push_back("No Compound");
+            cmp_smd->enumValues.push_back(0);
+            for (int a=0; a<compoundNames.size(); a++)
+            {
+                cmp_smd->enumNames.push_back(compoundNames[a]);
+                cmp_smd->enumValues.push_back(a+1);
+            }
+            md->Add(cmp_smd);
+        }
 
         AddScalarVarToMetaData(md, name_rt, name_mesh, AVT_NODECENT);
         AddScalarVarToMetaData(md, name_rs, name_mesh, AVT_NODECENT);
@@ -321,6 +341,9 @@ avtProteinDataBankFileFormat::GetMesh(const char *orig_meshname)
 //    Jeremy Meredith, Mon Aug 28 17:51:07 EDT 2006
 //    Exposed models through directories, not time steps.
 //
+//    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
+//    Added compound support.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -385,6 +408,18 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         for (int i=0; i<atoms.size(); i++)
         {
             ptr[i] = atoms[i].backbone ? 1 : 0;
+        }
+        return scalars;
+    }
+
+    if (string(varname) == "compound")
+    {
+        vtkFloatArray *scalars = vtkFloatArray::New();
+        scalars->SetNumberOfTuples(atoms.size());
+        float *ptr = (float *) scalars->GetVoidPointer(0);
+        for (int i=0; i<atoms.size(); i++)
+        {
+            ptr[i] = atoms[i].compound;
         }
         return scalars;
     }
@@ -754,6 +789,9 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 //    Files with non-unixy text formatting (^M's at the end of every line)
 //    required allowing for an extra character in getline.
 //
+//    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
+//    Added compound support.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::ReadAllMetaData()
@@ -769,6 +807,7 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
     in.getline(line, 82);
     nmodels = 0;
     int titleLineCount = 0, sourceLineCount = 0;
+    bool canReadCompounds = true;
     std::string source;
     while (in)
     {
@@ -777,6 +816,9 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
         {
             // Count the models
             nmodels++;
+            // Only read compound names once, even if there are multiple models
+            if (compoundNames.size() > 0)
+                canReadCompounds = false;
         }
         else if (record == "TITLE ")
         {
@@ -789,6 +831,10 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
             source += "\n\t";
             source += string(line + 10);
             sourceLineCount++;
+        }
+        else if (canReadCompounds && record == "COMPND")
+        {
+            compoundNames.push_back(string(line + 10));
         }
         in.getline(line, 82);
     }
@@ -859,6 +905,9 @@ avtProteinDataBankFileFormat::OpenFileAtBeginning()
 //    Files with non-unixy text formatting (^M's at the end of every line)
 //    required allowing for an extra character in getline.
 //
+//    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
+//    Added compound support.
+//
 // ****************************************************************************
 
 void
@@ -893,6 +942,8 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
     std::string hetnam, longhetnam;
     bool readingHetnam = false;
 
+    int compound = 0;
+
     while (in)
     {
         string record(line,0,6);
@@ -909,12 +960,12 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
 
         if (record == "ATOM  ")
         {
-            Atom a(line);
+            Atom a(line, compound);
             atoms.push_back(a);
         }
         else if (record == "HETATM")
         {
-            Atom a(line);
+            Atom a(line, compound);
             atoms.push_back(a);
         }
         else if (record == "ENDMDL")
@@ -950,6 +1001,10 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
             ConnectRecord c(line);
             connect.push_back(c);
             //c.Print(cout);
+        }
+        else if (record == "COMPND")
+        {
+            compound++;
         }
         else
         {
@@ -1100,8 +1155,11 @@ ScanFloat(const char *line, int len, int start, int end, float *val)
 //    effectively, (b) be faster, and (c) handle some missing elements
 //    (short lines) better.
 //
+//    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
+//    Added compound support.
+//
 // ****************************************************************************
-Atom::Atom(const char *line)
+Atom::Atom(const char *line, int cmpnd)
 {
     char record[7];
     int len = strlen(line);
@@ -1196,6 +1254,8 @@ Atom::Atom(const char *line)
     {
         backbone = true;
     }
+
+    compound = cmpnd;
 }
 
 // ****************************************************************************

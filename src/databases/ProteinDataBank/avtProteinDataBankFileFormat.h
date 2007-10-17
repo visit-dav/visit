@@ -61,6 +61,10 @@ class DBOptionsAttributes;
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 23, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
+//    Added compound support.
+//
 // ****************************************************************************
 struct Atom
 {
@@ -84,7 +88,9 @@ struct Atom
     int   residuenumber;
     bool  backbone;
 
-    Atom(const char *line);
+    int   compound;
+
+    Atom(const char *line, int compound=0);
     void Print(ostream &out);
 };
 
@@ -117,6 +123,9 @@ struct ConnectRecord
 //    Changed molecular data model so that bonds are line elements, not
 //    a 4-component array.
 //
+//    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
+//    Added compound support.
+//
 // ****************************************************************************
 
 class avtProteinDataBankFileFormat : public avtSTSDFileFormat
@@ -143,6 +152,7 @@ class avtProteinDataBankFileFormat : public avtSTSDFileFormat
     std::vector< std::pair<int, int> >  bonds;
 
     std::vector<ConnectRecord>       connect;
+    std::vector<std::string>         compoundNames;
 
     std::string filename;
     std::string dbTitle;
