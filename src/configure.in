@@ -723,6 +723,10 @@ dnl
 dnl    Hank Childs, Mon Oct 15 08:24:44 PDT 2007
 dnl    Make change to 'tr' syntax pointed out by Matt Wheeler.
 dnl
+dnl    Jeremy Meredith, Wed Oct 17 16:26:13 EDT 2007
+dnl    Added runtime check for disabling the simulation plugins.
+dnl    This is currently triggered by a check for OS X.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2755,6 +2759,19 @@ AC_SUBST(CCMIO)
 AC_SUBST(CCMIO_INCLUDE)
 AC_SUBST(CCMIO_LIBS)
 AC_SUBST(CCMIO_LIBDIR)
+
+#
+# Determine if we should enable the simulation APIs
+#
+AC_MSG_CHECKING(to see if simulation APIs should be enabled)
+SIMULATION="$""(SIMULATION)"
+if test "$SHORT_UNAME" = "darwin" ; then
+   SIMULATION=""
+   AC_MSG_RESULT(no)
+else
+   AC_MSG_RESULT(yes)
+fi
+AC_SUBST(SIMULATION)
 
 #
 # Add Some include paths to the engine's CPPFLAGS.

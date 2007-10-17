@@ -311,6 +311,10 @@
 #   Kathleen Bonnell, Fri Oct 12 09:56:21 PDT 2007
 #   Added Cale reader.
 #
+#   Jeremy Meredith, Wed Oct 17 16:26:42 EDT 2007
+#   Made the simulation plugins dependent on a variable determined during
+#   configure, like the 3rd-party-dependent plugins.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -334,6 +338,7 @@ ITAPS_S=ITAPS_S
 VISUS=ViSUS
 H5PART=H5Part
 CCMIO=CCM
+SIMULATION=SimV1 SimV1Writer
 
 SAMPLES=Rect Hex
 
@@ -377,8 +382,6 @@ REQUIRED=\
  STL \
  Shapefile \
  Silo \
- SimV1 \
- SimV1Writer \
  Spheral \
  TFT \
  TSurf \
@@ -395,7 +398,7 @@ REQUIRED=\
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve2D Silo VTK
 
-THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS_C@ @ITAPS_S@ @H5PART@ @CCMIO@
+THIRDPARTY_DEPENDENT=@EXODUS@ @HDF4@ @HDF5@ @PDB@ @MILI@ @BOXLIB2D@ @BOXLIB3D@ @VISUS@ @NETCDF@ @CGNS@ @GDAL@ @CFITSIO@ @ITAPS_C@ @ITAPS_S@ @H5PART@ @CCMIO@ @SIMULATION@
 
 SUBDIRS=@DB_BUILD_DIRS@
 ALLSUBDIRS=$(REQUIRED) $(THIRDPARTY_DEPENDENT) $(SAMPLES) $(OPTIONAL)
