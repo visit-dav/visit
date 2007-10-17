@@ -59,6 +59,36 @@ that a user could restart without spurious startup values interfering with the i
 <li>A custom renderer was implemented for the ParallelAxis plot that, among other things, obviates the need to recalculate the plot when only an Extents slider or axis selector slider is moved.</li>
 <li>The Threshold operator was improved to be more forgiving when incomplete attributes are input to it in the CLI.</li>
 <li>The Protein Data Bank file format reader now supports compounds (via COMPND records).</li>
+
+<li>Added an optimization to the parallel connected components algorithm that utilizes ghost zone neighbors to reduce memory and communication overhead.
+This optimization may not be appropriate for all problems and can be disabled when defining a connected components expression.</li>
+<li>Extended the connected components to work on structured meshes.</li>
+<li>VisIt's gradient expression was updated to provide an algorithm selection mechanism.<br>
+The available gradient algorithms are: sample (default), logical, nzqh (a new gradient method described below).<br>
+To define a expression use the following syntax:<br>
+<ul>
+<li> gradient(var), gradient(var,0) or gradient(var,"sample")</li>
+<li> gradient(var,1) or gradient(var,"logical") </li>
+<li> gradient(var,2) or gradient(var,"nzqh") </li>
+</ul>
+Macro expressions that utilize the gradient (divergance, curl, and laplacian) also provide this selection mechanism.<br>
+Old logical gradient expression names (ij_gradient, ijk_gradient) were retained for backward compatibility. </li>
+<li>Added a much more accurate logical gradient for structured grids composed of quad or hex cells. This gradient is called "nzqh".</li>
+<li>Added support for the Silo Multi Mesh Adjacency Object to the Silo database plugin creating an efficient path for VisIt to obtain connectivity info.<br>
+Please see the latest Silo manual for information about the Multi Mesh Adjacency Object.</li>
+<li>
+Added additional database annotation path expansion options, bringing the available options to:
+<ul>
+<li>File: File name only</li>
+<li>Directory: Full directory path</li>
+<li>Full: Full path</li>
+<li>Smart: Min unique path across plots </li>
+<li>Smart Directory: Min unique directory across plots </li>
+</ul>
+</li>
+<li>Added a <i>General</i> tab to the Annotation Attributes window to better support lower desktop resolutions.</li>
+<li>Added a VTK debug mode that helps track memory management of VTK objects in VisIt's pipelines. </li>
+<li>Added user settable floating point format string for Picks and Queries.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.7</font></b></p>
 <ul>
@@ -112,6 +142,12 @@ them.</li>
 <li>A bug was fixed where Chombo patches were sometimes placed in slightly incorrect positions, due to floating point accumulation errors.</li>
 <li>Some missing values in atomic radii for the Molecule plot were populated.</li>
 <li>Compile problems on OS X have been fixed by disabling the simulation APIs pending a full port.</li>
+<li>Fixed case where duplicate points where created in the rectilinear case of VisIt's isovolume algorithm.</li>
+<li>Fixed problem in Silo export that occurred when specifying an output directory.</li>
+<li>Fixed a bug with wedge node ordering in Silo export that produced negative volumes.</li>
+<li>Fixed a bug with the 2D J index calculation in the Zone Dump Operator.</li>
+<li>Raised the character limit on Silo material names from 128 to 256.</li>
+<li>Fixed a bug truncating floating point result text for queries returning small numbers.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.6.1.html">VisIt 1.6.1 Release Notes</a>.</p>
