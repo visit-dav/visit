@@ -252,12 +252,16 @@ avtMeshLogFilter::ScaleVal_log(double &v)
 //    Hank Childs, Tue Oct 16 16:16:34 PDT 2007
 //    Remove fabs call.
 //
+//    Hank Childs, Wed Oct 17 16:04:19 PDT 2007
+//    Make sure both arguments to pow are doubles.  Otherwise, this causes 
+//    an ambiguity that xlc can't handle.
+//
 // ****************************************************************************
 
 void
 avtMeshLogFilter::ScaleVal_invlog(float &v)
 {
-    v = pow(10., v);
+    v = pow(10., (double) v);
 }
 
 void
