@@ -35,6 +35,10 @@
 *
 *****************************************************************************/
 
+// Modifications:
+//    Jeremy Meredith, Wed Oct 17 10:32:42 EDT 2007
+//    Filled in some holes in atomic radii.
+
 #include "AtomicProperties.h"
 
 #include <visitstream.h>
@@ -555,14 +559,14 @@ float atomic_radius[MAX_ELEMENT_NUMBER] = {
     1.43f, // At 85
     1.34f, // Rn 86
     .1f,
-    .1f,
-    .1f,
-    .1f,
-    .1f,
-    .1f,
-    .1f,
-    .1f,
-    .1f,
+    2.15f, // Ra 88 (88-95 from "http://en.wikipedia.org/wiki/Atomic_radii_of_the_elements_(data_page)", which references J.C. Slater, J. Chem. Phys. 1964, 41, 3199.)
+    1.95f, // Ac 89
+    1.80f, // Th 90
+    1.80f, // Pa 91
+    1.75f, // U  92
+    1.75f, // Np 93
+    1.75f, // Pu 94
+    1.75f, // Am 95
     .1f,
     .1f,
     .1f,
