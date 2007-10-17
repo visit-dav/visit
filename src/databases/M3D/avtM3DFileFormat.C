@@ -717,23 +717,22 @@ avtM3DFileFormat::ReadStringAttribute( hid_t parentID, const char *attr, string 
 {
     hid_t attrID = H5Aopen_name( parentID, attr );
     if ( attrID <= 0 )
-		return false;
+	return false;
 
     hid_t typeID = H5Aget_type( attrID );
     if ( typeID < 0 )
-		return false;
+	return false;
     hsize_t nelem = H5Tget_size( typeID );
-	if ( nelem <= 0 )
-		return false;
-	char *str = new char[nelem];
-	H5Aread( attrID, typeID, str );
-	*value = str;
-	delete [] str;
+    if ( nelem <= 0 )
+	return false;
+    char *str = new char[nelem];
+    H5Aread( attrID, typeID, str );
+    *value = str;
+    delete [] str;
 
-	H5Tclose( typeID );
+    H5Tclose( typeID );
     H5Aclose( attrID );
-
-	return true;
+    return true;
 }
 
 // ****************************************************************************
@@ -756,26 +755,26 @@ avtM3DFileFormat::ReadAttribute( hid_t parentID, const char *attr, void *value )
 {
     hid_t attrID = H5Aopen_name( parentID, attr );
     if ( attrID <= 0 )
-		return false;
+	return false;
 
     hid_t attrType = H5Aget_type( attrID );
     if ( attrType < 0 )
-		return false;
+	return false;
 
     hid_t spaceID = H5Aget_space( attrID );
     if ( spaceID < 0 )
-		return false;
+	return false;
 
     hsize_t nelem = H5Sget_simple_extent_npoints( spaceID );
     if ( nelem < 0 )
-		return false;
+	return false;
 
     hid_t typeID = NormalizeH5Type( attrType );
-	if ( typeID < 0 )
-		return false;
+    if ( typeID < 0 )
+	return false;
 
     if ( H5Aread ( attrID, typeID, value ) < 0 )
-		return false;
+	return false;
 
     H5Sclose( spaceID );
     H5Tclose( attrType );
@@ -1050,7 +1049,7 @@ avtM3DFileFormat::CalcPlaneAngularSpacing()
     {
 	float *plane = planes[i];
 	float n[3] = {plane[0],plane[1],plane[2]};
-	float ang = acosf( vtkMath::Dot( n0, n ) ) * vtkMath::RadiansToDegrees();
+	float ang = acos( vtkMath::Dot( n0, n ) ) * vtkMath::RadiansToDegrees();
 	
 	m_planeAngles.push_back( ang );
 
