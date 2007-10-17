@@ -1,6 +1,8 @@
 #!/bin/sh
 # Do a little magic to run perl from anywhere in your path.
 
+echo "This program has been retired in favor of svn_bin/visit-dist"
+exit 1
 lines=`cat $0 | wc -l`
 lines=`expr $lines - 16`
 checksys=`uname -s`
