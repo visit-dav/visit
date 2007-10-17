@@ -978,11 +978,11 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         for (int i = 0 ; i < num_patches ; i++)
         {
             int e[6];
-            e[0] = (int) (gridHdrs[i].xlow / gridHdrs[i].dx);
+            e[0] = (int) (gridHdrs[i].xlow / gridHdrs[i].dx + 0.5);
             e[1] = e[0] + gridHdrs[i].mx + 1;
-            e[2] = (int) (gridHdrs[i].ylow / gridHdrs[i].dy);
+            e[2] = (int) (gridHdrs[i].ylow / gridHdrs[i].dy + 0.5);
             e[3] = e[2] + gridHdrs[i].my + 1;
-            e[4] = num_dims == 3 ? (int) (gridHdrs[i].zlow / gridHdrs[i].dz) : 0;
+            e[4] = num_dims == 3 ? (int) (gridHdrs[i].zlow / gridHdrs[i].dz + 0.5) : 0;
             e[5] = num_dims == 3 ? e[4] + gridHdrs[i].mz + 1 : 1;
             sdb->SetIndicesForAMRPatch(i, gridHdrs[i].AMR_level-1, e);
         }
