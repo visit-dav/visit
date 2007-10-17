@@ -7087,6 +7087,12 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
 //  Programmer: Hank Childs
 //  Creation:   July 27, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Oct 17 15:52:59 PDT 2007
+//    This routine causes the IRIX compiler to assert with an internal error. 
+//    So I tweaked the code a little to get it through.
+//    
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -7150,6 +7156,10 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     //
     int dims[3];
     rgrid->GetDimensions(dims);
+    bool is2D = (dims[2] == 1);
+    const int numI = dims[0]-1;
+    const int numJ = dims[1]-1;
+    const int numK = dims[2]-1;
 
     int minIGlob = my_exts[0];
     int maxIGlob = my_exts[0] + dims[0]-1; // -1 to have inclusive range.
@@ -7562,24 +7572,24 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
                 unsigned char c2 = ghost_zones->GetValue(c);
                 if (avtGhostData::IsGhostZoneType(c2,REFINED_ZONE_IN_AMR_GRID))
                 {
-                    if (dims[2] == 1)
+                    if (is2D)
                     {
-                        int I = c % (dims[0]-1);
-                        int J = c / (dims[0]-1);
+                        int I = c % (numI);
+                        int J = c / (numI);
                         for (l = 0 ; l < 4 ; l++)
                         {
                             int I2 = (l & 1 ? I+1 : I);
                             int J2 = (l & 2 ? J+1 : J);
                             int pt = J2*dims[0]+I2;
-                            avtGhostData::AddGhostNodeType(gnp[pt], 
+                            avtGhostData::AddGhostNodeType(gnp[pt],
                                NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
                         }
                     }
                     else
                     {
-                        int I = c % (dims[0]-1);
-                        int J = (c / (dims[0]-1)) % (dims[1]-1);
-                        int K = c / ((dims[0]-1)*(dims[1]-1));
+                        int I = c % (numI);
+                        int J = (c / (numI)) % (numJ);
+                        int K = c / ((numI)*(numJ));
                         for (l = 0 ; l < 8 ; l++)
                         {
                             int I2 = (l & 1 ? I+1 : I);
