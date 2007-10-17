@@ -1910,6 +1910,10 @@ avtParallelAxisFilter::DrawCoordinateAxisTitles()
 //     Hank Childs, Tue Oct 16 16:16:34 PDT 2007
 //     Remove reference to powf.  Always use pow.
 //
+//    Hank Childs, Wed Oct 17 16:04:19 PDT 2007
+//    Make sure both arguments to pow are doubles.  Otherwise, this causes
+//    an ambiguity that xlc can't handle.
+//
 // ****************************************************************************
 
 void
@@ -1998,7 +2002,7 @@ avtParallelAxisFilter::DrawContext()
                 alpha = float(binnedAxisCounts[axis][a*nparts+b]) /
                         float(maxcount);
 
-                alpha = pow(alpha,1./gamma);
+                alpha = pow((double)alpha,1./gamma);
 
                 int c = int(float(PCP_CTX_BRIGHTNESS_LEVELS-1) * alpha);
 
