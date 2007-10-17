@@ -48,8 +48,48 @@
 #include <vtkTransform.h>
 #include <vector>
 
-class VarInfo;
-class CellInfo;
+// ****************************************************************************
+//  Class: VarInfo
+//
+//  Purpose:
+//      Information on variables in the M3D file.
+//
+//  Programmer: pugmire
+//  Creation:   Tue Sep 25 08:49:28 PDT 2007
+//
+// ****************************************************************************
+
+class VarInfo
+{
+ public:
+	VarInfo()
+	    { varName = ""; varDim = -1; dataID = -1; planeIdx = -1; }
+	VarInfo( std::string &nm, hid_t id, int dim, int idx=-1 )
+	    { varName = nm; dataID = id; varDim = dim; planeIdx = idx; }
+
+	std::string varName;
+	int varDim, planeIdx;
+	hid_t dataID;
+};
+
+// ****************************************************************************
+//  Class: CellInfo
+//
+//  Purpose:
+//      Information on cells in the M3D file.
+//
+//  Programmer: pugmire
+//  Creation:   Tue Sep 25 08:49:28 PDT 2007
+//
+// ****************************************************************************
+class CellInfo
+{
+ public:
+	CellInfo() { id = -1; numCells = -1; }
+	CellInfo( int i, int n ) { id = i; numCells = n; }
+
+	int id, numCells;
+};
 
 
 // ****************************************************************************
@@ -123,28 +163,6 @@ class avtM3DFileFormat : public avtMTMDFileFormat
 	int m_nCellSets, m_nVars, m_nNodes;
 	int m_nPlanes, m_nPlanesPerProc;
 	float m_plane0Norm[3];
-};
-
-class VarInfo
-{
- public:
-	VarInfo()
-	    { varName = ""; varDim = -1; dataID = -1; planeIdx = -1; }
-	VarInfo( std::string &nm, hid_t id, int dim, int idx=-1 )
-	    { varName = nm; dataID = id; varDim = dim; planeIdx = idx; }
-
-	std::string varName;
-	int varDim, planeIdx;
-	hid_t dataID;
-};
-
-class CellInfo
-{
- public:
-	CellInfo() { id = -1; numCells = -1; }
-	CellInfo( int i, int n ) { id = i; numCells = n; }
-
-	int id, numCells;
 };
 
 
