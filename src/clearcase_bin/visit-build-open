@@ -20,6 +20,10 @@
 #   found, leading configure to not find the right X libraries, which 
 #   will lead to a compile error.
 #
+#   Hank Childs, Wed Oct 17 14:28:48 PDT 2007
+#   Add support for ksh users on sunspot.  (Default environment
+#   inherited by "sh" is not enough to do a compile.)
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -273,6 +277,11 @@ fi
 rm -f sunspot
 cat <<EOF > sunspot
 #!/bin/sh
+
+PATH=/usr/local/bin:\$PATH
+export PATH
+LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH
 if test ! -d /export/scratch/$user ; then
    mkdir /export/scratch/$user
 fi
@@ -568,7 +577,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-export PATH=$PATH:/usr/bin/X11
+export PATH=\$PATH:/usr/bin/X11
 env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
 make -j 3 >> ../../buildlog 2>&1
 clearcase_bin/visit-bin-dist -switch ib >> ../../buildlog 2>&1
@@ -620,7 +629,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-export PATH=$PATH:/usr/bin/X11
+export PATH=\$PATH:/usr/bin/X11
 env CXXFLAGS=-O2 ./configure --enable-parallel --enable-visitmodule >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 clearcase_bin/visit-bin-dist >> ../../buildlog 2>&1
