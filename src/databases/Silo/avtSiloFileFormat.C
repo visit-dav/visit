@@ -109,7 +109,19 @@ using std::vector;
 using std::map;
 using std::set;
 
+#ifdef SILO_VERSION_GE
+#    if SILO_VERSION_GE(4,6,0)
+#        if SILO_VERS_PRE>=6
+static void      ExceptionGenerator(const char *);
+#        else
 static void      ExceptionGenerator(char *);
+#        endif
+#    else
+static void      ExceptionGenerator(char *);
+#    endif
+#else
+static void      ExceptionGenerator(char *);
+#endif
 static char     *GenerateName(const char *, const char *);
 static string    PrepareDirName(const char *, const char *);
 static void      SplitDirVarName(const char *dirvar, const char *curdir,
@@ -1752,8 +1764,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 
         char *name_w_dir = GenerateName(dirname, ptmesh_names[i]);
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir, 1, 0,pm->origin,
-                                              0, pm->ndims, 0, AVT_POINT_MESH);
-        mmd->groupTitle = "blocks";
+                                              0, pm->ndims, 0, AVT_POINT_MESH); mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
         mmd->validVariable = valid_var;
         if (pm->units[0] != NULL)
@@ -8899,9 +8910,20 @@ avtSiloFileFormat::GetMultimatspec(const char *path, const char *name)
 //    error message for when msg==NULL.
 //
 // ****************************************************************************
-
 void
+#ifdef SILO_VERSION_GE
+#   if SILO_VERSION_GE(4,6,0)
+#      if SILO_VERS_PRE>=6
+ExceptionGenerator(const char *msg)
+#      else
 ExceptionGenerator(char *msg)
+#      endif
+#   else
+ExceptionGenerator(char *msg)
+#   endif
+#else
+ExceptionGenerator(char *msg)
+#endif
 {
     if (msg)
     {

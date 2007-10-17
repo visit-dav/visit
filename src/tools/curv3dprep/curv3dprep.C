@@ -51,7 +51,19 @@
 
 void AppendFile (char *fileName);
 
+#ifdef SILO_VERSION_GE
+#    if SILO_VERSION_GE(4,6,0)
+#        if SILO_VERS_PRE>=6
+void IgnoreError (const char *msg) { }
+#        else
 void IgnoreError (char *msg) { }
+#        endif
+#    else
+void IgnoreError (char *msg) { }
+#    endif
+#else
+void IgnoreError (char *msg) { }
+#endif
 
 int
 main (int argc, char **argv)
