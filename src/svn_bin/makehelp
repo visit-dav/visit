@@ -36,7 +36,10 @@
 #  source tree organization of the subversion repository.
 #
 #  Hank Childs, Tue Oct 16 15:40:42 PDT 2007
-#  Add special support for user "childs", which is not a tcsh user.
+#  Add special support for user "childs", who is not a tcsh user.
+#
+#  Hank Childs, Wed Oct 17 14:30:39 PDT 2007
+#  Add special support for user "treadway", who is also not a tcsh user.
 #
 ###############################################################################
 
@@ -87,7 +90,7 @@ else
     if ("$fmHost" == "") then
         set fmHost = "sunburn.llnl.gov"
     endif
-    if ("$USERNAME" == "childs") then
+    if ("$USERNAME" == "childs" || "$USERNAME" == "treadway") then
         set haveFrame = `ssh -x $fmHost "export PATH=/usr/local/framemaker/bin:$PATH ; which fmbatch | grep no"`
     else
         set haveFrame = `ssh -x $fmHost "set path = (/usr/local/framemaker/bin $path) ; which fmbatch | grep no"`
@@ -157,7 +160,7 @@ Quit" > $fmCommands
         echo "Converting $input.fm to $input.mif remotely on host $fmHost"
         scp $inputPath/$input.fm ${fmHost}:$srcFile > /dev/null
 	scp $fmCommands ${fmHost}:$fmCommands > /dev/null
-        if ("$USERNAME" == "childs") then
+        if ("$USERNAME" == "childs" || "$USERNAME" == "treadway") then
             ssh -x $fmHost "chmod 600 $srcFile $fmCommands ; cd $outputPath ; /usr/local/framemaker/bin/fmbatch $fmCommands > /dev/null"
         else
             ssh -x $fmHost "set path = (/usr/local/framemaker/bin $path) ; chmod 600 $srcFile $fmCommands ; cd $outputPath ; fmbatch $fmCommands >& /dev/null"
