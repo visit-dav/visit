@@ -48,7 +48,7 @@ the files before opening them in VisIt.</li>
 <li>Added support for depth cueing with an arbitrary angle when Scalable Rendering mode is enabled.</li>
 <li>If you have a private plugin from an old version of VisIt, VisIt will now successfully ignore that plugin and load the plugin from the new version of VisIt.</li>
 <li>Separated the Rendering attributes window into tabs to better support lower desktop resolutions.</li>
-<li>Added support for szlib compression library (used in HDF5, HDF4, Silo, and H5Part).</li>
+<li>Added support for szlib compression library (used in HDF5, HDF4, Silo, and H5Part). New <i>configure</i> option <i>--with-szip=INC-DIR,LIB-DIR</i>, and config-site file options <i>DEFAULT_SZIP_INCLUDE=</i>, and <i>DEFAULT_SZIP_LIB=</i> are recognized.</li>
 <li>The <i>build_visit</i> GUI have been enhanced to allow interactive selection of most of the command line options available.</li>
 <li>The behavior for projecting a slice has been improved.  If a point is explicitly defined to establish the plane, that point will be projected to (0,0).</li>
 <li>VisIt now uses the ghost data from Chombo files, rather reproducing the information.</li>
