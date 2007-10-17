@@ -217,6 +217,10 @@
 #     Modify H5Part dynamic library build for PPC Mac
 #     Fixed a few typos
 #
+#     Hank Childs, Sat Oct 13 08:09:41 PDT 2007
+#     Commit numerous fixes pointed out by Matthew Wheeler.  Highlights include
+#     improved SunOS and AIX support.
+#
 # *****************************************************************************
 
 
@@ -284,14 +288,15 @@ elif [[ "$OPSYS" == "IRIX64" ]]; then
    export MAKE=${MAKE-"gmake"}
    export MESA_TARGET="irix6-64-dso"
 elif [[ "$OPSYS" == "SunOS" ]]; then
-   export ARCH=${ARCH-"solaris"}
+   export ARCH=${ARCH-"sunos5"}
    export SO_EXT="so"
    export C_COMPILER=${C_COMPILER-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER-"g++"}
    export C_OPT_FLAGS=${C_OPT_FLAGS-"-O2"}
    export CXX_OPT_FLAGS=${CXX_OPT_FLAGS-"-O2"}
-   export MAKE=${MAKE-"gmake"}
-   export MESA_TARGET="solaris-x86-gcc"
+   export MAKE=${MAKE-"make"}
+   export MESA_TARGET="sunos5-gcc"
+   export QT_PLATFORM="solaris-g++"
 else
    export ARCH=${ARCH-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
@@ -493,11 +498,11 @@ DLG_WIDTH_WIDE="80"
 function uncompress_untar
 {
     # Check if GUN tar
-    if [[ $(echo $1 | egrep ".gz$" ) != "" ]] ; then
+    if [[ $(echo $1 | egrep "\.gz$" ) != "" ]] ; then
         COMPRESSTYPE="gzip"
-    elif [[ $(echo $1 | egrep ".bz2$" ) != "" ]] ; then
+    elif [[ $(echo $1 | egrep "\.bz2$" ) != "" ]] ; then
         COMPRESSTYPE="bzip"
-    elif [[ $(echo $1 | egrep ".tgz$" ) != "" ]] ; then
+    elif [[ $(echo $1 | egrep "\.tgz$" ) != "" ]] ; then
         COMPRESSTYPE="targzip"
     else
         echo "unsupported uncompression method"
@@ -517,7 +522,7 @@ function uncompress_untar
                ;;
             targzip) 
                gunzip $1
-               tar xf ${1%.tgz}
+               tar xf "${1%.tgz}.tar"
                ;;
             bzip)
                bunzip2 $1
@@ -534,6 +539,11 @@ function uncompress_untar
 #                                                                             #
 # Programmer: Brad Whitlock,                                                  #
 # Date: Thu Apr 5 14:38:36 PST 2007                                           #
+#                                                                             #
+# Modifications:                                                              #
+#                                                                             #
+#   Hank Childs, Mon Oct 15 15:55:22 PDT 2007                                 #
+#   Fail gracefully if wget is not available.                                 #
 #                                                                             #
 # *************************************************************************** #
 
@@ -557,12 +567,28 @@ function download_file
                 curl -sfo $2 "http://www.llnl.gov/visit/$2"
             else
                 wget -o /dev/null "http://www.llnl.gov/visit/$2" 
+                if [[ $? != 0 ]] ; then
+                   echo ""
+                   echo "Unable to run.  Need to download $2 from the "
+                   echo "VisIt website, but cannot locate the wget utility "
+                   echo "to do so."
+                   echo ""
+                   exit 1
+                fi
             fi
         else
             if [[ "$OPSYS" == "Darwin" ]]; then
                 curl -sfo $2 "http://www.llnl.gov/visit/$1/$2"
             else
                 wget -o /dev/null "http://www.llnl.gov/visit/$1/$2" 
+                if [[ $? != 0 ]] ; then
+                   echo ""
+                   echo "Unable to run.  Need to download $1/$2 from the "
+                   echo "VisIt website, but cannot locate the wget utility "
+                   echo "to do so."
+                   echo ""
+                   exit 1
+                fi
             fi
         fi
     fi
@@ -1885,8 +1911,7 @@ function build_qt
 
     #
     # Check to see if we are going to have to issue a "-thread" flag.
-   o
-#
+    #
     THREAD=""
     HAS_THREAD=$(./configure -platform ${QT_PLATFORM} \
 -shared -qt-libpng -help | grep thread)
@@ -2067,10 +2092,10 @@ function build_cmake
     fi
 
     #
-    # Patching mesa.
+    # Patching cmake.
     #
     if [[ "$OPSYS" == "AIX" ]]; then
-        info_box "Patching Mesa . . ." 1>&3
+        info_box "Patching cmake . . ." 1>&3
         patch -p0 <<\EOF
 diff -c cmake-2.4.5.orig/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/zconf.h
 *** cmake-2.4.5.orig/Utilities/cmzlib/zconf.h	Mon Dec  4 08:04:11 2006
@@ -2092,7 +2117,7 @@ diff -c cmake-2.4.5.orig/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/z
 --- 89,94 ----
 EOF
         if [[ $? != 0 ]] ; then
-            echo "Unable to patch Mesa. Wrong version?"
+            echo "Unable to patch cmake. Wrong version?"
             return 1
         fi
     fi
@@ -2731,7 +2756,12 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         mkdir tmpdir
         cd tmpdir
         ar -x ../libpython$PYTHON_VERSION.a
-        $C_COMPILER $C_OPT_FLAGS -shared \
+	if [[ "$OPSYS" == "SunOS" ]] ; then
+		C_SHARED_FLAG="-Wl,-G"
+	else
+		C_SHARED_FLAG="-shared"
+	fi
+        $C_COMPILER $C_OPT_FLAGS $C_SHARED_FLAG \
           -o ../libpython$PYTHON_VERSION.$SO_EXT *.o
         cd ..
         rm -rf tmpdir
@@ -5808,7 +5838,15 @@ function build_visit
              databases/SimV1Writer/Makefile.orig
            mv -f Make.tmp databases/SimV1Writer/Makefile
         fi
+    elif [[ "$OPSYS" == "SunOS" ]]; then
+        # Some Solaris systems hang when compiling Fluent when optimizations
+        # are on.  Turn optimizations off.
+        info_box "Patching VisIt . . ." 1>&3
+        cat databases/Fluent/Makefile | sed '/CXXFLAGS/s/$/ -O0/g' > Make.tmp
+        mv -f databases/Fluent/Makefile databases/Fluent/Makefile.orig
+        mv -f Make.tmp databases/Fluent/Makefile
     fi
+
     #
     # Build VisIt
     #
@@ -5954,12 +5992,26 @@ done
 
 if [[ "$GRAPHICAL" == "yes" ]] ; then
     DLG=$(which dialog)
+    
+    # Guard against bad "which" implementations that return
+    # "no <exe> in path1 path2 ..." (these implementations also
+    # return 0 as the exit status.
+    if [[ "${DLG#no }" != "${DLG}" ]] ; then
+        DLG=""
+    fi
     if [[ "$DLG" == "" ]] ; then
         DLG=$(which whiptail)
+        if [[ "${DLG#no }" != "${DLG}" ]] ; then
+           DLG=""
+        fi
         if [[ "$DLG" == "" ]] ; then
             GRAPHICAL="no"
-    fi
+            echo ""
+            echo "Unable to find utility for graphical build..."
+            echo "Continuing in command line mode..."
+            echo ""
         fi
+    fi
 fi
 if [[ "$GRAPHICAL" == "yes" ]] ; then
     $DLG --backtitle "$DLG_BACKTITLE" \
