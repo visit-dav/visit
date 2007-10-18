@@ -67,6 +67,9 @@ class QvisDialogLineEdit;
 //   Gunther H. Weber, Thu Sep 27 12:05:14 PDT 2007
 //   Added font selection for spreadsheet
 //   
+//   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
+//   Support toggling patch outline and tracer plane separately
+//
 // ****************************************************************************
 
 class QvisSpreadsheetPlotWindow : public QvisPostableWindowObserver
@@ -93,6 +96,7 @@ private slots:
     void formatStringProcessText();
     void useColorTableChanged(bool val);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
+    void showPatchOutlineChanged(bool val);
     void showTracerPlaneChanged(bool val);
     void tracerColorChanged(const QColor &color);
     void tracerOpacityChanged(int);
@@ -106,6 +110,7 @@ private:
     QvisDialogLineEdit *fontName;
     QCheckBox *useColorTable;
     QvisColorTableButton *colorTableName;
+    QCheckBox *showPatchOutline;
     QCheckBox *showTracerPlane;
     QvisColorButton   *tracerColor;
     QvisOpacitySlider *tracerOpacity;

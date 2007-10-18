@@ -198,6 +198,9 @@ avtSpreadsheetRenderer::SetForegroundColor(const double *fg)
 //
 // Modifications:
 //   
+//   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
+//   Support toggling patch outline and tracer plane separately
+//
 // ****************************************************************************
 
 void
@@ -205,7 +208,7 @@ avtSpreadsheetRenderer::RenderTracePlane(vtkDataSet *ds)
 {
     // Get the extents
     vtkDataArray *bounds = ds->GetFieldData()->GetArray("avtOriginalBounds");
-    if(bounds != 0 && atts.GetShowTracerPlane())
+    if(bounds != 0 && (atts.GetShowTracerPlane() || atts.GetShowPatchOutline()))
     {
         if(rendererImplementation == 0)
         {

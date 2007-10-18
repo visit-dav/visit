@@ -71,6 +71,9 @@
       <Field name="spreadsheetFont" label="Spreadsheet Font" type="string">
         Courier,12,-1,5,50,0,0,0,0,0
       </Field>
+      <Field name="showPatchOutline" label="Show patch outline" type="bool">
+        true
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="CopyAttributes" user="false" member="true">

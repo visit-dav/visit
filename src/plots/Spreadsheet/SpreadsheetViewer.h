@@ -86,6 +86,9 @@ class vtkDataSet;
 //   Gunther H. Weber (with help from Hank Childs & Brad Whitlock), Mon Sep 10 18:31:13 PDT 2007
 //   Show picks in spreadsheet 
 //
+//   Gunther H. Weber, Tue Oct 16 20:41:26 PDT 2007
+//   Toggle tracer plane and patch outline independently
+//
 // ****************************************************************************
 
 class SpreadsheetViewer : public QMainWindow, public Observer
@@ -114,6 +117,7 @@ private slots:
     void maxClicked();
     void colorTableCheckBoxToggled(bool);
     void tracerCheckBoxToggled(bool);
+    void outlineCheckBoxToggled(bool);
     void normalChanged(int);
     void selectedColorTable(bool, const QString &);
     void postNotify();
@@ -182,6 +186,7 @@ private:
     QSlider              *kSlider;
     bool                  sliding;
     QCheckBox            *tracerCheckBox;
+    QCheckBox            *patchOutlineCheckBox;
     QLabel               *normalLabel;
     QButtonGroup         *normalButtonGroup;
     QHBox                *normalRadioButtons;
