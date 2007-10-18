@@ -24,6 +24,10 @@
 #   Add support for ksh users on sunspot.  (Default environment
 #   inherited by "sh" is not enough to do a compile.)
 #
+#   Hank Childs, Wed Oct 17 16:25:14 PDT 2007
+#   Add a subject line to the status e-mails.  Also workaround problem
+#   with quad mailing out.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -257,7 +261,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): hoth" $emailName < resultlog
 EOF
 
 if [ $hoth = true ]
@@ -316,7 +320,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): sunspot" $emailName < resultlog
 EOF
 
 if [ $sunspot = true ]
@@ -367,7 +371,10 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+# quad can't mail out, so send mail through thunder
+cp resultlog ~/quad_resultlog
+ssh thunder "cat quad_resultlog | mail  -s \"VisIt build ($dist): quad\" $emailName"
+rm ~/quad_resultlog
 EOF
 
 if [ $quad = true ]
@@ -441,7 +448,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): up" $emailName < resultlog
 EOF
 
 if [ $up = true ]
@@ -492,7 +499,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): pengra" $emailName < resultlog
 EOF
 
 if [ $pengra = true ]
@@ -543,7 +550,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): thunder" $emailName < resultlog
 EOF
 
 if [ $thunder = true ]
@@ -595,7 +602,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): prism" $emailName < resultlog
 EOF
 
 if [ $prism = true ]
@@ -647,7 +654,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): yana" $emailName < resultlog
 EOF
 
 if [ $yana = true ]
@@ -702,7 +709,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): xchem" $emailName < resultlog
 EOF
 
 if [ $xchem = true ]
@@ -756,7 +763,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): davinci" $emailName < resultlog
 EOF
 
 if [ $davinci = true ]
@@ -810,7 +817,7 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail  -s "VisIt build ($dist): ellipse" $emailName < resultlog
 EOF
 
 if [ $ellipse = true ]

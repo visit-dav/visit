@@ -18,6 +18,9 @@
 #   Brad Whitlock, Tue Mar 7 14:08:59 PST 2006
 #   Added -b bank to the visit-install invokations.
 #
+#   Hank Childs, Wed Oct 17 16:25:14 PDT 2007
+#   Add a subject line to the status e-mail.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -238,7 +241,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/p
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): hoth" $emailName < resultlog
 EOF
 
 if [ $hoth = true ]
@@ -274,7 +277,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sun4-sunos5-sparc/plu
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/sun4-sunos5-sparc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sun4-sunos5-sparc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): sunspot" $emailName < resultlog
 EOF
 
 if [ $sunspot = true ]
@@ -310,7 +313,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugi
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sgi-irix6-mips2\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): quad" $emailName < resultlog
 EOF
 
 if [ $quad = true ]
@@ -361,7 +364,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): up" $emailName < resultlog
 EOF
 
 if [ $up = true ]
@@ -399,7 +402,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/p
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): pengra" $emailName < resultlog
 EOF
 
 if [ $pengra = true ]
@@ -435,7 +438,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-ia64/plugins/pl
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-ia64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-ia64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): thunder" $emailName < resultlog
 EOF
 
 if [ $thunder = true ]
@@ -471,7 +474,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugi
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64-ib\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): prism" $emailName < resultlog
 EOF
 
 if [ $prism = true ]
@@ -507,7 +510,7 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): yana" $emailName < resultlog
 EOF
 
 if [ $yana = true ]
@@ -543,7 +546,7 @@ echo "number of plot plugins = "\`ls /opt/llnl/visit/$ver/linux-x86_64/plugins/p
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /opt/llnl/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/opt\/llnl\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): xchem" $emailName < resultlog
 EOF
 
 if [ $xchem = true ]
@@ -579,7 +582,7 @@ echo "number of plot plugins = "\`ls visit/$ver/linux-ia64/plugins/plots/libI* |
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls visit/$ver/linux-ia64/plugins/databases/libI* | sed "s/visit\/$ver\/linux-ia64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): davinci" $emailName < resultlog
 EOF
 
 if [ $davinci = true ]
@@ -615,7 +618,7 @@ echo "number of plot plugins = "\`ls visit/$ver/linux-intel/plugins/plots/libI* 
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls visit/$ver/linux-intel/plugins/databases/libI* | sed "s/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail $emailName < resultlog
+mail -s "VisIt install ($ver): ellipse" $emailName < resultlog
 EOF
 
 if [ $ellipse = true ]
