@@ -136,6 +136,9 @@ avtChomboFileFormat::~avtChomboFileFormat()
 //    Hank Childs, Mon Jun 19 16:56:26 PDT 2006
 //    Add support for ghosts.
 //
+//    Gunther H. Weber, Thu Oct 11 16:00:16 PDT 2007
+//    Clean up expressions from file
+//
 // ****************************************************************************
 
 void
@@ -158,6 +161,9 @@ avtChomboFileFormat::FreeUpResources(void)
     lowK.clear();
     hiK.clear();
     numGhosts.clear();
+    for (std::list<Expression*>::iterator it = expressions.begin(); it != expressions.end(); ++it)
+        delete *it;
+    expressions.clear();
 }
 
 // ****************************************************************************
@@ -279,6 +285,9 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Gunther H. Weber, Tue Aug  7 15:58:03 PDT 2007
 //    Added check for variables specifying material fractions (variable name
 //    fraction-<i>)
+//
+//    Gunther H. Weber, Thu Oct 11 15:49:41 PDT 2007
+//    Read expressions from Chombo files.
 //
 // ****************************************************************************
 
@@ -452,6 +461,62 @@ avtChomboFileFormat::InitializeReader(void)
     }
     H5Aclose(dim_id);
     H5Gclose(global);
+
+    //
+    // Look for epxressions
+    //
+
+    hid_t expressionsGroup = H5Gopen(file_handle, "/Expressions");
+    if (expressionsGroup > 0)
+    {
+        for (unsigned int i=0; i<H5Aget_num_attrs(expressionsGroup); ++i)
+        {
+            // Open expression
+            hid_t currExpression = H5Aopen_idx(expressionsGroup, i);
+
+            // Get name, which has form <return type> <name>
+            const size_t buffSize = 1024;
+            char buffer[buffSize];
+            H5Aget_name(currExpression, buffSize, buffer);
+
+            // Split into type and name
+            char *separatorPos = index(buffer, ' ');
+            *separatorPos = '\0';
+            char *exprTypeStr = buffer;
+            char *exprName = separatorPos + 1;
+
+            // Parse type
+            Expression::ExprType exprType = Expression::Unknown;
+            if (strcmp("vector", exprTypeStr) == 0)
+                exprType = Expression::VectorMeshVar;
+            else if (strcmp("scalar", exprTypeStr) == 0)
+                exprType = Expression::ScalarMeshVar;
+            else 
+                debug1 << "Unknown expression type " << exprType << " in file." << std::endl;
+
+            if (exprType != Expression::Unknown) 
+            {
+                hid_t strType = H5Aget_type(currExpression);
+                hsize_t strLen;
+                if (strType >= 0 && H5Tget_class(strType) == H5T_STRING &&
+                    (strLen = H5Tget_size(strType)) < buffSize - 1)
+                {
+                    Expression *newExpression = new Expression;
+                    newExpression->SetName(exprName);
+                    newExpression->SetType(exprType);
+                    newExpression->SetHidden(false);
+
+                    // Read definition
+                    H5Aread(currExpression, strType, buffer);
+                    buffer[strLen]  = '\0';
+                    newExpression->SetDefinition(buffer);
+                    expressions.push_back(newExpression);
+                }
+            }
+            H5Aclose(currExpression);
+        }
+        H5Gclose(expressionsGroup);
+    }
 
     //
     // Now iterate over each refinement level and determine how many patches
@@ -886,6 +951,9 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    If material information was found in the file, add corresponding
 //    meta data
 //
+//    Gunther H. Weber, Thu Oct 11 15:49:41 PDT 2007
+//    Add expressions from Chombo files.
+//
 // ****************************************************************************
 
 void
@@ -1055,6 +1123,14 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             mnames[m] = str;
         }
         AddMaterialToMetaData(md, matname, mesh_name, nMaterials, mnames);
+    }
+
+    //
+    // If any expressions where found, add them here
+    //
+    for (std::list<Expression*>::iterator it = expressions.begin(); it != expressions.end(); ++it)
+    {
+        md->AddExpression(*it);
     }
 
     md->SetTime(timestep, dtime);
