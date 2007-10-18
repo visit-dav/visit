@@ -63,6 +63,9 @@ static vtkDataSet *CylindricalToSpherical(vtkDataSet *in_ds, bool);
 static vtkDataSet *CartesianToCylindrical(vtkDataSet *in_ds, bool);
 static vtkDataSet *FixWraparounds(vtkDataSet *in_ds, int comp_idx);
 
+typedef void(*xformFunc)(double *, const double *, bool);
+
+
 // ****************************************************************************
 //  Method: avtCoordSystemConvert constructor
 //
@@ -309,6 +312,125 @@ CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts)
 }
 
 
+
+// ****************************************************************************
+//  Function: TransformVectorArrays
+//
+//  Purpose:
+//      Transform any arrays of vector data to a new coordinate system.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Oct 17 14:24:01 PDT 2007
+//
+//  Modifications:
+// ****************************************************************************
+
+static void
+TransformVectorArrays(vtkDataSet *in_ds, bool in2D, xformFunc xf)
+{
+    int k;
+    // Transform node-centered vector data
+    int numPtArrays = in_ds->GetPointData()->GetNumberOfArrays();
+    for (k = numPtArrays-1 ; k >= 0 ; k--)
+    {
+        vtkDataArray *arr = in_ds->GetPointData()->GetArray(k);
+        if (arr->GetNumberOfComponents() != 3)
+            continue;
+        vtkDataArray *arr_new = vtkDataArray::CreateDataArray(arr->GetDataType());
+        if (arr->GetName() != NULL)
+            arr_new->SetName(arr->GetName());
+        int nTups = arr->GetNumberOfTuples();
+        arr_new->SetNumberOfComponents(3);
+        arr_new->SetNumberOfTuples(nTups);
+
+        double tup[3], newtup[3];
+        for (int n = 0 ; n < nTups ; n++)
+        {
+            arr->GetTuple(n, tup);
+            xf(newtup, tup, in2D);
+            arr_new->SetTuple(n, newtup);
+        }
+        bool isActive = false;
+        vtkDataArray *activeArr = in_ds->GetPointData()->GetVectors();
+        if (activeArr->GetName() != NULL &&
+            arr->GetName() != NULL &&
+            strcmp(activeArr->GetName(), arr->GetName()) == 0)
+            isActive = true;
+        if (arr->GetName() != NULL)
+            in_ds->GetPointData()->RemoveArray(arr->GetName());
+        in_ds->GetPointData()->AddArray(arr_new);
+        arr_new->Delete();
+        if (isActive)
+            in_ds->GetPointData()->SetVectors(arr_new);
+    }
+
+    // Transform cell-centered vector data
+    int numCellArrays = in_ds->GetCellData()->GetNumberOfArrays();
+    for (k = numCellArrays-1 ; k >= 0 ; k--)
+    {
+        vtkDataArray *arr = in_ds->GetCellData()->GetArray(k);
+        if (arr->GetNumberOfComponents() != 3)
+            continue;
+        vtkDataArray *arr_new = vtkDataArray::CreateDataArray(arr->GetDataType());
+        if (arr->GetName() != NULL)
+            arr_new->SetName(arr->GetName());
+        int nTups = arr->GetNumberOfTuples();
+        arr_new->SetNumberOfComponents(3);
+        arr_new->SetNumberOfTuples(nTups);
+
+        double tup[3], newtup[3];
+        for (int n = 0 ; n < nTups ; n++)
+        {
+            arr->GetTuple(n, tup);
+            xf(newtup, tup, in2D);
+            arr_new->SetTuple(n, newtup);
+        }
+        bool isActive = false;
+        vtkDataArray *activeArr = in_ds->GetCellData()->GetVectors();
+        if (activeArr->GetName() != NULL &&
+            arr->GetName() != NULL &&
+            strcmp(activeArr->GetName(), arr->GetName()) == 0)
+            isActive = true;
+        if (arr->GetName() != NULL)
+            in_ds->GetCellData()->RemoveArray(arr->GetName());
+        in_ds->GetCellData()->AddArray(arr_new);
+        arr_new->Delete();
+        if (isActive)
+            in_ds->GetCellData()->SetVectors(arr_new);
+    }
+}
+
+
+// ****************************************************************************
+//  Function: SphericalToCartesianPoint
+//
+//  Purpose:
+//      Converts spherical coordinates to cartesian coordinates.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Oct 17 14:24:01 PDT 2007
+//
+//  Modifications:
+// ****************************************************************************
+
+static void 
+SphericalToCartesianPoint(double *newpt, const double *pt, bool in2D)
+{
+    if (in2D)
+    {
+        newpt[0] = pt[0]*cos(pt[1]);
+        newpt[1] = pt[0]*sin(pt[1]);
+        newpt[2] = 0.;
+    }
+    else
+    {
+        newpt[0] = pt[0]*cos(pt[1])*sin(pt[2]);
+        newpt[1] = pt[0]*sin(pt[1])*sin(pt[2]);
+        newpt[2] = pt[0]*cos(pt[2]);
+    }
+}
+
+
 // ****************************************************************************
 //  Function: SphericalToCartesian
 //
@@ -324,10 +446,11 @@ CreateNewDataset(vtkDataSet *in_ds, vtkPoints *newPts)
 //  Creation:   June 28, 2003
 //
 //  Modifications:
-//
 //    Hank Childs, Tue Nov 15 15:40:04 PST 2005
 //    Add support for 2D.  Also re-order coordinates.
 //
+//    Dave Bremer, Wed Oct 17 14:24:01 PDT 2007
+//    Factored core function out, and added transform of vector data.
 // ****************************************************************************
 
 static vtkDataSet *
@@ -340,25 +463,16 @@ SphericalToCartesian(vtkDataSet *in_ds, bool in2D)
     newPts->SetNumberOfPoints(npts);
     for (int i = 0 ; i < npts ; i++)
     {
-        double pt[3];
+        double pt[3], newpt[3];
         pts->GetPoint(i, pt);
-        double newpt[3];
-        if (in2D)
-        {
-            newpt[0] = pt[0]*cos(pt[1]);
-            newpt[1] = pt[0]*sin(pt[1]);
-            newpt[2] = 0.;
-        }
-        else
-        {
-            newpt[0] = pt[0]*cos(pt[1])*sin(pt[2]);
-            newpt[1] = pt[0]*sin(pt[1])*sin(pt[2]);
-            newpt[2] = pt[0]*cos(pt[2]);
-        }
+        SphericalToCartesianPoint(newpt, pt, in2D);
         newPts->SetPoint(i, newpt);
     }
 
     vtkDataSet *rv = CreateNewDataset(in_ds, newPts);
+
+    TransformVectorArrays(rv, in2D, SphericalToCartesianPoint);
+
     pts->Delete();
     newPts->Delete();
 
@@ -367,10 +481,35 @@ SphericalToCartesian(vtkDataSet *in_ds, bool in2D)
 
 
 // ****************************************************************************
+//  Function: CylindricalToSphericalPoint
+//
+//  Purpose:
+//      Converts cylindrical coordinates to spherical coordinates.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Oct 17 14:24:01 PDT 2007
+//
+//  Modifications:
+// ****************************************************************************
+
+static void 
+CylindricalToSphericalPoint(double *newpt, const double *pt, bool in2D)
+{
+    newpt[1] = pt[1];
+    newpt[2] = atan2(pt[0], pt[2]);
+    if (newpt[2] < 0.)
+        newpt[2] = 2*vtkMath::Pi() + newpt[2];
+    if (in2D)
+        newpt[2] = 0.;
+    newpt[0] = sqrt(pt[0]*pt[0] + pt[2]*pt[2]);
+}
+
+
+// ****************************************************************************
 //  Function: CylindricalToSpherical
 //
 //  Purpose:
-//      Converts spherical coordinates to cartesian coordinates.
+//      Converts cylindrical coordinates to spherical coordinates.
 //
 //      More info at: 
 //      http://www.geom.uiuc.edu/docs/reference/CRC-formulas/node42.html
@@ -385,6 +524,8 @@ SphericalToCartesian(vtkDataSet *in_ds, bool in2D)
 //    Hank Childs, Tue Nov 15 15:40:04 PST 2005
 //    Add support for 2D.  Also re-order coordinates.
 //
+//    Dave Bremer, Wed Oct 17 14:24:01 PDT 2007
+//    Factored core function out and added transform of vector data.
 // ****************************************************************************
 
 static vtkDataSet *
@@ -397,20 +538,16 @@ CylindricalToSpherical(vtkDataSet *in_ds, bool in2D)
     newPts->SetNumberOfPoints(npts);
     for (int i = 0 ; i < npts ; i++)
     {
-        double pt[3];
+        double pt[3], newpt[3];
         pts->GetPoint(i, pt);
-        double newpt[3];
-        newpt[1] = pt[1];
-        newpt[2] = atan2(pt[0], pt[2]);
-        if (newpt[2] < 0.)
-            newpt[2] = 2*vtkMath::Pi() + newpt[2];
-        if (in2D)
-            newpt[2] = 0.;
-        newpt[0] = sqrt(pt[0]*pt[0] + pt[2]*pt[2]);
+        CylindricalToSphericalPoint(newpt, pt, in2D);
         newPts->SetPoint(i, newpt);
     }
 
     vtkDataSet *rv = CreateNewDataset(in_ds, newPts);
+
+    TransformVectorArrays(rv, in2D, CylindricalToSphericalPoint);
+
     pts->Delete();
     newPts->Delete();
 
@@ -418,11 +555,38 @@ CylindricalToSpherical(vtkDataSet *in_ds, bool in2D)
 }
 
 
+
+// ****************************************************************************
+//  Function: CartesianToCylindricalPoint
+//
+//  Purpose:
+//      Converts cartesian coordinates to cylindrical coordinates.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Oct 17 14:24:01 PDT 2007
+//
+//  Modifications:
+// ****************************************************************************
+
+static void 
+CartesianToCylindricalPoint(double *newpt, const double *pt, bool in2D)
+{
+    newpt[1] = atan2(pt[1], pt[0]);
+    if (newpt[1] < 0.)
+        newpt[1] = 2*vtkMath::Pi() + newpt[1];
+    newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
+    newpt[2] = pt[2];
+    if (in2D)
+        newpt[2] = 0.;
+}
+
+
+
 // ****************************************************************************
 //  Function: CartesianToCylindrical
 //
 //  Purpose:
-//      Converts spherical coordinates to cartesian coordinates.
+//      Converts cartesian coordinates to cylindrical coordinates.
 //
 //      More info at: 
 //      http://www.geom.uiuc.edu/docs/reference/CRC-formulas/node42.html
@@ -433,10 +597,11 @@ CylindricalToSpherical(vtkDataSet *in_ds, bool in2D)
 //  Creation:   June 28, 2003
 //
 //  Modifications:
-//
 //    Hank Childs, Tue Nov 15 15:40:04 PST 2005
 //    Add support for 2D.  Also re-order coordinates.
 //
+//    Dave Bremer, Wed Oct 17 14:24:01 PDT 2007
+//    Factored core function out and added transform of vector data.
 // ****************************************************************************
 
 static vtkDataSet *
@@ -452,17 +617,14 @@ CartesianToCylindrical(vtkDataSet *in_ds, bool in2D)
         double pt[3];
         pts->GetPoint(i, pt);
         double newpt[3];
-        newpt[1] = atan2(pt[1], pt[0]);
-        if (newpt[1] < 0.)
-            newpt[1] = 2*vtkMath::Pi() + newpt[0];
-        newpt[0] = sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
-        newpt[2] = pt[2];
-        if (in2D)
-            newpt[2] = 0.;
+        CartesianToCylindricalPoint(newpt, pt, in2D);
         newPts->SetPoint(i, newpt);
     }
 
     vtkDataSet *rv = CreateNewDataset(in_ds, newPts);
+
+    TransformVectorArrays(rv, in2D, CartesianToCylindricalPoint);
+
     pts->Delete();
     newPts->Delete();
 
