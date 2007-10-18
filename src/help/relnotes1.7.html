@@ -19,19 +19,6 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 <p><b><font size="4">Features added in version 1.7</font></b></p>
 <ul>
-<li>The <i>Revolved Surface Area</i> and <i>Revolved Volume</i> queries are now time-enabled</li>
-<li>The Elevate operator has a new option to elevate by a "zero" heigh, allowing quick conversion of plots from 2D to 3D.</li>
-<li>Added a new database reader for the University of Tennessee's VLI multivariate data server.</li>
-<li>VisIt has a new RAW triangle database reader and writer. The RAW format is an ASCII format consisting of triangle definitions where there is one triangle per line and a triangle is defined by 9 space delimited floating point numbers. The RAW format allows mesh geometry to be shared with CAD programs and rendering programs such as Blender and POVRay.</li>
-<li>VisIt has a new NETCDF-based reader for CCSM data, which is climate data. The reader exposes 2D and 3D time-varying mesh data and also provides an alternate representation of the data mapped onto a globe.</li>
-<li>Added a new HDF5-based reader for the fusion code, M3D. The reader exposes the full mesh, and each plane in both 2D and 3D. </li>
-<li>A new '-diffsum' option was added to VisIt to quickly summarize the differences in two databases and output results in textual form.</li>
-<li>Added Claw database plugin that reads Claw format, ascii amr mesh files.</li>
-<li>Added ZipWrapper database plugin so VisIt can directly open gzip and bzip compressed databases without having to uncompress
-the files before opening them in VisIt.</li>
-<li>Improved performance of the DiffSummary() when running VisIt in database differencing mode.</li>
-<li>VisIt now has an option to turn on/off automatic creation of <i>Mesh Quality</i> and <i>Time Derivative</i> expressions when the database is read.  This setting is saved in a users's custom settings when <i>Save Settings</i> is used. The default behavior is for this feature to be ON.  The controls are located in the Options->Preferences window.  If this option is changed while a database is open, reopening the database will add/remove the expression variables (corresponding to the on/off condition).</li>
-<li>Added support for depth cueing with an arbitrary angle when Scalable Rendering mode is enabled.</li>
 <li>You can now create a visual spreadsheet through picking. Pick-points are highlighted and labeled in the spreadsheet.</li>
 <li>It is possible to choose a font that is used for values in the spreadsheet table. The column width is chosen automatically to avoid truncating displayed values.</li>
 <li>In spreadsheet plots it is now possible to turn on/off display of tracer plane and patch  boundaries independently.</li>
@@ -99,24 +86,6 @@ Added additional database annotation path expansion options, bringing the availa
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.7</font></b></p>
 <ul>
-<li>Fixed problem where preference to 'Try Harder to get Accurate Cycles and Times' was ignored after already having opened a
-database once.</li>
-<li>Made attempts to match colors read from a database with known color names to be case IN-sensitive. Previous versions would
-fail resulting in all black material plots.</li>
-<li>Made SAMRAI plugin more mdserver friendly by avoiding building engine-specific objects there.</li>
-<li>Fixed failure to read Silo multi-block objects when blocks are in same directory as the multi-block object that points to
-them.</li>
-<li>Fixed failure to install visitdiff.py when installing VisIt.</li>
-<li>Fixed problem with VisIt not honoring the 'Treat All Databases as Time Varying' preference.</li>
-<li>Fixed problems with time-locking and hiding/unhiding plots when running VisIt in database differencing mode.</li>
-<li>Applying Lineout operator to a plot via the Lineout OpAtts window works again.</li>
-<li>Corrected a bug whereby certain Silo files with meshes defined in subdirs would not be sucessfully read by VisIt.</li>
-<li>Log scaled views are now rendered correctly in SR mode.</li>
-<li>Fixed internal error with <i>Node Pick</i> of data containing ghost nodes.</li> 
-<li><i>PickByNode</i> now correctly handles data whose node numbering does not begin at zero.</li> 
-<li>Fixed problem with <i>Index Select</i> not correctly handling AMR meshes when the <i>Levels</i> category was chosen.</li>
-<li>Fixed SSH tunneling support when running the VisIt front end on Mac OS X (10.4).</li>
-<li>Separated the Rendering attributes window into tabs to better support lower desktop resolutions.</li>
 <li>Choose center now works with VisIt's scalable rendering (SR) mode.</li>
 <li>Fixed problem where preference to 'Try Harder to get Accurate Cycles and Times' was ignored after already having opened a
 database once.</li>
