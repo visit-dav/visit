@@ -32,7 +32,9 @@ the files before opening them in VisIt.</li>
 <li>Improved performance of the DiffSummary() when running VisIt in database differencing mode.</li>
 <li>VisIt now has an option to turn on/off automatic creation of <i>Mesh Quality</i> and <i>Time Derivative</i> expressions when the database is read.  This setting is saved in a users's custom settings when <i>Save Settings</i> is used. The default behavior is for this feature to be ON.  The controls are located in the Options->Preferences window.  If this option is changed while a database is open, reopening the database will add/remove the expression variables (corresponding to the on/off condition).</li>
 <li>Added support for depth cueing with an arbitrary angle when Scalable Rendering mode is enabled.</li>
-<li>You can now create a visual spreadsheet through picking.</li>
+<li>You can now create a visual spreadsheet through picking. Pick-points are highlighted and labeled in the spreadsheet.</li>
+<li>It is possible to choose a font that is used for values in the spreadsheet table. The column width is chosen automatically to avoid truncating displayed values.</li>
+<li>In spreadsheet plots it is now possible to turn on/off display of tracer plane and patch  boundaries independently.</li>
 <li>The <i>Revolved Surface Area</i> and <i>Revolved Volume</i> queries are now time-enabled</li>
 <li>The Elevate operator has a new option to elevate by a "zero" heigh, allowing quick conversion of plots from 2D to 3D.</li>
 <li>Added a new database reader for the University of Tennessee's VLI multivariate data server.</li>
@@ -59,7 +61,12 @@ that a user could restart without spurious startup values interfering with the i
 <li>A custom renderer was implemented for the ParallelAxis plot that, among other things, obviates the need to recalculate the plot when only an Extents slider or axis selector slider is moved.</li>
 <li>The Threshold operator was improved to be more forgiving when incomplete attributes are input to it in the CLI.</li>
 <li>The Protein Data Bank file format reader now supports compounds (via COMPND records).</li>
-
+<li>The mouse wheel can now be used to zoom in and out.</li>
+<li>The Chombo database plugin now recognizes material fraction (embedded boundary) variables and translates them into material information for VisIt.</li>
+<li>The Chombo database plugin can now read expressions stored in the Chombo file and add them to VisIt's expression list.</li>
+<li>Material interfaces (embedded boundaries) can now be accessed as operator as well as plot, e.g., to restrict displaying of normal vectors to material boundaries.</li>
+<li>The plane tool can now control the Clip operator.</li>
+<li>The H5Part plugin now supports field data as well as particle data.</li>
 <li>Added an optimization to the parallel connected components algorithm that utilizes ghost zone neighbors to reduce memory and communication overhead.
 This optimization may not be appropriate for all problems and can be disabled when defining a connected components expression.</li>
 <li>Extended the connected components to work on structured meshes.</li>
