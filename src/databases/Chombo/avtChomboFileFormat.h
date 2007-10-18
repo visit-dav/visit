@@ -43,8 +43,10 @@
 #define AVT_Chombo_FILE_FORMAT_H
 
 #include <avtSTMDFileFormat.h>
+#include <Expression.h>
 
 #include <vector>
+#include <list>
 
 #include <hdf5.h>
 
@@ -141,6 +143,7 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     std::vector<int>       patchesPerLevel;
     std::vector<int>       refinement_ratio;
     std::vector<double>    dx;
+    std::list<Expression*> expressions;
     bool                   useGhosts;
 
     std::vector<int>       lowI;
