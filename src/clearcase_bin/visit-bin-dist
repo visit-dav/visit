@@ -1036,17 +1036,17 @@ cp $VisItDir/lib/python/lib/$pyver/*.py                 $libdir/python/lib/$pyve
 cp $VisItDir/lib/python/lib/$pyver/*.pyc                $libdir/python/lib/$pyver
 cp $VisItDir/lib/python/lib/$pyver/*.pyo                $libdir/python/lib/$pyver
 ls $VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/lib/python/lib/$pyver/*.$SHLIB_SOEXT     $libdir/python/lib/$pyver
 endif
 cp $VisItDir/lib/python/lib/$pyver/config/*             $libdir/python/lib/$pyver/config
 cp $VisItDir/lib/python/lib/$pyver/lib-dynload/*        $libdir/python/lib/$pyver/lib-dynload
 ls $VisItDir/lib/python/lib/$pyver/site-packages/PIL.* >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL.* $libdir/python/lib/$pyver/site-packages
 endif
 ls $VisItDir/lib/python/lib/$pyver/site-packages/PIL/* >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/lib/python/lib/$pyver/site-packages/PIL/*  $libdir/python/lib/$pyver/site-packages/PIL
 endif
 cp $VisItDir/lib/python/lib/$pyver/xml/*.{py,pyc,pyo}         $libdir/python/lib/$pyver/xml
@@ -1120,7 +1120,7 @@ cp $VisItDir/include/visit/[N-Q]*.h             $incdir/visit
 cp $VisItDir/include/visit/[R-Z]*.h             $incdir/visit
 cp $VisItDir/include/visit/a[a-uw-zA-Z]*.h      $incdir/visit
 ls $VisItDir/include/visit/av[a-su-zA-Z]*.h >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/visit/av[a-su-zA-Z]*.h   $incdir/visit
 endif
 cp $VisItDir/include/visit/avt[a-z]*.h          $incdir/visit
@@ -1130,80 +1130,80 @@ cp $VisItDir/include/visit/[b-z]*.h             $incdir/visit
 cp $VisItDir/include/mesa/GL/*.h                $incdir/mesa/GL
 cp $VisItDir/include/vtk/*.h                    $incdir/vtk
 ls $VisItDir/include/vtk/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/*.txx                $incdir/vtk
 endif
 ls $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.h >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.h   $incdir/visit
 endif
 ls $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Common/[a-uw-zA-Z]*.txx $incdir/visit
 endif
 ls $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.h >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.h  $incdir/visit
 endif
 ls $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Common/v[a-su-zA-Z]*.txx $incdir/visit
 endif
 ls $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.h >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.h $incdir/vtk/Common
 endif
 ls $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Common/vt[a-jl-zA-Z]*.txx $incdir/vtk/Common
 endif
 cp $VisItDir/include/vtk/Common/vtk[a-zA-J]*.h   $incdir/vtk/Common
 cp $VisItDir/include/vtk/Common/vtk[a-zA-J]*.txx $incdir/vtk/Common
 cp $VisItDir/include/vtk/Common/vtk[K-Z_]*.h      $incdir/vtk/Common
 ls $VisItDir/include/vtk/Common/vtk[K-Z]*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Common/vtk[K-Z]*.txx $incdir/vtk/Common
 endif
 cp $VisItDir/include/vtk/Filtering/*.h          $incdir/vtk/Filtering
 cp $VisItDir/include/vtk/Filtering/*.txx        $incdir/vtk/Filtering
 cp $VisItDir/include/vtk/GenericFiltering/*.h   $incdir/vtk/GenericFiltering
 ls $VisItDir/include/vtk/GenericFiltering/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/GenericFiltering/*.txx $incdir/vtk/GenericFiltering
 endif
 cp $VisItDir/include/vtk/Graphics/*.h           $incdir/vtk/Graphics
 ls $VisItDir/include/vtk/Graphics/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Graphics/*.txx       $incdir/vtk/Graphics
 endif
 cp $VisItDir/include/vtk/Hybrid/*.h             $incdir/vtk/Hybrid
 ls $VisItDir/include/vtk/Hybrid/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Hybrid/*.txx         $incdir/vtk/Hybrid
 endif
 cp $VisItDir/include/vtk/IO/*.h                 $incdir/vtk/IO
 ls $VisItDir/include/vtk/IO/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/IO/*.txx             $incdir/vtk/IO
 endif
 cp $VisItDir/include/vtk/Imaging/*.h            $incdir/vtk/Imaging
 ls $VisItDir/include/vtk/Imaging/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Imaging/*.txx        $incdir/vtk/Imaging
 endif
 cp $VisItDir/include/vtk/MangleMesaInclude/*.h  $incdir/vtk/MangleMesaInclude
 ls $VisItDir/include/vtk/MangleMesaInclude/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/MangleMesaInclude/*.txx $incdir/vtk/MangleMesaInclude
 endif
 cp $VisItDir/include/vtk/Rendering/*.h          $incdir/vtk/Rendering
 ls $VisItDir/include/vtk/Rendering/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Rendering/*.txx      $incdir/vtk/Rendering
 endif
 cp $VisItDir/include/vtk/Utilities/*.h          $incdir/vtk/Utilities
 ls $VisItDir/include/vtk/Utilities/*.txx >& /dev/null
-if ($? == 0) then
+if ($status == 0) then
   cp $VisItDir/include/vtk/Utilities/*.txx      $incdir/vtk/Utilities
 endif
 cp $VisItDir/include/vtk/Utilities/vtkexpat/*.h $incdir/vtk/Utilities/vtkexpat
@@ -1229,26 +1229,26 @@ if (-e $VisItDir/help) then
    echo "Copying help files to the distribution..."
    cp $VisItDir/help/[a-gi-z]*.html    $helpdir
    ls $VisItDir/help/h[a-df-z]*.html >& /dev/null
-   if ($? == 0) then
+   if ($status == 0) then
      cp $VisItDir/help/h[a-df-z]*.html $helpdir
    endif
    ls $VisItDir/help/he[a-km-z]*.html >& /dev/null
-   if ($? == 0) then
+   if ($status == 0) then
      cp $VisItDir/help/he[a-km-z]*.html $helpdir
    endif
    ls $VisItDir/help/hel[a-oq-z]*.html >& /dev/null
-   if ($? == 0) then
+   if ($status == 0) then
      cp $VisItDir/help/hel[a-oq-z]*.html $helpdir
    endif
    ls $VisItDir/help/help[a-z]*.html >& /dev/null
-   if ($? == 0) then
+   if ($status == 0) then
      cp $VisItDir/help/help[a-z]*.html $helpdir
    endif
    cp $VisItDir/help/help0[01]*.html   $helpdir
    cp $VisItDir/help/help0[23]*.html   $helpdir
    cp $VisItDir/help/help0[45]*.html   $helpdir
    ls "$VisItDir/help/help0[67]*.html" >& /dev/null
-   if ($? == 0) then
+   if ($status == 0) then
      cp $VisItDir/help/help0[67]*.html $helpdir
    endif
    if (-e $VisItDir/help/visit.helpml) then
