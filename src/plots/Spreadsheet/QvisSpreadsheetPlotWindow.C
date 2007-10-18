@@ -132,6 +132,9 @@ QvisSpreadsheetPlotWindow::~QvisSpreadsheetPlotWindow()
 //   Gunther H. Weber, Thu Sep 27 12:05:14 PDT 2007
 //   Added font selection for spreadsheet
 //   
+//   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
+//   Support toggling patch outline and tracer plane separately
+//
 // ****************************************************************************
 
 void
@@ -192,24 +195,29 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
             this, SLOT(colorTableNameChanged(bool, const QString&)));
     mainLayout->addWidget(colorTableName, 5,1);
 
+    showPatchOutline = new QCheckBox("Show patch outline", central, "showPatchOutline");
+    connect(showPatchOutline, SIGNAL(toggled(bool)),
+            this, SLOT(showPatchOutlineChanged(bool)));
+    mainLayout->addWidget(showPatchOutline, 6,0);
+
     showTracerPlane = new QCheckBox("Show tracer plane", central, "showTracerPlane");
     connect(showTracerPlane, SIGNAL(toggled(bool)),
             this, SLOT(showTracerPlaneChanged(bool)));
-    mainLayout->addWidget(showTracerPlane, 6,0);
+    mainLayout->addWidget(showTracerPlane, 7,0);
 
     tracerColorLabel = new QLabel("Tracer color", central, "tracerColorLabel");
-    mainLayout->addWidget(tracerColorLabel,7,0);
+    mainLayout->addWidget(tracerColorLabel,8,0);
     tracerColor = new QvisColorButton(central, "tracerColor");
     connect(tracerColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(tracerColorChanged(const QColor&)));
-    mainLayout->addWidget(tracerColor, 7,1);
+    mainLayout->addWidget(tracerColor, 8,1);
 
     tracerOpacity = new QvisOpacitySlider(central, "tracerOpacity");
     tracerOpacity->setMinValue(0);
     tracerOpacity->setMaxValue(255);
     connect(tracerOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(tracerOpacityChanged(int)));
-    mainLayout->addWidget(tracerOpacity, 8,1);
+    mainLayout->addWidget(tracerOpacity, 9,1);
 }
 
 
@@ -324,6 +332,11 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
             fontName->blockSignals(true);
             fontName->setText(atts->GetSpreadsheetFont().c_str());
             fontName->blockSignals(false);
+            break;
+        case 14: // showPatchOutline
+            showPatchOutline->blockSignals(true);
+            showPatchOutline->setChecked(atts->GetShowPatchOutline());
+            showPatchOutline->blockSignals(false);
             break;
         }
     }
@@ -633,6 +646,12 @@ QvisSpreadsheetPlotWindow::colorTableNameChanged(bool useDefault, const QString 
     Apply();
 }
 
+void
+QvisSpreadsheetPlotWindow::showPatchOutlineChanged(bool val)
+{
+    atts->SetShowPatchOutline(val);
+    Apply();
+}
 
 void
 QvisSpreadsheetPlotWindow::showTracerPlaneChanged(bool val)

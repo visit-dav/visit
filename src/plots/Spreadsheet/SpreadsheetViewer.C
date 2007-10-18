@@ -122,6 +122,9 @@
 //   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
 //   Add support for setting spreadsheet font
 //
+//   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
+//   Support toggling patch outline and tracer plane separately
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent, 
@@ -221,10 +224,17 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
             this, SLOT(selectedColorTable(bool, const QString &)));
     layoutDisplay->addWidget(colorTableButton, 1, 1);
 
-    tracerCheckBox = new QCheckBox("Show tracer plane", display, "tracerCheckBox");
+    //
+    // Show in viswindow controls
+    //
+    QGroupBox *show = new QGroupBox(1, Qt::Vertical, "Show in visualizaion window", top, "show");
+    topLayout->addWidget(show);
+    tracerCheckBox = new QCheckBox("Tracer plane", show, "tracerCheckBox");
     connect(tracerCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(tracerCheckBoxToggled(bool)));
-    layoutDisplay->addMultiCellWidget(tracerCheckBox, 2, 2, 0, 1);
+    patchOutlineCheckBox = new QCheckBox("Patch outline", show, "patchOutline");
+    connect(patchOutlineCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(outlineCheckBoxToggled(bool)));
 
     //
     // Tables
@@ -646,6 +656,9 @@ SpreadsheetViewer::PickPointsChanged() const
 //   Gunther H. Weber, Thu Sep 27 13:33:36 PDT 2007
 //   Add support for setting spreadsheet font
 //
+//   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
+//   Support toggling patch outline and tracer plane separately
+//
 // ****************************************************************************
 
 void
@@ -731,14 +744,21 @@ SpreadsheetViewer::Update(Subject *)
             needsPickUpdate |= PickPointsChanged();
             break;
         case 13: // fontName
-            QFont spreadsheetFont;
-            if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
-            {
-                for (int i=0; i<nTables; ++i)
+            { // Start a new block to avoid complaints about skipping QFont initialization
+                QFont spreadsheetFont;
+                if (spreadsheetFont.fromString(plotAtts->GetSpreadsheetFont().c_str()))
                 {
-                    tables[i]->setFont(spreadsheetFont);
+                    for (int i=0; i<nTables; ++i)
+                    {
+                        tables[i]->setFont(spreadsheetFont);
+                    }
                 }
+                break;
             }
+        case 14: //showTracerPlane
+            patchOutlineCheckBox->blockSignals(true);
+            patchOutlineCheckBox->setChecked(plotAtts->GetShowPatchOutline());
+            patchOutlineCheckBox->blockSignals(false);
             break;
         }
 
@@ -883,6 +903,9 @@ SpreadsheetViewer::updateSpreadsheet()
 //   Brad Whitlock, Wed Jun 6 17:24:26 PST 2007
 //   Support using a single tab of values.
 //
+//   Gunther H. Weber, Wed Oct 17 16:28:11 PDT 2007
+//   Adapt base index if data set has real dims field data
+//
 // ****************************************************************************
 
 void
@@ -929,6 +952,21 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
     }
     else
         debug5 << mName << "No base index" << endl;
+
+    // Try to adjust for real dims
+    vtkDataArray *realDims = input->GetFieldData()->GetArray("avtRealDims");
+    if(realDims != 0 && realDims->GetNumberOfTuples() == 3)
+    {
+        base_index[0] -= (int)realDims->GetTuple1(0);
+        base_index[1] -= (int)realDims->GetTuple1(1);
+        base_index[2] -= (int)realDims->GetTuple1(2);
+        debug5 << mName << "Ghost zones change base_index to  base_index = {"
+             << base_index[0] << ", "
+             << base_index[1] << ", "
+             << base_index[2] << "}\n";
+    }
+    else
+        debug5 << mName << "No real dims" << endl;
 
     if(arr != 0)
     {
@@ -2022,6 +2060,30 @@ SpreadsheetViewer::tracerCheckBoxToggled(bool val)
     plotAtts->SetShowTracerPlane(val);
     plotAtts->Notify();
 }
+
+// ****************************************************************************
+// Method: SpreadsheetViewer::outlineCheckBoxToggled
+//
+// Purpose: 
+//   This slot turns the patch outline on/off.
+//
+// Arguments:
+//   val : True to draw the patch outline.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Tue Oct 16 20:40:50 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::outlineCheckBoxToggled(bool val)
+{
+    plotAtts->SetShowPatchOutline(val);
+    plotAtts->Notify();
+}
+
 
 // ****************************************************************************
 // Method: SpreadsheetViewer::minClicked

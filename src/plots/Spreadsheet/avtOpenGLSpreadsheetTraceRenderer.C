@@ -148,6 +148,9 @@ avtOpenGLSpreadsheetTraceRenderer::Render(vtkDataSet *ds, vtkDataArray *bounds,
 //
 // Modifications:
 //   
+//   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
+//   Support toggling patch outline and tracer plane separately
+//
 // ****************************************************************************
 
 void
@@ -160,150 +163,162 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
 
     if(dims[2] < 2)
     {
-        // Draw the tracer plane.
-        glBegin(GL_QUADS);
-        glColor4ubv(atts.GetTracerColor().GetColor());
-        glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
-        glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
-        glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
-        glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);         
-        glEnd();
+        if (atts.GetShowTracerPlane())
+        {
+            // Draw the tracer plane.
+            glBegin(GL_QUADS);
+            glColor4ubv(atts.GetTracerColor().GetColor());
+            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
+            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
+            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
+            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);         
+            glEnd();
+        }
 
-        // Draw the outline of the mesh
-        glColor3dv(fgColor);
-        glLineWidth(2.);
-        glBegin(GL_LINE_LOOP);
-        glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
-        glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
-        glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
-        glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);
-        glEnd();
+        if (atts.GetShowPatchOutline())
+        {
+            // Draw the outline of the mesh
+            glColor3dv(fgColor);
+            glLineWidth(2.);
+            glBegin(GL_LINE_LOOP);
+            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
+            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
+            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
+            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);
+            glEnd();
+        }
     }
     else
     {
-        vtkDataArray *arr = rgrid->GetPointData()->GetScalars();
-        bool cellCentered = (arr == 0);
-
-        if(atts.GetNormal() == SpreadsheetAttributes::X)
+        if (atts.GetShowTracerPlane())
         {
-            double X;
 
-            vtkDataArray *xcoords = rgrid->GetXCoordinates();
-            if(xcoords != 0 && atts.GetSliceIndex() < xcoords->GetNumberOfTuples())
+            vtkDataArray *arr = rgrid->GetPointData()->GetScalars();
+            bool cellCentered = (arr == 0);
+
+            if(atts.GetNormal() == SpreadsheetAttributes::X)
             {
-                if(cellCentered)
+                double X;
+
+                vtkDataArray *xcoords = rgrid->GetXCoordinates();
+                if(xcoords != 0 && atts.GetSliceIndex() < xcoords->GetNumberOfTuples())
                 {
-                    X = (xcoords->GetTuple1(atts.GetSliceIndex()) + 
-                         xcoords->GetTuple1(atts.GetSliceIndex() + 1)) / 2.;
+                    if(cellCentered)
+                    {
+                        X = (xcoords->GetTuple1(atts.GetSliceIndex()) + 
+                                xcoords->GetTuple1(atts.GetSliceIndex() + 1)) / 2.;
+                    }
+                    else
+                        X = xcoords->GetTuple1(atts.GetSliceIndex());
                 }
                 else
-                    X = xcoords->GetTuple1(atts.GetSliceIndex());
-            }
-            else
-                X = (bounds->GetTuple1(0) + bounds->GetTuple1(1)) / 2.;
+                    X = (bounds->GetTuple1(0) + bounds->GetTuple1(1)) / 2.;
 
-            // Draw the tracer plane.
-            if(atts.GetTracerColor().Alpha() > 0)
-            {
-                glBegin(GL_QUADS);
-                glColor4ubv(atts.GetTracerColor().GetColor());
+                // Draw the tracer plane.
+                if(atts.GetShowTracerPlane() && atts.GetTracerColor().Alpha() > 0)
+                {
+                    glBegin(GL_QUADS);
+                    glColor4ubv(atts.GetTracerColor().GetColor());
+                    glVertex3d(X, bounds->GetTuple1(2), bounds->GetTuple1(5));
+                    glVertex3d(X, bounds->GetTuple1(2), bounds->GetTuple1(4));
+                    glVertex3d(X, bounds->GetTuple1(3), bounds->GetTuple1(4));
+                    glVertex3d(X, bounds->GetTuple1(3), bounds->GetTuple1(5));         
+                    glEnd();
+                }
+                // Outline the plane
+                glLineWidth(2.);
+                glColor3ubv(atts.GetTracerColor().GetColor()); // 3ubv so opaque
+                glBegin(GL_LINE_LOOP);
                 glVertex3d(X, bounds->GetTuple1(2), bounds->GetTuple1(5));
                 glVertex3d(X, bounds->GetTuple1(2), bounds->GetTuple1(4));
                 glVertex3d(X, bounds->GetTuple1(3), bounds->GetTuple1(4));
                 glVertex3d(X, bounds->GetTuple1(3), bounds->GetTuple1(5));         
                 glEnd();
             }
-            // Outline the plane
-            glLineWidth(2.);
-            glColor3ubv(atts.GetTracerColor().GetColor()); // 3ubv so opaque
-            glBegin(GL_LINE_LOOP);
-            glVertex3d(X, bounds->GetTuple1(2), bounds->GetTuple1(5));
-            glVertex3d(X, bounds->GetTuple1(2), bounds->GetTuple1(4));
-            glVertex3d(X, bounds->GetTuple1(3), bounds->GetTuple1(4));
-            glVertex3d(X, bounds->GetTuple1(3), bounds->GetTuple1(5));         
-            glEnd();
-
-        }
-        else if(atts.GetNormal() == SpreadsheetAttributes::Y)
-        {
-            double Y;
-
-            vtkDataArray *ycoords = rgrid->GetYCoordinates();
-            if(ycoords != 0 && atts.GetSliceIndex() < ycoords->GetNumberOfTuples())
+            else if(atts.GetNormal() == SpreadsheetAttributes::Y)
             {
-                if(cellCentered)
+                double Y;
+
+                vtkDataArray *ycoords = rgrid->GetYCoordinates();
+                if(ycoords != 0 && atts.GetSliceIndex() < ycoords->GetNumberOfTuples())
                 {
-                    Y = (ycoords->GetTuple1(atts.GetSliceIndex()) + 
-                         ycoords->GetTuple1(atts.GetSliceIndex() + 1)) / 2.;
+                    if(cellCentered)
+                    {
+                        Y = (ycoords->GetTuple1(atts.GetSliceIndex()) + 
+                                ycoords->GetTuple1(atts.GetSliceIndex() + 1)) / 2.;
+                    }
+                    else
+                        Y = ycoords->GetTuple1(atts.GetSliceIndex());
                 }
                 else
-                    Y = ycoords->GetTuple1(atts.GetSliceIndex());
-            }
-            else
-                Y = (bounds->GetTuple1(2) + bounds->GetTuple1(3)) / 2.;
+                    Y = (bounds->GetTuple1(2) + bounds->GetTuple1(3)) / 2.;
 
-            // Draw the tracer plane.
-            if(atts.GetTracerColor().Alpha() > 0)
-            {
-                glBegin(GL_QUADS);
-                glColor4ubv(atts.GetTracerColor().GetColor());
+                // Draw the tracer plane.
+                if(atts.GetTracerColor().Alpha() > 0)
+                {
+                    glBegin(GL_QUADS);
+                    glColor4ubv(atts.GetTracerColor().GetColor());
+                    glVertex3d(bounds->GetTuple1(0), Y, bounds->GetTuple1(4));
+                    glVertex3d(bounds->GetTuple1(0), Y, bounds->GetTuple1(5));
+                    glVertex3d(bounds->GetTuple1(1), Y, bounds->GetTuple1(5));
+                    glVertex3d(bounds->GetTuple1(1), Y, bounds->GetTuple1(4));
+                    glEnd();
+                }
+                // Outline the plane
+                glLineWidth(2.);
+                glColor3ubv(atts.GetTracerColor().GetColor()); // 3ubv so opaque
+                glBegin(GL_LINE_LOOP);
                 glVertex3d(bounds->GetTuple1(0), Y, bounds->GetTuple1(4));
                 glVertex3d(bounds->GetTuple1(0), Y, bounds->GetTuple1(5));
                 glVertex3d(bounds->GetTuple1(1), Y, bounds->GetTuple1(5));
                 glVertex3d(bounds->GetTuple1(1), Y, bounds->GetTuple1(4));
-                glEnd();
+                glEnd();        
             }
-            // Outline the plane
-            glLineWidth(2.);
-            glColor3ubv(atts.GetTracerColor().GetColor()); // 3ubv so opaque
-            glBegin(GL_LINE_LOOP);
-            glVertex3d(bounds->GetTuple1(0), Y, bounds->GetTuple1(4));
-            glVertex3d(bounds->GetTuple1(0), Y, bounds->GetTuple1(5));
-            glVertex3d(bounds->GetTuple1(1), Y, bounds->GetTuple1(5));
-            glVertex3d(bounds->GetTuple1(1), Y, bounds->GetTuple1(4));
-            glEnd();        
-        }
-        else if(atts.GetNormal() == SpreadsheetAttributes::Z)
-        {
-            double Z;
-
-            vtkDataArray *zcoords = rgrid->GetZCoordinates();
-            if(zcoords != 0 && atts.GetSliceIndex() < zcoords->GetNumberOfTuples())
+            else if(atts.GetNormal() == SpreadsheetAttributes::Z)
             {
-                if(cellCentered)
+                double Z;
+
+                vtkDataArray *zcoords = rgrid->GetZCoordinates();
+                if(zcoords != 0 && atts.GetSliceIndex() < zcoords->GetNumberOfTuples())
                 {
-                    Z = (zcoords->GetTuple1(atts.GetSliceIndex()) + 
-                         zcoords->GetTuple1(atts.GetSliceIndex() + 1)) / 2.;
+                    if(cellCentered)
+                    {
+                        Z = (zcoords->GetTuple1(atts.GetSliceIndex()) + 
+                                zcoords->GetTuple1(atts.GetSliceIndex() + 1)) / 2.;
+                    }
+                    else
+                        Z = zcoords->GetTuple1(atts.GetSliceIndex());
                 }
                 else
-                    Z = zcoords->GetTuple1(atts.GetSliceIndex());
-            }
-            else
-                Z = (bounds->GetTuple1(4) + bounds->GetTuple1(5)) / 2.;
+                    Z = (bounds->GetTuple1(4) + bounds->GetTuple1(5)) / 2.;
 
-            // Draw the tracer plane.
-            if(atts.GetTracerColor().Alpha() > 0)
-            {
-                glBegin(GL_QUADS);
-                glColor4ubv(atts.GetTracerColor().GetColor());
+                // Draw the tracer plane.
+                if(atts.GetTracerColor().Alpha() > 0)
+                {
+                    glBegin(GL_QUADS);
+                    glColor4ubv(atts.GetTracerColor().GetColor());
+                    glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), Z);
+                    glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), Z);
+                    glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), Z);
+                    glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), Z);
+                    glEnd();
+                }
+                // Outline the plane
+                glLineWidth(2.);
+                glColor3ubv(atts.GetTracerColor().GetColor()); // 3ubv so opaque
+                glBegin(GL_LINE_LOOP);
                 glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), Z);
                 glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), Z);
                 glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), Z);
                 glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), Z);
                 glEnd();
             }
-            // Outline the plane
-            glLineWidth(2.);
-            glColor3ubv(atts.GetTracerColor().GetColor()); // 3ubv so opaque
-            glBegin(GL_LINE_LOOP);
-            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), Z);
-            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), Z);
-            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), Z);
-            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), Z);
-            glEnd();
         }
 
-        DrawBoundingBox(bounds, fgColor);
+        if (atts.GetShowPatchOutline())
+        {
+            DrawBoundingBox(bounds, fgColor);
+        }
     }
 }
 
@@ -330,6 +345,9 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
 //
 // Modifications:
 //   
+//   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
+//   Support toggling patch outline and tracer plane separately
+//
 // ****************************************************************************
 
 void
@@ -342,175 +360,15 @@ avtOpenGLSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
 
     if(dims[2] < 2)
     {
-        // Draw the tracer plane.
-        glBegin(GL_QUADS);
-        glColor4ubv(atts.GetTracerColor().GetColor());
-        for(int j = 0; j < dims[1]-1; ++j)
+        if (atts.GetShowTracerPlane())
         {
-            vtkIdType row0 = j * dims[0];
-            vtkIdType row1 = (j+1) * dims[0];
-            for(int i = 0; i < dims[0]-1; ++i)
-            {
-                glVertex3dv(sgrid->GetPoint(row0));
-                glVertex3dv(sgrid->GetPoint(row0+1));
-                glVertex3dv(sgrid->GetPoint(row1+1));
-                glVertex3dv(sgrid->GetPoint(row1));
-
-                ++row0;
-                ++row1;
-            }
-        }
-        glEnd();
-
-        // Draw the outline of the mesh
-        glColor3dv(fgColor);
-        glLineWidth(2.);
-        glBegin(GL_LINE_LOOP);
-        glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
-        glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
-        glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
-        glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);
-        glEnd();
-    }
-    else
-    {
-        if(atts.GetNormal() == SpreadsheetAttributes::X)
-        {
-            int i = atts.GetSliceIndex();
-            if(i < 0) i = 0;
-            if(i >= dims[0]) i = dims[0];
-
+            // Draw the tracer plane.
             glBegin(GL_QUADS);
             glColor4ubv(atts.GetTracerColor().GetColor());
-            int nxny = dims[1]*dims[0];
             for(int j = 0; j < dims[1]-1; ++j)
             {
-                int jnx = j * dims[0];
-                int j1nx = (j+1) * dims[0];
-                for(int k = 0; k < dims[2]-1; ++k)
-                {
-                    vtkIdType p0 = k * nxny + jnx + i;
-                    vtkIdType p1 = (k+1) * nxny + jnx + i;
-                    vtkIdType p2 = (k+1) * nxny + j1nx + i;
-                    vtkIdType p3 = k * nxny + j1nx + i;
-
-                    glVertex3dv(sgrid->GetPoint(p0));
-                    glVertex3dv(sgrid->GetPoint(p1));
-                    glVertex3dv(sgrid->GetPoint(p2));
-                    glVertex3dv(sgrid->GetPoint(p3));
-                }
-            }
-            glEnd();
-        }
-        else if(atts.GetNormal() == SpreadsheetAttributes::Y)
-        {
-            int j = atts.GetSliceIndex();
-            if(j < 0) j = 0;
-            if(j >= dims[1]) j = dims[1];
-
-            glBegin(GL_QUADS);
-            glColor4ubv(atts.GetTracerColor().GetColor());
-            int jnx = j * dims[0];
-            for(int k = 0; k < dims[2]-1; ++k)
-            {
-                int knxny = k * dims[1] * dims[0];
-                int k1nxny = (k+1) * dims[1] * dims[0];
-                for(int i = 0; i < dims[0]-1; ++i)
-                {
-                    vtkIdType p0 = knxny + jnx + i;
-                    vtkIdType p1 = knxny + jnx + (i+1);
-                    vtkIdType p2 = k1nxny + jnx + (i+1);
-                    vtkIdType p3 = k1nxny + jnx + i;
-
-                    glVertex3dv(sgrid->GetPoint(p0));
-                    glVertex3dv(sgrid->GetPoint(p1));
-                    glVertex3dv(sgrid->GetPoint(p2));
-                    glVertex3dv(sgrid->GetPoint(p3));
-                }
-            }
-            glEnd();
-        }
-        else if(atts.GetNormal() == SpreadsheetAttributes::Z)
-        {
-#ifdef USE_VERTEX_ARRAYS
-//
-// This is an experiment that does not work yet for some reason. The plan was to
-// expose the VTK point data to GL and then create an index array that would
-// let me create quads while using the VTK points as the vertices. Theoretically,
-// this should be pretty fast.
-//
-            int nxny = dims[0] * dims[1];
-            int nCells = (dims[0]-1) * (dims[1]-1);
-            static int *quadIndices = 0;
-            if(quadIndices == 0)
-            {
-                // We create indices for the quads given that we'll make all of 
-                // the VTK points in the object available as a vertex array in 
-                // the client state.
-                quadIndices = new int[nCells * 4];
-            }
-
-            // if(k != lastK)
-            {
-                int *iptr = quadIndices;
-
-                int k = atts.GetSliceIndex();
-                if(k < 0) k = 0;
-                if(k >= dims[2]) k = dims[2];
-                int knxny = k * dims[1] * dims[0];
-                for(int j = 0; j < dims[1]-1; ++j)
-                {
-                    int row0 = knxny + j * dims[0];
-                    int row1 = knxny + (j+1) * dims[0];
-                    for(int i = 0; i < dims[0]-1; ++i)
-                    {
-                        iptr[0] = row0;
-                        iptr[1] = row0+1;
-                        iptr[2] = row1+1;
-                        iptr[3] = row1;
-
-//                        if(iptr < quadIndices + 40)
-//                            cerr << "quad = {" << iptr[0] << ", " << iptr[1] << ", " << iptr[2] << ", " << iptr[3] << "}" << endl;
-
-                        iptr += 4;
-                        row0++; row1++;
-                    }
-                }
-            }
-
-            glEnableClientState(GL_VERTEX_ARRAY);
-            if(sgrid->GetPoints()->GetDataType() == VTK_FLOAT)
-            {
-                glVertexPointer(3, GL_FLOAT, 0, sgrid->GetPoints()->GetData()->GetVoidPointer(0));
-
-                const float *fptr = (const float *)sgrid->GetPoints()->GetData()->GetVoidPointer(0);
-//                for(int i = 0; i < 10; ++i)
-//                {
-//                    cerr << "pt[" << i << "] = {" << fptr[0] << ", " << fptr[1] << ", " << fptr[2] << "}" << endl;
-//                    fptr += 3;
-//                }
-   
-            }
-            else if(sgrid->GetPoints()->GetDataType() == VTK_DOUBLE)
-                glVertexPointer(3, GL_DOUBLE, 0, sgrid->GetPoints()->GetData()->GetVoidPointer(0));
-            else
-                cerr << "VTK points are: " << sgrid->GetPoints()->GetDataType() << endl;
-            glColor4ubv(atts.GetTracerColor().GetColor());
-
-            // Use the connectivity that we computed for slicing in 
-            glDrawElements(GL_QUADS, nCells*4, GL_INT, quadIndices);
-#else
-            int k = atts.GetSliceIndex();
-            if(k < 0) k = 0;
-            if(k >= dims[2]) k = dims[2];
-
-            glBegin(GL_QUADS);
-            glColor4ubv(atts.GetTracerColor().GetColor());
-            int knxny = k * dims[1] * dims[0];
-            for(int j = 0; j < dims[1]-1; ++j)
-            {
-                vtkIdType row0 = knxny + j * dims[0];
-                vtkIdType row1 = knxny + (j+1) * dims[0];
+                vtkIdType row0 = j * dims[0];
+                vtkIdType row1 = (j+1) * dims[0];
                 for(int i = 0; i < dims[0]-1; ++i)
                 {
                     glVertex3dv(sgrid->GetPoint(row0));
@@ -523,10 +381,182 @@ avtOpenGLSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
                 }
             }
             glEnd();
-#endif
         }
 
-        DrawBoundingBox(bounds, fgColor);
+        if (atts.GetShowPatchOutline())
+        {
+            // Draw the outline of the mesh
+            glColor3dv(fgColor);
+            glLineWidth(2.);
+            glBegin(GL_LINE_LOOP);
+            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(2), 0.);
+            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(2), 0.);
+            glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
+            glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);
+            glEnd();
+        }
+    }
+    else
+    {
+        if (atts.GetShowTracerPlane())
+        {
+            if(atts.GetNormal() == SpreadsheetAttributes::X)
+            {
+                int i = atts.GetSliceIndex();
+                if(i < 0) i = 0;
+                if(i >= dims[0]) i = dims[0];
+
+                glBegin(GL_QUADS);
+                glColor4ubv(atts.GetTracerColor().GetColor());
+                int nxny = dims[1]*dims[0];
+                for(int j = 0; j < dims[1]-1; ++j)
+                {
+                    int jnx = j * dims[0];
+                    int j1nx = (j+1) * dims[0];
+                    for(int k = 0; k < dims[2]-1; ++k)
+                    {
+                        vtkIdType p0 = k * nxny + jnx + i;
+                        vtkIdType p1 = (k+1) * nxny + jnx + i;
+                        vtkIdType p2 = (k+1) * nxny + j1nx + i;
+                        vtkIdType p3 = k * nxny + j1nx + i;
+
+                        glVertex3dv(sgrid->GetPoint(p0));
+                        glVertex3dv(sgrid->GetPoint(p1));
+                        glVertex3dv(sgrid->GetPoint(p2));
+                        glVertex3dv(sgrid->GetPoint(p3));
+                    }
+                }
+                glEnd();
+            }
+            else if(atts.GetNormal() == SpreadsheetAttributes::Y)
+            {
+                int j = atts.GetSliceIndex();
+                if(j < 0) j = 0;
+                if(j >= dims[1]) j = dims[1];
+
+                glBegin(GL_QUADS);
+                glColor4ubv(atts.GetTracerColor().GetColor());
+                int jnx = j * dims[0];
+                for(int k = 0; k < dims[2]-1; ++k)
+                {
+                    int knxny = k * dims[1] * dims[0];
+                    int k1nxny = (k+1) * dims[1] * dims[0];
+                    for(int i = 0; i < dims[0]-1; ++i)
+                    {
+                        vtkIdType p0 = knxny + jnx + i;
+                        vtkIdType p1 = knxny + jnx + (i+1);
+                        vtkIdType p2 = k1nxny + jnx + (i+1);
+                        vtkIdType p3 = k1nxny + jnx + i;
+
+                        glVertex3dv(sgrid->GetPoint(p0));
+                        glVertex3dv(sgrid->GetPoint(p1));
+                        glVertex3dv(sgrid->GetPoint(p2));
+                        glVertex3dv(sgrid->GetPoint(p3));
+                    }
+                }
+                glEnd();
+            }
+            else if(atts.GetNormal() == SpreadsheetAttributes::Z)
+            {
+#ifdef USE_VERTEX_ARRAYS
+                //
+                // This is an experiment that does not work yet for some reason. The plan was to
+                // expose the VTK point data to GL and then create an index array that would
+                // let me create quads while using the VTK points as the vertices. Theoretically,
+                // this should be pretty fast.
+                //
+                int nxny = dims[0] * dims[1];
+                int nCells = (dims[0]-1) * (dims[1]-1);
+                static int *quadIndices = 0;
+                if(quadIndices == 0)
+                {
+                    // We create indices for the quads given that we'll make all of 
+                    // the VTK points in the object available as a vertex array in 
+                    // the client state.
+                    quadIndices = new int[nCells * 4];
+                }
+
+                // if(k != lastK)
+                {
+                    int *iptr = quadIndices;
+
+                    int k = atts.GetSliceIndex();
+                    if(k < 0) k = 0;
+                    if(k >= dims[2]) k = dims[2];
+                    int knxny = k * dims[1] * dims[0];
+                    for(int j = 0; j < dims[1]-1; ++j)
+                    {
+                        int row0 = knxny + j * dims[0];
+                        int row1 = knxny + (j+1) * dims[0];
+                        for(int i = 0; i < dims[0]-1; ++i)
+                        {
+                            iptr[0] = row0;
+                            iptr[1] = row0+1;
+                            iptr[2] = row1+1;
+                            iptr[3] = row1;
+
+                            //                        if(iptr < quadIndices + 40)
+                            //                            cerr << "quad = {" << iptr[0] << ", " << iptr[1] << ", " << iptr[2] << ", " << iptr[3] << "}" << endl;
+
+                            iptr += 4;
+                            row0++; row1++;
+                        }
+                    }
+                }
+
+                glEnableClientState(GL_VERTEX_ARRAY);
+                if(sgrid->GetPoints()->GetDataType() == VTK_FLOAT)
+                {
+                    glVertexPointer(3, GL_FLOAT, 0, sgrid->GetPoints()->GetData()->GetVoidPointer(0));
+
+                    const float *fptr = (const float *)sgrid->GetPoints()->GetData()->GetVoidPointer(0);
+                    //                for(int i = 0; i < 10; ++i)
+                    //                {
+                    //                    cerr << "pt[" << i << "] = {" << fptr[0] << ", " << fptr[1] << ", " << fptr[2] << "}" << endl;
+                    //                    fptr += 3;
+                    //                }
+
+                }
+                else if(sgrid->GetPoints()->GetDataType() == VTK_DOUBLE)
+                    glVertexPointer(3, GL_DOUBLE, 0, sgrid->GetPoints()->GetData()->GetVoidPointer(0));
+                else
+                    cerr << "VTK points are: " << sgrid->GetPoints()->GetDataType() << endl;
+                glColor4ubv(atts.GetTracerColor().GetColor());
+
+                // Use the connectivity that we computed for slicing in 
+                glDrawElements(GL_QUADS, nCells*4, GL_INT, quadIndices);
+#else
+                int k = atts.GetSliceIndex();
+                if(k < 0) k = 0;
+                if(k >= dims[2]) k = dims[2];
+
+                glBegin(GL_QUADS);
+                glColor4ubv(atts.GetTracerColor().GetColor());
+                int knxny = k * dims[1] * dims[0];
+                for(int j = 0; j < dims[1]-1; ++j)
+                {
+                    vtkIdType row0 = knxny + j * dims[0];
+                    vtkIdType row1 = knxny + (j+1) * dims[0];
+                    for(int i = 0; i < dims[0]-1; ++i)
+                    {
+                        glVertex3dv(sgrid->GetPoint(row0));
+                        glVertex3dv(sgrid->GetPoint(row0+1));
+                        glVertex3dv(sgrid->GetPoint(row1+1));
+                        glVertex3dv(sgrid->GetPoint(row1));
+
+                        ++row0;
+                        ++row1;
+                    }
+                }
+                glEnd();
+#endif
+            }
+        }
+
+        if (atts.GetShowPatchOutline())
+        {
+            DrawBoundingBox(bounds, fgColor);
+        }
     }
 }
 
