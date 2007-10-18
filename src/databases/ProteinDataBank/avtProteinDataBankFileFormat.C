@@ -117,6 +117,9 @@ avtProteinDataBankFileFormat::avtProteinDataBankFileFormat(const char *fn,
 //    Jeremy Meredith, Mon Aug 28 17:48:22 EDT 2006
 //    Changed bonds to line elements.
 //
+//    Jeremy Meredith, Thu Oct 18 16:31:00 EDT 2007
+//    Added compound support.
+//
 // ****************************************************************************
 
 void
@@ -130,6 +133,8 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
         allatoms[i].clear();
     }
     allatoms.clear();
+
+    compoundNames.clear();
 
     nmodels = 0;
     metadata_read = false;
@@ -153,6 +158,9 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //
 //    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
 //    Added compound support.
+//
+//    Jeremy Meredith, Thu Oct 18 16:31:20 EDT 2007
+//    Only add compounds as a variable if there's more than one of them.
 //
 // ****************************************************************************
 
@@ -208,7 +216,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         }
         md->Add(el_smd);
 
-        if (compoundNames.size() > 0)
+        if (compoundNames.size() > 1)
         {
             avtScalarMetaData *cmp_smd =
                 new avtScalarMetaData(name_cmp, name_mesh, AVT_NODECENT);
@@ -792,6 +800,9 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 //    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
 //    Added compound support.
 //
+//    Jeremy Meredith, Thu Oct 18 16:31:20 EDT 2007
+//    COMPND records can be multi-line; ignore all but the first line.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::ReadAllMetaData()
@@ -832,7 +843,8 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
             source += string(line + 10);
             sourceLineCount++;
         }
-        else if (canReadCompounds && record == "COMPND")
+        else if (canReadCompounds &&
+                 record == "COMPND" && line[8]==' ' && line[9]==' ')
         {
             compoundNames.push_back(string(line + 10));
         }
@@ -907,6 +919,9 @@ avtProteinDataBankFileFormat::OpenFileAtBeginning()
 //
 //    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
 //    Added compound support.
+//
+//    Jeremy Meredith, Thu Oct 18 16:31:20 EDT 2007
+//    COMPND records can be multi-line; ignore all but the first line.
 //
 // ****************************************************************************
 
@@ -1002,7 +1017,7 @@ avtProteinDataBankFileFormat::ReadAtomsForModel(int model)
             connect.push_back(c);
             //c.Print(cout);
         }
-        else if (record == "COMPND")
+        else if (record == "COMPND" && line[8]==' ' && line[9]==' ')
         {
             compound++;
         }
@@ -1042,6 +1057,10 @@ avtProteinDataBankFileFormat::CreateBondsFromModel(int model)
     // NOTE: this needs to be updated to create bonds
     // as line segments instead of as a 4-comp cell array
     // before it will work.
+
+    // ALSO: the conect records appear to reference atoms by
+    // number only within the current compound; this should be
+    // checked using a file with >1 compound
     for (int i=0; i<connect.size(); i++)
     {
         const ConnectRecord &c = connect[i];

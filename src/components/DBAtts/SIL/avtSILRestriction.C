@@ -1738,10 +1738,12 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
               {
                   if (silr->useSet[set2Index] == AllUsed)
                   {
+                      cerr << "turning on "<<i<<"\n";
                       TurnOnSet(i);
                   }
                   else if (silr->useSet[set2Index] == NoneUsed)
                   {
+                      cerr << "turning off "<<i<<"\n";
                       TurnOffSet(i);
                   }
               }
