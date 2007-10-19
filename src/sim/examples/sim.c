@@ -803,7 +803,7 @@ main(int argc, char *argv[])
     if (getenv("LD_LIBRARY_PATH")) printf("ld_library_path=%s\n", getenv("LD_LIBRARY_PATH")); else printf("ld_library_path=(null)\n");
     /* VisItAddLibraryPaths(argc, argv); */
     VisItSetupEnvironment();
-
+    printf("Version VisIt simulation lib running with: %s\n", VisItGetVersion());
 #ifdef PARALLEL
     MPI_Init(&argc, &argv);
     MPI_Comm_rank (MPI_COMM_WORLD, &par_rank);

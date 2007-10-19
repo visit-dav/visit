@@ -53,6 +53,10 @@
 **   I added VisItCommandTypes enumerated types so that user
 **   will have an easier time to use the generic UI
 **
+**   Shelly Prevost ri Oct 19 14:51:53 PDT 2007
+**   Added the VisItGetVersion so that the simulation could verify
+**   version numbers at runtime.
+**
 ****************************************************************************/
 
  
@@ -82,6 +86,7 @@ extern void VisItAddStripChartDataPoint( VisIt_SimulationMetaData mdd, double da
 extern void VisItAddStripChartDataPointByName( VisIt_SimulationMetaData mdd, char *name, double dataX,double dataY, int enable );
 extern void VisItSetStripChartTabName (VisIt_SimulationMetaData mdd, char *name, char *text );
 enum VisItCommandTypes { STATUS_MESSAGE = 9, TIME_LABEL,TIME_VALUE, STEP_LABEL, STEP_VALUE};
+extern char *VisItGetVersion();
 #ifdef __cplusplus
 }
 #endif
