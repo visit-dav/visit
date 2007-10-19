@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <SimWidgetNames.h>
+#include <visit-config.h>
 
 
 /* current number of active channels to the custom 
@@ -593,6 +594,26 @@ void VisItSetStripChartTabName (VisIt_SimulationMetaData mdd, char *name, char *
       strncpy(mdd.genericCommands[index].text, text,  MAX_CMD_STR_LEN-1);
     }
 }
+
+/*****************************************************************************
+** Function: void VisItGetVersion
+**
+** Purpose:
+**   Return the version of the program this lib was compiled with
+**   not necessarily the versions of the engine.so that is loaded.
+**   This allows the simulation to verify version numbers at runtime.
+**
+** Programmer: Shelly Prevost
+** Creation:   Fri Oct 19 14:40:24 PDT 2007
+**
+** Modifications:
+**
+** *****************************************************************************/
+char *VisItGetVersion()
+{
+    return VERSION;
+}
+
 
 /*****************************************************************************
 ** Function: void VisItInitAllCMD(VisIt_SimulationMetaData *mdd, int MaxNumCustCMD  )
