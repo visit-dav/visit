@@ -56,6 +56,25 @@ SliceAttributes::CopyAttributes(const AttributeGroup *atts)
             SetNormal(tmp->GetNormal());
             SetUpAxis(tmp->GetUpAxis());
             SetAxisType(Arbitrary);
+
+	    //Set theta/phi.
+	    double n[3] = {tmp->GetNormal()[0],tmp->GetNormal()[1],tmp->GetNormal()[2]};
+	    double len = sqrt(n[0]*n[0] + n[1]*n[1] + n[2]*n[2]);
+	    n[0] /= len;
+	    n[1] /= len;
+	    n[2] /= len;
+	    len = 1.0;
+	    double theta = atan2( n[1], n[0] ) * 57.29577951308232;
+	    double phi = acos( n[2] / len ) * 57.29577951308232;
+	    theta -= 90;
+	    phi -= 90;
+	    phi = - phi;
+
+	    theta = (fabs(theta) < 1e-5 ? 0 : theta);
+	    phi = (fabs(phi) < 1e-5 ? 0 : phi);
+	    SetTheta( theta );
+	    SetPhi( phi );
+
             retval = true;
         }
     }
