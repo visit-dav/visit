@@ -80,6 +80,8 @@ public:
     SC_NamesTabsIndex(){}
     SC_NamesTabsIndex(char *n, char *tab, int i):name(n),tabName(tab), index(i){}
     QString getName() {return name;}
+    QString setScrollView(QScrollView *sc) {scrollView = sc;}
+    QScrollView *getScrollView() {return scrollView;}
     QString getTabName() {return tabName;}
     int getIndex() {return index;}
 private:
@@ -87,6 +89,8 @@ private:
      QString tabName;
      int  index;
      VisItSimStripChart *StripChart;
+     QScrollView *scrollView;
+     
 };
 
 // holds and keeps properly associate all the strip chart infomation.
@@ -135,6 +139,7 @@ public:
     bool getEnableLogScale();
     void setTabLabel(int tabIndex, QString newLabel );
     double getCurrentData();
+    int  getCurrentCycle();
     
 public slots:
     void reset();

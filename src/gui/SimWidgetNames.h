@@ -66,6 +66,7 @@
 #define STRIP_MAX_WIDGET_NAME     "MaxEdit"
 #define STRIP_MIN_WIDGET_NAME     "MinEdit"
 #define STRIP_CUR_WIDGET_NAME     "CurEdit"
+#define STRIP_CYCLE_WIDGET_NAME   "CycleEdit"
 #define STRIP_MAX_LIMIT_WIDGET_NAME "MaxLimitEdit"
 #define STRIP_MIN_LIMIT_WIDGET_NAME "MinLimitEdit"
 

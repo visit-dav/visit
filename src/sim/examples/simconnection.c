@@ -274,7 +274,7 @@ Update_UI_Commands()
       if (timeStep > 0 )
       { 
           VisItAddStripChartDataPointByName( *md, STRIP_CHART_1_WIDGET_NAME, timeStep, dataValue+355.3, enable);
-          VisItAddStripChartDataPointByName( *md, STRIP_CHART_2_WIDGET_NAME, timeStep, dataValue, enable);
+          VisItAddStripChartDataPointByName( *md, STRIP_CHART_2_WIDGET_NAME, timeStep, dataValue*10.0, enable);
           VisItAddStripChartDataPointByName( *md, STRIP_CHART_3_WIDGET_NAME, timeStep, dataValue+ (-0.3), enable);
           VisItAddStripChartDataPointByName( *md, STRIP_CHART_4_WIDGET_NAME, timeStep, dataValue+5.3, enable);
           VisItAddStripChartDataPointByName( *md, STRIP_CHART_5_WIDGET_NAME, timeStep, dataValue+0.3, enable);
@@ -285,7 +285,8 @@ Update_UI_Commands()
       md->currentTime  = timeStep;
       md->currentMode  = runflag ? VISIT_SIMMODE_RUNNING : VISIT_SIMMODE_STOPPED;
       timeStep++;
-      dataValue = dataValue + 0.003;
+      dataValue = dataValue + 0.008;
+      if (dataValue > 0.2 ) dataValue = -0.01;
 }
 
 /*****************************************************************************
