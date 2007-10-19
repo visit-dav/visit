@@ -43,6 +43,7 @@
 
 #include <snprintf.h>
 #include <string>
+#include <cstring>
 
 #include <vtkFieldData.h>
 #include <vtkCellData.h>
@@ -480,7 +481,7 @@ avtChomboFileFormat::InitializeReader(void)
             H5Aget_name(currExpression, buffSize, buffer);
 
             // Split into type and name
-            char *separatorPos = index(buffer, ' ');
+            char *separatorPos = std::strchr(buffer, ' ');
             *separatorPos = '\0';
             char *exprTypeStr = buffer;
             char *exprName = separatorPos + 1;
