@@ -221,6 +221,12 @@
 #     Commit numerous fixes pointed out by Matthew Wheeler.  Highlights include
 #     improved SunOS and AIX support.
 #
+#     Thomas R. Treadway, Fri Oct 19 13:37:00 PDT 2007
+#     Fixes for Linux build:
+#     - forcing static libraries in szip and hdf5
+#     - corrected problems with szip in Silo build
+#     Added information about visit-bin-dist and visit-install
+#
 # *****************************************************************************
 
 
@@ -2811,6 +2817,9 @@ function build_silo
        cat configure | sed 's/-lhdf5/-lhdf5 -lsz/' > tmp.conf
        mv configure configure.orig
        mv tmp.conf configure
+       cat configure | sed "s?\$hdf5_lib/libhdf5\.a?\$hdf5_lib/libhdf5.a \$hdf5_lib/libsz.a?" > tmp.conf
+       mv configure configure.orig2
+       mv tmp.conf configure
        chmod +x configure
     else
        WITHHDF5ARG="--without-hdf5"
@@ -2924,6 +2933,7 @@ function build_szip
     echo "Invoking command to configure SZIP"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --disable-shared \
         --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
        echo "SZIP configure failed.  Giving up"
@@ -3029,6 +3039,7 @@ function build_hdf5
     echo "Invoking command to configure HDF5"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --disable-shared \
         --prefix="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" \
         --with-szlib="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
@@ -6717,11 +6728,18 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
 "You may now try to run VisIt by cd'ing into the ${VISIT_FILE%.tar*}/src/bin"
    fi
    echo "directory and invoking \"visit\"."
+   echo 
+   echo "To create a binary distribution tarball from this build, enter:"
+   echo "clearcase_bin/visit-bin-dist"
+   echo "Will produce a tarball called visitVERSION.ARCH.tar.gz, where"
+   echo "VERSION is the version number, and ARCH is the OS architecure."
+   echo 
+   echo "To install the above tarball in a directory called "INSTALL_DIR_PATH":"
+   echo "clearcase_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
+   echo 
    echo "If you run into problems, contact visit-help@llnl.gov"
 else
    echo "Done"
 fi
 
 exit 0
-
-
