@@ -53,6 +53,7 @@
 #include <FileServerList.h>
 #include <SliceAttributes.h>
 #include <ViewerProxy.h>
+#include <vtkMath.h>
 
 // ****************************************************************************
 // Method: QvisSliceWindow::QvisSliceWindow
@@ -144,7 +145,10 @@ QvisSliceWindow::~QvisSliceWindow()
 //   Added a domain number for slice-by-zone and -by-node.
 //
 //   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
-//   Added meshName combo box and label. 
+//   Added meshName combo box and label.
+//
+//   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
+//   Added theta-phi method of editing the plane normal.
 //
 // ****************************************************************************
 
@@ -156,7 +160,7 @@ QvisSliceWindow::CreateWindowContents()
     normalBox->setTitle("Normal");
     topLayout->addWidget(normalBox);
 
-    QGridLayout *normalLayout = new QGridLayout(normalBox, 3, 2);
+    QGridLayout *normalLayout = new QGridLayout(normalBox, 4, 2);
     normalLayout->setMargin(10);
     normalLayout->setSpacing(5);
     normalLayout->addRowSpacing(0, 10);
@@ -200,6 +204,22 @@ QvisSliceWindow::CreateWindowContents()
     arbitraryLayout->addWidget(normalLineEdit);
 
     normalLayout->addLayout(arbitraryLayout, 2,1);
+
+
+    //Theta-phi
+    normalLayout->addWidget( new QLabel( "Theta-Phi", normalBox ), 3, 0 );
+
+    QHBoxLayout *thetaPhiLayout = new QHBoxLayout();
+
+    QRadioButton *thetaPhiRadio = new QRadioButton(" ", normalBox, "thetaPhi");
+    normalTypeGroup->insert( thetaPhiRadio );
+    thetaPhiLayout->addWidget( thetaPhiRadio );
+
+    thetaPhiLineEdit = new QLineEdit( normalBox, "thetaPhiLineEdit");
+    connect( thetaPhiLineEdit, SIGNAL(returnPressed()), this, SLOT(processThetaPhiText()));
+    thetaPhiLayout->addWidget( thetaPhiLineEdit );
+
+    normalLayout->addLayout( thetaPhiLayout, 3, 1 );
 
     // Origin
     originTypeGroup = new QButtonGroup();
@@ -404,7 +424,10 @@ QvisSliceWindow::CreateWindowContents()
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
 //   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
-//   Added call to UpdateMeshNames. 
+//   Added call to UpdateMeshNames.
+//
+//   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
+//   Added theta-phi method of editing the plane normal.
 //
 // ****************************************************************************
 
@@ -480,6 +503,7 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             normalTypeGroup->blockSignals(false);
 
             normalLineEdit->setEnabled(!orthogonal);
+	    thetaPhiLineEdit->setEnabled( sliceAtts->GetAxisType() == SliceAttributes::ThetaPhi );
             upAxisLineEdit->setEnabled(!orthogonal && sliceAtts->GetProject2d());
             upAxisLabel->setEnabled(!orthogonal && sliceAtts->GetProject2d());
             break;
@@ -516,6 +540,11 @@ QvisSliceWindow::UpdateWindow(bool doAll)
             temp.sprintf("%d", sliceAtts->GetOriginNodeDomain());
             originNodeDomainLineEdit->setText(temp);
             break;
+	case 15: //theta
+	case 16: //phi
+	    temp.sprintf( "%g %g", sliceAtts->GetTheta(), sliceAtts->GetPhi() );
+	    thetaPhiLineEdit->setText( temp );
+	    break;
         }
     } // end for
 
@@ -651,6 +680,9 @@ QvisSliceWindow::UpdateOriginArea()
 //   Kathleen Bonnell, Tue Jan 25 08:15:23 PST 2005
 //   Added meshName.
 //
+//   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
+//   Added theta-phi method of editing the plane normal.
+//
 // ****************************************************************************
 
 void
@@ -679,8 +711,29 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
             {
                 okay = (vals[0] != 0. || vals[1] != 0. || vals[2] != 0. );
                 if (okay)
+		{
                     sliceAtts->SetNormal(vals);
-            }
+
+		    if ( sliceAtts->GetAxisType() != SliceAttributes::ThetaPhi )
+		    {
+			double len = sqrt(vals[0]*vals[0] + vals[1]*vals[1] + vals[2]*vals[2]);
+			vals[0] /= len;
+			vals[1] /= len;
+			vals[2] /= len;
+			len = 1.0;
+			double theta = atan2( vals[1], vals[0] ) * vtkMath::RadiansToDegrees();
+			double phi = acos( vals[2] / len ) * vtkMath::RadiansToDegrees();
+			theta -= 90;
+			phi -= 90;
+			phi = - phi;
+
+			theta = (fabs(theta) < 1e-5 ? 0 : theta);
+			phi = (fabs(phi) < 1e-5 ? 0 : phi);
+			sliceAtts->SetTheta( theta );
+			sliceAtts->SetPhi( phi );
+		    }
+		}
+	    }
         }
 
         if(!okay)
@@ -766,6 +819,7 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    
     // Do the origin (percent)
     if(which_widget == 5 || doAll)
     {
@@ -900,6 +954,48 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do theta/phi
+    if(which_widget == 11 || doAll)
+    {
+        temp = thetaPhiLineEdit->displayText().simplifyWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            okay = (sscanf(temp.latin1(), "%lg %lg", &vals[0], &vals[1]) == 2);
+            if(okay)
+            {
+		sliceAtts->SetTheta( vals[0] );
+		sliceAtts->SetPhi( vals[1] );
+		//Calculate the normal.
+		if ( sliceAtts->GetAxisType() == SliceAttributes::ThetaPhi )
+		{
+		    vals[0] -= 90;
+		    vals[1] -= 90;
+		    vals[0] *= vtkMath::DegreesToRadians();
+		    vals[1] *= vtkMath::DegreesToRadians();
+		    double n[3] = { cos(vals[0])*sin(vals[1]),
+				    sin(vals[0])*sin(vals[1]),
+				    cos(vals[1]) };
+		    static double eps = 1e-5;
+		    n[0] = (fabs(n[0]) < eps ? 0 : n[0]);
+		    n[1] = (fabs(n[1]) < eps ? 0 : n[1]);
+		    n[2] = (fabs(n[2]) < eps ? 0 : n[2]);
+		    sliceAtts->SetNormal( n );
+		}
+            }
+        }
+
+        if(!okay)
+        {
+	    double theta = sliceAtts->GetTheta();
+	    double phi = sliceAtts->GetPhi();
+            msg.sprintf( "The theta-phi angles were invalid. "
+			 "Resetting to the last good value <%g %g>.", theta, phi );
+            Message(msg);
+	    sliceAtts->SetTheta( theta );
+	    sliceAtts->SetPhi( phi );
+        }
+    }
 }
 
 //
@@ -1158,6 +1254,26 @@ QvisSliceWindow::processNormalText()
 }
 
 // ****************************************************************************
+// Method: QvisSliceWindow::processThetaPhiText
+//
+// Purpose: 
+//   This is a Qt slot function that sets the normal vector.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Oct 18 08:25:42 EDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSliceWindow::processThetaPhiText()
+{
+    GetCurrentValues(11);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisSliceWindow::processUpAxisText
 //
 // Purpose: 
@@ -1275,6 +1391,9 @@ QvisSliceWindow::interactiveToggled(bool val)
 //   Replaced simple QString::sprintf's with a setNum because there seems
 //   to be a bug causing numbers to be incremented by .00001.  See '5263.
 //
+//   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
+//   Added theta-phi method of editing the plane normal.
+//
 // ****************************************************************************
 
 void
@@ -1328,6 +1447,8 @@ QvisSliceWindow::normalTypeChanged(int index)
     dptr = sliceAtts->GetUpAxis();
     temp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
     upAxisLineEdit->setText(temp);
+    temp.sprintf("%g %g", sliceAtts->GetTheta(), sliceAtts->GetPhi() );
+    thetaPhiLineEdit->setText( temp );
 
     Apply();
 }

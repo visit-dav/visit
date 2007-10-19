@@ -87,7 +87,10 @@ class QHBoxLayout;
 //   Added a domain number for slice-by-zone and -by-node.
 //
 //   Kathleen Bonnell, Tue Jan 25 07:59:28 PST 2005 
-//   Added a meshName comboBox to be associated with domain-node/zone. 
+//   Added a meshName comboBox to be associated with domain-node/zone.
+//   
+//   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
+//   Added theta-phi method of editing the plane normal.
 //
 // ****************************************************************************
 
@@ -108,6 +111,7 @@ protected:
     void UpdateOriginArea();
 private slots:
     void processNormalText();
+    void processThetaPhiText();
     void processUpAxisText();
     void projectToggled(bool);
     void interactiveToggled(bool);
@@ -135,6 +139,7 @@ private:
 
     QButtonGroup     *normalTypeGroup;
     QLineEdit        *normalLineEdit;
+    QLineEdit        *thetaPhiLineEdit;
     QCheckBox        *flipNormalToggle;
 
     QButtonGroup     *originTypeGroup;
