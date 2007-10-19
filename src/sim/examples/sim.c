@@ -859,7 +859,7 @@ main(int argc, char *argv[])
                                             "/no/useful/path",
                                             NULL,
                                             "SimGUI_1.ui",
-					    NULL);
+                                            "/g/g0/shelly/.visit/simulations/defaultTester.sim1");
         printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
 
         printf("Known Commands:\n"

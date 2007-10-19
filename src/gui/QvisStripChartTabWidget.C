@@ -66,6 +66,10 @@
 //    Shelly Prevost Fri Apr 13 14:03:03 PDT 2007
 //    added pointSize to update font size. Also added a variable for
 //    zoomOutLimit to prevent to small of zooms.
+//
+//    Shelly Prevost Thu Oct 18 16:47:10 PDT 2007
+//    set the scroll area all the way to the left where the data will 
+//    first be drawn.
 //   
 // ****************************************************************************
 
@@ -88,8 +92,12 @@ QvisStripChartTabWidget::QvisStripChartTabWidget( QWidget *parent, const char *n
         QScrollView *sc = new QScrollView(this,"StripChartScrollWindow");
         sc->addChild(stripCharts[SC_Info[i].getIndex()]);
         sc->setCaption( "VisIt Strip Chart");
+        // move the scroll area all the way to the right. That is where the 
+        // data will start to be drawn.
+        sc->center( winX, winY/2.0);
         sc->show();
         sc->updateContents();
+        SC_Info[i].setScrollView(sc);
         addTab ( sc, stripCharts[SC_Info[i].getIndex()]->name() );
     }   
 
@@ -417,6 +425,25 @@ QvisStripChartTabWidget::getCurrentData( )
 }
 
 // ****************************************************************************
+// Method: VisItSimStripChart::getCurrentCycle
+//
+// Purpose: 
+//   Returns the last data updated for the currently displayed strip chart.
+//
+// Programmer: Shelly Prevost 
+// Creation:   Thu Oct 18 14:25:35 PDT 2007
+//
+// Modifications:
+//  
+//   
+// ****************************************************************************
+int 
+QvisStripChartTabWidget::getCurrentCycle( )
+{
+    return stripCharts[currentStripChart]->getCurrentCycle();
+}
+
+// ****************************************************************************
 // Method: VisItSimStripChart::getEnableLogScale
 //
 // Purpose: 
@@ -450,16 +477,19 @@ QvisStripChartTabWidget::getEnableLogScale()
 // Creation:   Mon Oct 15 14:27:29 PDT 2007
 //
 // Modifications:
-//  
+//    Shelly Prevost,  Thu Oct 18 16:36:59 PDT 2007
+//    fixed return type to pass on out of bounds information.
 //   
 // ****************************************************************************
 bool 
 QvisStripChartTabWidget::addDataPoint( QString name,double x, double y)
 {
+    bool outOfBounds = TRUE;
     int ST_Index = nameToIndex(name);
     if (ST_Index >= 0 )
-       return stripCharts[ST_Index]->addDataPoint(x,y);
+       outOfBounds = stripCharts[ST_Index]->addDataPoint(x,y);
     updateCurrentTabData();
+    return outOfBounds;
 }
 
 
@@ -753,6 +783,5 @@ void QvisStripChartTabWidget::zoomOut()
 // ****************************************************************************
 void QvisStripChartTabWidget::focus()
 {
-    // ***  NOT IMPLEMENTED YET  *****
-    //stripCharts[currentStripChart]->focus();
+    stripCharts[currentStripChart]->focus(SC_Info[currentStripChart].getScrollView());
 }

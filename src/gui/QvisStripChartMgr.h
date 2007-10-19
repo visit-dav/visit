@@ -1,4 +1,3 @@
-
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2007, The Regents of the University of California
@@ -97,6 +96,7 @@ public:
     void setOutOfBandLimits(double min, double max);
     void setLimitStripChartDataDisplay(double min, double max);
     void setCurrentDataDisplay(double currentData );
+    void setCycleDisplay (int currentCycle);
     int  sendCMD(QString sig, const QObject *ui, QString value);
     int  sendCMD(QString cmd);
     void CreateWindowContents();
@@ -131,6 +131,8 @@ private:
     QLabel             *minLabel;
     QLineEdit          *curEdit;
     QLabel             *curLabel;
+    QLineEdit          *cycleEdit;
+    QLabel             *cycleLabel;
     QGridLayout        *chartLayout;
     QPushButton        *resetButton;
     QPushButton        *plusButton;

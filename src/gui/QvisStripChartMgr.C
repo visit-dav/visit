@@ -118,28 +118,43 @@ QvisStripChartMgr::~QvisStripChartMgr()
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
+//    Shelly Prevost  Thu Oct 18 14:25:35 PDT 2007
+//    added new widgets for cycle display and removed widgets that
+//    do not fully function yet.
 //  
 //   
 // ****************************************************************************
 void QvisStripChartMgr::CreateWindowContents()
 {
 
-    stripChartTabWidget = new QvisStripChartTabWidget(central,"Chart Container",this,2000,1000 );
+    stripChartTabWidget = new QvisStripChartTabWidget(central,"Chart Container",this,2000,760 );
     topLayout->addWidget( stripChartTabWidget);
     
     // Create the group box 
     QGroupBox *stripChartGroup = new QGroupBox(central, "StripChartGroup");
-    stripChartGroup->setTitle("Strip Chart");
+    stripChartGroup->setTitle("Strip Chart Information and Controls");
     topLayout->addWidget( stripChartGroup);
     
     chartLayout =  new QGridLayout(stripChartGroup);              
     chartLayout->setMargin(20);
     chartLayout->setSpacing(10);
+    
+    QLabel *limitLab = new QLabel(stripChartGroup,"Bounds");
+    limitLab->setText("Limit Bounds");
+    chartLayout->addWidget(limitLab,0,1); 
+ 
+    QLabel *extremaLab = new QLabel(stripChartGroup,"Extrema"); 
+    extremaLab->setText("Extrema");
+    chartLayout->addWidget(extremaLab,0,3); 
+    
+    QLabel *currentLab = new QLabel(stripChartGroup,"Current");
+    currentLab->setText("Current");
+    chartLayout->addWidget(currentLab,0,5); 
 
     minLimitEdit = new QLineEdit(stripChartGroup,STRIP_MIN_LIMIT_WIDGET_NAME);
     minLimitEdit->setEnabled(false);
     minLimitLabel = new QLabel(stripChartGroup,"MinLimitLabel");
-    minLimitLabel->setText("Min Limit");
+    minLimitLabel->setText("Min");
     chartLayout->addWidget(minLimitLabel,1,0);
     chartLayout->addWidget(minLimitEdit,1,1);
     connect(minLimitEdit,SIGNAL(textChanged(const QString&)),this,SLOT(executeMinLimitStripChart()));
@@ -147,44 +162,53 @@ void QvisStripChartMgr::CreateWindowContents()
     maxLimitEdit = new QLineEdit(stripChartGroup,STRIP_MAX_LIMIT_WIDGET_NAME);
     maxLimitEdit->setEnabled(false); 
     maxLimitLabel = new QLabel(stripChartGroup,"MaxLimitLabel");
-    maxLimitLabel->setText("Max Limit");
-    chartLayout->addWidget(maxLimitLabel,1,2);
-    chartLayout->addWidget(maxLimitEdit,1,3);
+    maxLimitLabel->setText("Max");
+    chartLayout->addWidget(maxLimitLabel,2,0);
+    chartLayout->addWidget(maxLimitEdit,2,1);
     connect(maxLimitEdit,SIGNAL(textChanged(const QString&)),this,SLOT(executeMaxLimitStripChart()));
 
     minEdit = new QLineEdit(stripChartGroup,STRIP_MIN_WIDGET_NAME );
     minEdit->setEnabled(false);
     minEdit->setText("0.0");
     minLabel = new QLabel(stripChartGroup,"MinLabel");
-    minLabel->setText("Min value");
-    chartLayout->addWidget(minLabel,0,0);
-    chartLayout->addWidget(minEdit,0,1);    
-    
-    curEdit = new QLineEdit(stripChartGroup,STRIP_CUR_WIDGET_NAME );
-    curEdit->setEnabled(false);
-    curEdit->setText("0.0");
-    curLabel = new QLabel(stripChartGroup,"CurLabel");
-    curLabel->setText("Current value");
-    chartLayout->addWidget(curLabel,0,2);
-    chartLayout->addWidget(curEdit,0,3);
+    minLabel->setText("Min");
+    chartLayout->addWidget(minLabel,1,2);
+    chartLayout->addWidget(minEdit,1,3);    
+
 
     maxEdit = new QLineEdit(stripChartGroup,STRIP_MIN_WIDGET_NAME);
     maxEdit->setEnabled(false);
     maxEdit->setText("0.0");
     maxLabel = new QLabel(stripChartGroup,"MaxLabel");
-    maxLabel->setText("Max value");
-    chartLayout->addWidget(maxLabel,0,4);
-    chartLayout->addWidget(maxEdit,0,5);
+    maxLabel->setText("Max");
+    chartLayout->addWidget(maxLabel,2,2);
+    chartLayout->addWidget(maxEdit,2,3);
+        
+    curEdit = new QLineEdit(stripChartGroup,STRIP_CUR_WIDGET_NAME );
+    curEdit->setEnabled(false);
+    curEdit->setText("0.0");
+    curLabel = new QLabel(stripChartGroup,"CurLabel");
+    curLabel->setText("Data");
+    chartLayout->addWidget(curLabel,1,4);
+    chartLayout->addWidget(curEdit,1,5);
+    
+    cycleEdit = new QLineEdit(stripChartGroup,STRIP_CYCLE_WIDGET_NAME );
+    cycleEdit->setEnabled(false);
+    cycleEdit->setText("0.0");
+    cycleLabel = new QLabel(stripChartGroup,"Cycle");
+    cycleLabel->setText("Cycle");
+    chartLayout->addWidget(cycleLabel,2,4);
+    chartLayout->addWidget(cycleEdit,2,5);
     
     enableStripChartLimits = new QCheckBox(stripChartGroup,"EnableStripChartLimits");
-    enableStripChartLimits->setText("Limits");
+    enableStripChartLimits->setText("Enable Limits");
     connect(enableStripChartLimits,SIGNAL(stateChanged(int)),this,SLOT(executeEnableStripChartLimits()));
-    chartLayout->addMultiCellWidget(enableStripChartLimits,2,2,0,1);
+    chartLayout->addMultiCellWidget(enableStripChartLimits,3,3,0,2);
       
-    enableLogScale = new QCheckBox(stripChartGroup,"EnableLogScale");
-    enableLogScale->setText("Log Scale");
-    connect(enableLogScale,SIGNAL(stateChanged(int)),this,SLOT(executeEnableLogScale()));
-    chartLayout->addMultiCellWidget(enableLogScale,2,2,1,1);
+    //enableLogScale = new QCheckBox(stripChartGroup,"EnableLogScale");
+    //enableLogScale->setText("Log Scale");
+    //connect(enableLogScale,SIGNAL(stateChanged(int)),this,SLOT(executeEnableLogScale()));
+    //chartLayout->addMultiCellWidget(enableLogScale,4,2,1,1);
     
     // zoom and focus buttons
     // Create the group box and generic buttons.
@@ -200,12 +224,12 @@ void QvisStripChartMgr::CreateWindowContents()
     minusButton = new QPushButton("Zoom Out",stripChartGroup);
     minusButton->setEnabled(true);
     connect(minusButton,SIGNAL(clicked()),this,SLOT(zoomOut()));
-    zoomLayout->addWidget(minusButton,0,3);
+    zoomLayout->addWidget(minusButton,0,2);
     focusButton = new QPushButton("Focus",stripChartGroup);
     focusButton->setEnabled(true);
     connect(focusButton,SIGNAL(clicked()),this,SLOT(focus()));
-    zoomLayout->addWidget(focusButton,0,2);
-    chartLayout->addLayout(zoomLayout,2,3);
+    zoomLayout->addWidget(focusButton,0,3);
+    chartLayout->addLayout(zoomLayout,3,5);
     stripChartGroup->adjustSize();
 }
 
@@ -218,8 +242,8 @@ void QvisStripChartMgr::CreateWindowContents()
 // Programmer: Shelly Prevost
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
-// Modifications:
-//  
+//    Shelly Prevost  Thu Oct 18 14:25:35 PDT 2007
+//    disabled widget that do not fully function yet.
 //   
 // ****************************************************************************
 void 
@@ -234,8 +258,9 @@ QvisStripChartMgr::updateCurrentTabData()
     stripChartTabWidget->getOutOfBandLimits(minL,maxL);
     setLimitStripChartDataDisplay(minL,maxL);
     setCurrentDataDisplay ( stripChartTabWidget->getCurrentData() );
+    setCycleDisplay( stripChartTabWidget->getCurrentCycle() );
     enableStripChartLimits->setChecked(stripChartTabWidget->getEnableOutOfBandLimits());
-    enableLogScale->setChecked(stripChartTabWidget->getEnableLogScale());
+    //enableLogScale->setChecked(stripChartTabWidget->getEnableLogScale());
 }
 
 // ****************************************************************************
@@ -383,7 +408,7 @@ QvisStripChartMgr::setTabLabel(QString tabName, QString newLabel )
 void 
 QvisStripChartMgr::focus()
 {
-    //postLocation->reparent ( this, NULL, QPoint(0,0), true );
+    stripChartTabWidget->focus();
 }
 
 // ****************************************************************************
@@ -489,14 +514,16 @@ void QvisStripChartMgr::setEnable( QString name, bool enable )
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//  
+//    Shelly Prevost,  Thu Oct 18 16:36:59 PDT 2007
+//    fixed return type to pass on out of bounds information.
 //   
 // ****************************************************************************
 bool 
 QvisStripChartMgr::addDataPoint ( QString name,double x, double y)
 {
-    stripChartTabWidget->addDataPoint(name,x,y);
+    bool outOfBound = stripChartTabWidget->addDataPoint(name,x,y);
     updateCurrentTabData();
+    return outOfBound;
 }
 
 // ****************************************************************************
@@ -629,15 +656,15 @@ QvisStripChartMgr::executeMaxLimitStripChart()
 // Programmer: Shelly Prevost
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
-// Modifications:
-//  
+//    Shelly Prevost  Thu Oct 18 14:25:35 PDT 2007
+//    disable widgets that is not fully function yet. 
 //   
 // ****************************************************************************
 void 
 QvisStripChartMgr::executeEnableLogScale()
 {
-    QString cmd = "returnedPressed();EnableLogScale;QLineEdit;Simulations;" + enableLogScale->isChecked();
-    stripChartTabWidget->setEnableLogScale(enableLogScale->isChecked());
+    QString cmd = "returnedPressed();EnableLogScale;QLineEdit;Simulations;" + //enableLogScale->isChecked();
+    //stripChartTabWidget->setEnableLogScale(enableLogScale->isChecked());
     sendCMD(cmd);
 }
 
@@ -712,6 +739,28 @@ void
 QvisStripChartMgr::setCurrentDataDisplay (double currentData)
 {
   curEdit->setText(QString::number(currentData));
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::setCurrentDataDisplay
+//
+// Purpose:
+//   Updates the cycle display to the last cycle value dispalyed in the strip chart.
+//
+// Arguments:
+//   currentData: the last data y value update.
+//
+// Programmer: Shelly Prevost
+// Creation:   Thu Oct 18 14:25:35 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisStripChartMgr::setCycleDisplay (int currentCycle)
+{
+  cycleEdit->setText(QString::number(currentCycle));
 }
 
 // ****************************************************************************

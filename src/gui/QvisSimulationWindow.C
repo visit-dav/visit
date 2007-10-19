@@ -1075,7 +1075,7 @@ void
 QvisSimulationWindow::SpecialWidgetUpdate (avtSimulationCommandSpecification *cmd)
 {
     QObject *ui = NULL;
-    ui  = this->child(cmd->GetName().c_str());
+    ui  = this->child(cmd->GetName().c_str());  
     if ( stripCharts->isStripChartWidget(cmd->GetName().c_str()))
     {    double maxY;
          double minY;

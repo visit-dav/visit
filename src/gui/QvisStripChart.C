@@ -64,6 +64,9 @@
 //    Shelly Prevost Fri Oct 12 15:43:38 PDT 2007
 //    added enableLogScale flag initialization
 //
+//    Shelly Prevost Wed Oct 10 11:27:08 PDT 2007 
+//    added support for current cycle display.
+//
 // ****************************************************************************
 
 
@@ -99,6 +102,9 @@ VisItSimStripChart::VisItSimStripChart( QWidget *parent, const char *name, int w
     pointSize = 14;
     gridFont = new QFont("Helvetica",pointSize);
     setFont(*gridFont);
+    currentData =0;
+    currentCycle =0;
+    currentScaledY=0;
 }
 
 // ****************************************************************************
@@ -202,7 +208,7 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
         startPoint_int.setY ( int ((h-((startPoint.y()-minPoint)*vdelta))));
         endPoint_int.setX ( int(endPoint.x()*delta + timeShift));
         endPoint_int.setY ( int((h-((endPoint.y()-minPoint)*vdelta)) ));
-
+        currentScaledY = ((h-((endPoint.y()-minPoint)*vdelta)) );
         paint.drawLine( startPoint_int, endPoint_int ); // draw line
         i++;
         if ( i%10 == 0 )
@@ -217,7 +223,7 @@ void VisItSimStripChart::paintEvent( QPaintEvent * )
         {
             penLimits.setColor(red);
             penLimits.setWidth(3);
-            paint.setPen( penLimits ); // set random pen color
+            paint.setPen( penLimits ); 
             paint.drawLine( QPoint(int(0),int(h-((maxYLimit)-minPoint)*vdelta)), QPoint(int(w),int(h-((maxYLimit-minPoint)*vdelta)))); // draw line
             paint.drawLine( QPoint(int(0),int(h-((minYLimit)-minPoint)*vdelta)), QPoint(int(w),int(h-((minYLimit)-minPoint)*vdelta))); // draw line
         }
@@ -269,7 +275,9 @@ void VisItSimStripChart::paintGrid(QPainter *paint)
         paint->setPen( black ); // set pen color
         paint->drawLine( QPoint(int(0),int(h-(i*vdelta))), QPoint(int(w),int(h-(i*vdelta)))); // draw line
         paint->drawText( int(0),   int(h-(i*vdelta)), QString::number(i+minPoint));
-        paint->drawText( int(w-80),int(h-(i*vdelta)),QString::number(i+minPoint));
+        // be careful not to draw over the other numbers.
+        if ( (w-timeShift) > 200)
+           paint->drawText( int(w-80),int(h-(i*vdelta)),QString::number(i+minPoint));
         paint->drawText( timeShift,int(h-(i*vdelta)), QString::number(i+minPoint));
         for ( int t=int(0); t<int(last*delta); t+=int(delta)) 
         {
@@ -341,11 +349,13 @@ bool VisItSimStripChart::addDataPoint( double x, double y )
     float additionalMargin;
     bool outOfBounds = FALSE;
     currentData = y;
+    currentCycle = x;
+    // special startup processing
     if (points.size() < 2)
     {
         additionalMargin =0.3f;
-        maxData = y;
-        minData = y - ( y * 0.1);
+        maxPoint = maxData = y + ( fabs(y) * 0.1);
+        minPoint = minData = y - ( fabs(y) * 0.1);
     }
         else
             additionalMargin = 0.2f;
@@ -475,6 +485,24 @@ void VisItSimStripChart::getMinMaxData( double &minY, double &maxY )
 double VisItSimStripChart::getCurrentData( )
 {
    return currentData;
+}
+
+// ****************************************************************************
+// Method: VisItSimStripChart::getCurrentCycle
+//
+// Purpose:
+//   This method returns the current cycle for the strip chart.
+//
+// Programmer: Shelly Prevost
+// Creation:  Wed Oct 10 11:27:08 PDT 2007 
+//
+// Modifications:
+//
+//
+// ****************************************************************************
+int VisItSimStripChart::getCurrentCycle( )
+{
+   return currentCycle;
 }
 
 // ****************************************************************************
@@ -725,9 +753,11 @@ void VisItSimStripChart::reset()
     minData = HUGE_VAL;
     maxData = -HUGE_VAL;
     currentData = 0.0;
+    currentCycle = 0;
+    currentScaledY=0;
     
     //enableLogScale = FALSE;
-    
+   
     // set the timeshift offset to start at the right side of the 
     // window.
     timeShift = width();
@@ -768,13 +798,8 @@ void VisItSimStripChart::reset()
 
 void VisItSimStripChart::focus(QScrollView *sc)
 {
-    float range = maxPoint -minPoint;
-    sc->horizontalScrollBar()->setValue(sc->horizontalScrollBar()->maxValue());
-    float scVMax = sc->verticalScrollBar()->maxValue();
-    float dataPoint =  fabs((((points.back().y())-minPoint))/(range));
-    scVMax *= zoom;
-    scVMax *= (1.0 - dataPoint);
-    sc->verticalScrollBar()->setValue(scVMax);
+    
+    sc->center( width(), currentScaledY);
     sc->updateContents();
 }
 

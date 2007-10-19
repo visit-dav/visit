@@ -126,6 +126,7 @@ public:
     void    setEnableLogScale( bool enable );
     bool    getEnableLogScale();
     double  getCurrentData();
+    int     getCurrentCycle();
        
 protected:
     void    paintEvent( QPaintEvent * );
@@ -148,6 +149,7 @@ private:
     double  minData;
     double  maxData;
     double  currentData;
+    int  currentCycle;
     int     winXSize;
 
     int     winYSize;
@@ -159,5 +161,6 @@ private:
     float   zoomOutLimit;
     QFont   *gridFont;
     int     pointSize;
+    int     currentScaledY;
 };
 #endif /* QVIS_STRIPCHART_MGR */
