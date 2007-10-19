@@ -98,6 +98,9 @@ Definition:
 //    mode. Percentage, node and zone still won't work since
 //    viewer does not have access to information necessary for that.
 //
+//    Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
+//    Added theta-phi method of editing the plane normal.
+//
 // ****************************************************************************
 
 AttributeSubject *
@@ -129,6 +132,7 @@ SliceAttributes::CreateCompatible(const std::string &tname) const
                 nz = 1.;
                 break;
             case Arbitrary:
+            case ThetaPhi:
                 nx = GetNormal()[0];
                 ny = GetNormal()[1];
                 nz = GetNormal()[2];
@@ -190,6 +194,9 @@ Definition:
 //    Slice now uses right-hand system when creating projection matrix.
 //    Updated normals and upAxis to conform (with help from Jeremy). 
 //
+//    Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
+//    Added theta-phi method of editing the plane normal.
+//
 // ****************************************************************************
 void
 SliceAttributes::UpdateOrthogonalAxes()
@@ -205,12 +212,16 @@ SliceAttributes::UpdateOrthogonalAxes()
             // X: Y vs Z
             normal[0] = -1.; normal[1] =  0.; normal[2] =  0.;
             upAxis[0] =  0.; upAxis[1] =  1.; upAxis[2] =  0.;
+	    theta = 90;
+	    phi = 0;
         }
         else
         {
             // X: Z vs Y
             normal[0] =  1.; normal[1] =  0.; normal[2] =  0.;
             upAxis[0] =  0.; upAxis[1] =  0.; upAxis[2] =  1.;
+	    theta = -90;
+	    phi = 0;
         }
         break;
       case YAxis:
@@ -219,12 +230,16 @@ SliceAttributes::UpdateOrthogonalAxes()
             // Y: Z vs X
             normal[0] =  0.; normal[1] = -1.; normal[2] =  0.;
             upAxis[0] =  0.; upAxis[1] =  0.; upAxis[2] =  1.;
+	    theta = 180;
+	    phi = 0;
         }
         else
         {
             // Y: X vs Z
             normal[0] =  0.; normal[1] =  1.; normal[2] =  0.;
             upAxis[0] =  1.; upAxis[1] =  0.; upAxis[2] =  0.;
+	    theta = 0;
+	    phi = 0;
         }
         break;
       case ZAxis:
@@ -233,12 +248,16 @@ SliceAttributes::UpdateOrthogonalAxes()
             // Z: Y vs X
             normal[0] =  0.; normal[1] =  0.; normal[2] =  1.;
             upAxis[0] =  0.; upAxis[1] =  1.; upAxis[2] =  0.;
+	    theta = 0;
+	    phi = 90;
         }
         else
         {
             // Z: X vs Y
             normal[0] =  0.; normal[1] =  0.; normal[2] = -1.;
             upAxis[0] =  1.; upAxis[1] =  0.; upAxis[2] =  0.;
+	    theta = 0;
+	    phi = -90;
         }
         break;
       default:
@@ -269,6 +288,10 @@ Definition:
 // Programmer: Hank Childs
 // Creation:   August 28, 2007
 //
+// Modifications:
+//    Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
+//    Added theta-phi method of editing the plane normal.
+//
 // ****************************************************************************
 
 bool
@@ -278,6 +301,8 @@ SliceAttributes::EqualTo(const AttributeGroup *atts) const
         return AttributeSubject::EqualTo(atts);
 
     if (GetAxisType() != Arbitrary)
+        return false;
+    if (GetAxisType() != ThetaPhi)
         return false;
     if (GetOriginType() != Point)
         return false;

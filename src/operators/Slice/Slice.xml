@@ -6,6 +6,7 @@
         YAxis
         ZAxis
         Arbitrary
+        ThetaPhi
       </Enum>
       <Enum name="OriginType">
         Point
@@ -64,6 +65,12 @@
       </Field>
       <Field name="meshName" label="meshName" type="string">
         default
+      </Field>
+      <Field name="theta" label="theta" type="double">
+        0.000000
+      </Field>
+      <Field name="phi" label="phi" type="double">
+        0.000000
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
