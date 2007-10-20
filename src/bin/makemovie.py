@@ -1651,6 +1651,7 @@ class MakeMovie:
         s.family = 0
         s.screenCapture = self.screenCaptureImages
         s.outputToCurrentDirectory = 0
+        s.resConstraint = s.NoConstaint
 
         currentRA = GetRenderingAttributes()
 
