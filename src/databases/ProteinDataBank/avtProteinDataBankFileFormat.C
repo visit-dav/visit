@@ -162,6 +162,9 @@ avtProteinDataBankFileFormat::FreeUpResources(void)
 //    Jeremy Meredith, Thu Oct 18 16:31:20 EDT 2007
 //    Only add compounds as a variable if there's more than one of them.
 //
+//    Jeremy Meredith, Mon Oct 22 12:58:00 EDT 2007
+//    Added compound name support.
+//
 // ****************************************************************************
 
 void
@@ -188,7 +191,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         char name_mesh[80];
         char name_el[80],name_rt[80],name_rs[80],name_bk[80];
         char name_nm[80],name_rn[80],name_lr[80],name_en[80];
-        char name_cmp[80];
+        char name_cmp[80],name_cmpnm[80];
         sprintf(name_mesh, "%smesh",        prefix, i);
         sprintf(name_el,   "%selement",     prefix, i);
         sprintf(name_rt,   "%srestype",     prefix, i);
@@ -199,6 +202,7 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         sprintf(name_lr,   "%slongresname", prefix, i);
         sprintf(name_en,   "%selementname", prefix, i);
         sprintf(name_cmp,  "%scompound",    prefix, i);
+        sprintf(name_cmpnm,"%scompoundname",prefix, i);
 
         avtMeshMetaData *mmd = new avtMeshMetaData(name_mesh, 1, 0,0,0,
                                                    3, 0,
@@ -221,14 +225,13 @@ avtProteinDataBankFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             avtScalarMetaData *cmp_smd =
                 new avtScalarMetaData(name_cmp, name_mesh, AVT_NODECENT);
             cmp_smd->isEnumeration = true;
-            cmp_smd->enumNames.push_back("No Compound");
-            cmp_smd->enumValues.push_back(0);
             for (int a=0; a<compoundNames.size(); a++)
             {
                 cmp_smd->enumNames.push_back(compoundNames[a]);
-                cmp_smd->enumValues.push_back(a+1);
+                cmp_smd->enumValues.push_back(a);
             }
             md->Add(cmp_smd);
+            md->Add(new avtLabelMetaData(name_cmpnm, name_mesh, AVT_NODECENT));
         }
 
         AddScalarVarToMetaData(md, name_rt, name_mesh, AVT_NODECENT);
@@ -351,6 +354,9 @@ avtProteinDataBankFileFormat::GetMesh(const char *orig_meshname)
 //
 //    Jeremy Meredith, Wed Oct 17 11:27:10 EDT 2007
 //    Added compound support.
+//
+//    Jeremy Meredith, Mon Oct 22 12:58:00 EDT 2007
+//    Added compound name support.
 //
 // ****************************************************************************
 
@@ -491,6 +497,30 @@ avtProteinDataBankFileFormat::GetVar(const char *orig_varname)
         {
             memcpy(cptr, atoms[i].element, 3);
             cptr += 3;
+        }
+        return labels;       
+    }
+
+    if (string(varname) == "compoundname")
+    {
+        int maxlen = 1;
+        for (int j=0; j<compoundNames.size(); j++)
+        {
+            int l = compoundNames[j].length() + 1;
+            if (l > maxlen)
+                maxlen = l;
+        }
+
+        vtkUnsignedCharArray *labels = vtkUnsignedCharArray::New();
+        labels->SetNumberOfComponents(maxlen);
+        labels->SetNumberOfTuples(atoms.size());
+        char *cptr = (char *)labels->GetVoidPointer(0);
+        memset(cptr, 0, maxlen*atoms.size());  // Initialize all of this for
+                                               // purify, extents, etc.
+        for (int i=0; i<atoms.size(); i++)
+        {
+            strcpy(cptr, compoundNames[atoms[i].compound].c_str());
+            cptr += maxlen;
         }
         return labels;       
     }
@@ -803,6 +833,10 @@ avtProteinDataBankFileFormat::CreateBondsFromModel_Fast(int model)
 //    Jeremy Meredith, Thu Oct 18 16:31:20 EDT 2007
 //    COMPND records can be multi-line; ignore all but the first line.
 //
+//    Jeremy Meredith, Mon Oct 22 12:58:00 EDT 2007
+//    Explicitly make "no compound" part of the compound name array.
+//    This makes getting the name for any particular compound number easier.
+//
 // ****************************************************************************
 void
 avtProteinDataBankFileFormat::ReadAllMetaData()
@@ -846,6 +880,10 @@ avtProteinDataBankFileFormat::ReadAllMetaData()
         else if (canReadCompounds &&
                  record == "COMPND" && line[8]==' ' && line[9]==' ')
         {
+            if (compoundNames.size() == 0)
+            {
+                compoundNames.push_back("No compound");
+            }
             compoundNames.push_back(string(line + 10));
         }
         in.getline(line, 82);
