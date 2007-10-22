@@ -290,6 +290,15 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Gunther H. Weber, Thu Oct 11 15:49:41 PDT 2007
 //    Read expressions from Chombo files.
 //
+//    Gunther H. Weber, Fri Oct 19 16:47:45 PDT 2007
+//    Disable  HDF5 diagnostic output while attempting to read information
+//    that may not be contained in the data set. Read problem domain from
+//    file (used to figure out, which ghost cells are external to the problem).
+//
+//    Gunther H. Weber, Mon Oct 22 11:22:35 PDT 2007
+//    Read information about problem domain [low|hi]Prob[I|J|K] needed
+//    to figure out whether a ghost zone is external to the problem.
+
 // ****************************************************************************
 
 void
@@ -300,6 +309,18 @@ avtChomboFileFormat::InitializeReader(void)
     if (initializedReader)
         return;
 
+    //
+    // Get current automatic stack traversal function to re-enable it later and
+    // disable HDF5's automatic error printing
+    //
+    H5E_auto_t h5e_autofunc;
+    void* h5e_clientdata;
+    H5Eget_auto(&h5e_autofunc, &h5e_clientdata);
+    H5Eset_auto(0, 0);
+
+    //
+    // Open file
+    //
     file_handle = H5Fopen(filenames[0], H5F_ACC_RDONLY, H5P_DEFAULT);
     if (file_handle < 0)
     {
@@ -466,7 +487,6 @@ avtChomboFileFormat::InitializeReader(void)
     //
     // Look for epxressions
     //
-
     hid_t expressionsGroup = H5Gopen(file_handle, "/Expressions");
     if (expressionsGroup > 0)
     {
@@ -538,6 +558,7 @@ avtChomboFileFormat::InitializeReader(void)
             EXCEPTION1(InvalidDBTypeException, "Does not contain all "
                                                "refinement levels.");
         }
+
         hid_t boxes = H5Dopen(level, "boxes");
         if (boxes < 0)
         {
@@ -602,6 +623,19 @@ avtChomboFileFormat::InitializeReader(void)
         lowK.resize(totalPatches);
         hiK.resize(totalPatches);
     }
+
+    //
+    // Also, create space for the problem domain extent for each level
+    //
+    lowProbI.resize(num_levels);
+    hiProbI.resize(num_levels);
+    lowProbJ.resize(num_levels);
+    hiProbJ.resize(num_levels);
+    if (dimension == 3)
+    {
+        lowProbK.resize(num_levels);
+        hiProbK.resize(num_levels);
+    }
     
     //
     // Now iterate over the patches again, storing their extents in our
@@ -630,7 +664,6 @@ avtChomboFileFormat::InitializeReader(void)
     H5Tinsert (intvect3d_id, "intvectj", HOFFSET(intvect3d, j), H5T_NATIVE_INT);
     H5Tinsert (intvect3d_id, "intvectk", HOFFSET(intvect3d, k), H5T_NATIVE_INT);
 
-
     int patchId = 0;
     for (i = 0 ; i < num_levels ; i++)
     {
@@ -644,6 +677,58 @@ avtChomboFileFormat::InitializeReader(void)
         H5Sget_simple_extent_dims(boxspace, dims, maxdims);
         hid_t memdataspace = H5Screate_simple(1, dims, NULL);
 
+        //
+        // Level 0 contains information about the problem domain
+        // 
+        if (i == 0)
+        {
+            hid_t probDomain = H5Aopen_name(level, "prob_domain");
+            if (probDomain < 0)
+            {
+                EXCEPTION1(InvalidDBTypeException, "Does not contain \"prob_domain\".");
+            }
+            box *probDomain_buff = new box;
+            if (H5Aread(probDomain, (dimension == 2 ? box2d_id : box3d_id), probDomain_buff) < 0)
+            {
+                EXCEPTION1(InvalidDBTypeException, "Cannot read \"prob_domain\".");
+            }
+            if (dimension == 2)
+            {
+                lowProbI[0] = probDomain_buff->b2.lo.i;
+                hiProbI[0] = probDomain_buff->b2.hi.i;
+                lowProbJ[0] = probDomain_buff->b2.lo.i;
+                hiProbJ[0] = probDomain_buff->b2.hi.j;
+            }
+            else
+            {
+                lowProbI[0] = probDomain_buff->b3.lo.i;
+                hiProbI[0] = probDomain_buff->b3.hi.j;
+                lowProbJ[0] = probDomain_buff->b3.lo.j;
+                hiProbJ[0] = probDomain_buff->b3.hi.j;
+                lowProbK[0] = probDomain_buff->b3.lo.k;
+                hiProbK[0] = probDomain_buff->b3.hi.k;
+            }
+            delete probDomain_buff;
+            H5Aclose(probDomain);
+        }
+        else
+        {
+            // In higher levels, calculate the information using
+            // the previous level and refinement ratio
+            lowProbI[i] = refinement_ratio[i-1] * lowProbI[i-1];
+            hiProbI[i] = refinement_ratio[i-1] * hiProbI[i-1];
+            lowProbJ[i] = refinement_ratio[i-1] * lowProbJ[i-1];
+            hiProbJ[i] = refinement_ratio[i-1] * hiProbJ[i-1];
+            if (dimension == 3)
+            {
+                lowProbK[i] = refinement_ratio[i-1] * lowProbK[i-1];
+                hiProbK[i] = refinement_ratio[i-1] * hiProbK[i-1];
+            }
+        }
+
+        //
+        // Read box information
+        //
         box *boxes_buff = new box[dims[0]];
         H5Dread(boxes, (dimension == 2 ? box2d_id : box3d_id), memdataspace, 
                 boxspace, H5P_DEFAULT, boxes_buff);
@@ -717,6 +802,11 @@ avtChomboFileFormat::InitializeReader(void)
 
     H5Tclose(box2d_id);
     H5Tclose(box3d_id);
+
+    //
+    // Re-enable HDF5's automatic diagnostic output
+    //
+    H5Eset_auto(h5e_autofunc, h5e_clientdata);
 
     //
     // The domain nesting takes a while to calculate.  We don't need the
@@ -1201,6 +1291,9 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Make Gunther's code go live using DB options.  Also correct bug with
 //    setting coordinate positions with ghost zones.
 //
+//    Gunther H. Weber, Mon Oct 22 11:50:41 PDT 2007
+//    Distinguish between ghost zones internal and exterior to problem.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1314,6 +1407,7 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
     {
         //
         // Store real dims so that pick reports correct indices
+        //
         arr = vtkIntArray::New();
         arr->SetNumberOfTuples(6);
         arr->SetValue(0, numGhostI);
@@ -1326,54 +1420,72 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         rg->GetFieldData()->AddArray(arr);
         arr->Delete();
     
+
+        //
+        // Calculate the problem domian in the current level
+        //
         //
         // Generate ghost zone information
         //
         if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
         {
-            unsigned char realVal = 0, ghost = 0;
-            avtGhostData::AddGhostZoneType(ghost, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+            unsigned char realVal = 0, ghostInternal = 0, ghostExternal = 0;
+            avtGhostData::AddGhostZoneType(ghostInternal, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+            avtGhostData::AddGhostZoneType(ghostExternal, ZONE_EXTERIOR_TO_PROBLEM);
     
             vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
             ghostCells->SetName("avtGhostZones");
     
             ghostCells->Allocate(rg->GetNumberOfCells());
     
-            int nI = hiI[patch] - lowI[patch] + 2*numGhostI;
-            int nJ = hiJ[patch] - lowJ[patch] + 2*numGhostJ;
-    
             if (dimension == 3)
             {
-                int nK = hiK[patch] - lowK[patch] + 2*numGhostK;
-                for (int k=0; k<nK; ++k)
-                    for (int j=0; j<nJ; ++j)
-                        for (int i=0; i<nI; ++i)
+                for (int k=lowK[patch] - numGhostK; k<hiK[patch] + numGhostK; ++k)
+                    for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
+                        for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
                         {
-                            if (i>=numGhostI && i<nI - numGhostI &&
-                                j>=numGhostJ && j<nJ - numGhostJ && 
-                                k>=numGhostK && k<nK - numGhostK)  
+                            if (i>=lowI[patch] && i<hiI[patch] &&
+                                j>=lowJ[patch] && j<hiJ[patch] && 
+                                k>=lowK[patch] && k<hiK[patch])  
                             {
                                 ghostCells->InsertNextValue(realVal);
                             }
                             else
                             {
-                                ghostCells->InsertNextValue(ghost);
+                                if (i>=lowProbI[level] && i<=hiProbI[level] &&
+                                    j>=lowProbJ[level] && j<=hiProbJ[level] &&
+                                    k>=lowProbK[level] && k<=hiProbK[level])
+                                {
+                                    ghostCells->InsertNextValue(ghostInternal);
+                                }
+                                else
+                                {
+                                    ghostCells->InsertNextValue(ghostExternal);
+                                }
                             }
                         }
             }
             else
             {
-                for (int j=0; j<nJ; ++j)
-                    for (int i=0; i<nI; ++i)
+                for (int j=lowJ[patch] - numGhostJ; j<hiJ[patch] + numGhostJ; ++j)
+                    for (int i=lowI[patch] - numGhostI; i<hiI[patch] + numGhostI; ++i)
                     {
-                        if (i>=numGhostI && i<nI - numGhostI &&
-                            j>=numGhostJ && j<nJ - numGhostJ)
+                        if (i>=lowI[patch] && i<hiI[patch] &&
+                                j>=lowJ[patch] && j<hiJ[patch])
                         {
                             ghostCells->InsertNextValue(realVal);
                         }
                         else
                         {
-                            ghostCells->InsertNextValue(ghost);
+                            if (i>=lowProbI[level] && i<=hiProbI[level] &&
+                                    j>=lowProbJ[level] && j<=hiProbJ[level])
+                            {
+                                ghostCells->InsertNextValue(ghostInternal);
+                            }
+                            else
+                            {
+                                ghostCells->InsertNextValue(ghostExternal);
+                            }
                         }
                     }
             }

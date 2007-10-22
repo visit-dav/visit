@@ -104,6 +104,10 @@ class DBOptionsAttributes;
 //    Hank Childs, Mon Oct  8 17:17:24 PDT 2007
 //    Added options for reading.
 //
+//    Gunther H. Weber, Mon Oct 22 11:22:35 PDT 2007
+//    Added information about problem domain [low|hi]Prob[I|J|K] needed
+//    to figure out whether a ghost zone is external to the problem.
+//
 // ****************************************************************************
 
 class avtChomboFileFormat : public avtSTMDFileFormat
@@ -145,6 +149,13 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     std::vector<double>    dx;
     std::list<Expression*> expressions;
     bool                   useGhosts;
+
+    std::vector<int>       lowProbI;
+    std::vector<int>       hiProbI;
+    std::vector<int>       lowProbJ;
+    std::vector<int>       hiProbJ;
+    std::vector<int>       lowProbK;
+    std::vector<int>       hiProbK;
 
     std::vector<int>       lowI;
     std::vector<int>       hiI;
