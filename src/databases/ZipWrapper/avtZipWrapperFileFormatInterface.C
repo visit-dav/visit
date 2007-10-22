@@ -682,7 +682,14 @@ avtZipWrapperFileFormatInterface::GetRealInterface(int ts, int dom, bool dontCac
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
+//    Add return value.
+//
 // ****************************************************************************
+
 const char *
 avtZipWrapperFileFormatInterface::GetFilename(int ts)
 {
@@ -694,6 +701,8 @@ avtZipWrapperFileFormatInterface::GetFilename(int ts)
         return inputFileList[0][0].c_str(); 
     else if (dbType == DB_TYPE_STSD)
         return inputFileList[ts][0].c_str(); 
+
+    return NULL;
 }
 
 // ****************************************************************************
@@ -829,7 +838,14 @@ avtZipWrapperFileFormatInterface::SetCycleTimeInDatabaseMetaData(
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
+//    Add return value.
+//
 // ****************************************************************************
+
 vtkDataSet *
 avtZipWrapperFileFormatInterface::GetMesh(int ts, int dom, const char *meshname)
 {
@@ -841,6 +857,7 @@ avtZipWrapperFileFormatInterface::GetMesh(int ts, int dom, const char *meshname)
         return GetRealInterface(0,dom)->GetMesh(ts,0,meshname);
     else if (dbType == DB_TYPE_STSD)
         return GetRealInterface(ts,dom)->GetMesh(0,0,meshname);
+    return NULL;
 }
 
 // ****************************************************************************
@@ -850,7 +867,14 @@ avtZipWrapperFileFormatInterface::GetMesh(int ts, int dom, const char *meshname)
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
+//    Add return value.
+//
 // ****************************************************************************
+
 void *
 avtZipWrapperFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int dom,
     const char *type, void *args, DestructorFunction &df)
@@ -863,6 +887,7 @@ avtZipWrapperFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int 
         return GetRealInterface(0,dom)->GetAuxiliaryData(var, ts, 0, type, args, df);
     else if (dbType == DB_TYPE_STSD)
         return GetRealInterface(ts,dom)->GetAuxiliaryData(var, 0, 0, type, args, df);
+    return NULL;
 }
 
 // ****************************************************************************
@@ -872,7 +897,14 @@ avtZipWrapperFileFormatInterface::GetAuxiliaryData(const char *var, int ts, int 
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
+//    Add return value.
+//
 // ****************************************************************************
+
 vtkDataArray *
 avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
 {
@@ -884,6 +916,7 @@ avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
         return GetRealInterface(0,dom)->GetVar(ts,0,varname); 
     else if (dbType == DB_TYPE_STSD)
         return GetRealInterface(ts,dom)->GetVar(0,0,varname); 
+    return NULL;
 }
 
 // ****************************************************************************
@@ -893,7 +926,14 @@ avtZipWrapperFileFormatInterface::GetVar(int ts, int dom, const char *varname)
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   July 31, 2007 
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
+//    Add return value.
+//
 // ****************************************************************************
+
 vtkDataArray *
 avtZipWrapperFileFormatInterface::GetVectorVar(int ts, int dom, const char *varname)
 {
@@ -905,4 +945,5 @@ avtZipWrapperFileFormatInterface::GetVectorVar(int ts, int dom, const char *varn
         return GetRealInterface(0,dom)->GetVectorVar(ts,0,varname); 
     else if (dbType == DB_TYPE_STSD)
         return GetRealInterface(ts,dom)->GetVectorVar(0,0,varname); 
+    return NULL;
 }

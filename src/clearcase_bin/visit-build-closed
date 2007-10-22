@@ -19,6 +19,9 @@
 #   Hank Childs, Thu Oct 18 15:40:05 PDT 2007
 #   Add ksh support for sunset.
 #
+#   Hank Childs, Mon Oct 22 09:25:47 PDT 2007
+#   More ksh support for sunset.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -204,7 +207,7 @@ fi
 rm -f sunset
 cat <<EOF > sunset
 #!/bin/sh
-PATH=\$PATH:/usr/local/bin
+PATH=\$PATH:/usr/local/bin:/usr/ccs/bin
 export PATH
 if test ! -d /export/scratch/$user ; then
    mkdir /export/scratch/$user

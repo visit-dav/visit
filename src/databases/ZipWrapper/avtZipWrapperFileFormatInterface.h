@@ -117,6 +117,11 @@ class avtZipWrapperFileFormat;
 //  Modifications:
 //    Mark C. Miller, Wed Aug  8 17:19:14 PDT 2007
 //    Added procNum/procCount args to Initialize
+//
+//    Hank Childs, Sun Oct 21 09:51:53 PDT 2007
+//    Templates with default arguments confuse xlC, so add the default
+//    arguments explicitly.
+//
 // ****************************************************************************
 
 class avtZipWrapperFileFormatInterface : public avtFileFormatInterface 
@@ -176,7 +181,7 @@ class avtZipWrapperFileFormatInterface : public avtFileFormatInterface
       string                       pluginId;
       bool                         realPluginWasLoadedByMe;
 
-      MRUCache<string, avtFileFormatInterface*, MRUCache_CallbackDelete>
+      MRUCache<string, avtFileFormatInterface*, MRUCache_CallbackDelete, 20>
                                    decompressedFilesCache;
 };
 

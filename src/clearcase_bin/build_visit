@@ -227,6 +227,9 @@
 #     - corrected problems with szip in Silo build
 #     Added information about visit-bin-dist and visit-install
 #
+#     Hank Childs, Mon Oct 22 10:09:42 PDT 2007
+#     Fix typo.  Compiler flage -> Compiler flags.
+#
 # *****************************************************************************
 
 
@@ -5584,7 +5587,7 @@ function build_hostconf
 "DEFAULT_SILO_LIBRARY=\$VISITHOME/silo/$SILO_VERSION/$VISITARCH/lib" \
     >> $HOSTCONF
     echo >> $HOSTCONF
-    echo "## Compiler flage." >> $HOSTCONF
+    echo "## Compiler flags." >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "CC=\"$C_COMPILER\"" >> $HOSTCONF
     echo "CXX=\"$CXX_COMPILER\"" >> $HOSTCONF
