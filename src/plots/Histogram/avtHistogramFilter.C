@@ -569,7 +569,13 @@ avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, std::string)
 //  Programmer: Cyrus Harrison
 //  Creation:   March 7, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Oct 22 15:58:59 PDT 2007
+//    Ignore ghost data.
+//
 // ****************************************************************************
+
 void
 avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
 {
@@ -580,14 +586,13 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
     vtkDataArray *bin_arr = NULL;
     bool ownBinArr = false;
     
-    
     // if we have points obtain point data
-    if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         // in the point case, get point date
         bin_arr = inDS->GetPointData()->GetArray(var);
     }
-    else if ( inDS->GetPointData()->GetArray(var) != NULL)
+    else if (inDS->GetPointData()->GetArray(var) != NULL)
     {
         // in the 2d or 3d case make sure to get zone centered data
         vtkDataSet *new_in_ds = (vtkDataSet *) inDS->NewInstance();
@@ -616,6 +621,15 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
     if (bin_arr == NULL)
         EXCEPTION0(ImproperUseException);
 
+    unsigned char *ghosts = NULL;
+    if (inDS->GetCellData()->GetArray("avtGhostZones") != NULL)
+    {
+        vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
+                            inDS->GetCellData()->GetArray("avtGhostZones");
+        if (g->GetNumberOfTuples() == bin_arr->GetNumberOfTuples())
+            ghosts = g->GetPointer(0);
+    }
+
     //
     // Now we will walk through each value and sort them into bins.
     //
@@ -623,6 +637,8 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
     float binStep = (workingMax - workingMin) / (workingNumBins);
     for (int i = 0 ; i < nvals ; i++)
     {
+        if (ghosts != NULL && ghosts[i] != '\0')
+            continue;
         float val = bin_arr->GetTuple1(i);
         if (val < workingMin || val > workingMax)
             continue;
@@ -648,7 +664,13 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
 //  Programmer: Cyrus Harrison
 //  Creation:   March 7, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Oct 22 15:58:59 PDT 2007
+//    Ignore ghost data.
+//
 // ****************************************************************************
+
 void
 avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
 {
@@ -665,15 +687,13 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
     vtkDataArray *bin_arr = NULL;
     bool ownBinArr = false;
 
-    
-
     if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         // weighted case does not make sense for point data
         EXCEPTION0(ImproperUseException);
     }
     
-    if ( inDS->GetPointData()->GetArray(var) != NULL)
+    if (inDS->GetPointData()->GetArray(var) != NULL)
     {
         // in the 2d or 3d case make sure to get zone centered data
         //
@@ -701,6 +721,15 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
     if (bin_arr == NULL)
         EXCEPTION0(ImproperUseException);
 
+    unsigned char *ghosts = NULL;
+    if (inDS->GetCellData()->GetArray("avtGhostZones") != NULL)
+    {
+        vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
+                            inDS->GetCellData()->GetArray("avtGhostZones");
+        if (g->GetNumberOfTuples() == bin_arr->GetNumberOfTuples())
+            ghosts = g->GetPointer(0);
+    }
+
     //
     // Now we will walk through each value and sort them into bins.
     //
@@ -708,6 +737,8 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
     float binStep = (workingMax - workingMin) / (workingNumBins);
     for (int i = 0 ; i < nvals ; i++)
     {
+        if (ghosts != NULL && ghosts[i] != '\0')
+            continue;
         float val = bin_arr->GetTuple1(i);
         if (val < workingMin || val > workingMax)
             continue;
