@@ -28,6 +28,9 @@
 #   Add a subject line to the status e-mails.  Also workaround problem
 #   with quad mailing out.
 #
+#   Hank Childs, Mon Oct 22 09:25:47 PDT 2007
+#   More ksh sunspot fixes.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -282,7 +285,7 @@ rm -f sunspot
 cat <<EOF > sunspot
 #!/bin/sh
 
-PATH=/usr/local/bin:\$PATH
+PATH=/usr/local/bin:/usr/ccs/bin:\$PATH
 export PATH
 LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH
@@ -374,6 +377,8 @@ ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/li
 # quad can't mail out, so send mail through thunder
 cp resultlog ~/quad_resultlog
 ssh thunder "cat quad_resultlog | mail  -s \"VisIt build ($dist): quad\" $emailName"
+# give thunder time to mail it before removing the log
+sleep 10
 rm ~/quad_resultlog
 EOF
 

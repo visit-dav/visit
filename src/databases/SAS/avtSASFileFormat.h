@@ -57,7 +57,7 @@ struct Assembly
 #ifdef WIN32
 typedef __int64 int64_t;
 #else
-#include <stdint.h>
+#include <inttypes.h>
 #endif
 
 // ****************************************************************************
@@ -74,6 +74,10 @@ typedef __int64 int64_t;
 //    Added GetCycles call.  The data doesn't contain cycle metadata, but 
 //    returning it here has the nice side effect of making the query over time 
 //    and pick over time do the right thing by default.
+//
+//    Hank Childs, Sun Oct 21 09:34:21 PDT 2007
+//    Change stdint.h to inttypes.h for portability on suns.
+//
 // ****************************************************************************
 
 class avtSASFileFormat : public avtMTMDFileFormat
