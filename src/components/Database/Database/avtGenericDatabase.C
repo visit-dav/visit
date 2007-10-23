@@ -111,6 +111,9 @@ using     std::vector;
 // Function prototypes for static functions.
 static const char   *GetOriginalVariableName(const avtDatabaseMetaData *,
                                              const char *);
+void                 AddGhostNodesForSimplifiedNesting(bool *hasNeighbor, 
+                       vtkUnstructuredGrid *ugrid, bool addGhostZones,
+                       const int *dims, vtkUnsignedCharArray *ghost_zones);
 
 // static members
 
@@ -7090,9 +7093,13 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
 //  Modifications:
 //
 //    Hank Childs, Wed Oct 17 15:52:59 PDT 2007
-//    This routine causes the IRIX compiler to assert with an internal error. 
+//    This routine causes the IRIX compiler to assert with an internal error.
 //    So I tweaked the code a little to get it through.
-//    
+//
+//    Hank Childs, Mon Oct 22 17:09:58 PDT 2007
+//    Previous attempt had incorrect code.  Try again, by separating out
+//    the problem code into its own function.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -7156,10 +7163,6 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     //
     int dims[3];
     rgrid->GetDimensions(dims);
-    bool is2D = (dims[2] == 1);
-    const int numI = dims[0]-1;
-    const int numJ = dims[1]-1;
-    const int numK = dims[2]-1;
 
     int minIGlob = my_exts[0];
     int maxIGlob = my_exts[0] + dims[0]-1; // -1 to have inclusive range.
@@ -7516,95 +7519,9 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     {
         bool hasNeighbor[6];
         dbi->GetNeighborPresence(domain, hasNeighbor, allDomains);
-        vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
-        ghost_nodes->SetName("avtGhostNodes");
-        ghost_nodes->SetNumberOfTuples(nPts);
-        unsigned char *gnp = ghost_nodes->GetPointer(0);
-        for (i = 0 ; i < nPts ; i++)
-            gnp[i] = 0;
-
-        const int dims[3] = { numIlist, numJlist, numKlist };
-
-        //
-        // Start by setting up all ghost nodes from abutting 
-        // neighboring patches.
-        //
-        if (hasNeighbor[0])
-            for (j = 0 ; j < dims[1] ; j++)
-                for (k = 0 ; k < dims[2] ; k++)
-                    avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+j*dims[0]], 
-                                                   DUPLICATED_NODE);
-        if (hasNeighbor[1])
-            for (j = 0 ; j < dims[1] ; j++)
-                for (k = 0 ; k < dims[2] ; k++)
-                    avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+j*dims[0]+dims[0]-1], 
-                                                   DUPLICATED_NODE);
-        if (hasNeighbor[2])
-            for (i = 0 ; i < dims[0] ; i++)
-                for (k = 0 ; k < dims[2] ; k++)
-                    avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+i], 
-                                                   DUPLICATED_NODE);
-        if (hasNeighbor[3])
-            for (i = 0 ; i < dims[0] ; i++)
-                for (k = 0 ; k < dims[2] ; k++)
-                    avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+(dims[1]-1)*dims[0]+i], 
-                                                   DUPLICATED_NODE);
-        if (hasNeighbor[4])
-            for (i = 0 ; i < dims[0] ; i++)
-                for (j = 0 ; j < dims[1] ; j++)
-                    avtGhostData::AddGhostNodeType(gnp[j*dims[0]+i], 
-                                                   DUPLICATED_NODE);
-        if (hasNeighbor[5])
-            for (i = 0 ; i < dims[0] ; i++)
-                for (j = 0 ; j < dims[1] ; j++)
-                    avtGhostData::AddGhostNodeType(gnp[(dims[2]-1)*dims[0]*dims[1]+j*dims[0]+i], 
-                                                   DUPLICATED_NODE);
-
-        //
-        // If we have ghost zones, then every face that abutted a ghost
-        // zone should be treated as a ghost face.  This is important for
-        // wireframe subset plots.
-        //
-        if (addGhostZones)
-        {
-            for (int c = 0 ; c < numCells ; c++)
-            {
-                unsigned char c2 = ghost_zones->GetValue(c);
-                if (avtGhostData::IsGhostZoneType(c2,REFINED_ZONE_IN_AMR_GRID))
-                {
-                    if (is2D)
-                    {
-                        int I = c % (numI);
-                        int J = c / (numI);
-                        for (l = 0 ; l < 4 ; l++)
-                        {
-                            int I2 = (l & 1 ? I+1 : I);
-                            int J2 = (l & 2 ? J+1 : J);
-                            int pt = J2*dims[0]+I2;
-                            avtGhostData::AddGhostNodeType(gnp[pt],
-                               NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
-                        }
-                    }
-                    else
-                    {
-                        int I = c % (numI);
-                        int J = (c / (numI)) % (numJ);
-                        int K = c / ((numI)*(numJ));
-                        for (l = 0 ; l < 8 ; l++)
-                        {
-                            int I2 = (l & 1 ? I+1 : I);
-                            int J2 = (l & 2 ? J+1 : J);
-                            int K2 = (l & 4 ? K+1 : K);
-                            int pt = K2*dims[1]*dims[0] + J2*dims[0] + I2;
-                            avtGhostData::AddGhostNodeType(gnp[pt], 
-                               NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
-                        }
-                    }
-                }
-            }
-        }
-        ugrid->GetPointData()->AddArray(ghost_nodes);
-        ghost_nodes->Delete();
+        const int new_dims[3] = { numIlist, numJlist, numKlist };
+        AddGhostNodesForSimplifiedNesting(hasNeighbor, ugrid, addGhostZones, 
+                                          new_dims, ghost_zones);
     }
     
 
@@ -7617,6 +7534,128 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     delete [] useCell;
 
     return ugrid;
+}
+
+
+// ****************************************************************************
+//  Function: AddGhostNodesForSimplifiedNesting
+//
+//  Purpose:
+//      A helper function for CreateSimplifiedNestingRepresentation.  It 
+//      creates the ghost nodes.
+//
+//  Notes:      This functionality used to be directly in 
+//              CreateSimplifiedNestingRepresentation.  But that was causing
+//              an internal error with the SGI compiler, so I pulled it out.
+//              The function was too long anyway.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 22, 2007
+//
+// ****************************************************************************
+
+void
+AddGhostNodesForSimplifiedNesting(bool *hasNeighbor, vtkUnstructuredGrid *ugrid, 
+                                  bool addGhostZones, const int *dims, 
+                                  vtkUnsignedCharArray *ghost_zones)
+{
+    int  i, j, k, l;
+
+    int numCells;
+    if (dims[2] == 1)
+        numCells = (dims[0]-1)*(dims[1]-1);
+    else
+        numCells = (dims[0]-1)*(dims[1]-1)*(dims[2]-1); 
+    int nPts = dims[0]*dims[1]*dims[2];
+
+    vtkUnsignedCharArray *ghost_nodes = vtkUnsignedCharArray::New();
+    ghost_nodes->SetName("avtGhostNodes");
+    ghost_nodes->SetNumberOfTuples(nPts);
+    unsigned char *gnp = ghost_nodes->GetPointer(0);
+    for (i = 0 ; i < nPts ; i++)
+        gnp[i] = 0;
+
+
+    //
+    // Start by setting up all ghost nodes from abutting 
+    // neighboring patches.
+    //
+    if (hasNeighbor[0])
+        for (j = 0 ; j < dims[1] ; j++)
+            for (k = 0 ; k < dims[2] ; k++)
+                avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+j*dims[0]], 
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[1])
+        for (j = 0 ; j < dims[1] ; j++)
+            for (k = 0 ; k < dims[2] ; k++)
+                avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+j*dims[0]+dims[0]-1], 
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[2])
+        for (i = 0 ; i < dims[0] ; i++)
+            for (k = 0 ; k < dims[2] ; k++)
+                avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+i], 
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[3])
+        for (i = 0 ; i < dims[0] ; i++)
+            for (k = 0 ; k < dims[2] ; k++)
+                avtGhostData::AddGhostNodeType(gnp[k*dims[0]*dims[1]+(dims[1]-1)*dims[0]+i], 
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[4])
+        for (i = 0 ; i < dims[0] ; i++)
+            for (j = 0 ; j < dims[1] ; j++)
+                avtGhostData::AddGhostNodeType(gnp[j*dims[0]+i], 
+                                               DUPLICATED_NODE);
+    if (hasNeighbor[5])
+        for (i = 0 ; i < dims[0] ; i++)
+            for (j = 0 ; j < dims[1] ; j++)
+                avtGhostData::AddGhostNodeType(gnp[(dims[2]-1)*dims[0]*dims[1]+j*dims[0]+i], 
+                                               DUPLICATED_NODE);
+
+    //
+    // If we have ghost zones, then every face that abutted a ghost
+    // zone should be treated as a ghost face.  This is important for
+    // wireframe subset plots.
+    //
+    if (addGhostZones)
+    {
+        for (int c = 0 ; c < numCells ; c++)
+        {
+            unsigned char c2 = ghost_zones->GetValue(c);
+            if (avtGhostData::IsGhostZoneType(c2,REFINED_ZONE_IN_AMR_GRID))
+            {
+                if (dims[2] == 1)
+                {
+                    int I = c % (dims[0]-1);
+                    int J = c / (dims[0]-1);
+                    for (l = 0 ; l < 4 ; l++)
+                    {
+                        int I2 = (l & 1 ? I+1 : I);
+                        int J2 = (l & 2 ? J+1 : J);
+                        int pt = J2*dims[0]+I2;
+                        avtGhostData::AddGhostNodeType(gnp[pt], 
+                           NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+                    }
+                }
+                else
+                {
+                    int I = c % (dims[0]-1);
+                    int J = (c / (dims[0]-1)) % (dims[1]-1);
+                    int K = c / ((dims[0]-1)*(dims[1]-1));
+                    for (l = 0 ; l < 8 ; l++)
+                    {
+                        int I2 = (l & 1 ? I+1 : I);
+                        int J2 = (l & 2 ? J+1 : J);
+                        int K2 = (l & 4 ? K+1 : K);
+                        int pt = K2*dims[1]*dims[0] + J2*dims[0] + I2;
+                        avtGhostData::AddGhostNodeType(gnp[pt], 
+                           NODE_IS_ON_COARSE_SIDE_OF_COARSE_FINE_BOUNDARY);
+                    }
+                }
+            }
+        }
+    }
+    ugrid->GetPointData()->AddArray(ghost_nodes);
+    ghost_nodes->Delete();
 }
 
 
