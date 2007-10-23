@@ -32,6 +32,9 @@ Definition:
 //    Jeremy Meredith, Mon May  5 15:01:30 PDT 2003
 //    Changed the way origin works.
 //
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Added theta-phi method of editing the plane normal.    
+//
 // ****************************************************************************
 
 bool
@@ -55,7 +58,8 @@ SliceAttributes::CopyAttributes(const AttributeGroup *atts)
             SetOriginType(Point);
             SetNormal(tmp->GetNormal());
             SetUpAxis(tmp->GetUpAxis());
-            SetAxisType(Arbitrary);
+	    if ( GetAxisType() != Arbitrary && GetAxisType() != ThetaPhi )
+	         SetAxisType(Arbitrary);
 
 	    //Set theta/phi.
 	    double n[3] = {tmp->GetNormal()[0],tmp->GetNormal()[1],tmp->GetNormal()[2]};
@@ -220,7 +224,7 @@ Definition:
 void
 SliceAttributes::UpdateOrthogonalAxes()
 {
-    if (axisType == Arbitrary)
+    if (axisType == Arbitrary || axisType == ThetaPhi)
         return;
 
     switch(axisType)

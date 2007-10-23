@@ -258,6 +258,9 @@ avtSliceFilter::Create()
 //
 //    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
 //    Use the new vtkSlicer class.
+//    
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Added theta-phi method of editing the plane normal.    
 //
 // ****************************************************************************
 
@@ -266,9 +269,12 @@ avtSliceFilter::SetAtts(const AttributeGroup *a)
 {
     atts = *(const SliceAttributes*)a;
 
-    double nx = atts.GetNormal()[0];
-    double ny = atts.GetNormal()[1];
-    double nz = atts.GetNormal()[2];
+    double nx = 0, ny = 0, nz = 0;
+    GetNormal( nx, ny, nz );
+    cachedNormal[0] = nx;
+    cachedNormal[1] = ny;
+    cachedNormal[2] = nz;    
+
     //
     // Make sure the Normal is valid. 
     //
@@ -372,6 +378,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //
 //    Hank Childs, Wed Aug 15 10:39:51 PDT 2007
 //    Whoops ... I added bad logic for the change above.  Fixed now.
+//
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead.
 //
 // ****************************************************************************
 
@@ -483,7 +492,7 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         atts.GetOriginType() == SliceAttributes::Percent)
     {
         double normal[3]
-             = {atts.GetNormal()[0], atts.GetNormal()[1], atts.GetNormal()[2]};
+             = {cachedNormal[0], cachedNormal[1], cachedNormal[2]};
         double origin[3];
         if (atts.GetOriginType() == SliceAttributes::Percent)
         {
@@ -530,16 +539,15 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
 //    Jeremy Meredith, Thu Feb 15 11:55:03 EST 2007
 //    Call inherited PreExecute before everything else.
 //
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead.
+//
 // ****************************************************************************
 
 void
 avtSliceFilter::PreExecute(void)
 {
     avtPluginStreamer::PreExecute();
-
-    double nx = atts.GetNormal()[0];
-    double ny = atts.GetNormal()[1];
-    double nz = atts.GetNormal()[2];
 
     double ox = 0;
     double oy = 0;
@@ -551,10 +559,10 @@ avtSliceFilter::PreExecute(void)
     cachedOrigin[2] = oz;
 
     slicer->SetOrigin(ox, oy, oz);
-    slicer->SetNormal(nx, ny, nz);
+    slicer->SetNormal(cachedNormal[0], cachedNormal[1], cachedNormal[2] );
 
     // figure out D in the plane equation
-    D = nx*ox + ny*oy + nz*oz;
+    D = cachedNormal[0]*ox + cachedNormal[1]*oy + cachedNormal[2]*oz;
 
     if (atts.GetProject2d())
         SetUpProjection();
@@ -590,14 +598,17 @@ avtSliceFilter::PreExecute(void)
 //    Jeremy Meredith, Thu Aug 16 12:17:28 EDT 2007
 //    Rewrote all the matrix stuff.
 //
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead.
+//
 // ****************************************************************************
 
 void
 avtSliceFilter::SetUpProjection(void)
 {
-    double nx = atts.GetNormal()[0];
-    double ny = atts.GetNormal()[1];
-    double nz = atts.GetNormal()[2];
+    double nx = cachedNormal[0];
+    double ny = cachedNormal[1];
+    double nz = cachedNormal[2];
 
     double ox = cachedOrigin[0];
     double oy = cachedOrigin[1];
@@ -698,6 +709,38 @@ avtSliceFilter::SetUpProjection(void)
     xformToXYPlane->Delete();
 }
 
+// ****************************************************************************
+//  Method:  avtSliceFilter::GetNormal
+//
+//  Purpose:
+//    Extract the normal from the attributes as a 3-tuple.
+//
+//  Arguments:
+//    nx,ny,nz   the normal        (n)
+//
+//  Programmer:  Dave Pugmire
+//  Creation:    Oct 22, 2007
+//
+void
+avtSliceFilter::GetNormal(double &nx, double &ny, double &nz)
+{
+    // Compute the normal if this is a Theta/Phi axis type.
+    if ( atts.GetAxisType() == SliceAttributes::ThetaPhi )
+    {
+	double theta = (atts.GetTheta() - 90) * 0.017453292519943295;
+	double phi = (atts.GetPhi() - 90) * 0.017453292519943295;
+	nx = cos(theta)*sin(phi);
+	ny = sin(theta)*sin(phi);
+	nz = cos(phi);
+    }
+    else
+    {
+	nx = atts.GetNormal()[0];
+	ny = atts.GetNormal()[1];
+	nz = atts.GetNormal()[2];
+    }
+}
+
 
 // ****************************************************************************
 //  Method:  avtSliceFilter::GetOrigin
@@ -738,20 +781,25 @@ avtSliceFilter::SetUpProjection(void)
 //    Hank Childs, Wed Sep 12 09:13:20 PDT 2007
 //    Choose origin more carefully since the project code now depends more
 //    heavily on it.
+//    
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead. Also consider axis type
+//    of 'ThetaPhi'.
 //
 // ****************************************************************************
 
 void
 avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 {
-    double nx = atts.GetNormal()[0];
-    double ny = atts.GetNormal()[1];
-    double nz = atts.GetNormal()[2];
+    double nx = cachedNormal[0];
+    double ny = cachedNormal[1];
+    double nz = cachedNormal[2];
     double nl = sqrt(nx*nx + ny*ny + nz*nz);
 
     // We want to make sure for orthogonal slices that "intercept" is still
     // meaningful even when the normal is pointing in the negative direction
-    if (nx+ny+nz < 0 && atts.GetAxisType() != SliceAttributes::Arbitrary)
+    if (nx+ny+nz < 0 && (atts.GetAxisType() != SliceAttributes::Arbitrary ||
+			 atts.GetAxisType() != SliceAttributes::ThetaPhi) )
     {
         nl *= -1;
     }
@@ -1102,6 +1150,9 @@ avtSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //  Programmer: Hank Childs
 //  Creation:   December 29, 2006
 //
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead.
+//
 // ****************************************************************************
 
 bool
@@ -1110,9 +1161,9 @@ avtSliceFilter::CanIntersectPlane(vtkDataSet *in_ds)
     double bounds[6];
     in_ds->GetBounds(bounds);
     double normal[3];
-    normal[0] = atts.GetNormal()[0];
-    normal[1] = atts.GetNormal()[1];
-    normal[2] = atts.GetNormal()[2];
+    normal[0] = cachedNormal[0];
+    normal[1] = cachedNormal[1];
+    normal[2] = cachedNormal[2];
     avtIntervalTree tree(1, 3);
     tree.AddElement(0, bounds);
     tree.Calculate(true);
@@ -1138,12 +1189,17 @@ avtSliceFilter::CanIntersectPlane(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   December 29, 2006
 //
+// Modifications:
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead.
+
+//
 // ****************************************************************************
 
 bool
 avtSliceFilter::OutputCanBeRectilinear(vtkRectilinearGrid *rg)
 {
-    const double *normal = atts.GetNormal();
+    const double *normal = cachedNormal;
     if (! ((normal[0] != 0. && normal[1] == 0. && normal[2] == 0.) || 
            (normal[0] == 0. && normal[1] != 0. && normal[2] == 0.) || 
            (normal[0] == 0. && normal[1] == 0. && normal[2] != 0.)) )
@@ -1198,6 +1254,9 @@ avtSliceFilter::OutputCanBeRectilinear(vtkRectilinearGrid *rg)
 //    Hank Childs, Wed Sep 12 09:33:50 PDT 2007
 //    Change project behavior to be consistent with Jeremy's changes.
 //
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
@@ -1206,7 +1265,7 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
     int  i, j;
     
     const double *up     = atts.GetUpAxis();
-    const double *normal = atts.GetNormal();
+    const double *normal = cachedNormal;
     bool  project        = atts.GetProject2d();
 
     int pt_dims[3];
@@ -1726,7 +1785,7 @@ avtSliceFilter::RefashionDataObjectInfo(void)
 
     if (atts.GetProject2d())
     {
-        const double *normal = atts.GetNormal();
+        const double *normal = cachedNormal;
         const double *up     = atts.GetUpAxis();
         if ((normal[0] != 0.) && (normal[1] == 0.) && (normal[2] == 0.))
         {
@@ -1992,7 +2051,10 @@ avtSliceFilter::ProjectExtents(const double *b_in, double *b_out)
 //    Make normal-flipping cases work for all normal orientations.
 //
 //    Kathleen Bonnell, Fri Apr 28 15:44:39 PDT 2006
-//    Add an epsilon to check for origin close to bounds. 
+//    Add an epsilon to check for origin close to bounds.
+//
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead.
 //
 // ****************************************************************************
 
@@ -2000,9 +2062,9 @@ void
 avtSliceFilter::SetPlaneOrientation(double *b)
 {
     double normal[3];
-    normal[0] = atts.GetNormal()[0];
-    normal[1] = atts.GetNormal()[1];
-    normal[2] = atts.GetNormal()[2];
+    normal[0] = cachedNormal[0];
+    normal[1] = cachedNormal[1];
+    normal[2] = cachedNormal[2];
 
     //
     // Because of the underlying implementation, we will run into cases where
@@ -2063,6 +2125,9 @@ avtSliceFilter::SetPlaneOrientation(double *b)
 //    Hank Childs, Mon Jun  9 09:20:43 PDT 2003
 //    Use the new vtkSlicer class.
 //
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Normal is cached, so use that value instead.
+//
 // ****************************************************************************
 
 void
@@ -2104,9 +2169,9 @@ avtSliceFilter::CalculateRectilinearCells(vtkRectilinearGrid *rgrid)
     celllist   = new int[totalcells];
 
     float plane[4];
-    plane[0] = atts.GetNormal()[0];
-    plane[1] = atts.GetNormal()[1];
-    plane[2] = atts.GetNormal()[2];
+    plane[0] = cachedNormal[0];
+    plane[1] = cachedNormal[1];
+    plane[2] = cachedNormal[2];
     plane[3] = D;
 
     int numcells = 0;

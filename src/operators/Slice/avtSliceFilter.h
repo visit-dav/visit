@@ -119,6 +119,10 @@ class avtPointAttribute;
 //    Add some new methods.  The "ExecuteData" method got too crowded and
 //    some aspects are being put in their own method.
 //
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Added cachedNormal data memeber.
+//
+//
 // ****************************************************************************
 
 class avtSliceFilter : public avtPluginStreamer
@@ -141,6 +145,7 @@ class avtSliceFilter : public avtPluginStreamer
     SliceAttributes               atts;
     float                         D;
     double                        cachedOrigin[3];
+    double                        cachedNormal[3];
 
     vtkSlicer                    *slicer;
     vtkTransformFilter           *transform;
@@ -160,6 +165,7 @@ class avtSliceFilter : public avtPluginStreamer
     void                    SetPlaneOrientation(double *);
 
     void                    GetOrigin(double &, double &, double &);
+    void                    GetNormal(double &, double &, double &);
     void                    SetUpProjection(void);
 
     bool                    CanIntersectPlane(vtkDataSet *);

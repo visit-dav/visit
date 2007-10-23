@@ -53,7 +53,6 @@
 #include <FileServerList.h>
 #include <SliceAttributes.h>
 #include <ViewerProxy.h>
-#include <vtkMath.h>
 
 // ****************************************************************************
 // Method: QvisSliceWindow::QvisSliceWindow
@@ -683,6 +682,9 @@ QvisSliceWindow::UpdateOriginArea()
 //   Dave Pugmire, Thu Oct 18 08:25:42 EDT 2007
 //   Added theta-phi method of editing the plane normal.
 //
+//    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
+//    Removed dependencies on vtkMath.
+//
 // ****************************************************************************
 
 void
@@ -721,8 +723,8 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
 			vals[1] /= len;
 			vals[2] /= len;
 			len = 1.0;
-			double theta = atan2( vals[1], vals[0] ) * vtkMath::RadiansToDegrees();
-			double phi = acos( vals[2] / len ) * vtkMath::RadiansToDegrees();
+			double theta = atan2( vals[1], vals[0] ) * 57.29577951308232;
+			double phi = acos( vals[2] / len ) * 57.29577951308232;
 			theta -= 90;
 			phi -= 90;
 			phi = - phi;
@@ -971,8 +973,8 @@ QvisSliceWindow::GetCurrentValues(int which_widget)
 		{
 		    vals[0] -= 90;
 		    vals[1] -= 90;
-		    vals[0] *= vtkMath::DegreesToRadians();
-		    vals[1] *= vtkMath::DegreesToRadians();
+		    vals[0] *= 0.017453292519943295;
+		    vals[1] *= 0.017453292519943295;
 		    double n[3] = { cos(vals[0])*sin(vals[1]),
 				    sin(vals[0])*sin(vals[1]),
 				    cos(vals[1]) };
