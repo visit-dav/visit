@@ -80,7 +80,7 @@ public:
     SC_NamesTabsIndex(){}
     SC_NamesTabsIndex(char *n, char *tab, int i):name(n),tabName(tab), index(i){}
     QString getName() {return name;}
-    QString setScrollView(QScrollView *sc) {scrollView = sc;}
+    void setScrollView(QScrollView *sc) {scrollView = sc;}
     QScrollView *getScrollView() {return scrollView;}
     QString getTabName() {return tabName;}
     int getIndex() {return index;}
