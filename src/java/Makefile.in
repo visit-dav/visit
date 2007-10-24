@@ -131,6 +131,9 @@
 #   Eric Brugger, Fri Jun 29 09:46:40 PDT 2007
 #   Removed the setting of the NOT_DISTRIB variable.
 #
+#   Thomas R. Treadway, Wed Oct 24 14:03:41 PDT 2007
+#   Path to versionwriter executable added.
+#
 ##############################################################################
 
 ##
@@ -273,7 +276,7 @@ $(VERSIONWRITER): $(OBJ)
 	$(CXX) -o ${VERSIONWRITER} $(CXXFLAGS) $(OBJ)
 
 version: $(VERSIONWRITER)
-	$(VERSIONWRITER)
+	./$(VERSIONWRITER)
 
 package:
 	$(JAVAC) -d . $(JAVAFLAGS) $(PACKAGE_SRC) $(PACKAGE_STATE_SRC) $(METADATA_SRC)
