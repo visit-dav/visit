@@ -94,6 +94,7 @@ database once.</li>
 <li>A bug was fixed where the resample operator <i>sometimes</i> created bad data when executing in parallel.</li>
 <li>A bug was fixed where adding a new plot could cause VisIt to re-render.</li>
 <li>A bug was fixed that could cause the Threshold operator to output nothing when point mesh output is requested.</li>
+<li>A bug was fixed where Thresholding variables with long variable names would crash VisIt on Macs.</li>
 <li>Made attempts to match colors read from a database with known color names to be case IN-sensitive. Previous versions would
 fail resulting in all black material plots.</li>
 <li>Made SAMRAI plugin more mdserver friendly by avoiding building engine-specific objects there.</li>

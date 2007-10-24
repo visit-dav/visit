@@ -693,6 +693,9 @@ QvisThresholdWindow::AddNewRowToVariablesList(const QString &listVarName)
 //
 //  Modifications:
 //
+//    Hank Childs, Wed Oct 24 09:19:10 PDT 2007
+//    Fix array overwrite.
+//
 // *****************************************************************************
 
 void QvisThresholdWindow::MakeDisplayableVariableNameText(
@@ -707,7 +710,7 @@ void QvisThresholdWindow::MakeDisplayableVariableNameText(
         strcpy(displayVarText, rawVarName);
     else
     {
-        rawVarName[maxDisplayChars-3] = '\0';
+        rawVarName[maxDisplayChars-4] = '\0';
         sprintf(displayVarText,"%s..%s",rawVarName,&rawVarName[rawVarNameLen-2]);
     }
 }
