@@ -119,8 +119,9 @@ wizard_page_info pageInfo[] = {
 //
 // Movie format information.
 //
-#define MPEG_FORMAT "MPEG movie"
-#define TIFF_FORMAT "TIFF images"
+#define MPEG_FORMAT  "MPEG-1 movie"
+#define MPEG2_FORMAT "MPEG-2 movie"
+#define TIFF_FORMAT  "TIFF images"
 
 struct movie_format_info
 {
@@ -135,7 +136,8 @@ movie_format_info movieFormatInfo[] = {
     {"PPM  images",     "ppm"},
     {"RGB  images",     "rgb"},
     {TIFF_FORMAT,       "tiff"},
-    {MPEG_FORMAT,       "mpeg"}
+    {MPEG_FORMAT,       "mpeg"},
+    {MPEG2_FORMAT,      "mpeg2"}
 #if !defined(_WIN32)
    ,{"Quicktime movie", "qt"},
     {"Streaming movie", "sm"}
@@ -2178,6 +2180,9 @@ QvisSaveMovieWizard::CurrentPageToStaticPageIndex() const
 //   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
 //   Added an update for the new num frames page, and 
 //   moved pages 10-12 to 11-13.
+//
+//   Dave Bremer, Tue Oct 23 18:40:09 PDT 2007
+//   Made MPEG-2 the default output format.
 // ****************************************************************************
 
 void
@@ -2271,7 +2276,7 @@ QvisSaveMovieWizard::UpdatePage()
         else
         {
             // Try for MPEG but default to TIFF otherwise.
-            if(!page9_UpdateFormat(MPEG_FORMAT))
+            if(!page9_UpdateFormat(MPEG2_FORMAT))
                 page9_UpdateFormat(TIFF_FORMAT);
 
             page9_UpdateResolution(true, 1., (int)(default_movie_size[0]),
