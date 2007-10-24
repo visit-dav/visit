@@ -331,6 +331,14 @@ avtStructuredDomainNesting::GetSelectedDescendents(
 //    Hank Childs, Tue Oct  9 07:43:43 PDT 2007
 //    Add support for avtRealDims.
 //
+//    Hank Childs, Wed Oct 24 13:20:07 PDT 2007
+//    If the input already has ghost data, then make a copy of its
+//    ghost data.  Otherwise, we can run into the following bug:
+//    (1) Make PC plot with all patches, (2) Make second PC plot with
+//    only one patch, (3) Pick on first PC plot.  If we don't replace the
+//    ghost data with a new array, then step (2) will overwrite the ghost
+//    data from step (1) and the pick from (3) will get the wrong ghost data.
+//
 // ****************************************************************************
 
 bool
@@ -347,18 +355,29 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
         if (meshes[i] == NULL)
             continue;
 
-        vtkUnsignedCharArray *ghostArray = vtkUnsignedCharArray::SafeDownCast(
-            meshes[i]->GetCellData()->GetArray("avtGhostZones"));
-
         int parentDom = domainList[i];
         int numCells = meshes[i]->GetNumberOfCells();
-        bool parentAlreadyHasGhosts = (ghostArray != 0);
+
+        // Allocate the new ghost data array.  Allocate it now in case we
+        // need to copy into it.
+        vtkUnsignedCharArray *ghostArray = vtkUnsignedCharArray::New();
+        ghostArray->SetNumberOfTuples(numCells);
+        ghostData = (unsigned char *) ghostArray->GetVoidPointer(0);
+        ghostArray->SetName("avtGhostZones");
 
         // assume there are no boundary ghost layers
         int ghostLayers[3] = {0, 0, 0};
-        if (parentAlreadyHasGhosts)
+
+        // See if we had an existing ghost data array.
+        vtkUnsignedCharArray *oldArray = vtkUnsignedCharArray::SafeDownCast(
+            meshes[i]->GetCellData()->GetArray("avtGhostZones"));
+        if (oldArray != NULL)
         {
-            ghostData = (unsigned char *) ghostArray->GetVoidPointer(0);
+            // Copy the info from the old ghost data array to 
+            // the new ghost data array.
+            unsigned char *oldGhostData = 
+                               (unsigned char *) oldArray->GetVoidPointer(0);
+            memcpy(ghostData, oldGhostData, numCells);
 
             if (meshes[i]->GetFieldData()->GetArray("avtRealDims") != NULL)
             {
@@ -378,19 +397,17 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
                 // ghosted size (in the nesting info's logical extents of the 
                 // parent) of the patch and the actual ghost data array
                 //
-                DetectBoundaryGhostLayers(numDimensions, ghostData, numCells,
+                DetectBoundaryGhostLayers(numDimensions, oldGhostData, numCells,
                     domainNesting[parentDom].logicalExtents, ghostLayers);
             }
+
+            // Get rid of the old ghost data.
+            meshes[i]->GetCellData()->RemoveArray("avtGhostZones");
         }
-        else
-        {
-            ghostArray = vtkUnsignedCharArray::New();
-            ghostArray->SetNumberOfTuples(numCells);
-            ghostData = (unsigned char *) ghostArray->GetVoidPointer(0);
-            ghostArray->SetName("avtGhostZones");
-            meshes[i]->GetCellData()->AddArray(ghostArray);
-            ghostArray->Delete();
-        }
+
+        // Add the new ghost data array.
+        meshes[i]->GetCellData()->AddArray(ghostArray);
+        ghostArray->Delete();
 
         //
         // Compute (memory) size of this domain including ghostLayers
