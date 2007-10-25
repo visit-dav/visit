@@ -821,6 +821,10 @@ GetDoubleArrayFromPyObject(PyObject *obj, double *array, int maxLen)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 11, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Oct 25 10:05:37 EDT 2007
+//    Added support for pre-2.5 versions of Python.
+//
 // ****************************************************************************
 bool
 FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
@@ -837,7 +841,11 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
     }
 
     PyObject *key, *value;
+#if PY_VERSION_HEX >= 0x02050000
     Py_ssize_t pos = 0;
+#else
+    int pos = 0;
+#endif
 
     while (PyDict_Next(obj, &pos, &key, &value))
     {
@@ -951,6 +959,10 @@ FillDBOptionsFromDictionary(PyObject *obj, DBOptionsAttributes &opts)
 //  Programmer:  Jeremy Meredith
 //  Creation:    October 11, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Oct 25 10:05:37 EDT 2007
+//    Added support for pre-2.5 versions of Python.
+//
 // ****************************************************************************
 PyObject *
 CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
@@ -958,7 +970,10 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
     PyObject *dict = PyDict_New();
     for (int j=0; j<opts.GetNumberOfOptions(); j++)
     {
-        const char *name = opts.GetName(j).c_str();
+        // Older pythons don't support const char* in the PyDict routines,
+        // so we have to copy this into a non-const string.
+        char *name = new char[opts.GetName(j).length()];
+        strcpy(name, opts.GetName(j).c_str());
         switch (opts.GetType(j))
         {
           case DBOptionsAttributes::Bool:
@@ -980,6 +995,7 @@ CreateDictionaryFromDBOptions(DBOptionsAttributes &opts)
             PyDict_SetItemString(dict,name,PyInt_FromLong(opts.GetEnum(name)));
             break;
         }
+        delete[] name;
     }
     return dict;
 }
