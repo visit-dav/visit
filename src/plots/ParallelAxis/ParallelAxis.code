@@ -152,6 +152,11 @@ Declaration: #define PCP_FIRST_DUMMY_AXIS_GROUP_ID    -1000000000
 Definition: 
 
 
+Constant: PCP_LEFT_BRACKET_TOKEN
+Declaration: #define PCP_LEFT_BRACKET_TOKEN               103
+Definition: 
+
+
 Function: InsertAxis
 Declaration: void InsertAxis(const std::string &axisName_);
 Definition:
@@ -1298,3 +1303,4 @@ ParallelAxisAttributes::CopyAttributes(const AttributeGroup *atts)
 
     return retval;
 }
+
