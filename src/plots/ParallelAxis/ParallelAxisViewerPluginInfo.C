@@ -231,6 +231,11 @@ ParallelAxisViewerPluginInfo::AllocAvtPlot()
 //  Programmer: Mark Blair
 //  Creation:   Wed Jan 31 12:05:19 PST 2007
 //
+//  Modifications:
+//
+//      Cyrus Harrison, Wed Oct 24 16:23:54 PDT 2007
+//      Fixed parsing of array_compose_with_bins expressions
+//
 // ****************************************************************************
 
 void
@@ -249,6 +254,10 @@ TokenizeExtendedArrayExpression(
     int tokenLen, tokenType;
     char tokenChar;
     char *expCharPtr = (char *)arrayExpression + 13;
+    
+    if (strncmp(arrayExpression, "array_compose_with_bins", 23) == 0)
+        expCharPtr = (char *)arrayExpression + 23;
+    
     char *tokenCharPtr;
     char *suffixPtr;
     char token[121];
@@ -270,6 +279,11 @@ TokenizeExtendedArrayExpression(
                 charIsDelimiter = true;
             else if (tokenChar == ',')
                 charIsDelimiter = true;
+            else if (tokenChar == '[')
+            {
+                charIsDelimiter = true;
+                endOfExpression = true;
+            }
             else
                 charIsDelimiter = false;
                 
@@ -312,6 +326,8 @@ TokenizeExtendedArrayExpression(
                 tokenType = PCP_LEFT_PARENTHESIS_TOKEN;
             else if (strcmp(token, ")") == 0)
                 tokenType = PCP_RIGHT_PARENTHESIS_TOKEN;
+            else if (strcmp(token, "[") == 0)
+                tokenType = PCP_LEFT_BRACKET_TOKEN;
             else if (strcmp(token, ",") == 0)
                 tokenType = PCP_COMMA_TOKEN;
             else
@@ -358,6 +374,24 @@ TokenizeExtendedArrayExpression(
         }
         
         if (badExpression) break;
+    }
+    
+    // if array_compose_with_bins is used, replace the ",[" token combo with
+    // a single ")"
+    int pos = tokenTypes.size() - 1;
+    if(tokenTypes[pos] == PCP_LEFT_BRACKET_TOKEN)
+    {
+        tokenList.erase(tokenList.begin() + pos);
+        tokenTypes.erase(tokenTypes.begin() + pos);
+        
+        // make sure a comma preceded the bracket
+        if(tokenTypes[pos-1] == PCP_COMMA_TOKEN)
+        {
+            tokenList[pos-1]  = ")";
+            tokenTypes[pos-1] = PCP_RIGHT_PARENTHESIS_TOKEN;
+        }
+        else
+            badExpression = true;
     }
     
     tokenList.push_back(std::string("<end_of_expression>"));

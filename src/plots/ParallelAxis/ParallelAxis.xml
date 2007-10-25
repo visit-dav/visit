@@ -22,7 +22,7 @@
       QvisParallelAxisWidget.h
       QvisParallelAxisPlotWizard.h
     </Files>
-    <Attribute name="ParallelAxisAttributes" purpose="This class contains the plot attributes for the ParallelAxis plot." persistent="true" exportAPI="" exportInclude="" codefile="ParallelAxis.code">
+    <Attribute name="ParallelAxisAttributes" purpose="This class contains the plot attributes for the ParallelAxis plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ParallelAxis.code">
       <Field name="orderedAxisNames" label="orderedAxisNames" type="stringVector">
         default
       </Field>
@@ -30,10 +30,10 @@
         0
       </Field>
       <Field name="axisMinima" label="axisMinima" type="doubleVector" internal="true">
-        -1e+37
+        -9999999999999999538762658202121142272.000000
       </Field>
       <Field name="axisMaxima" label="axisMaxima" type="doubleVector" internal="true">
-        1e+37
+        9999999999999999538762658202121142272.000000
       </Field>
       <Field name="extentMinima" label="extentMinima" type="doubleVector" internal="true">
         0.000000
@@ -47,7 +47,7 @@
       <Field name="extMaxTimeOrds" label="extMaxTimeOrds" type="intVector" internal="true">
         0
       </Field>
-      <Field name="plotToolModeFlags" label="plotToolModeFlags" type="int" init="true" internal="true">
+      <Field name="plotToolModeFlags" label="plotToolModeFlags" type="int" internal="true" init="true">
       </Field>
       <Field name="axisGroupNames" label="axisGroupNames" type="stringVector" internal="true">
         (not_in_a_group)
@@ -60,9 +60,9 @@
       <Field name="axisAttributeVariables" label="axisAttributeVariables" type="stringVector">
         default
       </Field>
-      <Field name="attributesPerAxis" label="attributesPerAxis" type="int" init="true" internal="true">
+      <Field name="attributesPerAxis" label="attributesPerAxis" type="int" internal="true" init="true">
       </Field>
-      <Field name="axisAttributeData" label="axisAttributeData" type="doubleVector" init="true" internal="true">
+      <Field name="axisAttributeData" label="axisAttributeData" type="doubleVector" internal="true" init="true">
       </Field>
       <Field name="drawLines" label="Draw individual lines" type="bool">
         true
@@ -180,6 +180,8 @@
       <Constant name="PCP_IMPLICIT_AXIS_GROUP_ID" member="false">
       </Constant>
       <Constant name="PCP_FIRST_DUMMY_AXIS_GROUP_ID" member="false">
+      </Constant>
+      <Constant name="PCP_LEFT_BRACKET_TOKEN" member="false">
       </Constant>
       <Include file="header" quoted="false">
         ExtentsAttributes.h
