@@ -633,8 +633,6 @@ class MakeMovie:
     #   Brad Whitlock, Wed Sep 20 11:50:38 PDT 2006
     #   Added debugging logs.
     #
-    #   Dave Bremer, Tue Oct 23 18:40:09 PDT 2007
-    #   Added MPEG-2 as a new movie format.
     ###########################################################################
 
     def __init__(self):
@@ -648,7 +646,6 @@ class MakeMovie:
         self.FORMAT_MPEG = 6
         self.FORMAT_QT   = 7
         self.FORMAT_SM   = 8
-        self.FORMAT_MPEG2= 9
 
         # This map helps us determine what kind of image VisIt needs to save
         # in order to create the specified type of movie
@@ -661,8 +658,7 @@ class MakeMovie:
            self.FORMAT_PNG  : self.FORMAT_PNG, \
            self.FORMAT_MPEG : self.FORMAT_PPM, \
            self.FORMAT_QT   : self.FORMAT_PNG, \
-           self.FORMAT_SM   : self.FORMAT_PPM, \
-           self.FORMAT_MPEG2: self.FORMAT_PPM \
+           self.FORMAT_SM   : self.FORMAT_PPM \
         }
 
         # This map gives us the file extension to use for a specific file format.
@@ -675,8 +671,7 @@ class MakeMovie:
            self.FORMAT_PNG  : ".png", \
            self.FORMAT_MPEG : ".mpeg", \
            self.FORMAT_QT   : ".qt", \
-           self.FORMAT_SM   : ".sm", \
-           self.FORMAT_MPEG2: ".mpeg" \
+           self.FORMAT_SM   : ".sm" \
         }
 
         # This map gives us the type associated with a format name.
@@ -689,8 +684,7 @@ class MakeMovie:
            "png"  : self.FORMAT_PNG , \
            "mpeg" : self.FORMAT_MPEG, \
            "qt"   : self.FORMAT_QT  , \
-           "sm"   : self.FORMAT_SM, \
-           "mpeg2": self.FORMAT_MPEG2 \
+           "sm"   : self.FORMAT_SM \
         }
 
         self.STEREO_NONE = 0
@@ -813,9 +807,6 @@ class MakeMovie:
     #   Brad Whitlock, Fri Oct 20 15:59:14 PST 2006
     #   Added templates and changed how stereo works.
     #
-    #   Dave Bremer, Tue Oct 23 18:40:09 PDT 2007
-    #   Added MPEG-2 as a new movie format.
-    #
     ###########################################################################
 
     def PrintUsage(self):
@@ -832,7 +823,6 @@ class MakeMovie:
         print "                       for fmt are:"
         print ""
         print "                       mpeg : MPEG 1 movie."
-        print "                       mpeg2: MPEG 2 movie."
         print "                       qt   : Quicktime movie."
         print "                       sm   : Streaming movie format"
         print "                              (popular for powerwall demos)."
@@ -1126,9 +1116,6 @@ class MakeMovie:
     #   Brad Whitlock, Fri Oct 20 16:29:55 PST 2006
     #   Added stereoName argument.
     #
-    #   Dave Bremer, Tue Oct 23 18:40:09 PDT 2007
-    #   Make MPEG-2 conform to the same dimension restriction as MPEG-1.
-    #
     ###########################################################################
 
     def RequestFormat(self, fmtName, w, h, stereoName):
@@ -1137,7 +1124,7 @@ class MakeMovie:
         sfmt = self.stereoNameToType[stereoName]
         formatString = ""
         # If we're making MPEG then restrict the resolution to multiples of 16.
-        if fmt == self.FORMAT_MPEG or fmt == self.FORMAT_MPEG2:
+        if fmt == self.FORMAT_MPEG:
             w = int(w / 16) * 16
             h = int(h / 16) * 16
 
@@ -1194,9 +1181,6 @@ class MakeMovie:
     #   Added support for sending e-mails and for movie template files. I also
     #   changed how stereo works.
     #
-    #   Dave Bremer, Tue Oct 23 18:40:09 PDT 2007
-    #   Added MPEG-2 as a new movie format.
-    #
     ###########################################################################
 
     def ProcessArguments(self):
@@ -1241,8 +1225,6 @@ class MakeMovie:
                     formats = self.SplitString(commandLine[i+1], ",")
                     for format in formats:
                         if(format == "mpeg"):
-                            formatList = formatList + [format]
-                        elif(format == "mpeg2"):
                             formatList = formatList + [format]
                         elif(format == "qt"):
                             if(sys.platform != "win32"):
@@ -2099,9 +2081,6 @@ class MakeMovie:
     #   I made it use the tmp directory in the filename. Add support for
     #   template files and stereo.
     #
-    #   Dave Bremer, Tue Oct 23 18:40:09 PDT 2007
-    #   Added MPEG-2 as a new movie format.
-    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -2122,11 +2101,11 @@ class MakeMovie:
         index = 0
         for format in self.movieFormats:
             fmt = format[1]
-            if(fmt == self.FORMAT_MPEG or fmt == self.FORMAT_MPEG2 or fmt == self.FORMAT_QT or fmt == self.FORMAT_SM):
+            if(fmt == self.FORMAT_MPEG or fmt == self.FORMAT_QT or fmt == self.FORMAT_SM):
                 self.percentAllocationFrameGen = 0.9
                 self.percentAllocationEncode = 0.1
                 if format[4] == self.STEREO_LEFTRIGHT:
-                    if fmt == self.FORMAT_MPEG or fmt == self.FORMAT_MPEG2:
+                    if fmt == self.FORMAT_MPEG:
                         msg = "Left/Right stereo is not supported for MPEG movies. VisIt will instead create stereo PPM files."
                         self.ClientMessageBox(msg)
                         self.Log(msg)
@@ -2374,9 +2353,11 @@ class MakeMovie:
     #   Level ID caused the encoder to demand a lower bitrate than we sometimes
     #   passed in.
     #
+    #   Dave Bremer, Fri Oct 26 14:57:08 PDT 2007
+    #   Removed support for MPEG-2, because of licensing problems.
     ###########################################################################
 
-    def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres, writeMPEG1):
+    def EncodeMPEGMovie(self, moviename, imageFormatString, xres, yres):
         self.Debug(1, "EncodeMPEGMovie")
 
         retval = 0
@@ -2410,18 +2391,11 @@ class MakeMovie:
             statFile = self.outputDir + self.slash + "%s-stat.out" % moviename
 
             bitrate = xres * yres * 30 * 3;
-            if writeMPEG1:
-                if bitrate > 104000000:
-                    bitrate = 104000000
-            else:
-                if bitrate > 80000000:
-                    bitrate = 80000000
+            if bitrate > 104000000:
+                bitrate = 104000000
 
             f = open(paramFile, "w")
-            if writeMPEG1:
-                f.write('Generated by VisIt (http://www.llnl.gov/visit), MPEG-1 Movie, 30 frames/sec\n')
-            else:
-                f.write('Generated by VisIt (http://www.llnl.gov/visit), MPEG-2 Movie, 30 frames/sec\n')
+            f.write('Generated by VisIt (http://www.llnl.gov/visit), MPEG-1 Movie, 30 frames/sec\n')
             f.write(self.tmpDir + self.slash + linkbase + '%04d  /* name of source files */\n')
             f.write('-         /* name of reconstructed images ("-": do not store) */\n')
             f.write('-         /* name of intra quant matrix file     ("-": default matrix) */\n')
@@ -2433,17 +2407,11 @@ class MakeMovie:
             f.write('00:00:00:00 /* timecode of first frame */\n')
             f.write('15        /* N (# of frames in GOP) */\n')  # 15
             f.write('3         /* M (I/P frame distance) */\n')
-            if writeMPEG1:
-                f.write('1     /* ISO/IEC 11172-2 stream */\n')
-            else:
-                f.write('0     /* ISO/IEC 11172-2 stream */\n')
+            f.write('1         /* ISO/IEC 11172-2 stream */\n')
             f.write('0         /* 0:frame pictures, 1:field pictures */\n')
             f.write('%d        /* horizontal_size */\n' % xres)
             f.write('%d        /* vertical_size */\n' % yres)
-            if writeMPEG1:
-                f.write('8     /* aspect_ratio_information 8=CCIR601 625 line, 9=CCIR601 525 line */\n')
-            else:
-                f.write('1     /* aspect_ratio_information 1=square pel */\n')
+            f.write('8         /* aspect_ratio_information 8=CCIR601 625 line, 9=CCIR601 525 line */\n')
             f.write('5         /* frame_rate_code 1=23.976, 2=24, 3=25, 4=29.97, 5=30 frames/sec. */\n')
             f.write('%d.0      /* bit_rate (bits/s) */\n' % bitrate)
             f.write('112       /* vbv_buffer_size (in multiples of 16 kbit) */\n')
@@ -2806,8 +2774,6 @@ class MakeMovie:
     #   Kathleen Bonnell, Fri Jul 20 10:36:10 PDT 2007 
     #   Use self.outputDir to report where movie was stored when completed. 
     #
-    #   Dave Bremer, Tue Oct 23 18:40:09 PDT 2007
-    #   Added MPEG-2 as a new movie format.
     ###########################################################################
 
     def EncodeFrames(self):
@@ -2817,7 +2783,7 @@ class MakeMovie:
         nEncodedMovies = 0
         for format in self.movieFormats:
             fmt = format[1]
-            if(fmt == self.FORMAT_MPEG or fmt == self.FORMAT_MPEG2 or fmt == self.FORMAT_QT or fmt == self.FORMAT_SM):
+            if(fmt == self.FORMAT_MPEG or fmt == self.FORMAT_QT or fmt == self.FORMAT_SM):
                nEncodedMovies = nEncodedMovies + 1
 
         # Send a "stage transition" by changing the text.
@@ -2859,10 +2825,7 @@ Message from \"visit -movie\" running on %s.\n\n""" % host
             # Encode the movie if needed.
             encodeMovie = 0
             if(fmt == self.FORMAT_MPEG):
-                val = self.EncodeMPEGMovie(movieName, formatString, xres, yres, True)
-                encodeMovie = 1
-            elif(fmt == self.FORMAT_MPEG2):
-                val = self.EncodeMPEGMovie(movieName, formatString, xres, yres, False)
+                val = self.EncodeMPEGMovie(movieName, formatString, xres, yres)
                 encodeMovie = 1
             elif(fmt == self.FORMAT_QT):
                 val = self.EncodeQuickTimeMovie(movieName, formatString, xres, yres)
