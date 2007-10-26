@@ -859,20 +859,13 @@ main(int argc, char *argv[])
 
     if (par_rank == 0)
     {
-        if (getenv("HOME") != NULL)
-            sprintf(sim_filename, "%s/.visit/simulations/defaultTester.sim1", 
-                                   getenv("HOME"));
-        else
-        {
-            strcpy(sim_filename, "defaultTester.sim1");
-            printf("Unable to determine where to put sim file.  Placing\n");
-            printf("in ($PWD/) %s.\n", sim_filename);
-        }
+       
         VisItInitializeSocketAndDumpSimFile("proto",
                                             "Prototype Simulation",
                                             "/no/useful/path",
                                             NULL,
-                                            "SimGUI_1.ui", sim_filename);
+                                            "SimGUI_1.ui",NULL);
+ 
         printf("\n          >>> STARTING SIMULATION PROTOTYPE <<<\n\n\n");
 
         printf("Known Commands:\n"
