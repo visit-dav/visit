@@ -23,7 +23,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>It is possible to choose a font that is used for values in the spreadsheet table. The column width is chosen automatically to avoid truncating displayed values.</li>
 <li>In spreadsheet plots it is now possible to turn on/off display of tracer plane and patch  boundaries independently.</li>
 <li>The <i>Revolved Surface Area</i> and <i>Revolved Volume</i> queries are now time-enabled</li>
-<li>The Elevate operator has a new option to elevate by a "zero" heigh, allowing quick conversion of plots from 2D to 3D.</li>
+<li>The Elevate operator has a new option to elevate by a "zero" height, allowing quick conversion of plots from 2D to 3D.</li>
 <li>Added a new database reader for the University of Tennessee's VLI multivariate data server.</li>
 <li>VisIt has a new RAW triangle database reader and writer. The RAW format is an ASCII format consisting of triangle definitions where there is one triangle per line and a triangle is defined by 9 space delimited floating point numbers. The RAW format allows mesh geometry to be shared with CAD programs and rendering programs such as Blender and POVRay.</li>
 <li>VisIt has a new NETCDF-based reader for CCSM data, which is climate data. The reader exposes 2D and 3D time-varying mesh data and also provides an alternate representation of the data mapped onto a globe.</li>
@@ -32,6 +32,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>Added Claw database plugin that reads Claw format, ascii amr mesh files.</li>
 <li>Added ZipWrapper database plugin so VisIt can directly open gzip and bzip compressed databases without having to uncompress
 the files before opening them in VisIt.</li>
+<li>Created a reader for the SAS file format, used at Argonne National Lab.</li>
 <li>Improved performance of the DiffSummary() when running VisIt in database differencing mode.</li>
 <li>VisIt now has an option to turn on/off automatic creation of <i>Mesh Quality</i> and <i>Time Derivative</i> expressions when the database is read.  This setting is saved in a users's custom settings when <i>Save Settings</i> is used. The default behavior is for this feature to be ON.  The controls are located in the Options->Preferences window.  If this option is changed while a database is open, reopening the database will add/remove the expression variables (corresponding to the on/off condition).</li>
 <li>Added support for depth cueing with an arbitrary angle when Scalable Rendering mode is enabled.</li>
@@ -82,7 +83,10 @@ Added additional database annotation path expansion options, bringing the availa
 </li>
 <li>Added a <i>General</i> tab to the Annotation Attributes window to better support lower desktop resolutions.</li>
 <li>Added a VTK debug mode that helps track memory management of VTK objects in VisIt's pipelines. </li>
-<li>Added user settable floating point format string for Picks and Queries.</li>
+<li>Added user settable floating point format string for Picks, Queries, and the Label Plot.</li>
+<li>Added an option to save windows at a resolution proportional to the current screen, and made that the default.</li>
+<li>Added movie making options for framerate and start/end time.</li>
+<li>Added MPEG-2 as an optional movie format, which can improve the movie quality, but is not quite as portable as MPEG-1.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.7</font></b></p>
 <ul>
@@ -125,6 +129,10 @@ them.</li>
 <li>Fixed a bug with the 2D J index calculation in the Zone Dump Operator.</li>
 <li>Raised the character limit on Silo material names from 128 to 256.</li>
 <li>Fixed a bug truncating floating point result text for queries returning small numbers.</li>
+<li>Fixed the Nek3D reader to work on Windows.</li>
+<li>Apply changes of coordinate system, like spherical to cartesian, to vector fields.  Only the mesh was changed previously.</li>
+<li>Fixed a bug that sometimes caused the MPEG encoder to be unable to complete.</li>
+<li>Modified the Hohlraum Flux Query to return temperature values instead of flux values, when possible.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.6.1.html">VisIt 1.6.1 Release Notes</a>.</p>
