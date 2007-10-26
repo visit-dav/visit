@@ -50,6 +50,7 @@
 #include <vtkPolyDataOnionPeelFilter.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtSILRestrictionTraverser.h>
 #include <avtTerminatingSource.h>
 
 #include <BadCellException.h>
@@ -586,6 +587,10 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Ensure global zones/nodes are requested if using a global id and
 //    subset name is "whole". 
 //
+//    Hank Childs, Fri Oct 26 16:47:54 PDT 2007
+//    Don't use CompactSILAtts, since its indexing does match up cleanly
+//    with avtSILRestriction.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -633,10 +638,9 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     string subset = atts.GetSubsetName();
     avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
     int collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
-    CompactSILRestrictionAttributes *silAtts = silr->MakeCompactAttributes();
-    const unsignedCharVector &useSet =  silAtts->GetUseSet();
+    avtSILRestrictionTraverser trav(silr);
     int setID = silr->GetSetIndex(subset, collectionID);
-    if (useSet[setID] == 0) 
+    if (trav.UsesSetData(setID) == NoneUsed) 
     {
         EXCEPTION1(InvalidSetException, subset.c_str());
     }

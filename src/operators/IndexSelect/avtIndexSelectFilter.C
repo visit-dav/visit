@@ -748,6 +748,12 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //    If this is an AMR mesh and category is group, don't restrict the SIL
 //    and also request AMR indices.
 // 
+//    Hank Childs, Fri Oct 26 16:40:57 PDT 2007
+//    Correct some SIL handling.  Compact SIL attributes are only defined
+//    over a subset of the nodes in the SIL graph; comparing them without
+//    re-indexing ... which was being done previously ... led to incorrect
+//    results.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -763,11 +769,11 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
         string category = atts.GetCategoryName();
         string subset = atts.GetSubsetName();
         avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
+        avtSILRestriction_p old_values = new avtSILRestriction(silr);
+        avtSILRestrictionTraverser trav(old_values);
         int collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
-        CompactSILRestrictionAttributes *silAtts = silr->MakeCompactAttributes();
-        const unsignedCharVector &useSet =  silAtts->GetUseSet();
         int setID = silr->GetSetIndex(subset, collectionID);
-        if (useSet[setID] == 0) 
+        if (trav.UsesSetData(setID) == NoneUsed) 
         {
             EXCEPTION1(InvalidSetException, subset.c_str());
         }
@@ -779,11 +785,12 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
             // We've just turned on an entire set, but some parts
             // (materials) may have been turned off before, so ensure
             // that remains the case.
-            for (int i = 0; i < useSet.size(); i++)
+            int numSets = silr->GetNumSets();
+            for (int i = 0; i < numSets ; i++)
             {
                 if (setID == i)
                     continue;
-                if (useSet[i] == 0)
+                if (trav.UsesSetData(i) == NoneUsed)
                     silr->TurnOffSet(i);
             }
         }
