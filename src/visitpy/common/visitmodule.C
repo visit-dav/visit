@@ -493,6 +493,7 @@ static void WakeMainThread(Subject *, void *)
 #define MUTEX_DESTROY()
 #define MUTEX_LOCK()
 #define MUTEX_UNLOCK()
+#define THREAD_INIT()
 #endif
 
 
@@ -11627,6 +11628,9 @@ ExecuteClientMethodHelper(Subject *subj, void *)
 //   Brad Whitlock, Fri Jan 6 12:02:03 PDT 2006
 //   Added support for recording macros.
 //
+//   Hank Childs, Thu Oct 25 08:52:27 PDT 2007
+//   Add preprocessor directives for the case when THREADS is not defined.
+//
 // ****************************************************************************
 
 static void
@@ -11753,6 +11757,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
             cbData[1] = (void *)(onNewThread?1l:0);
             if(onNewThread)
             {
+#ifdef THREADS
 #if defined(_WIN32)
                 // Create the thread with the WIN32 API.
                 DWORD Id;
@@ -11773,6 +11778,7 @@ ExecuteClientMethod(ClientMethod *method, bool onNewThread)
                     fprintf(stderr, "VisIt: Error - Could not create work thread to "
                             "execute %s client method.\n", m->GetMethodName().c_str());
                 }
+#endif
 #endif
             }
             else

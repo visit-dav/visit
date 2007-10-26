@@ -63,10 +63,17 @@ void Update_UI_Commands();
 * Programmer: Jeremy Meredith
 * Creation:   April  4, 2005
 *
+* Modifications:
+* 
+*   Hank Childs, Fri Oct 26 08:45:58 PDT 2007
+*   Add an expression.
+*
 *****************************************************************************/
 void
 InitializeMD(int MaxNumCustCMD)
 {
+    int sz;
+
     md = malloc(sizeof(VisIt_SimulationMetaData));
 
     md->currentCycle = cycle;
@@ -104,7 +111,16 @@ InitializeMD(int MaxNumCustCMD)
 
     md->numMaterials   = 0;
     md->numCurves      = 0;
-    md->numExpressions = 0;
+    md->numExpressions = 2;
+    sz = sizeof(VisIt_ExpressionMetaData) * md->numExpressions;
+    md->expressions = (VisIt_ExpressionMetaData *) malloc(sz);
+    memset(md->expressions, 0, sz);
+    md->expressions[0].name = strdup("double_speed");
+    md->expressions[0].definition = strdup("2*speed");
+    md->expressions[0].vartype = VISIT_VARTYPE_SCALAR;
+    md->expressions[1].name = strdup("half_density");
+    md->expressions[1].definition = strdup("0.5*density");
+    md->expressions[1].vartype = VISIT_VARTYPE_SCALAR;
 
     /* this will set up the generic and custom commands*/
     VisItInitAllCMD(md, MaxNumCustCMD);

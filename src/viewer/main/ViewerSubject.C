@@ -8559,6 +8559,10 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
 //    Brad Whitlock, Mon Feb 12 17:00:19 PST 2007
 //    Made it use ViewerState.
 //
+//    Hank Childs, Fri Oct 26 08:40:01 PDT 2007
+//    Update the expression list.  Expressions from the sim won't work without
+//    this.
+//
 // ****************************************************************************
 
 void
@@ -8574,6 +8578,9 @@ ViewerSubject::HandleMetaDataUpdated(const string &host,
     // The file server will modify the metadata slightly; make sure
     // we picked up the new one.
     *GetViewerState()->GetDatabaseMetaData() = *fs->GetMetaData(host, file);
+    ViewerWindowManager *wM=ViewerWindowManager::Instance();
+    ViewerPlotList *plotList = wM->GetActiveWindow()->GetPlotList();
+    plotList->UpdateExpressionList(false);
     GetViewerState()->GetDatabaseMetaData()->SelectAll();
     GetViewerState()->GetDatabaseMetaData()->Notify();
 }
