@@ -61,13 +61,6 @@
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
-//  Modifications:
-//
-//    Hank Childs, Tue Oct  9 06:19:11 PDT 2007
-//    Added data member "args2", which is used to create a temporary version
-//    of the arguments for non-const expressions.  It must be a data member
-//    because its scope is longer than that of the function it is used in.
-//
 // ****************************************************************************
 
 class EXPRESSION_API avtMacroExpressionFilter : public avtExpressionFilter
@@ -86,7 +79,6 @@ class EXPRESSION_API avtMacroExpressionFilter : public avtExpressionFilter
     std::vector<std::string>      expression_arguments;
     ExpressionList                original_list;
     avtDataSpecification_p        last_spec;
-    ArgsExpr                     *args2;
 
     virtual void              Execute(void);
     virtual void              ProcessArguments(ArgsExpr *,ExprPipelineState *);
