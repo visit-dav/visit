@@ -47,9 +47,10 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
-#include <LineAttributes.h>
 #include <ParallelAxisAttributes.h>
 #include <avtParallelAxisFilter.h>
+#include <VisitExtentsTool.h>
+#include <LineAttributes.h>
 
 #include <snprintf.h>
 
@@ -122,18 +123,32 @@ avtOpenGLParallelAxisRenderer::ReleaseGraphicsResources()
 // ****************************************************************************
 // Method: avtOpenGLParallelAxisRenderer::SetupGraphicsLibrary
 //
-// Purpose: (Place holder for future development)
+// Purpose: Initializes information needed for all subsequent drawing performed
+//          by this renderer.
 //
 // Programmer: Mark Blair
 // Creation:   Thu Jul  5 19:06:33 PDT 2007
 //
 // Modifications:
 //   
+//     Mark Blair, Wed Oct 24 14:38:54 PDT 2007
+//     Gets rendering window size, which is needed for text rendering.
+//
 // ****************************************************************************
 
 void
 avtOpenGLParallelAxisRenderer::SetupGraphicsLibrary()
 {
+    if (VTKRen == NULL)
+    {
+        renWinWidth  = 1.0;
+        renWinHeight = 1.0;
+    }
+    else
+    {
+        renWinWidth  = (double)(VTKRen->GetVTKWindow()->GetSize()[0]);
+        renWinHeight = (double)(VTKRen->GetVTKWindow()->GetSize()[1]);
+    }
 }
 
 
@@ -149,6 +164,9 @@ avtOpenGLParallelAxisRenderer::SetupGraphicsLibrary()
 //
 //     Mark Blair, Wed Aug 22 15:56:42 PDT 2007
 //     Modified to correct an oversight in parallel rendering.
+//
+//     Mark Blair, Tue Oct 16 19:33:48 PDT 2007
+//     Upgraded to plot axis bounds and titles as true text.
 //
 // ****************************************************************************
 
@@ -195,8 +213,10 @@ avtOpenGLParallelAxisRenderer::RenderPlotComponents()
     //
     if (inputType == PCP_RENDERER_DATA_CURVE_INPUT)
         DrawDataCurves(pointCount, sameInput, processorRank, partitionSize);
-    else if (inputType == PCP_RENDERER_AXIS_LABEL_INPUT)
-        DrawAxesAndAxisLabels(pointCount);
+    else if (inputType == PCP_RENDERER_AXIS_LINE_INPUT)
+        DrawAxisLines(pointCount);
+    else if (inputType == PCP_RENDERER_AXIS_BOUND_INPUT)
+        DrawAxisBounds(pointCount);
     else if (inputType == PCP_RENDERER_AXIS_TITLE_INPUT)
         DrawAxisTitles(pointCount);
     else
@@ -313,14 +333,13 @@ avtOpenGLParallelAxisRenderer::DrawDataCurves(
 
 
 // ****************************************************************************
-// Method: avtOpenGLParallelAxisRenderer::DrawAxesAndAxisLabels
+// Method: avtOpenGLParallelAxisRenderer::DrawAxisLines
 //
-// Purpose: Draws axes and axis labels in a ParallelAxis plot using coordinates
-//          from the ParallelAxis cache.
+// Purpose: Draws axes in a ParallelAxis plot using coordinates from the
+//          ParallelAxis cache.
 //
 // Arguments:
-//    pointCount : Number of points in all the axis lines, tick mark lines, and
-//                 text strokes for the axis labels
+//    pointCount : Number of points in all the axis lines and tick mark lines
 //
 // Programmer: Mark Blair
 // Creation:   Tue Jul 24 17:36:07 PDT 2007
@@ -330,10 +349,14 @@ avtOpenGLParallelAxisRenderer::DrawDataCurves(
 //     Mark Blair, Wed Aug 22 15:56:42 PDT 2007
 //     Modified to correct an oversight in parallel rendering.
 //
+//     Mark Blair, Tue Oct 16 19:33:48 PDT 2007
+//     Now only draws axis lines and not also the stroked lines that formed
+//     axis bound "text".
+//
 // ****************************************************************************
 
 void
-avtOpenGLParallelAxisRenderer::DrawAxesAndAxisLabels(int pointCount)
+avtOpenGLParallelAxisRenderer::DrawAxisLines(int pointCount)
 {
     ColorAttribute axisColor;
     
@@ -348,7 +371,7 @@ avtOpenGLParallelAxisRenderer::DrawAxesAndAxisLabels(int pointCount)
     glLineWidth(1.0);
     glDisable(GL_LINE_STIPPLE);
 
-    // Draw the axes and axis labels.
+    // Draw the axis lines.
     float *axisCoords = (float *)input->GetPoints()->GetVoidPointer(0);
     float point0Metadata = axisCoords[2];
 
@@ -366,13 +389,17 @@ avtOpenGLParallelAxisRenderer::DrawAxesAndAxisLabels(int pointCount)
 
 
 // ****************************************************************************
-// Method: avtOpenGLParallelAxisRenderer::DrawAxisTitles
+// Method: avtOpenGLParallelAxisRenderer::DrawAxisBounds
 //
-// Purpose: Draws axis titles in a ParallelAxis plot using coordinates from the
-//          ParallelAxis cache.
+// Purpose: Draws axis bounds in a ParallelAxis plot using bound values and
+//          coordinates stored in the ParallelAxis cache.
 //
 // Arguments:
-//    pointCount : Number of points in all text strokes for the axis titles
+//    pointCount : Number of axis bound reference points (which is twice the
+//                 number of axis bounds)
+//
+// Note: Data bound values in the ParallelAxis attributes are NOT used as the
+//       axis bound values beacuase they are not always up to date.
 //
 // Programmer: Mark Blair
 // Creation:   Tue Jul 24 17:36:07 PDT 2007
@@ -382,34 +409,194 @@ avtOpenGLParallelAxisRenderer::DrawAxesAndAxisLabels(int pointCount)
 //     Mark Blair, Wed Aug 22 15:56:42 PDT 2007
 //     Modified to correct an oversight in parallel rendering.
 //
+//     Mark Blair, Wed Oct 24 14:38:54 PDT 2007
+//     Now draws axis bounds as true Arial text (defined as triangles), same
+//     font used by the Label plot.
+//
+// ****************************************************************************
+
+void
+avtOpenGLParallelAxisRenderer::DrawAxisBounds(int pointCount)
+{
+    int axisCount = atts.GetOrderedAxisNames().size();
+
+    if (pointCount != axisCount * 3)
+    {
+        debug3 << "PCP/aOGLPAR/DAT1: ParallelAxis plot axis bound "
+               << "information is inconsistent." << endl;
+        return;
+    }
+
+    bool boundsAreHorizontal =
+        ((atts.GetPlotToolModeFlags() & EA_VERTICAL_TEXT_AXIS_INFO_FLAG) == 0);
+    double boundSize;
+    Arial_Direction direction;
+    Arial_Horiz_Justify horizJust;
+    Arial_Vert_Justify vertJust;
+    ColorAttribute boundColor;
+    
+    if (boundsAreHorizontal)
+    {
+        boundSize = VET_H_BOUND_SIZE_MIN_DIM_RATIO * ARIAL_FONT_H_SCALE_ADJUST;
+        direction = RIGHTWARD_DIRECTION;
+    }
+    else
+    {
+        boundSize = VET_V_BOUND_SIZE_MIN_DIM_RATIO * ARIAL_FONT_V_SCALE_ADJUST;
+        direction = UPWARD_DIRECTION;
+    }
+
+    if (colorAtts.GetNumColors() < PCP_CTX_BRIGHTNESS_LEVELS)
+        boundColor = colorAtts.GetColors(2);
+    else
+        boundColor = colorAtts.GetColors(PCP_CTX_BRIGHTNESS_LEVELS+2);
+
+    glColor4ubv(boundColor.GetColor());
+    
+    // Draw the axes and axis bounds.
+    float *boundCoords = (float *)input->GetPoints()->GetVoidPointer(0);
+    float point0Metadata = boundCoords[2];
+    char boundValText[VET_H_BOUND_MAX_CHARS + 1];
+
+    boundCoords[2] = 0.0;
+    
+    glBegin(GL_TRIANGLES);
+    
+    for (int axisNum = 0; axisNum < axisCount; axisNum++)
+    {
+        if (boundsAreHorizontal)
+        {
+            if (axisNum == 0)
+                horizJust = LEFT_HORIZ_JUSTIFY;
+            else if (axisNum == axisCount-1)
+                horizJust = RIGHT_HORIZ_JUSTIFY;
+            else
+                horizJust = CENTER_HORIZ_JUSTIFY;
+        }
+
+        if (!boundsAreHorizontal)
+        {
+            horizJust = RIGHT_HORIZ_JUSTIFY;
+            vertJust  = CENTER_VERT_JUSTIFY;
+        }
+        MakeAxisBoundText(boundValText, (double)boundCoords[axisNum*9+6]);
+
+        DrawArialTextString(boundValText,
+            (double)boundCoords[axisNum*9], (double)boundCoords[axisNum*9+1],
+            boundSize, direction, horizJust, vertJust);
+
+        if (!boundsAreHorizontal)
+        {
+            horizJust = LEFT_HORIZ_JUSTIFY;
+            vertJust  = BOTTOM_VERT_JUSTIFY;
+        }
+        MakeAxisBoundText(boundValText, (double)boundCoords[axisNum*9+7]);
+
+        DrawArialTextString(boundValText,
+            (double)boundCoords[axisNum*9+3], (double)boundCoords[axisNum*9+4],
+            boundSize, direction, horizJust, vertJust);
+    }
+
+    glEnd();
+
+    boundCoords[2] = point0Metadata;
+}
+
+
+// ****************************************************************************
+// Method: avtOpenGLParallelAxisRenderer::DrawAxisTitles
+//
+// Purpose: Draws axis titles in a ParallelAxis plot using titles in current
+//          attributes and coordinates from the ParallelAxis cache.
+//
+// Arguments:
+//    pointCount : Number of axis title reference points (and titles)
+//
+// Programmer: Mark Blair
+// Creation:   Tue Jul 24 17:36:07 PDT 2007
+//
+// Modifications:
+//
+//     Mark Blair, Wed Aug 22 15:56:42 PDT 2007
+//     Modified to correct an oversight in parallel rendering.
+//
+//     Mark Blair, Wed Oct 24 14:38:54 PDT 2007
+//     Now draws axis titles as true Arial text (defined as triangles), same
+//     font used by the Label plot.
+//
 // ****************************************************************************
 
 void
 avtOpenGLParallelAxisRenderer::DrawAxisTitles(int pointCount)
 {
+    const stringVector axisNames = atts.GetOrderedAxisNames();
+
+    if (pointCount != axisNames.size())
+    {
+        debug3 << "PCP/aOGLPAR/DAT1: ParallelAxis plot axis title "
+               << "information is inconsistent." << endl;
+        return;
+    }
+
+    bool titlesAreHorizontal =
+        ((atts.GetPlotToolModeFlags() & EA_VERTICAL_TEXT_AXIS_INFO_FLAG) == 0);
+    double titleSize;
+    int maxChars;
+    Arial_Direction direction;
+    Arial_Horiz_Justify horizJust;
+    Arial_Vert_Justify vertJust;
     ColorAttribute titleColor;
     
-    if (colorAtts.GetNumColors() < PCP_CTX_BRIGHTNESS_LEVELS)
-        titleColor = colorAtts.GetColors(2);
+    if (titlesAreHorizontal)
+    {
+        titleSize = VET_H_TITLE_SIZE_MIN_DIM_RATIO * ARIAL_FONT_H_SCALE_ADJUST;
+        maxChars  = VET_H_TITLE_MAX_CHARS;
+        direction = RIGHTWARD_DIRECTION;
+        vertJust  = BOTTOM_VERT_JUSTIFY;
+    }
     else
-        titleColor = colorAtts.GetColors(PCP_CTX_BRIGHTNESS_LEVELS+2);
+    {
+        titleSize = VET_V_TITLE_SIZE_MIN_DIM_RATIO * ARIAL_FONT_V_SCALE_ADJUST;
+        maxChars  = VET_V_TITLE_MAX_CHARS;
+        direction = UPWARD_DIRECTION;
+        horizJust = RIGHT_HORIZ_JUSTIFY;
+        vertJust  = TOP_VERT_JUSTIFY;
+    }
+
+    if (colorAtts.GetNumColors() < PCP_CTX_BRIGHTNESS_LEVELS)
+        titleColor = colorAtts.GetColors(3);
+    else
+        titleColor = colorAtts.GetColors(PCP_CTX_BRIGHTNESS_LEVELS+3);
 
     glColor4ubv(titleColor.GetColor());
-
-    // Set up the line properties.
-    glLineWidth(1.0);
-    glDisable(GL_LINE_STIPPLE);
-
-    // Draw the axes and axis labels.
+    
+    // Draw the axes and axis bounds.
     float *titleCoords = (float *)input->GetPoints()->GetVoidPointer(0);
     float point0Metadata = titleCoords[2];
+    char axisTitle[VET_H_TITLE_MAX_CHARS + 1];
 
     titleCoords[2] = 0.0;
-
-    glBegin(GL_LINES);
+    
+    glBegin(GL_TRIANGLES);
 
     for (int pointNum = 0; pointNum < pointCount; pointNum++)
-	glVertex3fv(&titleCoords[pointNum*3]);
+    {
+        if (titlesAreHorizontal)
+        {
+            if (pointNum == 0)
+                horizJust = LEFT_HORIZ_JUSTIFY;
+            else if (pointNum == pointCount-1)
+                horizJust = RIGHT_HORIZ_JUSTIFY;
+            else
+                horizJust = CENTER_HORIZ_JUSTIFY;
+        }
+        
+        MakeAxisTitleText(axisTitle, axisNames[pointNum], maxChars);
+        
+        DrawArialTextString(axisTitle,
+            (double)titleCoords[pointNum*3], (double)titleCoords[pointNum*3+1],
+            titleSize, direction, horizJust, vertJust);
+    }
 
     glEnd();
 
@@ -801,4 +988,239 @@ avtOpenGLParallelAxisRenderer::ComputeWorldCoordinateExtents()
         worldExtentMaxima.push_back(
             curExtentMaxima[axisID]*axisHeight + bottomAxisY);
     }
+}
+
+
+// *****************************************************************************
+//  Method: avtOpenGLParallelAxisRenderer::MakeAxisBoundText
+//
+//  Purpose: Converts a double-precision floating-point axis bound value to a
+//           VisIt-style C string representation.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Oct 24 14:38:54 PDT 2007
+//
+//  Modifications:
+//
+// *****************************************************************************
+
+void
+avtOpenGLParallelAxisRenderer::MakeAxisBoundText(char boundText[], double boundValue)
+{
+    int textLen, charNum;
+
+    if (boundValue < -9e+36) {
+        strcpy(boundText, "min");
+        return;
+    }
+
+    if (boundValue > +9e+36) {
+        strcpy(boundText, "max");
+        return;
+    }
+
+    sprintf (boundText, "%g", boundValue);
+
+    if (strchr(boundText, 'e') != NULL) return;
+    if (strchr(boundText, 'E') != NULL) return;
+    
+    if ((textLen = strlen(boundText)) < 3) return;
+
+    for (charNum = textLen - 1; charNum > 1; charNum--)
+    {
+        if (boundText[charNum  ] != '0') break;
+        if (boundText[charNum-1] == '.') break;
+        if (boundText[charNum-1] == '+') break;
+        if (boundText[charNum-1] == '-') break;
+    }
+
+    boundText[charNum + 1] = '\0';
+}
+
+
+// *****************************************************************************
+//  Method: avtOpenGLParallelAxisRenderer::MakeAxisTitleText
+//
+//  Purpose: Creates a displayable axis title from an axis variable name.  Long
+//           titles and compound titles are shortened in a meaningful way.
+//
+//  Programmer: Mark Blair
+//  Creation:   Wed Oct 24 14:38:54 PDT 2007
+//
+//  Modifications:
+//
+// *****************************************************************************
+
+void
+avtOpenGLParallelAxisRenderer::MakeAxisTitleText(
+    char titleText[], const std::string &axisTitle, int maxTitleChars)
+{
+    int rawTitleLen;
+    char rawTitle[121];
+    
+    strncpy(rawTitle, axisTitle.c_str(), 120);
+    
+    if ((rawTitleLen = strlen(rawTitle)) <= maxTitleChars)
+        strcpy(titleText, rawTitle);
+    else
+    {
+        rawTitle[maxTitleChars-4] = '\0';
+        sprintf(titleText,"%s..%s", rawTitle, &rawTitle[rawTitleLen-2]);
+    }
+}
+
+
+// ****************************************************************************
+// Method: avtOpenGLParallelAxisRenderer::DrawArialTextString
+//
+// Purpose: Draws a text string in the ParallelAxis plot using Arial font
+//
+// Arguments:
+//      text: The string to be drawn
+// xPosition: X coordinate of string reference position
+// yPosition: Y coordinate of string reference position
+//  charSize: Height of a line of characters of the desired size
+//    direct: Direction the string follows (left, right, down, up) from first
+//            character to last
+//     hJust: String's horizontal position relative to reference position
+//     vJust: String's vertical position relative to reference position
+//
+// Programmer: Mark Blair
+// Creation:   Tue Oct 16 19:33:48 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtOpenGLParallelAxisRenderer::DrawArialTextString(
+    const char *text, double xPosition, double yPosition, double charSize,
+    Arial_Direction direct, Arial_Horiz_Justify hJust, Arial_Vert_Justify vJust)
+{
+    int charCount = strlen(text);
+    if (charCount == 0) return;
+
+    double tst[3][2];
+    
+    ConstructTextStringTransform(
+        tst, text, xPosition, yPosition, charSize, direct, hJust, vJust);
+        
+    double xBottomLeft = 0.0;
+    double xCoord, yCoord;
+    int charID, triCoordID, coordCount;
+    unsigned int charCode;
+    
+    float triCoords[3];
+    triCoords[2] = 0.0;
+
+    for (charID = 0; charID < charCount; charID++)
+    {
+        charCode = (unsigned int)text[charID];
+        triCoordID = arial_triangle_start[charCode];
+        coordCount = arial_triangle_ntriangles[charCode] * 3;
+        
+        while (coordCount-- > 0)
+        {
+            xCoord = (double)arial_font_x[arial_triangle_x_index[triCoordID]] +
+                     xBottomLeft;
+            yCoord = (double)arial_font_y[arial_triangle_y_index[triCoordID++]];
+            
+            triCoords[0] = float(tst[0][0]*xCoord + tst[1][0]*yCoord + tst[2][0]);
+            triCoords[1] = float(tst[0][1]*xCoord + tst[1][1]*yCoord + tst[2][1]);
+
+	    glVertex3fv(triCoords);
+        }
+        
+        xBottomLeft += arial_triangle_spacing[charCode];
+    }
+}
+
+
+// ****************************************************************************
+// Method: avtOpenGLParallelAxisRenderer::ConstructTexStringtTransform
+//
+// Purpose: Constructs matrix of the transformation needed to draw an Arial
+//          text string in the ParallelAxis plot
+//
+// Arguments:
+//       tst: The constructed transformation matrix
+//      text: The string to be drawn
+// xPosition: X coordinate of string reference position
+// yPosition: Y coordinate of string reference position
+//  charSize: Height of a line of characters of the desired size
+//    direct: Direction the string follows (left, right, down, up) from first
+//            character to last
+//     hJust: String's horizontal position relative to reference position
+//     vJust: String's vertical position relative to reference position
+//
+// Programmer: Mark Blair
+// Creation:   Tue Oct 16 19:33:48 PDT 2007
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtOpenGLParallelAxisRenderer::ConstructTextStringTransform(double tst[3][2],
+    const char *text, double xPosition, double yPosition, double charSize,
+    Arial_Direction direct, Arial_Horiz_Justify hJust, Arial_Vert_Justify vJust)
+{
+    double textWidth = 0.0;
+    double saveCoeff, distortX, distortY;
+    int textLen = strlen(text);
+
+    for (int charID = 0; charID < textLen; charID++)
+        textWidth += (double)arial_triangle_spacing[(unsigned int)text[charID]];
+
+    if (hJust == LEFT_HORIZ_JUSTIFY)
+        tst[2][0] = 0.0;
+    else if (hJust == CENTER_HORIZ_JUSTIFY)
+        tst[2][0] = -textWidth * 0.5;
+    else  // RIGHT_HORIZ_JUSTIFY
+        tst[2][0] = -textWidth;
+
+    if (vJust == BOTTOM_VERT_JUSTIFY)
+        tst[2][1] = 0.0;
+    else if (vJust == CENTER_VERT_JUSTIFY)
+        tst[2][1] = -0.35791;
+    else  // TOP_VERT_JUSTIFY
+        tst[2][1] = -0.71582;
+        
+    tst[0][0] =  charSize; tst[0][1]  = 0.0;
+    tst[1][0] =  0.0;      tst[1][1]  = charSize;
+    tst[2][0] *= charSize; tst[2][1] *= charSize;
+
+    if (direct == LEFTWARD_DIRECTION)
+    {
+        tst[0][0] = -tst[0][0]; tst[1][1] = -tst[1][1];
+        tst[2][0] = -tst[2][0]; tst[2][1] = -tst[2][1];
+    }
+    else if (direct == DOWNWARD_DIRECTION)
+    {
+        tst[0][1] = -tst[0][0]; tst[0][0] = 0.0;
+        tst[1][0] =  tst[1][1]; tst[1][1] = 0.0;
+        saveCoeff =  tst[2][0]; tst[2][0] = tst[2][1]; tst[2][1] = -saveCoeff;
+    }
+    else if (direct == UPWARD_DIRECTION)
+    {
+        tst[0][1] =  tst[0][0]; tst[0][0] = 0.0;
+        tst[1][0] = -tst[1][1]; tst[1][1] = 0.0;
+        saveCoeff =  tst[2][0]; tst[2][0] = -tst[2][1]; tst[2][1] = saveCoeff;
+    }
+    
+    if (renWinWidth > renWinHeight)
+    {
+        distortX = renWinHeight / renWinWidth;
+        distortY = 1.0;
+    }
+    else
+    {
+        distortX = 1.0;
+        distortY = renWinWidth / renWinHeight;
+    }
+    
+    tst[0][0] *= distortX; tst[1][0] *= distortX; tst[2][0] *= distortX;
+    tst[0][1] *= distortY; tst[1][1] *= distortY; tst[2][1] *= distortY;
+    
+    tst[2][0] += xPosition; tst[2][1] += yPosition;
 }

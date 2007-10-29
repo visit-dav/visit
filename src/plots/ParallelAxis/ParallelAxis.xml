@@ -9,14 +9,12 @@
       avtParallelAxisRenderer.C
       avtOpenGLParallelAxisRenderer.C
       avtMesaParallelAxisRenderer.C
-      PortableFont.C
     </Files>
     <Files components="E">
       avtParallelAxisFilter.C
       avtParallelAxisRenderer.C
       avtOpenGLParallelAxisRenderer.C
       avtMesaParallelAxisRenderer.C
-      PortableFont.C
     </Files>
     <Files components="W">
       QvisParallelAxisWidget.h

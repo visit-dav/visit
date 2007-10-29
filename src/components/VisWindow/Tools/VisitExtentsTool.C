@@ -4516,6 +4516,9 @@ VisitExtentsTool::AxisClosestToTipOfArrow(double arrowTipX)
 //     Mark Blair, Mon Apr 23 18:53:27 PDT 2007
 //     Simplified format conventions.  Now also consistent with Threshold op.
 //
+//     Mark Blair, Wed Oct 24 14:38:54 PDT 2007
+//     Fixed off-by-1 array indexing error.
+//
 // *****************************************************************************
 
 void
@@ -4531,7 +4534,7 @@ VisitExtentsTool::MakeAxisTitleText(
         strcpy(titleText, rawTitle);
     else
     {
-        rawTitle[maxTitleChars-3] = '\0';
+        rawTitle[maxTitleChars-4] = '\0';
         sprintf(titleText,"%s..%s", rawTitle, &rawTitle[rawTitleLen-2]);
     }
 }
