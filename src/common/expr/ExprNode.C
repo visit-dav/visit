@@ -341,11 +341,16 @@ ArgsExpr::ArgsExpr(const Pos &p, ArgExpr *e) : ExprParseTreeNode(p)
 
 ArgsExpr::~ArgsExpr()
 {
+cerr << "This = " << this << endl;
+cerr << "Num args = " << args->size() << endl;
     for (int i=0; i<args->size(); i++)
     {
+cerr << "Deleting " << i << endl;
         delete (*args)[i];
     }
+cerr << "Deleting array" << endl;
     delete args;
+cerr << "Done" << endl;
 }
 
 void

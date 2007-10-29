@@ -187,7 +187,7 @@
 #    Added command to copy private Qt headers.
 #
 #    Jeremy Meredith, Tue Nov  9 14:31:08 PST 2004
-#    Allowe distinction of 64-bit objects on IBM AIX systems.
+#    Allowed distinction of 64-bit objects on IBM AIX systems.
 #
 #    Jeremy Meredith, Fri Dec 10 13:34:55 PST 2004
 #    Added support for version-specific visit scripts and the ability to

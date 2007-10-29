@@ -36,7 +36,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                  avtGhostZoneAndFacelistFilter.h                          //
+//                    avtGhostZoneAndFacelistFilter.C                        //
 // ************************************************************************* //
 
 #include <avtGhostZoneAndFacelistFilter.h>
@@ -55,11 +55,21 @@
 //  Programmer: Kathleen Bonnell
 //  Creation:   July 20, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Oct 28 10:37:33 PST 2007
+//    Initialize exteriorBoundaryGhostFilter.
+//
 // ****************************************************************************
 
 avtGhostZoneAndFacelistFilter::avtGhostZoneAndFacelistFilter()
 {
     ghostFilter = new avtGhostZoneFilter;
+    exteriorBoundaryGhostFilter = new avtGhostZoneFilter;
+    unsigned char v = '\0';
+    avtGhostData::AddGhostZoneType(v, ZONE_EXTERIOR_TO_PROBLEM);
+    exteriorBoundaryGhostFilter->SetGhostZoneTypesToRemove(v);
+    exteriorBoundaryGhostFilter->GhostDataMustBeRemoved();
     faceFilter  = new avtFacelistFilter;
     useFaceFilter = false;
     useGhostFilter = true;
@@ -72,6 +82,11 @@ avtGhostZoneAndFacelistFilter::avtGhostZoneAndFacelistFilter()
 //  Programmer: Kathleen Bonnell
 //  Creation:   July 20, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Sun Oct 28 10:37:33 PST 2007
+//    Destruct exteriorBoundaryGhostFilter.
+//
 // ****************************************************************************
 
 avtGhostZoneAndFacelistFilter::~avtGhostZoneAndFacelistFilter()
@@ -80,6 +95,11 @@ avtGhostZoneAndFacelistFilter::~avtGhostZoneAndFacelistFilter()
     {
         delete ghostFilter;
         ghostFilter = NULL;
+    }
+    if (exteriorBoundaryGhostFilter != NULL)
+    {
+        delete exteriorBoundaryGhostFilter;
+        exteriorBoundaryGhostFilter = NULL;
     }
     if (faceFilter != NULL)
     {
@@ -268,6 +288,9 @@ avtGhostZoneAndFacelistFilter::MustCreatePolyData(void)
 //    Make sure we are using the right variable in the spec, since that will
 //    affect what the active variable is.
 //
+//    Hank Childs, Sun Oct 28 10:37:33 PST 2007
+//    Add support for exterior boundary ghosts.
+//
 // ****************************************************************************
 
 void
@@ -323,6 +346,16 @@ avtGhostZoneAndFacelistFilter::Execute(void)
         if (faceFirst)
         {
             debug5 << "Using facelist filter before ghostzone filter." << endl;
+
+            if (GetInput()->GetInfo().GetAttributes().
+                                           GetContainsExteriorBoundaryGhosts())
+            {
+                debug5 << "But there are exterior boundaries, so doing a ghost"
+                       << " before that!" << endl;
+                exteriorBoundaryGhostFilter->SetInput(data);
+                data = exteriorBoundaryGhostFilter->GetOutput();
+            }
+
             faceFilter->SetInput(data);
             ghostFilter->SetInput(faceFilter->GetOutput());
             ghostFilter->Update(goodSpec);
@@ -370,6 +403,9 @@ avtGhostZoneAndFacelistFilter::Execute(void)
 //    Hank Childs, Mon Sep 30 09:58:10 PDT 2002
 //    Tell the output that it does not have ghost zones.
 //
+//    Hank Childs, Sun Oct 28 10:44:26 PST 2007
+//    Tell the output that it does not have exterior boundary ghost zones.
+//
 // ****************************************************************************
 
 void
@@ -385,6 +421,7 @@ avtGhostZoneAndFacelistFilter::RefashionDataObjectInfo(void)
         }
     }
     output->GetInfo().GetAttributes().SetContainsGhostZones(AVT_NO_GHOSTS);
+    output->GetInfo().GetAttributes().SetContainsExteriorBoundaryGhosts(false);
 }
 
 

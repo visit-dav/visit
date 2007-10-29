@@ -43,8 +43,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vtkCellData.h>
 #include <vtkCellArray.h>
-#include <vtkExtractGrid.h>
-#include <vtkExtractRectilinearGrid.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkObjectFactory.h>
@@ -56,6 +54,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkVisItUtility.h>
+#include <vtkVisItExtractGrid.h>
+#include <vtkVisItExtractRectilinearGrid.h>
 
 #include <avtGhostData.h>
 
@@ -76,12 +76,16 @@ vtkStandardNewMacro(vtkDataSetRemoveGhostCells);
 //   Hank Childs, Fri Aug  3 16:56:36 PDT 2007
 //   Initialize GhostNodeTypesToRemove.
 //
+//   Hank Childs, Sun Oct 28 10:48:50 PST 2007
+//   Initialize GhostZoneTypesToRemove.
+//
 // ****************************************************************************
 
 // Construct with ghost level = 1.
 vtkDataSetRemoveGhostCells::vtkDataSetRemoveGhostCells()
 {
     GhostNodeTypesToRemove = 255;
+    GhostZoneTypesToRemove = 255;
 }
 
 
@@ -194,6 +198,9 @@ void vtkDataSetRemoveGhostCells::GenericExecute()
 //    Renamed ghost arrays.  Added logic to remove cells that are ghosted,
 //    since we can no longer use VTK's routine.
 //
+//    Hank Childs, Sun Oct 28 10:48:50 PST 2007
+//    Added support for GhostZoneTypesToRemove.
+//
 // ****************************************************************************
 
 void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
@@ -240,7 +247,8 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
   vtkIdType cellId = 0;
   for (i = 0 ; i < ncells ; i++)
   {
-      if (ghosts->GetValue(i) != 0)
+      unsigned char effectiveVal =ghosts->GetValue(i) & GhostZoneTypesToRemove;
+      if (avtGhostData::IsGhostZone(effectiveVal))
           continue;
 
       vtkIdType npts;
@@ -274,7 +282,8 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
   cells->Delete();
 
   output->Squeeze();
-  output->GetCellData()->RemoveArray("avtGhostZones");
+  if (GhostZoneTypesToRemove == 255)
+    output->GetCellData()->RemoveArray("avtGhostZones");
 }
 
 
@@ -322,6 +331,9 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
 //    Hank Childs, Fri Aug  3 13:34:38 PDT 2007
 //    Added support for GhostNodeTypesToRemove.
 //
+//    Hank Childs, Sun Oct 28 10:48:50 PST 2007
+//    Added support for GhostZoneTypesToRemove.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::PolyDataExecute()
@@ -368,7 +380,8 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
     {
     if (usingGhostZones)
       {
-      if (avtGhostData::IsGhostZone(zone_ptr[i]))
+      unsigned char effectiveVal = zone_ptr[i] & GhostZoneTypesToRemove;
+      if (avtGhostData::IsGhostZone(effectiveVal))
         {
         continue;
         }
@@ -395,7 +408,8 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
     output->InsertNextCell(input->GetCellType(i), npts, pts);
     outCD->CopyData(inCD, i, cell++);
     }
-  output->GetCellData()->RemoveArray("avtGhostZones");
+  if (GhostZoneTypesToRemove == 255)
+    output->GetCellData()->RemoveArray("avtGhostZones");
   output->GetPointData()->RemoveArray("avtGhostNodes");
   output->Squeeze();
 }
@@ -426,6 +440,9 @@ void vtkDataSetRemoveGhostCells::PolyDataExecute()
 //    Hank Childs, Thu Mar  2 11:14:53 PST 2006
 //    Call generic execute if there are no real dims.
 //
+//    Hank Childs, Sun Oct 28 10:56:37 PST 2007
+//    Added support for GhostZoneTypesToRemove.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
@@ -449,8 +466,23 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
     {
     voi[i] = (int) realDims->GetComponent(i, 0);
     }
+
+  vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *) 
+                               input->GetCellData()->GetArray("avtGhostZones");
+  if (GhostZoneTypesToRemove != 255 && arr != NULL)
+  {
+    int i,j,k;
+    unsigned char *ghosts = arr->GetPointer(0);
+    int dims[3];
+    input->GetDimensions(dims);
+
+    // Check to make sure that the zones we are going to remove are 
+    // uniformly of the type we should remove.
+    // It will modify the voi if necessary.
+    ConfirmRegion(ghosts, dims, voi);
+  }
  
-  vtkExtractRectilinearGrid *extractor = vtkExtractRectilinearGrid::New();
+  vtkVisItExtractRectilinearGrid *extractor = vtkVisItExtractRectilinearGrid::New();
   extractor->SetInput(input);
   extractor->SetVOI(voi);
   extractor->GetOutput()->Update();
@@ -459,7 +491,10 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
   extractor->Delete();
   output->GetFieldData()->PassData(input->GetFieldData());
   output->GetFieldData()->RemoveArray("avtRealDims");
-  output->GetCellData()->RemoveArray("avtGhostZones");
+  if (GhostZoneTypesToRemove == 255)
+  {
+    output->GetCellData()->RemoveArray("avtGhostZones");
+  }
 }
 
 
@@ -486,6 +521,9 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
 //    Hank Childs, Thu Mar  2 11:14:53 PST 2006
 //    Call generic execute if there are no real dims.
 //
+//    Hank Childs, Sun Oct 28 10:56:37 PST 2007
+//    Added support for GhostZoneTypesToRemove.
+//
 // ***************************************************************************
 
 void vtkDataSetRemoveGhostCells::StructuredGridExecute()
@@ -509,7 +547,22 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
      voi[i] = (int) realDims->GetComponent(i, 0);
      }
  
-  vtkExtractGrid *extractor = vtkExtractGrid::New();
+  vtkUnsignedCharArray *arr = (vtkUnsignedCharArray *) 
+                               input->GetCellData()->GetArray("avtGhostZones");
+  if (GhostZoneTypesToRemove != 255 && arr != NULL)
+  {
+    int i,j,k;
+    unsigned char *ghosts = arr->GetPointer(0);
+    int dims[3];
+    input->GetDimensions(dims);
+
+    // Check to make sure that the zones we are going to remove are 
+    // uniformly of the type we should remove.
+    // It will modify the voi if necessary.
+    ConfirmRegion(ghosts, dims, voi);
+  }
+ 
+  vtkVisItExtractGrid *extractor = vtkVisItExtractGrid::New();
   extractor->SetInput(input);
   extractor->SetVOI(voi);
   extractor->GetOutput()->Update();
@@ -518,8 +571,114 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
   extractor->Delete();
   output->GetFieldData()->PassData(input->GetFieldData()); 
   output->GetFieldData()->RemoveArray("avtRealDims");
-  output->GetCellData()->RemoveArray("avtGhostZones");
+  if (GhostZoneTypesToRemove == 255)
+  {
+    output->GetCellData()->RemoveArray("avtGhostZones");
+  }
 }
+
+void vtkDataSetRemoveGhostCells::ConfirmRegion(unsigned char *ghosts, 
+                                               int *pt_dims, int *voi)
+{
+    int  i, j, k;
+
+    int dims[3];
+    dims[0] = (pt_dims[0] > 1 ? pt_dims[0]-1 : 1);
+    dims[1] = (pt_dims[1] > 1 ? pt_dims[1]-1 : 1);
+    dims[2] = (pt_dims[2] > 1 ? pt_dims[2]-1 : 1);
+
+    if (voi[0] > 0)
+    {
+        bool allGhost = true;
+        i = voi[0]-1;
+        for (j = 0 ; j < dims[1] && allGhost ; j++)
+           for (k = 0 ; k < dims[2] && allGhost ; k++)
+           {
+               int c = k*dims[1]*dims[0] + j*dims[0] + i;
+               unsigned char effectiveVal = ghosts[c] & GhostZoneTypesToRemove;
+               if (! avtGhostData::IsGhostZone(effectiveVal))
+                   allGhost = false;
+           }
+        if (!allGhost)
+            voi[0] = 0;
+    }
+    if (voi[1] < dims[0])
+    {
+        bool allGhost = true;
+        i = dims[0]-1;
+        for (j = 0 ; j < dims[1] && allGhost ; j++)
+           for (k = 0 ; k < dims[2] && allGhost ; k++)
+           {
+               int c = k*dims[1]*dims[0] + j*dims[0] + i;
+               unsigned char effectiveVal = ghosts[c] & GhostZoneTypesToRemove;
+               if (! avtGhostData::IsGhostZone(effectiveVal))
+                   allGhost = false;
+           }
+        if (!allGhost)
+            voi[1] = dims[0];
+    }
+    if (voi[2] > 0)
+    {
+        bool allGhost = true;
+        j = voi[2]-1;
+        for (i = 0 ; i < dims[0] && allGhost ; i++)
+           for (k = 0 ; k < dims[2] && allGhost ; k++)
+           {
+               int c = k*dims[1]*dims[0] + j*dims[0] + i;
+               unsigned char effectiveVal = ghosts[c] & GhostZoneTypesToRemove;
+               if (! avtGhostData::IsGhostZone(effectiveVal))
+                   allGhost = false;
+           }
+        if (!allGhost)
+            voi[2] = 0;
+    }
+    if (voi[3] < dims[1])
+    {
+        bool allGhost = true;
+        j = dims[1]-1;
+        for (i = 0 ; i < dims[0] && allGhost ; i++)
+           for (k = 0 ; k < dims[2] && allGhost ; k++)
+           {
+               int c = k*dims[1]*dims[0] + j*dims[0] + i;
+               unsigned char effectiveVal = ghosts[c] & GhostZoneTypesToRemove;
+               if (! avtGhostData::IsGhostZone(effectiveVal))
+                   allGhost = false;
+           }
+        if (!allGhost)
+            voi[3] = dims[1];
+    }
+    if (voi[4] > 0)
+    {
+        bool allGhost = true;
+        k = voi[4]-1;
+        for (i = 0 ; i < dims[0] && allGhost ; i++)
+           for (j = 0 ; j < dims[1] && allGhost ; j++)
+           {
+               int c = k*dims[1]*dims[0] + j*dims[0] + i;
+               unsigned char effectiveVal = ghosts[c] & GhostZoneTypesToRemove;
+               if (! avtGhostData::IsGhostZone(effectiveVal))
+                   allGhost = false;
+           }
+        if (!allGhost)
+            voi[4] = 0;
+    }
+    if (voi[5] < dims[2])
+    {
+        bool allGhost = true;
+        k = dims[2]-1;
+        for (i = 0 ; i < dims[0] && allGhost ; i++)
+           for (j = 0 ; j < dims[1] && allGhost ; j++)
+           {
+               int c = k*dims[1]*dims[0] + j*dims[0] + i;
+               unsigned char effectiveVal = ghosts[c] & GhostZoneTypesToRemove;
+               if (! avtGhostData::IsGhostZone(effectiveVal))
+                   allGhost = false;
+           }
+        if (!allGhost)
+            voi[5] = dims[2];
+    }
+}
+
 
 // ****************************************************************************
 // Modifications:

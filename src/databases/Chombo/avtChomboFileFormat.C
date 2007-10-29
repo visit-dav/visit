@@ -1045,6 +1045,10 @@ avtChomboFileFormat::CalculateDomainNesting(void)
 //    Gunther H. Weber, Thu Oct 11 15:49:41 PDT 2007
 //    Add expressions from Chombo files.
 //
+//    Hank Childs, Sun Oct 28 09:42:50 PST 2007
+//    Set meta-data saying whether or not we have ghosts on the exterior
+//    boundary.
+//
 // ****************************************************************************
 
 void
@@ -1082,6 +1086,7 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mesh->numGroups = num_levels;
     mesh->groupTitle = "levels";
     mesh->groupPieceName = "level";
+    mesh->containsExteriorBoundaryGhosts = useGhosts;
     std::vector<int> groupIds(totalPatches);
     std::vector<string> blockPieceNames(totalPatches);
     for (i = 0 ; i < totalPatches ; i++)
@@ -1294,6 +1299,9 @@ avtChomboFileFormat::GetLevelAndLocalPatchNumber(int global_patch,
 //    Gunther H. Weber, Mon Oct 22 11:50:41 PDT 2007
 //    Distinguish between ghost zones internal and exterior to problem.
 //
+//    Hank Childs, Sun Oct 28 13:36:43 PST 2007
+//    Fix bug with avtRealDims.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -1408,14 +1416,22 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         //
         // Store real dims so that pick reports correct indices
         //
+        // If: G G R R R R G G G  (G = ghost, R = real)
+        //     0 1 2 3 4 5 6 7 9
+        // then dims = 9
+        // avtRealDims[0] = IDX of node that borders first real zone
+        // -> node #2
+        // avtRealDims[1] = IDX of node that borders last real zone
+        // -> node #6
+        // 
         arr = vtkIntArray::New();
         arr->SetNumberOfTuples(6);
         arr->SetValue(0, numGhostI);
-        arr->SetValue(1, dims[0]-numGhostI);
+        arr->SetValue(1, dims[0]-numGhostI-1);
         arr->SetValue(2, numGhostJ);
-        arr->SetValue(3, dims[1]-numGhostJ);
+        arr->SetValue(3, dims[1]-numGhostJ-1);
         arr->SetValue(4, numGhostK);
-        arr->SetValue(5, dims[2]-numGhostK);
+        arr->SetValue(5, dims[2]-numGhostK-1);
         arr->SetName("avtRealDims");
         rg->GetFieldData()->AddArray(arr);
         arr->Delete();
@@ -1430,8 +1446,10 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
         if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
         {
             unsigned char realVal = 0, ghostInternal = 0, ghostExternal = 0;
-            avtGhostData::AddGhostZoneType(ghostInternal, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-            avtGhostData::AddGhostZoneType(ghostExternal, ZONE_EXTERIOR_TO_PROBLEM);
+            avtGhostData::AddGhostZoneType(ghostInternal, 
+                                           DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+            avtGhostData::AddGhostZoneType(ghostExternal, 
+                                           ZONE_EXTERIOR_TO_PROBLEM);
     
             vtkUnsignedCharArray *ghostCells = vtkUnsignedCharArray::New();
             ghostCells->SetName("avtGhostZones");

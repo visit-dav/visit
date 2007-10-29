@@ -319,6 +319,9 @@ class     vtkUnstructuredGrid;
 //    Cyrus Harrison, Fri Sep 14 13:59:30 PDT 2007
 //    Added floating point format argument to QueryNodes and QueryZones
 //
+//    Hank Childs, Sun Oct 28 21:09:44 PST 2007
+//    Added Boolean argument to GetDomainBoundaryInformation.
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -458,9 +461,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                   boolVector &);
 
     avtDomainBoundaries       *GetDomainBoundaryInformation(
-                                                       avtDatasetCollection &,
-                                                       intVector &, 
-                                                       avtDataSpecification_p);
+                                      avtDatasetCollection &, intVector &, 
+                                      avtDataSpecification_p,
+                                      bool confirmInputMeshHasRightSize = true);
     bool                       CommunicateGhosts(avtGhostDataType,
                                     avtDatasetCollection &, intVector &,
                                     avtDataSpecification_p &,

@@ -59,11 +59,17 @@ using     std::vector;
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Oct  9 06:19:11 PDT 2007
+//    Initialize args2.
+//
 // ****************************************************************************
 
 avtMacroExpressionFilter::avtMacroExpressionFilter() 
 {
     term_src = NULL;
+    args2    = NULL;
 }
 
 
@@ -73,12 +79,20 @@ avtMacroExpressionFilter::avtMacroExpressionFilter()
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Oct  9 06:19:11 PDT 2007
+//    Delete args2.
+//
 // ****************************************************************************
 
 avtMacroExpressionFilter::~avtMacroExpressionFilter()
 {
+cerr << "Macro filter " << this << " deleting args2 = " << args2 << endl;
     if (term_src != NULL)
         delete term_src;
+    if (args2 != NULL)
+        delete args2;
 }
 
 
@@ -92,23 +106,50 @@ avtMacroExpressionFilter::~avtMacroExpressionFilter()
 //  Programmer: Hank Childs
 //  Creation:   December 28, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Oct  9 06:19:11 PDT 2007
+//    Add support for string constants.
+//
 // ****************************************************************************
 
 void
 avtMacroExpressionFilter::ProcessArguments(ArgsExpr *args, 
                                            ExprPipelineState *state)
 {
+    if (args2 != NULL)
+    {
+        delete args2;
+        args2 = NULL;
+    }
+
     std::vector<ArgExpr*> *arguments = args->GetArgs();
     int nArgs = arguments->size();
+    vector<ArgExpr *> nonConstArgs;
     for (int i = 0 ; i < nArgs ; i++)
     {
         expression_arguments.push_back((*arguments)[i]->GetText());
+        if ((*arguments)[i]->GetExpr()->GetTypeName() != "FloatConst" &&
+            (*arguments)[i]->GetExpr()->GetTypeName() != "StringConst" &&
+            (*arguments)[i]->GetExpr()->GetTypeName() != "BooleanConst" &&
+            (*arguments)[i]->GetExpr()->GetTypeName() != "IntegerConst")
+        {
+            nonConstArgs.push_back((*arguments)[i]);
+        }
     }
 
     //
-    // The base class knows how to process the arguments correctly. 
+    // The base class knows how to process the arguments correctly.
     //
-    avtExpressionFilter::ProcessArguments(args, state);
+    if (nonConstArgs.size() > 0)
+    {
+        args2 = new ArgsExpr(args->GetPos(), nonConstArgs[0]);
+        for (unsigned int j = 1 ; j < nonConstArgs.size() ; j++)
+            args2->AddArg(nonConstArgs[j]);
+        avtExpressionFilter::ProcessArguments(args2, state);
+    }
+    else
+        avtExpressionFilter::ProcessArguments(args, state);
 }
 
 
