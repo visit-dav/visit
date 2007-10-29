@@ -865,9 +865,16 @@ avtClawFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
 //  Creation:   Wed Sep 12 09:20:22 PDT 2007
 //
 //  Modifications:
+//
 //    Mark C. Miller, Tue Sep 18 11:08:52 PDT 2007
 //    Changed naux to ndims 
+//
+//    Hank Childs, Mon Oct 29 14:19:21 PDT 2007
+//    Remove +1 in for maxI, maxJ, maxK.  This makes the DBI object be
+//    correctly sized.
+//
 // ****************************************************************************
+
 void
 avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
 {
@@ -979,11 +986,11 @@ avtClawFileFormat::BuildDomainAuxiliaryInfo(int timeState)
         {
             int e[6];
             e[0] = (int) (gridHdrs[i].xlow / gridHdrs[i].dx + 0.5);
-            e[1] = e[0] + gridHdrs[i].mx + 1;
+            e[1] = e[0] + gridHdrs[i].mx;
             e[2] = (int) (gridHdrs[i].ylow / gridHdrs[i].dy + 0.5);
-            e[3] = e[2] + gridHdrs[i].my + 1;
+            e[3] = e[2] + gridHdrs[i].my;
             e[4] = num_dims == 3 ? (int) (gridHdrs[i].zlow / gridHdrs[i].dz + 0.5) : 0;
-            e[5] = num_dims == 3 ? e[4] + gridHdrs[i].mz + 1 : 1;
+            e[5] = num_dims == 3 ? e[4] + gridHdrs[i].mz  : 1;
             sdb->SetIndicesForAMRPatch(i, gridHdrs[i].AMR_level-1, e);
         }
         sdb->CalculateBoundaries();

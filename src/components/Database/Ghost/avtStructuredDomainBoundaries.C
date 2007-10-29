@@ -58,6 +58,7 @@
 #include <avtParallel.h>
 
 #include <BadIndexException.h>
+#include <DebugStream.h>
 #include <TimingsManager.h>
 #include <VisItException.h>
 
@@ -2368,6 +2369,9 @@ avtStructuredDomainBoundaries::RequiresCommunication(avtGhostDataType gtype)
 //    Mark C. Miller, Thu Mar  9 11:15:29 PST 2006
 //    Protected deref of meshes[i] with test for non-0
 //
+//    Hank Childs, Mon Oct 29 09:59:04 PDT 2007
+//    Add better debug messages.
+//
 // ****************************************************************************
 bool
 avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
@@ -2393,10 +2397,20 @@ avtStructuredDomainBoundaries::ConfirmMesh(vector<int>         domainNum,
         //
         if (meshes[i]->GetNumberOfPoints() != b.oldnpts)
         {
+            debug1 << "Rejecting domain boundaries because of inconsistency "
+                   << "with domain " << domainNum[i] << endl;
+            debug1 << "File returned " << meshes[i]->GetNumberOfPoints() 
+                   << " points, but dbi object believed it should be " 
+                   << b.oldnpts << endl;
             return false;
         }
         if (meshes[i]->GetNumberOfCells() != b.oldncells)
         {
+            debug1 << "Rejecting domain boundaries because of inconsistency "
+                   << "with domain " << domainNum[i] << endl;
+            debug1 << "File returned " << meshes[i]->GetNumberOfCells() 
+                   << "cells, but dbi object believed it should be " 
+                   << b.oldncells << endl;
             return false;
         }
     }
