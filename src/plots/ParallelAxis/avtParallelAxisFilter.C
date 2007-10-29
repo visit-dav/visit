@@ -559,7 +559,7 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
                << "is of zero length." << endl;
         return NULL;
     }
-
+    
     // If the input contains both cell data and point data, then by convention
     // the cell data takes precedence.  In this case, the value of a point
     // variable that is plotted for a given cell, by convention, is the average
@@ -743,18 +743,18 @@ avtParallelAxisFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
         }
     }
 
-    vtkDataSet **outputDataSets = new vtkDataSet *[3];
+    vtkDataSet **outputDataSets = new vtkDataSet *[4];
 
     outputDataSets[0] = dataCurvePolyData;
     outputDataSets[1] = axisPolyData;
-    outputDataSets[2] = titlePolyData;
+    outputDataSets[2] = labelPolyData;
+    outputDataSets[3] = titlePolyData;
 
     avtDataTree *outputDataTree =
-        new avtDataTree(3, outputDataSets, domain, curveAndAxisLabels);
-
-    outputDataSets[0]->Delete();
-    outputDataSets[1]->Delete();
-    outputDataSets[2]->Delete();
+        new avtDataTree(4, outputDataSets, domain, curveAndAxisLabels);
+        
+    for (int dataSetNum = 0; dataSetNum < 4; dataSetNum++)
+        outputDataSets[dataSetNum]->Delete();
 
     delete [] outputDataSets;
 
@@ -812,9 +812,9 @@ avtParallelAxisFilter::CreateLabels()
     curveAndAxisLabels.clear();
 
     curveAndAxisLabels.push_back("Data Curves");
-    curveAndAxisLabels.push_back("Axes and Bounds");
+    curveAndAxisLabels.push_back("Axes");
+    curveAndAxisLabels.push_back("Axis Bounds");
     curveAndAxisLabels.push_back("Axis Titles");
-    curveAndAxisLabels.push_back("Selector Arrows");
 
     char str[100];
     contextLabels.clear();
@@ -1084,8 +1084,6 @@ avtParallelAxisFilter::InitializePlotAtts()
     subrangeMinima.clear(); subrangeMaxima.clear();
 
     plotAxisTitles.clear();
-    
-    textPlotter = NULL;
 }
 
 
@@ -1114,6 +1112,9 @@ avtParallelAxisFilter::InitializePlotAtts()
 //
 //     Mark Blair, Fri Aug  3 17:10:19 PDT 2007
 //     Now applies extents only to those axes the Extents tool will not see.
+//
+//     Mark Blair, Tue Oct 16 19:33:48 PDT 2007
+//     Removed some obsolete code.
 //
 // *****************************************************************************
 
@@ -1223,16 +1224,11 @@ avtParallelAxisFilter::InitializeDataTupleInput(
     }
 
     applySubranges.clear();
-    drawBottomLabels.clear(); drawBottomBounds.clear(); drawTopBounds.clear();
     moveTitles.clear(); moveTopLabels.clear();
 
     for (axisNum = 0; axisNum < axisCount; axisNum++)
     {
         applySubranges.push_back(false);
-
-        drawBottomLabels.push_back(true);
-        drawBottomBounds.push_back(false);
-        drawTopBounds.push_back(false);
 
         moveTitles.push_back(false);
         moveTopLabels.push_back(false);
@@ -1331,6 +1327,23 @@ avtParallelAxisFilter::InitializeOutputDataSets()
     axisVerts = vtkCellArray::New();
     axisPolyData->SetVerts(axisVerts);
     axisVerts->Delete();
+
+//
+//  Initialize polyline dataset for the coordinate axis labels.
+//
+    labelPolyData = vtkPolyData::New();
+
+    labelPoints = vtkPoints::New();
+    labelPolyData->SetPoints(labelPoints);
+    labelPoints->Delete();
+
+    labelLines = vtkCellArray::New();
+    labelPolyData->SetLines(labelLines);
+    labelLines->Delete();
+
+    labelVerts = vtkCellArray::New();
+    labelPolyData->SetVerts(labelVerts);
+    labelVerts->Delete();
 
 //
 //  Initialize polyline dataset for the coordinate axis titles.
@@ -1545,6 +1558,9 @@ avtParallelAxisFilter::DrawDataCurves()
 //     Mark Blair, Wed Aug 22 15:56:42 PDT 2007
 //     Modified to correct an oversight in parallel rendering.
 //
+//     Mark Blair, Tue Oct 16 19:33:48 PDT 2007
+//     Now can always tag output as axis lines only.
+//
 // *****************************************************************************
 
 void
@@ -1589,14 +1605,11 @@ avtParallelAxisFilter::DrawCoordinateAxes()
         axisLines->InsertNextCell(2, vtkPointIDs);
     }
 
-    if ((parAxisAtts.GetPlotToolModeFlags() & EA_TOOL_DRAWS_AXIS_INFO_FLAG) != 0)
-    {
-        // Tag first point of output as axes and tick marks for custom renderer.
-        double firstPoint[3];
-        axisPolyData->GetPoint(0, firstPoint);
-        firstPoint[2] = double(PCP_RENDERER_AXIS_LABEL_INPUT << 10);
-        axisPolyData->GetPoints()->SetPoint(0, firstPoint);
-    }
+    // Tag first point of output as axes and tick marks for custom renderer.
+    double firstPoint[3];
+    axisPolyData->GetPoint(0, firstPoint);
+    firstPoint[2] = double(PCP_RENDERER_AXIS_LINE_INPUT << 10);
+    axisPolyData->GetPoints()->SetPoint(0, firstPoint);
 }
 
 
@@ -1625,132 +1638,64 @@ avtParallelAxisFilter::DrawCoordinateAxes()
 //     Mark Blair, Wed Aug 22 15:56:42 PDT 2007
 //     Modified to correct an oversight in parallel rendering.
 //
+//     Mark Blair, Tue Oct 16 19:33:48 PDT 2007
+//     Now calculates label positions only; custom renderer handles everything
+//     else.
+//
 // *****************************************************************************
 
 void
 avtParallelAxisFilter::DrawCoordinateAxisLabels()
 {
-    if (textPlotter == NULL) textPlotter = new PortableFont;
-    
-    intVector axisInfoFlagSets = parAxisAtts.GetAxisInfoFlagSets();
-
-    bool drawIt, centerIt;
-    int labelLen;
-    double minOrMax, axisX, xOffset, labelX, labelY;
-    PortableFont::PF_ORIENTATION orientation;
-    std::vector<floatVector> *strokeList = new std::vector<floatVector>;
-    char axisLabel[81];
+    double axisX;
+    float startCoords[3];
+    startCoords[2] = 0.0;
 
     for (int axisID = leftPlotAxisID; axisID <= rightPlotAxisID; axisID++)
     {
-        if ((axisInfoFlagSets[axisID] & EA_AXIS_INFO_SHOWN_FLAG) == 0) continue;
-
-        minOrMax = plotAxisMinima[axisID];
-        labelY = (moveTitles[axisID]) ? movedAxisTitleY : bottomLabelY;
-        drawIt = drawBottomLabels[axisID];
+        startCoords[1] = (moveTitles[axisID]) ? movedAxisTitleY : bottomLabelY;
 
         for (int labelNum = 0; labelNum < 2; labelNum++)
         {
-            if (drawIt)
-            {
-                textPlotter->DoubleNumericalString(axisLabel, minOrMax);
-                labelLen = strlen(axisLabel);
+            axisX = dataTransforms[axisID][0];
 
-                axisX = dataTransforms[axisID][0];
+            if (useVerticalText)
+                startCoords[0] =
+                axisX + ((labelNum == 0) ? bottomLabelXOff : topLabelXOff1);
+            else
+                startCoords[0] = axisX;
 
-                if (useVerticalText)
-                {
-                    if (labelNum == 0)
-                    {
-                        orientation = PortableFont::Downward;
-                        xOffset = bottomLabelXOff;
-                    }
-                    else
-                    {
-                        orientation = PortableFont::Upward;
-                        xOffset = (drawBottomBounds[axisID]) ?
-                        topLabelXOff2 : topLabelXOff1;
-                    }
+            labelPoints->InsertNextPoint(startCoords);
 
-                    labelX = axisX + xOffset;
-                    centerIt = false;
-                }
-                else
-                {
-                    orientation = PortableFont::Rightward;
-
-                    labelX = axisX;
-                    centerIt = true;
-
-                    if (axisID == leftPlotAxisID)
-                    {
-                        if (labelLen > 2)
-                        {
-                            labelX = axisX - labelCharWidth*1.5;
-                            centerIt = false;
-                        }
-                    }
-                    else if (axisID == rightPlotAxisID)
-                    {
-                        if (labelLen > 2)
-                        {
-                            labelX = axisX -
-                                (double)(labelLen-2)*labelCharWidth*1.428571;
-                            centerIt = false;
-                        }
-                    }
-                }
-
-                textPlotter->StrokeText(strokeList, orientation, centerIt,
-                labelX, labelY, labelCharWidth, labelCharHeight, 4, axisLabel);
-            }
-
-            minOrMax = plotAxisMaxima[axisID];
-            labelY = (moveTopLabels[axisID]) ? movedTopLabelY : topLabelY;
-            drawIt = true;
+            startCoords[1] = (moveTopLabels[axisID]) ? movedTopLabelY : topLabelY;
         }
+        
+        startCoords[0] = (float)plotAxisMinima[axisID];
+        startCoords[1] = (float)plotAxisMaxima[axisID];
+
+        labelPoints->InsertNextPoint(startCoords);
     }
 
-    floatVector strokeCoords;
+    // No purpose for cell definitions other than to prevent points from being
+    // deleted because they are not used in any polygons.  Custom renderer only
+    // needs the points.
+    int lineCount = rightPlotAxisID - leftPlotAxisID + 1;
+    vtkIdType vtkPointIDs[3];
 
-    float outputCoords[3];
-    outputCoords[2] = 0.0;
-
-    int strokeNum, xCoordID;
-
-    for (strokeNum = 0; strokeNum < strokeList->size(); strokeNum++)
+    for (int lineNum = 0; lineNum < lineCount; lineNum++)
     {
-        strokeCoords = (*strokeList)[strokeNum];
-
-        for (xCoordID = 0; xCoordID < 4; xCoordID += 2)
-        {
-            outputCoords[0] = strokeCoords[xCoordID];
-            outputCoords[1] = strokeCoords[xCoordID+1];
-            axisPoints->InsertNextPoint(outputCoords);
-        }
-    }
-
-    vtkIdType vtkPointIDs[2];
-    int axisVertexID =
-        (rightPlotAxisID - leftPlotAxisID + 1) * tickMarkIntervals * 2;
-
-    for (strokeNum = 0; strokeNum < strokeList->size() + 1; strokeNum++)
-    {
-        vtkPointIDs[0] = (vtkIdType)axisVertexID;
+        vtkPointIDs[0] = (vtkIdType)lineNum * 3;
         vtkPointIDs[1] = vtkPointIDs[0] + 1;
+        vtkPointIDs[2] = vtkPointIDs[0] + 2;
 
-        axisLines->InsertNextCell(2, vtkPointIDs);
-
-        axisVertexID += 2;
+        labelLines->InsertNextCell(3, vtkPointIDs);
     }
 
-    delete strokeList;
-
-    // Tag first point of output as axes and axis labels for custom renderer.
+    // Tag first point of output as axis label start points for custom renderer.
     double firstPoint[3];
-    axisPolyData->GetPoint(0, firstPoint);
-    firstPoint[2] = double(PCP_RENDERER_AXIS_LABEL_INPUT << 10);
-    axisPolyData->GetPoints()->SetPoint(0, firstPoint);
+    labelPolyData->GetPoint(0, firstPoint);
+    firstPoint[2] = double(PCP_RENDERER_AXIS_BOUND_INPUT << 10);
+    labelPolyData->GetPoints()->SetPoint(0, firstPoint);
 }
 
 
@@ -1778,104 +1723,52 @@ avtParallelAxisFilter::DrawCoordinateAxisLabels()
 //     Mark Blair, Wed Aug 22 15:56:42 PDT 2007
 //     Modified to correct an oversight in parallel rendering.
 //
+//     Mark Blair, Tue Oct 16 19:33:48 PDT 2007
+//     Now calculates title positions only; custom renderer handles everything
+//     else.
+//
 // *****************************************************************************
 
 void
 avtParallelAxisFilter::DrawCoordinateAxisTitles()
 {
-    if (textPlotter == NULL) textPlotter = new PortableFont;
-    
-    intVector axisInfoFlagSets = parAxisAtts.GetAxisInfoFlagSets();
-
-    bool centerIt;
-    int thickness;
-    double axisX, titleX, titleY;
-    PortableFont::PF_ORIENTATION orientation;
-    std::vector<floatVector> *strokeList = new std::vector<floatVector>;
-    char axisTitle[41];
-
-    if (useVerticalText)
-    {
-        orientation = PortableFont::Downward;
-        thickness = 4;
-        centerIt = false;
-    }
-    else
-    {
-        orientation = PortableFont::Rightward;
-        thickness = 6;
-        titleY = axisTitleY;
-    }
+    double axisX;
+    float startCoords[3];
+    startCoords[2] = 0.0;
 
     for (int axisID = leftPlotAxisID; axisID <= rightPlotAxisID; axisID++)
     {
-        if ((axisInfoFlagSets[axisID] & EA_AXIS_INFO_SHOWN_FLAG) == 0) continue;
-
         axisX = dataTransforms[axisID][0];
 
         if (useVerticalText)
         {
-            titleY = (moveTitles[axisID]) ? movedAxisTitleY : axisTitleY;
-            titleX = axisX + axisTitleXOff;
+            startCoords[0] = axisX + axisTitleXOff;
+            startCoords[1] = (moveTitles[axisID]) ? movedAxisTitleY : axisTitleY;
         }
         else
         {
-            if (axisID == leftPlotAxisID)
-            {
-                titleX = axisX - titleCharWidth;
-                centerIt = false;
-            }
-            else if (axisID == rightPlotAxisID)
-            {
-                titleX = axisX -
-                    (double)(plotAxisTitles[axisID].length()-1)*titleCharWidth*1.5;
-                centerIt = false;
-            }
-            else
-            {
-                titleX = axisX;
-                centerIt = true;
-            }
+            startCoords[0] = axisX;
+            startCoords[1] = axisTitleY;
         }
 
-        strcpy (axisTitle, plotAxisTitles[axisID].c_str());
-
-        textPlotter->StrokeText(strokeList, orientation, centerIt,
-        titleX, titleY, titleCharWidth, titleCharHeight, thickness, axisTitle);
+        titlePoints->InsertNextPoint(startCoords);
     }
 
-    floatVector strokeCoords;
-
-    float outputCoords[3];
-    outputCoords[2] = 0.0;
-
-    int strokeNum, xCoordID;
-
-    for (strokeNum = 0; strokeNum < strokeList->size(); strokeNum++)
-    {
-        strokeCoords = (*strokeList)[strokeNum];
-
-        for (xCoordID = 0; xCoordID < 4; xCoordID += 2)
-        {
-            outputCoords[0] = strokeCoords[xCoordID];
-            outputCoords[1] = strokeCoords[xCoordID+1];
-            titlePoints->InsertNextPoint(outputCoords);
-        }
-    }
-
+    // No purpose for cell definitions other than to prevent points from being
+    // deleted because they are not used in any polygons.  Custom renderer only
+    // needs the points.
+    int lineCount = rightPlotAxisID - leftPlotAxisID;
     vtkIdType vtkPointIDs[2];
 
-    for (strokeNum = 0; strokeNum < strokeList->size() + 1; strokeNum++)
+    for (int lineNum = 0; lineNum < lineCount; lineNum++)
     {
-        vtkPointIDs[0] = (vtkIdType)(strokeNum * 2);
+        vtkPointIDs[0] = (vtkIdType)lineNum;
         vtkPointIDs[1] = vtkPointIDs[0] + 1;
 
         titleLines->InsertNextCell(2, vtkPointIDs);
     }
 
-    delete strokeList;
-
-    // Tag first point of output as axis titles for custom renderer.
+    // Tag first point of output as axis title start points for custom renderer.
     double firstPoint[3];
     titlePolyData->GetPoint(0, firstPoint);
     firstPoint[2] = double(PCP_RENDERER_AXIS_TITLE_INPUT << 10);

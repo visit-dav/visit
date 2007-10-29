@@ -187,6 +187,9 @@ avtParallelAxisPlot::SetAtts(const AttributeGroup *a)
 //
 //      Mark Blair, Thu Jul  5 19:06:33 PDT 2007
 //      Now passes color attributes to custom renderer rather than levels mapper.
+//
+//      Mark Blair, Wed Oct 24 14:38:54 PDT 2007
+//      Added separate color for axis labels (bounds).  Removed unused variable.
 //   
 // ****************************************************************************
 
@@ -194,8 +197,7 @@ void
 avtParallelAxisPlot::SetColors()
 {
     int redID, red, green, blue;
-    int numColorEntries = 4 * (3+PCP_CTX_BRIGHTNESS_LEVELS);
-    unsigned char *plotColors = new unsigned char[numColorEntries];
+    int numColorEntries = 4 * (4+PCP_CTX_BRIGHTNESS_LEVELS);
 
     ColorAttribute colorAtt;
     ColorAttributeList colorAttList;
@@ -215,6 +217,11 @@ avtParallelAxisPlot::SetColors()
             blue  = (PCP_DEFAULT_AXIS_COLOR >>  8) & 0xff;
             break;
           case PCP_CTX_BRIGHTNESS_LEVELS*4 + 8:
+            red   = (PCP_DEFAULT_AXIS_BOUND_COLOR >> 24) & 0xff;
+            green = (PCP_DEFAULT_AXIS_BOUND_COLOR >> 16) & 0xff;
+            blue  = (PCP_DEFAULT_AXIS_BOUND_COLOR >>  8) & 0xff;
+            break;
+          case PCP_CTX_BRIGHTNESS_LEVELS*4 + 12:
             red   = (PCP_DEFAULT_AXIS_TITLE_COLOR >> 24) & 0xff;
             green = (PCP_DEFAULT_AXIS_TITLE_COLOR >> 16) & 0xff;
             blue  = (PCP_DEFAULT_AXIS_TITLE_COLOR >>  8) & 0xff;
@@ -237,16 +244,9 @@ avtParallelAxisPlot::SetColors()
 
         colorAtt.SetRgba(red, green, blue, 255);
         colorAttList.AddColors(colorAtt);
-
-        plotColors[redID  ] = (unsigned char)red;
-        plotColors[redID+1] = (unsigned char)green;
-        plotColors[redID+2] = (unsigned char)blue;
-        plotColors[redID+3] = 255;
     }
 
     renderer->SetColors(colorAttList);
-
-    delete [] plotColors;
 }
 
 

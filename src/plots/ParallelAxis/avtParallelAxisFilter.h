@@ -46,8 +46,6 @@
 #include <ParallelAxisAttributes.h>
 #include <avtDataTreeStreamer.h>
 
-#include <PortableFont.h>
-
 #include <vector>
 #include <string>
 
@@ -61,8 +59,8 @@
 
 #define PCP_DEFAULT_DATA_CURVE_COLOR      0x808080ff
 #define PCP_DEFAULT_AXIS_COLOR            0x00c0c0ff
+#define PCP_DEFAULT_AXIS_BOUND_COLOR      0x00c0c0ff
 #define PCP_DEFAULT_AXIS_TITLE_COLOR      0x0000ffff
-#define PCP_DEFAULT_RANGE_BOUND_COLOR     0xff80c0ff
 
 #define PCP_ALTERNATE_DATA_CURVE_COLOR    0xc0c0c0ff
 
@@ -97,9 +95,10 @@
 #define PCP_CTX_BRIGHTNESS_LEVELS         100
 
 #define PCP_RENDERER_DATA_CURVE_INPUT     PCP_CTX_BRIGHTNESS_LEVELS
-#define PCP_RENDERER_AXIS_LABEL_INPUT    (PCP_CTX_BRIGHTNESS_LEVELS + 1)
-#define PCP_RENDERER_AXIS_TITLE_INPUT    (PCP_CTX_BRIGHTNESS_LEVELS + 2)
-#define PCP_RENDERER_CONTEXT_INPUT       (PCP_CTX_BRIGHTNESS_LEVELS + 3)
+#define PCP_RENDERER_AXIS_LINE_INPUT     (PCP_CTX_BRIGHTNESS_LEVELS + 1)
+#define PCP_RENDERER_AXIS_BOUND_INPUT    (PCP_CTX_BRIGHTNESS_LEVELS + 2)
+#define PCP_RENDERER_AXIS_TITLE_INPUT    (PCP_CTX_BRIGHTNESS_LEVELS + 3)
+#define PCP_RENDERER_CONTEXT_INPUT       (PCP_CTX_BRIGHTNESS_LEVELS + 4)
 #define PCP_RENDERER_SAME_CACHED_INPUT    0x00000200
 #define PCP_END_OF_DRAWABLE_CURVE_LIST    0xffffffff
 
@@ -151,6 +150,9 @@ class vtkPoints;
 //      Mark Blair, Tue Aug 14 16:20:25 PDT 2007
 //      Removed DrawDataSubrangeBounds and associated VTK data; these bounds
 //      are now drawn only by the Extents tool.
+//
+//      Mark Blair, Wed Oct 24 14:38:54 PDT 2007
+//      Added color for axis labels (bounds).  Removed some obsolete variables.
 //
 // ****************************************************************************
 
@@ -270,9 +272,6 @@ private:
     std::vector<doubleVector>   dataTransforms;
     doubleVector                tickMarkOrdinates;
 
-    boolVector                  drawBottomLabels;
-    boolVector                  drawBottomBounds;
-    boolVector                  drawTopBounds;
     boolVector                  moveTitles;
     boolVector                  moveTopLabels;
 
@@ -288,12 +287,15 @@ private:
     vtkCellArray               *axisLines;
     vtkCellArray               *axisVerts;
 
+    vtkPolyData                *labelPolyData;
+    vtkPoints                  *labelPoints;
+    vtkCellArray               *labelLines;
+    vtkCellArray               *labelVerts;
+
     vtkPolyData                *titlePolyData;
     vtkPoints                  *titlePoints;
     vtkCellArray               *titleLines;
     vtkCellArray               *titleVerts;
-
-    PortableFont               *textPlotter;
 
     int                       **binnedAxisCounts;
 };
