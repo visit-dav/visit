@@ -5104,15 +5104,22 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 //  Creation:   August 14, 2004
 //
 //  Modifications:
+//
 //    Kathleen Bonnell, Wed Dec 15 08:41:17 PST 2004 
 //    Changed 'vector<int>' to 'intVector'.
+//
+//    Hank Childs, Sun Oct 28 21:09:44 PST 2007
+//    Add an argument for whether or not we need to confirm that the input
+//    mesh has a size consistent with what the domain boundary information
+//    expects.  If we already have ghost zones, we might want the domain
+//    boundary information just to understand how the domains abut.
 //
 // ****************************************************************************
 
 avtDomainBoundaries *
 avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
-                                                 intVector &doms,
-                                                 avtDataSpecification_p spec)
+                                intVector &doms, avtDataSpecification_p spec,
+                                bool confirmInputMeshHasRightSize)
 {
     //
     // Try getting the domain boundary information.  If we don't have it for
@@ -5138,14 +5145,25 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
     // Make sure that this mesh is the mesh we have boundary information
     // for.
     //
-    vector<vtkDataSet *> confirmlist;
-    for (int i = 0 ; i < doms.size() ; i++)
+    if (confirmInputMeshHasRightSize)
     {
-        confirmlist.push_back(ds.GetDataset(i, 0));
+        vector<vtkDataSet *> confirmlist;
+        for (int i = 0 ; i < doms.size() ; i++)
+        {
+            confirmlist.push_back(ds.GetDataset(i, 0));
+        }
+        bool haveRightMesh = dbi->ConfirmMesh(doms, confirmlist);
+        if (!haveRightMesh)
+        {
+            debug1 << "Ignoring domain boundary information, because the mesh "
+                   << "we read has the wrong size." << endl;
+            debug1 << "It could have the wrong size because of:" << endl;
+            debug1 << "\tAn internal error." << endl;
+            debug1 << "\tThere are multiple meshes in the file." << endl;
+            debug1 << "\tThe file already has ghost data." << endl;
+            dbi = NULL;
+        }
     }
-    bool haveRightMesh = dbi->ConfirmMesh(doms, confirmlist);
-    if (!haveRightMesh)
-        dbi = NULL;
 
     return dbi;
 }
@@ -7031,7 +7049,11 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
 
     avtStructuredDomainNesting *dn = (avtStructuredDomainNesting*)*vr;
     
-    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, domains, spec);
+    // Don't confirm the mesh sizes with the DBI.  We aren't actually going
+    // to apply the DBI ... we just want to get information from it.
+    bool confirmMeshSizes = false;
+    avtDomainBoundaries *dbi = GetDomainBoundaryInformation(ds, domains, spec,
+                                                            confirmMeshSizes);
     avtStructuredDomainBoundaries *sdbi = (avtStructuredDomainBoundaries*)dbi;
 
     char  progressString[1024] = "Simplifying nesting relationships";
@@ -7100,6 +7122,9 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
 //    Previous attempt had incorrect code.  Try again, by separating out
 //    the problem code into its own function.
 //
+//    Hank Childs, Sun Oct 28 15:02:31 PST 2007
+//    If there is ghost data in the input, then ignore that ghost data.
+//
 // ****************************************************************************
 
 vtkUnstructuredGrid *
@@ -7115,15 +7140,15 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     //
     // This will retrieve:
     //    my_exts: The extents of this patch with respect to the current
-    //             refinement level.  So my_exts[1]-my_exts[0] == dims[0]
+    //             refinement level.  So my_exts[3]-my_exts[0] == dims[0]
     //             but my_exts[0] will be the start of the patch in I
     //             for this patch's refinement level.
     //    child_domains: the patches nested inside this patch.
     //    childExts: the extents of each child in the same indexing 
     //             system as my_exts.  
     //
-    // Example: my_exts = [10,     20,    5,   15,    0,    0]
-    //                =   [minI, maxI, minJ, maxJ, minK, maxK]
+    // Example: my_exts = [10,      5,    0,   20,   15,    0]
+    //                =   [minI, minJ, minK, maxI, maxJ, maxK]
     //  child_domains = [5, 6] (the child patches are #'s 5 and 6)
     //  childExts = [12, 5, 0, 14, 8, 0, 15, 5, 0, 17, 8, 0]
     //  meaning patch 5 blocks out I=12-14, J=5-8 & patch 6 blocks out
@@ -7157,12 +7182,20 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
 
     //
     // This will get the dimensions for the grid.  This should be the same
-    // as (my_exts[1]-my_exts[0], my_exts[3]-my_exts[2], 
-    // my_exts[5]-my_exts[4]), but it seems extra safe to use what is
+    // as (my_exts[3]-my_exts[0], my_exts[4]-my_exts[1], 
+    // my_exts[5]-my_exts[2]), but it seems extra safe to use what is
     // actually on the mesh.
     //
     int dims[3];
     rgrid->GetDimensions(dims);
+    if (rgrid->GetFieldData()->GetArray("avtRealDims") != NULL)
+    {
+        vtkIntArray *rd = (vtkIntArray *) 
+                                 rgrid->GetFieldData()->GetArray("avtRealDims");
+        dims[0] = rd->GetValue(1) - rd->GetValue(0) + 1;
+        dims[1] = rd->GetValue(3) - rd->GetValue(2) + 1;
+        dims[2] = rd->GetValue(5) - rd->GetValue(4) + 1;
+    }
 
     int minIGlob = my_exts[0];
     int maxIGlob = my_exts[0] + dims[0]-1; // -1 to have inclusive range.
@@ -7413,7 +7446,7 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     //
     // We previously broke up the old mesh into cells based on the
     // elements of [IJK]list.  We will only keep some of these cells
-    // (the ones iwth useCell set to true).  So iterate all of
+    // (the ones with useCell set to true).  So iterate all of
     // the cells and add the keepers to the unstructured mesh.
     //
     vtkUnsignedCharArray *ghost_zones = NULL;
@@ -7486,19 +7519,33 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
     vtkPoints *pts = vtkPoints::New();
     int nPts = numIlist*numJlist*numKlist;
     pts->SetNumberOfPoints(nPts);
-    for (i = 0 ; i < numIlist ; i++)
+    int iOff = 0;
+    int jOff = 0;
+    int kOff = 0;
+    if (rgrid->GetFieldData()->GetArray("avtRealDims") != NULL)
+    {
+        vtkIntArray *rd = (vtkIntArray *) 
+                                rgrid->GetFieldData()->GetArray("avtRealDims");
+        iOff = rd->GetValue(0);
+        jOff = rd->GetValue(2);
+        kOff = rd->GetValue(4);
+    }
+    int realdims[3];
+    rgrid->GetDimensions(realdims);  // this should be the same as dims,
+                                     // unless we have ghost data...
+    for (k = 0 ; k < numKlist ; k++)
     {
         for (j = 0 ; j < numJlist ; j++)
         {
-            for (k = 0 ; k < numKlist ; k++)
+            for (i = 0 ; i < numIlist ; i++)
             {
                 //
                 // Get the point in the indexing scheme
                 // of the original rectilinear mesh.
                 //
-                int ptId = (Klist[k])*dims[1]*dims[0]
-                         + (Jlist[j])*dims[0] 
-                         + (Ilist[i]);
+                int ptId = (Klist[k]+kOff)*realdims[1]*realdims[0]
+                         + (Jlist[j]+jOff)*realdims[0] 
+                         + (Ilist[i]+iOff);
                 double pt[3];
                 rgrid->GetPoint(ptId, pt);
 

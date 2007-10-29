@@ -155,6 +155,9 @@ using     std::sort;
 //    Hank Childs, Fri Aug 31 08:48:40 PDT 2007
 //    Added adaptsToAnyWindowMode.
 //
+//    Hank Childs, Sun Oct 28 09:42:50 PST 2007
+//    Initialize containsExteriorBoundaryGhosts.
+//
 // ****************************************************************************
 
 avtDataAttributes::avtDataAttributes()
@@ -188,6 +191,7 @@ avtDataAttributes::avtDataAttributes()
     filename               = "<unknown>";
     fullDBName             = "<unknown>";
     containsGhostZones     = AVT_MAYBE_GHOSTS;
+    containsExteriorBoundaryGhosts = false;
     containsOriginalCells  = false;
     containsOriginalNodes  = false;
     keepNodeZoneArrays     = false;
@@ -434,6 +438,9 @@ avtDataAttributes::DestructSelf(void)
 //    Hank Childs, Fri Aug 31 08:48:40 PDT 2007
 //    Added adaptsToAnyWindowMode.
 //
+//    Hank Childs, Sun Oct 28 09:42:50 PST 2007
+//    Added containsExteriorBoundaryGhosts.
+//
 // ****************************************************************************
 
 void
@@ -483,6 +490,8 @@ avtDataAttributes::Print(ostream &out)
         out << "There maybe ghost zones in this dataset." << endl;
         break;
     }
+    if (containsExteriorBoundaryGhosts)
+        out << "There are ghost zones on the exterior of the boundary." <<endl;
 
     if (!canUseInvTransform)
         out << "An operation has been performed on this data that prevents "
@@ -893,6 +902,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
 //    Added adaptsToAnyWindowMode.
 //
+//    Hank Childs, Sun Oct 28 09:42:50 PST 2007
+//    Added containsExteriorBoundaryGhosts.
+//
 // ****************************************************************************
 
 void
@@ -964,6 +976,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 
     labels = di.labels;
     SetContainsGhostZones(di.GetContainsGhostZones());
+    SetContainsExteriorBoundaryGhosts(di.GetContainsExteriorBoundaryGhosts());
     SetContainsOriginalCells(di.GetContainsOriginalCells());
     SetContainsOriginalNodes(di.GetContainsOriginalNodes());
     SetKeepNodeZoneArrays(di.GetKeepNodeZoneArrays());
@@ -1109,6 +1122,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
 //    Added adaptsToAnyWindowMode.
+//
+//    Hank Childs, Sun Oct 28 09:42:50 PST 2007
+//    Added containsExteriorBoundaryGhosts.
 //
 // ****************************************************************************
 
@@ -1300,6 +1316,12 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
     else if (GetContainsGhostZones() == AVT_NO_GHOSTS)
     {
         SetContainsGhostZones(da.GetContainsGhostZones());
+    }
+
+    if (!GetContainsExteriorBoundaryGhosts())
+    {
+        SetContainsExteriorBoundaryGhosts(
+                                       da.GetContainsExteriorBoundaryGhosts());
     }
 
     if (!GetContainsOriginalCells()) 
@@ -2458,6 +2480,9 @@ avtDataAttributes::SetTime(double d)
 //    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
 //    Added adaptsToAnyWindowMode.
 //
+//    Hank Childs, Sun Oct 28 09:42:50 PST 2007
+//    Added containsExteriorBoundaryGhosts.
+//
 // ****************************************************************************
 
 void
@@ -2467,7 +2492,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     int   i, j;
 
     int varSize = 6;
-    int numVals = 30 + varSize*variables.size();
+    int numVals = 31 + varSize*variables.size();
     int *vals = new int[numVals];
     i = 0;
     vals[i++] = topologicalDimension;
@@ -2480,6 +2505,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
     vals[i++] = (cycleIsAccurate ? 1 : 0);
     vals[i++] = (timeIsAccurate ? 1 : 0);
     vals[i++] = (int) containsGhostZones;
+    vals[i++] = (int) containsExteriorBoundaryGhosts;
     vals[i++] = (containsOriginalCells ? 1 : 0);
     vals[i++] = (containsOriginalNodes ? 1 : 0);
     vals[i++] = (keepNodeZoneArrays ? 1 : 0);
@@ -2729,6 +2755,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Fri Aug 31 10:20:04 PDT 2007
 //    Added adaptsToAnyWindowMode.
 //
+//    Hank Childs, Sun Oct 28 09:42:50 PST 2007
+//    Added containsExteriorBoundaryGhosts.
+//
 // ****************************************************************************
 
 int
@@ -2778,6 +2807,10 @@ avtDataAttributes::Read(char *input)
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
     SetContainsGhostZones( (avtGhostType) tmp);
+
+    memcpy(&tmp, input, sizeof(int));
+    input += sizeof(int); size += sizeof(int);
+    SetContainsExteriorBoundaryGhosts( (bool) tmp);
 
     memcpy(&tmp, input, sizeof(int));
     input += sizeof(int); size += sizeof(int);
@@ -4425,6 +4458,10 @@ avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added node origin. Fixed apparent problem in outputting cellOrigin
 //    in outputting cellOrigin (it didn't before). 
+//
+//    Hank Childs, Sun Oct 28 09:42:50 PST 2007
+//    Added containsExteriorBoundaryGhosts.
+//
 // ****************************************************************************
 
 static const char *
@@ -4487,6 +4524,8 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
         break;
     }
     webpage->AddTableEntry2("Ghosts", str);
+    webpage->AddTableEntry2("Contains exterior boundary ghosts?",
+                            YesOrNo(containsExteriorBoundaryGhosts));
     webpage->EndTable();
 
     webpage->AddSubheading("Data attributes that rarely change");

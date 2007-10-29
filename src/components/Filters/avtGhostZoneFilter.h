@@ -80,6 +80,9 @@ class     vtkDataSetRemoveGhostCells;
 //    Hank Childs, Fri Aug  3 13:27:27 PDT 2007
 //    Add support for removing only ghost data of a certain type.
 //
+//    Hank Childs, Sun Oct 28 10:48:50 PST 2007
+//    Add a mode for removing only ghost zones of a certain type.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
@@ -104,9 +107,15 @@ class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
     // ghost.
     void                 SetGhostNodeTypesToRemove(unsigned char);
 
+    // If you call this method, only zones with the specified ghost zones types 
+    // will be removed.  Ghost zones information will not be removed,
+    // meaning that future ghost zone removals can occur.
+    void                 SetGhostZoneTypesToRemove(unsigned char);
+
   protected:
     bool                        ghostDataMustBeRemoved;
     unsigned char               ghostNodeTypesToRemove;
+    unsigned char               ghostZoneTypesToRemove;
 
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
     virtual void                RefashionDataObjectInfo(void);

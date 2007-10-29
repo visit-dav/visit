@@ -84,6 +84,11 @@ class   avtFacelistFilter;
 //    Hank Childs, Fri Aug  3 16:53:56 PDT 2007
 //    Added method SetGhostNodeTypesToRemove.
 //
+//    Hank Childs, Sun Oct 28 10:35:05 PST 2007
+//    Added second ghost zone filter for exterior boundary ghosts.  In this 
+//    case, we should remove the ghosts along the boundary, then find the
+//    external faces, then remove the faces that are interior and duplicated.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
@@ -110,6 +115,7 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
 
   protected:
     avtGhostZoneFilter   *ghostFilter;
+    avtGhostZoneFilter   *exteriorBoundaryGhostFilter;
     avtFacelistFilter    *faceFilter;
     bool                  useFaceFilter;
     bool                  useGhostFilter;

@@ -723,6 +723,9 @@ avtDatabase::GetOutput(const char *var, int ts)
 //    Hank Childs, Wed Jul 25 14:16:36 PDT 2007
 //    Renamed method: NeedBoundarySurfaces -> GetBoundarySurfaceRepresentation.
 //
+//    Hank Childs, Sun Oct 28 09:51:53 PST 2007
+//    Added support for ghost data on the exterior of the boundary.
+//
 // ****************************************************************************
 
 void
@@ -760,6 +763,8 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
         atts.SetYLabel(mmd->yLabel);
         atts.SetZLabel(mmd->zLabel);
         atts.SetContainsGhostZones(mmd->containsGhostZones);
+        atts.SetContainsExteriorBoundaryGhosts(
+                             mmd->containsExteriorBoundaryGhosts);
         atts.SetContainsOriginalCells(mmd->containsOriginalCells);
         atts.SetContainsOriginalNodes(mmd->containsOriginalNodes);
         atts.SetContainsGlobalZoneIds(mmd->containsGlobalZoneIds);

@@ -68,12 +68,16 @@
 //    Hank Childs, Fri Aug  3 13:27:27 PDT 2007
 //    Initialize ghostNodeTypesToRemove.
 //
+//    Hank Childs, Sun Oct 28 11:17:32 PST 2007
+//    Initialize ghostZoneTypesToRemove.
+//
 // ****************************************************************************
 
 avtGhostZoneFilter::avtGhostZoneFilter()
 {
     ghostDataMustBeRemoved = false;
     ghostNodeTypesToRemove = 255;
+    ghostZoneTypesToRemove = 255;
 }
 
 
@@ -143,6 +147,9 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //
 //    Hank Childs, Wed Jan  3 12:45:31 PST 2007
 //    Look for ghost nodes for all mesh types.  Fix indexing bug.
+//
+//    Hank Childs, Sun Oct 28 11:17:32 PST 2007
+//    Add support for ghostZoneTypesToRemove.
 //
 // ****************************************************************************
 
@@ -241,6 +248,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
     vtkDataSetRemoveGhostCells *filter = vtkDataSetRemoveGhostCells::New();
     filter->SetGhostNodeTypesToRemove(ghostNodeTypesToRemove);
+    filter->SetGhostZoneTypesToRemove(ghostZoneTypesToRemove);
     filter->SetInput(in_ds);
 
     //
@@ -253,7 +261,6 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
     //
     filter->Update();
     vtkDataSet *outDS = filter->GetOutput();
-    outDS->Update();
 
     if (outDS->GetNumberOfCells() == 0)
     {
@@ -281,6 +288,9 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 //    Hank Childs, Mon Sep 30 09:55:26 PDT 2002
 //    Tell the output that it does not contain any ghost zones.
 //
+//    Hank Childs, Sun Oct 28 11:17:32 PST 2007
+//    Allow for the case where some ghost zones are not removed.
+//
 // ****************************************************************************
 
 void
@@ -288,7 +298,8 @@ avtGhostZoneFilter::RefashionDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
-    GetOutput()->GetInfo().GetAttributes().
+    if (ghostZoneTypesToRemove == 255)
+        GetOutput()->GetInfo().GetAttributes().
                                           SetContainsGhostZones(AVT_NO_GHOSTS);
 }
 
@@ -331,6 +342,24 @@ void
 avtGhostZoneFilter::SetGhostNodeTypesToRemove(unsigned char t)
 {
     ghostNodeTypesToRemove = t;
+}
+
+
+// ****************************************************************************
+//  Method: avtGhostZoneFilter::SetGhostZoneTypesToRemove
+//
+//  Purpose:
+//      Sets the field for which ghost zone types to remove.
+//
+//  Programmer: Hank Childs
+//  Creation:   October 28, 2007
+//
+// ****************************************************************************
+
+void
+avtGhostZoneFilter::SetGhostZoneTypesToRemove(unsigned char t)
+{
+    ghostZoneTypesToRemove = t;
 }
 
 

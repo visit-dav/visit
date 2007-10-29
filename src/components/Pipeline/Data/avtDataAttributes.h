@@ -225,6 +225,9 @@ class     PlotInfoAttributes;
 //    Hank Childs, Fri Aug 31 08:48:40 PDT 2007
 //    Added adaptsToAnyWindowMode.
 //
+//    Hank Childs, Sun Oct 28 09:23:27 PST 2007
+//    Added containsExteriorBoundaryGhosts.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -328,6 +331,11 @@ class PIPELINE_API avtDataAttributes
                                    { return containsGhostZones; };
     void                     SetContainsGhostZones(avtGhostType v)
                                    { containsGhostZones = v; };
+
+    bool                     GetContainsExteriorBoundaryGhosts(void) const
+                                   { return containsExteriorBoundaryGhosts; };
+    void                     SetContainsExteriorBoundaryGhosts(bool v)
+                                   { containsExteriorBoundaryGhosts= v; };
 
     bool                     GetContainsOriginalCells(void) const
                                    { return containsOriginalCells; };
@@ -493,6 +501,7 @@ class PIPELINE_API avtDataAttributes
     int                      cycle;
     bool                     cycleIsAccurate;
     avtGhostType             containsGhostZones;
+    bool                     containsExteriorBoundaryGhosts;
     bool                     containsOriginalCells;
     bool                     containsOriginalNodes;
     bool                     keepNodeZoneArrays;

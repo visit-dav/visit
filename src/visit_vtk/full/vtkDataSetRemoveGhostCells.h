@@ -60,6 +60,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    Hank Childs, Thu Mar  2 11:14:53 PST 2006
 //    Add GenericExecute.
 //
+//    Hank Childs, Sun Oct 28 10:48:50 PST 2007
+//    Added GhostZoneTypesToRemove
+//
 class VISIT_VTK_API vtkDataSetRemoveGhostCells : public vtkDataSetToDataSetFilter
 {
 public:
@@ -70,11 +73,15 @@ public:
   vtkSetMacro(GhostNodeTypesToRemove,unsigned char);
   vtkGetMacro(GhostNodeTypesToRemove,unsigned char);
 
+  vtkSetMacro(GhostZoneTypesToRemove,unsigned char);
+  vtkGetMacro(GhostZoneTypesToRemove,unsigned char);
+
 protected:
   vtkDataSetRemoveGhostCells();
   ~vtkDataSetRemoveGhostCells() {};
 
   unsigned char GhostNodeTypesToRemove;
+  unsigned char GhostZoneTypesToRemove;
 
   // Usual data generation method
   void Execute();
@@ -89,6 +96,7 @@ private:
   vtkDataSetRemoveGhostCells(const vtkDataSetRemoveGhostCells&);
   void operator=(const vtkDataSetRemoveGhostCells&);
 
+  void ConfirmRegion(unsigned char *ghosts, int *dims, int *voi);
 };
 
 #endif

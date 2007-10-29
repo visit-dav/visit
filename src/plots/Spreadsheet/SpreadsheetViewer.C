@@ -1569,6 +1569,9 @@ SpreadsheetViewer::updateMenuEnabledState(QTable *table)
 //
 // Modifications:
 //   
+//   Hank Childs, Sun Oct 28 21:48:23 PST 2007
+//   Account for layers of ghost zones when calculating indices.
+//   
 // ****************************************************************************
 
 bool
@@ -1617,7 +1620,7 @@ SpreadsheetViewer::moveSliceToCurrentPick()
             double *currentPick = plotAtts->GetCurrentPick();
             int cellId = GetCell(currentPick[0], currentPick[1], currentPick[2]);
 
-            vtkVisItUtility::GetLogicalIndices(input, true, cellId, ijk);
+            vtkVisItUtility::GetLogicalIndices(input, true, cellId, ijk, false, false);
             debug5 << mName << "ijk=" << ijk[0] << " " << ijk[1] << " " << ijk[2] << std::endl;
 
             if (ijk[0] == -1)
@@ -1662,6 +1665,9 @@ SpreadsheetViewer::moveSliceToCurrentPick()
 // Creation:   Mon Sep 10 15:05:01 PDT 2007
 //
 // Modifications:
+//
+//   Hank Childs, Sun Oct 28 21:48:23 PST 2007
+//   Account for layers of ghost zones when calculating indices.
 //   
 // ****************************************************************************
 
@@ -1716,7 +1722,7 @@ SpreadsheetViewer::selectPickPoints()
             double *currentPick = plotAtts->GetCurrentPick();
             int cellId = GetCell(currentPick[0], currentPick[1], currentPick[2]);
 
-            vtkVisItUtility::GetLogicalIndices(input, true, cellId, ijk);
+            vtkVisItUtility::GetLogicalIndices(input, true, cellId, ijk, false, false);
 
             debug5 << mName << "CP: ijk=" << ijk[0] << " " << ijk[1] << " " << ijk[2] << std::endl;
 
@@ -1779,7 +1785,7 @@ SpreadsheetViewer::selectPickPoints()
             for (int i = 0 ; i < numOldPicks ; i++)
             {
                 int cellId = GetCell(pastPicks[3*i], pastPicks[3*i+1], pastPicks[3*i+2]);
-                vtkVisItUtility::GetLogicalIndices(input, true, cellId, old_ijk);
+                vtkVisItUtility::GetLogicalIndices(input, true, cellId, old_ijk, false, false);
 
                 // If old pick is same cell as current pick then skip it
                 if (old_ijk[0] == ijk[0] && old_ijk[1] == ijk[1] && old_ijk[2] == ijk[2])

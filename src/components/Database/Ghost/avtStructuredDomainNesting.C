@@ -583,6 +583,10 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
 //    Hank Childs, Tue Oct  9 07:43:43 PDT 2007
 //    Add support for avtRealDims.
 //
+//    Hank Childs, Sun Oct 28 14:30:31 PST 2007
+//    Fix off-by-one error.  Real off-by-one error was in Chombo.  When that
+//    bug got corrected, this got discovered.
+//
 // ****************************************************************************
 
 bool
@@ -619,9 +623,9 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
         {
             vtkIntArray *realDims = (vtkIntArray *) 
                             meshes[i]->GetFieldData()->GetArray("avtRealDims");
-            dims[0] = realDims->GetValue(1)-realDims->GetValue(0);
-            dims[1] = realDims->GetValue(3)-realDims->GetValue(2);
-            dims[2] = realDims->GetValue(5)-realDims->GetValue(4);
+            dims[0] = realDims->GetValue(1)-realDims->GetValue(0)+1;
+            dims[1] = realDims->GetValue(3)-realDims->GetValue(2)+1;
+            dims[2] = realDims->GetValue(5)-realDims->GetValue(4)+1;
         }
 
         if (domains[i] >= domainNesting.size())
