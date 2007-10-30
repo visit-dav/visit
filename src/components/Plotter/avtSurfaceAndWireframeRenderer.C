@@ -92,6 +92,9 @@
 //    Kathleen Bonnell, Thu Sep  2 16:24:49 PDT 2004 
 //    Added globalAmbientCoeff and canApplyGlobalRep. 
 //
+//    Kathleen Bonnell, Mon Oct 29 21:53:14 PDT 2007 
+//    Added drawEdgeVerts.
+//
 // ****************************************************************************
 
 avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
@@ -113,7 +116,7 @@ avtSurfaceAndWireframeRenderer::avtSurfaceAndWireframeRenderer()
     drawSurfaceStrips = drawSurfacePolys = true;
     canApplyGlobalRep = true;
 
-    drawEdgeLines = drawEdgeStrips = drawEdgePolys = true;
+    drawEdgeVerts = drawEdgeLines = drawEdgeStrips = drawEdgePolys = true;
 
     inputNum = 0;
     ignoreLighting = false;
@@ -303,6 +306,9 @@ avtSurfaceAndWireframeRenderer::Draw()
 //    If window size has changed and we are in Scalable Rendering mode,
 //    ReleaseGraphicsResources.   Set lastWindowSize and setupModified.
 //    
+//    Kathleen Bonnell, Mon Oct 29 21:53:14 PDT 2007 
+//    Added drawEdgeVerts.
+//
 // ****************************************************************************
 
 void
@@ -375,6 +381,7 @@ avtSurfaceAndWireframeRenderer::Render(vtkDataSet *ds)
     drawSurfaceLines  &= (input->GetNumberOfLines()  != 0);
     drawSurfaceStrips &= (input->GetNumberOfStrips() != 0);
     drawSurfacePolys  &= (input->GetNumberOfPolys()  != 0);
+    drawEdgeVerts     &= (input->GetNumberOfVerts()  != 0);
     drawEdgeLines     &= (input->GetNumberOfLines()  != 0);
     drawEdgeStrips    &= (input->GetNumberOfStrips() != 0);
     drawEdgePolys     &= (input->GetNumberOfPolys()  != 0);
@@ -880,6 +887,55 @@ avtSurfaceAndWireframeRenderer::SurfacePolysOff()
     }
     drawSurfacePolys = false;    
 }
+
+// ****************************************************************************
+// Method: avtSurfaceAndWireframeRenderer::EdgeVertsOn
+//
+// Purpose:
+//   Turns on the drawing of verts for edges mode.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 29, 2007 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSurfaceAndWireframeRenderer::EdgeVertsOn()
+{
+    if (!drawEdgeVerts) 
+    {
+        for (int i = 0; i < inputs.size(); i++)
+            edgesModified[i] = true;
+    }
+    drawEdgeVerts = true;    
+}
+
+// ****************************************************************************
+// Method: avtSurfaceAndWireframeRenderer::EdgeVertsOff
+//
+// Purpose:
+//   Turns off the drawing of verts for edges mode.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   October 29, 2007 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtSurfaceAndWireframeRenderer::EdgeVertsOff()
+{
+    if (drawEdgeVerts) 
+    {
+        for (int i = 0; i < inputs.size(); i++)
+            edgesModified[i] = true;
+    }
+    drawEdgeVerts = false;    
+}
+
 
 // ****************************************************************************
 // Method: avtSurfaceAndWireframeRenderer::EdgeLinesOn
