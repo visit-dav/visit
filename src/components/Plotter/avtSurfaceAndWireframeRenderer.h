@@ -116,6 +116,9 @@ typedef struct lec { double r, g, b; } LEC;
 //    Added SetSurfaceRepresentation, SetSpecularProperties and 
 //    CanApplyGlobalRepresentation.
 //    
+//    Kathleen Bonnell,  Mon Oct 29 21:51:19 PDT 2007
+//    Added EdgeVertsOn/Off, drawEdgeVerts.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
@@ -149,6 +152,8 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     void                      SurfaceStripsOff();
     void                      SurfacePolysOn();
     void                      SurfacePolysOff();
+    void                      EdgeVertsOn();
+    void                      EdgeVertsOff();
     void                      EdgeLinesOn();
     void                      EdgeLinesOff();
     void                      EdgeStripsOn();
@@ -184,6 +189,7 @@ class PLOTTER_API avtSurfaceAndWireframeRenderer : public avtCustomRenderer
     bool                      drawSurfaceLines; 
     bool                      drawSurfaceStrips; 
     bool                      drawSurfacePolys; 
+    bool                      drawEdgeVerts; 
     bool                      drawEdgeLines; 
     bool                      drawEdgeStrips; 
     bool                      drawEdgePolys; 

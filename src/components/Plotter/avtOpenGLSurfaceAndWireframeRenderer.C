@@ -3906,8 +3906,6 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     }
 
     // do verts
-    aPrim = input->GetVerts();
-    aGlFunction = glFunction[0];
 
     // For verts or lines that have no normals, disable shading.
     // This will fall back on the color set in the glColor4fv() 
@@ -3920,16 +3918,18 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
   
     if (drawSurfaceVerts)
     {
+        aPrim = input->GetVerts();
+        aGlFunction = glFunction[0];
         draw0(aPrim, aGlFunction, cellNum, p, n, c, t);
     }
   
     // do lines
-    aPrim = input->GetLines();
-    aGlFunction = glFunction[1];
   
     // draw all the elements
     if (drawSurfaceLines)
     {
+        aPrim = input->GetLines();
+        aGlFunction = glFunction[1];
         draw1(aPrim, aGlFunction, cellNum, p, n, c, t);
     }
   
@@ -3946,10 +3946,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     }
   
     // do tstrips
-    aPrim = input->GetStrips();
-    aGlFunction = glFunction[2];
     if (drawSurfaceStrips)
     {
+        aPrim = input->GetStrips();
+        aGlFunction = glFunction[2];
         draw2(aPrim, aGlFunction, cellNum, p, n, c, t);
         if (rep == VTK_WIREFRAME)   
         {
@@ -3958,10 +3958,10 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawSurface2()
     }
 
     // do polys
-    aPrim = input->GetPolys();
-    aGlFunction = glFunction[3];
     if (drawSurfacePolys)
     {
+        aPrim = input->GetPolys();
+        aGlFunction = glFunction[3];
         draw3(aPrim, aGlFunction, cellNum, p, n, c, t);
     }
 
@@ -4324,21 +4324,21 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
 
 #endif
 
-    aPrim = input->GetVerts();
-    aGlFunction = glFunction[0]; 
-  
     // draw all the points
-    if (draw0)
+    if (drawEdgeVerts)
     {
+        aPrim = input->GetVerts();
+        aGlFunction = glFunction[0]; 
+  
         draw0(aPrim, aGlFunction, cellNum, p, n, NULL, t);
     }
-  
-    aPrim = input->GetLines();
-    aGlFunction = glFunction[1]; 
   
     // draw all the elements
     if (drawEdgeLines)
     {
+        aPrim = input->GetLines();
+        aGlFunction = glFunction[1]; 
+  
         draw1(aPrim, aGlFunction, cellNum, p, n, NULL, t); 
     }
   
@@ -4347,10 +4347,11 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     // Kat's note:  Not certain both of these draw methods are necesssary
     // here.  Pulled from the normal Draw method.  draw2 and draw2W
     // compute normals differently.
-    aPrim = input->GetStrips();
-    aGlFunction = glFunction[2]; 
     if (drawEdgeStrips)
     {
+        aPrim = input->GetStrips();
+        aGlFunction = glFunction[2]; 
+
         draw2(aPrim, aGlFunction, cellNum, p, n, NULL, t);
         if (prop->GetRepresentation() == VTK_WIREFRAME)   
         {
@@ -4359,10 +4360,11 @@ avtOpenGLSurfaceAndWireframeRenderer::DrawEdges2()
     }
 
     // do polys
-    aPrim = input->GetPolys();
-    aGlFunction = glFunction[3]; 
     if (drawEdgePolys)
     {
+        aPrim = input->GetPolys();
+        aGlFunction = glFunction[3]; 
+
         draw3(aPrim, aGlFunction, cellNum, p, n, NULL, t);
     }
 
