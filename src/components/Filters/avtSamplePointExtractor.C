@@ -721,6 +721,9 @@ avtSamplePointExtractor::KernelBasedSample(vtkDataSet *ds)
 //    Timo Bremer, Thu Sep 13 14:02:40 PDT 2007
 //    Added support for hex-20s.
 //
+//    Hank Childs, Mon Oct 29 20:29:55 PST 2007
+//    Ignore surface primitives in 3D.
+//
 // ****************************************************************************
 
 void
@@ -762,7 +765,9 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds)
 
         vtkCell *cell = ds->GetCell(j);
         if (modeIs3D && cell->GetCellDimension() != 3)
-            EXCEPTION1(InvalidCellTypeException, "triangles and quads.");
+        {
+            continue;
+        }
         if (!modeIs3D && cell->GetCellDimension() != 2)
             EXCEPTION1(InvalidCellTypeException, "surfaces or anything outside"
                                                  " the finite element zoo.");
