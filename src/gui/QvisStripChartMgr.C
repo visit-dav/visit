@@ -657,15 +657,15 @@ QvisStripChartMgr::executeMaxLimitStripChart()
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 //    Shelly Prevost  Thu Oct 18 14:25:35 PDT 2007
-//    disable widgets that is not fully function yet. 
+//    disabled widgets because it is not fully function yet. 
 //   
 // ****************************************************************************
 void 
 QvisStripChartMgr::executeEnableLogScale()
 {
-    QString cmd = "returnedPressed();EnableLogScale;QLineEdit;Simulations;" + //enableLogScale->isChecked();
+    //QString cmd = "returnedPressed();EnableLogScale;QLineEdit;Simulations;" + //enableLogScale->isChecked();
     //stripChartTabWidget->setEnableLogScale(enableLogScale->isChecked());
-    sendCMD(cmd);
+    //sendCMD(cmd);
 }
 
 
@@ -845,6 +845,9 @@ int QvisStripChartMgr::sendCMD(QString sig, const QObject *ui, QString value)
         return -1;
     }
 
+    // check that there is at least one engine
+    const stringVector &s = engines->GetEngines();
+    if ( s.size() < 1) return 0;
     string host = engines->GetEngines()[simIndex];
     string sim  = engines->GetSimulationName()[simIndex];
 
@@ -877,7 +880,9 @@ int QvisStripChartMgr::sendCMD(QString cmd)
                              "Ok", 0, 0, 0, 1 );
         return -1;
     }
-
+    // check that there is at least one engine
+    const stringVector &s = engines->GetEngines();
+    if ( s.size() < 1) return 0;
     string host = engines->GetEngines()[simIndex];
     string sim  = engines->GetSimulationName()[simIndex];
     viewer->GetViewerMethods()->SendSimulationCommand(host, sim, cmd.latin1());
