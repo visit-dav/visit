@@ -37,11 +37,9 @@
 
 #ifndef VIEWERPASSWORDWINDOW_H
 #define VIEWERPASSWORDWINDOW_H
+#include <visit-config.h>
 #include <qdialog.h>
 #include <set>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 // Forward declarations
 class QLineEdit;
@@ -86,7 +84,7 @@ class ViewerPasswordWindow : public QDialog
     {
         dialog = d;
     }
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
   private:
 #else

@@ -37,6 +37,7 @@
 
 #ifndef REMOTE_PROCESS_H
 #define REMOTE_PROCESS_H
+#include <visit-config.h>
 #include <comm_exports.h>
 #if defined(_WIN32)
 #include <winsock2.h>
@@ -47,9 +48,6 @@
 #include <vectortypes.h>
 #include <HostProfile.h>
 #include <map>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 class Connection;
 
@@ -144,7 +142,7 @@ public:
     Connection *GetWriteConnection(int i=0) const;
     int  GetProcessId() const;
     void SetProgressCallback(bool (*)(void *, int), void *);
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     std::map<int,int> GetPortTunnelMap() { return portTunnelMap; }
@@ -192,7 +190,7 @@ private:
     int                      nReadConnections, nWriteConnections;
     bool                   (*progressCallback)(void *, int);
     void                    *progressCallbackData;
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     std::map<int,int>        portTunnelMap;

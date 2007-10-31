@@ -69,9 +69,6 @@
 #include <snprintf.h>
 #include <map>
 #include <set>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 #ifdef HAVE_THREADS
 #if !defined(_WIN32)
@@ -1744,7 +1741,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
 
         // If we're tunneling, add the arguments to SSH to 
         // forward a bunch of remote ports to our local ports.
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
         if (useTunneling)
@@ -1819,7 +1816,7 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     //
     // Add the local hostname and the ports we'll be talking on.
     //
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     if (useTunneling)

@@ -35,12 +35,10 @@
 *
 *****************************************************************************/
 
+#include <visit-config.h>
 #include <LauncherProxy.h>
 #include <RemoteProcess.h>
 #include <Utility.h>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 // ****************************************************************************
 // Method: LauncherProxy::LauncherProxy
@@ -147,7 +145,7 @@ LauncherProxy::LaunchProcess(const stringVector &origProgramArgs)
 {
     stringVector programArgs(origProgramArgs);
 
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     if (!GetPortTunnelMap().empty())
@@ -215,7 +213,7 @@ LauncherProxy::ConnectSimulation(const stringVector &programArgs,
 //    Backing out SSH tunneling on Panther (MacOS X 10.3) 
 //   
 // ****************************************************************************
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
 std::map<int,int>

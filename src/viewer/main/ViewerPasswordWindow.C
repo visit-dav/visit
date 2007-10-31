@@ -35,6 +35,7 @@
 *
 *****************************************************************************/
 
+#include <visit-config.h>
 #include "ViewerPasswordWindow.h"
 #include <ViewerConnectionProgressDialog.h>
 
@@ -52,14 +53,11 @@
 #include <ViewerSubject.h>
 extern ViewerSubject *viewerSubject;
 #endif
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 // Static members
 ViewerPasswordWindow *ViewerPasswordWindow::instance = NULL;
 ViewerConnectionProgressDialog *ViewerPasswordWindow::dialog = NULL;
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
 std::set<int> ViewerPasswordWindow::failedPortForwards;
@@ -194,7 +192,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
     char *buffer = new char[20000];
     char *pbuf   = buffer;
 
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     failedPortForwards.clear();
@@ -272,7 +270,7 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         {
             // Check for failed port forwards; this will be
             // in the buffer after the password was accepted.
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
             char failedStr[]  = "forwarding failed for listen port ";

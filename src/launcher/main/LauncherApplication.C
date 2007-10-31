@@ -36,13 +36,11 @@
 *****************************************************************************/
 
 #include <stdio.h>
+#include <visit-config.h>
 #include <LauncherApplication.h>
 #include <ConnectionGroup.h>
 #include <SocketConnection.h>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
 #include <SocketBridge.h>
@@ -101,7 +99,7 @@ static void CreateSocketBridge(void *ports)
 {
     int newlocalport = ((int*)ports)[0];
     int oldlocalport = ((int*)ports)[1];
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     SocketBridge bridge(newlocalport,oldlocalport);
@@ -629,7 +627,7 @@ LauncherApplication::ProcessInput()
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
 // ****************************************************************************
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
 void
@@ -774,7 +772,7 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
     // launching a parallel engine.  SSH port forwarding
     // is typically restricted to forwarding from localhost
     // which doesn't work if we're on a compute node.
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     SetupGatewaySocketBridgeIfNeeded(launchArgs);

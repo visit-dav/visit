@@ -37,14 +37,12 @@
 
 #ifndef LAUNCHER_PROXY_H
 #define LAUNCHER_PROXY_H
+#include <visit-config.h>
 #include <vclproxy_exports.h>
 #include <RemoteProxyBase.h>
 #include <LaunchRPC.h>
 #include <ConnectSimRPC.h>
 #include <map>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 // ****************************************************************************
 // Class: LauncherProxy
@@ -80,7 +78,7 @@ public:
 
     virtual std::string GetComponentName() const;
 
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     std::map<int,int> GetPortTunnelMap();

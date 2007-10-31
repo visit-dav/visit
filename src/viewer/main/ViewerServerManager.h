@@ -37,15 +37,13 @@
 
 #ifndef VIEWER_SERVER_MANAGER_H
 #define VIEWER_SERVER_MANAGER_H
+#include <visit-config.h>
 #include <viewer_exports.h>
 #include <ViewerBase.h>
 #include <vectortypes.h>
 #include <map>
 
 #include <HostProfile.h>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 class HostProfileList;
 class LauncherProxy;
@@ -130,7 +128,7 @@ protected:
 
     const char *RealHostName(const char *hostName) const;
 
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
     static std::map<int,int> GetPortTunnelMap(const std::string &host);
