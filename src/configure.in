@@ -727,10 +727,8 @@ dnl    Jeremy Meredith, Wed Oct 17 16:26:13 EDT 2007
 dnl    Added runtime check for disabling the simulation plugins.
 dnl    This is currently triggered by a check for OS X.
 dnl
-dnl    Jeremy Meredith, Thu Oct 18 09:50:46 EDT 2007
-dnl    Removed all sleep's.  They're slowing down the build and are probably
-dnl    no longer needed.  I rearranged some of the default value behavior
-dnl    for shared libraries to clean it up a bit.
+dnl    Thomas R. Treadway, Tue Oct 30 14:14:47 PDT 2007
+dnl    Replacing #if define with PANTHERHACK define.
 dnl
 dnl --------------------------------------------------------------------------
 
@@ -997,6 +995,12 @@ if test "$SHORT_UNAME" = "darwin"; then
     AC_MSG_CHECKING(for OpenGL)
     GL_LIBS="-framework OpenGL"
     AC_MSG_RESULT(found $GL_LIBS)
+# Turn off ssh tunnleing if on Panther
+    VERS=`uname -r`
+    case $VERS in
+       7*) AC_DEFINE(PANTHERHACK, [1], [Disable ssh tunneling on Panther.]);;
+       *);;
+    esac
 fi
 
 AC_SUBST(GL_LIBS)
@@ -3111,10 +3115,6 @@ fi
 #
 # Figure out how to create shared libraries
 #
-# these defaults are tied to the case statement below and cannot be overriden
-SHLIB_POSTPROCESS="mv $""(LIBSHAREDTEMP) $""@"
-SHLIB_POSTPROCESS_SER="mv $""(LIBSHAREDTEMPSER) $""@"
-SHLIB_POSTPROCESS_PAR="mv $""(LIBSHAREDTEMPPAR) $""@"
 case $SHORT_UNAME in
   freebsd)
     # Expecting g++
@@ -3220,16 +3220,24 @@ case $SHORT_UNAME in
     fi
     if test -z "$SHLIB_SOEXT"; then SHLIB_SOEXT="dylib"; fi
     if test -z "$SHLIB_LIBEXT"; then SHLIB_LIBEXT="dylib"; fi
+    # Set the post processing step to something really useless because we
+    # don't need a postprocessing step since we're going to build directly
+    # in the lib directory.
+    SHLIB_POSTPROCESS="sleep 1"
+    SHLIB_POSTPROCESS_SER="sleep 1" 
+    SHLIB_POSTPROCESS_PAR="sleep 1" 
+  
+    SHLIB_POSTPROCESS_ILIBS="sleep 1" 
+    SHLIB_POSTPROCESS_GLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_SLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_VLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_MLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_ESERLIBS="sleep 1" 
+    SHLIB_POSTPROCESS_EPARLIBS="sleep 1" 
 
     # Set SHLIB_TMPDIR so that libraries are created directly in the lib directory.
     SHLIB_TMPDIR="$""(TOPDIR)/lib/"
-    # And now we don't need to move them anywhere.
-    SHLIB_POSTPROCESS=""
-    SHLIB_POSTPROCESS_SER=""
-    SHLIB_POSTPROCESS_PAR=""
-
     COMPATIBILITY_VERSION=`sed -e "s/b//" VERSION`
-
     # Set SHLIB_LIBS so the right libraries are added to the link line but also ensure
     # that the shared library is created with a unique starting address so we can
     # prebind.
@@ -3251,10 +3259,31 @@ case $SHORT_UNAME in
     PREBIND_LIBS="$""(PREBIND_LIBS) $""(GLEW_LIBS) $""(MESA_LIBS) -lvisit_vtk"
     ;;
 esac
-# these always need to be set, but might be overridden in a config-site file,
-# so they must be set last
-if test -z "$SHLIB_SOEXT"  ; then SHLIB_SOEXT="so"; fi
-if test -z "$SHLIB_LIBEXT" ; then SHLIB_LIBEXT="so"; fi
+# Set up the defaults
+if test -z "$SHLIB_LIBS"           ; then SHLIB_LIBS=""; fi
+if test -z "$SHLIB_SERLIBS"        ; then SHLIB_SERLIBS=""; fi
+if test -z "$SHLIB_PARLIBS"        ; then SHLIB_PARLIBS=""; fi
+if test -z "$SHLIB_MPI_LIBS"       ; then SHLIB_MPI_LIBS=""; fi
+if test -z "$SHLIB_ILIBS"          ; then SHLIB_ILIBS=""; fi
+if test -z "$SHLIB_GLIBS"          ; then SHLIB_GLIBS=""; fi
+if test -z "$SHLIB_VLIBS"          ; then SHLIB_VLIBS=""; fi
+if test -z "$SHLIB_MLIBS"          ; then SHLIB_MLIBS=""; fi
+if test -z "$SHLIB_ESERLIBS"       ; then SHLIB_ESERLIBS=""; fi
+if test -z "$SHLIB_EPARLIBS"       ; then SHLIB_EPARLIBS=""; fi
+if test -z "$SHLIB_SLIBS"          ; then SHLIB_SLIBS=""; fi
+if test -z "$SHLIB_POSTPROCESS_ILIBS"    ; then SHLIB_POSTPROCESS_ILIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_GLIBS"    ; then SHLIB_POSTPROCESS_GLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_VLIBS"    ; then SHLIB_POSTPROCESS_VLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_MLIBS"    ; then SHLIB_POSTPROCESS_MLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_ESERLIBS" ; then SHLIB_POSTPROCESS_ESERLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_EPARLIBS" ; then SHLIB_POSTPROCESS_EPARLIBS="sleep 1"; fi
+if test -z "$SHLIB_POSTPROCESS_SLIBS"    ; then SHLIB_POSTPROCESS_SLIBS="sleep 1"; fi
+if test -z "$SHLIB_SOEXT"          ; then SHLIB_SOEXT="so"; fi
+if test -z "$SHLIB_LIBEXT"         ; then SHLIB_LIBEXT="so"; fi
+if test -z "$SHLIB_POSTPROCESS"    ; then SHLIB_POSTPROCESS="mv $""(LIBSHAREDTEMP) $""@"; fi
+if test -z "$SHLIB_POSTPROCESS_SER"; then SHLIB_POSTPROCESS_SER="mv $""(LIBSHAREDTEMPSER) $""@"; fi
+if test -z "$SHLIB_POSTPROCESS_PAR"; then SHLIB_POSTPROCESS_PAR="mv $""(LIBSHAREDTEMPPAR) $""@"; fi
+if test -z "$PREBIND_LIBS"         ; then PREBIND_LIBS=""; fi
 
 AC_SUBST(SHLIB_CREATEPROG)
 AC_SUBST(SHLIB_LIBS)

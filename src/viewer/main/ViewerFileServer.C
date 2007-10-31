@@ -35,6 +35,7 @@
 *
 *****************************************************************************/
 
+#include <visit-config.h>
 #include <stdlib.h>
 #include <snprintf.h>
 #include <ViewerFileServer.h>
@@ -68,9 +69,6 @@
 #include <DebugStream.h>
 
 #include <algorithm>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 #define ANY_STATE -1
 
@@ -1724,7 +1722,7 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
     {
         // If we're doing ssh tunneling, map the local host/port to the
         // remote one.
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
             servers[mdServerHost]->proxy->Connect(args);
 #else

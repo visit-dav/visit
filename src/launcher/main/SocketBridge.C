@@ -34,7 +34,8 @@
 * DAMAGE.
 *
 *****************************************************************************/
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#include <visit-config.h>
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
 #include "SocketBridge.h"
@@ -55,7 +56,6 @@
 #endif
 
 #include <CouldNotConnectException.h>
-#include <visit-config.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

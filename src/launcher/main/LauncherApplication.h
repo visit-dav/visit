@@ -37,6 +37,7 @@
 
 #ifndef LAUNCHER_APPLICATION_H
 #define LAUNCHER_APPLICATION_H
+#include <visit-config.h>
 #include <ParentProcess.h>
 #include <Xfer.h>
 #include <QuitRPC.h>
@@ -45,9 +46,6 @@
 #include <ConnectSimRPC.h>
 #include <RPCExecutor.h>
 #include <map>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 // ****************************************************************************
 // Class: LauncherApplication
@@ -101,7 +99,7 @@ protected:
     bool ProcessInput();
     void TurnOnAlarm();
     void TurnOffAlarm();
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
     void TerminateConnectionRequest(int, char **);
 #else
     void TerminateConnectionRequest(int, char **);

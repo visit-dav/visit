@@ -62,9 +62,6 @@ using std::vector;
 #include <sys/stat.h>
 #include <pwd.h>
 #endif
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 //
 // Static vars.
@@ -1533,7 +1530,7 @@ VisItFstat(int fd, VisItStat_t *buf)
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
 // ****************************************************************************
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
 bool

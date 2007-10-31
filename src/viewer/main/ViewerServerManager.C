@@ -53,9 +53,6 @@
 
 #include <DebugStream.h>
 #include <avtCallback.h>
-#if __APPLE__
-#include <AvailabilityMacros.h>
-#endif
 
 //
 // Global variables.
@@ -401,7 +398,7 @@ ViewerServerManager::GetSSHTunnelOptions(const std::string &host,
     // Check for a host profile for the hostName. If one exists, 
     // return the ssh tunneling options.
     //
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
         tunnelSSH = false;
 #else
@@ -979,7 +976,7 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
 // ****************************************************************************
-#if defined(__APPLE__) && (__POWERPC__) && ( MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_3 )
+#if defined(PANTHERHACK)
 // Broken on Panther
 #else
 std::map<int,int>
