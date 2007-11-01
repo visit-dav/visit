@@ -129,6 +129,9 @@
 //    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
 //    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
 //    visual queue for SR mode.
+//
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to clear the external renderer's cached image if disabling it.
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -198,8 +201,8 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     int                 GetSurfaceRepresentation()
                                   { return ProxiedGetSurfaceRepresentation(); };
 
-    bool                DisableExternalRenderRequests()
-                                  { return ProxiedDisableExternalRenderRequests(); };
+    bool                DisableExternalRenderRequests(bool bClearImage = false)
+                                  { return ProxiedDisableExternalRenderRequests(bClearImage); };
 
     bool                EnableExternalRenderRequests()
                                   { return ProxiedEnableExternalRenderRequests(); };

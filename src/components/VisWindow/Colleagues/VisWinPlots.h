@@ -243,7 +243,7 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          SetExternalRenderCallback(
                                       VisCallbackWithDob *cb, void *data);
     bool                          EnableExternalRenderRequests(void);
-    bool                          DisableExternalRenderRequests(void);
+    bool                          DisableExternalRenderRequests(bool bClearImage = false);
     bool                          IsMakingExternalRenderRequests(void) const;
     double                        GetAverageExternalRenderingTime(void) const;
     void                          DoNextExternalRenderAsVisualQueue(int w, int h,

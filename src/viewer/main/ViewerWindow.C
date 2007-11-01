@@ -7256,12 +7256,15 @@ ViewerWindow::IsChangingScalableRenderingMode(bool toMode) const
 // Programmer: Mark C. Miller
 // Creation:   Mon Nov  3 17:08:14 PST 2003 
 //
+// Modified:
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to clear the external renderer's cached image if disabling it.
 // ****************************************************************************
 
 bool
-ViewerWindow::DisableExternalRenderRequests()
+ViewerWindow::DisableExternalRenderRequests(bool bClearImage)
 {
-   return visWindow->DisableExternalRenderRequests();
+   return visWindow->DisableExternalRenderRequests(bClearImage);
 }
 
 // ****************************************************************************

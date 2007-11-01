@@ -4450,12 +4450,15 @@ VisWindow::EnableExternalRenderRequests(void)
 // Programmer: Mark C. Miller
 // Creation:   February 5, 2003 
 //
+// Modified:
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to clear the external renderer's cached image if disabling it.
 // ****************************************************************************
 
 bool
-VisWindow::DisableExternalRenderRequests(void)
+VisWindow::DisableExternalRenderRequests(bool bClearImage)
 {
-   return plots->DisableExternalRenderRequests();
+   return plots->DisableExternalRenderRequests(bClearImage);
 }
 
 // ****************************************************************************

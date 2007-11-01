@@ -1820,7 +1820,7 @@ VisWinRendering::SetScalableRendering(bool mode)
     if (scalableRendering)
         mediator.EnableExternalRenderRequests();
     else
-        mediator.DisableExternalRenderRequests();
+        mediator.DisableExternalRenderRequests(true);
     return oldMode;
 }
 

@@ -369,6 +369,8 @@ class VisitInteractor;
 //    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
 //    visual queue for SR mode.
 //
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to clear the external renderer's cached image if disabling it.
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -535,7 +537,7 @@ public:
     void                 SetExternalRenderCallback(
                              VisCallbackWithDob *cb, void *data);
     bool                 EnableExternalRenderRequests(void);
-    bool                 DisableExternalRenderRequests(void);
+    bool                 DisableExternalRenderRequests(bool bClearImage = false);
 
     // Rendering options.
     void                 SetRenderInfoCallback(VisCallback *cb, void *data);

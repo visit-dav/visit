@@ -379,6 +379,8 @@ typedef struct {
 //    Added methods to SetCreateMeshQualityExpressions and 
 //    SetCreateTimeDerivativeExpressions. 
 //
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to clear the external renderer's cached image if disabling it.
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -511,7 +513,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     void BeginEngineExecute();
     void EndEngineExecute();
 
-    void DisableExternalRenderRequestsAllWindows(std::vector<bool>& oldAble);
+    void DisableExternalRenderRequestsAllWindows(std::vector<bool>& oldAble, bool bClearImage = false);
     void EnableExternalRenderRequestsAllWindows(const std::vector<bool> oldAble);
 
     bool SetTreatAllDBsAsTimeVarying(bool val);

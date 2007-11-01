@@ -822,9 +822,9 @@ VisWindowProtectionProxy::ProxiedGetSurfaceRepresentation()
 // ****************************************************************************
 
 bool
-VisWindowProtectionProxy::ProxiedDisableExternalRenderRequests(void)
+VisWindowProtectionProxy::ProxiedDisableExternalRenderRequests(bool bClearImage)
 {
-   return viswin->DisableExternalRenderRequests();
+   return viswin->DisableExternalRenderRequests(bClearImage);
 }
 
 // ****************************************************************************

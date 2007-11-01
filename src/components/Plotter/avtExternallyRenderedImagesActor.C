@@ -116,9 +116,13 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
     visualQueueProps->BoldOn();
     visualQueueProps->SetFontSize(24);
     visualQueueProps->SetColor(1.0, 0.0, 0.0);
+    visualQueueProps->SetOpacity(0.0);
 
     visualQueueMapper->SetInput("Waiting for parallel rendering...");
     visualQueueMapper->SetTextProperty(visualQueueProps);
+
+    visualQueueActor = vtkActor2D::New();
+    visualQueueActor->SetMapper(visualQueueMapper);
 
     lastNonDummyImage     = NULL;
     myMapper->SetInput(dummyImage);
@@ -299,17 +303,14 @@ avtExternallyRenderedImagesActor::PrepareForRender(const vtkCamera *const cam)
    {
        doNextExternalRenderAsVisualQueue = false;
        visualQueueProps->SetColor(nextForegroundColor);
-       myActor->SetMapper(visualQueueMapper);
-       myActor->SetPosition((float) nextWidth / 2.0, (float) nextHeight / 2.0);
+       visualQueueProps->SetOpacity(1.0);
+       visualQueueActor->SetPosition((float) nextWidth * 0.5, (float) nextHeight * 0.025);
        return;
    }
    else
    {
-       if (myActor->GetMapper() != myMapper)
-       {
-           myActor->SetMapper(myMapper);
-           myActor->SetPosition(0.0, 0.0);
-       }
+       if (visualQueueProps->GetOpacity() != 0.0)
+           visualQueueProps->SetOpacity(0.0);
    }
 
    // issue the external rendering callback
@@ -485,15 +486,19 @@ avtExternallyRenderedImagesActor::GetVisibility(void) const
 //    This method is also used to disable scalable rendering.  In this use,
 //    the method also needs to stop drawing an image if it was drawing one
 //    before.
+//
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Modified my previous patch to optionally clear the cached image.
 // ****************************************************************************
 
 bool
-avtExternallyRenderedImagesActor::DisableExternalRenderRequests(void)
+avtExternallyRenderedImagesActor::DisableExternalRenderRequests(bool bClearImage)
 {
    bool oldMode = makeExternalRenderRequests;
    makeExternalRenderRequests = false;
    
-   myMapper->SetInput(dummyImage);
+   if (bClearImage)
+       myMapper->SetInput(dummyImage);
    
    return oldMode; 
 }
@@ -604,6 +609,7 @@ void
 avtExternallyRenderedImagesActor::AddToRenderer(vtkRenderer *ren)
 {
     ren->AddActor(myActor);
+    ren->AddActor(visualQueueActor);
 }
 
 
@@ -625,4 +631,30 @@ void
 avtExternallyRenderedImagesActor::RemoveFromRenderer(vtkRenderer *ren)
 {
     ren->RemoveActor(myActor);
+    ren->RemoveActor(visualQueueActor);
 }
+
+
+// ****************************************************************************
+//  Method: avtExternallyRenderedImagesActor::UseBlankImage
+//
+//  Purpose:
+//      Tells the renderer to stop using the last rendered image, and start
+//      using a blank image instead.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Oct 31 17:28:39 PDT 2007
+//
+// ****************************************************************************
+
+void
+avtExternallyRenderedImagesActor::UseBlankImage()
+{
+    myMapper->SetInput(dummyImage);
+}
+
+
+
+
+
+

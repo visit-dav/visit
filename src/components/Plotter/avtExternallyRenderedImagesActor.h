@@ -129,6 +129,20 @@ class     vtkRenderer;
 //    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
 //    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
 //    visual queue for SR mode.
+//
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to DisableExternalRenderRequests() to clear the cached image.
+//    DisableExternalRenderRequests() has a temporary use, in which you still
+//    want to draw the cached image after re-enabling, and a longer term use, 
+//    in which you need to remove the cached image so it doesn't get drawn 
+//    over new, non-externally-rendered images, and this flag lets you 
+//    distinguish those uses.
+//    I also added the UseBlankImage() call and the visualQueueActor member,
+//    to allow both the last image and the "Waiting..." message to be drawn
+//    simultaneously, if we stepping through time, or doing a camera fly-by.
+//    In the case of a wireframe drag and then a wait for the ERI, UseBlankImage()
+//    is called by VisWinPlots to clear the last image while the "Waiting..."
+//    message is displayed.
 // ****************************************************************************
 
 class PLOTTER_API avtExternallyRenderedImagesActor
@@ -162,12 +176,13 @@ class PLOTTER_API avtExternallyRenderedImagesActor
 
     // used to enable and disable external render requests 
     bool                 EnableExternalRenderRequests(void);
-    bool                 DisableExternalRenderRequests(void);
+    bool                 DisableExternalRenderRequests(bool bClearImage = false);
 
     bool                 IsMakingExternalRenderRequests(void) const;
     double               GetAverageRenderingTime(void) const;
     void                 DoNextExternalRenderAsVisualQueue(int width,
                              int height, const double *color);
+    void                 UseBlankImage();
 
   private:
 
@@ -184,6 +199,7 @@ class PLOTTER_API avtExternallyRenderedImagesActor
     // ALL externally rendered images in that vis window. 
     vtkActor2D          *myActor;
     vtkImageMapper      *myMapper;
+    vtkActor2D          *visualQueueActor;
     vtkTextMapper       *visualQueueMapper;
     vtkTextProperty     *visualQueueProps;
     vtkImageData        *dummyImage;
