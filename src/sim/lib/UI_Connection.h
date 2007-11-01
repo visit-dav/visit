@@ -65,6 +65,7 @@ void  VisItProcessCustomCommand( char *cmd);
 void  VisItAddConnection(char * name, char* sig, slotFunc theSlot );
 char *VisItParseCommand( char *cmd, char *signalName, char *buttonName );
 int   VisItGetCommandValue( char *cmd, double *retVal );
+void  VisItParseCommandValue( char *cmd, double *retVal);
 #ifdef __cplusplus
 }
 #endif
