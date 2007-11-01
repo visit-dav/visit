@@ -715,7 +715,7 @@ static int LoadVisItLibrary(void)
    SAFE_DLSYM(v_connectviewer, int (*)(void *, int, char **), "connect_to_viewer");
    SAFE_DLSYM(v_time_step_changed, void (*)(void *), "time_step_changed");
    SAFE_DLSYM(v_update_plots, void (*)(void *), "update_plots");
-   SAFE_DLSYM(v_execute_command, void (*)(void *,int), "execute_command");
+   SAFE_DLSYM(v_execute_command, void (*)(void *,const char*), "execute_command");
    SAFE_DLSYM(v_disconnect, void (*)(), "disconnect");
    SAFE_DLSYM(v_set_slave_process_callback, void (*)(void (*)()), "set_slave_process_callback");
    SAFE_DLSYM(v_set_command_callback, void (*)(void*,void (*)(const char*,int,float,const char*)), "set_command_callback");
