@@ -739,12 +739,16 @@ KFListView::contentsMouseReleaseEvent(QMouseEvent *e)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 23, 2003
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Nov  1 16:34:14 EDT 2007
+//    Removed manual setting of the second column's width; it is now being
+//    done automatically for us by a flag in the header, which seems to
+//    fix a couple bugs.
+//
 // ****************************************************************************
 void
 KFListView::resizeEvent(QResizeEvent *e)
 {
-    setColumnWidth(1, e->size().width() - columnWidth(0) - 4);
-
     QListView::resizeEvent(e);
 }
 

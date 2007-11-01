@@ -8924,7 +8924,7 @@ echo $ECHO_N "checking for supported Qt version... $ECHO_C" >&6
                     3.2.0  3.2.1  3.2.2  3.2.3 \
                     3.1.2  3.1.1  3.1.0 \
                     3.0.4  3.0.3  3.0.2  3.0.1  3.0.0 \
-                    2.3.2  2.3.1  2.3.0 ; do
+                    ; do
             QtVer=`grep \"$ver\" $QtGlobalInc`
             if test -n "$QtVer"; then
                 QtVersion=$ver
@@ -8934,8 +8934,8 @@ echo $ECHO_N "checking for supported Qt version... $ECHO_C" >&6
     fi
 
     if test -z "$QtVersion"; then
-        { { echo "$as_me:$LINENO: error:   Sorry, but you need Qt version 2.3.0 or higher to compile VisIt. " >&5
-echo "$as_me: error:   Sorry, but you need Qt version 2.3.0 or higher to compile VisIt. " >&2;}
+        { { echo "$as_me:$LINENO: error:   Sorry, but you need Qt version 3.0 or higher to compile VisIt. " >&5
+echo "$as_me: error:   Sorry, but you need Qt version 3.0 or higher to compile VisIt. " >&2;}
    { (exit 1); exit 1; }; }
     else
         echo "$as_me:$LINENO: result: Qt $QtVersion in $QT_INCLUDE" >&5

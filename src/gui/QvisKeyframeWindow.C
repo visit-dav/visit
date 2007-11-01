@@ -444,6 +444,10 @@ QvisKeyframeWindow::~QvisKeyframeWindow()
 //    Brad Whitlock, Tue Apr 6 23:53:31 PST 2004
 //    I hooked up a new signal to nFrames.
 //
+//    Jeremy Meredith, Thu Nov  1 16:35:43 EDT 2007
+//    Tell the header to fill the empty space with the second column's width.
+//    This works better than trying to do it manually.
+//
 // ****************************************************************************
 
 void
@@ -473,6 +477,7 @@ QvisKeyframeWindow::CreateWindowContents()
     lv->header()->setResizeEnabled(false);
     lv->header()->setClickEnabled(false);
     lv->header()->setMovingEnabled(false);
+    lv->header()->setStretchEnabled(1,true);
     lv->setRootIsDecorated(true);
     lv->setSorting(-1);
     lv->addColumn("Attributes");
@@ -1002,6 +1007,11 @@ QvisKeyframeWindow::UpdatePlotList()
 //    Brad Whitlock, Wed Apr 7 00:13:09 PDT 2004
 //    I added code to disable the time slider if we're not in keyframing mode.
 //
+//    Jeremy Meredith, Thu Nov  1 16:34:14 EDT 2007
+//    Removed manual setting of the second column's width; it is now being
+//    done automatically for us by a flag in the header, which seems to
+//    fix a couple bugs.
+//
 // ****************************************************************************
 
 void
@@ -1092,7 +1102,6 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
         }
     }
 
-    lv->setColumnWidth(1, lv->width() - lv->columnWidth(0) - 4);
     ts->updateSize();
     qApp->processEvents();
 }

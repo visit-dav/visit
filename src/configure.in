@@ -730,6 +730,9 @@ dnl
 dnl    Thomas R. Treadway, Tue Oct 30 14:14:47 PDT 2007
 dnl    Replacing #if define with PANTHERHACK define.
 dnl
+dnl    Jeremy Meredith, Thu Nov  1 16:41:12 EDT 2007
+dnl    Stop allowing Qt versions prior to 3.0.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -2847,7 +2850,7 @@ if test "$enable_gui" = "yes"; then
                     3.2.0  3.2.1  3.2.2  3.2.3 \
                     3.1.2  3.1.1  3.1.0 \
                     3.0.4  3.0.3  3.0.2  3.0.1  3.0.0 \
-                    2.3.2  2.3.1  2.3.0 ; do
+                    ; do
             QtVer=`grep \"$ver\" $QtGlobalInc`
             if test -n "$QtVer"; then
                 QtVersion=$ver
@@ -2857,7 +2860,7 @@ if test "$enable_gui" = "yes"; then
     fi
 
     if test -z "$QtVersion"; then
-        AC_MSG_ERROR([  Sorry, but you need Qt version 2.3.0 or higher to compile VisIt. ])
+        AC_MSG_ERROR([  Sorry, but you need Qt version 3.0 or higher to compile VisIt. ])
     else
         AC_MSG_RESULT(Qt $QtVersion in $QT_INCLUDE)
     fi
