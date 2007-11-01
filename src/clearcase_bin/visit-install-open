@@ -68,7 +68,6 @@ davinci=true
 ellipse=true
 
 ver=undefined
-verflag=-private
 
 #
 # The loop is executed once for each symbol on the execute line.  This means
@@ -184,18 +183,6 @@ do
          ver=$2
          shift 2
          ;;
-      -beta)
-         verflag=-beta
-         shift
-         ;;
-      -private)
-         verflag=-private
-         shift
-         ;;
-      -public)
-         verflag=;
-         shift
-         ;;
    esac
 done
 
@@ -204,7 +191,7 @@ done
 #
 if [ $ver = undefined ]
 then
-   echo "Usage: [-beta | -private | -public] [-none] [-<machine name>] -v <version>"
+   echo "Usage: [-none] [-<machine name>] -v <version>"
    exit
 fi
 
@@ -226,7 +213,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f hoth
 cat <<EOF > hoth
 #!/bin/sh
-./visit-install -r -private -c open -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on hoth"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -262,7 +249,7 @@ fi
 rm -f sunspot
 cat <<EOF > sunspot
 #!/bin/sh
-./visit-install $verflag -c open -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on sunspot"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -298,7 +285,7 @@ fi
 rm -f quad
 cat <<EOF > quad
 #!/bin/sh
-./visit-install -r -private -c open -g visit -b bdivp -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c open -g visit -b bdivp -gw -l $ver irix6 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on quad"            > resultlog 2>&1
 echo "       --------------------------"           >> resultlog 2>&1
@@ -313,7 +300,11 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugi
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sgi-irix6-mips2\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): quad" $emailName < resultlog
+cp resultlog ~/quad_resultlog
+ssh thunder "cat quad_resultlog | mail  -s \"VisIt build ($dist): quad\" $emailName"
+# give thunder time to mail it before removing the log
+sleep 10
+rm ~/quad_resultlog
 EOF
 
 if [ $quad = true ]
@@ -567,7 +558,7 @@ fi
 rm -f davinci
 cat <<EOF > davinci
 #!/bin/sh
-./visit-install -r -c nersc -b bdivp $ver linux-altix visit > installlog 2>&1
+./visit-install -private -c nersc -b bdivp $ver linux-altix visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on davinci"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1
@@ -603,7 +594,7 @@ fi
 rm -f ellipse
 cat <<EOF > ellipse
 #!/bin/sh
-./visit-install -r -c open -b bdivp $ver linux-ellipse visit > installlog 2>&1
+./visit-install -private -c open -b bdivp $ver linux-ellipse visit > installlog 2>&1
 rm -f resultlog
 echo "        install of visit on ellipse"         > resultlog 2>&1
 echo "       -----------------------------"        >> resultlog 2>&1

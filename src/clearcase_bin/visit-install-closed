@@ -32,7 +32,6 @@ gauss=true
 hopi=true
 
 ver=undefined
-verflag=-private
 
 #
 # The loop is executed once for each symbol on the execute line.  This means
@@ -112,18 +111,6 @@ do
          ver=$2
          shift 2
          ;;
-      -beta)
-         verflag=-beta
-         shift
-         ;;
-      -private)
-         verflag=-private
-         shift
-         ;;
-      -public)
-         verflag=
-         shift
-         ;;
    esac
 done
 
@@ -132,7 +119,7 @@ done
 #
 if [ $ver = undefined ]
 then
-   echo "Usage: [-beta | -private | -public] [-none] [-<machine name>] -v <version>"
+   echo "Usage: [-none] [-<machine name>] -v <version>"
    exit
 fi
 
@@ -154,7 +141,7 @@ ver=`echo $ver2 | tr "_" "."`
 rm -f crier
 cat <<EOF > crier
 #!/bin/sh
-./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux_rhel3 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on crier"           >> resultlog 2>&1
@@ -191,7 +178,7 @@ fi
 rm -f sunset
 cat <<EOF > sunset
 #!/bin/sh
-./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver sunos5 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on sunset"          >> resultlog 2>&1
@@ -228,7 +215,7 @@ fi
 rm -f sc
 cat <<EOF > sc
 #!/bin/sh
-./visit-install -r -private -c closed -g visit -b bdivp -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver osf1 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on sc"              >> resultlog 2>&1
@@ -392,7 +379,7 @@ fi
 rm -f hopi
 cat <<EOF > hopi
 #!/bin/sh
-./visit-install $verflag -c closed -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c closed -g visit -b bdivp -gw -l $ver linux-x86_64 /usr/gapps/visit > installlog 2>&1
 rm -f resultlog
 echo ""                                            > resultlog 2>&1
 echo "        install of visit on hopi"            >> resultlog 2>&1
