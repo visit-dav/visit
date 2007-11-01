@@ -807,7 +807,11 @@ main(int argc, char *argv[])
 
     if (getenv("LD_LIBRARY_PATH")) printf("ld_library_path=%s\n", getenv("LD_LIBRARY_PATH")); else printf("ld_library_path=(null)\n");
     /* VisItAddLibraryPaths(argc, argv); */
-    VisItSetupEnvironment();
+    if (!VisItSetupEnvironment())
+    {
+        printf("Error: couldn't set up enviroment using visit command\n");
+        exit(0);
+    }
     printf("Version VisIt simulation lib running with: %s\n", VisItGetVersion());
 #ifdef PARALLEL
     MPI_Init(&argc, &argv);
