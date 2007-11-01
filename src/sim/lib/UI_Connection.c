@@ -46,6 +46,38 @@ static int lastSigConnection =0;
 sigInfoConnect sigConnections[MAX_SIG_CONNECTIONS];
 
 
+ /*****************************************************************************
+** Function: void VisItParseCommandValue( char *cmd, double *retVal )
+**
+** Purpose:
+**   pases the cmd argument and returns the value
+**
+** Arguments:
+**   cmd        : Command to pass on to the connected slots
+**   retValue   : The value associated with this signal
+**
+** Programmer: Shelly Prevost
+** Creation:   Wed Oct 31 16:51:45 PDT 2007
+**
+** Modifications:
+**
+** *****************************************************************************/
+void VisItParseCommandValue( char *cmd, double *retVal)
+{
+    int i;
+    char value[MAX_CMD_STR_LEN];
+    char *str = strdup (cmd );
+    char *tok = NULL;
+    tok = strtok(str, ";" );
+    for ( i = 0; i < 4; i++)
+    {
+    	tok = strtok(NULL, ";" );
+        if ( tok ) strncpy( value,tok,MAX_CMD_STR_LEN );
+    }
+    *retVal = atof ( value );
+}
+
+
 /*****************************************************************************
 ** Function: char *VisItParseCommand ( const char *cmd, char *signalName, char *buttonName )
 **
