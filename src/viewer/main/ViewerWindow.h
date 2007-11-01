@@ -428,6 +428,8 @@ class ViewerToolbar;
 //    Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
 //    Added depth cueing properties.
 //
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to clear the external renderer's cached image if disabling it.
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -620,7 +622,7 @@ public:
 
     void ChangeScalableRenderingMode(bool newMode);
     bool IsChangingScalableRenderingMode(bool toMode = false) const;
-    bool DisableExternalRenderRequests();
+    bool DisableExternalRenderRequests(bool bClearImage = false);
     bool EnableExternalRenderRequests();
     void ExternalRenderManual(avtDataObject_p& dob, int w, int h);
 

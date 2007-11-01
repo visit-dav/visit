@@ -766,7 +766,7 @@ VisWinPlots::StartBoundingBox(void)
     }
     transparencyActor->VisibilityOff();
     extRenderedImagesActor->SaveVisibility(this, false);
-
+    extRenderedImagesActor->UseBlankImage();
     //
     // Create the bounding box and add it to the renderer.
     //
@@ -1867,12 +1867,15 @@ VisWinPlots::EnableExternalRenderRequests(void)
 //  Programmer: Mark C. Miller 
 //  Creation:   February 5, 2003 
 //
+//  Modified:
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to clear the external renderer's cached image if disabling it.
 // ****************************************************************************
 
 bool
-VisWinPlots::DisableExternalRenderRequests(void)
+VisWinPlots::DisableExternalRenderRequests(bool bClearImage)
 {
-    return extRenderedImagesActor->DisableExternalRenderRequests();
+    return extRenderedImagesActor->DisableExternalRenderRequests(bClearImage);
 }
 
 // ****************************************************************************

@@ -8714,13 +8714,13 @@ ViewerWindowManager::EndEngineExecute()
 
 void
 ViewerWindowManager::DisableExternalRenderRequestsAllWindows(
-    std::vector<bool>& oldAble)
+    std::vector<bool>& oldAble, bool bClearImage)
 {
     for (int windowIndex = 0; windowIndex < maxWindows; ++windowIndex)
     {
         if (windows[windowIndex] != 0)
         {
-            oldAble.push_back(windows[windowIndex]->DisableExternalRenderRequests());
+            oldAble.push_back(windows[windowIndex]->DisableExternalRenderRequests(bClearImage));
         }
     }
 }

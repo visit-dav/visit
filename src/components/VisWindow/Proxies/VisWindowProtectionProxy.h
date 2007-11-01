@@ -147,6 +147,9 @@ class     PlotInfoAttributes;
 //    Added IsMakingExternalRenderRequests, GetAverageExternalRenderingTime
 //    and DoNextExternalRenderAsVisualQueue to support the 'in-progress'
 //    visual queue for SR mode.
+//
+//    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
+//    Added flag to clear the external renderer's cached image if disabling it.
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -204,7 +207,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     bool                ProxiedGetLighting();
     void                ProxiedUpdateLightPositions();
     int                 ProxiedGetSurfaceRepresentation();
-    bool                ProxiedDisableExternalRenderRequests();
+    bool                ProxiedDisableExternalRenderRequests(bool bClearImage = false);
     bool                ProxiedEnableExternalRenderRequests();
     void                ProxiedGetScaleFactorAndType(double &s, int &t);
     void                ProxiedReAddColleaguesToRenderWindow();
