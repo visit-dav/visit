@@ -1641,6 +1641,11 @@ avtSILRestriction::GetSubsets(int ind, vector<int> &outsets) const
 //    Fixed bug where loop variable, i, was being used to GetSILSet
 //    instead of leaves[i] and otherLeaves[i]
 //
+//    Hank Childs, Thu Nov  1 14:22:20 PDT 2007
+//    If "this" had the same number of leaves as "silr", but the leaves 
+//    names and IDs didn't match, then the handling for that case
+//    was non-existent.  Fixed now.
+//
 // ****************************************************************************
 
 bool
@@ -1672,30 +1677,26 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
     if (leaves.size() == otherLeaves.size())
     {
         // confirm all leaves names/ids match
-        for(i = 0; i < leaves.size(); ++i)
+        compatible = true;
+        for (i = 0 ; i < leaves.size() && compatible ; i++)
         {
-            compatible = true;
             avtSILSet_p set1 = GetSILSet(leaves[i]);
             avtSILSet_p set2 = silr->GetSILSet(otherLeaves[i]);
             if ((set1->GetName() != set2->GetName()) ||
                 (set1->GetIdentifier() != set2->GetIdentifier()))
-            {
                 compatible = false;
-                break;
-            }
         }
+    }
 
+    if (compatible)
+    {
         // copy over the useSet values
-        if (compatible)
+        SuspendCorrectnessChecking();
+        for(i = 0; i < leaves.size(); ++i)
         {
-            SuspendCorrectnessChecking();
-            for(i = 0; i < leaves.size(); ++i)
-            {
-                useSet[leaves[i]] = silr->useSet[otherLeaves[i]];
-            }
-            EnableCorrectnessChecking();
+            useSet[leaves[i]] = silr->useSet[otherLeaves[i]];
         }
-
+        EnableCorrectnessChecking();
     }
     else
     {
@@ -1765,5 +1766,8 @@ avtSILRestriction::SetFromCompatibleRestriction(avtSILRestriction_p silr)
 
     }
 
+    // Note: current logic of this routine has compatible always being true.
     return compatible;
 }
+
+
