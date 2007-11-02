@@ -115,10 +115,9 @@ avtExternallyRenderedImagesActor::avtExternallyRenderedImagesActor()
     visualQueueProps->SetVerticalJustificationToCentered();
     visualQueueProps->BoldOn();
     visualQueueProps->SetFontSize(24);
-    visualQueueProps->SetColor(1.0, 0.0, 0.0);
-    visualQueueProps->SetOpacity(0.0);
+    visualQueueProps->SetColor(0.0, 0.0, 0.0);
 
-    visualQueueMapper->SetInput("Waiting for parallel rendering...");
+    visualQueueMapper->SetInput("");
     visualQueueMapper->SetTextProperty(visualQueueProps);
 
     visualQueueActor = vtkActor2D::New();
@@ -303,14 +302,13 @@ avtExternallyRenderedImagesActor::PrepareForRender(const vtkCamera *const cam)
    {
        doNextExternalRenderAsVisualQueue = false;
        visualQueueProps->SetColor(nextForegroundColor);
-       visualQueueProps->SetOpacity(1.0);
+       visualQueueMapper->SetInput("Waiting for parallel rendering...");
        visualQueueActor->SetPosition((float) nextWidth * 0.5, (float) nextHeight * 0.025);
        return;
    }
    else
    {
-       if (visualQueueProps->GetOpacity() != 0.0)
-           visualQueueProps->SetOpacity(0.0);
+       visualQueueMapper->SetInput("");
    }
 
    // issue the external rendering callback
