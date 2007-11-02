@@ -543,7 +543,11 @@ static int AcceptConnection(void)
 #ifdef HAVE_SOCKLEN_T
         socklen_t len;
 #else
+#ifdef __APPLE__
+        unsigned int len;
+#else
         int len;
+#endif
 #endif
         len = sizeof(struct sockaddr);
         desc = accept(listenSocket, (struct sockaddr *)&listenSockAddr, &len);
@@ -648,6 +652,9 @@ static function_pointer dlsym_function(void *h, const char *n)
 *   Brad Whitlock, Thu Jan 25 14:58:26 PST 2007
 *   Added update plots and execute_command.
 *
+*   Jeremy Meredith, Fri Nov  2 18:06:42 EDT 2007
+*   Use dylib as the extension for OSX.
+*
 *******************************************************************************/
 static int LoadVisItLibrary(void)
 {
@@ -663,14 +670,19 @@ static int LoadVisItLibrary(void)
    */
 
    /* load library */
+#ifdef __APPLE__
+   const char *extension = "dylib";
+#else
+   const char *extension = "so";
+#endif
 
    if (isParallel)
    {
-      sprintf(lib, "libvisitenginev1_par.so");
+       sprintf(lib, "libvisitenginev1_par.%s", extension);
    }
    else
    {
-      sprintf(lib, "libvisitenginev1_ser.so");
+       sprintf(lib, "libvisitenginev1_ser.%s", extension);
    }
 
    dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
@@ -684,9 +696,9 @@ static int LoadVisItLibrary(void)
          *ptr = 0;
 
          if (isParallel) 
-            sprintf(lib, "%s/libvisitenginev1_par.so", libpath);
+             sprintf(lib, "%s/libvisitenginev1_par.%s", libpath, extension);
          else
-            sprintf(lib, "%s/libvisitenginev1_ser.so", libpath);
+             sprintf(lib, "%s/libvisitenginev1_ser.%s", libpath, extension);
 
          dl_handle = dlopen(lib, RTLD_NOW | RTLD_GLOBAL);
       }
@@ -700,7 +712,7 @@ static int LoadVisItLibrary(void)
 
 #define SAFE_DLSYM(f,t,n)                \
    f = (t)dlsym_function(dl_handle, n); \
-   if (!v_getengine) \
+   if (!f) \
    { \
       sprintf(lastError, "Failed to open the VisIt library: "\
               "couldn't find symbol '%s': %s\n", n, dlerror()); \

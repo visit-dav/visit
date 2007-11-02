@@ -67,6 +67,10 @@
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 
+#ifdef __APPLE__
+#include <dlfcn.h>
+#endif
+
 using std::string;
 using std::vector;
 
@@ -75,10 +79,11 @@ using std::vector;
 #include <avtParallel.h>
 #endif
 
+#ifndef __APPLE__
 #ifndef MDSERVER
 extern "C" VisIt_SimulationCallback visitCallbacks;
 #endif
-
+#endif
 
 // ****************************************************************************
 //  Function:  FreeDataArray
@@ -246,6 +251,9 @@ GetQuadGhostZones(int nnodes, int ndims,
 //
 //  Modifications:
 //
+//    Jeremy Meredith, Fri Nov  2 18:00:15 EDT 2007
+//    On OSX, use dlsym to retrieve the visitCallbacks.
+//
 // ****************************************************************************
 
 avtSimV1FileFormat::avtSimV1FileFormat(const char *filename)
@@ -306,7 +314,22 @@ avtSimV1FileFormat::avtSimV1FileFormat(const char *filename)
                    "Did not find 'port' in the file.");
     }
 #else // ENGINE
+
+    // On OSX, we want to check for the visitCallbacks via dlsym
+    // because we're not currently allowing unresolved symbols in our
+    // plugins, which the old method requires.  Theoretically, we could
+    // use the dlsym method on other platforms, too, but it hasn't been
+    // thoroughly tested.
+#ifdef __APPLE__
+    void *cbptr = dlsym(RTLD_DEFAULT, "visitCallbacks");
+    if (!cbptr)
+        EXCEPTION2(InvalidFilesException,filename,
+                   "Could not find 'visitCallbacks' in the current exe.");
+    cb = *((VisIt_SimulationCallback*)cbptr);
+#else
     cb = visitCallbacks;
+#endif
+
 #endif
 }
 
