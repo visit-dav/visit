@@ -60,13 +60,18 @@
 #    Renamed the main object files to a more standard SEROBJ, PAROBJ, and FOBJ
 #    to play better with automatic dependencies.
 #
+#    Jeremy Meredith, Fri Nov  2 18:28:33 EDT 2007
+#    Put the binary in the real bin dir to play better with OS X.  Also,
+#    set export-dynamic based on a configure-detected value, since not all
+#    platforms support or need it.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SIMSER=simulation
-SIMPAR=psimulation
+SIMSER=$(tmpbin)/simulation
+SIMPAR=$(tmpbin)/psimulation
 
 SIMSRC=sim.c simconnection.c
 SEROBJ=$(SIMSRC:.c=.o)
@@ -86,21 +91,24 @@ PARLIBS=@MPI_LIBS@
 LIBS=@LIBS@ -lpthread -lsim
 FLIBS=@LIBS@ -lpthread -lsimf -lsim
 
+EXPORT_DYNAMIC=@EXPORT_DYNAMIC@
+LIBDEP=$(TOPDIR)/archives/libsim.a
+
 BUILD_FORTRAN=$(SIMFSER)
 
 all:  $(SIMSER) $(SIMPAR) @BUILD_FORTRAN@
 
-$(SIMSER): $(SEROBJ)
-	$(CC) -Wl,--export-dynamic $(SEROBJ) $(LDFLAGS) $(LIBS)    -o $@
+$(SIMSER): $(SEROBJ) $(LIBDEP)
+	$(CC) $(EXPORT_DYNAMIC) $(SEROBJ) $(LDFLAGS) $(LIBS)    -o $@
 
-$(SIMPAR): $(PAROBJ)
-	$(CC) -Wl,--export-dynamic $(LDFLAGS) $(PAROBJ) $(LIBS) $(PARLIBS)  -o $@
+$(SIMPAR): $(PAROBJ) $(LIBDEP)
+	$(CC) $(EXPORT_DYNAMIC) $(LDFLAGS) $(PAROBJ) $(LIBS) $(PARLIBS)  -o $@
 
-$(SIMSER).pure: $(SEROBJ)
+$(SIMSER).pure: $(SEROBJ) $(LIBDEP)
 	purify $(LD) $(LDFLAGS) $(SEROBJ) $(LIBS) -o $@
 
-$(SIMFSER): $(FSEROBJ)
-	$(F77) -Wl,--export-dynamic $(FSEROBJ) $(LDFLAGS) $(FLIBS) -o $@
+$(SIMFSER): $(FSEROBJ) $(LIBDEP)
+	$(F77) $(EXPORT_DYNAMIC) $(FSEROBJ) $(LDFLAGS) $(FLIBS) -o $@
 
 clean:
 	$(RM) $(SEROBJ) $(SIMSER) $(SIMSER).pure
