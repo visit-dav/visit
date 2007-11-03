@@ -382,6 +382,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
 //    Normal is cached, so use that value instead.
 //
+//    Hank Childs, Fri Nov  2 16:40:46 PDT 2007
+//    If the spatial meta data is invalidated, then don't use it.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -473,8 +476,11 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         rv->NoDynamicLoadBalancing();
 
     //
-    // Get the interval tree.
+    // Get the interval tree.  If we can't use the interval tree, then exit
+    // early.
     //
+    if (! GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+        return rv;
     avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
     if (it == NULL)
     {
