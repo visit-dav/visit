@@ -8861,7 +8861,7 @@ echo "${ECHO_T}yes" >&6
 #
 echo "$as_me:$LINENO: checking to see if --export-dynamic is supported" >&5
 echo $ECHO_N "checking to see if --export-dynamic is supported... $ECHO_C" >&6
-oldlflags="$LDFLAGS"
+oldldflags="$LDFLAGS"
 EXPORT_DYNAMIC="-Wl,--export-dynamic"
 LDFLAGS="$EXPORT_DYNAMIC $LDFLAGS";
 cat >conftest.$ac_ext <<_ACEOF
