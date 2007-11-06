@@ -39,6 +39,9 @@
 #    Jeremy Meredith, Wed Sep  7 12:06:04 PDT 2005
 #    Allowed spaces in variable names.
 #
+#    Mark C. Miller, Mon Nov  5 20:15:05 PST 2007
+#    Added tests for sparse materials, expressions
+#
 # ----------------------------------------------------------------------------
 
 LevelZero = 4 # set id for level 0
@@ -271,5 +274,58 @@ AddPlot("Pseudocolor", "Function_0") # only defined on some patches
 AddPlot("Pseudocolor", "Function_1") # only defined on some other patches
 DrawPlots()
 Test("samrai_23")
+
+#
+# Test a samrai database with sparse material representation
+#
+DeleteAllPlots()
+OpenDatabase("../data/samrai_test_data/sparse_mats/summary.samrai")
+AddPlot("Pseudocolor", "energy")
+DrawPlots()
+Test("samrai_24")
+
+#
+#  Zoom into a region where there is mixing
+#
+v=GetView2D()
+v.windowCoords=(-0.296975, -0.223086, 0.0437891, 0.120943)
+SetView2D(v)
+DrawPlots()
+Test("samrai_25")
+
+#
+# Turn off different materials and see what we get for the PC plot
+# and zone picks
+#
+silr = SILRestriction()
+j = 0
+for k1 in silr.SetsInCategory("materials"):
+    i = 1
+    for k2 in silr.SetsInCategory("materials"):
+        if silr.SetName(k2) == "material_%d"%(j+1):
+            silr.TurnOffSet(k2)
+        else:
+            silr.TurnOnSet(k2)
+        i = i + 1
+    SetPlotSILRestriction(silr)
+    DrawPlots()
+    Test("samrai_%d"%(26+2*j))
+    PickByZone(247,15)
+    TestText("samrai_%d"%(26+2*j+1),GetPickOutput())
+    j = j + 1
+
+#
+# Test some expressions from the samrai database 
+#
+silr.TurnOnAll()
+SetPlotSILRestriction(silr)
+DeleteAllPlots()
+AddPlot("Pseudocolor","von_mises_stress")
+DrawPlots()
+Test("samrai_33")
+DeleteAllPlots()
+AddPlot("Pseudocolor","speed")
+DrawPlots()
+Test("samrai_34")
 
 Exit()

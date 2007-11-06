@@ -1,0 +1,10 @@
+
+B:  summary.samrai  timestep 0
+amr_mesh level 1 patch level1,patch0 
+Point: <-0.288709, 0.075>
+Zone:  247
+Incident Nodes:  260  261  280  279  
+energy:  <zonal> = 0
+        material material_1 = 0
+        material material_3 = 8.5e-05
+

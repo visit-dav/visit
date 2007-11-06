@@ -1,1 +1,1 @@
-serial:tests/databases/diff.py 60
+serial:tests/databases/samrai.py 59
