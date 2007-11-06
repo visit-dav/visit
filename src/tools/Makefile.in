@@ -100,6 +100,10 @@
 #    Add missing dirs to the OPTIONAL variable.  Create ALLSUBDIRS.  This
 #    will help distclean fix things up.
 #
+#    Mark C. Miller, Tue Nov  6 08:36:56 PST 2007
+#    Removed references to prep, but keeping code in prep dir as per
+#    Hank's request.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -108,7 +112,7 @@
 
 MILI=makemili
 
-OPTIONAL=avtprep classwriter doxygenate prep windowmaker \
+OPTIONAL=avtprep classwriter doxygenate windowmaker \
 	 escan mpeg_encode clidriver DataManualExamples clipeditor
 
 SUBDIRS=imagetools annotations convert curv3dprep @MILI@ mpeg2encode silex \
