@@ -81,6 +81,7 @@
                 <Field name="launchMethodSet" type="bool">true</Field>
                 <Field name="launchMethod" type="string">srun</Field>
                 <Field name="parallel" type="bool">true</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">photon parallel</Field>
@@ -92,6 +93,7 @@
                 <Field name="launchMethodSet" type="bool">true</Field>
                 <Field name="launchMethod" type="string">srun</Field>
                 <Field name="parallel" type="bool">true</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">photon parallel render</Field>
@@ -107,11 +109,13 @@
                 <Field name="havePreCommand" type="bool">true</Field>
                 <Field name="hwAccelPreCommand" type="string">/usr/X11R6/bin/xinit</Field>
                 <Field name="hwAccelPostCommand" type="string"></Field>
+                <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
             </Object>
             <Object name="HostProfile">
                 <Field name="profileName" type="string">photon serial on login node</Field>
                 <Field name="host" type="string">photon01.ornl.gov</Field>
                 <Field name="hostAliases" type="string">photon##.ornl.gov photon##</Field>
+                <Field name="arguments" type="stringVector">"-dir" "/apps/visit"</Field>
             </Object>
             <Field name="activeProfile" type="int">0</Field>
         </Object>
