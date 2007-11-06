@@ -367,7 +367,7 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
 	spaceID = H5Dget_space( dataID );
 	H5Sget_simple_extent_dims( spaceID, dims, NULL );
 	if ( dims[1] != 6 )
-	    EXCEPTION2( UnexpectedValueException, "Connectivity", "Expecting a wedge!" );
+	    EXCEPTION2( UnexpectedValueException, "Expecting a wedge!", "Connectivity" );
 		
 	vtkWedge *wedge = vtkWedge::New();
 	
@@ -416,7 +416,7 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
 	spaceID = H5Dget_space( dataID );
 	H5Sget_simple_extent_dims( spaceID, dims, NULL );
 	if ( dims[1] != 6 )
-	    EXCEPTION2( UnexpectedValueException, "Connectivity", "Expecting a wedge!" );
+	    EXCEPTION2( UnexpectedValueException, "Expecting a wedge!", "Connectivity" );
 	int *conn = new int[dims[0]*dims[1]];
 	H5Dread( dataID, H5T_NATIVE_INT, H5S_ALL, spaceID, H5P_DEFAULT, conn );
 	
@@ -471,7 +471,7 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
 	spaceID = H5Dget_space( dataID );
 	H5Sget_simple_extent_dims( spaceID, dims, NULL );
 	if ( dims[1] != 6 )
-	    EXCEPTION2( UnexpectedValueException, "Connectivity", "Expecting a wedge!" );
+	    EXCEPTION2( UnexpectedValueException, "Expecting a wedge!", "Connectivity" );
 	int *conn = new int[dims[0]*dims[1]];
 	H5Dread( dataID, H5T_NATIVE_INT, H5S_ALL, spaceID, H5P_DEFAULT, conn );
 	
@@ -516,7 +516,7 @@ avtM3DFileFormat::GetMesh( int timestate, int domain, const char *nm )
 	return grid;
     }
 
-    EXCEPTION2( UnexpectedValueException, "Mesh not found.", "" );
+    EXCEPTION2( UnexpectedValueException, "the name of a mesh", "" );
     return NULL;
 }
 
@@ -967,7 +967,7 @@ static void PlanePlaneIntersect( float *p0, float *p1, float *pt, float *axis )
     vtkMath::Normalize( axis );
     //This *should* be the z axis.
     if ( fabs( fabs(axis[2]) -1 ) > 1e-7 )
-	EXCEPTION2( UnexpectedValueException, "Center axis", "Expected a z Dir central axis." );
+	EXCEPTION2( UnexpectedValueException, "Expected a z Dir central axis.", "Center axis" );
 
     // We now have a 2x2 system, where {A,B,C,D} is the plane equation, and Z = 0.
     // A1 X + B1 Y = -D1

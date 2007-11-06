@@ -94,6 +94,9 @@ class avtSpecies;
 //    Moved implementation of GetCycle to .C file. Added GetTime and
 //    GetCycleFromFilename
 //
+//    Mark C. Miller, Mon Nov  5 19:34:12 PST 2007
+//    Added support for sparse material representation and expressions
+//
 // ****************************************************************************
 
 class avtSAMRAIFileFormat : public avtSTMDFileFormat
@@ -221,6 +224,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     map<string, var_t>            mat_var_names_num_components;
     map<string, matinfo_t*>       mat_names_matinfo;
     map<string, map<string, matinfo_t*> > mat_var_names_matinfo;
+    matinfo_t                    *sparse_mat_info;
 
     bool                          has_specs;
     int                           num_spec_vars;
@@ -246,6 +250,11 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     string                        active_visit_var_name;
     string                        last_visit_var_name;
     int                           last_patch;
+
+    int                           num_exprs;
+    string                       *expr_keys;
+    string                       *expr_types;
+    string                       *expr_defns;
 
     hid_t                        *h5files;
 
@@ -294,7 +303,11 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     void            ReadParentArray(hid_t &h5_file);
     void            ReadParentPointerArray(hid_t &h5_file);
 
+    void            ReadExpressions(hid_t &h5_file);
+
     void            ReadMaterialInfo(hid_t &h5_file);
+    avtMaterial    *ReadSparseMaterialData(int patch, const int *matnos,
+                        const char **matnames);
     float          *ReadMatSpecFractions(int, string, string="");
     void            ConvertVolumeFractionFields(vector<int> matIds, float **vfracs,
                         int ncells, int* &matfield, int &mixlen, int* &mix_mat,
@@ -314,7 +327,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
 
     int             GetGhostCodeForVar(const char * visit_var_name);
 
-    void            ReadDataset(hid_t &h5_file, const char *dspath, const char *typeName,
+    bool            ReadDataset(hid_t &h5_file, const char *dspath, const char *typeName,
                         int ndims, int *dims, void **data, bool isOptional=true);
 };
 

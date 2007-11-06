@@ -48,7 +48,6 @@
 #include <avtMixedVariable.h>
 
 #include <BadDomainException.h>
-#include <UnexpectedValueException.h>
 #include <DebugStream.h>
 #include <TimingsManager.h>
 

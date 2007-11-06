@@ -748,8 +748,8 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     vtkFloatArray *sand_arr = (vtkFloatArray *) GetVar(ts, dom, "sand");
     if (sand_arr->GetNumberOfTuples() != ncells[dom][mesh_id])
     {
-        EXCEPTION2(UnexpectedValueException, sand_arr->GetNumberOfTuples(),
-                                             ncells[dom][mesh_id]);
+        EXCEPTION2(UnexpectedValueException, ncells[dom][mesh_id],
+	                                     sand_arr->GetNumberOfTuples());
     }
     float *sand_vals = (float*) sand_arr->GetVoidPointer(0);
 
@@ -1560,7 +1560,7 @@ avtMiliFileFormat::RestrictVarToFreeNodes(vtkFloatArray *src, int ts) const
 {
     if (free_nodes_ts != ts)
     {
-        EXCEPTION2(UnexpectedValueException, ts, free_nodes_ts);
+        EXCEPTION2(UnexpectedValueException, free_nodes_ts, ts);
     }
 
     int ncomps = src->GetNumberOfComponents();

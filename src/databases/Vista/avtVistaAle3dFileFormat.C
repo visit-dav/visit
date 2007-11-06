@@ -941,7 +941,7 @@ avtVistaAle3dFileFormat::GetMesh(int domain, const char *meshname)
 
         if ((numNodesPerElem != 4) && (numNodesPerElem != 8))
         {
-            EXCEPTION2(UnexpectedValueException, numNodesPerElem, "4 or 8");
+            EXCEPTION2(UnexpectedValueException, "4 or 8", numNodesPerElem);
         }
     }
 
@@ -1158,7 +1158,7 @@ avtVistaAle3dFileFormat::ReadVar(int domain, const char *visitName)
     }
     if (numAllocComponents == 0)
     {
-        EXCEPTION2(UnexpectedValueException, numAllocComponents, ">0");
+        EXCEPTION2(UnexpectedValueException, "a value > 0", numAllocComponents);
     }
 
     vtkFloatArray *var_data = vtkFloatArray::New();
