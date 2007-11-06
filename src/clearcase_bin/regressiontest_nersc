@@ -19,6 +19,9 @@
 #    Mark C. Miller, Fri Sep 14 08:53:32 PDT 2007
 #    Fixed poor use of 'tr -d' in construction of 'files_to_status' input
 #    to generating list of modifiers.
+#
+#    Mark C. Miller, Tue Nov  6 08:31:40 PST 2007
+#    Fixed problem removing uncleaned files manually.
 #   
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
@@ -282,7 +285,7 @@ find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*_moc.[
 uncleanedFilesCount=`wc -l uncleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2`
 checkAndHandleError $uncleanedFilesCount warning "make clean left files; removing manually" uncleaned_files_log.txt
 if test $uncleanedFilesCount -ne 0; then
-    find . -name .svn -prune -false -o -name '*.so' -o -name '*.o' -o -name '*_moc.[Ch]' -o -name 'moc_*.[Ch]' -exec rm {} \;
+    cat uncleaned_files_log.txt | tr -s ' ' | cut -d' ' -f2 | xargs -n 1 rm -f
 fi
 
 # test 'make distclean' acts as expected
