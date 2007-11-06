@@ -112,7 +112,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     if (strstr(string_attrib, "Cartesian - XYZ") == NULL)
     {
 	debug5 << "Cannot handle non cartesian coordinates" << std::endl;
-	EXCEPTION2 (UnexpectedValueException, "Coordinate System", "Cartesian - XYZ");
+	EXCEPTION2 (UnexpectedValueException, "Cartesian - XYZ", string_attrib);
     }
     H5NIMROD_read_string_attrib (grid_id, "Topology", &string_attrib);
     if (strstr (string_attrib, "Structured") != NULL)
@@ -124,7 +124,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     {
 	structured = 0;
 	debug5 << "Cannot handle unstructured mesh" << std::endl;
-	EXCEPTION2 (UnexpectedValueException, "Topology", "Structured");
+	EXCEPTION2 (UnexpectedValueException, "Structured", string_attrib);
     }
     free (string_attrib);
     H5NIMROD_read_string_attrib (grid_id, "Geometry", &string_attrib);
@@ -134,7 +134,7 @@ avtH5NimrodFileFormat::avtH5NimrodFileFormat (const char *filename):
     if (ndims != 3)
     {
 	debug5 << "Cannot handle other than 3 dimensional data" << std::endl;
-	EXCEPTION2 (UnexpectedValueException, "Number of dimensions", "3");
+	EXCEPTION2 (UnexpectedValueException, 3, ndims);
     }
     // points
     for (i = 0, npoints = 1; i < ndims; i++)

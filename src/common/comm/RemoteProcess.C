@@ -1237,6 +1237,10 @@ RemoteProcess::WaitForTermination()
 //   Brad Whitlock, Tue Jan 17 14:03:43 PST 2006
 //   Added debug logging.
 //
+//   Mark C. Miller, Mon Nov  5 17:15:45 PST 2007
+//   Added code to attempt 'localhost' after using name returned by
+//   gethostname() failes.
+//
 // ****************************************************************************
 
 bool
@@ -1295,12 +1299,19 @@ RemoteProcess::StartMakingConnection(const std::string &rHost, int numRead,
     struct hostent *localHostEnt = gethostbyname(localHostStr);
     if (localHostEnt == NULL)
     {
+	// Ok, using the host's name returned from gethostname()
+	// did not work. So, lets fall back to 'localhost'
+        strcpy(localHostStr,"localhost");
+        localHostEnt = gethostbyname(localHostStr);
+	if (localHostEnt == NULL)
+	{
 #if defined(_WIN32)
-        LogWindowsSocketError(mName, "gethostbyname,2");
+            LogWindowsSocketError(mName, "gethostbyname,2");
 #endif
-        // Couldn't get the full host entry; it's probably invalid so
-        // throw a BadHostException.
-        EXCEPTION1(BadHostException, localHostStr);
+            // Couldn't get the full host entry; it's probably invalid so
+            // throw a BadHostException.
+            EXCEPTION1(BadHostException, localHostStr);
+        }
     }
     localHost = std::string(localHostEnt->h_name);
     debug5 << localHost.c_str() << endl;

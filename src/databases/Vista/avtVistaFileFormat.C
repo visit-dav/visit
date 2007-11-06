@@ -710,7 +710,7 @@ avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
                 {
                     if (*size < retSize)
                     {
-                        EXCEPTION2(UnexpectedValueException, (int) retSize, (int) *size);
+                        EXCEPTION2(UnexpectedValueException, (int) *size, (int) retSize);
                     }
                 }
 
@@ -858,7 +858,7 @@ avtVistaFileFormat::ReadDataset(const char *fileName, const char *dsName,
                 {
                     if (*size < retSize)
                     {
-                        EXCEPTION2(UnexpectedValueException, (int) retSize, (int) *size);
+                        EXCEPTION2(UnexpectedValueException, (int) *size, (int) retSize);
                     }
                 }
                 H5Dread(ds, memType, H5S_ALL, H5S_ALL, H5P_DEFAULT, *buf);

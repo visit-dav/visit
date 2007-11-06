@@ -76,10 +76,12 @@
 #include <avtIntervalTree.h>
 #include <avtIOInformation.h>
 #include <avtMaterial.h>
+#include <avtMixedVariable.h>
 #include <avtSpecies.h>
 #include <avtStructuredDomainBoundaries.h>
 #include <avtStructuredDomainNesting.h>
 #include <avtVariableCache.h>
+#include <Expression.h>
 
 #include <BadIndexException.h>
 #include <DebugStream.h>
@@ -96,7 +98,7 @@ using std::vector;
 using std::string;
 
 // the version of the SAMRAI writer the current reader code matches 
-static const float        expected_version_number = 2.0;
+static const float        expected_version_number[] = {2.0,3.0};
 static const char        *inferredVoidMatName = "inferred void";
 static const int MAX_GHOST_LAYERS = 2;
 static const int MAX_GHOST_CODES = MAX_GHOST_LAYERS *
@@ -223,11 +225,16 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     mat_names = 0;
     mat_var_num_components = 0;
     mat_var_names = 0;
+    sparse_mat_info = 0;
 
     has_specs = false;
     nmatspec = 0;
     num_spec_vars = 0;
     spec_var_names = 0;
+
+    expr_keys = NULL;
+    expr_types = NULL;
+    expr_defns = NULL;
 
     h5files = new hid_t[MAX_FILES];
     for (i = 0 ; i < MAX_FILES ; i++)
@@ -352,6 +359,11 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     SAFE_DELETE(mat_var_names);
     SAFE_DELETE(mat_num_ghosts);
     SAFE_DELETE(mat_var_num_components);
+    SAFE_DELETE(sparse_mat_info);
+
+    SAFE_DELETE(expr_keys);
+    SAFE_DELETE(expr_types);
+    SAFE_DELETE(expr_defns);
 
     //
     // cleanup the mesh cache
@@ -926,6 +938,9 @@ avtSAMRAIFileFormat::GetVectorVar(int patch, const char *visit_var_name)
 //    Mark C. Miller, Thu Apr  6 17:06:33 PDT 2006
 //    Added conditional compilation for hssize_t type
 //
+//    Mark C. Miller, Mon Nov  5 19:08:57 PST 2007
+//    Added support for mixed variable components
+//
 // ****************************************************************************
 vtkDataArray *
 avtSAMRAIFileFormat::ReadVar(int patch, 
@@ -1001,7 +1016,7 @@ avtSAMRAIFileFormat::ReadVar(int patch,
     }
     if (num_alloc_comps == 0)
     {
-        EXCEPTION2(UnexpectedValueException, num_alloc_comps, "a value other than zero");
+        EXCEPTION2(UnexpectedValueException, "a value other than zero", num_alloc_comps);
     }
 
     // allocate VTK data array for this variable 
@@ -1014,9 +1029,15 @@ avtSAMRAIFileFormat::ReadVar(int patch,
     {
         // determine name of the HDF5 dataset and open it 
         char variable[256];
+        char mixvar[512];
         if (var_type == AVT_SCALAR_VAR)
         {
             sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s",
+                    patch_map[patch].processor_number,
+                    patch_map[patch].level_number,
+                    patch_map[patch].patch_number, 
+                    var_name.c_str());
+            sprintf(mixvar, "/processor.%05d/level.%05d/patch.%05d/material_state/%s",
                     patch_map[patch].processor_number,
                     patch_map[patch].level_number,
                     patch_map[patch].patch_number, 
@@ -1025,6 +1046,11 @@ avtSAMRAIFileFormat::ReadVar(int patch,
         else
         {
             sprintf(variable, "/processor.%05d/level.%05d/patch.%05d/%s.%02d",
+                    patch_map[patch].processor_number,
+                    patch_map[patch].level_number,
+                    patch_map[patch].patch_number, 
+                    var_name.c_str(), i);
+            sprintf(mixvar, "/processor.%05d/level.%05d/patch.%05d/material_state/%s.%02d",
                     patch_map[patch].processor_number,
                     patch_map[patch].level_number,
                     patch_map[patch].patch_number, 
@@ -1047,7 +1073,7 @@ avtSAMRAIFileFormat::ReadVar(int patch,
             hsum *= hdims[j];
         if ((hsize_t) num_data_samples != hsum)
         {
-            EXCEPTION2(UnexpectedValueException, hsum, num_data_samples);
+            EXCEPTION2(UnexpectedValueException, num_data_samples, hsum);
         }
         H5Sclose(h5d_space);
         delete [] hdims;
@@ -1069,6 +1095,42 @@ avtSAMRAIFileFormat::ReadVar(int patch,
 
         H5Dclose(h5d_variable);      
         H5Sclose(memspace);
+
+	//
+	// Ok, now read any material-specific fractional values for this component
+	//
+        hid_t h5d_mixvar = H5Dopen(h5f_file, mixvar);
+	if (h5d_mixvar < 0)
+	    continue;
+
+        // allocate a float buffer for the mixed values
+        h5d_space = H5Dget_space(h5d_mixvar);
+        hndims = H5Sget_simple_extent_ndims(h5d_space);
+        hdims = new hsize_t[hndims];
+        max_hdims = new hsize_t[hndims];
+        H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
+        hsum = 1;
+        for (int j = 0; j < hndims; j++)
+            hsum *= hdims[j];
+        float *mbuf = new float[(int)hsum];
+
+        // do the actual read
+        H5Dread(h5d_mixvar, H5T_NATIVE_FLOAT, H5S_ALL, H5S_ALL, H5P_DEFAULT, mbuf);
+
+        //
+        // Create VisIt's mixed variable structure and stuff it into the cache
+        //
+        avtMixedVariable *mv = new avtMixedVariable(mbuf, (int) hsum, 
+                                                    visit_var_name);
+        void_ref_ptr vr = void_ref_ptr(mv, avtMixedVariable::Destruct);
+        cache->CacheVoidRef(visit_var_name, AUXILIARY_DATA_MIXED_VARIABLE, timestep,
+                            patch, vr);
+
+        // Clean everything for the mixed var case up
+        H5Sclose(h5d_space);
+        delete [] hdims;
+        delete [] max_hdims;
+        H5Dclose(h5d_mixvar);
     }
 
     // fill in 0's when necessary
@@ -1123,7 +1185,7 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
     // inferred void material, something is really wrong
     if (mat_name == inferredVoidMatName)
     {
-        EXCEPTION2(UnexpectedValueException, mat_name, "something other than void");
+        EXCEPTION2(UnexpectedValueException, "something other than void", mat_name);
     }
 
     int matNo = -1;
@@ -1196,7 +1258,7 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
         hsum *= hdims[i];
     if ((hsize_t) num_data_samples != hsum)
     {
-        EXCEPTION2(UnexpectedValueException, hsum, num_data_samples);
+        EXCEPTION2(UnexpectedValueException, num_data_samples, hsum);
     }
     H5Sclose(h5d_space);
     delete [] hdims;
@@ -1212,6 +1274,153 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
     return buffer;
 }
 
+// ****************************************************************************
+//  Method:  avtSAMRAIFileFormat::ReadSparseMaterialData
+//
+//  Purpose: Read sparse mixed material information a la Silo's mixed structs
+//
+//  Programmer:  Mark C. Miller,
+//  Creation:    November 1, 2005 
+//
+// ****************************************************************************
+avtMaterial *
+avtSAMRAIFileFormat::ReadSparseMaterialData(int patch, const int *matnos,
+    const char **matnames) 
+{
+    int i;
+    int one = 1;
+    avtMaterial *mat = 0;
+
+    char domName[256];
+    SNPRINTF(domName, sizeof(domName), "patch_%d", patch);
+
+    // compute logical size in each dimension of this patch
+    int dim = num_dim_problem < 3 ? num_dim_problem: 3;
+    int dims[] = {1, 1, 1};
+    int ncells = 1;
+    for (i=0; i<dim; i++)
+    {
+        dims[i] = patch_extents[patch].upper[i] -
+                  patch_extents[patch].lower[i] + 1 +
+                  2 * mat_num_ghosts[i];
+        ncells *= dims[i];
+    }
+
+    char file[512];   
+    sprintf(file, "%sprocessor_cluster.%05d.samrai",
+        dir_name.c_str(), patch_map[patch].file_cluster_number);
+
+    hid_t h5_file = OpenFile(file);
+    if (h5_file < 0)
+    {
+        EXCEPTION1(InvalidFilesException, file);
+    }
+
+    char dsName[1024];
+    sprintf(dsName, "/processor.%05d/level.%05d/patch.%05d/"
+                    "materials/mat_list",
+        patch_map[patch].processor_number,
+        patch_map[patch].level_number,
+        patch_map[patch].patch_number);
+
+    // First, try reading a dataset of size equal to patch size.
+    int *matlist = 0;
+    int len = -1;
+    ReadDataset(h5_file, dsName,
+        "int", 1, &len, (void**) &matlist, true);
+
+    // If the above read failed, it may be clean in one material. 
+    // So, try to read that.
+    if (len == 1)
+    {
+        int *matlist_tmp = new int[ncells];
+	for (i = 0; i < ncells; i++)
+	    matlist_tmp[i] = matlist[0];
+	delete [] matlist;
+
+        mat = new avtMaterial(num_mats,      //silomat->nmat,
+                              matnos,        //silomat->matnos,
+                              (char**) matnames,      //silomat->matnames,
+                              dim,           //silomat->ndims,
+                              dims,          //silomat->dims,
+                              0,             //silomat->major_order,
+                              matlist_tmp,   //silomat->matlist,
+                              0,             //silomat->mixlen,
+                              0,             //silomat->mix_mat,
+                              0,             //silomat->mix_next,
+                              0,             //silomat->mix_zone,
+                              0,             //silomat->mix_vf
+                              domName);
+
+        delete [] matlist_tmp;
+
+	return mat;
+    }
+
+    // ok, try to read the mix info, if it exists
+    sprintf(dsName, "/processor.%05d/level.%05d/patch.%05d/"
+                    "materials/next_mat",
+        patch_map[patch].processor_number,
+        patch_map[patch].level_number,
+        patch_map[patch].patch_number);
+
+    int *mix_next = 0;
+    int *mix_mat = 0;
+    int *mix_zone = 0;
+    float *mix_vf = 0;
+    int mixlen = -1;
+    ReadDataset(h5_file, dsName,
+        "int", 1, &mixlen, (void**) &mix_next, true);
+
+    if (mixlen > 0 && mix_next != 0)
+    {
+        sprintf(dsName, "/processor.%05d/level.%05d/patch.%05d/"
+                        "materials/mix_mat",
+            patch_map[patch].processor_number,
+            patch_map[patch].level_number,
+            patch_map[patch].patch_number);
+        ReadDataset(h5_file, dsName,
+            "int", 1, &mixlen, (void**) &mix_mat, false);
+
+        sprintf(dsName, "/processor.%05d/level.%05d/patch.%05d/"
+                        "materials/mix_zones",
+            patch_map[patch].processor_number,
+            patch_map[patch].level_number,
+            patch_map[patch].patch_number);
+        ReadDataset(h5_file, dsName,
+            "int", 1, &mixlen, (void**) &mix_zone, false);
+
+        sprintf(dsName, "/processor.%05d/level.%05d/patch.%05d/"
+                        "materials/vol_fracs",
+            patch_map[patch].processor_number,
+            patch_map[patch].level_number,
+            patch_map[patch].patch_number);
+        ReadDataset(h5_file, dsName,
+            "float", 1, &mixlen, (void**) &mix_vf, false);
+    }
+
+    mat = new avtMaterial(num_mats,      //silomat->nmat,
+                          matnos,        //silomat->matnos,
+                          (char**) matnames,      //silomat->matnames,
+                          dim,           //silomat->ndims,
+                          dims,          //silomat->dims,
+                          0,             //silomat->major_order,
+                          matlist,       //silomat->matlist,
+                          mixlen,        //silomat->mixlen,
+                          mix_mat,       //silomat->mix_mat,
+                          mix_next,      //silomat->mix_next,
+                          mix_zone,      //silomat->mix_zone,
+                          mix_vf,        //silomat->mix_vf
+                          domName);
+
+     SAFE_DELETE(matlist);
+     SAFE_DELETE(mix_mat);
+     SAFE_DELETE(mix_next);
+     SAFE_DELETE(mix_zone);
+     SAFE_DELETE(mix_vf);
+
+     return mat;
+}
 
 // ****************************************************************************
 //  Method: avtSAMRAIFileFormat::GetMaterial
@@ -1235,6 +1444,9 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
 //
 //    Kathleen Bonnell, Mon May 23 16:55:35 PDT 2005
 //    Fix memory leaks. 
+//
+//    Mark C. Miller, Mon Nov  5 19:10:12 PST 2007
+//    Added support for sparse material information
 // 
 // ****************************************************************************
 
@@ -1247,6 +1459,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     static double bytesInFileTotal = 0.0;
     double bytesInMem = 0.0;
     static double bytesInMemTotal = 0.0;
+    avtMaterial *mat = NULL;
 
     debug5 << "avtSAMRAIFileFormat::GetMaterial getting materials on patch "
            << patch << endl;
@@ -1255,6 +1468,29 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     if (has_mats == false)
     {
         EXCEPTION1(InvalidVariableException, matObjName);
+    }
+
+    // re-format global mat numbers and names 
+    int *matnos = new int[num_mats];
+    char **matnames = new char*[num_mats];
+    for (i = 0; i < num_mats; i++)
+    {
+        matnos[i] = i;
+        matnames[i] = CXX_strdup(mat_names[i].c_str()); 
+    }
+
+    // if we have the newer, sparse format read and return that
+    if (sparse_mat_info && sparse_mat_info[patch].data_is_defined != 0)
+    {
+        mat = ReadSparseMaterialData(patch, matnos, (const char**) matnames);
+
+        // free up the matnames and numbers
+        SAFE_DELETE(matnos);
+        for (i = 0; i < num_mats; i++)
+            SAFE_DELETE(matnames[i]);
+        SAFE_DELETE(matnames);
+
+        return mat;
     }
 
     // first, determine which material nos., if any, we actually have on this patch
@@ -1281,8 +1517,9 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
                 break;
             default:
             {
-                EXCEPTION2(UnexpectedValueException, matCompFlag,
-                    "a value for material_composition_flag of 0,1 or 2");
+                EXCEPTION2(UnexpectedValueException,
+                    "a value for material_composition_flag of 0,1 or 2",
+		    matCompFlag);
             }
         }
     }
@@ -1309,7 +1546,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
     // one material
     if ((oneMat == true) && (matList.size() > 1))
     {
-        EXCEPTION2(UnexpectedValueException, matList.size(), 1);
+        EXCEPTION2(UnexpectedValueException, 1, matList.size());
     }
 
     // compute logical size in each dimension of this patch
@@ -1323,17 +1560,6 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
                   2 * mat_num_ghosts[i];
         ncells *= dims[i];
     }
-
-    // re-format global mat numbers and names 
-    int *matnos = new int[num_mats];
-    char **matnames = new char*[num_mats];
-    for (i = 0; i < num_mats; i++)
-    {
-        matnos[i] = i;
-        matnames[i] = CXX_strdup(mat_names[i].c_str()); 
-    }
-
-    avtMaterial *mat = NULL;
 
     if (oneMat)
     {
@@ -1381,7 +1607,7 @@ avtSAMRAIFileFormat::GetMaterial(int patch, const char *matObjName)
        {
            if (inferVoidMaterial == false)
            {
-               EXCEPTION2(UnexpectedValueException, 1, "2 or more materials");
+               EXCEPTION2(UnexpectedValueException, "2 or more materials", 1);
            }
 
            // infer the void's volume fractions
@@ -1487,7 +1713,7 @@ avtSAMRAIFileFormat::ConvertVolumeFractionFields(vector<int> matIds,
             {
                 if (matfield[z] != notSet)
                 {
-                    EXCEPTION2(UnexpectedValueException, matfield[z], "the 'notSet' value");
+                    EXCEPTION2(UnexpectedValueException, "the 'notSet' value", matfield[z]);
                 }
 
                 matfield[z] = matIds[m];
@@ -1508,7 +1734,7 @@ avtSAMRAIFileFormat::ConvertVolumeFractionFields(vector<int> matIds,
                 {
                     if (matfield[z] >= 0)
                     {
-                        EXCEPTION2(UnexpectedValueException, matfield[z], "a value < 0");
+                        EXCEPTION2(UnexpectedValueException, "a value < 0", matfield[z]);
                     }
 
                     // walk forward through the list for this zone
@@ -1530,8 +1756,8 @@ avtSAMRAIFileFormat::ConvertVolumeFractionFields(vector<int> matIds,
             }
             else if (frac[z] != 0.0)
             {
-                EXCEPTION2(UnexpectedValueException, frac[z],
-                    "a value between 0.0 and 1.0");
+                EXCEPTION2(UnexpectedValueException, "a value between 0.0 and 1.0",
+		    frac[z]);
             }
         }
     }
@@ -1701,8 +1927,9 @@ avtSAMRAIFileFormat::GetSpecies(int patch, const char *specObjName)
             }
             default:
             {
-                EXCEPTION2(UnexpectedValueException, matCompFlag,
-                    "a value for material_composition_flag of 0,1 or 2");
+                EXCEPTION2(UnexpectedValueException,
+                    "a value for material_composition_flag of 0,1 or 2",
+		    matCompFlag);
             }
         }
     }
@@ -1888,7 +2115,7 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
             // if this material has species, it should have species mf pointers
             if ((nmatspec[matNum] != 0) && (matSpecFracs[matNum] == NULL))
             {
-                EXCEPTION2(UnexpectedValueException, nmatspec[matNum], 0);
+                EXCEPTION2(UnexpectedValueException, 0, nmatspec[matNum]);
             }
 
             if (nmatspec[matNum] == 0)
@@ -1919,7 +2146,7 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
                 // if this material has species, it should have species mf pointers
                 if ((nmatspec[matNum] != 0) && (matSpecFracs[matNum] == NULL))
                 {
-                    EXCEPTION2(UnexpectedValueException, nmatspec[matNum], 0);
+                    EXCEPTION2(UnexpectedValueException, 0, nmatspec[matNum]);
                 }
 
 #ifdef USE_UNIQUE_SPECIES
@@ -1948,7 +2175,7 @@ avtSAMRAIFileFormat::ConvertMassFractionFields(vector<int> matIds,
     species_mf = aaspecies_mf.GetData();
     if (nspecies_mf != aaspecies_mf.GetSize())
     {
-        EXCEPTION2(UnexpectedValueException, nspecies_mf, aaspecies_mf.GetSize());
+        EXCEPTION2(UnexpectedValueException, aaspecies_mf.GetSize(), nspecies_mf);
     }
 #endif
 }
@@ -2231,6 +2458,12 @@ avtSAMRAIFileFormat::GetTime()
 //    Added md-specific code to NOT include default plot for a mesh with
 //    only 1 level. Added warning for this as well.
 //
+//    Mark C. Miller, Sat Nov  3 09:31:00 PST 2007
+//    Made it create a subset plot of patches in cases num_levels == 1.
+//
+//    Mark C. Miller, Mon Nov  5 19:34:12 PST 2007
+//    Added expressions
+//
 // ****************************************************************************
 
 void
@@ -2328,9 +2561,10 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         // add default plot (but only if we actually have 'levels'
         //
-        if (num_levels > 1)
+        if (num_patches > 1)
         {
-            avtDefaultPlotMetaData *plot = new avtDefaultPlotMetaData("Subset_1.0", "levels");
+            avtDefaultPlotMetaData *plot = new avtDefaultPlotMetaData("Subset_1.0",
+	        num_levels > 1 ? "levels" : "patches");
             char attribute[250];
             sprintf(attribute,"%d NULL ViewerPlot", INTERNAL_NODE);
             plot->AddAttribute(attribute);
@@ -2349,7 +2583,7 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             static bool haveIssuedWarning = false;
             SNPRINTF(msg, sizeof(msg), "Ordinarily, VisIt displays a wireframe, subset "
                 "plot of 'levels' automatically upon opening a SAMRAI file. However, such "
-                "a plot is not applicable in the case that there is only one level. So, "
+                "a plot is not applicable in the case that there is only one patch. So, "
                 "the normal subset plot is not being displayed.");
             if (!haveIssuedWarning)
             {
@@ -2441,6 +2675,21 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->Add(sil);
 #endif
 
+	for (i = 0; i < num_exprs; i++)
+	{
+            Expression exp;
+            exp.SetName(expr_keys[i]);
+            exp.SetDefinition(expr_defns[i]);
+	    if (expr_types[i] == "scalar")
+                exp.SetType(Expression::ScalarMeshVar);
+	    else if (expr_types[i] == "vector")
+                exp.SetType(Expression::VectorMeshVar);
+	    else if (expr_types[i] == "tensor")
+                exp.SetType(Expression::TensorMeshVar);
+	    else if (expr_types[i] == "array")
+                exp.SetType(Expression::ArrayMeshVar);
+            md->AddExpression(&exp);
+	}
     }
 }
 
@@ -2532,6 +2781,8 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
 
         ReadSpeciesInfo(h5_file);
 
+	ReadExpressions(h5_file);
+
         cached_patches = new vtkDataSet**[num_patches];
         for (int p=0; p<num_patches; p++)
         {
@@ -2605,17 +2856,30 @@ avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
             &obtained_version_number);
     H5Dclose(h5_dataset);
 
-    if (expected_version_number != obtained_version_number)
+    bool hasExpectedVersionNumber = false;
+    for (int n = 0;
+         n < sizeof(expected_version_number)/sizeof(expected_version_number[0]);
+	 n++)
+    {
+        if (obtained_version_number == expected_version_number[n])
+	{
+	    hasExpectedVersionNumber = true;
+	    break;
+	}
+    }
+
+    if (hasExpectedVersionNumber = false)
     {
         char str[2048];
         sprintf(str, "The file \"%s\" appears to be a SAMRAI file "
             "written for input to VisIt. However, the version of the writer "
-            "SAMRAI used to produce this file, %f, does not match the version of "
-            "the VisIt reader plugin you are now trying to use to read it, %f",
-             file_name.c_str(),obtained_version_number,expected_version_number);
+            "SAMRAI used to produce this file, %f, does not match any of the "
+            "version numbers the VisIt reader plugin you are now trying to use "
+	    "is designed for, %f, %f",
+            file_name.c_str(),obtained_version_number,
+	        expected_version_number[0],expected_version_number[1]);
         EXCEPTION1(InvalidFilesException, str);
     }
-
 }
 
 // ****************************************************************************
@@ -3104,7 +3368,7 @@ avtSAMRAIFileFormat::ReadVarNumGhosts(hid_t &h5_file)
 
     if (dims[0] != num_vars)
     {
-        EXCEPTION2(UnexpectedValueException, dims[0], num_vars);
+        EXCEPTION2(UnexpectedValueException, num_vars, dims[0]);
     }
 
     // When ghosting is not same for ALL variables in the file, we need
@@ -3634,8 +3898,12 @@ avtSAMRAIFileFormat::ReadMaterialInfo(hid_t &h5_file)
       mat_var_names_num_components[mat_var_name] = var;
     }
 
+    // read information on sparse material storage, if available
+    ReadDataset(h5_file, "/extents/materials/sparse_material_list",
+        "matinfo_t", 1, &num_patches, (void**) &sparse_mat_info, true);
+
     // Read "extents" information for each material 
-    for (int m = 0; m < num_mats; m++)
+    for (int m = 0; m < num_mats && sparse_mat_info == 0; m++)
     {
         matinfo_t *tmpInfo = 0;
 
@@ -3663,7 +3931,7 @@ avtSAMRAIFileFormat::ReadMaterialInfo(hid_t &h5_file)
     // check if we'll ever need to infer the "void" material for this database
     inferVoidMaterial = false;
     int p;
-    for (p = 0; p < num_patches; p++)
+    for (p = 0; p < num_patches && sparse_mat_info == 0; p++)
     {
         int i, n0 = 0, n1 = 0, n2 = 0;
         for (i = 0; i < num_mats; i++)
@@ -3799,6 +4067,37 @@ avtSAMRAIFileFormat::ReadSpeciesInfo(hid_t &h5_file)
             
             mat_specs_matinfo[matName][specName] = tmpInfo;
         }
+    }
+}
+
+// ****************************************************************************
+//  Method:  ReadExpressions
+//
+//  Purpose: Read any visit expressions defined in the file
+//
+//  Programmer:  Mark C. Miller 
+//  Creation:    November 1, 2007 
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadExpressions(hid_t &h5_file)
+{
+    bool isOptional = true;
+    num_exprs = -1;
+    if (ReadDataset(h5_file, "/visit_expressions/expression_keys",
+        "string", 1, &num_exprs, (void**) &expr_keys, isOptional)
+	&& num_exprs > 0)
+    {
+        cerr << "num_expr = " << num_exprs << endl;
+        isOptional = false;
+        ReadDataset(h5_file, "/visit_expressions/expression_types",
+            "string", 1, &num_exprs, (void**) &expr_types, isOptional);
+        ReadDataset(h5_file, "/visit_expressions/expressions",
+            "string", 1, &num_exprs, (void**) &expr_defns, isOptional);
+    }
+    else
+    {
+        num_exprs = 0;
     }
 }
 
@@ -3993,12 +4292,9 @@ avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
 // ****************************************************************************
 //  Method:  ReadDataset
 //
-//  Purpose:
-//    Read a dataset that is a 1D array of string-values and return it as
-//    a vector of strings
-//
-//  Arguments:
-//    IN:  h5_file     the handle of the file to be read
+//  Purpose: Read dataset of specified size and type. If size is not specified
+//  by caller, read the dataset and fill in the dims array. If it is specified
+//  by caller, compare to size in file and throw an exception if wrong.
 //
 //  Programmer:  Mark C. Miller, adapted from Walter Herrar Jimenez
 //  Creation:    December 11, 2003 
@@ -4012,7 +4308,7 @@ avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
 //     Changed for Windows compiler.
 //
 // ****************************************************************************
-void 
+bool
 avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
     const char *typeName, int ndims, int *dims, void **data, bool isOptional) 
 {
@@ -4022,7 +4318,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
     for (i = 0; i < ndims; i++)
     {
         if (dims[i] == 0)
-            return;
+            return false;
     }
 
     hid_t h5_dataset = H5Dopen(hdfFile, dsPath);
@@ -4031,9 +4327,12 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
         if (isOptional)
         {
             for (i = 0; i < ndims; i++)
-                dims[i] = 0;
+	    {
+		if (dims[i] == -1)
+                    dims[i] = 0;
+	    }
             *data = 0;
-            return;
+            return false;
         }
         else
         {
@@ -4050,7 +4349,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
     if (hndims != ndims)
     {
         H5Dclose(h5_dataset);
-        EXCEPTION2(UnexpectedValueException, hndims, ndims);
+        EXCEPTION2(UnexpectedValueException, ndims, hndims);
     }
     hsize_t *hdims = new hsize_t[hndims];
     hsize_t *max_hdims = new hsize_t[hndims];
@@ -4067,7 +4366,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
             if (dims[i] != hdims[i])
             {
                 H5Dclose(h5_dataset);
-                EXCEPTION2(UnexpectedValueException, hdims[i], dims[i]);
+                EXCEPTION2(UnexpectedValueException, dims[i], hdims[i]);
             }
         }
 
@@ -4083,7 +4382,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
         if (data != 0)
             *data = 0;
         H5Dclose(h5_dataset);
-        return;
+        return true;
     }
 
     if (strncmp(typeName,"string",6) == 0)
@@ -4193,7 +4492,7 @@ avtSAMRAIFileFormat::ReadDataset(hid_t &hdfFile, const char *dsPath,
 
 
     H5Dclose(h5_dataset);    
-
+    return true;
 }
 
 // ****************************************************************************
