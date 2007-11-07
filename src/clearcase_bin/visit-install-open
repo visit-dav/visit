@@ -300,11 +300,11 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugi
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sgi-irix6-mips2\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-cp resultlog ~/quad_resultlog
-ssh thunder "cat quad_resultlog | mail  -s \"VisIt build ($dist): quad\" $emailName"
+cp resultlog \$HOME/quad_resultlog
+ssh thunder "cat quad_resultlog | /bin/mail  -s \"VisIt build ($dist): quad\" $emailName"
 # give thunder time to mail it before removing the log
 sleep 10
-rm ~/quad_resultlog
+rm \$HOME/quad_resultlog
 EOF
 
 if [ $quad = true ]
