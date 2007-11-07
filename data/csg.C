@@ -159,9 +159,9 @@ build_csg(DBfile *dbfile, char *name)
 
     // output a csg variable
     {
-        const void *pv[1];
+        void *pv[1];
         double var1_data[] = {10.0, 100.0};
-        const char *pname[1];
+        char *pname[1];
         char name1[] = "var1";
 
         pv[0] = var1_data;

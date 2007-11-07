@@ -2993,8 +2993,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
 #ifdef DB_VARTYPE_SCALAR
     char   vnames[4][STRLEN];
     char   defns[4][STRLEN];
-    const char *pvnames[4] = {vnames[0], vnames[1], vnames[2], vnames[3]};
-    const char *pdefns[4] = {defns[0], defns[1], defns[2], defns[3]};
+    char *pvnames[4] = {vnames[0], vnames[1], vnames[2], vnames[3]};
+    char *pdefns[4] = {defns[0], defns[1], defns[2], defns[3]};
     int    types[4];
 
     types[0] = DB_VARTYPE_SCALAR;
