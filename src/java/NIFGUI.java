@@ -66,6 +66,9 @@ import llnl.visit.plots.CurveAttributes;
 //   Brad Whitlock, Mon Jun 6 17:29:15 PST 2005
 //   I made it use GetDataPath to locate some default data.
 //
+//   Brad Whitlock, Wed Nov 7 15:56:34 PST 2007
+//   Added -dv argument.
+//
 // ****************************************************************************
 
 public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemListener
@@ -122,6 +125,8 @@ public class NIFGUI extends JPanel implements Runnable, ActionListener, ItemList
                 viewer.SetBinPath(args[i + 1]);
                 ++i;
             }
+            else if(args[i].equals("-dv"))
+                viewer.SetBinPath("../bin");
             else if(args[i].equals("-o") && ((i + 1) < args.length))
             {
                 visitDatabase = new String(args[i + 1]);
