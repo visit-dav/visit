@@ -3,7 +3,7 @@
 <HEAD>
 <TITLE>VisIt What's New</TITLE>
 <meta http-equiv="content-type" content="text/html;charset=ISO-8859-1">
-<meta name="LLNLRandR" content="UCRL-WEB-233207">
+<meta name="LLNLRandR" content="UCRL-WEB-236187">
 <meta name="distribution" content="global">
 <meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
 <meta name="language" content="English">
@@ -226,6 +226,7 @@ function MM_initTimelines() { //v4.0
 <h1>What's New</h1>
 <p>This page provides information about what's new with VisIt, including general news about the tool as well as new features that have been recently added.</p>
 <ol>
+  <li><a href="#November2007">November, 2007</a></li>
   <li><a href="#August2007">August, 2007</a></li>
   <li><a href="#April2007">April, 2007</a></li>
   <li><a href="#December2006">December, 2006</a></li>
@@ -236,8 +237,70 @@ function MM_initTimelines() { //v4.0
   <li><a href="#Dec2005">December, 2005</a></li>
   <li><a href="#Oct2005">October, 2005</a></li>
 </ol>
+<h1><a name="November2007"></a>November, 2007 - VisIt 1.7 released </h1>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 1.7, which can be <a href="download.html">downloaded from this site</a>, <!--includes many new features and includes several important bug-fixes.--> is primarily a bug-fix release.</p>
+<h2>1. The simulation steering window was updated with a new strip chart tab window.</h2>
+<p>This is a postable/unpostable window that allows the simulation writer to monitor up to five simulation variables at a time in separate strip chart windows. The ability to reset a strip chart was added so that a user could restart without spurious startup values interfering with the interpretation of the data. The tab labels can be set via the running simulation to identify the variable being plotted. The current value of the data is now displayed in addition to the min and max data.</p>
+<h2>2. Added better support for lower resolution desktops.</h2>
+<p>Added a General tab to the Annotation Attributes window to make the window smaller. Separated the Rendering attributes window into tabs to make the window smaller.</p>
+<h2>3. New database reader plugins are available.</h2>
+<p>Many database reader plugins were enhanced in this release of VisIt and nine completely new database reader plug-ins were added. For more information about the reader enhancements, please read the VisIt 1.7 Release notes when you install VisIt and run it for the first time. The database reader plugins added in this release are:</p>	
+<table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
+  <tbody>
+    <tr NOSAVE>
+      <td width="15%" NOSAVE bgcolor="#9999CC" class="Section">File format </td>
+      <td width="65%" NOSAVE bgcolor="#9999CC" class="Section">Description</td>
+      <td width="20%" NOSAVE bgcolor="#9999CC" class="Section">URL</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">CALE</td>
+      <td bgcolor="#CCCCFF">The CALE plugin reads data from the CALE hydrodynamics code.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">CCM</td>
+      <td bgcolor="#CCCCFF">The CCM plugin reads data from the <a href="http://www.cd-adapco.com/products/STAR-CD/index.html" title="STAR-CD" target="_blank">STAR-CD</a> CFD code.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">CCSM</td>
+      <td bgcolor="#CCCCFF">The NETCDF plugin has been enhanced to read CCSM climate data.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">Claw</td>
+      <td bgcolor="#CCCCFF">The Claw plugin reads data from the Claw AMR code.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">ddcMD</td>
+      <td bgcolor="#CCCCFF">The ddcMD plugin reads cgrid files from the ddcMD code.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">M3D</td>
+      <td bgcolor="#CCCCFF">The M3D plugin reads data from the M3D fusion code.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">RAW</td>
+      <td bgcolor="#CCCCFF">The RAW plugin reads and writes RAW triangle files. The RAW format allows mesh geometry to be shared with CAD programs such as Blender and POVRAY.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">SAS</td>
+      <td bgcolor="#CCCCFF">The SAS plugin reads data from the SAS code.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+    <tr>
+      <td bgcolor="#CCCCFF">VLI</td>
+      <td bgcolor="#CCCCFF">The VLI plugin was developed at <a href="http://www.utk.edu/" title="UTK" target="_blank">University of Tennessee</a> for their VLI multivariate data server.</td>
+      <td bgcolor="#CCCCFF">&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</p>
 <h1><a name="August2007"></a>August, 2007 - VisIt 1.6.1 released </h1>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 1.6.1, which can be <a href="download.html">downloaded from this site</a>, <!--includes many new features and includes several important bug-fixes.--> is primarily a bug-fix release.</p>
 <h2>1. VisIt can now be built automatically using the <em>build_visit</em> script. </h2>
 <p>VisIt can now be built automatically using the <a href="source.html#build_visit" title="Build VisIt Download">build_visit</a> script on many Linux, MacOS X, and AIX platforms. The <a href="source.html#build_visit" title="Build VisIt Download">build_visit</a> script takes care of downloading relevant VisIt and 3rd party source code, configuring, and building it all using your C++ compiler. We encourage users to build VisIt using the build_visit script when our binary distributions have trouble running on some systems. We also recommend using the <a href="source.html#build_visit" title="Build VisIt Download">build_visit</a> script on your system if you plan to:</p>
 <ul>
@@ -247,7 +310,7 @@ function MM_initTimelines() { //v4.0
 <h2>2. Tunneling connections through SSH is now supported. </h2>
 <p>VisIt can now tunnel its network connections through SSH. This should be completely transparent and automatic when this flag is set in the Advanced section of the appropriate Host Profile. However, watch for errors in the console window where VisIt was launched; due to the indeterminate nature of available remote ports, many users tunneling simultaneously to a single machine may cause a failure when initiating the remote connection, but restarting VisIt and attempting the connection again will typically yield success.</p>
 <h2>3. New database reader plugins are available. </h2>
-<p>Many database reader plugins were enhanced in this release of VisIt and two completely new database reader plug-ins were added. For more information about the reader enhancements, please read the VisIt 1.6.1 Release notes when you install VisIt and run it for the first time. The database reader plugins added in this release are:</p>	
+<p>Many database reader plugins were enhanced in this release of VisIt and four completely new database reader plug-ins were added. For more information about the reader enhancements, please read the VisIt 1.6.1 Release notes when you install VisIt and run it for the first time. The database reader plugins added in this release are:</p>	
 <table width="90%" border="0" align="center" cellpadding="5" cellspacing="1">
   <tbody>
     <tr NOSAVE>
@@ -527,11 +590,11 @@ to produce characteristic functions describing a data set's shape. VisIt's expre
     | <a href="manuals.html">Manuals</a> | What's New | <a href="sitemap.html">Index</a></span></p>
   <p><a href="mailto:brugger1@llnl.gov, whitlock2@llnl.gov" class="links">VisIt Webmaster</a><br>
     <span class="body_text">Updated: 
-    <!-- #BeginDate format:Am1 -->July 26, 2007<!-- #EndDate -->
+    <!-- #BeginDate format:Am1 -->October 30, 2007<!-- #EndDate -->
     </span></p>
   <table width="100%" border="0" cellspacing="0" cellpadding="0" height="18">
     <tr> 
-      <td height="18" background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-233207, 
+      <td height="18" background="media/bottom_band.jpg">&copy;<span class="body_text">UCRL-WEB-236187, 
         <a href="http://www.llnl.gov/disclaimer.html" target="_parent" class="links">privacy 
         and legal notice</a></span></td>
       <td width="5">&nbsp;</td>
