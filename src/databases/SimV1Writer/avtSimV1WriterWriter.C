@@ -52,8 +52,14 @@
 
 #include <DebugStream.h>
 
+#ifdef __APPLE__
+#include <dlfcn.h>
+#endif
+
+#ifndef __APPLE__
 #ifndef MDSERVER
 extern "C" VisIt_SimulationWriterCallback visitWriterCallbacks;
+#endif
 #endif
 
 #define VISIT_OKAY 0
@@ -107,6 +113,8 @@ static void FreeDataArray(VisIt_DataArray &da)
 // Creation:   Thu Nov 2 17:35:39 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Wed Nov  7 16:25:53 EST 2007
+//    On OSX, use dlsym to retrieve the visitWriterCallbacks.
 //   
 // ****************************************************************************
 
@@ -118,7 +126,15 @@ avtSimV1WriterWriter::avtSimV1WriterWriter() : avtDatabaseWriter(), objectName()
     memset((void*)&cb, 0, sizeof(VisIt_SimulationWriterCallback));
 #else
     // Hook up the writer callbacks on the compute engine.
+#ifdef __APPLE__
+    void *cbptr = dlsym(RTLD_DEFAULT, "visitWriterCallbacks");
+    if (!cbptr)
+        EXCEPTION1(ImproperUseException,
+                   "Could not find 'visitWriterCallbacks' in the current exe.");
+    cb = *((VisIt_SimulationWriterCallback*)cbptr);
+#else
     cb = visitWriterCallbacks;
+#endif
 #endif
 }
 
