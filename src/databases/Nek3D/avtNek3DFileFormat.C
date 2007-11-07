@@ -84,6 +84,11 @@ using     std::string;
 //    Dave Bremer, Tue Sep 11 15:45:51 PDT 2007
 //    Added a small mod to support variable-length headers 
 //    and absolute paths to data files in the file template.
+//
+//    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
+//    Added support for 2D and ascii files, deprecated the
+//    meshcoords tag, and added support for misc scalar fields
+//    in addition to pressure and temperature.
 // ****************************************************************************
 
 avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
@@ -94,7 +99,8 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     fileTemplate = "";
     iFirstTimestep = 1;
     iNumTimesteps = 1;
-    
+    bBinary = true;
+
     iNumBlocks = 1;
     iBlockSize[0] = 1;
     iBlockSize[1] = 1;
@@ -103,11 +109,15 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     bHasVelocity = false;
     bHasPressure = false;
     bHasTemperature = false;
+    iNumSFields = 0;
 
     fdMesh = NULL;
     fdVar = NULL;
     iCurrTimestep = -999;
+    iAsciiMeshFileStart = -999;
+    iAsciiCurrFileStart = -999;
     iHeaderSize = 84;
+    iDim = 3;
 
     string tag, buf1, buf2;
     char buf[512];
@@ -179,6 +189,9 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
         }
         else if (STREQUAL("meshcoords:", tag.c_str())==0)
         {
+            //This tag is now deprecated.  The same info can be discovered by
+            //this reader while it scans all the headers for time and cycle info.
+
             int nStepsWithCoords;
             f >> nStepsWithCoords;
             
@@ -186,7 +199,25 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
             {
                 int step;
                 f >> step;
-                iTimestepsWithMesh.push_back(step);
+                //iTimestepsWithMesh.push_back(step);
+            }
+        }
+        else if (STREQUAL("type:", tag.c_str())==0)
+        {
+            string t;
+            f >> t;
+            if (STREQUAL("binary", t.c_str())==0)
+            {
+                bBinary = true;
+            }
+            else if (STREQUAL("ascii", t.c_str())==0)
+            {
+                bBinary = false;
+            }
+            else
+            {
+                EXCEPTION1(InvalidDBTypeException, 
+                   "Value following type: must be \"binary\" or \"ascii\"" );
             }
         }
         else
@@ -201,15 +232,6 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     {
         EXCEPTION1(InvalidDBTypeException, 
             "A tag called filetemplate: must be specified" );
-    }
-    for (ii = 0 ; ii < iTimestepsWithMesh.size() ; ii++)
-    {
-        if (iTimestepsWithMesh[ii] < iFirstTimestep ||
-            iTimestepsWithMesh[ii] >= iFirstTimestep+iNumTimesteps)
-        {
-            EXCEPTION1(InvalidDBTypeException, 
-                "A timestep with a mesh lies outside the range of timesteps" );
-        }
     }
     f.close();
 
@@ -258,6 +280,9 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     f >> buf2;   //skip
     f >> buf2;   //skip
 
+    if (iBlockSize[2] == 1)
+        iDim = 2;
+
     while (1)
     {
         f >> tag;
@@ -269,22 +294,60 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
             bHasPressure = true;
         else if (tag == "T")
             bHasTemperature = true;
+        else if (tag == "1")
+        {
+            char c;
+            iNumSFields++;
+
+            //From this file pos, figure out how long the sequence is.
+            //Starting with 1, we'll have a sequence of chars separated by
+            //a single space.  "1" or "1 2 3" for example.  This sequence
+            //is also the last possible sequence, hence the break after
+            //the while loop.
+            while (1)
+            {
+                f.read(&c, 1);
+                if (c == ' ' && f.peek() != ' ')
+                {
+                    f >> tag;
+                    if ( atoi(tag.c_str()) == iNumSFields+1 )
+                    {
+                        iNumSFields++;
+                    }
+                    else
+                        break;
+                }
+                else
+                    break;
+            }
+            break;
+        }
         else
             break;
     }
     delete[] blockfilename;
 
-    //Compute the size of the header
-    int iDomainSize, dummy;
-    GetDomainSizeAndVarOffset(iFirstTimestep, NULL, iDomainSize, dummy);
-
-    f.seekg( -iNumBlocks*iDomainSize*sizeof(float), std::ios_base::end );
-    iHeaderSize = (int)f.tellg();
-
-    if (iHeaderSize <= 0 || iHeaderSize > 256)
+    if (bBinary)
     {
-        EXCEPTION1(InvalidDBTypeException, "Error computing the header size of a file" );
+        // Compute the size of the header.  In all cases so far, the header size
+        // for binary files has been 84.
+        int iDomainSize, d1, d2, d3, d4;
+        GetDomainSizeAndVarOffset(iFirstTimestep, NULL, iDomainSize, d1, d2, d3, d4);
+    
+        f.seekg( -iNumBlocks*iDomainSize*sizeof(float), std::ios_base::end );
+        iHeaderSize = (int)f.tellg();
+    
+        if (iHeaderSize <= 0 || iHeaderSize > 256)
+        {
+            EXCEPTION1(InvalidDBTypeException, 
+                "File size is not consistent with variables declared in the header." );
+        }
     }
+    else
+    {
+        iHeaderSize = 80;
+    }
+
     f.close();
 }
 
@@ -352,6 +415,10 @@ avtNek3DFileFormat::FreeUpResources(void)
 //  Programmer: dbremer -- generated by xml2avt
 //  Creation:   Fri May 18 16:07:09 PST 2007
 //
+//  Modifications:
+//    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
+//    Added support for 2D and files, and added support for misc scalar fields
+//    in addition to pressure and temperature.
 // ****************************************************************************
 
 void
@@ -359,7 +426,7 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 {
     string meshname = "mesh";
     double *extents = NULL;
-    AddMeshToMetaData(md, meshname, AVT_CURVILINEAR_MESH, extents, iNumBlocks, 0, 3, 3);
+    AddMeshToMetaData(md, meshname, AVT_CURVILINEAR_MESH, extents, iNumBlocks, 0, iDim, iDim);
     
     if (bHasPressure)
         AddScalarVarToMetaData(md, "pressure", meshname, AVT_NODECENT);
@@ -368,7 +435,15 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
         AddScalarVarToMetaData(md, "temperature", meshname, AVT_NODECENT);
 
     if (bHasVelocity)
-        AddVectorVarToMetaData(md, "velocity", meshname, AVT_NODECENT, 3);
+        AddVectorVarToMetaData(md, "velocity", meshname, AVT_NODECENT, iDim);
+
+    int ii;
+    for (ii = 0; ii < iNumSFields; ii++)
+    {
+        char scalarVarName[32];
+        sprintf(scalarVarName, "s%d", ii+1);
+        AddScalarVarToMetaData(md, scalarVarName, meshname, AVT_NODECENT);
+    }
 }
 
 
@@ -398,6 +473,11 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 //
 //    Dave Bremer, Tue Sep 11 15:45:51 PDT 2007
 //    Added a small mod to support variable-length headers 
+//
+//    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
+//    Added support for 2D and ascii files, added a call to 
+//    UpdateCyclesAndTimes(), which also figures out which
+//    files have a mesh.
 // ****************************************************************************
 
 vtkDataSet *
@@ -406,6 +486,7 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
     vtkStructuredGrid    *grid   = vtkStructuredGrid::New();
     vtkPoints            *points  = vtkPoints::New();
     const int             nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+    int ii;
 
     grid->SetPoints(points);
     points->Delete();
@@ -413,6 +494,8 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
     points->SetNumberOfPoints( nPts );
 
     float *pts = (float *)points->GetVoidPointer(0);
+
+    UpdateCyclesAndTimes();   //This call also finds which timesteps have a mesh.
 
     if (fdMesh == NULL)
     {
@@ -423,29 +506,57 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
         if (!fdMesh)
             EXCEPTION1(InvalidFilesException, meshfilename);
         delete [] meshfilename;
+
+        if (!bBinary)
+            iAsciiMeshFileStart = FindAsciiDataStart(fdMesh);
     }
 
-    int nFloatsInDomain = 0, dummy;
-    GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, dummy);
+    int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, dummy1, dummy2;
+    GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, 
+                              nBytesInDomain, nBytesInSample, dummy1, dummy2);
 
-
-    fseek(fdMesh, iHeaderSize + nFloatsInDomain*sizeof(float)*domain, SEEK_SET);
-    float *tmppts = new float[nPts*3];
-    fread(tmppts, sizeof(float), nPts*3, fdMesh);
-
-    if (bSwapEndian)
-        ByteSwap32(tmppts, nPts*3);
-
-    int ii;
-    for (ii = 0 ; ii < nPts ; ii++)
+    if (bBinary)
     {
-        pts[ii*3 + 0] = tmppts[ii];
-        pts[ii*3 + 1] = tmppts[ii+nPts];
-        pts[ii*3 + 2] = tmppts[ii+nPts+nPts];
-    }
+        float *tmppts = new float[nPts*iDim];
+        fseek(fdMesh, iHeaderSize + nFloatsInDomain*sizeof(float)*domain, SEEK_SET);
+        fread(tmppts, sizeof(float), nPts*iDim, fdMesh);
+        if (bSwapEndian)
+            ByteSwap32(tmppts, nPts*iDim);
 
-    delete [] tmppts;
-    
+        for (ii = 0 ; ii < nPts ; ii++)
+        {
+            if (iDim == 3)
+            {
+                pts[ii*3 + 0] = tmppts[ii];
+                pts[ii*3 + 1] = tmppts[ii+nPts];
+                pts[ii*3 + 2] = tmppts[ii+nPts+nPts];
+            }
+            else
+            {
+                pts[ii*3 + 0] = tmppts[ii];
+                pts[ii*3 + 1] = tmppts[ii+nPts];
+                pts[ii*3 + 2] = 0.0f;
+            }
+        }
+        delete [] tmppts;
+    }
+    else
+    {
+        for (ii = 0 ; ii < nPts ; ii++)
+        {
+            fseek(fdMesh, iAsciiMeshFileStart + domain*nBytesInDomain + ii*nBytesInSample, SEEK_SET);
+            if (iDim == 3)
+            {
+                fscanf(fdMesh, " %f %f %f", pts, pts+1, pts+2);
+            }
+            else
+            {
+                fscanf(fdMesh, " %f %f", pts, pts+1);
+                pts[2] = 0.0f;
+            }
+            pts += 3;
+        }
+    }
     return grid;
 }
 
@@ -475,6 +586,9 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
 //
 //    Dave Bremer, Tue Sep 11 15:45:51 PDT 2007
 //    Added a small mod to support variable-length headers 
+//
+//    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
+//    Added support for 2D and ascii files
 // ****************************************************************************
 
 vtkDataArray *
@@ -490,28 +604,44 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 
         char *filename = new char[ fileTemplate.size() + 64 ];
         sprintf(filename, fileTemplate.c_str(), iTimestep);
-    
+
         fdVar = fopen(filename, "rb");
         if (!fdVar)
             EXCEPTION1(InvalidFilesException, filename);
         delete[] filename;
 
         iCurrTimestep = iTimestep;
+        iAsciiCurrFileStart = FindAsciiDataStart(fdVar);
     }
 
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(nPts);
+    float *var = (float *)rv->GetVoidPointer(0);
 
-    int nFloatsInDomain, nFloatsOffset;
-    GetDomainSizeAndVarOffset(iTimestep, varname,  
-                              nFloatsInDomain, nFloatsOffset);
-    int filepos = iHeaderSize + (nFloatsInDomain*domain + nFloatsOffset)*sizeof(float);
-    fseek(fdVar, filepos, SEEK_SET);
-    fread(rv->GetVoidPointer(0), sizeof(float), nPts, fdVar);
+    int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, 
+        iBinaryOffset = 0, iAsciiOffset = 0;
 
-    if (bSwapEndian)
-        ByteSwap32(rv->GetVoidPointer(0), nPts);
-
+    GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
+                              nBytesInDomain, nBytesInSample, 
+                              iBinaryOffset, iAsciiOffset);
+    if (bBinary)
+    {
+        int filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
+        fseek(fdVar, filepos, SEEK_SET);
+        fread(var, sizeof(float), nPts, fdVar);
+    
+        if (bSwapEndian)
+            ByteSwap32(var, nPts);
+    }
+    else
+    {
+        for (int ii = 0 ; ii < nPts ; ii++)
+        {
+            fseek(fdVar, iAsciiCurrFileStart + domain*nBytesInDomain + ii*nBytesInSample + iAsciiOffset, SEEK_SET);
+            fscanf(fdVar, " %f", var);
+            var++;
+        }
+    }
     return rv;
 }
 
@@ -541,14 +671,17 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 //
 //    Dave Bremer, Tue Sep 11 15:45:51 PDT 2007
 //    Added a small mod to support variable-length headers 
+//
+//    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
+//    Added support for 2D and ascii files
 // ****************************************************************************
 
 vtkDataArray *
-avtNek3DFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
+avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 {
     int iTimestep = timestate + iFirstTimestep;
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
-    float *tmppts = new float[nPts*3];
+    int ii;
 
     if (iTimestep != iCurrTimestep)
     {
@@ -564,31 +697,64 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain,const char *varname)
         delete[] filename;
 
         iCurrTimestep = iTimestep;
+        iAsciiCurrFileStart = FindAsciiDataStart(fdVar);
     }
 
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfComponents(3);
     rv->SetNumberOfTuples(nPts);
-
-    int nFloatsInDomain = 0, nFloatsOffset;
-    GetDomainSizeAndVarOffset(iTimestep, varname,  
-                              nFloatsInDomain, nFloatsOffset);
-    int filepos = iHeaderSize + (nFloatsInDomain*domain + nFloatsOffset)*sizeof(float);
-    fseek(fdVar, filepos, SEEK_SET);
-    fread(tmppts, sizeof(float), nPts*3, fdVar);
-
-    if (bSwapEndian)
-        ByteSwap32(tmppts, nPts*3);
-
     float *pts = (float *)rv->GetVoidPointer(0);
-    int ii;
-    for (ii = 0 ; ii < nPts ; ii++)
+
+    int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, 
+        iBinaryOffset = 0, iAsciiOffset = 0;
+
+    GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
+                              nBytesInDomain, nBytesInSample, 
+                              iBinaryOffset, iAsciiOffset);
+    if (bBinary)
     {
-        pts[ii*3 + 0] = tmppts[ii];
-        pts[ii*3 + 1] = tmppts[ii+nPts];
-        pts[ii*3 + 2] = tmppts[ii+nPts+nPts];
+        float *tmppts = new float[nPts*iDim];
+        int filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
+        fseek(fdVar, filepos, SEEK_SET);
+        fread(tmppts, sizeof(float), nPts*iDim, fdVar);
+    
+        if (bSwapEndian)
+            ByteSwap32(tmppts, nPts*iDim);
+    
+        for (ii = 0 ; ii < nPts ; ii++)
+        {
+            if (iDim == 3)
+            {
+                pts[ii*3 + 0] = tmppts[ii];
+                pts[ii*3 + 1] = tmppts[ii+nPts];
+                pts[ii*3 + 2] = tmppts[ii+nPts+nPts];
+            }
+            else
+            {
+                pts[ii*3 + 0] = tmppts[ii];
+                pts[ii*3 + 1] = tmppts[ii+nPts];
+                pts[ii*3 + 2] = 0.0;
+            }
+        }
+        delete[] tmppts;
     }
-    delete[] tmppts;
+    else
+    {
+        for (ii = 0 ; ii < nPts ; ii++)
+        {
+            fseek(fdVar, iAsciiCurrFileStart + domain*nBytesInDomain + ii*nBytesInSample + iAsciiOffset, SEEK_SET);
+            if (iDim == 3)
+            {
+                fscanf(fdVar, " %f %f %f", pts, pts+1, pts+2);
+            }
+            else
+            {
+                fscanf(fdVar, " %f %f", pts, pts+1);
+                pts[2] = 0.0f;
+            }
+            pts += 3;
+        }
+    }
 
     return rv;
 }
@@ -642,6 +808,10 @@ avtNek3DFileFormat::GetTimes(std::vector<double> &outTimes)
 //  Programmer: Dave Bremer
 //  Creation:   May 21, 2007
 //
+//  Modifications:
+//    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
+//    While scanning the headers, also figure out which files contain a mesh,
+//    allowing one less tag in the .nek3d file.
 // ****************************************************************************
 
 void
@@ -657,19 +827,28 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
     char dummy[64];
     double t;
     int    c;
+    string v;
     char *meshfilename = new char[ fileTemplate.size() + 64 ];
 
     int ii;
     for (ii = 0 ; ii < iNumTimesteps ; ii++)
     {
+        t = 0.0;
+        c = 0;
+
         sprintf(meshfilename, fileTemplate.c_str(), iFirstTimestep+ii);
 
         f.open(meshfilename);
-        f >> dummy >> dummy >> dummy >> dummy >> t >> c;  //skip #blocks and block size
+        f >> dummy >> dummy >> dummy >> dummy >> t >> c >> v;  //skip #blocks and block size
         f.close();
 
         aTimes[ii] = t;
         aCycles[ii] = c;
+
+        // If this file contains a mesh, the first variable codes after the 
+        // cycle number will be X Y
+        if (v == "X")
+            iTimestepsWithMesh.push_back(iFirstTimestep+ii);
     }
     delete[] meshfilename;
 }
@@ -685,14 +864,24 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
 //  Programmer: Dave Bremer
 //  Creation:   May 21, 2007
 //
+//  Modifications:
+//    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
+//    Return sizes and offsets needed if the data is in ascii format.
 // ****************************************************************************
 
 void
 avtNek3DFileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var, 
-                                              int &outDomSize, int &outOffset)
+                                              int &outDomSizeInFloats, 
+                                              int &outDomSizeInBytes, 
+                                              int &outSampleSizeInBytes, 
+                                              int &outVarOffsetBinary,
+                                              int &outVarOffsetAscii )
 {
     int ii;
     bool bHasMesh = false;
+
+    UpdateCyclesAndTimes();   //Needs to call this to update iTimestepsWithMesh
+
     for (ii = 0 ; ii < iTimestepsWithMesh.size() ; ii++)
     {
         if (iTimestepsWithMesh[ii] == iTimestep)
@@ -703,40 +892,62 @@ avtNek3DFileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
     }
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
 
-    outDomSize = 0;
+    int nFloatsPerSample = 0;
     if (bHasMesh)
-        outDomSize += nPts*3;
+        nFloatsPerSample += iDim;
     if (bHasVelocity)
-        outDomSize += nPts*3;
+        nFloatsPerSample += iDim;
     if (bHasPressure)
-        outDomSize += nPts;
+        nFloatsPerSample += 1;
     if (bHasTemperature)
-        outDomSize += nPts;
+        nFloatsPerSample += 1;
+    nFloatsPerSample += iNumSFields;
+
+    outDomSizeInFloats   = nFloatsPerSample * nPts;       //For binary
+    outSampleSizeInBytes = 14*nFloatsPerSample + 1;       //For ascii
+    outDomSizeInBytes    = outSampleSizeInBytes * nPts;   //For ascii
 
     if (var)
     {
-        outOffset = 0;
+        int iNumPrecedingFloats = 0;
         if (STREQUAL(var, "velocity")==0)
         {
             if (bHasMesh)
-                outOffset += nPts*3;
+                iNumPrecedingFloats += iDim;
         }
         else if (STREQUAL(var, "pressure")==0)
         {
             if (bHasMesh)
-                outOffset += nPts*3;
+                iNumPrecedingFloats += iDim;
             if (bHasVelocity)
-                outOffset += nPts*3;
+                iNumPrecedingFloats += iDim;
         }
         else if (STREQUAL(var, "temperature")==0)
         {
             if (bHasMesh)
-                outOffset += nPts*3;
+                iNumPrecedingFloats += iDim;
             if (bHasVelocity)
-                outOffset += nPts*3;
+                iNumPrecedingFloats += iDim;
             if (bHasPressure)
-                outOffset += nPts;
+                iNumPrecedingFloats += 1;
         }
+        else if (var[0] == 's')
+        {
+            if (bHasMesh)
+                iNumPrecedingFloats += iDim;
+            if (bHasVelocity)
+                iNumPrecedingFloats += iDim;
+            if (bHasPressure)
+                iNumPrecedingFloats += 1;
+            if (bHasTemperature)
+                iNumPrecedingFloats += 1;
+
+            int iSField = atoi(var+1);
+            //iSField should be between 1..iNumSFields, inclusive
+            iNumPrecedingFloats += iSField-1;
+        }
+        outVarOffsetBinary = nPts*iNumPrecedingFloats;
+        outVarOffsetAscii  = 14*iNumPrecedingFloats;
     }
 }
 
@@ -763,5 +974,36 @@ avtNek3DFileFormat::ByteSwap32(void *aVals, int nVals)
         tmp = v[1]; v[1] = v[2]; v[2] = tmp;
     }
 }
+
+
+// ****************************************************************************
+//  Method: avtNek3DFileFormat::FindAsciiDataStart
+//
+//  Purpose:
+//      If the data is ascii format, there is a certain amount of deprecated
+//      data to skip at the beginning of each file.  This method tells where to
+//      seek to, to read data for the first block.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Wed Nov  7 14:17:19 PST 2007
+//
+// ****************************************************************************
+
+int
+avtNek3DFileFormat::FindAsciiDataStart(FILE *fd)
+{
+    //Skip the header, then read a float for each block.  Then skip beyond the
+    //newline character and return the current position.
+    fseek(fd, iHeaderSize, SEEK_SET);
+    for (int ii = 0 ; ii < iNumBlocks ; ii++)
+    {
+        float dummy;
+        fscanf(fd, " %f", &dummy);
+    }
+    char tmp[256];
+    fgets(tmp, 255, fd);
+    return ftell(fd);
+}
+
 
 
