@@ -3528,7 +3528,7 @@ echo "${ECHO_T}yes" >&6
     JAVAC="javac"
     JAVA_TARGET="java"
     JAR="jar"
-    JAVAFLAGS=""
+    JAVAFLAGS="-source 1.4"
     JAVAPLUGINFLAGS=""
 else
     echo "$as_me:$LINENO: result: no" >&5
