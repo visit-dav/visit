@@ -323,7 +323,12 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): sunspot" $emailName < resultlog
+# sunspot can't handle a subject, so send mail through kickit
+cp resultlog \$HOME/sunspot_resultlog
+ssh kickit "cat sunspot_resultlog | /bin/mail  -s \"VisIt build ($dist): sunspot\" $emailName"
+# give kickit time to mail it before removing the log
+sleep 10
+rm \$HOME/sunspot_resultlog
 EOF
 
 if [ $sunspot = true ]
@@ -375,11 +380,11 @@ echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 # quad can't mail out, so send mail through thunder
-cp resultlog ~/quad_resultlog
-ssh thunder "cat quad_resultlog | mail  -s \"VisIt build ($dist): quad\" $emailName"
+cp resultlog \$HOME/quad_resultlog
+ssh thunder2 "cat quad_resultlog | /bin/mail  -s \"VisIt build ($dist): quad\" $emailName"
 # give thunder time to mail it before removing the log
 sleep 10
-rm ~/quad_resultlog
+rm \$HOME/quad_resultlog
 EOF
 
 if [ $quad = true ]
