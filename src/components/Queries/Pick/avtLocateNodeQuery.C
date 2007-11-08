@@ -41,9 +41,9 @@
 
 #include <avtLocateNodeQuery.h>
 
+#include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIdList.h>
-#include <vtkIntArray.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
@@ -376,72 +376,81 @@ avtLocateNodeQuery::DeterminePickedNode(vtkDataSet *ds, int foundCell,
 //    Kathleen Bonnell, Mon May 23 12:17:37 PDT 2005 
 //    Arg origNode was not getting set.
 //
+//    Kathleen Bonnell, Thu Nov  8 09:01:31 PST 2007 
+//    Rework to only consider 'original' nodes from cells that have same
+//    original cell as isectedCell.
+//
 // ****************************************************************************
 
 int
 avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
     double *isect, int &origNode)
 {
-    vtkVisItPointLocator *locator = vtkVisItPointLocator::New();
-    locator->SetDataSet(ds);
-    locator->SetIgnoreDisconnectedPoints(0);
-    locator->BuildLocator();
+    vtkDataArray *origCells = ds->GetCellData()->
+                              GetArray("avtOriginalCellNumbers");
 
-    vtkIdList *closestPoints = vtkIdList::New();
-    //
-    //  Some of the nearest points may not be valid (e.g. created during
-    //  material interface reconstruction, so make sure we retrieve enough
-    //  information to get to a valid point.
-    //
-    locator->FindClosestNPoints(8, isect, closestPoints);
-
-    int id = -1;
-    int ncp = closestPoints->GetNumberOfIds();
-
-    if (ncp > 0)
+    if (!origCells)
     {
-        vtkIntArray *origNodes = vtkIntArray::SafeDownCast(
-            ds->GetPointData()->GetArray("avtOriginalNodeNumbers"));
-        if (origNodes)
+        debug5 << "avtLocateNodeQuery::FindClosestPoint could not find "
+               << "avtOriginalCellNumbers, cannot continue." << endl;
+        return -1;
+    }
+
+    vtkDataArray *origNodes = ds->GetPointData()->
+                              GetArray("avtOriginalNodeNumbers");
+
+    if (!origNodes)
+    {
+        debug5 << "avtLocateNodeQuery::FindClosestPoint could not find "
+               << "avtOriginalNodeNumbers, cannot continue." << endl;
+        return -1;
+    }
+
+    int zcomp = origCells->GetNumberOfComponents()-1;
+    int ncomp = origNodes->GetNumberOfComponents()-1;
+    int oc = (int)origCells->GetComponent(isectedCell, zcomp);
+    intVector cells;
+
+    for (int i = 0; i < ds->GetNumberOfCells(); i++)
+    {
+        if ((int)origCells->GetComponent(i, zcomp) == oc)
+            cells.push_back(i);
+    }
+
+    vtkIdList *nodesFromCells = vtkIdList::New();
+    vtkIdList *cellPts = vtkIdList::New();
+
+    for (int i = 0; i < cells.size(); i++)
+    {
+        ds->GetCellPoints(cells[i], cellPts);
+        for (int j = 0; j < cellPts->GetNumberOfIds(); j++)
         {
-            // some close nodes are same distance, find the one
-            // that belongs to the isected cell.
-            vtkIdList *cellPts = vtkIdList::New();
-            ds->GetCellPoints(isectedCell, cellPts);
-            int comp = origNodes->GetNumberOfComponents()-1;
-            origNode = -1;
-            for (int i = 0; i < ncp && origNode == -1; i++)
-            {
-                id = closestPoints->GetId(i);
-                origNode = (int)origNodes->GetComponent(id, comp);
-                if (origNode != -1 && (cellPts->IsId(id) == -1))
-                {
-                    //
-                    // We only want to consider nodes that are part of
-                    // the isected cell.
-                    //
-                    origNode = -1;
-                }
-            }
-            cellPts->Delete();
+            int node = cellPts->GetId(j);
+            if ((int)origNodes->GetComponent(node, ncomp) != -1)
+                nodesFromCells->InsertUniqueId(node);
         }
-        else 
+        cellPts->Reset();
+    }
+
+    double d2, minD = FLT_MAX;
+    double pt[3];
+    int id = -1;
+    for (int i = 0; i < nodesFromCells->GetNumberOfIds(); i++)
+    {
+        ds->GetPoint(nodesFromCells->GetId(i), pt);
+        d2 = vtkMath::Distance2BetweenPoints(isect, pt);
+        if (d2 < minD)
         {
-            //
-            // This method is called when MateriaSelection has taken place,
-            // so avtOriginalNodeNumbers should be here.
-            //
-            id = closestPoints->GetId(0);
-            debug5 << "avtLocateNodeQuery::FindClosestPoint could not find "
-                   << "avtOriginalNodeNumbers, possible error." << endl;
+            id = nodesFromCells->GetId(i);
+            minD = d2;
+            origNode = origNodes->GetComponent(id, ncomp);
         }
     }
 
-    closestPoints->Delete();
-    locator->Delete();
+    nodesFromCells->Delete();
+    cellPts->Delete();
     return id;
 }
-
 
 
 // ****************************************************************************
