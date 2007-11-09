@@ -43,8 +43,11 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include <Python.h>
+#include <signal.h>
 #include <string.h>
+
+#include <Python.h>
+
 #include <Utility.h>
 #include <VisItException.h>
 
@@ -101,6 +104,9 @@ extern "C" int Py_Main(int, char **);
 //   Brad Whitlock, Fri Jun 15 16:49:53 PST 2007
 //   Load the visitrc file on startup.
 //
+//   Hank Childs, Thu Nov  8 15:49:38 PST 2007
+//   Add support for ignoring nohups.
+//
 // ****************************************************************************
 
 int
@@ -113,6 +119,10 @@ main(int argc, char *argv[])
     char **argv2 = new char *[argc];
     char **argv_after_s = new char *[argc];
     int  argc2 = 0, argc_after_s = 0;
+
+#ifdef IGNORE_HUPS
+    signal(SIGHUP, SIG_IGN);
+#endif
 
     // Parse the arguments
     for(int i = 0; i < argc; ++i)

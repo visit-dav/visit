@@ -866,17 +866,18 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-fake-exceptions       do not make use of C++'s exception library
+  --enable-ignore-hangups        ignore hangup signals (this avoids RHEL3 bug)
   --enable-parallel       make the parallel version
   --enable-viewer-mesa-stub     use the mesa stub library in the viewer
   --disable-ogl           do not check for the SGI ogl library
   --disable-mdserver      build without mdserver
   --disable-scripting     build without CLI Python scripting capability
-  --enable-visitmodule     build a VisIt Python module
+  --enable-visitmodule    build a VisIt Python module
   --disable-gui           build without gui
   --disable-annotations   build without annotations
   --enable-java           build the Java client library
   --enable-buildall       build all plugins
-  --enable-minimal-plugins   build only a few most common plugins
+  --enable-minimal-plugins   build only a few of the most common plugins
   --disable-bzip2         do not build or use bzip2 library -- disables compression
   --disable-glew          do not build or use glew library -- disables detection of OpenGL extensions
   --disable-bilib         do not use boost interval template library -- disables adaptive CSG discretization
@@ -1559,6 +1560,40 @@ if test "$doFakeExceptions" = "yes" ; then
   echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
   CXXFLAGS="$CXXFLAGS -DFAKE_EXCEPTIONS"
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+
+#
+# Allow for hangup signals to be ignored, which gets around an OS bug.
+# (Bug is that for xterm -e <prog>, if prog uses threads, then when one of
+# the child threads exits, the master thread gets a HUP.)
+#
+# Check whether --enable-ignore-hangups or --disable-ignore-hangups was given.
+if test "${enable_ignore_hangups+set}" = set; then
+  enableval="$enable_ignore_hangups"
+  UseIgnoreHups=$enableval
+else
+  UseIgnoreHups=not_specified
+fi;
+doIgnoreHups="no"
+if test "$UseIgnoreHups" = "yes" ; then
+  doIgnoreHups="yes"
+fi
+echo "$as_me:$LINENO: checking whether or not to use ignore hangup signals" >&5
+echo $ECHO_N "checking whether or not to use ignore hangup signals... $ECHO_C" >&6
+IGNORE_HUPS="xx$IGNORE_HUPS"
+if test "$IGNORE_HUPS" = "xxyes" ; then
+  if test "$UseIgnoreHups" = "not_specified" ; then
+     doIgnoreHups="yes"
+  fi
+fi
+if test "$doIgnoreHups" = "yes" ; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+  CXXFLAGS="$CXXFLAGS -DIGNORE_HUPS"
 else
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
@@ -5381,7 +5416,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5384:" \
+echo "$as_me:5419:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5

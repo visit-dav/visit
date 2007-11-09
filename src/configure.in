@@ -744,6 +744,10 @@ dnl
 dnl    Hank Childs, Mon Nov  5 11:35:30 PST 2007
 dnl    Fix typo with export-dynamic where existing LDFLAGS were ignored.
 dnl
+dnl    Hank Childs, Thu Nov  8 15:09:28 PST 2007
+dnl    Add a configure flag to get around a bug with threads getting hangup
+dnl    signals.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -880,6 +884,33 @@ fi
 if test "$doFakeExceptions" = "yes" ; then
   AC_MSG_RESULT([yes])
   CXXFLAGS="$CXXFLAGS -DFAKE_EXCEPTIONS"
+else
+  AC_MSG_RESULT([no])
+fi
+AC_SUBST(CXXFLAGS)
+
+#
+# Allow for hangup signals to be ignored, which gets around an OS bug.
+# (Bug is that for xterm -e <prog>, if prog uses threads, then when one of
+# the child threads exits, the master thread gets a HUP.)
+#
+AC_ARG_ENABLE(ignore-hangups,
+   [  --enable-ignore-hangups        ignore hangup signals (this avoids RHEL3 bug) ],
+   UseIgnoreHups=$enableval, UseIgnoreHups=not_specified)
+doIgnoreHups="no"
+if test "$UseIgnoreHups" = "yes" ; then
+  doIgnoreHups="yes"
+fi
+AC_MSG_CHECKING([whether or not to use ignore hangup signals])
+IGNORE_HUPS="xx$IGNORE_HUPS"
+if test "$IGNORE_HUPS" = "xxyes" ; then
+  if test "$UseIgnoreHups" = "not_specified" ; then
+     doIgnoreHups="yes"
+  fi
+fi
+if test "$doIgnoreHups" = "yes" ; then
+  AC_MSG_RESULT([yes])
+  CXXFLAGS="$CXXFLAGS -DIGNORE_HUPS"
 else
   AC_MSG_RESULT([no])
 fi
@@ -1206,7 +1237,7 @@ if test "X$UseScripting" = "Xyes"; then
     #
     AC_MSG_CHECKING(if VisIt Python module will be built)
     AC_ARG_ENABLE(visitmodule,
-                  [  --enable-visitmodule     build a VisIt Python module],
+                  [  --enable-visitmodule    build a VisIt Python module],
                   [UsePythonModule=yes])
     if test "X$UsePythonModule" = "Xyes"; then
         AC_MSG_RESULT(yes)
@@ -1383,7 +1414,7 @@ AC_ARG_ENABLE(buildall,
   buildall="all", buildall=base)
 
 AC_ARG_ENABLE(minimal-plugins,
-  [  --enable-minimal-plugins   build only a few most common plugins],
+  [  --enable-minimal-plugins   build only a few of the most common plugins],
   buildall="minimal")
 
 AC_MSG_CHECKING([which plot plugins to build])
