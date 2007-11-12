@@ -53,12 +53,15 @@
 //    Jeremy Meredith, Fri Nov 17 17:22:28 PST 2000
 //    Added initialization of log since it is no longer static.
 //
+//    Hank Childs, Sun Nov 11 10:41:07 PST 2007
+//    Change default message from annoying "Not set".
+//
 // ****************************************************************************
 
 VisItException::VisItException()
 {
     filename = "Unknown";
-    msg      = "Not set";
+    msg      = "<The reason for the exception was not described>";
     type     = "VisItException";
     line     = -1;
     log      = &debug1_real;

@@ -39,6 +39,7 @@
 #include "ViewerPasswordWindow.h"
 #include <ViewerConnectionProgressDialog.h>
 
+#include <ChangeUsernameException.h>
 #include <CouldNotConnectException.h>
 #include <CancelledConnectException.h>
 
@@ -79,6 +80,9 @@ std::set<int> ViewerPasswordWindow::failedPortForwards;
 //    Brad Whitlock, Mon Feb 23 15:07:41 PST 2004
 //    Added space between the password line edit and the cancel button.
 //
+//    Hank Childs, Sun Nov 11 22:21:55 PST 2007
+//    Add support for changing the username.
+//
 // ****************************************************************************
 
 ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
@@ -103,6 +107,13 @@ ViewerPasswordWindow::ViewerPasswordWindow(QWidget *parent, const char *name)
     connect(okay, SIGNAL(clicked()), this, SLOT(accept()));
     l3->addWidget(okay);
     l3->addStretch(10);
+
+    QPushButton *cub = new QPushButton("Change username", this, 
+                                                  "changeUsernameButton");
+    connect(cub, SIGNAL(clicked()), this, SLOT(changeUsername()));
+    l3->addWidget(cub);
+    l3->addStretch(10);
+
     QPushButton *cancel = new QPushButton("Cancel", this, "Cancel");
     connect(cancel, SIGNAL(clicked()), this, SLOT(reject()));
     l3->addWidget(cancel);
@@ -181,11 +192,14 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
+//    Hank Childs, Sun Nov 11 22:21:55 PST 2007
+//    Add support for changing the username.
+//
 // ****************************************************************************
 
 void
 ViewerPasswordWindow::authenticate(const char *username, const char *host,
-    int fd)
+                                   int fd)
 {
 #if !defined(_WIN32)
     int  timeout = 3000;
@@ -197,6 +211,9 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
 #else
     failedPortForwards.clear();
 #endif
+
+    if(!instance)
+        instance = new ViewerPasswordWindow();
 
     for (;;)
     {
@@ -231,12 +248,20 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
                  strstr(buffer, "ASSCODE"))
         {
             // Password needed. Prompt for it and write it to the FD.
+            instance->needToChangeUsername = false;
             const char *passwd = instance->getPassword(username, host);
 
             if (!passwd)
             {
-                // User closed the window or hit cancel
-                EXCEPTION0(CancelledConnectException);
+                if (instance->needToChangeUsername)
+                {
+                    EXCEPTION0(ChangeUsernameException)
+                }
+                else
+                {
+                    // User closed the window or hit cancel
+                    EXCEPTION0(CancelledConnectException);
+                }
             }
 
             write(fd, passwd, strlen(passwd));
@@ -250,12 +275,20 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
         else if (strstr(buffer, "assphrase"))
         {
             // Passphrase needed. Prompt for it and write it to the FD.
+            instance->needToChangeUsername = false;
             const char *passphr = instance->getPassword(username, host, true);
 
             if (!passphr)
             {
-                // User closed the window or hit cancel
-                EXCEPTION0(CancelledConnectException);
+                if (instance->needToChangeUsername)
+                {
+                    EXCEPTION0(ChangeUsernameException);
+                }
+                else
+                {
+                    // User closed the window or hit cancel
+                    EXCEPTION0(CancelledConnectException);
+                }
             }
 
             write(fd, passphr, strlen(passphr));
@@ -346,6 +379,9 @@ ViewerPasswordWindow::authenticate(const char *username, const char *host,
 //   Raise the window after it becomes active. This ensures that the
 //   password window is not hidden on MacOS X.
 //
+//   Hank Childs, Sun Nov 11 22:21:55 PST 2007
+//   Make the username be red.
+//
 // ****************************************************************************
 
 const char *
@@ -363,10 +399,14 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
 
     // Set the password prompt.
     QString labelText;
+    instance->label->setTextFormat(Qt::RichText);
     if(strcmp(username, "notset") == 0)
         labelText.sprintf("%s for %s: ", queryType, host);
     else
-        labelText.sprintf("%s for %s@%s: ", queryType, username, host);
+        // "nobr" means no line breaks, which is how it worked when we weren't
+        // using rich text.
+        labelText.sprintf("<nobr>%s for <font color=\"red\">%s</font>@%s: </nobr>", 
+                          queryType, username, host);
     instance->label->setText(labelText);
 
     // Make the password window be the active window.
@@ -400,3 +440,22 @@ ViewerPasswordWindow::getPassword(const char *username, const char *host,
         return NULL;
     }
 }
+
+// ****************************************************************************
+// Method: ViewerPasswordWindow::changeUsername
+//
+// Purpose:
+//    A slot for changing the user name.
+//
+// Programmer: Hank Childs
+// Creation:   November 10, 2007
+//
+// ****************************************************************************
+
+void
+ViewerPasswordWindow::changeUsername(void)
+{
+    instance->needToChangeUsername = true;
+    reject();
+}
+
