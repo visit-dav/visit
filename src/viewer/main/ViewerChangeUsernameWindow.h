@@ -37,73 +37,38 @@
 
 #ifndef VIEWERPASSWORDWINDOW_H
 #define VIEWERPASSWORDWINDOW_H
+
 #include <visit-config.h>
 #include <qdialog.h>
-#include <set>
 
 // Forward declarations
 class QLineEdit;
 class QLabel;
-class ViewerConnectionProgressDialog;
 
 // ****************************************************************************
-//  Class:  ViewerPasswordWindow
+//  Class:  ViewerChangeUsernameWindow
 //
 //  Purpose:
-//    Main window for the program.
+//     A window where the user can set the username for a host.
 //
-//  Programmer:  Jeremy Meredith
-//  Creation:    April 25, 2001
-//
-//  Modifications:
-//    Brad Whitlock, Thu Aug 29 10:40:19 PDT 2002
-//    I removed the Windows API stuff since this file is not part of the
-//    viewer on Windows. I also added a new static function.
-//
-//    Brad Whitlock, Thu Aug 29 17:50:25 PST 2002
-//    I added a userName argument to the getPassword and authenticate methods.
-//
-//    Jeremy Meredith, Thu May 24 10:57:02 EDT 2007
-//    Added support for checking failed SSH tunneling (port forwards).
-//
-//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
-//    Backing out SSH tunneling on Panther (MacOS X 10.3)
-//
-//    Hank Childs, Sat Nov 10 11:31:34 PST 2007
-//    Add a new button for changing the username.
+//  Programmer:  Hank Childs
+//  Creation:    November 11, 2007
 //
 // ****************************************************************************
 
-class ViewerPasswordWindow : public QDialog
+class ViewerChangeUsernameWindow : public QDialog
 {
     Q_OBJECT
   public:
-    ViewerPasswordWindow(QWidget *parent=NULL, const char *name=NULL);
-    ~ViewerPasswordWindow();
+    ViewerChangeUsernameWindow(QWidget *parent=NULL, const char *name=NULL);
+    ~ViewerChangeUsernameWindow();
 
-    static const char *getPassword(const char *, const char *, bool = false);
-    static void authenticate(const char *, const char *, int);
-    static void SetConnectionProgressDialog(ViewerConnectionProgressDialog *d)
-    {
-        dialog = d;
-    }
+    static bool changeUsername(const char *hostname);
 
-private slots:
-    void changeUsername();
-
-#if defined(PANTHERHACK)
-// Broken on Panther
   private:
-#else
-    static std::set<int> GetFailedPortForwards();
-  private:
-    static std::set<int> failedPortForwards;
-#endif
-    QLineEdit *passedit;
+    QLineEdit *usernameedit;
     QLabel    *label;
-    bool       needToChangeUsername;
-    static ViewerConnectionProgressDialog *dialog;
-    static ViewerPasswordWindow *instance;
+    static ViewerChangeUsernameWindow *instance;
 };
 
 #endif

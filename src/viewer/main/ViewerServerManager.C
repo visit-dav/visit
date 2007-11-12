@@ -788,7 +788,7 @@ ViewerServerManager::OpenWithLauncher(
                 (ViewerConnectionProgressDialog *)data;
 
             // Search the args list and see if we've supplied the path to
-            // the visit executeable.
+            // the visit executable.
             std::string visitPath;
             for(int i = 0; i < args.size(); ++i)
             {

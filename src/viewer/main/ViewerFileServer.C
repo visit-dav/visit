@@ -55,6 +55,7 @@
 #include <LostConnectionException.h>
 #include <IncompatibleVersionException.h>
 #include <IncompatibleSecurityTokenException.h>
+#include <ChangeUsernameException.h>
 #include <CouldNotConnectException.h>
 #include <CancelledConnectException.h>
 #include <MDServerProxy.h>
@@ -63,6 +64,7 @@
 #include <SILAttributes.h>
 #include <ViewerConnectionProgressDialog.h>
 #include <ViewerWindowManager.h>
+#include <ViewerChangeUsernameWindow.h>
 #include <LauncherProxy.h>
 #include <Utility.h>
 
@@ -1272,6 +1274,9 @@ ViewerFileServer::StartServer(const std::string &host)
 //    get an initial set of DB plugin info.  It reverts to the previous
 //    active one after we've gotten the initial set.
 //
+//    Hank Childs, Sun Nov 11 22:21:55 PST 2007
+//    Clean up gracefully for any exception type.
+//
 // ****************************************************************************
 
 void
@@ -1457,7 +1462,16 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         // Re-throw the exception.
         RETHROW;
     }
+    CATCHALL(...)
+    {
+        delete newServer;
+        delete dialog;
+
+        // Re-throw the exception.
+        RETHROW;
+    }
     ENDTRY
+
 
     // Delete the connection dialog
     delete dialog;
@@ -1646,8 +1660,11 @@ ViewerFileServer::SendKeepAlives()
 //   Brad Whitlock, Mon Jun 16 13:06:43 PST 2003
 //   I made it capable of using pipes.
 //
-//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
-//    Backing out SSH tunneling on Panther (MacOS X 10.3)
+//   Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//   Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
+//   Hank Childs, Sun Nov 11 22:21:55 PST 2007
+//   Add support for changing the username.
 //
 // ****************************************************************************
 
@@ -1680,41 +1697,54 @@ ViewerFileServer::ConnectServer(const std::string &mdServerHost,
     static const char *termString = "ViewerFileServer::ConnectServer: "
         "Terminating client mdserver connection because ";
 
-    // Start a server if one has not already been started.
-    TRY
+    bool keepGoing = true;
+    while (keepGoing)
     {
-        StartServer(mdServerHost, startArgs);
+        // Start a server if one has not already been started.
+        TRY
+        {
+            keepGoing = false;
+            StartServer(mdServerHost, startArgs);
+        }
+        CATCH(ChangeUsernameException)
+        {
+            // set up a new username
+            debug1 << "Asked to pick a new username" << endl;
+            TerminateConnectionRequest(args, 6);
+            ViewerChangeUsernameWindow::changeUsername(mdServerHost.c_str());
+            keepGoing = true;
+        }
+        CATCH(IncompatibleVersionException)
+        {
+            // Open a connection back to the process that initiated the request
+            // and send it a reason to quit.
+            debug1 << termString << "of incompatible versions." << endl;
+            TerminateConnectionRequest(args, 1);
+        }
+        CATCH(IncompatibleSecurityTokenException)
+        {
+            // Open a connection back to the process that initiated the request
+            // and send it a reason to quit.
+            debug1 << termString << "of incompatible security tokens." << endl;
+            TerminateConnectionRequest(args, 2);
+        }
+        CATCH(CouldNotConnectException)
+        {
+            // Open a connection back to the process that initiated the request
+            // and send it a reason to quit.
+            debug1 << termString << "we could not connect." << endl;
+            TerminateConnectionRequest(args, 3);
+        }
+        CATCH(CancelledConnectException)
+        {
+            // Open a connection back to the process that initiated the request
+            // and send it a reason to quit.
+            debug1 << termString << "the connection was cancelled by the user."
+                   << endl;
+            TerminateConnectionRequest(args, 4);
+        }
+        ENDTRY
     }
-    CATCH(IncompatibleVersionException)
-    {
-        // Open a connection back to the process that initiated the request
-        // and send it a reason to quit.
-        debug1 << termString << "of incompatible versions." << endl;
-        TerminateConnectionRequest(args, 1);
-    }
-    CATCH(IncompatibleSecurityTokenException)
-    {
-        // Open a connection back to the process that initiated the request
-        // and send it a reason to quit.
-        debug1 << termString << "of incompatible security tokens." << endl;
-        TerminateConnectionRequest(args, 2);
-    }
-    CATCH(CouldNotConnectException)
-    {
-        // Open a connection back to the process that initiated the request
-        // and send it a reason to quit.
-        debug1 << termString << "we could not connect." << endl;
-        TerminateConnectionRequest(args, 3);
-    }
-    CATCH(CancelledConnectException)
-    {
-        // Open a connection back to the process that initiated the request
-        // and send it a reason to quit.
-        debug1 << termString << "the connection was cancelled by the user."
-               << endl;
-        TerminateConnectionRequest(args, 4);
-    }
-    ENDTRY
 
     // If the remote host is in the server list, tell it to connect
     // to another program.
