@@ -1857,7 +1857,14 @@ else
             }
             print GDBFILE "set environment MESA_GLX_FX=$ENV{MESA_GLX_FX}\n";
             print GDBFILE "path $visitbindir\n";
-            print GDBFILE "file $visitbindir/$real_exe\n";
+            if($os eq "darwin")
+            {
+                print GDBFILE "file $real_exe\n";
+            }
+            else
+            {
+                print GDBFILE "file $visitbindir/$real_exe\n";
+            }
             print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Database\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/Pipeline\n";
             print GDBFILE "directory $ENV{VISITHOME}/common/Exceptions/VisWindow\n";

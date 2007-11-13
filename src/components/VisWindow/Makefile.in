@@ -162,6 +162,9 @@
 #    Cyrus Harrison, Sun Jun 17 20:16:02 PDT 2007
 #    Added VisWinPathTracker
 #
+#    Brad Whitlock, Wed Nov 7 16:56:34 PDT 2007
+#    Added avtText3DColleague.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -194,6 +197,7 @@ Colleagues_src= \
   Colleagues/avtLegendAttributesColleague.C \
   Colleagues/avtLine2DColleague.C \
   Colleagues/avtText2DColleague.C \
+  Colleagues/avtText3DColleague.C \
   Colleagues/avtTimeSliderColleague.C
 Interactors_src= \
   Interactors/Dolly3D.C \
