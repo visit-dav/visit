@@ -337,6 +337,8 @@ avtSASFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeStat
 
     AddScalarVarToMetaData(md, "channel_id",   meshname, AVT_ZONECENT);
     AddScalarVarToMetaData(md, "channel_type", meshname, AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "assembly_id",   meshname, AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "assembly_type", meshname, AVT_ZONECENT);
 
     if (!bDataFileIsMissing)
         AddScalarVarToMetaData(md, "temperature", meshname, AVT_ZONECENT);
@@ -523,9 +525,11 @@ avtSASFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname
 vtkDataArray *
 avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-    if (strcmp(varname, "temperature")  != 0 && 
-        strcmp(varname, "channel_id")   != 0 && 
-        strcmp(varname, "channel_type") != 0)
+    if (strcmp(varname, "temperature")   != 0 && 
+        strcmp(varname, "channel_id")    != 0 && 
+        strcmp(varname, "channel_type")  != 0 && 
+        strcmp(varname, "assembly_id")   != 0 && 
+        strcmp(varname, "assembly_type") != 0) 
         EXCEPTION1(InvalidVariableException, varname);
 
     if (!aAssemblyTypes)
@@ -586,10 +590,20 @@ avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
                 for (jj = 0; jj < pType->nZVals-1; jj++)
                     rv->InsertNextValue( (float)(iGlobalChannelID % 1000000));
             }
-            else
+            else if (strcmp(varname, "channel_type") == 0)
             {
                 for (jj = 0; jj < pType->nZVals-1; jj++)
                     rv->InsertNextValue( (float)(iGlobalChannelID / 1000000) );
+            }
+            else if (strcmp(varname, "assembly_id") == 0)
+            {
+                for (jj = 0; jj < pType->nZVals-1; jj++)
+                    rv->InsertNextValue( (float)iAssemblyID );
+            }
+            else if (strcmp(varname, "assembly_type") == 0)
+            {
+                for (jj = 0; jj < pType->nZVals-1; jj++)
+                    rv->InsertNextValue( (float)iAssemblyType );
             }
             continue;
         }
@@ -624,10 +638,20 @@ avtSASFileFormat::GetVar(int timestate, int domain, const char *varname)
                 for (jj = 0; jj < pType->nZVals-1; jj++)
                     rv->InsertNextValue( (float)(iGlobalChannelID % 1000000));
             }
-            else
+            else if (strcmp(varname, "channel_type") == 0)
             {
                 for (jj = 0; jj < pType->nZVals-1; jj++)
                     rv->InsertNextValue( (float)(iGlobalChannelID / 1000000) );
+            }
+            else if (strcmp(varname, "assembly_id") == 0)
+            {
+                for (jj = 0; jj < pType->nZVals-1; jj++)
+                    rv->InsertNextValue( (float)iAssemblyID );
+            }
+            else if (strcmp(varname, "assembly_type") == 0)
+            {
+                for (jj = 0; jj < pType->nZVals-1; jj++)
+                    rv->InsertNextValue( (float)iAssemblyType );
             }
         }
     }
