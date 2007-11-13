@@ -1201,6 +1201,9 @@ avtGradientFilter::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
 //    Cyrus Harrison, Tue Sep  4 09:10:28 PDT 2007
 //    Changed tiny to much smaller value.
 //
+//    Cyrus Harrison, Mon Nov 12 13:17:46 PST 2007
+//    Tuned tiny again due to floating point issues on AIX.
+//
 // ****************************************************************************
 
 void
@@ -1212,7 +1215,7 @@ avtGradientFilter::CalculateNodalToZonalQuadGrad(vtkDataSet *ds,
     // loop index
     int i;
 
-    double tiny = 1.e-80;
+    double tiny = 1.e-37;
     double xi,xj;
     double yi,yj;
     double vi,vj;
@@ -1292,6 +1295,9 @@ avtGradientFilter::CalculateNodalToZonalQuadGrad(vtkDataSet *ds,
 //    Cyrus Harrison, Tue Sep  4 09:10:28 PDT 2007
 //    Changed tiny to much smaller value.
 //
+//    Cyrus Harrison, Mon Nov 12 13:17:46 PST 2007
+//    Tuned tiny again due to floating point issues on AIX.
+//
 // ****************************************************************************
 
 void
@@ -1302,7 +1308,7 @@ avtGradientFilter::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
 {
     int i;
 
-    double tiny = 1.e-80;
+    double tiny = 1.e-37;
     double xi,xj,xk;
     double yi,yj,yk;
     double zi,zj,zk;
