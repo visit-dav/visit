@@ -153,6 +153,7 @@
 #include <PySaveWindowAttributes.h>
 #include <PySILRestriction.h>
 #include <PyText2DObject.h>
+#include <PyText3DObject.h>
 #include <PyQueryOverTimeAttributes.h>
 #include <PyTimeSliderObject.h>
 #include <PyViewAttributes.h>
@@ -10660,21 +10661,28 @@ DeleteAnnotationObjectHelper(AnnotationObject *annot)
 //   Brad Whitlock, Fri Mar 23 17:24:54 PST 2007
 //   Added PyLegendAttributesObject and added an error message.
 //
+//   Brad Whitlock, Mon Nov 12 16:00:45 PST 2007
+//   Added PyText3DObject.
+//
 // ****************************************************************************
 
 PyObject *
 CreateAnnotationWrapper(AnnotationObject *annot)
 {
     PyObject *retval = NULL;
-
     if(annot->GetObjectType() == AnnotationObject::Text2D)
     {
-        // Create a time slider wrapper for the new annotation object.
+        // Create a text2d wrapper for the new annotation object.
         retval = PyText2DObject_WrapPyObject(annot);
+    }
+    else if(annot->GetObjectType() == AnnotationObject::Text3D)
+    {
+        // Create a text3d wrapper for the new annotation object.
+        retval = PyText3DObject_WrapPyObject(annot);
     }
     else if(annot->GetObjectType() == AnnotationObject::TimeSlider)
     {
-        // Create a Text2D wrapper for the new annotation object.
+        // Create a time slider wrapper for the new annotation object.
         retval = PyTimeSliderObject_WrapPyObject(annot);
     }
     else if(annot->GetObjectType() == AnnotationObject::Line2D)
@@ -10724,6 +10732,9 @@ CreateAnnotationWrapper(AnnotationObject *annot)
 //   Added ability to name an object when it is created. Added a message for
 //   how to get at the legend attributes.
 //
+//   Brad Whitlock, Mon Nov 12 16:00:45 PST 2007
+//   Added Text3D.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -10748,6 +10759,8 @@ visit_CreateAnnotationObject(PyObject *self, PyObject *args)
         annotTypeIndex = 2;
     else if(strcmp(annotType, "Text2D") == 0)
         annotTypeIndex = 0;
+    else if(strcmp(annotType, "Text3D") == 0)
+        annotTypeIndex = 1;
     else if(strcmp(annotType, "Line2D") == 0)
         annotTypeIndex = 3;
     else if(strcmp(annotType, "Image") == 0)

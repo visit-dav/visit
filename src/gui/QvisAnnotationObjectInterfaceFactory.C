@@ -40,6 +40,7 @@
 #include <QvisLegendAttributesInterface.h>
 #include <QvisLine2DInterface.h>
 #include <QvisText2DInterface.h>
+#include <QvisText3DInterface.h>
 #include <QvisTimeSliderInterface.h>
 
 #include <DebugStream.h>
@@ -126,6 +127,9 @@ QvisAnnotationObjectInterfaceFactory::GetMaxInterfaces() const
 //   Brad Whitlock, Tue Mar 20 14:13:00 PST 2007
 //   Added legend attributes interface.
 //
+//   Brad Whitlock, Wed Nov 7 17:09:34 PST 2007
+//   Added text 3d.
+//
 // ****************************************************************************
 
 QvisAnnotationObjectInterface *
@@ -138,6 +142,9 @@ QvisAnnotationObjectInterfaceFactory::CreateInterface(
     {
     case AnnotationObject::Text2D:
         retval = new QvisText2DInterface(parent, "text2DInterface");
+        break;
+    case AnnotationObject::Text3D:
+        retval = new QvisText3DInterface(parent, "text3DInterface");
         break;
     case AnnotationObject::TimeSlider:
         retval = new QvisTimeSliderInterface(parent, "timeSliderInterface");

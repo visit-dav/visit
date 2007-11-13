@@ -47,6 +47,7 @@
 #include <avtLegendAttributesColleague.h>
 #include <avtLine2DColleague.h>
 #include <avtText2DColleague.h>
+#include <avtText3DColleague.h>
 #include <avtTimeSliderColleague.h>
 
 // ****************************************************************************
@@ -363,6 +364,9 @@ VisWinAnnotations::SetFrameAndState(int nFrames,
 //   Brad Whitlock, Tue Mar 20 10:11:22 PDT 2007
 //   Name the objects. Also added avtLegendAttributesColleague.
 //
+//   Brad Whitlock, Wed Nov 7 17:01:34 PDT 2007
+//   Added text 3D finally.
+//
 // ****************************************************************************
 
 bool
@@ -395,6 +399,9 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
     {
     case 0: // Text2D
         annot = new avtText2DColleague(mediator);
+        break;
+    case 1: // Text3D
+        annot = new avtText3DColleague(mediator);
         break;
     case 2: // Time slider
         annot = new avtTimeSliderColleague(mediator);
