@@ -114,12 +114,19 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+// 
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.
+//    
 // ****************************************************************************
 
 void
 QvisHistogramPlotWindow::CreateWindowContents()
 {
+    // Figure out the max width that we want to allow for some simple
+    // line edit widgets.
+    int maxWidth = fontMetrics().width("1.0000000000");
+    
     QGridLayout *mainLayout = new QGridLayout(topLayout, 4,2,  10, "mainLayout");
 
 
@@ -146,7 +153,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     QVBoxLayout *hgTopLayout = new QVBoxLayout(histGroupBox);
     hgTopLayout->setMargin(10);
     hgTopLayout->addSpacing(15);
-    QGridLayout *hgLayout = new QGridLayout(hgTopLayout, 6, 2);
+    QGridLayout *hgLayout = new QGridLayout(hgTopLayout, 8, 2);
     hgLayout->setSpacing(10);
     hgLayout->setColStretch(1,10);
 
@@ -182,34 +189,62 @@ QvisHistogramPlotWindow::CreateWindowContents()
             this, SLOT(twoDAmountChanged(int)));
     hgLayout->addWidget(twoDAmount, 1,1);
 
+
+    // Add data scale
+    QLabel *dataScaleLabel = new QLabel("Data Scale", histGroupBox, "dataScaleLabel");
+    hgLayout->addWidget(dataScaleLabel,2,0);
+
+    dataScale = new QButtonGroup(histGroupBox, "dataScale");
+    connect(dataScale, SIGNAL(clicked(int)),this, SLOT(dataScaleChanged(int)));    
+    QHBoxLayout *dataScaleLayout = new QHBoxLayout(dataScale);
+    QRadioButton *linearScale = new QRadioButton("Linear", dataScale);
+    dataScaleLayout->addWidget(linearScale);
+    QRadioButton *logScale = new QRadioButton("Log10", dataScale);
+    dataScaleLayout->addWidget(logScale);
+    QRadioButton *sqrtScale = new QRadioButton("Square root", dataScale);
+    dataScaleLayout->addWidget(sqrtScale);
+    hgLayout->addWidget(dataScale, 2,1);
+
     specifyRange = new QCheckBox("Specify Range?", histGroupBox, "specifyRange");
     connect(specifyRange, SIGNAL(toggled(bool)),
             this, SLOT(specifyRangeChanged(bool)));
-    hgLayout->addWidget(specifyRange, 2,0);
+    hgLayout->addWidget(specifyRange, 4,0);
 
 
     minLabel = new QLabel("Minimum", histGroupBox, "minLabel");
-    hgLayout->addWidget(minLabel,3,0);
+    hgLayout->addWidget(minLabel,5,0);
     min = new QLineEdit(histGroupBox, "min");
     connect(min, SIGNAL(returnPressed()),
             this, SLOT(minProcessText()));
-    hgLayout->addWidget(min, 3,1);
+    hgLayout->addWidget(min,5,1);
 
     maxLabel = new QLabel("Maximum", histGroupBox, "maxLabel");
-    hgLayout->addWidget(maxLabel,4,0);
+    hgLayout->addWidget(maxLabel,6,0);
     max = new QLineEdit(histGroupBox, "max");
     connect(max, SIGNAL(returnPressed()),
             this, SLOT(maxProcessText()));
-    hgLayout->addWidget(max, 4,1);
+    hgLayout->addWidget(max, 6,1);
 
     numBinsLabel = new QLabel("Number of Bins", histGroupBox, "numBinsLabel");
-    hgLayout->addWidget(numBinsLabel,5,0);
+    hgLayout->addWidget(numBinsLabel,7,0);
 
     numBins = new QLineEdit(histGroupBox, "numBins");
     connect(numBins, SIGNAL(returnPressed()),
             this, SLOT(numBinsProcessText()));
-    hgLayout->addWidget(numBins, 5,1);
+    hgLayout->addWidget(numBins, 7,1);
 
+    QLabel *binScaleLabel = new QLabel("Bin Scale", histGroupBox, "binScaleLabel");
+    hgLayout->addWidget(binScaleLabel,8,0);
+    binsScale = new QButtonGroup(histGroupBox, "binsScale");
+    connect(binsScale, SIGNAL(clicked(int)),this, SLOT(binsScaleChanged(int)));    
+    QHBoxLayout *binsScaleLayout = new QHBoxLayout(binsScale);
+    QRadioButton *binLinearScale = new QRadioButton("Linear", binsScale);
+    binsScaleLayout->addWidget(binLinearScale);
+    QRadioButton *binLogScale = new QRadioButton("Log10", binsScale);
+    binsScaleLayout->addWidget(binLogScale);
+    QRadioButton *binSqrtScale = new QRadioButton("Square root", binsScale);
+    binsScaleLayout->addWidget(binSqrtScale);
+    hgLayout->addWidget(binsScale, 8,1);    
 
     // Bar Plot Group Box
     barGroupBox =new QGroupBox(central, "barGroupBox"); 
@@ -315,7 +350,10 @@ QvisHistogramPlotWindow::CreateWindowContents()
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+//
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.
+//    
 // ****************************************************************************
 
 void
@@ -526,6 +564,16 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             color->setButtonColor(tempcolor);
             color->blockSignals(false);
             break;
+	case 14: //data scale
+	    dataScale->blockSignals(true);
+            dataScale->setButton(atts->GetDataScale() );
+	    dataScale->blockSignals(false);
+	    break;
+	case 15: //bin scale
+	    binsScale->blockSignals(true);
+            binsScale->setButton(atts->GetBinScale() );
+	    binsScale->blockSignals(false);
+	    break;	    
         }
     }
 }
@@ -541,7 +589,10 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
-//   
+//
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.
+//
 // ****************************************************************************
 
 void
@@ -709,6 +760,15 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
         // Nothing for color
     }
 
+    // Do dataScale
+    if (which_widget == 14 || doAll)
+    {
+    }
+    
+    // Do dataScale
+    if (which_widget == 15 || doAll)
+    {
+    }
 }
 
 
@@ -840,6 +900,25 @@ QvisHistogramPlotWindow::twoDAmountChanged(int val)
     }
 }
 
+void
+QvisHistogramPlotWindow::dataScaleChanged(int val)
+{
+    if ( val != atts->GetDataScale() )
+    {
+	atts->SetDataScale(HistogramAttributes::DataScale(val));
+	Apply();
+    }
+}
+
+void
+QvisHistogramPlotWindow::binsScaleChanged(int val)
+{
+    if ( val != atts->GetBinScale() )
+    {
+	atts->SetBinScale(HistogramAttributes::DataScale(val));
+	Apply();
+    }
+}
 
 void
 QvisHistogramPlotWindow::specifyRangeChanged(bool val)
@@ -847,7 +926,6 @@ QvisHistogramPlotWindow::specifyRangeChanged(bool val)
     atts->SetSpecifyRange(val);
     Apply();
 }
-
 
 void
 QvisHistogramPlotWindow::minProcessText()
