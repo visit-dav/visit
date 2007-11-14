@@ -1377,13 +1377,15 @@ DrawPlotsAction::~DrawPlotsAction()
 // Creation:   Fri Mar 21 15:51:48 PST 2003
 //
 // Modifications:
+//  Ellen Tarwater October 12, 2007
+//  added flag for active vs all plots
 //   
 // ****************************************************************************
 
 void
 DrawPlotsAction::Execute()
 {
-    window->GetPlotList()->RealizePlots();
+    window->GetPlotList()->RealizePlots(args.GetBoolFlag());
 }
 
 // ****************************************************************************
@@ -2287,3 +2289,85 @@ MovePlotDatabaseKeyframeAction::Execute()
     ViewerPlotList *plotList = window->GetPlotList();
     plotList->MovePlotDatabaseKeyframe(plotId, oldIndex, newIndex);
 }
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: CopyPlotAction::CopyPlotAction
+//
+// Purpose: 
+//   Constructor for the CopyPlotAction class.
+//
+// Arguments:
+//   win : The window that owns the action.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Fri Sept 28 15:38:54 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+CopyPlotAction::CopyPlotAction(ViewerWindow *win) : ViewerAction(win,
+    "CopyPlotAction")
+{
+    SetAllText("Copy active plots");
+    // Think of an icon...
+}
+
+// ****************************************************************************
+// Method: CopyPlotAction::~CopyPlotAction
+//
+// Purpose: 
+//   Destructor for the CopyPlotAction class.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Fri Sept 28 15:54:27 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+CopyPlotAction::~CopyPlotAction()
+{
+}
+
+// ****************************************************************************
+// Method: CopyPlotAction::Execute
+//
+// Purpose: 
+//   Copies the active plots.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Fri Sept 28 15:54:27 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+CopyPlotAction::Execute()
+{
+    window->GetPlotList()->CopyActivePlots();
+}
+
+// ****************************************************************************
+// Method: CopyPlotAction::Enabled
+//
+// Purpose: 
+//   Returns whether the action is enabled.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Fri Sept 28 15:54:27 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+CopyPlotAction::Enabled() const
+{
+    return (window->GetPlotList()->GetNumPlots() > 0);
+}
+

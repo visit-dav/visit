@@ -38,8 +38,11 @@
 #ifndef QVIS_PLOT_LIST_BOX_H
 #define QVIS_PLOT_LIST_BOX_H
 #include <gui_exports.h>
+#include <qaction.h>
 #include <qlistbox.h>
+#include <qpopupmenu.h>
 #include <vectortypes.h>
+#include <GUIBase.h>
 
 class PlotList;
 
@@ -71,6 +74,9 @@ class PlotList;
 //   Brad Whitlock, Wed Jul 28 17:33:21 PST 2004
 //   I added prefixes to arguments for NeedsToBeRegenerated.
 //
+//   Ellen Tarwate, Fri, May 25
+//   adding Context Menu to the Active Plots list
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotListBox : public QListBox
@@ -95,8 +101,33 @@ signals:
 protected:
     virtual void viewportMousePressEvent(QMouseEvent *e);
     virtual void viewportMouseDoubleClickEvent(QMouseEvent *e);
-    void clickHandler(const QPoint &p, bool);
-    void itemClicked(QListBoxItem *item, const QPoint &point, bool);
+    void clickHandler(const QPoint &p, bool, bool);
+    bool itemClicked(QListBoxItem *item, const QPoint &point, bool, bool);
+    void contextMenuEvent( QContextMenuEvent *event );
+signals:
+    void hideThisPlot();
+    void deleteThisPlot();
+    void drawThisPlot();
+    void clearThisPlot();
+    void copyThisPlot();
+    void copyToWinThisPlot();
+    void redrawThisPlot();
+    void setActivePlot();
+private:
+    void contextMenuCreateActions();
+    
+    QPopupMenu *plotContextMenu;
+    QAction    *hideShowAct;
+    QAction    *deleteAct;
+    QAction    *drawAct;
+    QAction    *clearAct;
+    QAction    *copyAct;
+    QAction    *copyToWinAct;
+    QAction    *redrawAct;
+
+    QPopupMenu *copyWinSubMenu;
+    QAction    *win1Act;
+    QAction    *win2Act;
 };
 
 #endif

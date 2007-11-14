@@ -38,6 +38,8 @@
 #ifndef QVIS_PLOT_MANAGER_WIDGET_H
 #define QVIS_PLOT_MANAGER_WIDGET_H
 #include <gui_exports.h>
+#include <qaction.h>
+#include <qpopupmenu.h>
 #include <vector>
 #include <string>
 #include <qwidget.h>
@@ -174,6 +176,11 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Tue Apr 25 16:29:44 PST 2006
 //   Added support for operators that influence the plot variable menu.
 //
+//   Ellen Tarwate, Fri, May 25
+//   adding Context Menu to the Active Plots list
+//   hideThisPlot, deleteThisPlot, drawThisPlot
+//
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -202,6 +209,16 @@ public:
     void EnablePluginMenus();
 
     void SetSourceVisible(bool);
+public slots:
+    void hideThisPlot();
+    void deleteThisPlot();
+    void drawThisPlot();
+    void clearThisPlot();
+    void copyThisPlot();
+    void copyToWinThisPlot();
+    void redrawThisPlot();
+    void setActivePlot();
+    
 signals:
     void activateSubsetWindow();
     void activatePlotWindow(int index);
@@ -225,6 +242,7 @@ private slots:
     void hidePlots();
     void deletePlots();
     void drawPlots();
+    void copyPlotToWin(int winIndex);
     void changeVariable(int, const QString &varName);
     void promoteOperator(int operatorIndex);
     void demoteOperator(int operatorIndex);
@@ -234,6 +252,7 @@ private slots:
     void operatorAction(int);
     void applyOperatorToggled(bool val);
     void sourceChanged(int);
+
 private:
     bool                     sourceVisible;
 
@@ -247,6 +266,9 @@ private:
     QPushButton             *deleteButton;
     QPushButton             *drawButton;
     QCheckBox               *applyOperatorToggle;
+    //et QPopupMenu              *WindowChoiceMenu;  //et comming soon for context menu...
+    //et QAction                 *win1Act;
+    //et QAction                 *win2Act;
 
     // Menu widgets
     QMenuBar                *plotMenuBar;
@@ -281,6 +303,7 @@ private:
     ExpressionList          *exprList;
     PluginManagerAttributes *pluginAtts;
     WindowInformation       *windowInfo;
+    
 };
 
 #endif

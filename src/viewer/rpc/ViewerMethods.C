@@ -396,12 +396,13 @@ ViewerMethods::HideAllWindows()
 // ****************************************************************************
 
 void
-ViewerMethods::ClearWindow()
+ViewerMethods::ClearWindow(bool clearAllPlots)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::ClearWindowRPC);
+    state->GetViewerRPC()->SetBoolFlag(clearAllPlots);
 
     //
     // Issue the RPC.
@@ -1617,6 +1618,38 @@ ViewerMethods::AddPlot(int type, const std::string &var)
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::CopyActivePlots
+//
+//  Purpose:
+//    Copy current plot and add it to the plot list.
+//
+//  Arguments:
+//
+//  Programmer: Ellen Tarwater
+//  Creation:   Sept 7, 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+void
+ViewerMethods::CopyActivePlots()
+{
+    int type;                  // type of plot to add
+   
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::CopyActivePlotsRPC);
+    type = state->GetViewerRPC()->GetPlotType();
+    state->GetViewerRPC()->SetPlotType(type);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerMethods::SetPlotFrameRange
 //
 //  Purpose:
@@ -1861,14 +1894,19 @@ ViewerMethods::HideActivePlots()
 //  Programmer: Eric Brugger
 //  Creation:   August 15, 2000
 //
+// Modifications:
+//  Ellen Tarwater October 12, 2007
+//  added drawAllPlots flag
+//
 // ****************************************************************************
 void
-ViewerMethods::DrawPlots()
+ViewerMethods::DrawPlots(bool drawAllPlots)
 {
     //
     // Set the rpc type and arguments.
     //
     state->GetViewerRPC()->SetRPCType(ViewerRPC::DrawPlotsRPC);
+    state->GetViewerRPC()->SetBoolFlag(drawAllPlots);
 
     //
     // Issue the RPC.

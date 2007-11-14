@@ -408,6 +408,9 @@ public:
 //   Brad Whitlock, Mon Feb 12 17:55:07 PST 2007
 //   Added ViewerBase base class.
 //
+//   Ellen Tarwater, Mon Sept 24, 1007
+//   Added CopyPlotAction.
+//
 // ****************************************************************************
 
 
@@ -483,6 +486,7 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
     AddAction(new SetPlotDatabaseStateAction(win), ViewerRPC::SetPlotDatabaseStateRPC);
     AddAction(new DeletePlotDatabaseKeyframeAction(win), ViewerRPC::DeletePlotDatabaseKeyframeRPC);
     AddAction(new MovePlotDatabaseKeyframeAction(win), ViewerRPC::MovePlotDatabaseKeyframeRPC);
+    AddAction(new CopyPlotAction(win), ViewerRPC::CopyActivePlotsRPC);
 }
 
 // ****************************************************************************

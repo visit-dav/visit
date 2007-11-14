@@ -497,7 +497,7 @@ public:
     bool GetPerspectiveProjection() const;
     void UpdateColorTable(const char *ctName);
     void RedrawWindow();
-    void ClearWindow();
+    void ClearWindow(bool clearAllPlots = true);
     avtImage_p ScreenCapture();
     avtDataset_p GetAllDatasets();
     void InvertBackgroundColor();

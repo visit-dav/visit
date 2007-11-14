@@ -2147,11 +2147,11 @@ ViewerWindow::UpdatesEnabled() const
 // ****************************************************************************
 
 void
-ViewerWindow::ClearWindow()
+ViewerWindow::ClearWindow(bool clearAllPlots)
 {
     ClearRefLines();
     ClearPickPoints();
-    GetPlotList()->ClearPlots();
+    GetPlotList()->ClearPlots(clearAllPlots);
 }
 
 // ****************************************************************************

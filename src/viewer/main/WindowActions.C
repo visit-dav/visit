@@ -289,7 +289,7 @@ ClearWindowAction::ClearWindowAction(ViewerWindow *win) :
 void
 ClearWindowAction::Execute()
 {
-    window->ClearWindow();
+    window->ClearWindow(args.GetBoolFlag());
 }
 
 // ****************************************************************************
