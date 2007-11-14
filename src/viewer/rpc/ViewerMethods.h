@@ -81,6 +81,9 @@ class ViewerState;
 //   Cyrus Harrison, Tue Sep 18 11:05:50 PDT 2007
 //   Added SetQueryFloatFormat
 //
+//   Ellen Tarwater, Thurs, Oct 11, 2007
+//   Added flag to DrawPlots to indicate all or only active...
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -101,7 +104,7 @@ public:
     void DeIconifyAllWindows();
     void ShowAllWindows();
     void HideAllWindows();
-    void ClearWindow();
+    void ClearWindow(bool clearAllPlots = true);
     void ClearAllWindows();
     void SaveWindow();
     void PrintWindow();
@@ -154,6 +157,7 @@ public:
     void SetActiveTimeSlider(const std::string &ts);
 
     void AddPlot(int type, const std::string &var);
+    void CopyActivePlots(void);
     void SetPlotFrameRange(int plotId, int frame0, int frame1);
     void DeletePlotKeyframe(int plotId, int frame);
     void MovePlotKeyframe(int plotId, int oldFrame, int newFrame);
@@ -162,7 +166,7 @@ public:
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);
     void DeleteActivePlots();
     void HideActivePlots();
-    void DrawPlots();
+    void DrawPlots(bool drawAllPlots = true);
     void SetActivePlots(const intVector &activePlotIds);
     void SetActivePlots(const intVector &activePlotIds,
                         const intVector &activeOperatorIds,

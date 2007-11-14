@@ -271,8 +271,14 @@ typedef std::map<std::string, int> StringIntMap;
 //    Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007 
 //    Added GetScaleMode, CanDoLogViewScaling.
 //
+//    Ellen Tarwater, Thurs Sept 27, 2007
+//    Added CopyActivePlots
+//
 //    Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007 
 //    Added scaleModeSet.
+//
+//    Ellen Tarwater )ctober 12, 2007
+//    Added flag to RealizePlots
 //
 // ****************************************************************************
 
@@ -359,7 +365,7 @@ public:
 
 
     void CopyFrom(const ViewerPlotList *pl, bool copyPlots);
-    void ClearPlots();
+    void ClearPlots(bool clearAll = true);
     void ClearActors();
     void TransmutePlots(bool turningOffScalableRendering);
     void DeleteActivePlots();
@@ -368,7 +374,7 @@ public:
 
     void DeletePlot(ViewerPlot *, bool);
     void HideActivePlots();
-    void RealizePlots();
+    void RealizePlots(bool drawAllPlots = true);
     void SetErrorFlagAllPlots(bool errorFlag);
     void SetPlotVar(const std::string &variable);
     void SetPlotAtts(const int plotType);
@@ -382,6 +388,7 @@ public:
                         const intVector &activeOperators,
                         const intVector &expandedPlots,
                         bool moreThanPlotsValid);
+    void CopyActivePlots();
 
     void SetPlotSILRestriction(bool applyToAll = false);
 

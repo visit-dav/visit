@@ -3329,7 +3329,7 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
 // ****************************************************************************
 
 void
-ViewerPlotList::ClearPlots()
+ViewerPlotList::ClearPlots(bool clearAll)
 {
     //
     // Clear the actors associated with the plots and make them all
@@ -3337,8 +3337,11 @@ ViewerPlotList::ClearPlots()
     //
     for (int i = 0; i < nPlots; i++)
     {
-        plots[i].plot->ClearActors();
-        plots[i].realized = false;
+        if(clearAll || plots[i].active)
+	{
+            plots[i].plot->ClearActors();
+            plots[i].realized = false;
+	}
     }
 
     //
@@ -3734,6 +3737,82 @@ ViewerPlotList::TransmutePlots(bool turningOffScalableRendering)
 }
 
 // ****************************************************************************
+//  Method: ViewerPlotList::CopyActivePlots
+//
+//  Purpose:
+//    Copy the active plots from the plot list.
+//
+//  Programmer: Ellen Tarwater
+//  Creation:   September 27, 2007
+//
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::CopyActivePlots()
+{
+     //
+    // Loop over the list, copying any active plots.
+    //
+    int plotsAdded = 0;
+    for (int i = 0; i < nPlots; i++)
+    {
+        if (plots[i].active == true)
+	{
+    
+	    // create a copy of this plot:
+            ViewerPlot *src = plots[i].plot;
+	    ViewerPlot *dest = 0;
+	    TRY
+	    {
+	        dest = new ViewerPlot(*src);
+	    }
+	    CATCH( VisItException )
+	    {
+	        if (dest)
+	        {
+	            delete dest;
+		    dest = NULL;
+	        }
+	    }
+	    ENDTRY
+	
+	    if (dest != 0)
+	    {
+	        //
+	        // Add the new plot to the plot list.
+	        //
+	        SimpleAddPlot( dest, false );
+	        ++plotsAdded;
+		// make the added plot INactive...
+		plots[nPlots-1].active = false;
+	    }
+	    else
+	    {
+	        Error( "Visit could not copy active plot." );
+	        return;
+	    }
+	}
+	
+    }
+ 
+    //
+    // Update the client attributes.
+    //
+    if (plotsAdded > 0)
+    {
+        UpdatePlotList();
+	UpdatePlotAtts();
+	UpdateSILRestrictionAtts();     //?
+
+        //
+        // Update the frame.
+        //
+        UpdateFrame();
+    }
+}
+
+// ****************************************************************************
 //  Method: ViewerPlotList::HideActivePlots
 //
 //  Purpose:
@@ -3797,18 +3876,24 @@ ViewerPlotList::HideActivePlots()
 //    I added code to set the error flag to false in all plots. This way
 //    we force the UpdatePlots method to try and regenerate them.
 //
+//    Ellen Tarwater, October 12, 2007
+//    Added drawAllPlots flag to draw only active plots
+//
 // ****************************************************************************
 
 void
-ViewerPlotList::RealizePlots()
+ViewerPlotList::RealizePlots(bool drawAllPlots)
 {
     //
     // Loop through the list setting the realized flag for each plot.
     //
     for (int i = 0; i < nPlots; i++)
     {
-        plots[i].realized = true;
-        plots[i].plot->SetErrorFlag(false);
+        if ( drawAllPlots || plots[i].active )
+	{
+            plots[i].realized = true;
+            plots[i].plot->SetErrorFlag(false);
+	}
     }
 
     //

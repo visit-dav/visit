@@ -50,6 +50,7 @@
 #include <qpopupmenu.h>
 #include <qpushbutton.h>
 #include <qvbox.h>
+#include <qmessagebox.h>
 
 #include <ViewerProxy.h>
 #include <PlotList.h>
@@ -233,6 +234,21 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
             this, SLOT(removeOperator(int)));
 
 
+    connect(plotListBox, SIGNAL(hideThisPlot()),
+            this, SLOT(hideThisPlot()));
+    connect(plotListBox, SIGNAL(deleteThisPlot()),
+            this, SLOT(deleteThisPlot()));
+    connect(plotListBox, SIGNAL(drawThisPlot()),
+            this, SLOT(drawThisPlot()));
+    connect(plotListBox, SIGNAL(clearThisPlot()),
+            this, SLOT(clearThisPlot()));
+    connect(plotListBox, SIGNAL(copyThisPlot()),
+            this, SLOT(copyThisPlot()));
+    connect(plotListBox, SIGNAL(copyToWinThisPlot()),
+            this, SLOT(copyToWinThisPlot()));
+    connect(plotListBox, SIGNAL(redrawThisPlot()),
+            this, SLOT(redrawThisPlot()));
+	    
     topLayout->addMultiCellWidget(plotListBox, 2, 2, 0, 3);
 
     // Create the "Apply operator to all plots" toggle.
@@ -1698,6 +1714,7 @@ QvisPlotManagerWidget::deletePlots()
     // Set the wait cursor. It will change back when the viewer returns
     // the updated plot list.
     SetWaitCursor();
+ 
 
     // delete the active plots.
     GetViewerMethods()->DeleteActivePlots();
@@ -1778,7 +1795,7 @@ QvisPlotManagerWidget::setActivePlots()
     intVector existingExpandedPlots,     newExpandedPlots;
     int firstSelectedFile = 0;
     bool found = false;
-
+ 
     //
     // Build a list of the active plots according to the plotListBox widget.
     //
@@ -2046,4 +2063,249 @@ QvisPlotManagerWidget::sourceChanged(int index)
     const stringVector &sources = globalAtts->GetSources();
     if(index >= 0 && index < sources.size())
         GetViewerMethods()->ActivateDatabase(sources[index]);
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::hideThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to hide the
+//   active plot. 
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Mon, June 25, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::hideThisPlot()
+{
+    // hide the active plot.
+    GetViewerMethods()->HideActivePlots();
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::deleteThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to delete the
+//   active plot.
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Mon, June 25, 2007
+//
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::deleteThisPlot()
+{
+    
+    // delete the active plots.
+    GetViewerMethods()->DeleteActivePlots();
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::drawThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to draw the active plot.
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Mon June 25, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::drawThisPlot()
+{
+    // Draw the active plots.
+    GetViewerMethods()->DrawPlots(false);
+    
+}
+
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::clearThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to clear 
+//   the active plot.
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Thurs July 12, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisPlotManagerWidget::clearThisPlot()
+{
+    // Clear the active plots.
+    GetViewerMethods()->ClearWindow(false);
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::copyThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to copy 
+//   the active plot to the plot list, but leave it undrawn, so user can 
+//   manipulate it...
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Thurs Sept 27, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisPlotManagerWidget::copyThisPlot()
+{
+    // Copy the active plot.
+    GetViewerMethods()->CopyActivePlots();
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::copyToWinThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to copy
+//   the active plot to a new window.
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Thurs July 12, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisPlotManagerWidget::copyToWinThisPlot()
+{
+//et this is part of the context menu - I'll get back to it asap...
+    QMessageBox::information( this, tr("Copy This Plot To Window"), tr("Not Yet Implemented..."), 
+                              QMessageBox::Cancel | QMessageBox::Default);
+    
+    // add in a pop-up menu to allow user to select target window:
+    //et win1Act = new QAction(tr("Window 1"), 0, this);
+    //et win1Act->setStatusTip(tr("Copy Plot to Window 1"));
+    //et connect( win1Act, SIGNAL(toggled(bool)), this, SIGNAL(CopyPlotToWin(1)));
+    
+    //et win2Act = new QAction(tr("Window 2"), 0, this);
+    //et win2Act->setStatusTip(tr("Copy Plot to Window 2"));
+    //et connect( win2Act, SIGNAL(toggled(bool)), this, SIGNAL(copyPlotToWin(2)));
+
+    //et WindowChoiceMenu = new QPopupMenu(this);
+    //et win1Act->addTo( WindowChoiceMenu );
+    //et win2Act->addTo( WindowChoiceMenu );
+    
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::copyPlotToWin
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to copy 
+//   the active plot to the plot list, but leave it undrawn, so user can 
+//   manipulate it...
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Mon Oct 22, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisPlotManagerWidget::copyPlotToWin(int winIndex)
+{
+//et this is part of the context menu - I'll get back to it asap...
+    // Copy the active plot.
+    //et GetViewerMethods()->CopyActivePlots();
+    QMessageBox::information( this, tr("Copy This Plot To Window"), tr("Not Yet Implemented..."), 
+                              QMessageBox::Cancel | QMessageBox::Default);
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::redrawThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to clear and then redraw
+//   the active plot.
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Thurs July 12, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisPlotManagerWidget::redrawThisPlot()
+{
+    // clear the plot:
+    clearThisPlot();
+    drawThisPlot();		      
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::setActivePlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer which plots are active.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Wed July 18, 2007
+//
+// Modifications:
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::setActivePlot()
+{
+    int i;
+    intVector existingPlotSelection,     newPlotSelection;
+    int firstSelectedFile = 0;
+    bool found = false;
+
+    //
+    // Build a list of the active plots according to the plotListBox widget.
+    //
+    for(i = 0; i < plotListBox->count(); ++i)
+    {
+        if(plotListBox->isSelected(i))
+        {
+            newPlotSelection.push_back(i);
+
+            // Record the first selected file.
+            if(!found)
+            {
+                found = true;
+                firstSelectedFile = i;
+            }
+        }
+
+    }
+
+   //
+    // Only tell the viewer about a new plot selection if the new selection
+    // is different from the old selection.
+    //
+    if(newPlotSelection != existingPlotSelection )
+    {
+        // Tell the viewer the new active plots.
+        if(newPlotSelection.size() > 0)
+        {
+            GetViewerMethods()->SetActivePlots(newPlotSelection);
+        }
+    }
 }

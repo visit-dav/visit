@@ -577,6 +577,31 @@ public:
     virtual void Execute();
 };
 
+// ****************************************************************************
+// Class: CopyPlotAction
+//
+// Purpose:
+//   This action copies the window's active plots.
+//
+// Notes:      
+//
+// Programmer: Ellen Tarwater
+// Creation:   Fri Sept 28  2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class CopyPlotAction : public ViewerAction
+{
+public:
+    CopyPlotAction(ViewerWindow *);
+    virtual ~CopyPlotAction();
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
+
+
 
 #endif
 
