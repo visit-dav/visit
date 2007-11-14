@@ -68,6 +68,9 @@ class QvisVariableButton;
 // Creation:   Thu Mar 8 08:20:00 PDT 2007
 //
 // Modifications:
+//
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.
 //   
 // ****************************************************************************
 
@@ -94,6 +97,8 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     void basedOnChanged(int val);
     void histogramTypeChanged(int val);
     void twoDAmountChanged(int val);
+    void dataScaleChanged(int val);
+    void binsScaleChanged(int val);
     void specifyRangeChanged(bool val);
     void minProcessText();
     void maxProcessText();
@@ -110,6 +115,8 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     QButtonGroup *basedOn;
     QButtonGroup *histogramType;
     QButtonGroup *twoDAmount;
+    QButtonGroup *dataScale;
+    QButtonGroup *binsScale;
     QCheckBox *specifyRange;
     QLineEdit *min;
     QLineEdit *max;

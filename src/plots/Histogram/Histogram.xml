@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
   <Plugin name="Histogram" type="plot" label="Histogram" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="Histogram.xpm">
-    <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
+    <Attribute name="HistogramAttributes" purpose="Attributes for Histogram Plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="HistogramAttributes.code">
       <Enum name="OutputType">
         Curve
         Block
@@ -17,6 +17,11 @@
         Auto
         Frequency
         Weighted
+      </Enum>
+      <Enum name="DataScale">
+        Linear
+        Log
+        SquareRoot
       </Enum>
       <Field name="basedOn" label="Histogram based on" type="enum" subtype="BasedOn">
         ManyZonesForSingleVar
@@ -57,11 +62,17 @@
       <Field name="lineWidth" label="Line Width" type="linewidth">
         0
       </Field>
-      <Field name="color" label="Color" type="color">
+      <Field name="color" label="Color" type="color" length="4">
         200
         80
         40
         255
+      </Field>
+      <Field name="dataScale" label="Data Scale" type="enum" subtype="DataScale">
+        Linear
+      </Field>
+      <Field name="binScale" label="Bin Scale" type="enum" subtype="DataScale">
+        Linear
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>

@@ -24,6 +24,10 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
         return true;
     if (histogramType != obj.GetHistogramType())
         return true; 
+    if ( dataScale != obj.GetDataScale() )
+	return true;
+    if ( binScale != obj.GetBinScale() )
+	return true;
     return false;
 }
 

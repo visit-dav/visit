@@ -121,6 +121,9 @@ avtHistogramFilter::SetAttributes(const HistogramAttributes &h_atts)
 //
 //    Hank Childs, Wed May 24 10:18:09 PDT 2006
 //    Add support for array variables.
+//    
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.
 //
 // ****************************************************************************
 
@@ -134,26 +137,12 @@ avtHistogramFilter::PreExecute(void)
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
     {
         bool extentsSpecified = atts.GetSpecifyRange();
-        double minmax[2];
-        if (!extentsSpecified)
-        {
-            GetDataExtents(minmax, pipelineVariable);
-        }
-    
-        if (extentsSpecified)
-            workingMin = atts.GetMin();
-        else
-            workingMin = minmax[0];
-    
-        if (extentsSpecified)
-            workingMax = atts.GetMax();
-        else
-            workingMax = minmax[1];
-    
-        workingNumBins = atts.GetNumBins();
-        if (workingNumBins <= 1)
-            EXCEPTION0(ImproperUseException);
-    
+
+	GetDataExtents( dataValueRange, pipelineVariable);
+	SetWorkingMin( (extentsSpecified ? atts.GetMin() : dataValueRange[0]) );
+	SetWorkingMax( (extentsSpecified ? atts.GetMax() : dataValueRange[1]) );
+	SetWorkingNumBins( atts.GetNumBins() );
+	
         if (bins != NULL)
             delete [] bins;
         bins = new float[workingNumBins];
@@ -210,6 +199,9 @@ avtHistogramFilter::PreExecute(void)
 //    Jeremy Meredith, Wed Mar 14 11:14:56 EDT 2007
 //    Call avtStreamer::PostExecute instead of PreExecute.
 //
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.    
+//
 // ****************************************************************************
 
 void
@@ -239,14 +231,16 @@ avtHistogramFilter::PostExecute(void)
             for (i = 0 ; i < workingNumBins ; i++)
                 bins[i] = 0.;
         }
-        workingMin = 0.;
-        workingMax = (float) workingNumBins;
+	workingRange[0] = 0.;
+	workingRange[1] = (float)workingNumBins;
     }
 
     float *newBins = new float[workingNumBins];
     SumFloatArrayAcrossAllProcessors(bins, newBins, workingNumBins);
     for (i = 0 ; i < workingNumBins ; i++)
         bins[i] = newBins[i];
+
+    ScaleBins();
 
     delete [] newBins;
 
@@ -273,14 +267,14 @@ avtHistogramFilter::PostExecute(void)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(workingNumBins);
-        float jump = (workingMax - workingMin) / (workingNumBins);
+        float jump = (GetWorkingMax() - GetWorkingMin()) / (workingNumBins);
         for (i = 0 ; i < workingNumBins ; i++)
         {
             float pt[3];
             if (spaceBins)
                 pt[0] = (ranges[i]+ranges[i+1])/2.;
             else
-                pt[0] = workingMin + (i+0.5)*jump;
+                pt[0] = GetWorkingMin() + (i+0.5)*jump;
             pt[1] = bins[i];
             pt[2] = 0.;
             pts->SetPoint(i, pt);
@@ -303,7 +297,7 @@ avtHistogramFilter::PostExecute(void)
     {
         vtkPoints *pts = vtkPoints::New();
         pts->SetNumberOfPoints(4*workingNumBins);
-        float jump = (workingMax - workingMin) / (workingNumBins);
+        float jump = (GetWorkingMax() - GetWorkingMin()) / (workingNumBins);
 
         int ptIndex = 0;
         float pt[3] = { 0., 0., 0. };
@@ -316,7 +310,7 @@ avtHistogramFilter::PostExecute(void)
             if (spaceBins)
                 pt[0] = ranges[i];
             else
-                pt[0] = jump*i + workingMin;
+                pt[0] = jump*i + GetWorkingMin();
             pt[1] = 0.;
             pts->SetPoint(ptIndex++, pt);
 
@@ -329,7 +323,7 @@ avtHistogramFilter::PostExecute(void)
             if (spaceBins)
                 pt[0] = ranges[i+1];
             else
-                pt[0] = jump*(i+1) + workingMin;
+                pt[0] = jump*(i+1) + GetWorkingMin();
             pt[1] = 0.;
             pts->SetPoint(ptIndex++, pt);
 
@@ -408,8 +402,8 @@ avtHistogramFilter::PostExecute(void)
     }
     else
     {
-        extents[0] = workingMin;
-        extents[1] = workingMax;
+        extents[0] = GetWorkingMin();
+        extents[1] = GetWorkingMax();
     }
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
         extents[2] = 0.;  // We always start from 0.  lo is misleading.
@@ -421,8 +415,8 @@ avtHistogramFilter::PostExecute(void)
     // Try to do something reasonable if we have constant data.
     if (extents[0] == extents[1])
     {
-        extents[0] = workingMin - hi/2.;
-        extents[1] = workingMax + hi/2.;
+        extents[0] = GetWorkingMin() - hi/2.;
+        extents[1] = GetWorkingMax() + hi/2.;
     }
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
@@ -439,11 +433,28 @@ avtHistogramFilter::PostExecute(void)
     {
         if(GetInput()->GetInfo().GetAttributes().GetVariableUnits() != "")
         {
-            outAtts.SetXLabel(string("Variable ") + pipelineVariable);
+	    string xlabel = "";
+	    if ( atts.GetDataScale() == HistogramAttributes::Linear )
+		xlabel = string( "Variable " ) + pipelineVariable;
+	    else if ( atts.GetDataScale() == HistogramAttributes::Log )
+		xlabel = string( "Variable log10(" ) + pipelineVariable + string(") ");
+	    if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
+		xlabel = string( "Variable sqrt(" ) + pipelineVariable + string(") ");
+	    
+            outAtts.SetXLabel( xlabel );
             outAtts.SetXUnits(GetInput()->GetInfo().GetAttributes().GetVariableUnits());
         }
         else
-            outAtts.SetXUnits(pipelineVariable);
+	{
+	    string str = "";
+	    if ( atts.GetDataScale() == HistogramAttributes::Linear )
+		str = pipelineVariable;
+	    else if ( atts.GetDataScale() == HistogramAttributes::Log )
+		str = string( "log10(" ) + pipelineVariable + string(") ");
+	    if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
+	        str = string( "sqrt(" ) + pipelineVariable + string(") ");	    
+            outAtts.SetXUnits(str );
+	}
     }
 
     if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
@@ -498,7 +509,13 @@ avtHistogramFilter::PostExecute(void)
                     yunits = "Revolved Volume";
             }
         }
-        outAtts.SetYUnits(yunits);
+	string str = yunits;
+	if ( atts.GetBinScale() == HistogramAttributes::Log )
+	    str = "log10(" + yunits + ") ";
+	else if ( atts.GetBinScale() == HistogramAttributes::SquareRoot )
+	    str = "sqrt(" + yunits + ") ";
+
+        outAtts.SetYUnits(str);
     }
 }
 
@@ -574,6 +591,9 @@ avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, std::string)
 //    Hank Childs, Mon Oct 22 15:58:59 PDT 2007
 //    Ignore ghost data.
 //
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.    
+//
 // ****************************************************************************
 
 void
@@ -634,15 +654,15 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
     // Now we will walk through each value and sort them into bins.
     //
     int nvals = bin_arr->GetNumberOfTuples();
-    float binStep = (workingMax - workingMin) / (workingNumBins);
     for (int i = 0 ; i < nvals ; i++)
     {
         if (ghosts != NULL && ghosts[i] != '\0')
             continue;
         float val = bin_arr->GetTuple1(i);
-        if (val < workingMin || val > workingMax)
-            continue;
-        int index = (int)((val - workingMin) / binStep);
+	int index = ComputeBinIndex( val );
+	if ( index < 0 )
+	    continue;
+
         if (index >= workingNumBins)
             index = workingNumBins-1;
         bins[index] += 1;
@@ -669,6 +689,8 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
 //    Hank Childs, Mon Oct 22 15:58:59 PDT 2007
 //    Ignore ghost data.
 //
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.    
 // ****************************************************************************
 
 void
@@ -734,15 +756,15 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
     // Now we will walk through each value and sort them into bins.
     //
     int nvals = bin_arr->GetNumberOfTuples();
-    float binStep = (workingMax - workingMin) / (workingNumBins);
+    
     for (int i = 0 ; i < nvals ; i++)
     {
         if (ghosts != NULL && ghosts[i] != '\0')
             continue;
-        float val = bin_arr->GetTuple1(i);
-        if (val < workingMin || val > workingMax)
-            continue;
-        int index = (int)((val - workingMin) / binStep);
+	float val = bin_arr->GetTuple1(i);
+	int index = ComputeBinIndex( val );
+	if ( index < 0 )
+	    continue;
         if (index >= workingNumBins)
             index = workingNumBins-1;
         float amount = amount_arr->GetTuple1(i);
@@ -906,3 +928,191 @@ avtHistogramFilter::PerformRestriction(avtPipelineSpecification_p spec)
 }
 
 
+// ****************************************************************************
+//  Method: avtHistogramFilter::ComputeBinIndex
+//
+//  Purpose:
+//      Compute the bin index for the given input value.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 01, 2007
+//
+// ****************************************************************************
+
+int
+avtHistogramFilter::ComputeBinIndex( const float &value ) const
+{
+    // Value out of bounds, just return.
+    if ( value < workingRange[0] || value > workingRange[1] )
+	return -1;
+
+    // If we have a zero range, return 0
+    if ( workingRange[0] == workingRange[1] )
+	return 0;
+    
+    int index = 0;
+    if ( atts.GetDataScale() == HistogramAttributes::Linear )
+    {
+	index = (int)((value - workingRange[0]) / binStep);
+    }
+    else if ( atts.GetDataScale() == HistogramAttributes::SquareRoot )
+    {
+	float sign = (value < 0 ? -1.0 : 1.0);
+	float x = sign * sqrt( fabs(value) );
+	index = (int)((x - sqrtWorkingRange[0]) / sqrtBinStep);	
+    }
+    else if ( atts.GetDataScale() == HistogramAttributes::Log )
+    {
+	float sign = (value < 0 ? -1.0 : 1.0);
+	float x = sign * log10( fabs( value ) + 1.0 );
+	index = (int)((x - logWorkingRange[0]) / logBinStep);
+    }
+
+    return index;
+}
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::ScaleBins
+//
+//  Purpose:
+//      Scale the bins based on the attributes.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 01, 2007
+//
+// ****************************************************************************
+
+void
+avtHistogramFilter::ScaleBins()
+{
+    if ( atts.GetBinScale() == HistogramAttributes::Linear )
+	return;
+    else if ( atts.GetBinScale() == HistogramAttributes::Log )
+    {
+	for ( int i = 0; i < workingNumBins; i++ )
+	{
+	    float x = bins[i];
+	    if ( x > 0.0 )
+		x = log10(x);
+	    bins[i] = x;
+	}
+    }
+    else if ( atts.GetBinScale() == HistogramAttributes::SquareRoot )
+    {
+	for ( int i = 0; i < workingNumBins; i++ )
+	    bins[i] = sqrt( bins[i] );
+    }    
+}
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::SetWorkingMin
+//
+//  Purpose:
+//      Set the working mins.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 01, 2007
+//
+// ****************************************************************************
+
+void
+avtHistogramFilter::SetWorkingMin( double dataMin )
+{
+    workingRange[0] = dataMin;
+    double abs_dataMin = fabs( dataMin );
+    float sign = (dataMin < 0 ? -1.0 : 1.0);
+    logWorkingRange[0] = sign * log10( abs_dataMin + 1.0 );
+    sqrtWorkingRange[0] = sign * sqrt( abs_dataMin );
+}
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::GetWorkingMin
+//
+//  Purpose:
+//      Get the working min based on the type of data scaling.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 01, 2007
+//
+// ****************************************************************************
+
+double
+avtHistogramFilter::GetWorkingMin() const
+{
+    switch ( atts.GetDataScale() )
+    {
+    case  HistogramAttributes::Linear:
+	return workingRange[0];
+    case  HistogramAttributes::Log:
+	return logWorkingRange[0];
+    case HistogramAttributes::SquareRoot:
+	return sqrtWorkingRange[0];	
+    }
+}
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::SetWorkingMax
+//
+//  Purpose:
+//      Set the working maxs.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 01, 2007
+//
+// ****************************************************************************
+
+void
+avtHistogramFilter::SetWorkingMax( double dataMax )
+{
+    workingRange[1] = dataMax;
+    double abs_dataMax = fabs( dataMax );
+
+    float sign = (dataMax < 0 ? -1.0 : 1.0);
+    logWorkingRange[1] = sign * log10( abs_dataMax + 1.0 );
+    sqrtWorkingRange[1] = sign * sqrt( abs_dataMax );
+}
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::GetWorkingMax
+//
+//  Purpose:
+//      Get the working max based on the type of data scaling.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 01, 2007
+//
+// ****************************************************************************
+
+double
+avtHistogramFilter::GetWorkingMax() const
+{
+    switch ( atts.GetDataScale() )
+    {
+    case  HistogramAttributes::Linear:
+	return workingRange[1];
+    case  HistogramAttributes::Log:
+	return logWorkingRange[1];
+    case HistogramAttributes::SquareRoot:	
+	return sqrtWorkingRange[1];	
+    }
+}
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::SetWorkingNumBins
+//
+//  Purpose:
+//      Set the number of working bins and the bin step sizes.
+//
+//  Programmer: Dave Pugmire
+//  Creation:   November 01, 2007
+//
+// ****************************************************************************
+
+void
+avtHistogramFilter::SetWorkingNumBins( int n )
+{
+    workingNumBins = n;
+    binStep = (workingRange[1] - workingRange[0]) / workingNumBins;
+    logBinStep = (logWorkingRange[1] - logWorkingRange[0] ) / workingNumBins;
+    sqrtBinStep = (sqrtWorkingRange[1] - sqrtWorkingRange[0] ) / workingNumBins;
+}

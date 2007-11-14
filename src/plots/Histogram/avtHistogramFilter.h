@@ -68,6 +68,9 @@
 //    Cyrus Harrison, Fri Mar  9 09:11:34 PST 2007
 //    Added support for point histograms and true "Frequency" histograms
 //
+//    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
+//    Support for log, sqrt scaling.        
+//
 // ****************************************************************************
 
 class avtHistogramFilter : public avtStreamer
@@ -85,8 +88,9 @@ class avtHistogramFilter : public avtStreamer
   protected:
     HistogramAttributes       atts;
     float                    *bins;
-    double                    workingMin;
-    double                    workingMax;
+    float                     binStep, logBinStep, sqrtBinStep;
+    double                    dataValueRange[2];
+    double                    workingRange[2], logWorkingRange[2], sqrtWorkingRange[2];
     int                       workingNumBins;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
@@ -100,6 +104,13 @@ class avtHistogramFilter : public avtStreamer
     virtual void              WeightedExecute(vtkDataSet *);
     virtual void              ArrayVarExecute(vtkDataSet *, int);
 
+    virtual int               ComputeBinIndex( const float &value ) const;
+    virtual void              ScaleBins();
+    virtual void              SetWorkingMin( double dataMin );
+    virtual double            GetWorkingMin() const;
+    virtual void              SetWorkingMax( double dataMax );
+    virtual double            GetWorkingMax() const;
+    virtual void              SetWorkingNumBins( int n );
 };
 
 
