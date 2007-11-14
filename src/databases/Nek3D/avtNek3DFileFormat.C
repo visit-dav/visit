@@ -89,6 +89,10 @@ using     std::string;
 //    Added support for 2D and ascii files, deprecated the
 //    meshcoords tag, and added support for misc scalar fields
 //    in addition to pressure and temperature.
+//
+//    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
+//    Added support for the parallel version of the file, added
+//    support for comments in the file, and deprecated the endian flag.
 // ****************************************************************************
 
 avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
@@ -100,6 +104,7 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     iFirstTimestep = 1;
     iNumTimesteps = 1;
     bBinary = true;
+    iNumOutputDirs = 1;
 
     iNumBlocks = 1;
     iBlockSize[0] = 1;
@@ -114,23 +119,39 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     fdMesh = NULL;
     fdVar = NULL;
     iCurrTimestep = -999;
+    iCurrMeshProc = -999;
+    iCurrVarProc  = -999;
     iAsciiMeshFileStart = -999;
     iAsciiCurrFileStart = -999;
     iHeaderSize = 84;
     iDim = 3;
+    iPrecision = 4;
+    aBlockLocs = NULL;
 
-    string tag, buf1, buf2;
-    char buf[512];
+    string tag, buf2;
+    char buf[2048];
     ifstream  f(filename);
     int ii, jj;
 
     // Verify that the 'magic' and version number are right
-    f >> tag >> buf1 >> version;
+    f >> tag;
+    while (tag[0] == '#')
+    {
+        f.getline(buf, 2048);
+        f >> tag;
+    }
     if (STREQUAL("NEK3D", tag.c_str()) != 0)
     {
         EXCEPTION1(InvalidDBTypeException, "Not a Nek3D file." );
     }
-    if (STREQUAL("version:", buf1.c_str()) != 0)
+    f >> tag;
+    while (tag[0] == '#')
+    {
+        f.getline(buf, 2048);
+        f >> tag;
+    }
+    f >> version;
+    if (STREQUAL("version:", tag.c_str()) != 0)
     {
         EXCEPTION1(InvalidDBTypeException, "Not a Nek3D file." );
     }
@@ -149,10 +170,20 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
             break;
         }
 
+        if (tag[0] == '#')
+        {
+            f.getline(buf, 2048);
+            continue;
+        }
+
         if (STREQUAL("endian:", tag.c_str())==0)
         {
             string  endianness;
             f >> endianness;
+
+            //This tag is deprecated.  There's a float written into each binary file
+            //from which endianness can be determined.
+            /*
             bool bDataIsBigEndian;
 
             if (STREQUAL("big", endianness.c_str())==0)
@@ -174,6 +205,7 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
                 bSwapEndian = true;
             else if ((*pTest == 0) && !bDataIsBigEndian)
                 bSwapEndian = true;
+            */
         }
         else if (STREQUAL("filetemplate:", tag.c_str())==0)
         {
@@ -219,6 +251,10 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
                 EXCEPTION1(InvalidDBTypeException, 
                    "Value following type: must be \"binary\" or \"ascii\"" );
             }
+        }
+        else if (STREQUAL("numoutputdirs:", tag.c_str())==0)
+        {
+            f >> iNumOutputDirs;
         }
         else
         {
@@ -269,63 +305,111 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
 
     //Now read the header out of one the files to get block and variable info
     char *blockfilename = new char[ fileTemplate.size() + 64 ];
-    sprintf(blockfilename, fileTemplate.c_str(), iFirstTimestep);
-
+    if (iNumOutputDirs == 1)
+        sprintf(blockfilename, fileTemplate.c_str(), iFirstTimestep);
+    else
+        sprintf(blockfilename, fileTemplate.c_str(), 0, 0, iFirstTimestep);
     f.open(blockfilename);
-    f >> iNumBlocks;
-    f >> iBlockSize[0];
-    f >> iBlockSize[1];
-    f >> iBlockSize[2];
 
-    f >> buf2;   //skip
-    f >> buf2;   //skip
-
-    if (iBlockSize[2] == 1)
-        iDim = 2;
-
-    while (1)
+    if (iNumOutputDirs == 1)
     {
-        f >> tag;
-        if (tag == "X" || tag == "Y" || tag == "Z")
-            continue;
-        else if (tag == "U")
-            bHasVelocity = true;
-        else if (tag == "P")
-            bHasPressure = true;
-        else if (tag == "T")
-            bHasTemperature = true;
-        else if (tag == "1")
+        f >> iNumBlocks;
+        f >> iBlockSize[0];
+        f >> iBlockSize[1];
+        f >> iBlockSize[2];
+    
+        f >> buf2;   //skip
+        f >> buf2;   //skip
+    
+        while (1)
         {
-            char c;
-            iNumSFields++;
-
-            //From this file pos, figure out how long the sequence is.
-            //Starting with 1, we'll have a sequence of chars separated by
-            //a single space.  "1" or "1 2 3" for example.  This sequence
-            //is also the last possible sequence, hence the break after
-            //the while loop.
-            while (1)
+            f >> tag;
+            if (tag == "X" || tag == "Y" || tag == "Z")
+                continue;
+            else if (tag == "U")
+                bHasVelocity = true;
+            else if (tag == "P")
+                bHasPressure = true;
+            else if (tag == "T")
+                bHasTemperature = true;
+            else if (tag == "1")
             {
-                f.read(&c, 1);
-                if (c == ' ' && f.peek() != ' ')
+                char c;
+                iNumSFields++;
+    
+                //From this file pos, figure out how long the sequence is.
+                //Starting with 1, we'll have a sequence of chars separated by
+                //a single space.  "1" or "1 2 3" for example.  This sequence
+                //is also the last possible sequence, hence the break after
+                //the while loop.
+                while (1)
                 {
-                    f >> tag;
-                    if ( atoi(tag.c_str()) == iNumSFields+1 )
+                    f.read(&c, 1);
+                    if (c == ' ' && f.peek() != ' ')
                     {
-                        iNumSFields++;
+                        f >> tag;
+                        if ( atoi(tag.c_str()) == iNumSFields+1 )
+                        {
+                            iNumSFields++;
+                        }
+                        else
+                            break;
                     }
                     else
                         break;
                 }
-                else
-                    break;
+                break;
             }
-            break;
+            else
+                break;
         }
-        else
-            break;
     }
-    delete[] blockfilename;
+    else
+    {
+        //Here's are two examples of what I'm parsing:
+        //#std 4  6  6  6   120  240  0.1500E+01  300  1  2XUPT
+        //#std 4  6  6  6   120  240  0.1500E+01  300  1  2 U T123
+        //This example means:  #std is for versioning, 4 bytes per sample, 6x6x6 blocks, 
+        //  120 of 240 blocks are in this file, time=1.5, cycle=300, 
+        //  MPI rank=1, MPI size=2, XUPT123 are tags that this file has a mesh, 
+        //  velocity, pressure, temperature, and 3 misc scalars.
+        f >> tag;
+        if (tag != "#std")
+        {
+            EXCEPTION1(InvalidDBTypeException, 
+                "Error reading the header.  Expected it to start with #std" );
+        }
+        f >> iPrecision;
+        f >> iBlockSize[0];
+        f >> iBlockSize[1];
+        f >> iBlockSize[2];
+        f >> buf2;        //blocks per file
+        f >> iNumBlocks;
+        f >> buf2;        //time
+        f >> buf2;        //cycle
+        f >> buf2;        //MPI rank
+        while (f.get() == ' ')  //read past the first char of the next tag
+            ;
+        f.get();         //skip the mesh code
+        if (f.get() == 'U')
+            bHasVelocity = true;
+        if (f.get() == 'P')
+            bHasPressure = true;
+        if (f.get() == 'T')
+            bHasTemperature = true;
+        while ((f.get()-'0') == (iNumSFields+1))
+            iNumSFields++;
+    }
+    if (iBlockSize[2] == 1)
+        iDim = 2;
+    
+    if (iNumOutputDirs > 1  &&  iNumBlocks%iNumOutputDirs != 0)
+    {
+        EXCEPTION1(InvalidDBTypeException, 
+            "Parallel Nek reader requires an equal number of blocks per file." );
+    }
+    iBlocksPerFile = iNumBlocks/iNumOutputDirs;
+
 
     if (bBinary)
     {
@@ -334,13 +418,81 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
         int iDomainSize, d1, d2, d3, d4;
         GetDomainSizeAndVarOffset(iFirstTimestep, NULL, iDomainSize, d1, d2, d3, d4);
     
-        f.seekg( -iNumBlocks*iDomainSize*sizeof(float), std::ios_base::end );
+        f.seekg( -iBlocksPerFile*iDomainSize*iPrecision, std::ios_base::end );
         iHeaderSize = (int)f.tellg();
-    
-        if (iHeaderSize <= 0 || iHeaderSize > 256)
+
+        // Determine endianness and whether we need to swap bytes.
+        // If this machine's endian matches the file's, the read will 
+        // put 6.54321 into this float.
+        float test;  
+        if (iNumOutputDirs == 1)
         {
-            EXCEPTION1(InvalidDBTypeException, 
-                "File size is not consistent with variables declared in the header." );
+            f.seekg( 80, std::ios_base::beg );
+            f.read((char *)(&test), 4);
+        }
+        else
+        {
+            f.seekg( 132, std::ios_base::beg );
+            f.read((char *)(&test), 4);
+        }
+        if (test > 6.5 && test < 6.6)
+            bSwapEndian = false;
+        else
+        {
+            ByteSwap32(&test, 1);
+            if (test > 6.5 && test < 6.6)
+                bSwapEndian = true;
+            else
+            {
+                EXCEPTION1(InvalidDBTypeException, 
+                    "Error reading file, while trying to determine endianness." );
+            }
+        }
+
+        // In each parallel file, in the header, there's a table that maps 
+        // each local block to a global id which starts at 1.  Here, I make 
+        // an inverse map, from a zero-based global id to a proc num and local
+        // offset.
+        if (iNumOutputDirs > 1)
+        {
+            f.close();
+            aBlockLocs = new int[2*iNumBlocks];
+            for (ii = 0; ii < 2*iNumBlocks; ii++)
+            {
+                aBlockLocs[ii] = -999;
+            }
+            int *tmpBlocks = new int[iBlocksPerFile];
+            for (ii = 0; ii < iNumOutputDirs; ii++)
+            {
+                sprintf(blockfilename, fileTemplate.c_str(), ii, ii, iFirstTimestep);
+                f.open(blockfilename);
+                if (!f.is_open())
+                {
+                    char msg[1024];
+                    sprintf(msg, "Could not open file %s.", filename);
+                    EXCEPTION1(InvalidDBTypeException, msg);
+                }
+                f.seekg( 136, std::ios_base::beg );
+                f.read( (char *)tmpBlocks, iBlocksPerFile*sizeof(int) );
+                f.close();
+
+                for (jj = 0; jj < iBlocksPerFile; jj++)
+                {
+                    int iBlockID = tmpBlocks[jj]-1;
+
+                    if ( iBlockID < 0  ||  
+                         iBlockID >= iNumBlocks ||
+                         aBlockLocs[iBlockID*2]   != -999  ||
+                         aBlockLocs[iBlockID*2+1] != -999 )
+                    {
+                        EXCEPTION1(InvalidDBTypeException, 
+                                   "Error reading parallel file block IDs.");
+                    }
+                    aBlockLocs[iBlockID*2  ] = ii;
+                    aBlockLocs[iBlockID*2+1] = jj;
+                }
+            }
+            delete[] tmpBlocks;
         }
     }
     else
@@ -348,7 +500,28 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
         iHeaderSize = 80;
     }
 
-    f.close();
+    delete[] blockfilename;
+    if (f.is_open())
+        f.close();
+}
+
+
+// ****************************************************************************
+//  Method: avtNek3DFileFormat destructor
+//
+//  Programmer: David Bremer
+//  Creation:   Wed Nov 14 11:35:30 PST 2007
+//
+// ****************************************************************************
+
+avtNek3DFileFormat::~avtNek3DFileFormat()
+{
+    FreeUpResources();
+    if (aBlockLocs)
+    {
+        delete[] aBlockLocs;
+        aBlockLocs = NULL;
+    }
 }
 
 
@@ -399,8 +572,12 @@ avtNek3DFileFormat::FreeUpResources(void)
     {
         fclose(fdVar);
         fdVar = NULL;
-        iCurrTimestep = -999;
     }
+    iCurrTimestep = -999;
+    iCurrMeshProc = -999;
+    iCurrVarProc  = -999;
+    iAsciiMeshFileStart = -999;
+    iAsciiCurrFileStart = -999;
 }
 
 
@@ -419,6 +596,9 @@ avtNek3DFileFormat::FreeUpResources(void)
 //    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
 //    Added support for 2D and files, and added support for misc scalar fields
 //    in addition to pressure and temperature.
+//
+//    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
+//    Changed block numbering from 0 based to 1 based.
 // ****************************************************************************
 
 void
@@ -426,7 +606,7 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 {
     string meshname = "mesh";
     double *extents = NULL;
-    AddMeshToMetaData(md, meshname, AVT_CURVILINEAR_MESH, extents, iNumBlocks, 0, iDim, iDim);
+    AddMeshToMetaData(md, meshname, AVT_CURVILINEAR_MESH, extents, iNumBlocks, 1, iDim, iDim);
     
     if (bHasPressure)
         AddScalarVarToMetaData(md, "pressure", meshname, AVT_NODECENT);
@@ -478,6 +658,9 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 //    Added support for 2D and ascii files, added a call to 
 //    UpdateCyclesAndTimes(), which also figures out which
 //    files have a mesh.
+//
+//    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
+//    Added support for the parallel version of the file.
 // ****************************************************************************
 
 vtkDataSet *
@@ -497,11 +680,24 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
 
     UpdateCyclesAndTimes();   //This call also finds which timesteps have a mesh.
 
-    if (fdMesh == NULL)
+    if (fdMesh == NULL || 
+        (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrMeshProc))
     {
-        char *meshfilename = new char[ fileTemplate.size() + 64 ];
-        sprintf(meshfilename, fileTemplate.c_str(), iTimestepsWithMesh[0]);
-    
+        if (fdMesh)
+            fclose(fdMesh);
+
+        char *meshfilename = new char[ fileTemplate.size() + 256 ];
+
+        if (iNumOutputDirs == 1)
+        {
+            sprintf(meshfilename, fileTemplate.c_str(), iTimestepsWithMesh[0]);
+        }
+        else
+        {
+            iCurrMeshProc = aBlockLocs[domain*2];
+            sprintf(meshfilename, fileTemplate.c_str(), 
+                    iCurrMeshProc, iCurrMeshProc, iTimestepsWithMesh[0]);
+        }
         fdMesh = fopen(meshfilename, "rb");
         if (!fdMesh)
             EXCEPTION1(InvalidFilesException, meshfilename);
@@ -511,34 +707,69 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
             iAsciiMeshFileStart = FindAsciiDataStart(fdMesh);
     }
 
+    if (iNumOutputDirs > 1)
+        domain = aBlockLocs[domain*2 + 1];
+
     int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, dummy1, dummy2;
     GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, 
                               nBytesInDomain, nBytesInSample, dummy1, dummy2);
 
     if (bBinary)
     {
-        float *tmppts = new float[nPts*iDim];
-        fseek(fdMesh, iHeaderSize + nFloatsInDomain*sizeof(float)*domain, SEEK_SET);
-        fread(tmppts, sizeof(float), nPts*iDim, fdMesh);
-        if (bSwapEndian)
-            ByteSwap32(tmppts, nPts*iDim);
+        //In the parallel format, the whole mesh comes before all the vars.
+        if (iNumOutputDirs > 1)
+            nFloatsInDomain = iDim*iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
 
-        for (ii = 0 ; ii < nPts ; ii++)
+        if (iPrecision == 4)
         {
-            if (iDim == 3)
+            float *tmppts = new float[nPts*iDim];
+            fseek(fdMesh, iHeaderSize + nFloatsInDomain*sizeof(float)*domain, SEEK_SET);
+            fread(tmppts, sizeof(float), nPts*iDim, fdMesh);
+            if (bSwapEndian)
+                ByteSwap32(tmppts, nPts*iDim);
+    
+            for (ii = 0 ; ii < nPts ; ii++)
             {
-                pts[ii*3 + 0] = tmppts[ii];
-                pts[ii*3 + 1] = tmppts[ii+nPts];
-                pts[ii*3 + 2] = tmppts[ii+nPts+nPts];
+                if (iDim == 3)
+                {
+                    pts[ii*3 + 0] = tmppts[ii];
+                    pts[ii*3 + 1] = tmppts[ii+nPts];
+                    pts[ii*3 + 2] = tmppts[ii+nPts+nPts];
+                }
+                else
+                {
+                    pts[ii*3 + 0] = tmppts[ii];
+                    pts[ii*3 + 1] = tmppts[ii+nPts];
+                    pts[ii*3 + 2] = 0.0f;
+                }
             }
-            else
-            {
-                pts[ii*3 + 0] = tmppts[ii];
-                pts[ii*3 + 1] = tmppts[ii+nPts];
-                pts[ii*3 + 2] = 0.0f;
-            }
+            delete [] tmppts;
         }
-        delete [] tmppts;
+        else
+        {
+            double *tmppts = new double[nPts*iDim];
+            fseek(fdMesh, iHeaderSize + nFloatsInDomain*sizeof(double)*domain, SEEK_SET);
+            fread(tmppts, sizeof(double), nPts*iDim, fdMesh);
+            if (bSwapEndian)
+                ByteSwap64(tmppts, nPts*iDim);
+    
+            for (ii = 0 ; ii < nPts ; ii++)
+            {
+                if (iDim == 3)
+                {
+                    pts[ii*3 + 0] = (float)tmppts[ii];
+                    pts[ii*3 + 1] = (float)tmppts[ii+nPts];
+                    pts[ii*3 + 2] = (float)tmppts[ii+nPts+nPts];
+                }
+                else
+                {
+                    pts[ii*3 + 0] = (float)tmppts[ii];
+                    pts[ii*3 + 1] = (float)tmppts[ii+nPts];
+                    pts[ii*3 + 2] = 0.0;
+                }
+            }
+            delete [] tmppts;
+        }
     }
     else
     {
@@ -589,6 +820,9 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
 //
 //    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
 //    Added support for 2D and ascii files
+//
+//    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
+//    Added support for the parallel version of the file.
 // ****************************************************************************
 
 vtkDataArray *
@@ -596,22 +830,33 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
     int iTimestep = timestate + iFirstTimestep;
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+    int ii;
 
-    if (iTimestep != iCurrTimestep)
+    if (iTimestep != iCurrTimestep || 
+        (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrVarProc))
     {
         if (fdVar)
             fclose(fdVar);
 
-        char *filename = new char[ fileTemplate.size() + 64 ];
-        sprintf(filename, fileTemplate.c_str(), iTimestep);
-
+        char *filename = new char[ fileTemplate.size() + 256 ];
+        if (iNumOutputDirs == 1)
+        {
+            sprintf(filename, fileTemplate.c_str(), iTimestep);
+        }
+        else
+        {
+            iCurrVarProc = aBlockLocs[domain*2];
+            sprintf(filename, fileTemplate.c_str(), 
+                    iCurrVarProc, iCurrVarProc, iTimestep);
+        }
         fdVar = fopen(filename, "rb");
         if (!fdVar)
             EXCEPTION1(InvalidFilesException, filename);
         delete[] filename;
 
         iCurrTimestep = iTimestep;
-        iAsciiCurrFileStart = FindAsciiDataStart(fdVar);
+        if (!bBinary)
+            iAsciiCurrFileStart = FindAsciiDataStart(fdVar);
     }
 
     vtkFloatArray *rv = vtkFloatArray::New();
@@ -624,18 +869,49 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
                               nBytesInDomain, nBytesInSample, 
                               iBinaryOffset, iAsciiOffset);
+    if (iNumOutputDirs > 1)
+        domain = aBlockLocs[domain*2 + 1];
+
     if (bBinary)
     {
-        int filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
-        fseek(fdVar, filepos, SEEK_SET);
-        fread(var, sizeof(float), nPts, fdVar);
-    
-        if (bSwapEndian)
-            ByteSwap32(var, nPts);
+        int filepos;
+        if (iNumOutputDirs == 1)
+            filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
+        else
+        {
+            // This assumes [block0: 216u 216v 216w 216p 216t]
+            //filepos = iHeaderSize + iBlocksPerFile*iDim*sizeof(float)*nPts + //the header and mesh
+            //          ((nFloatsInDomain-iDim)*domain + iBinaryOffset-iDim)*sizeof(float);
+
+            // This assumes uvw for all fields comes before p or t, then   [block0: 216p][block1: 216p][block2: 216p]
+            filepos = iHeaderSize + iBlocksPerFile*iBinaryOffset*iPrecision + //the header, mesh, vel if present,
+                      domain*nPts*iPrecision;
+        }
+        if (iPrecision==4)
+        {
+            fseek(fdVar, filepos, SEEK_SET);
+            fread(var, sizeof(float), nPts, fdVar);
+            if (bSwapEndian)
+                ByteSwap32(var, nPts);
+        }
+        else
+        {
+            double *tmp = new double[nPts];
+
+            fseek(fdVar, filepos, SEEK_SET);
+            fread(tmp, sizeof(double), nPts, fdVar);
+            if (bSwapEndian)
+                ByteSwap64(tmp, nPts);
+
+            for (ii = 0 ; ii < nPts ; ii++)
+                var[ii] = (float)tmp[ii];
+
+            delete[] tmp;
+        }
     }
     else
     {
-        for (int ii = 0 ; ii < nPts ; ii++)
+        for (ii = 0 ; ii < nPts ; ii++)
         {
             fseek(fdVar, iAsciiCurrFileStart + domain*nBytesInDomain + ii*nBytesInSample + iAsciiOffset, SEEK_SET);
             fscanf(fdVar, " %f", var);
@@ -674,6 +950,9 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 //
 //    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
 //    Added support for 2D and ascii files
+//
+//    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
+//    Added support for the parallel version of the file.
 // ****************************************************************************
 
 vtkDataArray *
@@ -683,21 +962,31 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
     int ii;
 
-    if (iTimestep != iCurrTimestep)
+    if (iTimestep != iCurrTimestep || 
+        (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrVarProc))
     {
         if (fdVar)
             fclose(fdVar);
 
-        char *filename = new char[ fileTemplate.size() + 64 ];
-        sprintf(filename, fileTemplate.c_str(), iTimestep);
-    
+        char *filename = new char[ fileTemplate.size() + 256 ];
+        if (iNumOutputDirs == 1)
+        {
+            sprintf(filename, fileTemplate.c_str(), iTimestep);
+        }
+        else
+        {
+            iCurrVarProc = aBlockLocs[domain*2];
+            sprintf(filename, fileTemplate.c_str(), 
+                    iCurrVarProc, iCurrVarProc, iTimestep);
+        }
         fdVar = fopen(filename, "rb");
         if (!fdVar)
             EXCEPTION1(InvalidFilesException, filename);
         delete[] filename;
 
         iCurrTimestep = iTimestep;
-        iAsciiCurrFileStart = FindAsciiDataStart(fdVar);
+        if (!bBinary)
+            iAsciiCurrFileStart = FindAsciiDataStart(fdVar);
     }
 
     vtkFloatArray *rv = vtkFloatArray::New();
@@ -711,32 +1000,73 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
                               nBytesInDomain, nBytesInSample, 
                               iBinaryOffset, iAsciiOffset);
+    if (iNumOutputDirs > 1)
+        domain = aBlockLocs[domain*2 + 1];
+
     if (bBinary)
     {
-        float *tmppts = new float[nPts*iDim];
-        int filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
-        fseek(fdVar, filepos, SEEK_SET);
-        fread(tmppts, sizeof(float), nPts*iDim, fdVar);
-    
-        if (bSwapEndian)
-            ByteSwap32(tmppts, nPts*iDim);
-    
-        for (ii = 0 ; ii < nPts ; ii++)
+        int filepos;
+        if (iNumOutputDirs == 1)
+            filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
+        else
         {
-            if (iDim == 3)
-            {
-                pts[ii*3 + 0] = tmppts[ii];
-                pts[ii*3 + 1] = tmppts[ii+nPts];
-                pts[ii*3 + 2] = tmppts[ii+nPts+nPts];
-            }
-            else
-            {
-                pts[ii*3 + 0] = tmppts[ii];
-                pts[ii*3 + 1] = tmppts[ii+nPts];
-                pts[ii*3 + 2] = 0.0;
-            }
+            //This assumes [block 0: 216u 216v 216w][block 1: 216u 216v 216w]...[block n: 216u 216v 216w]
+            filepos = iHeaderSize + iBlocksPerFile*iBinaryOffset*iPrecision + //the header and mesh if one exists
+                      domain*nPts*iDim*iPrecision;
         }
-        delete[] tmppts;
+        if (iPrecision == 4)
+        {
+            float *tmppts = new float[nPts*iDim];
+
+            fseek(fdVar, filepos, SEEK_SET);
+            fread(tmppts, sizeof(float), nPts*iDim, fdVar);
+
+            if (bSwapEndian)
+                ByteSwap32(tmppts, nPts*iDim);
+    
+            for (ii = 0 ; ii < nPts ; ii++)
+            {
+                if (iDim == 3)
+                {
+                    pts[ii*3 + 0] = tmppts[ii];
+                    pts[ii*3 + 1] = tmppts[ii+nPts];
+                    pts[ii*3 + 2] = tmppts[ii+nPts+nPts];
+                }
+                else
+                {
+                    pts[ii*3 + 0] = tmppts[ii];
+                    pts[ii*3 + 1] = tmppts[ii+nPts];
+                    pts[ii*3 + 2] = 0.0f;
+                }
+            }
+            delete [] tmppts;
+        }
+        else
+        {
+            double *tmppts = new double[nPts*iDim];
+            fseek(fdVar, filepos, SEEK_SET);
+            fread(tmppts, sizeof(double), nPts*iDim, fdVar);
+
+            if (bSwapEndian)
+                ByteSwap64(tmppts, nPts*iDim);
+    
+            for (ii = 0 ; ii < nPts ; ii++)
+            {
+                if (iDim == 3)
+                {
+                    pts[ii*3 + 0] = (double)tmppts[ii];
+                    pts[ii*3 + 1] = (double)tmppts[ii+nPts];
+                    pts[ii*3 + 2] = (double)tmppts[ii+nPts+nPts];
+                }
+                else
+                {
+                    pts[ii*3 + 0] = (double)tmppts[ii];
+                    pts[ii*3 + 1] = (double)tmppts[ii+nPts];
+                    pts[ii*3 + 2] = 0.0;
+                }
+            }
+            delete [] tmppts;
+        }
     }
     else
     {
@@ -812,6 +1142,9 @@ avtNek3DFileFormat::GetTimes(std::vector<double> &outTimes)
 //    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
 //    While scanning the headers, also figure out which files contain a mesh,
 //    allowing one less tag in the .nek3d file.
+//
+//    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
+//    Added support for the parallel version of the file.
 // ****************************************************************************
 
 void
@@ -836,10 +1169,22 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
         t = 0.0;
         c = 0;
 
-        sprintf(meshfilename, fileTemplate.c_str(), iFirstTimestep+ii);
-
-        f.open(meshfilename);
-        f >> dummy >> dummy >> dummy >> dummy >> t >> c >> v;  //skip #blocks and block size
+        if (iNumOutputDirs == 1)
+        {
+            sprintf(meshfilename, fileTemplate.c_str(), iFirstTimestep+ii);
+            f.open(meshfilename);
+            f >> dummy >> dummy >> dummy >> dummy >> t >> c >> v;  //skip #blocks and block size
+        }
+        else
+        {
+            sprintf(meshfilename, fileTemplate.c_str(), 0, 0, iFirstTimestep+ii);
+            f.open(meshfilename);
+            f >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
+            f >> t >> c >> dummy;
+            while (f.get() == ' ')  //read past the first char of the next tag
+                ;
+            v = f.get();
+        }
         f.close();
 
         aTimes[ii] = t;
@@ -972,6 +1317,32 @@ avtNek3DFileFormat::ByteSwap32(void *aVals, int nVals)
     {
         tmp = v[0]; v[0] = v[3]; v[3] = tmp;
         tmp = v[1]; v[1] = v[2]; v[2] = tmp;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtNek3DFileFormat::ByteSwap64
+//
+//  Purpose:
+//      Swap endian for an array of 64-bit entities
+//
+//  Programmer: Dave Bremer
+//  Creation:   Nov 8, 2007
+//
+// ****************************************************************************
+
+void
+avtNek3DFileFormat::ByteSwap64(void *aVals, int nVals)
+{
+    char *v = (char *)aVals;
+    char tmp;
+    for (int ii = 0 ; ii < nVals ; ii++, v+=8)
+    {
+        tmp = v[0]; v[0] = v[7]; v[7] = tmp;
+        tmp = v[1]; v[1] = v[6]; v[6] = tmp;
+        tmp = v[2]; v[2] = v[5]; v[5] = tmp;
+        tmp = v[3]; v[3] = v[4]; v[4] = tmp;
     }
 }
 

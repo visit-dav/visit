@@ -60,13 +60,16 @@
 //    Dave Bremer, Wed Nov  7 12:27:33 PST 2007
 //    This reader previously supported 3D binary Nek files.  Now it also 
 //    handles 2D and ascii versions of Nek files.
+//
+//    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
+//    Added support for the parallel version of the file.
 // ****************************************************************************
 
 class avtNek3DFileFormat : public avtMTMDFileFormat
 {
   public:
                        avtNek3DFileFormat(const char *);
-    virtual           ~avtNek3DFileFormat() {;};
+    virtual           ~avtNek3DFileFormat();
 
     //
     // This is used to return unconventional data -- ranging from material
@@ -97,14 +100,14 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     // This info is embedded in the .nek3d text file 
     // originally specified by Dave Bremer
     std::string          version;
-    bool                 bSwapEndian;
     std::string          fileTemplate;
     int                  iFirstTimestep;
     int                  iNumTimesteps;
-    std::vector<int>     iTimestepsWithMesh;
-    bool                 bBinary;  //binary or ascii
+    bool                 bBinary;         //binary or ascii
+    int                  iNumOutputDirs;  //denotes serial or parallel format
 
     // This info is embedded in, or derived from, the file header
+    bool                 bSwapEndian;
     int                  iNumBlocks;
     int                  iBlockSize[3];
     bool                 bHasVelocity;
@@ -113,17 +116,26 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     int                  iNumSFields;
     int                  iHeaderSize;
     int                  iDim;
+    int                  iPrecision; //4 or 8 for float or double
+                                     //only used in parallel binary
+    int                  iBlocksPerFile;
 
     // This info is distributed through all the dumps, and only
     // computed on demand
     std::vector<int>     aCycles;
     std::vector<double>  aTimes;
+    std::vector<int>     iTimestepsWithMesh;
 
     // Cached data
     FILE *fdMesh, *fdVar;
-    int  iCurrTimestep;
+    int  iCurrTimestep;        //which timestep is associated with fdVar
+    int  iCurrMeshProc;        //For parallel format, proc associated with fdMesh
+    int  iCurrVarProc;         //For parallel format, proc associated with fdVar  
     int  iAsciiMeshFileStart;  //For ascii data, file pos where data begins, in mesh file
     int  iAsciiCurrFileStart;  //For ascii data, file pos where data begins, in current timestep
+
+    int *aBlockLocs;           //For parallel format, make a table for looking up blocks.
+                               //This has 2 ints per block, with proc # and local block #.
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
     virtual void           UpdateCyclesAndTimes();
@@ -134,6 +146,7 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
                                                      int &outVarOffsetInFloats,
                                                      int &outVarOffsetInBytes );
     void                   ByteSwap32(void *aVals, int nVals);
+    void                   ByteSwap64(void *aVals, int nVals);
     int                    FindAsciiDataStart(FILE *fd);
 };
 
