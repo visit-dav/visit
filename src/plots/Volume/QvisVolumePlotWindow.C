@@ -1188,6 +1188,9 @@ QvisVolumePlotWindow::CopyGaussianOpacitiesToFreeForm()
 //
 //   Kathleen Bonnell, Thu Mar  3 11:01:22 PST 2005 
 //   Added support for skew factor.
+//   
+//   Dave Pugmire, Thu Nov  8 15:03:32 EST 2007
+//   Check the "okay" flag before setting the skew edit.
 //
 // ****************************************************************************
 
@@ -1409,7 +1412,8 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
         if(okay)
         {
             double val = temp.toDouble(&okay);
-            volumeAtts->SetSkewFactor(val);
+	    if ( okay )
+		volumeAtts->SetSkewFactor(val);
         }
 
         if(!okay)
