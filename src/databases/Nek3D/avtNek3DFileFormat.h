@@ -144,7 +144,8 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
                                                      int &outDomSizeInBytes, 
                                                      int &outSampleSizeInBytes, 
                                                      int &outVarOffsetInFloats,
-                                                     int &outVarOffsetInBytes );
+                                                     int &outVarOffsetInBytes,
+                                                     int &outTimestepHasMesh );
     void                   ByteSwap32(void *aVals, int nVals);
     void                   ByteSwap64(void *aVals, int nVals);
     int                    FindAsciiDataStart(FILE *fd);
