@@ -607,6 +607,12 @@ avtSliceFilter::PreExecute(void)
 //    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
 //    Normal is cached, so use that value instead.
 //
+//    Hank Childs, Wed Nov 14 16:10:07 PST 2007
+//    Make sure that projection really projects to Z=0.  Without the
+//    final projection to Z=0 added in this change, floating point 
+//    precision problems in a matrix inversion can lead to projections 
+//    that didn't actually go to 0.
+//
 // ****************************************************************************
 
 void
@@ -650,9 +656,9 @@ avtSliceFilter::SetUpProjection(void)
         }
     }
 
-    float origin[4] = {ox,oy,oz,1};
-    float normal[3] = {nx,ny,nz};
-    float upaxis[3] = {ux,uy,uz};
+    double origin[4] = {ox,oy,oz,1};
+    double normal[3] = {nx,ny,nz};
+    double upaxis[3] = {ux,uy,uz};
 
     vtkMath::Normalize(normal);
     vtkMath::Normalize(upaxis);
@@ -661,7 +667,7 @@ avtSliceFilter::SetUpProjection(void)
     // The normal and up vectors form two thirds of a basis, take their
     // cross product to find the third element of the basis.
     //
-    float  third[3];
+    double  third[3];
     vtkMath::Cross(upaxis, normal, third); // right-handed
     vtkMath::Normalize(third);  // if normal is not "orthogonal" to "third".
 
@@ -698,9 +704,19 @@ avtSliceFilter::SetUpProjection(void)
     vtkMatrix4x4 *xformToXYPlane = vtkMatrix4x4::New();
     vtkMatrix4x4::Invert(xformToOriginalSpace, xformToXYPlane);
 
+    // Floating point precision can cause the projection of really big data 
+    // sets (in terms of spatial extents) to have Z-values that are not 0, and
+    // even be outside the near and far planes.  So add an additional matrix to
+    // project it down to Z=0.
+    vtkMatrix4x4 *reallyProject = vtkMatrix4x4::New();
+    reallyProject->Identity();
+    reallyProject->SetElement(2, 2, 0.);
+    vtkMatrix4x4 *realXformToXYPlane = vtkMatrix4x4::New();
+    vtkMatrix4x4::Multiply4x4(reallyProject,xformToXYPlane,realXformToXYPlane);
+
     // Set the projection matrix for the transform.
     vtkMatrixToLinearTransform *mtlt = vtkMatrixToLinearTransform::New();
-    mtlt->SetInput(xformToXYPlane);
+    mtlt->SetInput(realXformToXYPlane);
     transform->SetTransform(mtlt);
     mtlt->Delete();
 
@@ -708,11 +724,13 @@ avtSliceFilter::SetUpProjection(void)
     // created these in-place and used them instead of the temporary
     // ones, but this makes the memory management a little clearer.
     invTrans->DeepCopy(xformToOriginalSpace);
-    origTrans->DeepCopy(xformToXYPlane);
+    origTrans->DeepCopy(realXformToXYPlane);
 
     // Free the temporary matrices
     xformToOriginalSpace->Delete();
     xformToXYPlane->Delete();
+    realXformToXYPlane->Delete();
+    reallyProject->Delete();
 }
 
 // ****************************************************************************
