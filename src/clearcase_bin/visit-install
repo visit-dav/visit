@@ -136,6 +136,10 @@
 #
 #    Mark C. Miller, Tue Jun 19 17:29:08 PDT 2007
 #    Added visit_plugin and mkgrdbl
+#
+#    Hank Childs, Wed Nov 14 16:54:09 PST 2007
+#    Make sure we have write permission for the target directory.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -326,6 +330,17 @@ set fname2 = $base.$platform.tar
 #
 if (`echo "$dir" | grep "^/"` == "") then
    set dir = `pwd`/"$dir"
+endif
+
+touch $dir/test.$$
+if (! -e $dir/test.$$) then
+   echo ""
+   echo "You do not have write permission to $dir"
+   echo "Bailing out"
+   echo ""
+   exit (2)
+else
+   rm $dir/test.$$
 endif
 
 #
