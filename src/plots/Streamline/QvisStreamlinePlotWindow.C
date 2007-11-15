@@ -115,6 +115,9 @@ QvisStreamlinePlotWindow::~QvisStreamlinePlotWindow()
 //   Hank Childs, Sat Mar  3 09:11:44 PST 2007
 //   Added useWholeBox.
 //
+//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
+//   Add streamline direction option.
+//
 // ****************************************************************************
 
 void
@@ -345,15 +348,25 @@ QvisStreamlinePlotWindow::CreateWindowContents()
             this, SLOT(pointDensityChanged(int)));
     mainLayout->addWidget(pointDensity, 3,1);
 
+    //Create the direction of integration.
+    mainLayout->addWidget(new QLabel("Streamline Direction", central, "streamlineDirectionLabel"),4,0);
+    directionType = new QComboBox(central, "directionType");
+    directionType->insertItem("Forward");
+    directionType->insertItem("Backward");
+    directionType->insertItem("Both");
+    connect(directionType, SIGNAL(activated(int)),
+            this, SLOT(directionTypeChanged(int)));
+    mainLayout->addWidget(directionType, 4,1);
+
     legendFlag = new QCheckBox("Legend", central, "legendFlag");
     connect(legendFlag, SIGNAL(toggled(bool)),
             this, SLOT(legendFlagChanged(bool)));
-    mainLayout->addWidget(legendFlag, 4,0);
+    mainLayout->addWidget(legendFlag, 5,0);
 
     lightingFlag = new QCheckBox("Lighting", central, "lightingFlag");
     connect(lightingFlag, SIGNAL(toggled(bool)),
             this, SLOT(lightingFlagChanged(bool)));
-    mainLayout->addWidget(lightingFlag, 4,1);
+    mainLayout->addWidget(lightingFlag, 5,1);
 
 }
 
@@ -414,6 +427,9 @@ QvisStreamlinePlotWindow::ProcessOldVersions(DataNode *parentNode,
 //
 //   Hank Childs, Sat Mar  3 09:11:44 PST 2007
 //   Added support for useWholeBox.
+//
+//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
+//   Add streamline direction option.
 //
 // ****************************************************************************
 
@@ -599,6 +615,13 @@ QvisStreamlinePlotWindow::UpdateWindow(bool doAll)
             lightingFlag->setChecked(streamAtts->GetLightingFlag());
             lightingFlag->blockSignals(false);
             break;
+        case 24: // streamline direction.
+
+            directionType->blockSignals(true);
+	    directionType->setCurrentItem( int(streamAtts->GetStreamlineDirection()) );
+	    directionType->blockSignals(false);
+
+	    break;
         }
     }
 }
@@ -1195,6 +1218,16 @@ QvisStreamlinePlotWindow::sourceTypeChanged(int val)
         Apply();
     }
 }
+
+void
+QvisStreamlinePlotWindow::directionTypeChanged(int val)
+ {
+    if(val != streamAtts->GetStreamlineDirection())
+    {
+        streamAtts->SetStreamlineDirection(StreamlineAttributes::IntegrationDirection(val));
+        Apply();
+    }
+}   
 
 void
 QvisStreamlinePlotWindow::stepLengthProcessText()

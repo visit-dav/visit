@@ -87,6 +87,9 @@ class vtkAppendPolyData;
 //   Add new data member: useWholeBox.  Also added method PreExecute to 
 //   support it.  Added PostExecute method to get the extents right.
 //
+//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
+//   Add support for streamline direction option.
+//
 // ****************************************************************************
 
 class avtStreamlineFilter : public avtStreamer
@@ -120,7 +123,7 @@ class avtStreamlineFilter : public avtStreamer
     void                      SetShowStart(bool);
     void                      SetRadius(double rad);
     void                      SetPointDensity(int den);
-
+    void                      SetStreamlineDirection(int dir);
     void                      SetColoringMethod(int);
 
   protected:
@@ -131,6 +134,7 @@ class avtStreamlineFilter : public avtStreamer
     int    displayMethod;
     bool   showStart;
     int    pointDensity;
+    int    streamlineDirection;
     int    coloringMethod;
 
     // Various starting locations for streamlines.

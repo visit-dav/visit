@@ -231,6 +231,7 @@ StreamlineAttributes::ChangesRequireRecalculation(const StreamlineAttributes &ob
     bool radiusMatters = (displayMethod != Lines) && (radius != obj.radius);
 
     return (sourceType != obj.sourceType) ||
+           (StreamlineDirection != obj.StreamlineDirection) ||
            (displayMethod != obj.displayMethod) ||
            (showStart != obj.showStart) ||
            (maxTime != obj.maxTime) ||
