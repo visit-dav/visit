@@ -511,8 +511,8 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     {
         // Compute the size of the header.  In all cases so far, the header size
         // for binary files has been 84.
-        int iDomainSize, d1, d2, d3, d4;
-        GetDomainSizeAndVarOffset(iFirstTimestep, NULL, iDomainSize, d1, d2, d3, d4);
+        int iDomainSize, d1, d2, d3, d4, d5;
+        GetDomainSizeAndVarOffset(iFirstTimestep, NULL, iDomainSize, d1, d2, d3, d4, d5);
     
         f.seekg( -iBlocksPerFile*iDomainSize*iPrecision, std::ios_base::end );
         iHeaderSize = (int)f.tellg();
@@ -711,8 +711,15 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
         AddScalarVarToMetaData(md, "temperature", meshname, AVT_NODECENT);
 
     if (bHasVelocity)
+    {
         AddVectorVarToMetaData(md, "velocity", meshname, AVT_NODECENT, iDim);
 
+        AddScalarVarToMetaData(md, "x_velocity", meshname, AVT_NODECENT);
+        AddScalarVarToMetaData(md, "y_velocity", meshname, AVT_NODECENT);
+
+        if (iDim == 3)
+            AddScalarVarToMetaData(md, "z_velocity", meshname, AVT_NODECENT);
+    }
     int ii;
     for (ii = 0; ii < iNumSFields; ii++)
     {
@@ -806,9 +813,9 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
     if (iNumOutputDirs > 1)
         domain = aBlockLocs[domain*2 + 1];
 
-    int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, dummy1, dummy2;
+    int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, d1, d2, d3;
     GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, 
-                              nBytesInDomain, nBytesInSample, dummy1, dummy2);
+                              nBytesInDomain, nBytesInSample, d1, d2, d3);
 
     if (bBinary)
     {
@@ -960,11 +967,11 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
     float *var = (float *)rv->GetVoidPointer(0);
 
     int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, 
-        iBinaryOffset = 0, iAsciiOffset = 0;
+        iBinaryOffset = 0, iAsciiOffset = 0, iHasMesh = 0;
 
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
                               nBytesInDomain, nBytesInSample, 
-                              iBinaryOffset, iAsciiOffset);
+                              iBinaryOffset, iAsciiOffset, iHasMesh);
     if (iNumOutputDirs > 1)
         domain = aBlockLocs[domain*2 + 1];
 
@@ -975,13 +982,18 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
             filepos = iHeaderSize + (nFloatsInDomain*domain + iBinaryOffset)*sizeof(float);
         else
         {
-            // This assumes [block0: 216u 216v 216w 216p 216t]
-            //filepos = iHeaderSize + iBlocksPerFile*iDim*sizeof(float)*nPts + //the header and mesh
-            //          ((nFloatsInDomain-iDim)*domain + iBinaryOffset-iDim)*sizeof(float);
-
-            // This assumes uvw for all fields comes before p or t, then   [block0: 216p][block1: 216p][block2: 216p]
-            filepos = iHeaderSize + iBlocksPerFile*iBinaryOffset*iPrecision + //the header, mesh, vel if present,
-                      domain*nPts*iPrecision;
+            // This assumes uvw for all fields comes after the mesh as [block0: 216u 216v 216w]...
+            // then p or t as   [block0: 216p][block1: 216p][block2: 216p]...
+            if (strcmp(varname+2, "velocity") == 0)
+            {
+                filepos  = iHeaderSize;                                  //header
+                filepos += iHasMesh*iBlocksPerFile*nPts*iDim*iPrecision; //mesh
+                filepos += domain*nPts*iDim*iPrecision;                  //start of block
+                filepos += (varname[0] - 'x')*nPts*iPrecision;           //position within block
+            }
+            else
+                filepos = iHeaderSize + iBlocksPerFile*iBinaryOffset*iPrecision + //the header, mesh, vel if present,
+                          domain*nPts*iPrecision;
         }
         if (iPrecision==4)
         {
@@ -1091,11 +1103,11 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     float *pts = (float *)rv->GetVoidPointer(0);
 
     int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, 
-        iBinaryOffset = 0, iAsciiOffset = 0;
+        iBinaryOffset = 0, iAsciiOffset = 0, dummy;
 
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
                               nBytesInDomain, nBytesInSample, 
-                              iBinaryOffset, iAsciiOffset);
+                              iBinaryOffset, iAsciiOffset, dummy);
     if (iNumOutputDirs > 1)
         domain = aBlockLocs[domain*2 + 1];
 
@@ -1316,10 +1328,11 @@ avtNek3DFileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
                                               int &outDomSizeInBytes, 
                                               int &outSampleSizeInBytes, 
                                               int &outVarOffsetBinary,
-                                              int &outVarOffsetAscii )
+                                              int &outVarOffsetAscii,
+                                              int &outTimestepHasMesh )
 {
     int ii;
-    bool bHasMesh = false;
+    outTimestepHasMesh = 0;
 
     UpdateCyclesAndTimes();   //Needs to call this to update iTimestepsWithMesh
 
@@ -1327,14 +1340,14 @@ avtNek3DFileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
     {
         if (iTimestepsWithMesh[ii] == iTimestep)
         {
-            bHasMesh = true;
+            outTimestepHasMesh = 1;
             break;
         }
     }
     const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
 
     int nFloatsPerSample = 0;
-    if (bHasMesh)
+    if (outTimestepHasMesh)
         nFloatsPerSample += iDim;
     if (bHasVelocity)
         nFloatsPerSample += iDim;
@@ -1351,21 +1364,36 @@ avtNek3DFileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
     if (var)
     {
         int iNumPrecedingFloats = 0;
-        if (STREQUAL(var, "velocity")==0)
+        if (STREQUAL(var, "velocity")==0  || 
+            STREQUAL(var, "x_velocity")==0)
         {
-            if (bHasMesh)
+            if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;
+        }
+        else if (STREQUAL(var, "y_velocity")==0)
+        {
+            if (outTimestepHasMesh)
+                iNumPrecedingFloats += iDim;
+
+            iNumPrecedingFloats += 1;
+        }
+        else if (STREQUAL(var, "z_velocity")==0)
+        {
+            if (outTimestepHasMesh)
+                iNumPrecedingFloats += iDim;
+
+            iNumPrecedingFloats += 2;
         }
         else if (STREQUAL(var, "pressure")==0)
         {
-            if (bHasMesh)
+            if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;
             if (bHasVelocity)
                 iNumPrecedingFloats += iDim;
         }
         else if (STREQUAL(var, "temperature")==0)
         {
-            if (bHasMesh)
+            if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;
             if (bHasVelocity)
                 iNumPrecedingFloats += iDim;
@@ -1374,7 +1402,7 @@ avtNek3DFileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
         }
         else if (var[0] == 's')
         {
-            if (bHasMesh)
+            if (outTimestepHasMesh)
                 iNumPrecedingFloats += iDim;
             if (bHasVelocity)
                 iNumPrecedingFloats += iDim;
