@@ -236,6 +236,9 @@
 #     (or earlier) built version of Qt and install it in
 #     $VISITDIR/qt/${QT_VERSION}/$VISITARCH
 #
+#     Hank Childs, Thu Nov 15 09:14:58 PST 2007
+#     Update references from version 1.6.1 to version 1.7.
+#
 # *****************************************************************************
 
 
@@ -421,8 +424,8 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_FILE=${VISIT_FILE-"visit070702.tar.gz"}
-export VISIT_VERSION=${VISIT_VERSION-"1.6.1"}
+export VISIT_FILE=${VISIT_FILE-"visit1.7.tar.gz"}
+export VISIT_VERSION=${VISIT_VERSION-"1.7"}
 
 export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
 export VTK_VERSION=${VTK_VERSION-"5.0.0c"}
