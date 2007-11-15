@@ -73,6 +73,96 @@ using     std::string;
 #endif
 #endif
 
+// ****************************************************************************
+// Notes on the format of each Nek variant--binary/ascii, 3D/2D, serial/parallel
+//
+// There's one data file per timestep for serial writes, several per timestep for 
+// parallel writes.  Usually it has the .fld extension.  And there's a text
+// metadata file whose format I made up, which has a template for the filenames,
+// first and number of timesteps, etc.
+//
+// This is the layout of a 3D, binary, serial .fld file.
+// 80 char ascii header:
+//   num_blocks  block_dim_x  block_dim_y  block_dim_z  time  cycle  var_codes
+//
+//   The var codes are single characters that indicate the presence or absence
+//   of known variables.
+//   X Y Z U P T 1 2 3 4   indicates a mesh (X Y Z), velocity vec (U), pressure, 
+//                         temperature, and 4 misc scalars
+//   A space in place of a letter code means that variable is absent.
+//   The variables always are written into the file in this order.
+//
+// After the ascii header the number 6.54321 is written in binary, and can be
+// read back to determine endianness of the data.
+//
+// After this comes the bulk of the data, written as 4-byte floats, tight packed
+// with no padding at all.
+// for each block
+//     for each variable that is present out of X,Y,Z,U,V,W,P,T
+//         for each sample in the block
+//             write the sample
+//
+// --------
+// If the data is 2D, the layout is the same, except the mesh points and velocity
+// have 2 components instead of 3.  In the .fld header, there are still 3 components
+// for the block dim, and the third is 1.
+//
+// --------
+// If the data is ascii, the 80-char header is the same, but the 4-byte endian
+// tag is not written.  Following the header, one float is written per block,
+// but it's info is not used (all zeros in my test examples).
+//
+// Next comes the bulk of the data:
+// for each block
+//     for each sample in the block
+//         for each variable that is present out of X,Y,Z,U,V,W,P,T
+//             write the sample, using 14 bytes including a leading space
+//         write a newline character
+//
+// Because each line takes the same amount of space, the reader has random-access
+// to blocks in the file.
+//
+// --------
+// If the data was written in parallel
+// The header becomes 132 chars.  Here are two example headers:
+// #std 4  6  6  6   120  240  0.1500E+01  300  1  2XUPT
+// #std 4  6  6  6   120  240  0.1500E+01  300  1  2 U T123
+// This example means:  #std is for versioning, 4 bytes per sample (could be 8, 
+//   for double precision), 6x6x6 blocks, 120 of 240 blocks are in this file, 
+//   time=1.5, cycle=300, this output dir=1, num output dirs=2, XUPT123 are 
+//   tags that this file has a mesh, velocity, pressure, temperature, and 
+//   3 misc scalars.
+// 
+// Next comes the 4-byte 6.54321 for endian determination.
+// Next comes one 4-byte integer per block in the file, which is the global id
+// of that block.
+// Next the bulk of the data:
+//
+// if a mesh is present:
+// for each block
+//     for each variable X,Y,Z
+//         for each sample in the block
+//             write the sample
+//
+// if velocity is present:
+// for each block
+//     for each variable U,V,W
+//         for each sample in the block
+//             write the sample
+//
+// for each variable in U, P, and any misc scalars
+//     for each block
+//         for each sample in the block
+//             write the sample
+// ****************************************************************************
+
+
+
+
+
+
+
+
 
 // ****************************************************************************
 //  Method: avtNek3D constructor
@@ -371,7 +461,7 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
         //#std 4  6  6  6   120  240  0.1500E+01  300  1  2 U T123
         //This example means:  #std is for versioning, 4 bytes per sample, 6x6x6 blocks, 
         //  120 of 240 blocks are in this file, time=1.5, cycle=300, 
-        //  MPI rank=1, MPI size=2, XUPT123 are tags that this file has a mesh, 
+        //  this output dir=1, num output dirs=2, XUPT123 are tags that this file has a mesh, 
         //  velocity, pressure, temperature, and 3 misc scalars.
         f >> tag;
         if (tag != "#std")
@@ -385,12 +475,18 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
         f >> iBlockSize[2];
         f >> buf2;        //blocks per file
         f >> iNumBlocks;
+        /*
         f >> buf2;        //time
         f >> buf2;        //cycle
         f >> buf2;        //MPI rank
         while (f.get() == ' ')  //read past the first char of the next tag
             ;
         f.get();         //skip the mesh code
+        */
+        //This bypasses some tricky and unnecessary parsing of data
+        //I already have.
+        f.seekg(77, std::ios_base::beg);
+
         if (f.get() == 'U')
             bHasVelocity = true;
         if (f.get() == 'P')
