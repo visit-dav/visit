@@ -12,7 +12,7 @@
 import os, string
 
 TurnOffAllAnnotations()
-OpenDatabase("../data/nek3d_test_data/7Pin.100blocks.nek3d")
+OpenDatabase("../data/nek3d_test_data/7Pin/7Pin.100blocks.nek3d")
 
 AddPlot("Mesh", "mesh")
 DrawPlots()
@@ -46,6 +46,59 @@ AddPlot("Pseudocolor", "pressure")
 DrawPlots()
 Test("nek3d_reader5")
 
+# -----------------------------
+DefineScalarExpression("vx", "velocity[0]")
+DefineScalarExpression("vy", "velocity[1]")
+DefineScalarExpression("vz", "velocity[2]")
+
+DeleteAllPlots()
+OpenDatabase("../data/nek3d_test_data/3dascii/test_ascii.nek3d")
+AddPlot("Pseudocolor", "temperature")
+DrawPlots()
+Test("nek3d_reader6")
+
+DeleteAllPlots()
+AddPlot("Mesh", "mesh");
+AddPlot("Pseudocolor", "vz")
+DrawPlots()
+Test("nek3d_reader7")
+
+# -----------------------------
+DeleteAllPlots()
+OpenDatabase("../data/nek3d_test_data/2dascii/couette.nek2d")
+ResetView()
+AddPlot("Vector", "velocity")
+DrawPlots()
+Test("nek3d_reader8")
+
+DeleteAllPlots()
+AddPlot("Pseudocolor", "pressure")
+DrawPlots()
+Test("nek3d_reader9")
+
+# -----------------------------
+DeleteAllPlots()
+OpenDatabase("../data/nek3d_test_data/2dbinary/couette.nek")
+ResetView()
+AddPlot("Mesh", "mesh")
+DrawPlots()
+Test("nek3d_reader10")
+
+# -----------------------------
+DeleteAllPlots()
+OpenDatabase("../data/nek3d_test_data/parallel_nek_output_example/par_test.nek3d")
+ResetView()
+AddPlot("Vector", "velocity")
+DrawPlots()
+Test("nek3d_reader11")
+
+DeleteAllPlots()
+AddPlot("Pseudocolor", "vy")
+DrawPlots()
+Test("nek3d_reader12")
+
 Exit()
+
+
 
 
