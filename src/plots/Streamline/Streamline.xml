@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-  <Plugin name="Streamline" type="plot" label="Streamline" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="vector" iconFile="Streamline.xpm">
+  <Plugin name="Streamline" type="plot" label="Streamline" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="vector" iconFile="Streamline.xpm">
     <Files components="V">
       avtStreamlineFilter.C
     </Files>
     <Files components="E">
       avtStreamlineFilter.C
     </Files>
-    <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" exportAPI="" exportInclude="" codefile="Streamline.code">
+    <Attribute name="StreamlineAttributes" purpose="Attributes for the Streamline plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Streamline.code">
       <Enum name="SourceType">
         SpecifiedPoint
         SpecifiedLine
@@ -23,6 +23,11 @@
         Lines
         Tubes
         Ribbons
+      </Enum>
+      <Enum name="IntegrationDirection">
+        Forward
+        Backward
+        Both
       </Enum>
       <Field name="sourceType" label="Source" type="enum" subtype="SourceType">
         SpecifiedPoint
@@ -106,7 +111,7 @@
       <Field name="colorTableName" label="Color table" type="colortable">
         Default
       </Field>
-      <Field name="singleColor" label="Single color" type="color">
+      <Field name="singleColor" label="Single color" type="color" length="4">
         0
         0
         0
@@ -117,6 +122,9 @@
       </Field>
       <Field name="lightingFlag" label="Lighting" type="bool">
         true
+      </Field>
+      <Field name="StreamlineDirection" label="Streamline Direction" type="enum" subtype="IntegrationDirection">
+        Forward
       </Field>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>

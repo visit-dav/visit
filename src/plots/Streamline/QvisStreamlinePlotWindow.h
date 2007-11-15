@@ -71,6 +71,9 @@ class StreamlineAttributes;
 //   Hank Childs, Sat Mar  3 09:11:44 PST 2007
 //   Added useWholeBox.
 //
+//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
+//   Add streamline direction option.
+//
 // ****************************************************************************
 
 class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
@@ -97,6 +100,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     void UpdateSourceAttributes();
   private slots:
     void sourceTypeChanged(int val);
+    void directionTypeChanged(int val);  
     void stepLengthProcessText();
     void maxTimeProcessText();
     void pointSourceProcessText();
@@ -124,6 +128,7 @@ class QvisStreamlinePlotWindow : public QvisPostableWindowObserver
     int plotType;
     QComboBox *sourceType;
     QGroupBox *sourceAtts;
+    QComboBox *directionType;
     QLineEdit *stepLength;
     QLineEdit *maxTime;
     QLineEdit *pointSource;

@@ -278,6 +278,9 @@ avtStreamlinePlot::CustomizeBehavior(void)
 //    Set use whole box for the streamline filter.  Also don't show a 
 //    color bar if the coloring is constant.
 //
+//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
+//   Add streamline direction option.
+//
 // ****************************************************************************
 
 void
@@ -304,6 +307,7 @@ avtStreamlinePlot::SetAtts(const AttributeGroup *a)
     streamlineFilter->SetShowStart(atts.GetShowStart());
     streamlineFilter->SetRadius(atts.GetRadius());
     streamlineFilter->SetPointDensity(atts.GetPointDensity());
+    streamlineFilter->SetStreamlineDirection(atts.GetStreamlineDirection());
 
     streamlineFilter->SetPointSource(atts.GetPointSource());
     streamlineFilter->SetLineSource(atts.GetLineStart(),

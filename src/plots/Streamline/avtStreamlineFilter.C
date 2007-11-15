@@ -80,6 +80,9 @@
 //    Hank Childs, Sat Mar  3 09:52:01 PST 2007
 //    Initialized useWholeBox.
 //
+//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
+//   Initialize streamline direction option.
+//
 // ****************************************************************************
 
 avtStreamlineFilter::avtStreamlineFilter()
@@ -91,6 +94,7 @@ avtStreamlineFilter::avtStreamlineFilter()
     pointDensity = 1;
     coloringMethod = STREAMLINE_COLOR_SPEED;
     displayMethod = STREAMLINE_DISPLAY_LINES;
+    streamlineDirection = VTK_INTEGRATE_FORWARD;
 
     //
     // Initialize source values.
@@ -465,6 +469,28 @@ avtStreamlineFilter::SetPointDensity(int den)
 }
 
 // ****************************************************************************
+// Method: avtStreamlineFilter::SetStreamlineDirection
+//
+// Purpose: 
+//   Sets the streamline integration direction
+//
+// Arguments:
+//   dir : The new direction
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Nov 15 12:09:08 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtStreamlineFilter::SetStreamlineDirection(int dir)
+{
+    streamlineDirection = dir;
+}
+
+// ****************************************************************************
 // Method: avtStreamlineFilter::ReleaseData
 //
 // Purpose: 
@@ -555,6 +581,9 @@ avtStreamlineFilter::ReleaseData(void)
 //    Hank Childs, Sat Mar  3 11:16:26 PST 2007
 //    Add support for getting the extents of the color variable later.
 //
+//   Dave Pugmire, Thu Nov 15 12:09:08 EST 2007
+//   Add support for streamline direction option.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -572,7 +601,7 @@ avtStreamlineFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     if(streamline != 0)
         streamline->Delete();
     streamline = vtkVisItStreamLine::New();
-    streamline->SetIntegrationDirection(VTK_INTEGRATE_FORWARD);
+    streamline->SetIntegrationDirection(streamlineDirection);
     streamline->SetIntegrationStepLength(stepLength);
     streamline->SetStepLength(stepLength);
     streamline->SetSavePointInterval(stepLength);
