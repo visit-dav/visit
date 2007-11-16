@@ -86,7 +86,9 @@
 //
 //    Mark C. Miller, Fri Sep  7 10:18:38 PDT 2007
 //    Moved call(s) to class methods to *after* all members have been
-//    initialized.
+//    initialized. If we don't do this, then we can wind up invoking methods
+//    on the object we are constructing here before all state variables have
+//    been initialized.
 //
 // ****************************************************************************
 
@@ -118,6 +120,12 @@ avtVariableLegend::avtVariableLegend()
     legend = sBar;
     legend->Register(NULL);
 
+    //
+    // WARNING: DO NOT INITIALIZE avtLevelsLegend STATE VARIABLES BELOW HERE
+    // WARNING: DO NOT INITIALIZE avtLevelsLegend STATE VARIABLES BELOW HERE
+    // WARNING: DO NOT INITIALIZE avtLevelsLegend STATE VARIABLES BELOW HERE
+    // See note of Fri Sep  7 10:18:38 PDT 2007 above
+    //
     SetLegendPosition(0.05, 0.72);
 }
 

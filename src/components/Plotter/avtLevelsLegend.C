@@ -74,6 +74,11 @@
 //    Brad Whitlock, Wed Mar 21 21:43:27 PST 2007
 //    Added scale.
 //
+//    Mark C. Miller, Thu Nov 15 16:13:12 PST 2007
+//    Moved call to SetLegendPosition() to bottom of constructor. Without this
+//    we can wind up invoking methods on the object we are constructing here
+//    before all its state variables have been initialized.
+//
 // ****************************************************************************
 
 avtLevelsLegend::avtLevelsLegend()
@@ -96,8 +101,6 @@ avtLevelsLegend::avtLevelsLegend()
     size[1] = 0.26;
     sBar->SetPosition2(size[0], size[1]);
 
-    SetLegendPosition(0.05, 0.72);
-
     barVisibility = 1;
     rangeVisibility = 1;
     labelVisibility = true;
@@ -109,6 +112,14 @@ avtLevelsLegend::avtLevelsLegend()
     //
     legend = sBar;
     legend->Register(NULL);
+
+    //
+    // WARNING: DO NOT INITIALIZE avtLevelsLegend STATE VARIABLES BELOW HERE
+    // WARNING: DO NOT INITIALIZE avtLevelsLegend STATE VARIABLES BELOW HERE
+    // WARNING: DO NOT INITIALIZE avtLevelsLegend STATE VARIABLES BELOW HERE
+    // See note of Thu Nov 15 16:13:12 PST 2007 above.
+    //
+    SetLegendPosition(0.05, 0.72);
 }
 
 
