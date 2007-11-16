@@ -232,6 +232,14 @@ $0 = shift @ARGV;
 #    DYLD_LIBRARY_PATH overrides the system libraries causing the wrong
 #    libraries to be loaded.
 #
+#    Mark C. Miller, Thu Nov 15 21:44:19 PST 2007
+#    Modified the way args to tools such as valgrind and totalview are
+#    processed. Before the user had to place all args to be passed to
+#    the tools in a single quoted string. Now, all args that appear between
+#    the tool's name and the name of the VisIt component it is to be
+#    launched on are treated as args to the tool. No special quoting is
+#    necessary.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -660,11 +668,11 @@ $launchengine = "";
 @breakpoints  = ();
 $debug_gdb    = 0;
 $debug_totalview = "";
-$debug_totalview_args = "";
+@debug_totalview_args = ();
 $debug_valgrind = "";
-$debug_valgrind_args = "";
+@debug_valgrind_args = ();
 $debug_strace   = "";
-$debug_strace_args = "";
+@debug_strace_args = ();
 $add_movie_args = 0;
 $add_diff_args  = 0;
 $add_diffsum_args = 0;
@@ -747,41 +755,41 @@ while (scalar(@ARGV) > 0) {
                                           $debug_totalview = shift;
                                           if (!IsAVisItComponentName($debug_totalview))
                                           {
-                                            $debug_totalview_args = $debug_totalview;
+					    push @debug_totalview_args, $debug_totalview;
                                             $debug_totalview = shift;
                                           }
                                           push @norun, $debug_totalview;
                                           push @visitargs, "-norun", $debug_totalview;
                                           if ($exe_name ne $debug_totalview)
                                           {
-                                            if ($debug_totalview_args eq "")
+					    if (scalar(@debug_totalview_args) == 0)
                                             {
-                                              push @visitargs, "-totalview", "\"\"", $debug_totalview;
+                                              push @visitargs, "-totalview", $debug_totalview;
                                             }
                                             else
                                             {
-                                              push @visitargs, "-totalview", "$debug_totalview_args", $debug_totalview;
+                                              push @visitargs, "-totalview", @debug_totalview_args, $debug_totalview;
                                             }
                                           }
                                         }
     elsif ($arg eq "-valgrind" )       {
                                           $debug_valgrind = shift;
-                                          if (!IsAVisItComponentName($debug_valgrind))
+                                          while (!IsAVisItComponentName($debug_valgrind))
                                           {
-                                            $debug_valgrind_args = $debug_valgrind;
+					    push @debug_valgrind_args, $debug_valgrind;
                                             $debug_valgrind = shift;
                                           }
                                           push @norun, $debug_valgrind;
                                           push @visitargs, "-norun", $debug_valgrind;
                                           if ($exe_name ne $debug_valgrind)
                                           {
-                                            if ($debug_valgrind_args eq "")
+					    if (scalar(@debug_valgrind_args) == 0)
                                             {
-                                              push @visitargs, "-valgrind", "\"\"", $debug_valgrind;
+                                              push @visitargs, "-valgrind", $debug_valgrind;
                                             }
                                             else
                                             {
-                                              push @visitargs, "-valgrind", "$debug_valgrind_args", $debug_valgrind;
+                                              push @visitargs, "-valgrind", @debug_valgrind_args, $debug_valgrind;
                                             }
                                           }
                                         }
@@ -789,20 +797,20 @@ while (scalar(@ARGV) > 0) {
                                           $debug_strace = shift;
                                           if (!IsAVisItComponentName($debug_strace))
                                           {
-                                            $debug_strace_args = $debug_strace;
+                                            push @debug_strace_args, $debug_strace;
                                             $debug_strace = shift;
                                           }
                                           push @norun, $debug_strace;
                                           push @visitargs, "-norun", $debug_strace;
                                           if ($exe_name ne $debug_strace)
                                           {
-                                            if ($debug_strace_args eq "")
+                                            if (scalar(@debug_strace_args) == 0)
                                             {
-                                              push @visitargs, "-strace", "\"\"", $debug_strace;
+                                              push @visitargs, "-strace", $debug_strace;
                                             }
                                             else
                                             {
-                                              push @visitargs, "-strace", "$debug_strace_args", $debug_strace;
+                                              push @visitargs, "-strace", @debug_strace_args, $debug_strace;
                                             }
                                           }
                                         }
@@ -1778,9 +1786,9 @@ else
     {
         # Run totalview
         @debugcmd = ("totalview", "$visitbindir/$exe_name", "-a", "-dograb");
-        if ($debug_totalview_args ne "\"\"")
+	if (!(scalar(@debug_totalview_args) == 0))
         {
-            push @debugcmd, split / /,$debug_totalview_args;
+            push @debugcmd, @debug_totalview_args;
         }
         push @debugcmd, @visitargs;
         if ($security_key_set) { push @debugcmd, "-key", $security_key; }
@@ -1795,9 +1803,9 @@ else
         #       and runs twice as fast, but it doesn't catch UMRs
         # Note: could add --leak-check=yes to either tool
         @debugcmd = ("valgrind");
-        if ($debug_valgrind_args ne "\"\"")
+	if (!(scalar(@debug_valgrind_args) == 0))
         {
-          push @debugcmd, split / /,$debug_valgrind_args;
+          push @debugcmd, @debug_valgrind_args;
         }
         else
         {
@@ -1812,9 +1820,9 @@ else
     {
         # Run strace with given args 
         @debugcmd = ("strace");
-        if ($debug_strace_args ne "\"\"")
+	if (!(scalar(@debug_strace_args) == 0))
         {
-            push @debugcmd, split / /,$debug_strace_args;
+            push @debugcmd, @debug_strace_args;
         }
         else
         {
