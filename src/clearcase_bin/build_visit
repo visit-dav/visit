@@ -243,6 +243,9 @@
 #     Tweak name of visit file so it automatically gets updated when version
 #     changes.
 #
+#     Thomas R. Treadway, Fri Nov 15 16:37:00 PDT 2007
+#     Modified visit file to allow interactive updating.
+#
 # *****************************************************************************
 
 
@@ -1161,6 +1164,7 @@ through this interface or using environment varaibles\n\n"\
                            --no-cancel --inputbox \
 "Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_VERSION" 2> tmp$$
                         VISIT_VERSION="$(cat tmp$$)"
+                        VISIT_FILE="visit${VISIT_VERSION}.tar.gz"
                         ;;
                      Tarball)
                         $DLG --backtitle "$DLG_BACKTITLE" \
@@ -6044,7 +6048,8 @@ do
            ON_USE_VISIT_FILE="on";;
       u|U) THIRD_PARTY_PATH="$OPTARG"
            ON_THIRD_PARTY_PATH="on";;
-      v|V) VISIT_VERSION=$OPTARG;;
+      v|V) VISIT_VERSION=$OPTARG
+           VISIT_FILE="visit${VISIT_VERSION}.tar.gz";;
       w|W) DO_MODULE="yes"
            ON_MODULE="on";;
       x|X) set -vx;;
@@ -6789,13 +6794,18 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
    fi
    echo "directory and invoking \"visit\"."
    echo 
-   echo "To create a binary distribution tarball from this build, enter:"
-   echo "clearcase_bin/visit-bin-dist"
+   echo "To create a binary distribution tarball from this build, cd to"
+    if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
+        echo "${START_DIR}/src"
+    else
+        echo "${START_DIR}/${VISIT_FILE%.tar*}/src"
+    fi
+   echo "then enter: \"clearcase_bin/visit-bin-dist\""
    echo "Will produce a tarball called visitVERSION.ARCH.tar.gz, where"
    echo "VERSION is the version number, and ARCH is the OS architecure."
    echo 
-   echo "To install the above tarball in a directory called "INSTALL_DIR_PATH":"
-   echo "clearcase_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
+   echo "To install the above tarball in a directory called "INSTALL_DIR_PATH","
+   echo "enter: clearcase_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
    echo 
    echo "If you run into problems, contact visit-help@llnl.gov"
 else
