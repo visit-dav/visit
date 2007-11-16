@@ -183,6 +183,9 @@ using     std::string;
 //    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
 //    Added support for the parallel version of the file, added
 //    support for comments in the file, and deprecated the endian flag.
+//
+//    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
+//    Added a small fix for the case in which there are more than 9 output dirs
 // ****************************************************************************
 
 avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
@@ -475,14 +478,7 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
         f >> iBlockSize[2];
         f >> buf2;        //blocks per file
         f >> iNumBlocks;
-        /*
-        f >> buf2;        //time
-        f >> buf2;        //cycle
-        f >> buf2;        //MPI rank
-        while (f.get() == ' ')  //read past the first char of the next tag
-            ;
-        f.get();         //skip the mesh code
-        */
+
         //This bypasses some tricky and unnecessary parsing of data
         //I already have.
         f.seekg(77, std::ios_base::beg);
@@ -511,8 +507,8 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
     {
         // Compute the size of the header.  In all cases so far, the header size
         // for binary files has been 84.
-        int iDomainSize, d1, d2, d3, d4, d5;
-        GetDomainSizeAndVarOffset(iFirstTimestep, NULL, iDomainSize, d1, d2, d3, d4, d5);
+        int iDomainSize, d1, d2, d3;
+        GetDomainSizeAndVarOffset(iFirstTimestep, NULL, iDomainSize, d1, d2, d3);
     
         f.seekg( -iBlocksPerFile*iDomainSize*iPrecision, std::ios_base::end );
         iHeaderSize = (int)f.tellg();
@@ -764,6 +760,9 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 //
 //    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
 //    Added support for the parallel version of the file.
+//
+//    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
+//    Small fix for ascii format in case windows-style CRLF is used.
 // ****************************************************************************
 
 vtkDataSet *
@@ -807,15 +806,15 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
         delete [] meshfilename;
 
         if (!bBinary)
-            iAsciiMeshFileStart = FindAsciiDataStart(fdMesh);
+            FindAsciiDataStart(fdMesh, iAsciiMeshFileStart, iAsciiMeshFileLineLen);
     }
 
     if (iNumOutputDirs > 1)
         domain = aBlockLocs[domain*2 + 1];
 
-    int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, d1, d2, d3;
+    int nFloatsInDomain = 0, d1, d2, d3;
     GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, 
-                              nBytesInDomain, nBytesInSample, d1, d2, d3);
+                              d1, d2, d3);
 
     if (bBinary)
     {
@@ -878,7 +877,9 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
     {
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdMesh, iAsciiMeshFileStart + domain*nBytesInDomain + ii*nBytesInSample, SEEK_SET);
+            fseek(fdMesh, iAsciiMeshFileStart + 
+                          domain*iAsciiMeshFileLineLen*nPts + 
+                          ii*iAsciiMeshFileLineLen, SEEK_SET);
             if (iDim == 3)
             {
                 fscanf(fdMesh, " %f %f %f", pts, pts+1, pts+2);
@@ -926,6 +927,9 @@ avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshnam
 //
 //    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
 //    Added support for the parallel version of the file.
+//
+//    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
+//    Small fix for ascii format in case windows-style CRLF is used.
 // ****************************************************************************
 
 vtkDataArray *
@@ -959,18 +963,16 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 
         iCurrTimestep = iTimestep;
         if (!bBinary)
-            iAsciiCurrFileStart = FindAsciiDataStart(fdVar);
+            FindAsciiDataStart(fdVar, iAsciiCurrFileStart, iAsciiCurrFileLineLen);
     }
 
     vtkFloatArray *rv = vtkFloatArray::New();
     rv->SetNumberOfTuples(nPts);
     float *var = (float *)rv->GetVoidPointer(0);
 
-    int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, 
-        iBinaryOffset = 0, iAsciiOffset = 0, iHasMesh = 0;
+    int nFloatsInDomain = 0, iBinaryOffset = 0, iAsciiOffset = 0, iHasMesh = 0;
 
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
-                              nBytesInDomain, nBytesInSample, 
                               iBinaryOffset, iAsciiOffset, iHasMesh);
     if (iNumOutputDirs > 1)
         domain = aBlockLocs[domain*2 + 1];
@@ -1021,7 +1023,10 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
     {
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdVar, iAsciiCurrFileStart + domain*nBytesInDomain + ii*nBytesInSample + iAsciiOffset, SEEK_SET);
+            fseek(fdVar, iAsciiCurrFileStart + 
+                         domain*iAsciiCurrFileLineLen*nPts + 
+                         ii*iAsciiCurrFileLineLen + 
+                         iAsciiOffset, SEEK_SET);
             fscanf(fdVar, " %f", var);
             var++;
         }
@@ -1061,6 +1066,9 @@ avtNek3DFileFormat::GetVar(int timestate, int domain, const char *varname)
 //
 //    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
 //    Added support for the parallel version of the file.
+//
+//    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
+//    Small fix for ascii format in case windows-style CRLF is used.
 // ****************************************************************************
 
 vtkDataArray *
@@ -1094,7 +1102,7 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
 
         iCurrTimestep = iTimestep;
         if (!bBinary)
-            iAsciiCurrFileStart = FindAsciiDataStart(fdVar);
+            FindAsciiDataStart(fdVar, iAsciiCurrFileStart, iAsciiCurrFileLineLen);
     }
 
     vtkFloatArray *rv = vtkFloatArray::New();
@@ -1102,11 +1110,9 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     rv->SetNumberOfTuples(nPts);
     float *pts = (float *)rv->GetVoidPointer(0);
 
-    int nFloatsInDomain = 0, nBytesInDomain = 0, nBytesInSample = 0, 
-        iBinaryOffset = 0, iAsciiOffset = 0, dummy;
+    int nFloatsInDomain = 0, iBinaryOffset = 0, iAsciiOffset = 0, dummy;
 
     GetDomainSizeAndVarOffset(iTimestep, varname, nFloatsInDomain, 
-                              nBytesInDomain, nBytesInSample, 
                               iBinaryOffset, iAsciiOffset, dummy);
     if (iNumOutputDirs > 1)
         domain = aBlockLocs[domain*2 + 1];
@@ -1180,7 +1186,10 @@ avtNek3DFileFormat::GetVectorVar(int timestate, int domain, const char *varname)
     {
         for (ii = 0 ; ii < nPts ; ii++)
         {
-            fseek(fdVar, iAsciiCurrFileStart + domain*nBytesInDomain + ii*nBytesInSample + iAsciiOffset, SEEK_SET);
+            fseek(fdVar, iAsciiCurrFileStart + 
+                         domain*iAsciiCurrFileLineLen*nPts + 
+                         ii*iAsciiCurrFileLineLen + 
+                         iAsciiOffset, SEEK_SET);
             if (iDim == 3)
             {
                 fscanf(fdVar, " %f %f %f", pts, pts+1, pts+2);
@@ -1320,13 +1329,15 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
 //  Modifications:
 //    Dave Bremer, Wed Nov  7 14:17:19 PST 2007
 //    Return sizes and offsets needed if the data is in ascii format.
+//
+//    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
+//    Moved some size computations to FindAsciiDataStart, to deal with 
+//    windows-style CRLF
 // ****************************************************************************
 
 void
 avtNek3DFileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var, 
                                               int &outDomSizeInFloats, 
-                                              int &outDomSizeInBytes, 
-                                              int &outSampleSizeInBytes, 
                                               int &outVarOffsetBinary,
                                               int &outVarOffsetAscii,
                                               int &outTimestepHasMesh )
@@ -1357,9 +1368,7 @@ avtNek3DFileFormat::GetDomainSizeAndVarOffset(int iTimestep, const char *var,
         nFloatsPerSample += 1;
     nFloatsPerSample += iNumSFields;
 
-    outDomSizeInFloats   = nFloatsPerSample * nPts;       //For binary
-    outSampleSizeInBytes = 14*nFloatsPerSample + 1;       //For ascii
-    outDomSizeInBytes    = outSampleSizeInBytes * nPts;   //For ascii
+    outDomSizeInFloats = nFloatsPerSample * nPts;
 
     if (var)
     {
@@ -1482,10 +1491,13 @@ avtNek3DFileFormat::ByteSwap64(void *aVals, int nVals)
 //  Programmer: Dave Bremer
 //  Creation:   Wed Nov  7 14:17:19 PST 2007
 //
+//  Modifications:
+//    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
+//    Calculate line length, in case windows-style CRLF is used.
 // ****************************************************************************
 
-int
-avtNek3DFileFormat::FindAsciiDataStart(FILE *fd)
+void
+avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLineLen)
 {
     //Skip the header, then read a float for each block.  Then skip beyond the
     //newline character and return the current position.
@@ -1495,9 +1507,12 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd)
         float dummy;
         fscanf(fd, " %f", &dummy);
     }
-    char tmp[256];
-    fgets(tmp, 255, fd);
-    return ftell(fd);
+    char tmp[1024];
+    fgets(tmp, 1023, fd);
+    outDataStart = ftell(fd);
+
+    fgets(tmp, 1023, fd);
+    outLineLen = ftell(fd) - outDataStart;
 }
 
 
