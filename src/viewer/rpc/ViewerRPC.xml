@@ -170,11 +170,11 @@
       ConstructDDFRPC
       UpdatePlotInfoAttsRPC
       RequestMetaDataRPC
-      MaxRPC
       SetTreatAllDBsAsTimeVaryingRPC
       SetCreateMeshQualityExpressionsRPC
       SetCreateTimeDerivativeExpressionsRPC
       CopyActivePlotsRPC
+      MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
       CloseRPC

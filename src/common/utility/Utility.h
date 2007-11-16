@@ -49,6 +49,8 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <limits.h>
+#include <float.h>
 
 //
 // Type definitions
@@ -113,6 +115,10 @@ void        UTILITY_API ConfigStateIncrementRunCount(ConfigStateEnum &code);
 
 int         UTILITY_API VisItStat(const char *filename, VisItStat_t *buf);
 int         UTILITY_API VisItFstat(int fd, VisItStat_t *buf);
+
+bool        UTILITY_API VisItInitExtentsToLimits(double *exts, int n);
+bool        UTILITY_API VisItInitExtentsToLimits(float *exts, int n);
+bool        UTILITY_API VisItInitExtentsToLimits(int *exts, int n);
 
 #if defined(PANTHERHACK)
 // Broken on Panther
@@ -253,7 +259,51 @@ InlineExtract(char * const &target, const char *&src, const int &amount)
     src += amount;
 }
 
+// ****************************************************************************
+//  Function: VisItInitExtentsToLimits
+//
+//  Purpose: Initialize an extents array to numerical limits of platform
+//
+//  Programmer: Mark C. Miller 
+//  Creation:   November 15, 2007 
+//
+// ****************************************************************************
 
+inline bool 
+VisItInitExtentsToLimits(double *exts, int n)
+{
+    if (!(n == 2 || n == 4 || n == 6))
+        return false;
+
+    for (int i = 0; i < n; i++)
+        exts[i] = n % 2 ? -DBL_MAX : DBL_MAX;
+
+    return true;
+}
+
+inline bool 
+VisItInitExtentsToLimits(float *exts, int n)
+{
+    if (!(n == 2 || n == 4 || n == 6))
+        return false;
+
+    for (int i = 0; i < n; i++)
+        exts[i] = n % 2 ? -FLT_MAX : FLT_MAX;
+
+    return true;
+}
+
+inline bool 
+VisItInitExtentsToLimits(int *exts, int n)
+{
+    if (!(n == 2 || n == 4 || n == 6))
+        return false;
+
+    for (int i = 0; i < n; i++)
+        exts[i] = n % 2 ? -INT_MAX : INT_MAX;
+
+    return true;
+}
 #endif
 
 

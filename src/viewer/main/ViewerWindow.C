@@ -84,6 +84,8 @@ using std::string;
 
 #include <DebugStream.h>
 
+#include <Utility.h>
+
 //
 // Definition of static variables associated with ViewerWindow.
 //
@@ -6002,6 +6004,7 @@ ViewerWindow::SendWindowEnvironmentToEngine(const EngineKey &ek)
     visWindow->GetFrameAndState(fns[0], fns[1], fns[2], fns[3],
                                         fns[4], fns[5], fns[6]);
     double vexts[6];
+    VisItInitExtentsToLimits(vexts, 6);
     GetExtents(visWindow->GetWindowMode()==WINMODE_3D?3:2, vexts);
     if (visWindow->GetWindowMode()!=WINMODE_3D)
     {
