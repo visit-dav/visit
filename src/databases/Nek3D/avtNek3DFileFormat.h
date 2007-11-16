@@ -63,6 +63,9 @@
 //
 //    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
 //    Added support for the parallel version of the file.
+//
+//    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
+//    Small fix for ascii format in case windows-style CRLF is used.
 // ****************************************************************************
 
 class avtNek3DFileFormat : public avtMTMDFileFormat
@@ -133,6 +136,8 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     int  iCurrVarProc;         //For parallel format, proc associated with fdVar  
     int  iAsciiMeshFileStart;  //For ascii data, file pos where data begins, in mesh file
     int  iAsciiCurrFileStart;  //For ascii data, file pos where data begins, in current timestep
+    int  iAsciiMeshFileLineLen; //For ascii data, length of each line, in mesh file
+    int  iAsciiCurrFileLineLen; //For ascii data, length of each line, in current timestep
 
     int *aBlockLocs;           //For parallel format, make a table for looking up blocks.
                                //This has 2 ints per block, with proc # and local block #.
@@ -141,14 +146,12 @@ class avtNek3DFileFormat : public avtMTMDFileFormat
     virtual void           UpdateCyclesAndTimes();
     virtual void           GetDomainSizeAndVarOffset(int timestate, const char *var, 
                                                      int &outDomSizeInFloats, 
-                                                     int &outDomSizeInBytes, 
-                                                     int &outSampleSizeInBytes, 
                                                      int &outVarOffsetInFloats,
                                                      int &outVarOffsetInBytes,
                                                      int &outTimestepHasMesh );
     void                   ByteSwap32(void *aVals, int nVals);
     void                   ByteSwap64(void *aVals, int nVals);
-    int                    FindAsciiDataStart(FILE *fd);
+    void                   FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLineLen);
 };
 
 
