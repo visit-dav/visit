@@ -483,6 +483,9 @@ PluginManager::EnablePlugin(const string &id)
 //    Honor the precedence of the plugin directories, rather than just throwing
 //    them in a giant list.
 //
+//    Hank Childs, Fri Nov 16 15:24:16 PST 2007
+//    Fix bug pointed out by Paul Selby of AWE.
+//
 // ****************************************************************************
 
 void
@@ -527,11 +530,11 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 
     // Sort the file names, but keep the precedence of the directory
     // they came from preserved.
-    for (dir = 0 ; dir < files.size() ; dir++)
+    for (dir = 0 ; dir < tmp.size() ; dir++)
     {
-        sort(files[dir].begin(), files[dir].end());
-        for (f = 0 ; f < files[dir].size() ; f++)
-            libs.push_back(files[dir][f]);
+        sort(tmp[dir].begin(), tmp[dir].end());
+        for (f = 0 ; f < tmp[dir].size() ; f++)
+            libs.push_back(tmp[dir][f]);
     }
 }
 
