@@ -44,6 +44,7 @@
 #include <snprintf.h>
 #include <string>
 #include <cstring>
+#include <limits>
 
 #include <vtkFieldData.h>
 #include <vtkCellData.h>
@@ -298,7 +299,10 @@ avtChomboFileFormat::ActivateTimestep(void)
 //    Gunther H. Weber, Mon Oct 22 11:22:35 PDT 2007
 //    Read information about problem domain [low|hi]Prob[I|J|K] needed
 //    to figure out whether a ghost zone is external to the problem.
-
+//
+//    Gunther H. Weber, Mon Nov 19 14:02:59 PST 2007
+//    Added missing H5Tclose in expression reading code.
+//
 // ****************************************************************************
 
 void
@@ -308,6 +312,8 @@ avtChomboFileFormat::InitializeReader(void)
 
     if (initializedReader)
         return;
+
+    debug5 << "avtChomboFileFormat: Initializing reader." << std::endl;
 
     //
     // Get current automatic stack traversal function to re-enable it later and
@@ -533,6 +539,7 @@ avtChomboFileFormat::InitializeReader(void)
                     newExpression->SetDefinition(buffer);
                     expressions.push_back(newExpression);
                 }
+                H5Tclose(strType);
             }
             H5Aclose(currExpression);
         }
@@ -1550,6 +1557,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Hank Childs, Mon Oct  8 17:22:26 PDT 2007
 //    Make Gunther's code go live using DB options.
 //
+//    Gunther H. Weber, Mon Nov  5 17:07:26 PST 2007
+//    Use 64-bit arithmetic for offset calculations.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1586,9 +1596,9 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         EXCEPTION2(BadDomainException, local_patch, patchesPerLevel[level]);
     }
 
-    int numGhostI = numGhosts[3*level];
-    int numGhostJ = numGhosts[3*level+1];
-    int numGhostK = numGhosts[3*level+2];
+    hsize_t numGhostI = numGhosts[3*level];
+    hsize_t numGhostJ = numGhosts[3*level+1];
+    hsize_t numGhostK = numGhosts[3*level+2];
 
     //
     // Figure out how much data to read and what it's offset is into the
@@ -1596,21 +1606,37 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
     // the HDF file.
     //
     int patchStart = patch-local_patch;
-    int nvals = 0;
+    hsize_t nvals = 0;
     for (i = patchStart ; i < patch ; i++)
     {
-        int numZones = (hiI[i]-lowI[i]+2*numGhostI)
-                     * (hiJ[i]-lowJ[i]+2*numGhostJ);
+        hsize_t numZones = (hsize_t(hiI[i]-lowI[i])+2*numGhostI)
+                         * (hsize_t(hiJ[i]-lowJ[i])+2*numGhostJ);
         if (dimension == 3)
-            numZones *= (hiK[i]-lowK[i]+2*numGhostK);
+            numZones *= hsize_t(hiK[i]-lowK[i])+2*numGhostK;
         nvals += numZones*nVars;
     }
-    int start = nvals;
-    int amt = (hiI[patch]-lowI[patch]+2*numGhostI)
-            * (hiJ[patch]-lowJ[patch]+2*numGhostJ);
+
+#if HDF5_VERSION_GE(1,6,4)
+    hsize_t start = nvals;
+#else
+    hssize_t start = nvals;
+#endif
+    hsize_t amt = (hsize_t(hiI[patch]-lowI[patch])+2*numGhostI)
+                * (hsize_t(hiJ[patch]-lowJ[patch])+2*numGhostJ);
     if (dimension == 3)
-        amt *= (hiK[patch]-lowK[patch]+2*numGhostK);
+        amt *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
     start += amt*varIdx;
+
+    //std::cout << "Computed offsets into Chombo HDF5 file: patch=" << patch
+        //<< " local_patch=" << local_patch << " patchStart=" << patchStart
+        //<< " varIdx=" << varIdx << " start=" << start << " amt=" << amt << std::endl;
+
+    if (amt > std::numeric_limits<vtkIdType>::max())
+    {
+        EXCEPTION1(InvalidFilesException, "Grid contains more cells than installed "
+                "VTK can handle. Installing a VTK version with 64-bit indices "
+                "enabled may help.");
+    }
 
     vtkFloatArray *farr = vtkFloatArray::New();
     farr->SetNumberOfComponents(1);
@@ -1626,27 +1652,29 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
     char name[1024];
     SNPRINTF(name, 1024, "level_%d", level);
     hid_t level_id = H5Gopen(file_handle, name);
+    if (level_id < 0)
+    {
+        EXCEPTION1(InvalidFilesException, "Chombo file does not contain group for requested level.");
+    }
+
     hid_t data = H5Dopen(level_id, "data:datatype=0");
+    if (data < 0)
+    {
+        EXCEPTION1(InvalidFilesException, "Level does not contain data.");
+    }
 
     hid_t space_id = H5Dget_space(data);
     hid_t rank     = H5Sget_simple_extent_ndims(space_id);
     hsize_t dims[1];
     int status_n   = H5Sget_simple_extent_dims(space_id, dims, NULL);
-#if HDF5_VERSION_GE(1,6,4)
-    hsize_t offset[1] = { start };
-#else
-    hssize_t offset[1] = { start };
-#endif
-    hsize_t count[1]  = { amt };
-    H5Sselect_hyperslab(space_id, H5S_SELECT_SET, offset, NULL, count, NULL);
+    H5Sselect_hyperslab(space_id, H5S_SELECT_SET, &start, NULL, &amt, NULL);
     
-    hsize_t mem_size[1] = { amt };
-    hid_t memdataspace = H5Screate_simple(1, mem_size, NULL);
+    hid_t memdataspace = H5Screate_simple(1, &amt, NULL);
     
     H5Dread(data, H5T_NATIVE_FLOAT, memdataspace, space_id, H5P_DEFAULT, ptr);
 
-    H5Sclose(space_id);
     H5Sclose(memdataspace);
+    H5Sclose(space_id);
     H5Dclose(data);
     H5Gclose(level_id);
 
@@ -1662,41 +1690,41 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
         {
             vtkFloatArray *new_farr = vtkFloatArray::New();
-            int new_amt = (hiI[patch]-lowI[patch])
-                        * (hiJ[patch]-lowJ[patch]);
+            size_t new_amt = size_t(hiI[patch]-lowI[patch])
+                           * size_t(hiJ[patch]-lowJ[patch]);
             if (dimension == 3)
                 new_amt *= (hiK[patch]-lowK[patch]);
             new_farr->SetNumberOfTuples(new_amt);
     
-            int nJ = hiJ[patch] - lowJ[patch];
-            int nI = hiI[patch] - lowI[patch];
+            size_t nJ = hiJ[patch] - lowJ[patch];
+            size_t nI = hiI[patch] - lowI[patch];
     
-            int nJ2 = nJ + 2*numGhostJ;
-            int nI2 = nI + 2*numGhostI;
+            size_t nJ2 = nJ + 2*numGhostJ;
+            size_t nI2 = nI + 2*numGhostI;
     
             float *new_ptr = new_farr->GetPointer(0);
             float *old_ptr = farr->GetPointer(0);
             if (dimension == 3)
             {
-                int nK = hiK[patch] - lowK[patch];
-                int nK2 = nK + 2*numGhostK;
-                for (int k = 0 ; k < nK ; k++)
-                    for (int j = 0 ; j < nJ ; j++)
-                        for (int i = 0 ; i < nI ; i++)
+                size_t nK = hiK[patch] - lowK[patch];
+                size_t nK2 = nK + 2*numGhostK;
+                for (size_t k = 0 ; k < nK ; k++)
+                    for (size_t j = 0 ; j < nJ ; j++)
+                        for (size_t i = 0 ; i < nI ; i++)
                         {
-                            int idx_new = k*nJ*nI + j*nI + i;
-                            int idx_old = (k+numGhostK)*nJ2*nI2 + (j+numGhostJ)*nI2
-                                        + (i+numGhostI);
+                            size_t idx_new = hsize_t(k)*nJ*nI + j*nI + i;
+                            size_t idx_old = (k+numGhostK)*nJ2*nI2 + (j+numGhostJ)*nI2
+                                           + (i+numGhostI);
                             new_ptr[idx_new] = old_ptr[idx_old];
                         }
             }
             else
             {
-                for (int j = 0 ; j < nJ ; j++)
-                    for (int i = 0 ; i < nI ; i++)
+                for (size_t j = 0 ; j < nJ ; j++)
+                    for (size_t i = 0 ; i < nI ; i++)
                     {
-                        int idx_new = j*nI + i;
-                        int idx_old = (j+numGhostJ)*nI2 + (i+numGhostI);
+                        size_t idx_new = j*nI + i;
+                        size_t idx_old = (j+numGhostJ)*nI2 + (i+numGhostI);
                         new_ptr[idx_new] = old_ptr[idx_old];
                     }
             }
@@ -1707,7 +1735,6 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
 
     return farr;
 }
-
 
 // ****************************************************************************
 //  Method: avtChomboFileFormat::GetVectorVar
