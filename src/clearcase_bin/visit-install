@@ -140,6 +140,9 @@
 #    Hank Childs, Wed Nov 14 16:54:09 PST 2007
 #    Make sure we have write permission for the target directory.
 #
+#    Hank Childs, Mon Nov 19 09:20:04 PST 2007
+#    Check for corrupted downloads.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -354,6 +357,14 @@ if ($Compress == "COMPRESS") then
    uncompress $fname1
 else
    gunzip $fname1
+endif
+if (! -e $fname2) then
+   echo ""
+   echo "Unable to unzip $fname1.  The file appears to be corrupted."
+   echo "This is often the case when a download has not yet completed."
+   echo "Bailing out..."
+   echo ""
+   exit (2)
 endif
 tar xvbf 20 $fname2
 cd ..
