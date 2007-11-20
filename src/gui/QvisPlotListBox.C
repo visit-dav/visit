@@ -162,7 +162,9 @@ QvisPlotListBox::viewportMouseDoubleClickEvent(QMouseEvent *e)
 // Creation:   Thu Apr 10 16:16:32 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Nov 20 14:34:44 PST 2007
+//   Fixed plot expansion.
+//
 // ****************************************************************************
 
 void
@@ -172,37 +174,6 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
     QPoint itemClickLocation(clickLocation);
     int y = 0;
     int heightSum = 0;
-#if 0
-    for(int i = 0; i < count(); ++i)
-    {
-        QListBoxItem *current = item(i);
-        int h = current->height(this);
-
-        if(clickLocation.y() >= y && clickLocation.y() < (y + h))
-        {
-				      
-            // If the item is not selected, select it.
-            bool bs = signalsBlocked();
-
-            if(!bs)
-                blockSignals(true);
-            setSelected(current, true);
-            if(!bs)
-                blockSignals(false);
-
-            // Reduce the y location of the click location
-            itemClickLocation.setY(clickLocation.y() - heightSum);
-
-            // Handle the click.
-            itemClicked(current, itemClickLocation, rightClick, doubleClicked);
-            return;
-        }
-
-        heightSum += h;
-        y += h;
-    }
-#else
-//experiment
     int action = -1, id = -1;
     bool bs = signalsBlocked();
     bool emitted = true;
@@ -231,7 +202,7 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
             
             if(action == -1)
             {
-                action = item2->clicked(clickLocation, doubleClicked, i);
+                action = item2->clicked(itemClickLocation, doubleClicked, i);
                 id = i;
             }
         }
@@ -279,73 +250,6 @@ QvisPlotListBox::clickHandler(const QPoint &clickLocation, bool rightClick,
             emitted = false;
         break;
     }
-#endif
-}
-
-// ****************************************************************************
-// Method: QvisPlotListBox::itemClicked
-//
-// Purpose: 
-//   This method is called when an item is clicked. We use it to emit certain
-//   signals depending on which areas of the item were clicked.
-//
-// Arguments:
-//   item          : The item that was clicked.
-//   point         : The point where the item was clicked.
-//   doubleClicked : Whether or not we're handling a click or a double click.
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Apr 8 16:20:54 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-QvisPlotListBox::itemClicked(QListBoxItem *item, const QPoint &point,
-    bool rightClick, bool doubleClicked)
-{
-    if(item == 0)
-        return(false);
-
-    QvisPlotListBoxItem *item2 = (QvisPlotListBoxItem *)item;
-    int id = 0;
-    
-    bool emitted = true;
-    switch(item2->clicked(point, doubleClicked, id))
-    {
-    case 0: // expand clicked
-        triggerUpdate(true);
-        break;
-    case 1: // subset clicked
-         emit activateSubsetWindow();
-        break;
-    case 2: // plot clicked
-         emit activatePlotWindow(id);
-        break;
-    case 3: // operator clicked
-         emit activateOperatorWindow(id);
-        break;
-    case 4: // promote clicked
-         emit promoteOperator(id);
-        break;
-    case 5: // demote clicked
-        emit demoteOperator(id);
-        break;
-    case 6: // delete clicked
-         emit removeOperator(id);
-        break;
-    default:
-        if(rightClick)
-	{
-	    emit selectionChanged();
-	}
-        else
-            emitted = false;
-        break;
-    }
-
-    return emitted;
 }
 
 // ****************************************************************************
