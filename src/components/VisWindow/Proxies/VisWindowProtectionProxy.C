@@ -1179,3 +1179,24 @@ VisWindowProtectionProxy::ProxiedDoNextExternalRenderAsVisualQueue(
 {
     viswin->DoNextExternalRenderAsVisualQueue(w,h,c);
 };
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::GetBackgroundMode
+//
+// Purpose:
+//   Return the background mode.
+//
+// Returns:    The background mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 19 17:45:21 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+VisWindowProtectionProxy::ProxiedGetBackgroundMode() const
+{
+    return viswin->GetBackgroundMode();
+}

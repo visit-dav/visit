@@ -118,7 +118,7 @@ static void      start_render(vtkObject *, unsigned long, void*, void *);
 
 VisWindow::VisWindow()
     : colleagueProxy(this), interactorProxy(this), renderProxy(this),
-      lightList()
+      lightList(), backgroundImage()
 {
     Initialize(new VisWinRenderingWithoutWindow(colleagueProxy));
 }
@@ -134,7 +134,7 @@ VisWindow::VisWindow()
 
 VisWindow::VisWindow(bool callInit)
     : colleagueProxy(this), interactorProxy(this), renderProxy(this),
-      lightList()
+      lightList(), backgroundImage()
 {
     if (callInit)
     {
@@ -225,6 +225,9 @@ VisWindow::VisWindow(bool callInit)
 //    Mark Blair, Mon Sep 25 11:41:09 PDT 2006
 //    Initialize with axis annotations enabled.
 //
+//    Brad Whitlock, Mon Nov 19 12:21:11 PST 2007
+//    Added background image support.
+//
 // ****************************************************************************
 
 void
@@ -254,6 +257,9 @@ VisWindow::Initialize(VisWinRendering *ren)
     gradientBackgroundStyle = 0;
     SetBackgroundColor(1., 1., 1.);
     SetForegroundColor(0., 0., 0.);
+    backgroundImage = std::string("");
+    backgroundNX = 1;
+    backgroundNY = 1;
     SetViewport(0., 0., 1., 1.);
     EnableAxisAnnotations();
     EnableUpdates();
@@ -475,6 +481,9 @@ VisWindow::~VisWindow()
 //    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
 //    Added support for WINMODE_CURVE. 
 //
+//    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
+//    Added background image support.
+//
 // ****************************************************************************
 
 void
@@ -498,6 +507,8 @@ VisWindow::AddColleague(VisWinColleague *col)
         gradientBackground[1][1],
         gradientBackground[1][2]);
     col->SetBackgroundMode(backgroundMode);
+    col->SetBackgroundImage(backgroundImage, backgroundNX, backgroundNY);
+
     col->SetViewport(viewportLeft, viewportBottom, viewportRight, viewportTop);
 
     if (hasPlots)
@@ -765,6 +776,48 @@ VisWindow::InvertBackgroundColor()
     annotationAtts.SetForegroundColor(tmp2);
 
     Render();
+}
+
+// ****************************************************************************
+//  Method: VisWindow::SetBackgroundImage
+//
+//  Purpose:
+//      Sets the background image.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Nov 14 15:39:34 PST 2007
+//
+// ****************************************************************************
+
+void
+VisWindow::SetBackgroundImage(const std::string &imgFile, int nx, int ny)
+{
+    backgroundImage = imgFile;
+    backgroundNX = nx;
+    backgroundNY = ny;
+
+    std::vector< VisWinColleague * >::iterator it;
+    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    {
+        (*it)->SetBackgroundImage(backgroundImage, backgroundNX, backgroundNY);
+    }
+}
+
+// ****************************************************************************
+//  Method: VisWindow::GetBackgroundImage
+//
+//  Purpose:
+//      Gets the background image.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Nov 14 15:39:34 PST 2007
+//
+// ****************************************************************************
+
+const std::string &
+VisWindow::GetBackgroundImage() const
+{
+    return backgroundImage;
 }
 
 // ****************************************************************************
@@ -3250,6 +3303,9 @@ VisWindow::SetShowCallback(VisCallback *cb, void *data)
 //   Brad Whitlock, Thu Jan 10 08:20:30 PDT 2002
 //   I added a call to UpdateTextAnnotations.
 //
+//   Brad Whitlock, Wed Nov 14 15:37:34 PST 2007
+//   I added support for image backgrounds.
+//
 // ****************************************************************************
 
 void
@@ -3277,6 +3333,8 @@ VisWindow::SetAnnotationAtts(const AnnotationAttributes *atts)
         SetGradientBackgroundColors(atts->GetGradientBackgroundStyle(),
             gbg1[0], gbg1[1], gbg1[2], gbg2[0], gbg2[1], gbg2[2]);
         SetForegroundColor(fg[0], fg[1], fg[2]);
+        SetBackgroundImage(atts->GetBackgroundImage(),
+                           atts->GetImageRepeatX(), atts->GetImageRepeatY());
         SetBackgroundMode(atts->GetBackgroundMode());
 
         // Copy the annotation attributes.

@@ -44,6 +44,7 @@
 #include <vtkVisItCellDataToPointData.h>
 #include <vtkVisItDataSetMapper.h>
 #include <vtkVisItOpenGLPolyDataMapper.h>
+#include <vtkVisItOpenGLTexture.h>
 #include <vtkVisItMesaPolyDataMapper.h>
 #include <vtkVisItRectilinearGrid.h>
 #include <vtkVisItStructuredGrid.h>
@@ -80,6 +81,7 @@ class vtkVisItGraphicsFactory : public vtkObjectFactory
 // Necessary for each object that will override a vtkObject.
 //
 VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLPolyDataMapper);
+VTK_CREATE_CREATE_FUNCTION(vtkVisItOpenGLTexture);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItMesaPolyDataMapper);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItCellDataToPointData);
 VTK_CREATE_CREATE_FUNCTION(vtkVisItDataSetMapper);
@@ -124,7 +126,10 @@ vtkVisItGraphicsFactory::GetVTKSourceVersion()
 //
 //    Dave Bremer, Mon Jun 18 17:44:43 PDT 2007
 //    Reinstantiated use of vtkVisItStructuredGrid and vtkVisItRectilinearGrid.
-//    
+//
+//    Brad Whitlock, Thurs Nov 15 16:25 PST 2007
+//    Added override of vtkOpenGLTexture that is compatible with our vtkQtRenderWindow.
+//
 vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
 {
   this->RegisterOverride("vtkOpenGLPolyDataMapper", "vtkVisItOpenGLPolyDataMapper",
@@ -157,6 +162,10 @@ vtkVisItGraphicsFactory::vtkVisItGraphicsFactory()
                          1,
                          vtkObjectFactoryCreatevtkOSMesaRenderWindow);
 #endif
+  this->RegisterOverride("vtkOpenGLTexture", "vtkVisItOpenGLTexture",
+                         "vtkVisItOpenGLTexture override vtkOpenGLTexture",
+                         1,
+                         vtkObjectFactoryCreatevtkVisItOpenGLTexture);
 }
 
 // ****************************************************************************

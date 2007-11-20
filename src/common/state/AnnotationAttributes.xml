@@ -29,6 +29,8 @@
     <Enum name="BackgroundMode">
       Solid
       Gradient
+      Image
+      ImageSphere
     </Enum>
     <Enum name="PathExpansionMode">
       File
@@ -320,6 +322,8 @@
     <Field name="backgroundMode" label="backgroundMode" type="enum" subtype="BackgroundMode">
       Solid
     </Field>
+    <Field name="backgroundImage" label="Background image" type="string">
+    </Field>
     <Field name="userInfoFlag" label="userInfoFlag" type="bool">
       true
     </Field>
@@ -331,6 +335,12 @@
     </Field>
     <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
       true
+    </Field>
+    <Field name="imageRepeatX" label="Image repeat X" type="int">
+      1
+    </Field>
+    <Field name="imageRepeatY" label="Image repeat Y" type="int">
+      1
     </Field>
     <Function name="GetDiscernibleBackgroundColor" user="true" member="true">
     </Function>

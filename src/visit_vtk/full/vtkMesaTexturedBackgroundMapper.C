@@ -34,62 +34,13 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#define VTK_IMPLEMENT_MESA_CXX
 
-// ************************************************************************* //
-//                          VisWinBackground.h                               //
-// ************************************************************************* //
+#include "MangleMesaInclude/gl_mangle.h"
+#include "MangleMesaInclude/gl.h"
+#define vtkOpenGLTexturedBackgroundMapper vtkMesaTexturedBackgroundMapper
 
-#ifndef VIS_WIN_BACKGROUND_H
-#define VIS_WIN_BACKGROUND_H
-#include <viswindow_exports.h>
+#define DrawSphere DrawSphere_mesa
 
-#include <VisWinColleague.h>
-
-// Forward declarations.
-class vtkBackgroundActor;
-class vtkTexturedBackgroundActor;
-class VisWindowColleagueProxy;
-
-// ****************************************************************************
-// Class: VisWinBackground
-//
-// Purpose:
-//   This colleague displays a gradient background or an image background
-//   for the Vis window.
-//
-// Notes:      
-//
-// Programmer: Brad Whitlock
-// Creation:   Tue Aug 28 10:08:09 PDT 2001
-//
-// Modifications:
-//    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
-//    Added background image support.
-//   
-// ****************************************************************************
-
-class VISWINDOW_API VisWinBackground : public VisWinColleague
-{
-  public:
-                              VisWinBackground(VisWindowColleagueProxy &);
-    virtual                  ~VisWinBackground();
-
-    virtual void              SetGradientBackgroundColors(int,
-                                                    double, double, double,
-                                                    double, double, double);
-    virtual void              SetBackgroundMode(int);
-    virtual void              SetBackgroundImage(const std::string &,int,int);
-    virtual void              UpdatePlotList(std::vector<avtActor_p> &);
-  protected:
-    static bool                 sphereModeError1;
-    static bool                 sphereModeError2;
-
-    vtkBackgroundActor         *bgActor;
-    vtkTexturedBackgroundActor *textureActor;
-    bool                        addedBackground;
-
-    void                        AddBackgroundToWindow(int);
-    void                        RemoveBackgroundFromWindow();
-};
-
-#endif
+#include "vtkOpenGLTexturedBackgroundMapper.C"
+#undef vtkOpenGLTexturedBackgroundMapper

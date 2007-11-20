@@ -43,8 +43,8 @@
 #define VIS_WIN_COLLEAGUE_H
 #include <viswindow_exports.h>
 
-
 #include <vector>
+#include <string>
 
 #include <avtActor.h>
 
@@ -108,6 +108,9 @@ class     ColorAttribute;
 //    Brad Whitlock, Mon Sep 18 11:11:09 PDT 2006
 //    Added color texturing.
 //
+//    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
+//    Added background image support.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -122,6 +125,7 @@ class VISWINDOW_API VisWinColleague
                                                       double, double, double)
                                                          {;};
     virtual void              SetBackgroundMode(int) {;};
+    virtual void              SetBackgroundImage(const std::string &,int,int) {;};
     virtual void              SetForegroundColor(double, double, double) {;};
 
     virtual void              SetViewport(double, double, double, double) {;};
