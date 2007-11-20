@@ -34,62 +34,52 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef VTK_MESA_TEXTURED_BACKGROUND_MAPPER_H
+#define VTK_MESA_TEXTURED_BACKGROUND_MAPPER_H
+#include <vtkMapper2D.h>
 
-// ************************************************************************* //
-//                          VisWinBackground.h                               //
-// ************************************************************************* //
-
-#ifndef VIS_WIN_BACKGROUND_H
-#define VIS_WIN_BACKGROUND_H
-#include <viswindow_exports.h>
-
-#include <VisWinColleague.h>
-
-// Forward declarations.
-class vtkBackgroundActor;
-class vtkTexturedBackgroundActor;
-class VisWindowColleagueProxy;
+class vtkTexture;
+class vtkRenderer;
 
 // ****************************************************************************
-// Class: VisWinBackground
+// Class: vtkMesaTexturedBackgroundMapper
 //
 // Purpose:
-//   This colleague displays a gradient background or an image background
-//   for the Vis window.
+//   Mesa version of the textured background mapper class.
 //
 // Notes:      
 //
 // Programmer: Brad Whitlock
-// Creation:   Tue Aug 28 10:08:09 PDT 2001
+// Creation:   
 //
 // Modifications:
-//    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
-//    Added background image support.
-//   
+//
 // ****************************************************************************
 
-class VISWINDOW_API VisWinBackground : public VisWinColleague
+// Not exposed in DLL on purpose
+class vtkMesaTexturedBackgroundMapper : public vtkMapper2D
 {
-  public:
-                              VisWinBackground(VisWindowColleagueProxy &);
-    virtual                  ~VisWinBackground();
+public:
+  static vtkMesaTexturedBackgroundMapper *New();
 
-    virtual void              SetGradientBackgroundColors(int,
-                                                    double, double, double,
-                                                    double, double, double);
-    virtual void              SetBackgroundMode(int);
-    virtual void              SetBackgroundImage(const std::string &,int,int);
-    virtual void              UpdatePlotList(std::vector<avtActor_p> &);
-  protected:
-    static bool                 sphereModeError1;
-    static bool                 sphereModeError2;
+  vtkTypeMacro(vtkMesaTexturedBackgroundMapper, vtkMapper2D);
+  virtual void PrintSelf(ostream &os, vtkIndent indent);
 
-    vtkBackgroundActor         *bgActor;
-    vtkTexturedBackgroundActor *textureActor;
-    bool                        addedBackground;
+  virtual void RenderOpaqueGeometry(vtkViewport *, vtkActor2D *);
 
-    void                        AddBackgroundToWindow(int);
-    void                        RemoveBackgroundFromWindow();
+  void SetTextureAndRenderers(vtkTexture *t, vtkRenderer *bg, vtkRenderer *canvas);
+  void SetSphereMode(bool);
+  void SetImageRepetitions(int,int);
+protected:
+   vtkMesaTexturedBackgroundMapper();
+  ~vtkMesaTexturedBackgroundMapper();
+private:
+  vtkTexture  *tex;
+  vtkRenderer *background;
+  vtkRenderer *canvas;
+  bool         sphereMode;
+  int          imageRepeatX;
+  int          imageRepeatY;
 };
 
 #endif

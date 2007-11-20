@@ -34,62 +34,55 @@
 * DAMAGE.
 *
 *****************************************************************************/
+#ifndef VTK_TEXTURED_BACKGROUND_ACTOR_H
+#define VTK_TEXTURED_BACKGROUND_ACTOR_H
+#include <vtkActor2D.h>
+#include <visit_vtk_exports.h>
 
-// ************************************************************************* //
-//                          VisWinBackground.h                               //
-// ************************************************************************* //
-
-#ifndef VIS_WIN_BACKGROUND_H
-#define VIS_WIN_BACKGROUND_H
-#include <viswindow_exports.h>
-
-#include <VisWinColleague.h>
-
-// Forward declarations.
-class vtkBackgroundActor;
-class vtkTexturedBackgroundActor;
-class VisWindowColleagueProxy;
+class vtkTexture;
+class vtkRenderer;
 
 // ****************************************************************************
-// Class: VisWinBackground
+// Class: vtkTexturedBackgroundActor
 //
 // Purpose:
-//   This colleague displays a gradient background or an image background
-//   for the Vis window.
+//   This class is a 2D actor that can draw a background image into a render
+//   window.
 //
-// Notes:      
+// Notes:      This class does not need to be associated with a mapper because
+//             a specialized mapper is created and used internally.
 //
 // Programmer: Brad Whitlock
-// Creation:   Tue Aug 28 10:08:09 PDT 2001
+// Creation:   Fri Nov 16 10:21:51 PST 2007
 //
 // Modifications:
-//    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
-//    Added background image support.
 //   
 // ****************************************************************************
 
-class VISWINDOW_API VisWinBackground : public VisWinColleague
+class VISIT_VTK_API vtkTexturedBackgroundActor : public vtkActor2D
 {
-  public:
-                              VisWinBackground(VisWindowColleagueProxy &);
-    virtual                  ~VisWinBackground();
+public:
+  static vtkTexturedBackgroundActor *New();
+ 
+  vtkTypeMacro(vtkTexturedBackgroundActor, vtkActor2D); 
+  virtual void PrintSelf(ostream &os, vtkIndent indent);
+ 
+  virtual void ReleaseGraphicsResources(vtkWindow *);
 
-    virtual void              SetGradientBackgroundColors(int,
-                                                    double, double, double,
-                                                    double, double, double);
-    virtual void              SetBackgroundMode(int);
-    virtual void              SetBackgroundImage(const std::string &,int,int);
-    virtual void              UpdatePlotList(std::vector<avtActor_p> &);
-  protected:
-    static bool                 sphereModeError1;
-    static bool                 sphereModeError2;
+  int SetTextureAndRenderers(const char *filename, vtkRenderer *bg, vtkRenderer *canvas);
 
-    vtkBackgroundActor         *bgActor;
-    vtkTexturedBackgroundActor *textureActor;
-    bool                        addedBackground;
+  void SetSphereMode(bool);
+  void SetImageRepetitions(int,int);
+protected:
+   vtkTexturedBackgroundActor();
+  ~vtkTexturedBackgroundActor(); 
 
-    void                        AddBackgroundToWindow(int);
-    void                        RemoveBackgroundFromWindow();
+   vtkMapper2D *GetInitializedMapper();
+   vtkTexture  *GetTexture(const char *);
+   void         SetTextureAndRenderers(vtkTexture *tex, vtkRenderer *bg, vtkRenderer *canvas);
+
+   vtkTexture  *texture;
+   char        *imageFile;
 };
 
 #endif

@@ -1,15 +1,53 @@
 <?xml version="1.0"?>
-  <Attribute name="WindowAttributes" purpose="This class contains the attributes for a visualization window." exportAPI="STATE_API" exportInclude="state_exports.h">
-    <Field name="viewCurve" type="att" subtype="ViewCurveAttributes"></Field>
-    <Field name="view2D" type="att" subtype="View2DAttributes"></Field>
-    <Field name="view3D" type="att" subtype="View3DAttributes"></Field>
-    <Field name="lights" type="att" subtype="LightList"></Field>
-    <Field name="renderAtts" type="att" subtype="RenderingAttributes"></Field>
-    <Field name="colorTables" type="att" subtype="ColorTableAttributes"></Field>
-    <Field name="size" type="intArray" length="2">300 300</Field>
-    <Field name="background" type="ucharArray" length="3">255 255 255</Field>
-    <Field name="foreground" type="ucharArray" length="3">0 0 0</Field>
-    <Field name="backgroundMode" type="int">0</Field>
-    <Field name="gradBG1" type="doubleArray" length="3">0. 0. 1.</Field>
-    <Field name="gradBG2" type="doubleArray" length="3">0. 0. 0.</Field>
+  <Attribute name="WindowAttributes" purpose="This class contains the attributes for a visualization window." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="viewCurve" label="viewCurve" type="att" subtype="ViewCurveAttributes">
+    </Field>
+    <Field name="view2D" label="view2D" type="att" subtype="View2DAttributes">
+    </Field>
+    <Field name="view3D" label="view3D" type="att" subtype="View3DAttributes">
+    </Field>
+    <Field name="lights" label="lights" type="att" subtype="LightList">
+    </Field>
+    <Field name="renderAtts" label="renderAtts" type="att" subtype="RenderingAttributes">
+    </Field>
+    <Field name="colorTables" label="colorTables" type="att" subtype="ColorTableAttributes">
+    </Field>
+    <Field name="size" label="size" type="intArray" length="2">
+      300
+      300
+    </Field>
+    <Field name="background" label="background" type="ucharArray" length="3">
+      255
+      255
+      255
+    </Field>
+    <Field name="foreground" label="foreground" type="ucharArray" length="3">
+      0
+      0
+      0
+    </Field>
+    <Field name="backgroundMode" label="backgroundMode" type="int">
+      0
+    </Field>
+    <Field name="gradBG1" label="gradBG1" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      1.000000
+    </Field>
+    <Field name="gradBG2" label="gradBG2" type="doubleArray" length="3">
+      0.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="gradientBackgroundStyle" label="Gradient background style" type="int">
+      0
+    </Field>
+    <Field name="backgroundImage" label="Background image" type="string">
+    </Field>
+    <Field name="imageRepeatX" label="Image repeat X" type="int">
+      1
+    </Field>
+    <Field name="imageRepeatY" label="Image repeat Y" type="int">
+      1
+    </Field>
   </Attribute>

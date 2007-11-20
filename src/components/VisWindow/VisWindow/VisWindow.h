@@ -371,6 +371,10 @@ class VisitInteractor;
 //
 //    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
 //    Added flag to clear the external renderer's cached image if disabling it.
+//
+//    Brad Whitlock, Wed Nov 14 15:29:34 PST 2007
+//    Added support for image backgrounds.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -442,6 +446,8 @@ public:
     void                 SetForegroundColor(double, double, double);
     const double *       GetForegroundColor() const;
     void                 InvertBackgroundColor();
+    void                 SetBackgroundImage(const std::string &,int,int);
+    const std::string   &GetBackgroundImage() const;
     void                 SetViewport(double, double, double, double);
 
     void                 SetTitle(const char *);
@@ -621,6 +627,9 @@ protected:
     double                             gradientBackground[2][3];
     int                                gradientBackgroundStyle;
     int                                backgroundMode;
+    int                                backgroundNX;
+    int                                backgroundNY;
+    std::string                        backgroundImage;
     double                             viewportLeft, viewportRight,
                                        viewportBottom, viewportTop;
     int                                frameAndState[7];

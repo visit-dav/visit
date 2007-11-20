@@ -150,6 +150,10 @@ class     PlotInfoAttributes;
 //
 //    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
 //    Added flag to clear the external renderer's cached image if disabling it.
+//
+//    Brad Whitlock, Mon Nov 19 17:44:10 PST 2007
+//    Added code to query the background mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowProtectionProxy
@@ -176,6 +180,7 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedGetForegroundColor(double [3]);
     bool                ProxiedGetHotPoint(int, int, HotPoint &) const;
     WINDOW_MODE         ProxiedGetMode();
+    int                 ProxiedGetBackgroundMode() const;
     void                ProxiedGetViewport(double vport[4]);
     void                ProxiedGetSize(int &width, int &height) const;
     void                ProxiedGetWindowSize(int &width, int &height) const;

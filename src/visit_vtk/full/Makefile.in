@@ -315,6 +315,10 @@
 #    Dave Bremer, Fri May 25 15:27:41 PDT 2007
 #    Added vtkVisItStructuredGrid and vtkVisItRectilinearGrid
 #
+#    Brad Whitlock, Wed Nov 14 11:16:34 PDT 2007
+#    Added vtkTexturedBackgroundActor, vtkOpenGLTexturedBackgroundMapper,
+#    vtkMesaTexturedBackgroundMapper, vtkVisItOpenGLTexture.C
+#
 ##############################################################################
 
 ##
@@ -328,11 +332,14 @@
 ##
 OPENGL_SRC=vtkVisItOpenGLPolyDataMapper.C \
     vtkOpenGLRectilinearGridMapper.C \
-    vtkOpenGLStructuredGridMapper.C
+    vtkOpenGLStructuredGridMapper.C \
+    vtkOpenGLTexturedBackgroundMapper.C \
+    vtkVisItOpenGLTexture.C
 
 MESA_SRC=vtkOSMesaRenderWindow.C \
     vtkMesaRectilinearGridMapper.C \
     vtkMesaStructuredGridMapper.C \
+    vtkMesaTexturedBackgroundMapper.C \
     vtkVisItMesaPolyDataMapper.C
 
 SRC=InitVTK.C \
@@ -361,6 +368,7 @@ SRC=InitVTK.C \
     vtkSurfaceFilter.C \
     vtkSurfaceFromVolume.C \
     vtkTensorReduceFilter.C \
+    vtkTexturedBackgroundActor.C \
     vtkTimeSliderActor.C \
     vtkTriad2D.C \
     vtkUniqueFeatureEdges.C \

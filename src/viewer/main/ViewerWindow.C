@@ -5841,6 +5841,9 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
 //   Added depth cueing properties.
 //
+//   Brad Whitlock, Mon Nov 19 14:37:52 PST 2007
+//   Added support for background images.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -5895,12 +5898,11 @@ ViewerWindow::GetWindowAttributes() const
     gbg[1] = double(annot->GetGradientColor2().Green()) / 255.;
     gbg[2] = double(annot->GetGradientColor2().Blue()) / 255.;
     winAtts.SetGradBG2(gbg);
-    int bgMode;
-    if(annot->GetBackgroundMode() == 0)
-        bgMode = 0;
-    else
-        bgMode = annot->GetGradientBackgroundStyle() + 1;
-    winAtts.SetBackgroundMode(bgMode);
+    winAtts.SetBackgroundMode((int)annot->GetBackgroundMode());
+    winAtts.SetGradientBackgroundStyle((int)annot->GetGradientBackgroundStyle());
+    winAtts.SetBackgroundImage(annot->GetBackgroundImage());
+    winAtts.SetImageRepeatX(annot->GetImageRepeatX());
+    winAtts.SetImageRepeatY(annot->GetImageRepeatY());    winAtts.SetBackgroundMode((int)annot->GetBackgroundMode());
 
     // Rendering attributes
     RenderingAttributes renderAtts;

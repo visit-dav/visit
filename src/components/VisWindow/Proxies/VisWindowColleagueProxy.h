@@ -132,6 +132,10 @@
 //
 //    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
 //    Added flag to clear the external renderer's cached image if disabling it.
+//
+//    Brad Whitlock, Mon Nov 19 17:46:11 PST 2007
+//    Added GetBackgroundMode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
@@ -156,6 +160,9 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
 
     vtkRenderer        *GetBackground(void)
                                   { return ProxiedGetBackground(); };
+
+    int                 GetBackgroundMode() const
+                                  { return ProxiedGetBackgroundMode(); }
 
     void                GetBounds(double bounds[6])
                                   { ProxiedGetBounds(bounds); };

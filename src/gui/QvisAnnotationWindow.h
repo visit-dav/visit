@@ -53,10 +53,12 @@ class QLabel;
 class QListBox;
 class QNarrowLineEdit;
 class QPushButton;
+class QSpinBox;
 class QTabWidget;
 class QVBox;
 class QvisAnnotationObjectInterface;
 class QvisColorButton;
+class QvisDialogLineEdit;
 class QvisLineWidthWidget;
 
 // ****************************************************************************
@@ -108,6 +110,9 @@ class QvisLineWidthWidget;
 //
 //   Cyrus Harrison, Tue Oct  2 09:07:52 PDT 2007
 //   Added create general tab
+//
+//   Brad Whitlock, Wed Nov 14 11:34:45 PDT 2007
+//   Added background image support.
 //
 // ****************************************************************************
 
@@ -213,6 +218,10 @@ private slots:
     void gradientColor2Changed(const QColor &c);
     void backgroundStyleChanged(int index);
     void gradientStyleChanged(int index);
+    void backgroundImageChanged();
+    void imageRepeatXChanged(int);
+    void imageRepeatYChanged(int);
+
     void tabSelected(const QString &tabLabel);
     void userInfoChecked(bool val);
     void databaseInfoChecked(bool val);
@@ -326,6 +335,13 @@ private:
     QvisColorButton *gradientColor1Button;
     QLabel          *gradientColor2Label;
     QvisColorButton *gradientColor2Button;
+    QvisDialogLineEdit *backgroundImage;
+    QLabel             *backgroundImageLabel;
+    QSpinBox           *imageRepeatX;
+    QLabel             *imageRepeatXLabel;
+    QSpinBox           *imageRepeatY;
+    QLabel             *imageRepeatYLabel;
+
     // Objects tab widgets
     QGroupBox       *pageObjects;
     QButtonGroup    *objButtonGroup;

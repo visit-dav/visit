@@ -41,10 +41,22 @@
 
 #include <vtkRenderer.h>
 #include <vtkBackgroundActor.h>
+#include <vtkImageReader2.h>
+#include <vtkImageReader2Factory.h>
+#include <vtkTexture.h>
+#include <vtkTexturedBackgroundActor.h>
 
 #include <VisWindow.h>
 #include <VisWindowColleagueProxy.h>
 #include <VisWinBackground.h>
+
+#include <avtCallback.h>
+#include <DebugStream.h>
+#include <snprintf.h>
+
+// Static
+bool VisWinBackground::sphereModeError1 = false;
+bool VisWinBackground::sphereModeError2 = false;
 
 // ****************************************************************************
 //  Method: VisWinBackground constructor
@@ -57,12 +69,16 @@
 //  Creation:   Wed Aug 29 15:39:16 PST 2001
 //
 //  Modifications:
-//   
+//   Brad Whitlock, Fri Nov 16 11:02:20 PST 2007
+//   Added support for background images.
+//
 // ****************************************************************************
 
-VisWinBackground::VisWinBackground(VisWindowColleagueProxy &p) : VisWinColleague(p)
+VisWinBackground::VisWinBackground(VisWindowColleagueProxy &p) :
+    VisWinColleague(p)
 {
     bgActor = vtkBackgroundActor::New();
+    textureActor = vtkTexturedBackgroundActor::New();
     addedBackground = false;
 }
 
@@ -73,6 +89,8 @@ VisWinBackground::VisWinBackground(VisWindowColleagueProxy &p) : VisWinColleague
 //  Creation:   Wed Aug 29 15:39:16 PST 2001
 //
 //  Modifications:
+//    Brad Whitlock, Fri Nov 16 11:02:00 PST 2007
+//    Added support for background images.
 //
 // ****************************************************************************
 
@@ -82,6 +100,12 @@ VisWinBackground::~VisWinBackground()
     {
         bgActor->Delete();
         bgActor = NULL;
+    }
+
+    if(textureActor != 0)
+    {
+        textureActor->Delete();
+        textureActor = 0;
     }
 }
 
@@ -153,6 +177,30 @@ VisWinBackground::SetGradientBackgroundColors(int gradStyle,
 }
 
 // ****************************************************************************
+// Method: VisWinBackground::UpdatePlotList
+//
+// Purpose: 
+//   Updates the background mode when the plot list changes. This ensures that
+//   we can successfully shift into image sphere mode from when we did not have
+//   plots.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 19 17:56:25 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinBackground::UpdatePlotList(std::vector<avtActor_p> &)
+{
+    // Update the background in image sphere mode in case we were unable to
+    // originally draw the image sphere due to having no plots.
+    if(mediator.GetBackgroundMode() == 3)
+        SetBackgroundMode(mediator.GetBackgroundMode());
+}
+
+// ****************************************************************************
 // Method: VisWinBackground::SetBackgroundMode
 //
 // Purpose: 
@@ -167,18 +215,56 @@ VisWinBackground::SetGradientBackgroundColors(int gradStyle,
 // Creation:   Wed Aug 29 15:48:18 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Nov 16 11:01:45 PST 2007
+//   Changed so it supports background images.
+//
 // ****************************************************************************
 
 void
 VisWinBackground::SetBackgroundMode(int mode)
 {
-    if(mode == 0)
-        RemoveBackgroundFromWindow();
-    else
-        AddBackgroundToWindow();
+    RemoveBackgroundFromWindow();
+    if(mode > 0)
+        AddBackgroundToWindow(mode);
 }
 
+// ****************************************************************************
+// Method: VisWinBackground::SetBackgroundImage
+//
+// Purpose: 
+//   Sets the background image for the colleague to use.
+//
+// Arguments:
+//   imgFile : The name of the image file.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Nov 16 10:56:59 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinBackground::SetBackgroundImage(const std::string &imgFile, int nx, int ny)
+{
+    if(textureActor->SetTextureAndRenderers(imgFile.c_str(),
+        mediator.GetBackground(), mediator.GetCanvas()) == -1 &&
+        imgFile.size() > 0)
+    {
+        char msg[1024];
+        SNPRINTF(msg, 1024, "VisIt could not read the image file %s"
+            " for use as a background image. No image background will be displayed.",
+            imgFile.c_str());
+        avtCallback::IssueWarning(msg);
+    } 
+
+    // Set the number of times the image repeats in x,y.
+    textureActor->SetImageRepetitions(nx, ny);
+}
 
 // ****************************************************************************
 //  Method: VisWinBackground::AddBackgroundToWindow
@@ -190,11 +276,13 @@ VisWinBackground::SetBackgroundMode(int mode)
 //  Creation:   Wed Aug 29 15:39:59 PST 2001
 //
 //  Modifications:
+//    Brad Whitlock, Fri Nov 16 11:01:18 PST 2007
+//    Added background image support.
 //
 // ****************************************************************************
 
 void
-VisWinBackground::AddBackgroundToWindow(void)
+VisWinBackground::AddBackgroundToWindow(int mode)
 {
     if (addedBackground)
     {
@@ -206,8 +294,49 @@ VisWinBackground::AddBackgroundToWindow(void)
     // renderer's camera -- the canvas').
     //
     vtkRenderer *background = mediator.GetBackground();
-    background->AddActor2D(bgActor);
-    bgActor->SetVisibility(true);
+    if(mode == 1)
+    {
+        background->AddActor2D(bgActor);
+        bgActor->SetVisibility(true);
+    }
+    else if(mode == 2)
+    {
+        background->AddActor2D(textureActor);
+        textureActor->SetVisibility(true);
+        textureActor->SetSphereMode(false);
+    }
+    else if(mode == 3)
+    {
+        background->AddActor2D(textureActor);
+        textureActor->SetVisibility(true);
+        bool doSphereMode = true;
+
+        if(mediator.GetMode() != WINMODE_3D)
+        {
+            if(!sphereModeError1)
+            {
+                avtCallback::IssueWarning("Image sphere background mode "
+                    "may only be used with 3D plots. In the meantime, the "
+                    "2D image background mode will be used instead.");
+                sphereModeError1 = true;
+            }
+            doSphereMode = false;
+        }
+        if(!mediator.HasPlots())
+        {
+            if(!sphereModeError2)
+            {
+                avtCallback::IssueWarning("Image sphere background mode "
+                    "may only be used when there are 3D plots in the visualization"
+                    " window. Until 3D plots are drawn, the 2D image background "
+                    "will be used instead.");
+                sphereModeError2 = true;
+            }
+            doSphereMode = false;
+        }
+
+        textureActor->SetSphereMode(doSphereMode);
+    }
 
     addedBackground = true;
 }
@@ -223,11 +352,13 @@ VisWinBackground::AddBackgroundToWindow(void)
 //  Creation:   Wed Aug 29 15:39:59 PST 2001
 //
 //  Modifications:
+//   Brad Whitlock, Fri Nov 16 11:01:00 PST 2007
+//   Added background image support.
 //
 // ****************************************************************************
 
 void
-VisWinBackground::RemoveBackgroundFromWindow(void)
+VisWinBackground::RemoveBackgroundFromWindow()
 {
     if (! addedBackground)
     {
@@ -236,6 +367,7 @@ VisWinBackground::RemoveBackgroundFromWindow(void)
 
     vtkRenderer *background = mediator.GetBackground();
     background->RemoveActor2D(bgActor);
+    background->RemoveActor2D(textureActor);
 
     addedBackground = false;
 }

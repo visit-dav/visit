@@ -2708,6 +2708,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 //    Brad Whitlock, Mon Sep 18 11:54:28 PDT 2006
 //    Added color texturing flag.
 //
+//    Brad Whitlock, Mon Nov 19 14:41:47 PST 2007
+//    Added support for image backgrounds.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
@@ -2824,17 +2827,21 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     // Set the bacbround mode and gradient colors if necessary
     //
     int bgMode = atts.GetBackgroundMode();
-    if (bgMode == 0)
-       viswin->SetBackgroundMode(0);
-    else
+    viswin->SetBackgroundMode(bgMode);
+    if (bgMode == 1)
     {
-       viswin->SetBackgroundMode(1);
-       viswin->SetGradientBackgroundColors(bgMode-1, atts.GetGradBG1()[0],
-                                                     atts.GetGradBG1()[1],
-                                                     atts.GetGradBG1()[2],
-                                                     atts.GetGradBG2()[0],
-                                                     atts.GetGradBG2()[1],
-                                                     atts.GetGradBG2()[2]);
+       viswin->SetGradientBackgroundColors(atts.GetGradientBackgroundStyle(),
+           atts.GetGradBG1()[0],
+           atts.GetGradBG1()[1],
+           atts.GetGradBG1()[2],
+           atts.GetGradBG2()[0],
+           atts.GetGradBG2()[1],
+           atts.GetGradBG2()[2]);
+    }
+    else if(bgMode >= 2)
+    {
+       viswin->SetBackgroundImage(atts.GetBackgroundImage(), 
+           atts.GetImageRepeatX(), atts.GetImageRepeatY());
     }
 
     if (viswin->GetAntialiasing() != atts.GetRenderAtts().GetAntialiasing())

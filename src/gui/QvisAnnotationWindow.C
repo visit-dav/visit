@@ -46,6 +46,7 @@
 #include <qpushbutton.h>
 #include <qlabel.h>
 #include <qlistbox.h>
+#include <qspinbox.h>
 #include <qtabwidget.h>
 #include <qtable.h>
 #include <qtimer.h>
@@ -53,11 +54,13 @@
 #include <qhbox.h>
 #include <qgrid.h>
 #include <qradiobutton.h>
+#include <qtooltip.h>
 
 #include <QNarrowLineEdit.h>
 #include <QvisAnnotationObjectInterface.h>
 #include <QvisAnnotationObjectInterfaceFactory.h>
 #include <QvisColorButton.h>
+#include <QvisDialogLineEdit.h>
 #include <QvisLineWidthWidget.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObject.h>
@@ -1147,12 +1150,16 @@ QvisAnnotationWindow::Create3DTabForTitleAndLabels(QWidget *parentWidget)
 // Creation:   Thu Oct 30 16:33:39 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 14 11:34:45 PDT 2007
+//   Added background image support.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::CreateColorTab()
 {
+    int row = 0;
+
     //
     // Create the group of color-related widgets.
     //
@@ -1162,7 +1169,7 @@ QvisAnnotationWindow::CreateColorTab()
 
     QVBoxLayout *vcLayout = new QVBoxLayout(pageColor);
     vcLayout->setMargin(10);
-    QGridLayout *cLayout = new QGridLayout(vcLayout, 3, 2);
+    QGridLayout *cLayout = new QGridLayout(vcLayout, 11, 2);
     cLayout->setSpacing(10);
 
     // Add the background color widgets.
@@ -1172,8 +1179,9 @@ QvisAnnotationWindow::CreateColorTab()
     QLabel *bgColorLabel = new QLabel(backgroundColorButton,
                                       "Background color", pageColor,
                                       "bgColorLabel");
-    cLayout->addWidget(bgColorLabel, 0, 0);
-    cLayout->addWidget(backgroundColorButton, 0, 1, AlignLeft);
+    cLayout->addWidget(bgColorLabel, row, 0);
+    cLayout->addWidget(backgroundColorButton, row, 1, AlignLeft);
+    ++row;
 
     // Add the foreground color widgets.
     foregroundColorButton = new QvisColorButton(pageColor, "foregroundColorButton");
@@ -1182,22 +1190,37 @@ QvisAnnotationWindow::CreateColorTab()
     QLabel *fgColorLabel = new QLabel(foregroundColorButton,
                                       "Foreground color", pageColor,
                                       "fgColorLabel");
-    cLayout->addWidget(fgColorLabel, 1, 0);
-    cLayout->addWidget(foregroundColorButton, 1, 1, AlignLeft);
+    cLayout->addWidget(fgColorLabel, row, 0);
+    cLayout->addWidget(foregroundColorButton, row, 1, AlignLeft);
+    ++row;
 
     // Create the background style widgets.
     QLabel *backgroundStyleLabel = new QLabel("Background style", pageColor,
                                               "backgroundStyleLabel");
-    cLayout->addWidget(backgroundStyleLabel, 2, 0);
+    cLayout->addWidget(backgroundStyleLabel, row, 0);
     backgroundStyleButtons = new QButtonGroup(0, "backgroundStyleButtons");
     connect(backgroundStyleButtons, SIGNAL(clicked(int)),
             this, SLOT(backgroundStyleChanged(int)));
+    QGridLayout *mLayout = new QGridLayout(1, 4, 5, "mLayout");
+    cLayout->addMultiCellLayout(mLayout, row, row, 1, 2);
     QRadioButton *solid = new QRadioButton("Solid", pageColor, "solid");
     backgroundStyleButtons->insert(solid);
-    cLayout->addWidget(solid, 2, 1);
+    mLayout->addWidget(solid, 0, 0);
     QRadioButton *gradient = new QRadioButton("Gradient", pageColor, "gradient");
     backgroundStyleButtons->insert(gradient);
-    cLayout->addWidget(gradient, 2, 2);
+    mLayout->addWidget(gradient, 0, 1);
+    QRadioButton *image = new QRadioButton("Image", pageColor, "image");
+    backgroundStyleButtons->insert(image);
+    mLayout->addWidget(image, 0, 2);
+    QRadioButton *imageSphere = new QRadioButton("Image sphere", pageColor, "imageSphere");
+    backgroundStyleButtons->insert(imageSphere);
+    mLayout->addWidget(imageSphere, 0, 3);
+    ++row;
+
+    QFrame *splitter = new QFrame(pageColor, "splitter");
+    splitter->setFrameStyle(QFrame::HLine + QFrame::Raised);
+    cLayout->addMultiCellWidget(splitter, row, row, 0, 3);  
+    ++row;
 
     // Create the gradient style combobox.
     gradientStyleComboBox = new QComboBox(pageColor, "gradientStyleComboBox");
@@ -1208,11 +1231,12 @@ QvisAnnotationWindow::CreateColorTab()
     gradientStyleComboBox->insertItem("Radial",        4);
     connect(gradientStyleComboBox, SIGNAL(activated(int)),
             this, SLOT(gradientStyleChanged(int)));
-    cLayout->addMultiCellWidget(gradientStyleComboBox, 3, 3, 1, 2);
+    cLayout->addMultiCellWidget(gradientStyleComboBox, row, row, 1, 2);
     gradientStyleLabel = new QLabel(gradientStyleComboBox,
                                     "Gradient style", pageColor,
                                     "gradientStyleLabel");
-    cLayout->addWidget(gradientStyleLabel, 3, 0);
+    cLayout->addWidget(gradientStyleLabel, row, 0);
+    ++row;
 
     // Add the gradient color1 widgets.
     gradientColor1Button = new QvisColorButton(pageColor, "gradientColor1Button");
@@ -1221,8 +1245,9 @@ QvisAnnotationWindow::CreateColorTab()
     gradientColor1Label = new QLabel(gradientColor1Button,
                                      "Gradient color 1", pageColor,
                                      "gradColor1Label");
-    cLayout->addWidget(gradientColor1Label, 4, 0);
-    cLayout->addWidget(gradientColor1Button, 4, 1, AlignLeft);
+    cLayout->addWidget(gradientColor1Label, row, 0);
+    cLayout->addWidget(gradientColor1Button, row, 1, AlignLeft);
+    ++row;
 
     // Add the gradiant color2 widgets.
     gradientColor2Button = new QvisColorButton(pageColor, "gradientColor2Button");
@@ -1231,8 +1256,51 @@ QvisAnnotationWindow::CreateColorTab()
     gradientColor2Label = new QLabel(gradientColor2Button,
                                      "Gradient color 2", pageColor,
                                      "gradColor2Label");
-    cLayout->addWidget(gradientColor2Label, 5, 0);
-    cLayout->addWidget(gradientColor2Button, 5, 1, AlignLeft);
+    cLayout->addWidget(gradientColor2Label, row, 0);
+    cLayout->addWidget(gradientColor2Button, row, 1, AlignLeft);
+    ++row;
+
+    QFrame *splitter2 = new QFrame(pageColor, "splitter2");
+    splitter2->setFrameStyle(QFrame::HLine + QFrame::Raised);
+    cLayout->addMultiCellWidget(splitter2, row, row, 0, 3);  
+    ++row;
+
+    // Add the image selection widget
+    backgroundImage = new QvisDialogLineEdit(pageColor, "backgroundImage");
+    backgroundImage->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
+    connect(backgroundImage, SIGNAL(returnPressed()),
+            this, SLOT(backgroundImageChanged()));
+    cLayout->addMultiCellWidget(backgroundImage, row, row, 1, 2);
+    backgroundImageLabel = new QLabel(backgroundImage, "Background image",
+        pageColor, "backgroundImageLabel");
+    cLayout->addWidget(backgroundImageLabel, row, 0);
+    QString disclaimer("The local file must be accessible to the "
+        "compute engine in order to be used in scalable rendering mode.");
+    QToolTip::add(backgroundImage, disclaimer);
+    QToolTip::add(backgroundImageLabel, disclaimer);
+    ++row;
+
+    // Add the image repeat x,y widgets. 
+    imageRepeatX = new QSpinBox(1, 100, 1, pageColor, "imageRepeatX");
+    imageRepeatX->setButtonSymbols(QSpinBox::PlusMinus);
+    connect(imageRepeatX, SIGNAL(valueChanged(int)),
+            this, SLOT(imageRepeatXChanged(int)));
+    cLayout->addWidget(imageRepeatX, row, 1);
+    imageRepeatXLabel = new QLabel(imageRepeatX, "Repetitions in X", pageColor,
+        "imageRepeatXLabel");
+    cLayout->addWidget(imageRepeatXLabel, row, 0);
+    ++row;
+
+    imageRepeatY = new QSpinBox(1, 100, 1, pageColor, "imageRepeatY");
+    imageRepeatY->setButtonSymbols(QSpinBox::PlusMinus);
+    connect(imageRepeatY, SIGNAL(valueChanged(int)),
+            this, SLOT(imageRepeatYChanged(int)));
+    cLayout->addWidget(imageRepeatY, row, 1);
+    imageRepeatYLabel = new QLabel(imageRepeatY, "Repetitions in Y", pageColor,
+        "imageRepeatYLabel");
+    cLayout->addWidget(imageRepeatYLabel, row, 0);
+    ++row;
+
     vcLayout->addStretch(50);
 }
 
@@ -1450,6 +1518,9 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Wed Jul 27 15:58:54 PST 2005
 //   Added support for setting user-specified titles and labels.
 //
+//   Brad Whitlock, Wed Nov 14 11:34:45 PDT 2007
+//   Added background image support.
+//
 // ****************************************************************************
 
 void
@@ -1458,7 +1529,7 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
     QColor  c;
     QString temp;
     bool isGradient, axesAutoSetTicks, labelAutoSetScaling;
-    bool vals[3];
+    bool vals[4];
     bool setAxisLabels2D = false;
     bool setAxisTitles2D = false;
     bool setGridLines2D = false;
@@ -1833,6 +1904,8 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
         case 91: // backgroundMode
             vals[0] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Solid;
             vals[1] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Gradient;
+            vals[2] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Image;
+            vals[3] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::ImageSphere;
             SetButtonGroup(backgroundStyleButtons, vals);
 
             // Set widget sensitivity based on this field.
@@ -1843,27 +1916,46 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             gradientColor1Button->setEnabled(isGradient);
             gradientColor2Label->setEnabled(isGradient);
             gradientColor2Button->setEnabled(isGradient);
+            backgroundImage->setEnabled(vals[2] || vals[3]);
+            backgroundImageLabel->setEnabled(vals[2] || vals[3]);
+            imageRepeatX->setEnabled(vals[2] || vals[3]);
+            imageRepeatXLabel->setEnabled(vals[2] || vals[3]);
+            imageRepeatY->setEnabled(vals[2] || vals[3]);
+            imageRepeatYLabel->setEnabled(vals[2] || vals[3]);
             break;
-        case 92: // userInfo
+        case 92: // backgroundImage
+            backgroundImage->setText(annotationAtts->GetBackgroundImage().c_str());
+            break;
+        case 93: // userInfo
             userInfo->blockSignals(true);
             userInfo->setChecked(annotationAtts->GetUserInfoFlag());
             userInfo->blockSignals(false);
             break;
-        case 93: // databaseInfo
+        case 94: // databaseInfo
             databaseInfo->blockSignals(true);
             databaseInfo->setChecked(annotationAtts->GetDatabaseInfoFlag());
             databaseInfo->blockSignals(false);
             break;
-        case 94: // databaseInfo path expansion
+        case 95: // databaseInfo path expansion
             databasePathExpansionMode->blockSignals(true);
             databasePathExpansionMode->setCurrentItem(
                                 annotationAtts->GetDatabaseInfoExpansionMode());
             databasePathExpansionMode->blockSignals(false);
             break;
-        case 95: // legendInfo
+        case 96: // legendInfo
             legendInfo->blockSignals(true);
             legendInfo->setChecked(annotationAtts->GetLegendInfoFlag());
             legendInfo->blockSignals(false);
+            break;
+        case 97: // imageRepeatX
+            imageRepeatX->blockSignals(true);
+            imageRepeatX->setValue(annotationAtts->GetImageRepeatX());
+            imageRepeatX->blockSignals(false);
+            break;
+        case 98: // imageRepeatY
+            imageRepeatY->blockSignals(true);
+            imageRepeatY->setValue(annotationAtts->GetImageRepeatY());
+            imageRepeatY->blockSignals(false);
             break;
         }
     } // end for
@@ -2058,6 +2150,9 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
 //
 //   Brad Whitlock, Wed Jul 27 17:35:59 PST 2005
 //   Added code to get axis labels and units.
+//
+//   Brad Whitlock, Wed Nov 14 13:30:23 PST 2007
+//   Added support for background images.
 //
 // ****************************************************************************
 
@@ -2594,6 +2689,13 @@ QvisAnnotationWindow::GetCurrentValues(int which_widget)
     {
         temp = zAxisUserUnitsLineEdit->displayText().stripWhiteSpace();
         annotationAtts->SetZAxisUserUnits(temp.latin1());
+    }
+
+    // Do backgroundImage
+    if (which_widget == 27 || doAll)
+    {
+        temp = backgroundImage->displayText().stripWhiteSpace();
+        annotationAtts->SetBackgroundImage(temp.latin1());
     }
 }
 
@@ -4019,6 +4121,9 @@ QvisAnnotationWindow::gradientColor2Changed(const QColor &c)
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Modified to match changes in annotationAtts.
 //   
+//   Brad Whitlock, Wed Nov 14 13:26:34 PST 2007
+//   Added support for image backgrounds.
+//
 // ****************************************************************************
 
 void
@@ -4028,6 +4133,10 @@ QvisAnnotationWindow::backgroundStyleChanged(int index)
         annotationAtts->SetBackgroundMode(AnnotationAttributes::Solid);
     else if (index == 1)
         annotationAtts->SetBackgroundMode(AnnotationAttributes::Gradient);
+    else if (index == 2)
+        annotationAtts->SetBackgroundMode(AnnotationAttributes::Image);
+    else if (index == 3)
+        annotationAtts->SetBackgroundMode(AnnotationAttributes::ImageSphere);
     Apply();
 }
 
@@ -4068,6 +4177,84 @@ QvisAnnotationWindow::gradientStyleChanged(int index)
     else if (index == 4)
         annotationAtts->SetGradientBackgroundStyle(
             AnnotationAttributes::Radial);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::backgroundImageChanged.
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the background image changes.
+//
+// Programmer: Brad Whitlock
+// Creation:   
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::backgroundImageChanged()
+{
+    GetCurrentValues(27);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::imageRepeatXChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the number of image repeats
+//   in X changes.
+//
+// Arguments:
+//   value : The new number of repeats.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 19 12:11:15 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::imageRepeatXChanged(int value)
+{
+    annotationAtts->SetImageRepeatX(value);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::imageRepeatYChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the number of image repeats
+//   in Y changes.
+//
+// Arguments:
+//   value : The new number of repeats.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Nov 19 12:11:15 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::imageRepeatYChanged(int value)
+{
+    annotationAtts->SetImageRepeatY(value);
     SetUpdate(false);
     Apply();
 }
