@@ -250,7 +250,8 @@ vtkOpenGLTexturedBackgroundMapper::SetImageRepetitions(int nx, int ny)
 // ****************************************************************************
 
 void
-vtkOpenGLTexturedBackgroundMapper::DrawSphere(int X_RES, int Y_RES, float radius)
+vtkOpenGLTexturedBackgroundMapper::DrawSphere(int X_RES, int Y_RES, float radius,
+    const double *fc)
 {
     int npts = (X_RES * (Y_RES-1) + 2);
     int ncells = X_RES * Y_RES;
@@ -259,14 +260,18 @@ vtkOpenGLTexturedBackgroundMapper::DrawSphere(int X_RES, int Y_RES, float radius
     float *fptr = coords;
     float *tptr = tex_coords;
     float tex_offsets[3] = {0.f, 0.f, 0.f};
+    float focalPoint[3];
+    focalPoint[0] = (float)fc[0];
+    focalPoint[1] = (float)fc[1];
+    focalPoint[2] = (float)fc[2];
 
     for(int ip = 0; ip < Y_RES+1; ++ip)
     {
         if(ip == 0)
         {
-            *fptr++ = 0.f;
-            *fptr++ = -radius;
-            *fptr++ = 0.f;
+            *fptr++ = focalPoint[0] + 0.f;
+            *fptr++ = focalPoint[1] + -radius;
+            *fptr++ = focalPoint[2] + 0.f;
 
             *tptr++ = 0.5f;
             *tptr++ = 0.f;
@@ -274,9 +279,9 @@ vtkOpenGLTexturedBackgroundMapper::DrawSphere(int X_RES, int Y_RES, float radius
         }
         else if(ip == Y_RES)
         {
-            *fptr++ = 0.f;
-            *fptr++ = radius;
-            *fptr++ = 0.f;
+            *fptr++ = focalPoint[0] + 0.f;
+            *fptr++ = focalPoint[1] + radius;
+            *fptr++ = focalPoint[2] + 0.f;
 
             *tptr++ = 0.5f;
             *tptr++ = 1.f;
@@ -297,9 +302,9 @@ vtkOpenGLTexturedBackgroundMapper::DrawSphere(int X_RES, int Y_RES, float radius
                 float x = yrad * cos(angle + M_PI/2.);
                 float z = yrad * sin(angle + M_PI/2.);    
 
-                *fptr++ = x;
-                *fptr++ = y;
-                *fptr++ = z;
+                *fptr++ = focalPoint[0] + x;
+                *fptr++ = focalPoint[1] + y;
+                *fptr++ = focalPoint[2] + z;
 
                 *tptr++ = 1. - (texcoord_x + tex_offsets[0]);
                 *tptr++ = texcoord_y + tex_offsets[1];
@@ -458,6 +463,11 @@ vtkOpenGLTexturedBackgroundMapper::DrawImageSphere()
 
         vtkMatrix4x4 *matrix = vtkMatrix4x4::New();
         matrix->DeepCopy(canvas->GetActiveCamera()->GetViewTransformMatrix());
+#ifdef DEBUG_PRINT
+cout << "+++++++++++++++++++++++ Begin ++++++++++++++++++++++++++" << endl;
+cout << "Modelview = ";
+matrix->Print(cout);
+#endif
         matrix->Transpose();
         glMultMatrixd(matrix->Element[0]);
         matrix->Delete();
@@ -468,7 +478,9 @@ vtkOpenGLTexturedBackgroundMapper::DrawImageSphere()
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
 
-//        canvas->GetActiveCamera()->Print(cout);
+#ifdef DEBUG_PRINT
+canvas->GetActiveCamera()->Print(cout);
+#endif
         // Force the focal disk to 1. to prevent zooming.
         double oldFocalDisk = canvas->GetActiveCamera()->GetFocalDisk();
         canvas->GetActiveCamera()->SetFocalDisk(1.);
@@ -494,18 +506,21 @@ vtkOpenGLTexturedBackgroundMapper::DrawImageSphere()
         {
             matrix->DeepCopy(canvas->GetActiveCamera()->GetPerspectiveTransformMatrix(
                 aspectModification*usize/vsize, -1,1));
+#ifdef DEBUG_PRINT
+cout << "Projection = ";
+matrix->Print(cout);
+#endif
             matrix->Transpose();
         }
         glLoadMatrixd(matrix->Element[0]);
-//matrix->Print(cout);
         matrix->Delete();
 
         // Restore the focal disk and window center values
         canvas->GetActiveCamera()->SetFocalDisk(oldFocalDisk);
         canvas->GetActiveCamera()->SetWindowCenter(oldWindowCenter[0], oldWindowCenter[1]);
 
-        // Construct a clipping plane through 0,0,0 that matches up 
-        // with the view normal. This clips off the front of the sky
+        // Construct a clipping plane through the focal point that matches 
+        // up with the view normal. This clips off the front of the sky
         // sphere that we're drawing.
         glGetBooleanv(GL_CLIP_PLANE5, &clipped);
         double plane[4];
@@ -513,7 +528,8 @@ vtkOpenGLTexturedBackgroundMapper::DrawImageSphere()
         plane[0] = -N[0];
         plane[1] = -N[1];
         plane[2] = -N[2];
-        plane[3] = (N[0] + N[1] + N[2]);
+        const double *fc = canvas->GetActiveCamera()->GetFocalPoint();
+        plane[3] = (fc[0]*N[0] + fc[1]*N[1] + fc[2]*N[2]);
         glClipPlane(GL_CLIP_PLANE5, plane);
         glEnable(GL_CLIP_PLANE5);
     }
@@ -535,8 +551,13 @@ vtkOpenGLTexturedBackgroundMapper::DrawImageSphere()
     double sphereRad = bboxRad * 0.95;
 
     // Draw the sky sphere.
-    DrawSphere(30, 30, sphereRad);
+    const double *fc = canvas->GetActiveCamera()->GetFocalPoint();
+    DrawSphere(30, 30, sphereRad, fc);
 
+#ifdef DEBUG_PRINT
+cout << "sphereRad = " << sphereRad << endl;
+cout << "+++++++++++++++++++++++ End ++++++++++++++++++++++++++" << endl;
+#endif
     // Restore the previous texture matrix.
     glPopMatrix();
 
