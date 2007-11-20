@@ -40,7 +40,5 @@
 #include "MangleMesaInclude/gl.h"
 #define vtkOpenGLTexturedBackgroundMapper vtkMesaTexturedBackgroundMapper
 
-#define DrawSphere DrawSphere_mesa
-
 #include "vtkOpenGLTexturedBackgroundMapper.C"
 #undef vtkOpenGLTexturedBackgroundMapper

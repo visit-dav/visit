@@ -74,6 +74,10 @@ protected:
    vtkMesaTexturedBackgroundMapper();
   ~vtkMesaTexturedBackgroundMapper();
 private:
+  void DrawSphere(int X_RES, int Y_RES, float radius, const double *);
+  void DrawImageSphere();
+  void DrawImageFlat();
+
   vtkTexture  *tex;
   vtkRenderer *background;
   vtkRenderer *canvas;
