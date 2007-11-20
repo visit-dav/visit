@@ -77,6 +77,9 @@ class PlotList;
 //   Ellen Tarwate, Fri, May 25
 //   adding Context Menu to the Active Plots list
 //
+//   Brad Whitlock, Tue Nov 20 14:37:05 PST 2007
+//   Removed itemClicked.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotListBox : public QListBox
@@ -102,7 +105,6 @@ protected:
     virtual void viewportMousePressEvent(QMouseEvent *e);
     virtual void viewportMouseDoubleClickEvent(QMouseEvent *e);
     void clickHandler(const QPoint &p, bool, bool);
-    bool itemClicked(QListBoxItem *item, const QPoint &point, bool, bool);
     void contextMenuEvent( QContextMenuEvent *event );
 signals:
     void hideThisPlot();
