@@ -305,7 +305,7 @@ avtCurveLegend::ChangePosition(double x, double y)
     lineLegend->GetPositionCoordinate()->SetValue(x, y, 0.);
 
     // Set the position 2, incorporating the scale.
-    double tmp, w, h;
+    double tmp = 0., w, h;
     GetLegendSize(tmp, w, h);
     lineLegend->SetPosition2(w, h);  
 }

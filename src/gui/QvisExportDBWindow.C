@@ -643,8 +643,8 @@ QvisExportDBWindow::exportButtonClicked()
     {
         QvisDBOptionsDialog *optsdlg =
             new QvisDBOptionsDialog(&(exportDBAtts->GetOpts()), NULL, "opts");
-        QString caption = "Export options for " +
-            exportDBAtts->GetDb_type() + " writer";
+		QString caption = std::string("Export options for " +
+            exportDBAtts->GetDb_type() + " writer").c_str();
         optsdlg->setCaption(caption);
         result = optsdlg->exec();
         delete optsdlg;

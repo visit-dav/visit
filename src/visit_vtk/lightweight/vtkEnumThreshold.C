@@ -178,7 +178,6 @@ int vtkEnumThreshold::RequestData(
 int vtkEnumThreshold::EvaluateComponents( vtkDataArray *scalars, vtkIdType id )
 {
     int numComp = scalars->GetNumberOfComponents();
-    int c;
 
     double val = scalars->GetComponent(id, 0);
     int keepCell = false;

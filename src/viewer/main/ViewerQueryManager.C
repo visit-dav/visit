@@ -2373,7 +2373,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     if (spreadsheet->GetErrorFlag())
                         plotList->DeletePlot(spreadsheet, false);
                 }
-                CATCH2(VisItException, e)
+                CATCH(VisItException)
                 {
                     plotList->DeletePlot(spreadsheet, false);
                 }
@@ -2463,7 +2463,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     if (resultsPlot->GetErrorFlag())
                         plotList->DeletePlot(resultsPlot, false);
                 }
-                CATCH2(VisItException, e)
+                CATCH(VisItException)
                 {
                     plotList->DeletePlot(resultsPlot, false);
                 }

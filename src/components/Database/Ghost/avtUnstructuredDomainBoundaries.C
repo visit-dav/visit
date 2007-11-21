@@ -1034,7 +1034,7 @@ avtUnstructuredDomainBoundaries::ExchangeMixVar(vector<int>         domainNum,
                                           const vector<avtMaterial*> mats,
                                           vector<avtMixedVariable*>  mixvars)
 {
-    int      i, j, k, l;
+    int      i, j;
 
 
     vector<int> domain2proc = CreateDomainToProcessorMap(domainNum);

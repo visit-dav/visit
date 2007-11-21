@@ -687,6 +687,7 @@ bool
 StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Type, ... )
 {
     string re = "^"; // anchor first char to beginning of line
+    int i;
 
     // compute length up to max of 4096
     int n = 0;
@@ -697,7 +698,7 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
 
     // count conversion specs.
     int ncspecs = 0;
-    for (int i = 0; i < n-1; i++)
+    for (i = 0; i < n-1; i++)
     {
         if (fmtStr[i] == '%' && fmtStr[i+1] != '%')
 	    ncspecs++;
@@ -712,7 +713,6 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
     va_start(ap, arg1Type);
     const char *currentArgTypeName = arg1Type; 
     // loop adding RE terms for each argument type
-    int i;
     for (i = 0; i < ncspecs; i++)
     {
 	if (typeNameToFmtREMap.find(string(currentArgTypeName)) == typeNameToFmtREMap.end())

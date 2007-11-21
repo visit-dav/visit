@@ -157,7 +157,7 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                                                3, 3,
                                                AVT_RECTILINEAR_MESH);
 
-    for (int i=0; i<9; i++)
+    for (i=0; i<9; i++)
     {
        mmd->unitCellVectors[i] = unitCell[i/3][i%3];
     }

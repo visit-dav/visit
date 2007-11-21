@@ -601,7 +601,7 @@ avtLODIParticleFileFormat::GetMesh(int ts, const char *var)
             starts[0] = ts;
             counts[0] = 1;
 
-            int nPts = nElems / 3, varId;
+            int nPts = nElems / 3, varId = 0;
             vtkPoints *pts = vtkPoints::New();
             fileObject->GetVarId("part_posn", &varId);
 
@@ -652,7 +652,7 @@ avtLODIParticleFileFormat::GetMesh(int ts, const char *var)
                 //
                 // Read the coordinates into the VTK points array.
                 //
-                int nPts = nElems / 3, varId;
+                int nPts = nElems / 3, varId = 0;
                 vtkPoints *pts = vtkPoints::New();
                 pts->SetNumberOfPoints(nPts);
                 float *fptr = (float *)pts->GetVoidPointer(0);

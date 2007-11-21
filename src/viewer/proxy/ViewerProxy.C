@@ -108,8 +108,6 @@ ViewerProxy::ViewerProxy() : SimpleObserver(), argv()
 
 ViewerProxy::~ViewerProxy()
 {
-    int i;
-
     delete viewer;
     delete viewerP;
     delete xfer;

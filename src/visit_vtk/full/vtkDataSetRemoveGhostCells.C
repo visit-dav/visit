@@ -471,7 +471,6 @@ void vtkDataSetRemoveGhostCells::RectilinearGridExecute()
                                input->GetCellData()->GetArray("avtGhostZones");
   if (GhostZoneTypesToRemove != 255 && arr != NULL)
   {
-    int i,j,k;
     unsigned char *ghosts = arr->GetPointer(0);
     int dims[3];
     input->GetDimensions(dims);
@@ -551,7 +550,6 @@ void vtkDataSetRemoveGhostCells::StructuredGridExecute()
                                input->GetCellData()->GetArray("avtGhostZones");
   if (GhostZoneTypesToRemove != 255 && arr != NULL)
   {
-    int i,j,k;
     unsigned char *ghosts = arr->GetPointer(0);
     int dims[3];
     input->GetDimensions(dims);

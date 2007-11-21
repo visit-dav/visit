@@ -8519,7 +8519,7 @@ ViewerSubject::ReadFromSimulationAndProcess(int socket)
     {
        vem->ReadDataAndProcess(ek);
     }
-    CATCH2(LostConnectionException, lce)
+    CATCH(LostConnectionException)
     {
         ViewerWindowManager::Instance()->ResetNetworkIds(ek);
         ViewerEngineManager::Instance()->CloseEngine(ek);
