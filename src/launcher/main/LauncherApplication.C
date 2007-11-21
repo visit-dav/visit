@@ -70,6 +70,12 @@
 #include <netinet/tcp.h>
 #endif
 
+// Capture child output on UNIX & Mac. VCL is never run on Windows so this
+// should not matter.
+#if !defined(_WIN32) && !defined(PANTHERHACK)
+#define CAPTURE_CHILD_OUTPUT
+#endif
+
 //
 // Static member variables.
 //
@@ -249,10 +255,13 @@ LauncherApplication::Instance()
 //   Jeremy Meredith, Thu May 24 11:25:16 EDT 2007
 //   Initialize useSSHTunneling.
 //
+//   Brad Whitlock, Wed Nov 21 11:13:20 PST 2007
+//   Added support for forwarding child output.
+//
 // ****************************************************************************
 
 LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
-    keepAliveRPC(), launchRPC()
+    keepAliveRPC(), launchRPC(), childOutput()
 {
     quitExecutor = 0;
     keepAliveExecutor = 0;
@@ -284,6 +293,9 @@ LauncherApplication::LauncherApplication() : parent(), xfer(), quitRPC(),
 //   Jeremy Meredith, Tue Mar 30 17:27:59 PST 2004
 //   Added connectSimExecutor.
 //
+//   Brad Whitlock, Wed Nov 21 11:13:20 PST 2007
+//   Added support for forwarding child output.
+//
 // ****************************************************************************
 
 LauncherApplication::~LauncherApplication()
@@ -293,6 +305,11 @@ LauncherApplication::~LauncherApplication()
     delete keepAliveExecutor;
     delete launchExecutor;
     delete connectSimExecutor;
+
+#ifdef CAPTURE_CHILD_OUTPUT
+    for(int i = 0; i < childOutput.size(); ++i)
+        delete childOutput[i];
+#endif
 }
 
 // ****************************************************************************
@@ -386,6 +403,9 @@ LauncherApplication::ProcessArguments(int *argcp, char **argvp[])
 //   Jeremy Meredith, Tue Mar 30 17:27:59 PST 2004
 //   Added connectSimExecutor.
 //
+//   Brad Whitlock, Wed Nov 21 11:15:42 PST 2007
+//   Added another socket to forward output to the client.
+//
 // ****************************************************************************
 
 void
@@ -396,7 +416,7 @@ LauncherApplication::Connect(int *argc, char **argv[])
     //
     TRY
     {
-        parent.Connect(1, 1, argc, argv, true);
+        parent.Connect(1, 2, argc, argv, true);
     }
     CATCH(IncompatibleVersionException)
     {
@@ -534,22 +554,27 @@ LauncherApplication::DeadChildHandler(int)
 // Creation:   Fri May 2 17:32:23 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 21 10:36:01 PST 2007
+//   Added support for forwarding child process output to the client.
+//
 // ****************************************************************************
 
 void
 LauncherApplication::MainLoop()
 {
-    // Create a connection group that we will use to check if any
-    // connections have input to be read.
-    ConnectionGroup connGroup;
-    connGroup.AddConnection(parent.GetWriteConnection());
-
     // The application's main loop
     while(keepGoing)
     {
         TurnOnAlarm();
 
+        // Create a connection group that we will use to check if any
+        // connections have input to be read.
+        ConnectionGroup connGroup;
+        connGroup.AddConnection(parent.GetWriteConnection());
+#ifdef CAPTURE_CHILD_OUTPUT
+        for(int i = 0; i < childOutput.size(); ++i)
+            connGroup.AddConnection(childOutput[i]);
+#endif
         // Check the connections for input that needs to be processed.
         if(connGroup.CheckInput())
         {
@@ -572,6 +597,90 @@ LauncherApplication::MainLoop()
                 }
                 ENDTRY
             }
+#ifdef CAPTURE_CHILD_OUTPUT
+            else if(childOutput.size() > 0)
+            {
+                char         buf[1000 + 1];
+                ssize_t      nbuf = 0;
+                std::string *outputs = new std::string[childOutput.size()];
+                bool        *valid = new bool[childOutput.size()];
+
+                // Gather all of the output from each child in sequence.
+                for(int i = 0; i < childOutput.size(); ++i)
+                {
+                    valid[i] = true;
+                    if(connGroup.NeedsRead(i + 1))
+                    {
+                        debug1 << "Child " << i << " needs to be read (desc="
+                               << childOutput[i]->GetDescriptor() << ")" << endl;
+                        // Read from the child process's pipe. Note that we use
+                        // the read() function because we can't use 
+                        // SocketConnection::DirectRead because it calls recv
+                        // and that requires a real socket descriptor, whereas
+                        // in this case, we have a pipe file descriptor.
+                        int nZeroesRead = 0;
+                        do
+                        {
+                            nbuf = read(childOutput[i]->GetDescriptor(), (void*)buf, 1000);
+
+                            if(nbuf > 0)
+                            {
+                                nZeroesRead = 0;
+                                buf[nbuf] = 0;
+                                outputs[i] = outputs[i] + std::string(buf);
+                            }
+                            else
+                                ++nZeroesRead;
+                        } while(nZeroesRead < 100 && childOutput[i]->NeedsRead(false));
+
+                        // If we read enough zeroes in a row, consider the connection dead.
+                        if(nZeroesRead >= 100)
+                        {
+                            valid[i] = false;
+                            debug1 << "Lost connection to child " << i << endl;
+                        }
+                        else
+                            debug1 << "Done reading for child " << i << endl;
+                    }
+                }
+
+                // Now that we have output from all of the child processes, send it
+                // back to the launcher proxy so the client can do something with
+                // it.
+                std::string completeOutput;
+                std::vector<Connection *> validConnections;
+                for(int i = 0; i < childOutput.size(); ++i)
+                {
+                    // Append the output to a complete output that we'll send 
+                    // to the client.
+                    if(outputs[i].size() > 0)
+                    {
+                        debug5 << "CHILD OUTPUT[" << i << "]: " << outputs[i].c_str() << endl;
+                        completeOutput += outputs[i];
+                        if(outputs[i][outputs[i].size()-1] != '\n' && i < childOutput.size()-1)
+                            completeOutput += std::string("\n");
+                    }
+
+                    // Delete any child connections that we lost.
+                    if(!valid[i])
+                        delete childOutput[i];
+                    else
+                        validConnections.push_back(childOutput[i]);
+                }
+                childOutput = validConnections;
+                delete [] outputs;
+                delete [] valid;
+
+                // Forward the output to the client.
+                if(completeOutput.size() > 0)
+                {
+                    debug1 << "Sending " << completeOutput.size() << " bytes" << endl;
+                    parent.GetReadConnection(1)->DirectWrite(
+                        (const unsigned char *)completeOutput.c_str(), 
+                        completeOutput.size());
+                }
+            }
+#endif
         }
     }
 }
@@ -753,9 +862,13 @@ LauncherApplication::SetupGatewaySocketBridgeIfNeeded(stringVector &launchArgs)
 // Creation:   Mon May 5 11:23:56 PDT 2003
 //
 // Modifications:
-//    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
-//    Backing out SSH tunneling on Panther (MacOS X 10.3)
-//   
+//   Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
+//   Backing out SSH tunneling on Panther (MacOS X 10.3)
+//
+//   Brad Whitlock, Wed Nov 21 10:30:50 PST 2007
+//   I added support for forwarding child process stdout to VCL through a pipe
+//   so we can forward that output to the client.
+//
 // ****************************************************************************
 
 void
@@ -796,7 +909,7 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
 
     // We have command line arguments for a command to launch.
 
-    int remoteProgramPid;
+    int remoteProgramPid = 0;
 #if defined(_WIN32)
     // Do it the WIN32 way where we use the _spawnvp system call.
     remoteProgramPid = _spawnvp(_P_NOWAIT, remoteProgram.c_str(), args);
@@ -804,6 +917,13 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
     // Watch for a process who died
     childDied[remoteProgramPid] = false;
     signal(SIGCHLD, DeadChildHandler);
+
+#ifdef CAPTURE_CHILD_OUTPUT
+    // Create a pipe.
+    int f_des[2];
+    if(pipe(f_des) == -1)
+        exit(-1);
+#endif
 
     switch (remoteProgramPid = fork())
     {
@@ -814,6 +934,13 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
     case 0:
         // Close stdin and any other file descriptors.
         fclose(stdin);
+#ifdef CAPTURE_CHILD_OUTPUT
+        // Send the process' stdout to our pipe.
+        dup2(f_des[1], fileno(stdout));
+        dup2(f_des[1], fileno(stderr));
+        close(f_des[0]);
+        close(f_des[1]);
+#endif
         for (int k = 3 ; k < 32 ; ++k)
         {
             close(k);
@@ -823,6 +950,9 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
         exit(-1);
         break;   // OCD
     default:
+#ifdef CAPTURE_CHILD_OUTPUT
+        close(f_des[1]);
+#endif
         break;
     }
 
@@ -845,7 +975,16 @@ LauncherApplication::LaunchProcess(const stringVector &origLaunchArgs)
         TerminateConnectionRequest(launchArgs.size(), args2);
 
         delete [] args2;
-    }   
+    }
+#ifdef CAPTURE_CHILD_OUTPUT
+    else
+    {
+        // Add the child's output pipe to the list of descriptors that
+        // we will check. We add the pipe file descriptor as a 
+        // SocketConnection object.
+        childOutput.push_back(new SocketConnection(f_des[0]));
+    }
+#endif
 #endif
 
     // Free the command line storage.

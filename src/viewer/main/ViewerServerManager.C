@@ -38,7 +38,10 @@
 #include <visit-config.h>
 #include <snprintf.h>
 
+#include <qsocketnotifier.h>
+
 #include <ViewerServerManager.h>
+#include <Connection.h>
 #include <HostProfileList.h>
 #include <HostProfile.h>
 #include <LauncherProxy.h>
@@ -567,7 +570,9 @@ ViewerServerManager::SetupConnectionProgressWindow(RemoteProxyBase *component,
 // Creation:   Wed May 7 14:00:16 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 21 15:00:45 PST 2007
+//   Changed map storage type.
+//
 // ****************************************************************************
 
 void
@@ -576,9 +581,11 @@ ViewerServerManager::CloseLaunchers()
     LauncherMap::iterator pos;
     for(pos = launchers.begin(); pos != launchers.end(); ++pos)
     {
-        pos->second->Close();
-        delete pos->second;
-        pos->second = 0;
+        pos->second.launcher->Close();
+        delete pos->second.launcher;
+        pos->second.launcher = 0;
+        delete pos->second.notifier;
+        pos->second.notifier = 0;
     }
 }
 
@@ -592,7 +599,9 @@ ViewerServerManager::CloseLaunchers()
 // Creation:   Fri Mar 12 12:02:25 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 21 15:01:35 PST 2007
+//   Changed map storage type.
+//
 // ****************************************************************************
 
 void
@@ -605,7 +614,7 @@ ViewerServerManager::SendKeepAlivesToLaunchers()
         {
             debug2 << "Sending keep alive signal to launcher on "
                    << pos->first.c_str() << endl;
-            pos->second->SendKeepAlive();
+            pos->second.launcher->SendKeepAlive();
             ++pos;
         }
         CATCHALL(...)
@@ -613,8 +622,10 @@ ViewerServerManager::SendKeepAlivesToLaunchers()
             debug2 << "Could not send keep alive signal to launcher on "
                    << pos->first.c_str() << " so that launcher will be closed."
                    << endl;
-            delete pos->second;
-            pos->second = 0;
+            delete pos->second.launcher;
+            pos->second.launcher = 0;
+            delete pos->second.notifier;
+            pos->second.notifier = 0;
             launchers.erase(pos++);
         }
         ENDTRY
@@ -653,6 +664,9 @@ ViewerServerManager::SendKeepAlivesToLaunchers()
 //   Jeremy Meredith, Thu May 24 10:17:57 EDT 2007
 //   Since SSH tunneling is only useful when launching the VCL, we
 //   check its actual value and use pass it along.
+//
+//   Brad Whitlock, Wed Nov 21 14:39:37 PST 2007
+//   Added support for reading console output from VCL's children.
 //
 // ****************************************************************************
 
@@ -724,7 +738,12 @@ ViewerServerManager::StartLauncher(const std::string &host,
             //
             newLauncher->Create(host, chd, clientHostName,
                                 manualSSHPort, sshPort, useTunneling);
-            launchers[host] = newLauncher;
+            launchers[host].launcher = newLauncher;
+
+            // Create a socket notifier for the launcher's data socket so
+            // we can read remote console output as it is forwarded.
+            launchers[host].notifier = new ViewerConnectionPrinter(
+                 newLauncher->GetWriteConnection(1), "launcher_notifier");
 
             // Set the dialog's information back to the previous values.
             if(dialog)
@@ -765,6 +784,9 @@ ViewerServerManager::StartLauncher(const std::string &host,
 //   I made it throw a CancelledConnect exception in the event that we're
 //   launching on a machine that shares mdserver and engine batch jobs. That
 //   way, if the launch was cancelled, we don't crash!
+//
+//   Brad Whitlock, Wed Nov 21 14:41:54 PST 2007
+//   Changed map storage type.
 //
 // ****************************************************************************
 
@@ -807,7 +829,7 @@ ViewerServerManager::OpenWithLauncher(
                 cancelled = true;
             else
             {
-                launchers[remoteHost]->LaunchProcess(args);
+                launchers[remoteHost].launcher->LaunchProcess(args);
                 // Indicate success.
                 launched = true;
             }
@@ -819,8 +841,10 @@ ViewerServerManager::OpenWithLauncher(
             // We lost the connection to the launcher program so we need
             // to delete its proxy and remove it from the launchers map
             // so the next time we go through this loop, we relaunch it.
-            delete launchers[remoteHost];
-            launchers[remoteHost] = 0;
+            delete launchers[remoteHost].launcher;
+            launchers[remoteHost].launcher = 0;
+            delete launchers[remoteHost].notifier;
+            launchers[remoteHost].notifier = 0;
             LauncherMap::iterator pos = launchers.find(remoteHost);
             launchers.erase(pos);
 
@@ -874,6 +898,9 @@ ViewerServerManager::OpenWithLauncher(
 //    progress dialog for aborting the connection to the sim will take quite
 //    a bit more work.
 //
+//    Brad Whitlock, Wed Nov 21 14:43:04 PST 2007
+//    Changed the map storage type.
+//
 // ****************************************************************************
 
 void
@@ -917,10 +944,9 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
                 cancelled = true;
             else
             {
-                launchers[remoteHost]->ConnectSimulation(args,
-                                                         simData->h,
-                                                         simData->p,
-                                                         simData->k);
+                launchers[remoteHost].launcher->ConnectSimulation(args,
+                    simData->h, simData->p, simData->k);
+
                 // Indicate success.
                 launched = true;
             }
@@ -932,8 +958,10 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
             // We lost the connection to the launcher program so we need
             // to delete its proxy and remove it from the launchers map
             // so the next time we go through this loop, we relaunch it.
-            delete launchers[remoteHost];
-            launchers[remoteHost] = 0;
+            delete launchers[remoteHost].launcher;
+            launchers[remoteHost].launcher = 0;
+            delete launchers[remoteHost].notifier;
+            launchers[remoteHost].notifier = 0;
             LauncherMap::iterator pos = launchers.find(remoteHost);
             launchers.erase(pos);
 
@@ -975,6 +1003,9 @@ ViewerServerManager::SimConnectThroughLauncher(const std::string &remoteHost,
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
+//    Brad Whitlock, Wed Nov 21 14:43:24 PST 2007
+//    Changed the map storage type.
+//
 // ****************************************************************************
 #if defined(PANTHERHACK)
 // Broken on Panther
@@ -984,7 +1015,91 @@ ViewerServerManager::GetPortTunnelMap(const std::string &host)
 {
     std::map<int,int> ret;
     if (launchers.count(host))
-        ret = launchers[host]->GetPortTunnelMap();
+        ret = launchers[host].launcher->GetPortTunnelMap();
     return ret;
 }
 #endif
+
+//
+// ViewerConnectionPrinter class. It's really a minor class so it's in here.
+//
+
+// ****************************************************************************
+// Method: ViewerConnectionPrinter::ViewerConnectionPrinter
+//
+// Purpose: 
+//   Constructor.
+//
+// Arguments:
+//   conn : The connection associated with the socket.
+//   name : The name of the object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 21 15:22:42 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerConnectionPrinter::ViewerConnectionPrinter(Connection *c, const char *name) : 
+    QSocketNotifier(c->GetDescriptor(), QSocketNotifier::Read, 0, name)
+{
+    conn = c;
+    connect(this, SIGNAL(activated(int)),
+            this, SLOT(HandleRead(int)));
+}
+
+// ****************************************************************************
+// Method: ViewerConnectionPrinter::~ViewerConnectionPrinter
+//
+// Purpose: 
+//   Destructor.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 21 15:23:38 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ViewerConnectionPrinter::~ViewerConnectionPrinter()
+{
+}
+
+// ****************************************************************************
+// Method: ViewerConnectionPrinter::HandleRead
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the socket has data. The
+//   data gets read and printed to the console.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 21 15:23:52 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerConnectionPrinter::HandleRead(int)
+{
+    TRY
+    {
+        // Fill up the connection from the socket.
+        conn->Fill();
+
+        // Print the output that we read to stdout.
+        while(conn->Size() > 0)
+        {
+            unsigned char c;
+            conn->Read(&c);
+            fputc((int)c, stdout);
+        }
+        fflush(stdout);
+    }
+    CATCH(LostConnectionException)
+    {
+        debug1 << "Lost connection in ViewerConnectionPrinter::HandleRead" << endl;
+    }
+    ENDTRY
+}

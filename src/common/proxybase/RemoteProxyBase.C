@@ -566,3 +566,55 @@ RemoteProxyBase::AddExtraArguments()
     for(int i = 0; i < argv.size(); ++i)
         component->AddArgument(argv[i]);
 }
+
+// ****************************************************************************
+// Method: RemoteProxyBase::GetReadConnection
+//
+// Purpose: 
+//   Get the component's i'th read connection.
+//
+// Arguments:
+//   i : The index of the read connection. Default=0
+//
+// Returns:    The i'th connection.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 21 11:44:29 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+Connection *
+RemoteProxyBase::GetReadConnection(int i) const
+{
+    return component ? component->GetReadConnection(i) : 0;
+}
+
+// ****************************************************************************
+// Method: RemoteProxyBase::GetWriteConnection
+//
+// Purpose: 
+//   Get the component's i'th write connection.
+//
+// Arguments:
+//   i : The index of the write connection. Default=0
+//
+// Returns:    The i'th connection.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 21 11:44:29 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+Connection *
+RemoteProxyBase::GetWriteConnection(int i) const
+{
+    return component ? component->GetWriteConnection(i) : 0;
+}

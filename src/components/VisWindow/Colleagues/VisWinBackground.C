@@ -322,8 +322,10 @@ VisWinBackground::AddBackgroundToWindow(int mode)
             }
             doSphereMode = false;
         }
+
         if(!mediator.HasPlots())
         {
+#if 0
             if(!sphereModeError2)
             {
                 avtCallback::IssueWarning("Image sphere background mode "
@@ -332,9 +334,9 @@ VisWinBackground::AddBackgroundToWindow(int mode)
                     "will be used instead.");
                 sphereModeError2 = true;
             }
+#endif
             doSphereMode = false;
         }
-
         textureActor->SetSphereMode(doSphereMode);
     }
 

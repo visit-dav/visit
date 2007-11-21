@@ -80,6 +80,9 @@ class RemoteProcess;
 //    Jeremy Meredith, Thu May 24 10:20:32 EDT 2007
 //    Added SSH tunneling argument to Create.
 //
+//    Brad Whitlock, Wed Nov 21 11:41:52 PST 2007
+//    Added methods to access the RemoteProcess's connections.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -111,6 +114,8 @@ public:
     virtual void SetNumNodes(int)       { }
     virtual void SetLoadBalancing(int)  { }
 
+    Connection *GetReadConnection(int i=0) const;
+    Connection *GetWriteConnection(int i=0) const;
 protected:
     virtual void         SetupComponentRPCs() = 0;
     std::string          GetVisItString() const;
