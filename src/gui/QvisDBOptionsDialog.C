@@ -64,40 +64,40 @@ QvisDBOptionsDialog::QvisDBOptionsDialog(DBOptionsAttributes *dbatts,
         switch (t)
         {
           case DBOptionsAttributes::Bool:
-            checkboxes[i] = new QCheckBox(name, this);
+            checkboxes[i] = new QCheckBox(name.c_str(), this);
             checkboxes[i]->setChecked(atts->GetBool(name));
             grid->addMultiCellWidget(checkboxes[i], i,i, 0,1);
             break;
           case DBOptionsAttributes::Int:
             txt.setNum(atts->GetInt(name));
             lineedits[i] = new QLineEdit(txt, this);
-            grid->addWidget(new QLabel(name, this), i, 0);
+            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
             grid->addWidget(lineedits[i], i, 1);
             break;
           case DBOptionsAttributes::Float:
             txt.setNum(atts->GetFloat(name));
             lineedits[i] = new QLineEdit(txt, this);
-            grid->addWidget(new QLabel(name, this), i, 0);
+            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
             grid->addWidget(lineedits[i], i, 1);
             break;
           case DBOptionsAttributes::Double:
             txt.setNum(atts->GetDouble(name));
             lineedits[i] = new QLineEdit(txt, this);
-            grid->addWidget(new QLabel(name, this), i, 0);
+            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
             grid->addWidget(lineedits[i], i, 1);
             break;
           case DBOptionsAttributes::String:
-            txt = atts->GetString(name);
+            txt = atts->GetString(name).c_str();
             lineedits[i] = new QLineEdit(txt, this);
-            grid->addWidget(new QLabel(name, this), i, 0);
+            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
             grid->addWidget(lineedits[i], i, 1);
             break;
           case DBOptionsAttributes::Enum:
             comboboxes[i] = new QComboBox(false, this);
             for (int j=0; j<atts->GetEnumStrings(name).size(); j++)
-                comboboxes[i]->insertItem(atts->GetEnumStrings(name)[j]);
+                comboboxes[i]->insertItem(atts->GetEnumStrings(name)[j].c_str());
             comboboxes[i]->setCurrentItem(atts->GetEnum(name));
-            grid->addWidget(new QLabel(name, this), i, 0);
+            grid->addWidget(new QLabel(name.c_str(), this), i, 0);
             grid->addWidget(comboboxes[i], i, 1);
             break;
         }

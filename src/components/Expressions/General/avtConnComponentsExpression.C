@@ -267,7 +267,7 @@ void
 avtConnComponentsExpression::Execute()
 {
     // loop index
-    int i, j, k;
+    int i;
     // initialize number of components to zero 
     nFinalComps = 0;
 
@@ -1564,7 +1564,7 @@ void
 avtConnComponentsExpression::BoundarySet::Finalize()
 {
     // loop indices
-    int i, j, k;
+    int i, j;
 
     // set bounds defaults
     bounds[0] =  DBL_MAX;

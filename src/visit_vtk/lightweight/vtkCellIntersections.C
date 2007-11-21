@@ -751,7 +751,7 @@ vtkCellIntersections::QuadraticHexahedronIntersectWithLine(
                              vtkQuadraticHexahedron *cell, double p1[3], 
                              double p2[3], double& t, double x[3])
 {
-  int  i, intersection = 0, faceNum, *faceIds;
+  int  i, intersection = 0, faceNum;
   double tTemp, xTemp[3];
   double pt0[3], pt1[3], pt2[3], pt3[3];
   t = VTK_DOUBLE_MAX;

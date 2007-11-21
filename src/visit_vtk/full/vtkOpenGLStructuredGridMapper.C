@@ -400,8 +400,6 @@ void vtkOpenGLStructuredGridMapper::Render(vtkRenderer *ren, vtkActor *act)
 
 int vtkOpenGLStructuredGridMapper::Draw(vtkRenderer *ren, vtkActor *act)
 {
-   int  i;
-
    vtkStructuredGrid *input = this->GetInput();
    int dims[3];
    input->GetDimensions(dims);

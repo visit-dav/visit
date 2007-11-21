@@ -1401,7 +1401,6 @@ static void log_ImportEntireStateRPC(ViewerRPC *rpc, char *str)
 static void log_ImportEntireStateWithDifferentSourcesRPC(ViewerRPC *rpc, char *str)
 {
     std::string stuple;
-    char tmp[1000];
     const stringVector &sources = rpc->GetProgramOptions();
     stuple = "(";
     for(int i = 0; i < sources.size(); ++i)

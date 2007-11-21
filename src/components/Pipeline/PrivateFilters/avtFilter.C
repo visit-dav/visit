@@ -1299,10 +1299,8 @@ avtFilter::DumpDataObject(avtDataObject_p dob, const char *prefix)
     {
         // If we add the reference to the main web page right now, 
         // all of the filters will be in execution order.
-        char line[1024];
         avtOriginatingSink::AddDumpReference(webpage->GetName(), GetType(), 
                                              numInExecute);
-
 
         std::string input_string;
         char prefix[128];

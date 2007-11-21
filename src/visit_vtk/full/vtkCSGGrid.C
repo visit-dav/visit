@@ -2133,7 +2133,7 @@ vtkCSGGrid::MakeMeshZonesByCuttingBox4(const Box *theBox,
     boxPoints->Delete();
     map<float, map<float, map<float, int> > > dummyNodemap;
     MakeMeshZone(theBox, boxPoints, boxUgrid, dummyNodemap);
-    int i, j;
+    int i;
 
     //
     // Set up two "buffers" for pieces that result from repeated clips and
