@@ -78,6 +78,9 @@
 //   Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //   Backout SSH tunneling changes for Panther (MacOS X 10.3)
 //
+//   Brad Whitlock, Wed Nov 21 10:34:14 PST 2007
+//   Added support for forwarding child process output to the client.
+//
 // ****************************************************************************
 
 class LauncherApplication
@@ -127,6 +130,7 @@ private:
     bool                        useSSHTunneling;
     bool                        keepGoing;
     int                         timeout;
+    std::vector<Connection*>    childOutput;
 };
 
 #endif

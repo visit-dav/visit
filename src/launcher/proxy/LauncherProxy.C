@@ -50,11 +50,15 @@
 // Creation:   Fri May 2 16:38:42 PST 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Nov 21 13:25:27 PST 2007
+//   Added a second write socket.
+//
 // ****************************************************************************
 
 LauncherProxy::LauncherProxy() : RemoteProxyBase("-vcl")
 {
+    // Indicate that we want 2 write sockets from VCL.
+    nWrite = 2;
 }
 
 // ****************************************************************************

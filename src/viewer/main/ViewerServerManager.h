@@ -42,12 +42,15 @@
 #include <ViewerBase.h>
 #include <vectortypes.h>
 #include <map>
+#include <qsocketnotifier.h>
 
 #include <HostProfile.h>
 
+class Connection;
 class HostProfileList;
 class LauncherProxy;
 class RemoteProxyBase;
+class ViewerConnectionPrinter;
 class ViewerConnectionProgressDialog;
 
 // ****************************************************************************
@@ -83,11 +86,20 @@ class ViewerConnectionProgressDialog;
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
+//    Brad Whitlock, Wed Nov 21 14:32:31 PST 2007
+//    Added support for printing out remote process console output.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerServerManager : public ViewerBase
 {
-    typedef std::map<std::string, LauncherProxy *> LauncherMap;
+    struct LauncherData
+    {
+        LauncherProxy           *launcher;
+        ViewerConnectionPrinter *notifier;
+    };
+
+    typedef std::map<std::string, LauncherData> LauncherMap;
 public:
     ViewerServerManager();
     virtual ~ViewerServerManager();
@@ -135,6 +147,7 @@ protected:
 #endif
 
     static HostProfileList         *clientAtts;
+
 private:
     static void StartLauncher(const std::string &host,
                               const std::string &visitPath,
@@ -145,6 +158,34 @@ private:
     static stringVector             arguments;
     static LauncherMap              launchers;
     static void                    *cbData[2];
+};
+
+
+// ****************************************************************************
+// Class: ViewerConnectionPrinter
+//
+// Purpose:
+//   Subclass of QSocketNotifier that we use for printing VCL console output.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Nov 21 15:14:14 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class ViewerConnectionPrinter : public QSocketNotifier
+{
+    Q_OBJECT
+public:
+    ViewerConnectionPrinter(Connection *, const char *name = 0);
+    virtual ~ViewerConnectionPrinter();
+private slots:
+    void HandleRead(int);
+private:
+    Connection *conn;
 };
 
 #endif

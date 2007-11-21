@@ -326,6 +326,9 @@
 #    Hank Childs, Sun Nov 11 12:57:03 PST 2007
 #    Added ViewerChangeUsernameWindow.
 #
+#    Brad Whitlock, Wed Nov 21 14:54:43 PST 2007
+#    Made ViewerServerManager get fed through moc since it now has a slot.
+#
 ##############################################################################
 
 ##
@@ -430,6 +433,7 @@ HDRMOC = \
     ViewerPasswordWindow.h \
     ViewerPlot.h \
     ViewerPlotList.h \
+    ViewerServerManager.h \
     ViewerSILAttsObserver.h \
     ViewerSubject.h \
     ViewerWindowManager.h
