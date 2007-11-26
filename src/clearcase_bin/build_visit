@@ -250,6 +250,9 @@
 #     Patch Qt to build on MacOS X 10.5 (based on patches used by the Fink
 #     project). 
 #
+#     Thomas R. Treadway, Mon Nov 26 10:03:38 PST 2007
+#     Changed web pages from www.llnl.gov/VisIt to wci.llnl.gov/codes/visit 
+#
 # *****************************************************************************
 
 
@@ -597,9 +600,9 @@ function download_file
         if [[ "$1" == "" ]] ; then
             if [[ "$OPSYS" == "Darwin" ]]; then
                 # MaxOS X comes with curl
-                curl -sfo $2 "http://www.llnl.gov/visit/$2"
+                curl -sfo $2 "http://wci.llnl.gov/codes/visit/$2"
             else
-                wget -o /dev/null "http://www.llnl.gov/visit/$2" 
+                wget -o /dev/null "http://wci.llnl.gov/codes/visit/$2" 
                 if [[ $? != 0 ]] ; then
                    echo ""
                    echo "Unable to run.  Need to download $2 from the "
@@ -611,9 +614,9 @@ function download_file
             fi
         else
             if [[ "$OPSYS" == "Darwin" ]]; then
-                curl -sfo $2 "http://www.llnl.gov/visit/$1/$2"
+                curl -sfo $2 "http://wci.llnl.gov/codes/visit/$1/$2"
             else
-                wget -o /dev/null "http://www.llnl.gov/visit/$1/$2" 
+                wget -o /dev/null "http://wci.llnl.gov/codes/visit/$1/$2" 
                 if [[ $? != 0 ]] ; then
                    echo ""
                    echo "Unable to run.  Need to download $1/$2 from the "
@@ -6062,7 +6065,7 @@ function build_visit
 
 usage () {
   printf "Usage: %s [-45bcdefghijkmnopswxyz] [-a opt] [-l opt]\n" $0
-  printf "       [-t opt] [-u opt] [-v opt]\n"
+  printf "       [-t opt] [-u opt] [-v opt] [-D opt]\n"
   printf "\n"
   printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
   printf "%s %s %s\n" "-5     Build HDF5 from [" $HDF5_FILE "]"
@@ -6072,6 +6075,9 @@ usage () {
   printf "%s\n" "       linux_gcc-3.4.6 or Darwin_gcc-4.0.1"
   printf "%s %s %s\n" "-b     Build Boxlib from [" $BOXLIB_FILE "]"
   printf "%s %s %s\n" "-c     Build CGNS from [" $CGNS_FILE "]"
+  printf "%s\n" "-D opt Select -g level debugging flag in CFLAGS/CXXFLAGS"
+  printf "%s\n" "       The default level is 2 (-g2). Level 1 produces"
+  printf "%s\n" "       minimal information, while level 3 includes extra"
   printf "%s\n" "-d     Turn on -g, debugging flag in CFLAGS/CXXFLAGS"
   printf "%s %s %s\n" "-e     Build Exodus from [" $EXODUS_FILE "]"
   printf "%s %s %s\n" "-f     Build CFITSIO from [" $CFITSIO_FILE "]"
@@ -6116,7 +6122,7 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCDEFGHIJKL:MNOPRST:U:V:WXYZ ARG
+while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCD:EFGHIJKL:MNOPRST:U:V:WXYZ ARG
 
 do
     argcur=$ARG
@@ -6134,7 +6140,9 @@ do
            ON_BOXLIB="on";;
       c|C) DO_CGNS="yes"
            ON_CGNS="on";;
-      d|D) C_OPT_FLAGS="$C_OPT_FLAGS -g"
+      D) C_OPT_FLAGS="$C_OPT_FLAGS -g$OPTARG"
+           CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g$OPTARG";;
+      d) C_OPT_FLAGS="$C_OPT_FLAGS -g"
            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g";;
       e|E) DO_EXODUS="yes"
            ON_EXODUS="on"
