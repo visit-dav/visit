@@ -143,6 +143,10 @@
 #    Hank Childs, Mon Nov 19 09:20:04 PST 2007
 #    Check for corrupted downloads.
 #
+#    Hank Childs, Mon Nov 26 16:17:06 PST 2007
+#    Add some more checks to issue better error messages for various
+#    common ways to do this wrong.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -229,6 +233,82 @@ if ($beta == true && $private == true) then
    exit (1)
 endif
 
+
+set version = "$1";
+set base = `echo visit$version | tr "." "_"`
+set platform = "$2"
+set dir = "$3"
+
+set fname1 = $base.$platform.tar.Z
+if (! -e $fname1) then
+   set Compress = GZIP
+   set fname1 = $base.$platform.tar.gz
+   if (! -e $fname1) then
+      set tarname = $base.$platform.tar
+      if (-e $tarname) then
+          # Note: as far as I can tell, it would be fine to just
+          # accept the unzipped distribution.  But I decided that 
+          # would be a bigger change than I wanted to make.
+          # ** The purpose of the above comment is to communicate to
+          #    a developer that *was* inclined to modify this script to
+          #    accept unzipped distributions that I don't have any 
+          #    special knowledge that this is a bad idea ... I'm just
+          #    not brave enough right now to deal with any potential 
+          #    fallout. **
+          echo "It appears that you unzipped the distribution file yourself."
+          echo "That is not what this script expects."
+          echo "Please download the zipped distribution again."
+      else
+          ls -1 $base.*.tar.* >& /dev/null
+          if ($status == 0) then
+              echo "You specified your distribution as $platform."
+              echo "I could not locate that distribution."
+              set num_dist = `ls -1 $base*.tar.* | wc -l`
+              if ($num_dist == "1") then
+                 echo "But I could find this distribution that you downloaded:"
+              else
+                 echo "But I could find these distributions that you downloaded:"
+              endif
+              ls -1 $base*.tar.* | sed 's/'$base'./\t/g' | sed 's/.tar.gz//g' | sed 's/.tar.Z//g'
+              if ($num_dist == 1) then
+                  echo "Either try specifying visit-install again with this "
+                  echo "distribution, or, if you think you specified the distribution"
+                  echo "name correctly, try downloading the file for $platform ($fname1)"
+              else
+                  echo "Either try specifying visit-install again with one of these "
+                  echo "distributions, or, if you think you specified the distribution"
+                  echo "name correctly, try downloading the file for $platform ($fname1)"
+              endif
+              echo ""
+          else
+              echo "Could not find file containing the distribution."
+              echo "(I was looking for file: $fname1)"
+          endif
+      endif
+      echo "Bailing out..."
+      exit (2)
+   endif
+endif
+set fname2 = $base.$platform.tar
+
+#
+# If the directory name is not an absolute path then make it one.
+#
+if (`echo "$dir" | grep "^/"` == "") then
+   set dir = `pwd`/"$dir"
+endif
+
+touch $dir/test.$$
+if (! -e $dir/test.$$) then
+   echo ""
+   echo "You do not have write permission to $dir"
+   echo "Bailing out"
+   echo ""
+   exit (2)
+else
+   rm $dir/test.$$
+endif
+
 while ($config == prompt)
    echo "Choose a system configuration file.  A system configuration"
    echo "file contains profiles that make it easy to access VisIt on"
@@ -310,40 +390,6 @@ if ($bank == prompt) then
         # No bank was required. Use the default of bdivp.
         set bank = "bdivp"
     endif
-endif
-
-set version = "$1";
-set base = `echo visit$version | tr "." "_"`
-set platform = "$2"
-set dir = "$3"
-
-set fname1 = $base.$platform.tar.Z
-if (! -e $fname1) then
-   set Compress = GZIP
-   set fname1 = $base.$platform.tar.gz
-   if (! -e $fname1) then
-      echo "Could not find file containing the distribution."
-      exit (2)
-   endif
-endif
-set fname2 = $base.$platform.tar
-
-#
-# If the directory name is not an absolute path then make it one.
-#
-if (`echo "$dir" | grep "^/"` == "") then
-   set dir = `pwd`/"$dir"
-endif
-
-touch $dir/test.$$
-if (! -e $dir/test.$$) then
-   echo ""
-   echo "You do not have write permission to $dir"
-   echo "Bailing out"
-   echo ""
-   exit (2)
-else
-   rm $dir/test.$$
 endif
 
 #
