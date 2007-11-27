@@ -68,6 +68,9 @@
 #    Thomas R. Treadway, Fri Jul 27 15:22:15 PDT 2007
 #    Added GLEW libraries.
 #
+#    Brad Whitlock, Mon Nov 26 17:40:32 PST 2007
+#    Changed PARLIBS for the Mac.
+#
 ##############################################################################
 
 ##
@@ -91,7 +94,7 @@ LIB=libparallel_visit_vtk
 LIBS_FOR_MACOSX_PREBINDING=@MESA_LIBS@ $(GLEW_LIBS) $(GL_LIBS)
 LIBS=-lmisc -lvisit_vtk -llightweight_visit_vtk -lavtexceptions $(LIBS_FOR_MACOSX_PREBINDING)
 SERLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS)
-PARLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS) -lpipeline_par -ldbatts -lstate -lcomm -lutility -lexpr -lparser -lavtmath_par -lbz2
+PARLIBS=$(LIBS) @VTK_LIBS@ $(X_LIBS) $(MPI_LIBS)
 
 ##
 ## Standard targets...
