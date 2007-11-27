@@ -583,17 +583,18 @@ $fullusage = "$usage
         -newconsole          Run any VisIt component in a new console window.
         -totalview <args> <comp>
                              Run totalview with <args> on component <comp>.
-                             Default <args> is \"\".
+                             Default <args> is whitespace.
         -valgrind <args> <comp>
                              Run valgrind with <args> on component <comp>.
-                             Default <args> is \"--tool=memcheck --error-limit=no
-                             --num-callers=64\".
+                             Default <args> is --tool=memcheck --error-limit=no
+                             --num-callers=64.
         -strace <args> <comp>
                              Run strace with <args> on component <comp>.
-                             Default <args> is \"-ttt -T\".
+                             Default <args> is -ttt -T.
 
-                             In the above, if <args> are present,
-                             wrap them in quotes (single or double).
+                             In the above, all arguments between the tool name
+			     and the visit component name are treated as args
+			     to the tool.
 
         -numrestarts <#>     Number of attempts to restart a failed engine.
         -quiet               Don't print the Running message.
