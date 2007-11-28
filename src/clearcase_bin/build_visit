@@ -581,6 +581,9 @@ function uncompress_untar
 #   Hank Childs, Mon Oct 15 15:55:22 PDT 2007                                 #
 #   Fail gracefully if wget is not available.                                 #
 #                                                                             #
+#   Thomas R. Treadway, Tue Nov 27 16:37:21 PST 2007                          # 
+#   Deal with LLNL's invalid certificates                                     #
+#                                                                             #
 # *************************************************************************** #
 
 function download_file
@@ -600,9 +603,10 @@ function download_file
         if [[ "$1" == "" ]] ; then
             if [[ "$OPSYS" == "Darwin" ]]; then
                 # MaxOS X comes with curl
-                curl -sfo $2 "http://wci.llnl.gov/codes/visit/$2"
+                curl -ksfo $2 "https://wci.llnl.gov/codes/visit/$2"
             else
-                wget -o /dev/null "http://wci.llnl.gov/codes/visit/$2" 
+                wget --no-check-certificate -o /dev/null \
+                   "https://wci.llnl.gov/codes/visit/$2" 
                 if [[ $? != 0 ]] ; then
                    echo ""
                    echo "Unable to run.  Need to download $2 from the "
@@ -614,9 +618,10 @@ function download_file
             fi
         else
             if [[ "$OPSYS" == "Darwin" ]]; then
-                curl -sfo $2 "http://wci.llnl.gov/codes/visit/$1/$2"
+                curl -ksfo $2 "https://wci.llnl.gov/codes/visit/$1/$2"
             else
-                wget -o /dev/null "http://wci.llnl.gov/codes/visit/$1/$2" 
+                wget --no-check-certificate -o /dev/null \
+                   "https://wci.llnl.gov/codes/visit/$1/$2" 
                 if [[ $? != 0 ]] ; then
                    echo ""
                    echo "Unable to run.  Need to download $1/$2 from the "
