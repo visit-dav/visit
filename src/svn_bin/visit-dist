@@ -123,7 +123,9 @@ if (! -d "src")
 #
 if($opt_withhelp)
 {
-    system("./src/svn_bin/makehelp");
+    # Temporarily disable until we convert from FrameMaker. In the meantime,
+    # all of the help files have been added to svn.
+    #system("./src/svn_bin/makehelp");
 }
 
 $dist = "";
