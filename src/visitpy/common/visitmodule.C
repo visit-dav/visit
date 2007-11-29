@@ -2955,6 +2955,11 @@ visit_DefineSpeciesExpression(PyObject *self, PyObject *args)
 //   Kathleen Bonnell, Wed Dec 22 12:50:20 PST 2004
 //   Notify viewer that ExpressionList has been modified.
 //   
+//   Cyrus Harrison, Thu Nov 29 09:52:41 PST 2007
+//   To maintain consistency with the GUI, made sure we guard against deletion
+//   of database expressions and auto expressions. Also added descriptive error
+//   messages if no expression is deleted. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -2962,26 +2967,64 @@ visit_DeleteExpression(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
+    bool found  = false;
+    bool success =false;
+    
     char *exprName;
     if (!PyArg_ParseTuple(args, "s", &exprName))
        return NULL;
 
-    // Access the expression list and add a new one.
+    char buff[512];
+    
+    // Access the expression list and delete the proper expression
     MUTEX_LOCK();
 
         ExpressionList *list = GetViewerState()->GetExpressionList();
         for(int i=0;i<list->GetNumExpressions();i++)
         {
-            if (strcmp((*list)[i].GetName().c_str(),exprName) == 0)
+            const Expression &expr = list->GetExpressions(i);
+            if( strcmp(expr.GetName().c_str(),exprName) == 0)
             {
-                list->RemoveExpressions(i);
+                // make sure expr is not from db, or an auto expression
+                if(expr.GetAutoExpression())
+                {
+                    SNPRINTF(buff,512,
+                             "Cannot delete auto generated expression \"%s\".",
+                             exprName);
+                }
+                else if(expr.GetFromDB())
+                {
+                    SNPRINTF(buff,512,
+                             "Cannot delete database expression \"%s\".",
+                             exprName);
+                }
+                else // delete the expression
+                {
+                    list->RemoveExpressions(i);
+                    success = true;
+                }
+                found = true;
                 break;
             }
         }
-        list->Notify();
-        GetViewerMethods()->ProcessExpressions();
-    MUTEX_UNLOCK();
 
+        if(success)
+        {
+            list->Notify();
+            GetViewerMethods()->ProcessExpressions();
+        }
+
+    MUTEX_UNLOCK();
+    
+    if(!found)
+        SNPRINTF(buff,512,"Cannot delete unknown expression \"%s\".",exprName);
+         
+    if(!success)
+    {
+        VisItErrorFunc(buff);
+        return NULL;
+    }
+    
     return IntReturnValue(Synchronize());
 }
 
