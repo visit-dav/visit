@@ -219,6 +219,10 @@
 //    was a hold out from when we had to use -flat_namespace. Now, it was just
 //    breaking parallel builds.
 //
+//    Jeremy Meredith, Thu Nov 29 15:03:11 EST 2007
+//    Allow the Writer plugin file to be renamed using the custom engine
+//    files mechanism.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -295,6 +299,10 @@ class MakefileGeneratorPlugin
             QString filter = QString("avt") + name + "FileFormat.C";
             defaultmfiles.push_back(filter);
             defaultefiles.push_back(filter);
+            if (haswriter)
+            {
+                defaultefiles.push_back(QString("avt") + name + "Writer.C");
+            }
         }
         else if (type == "plot")
         {
@@ -739,10 +747,6 @@ class MakefileGeneratorPlugin
                 out << "ESPECIFICSRC=";
             }
 
-            if (haswriter)
-            {
-                out << " avt" << name << "Writer.C";
-            }
             if (customefiles)
                 for (int i=0; i<efiles.size(); i++)
                     out << " " << efiles[i];
