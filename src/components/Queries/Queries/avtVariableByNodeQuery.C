@@ -156,7 +156,8 @@ avtVariableByNodeQuery::PostExecute(void)
         {
             char msg[120]; 
             SNPRINTF(msg, 120, "Could not retrieve information from domain "
-                     " %d element %d.", queryAtts.GetDomain(), queryAtts.GetElement());
+                     " %d element %d.", queryAtts.GetDomain(), 
+                     queryAtts.GetElement());
             SetResultMessage(msg);
         }
     }

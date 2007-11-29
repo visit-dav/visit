@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 
+#include <qcombobox.h>
 #include <qcheckbox.h>
 #include <qdir.h>
 #include <qfiledialog.h>
@@ -201,6 +202,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Cyrus Harrison, Mon Sep 17 15:18:50 PDT 2007
 //   Added floatFormat
 //
+//   Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//   Added preserveCoord combo box. 
+//
 // ****************************************************************************
 
 void
@@ -226,10 +230,10 @@ QvisPickWindow::CreateWindowContents()
         }
     }
     
+    QGridLayout *gLayout = new QGridLayout(topLayout, 15, 4);
 
-    QGridLayout *gLayout = new QGridLayout(topLayout, 13, 4);
-
-    userMaxPickTabs = new QSpinBox(MIN_PICK_TABS, MAX_PICK_TABS, 1, central, "userMaxPickTabs");
+    userMaxPickTabs = new QSpinBox(MIN_PICK_TABS, MAX_PICK_TABS, 1, central, 
+                                   "userMaxPickTabs");
     userMaxPickTabs->setButtonSymbols(QSpinBox::PlusMinus);
     gLayout->addWidget(userMaxPickTabs, 0, 1);
     gLayout->addWidget(new QLabel(userMaxPickTabs, "Max Tabs", central), 0,0);
@@ -255,7 +259,8 @@ QvisPickWindow::CreateWindowContents()
     gLayout->addMultiCellWidget(varsLineEdit, 1, 1, 1, 3);
 
     
-    QLabel *floatFormatLabel = new QLabel("Float Format:",central,"floatFormatLabel");
+    QLabel *floatFormatLabel = new QLabel("Float Format:",central,
+                                          "floatFormatLabel");
     gLayout->addWidget(floatFormatLabel, 2, 0);
     
     floatFormatLineEdit= new QLineEdit(central, "floatFormatLineEdit");
@@ -295,8 +300,8 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(displayGlobalIdsToggled(bool)));
     gLayout->addMultiCellWidget(displayGlobalIds, 6, 6, 0, 1);
 
-    displayPickLetter = new QCheckBox("Display reference pick letter.", central, 
-                                  "displayPickLetter");
+    displayPickLetter = new QCheckBox("Display reference pick letter.", 
+                                      central, "displayPickLetter");
     connect(displayPickLetter, SIGNAL(toggled(bool)),
             this, SLOT(displayPickLetterToggled(bool)));
     gLayout->addMultiCellWidget(displayPickLetter, 7, 7, 0, 1);
@@ -316,15 +321,18 @@ QvisPickWindow::CreateWindowContents()
     connect(nodeId, SIGNAL(toggled(bool)),
             this, SLOT(nodeIdToggled(bool)));
     nLayout->addMultiCellWidget(nodeId, 1, 1, 0, 1);
-    nodePhysical = new QCheckBox("Physical Coords", nodeGroupBox, "nodePhysical");
+    nodePhysical = new QCheckBox("Physical Coords", nodeGroupBox, 
+                                 "nodePhysical");
     connect(nodePhysical, SIGNAL(toggled(bool)),
             this, SLOT(nodePhysicalToggled(bool)));
     nLayout->addMultiCellWidget(nodePhysical, 2, 2, 0, 1);
-    nodeDomLog = new QCheckBox("Domain-Logical Coords", nodeGroupBox, "nodeDomLog");
+    nodeDomLog = new QCheckBox("Domain-Logical Coords", nodeGroupBox, 
+                               "nodeDomLog");
     connect(nodeDomLog, SIGNAL(toggled(bool)),
             this, SLOT(nodeDomLogToggled(bool)));
     nLayout->addMultiCellWidget(nodeDomLog, 1, 1, 2, 3);
-    nodeBlockLog = new QCheckBox("Block-Logical Coords", nodeGroupBox, "nodeBlockLog");
+    nodeBlockLog = new QCheckBox("Block-Logical Coords", nodeGroupBox, 
+                                 "nodeBlockLog");
     connect(nodeBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(nodeBlockLogToggled(bool)));
     nLayout->addMultiCellWidget(nodeBlockLog, 2, 2, 2, 3);
@@ -343,11 +351,13 @@ QvisPickWindow::CreateWindowContents()
     connect(zoneId, SIGNAL(toggled(bool)),
             this, SLOT(zoneIdToggled(bool)));
     zLayout->addMultiCellWidget(zoneId, 1, 1, 0, 1);
-    zoneDomLog = new QCheckBox("Domain-Logical Coords", zoneGroupBox, "zoneDomLog");
+    zoneDomLog = new QCheckBox("Domain-Logical Coords", zoneGroupBox, 
+                               "zoneDomLog");
     connect(zoneDomLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneDomLogToggled(bool)));
     zLayout->addMultiCellWidget(zoneDomLog, 1, 1, 2, 3);
-    zoneBlockLog = new QCheckBox("Block-Logical Coords", zoneGroupBox, "zoneBlockLog");
+    zoneBlockLog = new QCheckBox("Block-Logical Coords", zoneGroupBox,
+                                 "zoneBlockLog");
     connect(zoneBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneBlockLogToggled(bool)));
     zLayout->addMultiCellWidget(zoneBlockLog, 2, 2, 2, 3);
@@ -365,17 +375,25 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(savePicksToggled(bool)));
     gLayout->addMultiCellWidget(savePicksCheckBox, 11, 11, 0, 3);
 
-    timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", central,
-                                     "timeCurveCheckBox");
+    timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", 
+                                      central, "timeCurveCheckBox");
     connect(timeCurveCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
     gLayout->addMultiCellWidget(timeCurveCheckBox, 12, 12, 0, 3);
 
-    spreadsheetCheckBox = new QCheckBox("Create spreadsheet with next pick.", central,
-                                     "spreadsheetCheckBox");
+    preserveCoord= new QComboBox(false, central, "preserveCoord");
+    preserveCoord->insertItem("Time curve use picked element");
+    preserveCoord->insertItem("Time curve use picked coordinates");
+    preserveCoord->setCurrentItem(0);
+    connect(preserveCoord, SIGNAL(activated(int)),
+            this, SLOT(preserveCoordActivated(int)));
+    gLayout->addMultiCellWidget(preserveCoord, 13, 13, 0, 3);
+
+    spreadsheetCheckBox = new QCheckBox("Create spreadsheet with next pick.", 
+                                        central, "spreadsheetCheckBox");
     connect(spreadsheetCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(spreadsheetToggled(bool)));
-    gLayout->addMultiCellWidget(spreadsheetCheckBox, 13, 13, 0, 3);
+    gLayout->addMultiCellWidget(spreadsheetCheckBox, 14, 14, 0, 3);
 }
 
 // ****************************************************************************
@@ -433,6 +451,9 @@ QvisPickWindow::CreateWindowContents()
 //
 //   Cyrus Harrison,  Mon Sep 17 15:15:47 PDT 2007
 //   Added floatFormat
+//
+//   Kathleen Bonnell, Fri Nov  9 14:00:27 PST 2007 
+//   Added timePreserveCoord and fixed some select numbers to match atts. 
 //
 // ****************************************************************************
 
@@ -555,6 +576,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     {
         timeCurveCheckBox->blockSignals(true);
         timeCurveCheckBox->setChecked(pickAtts->GetDoTimeCurve());
+        preserveCoord->setEnabled(pickAtts->GetDoTimeCurve());
         timeCurveCheckBox->blockSignals(false);
     }
 
@@ -566,20 +588,20 @@ QvisPickWindow::UpdateWindow(bool doAll)
         conciseOutputCheckBox->blockSignals(false);
     }
 
-    // showMeshName
-    if (pickAtts->IsSelected(43) || doAll)
-    {
-        showMeshNameCheckBox->blockSignals(true);
-        showMeshNameCheckBox->setChecked(pickAtts->GetShowMeshName());
-        showMeshNameCheckBox->blockSignals(false);
-    }
-
     // showTimestep
-    if (pickAtts->IsSelected(44) || doAll)
+    if (pickAtts->IsSelected(43) || doAll)
     {
         showTimestepCheckBox->blockSignals(true);
         showTimestepCheckBox->setChecked(pickAtts->GetShowTimeStep());
         showTimestepCheckBox->blockSignals(false);
+    }
+
+    // showMeshName
+    if (pickAtts->IsSelected(44) || doAll)
+    {
+        showMeshNameCheckBox->blockSignals(true);
+        showMeshNameCheckBox->setChecked(pickAtts->GetShowMeshName());
+        showMeshNameCheckBox->blockSignals(false);
     }
 
     // displayGlobalIds
@@ -591,7 +613,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // displayPickLetter
-    if (pickAtts->IsSelected(53) || doAll)
+    if (pickAtts->IsSelected(56) || doAll)
     {
         displayPickLetter->blockSignals(true);
         displayPickLetter->setChecked(pickAtts->GetDisplayPickLetter());
@@ -607,11 +629,19 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
     
     // floatFormat
-    if (pickAtts->IsSelected(63) || doAll)
+    if (pickAtts->IsSelected(64) || doAll)
     {
         floatFormatLineEdit->blockSignals(true);
         floatFormatLineEdit->setText(pickAtts->GetFloatFormat().c_str());
         floatFormatLineEdit->blockSignals(false);
+    }
+
+    // timePreserveCoord
+    if (pickAtts->IsSelected(65) || doAll)
+    {
+        preserveCoord->blockSignals(true);
+        preserveCoord->setCurrentItem((int)pickAtts->GetTimePreserveCoord());
+        preserveCoord->blockSignals(false);
     }
 }
 
@@ -815,7 +845,7 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
         {
             node->AddNode(new DataNode("autoShow", autoShow));
             node->AddNode(new DataNode("savePicks", savePicks));
-            node->AddNode(new DataNode("userMaxTabs", userMaxPickTabs->value()));
+            node->AddNode(new DataNode("userMaxTabs",userMaxPickTabs->value()));
         }
     }
 }
@@ -1458,6 +1488,31 @@ QvisPickWindow::displayPickLetterToggled(bool val)
 
 
 // ****************************************************************************
+// Method: QvisPickWindow::preserveCoordToggled
+//
+// Purpose: 
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not a time-curve pick should preserved the picked coordinates. 
+//
+// Arguments:
+//   val : The new timePreserveCoord value.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 9, 2007 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::preserveCoordActivated(int val)
+{
+    pickAtts->SetTimePreserveCoord((bool)val);
+    Apply();
+}
+
+
+// ****************************************************************************
 // Method: QvisPickWindow::ResizeTabs
 //
 // Purpose:
@@ -1543,11 +1598,11 @@ QvisPickWindow::savePickText()
     if(!fileName.isNull())
     {
         ++saveCount;
-    QFile file( fileName );
-    if ( file.open(IO_WriteOnly) )
-    {
-        QTextStream stream( &file );
-        int i;
+        QFile file( fileName );
+        if ( file.open(IO_WriteOnly) )
+        {
+            QTextStream stream( &file );
+            int i;
             for ( i = 0; i < tabWidget->count(); i++ )
             {
                 QString txt( infoLists[i]->text() );
@@ -1555,15 +1610,12 @@ QvisPickWindow::savePickText()
                     stream << txt;
             }
    
-        file.close();
+            file.close();
+        }
+        else
+            Error( "VisIt could not save the pick results"
+                   "to the selected file" ) ;
     }
-    else
-        Error( "VisIt could not save the pick results"
-               "to the selected file" ) ;
-
-
-   }
-
 }
 
 

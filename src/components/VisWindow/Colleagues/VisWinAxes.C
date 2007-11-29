@@ -706,6 +706,9 @@ VisWinAxes::UpdatePlotList(vector<avtActor_p> &list)
 //    Hank Childs, Fri Jun  9 14:43:27 PDT 2006
 //    Add missing cases for the switch statement.
 //
+//    Kathleen Bonnell, Tue Nov 20 15:12:57 PST 2007 
+//    Removed debug message for default case.
+// 
 // ****************************************************************************
 
 void
@@ -734,7 +737,6 @@ VisWinAxes::GetRange(double &min_x, double &max_x, double &min_y, double &max_y)
         }
         break;
       default:
-        debug1 << "Asked for range of non-2D window." << endl;
         break;
     }
 }

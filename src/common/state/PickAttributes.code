@@ -236,6 +236,9 @@ PickAttributes::PrintSelf(ostream &os)
     if (doTimeCurve)
         os << "Set up to create a time-curve.\n";
 
+    if (timePreserveCoord)
+        os << "Set up for time-curve to preserved picked coord.\n";
+
     if (createSpreadsheet)
         os << "Create a spreadsheet with this pick.\n";
 
@@ -783,6 +786,8 @@ PickAttributes::SetFromNode(DataNode *parentNode)
 
     if((node = searchNode->GetNode("doTimeCurve")) != 0)
         SetDoTimeCurve(node->AsBool());
+    if((node = searchNode->GetNode("timePreserveCoord")) != 0)
+        SetTimePreserveCoord(node->AsBool());
     if((node = searchNode->GetNode("createSpreadsheet")) != 0)
         SetCreateSpreadsheet(node->AsBool());
 
@@ -1217,5 +1222,53 @@ PickAttributes::CreateConciseOutputString(std::string &os, bool withLetter)
         }
         os += "\n";
     }
+}
+
+Function: SetRayPoint1
+Declaration: void SetRayPoint1(const doubleVector &);
+Definition:
+// ****************************************************************************
+// Method: PickAttributes::SetRayPoint1
+//
+// Purpose: 
+//   Sets raypoint1 from a doubleVector arg.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    November 9, 2007 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::SetRayPoint1(const doubleVector & _v)
+{
+    rayPoint1[0] = _v[0];
+    rayPoint1[1] = _v[1];
+    rayPoint1[2] = _v[2];
+}
+
+Function: SetRayPoint2
+Declaration: void SetRayPoint2(const doubleVector &);
+Definition:
+// ****************************************************************************
+// Method: PickAttributes::SetRayPoint2
+//
+// Purpose: 
+//   Sets raypoint2 from a doubleVector arg.
+//
+// Programmer:  Kathleen Bonnell
+// Creation:    November 9, 2007 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+PickAttributes::SetRayPoint2(const doubleVector &_v)
+{
+    rayPoint2[0] = _v[0];
+    rayPoint2[1] = _v[1];
+    rayPoint2[2] = _v[2];
 }
 

@@ -3263,6 +3263,10 @@ NetworkManager::StopQueryMode(void)
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added bool for leftEye to Render calls.
+//
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Fix memory leak associated with silr->MakeAttributes(). 
+//
 // ****************************************************************************
  
 void
@@ -3299,7 +3303,7 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
         EXCEPTION0(NoInputException);
     }
 
-    avtSILRestriction_p silr = networkCache[id]->GetDataSpec()->GetRestriction();
+    avtSILRestriction_p silr =networkCache[id]->GetDataSpec()->GetRestriction();
     avtDataAttributes &queryInputAtts = queryInput->GetInfo().GetAttributes();
 
     pa->SetMatSelected(queryInputAtts.MIROccurred() || pa->GetMatSelected());
@@ -3403,7 +3407,10 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     lQ->SetPickAtts(pa);
                     if (*silr != NULL)
                     {
-                        lQ->SetSILRestriction(silr->MakeAttributes());
+                        const SILRestrictionAttributes *silAtts = 
+                             silr->MakeAttributes();
+                        lQ->SetSILRestriction(silAtts);
+                        delete silAtts;
                     }
                     int queryTimer = visitTimer->StartTimer();
                     lQ->PerformQuery(&qa); 
@@ -3422,7 +3429,10 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
                     lQ->SetPickAtts(pa);
                     if (*silr != NULL)
                     {
-                        lQ->SetSILRestriction(silr->MakeAttributes());
+                        const SILRestrictionAttributes *silAtts = 
+                             silr->MakeAttributes();
+                        lQ->SetSILRestriction(silAtts);
+                        delete silAtts;
                     }
                     int queryTimer = visitTimer->StartTimer();
                     lQ->PerformQuery(&qa); 
@@ -3456,7 +3466,10 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             
                 if (*silr != NULL)
                 {
-                    pQ->SetSILRestriction(silr->MakeAttributes());
+                    const SILRestrictionAttributes *silAtts = 
+                             silr->MakeAttributes();
+                    pQ->SetSILRestriction(silAtts);
+                    delete silAtts;
                 }
                 pQ->SetNeedTransform(queryInputVal.GetPointsWereTransformed());
                 pQ->SetInput(networkCache[id]->GetNodeList()[0]->GetOutput());
@@ -3591,6 +3604,9 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
 //    Kathleen Bonnell, Thu Oct  7 10:29:36 PDT 2004 
 //    Added timing code for each PerformQuery. 
 //
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Fix memory leak associated with silr->MakeAttributes().
+//
 // ****************************************************************************
 
 void
@@ -3672,7 +3688,10 @@ NetworkManager::Query(const std::vector<int> &ids, QueryAttributes *qa)
                networkCache[ids[0]]->GetDataSpec()->GetRestriction();
             if (*silr != NULL)
             {
-                query->SetSILRestriction(silr->MakeAttributes());
+                const SILRestrictionAttributes *silAtts = 
+                             silr->MakeAttributes();
+                query->SetSILRestriction(silAtts);
+                delete silAtts;
             }
 
 
@@ -4079,6 +4098,10 @@ NetworkManager::CloneNetwork(const int id)
 //    Kathleen Bonnell, Wed May 11 17:14:03 PDT 2005
 //    Use EEF output instead of DB output for input to filters.
 //
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Fix memory leak associated with silr->MakeAttributes(), add support for
+//    "Locate and Pick Zone/Node" queries.
+//
 // ****************************************************************************
 
 void
@@ -4095,7 +4118,13 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     // Determine which input the filter should use.
     //
     avtDataObject_p input;
-    if (qA->GetQueryAtts().GetDataType() == QueryAttributes::OriginalData)
+    if (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
+        qA->GetQueryAtts().GetName() == "Locate and Pick Node" )
+    {
+        input = networkCache[clonedFromId]->GetPlot()->
+                GetIntermediateDataObject();
+    }
+    else if (qA->GetQueryAtts().GetDataType() == QueryAttributes::OriginalData)
     {
         input = workingNet->GetNodeList()[0]->GetOutput();
     }
@@ -4130,7 +4159,11 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
     // 
     avtQueryOverTimeFilter *qf = new avtQueryOverTimeFilter(qA);
     if (*silr != NULL)
-        qf->SetSILAtts(silr->MakeAttributes());
+    {
+        const SILRestrictionAttributes *silAtts = silr->MakeAttributes();
+        qf->SetSILAtts(silAtts);
+        delete silAtts;
+    }
     NetnodeFilter *qfilt = new NetnodeFilter(qf, "QueryOverTime");
     qfilt->GetInputNodes().push_back(trans);
     

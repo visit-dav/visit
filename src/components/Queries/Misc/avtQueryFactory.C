@@ -70,6 +70,8 @@
 #include <avtL2NormBetweenCurvesQuery.h>
 #include <avtLineScanTransformQuery.h>
 #include <avtLocalizedCompactnessFactorQuery.h>
+#include <avtLocateAndPickNodeQuery.h>
+#include <avtLocateAndPickZoneQuery.h>
 #include <avtKurtosisQuery.h>
 #include <avtMassDistributionQuery.h>
 #include <avtMomentOfInertiaQuery.h>
@@ -256,6 +258,9 @@ avtQueryFactory::Instance()
 //
 //    Cyrus Harrison, Thu Mar  1 16:20:27 PST 2007
 //    Added connected components summary query.
+//
+//    Kathleen Bonnell, Tue Nov 20 10:33:49 PST 2007 
+//    Added Locate and Pick Zone/Node queries. 
 //
 // ****************************************************************************
 
@@ -571,6 +576,14 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
                                           =new avtConnComponentsSummaryQuery();
         ccl_query->SetOutputFileName(qa->GetVariables()[0]);
         query = ccl_query;
+    }
+    else if( qname == "Locate and Pick Zone")
+    {
+        query = new avtLocateAndPickZoneQuery();
+    }
+    else if( qname == "Locate and Pick Node")
+    {
+        query = new avtLocateAndPickNodeQuery();
     }
 
 
