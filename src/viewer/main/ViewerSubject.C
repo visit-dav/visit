@@ -6538,13 +6538,16 @@ ViewerSubject::PointQuery()
 {
     // Send the client a status message.
     QString msg;
-    msg.sprintf("Performing %s query...", GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
+    msg.sprintf("Performing %s query...", 
+                GetViewerState()->GetViewerRPC()->GetQueryName().c_str());
     Status(msg.latin1());
 
     ViewerQueryManager *qm = ViewerQueryManager::Instance();
-    qm->PointQuery(GetViewerState()->GetViewerRPC()->GetQueryName(), GetViewerState()->GetViewerRPC()->GetQueryPoint1(),
+    qm->PointQuery(GetViewerState()->GetViewerRPC()->GetQueryName(), 
+                   GetViewerState()->GetViewerRPC()->GetQueryPoint1(),
                    GetViewerState()->GetViewerRPC()->GetQueryVariables(),
-                   GetViewerState()->GetViewerRPC()->GetIntArg1(), GetViewerState()->GetViewerRPC()->GetIntArg2(),
+                   GetViewerState()->GetViewerRPC()->GetIntArg1(), 
+                   GetViewerState()->GetViewerRPC()->GetIntArg2(),
                    GetViewerState()->GetViewerRPC()->GetBoolFlag(),
                    (bool)GetViewerState()->GetViewerRPC()->GetIntArg3()); 
 

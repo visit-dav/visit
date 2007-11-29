@@ -189,6 +189,9 @@
 #   Thomas R. Treadway, Tue Mar 27 12:52:26 PDT 2007
 #   Added $(MESA_LIBS)  
 #
+#   Kathleen Bonnell, Tue Nov 20 10:20:17 PST 2007 
+#   Added avtLocateAndPickZone/Node Queries.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -257,6 +260,8 @@ Queries_src= \
  Queries/avtL2NormQuery.C  \
  Queries/avtL2NormBetweenCurvesQuery.C  \
  Queries/avtLocalizedCompactnessFactorQuery.C  \
+ Queries/avtLocateAndPickNodeQuery.C  \
+ Queries/avtLocateAndPickZoneQuery.C  \
  Queries/avtMassDistributionQuery.C  \
  Queries/avtMinMaxQuery.C  \
  Queries/avtMomentOfInertiaQuery.C  \

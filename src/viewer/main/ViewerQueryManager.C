@@ -1855,6 +1855,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Hank Childs, Mon Oct  8 19:51:21 PDT 2007
 //    If the pick is of a mesh plot, make a spreadsheet anyway.
 //
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Return early if time curve and preserving picked coordinates.
+//
 // ****************************************************************************
 
 bool
@@ -2114,6 +2117,9 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
             pickAtts->SetPickPoint(dummyPt);
             pickAtts->SetCellPoint(dummyPt);
         }
+
+        if (pickAtts->GetDoTimeCurve() && pickAtts->GetTimePreserveCoord())
+            return true;
 
         bool retry;
         int numAttempts = 0; 
@@ -2980,6 +2986,10 @@ ViewerQueryManager::SetGlobalLineoutAttsFromClient()
 //    to a node-type or vice-versa, as each type has different requirements
 //    for re-execution of picked plot.
 //
+//    Kathleen Bonnell, Wed Nov 28 09:58:23 PST 2007 
+//    Set pick type in client atts, too, in case pick atts change while
+//    still in pick mode, so we don't lose the pick type. 
+//
 // ****************************************************************************
 
 void
@@ -3000,9 +3010,15 @@ ViewerQueryManager::StartPickMode(const bool firstEntry, const bool zonePick)
     }
 
     if (zonePick)
+    {
         pickAtts->SetPickType(PickAttributes::Zone);
+        pickClientAtts->SetPickType(PickAttributes::Zone);
+    }
     else 
+    {
         pickAtts->SetPickType(PickAttributes::Node);
+        pickClientAtts->SetPickType(PickAttributes::Node);
+    }
 }
 
 
@@ -3103,6 +3119,12 @@ ViewerQueryManager::HandlePickCache()
 //    Kathleen Bonnell, Tue May  9 15:45:04 PDT 2006 
 //    Added a couple of Pick aliases. 
 //
+//    Kathleen Bonnell, Wed Nov 28 16:25:54 PST 2007 
+//    Added timeCurve bool.  For Node/Zone picks-through-time, preserve current
+//    values of pickAtts DoTimeCurve and TimePreserveCoord as they both should
+//    be true in this instance.  For PickByNode/Zone, TimePreserveCoord should
+//    be false.
+//   
 // ****************************************************************************
 
 void         
@@ -3115,6 +3137,7 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
     ViewerPlotList *plist = win->GetPlotList();
     intVector plotIds;
     plist->GetActivePlotIDs(plotIds);
+    bool timeCurve = doTime || pickAtts->GetDoTimeCurve();
     if (plotIds.size() > 0)
     {
         if (!EngineExistsForQuery(plist->GetPlot(plotIds[0])))
@@ -3160,10 +3183,18 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
         ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
         ppi.validPick = true;
-        if (!doTime)
+        if (!timeCurve)
             Pick(&ppi);
-         else
+        else
+        {
+            bool tpc = pickAtts->GetTimePreserveCoord();
+            bool tc = pickAtts->GetDoTimeCurve();
+            pickAtts->SetTimePreserveCoord(true);
+            pickAtts->SetDoTimeCurve(true);
             PickThroughTime(&ppi);
+            pickAtts->SetDoTimeCurve(tc);
+            pickAtts->SetTimePreserveCoord(tpc);
+        }
 
         win->SetInteractionMode(imode);
     }
@@ -3190,10 +3221,15 @@ ViewerQueryManager::PointQuery(const string &qName, const double *pt,
         ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
         ppi.validPick = true;
 
-        if (!doTime)
+        if (!timeCurve)
             Pick(&ppi, arg2, arg1);
         else
+        {
+            bool tpc = pickAtts->GetTimePreserveCoord();
+            pickAtts->SetTimePreserveCoord(false);
             PickThroughTime(&ppi, arg2, arg1);
+            pickAtts->SetTimePreserveCoord(tpc);
+        }
 
         win->SetInteractionMode(imode);
     }
@@ -4066,6 +4102,9 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Kathleen Bonnell, Tue Oct 24 18:54:56 PDT 2006 
 //    Send pick atts to the Time Query for Variable by Zone/Node. 
 //
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Add "Locate and Pick Zone/Node" options. 
+//
 // ***********************************************************************
 
 void
@@ -4074,7 +4113,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     string qName = qA->GetName();
     if (!queryTypes->TimeQueryAvailable(qName))
     {
-        if (qName != "Variable by Zone" && qName != "Variable by Node") 
+        if (qName != "Variable by Zone" && 
+            qName != "Variable by Node" &&
+            qName != "Locate and Pick Zone" &&
+            qName != "Locate and Pick Node") 
         {
             string msg = "Time history query is not available for " + qName;
             Error(msg.c_str());
@@ -4108,10 +4150,14 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     // For certain queries, if we are querying the plot's current variable, 
     // check for centering consistency.
     //
-    if (qName == "Variable by Zone" || qName == "Variable by Node") 
+    if (qName == "Variable by Zone" || 
+        qName == "Variable by Node" ||
+        qName == "Locate and Pick Zone" ||
+        qName == "Locate and Pick Node") 
     {
         bool issueWarning = false;
-        bool zoneQuery = (qName == "Variable by Zone");
+        bool zoneQuery = (qName == "Variable by Zone" ||
+                          qName == "Locate and Pick Zone");
 
         avtVarType varType = origPlot->GetVarType();
         if (varType == AVT_MATERIAL )
@@ -4220,7 +4266,8 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     ViewerPlot *resultsPlot = plotList->GetPlot(pid);
 
     timeQueryAtts->SetQueryAtts(*qA);
-    if (qName == "Variable by Zone" || qName == "Variable by Node") 
+    if (qName == "Variable by Zone"     || qName == "Variable by Node" ||
+        qName == "Locate and Pick Zone" || qName == "Locate and Pick Node") 
     {
         timeQueryAtts->SetPickAtts(*pickAtts);
     }
@@ -4349,6 +4396,10 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
 //    Kathleen Bonnell, Wed Jun  2 10:00:35 PDT 2004 
 //    Support new pick types. 
 //
+//    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//    Support new pick-through-time options which perserve picked coordinates
+//    instead of picked element.
+//
 // ****************************************************************************
 
 void
@@ -4424,7 +4475,8 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
                     "appropriately centered Pick");
             return;
         }
-        else if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
+        else 
+        if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
         {
             Warning("The centering of the pick-through-time (node) does "
                     "not match the centering of the plot's current "
@@ -4438,20 +4490,51 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi, const int dom,
     if (valid)
     {
         QueryAttributes qatts;
-        qatts.SetDomain(pickAtts->GetDomain() >= 0 ? pickAtts->GetDomain() : 0);
-        qatts.SetElement(pickAtts->GetElementNumber());
+        if (pickAtts->GetTimePreserveCoord())
+        {
+            doubleVector d(3);
+            d[0] = ppi->rayPt1[0];
+            d[1] = ppi->rayPt1[1];
+            d[2] = ppi->rayPt1[2];
+            qatts.SetDarg1(d);
+            d[0] = ppi->rayPt2[0];
+            d[1] = ppi->rayPt2[1];
+            d[2] = ppi->rayPt2[2];
+            qatts.SetDarg2(d);
+        }
+        else
+        {
+            qatts.SetDomain(pickAtts->GetDomain() >= 0 ? 
+                            pickAtts->GetDomain() : 0);
+            qatts.SetElement(pickAtts->GetElementNumber());
+        }
         qatts.SetDataType(QueryAttributes::OriginalData);
         stringVector vars;
         vars.push_back(pvarName);
         qatts.SetVariables(vars);
         if (type == PickAttributes::Zone || type == PickAttributes::DomainZone) 
         {
-            qatts.SetName("Variable by Zone");
+            if (pickAtts->GetTimePreserveCoord())
+            {
+                qatts.SetName("Locate and Pick Zone");
+            }
+            else
+            {
+                qatts.SetName("Variable by Zone");
+            }
             qatts.SetElementType(QueryAttributes::Zone);
         }
-        else if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
+        else 
+        if (type == PickAttributes::Node || type == PickAttributes::DomainNode)
         {
-            qatts.SetName("Variable by Node");
+            if (pickAtts->GetTimePreserveCoord())
+            {
+                qatts.SetName("Locate and Pick Node");
+            }
+            else
+            {
+                qatts.SetName("Variable by Node");
+            }
             qatts.SetElementType(QueryAttributes::Node);
         }
 

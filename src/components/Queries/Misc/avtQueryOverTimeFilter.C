@@ -46,6 +46,8 @@
 #include <avtDataObjectQuery.h>
 #include <avtQueryFactory.h>
 #include <avtQueryOverTimeFilter.h>
+#include <avtLocateAndPickNodeQuery.h>
+#include <avtLocateAndPickZoneQuery.h>
 #include <avtVariableByZoneQuery.h>
 #include <avtVariableByNodeQuery.h>
 
@@ -88,6 +90,11 @@ using std::string;
 //    Hank Childs, Thu Feb  8 09:54:01 PST 2007
 //    Initialize numAdditionalFilters.
 //
+//    Kathleen Bonnell, Tue Nov 27 15:35:55 PST 2007
+//    Fix memory leak, delete 'query' used to initialize numAdditionalFilters. 
+//    Set label from query's ShortDescription if available, otherwise use
+//    query name.
+//
 // ****************************************************************************
 
 avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
@@ -105,6 +112,11 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
         avtDataObjectQuery *query = avtQueryFactory::Instance()->
             CreateQuery(&qatts);
         numAdditionalFilters = query->GetNFilters()+1; // 1 for query itself
+        if (query->GetShortDescription() != NULL)
+            label = query->GetShortDescription();
+        else
+            label = qatts.GetName();
+        delete query;
     }
     CATCHALL(...)
     {
@@ -186,6 +198,9 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //    Kathleen Bonnell, Tue Oct 24 18:59:27 PDT 2006 
 //    Added call to query->SetPickAttsForTimeQuery for VariableByNode/Zone.
 //
+//    Kathleen Bonnell, Tue Nov 20 10:33:49 PST 2007 
+//    Added call to query->SetPickAttsForTimeQuery for LocateAndPickZone.
+//
 // ****************************************************************************
 
 void
@@ -223,6 +238,8 @@ avtQueryOverTimeFilter::Execute(void)
     qatts.SetTimeStep(currentTime);
     avtDataObjectQuery *query = avtQueryFactory::Instance()->
         CreateQuery(&qatts);
+    query->SetInput(GetInput());
+
     if (strncmp(query->GetType(), "avtVariableByNodeQuery",22) == 0)
     {
         PickAttributes patts = atts.GetPickAtts();
@@ -233,9 +250,18 @@ avtQueryOverTimeFilter::Execute(void)
         PickAttributes patts = atts.GetPickAtts();
         ((avtVariableByZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
     }
+    else if (strncmp(query->GetType(), "avtLocateAndPickZoneQuery",25) == 0)
+    {
+        PickAttributes patts = atts.GetPickAtts();
+        ((avtLocateAndPickZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
+    }
+    else if (strncmp(query->GetType(), "avtLocateAndPickNodeQuery",25) == 0)
+    {
+        PickAttributes patts = atts.GetPickAtts();
+        ((avtLocateAndPickNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
+    }
     query->GetTimeCurveSpecs(useTimeForXAxis, nResultsToStore);
     query->SetTimeVarying(true);
-    query->SetInput(GetInput());
     query->SetSILRestriction(currentSILR);
 
     //
@@ -321,6 +347,9 @@ avtQueryOverTimeFilter::Execute(void)
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
 //    Use different labels/units if Time not used for X-Axis. 
 //
+//    Kathleen Bonnell, Wed Nov 28 16:33:22 PST 2007 
+//    Use new 'label' member for Y axis label. 
+//
 // ****************************************************************************
 
 void
@@ -338,7 +367,7 @@ avtQueryOverTimeFilter::RefashionDataObjectInfo(void)
         if (useTimeForXAxis)
         {
             outAtts.SetXLabel("Time");
-            outAtts.SetYLabel(atts.GetQueryAtts().GetName());
+            outAtts.SetYLabel(label);
             if (atts.GetTimeType() == QueryOverTimeAttributes::Cycle)
             {
                 outAtts.SetXUnits("cycle");

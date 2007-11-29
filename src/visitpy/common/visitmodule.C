@@ -10181,17 +10181,18 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
 //   Swapped order of dom/el in args list, and in call to PointQuery. 
 //
 //   Kathleen Bonnell, Thu Dec 16 17:31:10 PST 2004 
-//   Added ool arg, indicating of node/zone is global or not. 
+//   Added bool arg, indicating of node/zone is global or not. 
 //
 // ****************************************************************************
 
 STATIC PyObject *
-visit_DomainPick(const char *type, int el, int dom, stringVector vars, bool doGlobal)
+visit_DomainPick(const char *type, int el, int dom, stringVector vars, 
+                 bool doGlobal)
 {
     double pt[3] = {0., 0., 0};
 
     MUTEX_LOCK();
-        GetViewerMethods()->PointQuery(type, pt, vars, false, el, dom, doGlobal);
+       GetViewerMethods()->PointQuery(type, pt, vars, false, el, dom, doGlobal);
     MUTEX_UNLOCK();
 
     // Return the success value.

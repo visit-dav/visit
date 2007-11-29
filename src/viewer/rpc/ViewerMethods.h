@@ -300,8 +300,8 @@ public:
     void SetQueryFloatFormat(const std::string &format);
     
     void DatabaseQuery(const std::string &queryName, const stringVector &vars,
-                       const bool = false, const int arg1 = 0, const int arg2 = 0,
-                       const bool = false,
+                       const bool = false, const int arg1 = 0, 
+                       const int arg2 = 0, const bool = false,
                        const doubleVector &darg1 = doubleVector(),
                        const doubleVector &darg2 = doubleVector());
     void PointQuery(const std::string &queryName, const double pt[3],

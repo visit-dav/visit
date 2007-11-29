@@ -86,6 +86,10 @@ class vtkRectilinearGrid;
 //    Try to correctly quote how many additional filters there will be
 //    for one time step.
 //
+//    Kathleen Bonnell, Wed Nov 28 16:33:22 PST 2007 
+//    Added member 'label', to store a shorter y-axis label than the query
+//    name if desired. 
+//
 // ****************************************************************************
 
 class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
@@ -109,6 +113,7 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
     doubleVector          times;
     bool                  success;
     bool                  finalOutputCreated;
+    string                label;
 
     bool                  useTimeForXAxis;
     int                   nResultsToStore;

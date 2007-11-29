@@ -105,39 +105,41 @@ typedef void (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Hank Childs, Thu Feb  8 09:57:39 PST 2007
 //    Made GetNFilters be a public method.
 //
+//    Kathleen Bonnell, Tue Nov 20 10:27:51 PST 2007 
+//    Remove unused PerformQueryInTime method. Add GetShortDescription method,
+//    whereby queries-through-time can specify a short label for y-axis than
+//    their query name.
+//
 // ****************************************************************************
 
 class QUERY_API avtDataObjectQuery : public virtual avtDataObjectSink
 {
   public:
-                                  avtDataObjectQuery();
-    virtual                      ~avtDataObjectQuery();
+                            avtDataObjectQuery();
+    virtual                ~avtDataObjectQuery();
 
-    virtual const char           *GetType(void) = 0;
-    virtual const char           *GetDescription(void) { return NULL; };
+    virtual const char     *GetType(void) = 0;
+    virtual const char     *GetDescription(void) { return NULL; };
+    virtual const char     *GetShortDescription(void) { return NULL; };
 
-    virtual bool                  OriginalData(void) { return false; };
-    virtual void                  PerformQuery(QueryAttributes *) = 0;
-    virtual void                  PerformQueryInTime(QueryAttributes *,
-                                      const int, const int, const int,
-                                      const int, doubleVector &, intVector &,
-                                      std::string &) {;};
-    virtual std::string           GetResultMessage(void) = 0;
+    virtual bool            OriginalData(void) { return false; };
+    virtual void            PerformQuery(QueryAttributes *) = 0;
+    virtual std::string     GetResultMessage(void) = 0;
 
-    static void                   RegisterInitializeProgressCallback(
+    static void             RegisterInitializeProgressCallback(
                                           InitializeProgressCallback, void *);
 
-    static void                   RegisterProgressCallback(ProgressCallback,
-                                                           void *);
-    virtual int                   GetNFilters();
+    static void             RegisterProgressCallback(ProgressCallback, void *);
+    virtual int             GetNFilters();
 
-    virtual void                  SetTimeVarying(bool val) { timeVarying = val;};
-    virtual void                  GetTimeCurveSpecs(bool &timeForX, int &nRes);
+    virtual void            SetTimeVarying(bool val) { timeVarying = val;}
+    virtual void            GetTimeCurveSpecs(bool &timeForX, int &nRes);
 
-    void                          SetSILRestriction(const SILRestrictionAttributes *);
-    void                          SetSILRestriction(const avtSILRestriction_p);
-    std::string                  &GetUnits(void) { return units; };
-    void                          SetUnits(const std::string &_units) { units  = _units;};
+    void                    SetSILRestriction(const SILRestrictionAttributes *);
+    void                    SetSILRestriction(const avtSILRestriction_p);
+    std::string            &GetUnits(void) { return units; }
+    void                    SetUnits(const std::string &_units) 
+                                { units = _units;}
 
   protected:
     static InitializeProgressCallback

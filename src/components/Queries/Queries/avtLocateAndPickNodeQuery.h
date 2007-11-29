@@ -36,53 +36,69 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtVariableByNodeQuery.h                           //
+//                        avtLocateAndPickNodeQuery.h                        //
 // ************************************************************************* //
 
-#ifndef AVT_VARIABLEBYNODE_QUERY_H
-#define AVT_VARIABLEBYNODE_QUERY_H
+#ifndef AVT_LOCATEANDPICKNODE_QUERY_H
+#define AVT_LOCATEANDPICKNODE_QUERY_H
 #include <query_exports.h>
 
-#include <avtPickByNodeQuery.h>
-
+#include <avtDatasetQuery.h>
 #include <PickAttributes.h>
 
-
+class avtLocateQuery;
+class avtPickQuery;
 class vtkDataSet;
 
-
 // ****************************************************************************
-//  Class: avtVariableByNodeQuery
+//  Class: avtLocateAndPickNodeQuery
 //
 //  Purpose:
-//    A query that retrieves var information about a mesh given a 
-//    particular domain and node number.
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   July 29, 2004
+//  Programmer: Kathleen Bonnell 
+//  Creation:   October 22, 2007 
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
-//    Added avtDataAttributes arg to Preparation.
 //
 // ****************************************************************************
 
-class QUERY_API avtVariableByNodeQuery : public avtPickByNodeQuery
+class QUERY_API avtLocateAndPickNodeQuery : public avtDatasetQuery
 {
   public:
-                              avtVariableByNodeQuery();
-    virtual                  ~avtVariableByNodeQuery();
+                              avtLocateAndPickNodeQuery();
+    virtual                  ~avtLocateAndPickNodeQuery();
 
 
-    virtual const char       *GetType(void)   
-                              { return "avtVariableByNodeQuery"; }
+    virtual const char       *GetType(void)
+                                { return "avtLocateAndPickNodeQuery"; }
     virtual const char       *GetDescription(void)
-                              { return "Retrieving var information on mesh."; }
+                                { return "Locating and Picking Node."; }
+    virtual const char       *GetShortDescription(void)
+                                { return "Pick Node"; }
+
+
+    virtual int               GetNFilters(void) { return 2; }
+
+    virtual void              PerformQuery(QueryAttributes *);
+
+    void                      SetPickAttsForTimeQuery(const PickAttributes *pa);
+
+    virtual void              SetInvTransform(const avtMatrix *m);
+    virtual void              SetNeedTransform(const bool v);
+
 
   protected:
-    virtual void              Preparation(const avtDataAttributes &); 
-    virtual void              PostExecute(void);
+    virtual void              Execute(vtkDataSet*, int){;}
+
+    PickAttributes            pickAtts;
+
+  private:
+    void                      SetPickAtts(const PickAttributes *);
+    avtLocateQuery           *lnq;
+    avtPickQuery             *npq;
 };
 
 
 #endif
+
+

@@ -1053,7 +1053,8 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 {
                     if (t == QueryList::DatabaseQuery)
                     {
-                        GetViewerMethods()->DatabaseQuery(names[index], vars, doTime, useActualData);
+                        GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                            doTime, useActualData);
                     }
                     else 
                     {

@@ -720,6 +720,9 @@ VisWinFrame::UpdateView(void)
 //    Hank Childs, Fri Jun  9 14:51:31 PDT 2006
 //    Add case to switch statement.
 //
+//    Kathleen Bonnell, Tue Nov 20 15:12:57 PST 2007 
+//    Removed debug message for default case.
+//
 // ****************************************************************************
 
 void
@@ -748,7 +751,6 @@ VisWinFrame::GetRange(double &min_x, double &max_x, double &min_y, double &max_y
         }
         break;
       default:
-        debug1 << "Asked for range from non-2D window." << endl;
         break;
     }
 }

@@ -44,6 +44,7 @@
 #define MIN_PICK_TABS 8 
 
 class QCheckBox;
+class QComboBox;
 class QLineEdit;
 class QMultiLineEdit;
 class QSpinBox;
@@ -123,6 +124,9 @@ class PickAttributes;
 //   Added floatFormatLineEdit and floatFormatProcessText to support
 //   user settable floating point format string.
 //
+//   Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
+//   Added preserveCoord combo box.
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -169,6 +173,7 @@ private slots:
     void showTimestepToggled(bool);
     void addPickVariable(const QString &);
     void savePickText();
+    void preserveCoordActivated(int);
 private:
     void UpdatePage(void);
     void ClearPages(void);
@@ -198,6 +203,7 @@ private:
     QCheckBox          *conciseOutputCheckBox;
     QCheckBox          *showMeshNameCheckBox;
     QCheckBox          *showTimestepCheckBox;
+    QComboBox          *preserveCoord;
 
     QvisVariableButton *varsButton;
     QLineEdit          *varsLineEdit;

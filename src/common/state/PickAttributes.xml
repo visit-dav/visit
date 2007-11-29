@@ -199,6 +199,9 @@
     <Field name="floatFormat" label="Float Format" type="string">
       %g
     </Field>
+    <Field name="timePreserveCoord" label="timePreserveCoord" type="bool">
+      true
+    </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>
     <Function name="CreateOutputString" user="true" member="true">
@@ -210,6 +213,10 @@
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="CreateConciseOutputString" user="true" member="true">
+    </Function>
+    <Function name="SetRayPoint1" user="true" member="true">
+    </Function>
+    <Function name="SetRayPoint2" user="true" member="true">
     </Function>
     <Include file="source" quoted="false">
       stdio.h
