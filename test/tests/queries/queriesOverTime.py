@@ -500,6 +500,7 @@ def TestMili():
 
     p = GetPickAttributes()
     p.doTimeCurve = 1
+    p.timePreserveCoord = 0
     SetPickAttributes(p)
     NodePick(122, 161)
 
