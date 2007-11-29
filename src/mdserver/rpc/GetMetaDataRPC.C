@@ -68,9 +68,12 @@ using std::string;
 //   Added support for controlling creation of MeshQuality and TimeDerivative 
 //   expressions.
 //
+//   Cyrus Harrison, Wed Nov 28 11:22:13 PST 2007
+//   Added support for controlling creation of vector magnitude expressions
+//
 // ****************************************************************************
 
-GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sibsbbb",&metaData)
+GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sibsbbbb",&metaData)
 {
     timeState = 0;
     forceReadAllCyclesAndTimes = false;
@@ -78,6 +81,7 @@ GetMetaDataRPC::GetMetaDataRPC() : BlockingRPC("sibsbbb",&metaData)
     treatAllDBsAsTimeVarying = false;
     createMeshQualityExpressions = true;
     createTimeDerivativeExpressions = true;
+    createVectorMagnitudeExpressions = true;
 }
 
 // ****************************************************************************
@@ -152,11 +156,15 @@ GetMetaDataRPC::TypeName() const
 //    Added support for controlling creation of MeshQuality and TimeDerivative 
 //    expressions.
 //
+//   Cyrus Harrison, Wed Nov 28 11:22:13 PST 2007
+//   Added support for controlling creation of vector magnitude expressions
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
 GetMetaDataRPC::operator()(const string &f, int ts, bool force,
-                           const string &fft, bool tv, bool acmq, bool actd)
+                           const string &fft, bool tv, bool acmq, bool actd,
+                           bool acvm)
 {
     debug3 << "Executing GetMetaData RPC on file " << f.c_str()
            << ", timestate=" << ts
@@ -165,7 +173,8 @@ GetMetaDataRPC::operator()(const string &f, int ts, bool force,
            << ", treatAllDBsAsTimeVarying = " << tv
            << ", createMeshQualityExpressions = " << acmq
            << ", createTimeDerivativeExpressions = " << actd
-           << endl;;
+           << ", createVectorMagnitudeExpressions = " << acvm
+           << endl;
 
     SetFile(f);
     SetTimeState(ts);
@@ -174,7 +183,8 @@ GetMetaDataRPC::operator()(const string &f, int ts, bool force,
     SetTreatAllDBsAsTimeVarying(tv);
     SetCreateMeshQualityExpressions(acmq);
     SetCreateTimeDerivativeExpressions(actd);
-
+    SetCreateVectorMagnitudeExpressions(acvm);
+    
     // Try to execute the RPC.
     Execute();
 
@@ -216,6 +226,9 @@ GetMetaDataRPC::operator()(const string &f, int ts, bool force,
 //    Added support for controlling creation of MeshQuality and TimeDerivative 
 //    expressions.
 //
+//    Cyrus Harrison, Wed Nov 28 11:22:13 PST 2007
+//    Added support for controlling creation of vector magnitude expressions
+//
 // ****************************************************************************
 
 void
@@ -228,6 +241,7 @@ GetMetaDataRPC::SelectAll()
     Select(4, (void*)&treatAllDBsAsTimeVarying);
     Select(5, (void*)&createMeshQualityExpressions);
     Select(6, (void*)&createTimeDerivativeExpressions);
+    Select(7, (void*)&createVectorMagnitudeExpressions);
 }
 
 // ****************************************************************************
@@ -364,6 +378,24 @@ GetMetaDataRPC::SetCreateTimeDerivativeExpressions(bool set)
     Select(6, (void*)&createTimeDerivativeExpressions);
 }
 
+// ****************************************************************************
+// Method: GetMetaDataRPC::SetCreateVectorMagnitudeExpressions
+//
+// Purpose: Sets flag for auto creation of vector magnitude expressions.
+//
+// Programmer: Cyrus Harrison
+// Creation:   November 28, 2007 
+//
+// ****************************************************************************
+
+void
+GetMetaDataRPC::SetCreateVectorMagnitudeExpressions(bool set)
+{
+    createVectorMagnitudeExpressions = set;
+    Select(7, (void*)&createVectorMagnitudeExpressions);
+}
+
+
 
 // ****************************************************************************
 // Method: GetMetaDataRPC::GetFile
@@ -491,4 +523,20 @@ bool
 GetMetaDataRPC::GetCreateTimeDerivativeExpressions() const
 {
     return createTimeDerivativeExpressions;
+}
+
+// ****************************************************************************
+// Method: GetMetaDataRPC::GetCreateVectorMagnitudeExpressions
+//
+// Purpose: Gets the flag for auto creating of vector magnitude expressions
+//
+// Programmer: Cyrus Harrison
+// Creation:   November 28, 2007 
+//
+// ****************************************************************************
+
+bool
+GetMetaDataRPC::GetCreateVectorMagnitudeExpressions() const
+{
+    return createVectorMagnitudeExpressions;
 }

@@ -169,6 +169,7 @@ extern const char *visit_SetAnimationTimeout_doc;
 extern const char *visit_SetAnnotationAttributes_doc;
 extern const char *visit_SetCreateMeshQualityExpressions_doc;
 extern const char *visit_SetCreateTimeDerivativeExpressions_doc;
+extern const char *visit_SetCreateVectorMagnitudeExpressions_doc;
 extern const char *visit_SetCenterOfRotation_doc;
 extern const char *visit_SetDatabaseCorrelationOptions_doc;
 extern const char *visit_SetGlobalLineoutAttributes_doc;

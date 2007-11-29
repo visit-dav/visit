@@ -409,6 +409,10 @@ MDServerProxy::GetFileList(const std::string &filter,
 //    Added flags for controlling creation of MeshQuality and 
 //    TimeDerivative expressions.
 //
+//    Cyrus Harrison, Wed Nov 28 14:33:34 PST 2007
+//    Added flag to GetMetaData for controlling auto creation of vector
+//    magnitude expressions.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -417,7 +421,8 @@ MDServerProxy::GetMetaData(const string &file, int timeState,
                            const string &forcedFileType,
                            bool treatAllDBsAsTimeVarying,
                            bool createMeshQualityExpressions,
-                           bool createTimeDerivativeExpressions)
+                           bool createTimeDerivativeExpressions,
+                           bool createVectorMagnitudeExpressions)
 {
     // Try and get the meta data from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
@@ -426,7 +431,8 @@ MDServerProxy::GetMetaData(const string &file, int timeState,
                                          forcedFileType,
                                          treatAllDBsAsTimeVarying,
                                          createMeshQualityExpressions,
-                                         createTimeDerivativeExpressions);
+                                         createTimeDerivativeExpressions,
+                                         createVectorMagnitudeExpressions);
 
 #ifdef DEBUG
     // Write the metadata to stdout.

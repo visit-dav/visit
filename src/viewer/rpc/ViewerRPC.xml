@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ViewerRPC" purpose="This class contains the attributes for controlling the viewer." persistent="false" exportAPI="VIEWER_RPC_API" exportInclude="viewerrpc_exports.h" codefile="ViewerRPC.code">
+  <Attribute name="ViewerRPC" purpose="This class contains the attributes for controlling the viewer." persistent="false" keyframe="true" exportAPI="VIEWER_RPC_API" exportInclude="viewerrpc_exports.h" codefile="ViewerRPC.code">
     <Enum name="ViewerRPCType">
       CloseRPC
       DetachRPC
@@ -173,6 +173,7 @@
       SetTreatAllDBsAsTimeVaryingRPC
       SetCreateMeshQualityExpressionsRPC
       SetCreateTimeDerivativeExpressionsRPC
+      SetCreateVectorMagnitudeExpressionsRPC
       CopyActivePlotsRPC
       MaxRPC
     </Enum>

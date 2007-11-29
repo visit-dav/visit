@@ -7289,6 +7289,9 @@ ViewerSubject::SendKeepAlives()
 //    Kathleen Bonnell, Tue Oct  9 17:04:58 PDT 2007 
 //    Add SetCreateMeshQualityExpressions, SetCreateTimeDerivativeExpressions.
 //
+//    Cyrus Harrison, Wed Nov 28 12:04:31 PST 2007
+//    Add SetCreateVectorMagnitudeExpressions
+//
 // ****************************************************************************
 
 void
@@ -7651,6 +7654,9 @@ ViewerSubject::HandleViewerRPC()
 	break;
     case ViewerRPC::SetCreateTimeDerivativeExpressionsRPC:
         SetCreateTimeDerivativeExpressions();
+	break;
+    case ViewerRPC::SetCreateVectorMagnitudeExpressionsRPC:
+        SetCreateVectorMagnitudeExpressions();
 	break;
     case ViewerRPC::MaxRPC:
         break;
@@ -9085,3 +9091,23 @@ ViewerSubject::SetCreateTimeDerivativeExpressions()
     wM->SetCreateTimeDerivativeExpressions(
         GetViewerState()->GetViewerRPC()->GetIntArg1());
 }
+
+// ****************************************************************************
+//  Method:  ViewerSubject::SetCreateVectorMagnitudeExpressions
+//
+//  Purpose: Handle a SetCreateVectorMagnitudeExpression RPC
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    November 28, 2007 
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetCreateVectorMagnitudeExpressions()
+{
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetCreateVectorMagnitudeExpressions(
+        GetViewerState()->GetViewerRPC()->GetIntArg1());
+}
+
+

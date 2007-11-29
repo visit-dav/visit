@@ -149,6 +149,9 @@ MDCacheKeys(const string& stateLessName, int timeState)
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Added flags for creation of MeshQuality and TimeDerivative expressions.
 //
+//   Cyrus Harrison, Thu Nov 29 08:12:53 PST 2007
+//   Added flags for creation of vector magnitude expressions.
+//
 // ****************************************************************************
 
 FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
@@ -176,6 +179,7 @@ FileServerList::FileServerList() : AttributeSubject("bbbbbibbbb"), servers(),
 
     createMeshQualityExpressions = true;
     createTimeDerivativeExpressions = true;
+    createVectorMagnitudeExpressions = true;
 
     // Initialize some callback functions.
     connectCallback = 0;
@@ -1283,6 +1287,23 @@ void
 FileServerList::SetCreateTimeDerivativeExpressions(bool set)
 {
     createTimeDerivativeExpressions = set;
+}
+
+// ****************************************************************************
+// Method: FileServerList::SetCreateVectorMagnitudeExpressions
+//
+// Purpose: Set flag indicating if vector magnitude expressions should be
+//          auto generated 
+//
+// Programmer: Cyrus Harrison
+// Creation:   November 28, 2007
+//   
+// ****************************************************************************
+
+void
+FileServerList::SetCreateVectorMagnitudeExpressions(bool set)
+{
+    createVectorMagnitudeExpressions = set;
 }
 
 // ****************************************************************************
@@ -2475,7 +2496,8 @@ FileServerList::GetMetaData(const QualifiedFilename &filename,
                              forceReadAllCyclesTimes, "",
                              treatAllDBsAsTimeVarying,
                              createMeshQualityExpressions,
-                             createTimeDerivativeExpressions);
+                             createTimeDerivativeExpressions,
+                             createVectorMagnitudeExpressions);
 
         // cache what we got
         if (md)
@@ -2550,6 +2572,24 @@ FileServerList::GetCreateTimeDerivativeExpressions() const
 {
     return createTimeDerivativeExpressions;
 }
+
+// ****************************************************************************
+// Method: FileServerList::GetCreateVectorMagnitudeExpressions
+//
+// Purpose: Get flag indicating if vector magnitude expressions should be 
+//          auto generated
+//
+// Programmer: Cyrus Harrison
+// Creation:   November 28, 2007
+//   
+// ****************************************************************************
+
+bool
+FileServerList::GetCreateVectorMagnitudeExpressions() const
+{
+    return createVectorMagnitudeExpressions;
+}
+
 
 // ****************************************************************************
 // Method: FileServerList::GetSIL

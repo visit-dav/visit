@@ -63,6 +63,9 @@ Definition:
 //   Kathleen Bonnell, Mon Oct  8 18:17:24 PDT 2007 
 //   Added createMeshQuality/TimeDerivativeExpressions.
 //
+//   Cyrus Harrison, Wed Nov 28 15:22:42 PST 2007
+//   Added createVectorMagnitudeExpressions
+//
 // ****************************************************************************
 
 bool
@@ -158,6 +161,12 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("createTimeDerivativeExpressions",
                       createTimeDerivativeExpressions));
     }
+    if(completeSave || !FieldsEqual(18, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("createVectorMagnitudeExpressions",
+                      createVectorMagnitudeExpressions));
+    }
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -222,6 +231,9 @@ Definition:
 //   Kathleen Bonnell, Mon Oct  8 18:17:24 PDT 2007 
 //   Added createMeshQuality/TimeDerivativeExpressions.
 //
+//   Cyrus Harrison, Wed Nov 28 15:22:42 PST 2007
+//   Added createVectorMagnitudeExpressions
+//
 // ****************************************************************************
 
 void
@@ -261,5 +273,7 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetCreateMeshQualityExpressions(node->AsBool());
     if((node = searchNode->GetNode("createTimeDerivativeExpressions")) != 0)
         SetCreateTimeDerivativeExpressions(node->AsBool());
+    if((node = searchNode->GetNode("createVectorMagnitudeExpressions")) != 0)
+        SetCreateVectorMagnitudeExpressions(node->AsBool());
 }
 

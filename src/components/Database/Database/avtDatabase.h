@@ -276,6 +276,9 @@ typedef struct {
 //    Cyrus Harrison, Fri Sep 14 13:59:30 PDT 2007
 //    Added floating point format argument to QueryNodes and QueryZones
 //
+//    Cyrus Harrison, Wed Nov 28 10:11:41 PST 2007
+//    Added AddVectorMagnitudeExpressions.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabase
@@ -298,7 +301,7 @@ class DATABASE_API avtDatabase
     avtDatabaseMetaData        *GetMetaData(int stateIndex,
                                     bool forceReadAllCyclesTimes = false,
                                     bool forceReadThisStateCycleTime = false,
-				    bool treatAllDBsAsTimeVarying = false);
+                                    bool treatAllDBsAsTimeVarying = false);
     avtSIL                     *GetSIL(int stateIndex,
                                     bool treatAllDBsAsTimeVarying = false);
     int                         GetMostRecentTimestep() const;
@@ -383,7 +386,8 @@ class DATABASE_API avtDatabase
                                     bool treatAllDBsAsTimeVarying = false);
     void                        AddMeshQualityExpressions(avtDatabaseMetaData *);
     void                        AddTimeDerivativeExpressions(avtDatabaseMetaData *);
-
+    void                        AddVectorMagnitudeExpressions(avtDatabaseMetaData *);
+    
     virtual bool                HasInvariantMetaData(void) const = 0;
     virtual bool                HasInvariantSIL(void) const = 0;
 

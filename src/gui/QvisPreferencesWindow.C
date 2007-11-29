@@ -150,6 +150,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Added toggles for createMeshQuality, createTimeDerivative.
 // 
+//   Cyrus Harrison, Wed Nov 28 13:31:30 PST 2007
+//   Added creation of createVectorMagnitudeToggle check box
+//
 // ****************************************************************************
 
 void
@@ -210,6 +213,13 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(createTimeDerivativeToggle, SIGNAL(toggled(bool)),
             this, SLOT(createTimeDerivativeToggled(bool)));
     topLayout->addWidget(createTimeDerivativeToggle);
+    
+    createVectorMagnitudeToggle =
+        new QCheckBox("Automatically create vector magnitude expressions",
+                      central, "createVectorMagnitudeToggle ");
+    connect(createVectorMagnitudeToggle, SIGNAL(toggled(bool)),
+            this, SLOT(createVectorMagnitudeToggled(bool)));
+    topLayout->addWidget(createVectorMagnitudeToggle);
 
     //
     // Create group box for time controls.
@@ -289,6 +299,9 @@ QvisPreferencesWindow::CreateWindowContents()
 //
 // Modifications:
 //
+//   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
+//   Added support for flag for creating vector magnitude expressions
+//
 // ****************************************************************************
 
 void
@@ -305,6 +318,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
         if(atts->IsSelected(17))
             fileServer->SetCreateTimeDerivativeExpressions(
                 atts->GetCreateTimeDerivativeExpressions());
+        if(atts->IsSelected(18))
+            fileServer->SetCreateVectorMagnitudeExpressions(
+                atts->GetCreateVectorMagnitudeExpressions());
     }
 }
 
@@ -336,6 +352,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Added toggles for createMeshQuality, createTimeDerivative.
 // 
+//   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
+//   Added toggle for createVectorMagnitude
+//
 // ****************************************************************************
 
 void
@@ -409,6 +428,14 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         createTimeDerivativeToggle->blockSignals(false);
     }
 
+    if (doAll || atts->IsSelected(18))
+    {
+        createVectorMagnitudeToggle->blockSignals(true);
+        createVectorMagnitudeToggle->setChecked(
+            atts->GetCreateVectorMagnitudeExpressions());
+        createVectorMagnitudeToggle->blockSignals(false);
+    }
+    
     if(doAll)
     {
         postWindowsWhenShownToggle->blockSignals(true);
@@ -817,6 +844,27 @@ QvisPreferencesWindow::createTimeDerivativeToggled(bool val)
 {
     atts->SetCreateTimeDerivativeExpressions(val);
     fileServer->SetCreateTimeDerivativeExpressions(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::createVectorMagnitudeToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the
+//   createVectorMagnitudeToggle is clicked.
+//
+// Programmer: Cyrus Harrison
+// Creation:   November 28, 2007 
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::createVectorMagnitudeToggled(bool val)
+{
+    atts->SetCreateVectorMagnitudeExpressions(val);
+    fileServer->SetCreateVectorMagnitudeExpressions(val);
     SetUpdate(false);
     Apply();
 }

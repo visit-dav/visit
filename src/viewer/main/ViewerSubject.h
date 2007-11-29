@@ -436,6 +436,9 @@ class avtDefaultPlotMetaData;
 //    Added SetCreateMeshQualityExpressions and
 //    SetCreateTimeDerivativeExpressions
 //
+//    Cyrus Harrison, Wed Nov 28 12:03:27 PST 2007
+//    Added SetCreateVectorMagnitudeExpressions
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -610,6 +613,7 @@ private:
 
     void SetCreateMeshQualityExpressions();
     void SetCreateTimeDerivativeExpressions();
+    void SetCreateVectorMagnitudeExpressions();
 
     void MoveWindow();
     void MoveAndResizeWindow();

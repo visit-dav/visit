@@ -381,6 +381,10 @@ typedef struct {
 //
 //    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
 //    Added flag to clear the external renderer's cached image if disabling it.
+//
+//    Cyrus Harrison, Wed Nov 28 12:01:16 PST 2007
+//    Added SetCreateVectorMagnitudeExpressions.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -521,6 +525,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
 
     bool SetCreateMeshQualityExpressions(bool val);
     bool SetCreateTimeDerivativeExpressions(bool val);
+    bool SetCreateVectorMagnitudeExpressions(bool val);
 
     void ReplaceDatabase(const EngineKey &key,
                          const std::string &database,

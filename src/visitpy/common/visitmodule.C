@@ -1859,6 +1859,34 @@ visit_SetCreateTimeDerivativeExpressions(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetCreateTimeDerivativeExpressions
+//
+// Purpose: Tells the viewer to turn on/off automatic creation of vector
+//          magnitude expressions.
+//
+// Programmer: Cyrus Harrison
+// Creation:   November 28, 2007
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetCreateVectorMagnitudeExpressions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    int flag;
+    if (!PyArg_ParseTuple(args, "i", &flag))
+        return NULL;
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetCreateVectorMagnitudeExpressions(flag);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SetActiveTimeSlider
 //
 // Purpose: 
@@ -12103,6 +12131,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Mark C. Miller, Tue Nov 27 10:44:29 PST 2007
 //   Added SuppressMessages
 //
+//   Cyrus Harrison, Wed Nov 28 11:50:54 PST 2007
+//   Added SetCreateVectorMagnitudeExpressions
+//
 // ****************************************************************************
 
 static void
@@ -12341,6 +12372,9 @@ AddDefaultMethods()
     AddMethod("SetCreateTimeDerivativeExpressions", 
                visit_SetCreateTimeDerivativeExpressions,
                visit_SetCreateTimeDerivativeExpressions_doc);
+    AddMethod("SetCreateVectorMagnitudeExpressions", 
+               visit_SetCreateVectorMagnitudeExpressions,
+               visit_SetCreateVectorMagnitudeExpressions_doc);
     AddMethod("SetCenterOfRotation", visit_SetCenterOfRotation,
                                                 visit_SetCenterOfRotation_doc);
     AddMethod("SetCloneWindowOnFirstRef", visit_SetCloneWindowOnFirstRef);

@@ -165,6 +165,10 @@ class     DBPluginInfoAttributes;
 //    Added flags to GetMetaData for controlling creation of MeshQuality 
 //    and TimeDerivative expressions.
 //
+//    Cyrus Harrison, Wed Nov 28 14:33:34 PST 2007
+//    Added flag to GetMetaData for controlling auto creation of vector
+//    magnitude expressions.
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -227,7 +231,8 @@ public:
                                const std::string &forcedFileType = "",
                                bool treatAllDBsAsTimeVarying = false,
                                bool createMeshQualityExpressions = true,
-                               bool createTimeDerivativeExpressions = true);
+                               bool createTimeDerivativeExpressions = true,
+                               bool createVectorMagnitudeExpressions = true);
     const SILAttributes       *GetSIL(const std::string &, int=0,
                                    bool treatAllDBsAsTimeVarying = false);
     std::string                ExpandPath(const std::string &);
