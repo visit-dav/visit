@@ -106,6 +106,9 @@ avtLocateAndPickZoneQuery::~avtLocateAndPickZoneQuery()
 //  Creation:   October 22, 2007 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Nov 29 11:38:02 PST 2007
+//    Ensure magnitude of vectors/tensors gets reported as the result, instead
+//    of the first component.  Also ensure a failed query gets reported.
 //
 // ****************************************************************************
 
@@ -136,22 +139,26 @@ avtLocateAndPickZoneQuery::PerformQuery(QueryAttributes *qa)
 
     SetPickAtts(lcq->GetPickAtts());
 
-    // Do the pick part of the query
-    zpq->SetInput(GetInput()->GetQueryableSource()->GetOutput());
-    zpq->SetPickAtts(&pickAtts);
-    zpq->SetSILRestriction(querySILR); 
-    zpq->SetSkippedLocate(false); 
-    zpq->SetTimeVarying(true);
-    zpq->SetNeedTransform(inVal.GetPointsWereTransformed());
-    if (inAtts.HasInvTransform() && inAtts.GetCanUseInvTransform())
-        zpq->SetInvTransform(inAtts.GetInvTransform());
-    zpq->PerformQuery(qa);
+    if (pickAtts.GetLocationSuccessful())
+    {
+        // Do the pick part of the query
+        zpq->SetInput(GetInput()->GetQueryableSource()->GetOutput());
+        zpq->SetPickAtts(&pickAtts);
+        zpq->SetSILRestriction(querySILR); 
+        zpq->SetSkippedLocate(false); 
+        zpq->SetTimeVarying(true);
+        zpq->SetNeedTransform(inVal.GetPointsWereTransformed());
+        if (inAtts.HasInvTransform() && inAtts.GetCanUseInvTransform())
+            zpq->SetInvTransform(inAtts.GetInvTransform());
+        zpq->PerformQuery(qa);
 
-    SetPickAtts(zpq->GetPickAtts());
+        SetPickAtts(zpq->GetPickAtts());
+    }
 
     // Post work
     if (PAR_Rank() == 0) 
     {
+        doubleVector vals;
         if (pickAtts.GetFulfilled())
         {
             // Special indication that the pick point should not be displayed.
@@ -160,7 +167,8 @@ avtLocateAndPickZoneQuery::PerformQuery(QueryAttributes *qa)
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             qa->SetResultsMessage(msg);
-            qa->SetResultsValue(pickAtts.GetVarInfo(0).GetValues());
+            vals = pickAtts.GetVarInfo(0).GetValues();
+            qa->SetResultsValue(vals[vals.size()-1]);
         }
         else
         {
@@ -169,6 +177,7 @@ avtLocateAndPickZoneQuery::PerformQuery(QueryAttributes *qa)
                      " %d element %d.", queryAtts.GetDomain(), 
                      queryAtts.GetElement());
             qa->SetResultsMessage(msg);
+            qa->SetResultsValue(vals);
         }
     }
     pickAtts.PrepareForNewPick();

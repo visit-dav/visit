@@ -133,6 +133,10 @@ avtVariableByZoneQuery::Preparation(const avtDataAttributes &inAtts)
 //    Brad Whitlock, Tue Mar 13 11:26:59 PDT 2007
 //    Updated due to code generation changes.
 //
+//    Kathleen Bonnell, Thu Nov 29 11:38:02 PST 2007
+//    Ensure magnitude of vectors/tensors gets reported as the result, instead
+//    of the first component.  Also ensure a failed query gets reported.
+//
 // ****************************************************************************
 
 void
@@ -142,6 +146,7 @@ avtVariableByZoneQuery::PostExecute(void)
    
     if (PAR_Rank() == 0) 
     {
+        doubleVector vals;
         if (pickAtts.GetFulfilled())
         {
             // Special indication that the pick point should not be displayed.
@@ -150,7 +155,8 @@ avtVariableByZoneQuery::PostExecute(void)
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             SetResultMessage(msg.c_str());
-            SetResultValues(pickAtts.GetVarInfo(0).GetValues());
+            vals = pickAtts.GetVarInfo(0).GetValues();
+            SetResultValue(vals[vals.size()-1]);
         }
         else
         {
@@ -158,6 +164,7 @@ avtVariableByZoneQuery::PostExecute(void)
             SNPRINTF(msg, 120, "Could not retrieve information from domain "
                      " %d element %d.", queryAtts.GetDomain(), queryAtts.GetElement());
             SetResultMessage(msg);
+            SetResultValues(vals);
         }
     }
     pickAtts.PrepareForNewPick();

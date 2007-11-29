@@ -106,6 +106,9 @@ avtLocateAndPickNodeQuery::~avtLocateAndPickNodeQuery()
 //  Creation:   October 22, 2007 
 //
 //  Modifications:
+//    Kathleen Bonnell, Thu Nov 29 11:38:02 PST 2007
+//    Ensure magnitude of vectors/tensors gets reported as the result, instead
+//    of the first component.  Also ensure a failed query gets reported.
 //
 // ****************************************************************************
 
@@ -136,21 +139,25 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
 
     SetPickAtts(lnq->GetPickAtts());
 
-    // Do the pick part of the query
-    npq->SetInput(GetInput()->GetQueryableSource()->GetOutput());
-    npq->SetPickAtts(&pickAtts);
-    npq->SetSILRestriction(querySILR); 
-    npq->SetSkippedLocate(false); 
-    npq->SetTimeVarying(true);
-    npq->SetNeedTransform(inVal.GetPointsWereTransformed());
-    if (inAtts.HasInvTransform() && inAtts.GetCanUseInvTransform())
-        npq->SetInvTransform(inAtts.GetInvTransform());
-    npq->PerformQuery(qa);
+    if (pickAtts.GetLocationSuccessful())
+    {
+        // Do the pick part of the query
+        npq->SetInput(GetInput()->GetQueryableSource()->GetOutput());
+        npq->SetPickAtts(&pickAtts);
+        npq->SetSILRestriction(querySILR); 
+        npq->SetSkippedLocate(false); 
+        npq->SetTimeVarying(true);
+        npq->SetNeedTransform(inVal.GetPointsWereTransformed());
+        if (inAtts.HasInvTransform() && inAtts.GetCanUseInvTransform())
+            npq->SetInvTransform(inAtts.GetInvTransform());
+        npq->PerformQuery(qa);
 
-    SetPickAtts(npq->GetPickAtts());
+        SetPickAtts(npq->GetPickAtts());
+    }
 
     if (PAR_Rank() == 0) 
     {
+        doubleVector vals;
         if (pickAtts.GetFulfilled())
         {
             // Special indication that the pick point should not be displayed.
@@ -159,7 +166,8 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
             pickAtts.SetCellPoint(cp);
             pickAtts.CreateOutputString(msg);
             qa->SetResultsMessage(msg);
-            qa->SetResultsValue(pickAtts.GetVarInfo(0).GetValues());
+            vals = pickAtts.GetVarInfo(0).GetValues();
+            qa->SetResultsValue(vals[vals.size()-1]);
         }
         else
         {
@@ -168,6 +176,7 @@ avtLocateAndPickNodeQuery::PerformQuery(QueryAttributes *qa)
                      " %d element %d.", queryAtts.GetDomain(), 
                      queryAtts.GetElement());
             qa->SetResultsMessage(msg);
+            qa->SetResultsValue(vals);
         }
     }
     pickAtts.PrepareForNewPick();
