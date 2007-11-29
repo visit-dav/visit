@@ -9655,3 +9655,23 @@ bool ViewerWindowManager::SetCreateTimeDerivativeExpressions(bool newVal)
     }
     return oldVal;
 }
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetCreateVectorMagnitudeExpressions
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   November 28, 2007 
+//
+// ****************************************************************************
+
+bool ViewerWindowManager::SetCreateVectorMagnitudeExpressions(bool newVal)
+{
+    bool oldVal = clientAtts->GetCreateVectorMagnitudeExpressions();
+    if (oldVal != newVal)
+    {
+        clientAtts->SetCreateVectorMagnitudeExpressions(newVal);
+        clientAtts->Notify();
+    }
+    return oldVal;
+}
+

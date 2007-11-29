@@ -52,6 +52,9 @@
     <Field name="createTimeDerivativeExpressions" label="createTimeDerivativeExpressions" type="bool">
       true
     </Field>
+    <Field name="createVectorMagnitudeExpressions" label="createVectorMagnitudeExpressions" type="bool">
+      true
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

@@ -198,6 +198,9 @@ class MessageAttributes;
 //   Added support for turning on/off automatic creation of MeshQuality and
 //   TimeDerivative expressions.
 //
+//   Cyrus Harrison, Wed Nov 28 13:24:51 PST 2007
+//   Added flag for auto creation of vector magnitude expressions
+//
 // ****************************************************************************
 class GUI_API FileServerList : public AttributeSubject
 {
@@ -243,6 +246,7 @@ public:
 
     void SetCreateMeshQualityExpressions(bool set);
     void SetCreateTimeDerivativeExpressions(bool set);
+    void SetCreateVectorMagnitudeExpressions(bool set);
 
     void OpenFile(const QualifiedFilename &filename, int timeState);
     void ReplaceFile(const QualifiedFilename &filename);
@@ -270,6 +274,7 @@ public:
 
     bool GetCreateMeshQualityExpressions() const;
     bool GetCreateTimeDerivativeExpressions() const;
+    bool GetCreateVectorMagnitudeExpressions() const;
 
     const stringVector &GetRecentPaths(const string &host) const;
     void AddPathToRecentList(const string &host, const string &path);
@@ -352,6 +357,7 @@ private:
 
     bool        createMeshQualityExpressions;
     bool        createTimeDerivativeExpressions;
+    bool        createVectorMagnitudeExpressions;
 
     // The file list for the current host.
     MDServerProxy::FileList fileList;

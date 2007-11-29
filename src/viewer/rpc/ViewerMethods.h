@@ -84,6 +84,9 @@ class ViewerState;
 //   Ellen Tarwater, Thurs, Oct 11, 2007
 //   Added flag to DrawPlots to indicate all or only active...
 //
+//   Cyrus Harrison, Wed Nov 28 14:38:19 PST 2007
+//   Added SetCreateVectorMagnitudeExpressions
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -281,6 +284,7 @@ public:
     void SetTreatAllDBsAsTimeVarying(int flag);
     void SetCreateMeshQualityExpressions(int flag);
     void SetCreateTimeDerivativeExpressions(int flag);
+    void SetCreateVectorMagnitudeExpressions(int flag);
 
     void SetMeshManagementAttributes();
     void SetDefaultMeshManagementAttributes();

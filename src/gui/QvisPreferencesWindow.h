@@ -82,6 +82,9 @@ class QSpinBox;
 //   Added 'Update' method, as this class now observes GlobalAttributes.
 //   Added createMeshQuality, createTimeDerivative buttons.
 //
+//   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
+//   Added createVectorMagnitudeToggle check box
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -121,6 +124,7 @@ private slots:
     void treatAllDBsAsTimeVaryingToggled(bool);
     void createMeshQualityToggled(bool);
     void createTimeDerivativeToggled(bool);
+    void createVectorMagnitudeToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -134,6 +138,7 @@ private:
     QSpinBox         *timeStateNDigits;
     QCheckBox        *createMeshQualityToggle;
     QCheckBox        *createTimeDerivativeToggle;
+    QCheckBox        *createVectorMagnitudeToggle;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;

@@ -650,6 +650,9 @@ MDServerConnection::GetPluginErrors()
 //   Added flags controlling creation of MeshQuality and TimeDerivative 
 //   expressions. Send the flags to the database factory.
 //
+//   Cyrus Harrison, Wed Nov 28 11:17:23 PST 2007
+//   Added flag for creation of vector magnitude expressions
+//
 // ****************************************************************************
 
 void
@@ -658,7 +661,8 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
                                  std::string forcedFileType,
                                  bool treatAllDBsAsTimeVarying,
                                  bool createMeshQualityExpressions,
-                                 bool createTimeDerivativeExpressions)
+                                 bool createTimeDerivativeExpressions,
+                                 bool createVectorMagnitudeExpressions)
 {
     currentMetaData = NULL;
 
@@ -671,13 +675,17 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
            << ", createMeshQualityExpressions = " 
            << createMeshQualityExpressions
            << ", createTimeDerivativeExpressions = " 
-           << createTimeDerivativeExpressions
+           << createTimeDerivativeExpressions      
+           << ", createVectorMagnitudeExpressions = " 
+           << createVectorMagnitudeExpressions
            << endl;
 
     avtDatabaseFactory::SetCreateMeshQualityExpressions(
         createMeshQualityExpressions);
     avtDatabaseFactory::SetCreateTimeDerivativeExpressions(
         createTimeDerivativeExpressions);
+    avtDatabaseFactory::SetCreateVectorMagnitudeExpressions(
+        createVectorMagnitudeExpressions);
 
     //
     // Try and read the database. This could throw an exception.

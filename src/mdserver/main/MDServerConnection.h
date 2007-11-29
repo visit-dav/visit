@@ -189,6 +189,9 @@ class Xfer;
 //    Added flags to ReadMetaData for controlling creation of MeshQuality 
 //    and TimeDerivative expressions.
 //
+//   Cyrus Harrison, Wed Nov 28 11:17:23 PST 2007
+//   Added flag for creation of vector magnitude expressions
+//
 // ****************************************************************************
 
 class MDServerConnection
@@ -239,7 +242,9 @@ public:
                       std::string forcedFileType,
                       bool treatAllDBsAsTimeVarying,
                       bool createMeshQualityExpressions,
-                      bool createTimeDerivativeExpressions);
+                      bool createTimeDerivativeExpressions,
+                      bool createVectorMagnitudeExpressions);
+
     avtDatabaseMetaData *GetCurrentMetaData() const;
 
     void ReadSIL(std::string file, int timeState,

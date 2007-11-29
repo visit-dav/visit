@@ -92,6 +92,9 @@ class CommonDatabasePluginInfo;
 //    Added support for turning on/off automatic creation of MeshQuality and
 //    TimeDerivative expressions. 
 //
+//    Cyrus Harrison, Wed Nov 28 10:38:17 PST 2007
+//    Added preference for automatic creation of Vector Magnitude expressions. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -111,10 +114,15 @@ class DATABASE_API avtDatabaseFactory
                                      {createMeshQualityExpressions = f;}
     static void                  SetCreateTimeDerivativeExpressions(bool f)
                                      {createTimeDerivativeExpressions = f;}
+    static void                  SetCreateVectorMagnitudeExpressions(bool f)
+                                     {createVectorMagnitudeExpressions= f;}
+                                     
     static bool                  GetCreateMeshQualityExpressions(void)
                                   {return createMeshQualityExpressions;}
     static bool                  GetCreateTimeDerivativeExpressions(void)
                                   {return createTimeDerivativeExpressions;}
+    static bool                  GetCreateVectorMagnitudeExpressions(void)
+                                  {return createVectorMagnitudeExpressions;}
 
   protected:
     static avtDatabase          *SetupDatabase(CommonDatabasePluginInfo *,
@@ -124,6 +132,7 @@ class DATABASE_API avtDatabaseFactory
     static char                 *defaultFormat;
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;
+    static bool                  createVectorMagnitudeExpressions;
 };
 
 

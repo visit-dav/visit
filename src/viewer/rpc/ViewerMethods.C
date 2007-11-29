@@ -5036,3 +5036,23 @@ ViewerMethods::SetCreateTimeDerivativeExpressions(int flag)
     state->GetViewerRPC()->Notify();
 }
 
+// ****************************************************************************
+//  Method: ViewerMethods::SetCreateVectorMagnitudeExpressions
+//
+//  Purpose: Tells viewer to turn on/off automatic creation of vector 
+//           magnitude expressions. 
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   November 28, 2007 
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetCreateVectorMagnitudeExpressions(int flag)
+{
+    state->GetViewerRPC()->SetRPCType(
+        ViewerRPC::SetCreateVectorMagnitudeExpressionsRPC);
+    state->GetViewerRPC()->SetIntArg1(flag);
+    state->GetViewerRPC()->Notify();
+}
+

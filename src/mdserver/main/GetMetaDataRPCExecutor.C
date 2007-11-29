@@ -129,6 +129,9 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //   Send flags from rpc for controlling creation of MeshQuality and 
 //   TimeDerivative expressions to the ReadMetaData call.
 //
+//   Cyrus Harrison, 
+//   Added flag for auto vector magnitude expression creation 
+//
 // ****************************************************************************
 
 void
@@ -149,7 +152,8 @@ GetMetaDataRPCExecutor::Update(Subject *s)
                              rpc->GetForcedFileType(),
                              rpc->GetTreatAllDBsAsTimeVarying(),
                              rpc->GetCreateMeshQualityExpressions(),
-                             rpc->GetCreateTimeDerivativeExpressions());
+                             rpc->GetCreateTimeDerivativeExpressions(),
+                             rpc->GetCreateVectorMagnitudeExpressions());
 
         debug5 << "MetaData=" << endl;
         if(debug5_real)

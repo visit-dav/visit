@@ -79,7 +79,7 @@ using std::vector;
 char    *avtDatabaseFactory::defaultFormat = "Silo";
 bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
-
+bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;
 
 //
 // Function Prototypes

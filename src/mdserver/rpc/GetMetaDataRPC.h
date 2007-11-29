@@ -74,6 +74,9 @@
 //   Added support for controlling creation of MeshQuality and TimeDerivative 
 //   expressions.
 //
+//   Cyrus Harrison, Wed Nov 28 11:22:13 PST 2007
+//   Added support for controlling creation of vector magnitude expressions
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API GetMetaDataRPC : public BlockingRPC
@@ -89,8 +92,9 @@ public:
                                  bool forceReadAllCyclesAndTimes=false,
                                  const std::string &forcedFileType="",
                                  bool treatAllDBsAsTimeVarying=false,
-                                 bool createMeshQualityExpressions=true,
-                                 bool createTimeDerivativeExpressions=true);
+                                 bool createTimeDerivativeExpressions=true,
+                                 bool createTimeDerivativeExpressions=true,
+                                 bool createVectorMagnitudeExpressions=true);
 
     // Property setting methods
     void SetFile(const std::string&);
@@ -100,7 +104,8 @@ public:
     void SetTreatAllDBsAsTimeVarying(bool set);
     void SetCreateMeshQualityExpressions(bool set);
     void SetCreateTimeDerivativeExpressions(bool set);
-
+    void SetCreateVectorMagnitudeExpressions(bool set);
+    
 
     // Property getting methods
     std::string GetFile() const;
@@ -110,6 +115,7 @@ public:
     bool GetTreatAllDBsAsTimeVarying() const;
     bool GetCreateMeshQualityExpressions() const;
     bool GetCreateTimeDerivativeExpressions() const;
+    bool GetCreateVectorMagnitudeExpressions() const;
 
     // Property selection methods
     virtual void SelectAll();
@@ -122,6 +128,7 @@ private:
     bool                 treatAllDBsAsTimeVarying;
     bool                 createMeshQualityExpressions;
     bool                 createTimeDerivativeExpressions;
+    bool                 createVectorMagnitudeExpressions;
 };
 
 
