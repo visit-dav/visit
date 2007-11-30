@@ -63,6 +63,7 @@ class vtkUnstructuredGrid;
 
 class avtMeshMetaData;
 
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtSiloWriter
@@ -94,7 +95,7 @@ class
 avtSiloWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtSiloWriter();
+                   avtSiloWriter(DBOptionsAttributes *);
     virtual       ~avtSiloWriter();
 
   protected:
@@ -103,6 +104,7 @@ avtSiloWriter : public virtual avtDatabaseWriter
     string         meshname;
     string         matname;
     int            nblocks;
+    int            driver;
     avtMeshType    meshtype;
     DBoptlist     *optlist;
 

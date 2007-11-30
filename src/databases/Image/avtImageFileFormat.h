@@ -49,6 +49,7 @@
 #include <avtSTSDFileFormat.h>
 #include <vtkImageData.h>
 
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtImageFileFormat
@@ -79,7 +80,7 @@
 class avtImageFileFormat : public avtSTSDFileFormat
 {
   public:
-                       avtImageFileFormat(const char *filename);
+                       avtImageFileFormat(const char *filename, DBOptionsAttributes *);
     virtual           ~avtImageFileFormat();
 
     virtual const char    *GetType(void)   { return "Image"; };

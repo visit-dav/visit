@@ -39,6 +39,7 @@
 #include <avtSiloFileFormat.h>
 #include <avtSTMDFileFormatInterface.h>
 #include <avtGenericDatabase.h>
+#include <avtSiloOptions.h>
 
 // ****************************************************************************
 //  Method:  SiloCommonPluginInfo::GetDatabaseType
@@ -86,3 +87,16 @@ SiloCommonPluginInfo::SetupDatabase(const char *const *list,
            = new avtSTMDFileFormatInterface(ffl, nList);
     return new avtGenericDatabase(inter);
 }
+
+DBOptionsAttributes *
+SiloCommonPluginInfo::GetReadOptions() const
+{
+    return GetSiloReadOptions();
+}
+
+DBOptionsAttributes *
+SiloCommonPluginInfo::GetWriteOptions() const
+{
+    return GetSiloWriteOptions();
+}
+
