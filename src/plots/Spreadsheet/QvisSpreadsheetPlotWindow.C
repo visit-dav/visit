@@ -135,6 +135,9 @@ QvisSpreadsheetPlotWindow::~QvisSpreadsheetPlotWindow()
 //   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
 //   Support toggling patch outline and tracer plane separately
 //
+//   Gunther H. Weber, Wed Nov 28 15:37:17 PST 2007
+//   Support toggeling the current cell outline
+//
 // ****************************************************************************
 
 void
@@ -200,24 +203,29 @@ QvisSpreadsheetPlotWindow::CreateWindowContents()
             this, SLOT(showPatchOutlineChanged(bool)));
     mainLayout->addWidget(showPatchOutline, 6,0);
 
+    showCurrentCellOutline = new QCheckBox("Show current cell outline", central, "showCurrentCellOutline");
+    connect(showCurrentCellOutline, SIGNAL(toggled(bool)),
+            this, SLOT(showCurrentCellOutlineChanged(bool)));
+    mainLayout->addWidget(showCurrentCellOutline, 7,0);
+ 
     showTracerPlane = new QCheckBox("Show tracer plane", central, "showTracerPlane");
     connect(showTracerPlane, SIGNAL(toggled(bool)),
             this, SLOT(showTracerPlaneChanged(bool)));
-    mainLayout->addWidget(showTracerPlane, 7,0);
+    mainLayout->addWidget(showTracerPlane, 8,0);
 
     tracerColorLabel = new QLabel("Tracer color", central, "tracerColorLabel");
-    mainLayout->addWidget(tracerColorLabel,8,0);
+    mainLayout->addWidget(tracerColorLabel,9,0);
     tracerColor = new QvisColorButton(central, "tracerColor");
     connect(tracerColor, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(tracerColorChanged(const QColor&)));
-    mainLayout->addWidget(tracerColor, 8,1);
+    mainLayout->addWidget(tracerColor, 9,1);
 
     tracerOpacity = new QvisOpacitySlider(central, "tracerOpacity");
     tracerOpacity->setMinValue(0);
     tracerOpacity->setMaxValue(255);
     connect(tracerOpacity, SIGNAL(valueChanged(int)),
             this, SLOT(tracerOpacityChanged(int)));
-    mainLayout->addWidget(tracerOpacity, 9,1);
+    mainLayout->addWidget(tracerOpacity, 10,1);
 }
 
 
@@ -337,6 +345,11 @@ QvisSpreadsheetPlotWindow::UpdateWindow(bool doAll)
             showPatchOutline->blockSignals(true);
             showPatchOutline->setChecked(atts->GetShowPatchOutline());
             showPatchOutline->blockSignals(false);
+            break;
+        case 15: // showCurrentCellOutline
+            showCurrentCellOutline->blockSignals(true);
+            showCurrentCellOutline->setChecked(atts->GetShowCurrentCellOutline());
+            showCurrentCellOutline->blockSignals(false);
             break;
         }
     }
@@ -650,6 +663,13 @@ void
 QvisSpreadsheetPlotWindow::showPatchOutlineChanged(bool val)
 {
     atts->SetShowPatchOutline(val);
+    Apply();
+}
+
+void
+QvisSpreadsheetPlotWindow::showCurrentCellOutlineChanged(bool val)
+{
+    atts->SetShowCurrentCellOutline(val);
     Apply();
 }
 

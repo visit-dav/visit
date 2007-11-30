@@ -89,6 +89,9 @@ class vtkDataSet;
 //   Gunther H. Weber, Tue Oct 16 20:41:26 PDT 2007
 //   Toggle tracer plane and patch outline independently
 //
+//   Gunther H. Weber, Wed Nov 28 15:20:13 PST 2007
+//   Added toggle for current cell outline
+//
 // ****************************************************************************
 
 class SpreadsheetViewer : public QMainWindow, public Observer
@@ -118,6 +121,7 @@ private slots:
     void colorTableCheckBoxToggled(bool);
     void tracerCheckBoxToggled(bool);
     void outlineCheckBoxToggled(bool);
+    void showCurrentCellOutlineCheckBoxToggled(bool);
     void normalChanged(int);
     void selectedColorTable(bool, const QString &);
     void postNotify();
@@ -187,6 +191,7 @@ private:
     bool                  sliding;
     QCheckBox            *tracerCheckBox;
     QCheckBox            *patchOutlineCheckBox;
+    QCheckBox            *currentCellOutlineCheckBox;
     QLabel               *normalLabel;
     QButtonGroup         *normalButtonGroup;
     QHBox                *normalRadioButtons;

@@ -74,6 +74,9 @@
       <Field name="showPatchOutline" label="Show patch outline" type="bool">
         true
       </Field>
+      <Field name="showCurrentCellOutline" label="Show current cell outline" type="bool">
+        false
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="CopyAttributes" user="false" member="true">

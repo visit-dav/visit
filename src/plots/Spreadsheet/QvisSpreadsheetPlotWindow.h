@@ -70,6 +70,9 @@ class QvisDialogLineEdit;
 //   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
 //   Support toggling patch outline and tracer plane separately
 //
+//   Gunther H. Weber, Wed Nov 28 15:37:17 PST 2007
+//   Support toggeling the current cell outline
+//
 // ****************************************************************************
 
 class QvisSpreadsheetPlotWindow : public QvisPostableWindowObserver
@@ -97,6 +100,7 @@ private slots:
     void useColorTableChanged(bool val);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
     void showPatchOutlineChanged(bool val);
+    void showCurrentCellOutlineChanged(bool val);
     void showTracerPlaneChanged(bool val);
     void tracerColorChanged(const QColor &color);
     void tracerOpacityChanged(int);
@@ -111,6 +115,7 @@ private:
     QCheckBox *useColorTable;
     QvisColorTableButton *colorTableName;
     QCheckBox *showPatchOutline;
+    QCheckBox *showCurrentCellOutline;
     QCheckBox *showTracerPlane;
     QvisColorButton   *tracerColor;
     QvisOpacitySlider *tracerOpacity;

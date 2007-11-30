@@ -42,6 +42,7 @@ class vtkDataArray;
 class vtkDataSet;
 class vtkRectilinearGrid;
 class vtkStructuredGrid;
+class vtkCell;
 
 // ****************************************************************************
 // Class: avtOpenGLSpreadsheetTraceRenderer
@@ -72,6 +73,8 @@ private:
     void DrawStructuredGrid(vtkStructuredGrid *, vtkDataArray *, 
                             const SpreadsheetAttributes &, const double *);
     void DrawBoundingBox(vtkDataArray *bounds, const double *);
+    void Draw2DCell(vtkCell *cell, const double *fgColor);
+    void Draw3DCell(vtkCell *cell, const double *fgColor);
 };
 
 #endif

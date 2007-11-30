@@ -36,10 +36,17 @@
 *****************************************************************************/
 #include <avtOpenGLSpreadsheetTraceRenderer.h>
 
+#include <float.h>
+
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
+#include <vtkCell.h>
+
+#include <vtkVisItUtility.h>
+#include <vtkVisItCellLocator.h>
+#include <DebugStream.h>
 
 // Include OpenGL
 #ifndef VTK_IMPLEMENT_MESA_CXX
@@ -151,6 +158,9 @@ avtOpenGLSpreadsheetTraceRenderer::Render(vtkDataSet *ds, vtkDataArray *bounds,
 //   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
 //   Support toggling patch outline and tracer plane separately
 //
+//   Gunther H. Weber, Thu Nov 29 15:04:29 PST 2007
+//   Support rendering outline of current cell
+//
 // ****************************************************************************
 
 void
@@ -158,10 +168,20 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
     vtkDataArray *bounds, const SpreadsheetAttributes &atts, 
     const double *fgColor)
 {
+    // Get dimensions
     int dims[3];
     rgrid->GetDimensions(dims);
 
-    if(dims[2] < 2)
+    // Compute id of current cell if necessary
+    int ijk[3];
+    double currPick[3] = {
+        atts.GetCurrentPick()[0], atts.GetCurrentPick()[1], atts.GetCurrentPick()[2]
+    };
+    bool drawCellOutline = atts.GetShowCurrentCellOutline() && atts.GetCurrentPickValid() &&
+        vtkVisItUtility::ComputeStructuredCoordinates(rgrid, currPick, ijk);
+    vtkIdType cellId = ijk[2]*(dims[0]-1)*(dims[1]-1) + ijk[1]*(dims[0]-1) + ijk[0];
+
+   if(dims[2] < 2)
     {
         if (atts.GetShowTracerPlane())
         {
@@ -186,6 +206,15 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
             glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
             glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);
             glEnd();
+        }
+
+        if (drawCellOutline)
+        {
+            vtkCell *cell = rgrid->GetCell(cellId);
+            if (cell)
+                Draw2DCell(cell, fgColor);
+            else
+                debug1 << "Internal error: Cannot locate cell." << std::endl;
         }
     }
     else
@@ -319,6 +348,15 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
         {
             DrawBoundingBox(bounds, fgColor);
         }
+
+        if (drawCellOutline)
+        {
+            vtkCell *cell = rgrid->GetCell(cellId);
+            if (cell)
+                Draw3DCell(cell, fgColor);
+            else
+                debug1 << "Internal error: Cannot locate cell." << std::endl;
+        }
     }
 }
 
@@ -348,6 +386,9 @@ avtOpenGLSpreadsheetTraceRenderer::DrawRectilinearGrid(vtkRectilinearGrid *rgrid
 //   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
 //   Support toggling patch outline and tracer plane separately
 //
+//   Gunther H. Weber, Thu Nov 29 15:04:29 PST 2007
+//   Support rendering outline of current cell
+//
 // ****************************************************************************
 
 void
@@ -357,6 +398,32 @@ avtOpenGLSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
 {
     int dims[3];
     sgrid->GetDimensions(dims);
+
+    // Compute id of current cell if necessary. Building a locator here is probably
+    // not very efficient
+    bool drawCellOutline = false; 
+    double currPick[3] = {
+        atts.GetCurrentPick()[0], atts.GetCurrentPick()[1], atts.GetCurrentPick()[2]
+    };
+    vtkIdType cellId;
+    if (atts.GetShowCurrentCellOutline() && atts.GetCurrentPickValid()) 
+    {
+        vtkVisItCellLocator *loc = vtkVisItCellLocator::New();
+        loc->SetDataSet(sgrid);
+        loc->BuildLocator();
+       
+        int subId = 0;
+        double cp[3] = {0., 0., 0.};
+        double dist;
+        int success = loc->FindClosestPointWithinRadius(currPick, FLT_MAX, cp,
+                                                   cellId, subId, dist);
+        loc->Delete();
+
+        if (success)
+        {
+            drawCellOutline = true;
+        }
+    }
 
     if(dims[2] < 2)
     {
@@ -394,6 +461,15 @@ avtOpenGLSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
             glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), 0.);
             glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), 0.);
             glEnd();
+        }
+
+        if (drawCellOutline)
+        {
+            vtkCell *cell = sgrid->GetCell(cellId);
+            if (cell)
+                Draw2DCell(cell, fgColor);
+            else
+                debug1 << "Internal error: Cannot locate cell." << std::endl;
         }
     }
     else
@@ -520,7 +596,7 @@ avtOpenGLSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
                 else if(sgrid->GetPoints()->GetDataType() == VTK_DOUBLE)
                     glVertexPointer(3, GL_DOUBLE, 0, sgrid->GetPoints()->GetData()->GetVoidPointer(0));
                 else
-                    cerr << "VTK points are: " << sgrid->GetPoints()->GetDataType() << endl;
+                    debug1 << "VTK points are: " << sgrid->GetPoints()->GetDataType() << endl;
                 glColor4ubv(atts.GetTracerColor().GetColor());
 
                 // Use the connectivity that we computed for slicing in 
@@ -557,11 +633,20 @@ avtOpenGLSpreadsheetTraceRenderer::DrawStructuredGrid(vtkStructuredGrid *sgrid,
         {
             DrawBoundingBox(bounds, fgColor);
         }
+
+        if (drawCellOutline)
+        {
+            vtkCell *cell = sgrid->GetCell(cellId);
+            if (cell)
+                Draw3DCell(cell, fgColor);
+            else
+                debug1 << "Internal error: Cannot locate cell." << std::endl;
+        }
     }
 }
 
 // ****************************************************************************
-// Method: avtOpenGLSpreadsheetTraceRenderer::DrawBoundingBox
+// Method: avtOpenGLSpreadsheetTraceRenderer::DrawBoundingBox(vtkDataArray*)
 //
 // Purpose: 
 //   Draws the 3D bounding box.
@@ -605,5 +690,82 @@ avtOpenGLSpreadsheetTraceRenderer::DrawBoundingBox(vtkDataArray *bounds,
     glVertex3d(bounds->GetTuple1(1), bounds->GetTuple1(3), bounds->GetTuple1(5));
     glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), bounds->GetTuple1(4));
     glVertex3d(bounds->GetTuple1(0), bounds->GetTuple1(3), bounds->GetTuple1(5));
+    glEnd();
+}
+
+// ****************************************************************************
+// Method: avtOpenGLSpreadsheetTraceRenderer::Draw2DCell
+//
+// Purpose: 
+//   Draws the outline of a 2D cell.
+//
+// Arguments:
+//   cell    : Pointer to the 2D VTK cell
+//   fgColor : The foreground color.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Thu Nov 29 14:31:24 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+avtOpenGLSpreadsheetTraceRenderer::Draw2DCell(vtkCell *cell, const double *fgColor)
+{
+    glBegin(GL_LINES);
+    for (int eNo=0; eNo<cell->GetNumberOfEdges(); ++eNo)
+    {
+        vtkCell *edge = cell->GetEdge(eNo);
+        glVertex3d(
+                edge->GetPoints()->GetPoint(0)[0],
+                edge->GetPoints()->GetPoint(0)[1],
+                edge->GetPoints()->GetPoint(0)[2]);
+        glVertex3d(
+                edge->GetPoints()->GetPoint(1)[0],
+                edge->GetPoints()->GetPoint(1)[1],
+                edge->GetPoints()->GetPoint(1)[2]);
+    }
+    glEnd();
+}
+
+// ****************************************************************************
+// Method: avtOpenGLSpreadsheetTraceRenderer::Draw3DCell
+//
+// Purpose: 
+//   Draws the outline of a 3D cell.
+//
+// Arguments:
+//   cell    : Pointer to the 3D VTK cell
+//   fgColor : The foreground color.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Thu Nov 29 14:31:24 PST 2007
+//
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void 
+avtOpenGLSpreadsheetTraceRenderer::Draw3DCell(vtkCell *cell, const double *fgColor)
+{
+    glBegin(GL_LINES);
+    for (int fNo =0; fNo<cell->GetNumberOfFaces(); ++fNo)
+    {
+        vtkCell *face = cell->GetFace(fNo);
+        for (int eNo=0; eNo<face->GetNumberOfEdges(); ++eNo)
+        {
+            vtkCell *edge = face->GetEdge(eNo);
+            glVertex3d(
+                    edge->GetPoints()->GetPoint(0)[0],
+                    edge->GetPoints()->GetPoint(0)[1],
+                    edge->GetPoints()->GetPoint(0)[2]);
+            glVertex3d(
+                    edge->GetPoints()->GetPoint(1)[0],
+                    edge->GetPoints()->GetPoint(1)[1],
+                    edge->GetPoints()->GetPoint(1)[2]);
+        }
+    }
     glEnd();
 }
