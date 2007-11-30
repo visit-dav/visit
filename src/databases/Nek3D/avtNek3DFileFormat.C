@@ -567,6 +567,8 @@ avtNek3DFileFormat::avtNek3DFileFormat(const char *filename)
                 f.seekg( 136, std::ios_base::beg );
                 f.read( (char *)tmpBlocks, iBlocksPerFile*sizeof(int) );
                 f.close();
+                if (bSwapEndian)
+                    ByteSwap32(tmpBlocks, iBlocksPerFile);
 
                 for (jj = 0; jj < iBlocksPerFile; jj++)
                 {
@@ -1302,8 +1304,12 @@ avtNek3DFileFormat::UpdateCyclesAndTimes()
             f.open(meshfilename);
             f >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy >> dummy;
             f >> t >> c >> dummy;
-            while (f.get() == ' ')  //read past the first char of the next tag
-                ;
+            //while (f.get() == ' ')  //read past the first char of the next tag
+            //    ;
+
+            //I have to seek to a specific position, because in the header for parallel
+            //files, sometimes the tags aren't separated by white space.
+            f.seekg(76, std::ios_base::beg);
             v = f.get();
         }
         f.close();
