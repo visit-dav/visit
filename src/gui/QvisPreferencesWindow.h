@@ -85,6 +85,9 @@ class QSpinBox;
 //   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
 //   Added createVectorMagnitudeToggle check box
 //
+//   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
+//   Removed apply functions b/c the apply button was removed.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -106,11 +109,8 @@ signals:
     void changeTimeFormat(const TimeFormat &);
     void showSelectedFiles(bool);
     void allowFileSelectionChange(bool);
-public slots:
-    virtual void apply();
 protected:
     void UpdateWindow(bool doAll);
-    void Apply(bool ignore = false);
 private slots:
     void cloneWindowOnFirstRefToggled(bool val);
     void postWindowsWhenShownToggled(bool val);
