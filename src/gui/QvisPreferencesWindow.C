@@ -71,6 +71,10 @@
 //   Kathleen Bonnell, Tue Oct  9 14:40:10 PDT 2007
 //   Attach the global attributes.
 // 
+//   Cyrus Harrison, Thu Nov 29 16:21:48 PST 2007
+//   No need to attach the global atts, they are already attached
+//   in a parent class.  Also removed the Apply button.
+//
 // ****************************************************************************
 
 QvisPreferencesWindow::QvisPreferencesWindow(
@@ -79,11 +83,10 @@ QvisPreferencesWindow::QvisPreferencesWindow(
                        const char *shortName,
                        QvisNotepadArea *notepad)
     : QvisPostableWindowObserver(subj, caption, shortName, notepad,
-                       QvisPostableWindowObserver::ApplyButton, true),
+                       QvisPostableWindowObserver::NoExtraButtons, true),
     tsFormat()
 {
     atts = subj;
-    atts->Attach(this);
     timeStateDisplayMode = 0;
     showSelFiles = true;
     selectedFilesToggle = 0;
@@ -302,11 +305,18 @@ QvisPreferencesWindow::CreateWindowContents()
 //   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
 //   Added support for flag for creating vector magnitude expressions
 //
+//   Cyrus Harrison, 
+//   Fixed missing call to parent class Update method. This was preventing
+//   UpdateWindow from being called  - making the window out of sync with
+//   the app values.
+//
 // ****************************************************************************
 
 void
 QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 {
+    QvisPostableWindowSimpleObserver::Update(TheChangedSubject);
+
     if (atts == 0)
         return;
 
@@ -540,59 +550,21 @@ QvisPreferencesWindow::SetAllowFileSelectionChange(bool val)
     }
 }
 
-// ****************************************************************************
-// Method: QvisPreferencesWindow::Apply
-//
-// Purpose: 
-//   Called to apply changes in the subject.
-//
-// Programmer: Eric Brugger
-// Creation:   Thu Mar 13 11:15:53 PST 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisPreferencesWindow::Apply(bool ignore)
-{
-    if(AutoUpdate() || ignore)
-    {
-        atts->Notify();
-    }
-}
-
-
 //
 // Qt Slot functions
 //
 
 
 // ****************************************************************************
-// Method: QvisPreferencesWindow::apply
-//
-// Purpose: 
-//   Qt slot function called when apply button is clicked.
-//
-// Programmer: Eric Brugger
-// Creation:   Thu Mar 13 11:15:53 PST 2003
-//
 // Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisPreferencesWindow::apply()
-{
-    Apply(true);
-}
-
-
+//    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
+//    Notify the GlobalAttributes 
+//
 void
 QvisPreferencesWindow::cloneWindowOnFirstRefToggled(bool val)
 {
     atts->SetCloneWindowOnFirstRef(val);
-    Apply();
+    atts->Notify();
 }
 
 // ****************************************************************************
@@ -632,14 +604,16 @@ QvisPreferencesWindow::postWindowsWhenShownToggled(bool val)
 // Creation:   Fri Aug 6 09:28:57 PDT 2004
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
+//    Notify the GlobalAttributes 
+//
 // ****************************************************************************
 
 void
 QvisPreferencesWindow::makeDefaultConfirmToggled(bool val)
 {
     atts->SetMakeDefaultConfirm(val);
-    Apply();
+    atts->Notify();
 }
 
 // ****************************************************************************
@@ -657,15 +631,16 @@ QvisPreferencesWindow::makeDefaultConfirmToggled(bool val)
 // Creation:   Fri Aug 6 09:28:57 PDT 2004
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
+//    Notify the GlobalAttributes 
+//
 // ****************************************************************************
 
 void
 QvisPreferencesWindow::automaticallyApplyOperatorToggled(bool val)
 {
     atts->SetAutomaticallyAddOperator(!val);
-    SetUpdate(false);
-    Apply();
+    atts->Notify();
 }
 
 // ****************************************************************************
@@ -774,6 +749,10 @@ QvisPreferencesWindow::allowFileSelectionChangeToggled(bool val)
 // Programmer: Mark C. Miller 
 // Creation:   June 1, 2005 
 //
+// Modifications:
+//    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
+//    Notify the GlobalAttributes 
+//
 // ****************************************************************************
 
 void
@@ -781,8 +760,7 @@ QvisPreferencesWindow::tryHarderCyclesTimesToggled(bool val)
 {
     atts->SetTryHarderCyclesTimes(val);
     fileServer->SetForceReadAllCyclesTimes(val);
-    SetUpdate(false);
-    Apply();
+    atts->Notify();
 }
 
 // ****************************************************************************
@@ -795,6 +773,10 @@ QvisPreferencesWindow::tryHarderCyclesTimesToggled(bool val)
 // Programmer: Mark C. Miller 
 // Creation:   June 11, 2007 
 //
+// Modifications:
+//    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
+//    Notify the GlobalAttributes 
+//
 // ****************************************************************************
 
 void
@@ -802,8 +784,7 @@ QvisPreferencesWindow::treatAllDBsAsTimeVaryingToggled(bool val)
 {
     atts->SetTreatAllDBsAsTimeVarying(val);
     fileServer->SetTreatAllDBsAsTimeVarying(val);
-    SetUpdate(false);
-    Apply();
+    atts->Notify();
 }
 
 // ****************************************************************************
@@ -816,6 +797,10 @@ QvisPreferencesWindow::treatAllDBsAsTimeVaryingToggled(bool val)
 // Programmer: Mark C. Miller 
 // Creation:   June 11, 2007 
 //
+// Modifications:
+//    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
+//    Notify the GlobalAttributes 
+//
 // ****************************************************************************
 
 void
@@ -823,8 +808,7 @@ QvisPreferencesWindow::createMeshQualityToggled(bool val)
 {
     atts->SetCreateMeshQualityExpressions(val);
     fileServer->SetCreateMeshQualityExpressions(val);
-    SetUpdate(false);
-    Apply();
+    atts->Notify();
 }
 
 // ****************************************************************************
@@ -837,6 +821,10 @@ QvisPreferencesWindow::createMeshQualityToggled(bool val)
 // Programmer: Mark C. Miller 
 // Creation:   June 11, 2007 
 //
+// Modifications:
+//    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
+//    Notify the GlobalAttributes 
+//
 // ****************************************************************************
 
 void
@@ -844,8 +832,7 @@ QvisPreferencesWindow::createTimeDerivativeToggled(bool val)
 {
     atts->SetCreateTimeDerivativeExpressions(val);
     fileServer->SetCreateTimeDerivativeExpressions(val);
-    SetUpdate(false);
-    Apply();
+    atts->Notify();
 }
 
 // ****************************************************************************
@@ -858,6 +845,10 @@ QvisPreferencesWindow::createTimeDerivativeToggled(bool val)
 // Programmer: Cyrus Harrison
 // Creation:   November 28, 2007 
 //
+// Modifications:
+//    Cyrus Harrison, Fri Nov 30 10:56:10 PST 2007
+//    Notify the GlobalAttributes 
+//
 // ****************************************************************************
 
 void
@@ -865,6 +856,5 @@ QvisPreferencesWindow::createVectorMagnitudeToggled(bool val)
 {
     atts->SetCreateVectorMagnitudeExpressions(val);
     fileServer->SetCreateVectorMagnitudeExpressions(val);
-    SetUpdate(false);
-    Apply();
+    atts->Notify();
 }

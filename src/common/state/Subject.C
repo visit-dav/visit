@@ -98,13 +98,27 @@ Subject::~Subject()
 // Creation:   Wed Aug 9 16:02:26 PST 2000
 //
 // Modifications:
-//   
+//    Cyrus Harrison, Fri Nov 30 09:05:09 PST 2007
+//    Added guard against adding the same observer multiple times
+//
 // *******************************************************************
 
 void
 Subject::Attach(SimpleObserver *o)
 {
-    observers.push_back(o);
+    // only add the observer if it has not already been attached.
+    bool has_observer = false;
+    std::vector<SimpleObserver *>::iterator itr;
+    for(itr = observers.begin(); itr != observers.end(); ++itr)
+    {
+        if(*itr == o)
+        {
+            has_observer = true;
+            break;
+        }
+    }
+    if(!has_observer)
+        observers.push_back(o);
 }
 
 // *******************************************************************
