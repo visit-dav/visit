@@ -763,10 +763,14 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
 //
 //    Dave Bremer, Thu Nov 15 16:44:42 PST 2007
 //    Small fix for ascii format in case windows-style CRLF is used.
+//
+//    Kathleen Bonnell, Wed Nov 28 09:43:34 PST 2007 
+//    Added space in args list between 'const char *' and '/*meshname*/'.
+// 
 // ****************************************************************************
 
 vtkDataSet *
-avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char */*meshname*/)
+avtNek3DFileFormat::GetMesh(int /*timestate*/, int domain, const char * /*meshname*/)
 {
     vtkStructuredGrid    *grid   = vtkStructuredGrid::New();
     vtkPoints            *points  = vtkPoints::New();
