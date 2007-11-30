@@ -17,3 +17,4 @@ tryHarderCyclesTimes = 0
 treatAllDBsAsTimeVarying = 0
 createMeshQualityExpressions = 1
 createTimeDerivativeExpressions = 1
+createVectorMagnitudeExpressions = 1

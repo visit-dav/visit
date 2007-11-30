@@ -41,3 +41,4 @@ expression 39: time_derivative/conn_based/v = (v - conn_cmfe(<[-1]id:v>, quadmes
 expression 40: time_derivative/pos_based/v = v - pos_cmfe(<[-1]id:v>, quadmesh, 0.) / (<time_derivative/pos_based/quadmesh_time> - <time_derivative/pos_based/quadmesh_lasttime>)
 expression 41: time_derivative/conn_based/w = (w - conn_cmfe(<[-1]id:w>, quadmesh)) / (<time_derivative/conn_based/quadmesh_time> - <time_derivative/conn_based/quadmesh_lasttime>)
 expression 42: time_derivative/pos_based/w = w - pos_cmfe(<[-1]id:w>, quadmesh, 0.) / (<time_derivative/pos_based/quadmesh_time> - <time_derivative/pos_based/quadmesh_lasttime>)
+expression 43: direction_magnitude = magnitude(direction)

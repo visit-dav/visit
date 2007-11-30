@@ -4,3 +4,5 @@ expression 2: user_defined2 = v + v
 expression 3: user_defined3 = {u, v, w}
 expression 4: grad_tensor = { { <tensor_comps/grad_tensor_ii>, <tensor_comps/grad_tensor_ji>, <tensor_comps/grad_tensor_ki> }, { <tensor_comps/grad_tensor_ij>, <tensor_comps/grad_tensor_jj>, <tensor_comps/grad_tensor_kj> }, { <tensor_comps/grad_tensor_ik>, <tensor_comps/grad_tensor_jk>, <tensor_comps/grad_tensor_kk> } }
 expression 5: grad_tensor_diagonal = array_compose(<tensor_comps/grad_tensor_ii>, <tensor_comps/grad_tensor_jj>, <tensor_comps/grad_tensor_kk>)
+expression 6: airVfGradient_magnitude = magnitude(airVfGradient)
+expression 7: grad_magnitude = magnitude(grad)
