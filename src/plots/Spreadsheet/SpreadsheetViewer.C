@@ -125,6 +125,9 @@
 //   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
 //   Support toggling patch outline and tracer plane separately
 //
+//   Gunther H. Weber, Wed Nov 28 15:20:58 PST 2007
+//   Added toggle for showing current cell outline
+//
 // ****************************************************************************
 
 SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent, 
@@ -235,6 +238,9 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent,
     patchOutlineCheckBox = new QCheckBox("Patch outline", show, "patchOutline");
     connect(patchOutlineCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(outlineCheckBoxToggled(bool)));
+    currentCellOutlineCheckBox = new QCheckBox("Current cell outline", show, "currentCellOutline");
+    connect(currentCellOutlineCheckBox, SIGNAL(toggled(bool)),
+            this, SLOT(showCurrentCellOutlineCheckBoxToggled(bool)));
 
     //
     // Tables
@@ -659,6 +665,9 @@ SpreadsheetViewer::PickPointsChanged() const
 //   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
 //   Support toggling patch outline and tracer plane separately
 //
+//   Gunther H. Weber, Wed Nov 28 15:20:58 PST 2007
+//   Added toggle for showing current cell outline
+//
 // ****************************************************************************
 
 void
@@ -755,13 +764,17 @@ SpreadsheetViewer::Update(Subject *)
                 }
                 break;
             }
-        case 14: //showTracerPlane
+        case 14: //showPatchOutline
             patchOutlineCheckBox->blockSignals(true);
             patchOutlineCheckBox->setChecked(plotAtts->GetShowPatchOutline());
             patchOutlineCheckBox->blockSignals(false);
             break;
+        case 15: //showCurrentCellOutline
+            currentCellOutlineCheckBox->blockSignals(true);
+            currentCellOutlineCheckBox->setChecked(plotAtts->GetShowCurrentCellOutline());
+            currentCellOutlineCheckBox->blockSignals(false);
+            break;
         }
-
     }
 
     // Move slice if there is a pick update. The moveSliceToCurrentPick method
@@ -2090,6 +2103,28 @@ SpreadsheetViewer::outlineCheckBoxToggled(bool val)
     plotAtts->Notify();
 }
 
+// ****************************************************************************
+// Method: SpreadsheetViewer::showCurrentCellOutlineCheckBoxToggled
+//
+// Purpose: 
+//   This slot turns the current cell on/off.
+//
+// Arguments:
+//   val : True to draw the current cell outline.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Wed Nov 28 15:27:10 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SpreadsheetViewer::showCurrentCellOutlineCheckBoxToggled(bool val)
+{
+    plotAtts->SetShowCurrentCellOutline(val);
+    plotAtts->Notify();
+}
 
 // ****************************************************************************
 // Method: SpreadsheetViewer::minClicked

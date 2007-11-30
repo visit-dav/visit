@@ -38,6 +38,7 @@
 
 #include <vtkFieldData.h>
 #include <vtkDataArray.h>
+#include <vtkFloatArray.h>
 #include <vtkDataSet.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
@@ -201,14 +202,29 @@ avtSpreadsheetRenderer::SetForegroundColor(const double *fg)
 //   Gunther H. Weber, Wed Oct 17 14:48:16 PDT 2007
 //   Support toggling patch outline and tracer plane separately
 //
+//   Gunther H. Weber, Thu Nov 29 18:17:50 PST 2007
+//   Support showing current cell outline. Calculate bounds from data set if
+//   "avtOriginalBounds" does not exist.
+//
 // ****************************************************************************
 
 void
 avtSpreadsheetRenderer::RenderTracePlane(vtkDataSet *ds)
 {
     // Get the extents
+    bool mustDeleteBounds = false;
     vtkDataArray *bounds = ds->GetFieldData()->GetArray("avtOriginalBounds");
-    if(bounds != 0 && (atts.GetShowTracerPlane() || atts.GetShowPatchOutline()))
+    if (!bounds)
+    {
+        bounds=vtkFloatArray::New();
+        bounds->SetNumberOfTuples(6);
+        for (vtkIdType i=0; i<6; ++i)
+            bounds->SetTuple1(i, ds->GetBounds()[i]);
+        mustDeleteBounds=true;
+    }
+
+    if(atts.GetShowTracerPlane() || atts.GetShowPatchOutline() ||
+            atts.GetShowCurrentCellOutline())
     {
         if(rendererImplementation == 0)
         {
@@ -221,5 +237,7 @@ avtSpreadsheetRenderer::RenderTracePlane(vtkDataSet *ds)
         if(rendererImplementation != 0)
              rendererImplementation->Render(ds, bounds, atts, fgColor);
     }
+
+    if (mustDeleteBounds) bounds->Delete();
 }
 
