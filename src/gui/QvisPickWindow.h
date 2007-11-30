@@ -127,6 +127,9 @@ class PickAttributes;
 //   Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
 //   Added preserveCoord combo box.
 //
+//   Kathleen Bonnell, Thu Nov 29 15:32:32 PST 2007 
+//   Added defaultAutoShow, defaultSavePicks, defaultNumTabs, clearPicks(). 
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -174,13 +177,17 @@ private slots:
     void addPickVariable(const QString &);
     void savePickText();
     void preserveCoordActivated(int);
+    void clearPicks();
 private:
     void UpdatePage(void);
     void ClearPages(void);
     void ResizeTabs(void);
 
     bool                savePicks;
+    bool                defaultSavePicks;
     bool                autoShow;
+    bool                defaultAutoShow;
+    int                 defaultNumTabs;
     int                 nextPage;
     QString             lastLetter;
 

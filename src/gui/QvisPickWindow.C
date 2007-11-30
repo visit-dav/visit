@@ -103,6 +103,10 @@ using std::vector;
 //   Ellen Tarwater, Fri May 18, 2007
 //   Added save Count for 'Save Pick as...' functionality.
 //
+//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007 
+//   Added defaultAutoShow, defaultSavePicks, defaultNumTabs so that their
+//   counterparts can be 'reset' correclty from user-saved values when needed. 
+//
 // ****************************************************************************
 
 QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption, 
@@ -112,9 +116,10 @@ QvisPickWindow::QvisPickWindow(PickAttributes *subj, const char *caption,
     lastLetter(" ")
 {
     pickAtts = subj;
-    autoShow = true;
+    defaultAutoShow = autoShow = true;
     nextPage = 0;
-    savePicks = false;
+    defaultSavePicks = savePicks = false;
+    defaultNumTabs = 8;
     saveCount = 0;
 }
 
@@ -204,6 +209,9 @@ QvisPickWindow::~QvisPickWindow()
 //
 //   Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
 //   Added preserveCoord combo box. 
+//
+//   Kathleen Bonnell, Thu Nov 29 15:32:32 PST 2007 
+//   Added clearPicks push button.
 //
 // ****************************************************************************
 
@@ -373,7 +381,13 @@ QvisPickWindow::CreateWindowContents()
                                      "savePicksCheckBox");
     connect(savePicksCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(savePicksToggled(bool)));
-    gLayout->addMultiCellWidget(savePicksCheckBox, 11, 11, 0, 3);
+    gLayout->addMultiCellWidget(savePicksCheckBox, 11, 11, 0, 2);
+
+    QPushButton *clearPicksButton = new QPushButton("Clear Picks", central,
+            "clearPicksButton");
+    connect(clearPicksButton, SIGNAL(clicked()),
+            this, SLOT(clearPicks()));
+    gLayout->addWidget(clearPicksButton, 11, 3);
 
     timeCurveCheckBox = new QCheckBox("Create time curve with next pick.", 
                                       central, "timeCurveCheckBox");
@@ -870,6 +884,10 @@ QvisPickWindow::CreateNode(DataNode *parentNode)
 //   Kathleen Bonnell, Mon Oct 31 10:47:53 PST 2005 
 //   Added a node for userMaxTabs.
 //   
+//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007 
+//   Added defaultAutoShow, defaultSavePicks, defaultNumTabs so that their
+//   counterparts can be 'reset' correclty from user-saved values when needed. 
+//   
 // ****************************************************************************
 
 void
@@ -884,11 +902,12 @@ QvisPickWindow::SetFromNode(DataNode *parentNode, const int *borders)
     // Set the autoShow flag.
     DataNode *node;
     if((node = winNode->GetNode("autoShow")) != 0)
-        autoShow = node->AsBool();
+        defaultAutoShow = autoShow = node->AsBool();
     if((node = winNode->GetNode("savePicks")) != 0)
-        savePicks = node->AsBool();
+        defaultSavePicks = savePicks = node->AsBool();
     if((node = winNode->GetNode("userMaxTabs")) != 0)
     {
+        defaultNumTabs = node->AsInt();
         userMaxPickTabs->setValue(node->AsInt());
         ResizeTabs();
     }
@@ -1049,8 +1068,8 @@ QvisPickWindow::autoShowToggled(bool val)
 // Method: QvisPickWindow::savePicksToggled
 //
 // Purpose: 
-//   This is a Qt slot function that sets the internal savePicks flag when the
-//   savePicks checkbox is toggled.
+//   This is a Qt slot function that sets the internal savePicks flag when 
+//   the savePicks checkbox is toggled.
 //
 // Arguments:
 //   val : The new savePicks value.
@@ -1100,11 +1119,32 @@ QvisPickWindow::makeDefault()
 // Programmer: Kathleen Bonnell
 // Creation:   December 3, 2001 
 //
+// Modifications:
+//   Katheen Bonnell, Thu Nov 29 15:35:15 PST 2007 
+//   Allow 'autoShow', 'savePicks' and 'maxTabs' to be reset.
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::reset()
 {
+    // Set the autoShow back to default 
+    autoShow = defaultAutoShow;
+    autoShowCheckBox->blockSignals(true);
+    autoShowCheckBox->setChecked(autoShow);
+    autoShowCheckBox->blockSignals(false);
+
+    // Set the max tabs back to default 
+    userMaxPickTabs->setValue(defaultNumTabs);
+    ResizeTabs();
+
+    // Set the "don't clear window" back to default 
+    savePicks = defaultSavePicks;
+    savePicksCheckBox->blockSignals(true);
+    savePicksCheckBox->setChecked(savePicks);
+    savePicksCheckBox->blockSignals(false);
+    
+
     // Tell the viewer to reset the pick attributes to the last
     // applied values.
     //
@@ -1619,3 +1659,21 @@ QvisPickWindow::savePickText()
 }
 
 
+// ****************************************************************************
+// Method: QvisPickWindow::clearPicks
+//
+// Purpose: 
+//   This is a Qt slot function that clears the picks from the active window.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   November 29, 2007 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPickWindow::clearPicks()
+{
+    GetViewerMethods()->ClearPickPoints();
+}
