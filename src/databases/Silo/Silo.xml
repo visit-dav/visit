@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Plugin name="Silo" type="database" label="Silo" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="false">
+  <Plugin name="Silo" type="database" label="Silo" version="1.0" enabled="true" mdspecificcode="true" onlyengine="false" noengine="false" dbtype="STMD" haswriter="true" hasoptions="true">
     <CXXFLAGS>
       $(SILO_INCLUDE)
     </CXXFLAGS>

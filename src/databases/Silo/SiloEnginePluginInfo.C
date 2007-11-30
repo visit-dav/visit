@@ -72,6 +72,6 @@ extern "C" EngineDatabasePluginInfo* GetEngineInfo()
 avtDatabaseWriter *
 SiloEnginePluginInfo::GetWriter(void)
 {
-    return new avtSiloWriter;
+    return new avtSiloWriter(writeOptions);
 }
 

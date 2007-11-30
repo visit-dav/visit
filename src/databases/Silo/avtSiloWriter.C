@@ -60,8 +60,11 @@
 #include <avtParallel.h>
 #include <avtTerminatingSource.h>
 
+#include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <ImproperUseException.h>
+
+#include <silo.h>
 
 
 using std::map;
@@ -85,11 +88,17 @@ using std::vector;
 //
 // ****************************************************************************
 
-avtSiloWriter::avtSiloWriter()
+avtSiloWriter::avtSiloWriter(DBOptionsAttributes *dbopts)
 {
     headerDbMd = 0;
     optlist = 0;
     nblocks = 0;
+    driver = DB_PDB;
+    switch (dbopts->GetEnum("Driver"))
+    {
+        case 0: driver = DB_PDB; break;
+	case 1: driver = DB_HDF5; break;
+    }
     meshtype = AVT_UNKNOWN_MESH;
 }
 
@@ -601,7 +610,7 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     int oldEnable = DBSetEnableChecksums(0);
 #endif
     DBfile *dbfile = DBCreate(filename, 0, DB_LOCAL, 
-                              "Silo file written by VisIt", DB_PDB);
+                              "Silo file written by VisIt", driver);
 #ifdef E_CHECKSUM
     DBSetEnableChecksums(oldEnable);
 #endif
