@@ -88,7 +88,7 @@ class QUERY_API avtLocateAndPickZoneQuery : public avtDatasetQuery
 
 
   protected:
-    virtual void              Execute(vtkDataSet*, int){;}
+    virtual void              Execute(vtkDataSet*, const int){;}
 
     PickAttributes            pickAtts;
 

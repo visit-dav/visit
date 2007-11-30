@@ -441,6 +441,8 @@ QvisPlotListBox::NeedToUpdateSelection(const PlotList *pl) const
 // Creation:   Mon June 11 2007
 //
 // Modifications:
+//   Kathleen Bonnell, Wed Nov 28 09:36:22 PST 2007
+//   Fix compile errror on Windows -- make maxNwins const.
 //   
 // ****************************************************************************
 void
@@ -451,7 +453,7 @@ QvisPlotListBox::contextMenuCreateActions()
 //et them out) here...
 
      //et  = DEBUGGING - need to get the max # of wins from somewhere else...
-     int maxNwins = 10;
+     const int maxNwins = 10;
      int selectWindow[maxNwins];
      
      hideShowAct = new QAction(tr("&Hide/Show"), 0, this);
