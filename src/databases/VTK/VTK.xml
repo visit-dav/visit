@@ -41,6 +41,7 @@
     </Files>
     <Files components="E">
       avtVTKFileFormat.C
+      avtVTKWriter.C
       vtkVisItDataReader.C
       vtkVisItDataSetReader.C
       vtkVisItPolyDataReader.C
