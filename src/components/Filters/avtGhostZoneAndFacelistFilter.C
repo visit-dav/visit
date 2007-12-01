@@ -291,6 +291,9 @@ avtGhostZoneAndFacelistFilter::MustCreatePolyData(void)
 //    Hank Childs, Sun Oct 28 10:37:33 PST 2007
 //    Add support for exterior boundary ghosts.
 //
+//    Hank Childs, Fri Nov 30 16:14:48 PST 2007
+//    Fix problem where too much SIL work is being done.
+//
 // ****************************************************************************
 
 void
@@ -315,6 +318,11 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     avtDataSpecification_p wrongVar = specForDB->GetDataSpecification();
     avtDataSpecification_p correctVar = new avtDataSpecification(wrongVar,
                                                              pipelineVariable);
+    // By copying the "correct var", our mechanism for telling the SIL to
+    // not be used is ignored.  So turn it back on.
+    correctVar->GetSIL().useRestriction = false;
+    correctVar->GetSIL().dataChunk = -1;
+
     avtPipelineSpecification_p goodSpec = new avtPipelineSpecification(
                                                        specForDB, correctVar);
     
