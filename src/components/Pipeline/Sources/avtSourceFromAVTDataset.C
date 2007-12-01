@@ -125,6 +125,9 @@ avtSourceFromAVTDataset::~avtSourceFromAVTDataset()
 //    Hank Childs, Wed Mar  2 10:09:31 PST 2005
 //    Do not assume tree is non-NULL.
 //
+//    Hank Childs, Fri Nov 30 16:47:33 PST 2007
+//    Add timing information.
+//
 // ****************************************************************************
 
 bool
@@ -136,10 +139,18 @@ avtSourceFromAVTDataset::FetchDataset(avtDataSpecification_p spec,
     vector<int> list;
     if (spec->GetSIL().useRestriction)
     {
+        int t0 = visitTimer->StartTimer();
         avtSILRestrictionTraverser trav(spec->GetRestriction());
+        visitTimer->StopTimer(t0, "SourceFromAVTDataset:: setting up SILtrav");
+        int t1 = visitTimer->StartTimer();
         trav.GetDomainList(list);
+        visitTimer->StopTimer(t1, "SourceFromAVTDataset:: getting domains");
         if (*tree != NULL)
+        {
+            int t2 = visitTimer->StartTimer();
             outtree = tree->PruneTree(list);
+            visitTimer->StopTimer(t2, "SourceFromAVTDataset:: prune tree");
+        }
         else
             outtree = NULL;
     }
@@ -150,7 +161,11 @@ avtSourceFromAVTDataset::FetchDataset(avtDataSpecification_p spec,
         {
             list.push_back(dataChunk);
             if (*tree != NULL)
+            {
+                int t2 = visitTimer->StartTimer();
                 outtree = tree->PruneTree(list);
+                visitTimer->StopTimer(t2, "SourceFromAVTDataset:: prunetree2");
+            }
             else
                 outtree = NULL;
         }

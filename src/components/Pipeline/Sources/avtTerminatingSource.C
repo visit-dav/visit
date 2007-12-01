@@ -44,6 +44,7 @@
 #include <avtMetaData.h>
 
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 
 //
@@ -231,6 +232,9 @@ avtTerminatingSource::GetSpeciesAuxiliaryData(const char *type, void *args,
 //    Hank Childs, Sun Dec  4 17:45:14 PST 2005
 //    No longer issue progress.  All this does is clobber useful progress
 //    reports.
+// 
+//    Hank Childs, Fri Nov 30 16:47:33 PST 2007
+//    Add timing information.
 //
 // ****************************************************************************
 
@@ -239,8 +243,12 @@ avtTerminatingSource::Update(avtPipelineSpecification_p spec)
 {
     if (!ArtificialPipeline())
         GetOutput()->GetInfo().GetValidity().Reset();
+    int t0 = visitTimer->StartTimer();
     avtDataSpecification_p data = BalanceLoad(spec);
+    visitTimer->StopTimer(t0, "Calling BalanceLoad in avtTermSrc::Update");
+    int t1 = visitTimer->StartTimer();
     bool rv = FetchData(data);
+    visitTimer->StopTimer(t1, "Calling avtTermSrc::FetchData");
 
     return rv;
 }
