@@ -864,6 +864,9 @@ avtBoxFilter::RefashionDataObjectInfo(void)
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Hank Childs, Tue Dec  4 13:06:42 PST 2007
+//    Do not use an interval tree if the spatial meta data has been invalidated
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -890,7 +893,9 @@ avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // Now, if the file format reader has produced an interval tree, determine
     // which domains fall within the box and make sure we only read in those.
     //
-    avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+    avtIntervalTree *it = NULL;
+    if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
+        it = GetMetaData()->GetSpatialExtents();
 
     if (it != NULL)
     {
