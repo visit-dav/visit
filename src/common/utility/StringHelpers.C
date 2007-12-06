@@ -682,15 +682,57 @@ static void InitTypeNameToFmtREMap()
 //  Modifications:
 //    Mark C. Miller, Fri Sep 21 07:31:02 PDT 2007
 //    Fixed end anchor to be any chars not a '%'
+//
+//    Mark C. Miller, Wed Dec  5 17:53:06 PST 2007
+//    Fixed issue with missing REG_EXTENDED on Mac by adding check for simple
+//    case and falling back to REs for more complicated cases.
 // ****************************************************************************
 bool
 StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Type, ... )
 {
-    string re = "^"; // anchor first char to beginning of line
+    int n;
     int i;
 
+    // this block should be removed with regcomp on Mac works with REG_EXTENDED
+#if defined(__APPLE__)
+    // first char must be a conversion specifier ('%')
+    n = 0;
+    if (fmtStr[n] == '%')
+    {
+        n++;
+
+        // optional sign designation
+        if (strchr(" +-", fmtStr[n]) != 0)
+            n++;
+
+        // walk over field width digits
+        while (fmtStr[n] >= '0' && fmtStr[n] <= '9')
+            n++;
+   
+        // optional dot
+        if (fmtStr[n] == '.')
+        {
+	    n++;
+	    // walk over precision digits
+            while (fmtStr[n] >= '0' && fmtStr[n] <= '9')
+                n++;
+        }
+
+        if (strchr("eEfFgGaAouxXdi", fmtStr[n]) != 0)
+        {
+            if (fmtStr[n+1] == '\0')
+                return true;
+        }
+    }
+#endif
+
+    //
+    // fall back to RE based validation
+    //
+    string re = "^"; // anchor first char to beginning of line
+
     // compute length up to max of 4096
-    int n = 0;
+    n = 0;
     while (n < 4096 && fmtStr[n] != '\0')
         n++;
     if (n == 4096)
