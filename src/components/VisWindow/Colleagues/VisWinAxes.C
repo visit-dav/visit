@@ -1600,8 +1600,8 @@ VisWinAxes::AdjustLabelFormatForLogScale(
         int xAxisDigits = Digits(minx, maxx);
         char  format[16];
 
-        int ipow_minx = (floor(floor(min_x)/3.))*3;
-        int ipow_maxx = (floor(floor(max_x)/3.))*3;
+        int ipow_minx = (int) ((floor(floor(min_x)/3.))*3);
+        int ipow_maxx = (int) ((floor(floor(max_x)/3.))*3);
 
         int ipow_min = ipow_minx < ipow_maxx ? ipow_minx : ipow_maxx;
         int ipow_max = ipow_minx > ipow_maxx ? ipow_minx : ipow_maxx;
@@ -1619,8 +1619,8 @@ VisWinAxes::AdjustLabelFormatForLogScale(
         int yAxisDigits = Digits(miny, maxy);
         char  format[16];
 
-        int ipow_miny = (floor(floor(min_y)/3.))*3;
-        int ipow_maxy = (floor(floor(max_y)/3.))*3;
+        int ipow_miny = (int) ((floor(floor(min_y)/3.))*3);
+        int ipow_maxy = (int) ((floor(floor(max_y)/3.))*3);
         int ipow_min = ipow_miny < ipow_maxy ? ipow_miny : ipow_maxy;
         int ipow_max = ipow_miny > ipow_maxy ? ipow_miny : ipow_maxy;
 
