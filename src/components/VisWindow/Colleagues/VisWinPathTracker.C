@@ -42,6 +42,7 @@
 #include <VisWinPathTracker.h>
 
 #include <VisWindow.h>
+#include <visit-config.h> // for SLASH_CHAR, SLASH_STRING
 
 #include <string>
 #include <vector>
@@ -101,7 +102,9 @@ VisWinPathTracker::Instance()
 {
     // If the singleton instance has not been instantiated, create it.
     if (instance == 0)
-    {instance = new VisWinPathTracker;}
+    {
+        instance = new VisWinPathTracker;
+    }
 
     return instance;
 }
@@ -125,7 +128,9 @@ VisWinPathTracker::AddPath(const std::string &path)
     itr = entires.find(path);
     // if path exists, increment its counter,
     if(itr != entires.end())
-    {entires[path].IncrementRefCount();}
+    {
+        entires[path].IncrementRefCount();
+    }
     else // otherwise create new map entry with ref count of one
     {
         // create a new path entry
@@ -284,6 +289,9 @@ VisWinPathTracker::GetSmartDirectory(const std::string &path)
 //    Cyrus Harrison, Tue Sep 25 09:54:17 PDT 2007
 //    Added construction of the smart directory
 //
+//    Kathleen Bonnell, Thu Dec  6 09:34:01 PST 2007 
+//    Changed "/" to SLASH_STRING for windows compatibility. 
+//
 // ****************************************************************************
 
 void
@@ -328,7 +336,7 @@ VisWinPathTracker::UpdatePaths()
     for ( itr = entires.begin(); itr != entires.end(); ++itr)
     {
         if( dir_common == itr->second.GetDirectory())
-            sdir = dir_common.substr(dir_common.rfind("/")+1);
+            sdir = dir_common.substr(dir_common.rfind(SLASH_STRING)+1);
         else
             sdir = itr->second.GetDirectory().substr(dir_common_size+1);
         
@@ -336,7 +344,7 @@ VisWinPathTracker::UpdatePaths()
     }
 }
 
-/****************************************************************************
+//*****************************************************************************
 //  Method: VisWinPathTracker::GetSubPath
 //
 //  Purpose:
@@ -351,7 +359,10 @@ VisWinPathTracker::UpdatePaths()
 //    Cyrus Harrison, Mon Oct  1 11:39:47 PDT 2007
 //    Switched from right path to left path to support GetCommonPath.
 //
-// *************************************************************************/
+//    Kathleen Bonnell, Thu Dec  6 09:34:01 PST 2007 
+//    Changed '/' to SLASH_CHAR for windows compatibility. 
+//
+// ****************************************************************************
 
 std::string VisWinPathTracker::GetSubPath(const std::string &path,
                                           int depth)
@@ -366,8 +377,8 @@ std::string VisWinPathTracker::GetSubPath(const std::string &path,
 
     for ( i = 0; i < size && cdepth != depth; i++)
     {
-        // if we encounter a /, update depth
-        if(path[i] == '/')
+        // if we encounter a slash, update depth
+        if(path[i] == SLASH_CHAR)
         {
             pos= i;
             cdepth++;
@@ -380,7 +391,7 @@ std::string VisWinPathTracker::GetSubPath(const std::string &path,
         return path.substr(0,pos);
 }
 
-/****************************************************************************
+//*****************************************************************************
 //  Method: VisWinPathTracker::GetCommonPath
 //
 //  Purpose:
@@ -389,7 +400,7 @@ std::string VisWinPathTracker::GetSubPath(const std::string &path,
 //  Programmer: Cyrus Harrison
 //  Creation:   October 1, 2007
 //
-// *************************************************************************/
+// ****************************************************************************
 
 std::string VisWinPathTracker::GetCommonPath(stringVector &paths)
 {
@@ -465,6 +476,9 @@ VisWinPathTracker::Entry::Entry()
 //    Cyrus Harrison, Tue Sep 25 10:57:57 PDT 2007
 //    Added init of fileName and directory
 //
+//    Kathleen Bonnell, Thu Dec  6 09:34:01 PST 2007 
+//    Changed "/" to SLASH_STRING for windows compatibility. 
+//
 // ****************************************************************************
 
 
@@ -476,7 +490,7 @@ VisWinPathTracker::Entry::Entry(const std::string &path)
     directory = path;
     fileName  = path;
     
-    int idx = directory.rfind("/");
+    int idx = directory.rfind(SLASH_STRING);
     if(idx != string::npos)
     {
         fileName  = directory.substr(idx+1);
