@@ -1,168 +1,329 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <HTML>
+
 <HEAD>
+
 <TITLE>VisIt Visualization Tool</TITLE>
-<meta http-equiv="content-type" content="text/html;charset=ISO-8859-1">
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <meta name="LLNLRandR" content="UCRL-WEB-229972">
-<meta name="distribution" content="global">
-<meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
-<meta name="language" content="English">
-<meta name="rating" content="general">
 <meta name="review" content="March 2003">
+<meta name="copyright" content="This document is copyrighted U.S. Department of Energy under Contract DE-AC52-07NA27344">
+<meta name="language" content="en">
+<meta name="rating" content="general">
+<meta name="distribution" content="global">
 <meta name="keywords" content="visualization, qualitative, quantitative, analysis, distributed, parallel, tera-scale, rectilinear, curvilinear, structured, unstructured, mesh, grid, finite element, hydrodynamics, python, java, unix, irix, tru64, aix, linux, solaris, windows 98, windows xp, open source contour, vector, volume visualization, streamlines">
-<meta name="copyright" content="This document is copyrighted U.S. Department of Energy under Contract W-7405-Eng-48">
+<meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods--such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots--for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
+<meta http-equiv="Expires" content="never">
+<meta name="date" content="2007-11-08">
 <meta name="Author" content="Eric Brugger">
+
 <!-- ImageReady Preload Script (home.psd) -->
+
 <SCRIPT TYPE="text/javascript">
+
 <!--
+
 <!--
+
+
 
 function newImage(arg) {
+
 	if (document.images) {
+
 		rslt = new Image();
+
 		rslt.src = arg;
+
 		return rslt;
+
 	}
+
 }
+
+
 
 function changeImages() {
+
 	if (document.images && (preloadFlag == true)) {
+
 		for (var i=0; i<changeImages.arguments.length; i+=2) {
+
 			document[changeImages.arguments[i]].src = changeImages.arguments[i+1];
+
 		}
+
 	}
+
 }
 
+
+
 var preloadFlag = false;
+
 function preloadImages() {
+
 	if (document.images) {
+
 		dloadH_o = newImage("media/dloadH-o.gif");
+
 		dloadH_o005 = newImage("media/dloadH-o-05.gif");
+
 		docH_o = newImage("media/docH-o.gif");
+
 		docH_o008 = newImage("media/docH-o-08.gif");
+
 		docH_o009 = newImage("media/docH-o-09.gif");
+
 		NewH_o = newImage("media/NewH-o.gif");
+
 		AboutH_o = newImage("media/AboutH-o.gif");
+
 		indexH_o = newImage("media/indexH-o.gif");
+
 		contactH_o = newImage("media/contactH-o.gif");
+
 		sshotsH_o = newImage("media/sshotsH-o.gif");
+
                 galleryH_o = newImage("media/galleryH-o.gif");
+
 		FAQH_o = newImage("media/FAQH-o.gif");
+
 		preloadFlag = true;
+
 	}
+
 }
+
+
 
 // -->
 
+
+
 function MM_preloadImages() { //v3.0
+
   var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+
     var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+
     if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+
 }
+
+
 
 function MM_swapImgRestore() { //v3.0
+
   var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+
 }
+
+
 
 function MM_findObj(n, d) { //v4.01
+
   var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+
     d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+
   if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+
   for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+
   if(!x && d.getElementById) x=d.getElementById(n); return x;
+
 }
 
+
+
 function MM_swapImage() { //v3.0
+
   var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+
    if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+
 }
+
 //-->
+
 </SCRIPT>
+
 <!-- End Preload Script -->
+
 <meta name="keywords" content="visualizing scientific quantitative qualitative data plotting 3D operators GUI">
+
 <meta name="description" content="Developed by the Lawrence Livermore National Laboratory, VisIt contains a rich set of visualization methods&#8212;such as contour plots, pesudocolor plots, volume plots, vector plots, and boundary plots&#8212;for visualizing scientific data. VisIt allows the ability to provide quantitative as well as qualitative information from a scientific data set.">
+
 <script language="JavaScript" type="text/JavaScript">
+
 <!--
+
 function MM_reloadPage(init) {  //reloads the window if Nav4 resized
+
   if (init==true) with (navigator) {if ((appName=="Netscape")&&(parseInt(appVersion)==4)) {
+
     document.MM_pgW=innerWidth; document.MM_pgH=innerHeight; onresize=MM_reloadPage; }}
+
   else if (innerWidth!=document.MM_pgW || innerHeight!=document.MM_pgH) location.reload();
+
 }
+
 MM_reloadPage(true);
+
 //-->
+
 </script>
+
 </HEAD>
+
 <BODY BGCOLOR=#333366 background="media/homeBG.gif" LEFTMARGIN=0 TOPMARGIN=0 MARGINWIDTH=0 MARGINHEIGHT=0 ONLOAD="preloadImages();MM_preloadImages('media/dloadH-o.gif','media/NewH-o.gif','media/docH-o.gif','media/AboutH-o.gif','media/sshotsH-o.gif','media/FAQH-o.gif')">
+
 <TABLE WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=0>
+
   <TR>
+
     <TD> <IMG SRC="media/logoH.gif" WIDTH=171 HEIGHT=72 ALT=""></TD>
+
     <TD> <A HREF="download.html"
+
 				ONMOUSEOVER="MM_swapImage('dloadH','','media/dloadH-o.gif',1)"
+
 				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="dloadH" SRC="media/dloadH.gif" WIDTH=130 HEIGHT=72 BORDER=0 ALT="downloads"></A></TD>
+
     <TD> <A HREF="doc.html"
+
 				ONMOUSEOVER="MM_swapImage('docH','','media/docH-o.gif',1)"
+
 				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="docH" SRC="media/docH.gif" WIDTH=130 HEIGHT=72 BORDER=0 ALT="documentation"></A></TD>
+
     <TD> <a href="new.html" onMouseOver="MM_swapImage('Image1','','media/NewH-o.gif',1)" onMouseOut="MM_swapImgRestore()"><IMG SRC="media/NewH.gif" ALT="What's New" name="Image1" WIDTH=161 HEIGHT=72 border="0" id="Image1"></a></TD>
+
     <TD COLSPAN=3> <IMG SRC="media/home_05H.gif" WIDTH=419 HEIGHT=72 ALT=""></TD>
+
     <TD width="100%" ROWSPAN=2 background="media/sideH.gif">&nbsp; </TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=1 HEIGHT=72 ALT=""></TD>
+
   </TR>
+
   <TR>
+
     <TD ROWSPAN=2> <A HREF="about.html"
+
 				ONMOUSEOVER="MM_swapImage('AboutH','','media/AboutH-o.gif',1)"
+
 				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="AboutH" SRC="media/AboutH.gif" WIDTH=171 HEIGHT=51 BORDER=0 ALT="About VisIt"></A></TD>
+
     <TD COLSPAN=4> <IMG SRC="media/nullH.gif" WIDTH=624 HEIGHT=25 ALT=""></TD>
+
     <TD> <A HREF="sitemap.html"
+
 				ONMOUSEOVER="changeImages('indexH', 'media/indexH-o.gif'); return true;"
+
 				ONMOUSEOUT="changeImages('indexH', 'media/indexH.gif'); return true;"> <IMG NAME="indexH" SRC="media/indexH.gif" WIDTH=75 HEIGHT=25 BORDER=0 ALT="Index"></A></TD>
+
     <TD> <A HREF="mailto:visit-help@llnl.gov"
+
 				ONMOUSEOVER="changeImages('contactH', 'media/contactH-o.gif'); return true;"
+
 				ONMOUSEOUT="changeImages('contactH', 'media/contactH.gif'); return true;"> <IMG NAME="contactH" SRC="media/contactH.gif" WIDTH=141 HEIGHT=25 BORDER=0 ALT="Contact"></A></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=1 HEIGHT=25 ALT=""></TD>
+
   </TR>
+
   <TR>
+
     <TD COLSPAN=7 ROWSPAN=5> <IMG SRC="media/centerH.gif" WIDTH=853 HEIGHT=671 ALT="Software that delivers parallel, interactive visualization"></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=1 HEIGHT=26 ALT=""></TD>
+
   </TR>
+
   <TR>
+
     <TD> <A HREF="screens.html"
+
 				ONMOUSEOVER="MM_swapImage('sshotsH','','media/sshotsH-o.gif',1)"
+
 				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="sshotsH" SRC="media/sshotsH.gif" WIDTH=171 HEIGHT=54 BORDER=0 ALT="Screen Shots"></A></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=1 HEIGHT=54 ALT=""></TD>
+
   </TR>
+
   <TR>
+
     <TD> <A HREF="gallery.html"
+
 				ONMOUSEOVER="MM_swapImage('galleryH','','media/galleryH-o.gif',1)"
+
 				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="galleryH" SRC="media/galleryH.gif" WIDTH=171 HEIGHT=36 BORDER=0 ALT="Gallery"></A></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=1 HEIGHT=36 ALT=""></TD>
+
   </TR>
+
   <TR>
+
     <TD> <A HREF="FAQ.html"
+
 				ONMOUSEOVER="MM_swapImage('FAQH','','media/FAQH-o.gif',1)"
+
 				ONMOUSEOUT="MM_swapImgRestore()"> <IMG NAME="FAQH" SRC="media/FAQH.gif" WIDTH=171 HEIGHT=42 BORDER=0 ALT="FAQs"></A></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=1 HEIGHT=36 ALT=""></TD>
+
   </TR>
+
   <TR>
+
     <TD> <IMG SRC="media/leftH.gif" WIDTH=171 HEIGHT=513 ALT=""></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=1 HEIGHT=513 ALT=""></TD>
+
   </TR>
+
   <TR>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=171 HEIGHT=1 ALT=""></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=130 HEIGHT=1 ALT=""></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=130 HEIGHT=1 ALT=""></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=161 HEIGHT=1 ALT=""></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=203 HEIGHT=1 ALT=""></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=75 HEIGHT=1 ALT=""></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=141 HEIGHT=1 ALT=""></TD>
+
     <TD> <IMG SRC="media/spacer.gif" WIDTH=13 HEIGHT=1 ALT=""></TD>
+
     <TD></TD>
+
   </TR>
+
 </TABLE>
+
 <!-- End ImageReady Slices -->
+
 <div id="Layer1" style="position:absolute; width:376px; height:32px; z-index:1; left: 9px; top: 515px;" class="body_text">
+
   <p><font color="#FFFFFF" size="-1" face="Arial, Helvetica, sans-serif">UCRL-WEB-229972<br>
+
       <a href="http://www.llnl.gov/disclaimer.html"><font color="#CCCCFF">legal and 
+
   privacy notice</font></a></font></p>
+
   </div>
+
 </BODY>
+
 </HTML>
+
