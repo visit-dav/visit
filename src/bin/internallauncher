@@ -240,6 +240,9 @@ $0 = shift @ARGV;
 #    launched on are treated as args to the tool. No special quoting is
 #    necessary.
 #
+#    Hank Childs, Fri Dec  7 09:14:57 PST 2007
+#    Added -info-dump to -fullhelp message.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -570,8 +573,9 @@ $fullusage = "$usage
                              Have only every Nth processor output timing info.
                              Prevents overwhelming parallel file systems.
         -env                 Print env. variables VisIt will use when run.
-        -dump                Dump intermediate results from AVT filters and
-                             scalably rendered images.
+        -dump                Dump intermediate results from AVT filters,
+                             scalably rendered images, and html pages.
+        -info-dump           Dump html pages only.
         -gdb                 Run under gdb.
         -gdb-gui             Run the gui under gdb.
         -gdb-cli             Run the cli under gdb.
