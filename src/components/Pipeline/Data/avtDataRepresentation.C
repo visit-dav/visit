@@ -41,11 +41,13 @@
 
 #include <avtDataRepresentation.h>
 
+#include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
 #include <vtkDataSetReader.h>
 #include <vtkDataSetWriter.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataReader.h>
 #include <vtkRectilinearGrid.h>
@@ -893,8 +895,13 @@ avtDataRepresentation::GetTimeToDecompress() const
 //  Programmer: Hank Childs
 //  Creation:   December 21, 2006
 //
-//  Cyrus Harrison, Tue Mar 13 11:41:22 PDT 2007
-//  Added case for debug dumps without dumping vtk datasets (-info-dump)
+//  Modifications:
+//
+//    Cyrus Harrison, Tue Mar 13 11:41:22 PDT 2007
+//    Added case for debug dumps without dumping vtk datasets (-info-dump)
+//
+//    Hank Childs, Fri Dec  7 09:59:34 PST 2007
+//    Added reference counts to output.
 //
 // ****************************************************************************
 
@@ -906,11 +913,11 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         return "EMPTY DATA SET";
     }
 
-    char name[1024];
+    const int strsize = 4096;
+    char name[strsize];
 
     if(datasetDump)
     {
-
         static int times = 0;
 
         
@@ -934,6 +941,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     int nnodes = asVTK->GetNumberOfPoints();
     int dims[3] = { -1, -1, -1 };
     int vtktype = asVTK->GetDataObjectType();
+    int ptcnt = -1;
     switch (vtktype)
     {
       case VTK_RECTILINEAR_GRID:
@@ -944,62 +952,91 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
       case VTK_STRUCTURED_GRID:
         type = "curvilinear mesh";
         ((vtkStructuredGrid *) asVTK)->GetDimensions(dims);
+        ptcnt=((vtkStructuredGrid *) asVTK)->GetPoints()->GetReferenceCount();
         break;
 
       case VTK_UNSTRUCTURED_GRID:
         type = "unstructured mesh";
+        ptcnt=((vtkUnstructuredGrid *) asVTK)->GetPoints()->GetReferenceCount();
         break;
 
       case VTK_POLY_DATA:
         type = "poly data mesh";
+        ptcnt=((vtkPolyData *) asVTK)->GetPoints()->GetReferenceCount();
         break;
     }
 
-    static char str[1024];
+    static char str[strsize];
 
-    if(datasetDump)
+    str[0] = '\0';
+    char *cur = str + 0;
+
+    if (datasetDump)
     {
-        if (dims[0] > 0)
-            sprintf(str, "%s, %s, ncells = %d, npts = %d, dims = %d, %d, %d",
-                    name, type, nzones, nnodes, dims[0], dims[1], dims[2]);
-        else
-            sprintf(str, "%s, %s, ncells = %d, npts = %d",
-                    name, type, nzones, nnodes);
+        sprintf(cur, "%s, ", name);
     }
+    cur = cur + strlen(cur);
+
+    if (dims[0] > 0)
+        sprintf(cur, "%s, ncells = %d, npts = %d, dims = %d, %d, %d",
+                type, nzones, nnodes, dims[0], dims[1], dims[2]);
     else
-    {
-        if (dims[0] > 0)
-            sprintf(str, "%s, ncells = %d, npts = %d, dims = %d, %d, %d",
-                    type, nzones, nnodes, dims[0], dims[1], dims[2]);
-        else
-            sprintf(str, "%s, ncells = %d, npts = %d",
-                    type, nzones, nnodes);
-    }
+        sprintf(str, "%s, ncells = %d, npts = %d",
+                type, nzones, nnodes);
+    cur = cur + strlen(cur);
+    sprintf(cur, "<br>");
+    cur = cur + strlen(cur);
     
-    int remain = 1024 - strlen(str) - 1;
+    if (ptcnt >= 0)
+        sprintf(cur, "Refs to mesh = %d, to points = %d <br>", 
+                asVTK->GetReferenceCount(), ptcnt);
+    else
+        sprintf(cur, "Refs to mesh = %d <br>", asVTK->GetReferenceCount());
+    cur = cur + strlen(cur);
 
-    if (remain > 0) {
-	const char *appendStr = ", field_data_names = [ ";
-	strncat(str, appendStr, remain);
-	remain -= strlen(appendStr);	
-    }
+    int remain = strsize - strlen(str) - 1;
 
- 
-    for (int i=0; i<asVTK->GetFieldData()->GetNumberOfArrays() && remain>0; ++i)
+    // Do field data.
+    vtkFieldData *data[3];
+    data[0] = asVTK->GetFieldData();
+    data[1] = asVTK->GetPointData();
+    data[2] = asVTK->GetCellData();
+    char *names[3];
+    names[0] = "field";
+    names[1] = "point";
+    names[2] = "cell";
+
+    for (int fd = 0 ; fd < 3 ; fd++)
     {
-	strncat(str, asVTK->GetFieldData()->GetArray(i)->GetName(), remain); 
-	remain -= strlen(asVTK->GetFieldData()->GetArray(i)->GetName());
-	if (remain > 0)
-	{
-	    strncat(str, " ", remain); 
-	    remain--;
-	}
-    }
+        if (remain > 0) 
+        {
+            char appendStr[strsize];
+            sprintf(appendStr, "%s_data_names = [", names[fd]);
+	    strncat(str, appendStr, remain);
+	    remain -= strlen(appendStr);	
+        }
 
-    if (remain > 0) {
-	const char *appendStr = " ]";
-	strncat(str, appendStr, remain);
-	remain -= strlen(appendStr);	
+        for (int i=0; i<data[fd]->GetNumberOfArrays() && remain>0; i++)
+        {
+            char tmpString[strsize];
+            sprintf(tmpString, "%s (refs = %d)", 
+                       data[fd]->GetArray(i)->GetName(),
+                       data[fd]->GetArray(i)->GetReferenceCount());
+	    strncat(str, tmpString, remain); 
+	    remain -= strlen(tmpString);
+	    if (remain > 0)
+	    {
+	        strncat(str, " ", remain); 
+	        remain--;
+	    }
+        }
+
+        if (remain > 0)
+        {
+	    const char *appendStr = (fd == 2 ? " ]" : " ]<br>");
+	    strncat(str, appendStr, remain);
+	    remain -= strlen(appendStr);	
+        }
     }
 
     return str;
