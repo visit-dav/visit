@@ -2517,11 +2517,14 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
 //   Kathleen Bonnell, Tue Dec 28 14:36:44 PST 2004
 //   Allow pick letter to NOT be displayed. 
 //
-//    Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
-//    Test for existence of engine before proceeding. 
+//   Kathleen Bonnell, Thu Jul 14 09:16:22 PDT 2005 
+//   Test for existence of engine before proceeding. 
 //    
-//    Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005
-//    Check for non-hidden active plot before checking if EngineExists. 
+//   Kathleen Bonnell, Tue Aug 16 10:03:27 PDT 2005
+//   Check for non-hidden active plot before checking if EngineExists. 
+//
+//   Kathleen Bonnell, Fri Dec  7 10:43:07 PST 2007 
+//   Don't send message if QueryOutput is suppressed. 
 //
 // ****************************************************************************
 
@@ -2590,8 +2593,8 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             }
             msg += append;
         }
-
-        Message(msg.c_str()); 
+        if (!suppressQueryOutput)
+            Message(msg.c_str()); 
         UpdatePickAtts();
 
         //
@@ -4828,6 +4831,9 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
 //    Cyrus Harrison, Wed Sep 19 08:40:27 PDT 2007
 //    Added support for user settable floating point format string
 //
+//    Kathleen Bonnell, Fri Dec  7 10:43:07 PST 2007 
+//    Don't send message if QueryOutput is suppressed. 
+//
 // ****************************************************************************
 
 void
@@ -4857,7 +4863,8 @@ ViewerQueryManager::DoSpatialExtentsQuery(ViewerPlot *oplot, bool actualData)
         queryClientAtts->SetResultsValue(d);
         delete [] ext;
         queryClientAtts->Notify();
-        Message(s.c_str());
+        if (!suppressQueryOutput)
+            Message(s.c_str());
     }
     CATCH2(VisItException, e)
     {
