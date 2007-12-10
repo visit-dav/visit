@@ -62,13 +62,37 @@
 //    Brad Whitlock, Fri Jun 28 13:26:48 PST 2002
 //    Added windows api.
 //
+//    Sean Ahern, Mon Dec 10 09:53:05 EST 2007
+//    Required the expression name.
+//
 // **************************************************************************** 
 
 class AVTEXCEPTION_API ExpressionException : public PipelineException
 {
   public:
-                          ExpressionException(std::string);
+                          ExpressionException(std::string name, std::string reason);
     virtual              ~ExpressionException() VISIT_THROW_NOTHING {;};
+};
+
+
+
+// ****************************************************************************
+//  Class: ExpressionParseException
+//
+//  Purpose:
+//      Thrown when an expression fails to parse.
+//
+//  Programmer: Sean Ahern
+//  Creation:   Mon Dec 10 13:13:08 EST 2007
+//
+//  Modifications:
+// **************************************************************************** 
+
+class AVTEXCEPTION_API ExpressionParseException : public PipelineException
+{
+  public:
+                          ExpressionParseException(std::string reason);
+    virtual              ~ExpressionParseException() VISIT_THROW_NOTHING {;};
 };
 
 
