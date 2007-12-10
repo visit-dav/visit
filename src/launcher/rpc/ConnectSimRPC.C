@@ -214,3 +214,21 @@ ConnectSimRPC::GetSimSecurityKey() const
     return simSecurityKey;
 }
 
+// ****************************************************************************
+// Method: ConnectSimRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 13:27:02 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+ConnectSimRPC::TypeName() const
+{
+    return "ConnectSimRPC";
+}

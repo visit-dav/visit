@@ -150,7 +150,32 @@ ExpandPathRPC::SetPath(const std::string &p)
     SelectAll();
 }
 
-// *******************************************************************
+// ****************************************************************************
+// Method: ExpandPathRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+ExpandPathRPC::TypeName() const
+{
+    return "ExpandPathRPC";
+}
+
+// ****************************************************************************
 // Method: ExpandPathRPC::PathName::PathName
 //
 // Purpose: 
@@ -161,14 +186,14 @@ ExpandPathRPC::SetPath(const std::string &p)
 //
 // Modifications:
 //   
-// *******************************************************************
+// ****************************************************************************
 
 ExpandPathRPC::PathName::PathName() : AttributeSubject("s"),
     name()
 {
 }
 
-// *******************************************************************
+// ****************************************************************************
 // Method: ExpandPathRPC::PathName::~PathName
 //
 // Purpose: 
@@ -179,13 +204,13 @@ ExpandPathRPC::PathName::PathName() : AttributeSubject("s"),
 //
 // Modifications:
 //   
-// *******************************************************************
+// ****************************************************************************
 
 ExpandPathRPC::PathName::~PathName()
 {
 }
 
-// *******************************************************************
+// ****************************************************************************
 // Method: ExpandPathRPC::PathName::SelectAll
 //
 // Purpose: 
@@ -196,10 +221,35 @@ ExpandPathRPC::PathName::~PathName()
 //
 // Modifications:
 //   
-// *******************************************************************
+// ****************************************************************************
 
 void
 ExpandPathRPC::PathName::SelectAll()
 {
     Select(0, (void *)&name);
+}
+
+// ****************************************************************************
+// Method: ExpandPathRPC::PathName::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+ExpandPathRPC::PathName::TypeName() const
+{
+    return "ExpandPathRPC::PathName";
 }

@@ -167,3 +167,22 @@ KeepAliveRPC::GetValue() const
 {
     return value;
 }
+
+// ****************************************************************************
+// Method: KeepAliveRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+KeepAliveRPC::TypeName() const
+{
+    return "KeepAliveRPC";
+}

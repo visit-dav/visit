@@ -64,7 +64,7 @@ public:
     QueryRPC();
     virtual ~QueryRPC() { };
 
-    const std::string TypeName() const { return "QueryRPC";};
+    virtual const std::string TypeName() const { return "QueryRPC"; }
 
     // Invokation method
     void operator() (const std::vector<int> &netids, const QueryAttributes *);

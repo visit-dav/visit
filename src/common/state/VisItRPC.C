@@ -47,7 +47,8 @@ VisItRPC::RPCReply::RPCReply(int s, AttributeSubject *d)
       status(s),
       message(""),
       type(""),
-      data(d)
+      data(d),
+      rpcName("")
 {
 }
 
@@ -118,6 +119,19 @@ VisItRPC::RPCReply::GetData()
     return data;
 }
 
+void
+VisItRPC::RPCReply::SetRPCName(const std::string &name)
+{
+    rpcName = name;
+}
+
+const std::string
+VisItRPC::RPCReply::TypeName() const
+{
+    std::string ret(data ? data->TypeName() : 
+                    std::string("VisItRPC::RPCReply"));
+    return ret + std::string(" (from ") + rpcName + std::string(")");
+}
 
 //-----------------------------------------------------------------------------
 
@@ -154,6 +168,8 @@ VisItRPC::GetExceptionType() const
 VisItRPC::RPCReply *
 VisItRPC::GetReply()
 {
+    reply.SetRPCName(TypeName());
+
     return &reply;
 }
 

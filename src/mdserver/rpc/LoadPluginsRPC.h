@@ -51,6 +51,10 @@
 // Programmer: Hank Childs
 // Creation:   January 22, 2004
 //
+// Modifications:
+//   Brad Whitlock, Fri Dec  7 11:47:50 PST 2007
+//   Added TypeName override.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API LoadPluginsRPC : public NonBlockingRPC
@@ -65,7 +69,7 @@ public:
     // Property selection methods
     virtual void SelectAll();
 
-private:
+    virtual const std::string TypeName() const;
 };
 
 

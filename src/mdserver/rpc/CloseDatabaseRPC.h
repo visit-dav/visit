@@ -55,6 +55,9 @@
 //   Brad Whitlock, Fri Feb 4 08:24:38 PDT 2005
 //   Added a database argument.
 //
+//   Brad Whitlock, Fri Dec  7 11:06:35 PST 2007
+//   Added TypeName override.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API CloseDatabaseRPC : public BlockingRPC
@@ -70,6 +73,8 @@ public:
 
     void SetDatabase(const std::string &db);
     const std::string &GetDatabase() { return database; };
+
+    virtual const std::string TypeName() const;
 private:
     std::string database;
 };

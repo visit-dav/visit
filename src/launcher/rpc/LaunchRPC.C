@@ -136,3 +136,21 @@ LaunchRPC::GetLaunchArgs() const
     return launchArgs;
 }
 
+// ****************************************************************************
+// Method: LaunchRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 13:27:02 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+LaunchRPC::TypeName() const
+{
+    return "LaunchRPC";
+}

@@ -91,7 +91,7 @@ public:
     SetWinAnnotAttsRPC();
     virtual ~SetWinAnnotAttsRPC();
 
-    const std::string TypeName() const { return "SetWinAnnotAttsRPC";};
+    virtual const std::string TypeName() const { return "SetWinAnnotAttsRPC"; }
 
     // Invokation method
     void operator()(const WindowAttributes*,

@@ -53,6 +53,8 @@
 // Creation:   Thu Mar 11 12:32:22 PDT 2004
 //
 // Modifications:
+//   Brad Whitlock, Fri Dec  7 11:55:07 PST 2007
+//   Added TypeName override.
 //
 // ****************************************************************************
 
@@ -74,6 +76,7 @@ public:
     // Property getting methods
     int GetValue() const;
 
+    virtual const std::string TypeName() const;
 private:
     int value;
 };

@@ -59,7 +59,7 @@ class ENGINE_RPC_API ConstructDDFRPC : public BlockingRPC
     ConstructDDFRPC();
     virtual ~ConstructDDFRPC();
 
-    const std::string TypeName() const { return "ConstructDDFRPC";};
+    virtual const std::string TypeName() const { return "ConstructDDFRPC"; }
 
     // Invocation method
     void operator()(const int, const ConstructDDFAttributes *);

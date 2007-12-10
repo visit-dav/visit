@@ -59,6 +59,9 @@
 //   Brad Whitlock, Mon Jun 16 13:39:48 PST 2003
 //   I changed the definition so all fields are encapsulated in a string vector.
 //
+//   Brad Whitlock, Fri Dec  7 11:09:08 PST 2007
+//   Added TypeName override.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API ConnectRPC : public NonBlockingRPC
@@ -75,6 +78,8 @@ public:
 
     // Access methods
     const stringVector &GetArguments() const;
+
+    virtual const std::string TypeName() const;
 private:
     stringVector arguments;
 };

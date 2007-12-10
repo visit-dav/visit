@@ -59,6 +59,9 @@
 //   Brad Whitlock, Tue Aug 29 10:57:00 PDT 2000
 //   I moved DirectoryName's implementation to the .C file.
 //
+//   Brad Whitlock, Fri Dec  7 11:39:33 PST 2007
+//   Added TypeName override.
+//
 // *******************************************************************
 
 class MDSERVER_RPC_API GetDirectoryRPC : public BlockingRPC
@@ -71,8 +74,7 @@ public:
         DirectoryName();
         ~DirectoryName();
         virtual void SelectAll();
-        virtual const std::string TypeName() const
-            { return "GetDirectoryRPC::DirectoryName"; };
+        virtual const std::string TypeName() const;
     };
 public:
     GetDirectoryRPC();
@@ -83,6 +85,8 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+
+    virtual const std::string TypeName() const;
 private:
     DirectoryName cwd;
 };

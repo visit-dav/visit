@@ -2413,10 +2413,86 @@ AttributeGroup::GetFieldType(int index) const
     return FieldType_unknown;
 }
 
+// ****************************************************************************
+// Method: AttributeGroup::GetFieldTypeName
+//
+// Purpose: 
+//   Returns the field type name based on information available in the type map.
+//
+// Arguments:
+//   index : The index of the field type name to retrieve.
+//
+// Returns:    The name of the type.
+//
+// Note:       This base implementation does not account for types such as 
+//             line width, scale mode, etc that are built on top of 
+//             regular AttributeGroup field types. We provide this method
+//             for objects that did not provide a GetFieldTypeName method.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 15:58:47 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 std::string
 AttributeGroup::GetFieldTypeName(int index) const
 {
-    return "<UNKNOWN type>";
+    static const char *fieldTypeNames[] = {
+    "none", "char", "unsigned char", "int", "long", "float", "double", "string", "att", "bool",
+    "char[%d]", "unsigned char[%d]", "int[%d]", "long[%d]", "float[%d]", "double[%d]", "string[%d]", "att", "bool[%d]",
+    "charVector", "unsignedCharVector", "intVector", "longVector", "floatVector", "doubleVector", "stringVector", "attVector", "boolVector"
+    };
+    std::string retval("<UNKNOWN type>");
+    if(index >= 0 && index < typeMap.size())
+    { 
+        // Get around calling some non-const methods for now.
+        AttributeGroup *THIS = const_cast<AttributeGroup *>(this);
+
+        if(typeMap[index].typeCode == msgTypeAttributeGroup)
+        {
+            THIS->SelectAll();
+            retval = std::string(fieldTypeNames[typeMap[index].typeCode]);
+            AttributeGroup *s = (AttributeGroup *)typeMap[index].address;
+            if(s != 0)
+            {
+                retval += ",";
+                retval += s->TypeName();
+            }
+        }
+        else if(typeMap[index].typeCode == msgTypeListAttributeGroup ||
+                typeMap[index].typeCode == msgTypeVectorAttributeGroup)
+        {
+            retval = std::string(fieldTypeNames[typeMap[index].typeCode]);
+            AttributeGroup *s = THIS->CreateSubAttributeGroup(index);
+            if(s != 0)
+            {
+                retval += ",";
+                retval += s->TypeName();
+                delete s;
+            }
+            if(typeMap[index].typeCode == msgTypeListAttributeGroup)
+            {
+                char arr[100];
+                THIS->SelectAll();
+                sprintf(arr, "[%d]", typeMap[index].length);
+                retval += arr;
+            }
+        }
+        else if(typeMap[index].typeCode >= msgTypeListChar &&
+                typeMap[index].typeCode <= msgTypeListBool)
+        {
+            char tname[100];
+            THIS->SelectAll();
+            sprintf(tname, fieldTypeNames[typeMap[index].typeCode], typeMap[index].length);
+            retval = std::string(tname);
+        }
+        else
+            retval = std::string(fieldTypeNames[typeMap[index].typeCode]);
+    }
+
+    return retval;
 }
 
 bool

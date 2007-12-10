@@ -61,7 +61,7 @@ class ENGINE_RPC_API PrepareUpdatePlotAttsRPC : public BlockingRPC
     PrepareUpdatePlotAttsRPC();
     ~PrepareUpdatePlotAttsRPC();
 
-    const std::string TypeName() const { return "PrepareUpdatePlotAttsRPC";};
+    virtual const std::string TypeName() const { return "PrepareUpdatePlotAttsRPC"; }
 
     void SetUpdatePlotAttsRPC(UpdatePlotAttsRPC*);
     UpdatePlotAttsRPC *GetUpdatePlotAttsRPC();
@@ -96,7 +96,7 @@ class ENGINE_RPC_API UpdatePlotAttsRPC : public BlockingRPC
     UpdatePlotAttsRPC();
     virtual ~UpdatePlotAttsRPC();
 
-    const std::string TypeName() const { return "UpdatePlotAttsRPC";};
+    virtual const std::string TypeName() const { return "UpdatePlotAttsRPC"; }
 
     void operator()(const std::string&, int, const AttributeSubject*);
 

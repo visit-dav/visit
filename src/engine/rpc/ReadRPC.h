@@ -75,7 +75,7 @@ public:
     ReadRPC();
     virtual ~ReadRPC();
 
-    const std::string TypeName() const { return "ReadRPC";};
+    virtual const std::string TypeName() const { return "ReadRPC"; }
 
     // Invokation method
     void operator()(const std::string &format, const std::string& filename,

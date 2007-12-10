@@ -243,6 +243,9 @@ $0 = shift @ARGV;
 #    Hank Childs, Fri Dec  7 09:14:57 PST 2007
 #    Added -info-dump to -fullhelp message.
 #
+#    Brad Whitlock, Mon Dec 10 14:05:43 PST 2007
+#    Added -protocol to the -fullhelp message.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -602,6 +605,9 @@ $fullusage = "$usage
 
         -numrestarts <#>     Number of attempts to restart a failed engine.
         -quiet               Don't print the Running message.
+        -protocol            Print the definitions of the state objects that
+                             comprise the VisIt protocol so they can be compared
+                             against the values on other computers.
 ";
 
 # Get our location

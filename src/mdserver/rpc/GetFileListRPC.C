@@ -229,6 +229,25 @@ GetFileListRPC::GetSmartFileGrouping() const
 }
 
 // ****************************************************************************
+// Method: GetFileListRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+GetFileListRPC::TypeName() const
+{
+    return "GetFileListRPC";
+}
+
+// ****************************************************************************
 // Method: GetFileListRPC::FileList::FileList
 //
 // Purpose: 
@@ -322,6 +341,25 @@ GetFileListRPC::FileList::Clear()
 
     virtualNames.clear();
     numVirtualFiles.clear();
+}
+
+// ****************************************************************************
+// Method: GetFileListRPC::FileList::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+GetFileListRPC::FileList::TypeName() const
+{
+    return "GetFileListRPC::FileList";
 }
 
 // ****************************************************************************

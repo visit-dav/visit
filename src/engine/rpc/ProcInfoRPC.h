@@ -58,7 +58,7 @@ public:
     ProcInfoRPC();
     virtual ~ProcInfoRPC() { };
 
-    const std::string TypeName() const { return "ProcInfoRPC";};
+    virtual const std::string TypeName() const { return "ProcInfoRPC"; }
 
     // Invokation method
     void operator()() { Execute(); };

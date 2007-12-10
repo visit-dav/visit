@@ -155,3 +155,28 @@ ConnectRPC::GetArguments() const
 {
      return arguments;
 }
+
+// ****************************************************************************
+// Method: ConnectRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+ConnectRPC::TypeName() const
+{
+    return "ConnectRPC";
+}

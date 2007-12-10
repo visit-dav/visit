@@ -138,3 +138,28 @@ CloseDatabaseRPC::SetDatabase(const std::string &db)
     database = db;
     SelectAll();
 }
+
+// ****************************************************************************
+// Method: CloseDatabaseRPC::TypeName
+//
+// Purpose: 
+//   Returns the name of the RPC.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:05:47 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+CloseDatabaseRPC::TypeName() const
+{
+    return "CloseDatabaseRPC";
+}

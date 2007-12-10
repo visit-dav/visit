@@ -53,6 +53,8 @@
 // Creation:   Fri May 2 16:17:26 PST 2003
 //
 // Modifications:
+//   Brad Whitlock, Fri Dec  7 13:28:21 PST 2007
+//   Added TypeName override.
 //
 // ****************************************************************************
 
@@ -70,6 +72,8 @@ public:
 
     // Methods to access private data.
     const stringVector &GetLaunchArgs() const;
+
+    virtual const std::string TypeName() const;
 private:
     stringVector launchArgs;
 };

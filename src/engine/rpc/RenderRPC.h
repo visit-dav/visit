@@ -70,7 +70,7 @@ public:
     RenderRPC();
     virtual ~RenderRPC();
 
-    const std::string TypeName() const { return "RenderRPC";};
+    virtual const std::string TypeName() const { return "RenderRPC"; }
 
     // Invokation method
     void operator()(const intVector&,bool,int,int,bool);

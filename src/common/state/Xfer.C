@@ -730,3 +730,54 @@ Xfer::SetupSpecialOpcodeHandler(void (*cb)(int, void *), void *data)
     specialOpcodeCallback = cb;
     specialOpcodeCallbackData = data;
 }
+
+// ****************************************************************************
+// Method: Xfer::GetSubject
+//
+// Purpose: 
+//   Return the i'th subject in the Xfer.
+//
+// Arguments:
+//   index : The index of the object to return.
+//
+// Returns:    The pointer to the i'th subject or 0.
+//
+// Note:       This method should almost never need to be used.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 17:03:55 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const AttributeSubject *
+Xfer::GetSubject(int index) const
+{
+    return (index >= 0 && index < subjectList.size()) ? subjectList[index] : 0;
+}
+
+// ****************************************************************************
+// Method: Xfer::GetNumSubjects
+//
+// Purpose: 
+//   Return the number of subjects in the Xfer.
+//
+// Arguments:
+//
+// Returns:    The number of subjects.
+//
+// Note:       This method should almost never need to be used.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 17:03:55 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+Xfer::GetNumSubjects() const
+{
+    return subjectList.size();
+}

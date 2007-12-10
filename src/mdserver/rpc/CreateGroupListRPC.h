@@ -58,7 +58,9 @@ using std::vector;
 // Creation:   Tue Feb 13 14:45:41 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec  7 11:12:32 PST 2007
+//   Added TypeName override.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API CreateGroupListRPC : public NonBlockingRPC
@@ -71,6 +73,8 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+
+    virtual const std::string TypeName() const;
 
     // Access methods
     string filename;

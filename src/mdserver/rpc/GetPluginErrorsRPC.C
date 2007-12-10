@@ -119,6 +119,25 @@ GetPluginErrorsRPC::SelectAll()
     // no data sent
 }
 
+// ****************************************************************************
+// Method: GetPluginErrorsRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+GetPluginErrorsRPC::TypeName() const
+{
+    return "GetPluginErrorsRPC";
+}
+
 // *******************************************************************
 // Method: GetPluginErrorsRPC::PluginErrors::PluginErrors
 //
@@ -171,4 +190,23 @@ void
 GetPluginErrorsRPC::PluginErrors::SelectAll()
 {
     Select(0, (void *)&errorString);
+}
+
+// ****************************************************************************
+// Method: GetPluginErrorsRPC::PluginErrors::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+GetPluginErrorsRPC::PluginErrors::TypeName() const
+{
+    return "GetPluginErrorsRPC::PluginErrors";
 }

@@ -4066,6 +4066,9 @@ avtDatabaseMetaData::ReplaceForbiddenCharacters(std::vector<char> &badChars,
 //    Jeremy Meredith, Tue Aug  2 10:45:01 PDT 2005
 //    Changed the new m.m.d. for point meshes to avoid using a temporary.
 //
+//    Brad Whitlock, Tue Nov 27 15:51:36 PST 2007
+//    Turn topdim==0 unstructured meshes into point meshes.
+//
 // ****************************************************************************
 
 void
@@ -4083,6 +4086,11 @@ avtDatabaseMetaData::Add(avtMeshMetaData *mmd)
         avtMeshMetaData *tmpmmd = new avtMeshMetaData(*mmd);
         tmpmmd->topologicalDimension = 0;
         meshes.push_back(tmpmmd);
+    }
+    else if (mmd->meshType == AVT_UNSTRUCTURED_MESH && mmd->topologicalDimension == 0)
+    {
+        mmd->meshType = AVT_POINT_MESH;
+        meshes.push_back(mmd);
     }
     else
     {

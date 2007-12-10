@@ -57,6 +57,9 @@
 //    Jeremy Meredith, Mon May  9 14:41:35 PDT 2005
 //    Added security key.
 //
+//    Brad Whitlock, Fri Dec  7 13:26:30 PST 2007
+//    Added TypeName override.
+//
 // ****************************************************************************
 
 class LAUNCHER_RPC_API ConnectSimRPC : public BlockingRPC
@@ -78,6 +81,7 @@ class LAUNCHER_RPC_API ConnectSimRPC : public BlockingRPC
     int                 GetSimPort() const;
     const std::string  &GetSimSecurityKey() const;
 
+    virtual const std::string TypeName() const;
   private:
     stringVector launchArgs;
     std::string  simHost;

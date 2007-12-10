@@ -52,6 +52,8 @@
 // Creation:   February  7, 2005
 //
 // Modifications:
+//   Brad Whitlock, Fri Dec  7 11:45:37 PST 2007
+//   Added TypeName override.
 //
 // *******************************************************************
 
@@ -65,8 +67,7 @@ public:
         PluginErrors();
         ~PluginErrors();
         virtual void SelectAll();
-        virtual const std::string TypeName() const
-            { return "GetPluginErrorsRPC::PluginErrors"; };
+        virtual const std::string TypeName() const;
     };
 public:
     GetPluginErrorsRPC();
@@ -77,6 +78,8 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+
+    virtual const std::string TypeName() const;
 private:
     PluginErrors errors;
 };
