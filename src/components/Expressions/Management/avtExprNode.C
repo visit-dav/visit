@@ -240,7 +240,7 @@ avtFloatConstExpr::CreateFilters(ExprPipelineState *state)
 void
 avtStringConstExpr::CreateFilters(ExprPipelineState *state)
 {
-    EXCEPTION1(ExpressionException,
+    EXCEPTION1(ExpressionParseException,
                "avtStringConstExpr::CreateFilters: "
                "Unsupported constant type: String");
 }
@@ -260,7 +260,7 @@ avtStringConstExpr::CreateFilters(ExprPipelineState *state)
 void
 avtBooleanConstExpr::CreateFilters(ExprPipelineState *state)
 {
-    EXCEPTION1(ExpressionException,
+    EXCEPTION1(ExpressionParseException,
                "avtStringConstExpr::CreateFilters: "
                "Unsupported constant type: Bool");
 }
@@ -279,7 +279,7 @@ avtUnaryExpr::CreateFilters(ExprPipelineState *state)
         string error =
             string("avtUnaryExpr::CreateFilters: "
                    "Unknown unary operator:\"") + op + string("\".");
-        EXCEPTION1(ExpressionException, error);
+        EXCEPTION1(ExpressionParseException, error);
     }
 
     // Set the variable the function should process.
@@ -319,7 +319,7 @@ avtBinaryExpr::CreateFilters(ExprPipelineState *state)
         string error =
             string("avtBinaryExpr::CreateFilters: "
                    "Unknown binary operator:\"") + op + string("\".");
-        EXCEPTION1(ExpressionException, error);
+        EXCEPTION1(ExpressionParseException, error);
     }
 
     // Set the variable the function should process.
@@ -985,7 +985,7 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
             string("avtFunctionExpr::CreateFilters: "
                    "Unknown function:\"") + functionName +
                    string("\".");
-        EXCEPTION1(ExpressionException, error);
+        EXCEPTION1(ExpressionParseException, error);
     }
 
     // Have the filter process arguments as necessary.  It's important
@@ -1006,7 +1006,7 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
             inputName = state->PopName();
         else
         {
-            EXCEPTION1(ExpressionException, "Parsing of your expression has "
+            EXCEPTION2(ExpressionException, outputName, "Parsing of your expression has "
                        "failed.  Failures of the type VisIt's parser has "
                        "encountered are often caused when an expression is "
                        "given less arguments than that expression expects.");

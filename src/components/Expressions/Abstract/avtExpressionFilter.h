@@ -101,6 +101,9 @@ class     ExprPipelineState;
 //    Hank Childs, Mon Jan  8 10:17:15 PST 2007
 //    Added method to determine variable type of variable.
 //
+//    Sean Ahern, Mon Dec 10 09:59:51 EST 2007
+//    Added an expression name to Recenter for error messages.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -118,7 +121,8 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     virtual void             ProcessArguments(ArgsExpr *, ExprPipelineState *);
     virtual int              NumVariableArguments() = 0;
-    static vtkDataArray     *Recenter(vtkDataSet*, vtkDataArray*,avtCentering);
+    static vtkDataArray     *Recenter(vtkDataSet*, vtkDataArray*,
+                                      avtCentering, std::string name);
 
   protected:
     char                    *outputVariableName;

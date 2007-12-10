@@ -531,7 +531,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     int nargs = arguments->size();
     if (nargs == 0)
     {
-        EXCEPTION1(ExpressionException, "avtSpecMFFilter: No arguments given.");
+        EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFFilter: No arguments given.");
     }
     // Tell the first argument to create its filters.
     ArgExpr *firstarg = (*arguments)[0];
@@ -548,7 +548,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // See if there are other arguments.
     if (nargs > 4)
     {
-        EXCEPTION1(ExpressionException, "avtSpecMFFilter only expects three "
+        EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFFilter only expects three "
                    "or four arguments.  To specify more than one species,"
                    " , use a list (e.g. [1,4,5:9].");
     }
@@ -560,7 +560,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     if (secondtype != "IntegerConst" && secondtype != "StringConst")
     {
         debug5 << "avtSpecMFFilter: Second argument is not a string or integer constant: " << secondtype.c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtSpecMFFilter: Second argument is not a string or integer constant.");
+        EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFFilter: Second argument is not a string or integer constant.");
     }
 
     // It's a single constant.
@@ -573,7 +573,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     if ((thirdtype != "IntegerConst") && (thirdtype != "StringConst") && (thirdtype != "List"))
     {
         debug5 << "avtSpecMFFilter: Third argument is not a string/int constant or a list: " << thirdtype.c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtSpecMFFilter: Third argument is not a string/int constant or a list.");
+        EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFFilter: Third argument is not a string/int constant or a list.");
     }
 
     if (thirdtype == "IntegerConst" || thirdtype == "StringConst")
@@ -599,7 +599,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     endExpr->GetTypeName() != "IntegerConst" ||
                     (skipExpr && skipExpr->GetTypeName() != "IntegerConst"))
                 {
-                    EXCEPTION1(ExpressionException, "avtSpecMFFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFFilter: "
                                "Range must contain integers.");
                 }
 
@@ -610,7 +610,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
                 if (skip <= 0 || beg > end)
                 {
-                    EXCEPTION1(ExpressionException, "avtSpecMFFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFFilter: "
                                "Range must be of the form beg:end[:skip].");
                 }
 
@@ -626,7 +626,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     debug5 << "avtSpecMFFilter: List element is not an "
                               "integer constant, a string constant, "
                               "or a list: " << type.c_str() << endl;
-                    EXCEPTION1(ExpressionException, "avtSpecMFFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFFilter: "
                                "List element is not a string/int constant or a list.");
                 }
 
@@ -645,7 +645,7 @@ avtSpecMFFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
         string fourthtype = fourthTree->GetTypeName();
         if ((fourthtype != "BooleanConst"))
         {
-            EXCEPTION1(ExpressionException, "avtSpecMFFilter: Fourth argument is not a constant boolean (true, false).");
+            EXCEPTION2(ExpressionException, outputVariableName, "avtSpecMFFilter: Fourth argument is not a constant boolean (true, false).");
         }
         weightByVF = dynamic_cast<BooleanConstExpr*>(fourthTree)->GetValue();
     }

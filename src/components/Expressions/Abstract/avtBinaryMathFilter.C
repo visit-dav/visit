@@ -155,7 +155,7 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if (data1 == NULL)
     {
-        EXCEPTION1(ExpressionException, "An internal error occurred when "
+        EXCEPTION2(ExpressionException, outputVariableName, "An internal error occurred when "
               "calculating an expression.  Please contact a VisIt developer.");
     }
 
@@ -170,12 +170,12 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
             data2 = in_ds->GetPointData()->GetArray(varnames[1]);
             if (data2 != NULL)
             {
-                data2 = Recenter(in_ds, data2, AVT_NODECENT);
+                data2 = Recenter(in_ds, data2, AVT_NODECENT, outputVariableName);
                 ownData2 = true;
             }
             else
             {
-                EXCEPTION1(ExpressionException, "Unable to locate variable");
+                EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable");
             }
         }
     }
@@ -188,13 +188,13 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
             if (data2 != NULL)
             {
                 // Recenter data1 so it will match data2.  We want both zonal.
-                data1 = Recenter(in_ds, data1, AVT_NODECENT);
+                data1 = Recenter(in_ds, data1, AVT_NODECENT, outputVariableName);
                 centering = AVT_ZONECENT;
                 ownData1 = true;
             }
             else
             {
-                EXCEPTION1(ExpressionException, "Unable to locate variable");
+                EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable");
             }
         }
     }

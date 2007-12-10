@@ -117,7 +117,7 @@ avtBase10LogFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
             float f = in->GetComponent(i, j);
             if (f <= 0)
             {
-                EXCEPTION1(ExpressionException,
+                EXCEPTION2(ExpressionException, outputVariableName,
                            "you cannot take the logarithm of values <= 0");
             }
             f = log10(f);

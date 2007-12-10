@@ -159,7 +159,7 @@ avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     int nargs = arguments->size();
     if (nargs == 0)
     {
-        EXCEPTION1(ExpressionException, "avtRandomFilter: No arguments given.");
+        EXCEPTION2(ExpressionException, outputVariableName, "avtRandomFilter: No arguments given.");
     }
 
     // Tell the first argument to create its filters.
@@ -181,7 +181,7 @@ avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     {
         debug5 << "avtRandomFilter: Second argument is not a constant: "
                << secondTree->GetTypeName().c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtRandomFilter: Second argument is "
+        EXCEPTION2(ExpressionException, outputVariableName, "avtRandomFilter: Second argument is "
                    "not an integer constant.");
     }
 
@@ -193,6 +193,6 @@ avtRandomFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // See if there are other arguments.
     if (nargs > 2)
     {
-        EXCEPTION1(ExpressionException, "avtRandomFilter: Too many arguments.");
+        EXCEPTION2(ExpressionException, outputVariableName, "avtRandomFilter: Too many arguments.");
     }
 }

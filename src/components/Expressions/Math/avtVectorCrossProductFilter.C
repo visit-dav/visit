@@ -112,7 +112,7 @@ avtVectorCrossProductFilter::DoOperation(vtkDataArray *in1,
 {
     if (ncomponents != 3)
     {
-        EXCEPTION1(ExpressionException,
+        EXCEPTION2(ExpressionException, outputVariableName,
                    "you cannot take the cross product of data which are not 3-component vectors.");
     }
 

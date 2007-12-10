@@ -188,7 +188,7 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if (data2 == NULL)
     {
-        EXCEPTION1(ExpressionException, 
+        EXCEPTION2(ExpressionException, outputVariableName, 
                    "The first two variables have different centering.");
     }
 
@@ -202,7 +202,7 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
     
         if (data3 == NULL)
         {
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName, 
                    "The first and third variables have different centering.");
         }
     }
@@ -260,12 +260,12 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
                              "%d into a vector or tensor.", 
                               data1->GetNumberOfComponents(),
                               data2->GetNumberOfComponents());
-                EXCEPTION1(ExpressionException, str);
+                EXCEPTION2(ExpressionException, outputVariableName, str);
             }
         }
         else if (numinputs == 3)
         {
-            EXCEPTION1(ExpressionException, "I don't know how to compose "
+            EXCEPTION2(ExpressionException, outputVariableName, "I don't know how to compose "
                            "3 variables to make a field for a 2D dataset.");
         }
     }
@@ -315,7 +315,7 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
             }
             else
             {
-                EXCEPTION1(ExpressionException, "The only interpretation "
+                EXCEPTION2(ExpressionException, outputVariableName, "The only interpretation "
                            "VisIt can make of 3 variables for a 3D dataset is "
                            "a vector or a tensor.  But these inputs don't have"
                            " the right number of components to make either.");
@@ -323,7 +323,7 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
         }
         else 
         {
-            EXCEPTION1(ExpressionException, "You must specify three vectors "
+            EXCEPTION2(ExpressionException, outputVariableName, "You must specify three vectors "
                         "to compose a field for a 3D dataset.");
         }
     }

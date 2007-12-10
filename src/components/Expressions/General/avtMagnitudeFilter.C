@@ -138,13 +138,13 @@ avtMagnitudeFilter::DeriveVariable(vtkDataSet *in_ds)
     }
     if (vectorValues == NULL)
     {
-        EXCEPTION1(ExpressionException, "Unable to locate variable for "
+        EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable for "
                                         "magnitude expression");
     }
 
     if (vectorValues->GetNumberOfComponents() != 3)
     {
-        EXCEPTION1(ExpressionException, "Can only take magnitude of vectors.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Can only take magnitude of vectors.");
     }
     int ntuples = vectorValues->GetNumberOfTuples();
 

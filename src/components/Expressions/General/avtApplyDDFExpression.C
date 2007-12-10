@@ -136,7 +136,8 @@ avtApplyDDFExpression::ProcessArguments(ArgsExpr *args,
     int nargs = arguments->size();
     if (nargs != 2)
     {
-        EXCEPTION1(ExpressionException, "the syntax for the apply_ddf "
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "the syntax for the apply_ddf "
                     "expression were incorrect.  Arguments should be: "
                     "<meshname>, \"ddf_name\"");
     }
@@ -151,7 +152,8 @@ avtApplyDDFExpression::ProcessArguments(ArgsExpr *args,
     string type = secondTree->GetTypeName();
     if (type != "Var")
     {
-        EXCEPTION1(ExpressionException, "the syntax for the apply_ddf "
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "the syntax for the apply_ddf "
                     "expression were incorrect.  Arguments should be: "
                     "<meshname>, \"ddf_name\"");
     }
@@ -161,14 +163,16 @@ avtApplyDDFExpression::ProcessArguments(ArgsExpr *args,
     {
         // No one ever registered the callback.  The NetworkManager should
         // do this.
-        EXCEPTION1(ExpressionException, "An internal error occurred when "
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "An internal error occurred when "
                         "trying to locate the DDF.");
     }
 
     theDDF = getDDFCallback(getDDFCallbackArgs, ddfName.c_str());
     if (theDDF == NULL)
     {
-        EXCEPTION1(ExpressionException, "The DDF name you have specified is "
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "The DDF name you have specified is "
                         "not recognized.  VisIt is only aware of the DDFs that"
                         " have been calculated this session.  In addition, if "
                         "the engine crashes, you must have VisIt regenerate "
@@ -195,7 +199,7 @@ avtApplyDDFExpression::PerformRestriction(avtPipelineSpecification_p spec)
     if (theDDF == NULL)
     {
         // We should have failed before getting to this point...
-        EXCEPTION1(ExpressionException, "Could not locate the DDF.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the DDF.");
     }
 
     avtDataSpecification_p ds = spec->GetDataSpecification();
@@ -239,7 +243,7 @@ avtApplyDDFExpression::DeriveVariable(vtkDataSet *in_ds)
     if (theDDF == NULL)
     {
         // We should have failed before getting to this point...
-        EXCEPTION1(ExpressionException, "Could not locate the DDF.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Could not locate the DDF.");
     }
 
     vtkDataArray *res = theDDF->ApplyFunction(in_ds);
@@ -247,7 +251,7 @@ avtApplyDDFExpression::DeriveVariable(vtkDataSet *in_ds)
     if ( res == NULL)
     {
         // ddf was unsuccessful, this is probably due to a centering problem
-        EXCEPTION1(ExpressionException,
+        EXCEPTION2(ExpressionException, outputVariableName,
                    "Could not apply the ddf. Please check that all variables "
                    " are valid and have the same centering.");
     }

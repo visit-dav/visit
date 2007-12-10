@@ -230,8 +230,8 @@ avtBinaryMultiplyFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Don't know how to multiply vectors "
-                                        "of differing dimensions.");
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "Don't know how to multiply vectors of differing dimensions.");
     }
 }
 

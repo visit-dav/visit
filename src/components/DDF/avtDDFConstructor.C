@@ -66,6 +66,7 @@
 #include <BadIndexException.h>
 #include <DebugStream.h>
 #include <ExpressionException.h>
+#include <PipelineException.h>
 #include <ImproperUseException.h>
 
 using     std::string;
@@ -254,8 +255,8 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     }
     if (R2Foperator == NULL)
     {
-        EXCEPTION1(ExpressionException, "You have requested an operator "
-                                         "that has not been implemented yet.");
+        EXCEPTION2(ExpressionException, atts->GetDdfName(),
+                   "You have requested an operator that has not been implemented yet.");
     }
 
     //

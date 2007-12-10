@@ -127,7 +127,7 @@ avtArrayDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
     int    i;
 
     if (activeVariable == NULL)
-        EXCEPTION1(ExpressionException, "Asked to decompose an array, but did "
+        EXCEPTION2(ExpressionException, outputVariableName, "Asked to decompose an array, but did "
                    "specify which variable to decompose");
 
     vtkDataArray *data = in_ds->GetPointData()->GetArray(activeVariable);
@@ -135,11 +135,11 @@ avtArrayDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
         data = in_ds->GetCellData()->GetArray(activeVariable);
 
     if (data == NULL)
-        EXCEPTION1(ExpressionException, "Unable to locate variable to "
+        EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable to "
                                         "decompose");
 
     if (index < 0 || index >= data->GetNumberOfComponents())
-        EXCEPTION1(ExpressionException, "Index into array is not valid.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Index into array is not valid.");
 
     vtkFloatArray *rv = vtkFloatArray::New();
     int nvals = data->GetNumberOfTuples();
@@ -178,7 +178,7 @@ avtArrayDecomposeFilter::ProcessArguments(ArgsExpr *args,
     int nargs = arguments->size();
     if (nargs != 2)
     {
-        EXCEPTION1(ExpressionException, 
+        EXCEPTION2(ExpressionException, outputVariableName, 
                         "this expression must be specified with exactly two "
                         "arguments.  Usage: array_decompose(array, #)");
     }
@@ -197,7 +197,7 @@ avtArrayDecomposeFilter::ProcessArguments(ArgsExpr *args,
     {
         debug5 << "avtArrayDecomposeFilter: Second argument is not an int."
                << endl;
-        EXCEPTION1(ExpressionException, "Second argument to array_decompose "
+        EXCEPTION2(ExpressionException, outputVariableName, "Second argument to array_decompose "
                                         "must be a number.");
     }
 }

@@ -117,7 +117,7 @@ avtNaturalLogFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
             float val = in->GetComponent(i, j);
             if (val <= 0)
             {
-                EXCEPTION1(ExpressionException,
+                EXCEPTION2(ExpressionException, outputVariableName,
                            "you cannot take the natural log of values <= 0");
             }
             out->SetComponent(i, j, log(val));

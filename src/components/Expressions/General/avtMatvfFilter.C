@@ -446,7 +446,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     int nargs = arguments->size();
     if (nargs == 0)
     {
-        EXCEPTION1(ExpressionException, "avtMatvfFilter: No arguments given.");
+        EXCEPTION2(ExpressionException, outputVariableName, "avtMatvfFilter: No arguments given.");
     }
     // Tell the first argument to create its filters.
     ArgExpr *firstarg = (*arguments)[0];
@@ -463,7 +463,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     // See if there are other arguments.
     if (nargs > 2)
     {
-        EXCEPTION1(ExpressionException, "avtMatvfFilter only expects two "
+        EXCEPTION2(ExpressionException, outputVariableName, "avtMatvfFilter only expects two "
                    "arguments.  To specify more than one material, use a "
                    "list (e.g. [1,4,5:9].");
     }
@@ -475,7 +475,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     if ((type != "IntegerConst") && (type != "StringConst") && (type != "List"))
     {
         debug5 << "avtMatvfFilter: Second argument is not a constant or a list: " << type.c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtMatvfFilter: Second argument is not a constant or a list.");
+        EXCEPTION2(ExpressionException, outputVariableName, "avtMatvfFilter: Second argument is not a constant or a list.");
     }
 
     if (type == "IntegerConst" || type == "StringConst")
@@ -501,7 +501,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     endExpr->GetTypeName() != "IntegerConst" ||
                     (skipExpr && skipExpr->GetTypeName() != "IntegerConst"))
                 {
-                    EXCEPTION1(ExpressionException, "avtMatvfFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtMatvfFilter: "
                                "Range must contain integers.");
                 }
 
@@ -512,7 +512,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
                 if (skip <= 0 || beg > end)
                 {
-                    EXCEPTION1(ExpressionException, "avtMatvfFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtMatvfFilter: "
                                "Range must be of the form beg:end[:skip].");
                 }
 
@@ -528,7 +528,7 @@ avtMatvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     debug5 << "avtMatvfFilter: List element is not an "
                               "integer constant, a string constant, "
                               "or a list: " << type.c_str() << endl;
-                    EXCEPTION1(ExpressionException, "avtMatvfFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtMatvfFilter: "
                                "List element is not an int/string constant "
                                "or a list.");
                 }

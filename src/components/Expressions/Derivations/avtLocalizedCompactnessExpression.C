@@ -113,7 +113,8 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
 
     if (in_ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
-        EXCEPTION1(ExpressionException, "The localized compactness expression "
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "The localized compactness expression "
                    "can only be calculated on rectilinear grids.  Use the "
                    "resample operator to generate a rectilinear grid of "
                    "this object.  You must also use the DeferExpression "
@@ -134,8 +135,9 @@ avtLocalizedCompactnessExpression::DeriveVariable(vtkDataSet *in_ds)
     vtkDataArray *var = in_ds->GetPointData()->GetArray(varname);
     if (var == NULL)
     {
-        EXCEPTION1(ExpressionException, "The variable you take the localized"
-                  " compactness of must be nodal.  Recenter your data and try"
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "The variable of which you take the localized"
+                  " compactness must be nodal.  Recenter your data and try"
                   " again.");
     }
 

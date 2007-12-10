@@ -132,7 +132,7 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Don't know how to take minimums or "
+        EXCEPTION2(ExpressionException, outputVariableName, "Don't know how to take minimums or "
                          "maximums with data of differing dimensions.");
     }
 }

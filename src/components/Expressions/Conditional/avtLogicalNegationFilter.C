@@ -105,8 +105,8 @@ avtLogicalNegationFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
     int inncomps = in->GetNumberOfComponents();
     if (inncomps != 1)
     {
-        EXCEPTION1(ExpressionException, "Cannot logically negate a vector "
-                                        "variable.");
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "Cannot logically negate a vector variable.");
     }
 
     for (int i = 0 ; i < ntuples ; i++)

@@ -109,7 +109,7 @@ avtLaplacianFilter::GetMacro(std::vector<std::string> &args, std::string &ne,
     }
     else
     {
-        EXCEPTION1(ExpressionException, " invalid laplacian syntax. "
+        EXCEPTION2(ExpressionException, outputVariableName, " invalid laplacian syntax. "
                     "Expected arguments: "
                     "var, gradient_algorithm\n"
                     "[gradient_algorithm is optional]");

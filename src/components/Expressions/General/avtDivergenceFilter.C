@@ -127,7 +127,7 @@ avtDivergenceFilter::GetMacro(std::vector<std::string> &args, std::string &ne,
         }
         else
         {
-            EXCEPTION1(ExpressionException, " invalid divergence syntax. "
+            EXCEPTION2(ExpressionException, outputVariableName, " invalid divergence syntax. "
                         "Expected arguments: "
                         " vector_var, gradient_algorithm\n"
                         " gradient_algorithm is optional");
@@ -150,7 +150,7 @@ avtDivergenceFilter::GetMacro(std::vector<std::string> &args, std::string &ne,
         }
         else
         {
-            EXCEPTION1(ExpressionException, " invalid divergence syntax. "
+            EXCEPTION2(ExpressionException, outputVariableName, " invalid divergence syntax. "
                         "Expected arguments: "
                         " vector_var, gradient_algorithm\n"
                         " gradient_algorithm is optional");

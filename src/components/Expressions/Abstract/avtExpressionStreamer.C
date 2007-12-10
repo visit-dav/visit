@@ -199,7 +199,7 @@ avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
         dat = DeriveVariable(in_ds);
         if (dat == NULL)
         {
-            EXCEPTION1(ExpressionException, "an unknown error occurred while " 
+            EXCEPTION2(ExpressionException, outputVariableName, "an unknown error occurred while " 
                   "trying to calculate your expression.  Please contact a "
                   "VisIt developer.");
         }

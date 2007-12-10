@@ -113,7 +113,7 @@ avtEvalPlaneExpression::TransformData(avtDataObject_p input)
     float mag = sqrt(A*A + B*B + C*C);
     if (mag == 0.)
     {
-        EXCEPTION1(ExpressionException, "The plane has a degenerate normal.");
+        EXCEPTION2(ExpressionException, outputVariableName, "The plane has a degenerate normal.");
     }
     A /= mag;
     B /= mag;

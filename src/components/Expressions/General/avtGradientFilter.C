@@ -138,7 +138,7 @@ avtGradientFilter::ProcessArguments(ArgsExpr *args,
     // check for call with no args
     if (nargs == 0)
     {
-        EXCEPTION1(ExpressionException,
+        EXCEPTION2(ExpressionException, outputVariableName,
                    "gradient() Incorrect syntax.\n"
                    " usage: gradient(varname,algo)\n"
                    " The algo parameter is optional "
@@ -178,7 +178,7 @@ avtGradientFilter::ProcessArguments(ArgsExpr *args,
             if(gradientAlgo < 0 || gradientAlgo > 2)
             {
 
-                EXCEPTION1(ExpressionException,
+                EXCEPTION2(ExpressionException, outputVariableName,
                 "avtGradientFilter: Invalid second argument.\n"
                 " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
 
@@ -198,7 +198,7 @@ avtGradientFilter::ProcessArguments(ArgsExpr *args,
                 gradientAlgo= NODAL_TO_ZONAL_QUAD_HEX;
             else
             {
-                EXCEPTION1(ExpressionException,
+                EXCEPTION2(ExpressionException, outputVariableName,
                 "avtGradientFilter: Invalid second argument.\n"
                 " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
             }
@@ -206,7 +206,7 @@ avtGradientFilter::ProcessArguments(ArgsExpr *args,
         else // invalid arg type
         {
 
-            EXCEPTION1(ExpressionException,
+            EXCEPTION2(ExpressionException, outputVariableName,
             "avtGradientFilter: Expects an integer or string second "
             "argument.\n"
             " Valid options are: 0,1,2 or \"sample\",\"logical\",\"nzqh\"");
@@ -354,7 +354,7 @@ avtGradientFilter::DeriveVariable(vtkDataSet *in_ds)
     {
         if (!(in_ds->GetCellData()->GetScalars()))
         {
-            EXCEPTION1(ExpressionException, "the scalar variable could not"
+            EXCEPTION2(ExpressionException, outputVariableName, "the scalar variable could not"
                                             " be found.");
         }
 
@@ -656,7 +656,7 @@ avtGradientFilter::RectilinearGradient(vtkRectilinearGrid *rg)
          s = rg->GetCellData()->GetScalars();
          if (s == NULL)
          {
-             EXCEPTION1(ExpressionException, "the scalar variable could not"
+             EXCEPTION2(ExpressionException, outputVariableName, "the scalar variable could not"
                                              " be found.");
          }
 
@@ -844,7 +844,7 @@ avtGradientFilter::LogicalGradient(vtkStructuredGrid *sg)
          s = sg->GetCellData()->GetScalars();
          if (s == NULL)
          {
-             EXCEPTION1(ExpressionException, "the scalar variable could not"
+             EXCEPTION2(ExpressionException, outputVariableName, "the scalar variable could not"
                                              " be found.");
          }
 
@@ -1122,7 +1122,7 @@ avtGradientFilter::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
         }
 
         if( val == NULL || val->GetNumberOfComponents() != 1 )
-            EXCEPTION1(ExpressionException,
+            EXCEPTION2(ExpressionException, outputVariableName,
                        "avtGradientFilter: Unable to find var.");
     }
 
@@ -1148,7 +1148,7 @@ avtGradientFilter::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
             // for the 2d case
             int ctype = in_ds->GetCell(0)->GetCellType();
             if( !(ctype == VTK_PIXEL || ctype == VTK_QUAD) )
-                EXCEPTION1(ExpressionException,
+                EXCEPTION2(ExpressionException, outputVariableName,
                            "avtGradientFilter: 2D NZQH Graident "
                            " only supports quadrilateral cells.");
 
@@ -1169,7 +1169,7 @@ avtGradientFilter::NodalToZonalQuadHexGrad(vtkStructuredGrid *in_ds)
             // for the 2d case
             int ctype = in_ds->GetCell(0)->GetCellType();
             if( !(ctype == VTK_VOXEL || ctype == VTK_HEXAHEDRON) )
-                EXCEPTION1(ExpressionException,
+                EXCEPTION2(ExpressionException, outputVariableName,
                            "avtGradientFilter: 3D NZQH Graident "
                            " only supports hexahedral cells.");
 

@@ -155,7 +155,7 @@ avtBinarySubtractFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Don't know how to subtract vectors "
+        EXCEPTION2(ExpressionException, outputVariableName, "Don't know how to subtract vectors "
                                         "of differing dimensions.");
     }
 }

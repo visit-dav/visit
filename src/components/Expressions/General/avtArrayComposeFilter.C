@@ -141,13 +141,13 @@ avtArrayComposeFilter::DeriveVariable(vtkDataSet *in_ds)
     for (i = 0 ; i < nvars ; i++)
     {
         if (vars[i] == NULL)
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName,
                   "Cannot create array because: cannot locate all variables");
         if (vars[i]->GetNumberOfComponents() != 1)
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName,
                   "Cannot create array because: all inputs must be scalars");
         if (centering[i] != centering[0])
-            EXCEPTION1(ExpressionException,
+            EXCEPTION2(ExpressionException, outputVariableName,
                   "Cannot create array because: the centering of the "
                   "variables does not agree.");
     }

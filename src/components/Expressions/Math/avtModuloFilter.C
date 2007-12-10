@@ -127,7 +127,7 @@ avtModuloFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Don't know how to perform modulo "
+        EXCEPTION2(ExpressionException, outputVariableName, "Don't know how to perform modulo "
                                         "operation with a vector variable.");
     }
 }

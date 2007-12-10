@@ -139,13 +139,13 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
     centering = UnifyMaximumValue(centering);
     if (centering == 0)
     {
-        EXCEPTION1(ExpressionException, "Could not do database comparison, "
+        EXCEPTION2(ExpressionException, outvar, "Could not do database comparison, "
                        "because the secondary database had no data.");
     }
     nComp = UnifyMaximumValue(nComp);
     if (nComp == 0)
     {
-        EXCEPTION1(ExpressionException, "Could not do database comparison, "
+        EXCEPTION2(ExpressionException, outvar, "Could not do database comparison, "
                        "because the specified variable is degenerate.");
     }
     bool isNodal = (centering == 1);
@@ -253,7 +253,7 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
                        : in_ds1->GetCellData()->GetArray(defaultName));
              if (defaultVar == NULL)
              {
-                 EXCEPTION1(ExpressionException, "Cannot perform pos_cmfe "
+                 EXCEPTION2(ExpressionException, outvar, "Cannot perform pos_cmfe "
                          "because VisIt cannot locate the default variable."
                          "   Please contact a VisIt developer.");
              }
@@ -261,7 +261,7 @@ avtPosCMFEAlgorithm::PerformCMFE(avtDataTree_p output_mesh,
              {
                  deleteDefault = true;
                  defaultVar = avtExpressionFilter::Recenter(in_ds1, defaultVar, 
-                                  (isNodal ? AVT_ZONECENT : AVT_NODECENT));
+                                  (isNodal ? AVT_ZONECENT : AVT_NODECENT), outvar);
              }
         }
         vtkDataSet *new_obj = (vtkDataSet *) in_ds1->NewInstance();

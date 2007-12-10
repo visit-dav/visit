@@ -133,7 +133,7 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             }
             else if (val2 == 0. && val1 != 0.)
             {
-                EXCEPTION1(ExpressionException, "You can't divide by zero");
+                EXCEPTION2(ExpressionException, outputVariableName, "You can't divide by zero");
             }
             else
                 out->SetTuple1(i, val1 / val2);
@@ -146,7 +146,7 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
             float val2 = in2->GetTuple1(i);
             if (val2 == 0)
             {
-                EXCEPTION1(ExpressionException, "You can't divide by zero");
+                EXCEPTION2(ExpressionException, outputVariableName, "You can't divide by zero");
             }
             for (int j = 0 ; j < in1ncomps ; j++)
             {
@@ -165,7 +165,7 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                 float val2 = in2->GetComponent(i, j);
                 if (val2 == 0)
                 {
-                    EXCEPTION1(ExpressionException,"You can't divide by zero");
+                    EXCEPTION2(ExpressionException, outputVariableName, "You can't divide by zero");
                 }
                 out->SetComponent(i, j, val1/val2);
             }
@@ -173,7 +173,7 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Division of vectors in undefined.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Division of vectors in undefined.");
     }
 }
 

@@ -141,13 +141,13 @@ avtArrayComposeWithBinsFilter::DeriveVariable(vtkDataSet *in_ds)
     for (i = 0 ; i < nvars ; i++)
     {
         if (vars[i] == NULL)
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName, 
                   "Cannot create array because: cannot locate all variables");
         if (vars[i]->GetNumberOfComponents() != 1)
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName, 
                   "Cannot create array because: all inputs must be scalars");
         if (centering[i] != centering[0])
-            EXCEPTION1(ExpressionException,
+            EXCEPTION2(ExpressionException, outputVariableName,
                   "Cannot create array because: the centering of the "
                   "variables does not agree.");
     }
@@ -199,7 +199,7 @@ avtArrayComposeWithBinsFilter::ProcessArguments(ArgsExpr *args,
     {
         debug1 << "avtArrayComposeWithBinsFilter: second arg is not a list: "
                << listTree->GetTypeName() << endl;
-        EXCEPTION1(ExpressionException, "the last argument to array_compose_"
+        EXCEPTION2(ExpressionException, outputVariableName, "the last argument to array_compose_"
                     "with_bins must be a list");
     }
 
@@ -208,7 +208,7 @@ avtArrayComposeWithBinsFilter::ProcessArguments(ArgsExpr *args,
     binRanges.resize(elems->size());
     if (elems->size() != nvars+1)
     {
-        EXCEPTION1(ExpressionException, "the list for array_compose_with_bins"
+        EXCEPTION2(ExpressionException, outputVariableName, "the list for array_compose_with_bins"
                    " must have one more number than there are variables. "
                    " For two variables (V1 and V2), there should be a list of"
                    " size 3: [L0, L1, L2].  V1's bin goes from L0 to L1, "
@@ -218,7 +218,7 @@ avtArrayComposeWithBinsFilter::ProcessArguments(ArgsExpr *args,
     {
         if ((*elems)[i]->GetEnd())
         {
-            EXCEPTION1(ExpressionException, "the list for array_compose_with"
+            EXCEPTION2(ExpressionException, outputVariableName, "the list for array_compose_with"
                         "_bins expression cannot contain ranges.");
         }
 
@@ -235,7 +235,7 @@ avtArrayComposeWithBinsFilter::ProcessArguments(ArgsExpr *args,
         }
         else 
         {
-            EXCEPTION1(ExpressionException, "the list for the array_compose"
+            EXCEPTION2(ExpressionException, outputVariableName, "the list for the array_compose"
                           "_with_bins expression may contain only numbers.");
         }
     }

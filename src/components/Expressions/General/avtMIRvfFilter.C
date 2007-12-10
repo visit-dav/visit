@@ -142,14 +142,14 @@ avtMIRvfFilter::DeriveVariable(vtkDataSet *in_ds)
     vtkDataArray *zoneid = in_ds->GetCellData()->GetArray(zoneid_name.c_str());
     if (volume == NULL || zoneid == NULL)
     {
-        EXCEPTION1(ExpressionException, "The arguments to MIR VF were not "
+        EXCEPTION2(ExpressionException, outputVariableName, "The arguments to MIR VF were not "
                       "created properly.");
     }
     vtkIntArray *matnum = (vtkIntArray *)
                            in_ds->GetCellData()->GetArray("avtSubsets");
     if (matnum == NULL)
     {
-        EXCEPTION1(ExpressionException, "MIR VF not able to locate materials");
+        EXCEPTION2(ExpressionException, outputVariableName, "MIR VF not able to locate materials");
     }
 
     //
@@ -242,7 +242,7 @@ avtMIRvfFilter::GetMaterialList(std::vector<bool> &useMat)
     avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
                                                   currentTimeState);
     if (mat == NULL)
-        EXCEPTION1(ExpressionException, "Unable to match up material names.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Unable to match up material names.");
 
     //
     // Try to match up the materials in the avtMaterial object with the
@@ -393,7 +393,7 @@ avtMIRvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     int nargs = arguments->size();
     if (nargs != 4)
     {
-        EXCEPTION1(ExpressionException, "avtMIRvfFilter: Incorrect # of "
+        EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfFilter: Incorrect # of "
              "arguments.  (mat-name, zone-id, volume, material list)."
              "To specify more than one material, use a list (e.g. [1,4,5:9].");
     }
@@ -421,7 +421,7 @@ avtMIRvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
     if ((type != "IntegerConst") && (type != "StringConst") && (type != "List"))
     {
         debug5 << "avtMIRvfFilter: Second argument is not a constant or a list: " << type.c_str() << endl;
-        EXCEPTION1(ExpressionException, "avtMIRvfFilter: Second argument is not a constant or a list.");
+        EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfFilter: Second argument is not a constant or a list.");
     }
 
     if (type == "IntegerConst" || type == "StringConst")
@@ -447,7 +447,7 @@ avtMIRvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     endExpr->GetTypeName() != "IntegerConst" ||
                     (skipExpr && skipExpr->GetTypeName() != "IntegerConst"))
                 {
-                    EXCEPTION1(ExpressionException, "avtMIRvfFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfFilter: "
                                "Range must contain integers.");
                 }
 
@@ -458,7 +458,7 @@ avtMIRvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
 
                 if (skip <= 0 || beg > end)
                 {
-                    EXCEPTION1(ExpressionException, "avtMIRvfFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfFilter: "
                                "Range must be of the form beg:end[:skip].");
                 }
 
@@ -474,7 +474,7 @@ avtMIRvfFilter::ProcessArguments(ArgsExpr *args, ExprPipelineState *state)
                     debug5 << "avtMIRvfFilter: List element is not an "
                               "integer constant, a string constant, "
                               "or a list: " << type.c_str() << endl;
-                    EXCEPTION1(ExpressionException, "avtMIRvfFilter: "
+                    EXCEPTION2(ExpressionException, outputVariableName, "avtMIRvfFilter: "
                                "List element is not a int/string constant "
                                "or a list.");
                 }

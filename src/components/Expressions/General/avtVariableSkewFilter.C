@@ -123,7 +123,7 @@ avtVariableSkewFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Skew can only be used on scalar " 
+        EXCEPTION2(ExpressionException, outputVariableName, "Skew can only be used on scalar " 
                    "variables.");
     }
 }
