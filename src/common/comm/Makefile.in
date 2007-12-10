@@ -117,6 +117,9 @@
 #    Eric Brugger, Fri Jun 29 09:33:54 PDT 2007
 #    Removed the setting of the NOT_DISTRIB variable.
 #
+#    Jeremy Meredith, Mon Dec 10 17:01:25 EST 2007
+#    I added a dependency on libutil.
+#
 ##############################################################################
 
 ##
@@ -165,7 +168,7 @@ HDR=BadHostException.h \
 
 TESTCOMM_LIBS=@LIBS@
 OBJ=$(SRC:.C=.o)
-LIBS=-lmisc
+LIBS=-lmisc -lutility
 LIB=libcomm
 
 TESTPROG=test1

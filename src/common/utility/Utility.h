@@ -120,6 +120,9 @@ bool        UTILITY_API VisItInitExtentsToLimits(double *exts, int n);
 bool        UTILITY_API VisItInitExtentsToLimits(float *exts, int n);
 bool        UTILITY_API VisItInitExtentsToLimits(int *exts, int n);
 
+int  UTILITY_API GetVisItVersionFromString(const char*, int&, int&, int&);
+bool UTILITY_API VisItVersionsCompatible(const char*, const char*);
+
 #if defined(PANTHERHACK)
 // Broken on Panther
 #else
