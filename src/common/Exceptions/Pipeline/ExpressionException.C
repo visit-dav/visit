@@ -50,9 +50,22 @@ using namespace std;
 //  Creation:   Fri Mar 22 13:23:12 PST 2002
 //
 // ****************************************************************************
-ExpressionException::ExpressionException(string reason)
+ExpressionException::ExpressionException(string name, string reason)
 {
-    msg = "The expression failed because " + reason;
+    msg = "The '" + name + "' expression failed because " + reason;
+}
+
+
+// ****************************************************************************
+//  Method: ExpressionParseException constructor
+//
+//  Programmer: Sean Ahern
+//  Creation:   Mon Dec 10 13:12:23 EST 2007
+//
+// ****************************************************************************
+ExpressionParseException::ExpressionParseException(string reason)
+{
+    msg = "Expression parsing failed because " + reason;
 }
 
 
