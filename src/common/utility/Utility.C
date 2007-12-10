@@ -1581,3 +1581,109 @@ ConvertArgsToTunneledValues(const std::map<int,int> &portTunnelMap,
     return true;
 }
 #endif
+
+
+// ****************************************************************************
+//  Function:  GetVisItVersionFromString
+//
+//  Purpose:
+//    Parse out a numerical major.minor.patch version number.
+//
+//  Arguments:
+//    v0         the version string to parse
+//    major      the first portion of the version string
+//    minor      the second portion of the version string
+//    patch      the third portion of the version string
+//
+//  Returns:
+//    The magnitude of the return value is the number of numeric values
+//    found at the beginning of the version string.
+//    A negative return code means that there was extra text after the
+//    numeric values had been parsed.
+//    E.g. "1.4.5" has a return value of 3.
+//         "1.4b5" has a return value of -2.
+//         "b1.4"  has a return value of 0.
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    October 8, 2007
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Dec 10 13:32:10 EST 2007
+//    Changed it a bit to be more careful about extra stuff at the end of the
+//    string; a negative return value indicates that abs(returnvalue) numeric
+//    values were found first, but that there's extra text after those numeric
+//    numeric values.  This lets the caller distinguish between "1.4.5" (ret=3)
+//    and "1.4.5b1"/"1.4.5b" (ret=-3), for example, as well as "1.4" (ret=2)
+//    and "1.4b1"/"1.4b" (ret=-2).
+//
+// ****************************************************************************
+int
+GetVisItVersionFromString(const char *v0, int &major, int &minor, int &patch)
+{
+    int ret = 0;
+    char extra[1000] = "";
+    
+    if (ret==0 && sscanf(v0, "%d.%d.%d%s", &major, &minor, &patch, extra) == 4)
+    {
+        ret = -3;
+    }
+    if (ret==0 && sscanf(v0, "%d.%d.%d", &major, &minor, &patch) == 3)
+    {
+        ret = 3;
+    }
+    if (ret==0 && sscanf(v0, "%d.%d%s", &major, &minor, extra) == 3)
+    {
+        ret = -2;
+    }
+    if (ret==0 && sscanf(v0, "%d.%d", &major, &minor) == 2)
+    {
+        ret = 2;
+    }
+    if (ret==0 && sscanf(v0, "%d%s", &major, &extra) == 2)
+    {
+        ret = -1;
+    }
+    if (ret==0 && sscanf(v0, "%d", &major) == 1)
+    {
+        ret = 1;
+    }
+
+    return ret;
+}
+
+// ****************************************************************************
+//  Function:  VisItVersionsCompatible
+//
+//  Purpose:
+//    See if two version strings have the same X and Y (in X.Y.Z).
+//
+//  Arguments:
+//    v0         one version string to compare
+//    v0         the other version string to compare
+//
+//  Programmer:  Brad Whitlock
+//  Creation:    October 8, 2007
+//
+//  Modifications:
+//    Jeremy Meredith, Mon Dec 10 13:18:16 EST 2007
+//    Ensure both version strings have at least the first two parts numerical.
+//    Used absolute value of the return value from GetVisItVersionFromString
+//    because we're going to allow betas to remain compatible with non-betas.
+//
+// ****************************************************************************
+bool
+VisItVersionsCompatible(const char *v0, const char *v1)
+{
+    bool ret = false;
+    int major0=0, minor0=0, patch0=0;
+    int major1=0, minor1=0, patch1=0;
+
+    if ((abs(GetVisItVersionFromString(v0, major0, minor0, patch0)) >= 2) &&
+        (abs(GetVisItVersionFromString(v1, major1, minor1, patch1)) >= 2))
+    {
+        ret = (major0 == major1) && (minor0 == minor1);
+    }
+
+    return ret;
+}
+

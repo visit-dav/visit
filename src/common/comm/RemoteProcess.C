@@ -64,6 +64,7 @@
 #include <IncompatibleSecurityTokenException.h>
 #include <CancelledConnectException.h>
 #include <CouldNotConnectException.h>
+#include <Utility.h>
 
 #include <DebugStream.h>
 #include <snprintf.h>
@@ -1697,6 +1698,12 @@ RemoteProcess::SecureShellArgs() const
 //    Thomas R. Treadway, Mon Oct  8 13:27:42 PDT 2007
 //    Backing out SSH tunneling on Panther (MacOS X 10.3)
 //
+//    Jeremy Meredith, Mon Dec 10 14:58:59 EST 2007
+//    If we got a fully numeric X.Y.Z version number, request just
+//    X.Y; from this point on, we have designated that all patch
+//    levels of the same Major.Minor version will be compatible with
+//    each other, so we always want the latest in the X.Y series.
+//
 // ****************************************************************************
 
 void
@@ -1816,7 +1823,21 @@ RemoteProcess::CreateCommandLine(stringVector &args, const std::string &rHost,
     // with this version.
     //
     args.push_back("-v");
-    args.push_back(VERSION);
+    int major=0, minor=0, patch=0;
+    if (GetVisItVersionFromString(VERSION, major, minor, patch) >= 2)
+    {
+        // Note: we didn't wrap GetVisItVersionFromString with abs() because
+        // a negative value implies a beta version, and we only want to
+        // attempt to request a compatible version within this major
+        // release period if we're not a beta version.
+        char majorVersionOnly[100];
+        sprintf(majorVersionOnly, "%d.%d", major, minor);
+        args.push_back(majorVersionOnly);
+    }
+    else
+    {
+        args.push_back(VERSION);
+    }
 
     //
     // Add the program's additional arguments.

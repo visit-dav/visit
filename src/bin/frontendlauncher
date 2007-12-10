@@ -65,6 +65,18 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Mon Dec 10 14:01:54 PST 2007
 #    Added -protocol.
 #
+#    Jeremy Meredith, Mon Dec 10 16:49:26 EST 2007
+#    For versions 1.7 and later, requests for "-v X.Y" will pick the latest
+#    patchlevel in the X.Y.z series.  Note that requests for a specific patch
+#    level (-v X.Y.Z) or beta versions (e.g. -v X.Yb1 or -v X.Y.Zb) will
+#    still be honored here.  (Note that the code makes its own determination
+#    about which version request it passes along, so this is no guarantee
+#    that a user request for X.Y.Z at the GUI will result in X.Y.Z down the
+#    whole chain; at the moment, beta versions propagate properly but public
+#    ones always get converted to "-v X.Y".)
+#    NOTE: When 1.7 is the latest likely version on any platform, the check
+#    for >=1.7 in that test may safely be removed.
+#
 ###############################################################################
 
 
@@ -185,6 +197,51 @@ while (scalar(@ARGV) > 0) {
 }
 
 # -----------------------------------------------------------------------------
+#                        Parse the requested version
+# -----------------------------------------------------------------------------
+if ($ver_set)
+{
+    if (grep /^\d+\.\d+$/, $ver) {
+        # e.g. -v 1.7
+        ($ver_major = $ver) =~ s/^(\d+)\.\d+$/$1/;
+        ($ver_minor = $ver) =~ s/^\d+\.(\d+)$/$1/;
+        ($ver_patch = -1);
+        ($ver_beta  = -1);
+    } elsif (grep /^\d+\.\d+\.\d+$/, $ver) {
+        # e.g. -v 1.7.11
+        ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+$/$1/;
+        ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+$/$1/;
+        ($ver_patch = $ver) =~ s/^\d+\.\d+\.(\d+)$/$1/;
+        ($ver_beta  = -1);
+    } elsif (grep /^\d+\.\d+b$/, $ver) {
+        # e.g. -v 1.7b
+        ($ver_major = $ver) =~ s/^(\d+)\.\d+b$/$1/;
+        ($ver_minor = $ver) =~ s/^\d+\.(\d+)b$/$1/;
+        ($ver_patch = -1);
+        ($ver_beta  = 0);
+    } elsif (grep /^\d+\.\d+b\d+$/, $ver) {
+        # e.g. -v 1.7b3
+        ($ver_major = $ver) =~ s/^(\d+)\.\d+b\d+$/$1/;
+        ($ver_minor = $ver) =~ s/^\d+\.(\d+)b\d+$/$1/;
+        ($ver_patch = -1);
+        ($ver_beta  = $ver) =~ s/^\d+\.\d+b(\d+)$/$1/;
+    } elsif (grep /^\d+\.\d+\.\d+b$/, $ver) {
+        # e.g. -v 1.7.11b
+        ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+b$/$1/;
+        ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+b$/$1/;
+        ($ver_patch = $ver) =~ s/^\d+\.\d+\.(\d+)b$/$1/;
+        ($ver_beta = 0);
+    } elsif (grep /^\d+\.\d+\.\d+b\d+$/, $ver) {
+        # e.g. -v 1.7.11b3
+        ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+b\d+$/$1/;
+        ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+b\d+$/$1/;
+        ($ver_patch = $ver) =~ s/^\d+\.\d+\.(\d+)b\d+$/$1/;
+        ($ver_beta  = $ver) =~ s/^\d+\.\d+\.\d+b(\d+)$/$1/;
+    }
+}
+
+
+# -----------------------------------------------------------------------------
 #                          Find the right version
 # -----------------------------------------------------------------------------
 # If we have a top-level "exe" directory, then don't bother looking
@@ -251,6 +308,26 @@ else
 
             $ver = $current_version;
         }
+    }
+
+    # If they requested no minor version (i.e. $ver_patch is -1)
+    # then fill it in with the most recent bugfix release.
+    # We don't want to attempt this trick with beta versions.
+    # This behavior is new for 1.7.
+    if ((not ($ver_major == 1 and $ver_minor < 7)) and
+        $ver_patch == -1 and $ver_beta == -1)
+    {
+        @unsorted_matches = grep /^${ver}(\.\d+)?$/, @exeversions;
+        sub by_patch_version
+        {
+            my ($maj1,$min1,$pat1) = split /\./, $a;
+            my ($maj2,$min2,$pat2) = split /\./, $b;
+            return -1 if (not defined($pat1));
+            return +1 if (not defined($pat2));
+            return $pat1 <=> $pat2;
+        }
+        @sorted_matches = sort by_patch_version @unsorted_matches;
+        $ver = @sorted_matches[-1];
     }
 
     # If there was no internal laucher for that version, then either
