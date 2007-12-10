@@ -273,6 +273,9 @@ typedef struct
 //
 //   Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //   Added PointerNotInCacheException for transform manager
+//
+//   Sean Ahern, Mon Dec 10 15:33:50 EST 2007
+//   Added ExpressionParseException.
 
 static const exception_info exception_tree[] =
 {
@@ -294,6 +297,7 @@ static const exception_info exception_tree[] =
     {"CouldNotConnectException",           "VisItException"},
     {"DatabaseException",                  "VisItException"},
     {"ExpressionException",                "PipelineException"},
+    {"ExpressionParseException",           "PipelineException"},
     {"FileDoesNotExistException",          "DatabaseException"},
     {"GetFileListException",               "VisItException"},
     {"GetMetaDataException",               "VisItException"},
