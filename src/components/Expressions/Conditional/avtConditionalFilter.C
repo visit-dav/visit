@@ -134,12 +134,12 @@ avtConditionalFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if (data1 == NULL)
     {
-        EXCEPTION1(ExpressionException, 
+        EXCEPTION2(ExpressionException, outputVariableName,
                    "Could not identify centering of first variable");
     }
     if (data1->GetNumberOfComponents() != 1)
     {
-        EXCEPTION1(ExpressionException, 
+        EXCEPTION2(ExpressionException, outputVariableName,
                    "Cannot interpret conditional with vector dimensionality");
     }
 
@@ -155,7 +155,7 @@ avtConditionalFilter::DeriveVariable(vtkDataSet *in_ds)
         SNPRINTF(msg, 1024, 
                    "the first two arguments to \"if\" (%s and %s) have "
                    " different centerings.", varnames[0], varnames[1]);
-        EXCEPTION1(ExpressionException, msg);
+        EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
 
     // Get the third variable.
@@ -170,7 +170,7 @@ avtConditionalFilter::DeriveVariable(vtkDataSet *in_ds)
         SNPRINTF(msg, 1024, 
                    "the first and third arguments to \"if\" (%s and %s) have "
                    " different centerings.", varnames[0], varnames[2]);
-        EXCEPTION1(ExpressionException, msg);
+        EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
 
     //

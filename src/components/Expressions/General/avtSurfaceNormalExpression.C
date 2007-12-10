@@ -107,7 +107,7 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
 {
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
-        EXCEPTION1(ExpressionException, "The Surface normal expression "
+        EXCEPTION2(ExpressionException, outputVariableName, "The Surface normal expression "
                    "can only be calculated on surfaces.  Use the External"
                    "Surface operator to generate the external surface of "
                    "this object.  You must also use the DeferExpression "
@@ -137,7 +137,7 @@ avtSurfaceNormalExpression::DeriveVariable(vtkDataSet *in_ds)
     
     if (arr == NULL)
     {
-        EXCEPTION1(ExpressionException, "An internal error occurred where "
+        EXCEPTION2(ExpressionException, outputVariableName, "An internal error occurred where "
                    "the surface normals could not be calculated.  Please "
                    "contact a VisIt developer.");
     }

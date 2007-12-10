@@ -131,7 +131,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
     std::vector<ArgExpr*> *arguments = args->GetArgs();
     int nargs = arguments->size();
     if (nargs != 3)
-        EXCEPTION1(ExpressionException, badSyntaxMsg);
+        EXCEPTION2(ExpressionException, outputVariableName, badSyntaxMsg);
 
     // Tell the variables to create their filters.
     ArgExpr *firstarg = (*arguments)[0];
@@ -146,7 +146,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
     ExprParseTreeNode *thirdTree = thirdarg->GetExpr();
     string type = thirdTree->GetTypeName();
     if (type != "List")
-        EXCEPTION1(ExpressionException, badSyntaxMsg);
+        EXCEPTION2(ExpressionException, outputVariableName, badSyntaxMsg);
 
     // It's a list.  Process all of them.
     inputParameters.clear();
@@ -158,7 +158,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
         SNPRINTF(msg, 1024, "%s.  You're list had %d numbers, where %d were "
                   "expected.", badSyntaxMsg, elems->size(), 
                  GetNumberOfInputParameters());
-        EXCEPTION1(ExpressionException, msg);
+        EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
 
     for (i = 0 ; i < elems->size() ; i++)
@@ -178,7 +178,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
             char msg[1024];
             SNPRINTF(msg, 1024, "%s.  Element #%d in your list was "
                       "not a number.",  badSyntaxMsg, i);
-            EXCEPTION1(ExpressionException, msg);
+            EXCEPTION2(ExpressionException, outputVariableName, msg);
         }
         ConstExpr *c = dynamic_cast<ConstExpr*>(item);
         if (c->GetConstantType() == ConstExpr::Integer)
@@ -197,7 +197,7 @@ avtSymmEvalExpression::ProcessArguments(ArgsExpr *args,
         }
         else
         {
-            EXCEPTION1(ExpressionException, badSyntaxMsg);
+            EXCEPTION2(ExpressionException, outputVariableName, badSyntaxMsg);
         }
     }
 }
@@ -224,7 +224,7 @@ avtSymmEvalExpression::Execute(void)
 
     if (varnames.size() != 2)
     {
-        EXCEPTION1(ExpressionException, "Symmetry evaluation expressions "
+        EXCEPTION2(ExpressionException, outputVariableName, "Symmetry evaluation expressions "
                       "must take the form: <var> <default-var> [parameters]");
     }
 

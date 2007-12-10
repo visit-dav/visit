@@ -91,7 +91,6 @@ avtStrainTensorFilter::HexPartialDerivative
     (double dNx[8], double dNy[8], double dNz[8],
     double coorX[8], double coorY[8], double coorZ[8])
 {   // copied from Griz
-    char msg[1024];
 //  Local shape function derivatives evaluated at node points.
     static double dN1[8] = { -.125, -.125, .125, .125,
                             -.125, -.125, .125, .125 };
@@ -121,9 +120,8 @@ avtStrainTensorFilter::HexPartialDerivative
     
     if ( fabs( detJacob ) < 1.0e-20 )
     {   
-        sprintf(msg, "HexPartialDerivative, "
-            "Element is degenerate! Result is invalid!");
-        EXCEPTION1 (ExpressionException, msg);
+        EXCEPTION2(ExpressionException, outputVariableName,
+                "HexPartialDerivative, Element is degenerate! Result is invalid!");
         detJacob = 1.0;
     }
     

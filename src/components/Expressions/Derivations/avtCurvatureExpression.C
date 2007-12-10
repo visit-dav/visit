@@ -109,7 +109,8 @@ avtCurvatureExpression::DeriveVariable(vtkDataSet *in_ds)
 {
     if (in_ds->GetDataObjectType() != VTK_POLY_DATA)
     {
-        EXCEPTION1(ExpressionException, "The curvature expression "
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "The curvature expression "
                    "can only be calculated on surfaces.  VisIt tries to "
                    "evaluate expressions as soon as they are read from a "
                    "database.  For curvature, the expression is typically "

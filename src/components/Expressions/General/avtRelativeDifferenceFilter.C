@@ -112,7 +112,7 @@ avtRelativeDifferenceFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     int in2ncomps = in2->GetNumberOfComponents();
     if (in1ncomps != 1 || in2ncomps != 1)
     {
-        EXCEPTION1(ExpressionException, "Can only take relative difference of "
+        EXCEPTION2(ExpressionException, outputVariableName, "Can only take relative difference of "
                                         "scalars.");
     }
 

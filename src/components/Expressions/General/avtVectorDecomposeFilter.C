@@ -183,7 +183,7 @@ avtVectorDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
     }
     if (arr == NULL)
     {
-        EXCEPTION1(ExpressionException, "When creating an expression, VisIt "
+        EXCEPTION2(ExpressionException, outputVariableName, "When creating an expression, VisIt "
                           "was not able to locate a necessary variable.");
     }
 
@@ -203,7 +203,7 @@ avtVectorDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
     {
         if ((which_comp > 1) || (which_comp < 0))
         {
-            EXCEPTION1(ExpressionException, "The only valid indices for "
+            EXCEPTION2(ExpressionException, outputVariableName, "The only valid indices for "
                          "2D vectors are 0 and 1.");
         }
         if (arr->GetNumberOfComponents() == 3)
@@ -233,7 +233,7 @@ avtVectorDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
         }
         else
         {
-            EXCEPTION1(ExpressionException, "You can only decompose vectors "
+            EXCEPTION2(ExpressionException, outputVariableName, "You can only decompose vectors "
                         "and tensors.");
         }
     }
@@ -241,7 +241,7 @@ avtVectorDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
     {
         if ((which_comp > 2) || (which_comp < 0))
         {
-            EXCEPTION1(ExpressionException, "The only valid indices for "
+            EXCEPTION2(ExpressionException, outputVariableName, "The only valid indices for "
                         "3D vectors are 0, 1, and 2");
         }
         if (arr->GetNumberOfComponents() == 3)
@@ -274,7 +274,7 @@ avtVectorDecomposeFilter::DeriveVariable(vtkDataSet *in_ds)
         }
         else
         {
-            EXCEPTION1(ExpressionException, "You can only decompose vectors "
+            EXCEPTION2(ExpressionException, outputVariableName, "You can only decompose vectors "
                         "and tensors.");
         }
     }

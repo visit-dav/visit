@@ -152,7 +152,7 @@ avtExternalNodeExpression::DeriveVariable(vtkDataSet *in_ds)
     vtkDataArray *arr2 = 
                    avtDatasetExaminer::GetArray(ds2, varname, 0, node_cent);
     if (arr2 == NULL || arr2->GetDataType() != VTK_INT)
-        EXCEPTION1(ExpressionException, "An internal error occurred when "
+        EXCEPTION2(ExpressionException, outputVariableName, "An internal error occurred when "
                    "calculating the external nodes.");
     vtkIntArray *arr3 = (vtkIntArray *) arr2;
 

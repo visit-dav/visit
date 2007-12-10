@@ -115,7 +115,7 @@ avtViscousStressFilter::DeriveVariable(vtkDataSet *in_ds)
 
         if(topo_dim != 2)
         {
-          EXCEPTION1(ExpressionException, "The viscous stress expression "
+          EXCEPTION2(ExpressionException, outputVariableName, "The viscous stress expression "
                    "currently only supports 2D datasets.");
         }
     }
@@ -127,7 +127,7 @@ avtViscousStressFilter::DeriveVariable(vtkDataSet *in_ds)
     if( ( dtype != VTK_STRUCTURED_GRID) &&
         ( dtype != VTK_RECTILINEAR_GRID ))
     {
-        EXCEPTION1(ExpressionException,
+        EXCEPTION2(ExpressionException, outputVariableName,
         "Viscous Stress Expression requires a rectilinear or structured mesh");
     }
 
@@ -136,7 +136,7 @@ avtViscousStressFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if( vel == NULL || vel->GetNumberOfComponents() != 3 )
     {
-        EXCEPTION1(ExpressionException, "The viscous stress expression "
+        EXCEPTION2(ExpressionException, outputVariableName, "The viscous stress expression "
                    "was not passed a valid velocity vector.");
     }
 

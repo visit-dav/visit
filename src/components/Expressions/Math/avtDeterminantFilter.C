@@ -144,7 +144,7 @@ avtDeterminantFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Cannot determine tensor type");
+        EXCEPTION2(ExpressionException, outputVariableName, "Cannot determine tensor type");
     }
 }
 

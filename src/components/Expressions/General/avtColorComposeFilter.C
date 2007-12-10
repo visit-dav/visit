@@ -142,7 +142,7 @@ avtColorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
     }
     if (data1 != NULL && data1->GetNumberOfComponents() != 1)
     {
-        EXCEPTION1(ExpressionException, 
+        EXCEPTION2(ExpressionException, outputVariableName, 
                    "The first variable is not a scalar.");
     }
 
@@ -154,12 +154,12 @@ avtColorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if (data2 == NULL)
     {
-        EXCEPTION1(ExpressionException, 
+        EXCEPTION2(ExpressionException, outputVariableName, 
                    "The first two variables have different centering.");
     }
     if (data2->GetNumberOfComponents() != 1)
     {
-        EXCEPTION1(ExpressionException, 
+        EXCEPTION2(ExpressionException, outputVariableName, 
                    "The second variable is not a scalar.");
     }
 
@@ -173,12 +173,12 @@ avtColorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
     
         if (data3 == NULL)
         {
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName, 
                    "The first and third variables have different centering.");
         }
         if (data3->GetNumberOfComponents() != 1)
         {
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName, 
                        "The third variable is not a scalar.");
         }
     }
@@ -193,12 +193,12 @@ avtColorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
     
         if (data4 == NULL)
         {
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName, 
                    "The first and fourth variables have different centering.");
         }
         if (data4->GetNumberOfComponents() != 1)
         {
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName, 
                        "The fourth variable is not a scalar.");
         }
     }

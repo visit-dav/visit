@@ -197,7 +197,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
     // Check if there's a second argument.
     if (nargs != targetArgs)
     {
-        EXCEPTION1(ExpressionException, mismatchMsg);
+        EXCEPTION2(ExpressionException, outputVariableName, mismatchMsg);
     }
 
     // Tell the second argument (the mesh) to create its filters.
@@ -223,7 +223,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
     VarExpr::SetGetVarLeavesRequiresCurrentDB(oldVal);
     if (vars.empty())
     {
-        EXCEPTION1(ExpressionException,
+        EXCEPTION2(ExpressionException, outputVariableName, 
                    "The database comparison expression does not contain "
                    "any real variables.");
     }
@@ -231,7 +231,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
     if ((*i)->GetTypeName() != "Var")
     {
         // There should be no way to get to this line.
-        EXCEPTION1(ExpressionException,
+        EXCEPTION2(ExpressionException, outputVariableName,
                    "VisIt was not able to locate a real variable in your "
                    "database comparison expression.");
     }
@@ -242,7 +242,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
     DBExpr *db_expr = var_expr->GetDB();
     if (db_expr == NULL)
     {
-        EXCEPTION1(ExpressionException, 
+        EXCEPTION2(ExpressionException, outputVariableName,
                    "The first argument of the database comparison "
                    "expression must be a database.");
     }
@@ -260,10 +260,10 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
         ListExpr *l_expr = time_expr->GetList();
         std::vector<ListElemExpr *> *l_elems = l_expr->GetElems();
         if (l_elems == NULL || l_elems->size() < 1)
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName,
                        "No times were specified.");
         if (l_elems->size() > 1)
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName,
                        "Only one time can be specified.");
         ListElemExpr *the_one = (*l_elems)[0];
         ExprNode *cons = the_one->GetBeg();
@@ -278,7 +278,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
         {
             if (cons->GetTypeName() != "IntegerConst")
             {
-                EXCEPTION1(ExpressionException, 
+                EXCEPTION2(ExpressionException, outputVariableName,
                        "The type of time you have specified requires an "
                        "integer argument.");
             }
@@ -298,7 +298,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
         {
             if (cons->GetTypeName() != "FloatConst")
             {
-                EXCEPTION1(ExpressionException, 
+                EXCEPTION2(ExpressionException, outputVariableName,
                        "The type of time you have specified requires a "
                        "floating point argument.");
             }
@@ -310,7 +310,7 @@ avtCMFEExpression::ProcessArguments(ArgsExpr *args,
         }
         else
         {
-            EXCEPTION1(ExpressionException, 
+            EXCEPTION2(ExpressionException, outputVariableName,
                    "a time was specified for a "
                    "database, but that time could not be parsed."
                    "Try adding the \'c\', \'i\', or \'t\' qualifiers.");
@@ -432,7 +432,7 @@ avtCMFEExpression::Execute()
         char msg[1024];
         sprintf(msg, "Unable to evaluate expression \"%s\" for doing "
                      "database comparison.", argument_expression.c_str());
-        EXCEPTION1(ExpressionException, msg);
+        EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
     ENDTRY;
 

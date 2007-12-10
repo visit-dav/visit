@@ -555,7 +555,7 @@ avtExpressionFilter::GetVariableDimension(void)
 //  Arguments:
 //      ds      The mesh the variable lays on.
 //      arr     The variable to recenter.
-//      cent    The centering of the variable now -- NOT the desired centering.
+//      currCent The current centering of the variable -- NOT the desired centering.
 //
 //  Returns:    The array recentered.  Note: the calling routine will then
 //              be responsible for deleting the returned object.
@@ -563,21 +563,25 @@ avtExpressionFilter::GetVariableDimension(void)
 //  Programmer: Hank Childs
 //  Creation:   December 10, 2003
 //
+//  Modifications:
+//      Sean Ahern, Mon Dec 10 09:59:27 EST 2007
+//      Added a variable for error messages.
+//
 // ****************************************************************************
 
 vtkDataArray *
 avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr, 
-                              avtCentering cent)
+                              avtCentering currCent, std::string name)
 {
     vtkDataSet *ds2 = ds->NewInstance();
     ds2->CopyStructure(ds);
 
     vtkDataArray *outv = NULL;
-    if (cent == AVT_NODECENT)
+    if (currCent == AVT_NODECENT)
     {
         if (ds2->GetNumberOfPoints() != arr->GetNumberOfTuples())
         {
-            EXCEPTION1(ExpressionException, "Asked to re-center a nodal "
+            EXCEPTION2(ExpressionException, name, "Asked to re-center a nodal "
                        "variable that is not nodal.");
         }
 
@@ -595,7 +599,7 @@ avtExpressionFilter::Recenter(vtkDataSet *ds, vtkDataArray *arr,
     {
         if (ds2->GetNumberOfCells() != arr->GetNumberOfTuples())
         {
-            EXCEPTION1(ExpressionException, "Asked to re-center a zonal "
+            EXCEPTION2(ExpressionException, name, "Asked to re-center a zonal "
                        "variable that is not zonal.");
         }
 

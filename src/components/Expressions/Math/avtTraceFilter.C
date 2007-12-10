@@ -116,7 +116,7 @@ avtTraceFilter::DoOperation(vtkDataArray *in, vtkDataArray *out,
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Cannot take trace of non-tensor.");
+        EXCEPTION2(ExpressionException, outputVariableName, "Cannot take trace of non-tensor.");
     }
 }
 

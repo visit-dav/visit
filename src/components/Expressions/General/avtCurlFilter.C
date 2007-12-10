@@ -142,7 +142,7 @@ avtCurlFilter::GetMacro(std::vector<std::string> &args, std::string &ne,
         }
         else
         {
-            EXCEPTION1(ExpressionException, " invalid curl syntax. "
+            EXCEPTION2(ExpressionException, outputVariableName, " invalid curl syntax. "
                         "Expected arguments: "
                         "vector_var, gradient_algorithm\n"
                         "[gradient_algorithm is optional]");
@@ -167,7 +167,7 @@ avtCurlFilter::GetMacro(std::vector<std::string> &args, std::string &ne,
         }
         else
         {
-            EXCEPTION1(ExpressionException, " invalid curl syntax. "
+            EXCEPTION2(ExpressionException, outputVariableName, " invalid curl syntax. "
                         "Expected arguments: "
                         "vector_var, gradient_algorithm\n"
                         "[gradient_algorithm is optional]");

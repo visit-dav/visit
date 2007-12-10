@@ -110,7 +110,7 @@ avtRecenterFilter::DeriveVariable(vtkDataSet *in_ds)
 {
     if (activeVariable == NULL)
     {
-        EXCEPTION1(ExpressionException, "Asked to recenter, but did not "
+        EXCEPTION2(ExpressionException, outputVariableName, "Asked to recenter, but did not "
                    "specify which variable to recenter");
     }
 
@@ -121,15 +121,15 @@ avtRecenterFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if (cell_data != NULL)
     {
-        rv = Recenter(in_ds, cell_data, AVT_ZONECENT);
+        rv = Recenter(in_ds, cell_data, AVT_ZONECENT, outputVariableName);
     }
     else if (pt_data != NULL)
     {
-        rv = Recenter(in_ds, pt_data, AVT_NODECENT);
+        rv = Recenter(in_ds, pt_data, AVT_NODECENT, outputVariableName);
     }
     else
     {
-        EXCEPTION1(ExpressionException, "Was not able to locate variable to "
+        EXCEPTION2(ExpressionException, outputVariableName, "Was not able to locate variable to "
                    "recenter.");
     }
 

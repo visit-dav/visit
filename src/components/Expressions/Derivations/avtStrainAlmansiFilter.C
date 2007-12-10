@@ -118,9 +118,8 @@ avtStrainAlmansiFilter::DeriveVariable(vtkDataSet *in_ds)
     // Let's get the points from the input dataset.
     if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
     {
-        EXCEPTION1(ExpressionException, "The strain expression "
-                   "only operate on unstructured grids."
-                   "Is this an issue?");
+        EXCEPTION2(ExpressionException, outputVariableName, "The strain expression "
+                   "only operates on unstructured grids.");
     }
     vtkUnstructuredGrid *in_usg = vtkUnstructuredGrid::SafeDownCast(in_ds);
     int nCells = in_usg->GetNumberOfCells();
@@ -129,7 +128,7 @@ avtStrainAlmansiFilter::DeriveVariable(vtkDataSet *in_ds)
     {
         sprintf(msg, "The strain expression "
             "could not extract the data array for: %s", varnames[1]);
-        EXCEPTION1(ExpressionException, msg);
+        EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
     vtkDataArray *ghost_data = in_ds->GetPointData()->GetArray("avtGhostNodes");
     unsigned char *ghost =

@@ -110,9 +110,9 @@ avtDisplacementFilter::DeriveVariable (vtkDataSet *in_ds)
     // Let's get the points from the input dataset.
     if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
     {
-        EXCEPTION1(ExpressionException, "The displacement expression "
-                   "only operate on unstructured grids."
-                   "Is this an issue?");
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "The displacement expression "
+                   "only operates on unstructured grids.");
     }
     vtkUnstructuredGrid *in_usg = vtkUnstructuredGrid::SafeDownCast(in_ds);
     int nPoints = in_usg->GetNumberOfPoints();
@@ -121,7 +121,7 @@ avtDisplacementFilter::DeriveVariable (vtkDataSet *in_ds)
     {
         sprintf(msg, "The displacement expression "
             "could not extract the data array for: %s", varnames[1]);
-        EXCEPTION1(ExpressionException, msg);
+        EXCEPTION2(ExpressionException, outputVariableName, msg);
     }
     vtkFloatArray *out = vtkFloatArray::New();
     out->SetNumberOfComponents(3);

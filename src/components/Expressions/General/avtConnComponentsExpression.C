@@ -146,7 +146,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
     // check for call with no args
     if (nargs == 0)
     {
-        EXCEPTION1(ExpressionException,
+        EXCEPTION2(ExpressionException, outputVariableName,
                    "conn_components() Incorrect syntax.\n"
                    " usage: conn_components(mesh_name,enable_ghost_neighbors)\n"
                    "The enable_ghost_neighbors parameter is optional "
@@ -183,7 +183,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
             if(enable < 0 || enable > 1)
             {
 
-                EXCEPTION1(ExpressionException,
+                EXCEPTION2(ExpressionException, outputVariableName,
                 "avtConnComponents: Invalid second argument.\n"
                 " Valid options are: 1,0 or \"true\",\"false\"");
 
@@ -202,7 +202,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
                 enableGhostNeighbors = false;
             else
             {
-                EXCEPTION1(ExpressionException,
+                EXCEPTION2(ExpressionException, outputVariableName,
                 "avtConnComponents: Invalid second argument.\n"
                 " Valid options are: 1,0 or \"true\",\"false\"");
             }
@@ -210,7 +210,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
         else // invalid arg type
         {
 
-            EXCEPTION1(ExpressionException,
+            EXCEPTION2(ExpressionException, outputVariableName,
             "avtGradientFilter: Expects an integer or string second "
             "argument.\n"
             " Valid options are: 1,0 or \"true\",\"false\"");

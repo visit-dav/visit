@@ -110,8 +110,8 @@ avtTestEqualToFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     int in2ncomps = in2->GetNumberOfComponents();
     if (in1ncomps != 1 || in2ncomps != 1)
     {
-        EXCEPTION1(ExpressionException, "Cannot compare vector "
-                                        "variables.");
+        EXCEPTION2(ExpressionException, outputVariableName,
+                   "Cannot compare vector variables.");
     }
 
     for (int i = 0 ; i < ntuples ; i++)
