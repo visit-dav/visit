@@ -46,7 +46,7 @@ public:
     ExecuteRPC();
     virtual ~ExecuteRPC();
 
-    const std::string TypeName() const { return "ExecuteRPC";};
+    virtual const std::string TypeName() const { return "ExecuteRPC"; }
 
     // Invokation method
     void operator()(bool);

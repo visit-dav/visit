@@ -69,7 +69,7 @@ public:
     OpenDatabaseRPC();
     virtual ~OpenDatabaseRPC();
 
-    const std::string TypeName() const { return "OpenDatabaseRPC";};
+    virtual const std::string TypeName() const { return "OpenDatabaseRPC"; }
 
     void operator()(const std::string &, const std::string &, int, 
                     bool, bool);

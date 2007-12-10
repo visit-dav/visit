@@ -71,6 +71,9 @@
 //   I added a new UNCHECKED enum to file_types to fill in for when we have
 //   not checked for a file type yet.
 //
+//   Brad Whitlock, Fri Dec  7 11:41:32 PST 2007
+//   Added TypeName overrides.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API GetFileListRPC : public BlockingRPC
@@ -101,8 +104,7 @@ public:
         FileList(const FileList &obj);
         virtual ~FileList();
         virtual void SelectAll();
-        virtual const std::string TypeName() const
-           { return "GetFileListRPC::FileList"; };
+        virtual const std::string TypeName() const;
 
         void Clear();
         void Sort();
@@ -120,6 +122,8 @@ public:
     const std::string &GetFilter() const;
     bool               GetAutomaticFileGrouping() const;
     bool               GetSmartFileGrouping() const;
+
+    virtual const std::string TypeName() const;
 private:
     FileList    fileList;
     std::string filter;

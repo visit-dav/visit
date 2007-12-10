@@ -75,6 +75,9 @@ class VisItRPC;
 //    Added a method to give access to the buffered input so we can store
 //    objects directly in it.
 //
+//    Brad Whitlock, Fri Dec  7 17:01:29 PST 2007
+//    Added methods to get the i'th state object in the Xfer.
+//
 // ****************************************************************************
 
 class STATE_API Xfer : public SimpleObserver
@@ -102,6 +105,10 @@ public:
     void SetupSpecialOpcodeHandler(void (*cb)(int, void *), void *data);
 
     void ListObjects();
+
+    // These should rarely need to be used.
+    const AttributeSubject *GetSubject(int) const;
+    int GetNumSubjects() const;
 protected:
     bool ReadHeader();
     int  GetNextGuido();

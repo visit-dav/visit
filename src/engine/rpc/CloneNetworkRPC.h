@@ -60,7 +60,7 @@ public:
     CloneNetworkRPC();
     virtual ~CloneNetworkRPC();
 
-    const std::string TypeName() const { return "CloneNetworkRPC";};
+    virtual const std::string TypeName() const { return "CloneNetworkRPC"; }
 
     // Invocation method
     void operator()(const int, const QueryOverTimeAttributes *);

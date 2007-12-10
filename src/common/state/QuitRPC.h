@@ -55,6 +55,9 @@
 //   Brad Whitlock, Thu Apr 24 10:23:39 PDT 2003
 //   I made it be nonblocking.
 //
+//   Brad Whitlock, Fri Dec  7 11:52:21 PST 2007
+//   Added TypeName override.
+//
 // ****************************************************************************
 
 class STATE_API QuitRPC : public NonBlockingRPC
@@ -75,6 +78,7 @@ public:
     // Property getting methods
     bool GetQuit() const;
 
+    virtual const std::string TypeName() const;
 private:
     bool quit;
 };

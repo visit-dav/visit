@@ -163,3 +163,22 @@ QuitRPC::GetQuit() const
 {
     return quit;
 }
+
+// ****************************************************************************
+// Method: QuitRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+QuitRPC::TypeName() const
+{
+    return "QuitRPC";
+}

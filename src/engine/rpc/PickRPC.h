@@ -64,7 +64,7 @@ class ENGINE_RPC_API PickRPC : public BlockingRPC
     PickRPC();
     virtual ~PickRPC();
 
-    const std::string TypeName() const { return "PickRPC";};
+    virtual const std::string TypeName() const { return "PickRPC"; }
 
     // Invokation method
     PickAttributes operator()(const int, const PickAttributes*, const int);

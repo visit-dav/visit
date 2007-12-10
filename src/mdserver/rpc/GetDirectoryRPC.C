@@ -124,6 +124,25 @@ GetDirectoryRPC::SelectAll()
     // no data sent
 }
 
+// ****************************************************************************
+// Method: GetDirectoryRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+GetDirectoryRPC::TypeName() const
+{
+    return "GetDirectoryRPC";
+}
+
 // *******************************************************************
 // Method: GetDirectoryRPC::DirectoryName::DirectoryName
 //
@@ -176,4 +195,29 @@ void
 GetDirectoryRPC::DirectoryName::SelectAll()
 {
     Select(0, (void *)&name);
+}
+
+// ****************************************************************************
+// Method: GetDirectoryRPC::DirectoryName::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+GetDirectoryRPC::DirectoryName::TypeName() const
+{
+    return "GetDirectoryRPC::DirectoryName";
 }

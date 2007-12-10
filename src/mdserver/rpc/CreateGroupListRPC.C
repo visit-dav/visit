@@ -104,3 +104,28 @@ CreateGroupListRPC::SelectAll()
     Select(0, (void *)&filename);
     Select(1, (void *)&groupList);
 }
+
+// ****************************************************************************
+// Method: CreateGroupListRPC::TypeName
+//
+// Purpose: 
+//   Returns the RPC name.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 11:09:23 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const std::string
+CreateGroupListRPC::TypeName() const
+{
+    return "CreateGroupListRPC";
+}

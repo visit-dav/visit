@@ -62,7 +62,7 @@ public:
     ClearCacheRPC();
     virtual ~ClearCacheRPC();
 
-    const std::string TypeName() const { return "ClearCacheRPC";};
+    virtual const std::string TypeName() const { return "ClearCacheRPC";}
 
 
     // Invokation methods.

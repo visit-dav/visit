@@ -54,6 +54,8 @@
 // Creation:   Tue Feb 12 13:38:19 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Fri Dec  7 11:34:01 PST 2007
+//   Added TypeName override.
 //
 // ****************************************************************************
 
@@ -67,8 +69,7 @@ public:
         PathName();
         ~PathName();
         virtual void SelectAll();
-        virtual const std::string TypeName() const
-            { return "ExpandPathRPC::PathName"; };
+        virtual const std::string TypeName() const;
     };
 public:
     ExpandPathRPC();
@@ -86,6 +87,7 @@ public:
     // Property getting methods
     std::string GetPath() const { return path.name; };
 
+    virtual const std::string TypeName() const;
 private:
     PathName path;
 };

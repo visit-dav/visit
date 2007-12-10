@@ -57,6 +57,9 @@
 //  Brad Whitlock, Thu Mar 11 12:47:34 PDT 2004
 //  Added KeepAliveRPC.
 //
+//  Brad Whitlock, Fri Dec  7 16:50:02 PST 2007
+//  Added rpcSetup flag.
+//
 // ****************************************************************************
 
 RemoteProxyBase::RemoteProxyBase(const std::string &compName) :
@@ -67,6 +70,7 @@ RemoteProxyBase::RemoteProxyBase(const std::string &compName) :
     nWrite = nRead = 1;
     progressCallback = 0;
     progressCallbackData = 0;
+    rpcSetup = false;
 }
 
 // ****************************************************************************
@@ -115,6 +119,9 @@ RemoteProxyBase::~RemoteProxyBase()
 //    Jeremy Meredith, Thu May 24 10:20:57 EDT 2007
 //    Added SSH tunneling argument; pass it along to RemoteProcess::Open.
 //
+//    Brad Whitlock, Fri Dec  7 16:50:17 PST 2007
+//    Moved RPC creation into the SetupAllRPCs method.
+//
 // ****************************************************************************
 
 void
@@ -162,18 +169,71 @@ RemoteProxyBase::Create(const std::string &hostName,
     //
     xfer.SetOutputConnection(component->GetReadConnection());
     xfer.SetInputConnection(component->GetWriteConnection());
-    xfer.Add(&quitRPC);
-    xfer.Add(&keepAliveRPC);
-
+    
     //
-    // Set up the RPC's for the remote component.
+    // Set up the RPCs
     //
-    SetupComponentRPCs();
+    SetupAllRPCs();
 
     //
     // List the objects that were hooked up. 
     //
     xfer.ListObjects();
+}
+
+// ****************************************************************************
+// Method: RemoteProxyBase::SetupAllRPCs
+//
+// Purpose: 
+//   Sets up all of the RPCs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 16:50:46 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+RemoteProxyBase::SetupAllRPCs()
+{
+    if(!rpcSetup)
+    {
+        xfer.Add(&quitRPC);
+        xfer.Add(&keepAliveRPC);
+
+        //
+        // Set up the RPC's for the remote component.
+        //
+        SetupComponentRPCs();
+        rpcSetup = true;
+    }
+}
+
+// ****************************************************************************
+// Method: RemoteProxyBase::GetXfer
+//
+// Purpose: 
+//   Return a reference to Xfer
+//
+// Arguments:
+//
+// Returns:    A reference to Xfer.
+//
+// Note:       This method has the side-effect of setting up the RPCs.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec  7 16:57:38 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+const Xfer &
+RemoteProxyBase::GetXfer()
+{
+    SetupAllRPCs();
+    return xfer;
 }
 
 // ****************************************************************************

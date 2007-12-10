@@ -57,6 +57,9 @@
 //   Brad Whitlock, Wed Apr 17 10:46:45 PDT 2002
 //   Made GetDirectory return a reference.
 //
+//   Brad Whitlock, Fri Dec  7 11:04:56 PST 2007
+//   Added TypeName override.
+//
 // ****************************************************************************
 
 class MDSERVER_RPC_API ChangeDirectoryRPC : public BlockingRPC
@@ -77,6 +80,8 @@ public:
     // Property getting methods
     const std::string &GetDirectory() const;
 
+    // Return name of object.
+    virtual const std::string TypeName() const;
 private:
     std::string directory;
 };

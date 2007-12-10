@@ -48,6 +48,9 @@
 //    Hank Childs, Thu Feb  8 10:22:45 PST 2007
 //    Make sure that MaxStageNum is never less than CurStageNum.
 //
+//    Brad Whitlock, Fri Dec  7 11:57:01 PST 2007
+//    Added TypeName overrides.
+//
 // ****************************************************************************
 
 class Xfer;
@@ -89,11 +92,18 @@ public:
 
         void              SetData(AttributeSubject *d);
         AttributeSubject *GetData();
+
+        void              SetRPCName(const std::string &);
+        virtual const std::string TypeName() const;
+
     private:
         int               status;
         std::string       message;
-        std::string       type ;
+        std::string       type;
         AttributeSubject *data;
+
+        // non-transmissible
+        std::string       rpcName;
     };
 
 public:
@@ -112,6 +122,11 @@ public:
     void SendError(const std::string &msg);
     void SendError(const std::string &msg, const std::string &etype);
     void SendWarning(const std::string &msg);
+
+    virtual const std::string TypeName() const
+    {
+        return "VisItRPC";
+    }
 protected:
     virtual void Execute() = 0;
     void SendReply(int s, AttributeSubject *d);
@@ -170,6 +185,11 @@ public:
             Select(4,&curStageName);
             Select(5,replyData);
         };
+
+        virtual const std::string TypeName() const
+        {
+            return "NonBlockingRPC::CompletionData";
+        }
     };
 public:
     NonBlockingRPC(const char *fmt, AttributeSubject *d = NULL);
@@ -191,6 +211,11 @@ public:
     void SetCurStageNum(int n) { completion.SetCurStageNumWithoutSending(n); };
 
     void RecvReply();
+
+    virtual const std::string TypeName() const
+    {
+        return "NonBlockingRPC";
+    }
 protected:
     virtual void Execute();
 private:
@@ -206,6 +231,11 @@ public:
     BlockingRPC(const char *fmt, AttributeSubject *d=NULL);
     virtual ~BlockingRPC();
     void SendReply(AttributeSubject *d=NULL);
+
+    virtual const std::string TypeName() const
+    {
+        return "BlockingRPC";
+    }
 protected:
     virtual void Execute();
 };

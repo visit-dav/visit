@@ -83,6 +83,9 @@ class RemoteProcess;
 //    Brad Whitlock, Wed Nov 21 11:41:52 PST 2007
 //    Added methods to access the RemoteProcess's connections.
 //
+//    Brad Whitlock, Fri Dec  7 16:58:33 PST 2007
+//    Added SetupAllRPCs and GetXfer.
+//
 // ****************************************************************************
 
 class PROXYBASE_API RemoteProxyBase
@@ -116,7 +119,11 @@ public:
 
     Connection *GetReadConnection(int i=0) const;
     Connection *GetWriteConnection(int i=0) const;
+
+    // This method should rarely need to be used.
+    const Xfer &GetXfer();
 protected:
+    void                 SetupAllRPCs();
     virtual void         SetupComponentRPCs() = 0;
     std::string          GetVisItString() const;
     virtual void         AddExtraArguments();
@@ -124,6 +131,7 @@ protected:
     std::string          componentName;
     RemoteProcess       *component;
     Xfer                 xfer;
+    bool                 rpcSetup;
     QuitRPC              quitRPC;
     KeepAliveRPC         keepAliveRPC;
 

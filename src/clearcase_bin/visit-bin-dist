@@ -315,6 +315,9 @@
 #    Hank Childs, Wed Oct 17 08:39:39 PDT 2007
 #    Improve existence test.  Also cut down on error messages from strip.
 #
+#    Brad Whitlock, Mon Dec 10 14:19:45 PST 2007
+#    Added visitprotocol.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -868,6 +871,8 @@ cp $VisItDir/bin/movietemplates/*.py  $bindir/movietemplates
 cp $VisItDir/bin/movietemplates/*.{bmp,jpg,gif,tif} $bindir/movietemplates
 # Copy the visitdiff script
 cp $VisItDir/bin/visitdiff.py  $bindir
+# Copy the visitprotocol program.
+cp $VisItDir/exe/visitprotocol $bindir
 
 #
 # Make symlinks for the programs
