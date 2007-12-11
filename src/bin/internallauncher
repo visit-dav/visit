@@ -246,6 +246,12 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Mon Dec 10 14:05:43 PST 2007
 #    Added -protocol to the -fullhelp message.
 #
+#    Dave Pugmire, Tue Dec 11 08:15:16 EST 2007
+#    For qsub, pass the environment variables on the command line via
+#    the -v option. Also, for qsub/mpirun, set the -plugindir argument
+#    to engine_par as some installations don't pass the env vars to the
+#    executable.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1687,9 +1693,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
 
             $cdcmd     = "cd $cwd\n";
             $limitcmd  = "limit coredumpsize 0\n";
-            $libcmd    = "setenv LIBPATH $ENV{LIBPATH}\n";
-            $ldlibcmd  = "setenv LD_LIBRARY_PATH $ENV{LD_LIBRARY_PATH}\n";
-            $plugincmd = "setenv VISITPLUGINDIR $ENV{VISITPLUGINDIR}\n";
+
             if ($sublauncher eq "mpiexec")
             {
                 @mpicmd = ("mpiexec");
@@ -1704,7 +1708,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
                 push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-np", $procs if $procs_set;
                 push @mpicmd, "-machinefile", $machinefile if $machinefile_set;
-                push @mpicmd, "@visitcmd\n";
+                push @mpicmd, "@visitcmd -plugindir $ENV{VISITPLUGINDIR}\n";
             }
             elsif ($sublauncher eq "srun")
             {
@@ -1717,13 +1721,13 @@ if ($procs_set or ($parallel and $parlaunch_set))
             print TFILE "#!/bin/tcsh\n";
             print TFILE $cdcmd;
             print TFILE $limitcmd;
-            print TFILE $libcmd;
-            print TFILE $ldlibcmd;
-            print TFILE $plugincmd;
             print TFILE "@mpicmd";
             close(TFILE);
            
             @parcmd = ($plauncher);
+
+	    # Add the env variables.
+	    push @parcmd, "-v LIBPATH=$ENV{LIBPATH}, LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}, VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
 
             # parse for '-l vis' so it can be separated from the
             # launchargs
