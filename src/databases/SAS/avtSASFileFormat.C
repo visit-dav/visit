@@ -81,7 +81,7 @@ using namespace std;
 #define CLOSE ::close
 #define READ  ::read
 #define WRITE ::write
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(_OSF_SOURCE)
 #define LSEEK64 ::lseek
 #else
 #define LSEEK64 ::lseek64
