@@ -38,6 +38,7 @@
 // ************************************************************************* //
 //                           avtSiloFileFormat.C                             //
 // ************************************************************************* //
+#define DISABLE_EXTENTS_DUE_TO_BAD_ALE3D_FILES 1
 
 #include <avtSiloFileFormat.h>
 
@@ -7420,6 +7421,8 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
         rv = (void *) GetGlobalZoneIds(domain, var);
         df = avtVariableCache::DestructVTKObject;
     }
+#if DISABLE_EXTENTS_DUE_TO_BAD_ALE3D_FILES!=1
+#foo // cause compiler to fail if we get here
     else if (strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0)
     {
         rv = (void *) GetSpatialExtents(var);
@@ -7430,6 +7433,7 @@ avtSiloFileFormat::GetAuxiliaryData(const char *var, int domain,
         rv = (void *) GetDataExtents(var);
         df = avtIntervalTree::Destruct;
     }
+#endif
 
     //
     // Note -- although the Silo file format can get mixed variables, it does
