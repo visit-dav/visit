@@ -133,6 +133,10 @@ avtDDFConstructor::~avtDDFConstructor()
 //    Detect and report errors that happen upstream when getting the data ready
 //    to calculate the DDF.
 //
+//    Hank Childs, Mon Dec 10 16:54:53 PST 2007
+//    Make sure, for unstructured grids, we are only using nodes that are
+//    referenced by cells.
+//
 // ****************************************************************************
 
 avtDDF *
@@ -374,13 +378,43 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
                                 : leaves[j]->GetCellData()->GetArray(varname));
                 }
                 int nvals;
+                bool doCells = true;
                 if (mixedCentering)
-                    nvals = leaves[j]->GetNumberOfCells();
+                    doCells = true;
+                else if (!coDomIsNodal)
+                    doCells = true;
                 else
-                    nvals = (coDomIsNodal ? leaves[j]->GetNumberOfPoints()
-                                     : leaves[j]->GetNumberOfCells());
+                    doCells = false;
+
+                nvals = (doCells ? leaves[j]->GetNumberOfCells()
+                                 : leaves[j]->GetNumberOfPoints());
+
+                vector<bool> useValue;
+                if (!doCells)
+                {
+                    if (leaves[j]->GetDataObjectType() == VTK_UNSTRUCTURED_GRID ||
+                        leaves[j]->GetDataObjectType() == VTK_POLY_DATA)
+                    {
+                        useValue.resize(nvals, false);
+                        int ncells = leaves[j]->GetNumberOfCells();
+                        for (l = 0 ; l < ncells ; l++)
+                        {
+                            vtkCell *cell = leaves[j]->GetCell(l);
+                            for (int p = 0 ; p < cell->GetNumberOfPoints() ; p++)
+                            {
+                                vtkIdType ptId = cell->GetPointId(p);
+                                useValue[ptId] = true;
+                            }
+                        }
+                    }
+                }
+
                 for (l = 0 ; l < nvals ; l++)
                 {
+                    if (useValue.size() > 0)
+                        if (!useValue[l])
+                            continue;
+
                     if (!mixedCentering)
                     {
                         for (k = 0 ; k < nvars ; k++)

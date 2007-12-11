@@ -115,6 +115,9 @@ typedef avtDDF *   (*GetDDFCallback)(void *, const char *);
 //   Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //   Added support for rectilinear grids with an inherent transform.
 //
+//   Hank Childs, Mon Dec 10 17:49:02 PST 2007
+//   Add data member for keeping track of expressions generated.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionEvaluatorFilter 
@@ -128,7 +131,7 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     virtual                 ~avtExpressionEvaluatorFilter();
     virtual const char*      GetType(void)
                                      { return "avtExpressionEvaluatorFilter";};
-   virtual const char        *GetDescription(void)
+    virtual const char      *GetDescription(void)
                                      { return "Creating expressions"; };
 
 
@@ -162,6 +165,7 @@ class EXPRESSION_API avtExpressionEvaluatorFilter
     ExprPipelineState            pipelineState;
     avtPipelineSpecification_p   lastUsedSpec;
     avtSourceFromAVTDataset     *termsrc;
+    std::vector<std::string>     expr_list_fromLastTime;
 
     static  GetDDFCallback       getDDFCallback;
     static  void                *getDDFCallbackArgs;

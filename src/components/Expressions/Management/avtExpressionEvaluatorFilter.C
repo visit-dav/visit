@@ -347,6 +347,10 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //    Cyrus Harrison, Tue Jul  3 11:24:33 PDT 2007
 //    Changed to reflect return of vector from GetVarLeaves()
 //
+//    Hank Childs, Mon Dec 10 17:49:02 PST 2007
+//    Keep track of variables that will be generated.  This is needed to
+//    force recalculation in rare cases.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -483,6 +487,21 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             }
         }
     }
+
+    // See what expressions have to be generated.  If it is not the same list as
+    // the last time we executed, then set the "modified" bit to true, forcing this
+    // filter to re-execute.  If we don't set this to true, we are depending on the
+    // output from the database to be different from previous execution.  This isn't
+    // always the case, esp. if we are making expressions based on the mesh.
+    if (expr_list_fromLastTime.size() != expr_list.size())
+        modified = true;
+    else
+    {
+        for (int i = 0 ; i < expr_list.size() ; i++)
+            if (expr_list[i] != expr_list_fromLastTime[i])
+                modified = true;
+    }
+    expr_list_fromLastTime = expr_list;
 
     // Take the list of expressions and make the filters for them.
     int numFiltersLastTime = 0;

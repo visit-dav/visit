@@ -196,6 +196,9 @@ avtFilter::UpdateProgress(int current, int total)
 //    Maintain "numInExecute" to keep track of how many nested executions
 //    we have.  Also dump info for pipeline specifications.
 //
+//    Hank Childs, Mon Dec 10 14:17:47 PST 2007
+//    Added debug statement for when the filter decides *not* to execute.
+//
 // ****************************************************************************
 
 bool
@@ -279,6 +282,10 @@ avtFilter::Update(avtPipelineSpecification_p spec)
             FinalizeWebpage();
         inExecute = false;
         numInExecute--;
+    }
+    else
+    {
+        debug1 << "Decided to *not* re-execute " << GetType() << endl;
     }
 
     //
