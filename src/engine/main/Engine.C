@@ -441,12 +441,22 @@ Engine::Finalize(void)
 //    Brad Whitlock, Thu Jan 25 14:02:10 PST 2007
 //    Added commandFromSim.
 //
+//    Dave Pugmire, Mon Dec 10 15:57:32 EST 2007
+//    Moved the plugin init and load after ProcessCommandLine call.
+//    ProcessCommandLine now takes an optional plugindir argument which
+//    must be set before the plugins are activated.
+//
 // ****************************************************************************
 
 void
 Engine::SetUpViewerInterface(int *argc, char **argv[])
 {
     int setupTimer = visitTimer->StartTimer();
+
+    vtkConnection = theViewer.GetReadConnection(1);
+
+    // Parse the command line.
+    ProcessCommandLine(*argc, *argv);
 
     //
     // Initialize the plugin managers.
@@ -459,19 +469,14 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     PlotPluginManager::Initialize(PlotPluginManager::Engine, false);
     OperatorPluginManager::Initialize(OperatorPluginManager::Engine, false);
     DatabasePluginManager::Initialize(DatabasePluginManager::Engine, false);
-#endif
-
+#endif    
     //
     // Load plugins
     //
     PlotPluginManager::Instance()->LoadPluginsOnDemand();
     OperatorPluginManager::Instance()->LoadPluginsOnDemand();
     DatabasePluginManager::Instance()->LoadPluginsOnDemand();
-
-    vtkConnection = theViewer.GetReadConnection(1);
-
-    // Parse the command line.
-    ProcessCommandLine(*argc, *argv);
+    
 
     InitVTK::Initialize();
     if (avtCallback::GetSoftwareRendering())
@@ -1045,6 +1050,9 @@ Engine::ProcessInput()
 //    Cyrus Harrison, Sat Aug 11 19:58:55 PDT 2007
 //    Added -vtk-debug option
 //
+//    Dave Pugmire, Mon Dec 10 15:57:32 EST 2007
+//    Added -plugindir option
+//
 // ****************************************************************************
 
 void
@@ -1197,6 +1205,13 @@ Engine::ProcessCommandLine(int argc, char **argv)
         {
             LoadBalancer::SetScheme(LOAD_BALANCE_ABSOLUTE);
         }
+        else if (strcmp(argv[i], "-plugindir") == 0  && (i+1) < argc )
+        {
+	    string pluginDir = argv[i+1];
+	    setenv( "VISITPLUGINDIR", pluginDir.c_str(), 1 );
+	    ++i;
+        }
+	
     }
     avtCallback::SetSoftwareRendering(!haveHWAccel);
 }
