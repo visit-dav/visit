@@ -66,7 +66,9 @@
 @VARIABLES@
 
 CPPFLAGS=-I. -I../../include -I../../include/visit
-EXTRA_LIBS=-lpipeline_ser -lavtmath_ser $(VTK_LIBS) $(MESA_LIBS) $(GLEW_LIBS) -llightweight_visit_vtk -lbz2 $(GL_LIBS)
+AVT_LIBS=-lpipeline_ser -lavtmath_ser -lavtfilters_ser -lavtview -lplotter_ser
+VISIT_VTK_LIBS=-lvisit_vtk -llightweight_visit_vtk -lparallel_visit_vtk_ser
+EXTRA_LIBS=$(AVT_LIBS) $(VISIT_VTK_LIBS) $(VTK_LIBS) $(X_LIBS) $(MESA_LIBS) $(GLEW_LIBS) $(BZIP2_LIBS) $(GL_LIBS) $(PTHREAD_LIB)
 LIBS=-L../../lib -lengineproxy -lenginerpc -lmdserverproxy -lmdserverrpc -lvclproxy -lvclrpc -lproxybase -lplugin -ldbatts -lexpr -lparser -lavtexceptions -lcomm -lstate -lutility -lmisc $(EXTRA_LIBS)
 
 ##
@@ -74,63 +76,6 @@ LIBS=-L../../lib -lengineproxy -lenginerpc -lmdserverproxy -lmdserverrpc -lvclpr
 ##
 SRC=dump_protocol.C
 OBJ=$(SRC:.C=.o)
-
-PLOTOBJ=../../plots/Boundary/BoundaryAttributes.o \
-../../plots/Contour/ContourAttributes.o \
-../../plots/Curve/CurveAttributes.o \
-../../plots/FilledBoundary/FilledBoundaryAttributes.o \
-../../plots/Histogram/HistogramAttributes.o \
-../../plots/Label/LabelAttributes.o \
-../../plots/Mesh/MeshAttributes.o \
-../../plots/Molecule/MoleculeAttributes.o \
-../../plots/ParallelAxis/ParallelAxisAttributes.o \
-../../plots/Pseudocolor/PseudocolorAttributes.o \
-../../plots/Scatter/ScatterAttributes.o \
-../../plots/Spreadsheet/SpreadsheetAttributes.o \
-../../plots/Streamline/StreamlineAttributes.o \
-../../plots/Subset/SubsetAttributes.o \
-../../plots/Surface/SurfaceAttributes.o \
-../../plots/Tensor/TensorAttributes.o \
-../../plots/Truecolor/TruecolorAttributes.o \
-../../plots/Vector/VectorAttributes.o \
-../../plots/Volume/VolumeAttributes.o
-
-# The REQUIRED operators
-OPERATOROBJ=../../operators/BoundaryOp/BoundaryOpAttributes.o \
-../../operators/Box/BoxAttributes.o \
-../../operators/Clip/ClipAttributes.o \
-../../operators/Cone/ConeAttributes.o \
-../../operators/CoordSwap/CoordSwapAttributes.o \
-../../operators/CracksClipper/CracksClipperAttributes.o \
-../../operators/CreateBonds/CreateBondsAttributes.o \
-../../operators/Cylinder/CylinderAttributes.o \
-../../operators/Decimate/DecimateAttributes.o \
-../../operators/DeferExpression/DeferExpressionAttributes.o \
-../../operators/Displace/DisplaceAttributes.o \
-../../operators/Elevate/ElevateAttributes.o \
-../../operators/ExternalSurface/ExternalSurfaceAttributes.o \
-../../operators/IndexSelect/IndexSelectAttributes.o \
-../../operators/InverseGhostZone/InverseGhostZoneAttributes.o \
-../../operators/Isosurface/IsosurfaceAttributes.o \
-../../operators/Isovolume/IsovolumeAttributes.o \
-../../operators/Lineout/LineoutAttributes.o \
-../../operators/Merge/MergeOperatorAttributes.o \
-../../operators/OnionPeel/OnionPeelAttributes.o \
-../../operators/PDF/PDFAttributes.o \
-../../operators/Project/ProjectAttributes.o \
-../../operators/Reflect/ReflectAttributes.o \
-../../operators/Replicate/ReplicateAttributes.o \
-../../operators/Resample/ResamplePluginAttributes.o \
-../../operators/Revolve/RevolveAttributes.o \
-../../operators/Slice/SliceAttributes.o \
-../../operators/Smooth/SmoothOperatorAttributes.o \
-../../operators/SphereSlice/SphereSliceAttributes.o \
-../../operators/ThreeSlice/ThreeSliceAttributes.o \
-../../operators/Threshold/ThresholdAttributes.o \
-../../operators/Transform/TransformAttributes.o \
-../../operators/Tube/TubeAttributes.o \
-../../operators/ZoneDump/ZoneDumpAttributes.o 
-
 
 ##
 ## Standard targets...
@@ -144,7 +89,7 @@ clean:
 ## Other targets...
 ##
 $(tmpbin)/visitprotocol: $(OBJ)
-	$(CXX) -o $@ $(OBJ) $(PLOTOBJ) $(OPERATOROBJ) $(LDFLAGS) $(LIBS)
+	$(CXX) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
 message:
 	@echo

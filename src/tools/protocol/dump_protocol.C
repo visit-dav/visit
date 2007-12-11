@@ -109,63 +109,12 @@
 #include <EngineProxy.h>
 #include <MDServerProxy.h>
 
-// Include plot attributes that we regularly build
-#include <../../plots/Boundary/BoundaryAttributes.h>
-#include <../../plots/Contour/ContourAttributes.h>
-#include <../../plots/Curve/CurveAttributes.h>
-#include <../../plots/FilledBoundary/FilledBoundaryAttributes.h>
-#include <../../plots/Histogram/HistogramAttributes.h>
-#include <../../plots/Label/LabelAttributes.h>
-#include <../../plots/Mesh/MeshAttributes.h>
-#include <../../plots/Molecule/MoleculeAttributes.h>
-#include <../../plots/ParallelAxis/ParallelAxisAttributes.h>
-#include <../../plots/Pseudocolor/PseudocolorAttributes.h>
-#include <../../plots/Scatter/ScatterAttributes.h>
-#include <../../plots/Spreadsheet/SpreadsheetAttributes.h>
-#include <../../plots/Streamline/StreamlineAttributes.h>
-#include <../../plots/Subset/SubsetAttributes.h>
-#include <../../plots/Surface/SurfaceAttributes.h>
-#include <../../plots/Tensor/TensorAttributes.h>
-#include <../../plots/Truecolor/TruecolorAttributes.h>
-#include <../../plots/Vector/VectorAttributes.h>
-#include <../../plots/Volume/VolumeAttributes.h>
-
-// Include the operator attributes that we are REQUIRED to build
-#include <../../operators/BoundaryOp/BoundaryOpAttributes.h>
-#include <../../operators/Box/BoxAttributes.h>
-#include <../../operators/Clip/ClipAttributes.h>
-#include <../../operators/Cone/ConeAttributes.h>
-#include <../../operators/CoordSwap/CoordSwapAttributes.h>
-#include <../../operators/CracksClipper/CracksClipperAttributes.h>
-#include <../../operators/CreateBonds/CreateBondsAttributes.h>
-#include <../../operators/Cylinder/CylinderAttributes.h>
-#include <../../operators/Decimate/DecimateAttributes.h>
-#include <../../operators/DeferExpression/DeferExpressionAttributes.h>
-#include <../../operators/Displace/DisplaceAttributes.h>
-#include <../../operators/Elevate/ElevateAttributes.h>
-#include <../../operators/ExternalSurface/ExternalSurfaceAttributes.h>
-#include <../../operators/IndexSelect/IndexSelectAttributes.h>
-#include <../../operators/InverseGhostZone/InverseGhostZoneAttributes.h>
-#include <../../operators/Isosurface/IsosurfaceAttributes.h>
-#include <../../operators/Isovolume/IsovolumeAttributes.h>
-#include <../../operators/Lineout/LineoutAttributes.h>
-#include <../../operators/Merge/MergeOperatorAttributes.h>
-#include <../../operators/OnionPeel/OnionPeelAttributes.h>
-#include <../../operators/PDF/PDFAttributes.h>
-#include <../../operators/Project/ProjectAttributes.h>
-#include <../../operators/Reflect/ReflectAttributes.h>
-#include <../../operators/Replicate/ReplicateAttributes.h>
-#include <../../operators/Resample/ResamplePluginAttributes.h>
-#include <../../operators/Revolve/RevolveAttributes.h>
-#include <../../operators/Slice/SliceAttributes.h>
-#include <../../operators/Smooth/SmoothOperatorAttributes.h>
-#include <../../operators/SphereSlice/SphereSliceAttributes.h>
-#include <../../operators/ThreeSlice/ThreeSliceAttributes.h>
-#include <../../operators/Threshold/ThresholdAttributes.h>
-#include <../../operators/Transform/TransformAttributes.h>
-#include <../../operators/Tube/TubeAttributes.h>
-#include <../../operators/ZoneDump/ZoneDumpAttributes.h>
-
+// Includes for plot and operator plugins
+#include <Init.h>
+#include <PlotPluginManager.h>
+#include <OperatorPluginManager.h>
+#include <PlotPluginInfo.h>
+#include <OperatorPluginInfo.h>
 
 #define MAKE_OBJECT(T) \
     { T *obj = new T; \
@@ -346,27 +295,29 @@ CreateMetaDataObjects(StateObjectMap &attributes)
 void
 CreatePlotStateObjects(StateObjectMap &attributes)
 {
-    MAKE_OBJECT(BoundaryAttributes);
-    MAKE_OBJECT(ContourAttributes);
-    MAKE_OBJECT(CurveAttributes);
-    MAKE_OBJECT(FilledBoundaryAttributes);
-    MAKE_OBJECT(HistogramAttributes);
-    //MAKE_OBJECT(KerbelAttributes);
-    MAKE_OBJECT(LabelAttributes);
-    MAKE_OBJECT(MeshAttributes);
-    MAKE_OBJECT(MoleculeAttributes);
-    MAKE_OBJECT(ParallelAxisAttributes);
-    MAKE_OBJECT(PseudocolorAttributes);
-    MAKE_OBJECT(ScatterAttributes);
-    MAKE_OBJECT(SpreadsheetAttributes);
-    MAKE_OBJECT(StreamlineAttributes);
-    MAKE_OBJECT(SubsetAttributes);
-    MAKE_OBJECT(SurfaceAttributes);
-    MAKE_OBJECT(TensorAttributes);
-    //MAKE_OBJECT(TopologyAttributes);
-    MAKE_OBJECT(TruecolorAttributes);
-    MAKE_OBJECT(VectorAttributes);
-    MAKE_OBJECT(VolumeAttributes);
+    // Enable all plugins
+    for(int i = 0; i < PlotPluginManager::Instance()->GetNAllPlugins(); ++i)
+    {
+        // Get a pointer to the GUI portion of the plot plugin information.
+        PlotPluginManager::Instance()->EnablePlugin(
+            PlotPluginManager::Instance()->GetAllID(i));
+    }
+
+    // Load the plugins
+    PlotPluginManager::Instance()->LoadPluginsNow();
+
+    // Create a state object for each plugin.
+    for(int i = 0; i < PlotPluginManager::Instance()->GetNAllPlugins(); ++i)
+    {
+        // Get a pointer to the GUI portion of the plot plugin information.
+        EnginePlotPluginInfo *info = PlotPluginManager::Instance()->
+            GetEnginePluginInfo(PlotPluginManager::Instance()->GetAllID(i));
+        if(info != 0)
+        {
+            AttributeSubject *atts = info->AllocAttributes();
+            attributes[atts->TypeName()] = atts;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -392,40 +343,29 @@ CreatePlotStateObjects(StateObjectMap &attributes)
 void
 CreateOperatorStateObjects(StateObjectMap &attributes)
 {
-    MAKE_OBJECT(BoundaryOpAttributes);
-    MAKE_OBJECT(BoxAttributes);
-    MAKE_OBJECT(ClipAttributes);
-    MAKE_OBJECT(ConeAttributes);
-    MAKE_OBJECT(CoordSwapAttributes);
-    MAKE_OBJECT(CracksClipperAttributes);
-    MAKE_OBJECT(CreateBondsAttributes);
-    MAKE_OBJECT(CylinderAttributes);
-    MAKE_OBJECT(DecimateAttributes);
-    MAKE_OBJECT(DeferExpressionAttributes);
-    MAKE_OBJECT(DisplaceAttributes);
-    MAKE_OBJECT(ElevateAttributes);
-    MAKE_OBJECT(ExternalSurfaceAttributes);
-    MAKE_OBJECT(IndexSelectAttributes);
-    MAKE_OBJECT(InverseGhostZoneAttributes);
-    MAKE_OBJECT(IsosurfaceAttributes);
-    MAKE_OBJECT(IsovolumeAttributes);
-    MAKE_OBJECT(LineoutAttributes);
-    MAKE_OBJECT(MergeOperatorAttributes);
-    MAKE_OBJECT(OnionPeelAttributes);
-    MAKE_OBJECT(PDFAttributes);
-    MAKE_OBJECT(ProjectAttributes);
-    MAKE_OBJECT(ReflectAttributes);
-    MAKE_OBJECT(ReplicateAttributes);
-    MAKE_OBJECT(ResamplePluginAttributes);
-    MAKE_OBJECT(RevolveAttributes);
-    MAKE_OBJECT(SliceAttributes);
-    MAKE_OBJECT(SmoothOperatorAttributes);
-    MAKE_OBJECT(SphereSliceAttributes);
-    MAKE_OBJECT(ThreeSliceAttributes);
-    MAKE_OBJECT(ThresholdAttributes);
-    MAKE_OBJECT(TransformAttributes);
-    MAKE_OBJECT(TubeAttributes);
-    MAKE_OBJECT(ZoneDumpAttributes);
+    // Enable all plugins
+    for(int i = 0; i < OperatorPluginManager::Instance()->GetNAllPlugins(); ++i)
+    {
+        // Get a pointer to the GUI portion of the Operator plugin information.
+        OperatorPluginManager::Instance()->EnablePlugin(
+            OperatorPluginManager::Instance()->GetAllID(i));
+    }
+
+    // Load the plugins
+    OperatorPluginManager::Instance()->LoadPluginsNow();
+
+    // Create a state object for each plugin.
+    for(int i = 0; i < OperatorPluginManager::Instance()->GetNAllPlugins(); ++i)
+    {
+        // Get a pointer to the GUI portion of the Operator plugin information.
+        EngineOperatorPluginInfo *info = OperatorPluginManager::Instance()->
+            GetEnginePluginInfo(OperatorPluginManager::Instance()->GetAllID(i));
+        if(info != 0)
+        {
+            AttributeSubject *atts = info->AllocAttributes();
+            attributes[atts->TypeName()] = atts;
+        }
+    }
 }
 
 // ****************************************************************************
@@ -623,6 +563,14 @@ main(int argc, char *argv[])
     StateObjectMap commonState, metadata, engine, launcher, plots, operators;
     FILE *f = stdout;
 
+    // Initialize
+    Init::Initialize(argc, argv, 0, 1, true, true);
+    Init::SetComponentName("visitprotocol");
+
+    // Initialize the plugin managers and load the info plugins.
+    PlotPluginManager::Initialize(PlotPluginManager::Engine, false);
+    OperatorPluginManager::Initialize(OperatorPluginManager::Engine, false);
+
     // Print out header and program description.
     PrintHeader(f, "VisIt protocol report");
     fprintf(f, "Command line: \n");
@@ -677,6 +625,9 @@ main(int argc, char *argv[])
     CreateOperatorStateObjects(operators);
     WriteObjectDefinitions(f, operators);
     DeleteStateObjects(operators);
+
+    // Prepare for exit.
+    Init::Finalize();
 
     return 0;
 }
