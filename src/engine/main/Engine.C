@@ -112,9 +112,6 @@ static void WriteByteStreamToSocket(NonBlockingRPC *, Connection *,
                                     avtDataObjectString &);
 static void ResetEngineTimeout(void *p, int secs);
 
-// Initial connection timeout of 5 minutes (300 seconds)
-#define INITIAL_CONNECTION_TIMEOUT 60
-
 // message tag for interrupt messages used in static abort callback function
 #ifdef PARALLEL
 const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
@@ -146,13 +143,23 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Brad Whitlock, Thu Jan 25 13:56:24 PST 2007
 //    Added commandFromSim.
 //
+//    Sean Ahern, Wed Dec 12 12:01:13 EST 2007
+//    Added a distinction between the execution timeout and the idle timeout.
+//
+//    Sean Ahern, Wed Dec 12 16:24:46 EST 2007
+//    Moved the execution timeout back to 30 minutes.
+//
 // ****************************************************************************
 
 Engine::Engine()
 {
     vtkConnection = 0;
     noFatalExceptions = true;
-    timeout = 0;
+    idleTimeoutMins = 480;
+    executionTimeoutMins = 30;
+    idleTimeoutEnabled = false;
+    overrideTimeoutMins = 0;
+    overrideTimeoutEnabled = false;
     netmgr = NULL;
     lb = NULL;
     procAtts = NULL;
@@ -776,6 +783,10 @@ Engine::ConnectViewer(int *argc, char **argv[])
 //
 //    Mark C. Miller, Tue Feb 13 16:24:58 PST 2007
 //    Replaced MPI_Bcast with MPIXfer::VisIt_MPI_Bcast
+//
+//    Sean Ahern, Wed Dec 12 12:02:21 EST 2007
+//    Made a distinction between the execution and the idle timeouts.
+//
 // ****************************************************************************
 
 void
@@ -804,15 +815,20 @@ Engine::PAR_EventLoop()
         while(!quitRPC->GetQuit() && noFatalExceptions)
         {
             // Reset the alarm
-            ResetTimeout(timeout * 60);
+            overrideTimeoutEnabled = false;
+
+            idleTimeoutEnabled = true;
+            debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+            ResetTimeout(idleTimeoutMins * 60);
 
             // Get state information from the UI process.
             MPIXfer::VisIt_MPI_Bcast((void *)&par_buf, 1,
                 PAR_STATEBUFFER, 0, VISIT_MPI_COMM);
 
-            // We have work to do, so cancel the alarm.
-            int num_seconds_in_ten_minutes = 10*60;
-            ResetTimeout(num_seconds_in_ten_minutes);
+            // We have work to do, so reset the alarm.
+            idleTimeoutEnabled = false;
+            debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
+            ResetTimeout(executionTimeoutMins * 60);
 
             // Add the state information to the connection.
             par_conn.Append((unsigned char *)par_buf.buffer, par_buf.nbytes);
@@ -820,7 +836,9 @@ Engine::PAR_EventLoop()
             // Process the state information.
             xfer->Process();
 
-            ResetTimeout(timeout * 60);
+            idleTimeoutEnabled = true;
+            debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+            ResetTimeout(idleTimeoutMins * 60);
         }
     }
 }
@@ -903,6 +921,9 @@ Engine::PAR_ProcessInput()
 //    Kathleen Bonnell, Mon May  9 13:27:18 PDT 200 
 //    Changed the timeout to 10 minutes. 
 //
+//    Sean Ahern, Wed Dec 12 12:04:15 EST 2007
+//    Made a distinction between the execution and the idle timeouts.
+//
 // ****************************************************************************
 
 bool
@@ -914,7 +935,11 @@ Engine::EventLoop()
     while(!quitRPC->GetQuit() && noFatalExceptions)
     {
         // Reset the timeout alarm
-        ResetTimeout(timeout * 60);
+        overrideTimeoutEnabled = false;
+
+        idleTimeoutEnabled = true;
+        debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+        ResetTimeout(idleTimeoutMins * 60);
 
         //
         // Block until the connection needs to be read. Then process its
@@ -924,14 +949,17 @@ Engine::EventLoop()
         {
             TRY
             {
-                // We've got some work to do.  Disable the alarm.
-                const int num_seconds_in_ten_minutes = 10*60;
-                ResetTimeout(num_seconds_in_ten_minutes);
+                // We've got some work to do.  Reset the alarm.
+                idleTimeoutEnabled = false;
+                debug5 << "Resetting execution timeout to " << executionTimeoutMins << " minutes." << endl;
+                ResetTimeout(executionTimeoutMins * 60);
 
                 // Process input.
                 ProcessInput();
 
-                ResetTimeout(timeout * 60);
+                idleTimeoutEnabled = true;
+                debug5 << "Resetting idle timeout to " << idleTimeoutMins << " minutes." << endl;
+                ResetTimeout(idleTimeoutMins * 60);
             }
             CATCH(LostConnectionException)
             {
@@ -1110,7 +1138,7 @@ Engine::ProcessCommandLine(int argc, char **argv)
                 long int to = strtol(argv[i+1], &endptr, 10);
                 if (*(argv[i+1]) != '\0' && *endptr == '\0' && errno == 0)
                 {
-                    timeout = (int) to;
+                    idleTimeoutMins = (int) to;
                 }
                 else
                 {
@@ -1240,15 +1268,29 @@ Engine::ProcessCommandLine(int argc, char **argv)
 void
 Engine::AlarmHandler(int signal)
 {
-    debug1 << "ENGINE exited due to an inactivity timeout of "
-           << Engine::Instance()->timeout << " minutes." << endl;
+    Engine *e = Engine::Instance();
+    if (e->overrideTimeoutEnabled == true)
+    {
+        debug1 << "ENGINE exited due to an inactivity timeout of "
+            << e->overrideTimeoutMins << " minutes.  Timeout was set through a callback. (Alarm received)" << endl;
+    } else
+    {
+        if (e->idleTimeoutEnabled == true)
+        {
+            debug1 << "ENGINE exited due to an idle inactivity timeout of "
+                << e->idleTimeoutMins << " minutes. (Alarm received)" << endl;
+        } else
+        {
+            debug1 << "ENGINE exited due to an execution timeout of "
+                << e->executionTimeoutMins << " minutes. (Alarm received)" << endl;
+        }
+    }
 
     Init::Finalize();
 #ifdef PARALLEL
     PAR_Exit();
 #endif
     exit(0);
-
 }
 
 // ****************************************************************************
@@ -2447,6 +2489,9 @@ Engine::GetProcessAttributes()
 //
 //  Programmer: Hank Childs
 //  Creation:   September 5, 2006
+//  
+//  Sean Ahern, Wed Dec 12 12:08:38 EST 2007
+//  Added a message to say what timeout is being affected.
 //
 // ****************************************************************************
 
@@ -2454,7 +2499,14 @@ static void
 ResetEngineTimeout(void *p, int secs)
 {
     Engine *e = (Engine *) p;
+    e->SetOverrideTimeout(secs*60);
+    if (e->IsIdleTimeoutEnabled() == false)
+    {
+        debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
+    } else
+    {
+        debug5 << "ResetEngineTimeout: We shouldn't get here!  Callbacks shouldn't set the timeout during idle!" << endl;
+        debug5 << "ResetEngineTimeout: Overriding timeout to " << secs << " seconds." << endl;
+    }
     e->ResetTimeout(secs);
 }
-
-
