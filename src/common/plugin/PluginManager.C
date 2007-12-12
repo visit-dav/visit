@@ -43,6 +43,7 @@
 #include <DebugStream.h>
 #include <InvalidDirectoryException.h>
 #include <InvalidPluginException.h>
+#include <Utility.h>
 #include <visit-config.h>
 #include <visitstream.h>
 #include <stdlib.h>
@@ -588,6 +589,9 @@ PluginManager::GetPluginList(vector<pair<string,string> > &libs)
 //    Hank Childs, Thu Aug 30 08:45:02 PDT 2007
 //    Clean up debug statements.
 //
+//    Jeremy Meredith, Wed Dec 12 16:09:38 EST 2007
+//    Allow plugins to be compatible across point releases.
+//
 // ****************************************************************************
 
 void
@@ -663,7 +667,7 @@ PluginManager::ReadPluginInfo()
             pluginsWithNoVersion.push_back(pluginFile);
             success = false; 
         }
-        else if (strcmp(*VisItPluginVersion, VERSION) != 0)
+        else if (!VisItVersionsCompatible(*VisItPluginVersion, VERSION))
         {
             pluginsWithWrongVersion.push_back(pluginFile);
             success = false; 
