@@ -128,6 +128,12 @@
 //    Brad Whitlock, Sat Sep 29 14:49:09 PST 2007
 //    Replace getenv("USER") with a safer function so we don't crash on Windows.
 //
+//    Hank Childs, Tue Nov 20 10:50:49 PST 2007
+//    Add include for DBOptionsAttributes.
+//
+//    Hank Childs, Tue Nov 27 09:10:45 PST 2007
+//    Fix type (cyle -> cycle).
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -1015,7 +1021,7 @@ class AVTGeneratorPlugin
             h << "    // If you know the cycle number, overload this function." << endl;
             h << "    // Otherwise, VisIt will make up a reasonable one for you." << endl;
             h << "    //" << endl;
-            h << "    // virtual int         GetCyle(void);" << endl;
+            h << "    // virtual int         GetCycle(void);" << endl;
             h << "    //" << endl;
             h << "" << endl;
             h << "    virtual const char    *GetType(void)   { return \""<<name<<"\"; };" << endl;
@@ -1127,6 +1133,7 @@ class AVTGeneratorPlugin
             c << "" << endl;
             c << "#include <avtDatabaseMetaData.h>" << endl;
             c << "" << endl;
+            c << "#include <DBOptionsAttributes.h>" << endl;
             c << "#include <Expression.h>" << endl;
             c << "" << endl;
             c << "#include <InvalidVariableException.h>" << endl;
@@ -1433,6 +1440,7 @@ class AVTGeneratorPlugin
             c << "" << endl;
             c << "#include <avtDatabaseMetaData.h>" << endl;
             c << "" << endl;
+            c << "#include <DBOptionsAttributes.h>" << endl;
             c << "#include <Expression.h>" << endl;
             c << "" << endl;
             c << "#include <InvalidVariableException.h>" << endl;
@@ -1763,6 +1771,7 @@ class AVTGeneratorPlugin
             c << "" << endl;
             c << "#include <avtDatabaseMetaData.h>" << endl;
             c << "" << endl;
+            c << "#include <DBOptionsAttributes.h>" << endl;
             c << "#include <Expression.h>" << endl;
             c << "" << endl;
             c << "#include <InvalidVariableException.h>" << endl;
@@ -2078,6 +2087,7 @@ class AVTGeneratorPlugin
             c << "" << endl;
             c << "#include <avtDatabaseMetaData.h>" << endl;
             c << "" << endl;
+            c << "#include <DBOptionsAttributes.h>" << endl;
             c << "#include <Expression.h>" << endl;
             c << "" << endl;
             c << "#include <InvalidVariableException.h>" << endl;
