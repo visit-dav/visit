@@ -46,6 +46,7 @@
 #include <stdio.h>
 
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 #include <visit-config.h>
 
@@ -413,6 +414,9 @@ MDServerProxy::GetFileList(const std::string &filter,
 //    Added flag to GetMetaData for controlling auto creation of vector
 //    magnitude expressions.
 //
+//    Hank Childs, Tue Dec 11 16:35:25 PST 2007
+//    Added timings information.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -426,6 +430,7 @@ MDServerProxy::GetMetaData(const string &file, int timeState,
 {
     // Try and get the meta data from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
+    int t0 = visitTimer->StartTimer();
     const avtDatabaseMetaData *md = getMetaDataRPC(file, timeState,
                                          forceReadAllCyclesTimes,
                                          forcedFileType,
@@ -442,6 +447,7 @@ MDServerProxy::GetMetaData(const string &file, int timeState,
 
     metaData = *md;
 
+    visitTimer->StopTimer(t0, "MDServerProxy::GetMetaData");
     return &metaData;
 }
 
@@ -460,12 +466,18 @@ MDServerProxy::GetMetaData(const string &file, int timeState,
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added treatAllDBsAsTimeVarying
+//
+//    Hank Childs, Tue Dec 11 16:35:25 PST 2007
+//    Added timings information.
+//
 // ****************************************************************************
 
 const SILAttributes *
 MDServerProxy::GetSIL(const string &file, int timeState,
     bool treatAllDBsAsTimeVarying)
 {
+    int t0 = visitTimer->StartTimer();
+
     // Try and get the SIL from the MD Server. This could throw an
     // exception, but we don't want to catch it here.
     const SILAttributes *s = getSILRPC(file, timeState,
@@ -478,6 +490,8 @@ MDServerProxy::GetSIL(const string &file, int timeState,
 #endif
 
     sil = *s;
+
+    visitTimer->StopTimer(t0, "MDServerProxy::GetSIL");
 
     return &sil;
 }
