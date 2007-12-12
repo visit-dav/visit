@@ -69,6 +69,7 @@
 #include <Utility.h>
 
 #include <DebugStream.h>
+#include <TimingsManager.h>
 
 #include <algorithm>
 
@@ -589,6 +590,9 @@ ViewerFileServer::GetMetaDataForState(const std::string &host,
 //   Kathleen Bonnell, Tue Oct  9 16:59:39 PDT 2007 
 //   Added GetCreateMeshQuality/TimeDerivativeExpressions to GetMetaData call. 
 //
+//   Hank Childs, Tue Dec 11 16:35:25 PST 2007
+//   Added timings of getting meta-data.
+//
 // ****************************************************************************
 
 const avtDatabaseMetaData *
@@ -619,6 +623,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
 
             TRY
             {
+                int t0 = visitTimer->StartTimer();
                 const avtDatabaseMetaData *md =
                     servers[host]->proxy->GetMetaData(db, timeState,
                                         forceReadAllCyclesAndTimes ||
@@ -627,6 +632,7 @@ ViewerFileServer::GetMetaDataHelper(const std::string &host,
                                         GetTreatAllDBsAsTimeVarying(),
                                         GetCreateMeshQualityExpressions(),
                                         GetCreateTimeDerivativeExpressions());
+                visitTimer->StopTimer(t0, "Getting meta data from mdserver");
 
                 if(md != NULL)
                 {
