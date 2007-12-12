@@ -219,6 +219,12 @@ class Engine
                                                  const char*, int,int);
     static void     EngineWarningCallback(void *, const char *);
     void            ResetTimeout(int timeout);
+    void            SetOverrideTimeout(int mins)
+                    {
+                        overrideTimeoutEnabled = true;
+                        overrideTimeoutMins = mins; 
+                    }
+    bool            IsIdleTimeoutEnabled(void) { return idleTimeoutEnabled; }
 
     // Internal methods
   protected:
@@ -247,8 +253,12 @@ class Engine
     // Flag for whether there were any fatal exceptions
     bool               noFatalExceptions;
 
-    // Current Timeout
-    int                timeout;
+    // Current timeouts in minutes.
+    int                idleTimeoutMins;
+    int                executionTimeoutMins;
+    bool               idleTimeoutEnabled;
+    int                overrideTimeoutMins;
+    bool               overrideTimeoutEnabled;
 
     // The load balancer
     LoadBalancer       *lb;
