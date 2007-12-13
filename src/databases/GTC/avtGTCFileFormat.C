@@ -57,10 +57,10 @@
 
 #include <DebugStream.h>
 
-using     std::string;
-
-static string IndexToVarName( int idx );
-static int VarNameToIndex( const string &var );
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif
 
 // ****************************************************************************
 //  Method: avtGTCFileFormat constructor
@@ -73,14 +73,16 @@ static int VarNameToIndex( const string &var );
 avtGTCFileFormat::avtGTCFileFormat(const char *filename)
     : avtSTMDFileFormat(&filename, 1)
 {
-    fileId = -1;
+    fileHandle = -1;
+    particleHandle = -1;
     nVars = 0;
+    nTotalPoints = 0;
+    nPoints = 0;
     initialized = false;
 
     // Make sure that the file is in fact GTC.
-    Initialize(true, true);
+    Initialize();
 }
-
 
 // ****************************************************************************
 //  Method: avtGTCFileFormat::FreeUpResources
@@ -99,10 +101,15 @@ avtGTCFileFormat::avtGTCFileFormat(const char *filename)
 void
 avtGTCFileFormat::FreeUpResources(void)
 {
-    if(fileId >= 0)
+    if(fileHandle >= 0)
     {
-        H5Fclose(fileId);
-        fileId = -1;
+        H5Fclose(fileHandle);
+        fileHandle = -1;
+    }
+    if (particleHandle >= 0)
+    {
+	H5Dclose(particleHandle);
+	particleHandle = -1;
     }
 
     initialized = false;
@@ -122,7 +129,7 @@ avtGTCFileFormat::FreeUpResources(void)
 // ****************************************************************************
 
 bool
-avtGTCFileFormat::Initialize(bool throwE, bool extraChecks)
+avtGTCFileFormat::Initialize()
 {
     const char *mName = "avtGTCFileFormat::Initialize: ";
 
@@ -130,99 +137,78 @@ avtGTCFileFormat::Initialize(bool throwE, bool extraChecks)
         return true;
 
     // Turn off error message printing.
-    H5Eset_auto(0,0);
+    //H5Eset_auto(0,0);
     debug4 << mName << "Opening " << GetFilename() << endl;
     bool err = false;
-    fileId = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT);
-    if (fileId < 0)
+    fileHandle = H5Fopen(GetFilename(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    
+    if (fileHandle < 0)
     {
         debug4 << mName << "Could not open " << GetFilename() << endl;
-        if(throwE)
-        {
-            EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file "
-                "since it is not even an HDF5 file.");
-        }
-        else
-            err = true;
+	EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file since it is not even an HDF5 file.");
     }
 
-    if(!err && extraChecks)
+    particleHandle = H5Dopen(fileHandle, "particle_data");
+    if (particleHandle < 0)
     {
-        int val, ndims;
-        hid_t sid;
-        hsize_t dims[3];
-
-        debug4 << mName << "Opening particle_data" << endl;
-        hid_t handle = H5Dopen(fileId, "particle_data");
-        if (handle < 0)
-        {
-            debug4 << mName << "Could not open particle_data" << endl;
-            H5Fclose(fileId);
-            if(throwE)
-            {
-                EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file, "
-                    "since it is does not contain the dataset \"particle_data\"");
-            }
-            else
-            {
-                err = true;
-                goto bail;
-            }
-        }
-
-        // Get the variable's size.
-        debug4 << mName << "Determining number of dimensions" << endl;
-        sid = H5Dget_space(handle);
-        ndims = H5Sget_simple_extent_ndims(sid);
-        if(ndims < 0 || ndims > 2)
-        {
-            debug4 << mName << "Could not determine number of dimensions" << endl;
-            H5Sclose(sid);
-            H5Dclose(handle);
-            H5Fclose(fileId);
-            if(throwE)
-            {
-                EXCEPTION1(InvalidDBTypeException, "The GTC file has an "
-                    "invalid number of dimensions");
-            }
-            else
-            {
-                err = true;
-                goto bail;
-            }
-        }
-
-        debug4 << mName << "Determining variable size" << endl;
-        val = H5Sget_simple_extent_dims(sid, dims, NULL);
-        nVars = dims[1];
-        if(val < 0 || nVars < 3)
-        {
-            debug4 << mName << "Could not determine variable size" << endl;
-            H5Sclose(sid);
-            H5Dclose(handle);
-            H5Fclose(fileId);
-            if(throwE)
-            {
-                EXCEPTION1(InvalidDBTypeException, "The GTC file has an "
-                    "insufficient number of coordinates");
-            }
-            else
-            {
-                err = true;
-                goto bail;
-            }
-        }
-        else
-        {
-            debug4 << mName << "variable size (" << dims[0] << ", "
-                   << dims[1] << ")" << endl;
-        }
-
-bail:   ; // Skip the other stuff by jumping here
+	debug4 << mName << "Could not open particle_data" << endl;
+	EXCEPTION1(InvalidDBTypeException, "Cannot be a GTC file, "
+		   "since it is does not contain the dataset \"particle_data\"");
     }
 
-    initialized = !err;
+    //Check variable's size.
+    hid_t dataspace = H5Dget_space(particleHandle);
+    hsize_t dims[3];
+    hid_t sid = H5Dget_space(particleHandle);
+    int ndims = H5Sget_simple_extent_dims(dataspace, dims, NULL);
+    if(ndims < 0 || ndims > 2)
+    {
+	debug4 << mName << "Could not determine number of dimensions" << endl;
+	H5Sclose(sid);
+	H5Dclose(particleHandle);
+	H5Fclose(fileHandle);
+	EXCEPTION1(InvalidDBTypeException, "The GTC file has an invalid number of dimensions");
+    }
+    
+    debug4 << mName << "Determining variable size" << endl;
+    int val = H5Sget_simple_extent_dims(sid, dims, NULL);
 
+    if(val < 0 || dims[1] < 3)
+    {
+	debug4 << mName << "Could not determine variable size" << endl;
+	H5Sclose(sid);
+	H5Dclose(particleHandle);
+	H5Fclose(fileHandle);
+	EXCEPTION1(InvalidDBTypeException, "The GTC file has an insufficient number of variables");
+    }
+    H5Sclose(dataspace);
+
+    debug4 << mName << "variable size (" << dims[0] << ", " << dims[1] << ")" << endl;
+
+    nTotalPoints = dims[0];
+    nVars = dims[1];
+
+#ifdef PARALLEL
+    nProcs = PAR_Size();
+    rank = PAR_Rank();
+    nPoints = nTotalPoints / nProcs;
+    int remainder = nTotalPoints % nProcs;
+
+    startOffset = rank * nPoints;
+    if ( rank < remainder )
+	startOffset += rank;
+    else
+	startOffset += remainder;
+
+    if ( rank < remainder )
+	nPoints++;
+#else
+    nPoints = nTotalPoints;
+    startOffset = 0;
+#endif
+    
+    initialized = true;
+    
     return initialized;
 }
 
@@ -249,6 +235,9 @@ avtGTCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mmd->spatialDimension = 3;
     mmd->topologicalDimension = 0;
     mmd->meshType = AVT_POINT_MESH;
+#ifdef PARALLEL
+    mmd->numBlocks = PAR_Size();
+#endif
     md->Add(mmd);
 
     // Add scalar variables.
@@ -270,8 +259,6 @@ avtGTCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //      vtkUnstructuredGrid, etc).
 //
 //  Arguments:
-//      timestate   The index of the timestate.  If GetNTimesteps returned
-//                  'N' time steps, this is guaranteed to be between 0 and N-1.
 //      domain      The index of the domain.  If there are NDomains, this
 //                  value is guaranteed to be between 0 and NDomains-1,
 //                  regardless of block origin.
@@ -286,82 +273,102 @@ avtGTCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 vtkDataSet *
 avtGTCFileFormat::GetMesh(int domain, const char *meshname)
 {
-    const char *mName = "avtGTCFileFormat::GetMesh: ";
-    Initialize(false, false);
-
-    debug4 << mName << "Opening particle_data" << endl;
-    hid_t handle = H5Dopen(fileId, "particle_data");
-    if (handle < 0)
-    {
-        EXCEPTION1(InvalidVariableException, meshname);
-    }
-
-    // Get the data space and the dimensions.
-    hid_t dataspace = H5Dget_space(handle);
-    hsize_t dims[2];
-    H5Sget_simple_extent_dims(dataspace, dims, NULL);
-    debug4 << mName << "particle_data dims(" << dims[0] << ", "
-           << dims[1] << ")" << endl;
-
-    // Read all the data
-    int i, nPoints = int(dims[0]);
-    float *xyz = new float[dims[0] * dims[1]];
-    H5Sselect_all(dataspace);
-    H5Dread(handle, H5T_NATIVE_FLOAT, H5S_ALL, dataspace, H5P_DEFAULT, xyz);
-
-    debug4 << "Creating VTK points with " << nPoints << " points" << endl;
+    Initialize();
+    // Allocate mesh.
     vtkPoints *points  = vtkPoints::New();
     points->SetNumberOfPoints(nPoints);
-    float *pts = (float *) points->GetVoidPointer(0);
-    float *pdata = xyz;
-    for(i = 0; i < nPoints; ++i)
-    {
-        *pts++ = pdata[0];
-        *pts++ = pdata[1];
-        *pts++ = pdata[2];
-        pdata += dims[1];
-    }
+    
+    vtkUnstructuredGrid  *grid = vtkUnstructuredGrid::New();
+    grid->SetPoints(points);
+    grid->Allocate(nPoints);
 
-    //Read in the point ids.
-#if HDF5_VERSION_GE(1,6,4)
-    hsize_t start[3];
-#else
-    hssize_t start[3];
-#endif
-    hsize_t count[3];    
-    start[0] = 0; start[1] = VarNameToIndex( "id" );
-    count[0] = dims[0]; count[1] = 1;
-    H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
+    //Read in particles.
+    float *ptrXYZ = (float *) points->GetVoidPointer(0);
+    ReadVariable( domain, 0, 3, &ptrXYZ );    
 
-    hsize_t dimsm[1] = {dims[0]};
-    hid_t memspace = H5Screate_simple(1, dimsm, NULL);
-    H5Sselect_all(memspace);
-    float *ids = new float[nPoints];
-    H5Dread(handle, H5T_NATIVE_FLOAT, memspace, dataspace, H5P_DEFAULT, ids);
-    H5Sclose(memspace);
-    H5Sclose(dataspace);
-    H5Dclose(handle);    
-
-
-    // Create the point mesh
-    debug4 << "Creating point mesh..." << endl;
-    vtkUnstructuredGrid  *ugrid = vtkUnstructuredGrid::New(); 
-    ugrid->SetPoints(points);
-    ugrid->Allocate(nPoints);
+    // Set the IDs in the grid.
     vtkIdType vertID;
-    for(i = 0; i < nPoints; ++i)
+    for ( int i = 0; i < nPoints; i++ )
     {
-	vertID = (vtkIdType)ids[i];
-        ugrid->InsertNextCell(VTK_VERTEX, 1, &vertID);
+	vertID = i;
+	grid->InsertNextCell( VTK_VERTEX, 1, &vertID );
     }
 
     points->Delete();
-    delete [] xyz;
-    delete [] ids;
-
-    return ugrid;
+    return grid;
 }
 
+// ****************************************************************************
+// Method: avtGTCFileFormat::ReadVariable
+//
+// Purpose: 
+//   Reads in the variables from the file. If parallel, then do data exchange.
+//
+//  Arguments:
+//      domain      The index of the domain.
+//      varIdx      Variable of index to be read.
+//      varDim      Dimension of varible to be read.
+//      ptrVar      pointer to buffer for variable.
+//
+// Programmer: Dave Pugmire
+// Creation:   Mon Dec  3 16:17:45 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtGTCFileFormat::ReadVariable( int domain, int varIdx, int varDim, float **ptrVar )
+{
+    debug5 << "Reading Variable: " << startOffset << " " << nPoints << endl;
+    hid_t dataspace = H5Dget_space(particleHandle);
+
+    //Select the Var.
+    hsize_t start[2] = { startOffset, varIdx };
+    hsize_t count[2] = { nPoints, varDim };
+    H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
+
+    hsize_t dataDim[1] = {nPoints*varDim};
+    hid_t memspace = H5Screate_simple(1, dataDim, NULL);
+    H5Sselect_all(memspace);
+
+    //Read the variable from file.
+    float *var = new float[nPoints*varDim];
+    H5Dread(particleHandle, H5T_NATIVE_FLOAT, memspace, dataspace, H5P_DEFAULT, var );
+    H5Sclose(memspace);
+
+    //Select ID
+    start[0] = startOffset;
+    start[1] = VarNameToIndex( "id" );
+    
+    count[0] = nPoints;
+    count[1] = 1;    
+    H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
+    
+    // Read in ID.
+    dataDim[0] = nPoints;
+    memspace = H5Screate_simple(1, dataDim, NULL);
+    H5Sselect_all(memspace);
+    float *ids = new float[nPoints];
+    H5Dread(particleHandle, H5T_NATIVE_FLOAT, memspace, dataspace, H5P_DEFAULT, ids );
+    
+    H5Sclose(memspace);
+    H5Sclose(dataspace);
+
+#ifdef PARALLEL
+    ParallelReadVariable( domain, varDim, var, ids );
+#endif
+
+    //Put the variables into the right order.
+    for ( int i = 0; i < nPoints; i++ )
+    {
+	int id = (int)ids[i] - startOffset - 1;
+	memcpy( (void *)&((*ptrVar)[i*varDim]), (void*)&var[id*varDim], varDim*sizeof(float) );
+    }
+
+    delete [] ids;
+    delete [] var;
+}
 
 // ****************************************************************************
 //  Method: avtGTCFileFormat::GetVar
@@ -372,8 +379,6 @@ avtGTCFileFormat::GetMesh(int domain, const char *meshname)
 //      that is supported everywhere through VisIt.
 //
 //  Arguments:
-//      timestate  The index of the timestate.  If GetNTimesteps returned
-//                 'N' time steps, this is guaranteed to be between 0 and N-1.
 //      domain     The index of the domain.  If there are NDomains, this
 //                 value is guaranteed to be between 0 and NDomains-1,
 //                 regardless of block origin.
@@ -388,59 +393,23 @@ vtkDataArray *
 avtGTCFileFormat::GetVar(int domain, const char *varname)
 {
     const char *mName = "avtGTCFileFormat::GetVar: ";
-    Initialize(false, false);
+
+    Initialize();
 
     // Determine the variable index from the varname
     int varIdx = VarNameToIndex( varname );
     if ( varIdx == -1 )
         EXCEPTION1(InvalidVariableException, varname);
-
-    debug4 << mName << "We want var " << varIdx << " for "
-           << varname << endl;
-
-    debug4 << mName << "Opening particle_data" << endl;
-    hid_t handle = H5Dopen(fileId, "particle_data");
-    if (handle < 0)
-    {
-        EXCEPTION1(InvalidVariableException, varname);
-    }
-
-    // Get the data space and the dimensions.
-    hid_t dataspace = H5Dget_space(handle);
-#if HDF5_VERSION_GE(1,6,4)
-    hsize_t start[3];
-#else
-    hssize_t start[3];
-#endif
-    hsize_t dims[3], count[3];
-    H5Sget_simple_extent_dims(dataspace, dims, NULL);
-    debug4 << mName << "particle_data dims(" << dims[0] << ", "
-           << dims[1] << ")" << endl;
-
-    // Select the var'th row of data.
-    start[0] = 0; start[1] = varIdx;
-    count[0] = dims[0]; count[1] = 1;
-    H5Sselect_hyperslab(dataspace, H5S_SELECT_SET, start, NULL, count, NULL);
-
-    // Create a data space for the block of memory that we'll read the
-    // data into.
-    hsize_t dimsm[1] = {dims[0]};
-    hid_t memspace = H5Screate_simple(1, dimsm, NULL);
-    H5Sselect_all(memspace);
-
-    // Read the data directly into the VTK data array.
-    int nValues = int(dims[0]);
-    debug4 << "Creating VTK float array with " << nValues << " values" << endl;
-    vtkFloatArray *rv = vtkFloatArray::New();
-    rv->SetNumberOfTuples(nValues);
-    float *f = (float *) rv->GetVoidPointer(0);
-    debug4 << "Reading slab into data array" << endl;
-
-    H5Dread(handle, H5T_NATIVE_FLOAT, memspace, dataspace, H5P_DEFAULT, f);
-    H5Sclose(memspace);
-    H5Sclose(dataspace);
-    H5Dclose(handle);
     
+    debug4 << mName << "We want var " << varIdx << " for " << varname << endl;
+
+    // Allocate the variable.
+    vtkFloatArray *rv = vtkFloatArray::New();
+    rv->SetNumberOfTuples(nPoints);
+    float *ptrVar = (float *) rv->GetVoidPointer(0);
+    
+    ReadVariable( domain, varIdx, 1, &ptrVar );
+
     return rv;
 }
 
@@ -454,8 +423,6 @@ avtGTCFileFormat::GetVar(int domain, const char *varname)
 //      that is supported everywhere through VisIt.
 //
 //  Arguments:
-//      timestate  The index of the timestate.  If GetNTimesteps returned
-//                 'N' time steps, this is guaranteed to be between 0 and N-1.
 //      domain     The index of the domain.  If there are NDomains, this
 //                 value is guaranteed to be between 0 and NDomains-1,
 //                 regardless of block origin.
@@ -472,7 +439,6 @@ avtGTCFileFormat::GetVectorVar(int domain,const char *varname)
     EXCEPTION1(InvalidVariableException, varname);
 }
 
-
 // ****************************************************************************
 //  Method: IndexToVarName
 //
@@ -487,7 +453,8 @@ avtGTCFileFormat::GetVectorVar(int domain,const char *varname)
 //
 // ****************************************************************************
 
-static string IndexToVarName( int idx )
+string
+avtGTCFileFormat::IndexToVarName( int idx ) const
 {
     string var = "";
     if ( idx == 3 )
@@ -515,7 +482,8 @@ static string IndexToVarName( int idx )
 //
 // ****************************************************************************
 
-static int VarNameToIndex( const string &var )
+int
+avtGTCFileFormat::VarNameToIndex( const string &var ) const
 {
     if ( var == "v_par" )
 	return 3;
@@ -528,3 +496,364 @@ static int VarNameToIndex( const string &var )
     
     return -1;
 }
+
+#if PARALLEL
+
+// ****************************************************************************
+// Method: avtGTCFileFormat::ParallelReadVariable
+//
+// Purpose: 
+//   Sorts the variable into bins by ID and exchanges data with other processes.
+//
+//  Arguments:
+//      domain        Domain
+//      varDim        Dimension of the variable
+//      var           Variable read by this process.
+//      ids           IDs for the variables.
+//
+// Programmer: Dave Pugmire
+// Creation:   Mon Dec  3 16:17:45 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtGTCFileFormat::ParallelReadVariable( int domain, int varDim, float *var, float *ids )
+{
+    // Sort the particles into bins. We need to build a package for each processor.
+    int ptCnt = nTotalPoints / nProcs;
+    int remainder = nTotalPoints % nProcs;
+
+    float *myVar = var, *myIds = ids;
+
+    parallelBuffer **particleArr = new parallelBuffer*[nProcs];
+    for ( int i = 0; i < nProcs; i++ )
+	particleArr[i] = new parallelBuffer( varDim+1 );
+
+    BinData( varDim, particleArr, var, ids, &myVar, &myIds );
+    int *dataShareMatrix = GetDataShareMatrix( particleArr );
+    CommunicateData( varDim, dataShareMatrix, particleArr, &myVar, &myIds );
+
+    //Cleanup.
+    for ( int i = 0; i < nProcs; i++ )
+	delete particleArr[i];
+    delete [] particleArr;
+    delete [] dataShareMatrix;    
+}
+
+
+
+// ****************************************************************************
+// Method: avtGTCFileFormat::BinData
+//
+// Purpose: 
+//   Bin the data based on ID. Data that belong on other processors is placed into
+//   the parallelBuffer 'array'. Data that remains on "this" process, will be copied
+//   towards the front of the var/ids array. myVarsPtr and myIdsPtr track the end of
+//   this array.
+//
+//  Arguments:
+//      dim           Dimension of the variable
+//      array         Array of dynamic arrays for storing bined data.
+//      var           Input data variables.
+//      ids           IDs for the variables.
+//      myVarsPtr     Upon exit, this points to the next location in vars where data
+//                    can be stored.
+//      myIdsPtr      Upon exit, this points to the next location in vars where data
+//                    can be stored.      
+//
+// Programmer: Dave Pugmire
+// Creation:   Mon Dec  3 16:17:45 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtGTCFileFormat::BinData( int dim, parallelBuffer **array, float *vars, float *ids,
+			    float **myVarsPtr, float **myIdsPtr )
+{
+    int ptCnt = nTotalPoints / nProcs;
+    int remainder = nTotalPoints % nProcs;
+
+    float *ptrIDs = ids, *ptrVars = vars, *myVars = *myVarsPtr, *myIds = *myIdsPtr;
+    float *data = new float[dim+1];
+    
+    for ( int i = 0; i < nPoints; i++ )
+    {
+	int id = ((int) *ptrIDs) - 1; //Make the id 0...N-1 for the math below.
+	int whichProc;
+
+	// Determine which processor this ID goes to.
+	if ( id < (remainder * (ptCnt+1)) )
+	    whichProc = id / (ptCnt+1);
+	else
+	{
+	    int id2 = id - (remainder * (ptCnt+1));
+	    whichProc = remainder + id2/ptCnt;
+	}
+
+	if ( whichProc < 0 || whichProc >= nProcs )
+	{
+	    char str[512];
+	    sprintf( str, "Bad Id mapping: %d ==> %d\n", id, whichProc );
+	    EXCEPTION1( InvalidDBTypeException, str );
+	}
+
+	// This is our data, so copy it to the front of the var, ids arrays.
+	if ( whichProc == rank )
+	{
+	    // ID
+	    *myIds++ = *ptrIDs++;
+	    for ( int j = 0; j < dim; j++ )
+		*myVars++ = *ptrVars++;
+	}
+	// This data isn't ours. Stash it in the buffer to be sent.	
+	else   
+	{
+	    // ID
+	    data[0] = *ptrIDs++;
+	    for ( int j = 0; j < dim; j++ )
+		data[j+1] = *ptrVars++;
+	    array[whichProc]->Add( data );
+	}
+    }
+    
+    delete [] data;
+
+    *myIdsPtr = myIds;
+    *myVarsPtr = myVars;
+}
+
+// ****************************************************************************
+// Method: avtGTCFileFormat::GetDataShareMatrix
+//
+// Purpose: 
+//   This computes an NxN matrix, where M[i,j] contains the number of values that
+//   processor i has that need to be sent to j.
+//
+//  Arguments:
+//      array           Array of dynamic arrays. This contains data that must be
+//                      communicated.
+//
+// Programmer: Dave Pugmire
+// Creation:   Mon Dec  3 16:17:45 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int *
+avtGTCFileFormat::GetDataShareMatrix( parallelBuffer **array )
+{
+    // Binning done, now tell everyone else how many particles we have for them.
+    int *particleCnts = new int[nProcs], *gatherCnts = new int[nProcs*nProcs];
+    
+    for ( int i = 0; i < nProcs; i++ )
+	particleCnts[i] = array[i]->Size();
+
+    // Allgather is a little overkill, but there isn't much data.
+    int err = MPI_Allgather( particleCnts, nProcs, MPI_INT,
+			     gatherCnts, nProcs*nProcs, MPI_INT, VISIT_MPI_COMM );
+    if ( err != MPI_SUCCESS )
+	EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Allgather() failure." );
+    
+    return gatherCnts;
+}
+
+// ****************************************************************************
+// Method: avtGTCFileFormat::CommunicateData
+//
+// Purpose: 
+//   Communicate the data to the owning processors via non blocking send/recv.
+//
+//  Arguments:
+//      dim           Dimension of the variable
+//      shareMatrix   Matrix with share data.
+//      array         Array of dynamic arrays for storing bined data.
+//      var           Input data variables.
+//      ids           IDs for the variables.
+//      myVarsPtr     Upon exit, this points to the next location in vars where data
+//                    can be stored.
+//      myIdsPtr      Upon exit, this points to the next location in vars where data
+//                    can be stored.         
+//
+// Programmer: Dave Pugmire
+// Creation:   Mon Dec  3 16:17:45 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **array,
+				   float **myVarsPtr, float **myIdsPtr )
+{
+    int err;
+    
+    // Everyone knows what to expect now. Do the send/recvs via nonblocking send/recv.
+    std::vector<MPI_Request> requests;
+    for ( int i = 0; i < nProcs; i++ )
+    {
+	MPI_Request req;
+	int sz = (dim+1) * array[i]->Size();
+	if ( sz == 0 )
+	    continue;
+
+	char str[512]; sprintf( str, "%d: sending to %d [%d]\n", rank, i, sz );
+	debug5 << str;
+	
+	err = MPI_Isend( array[i]->Get(0), sz, MPI_FLOAT, i, rank, VISIT_MPI_COMM, &req );
+	if ( err != MPI_SUCCESS )
+	    EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Isend() failure." );
+	requests.push_back( req );
+    }
+
+    //Do the recvs.
+    float **bufs = new float*[nProcs];
+    float *myVars = *myVarsPtr, *myIds = *myIdsPtr;
+    
+    for ( int i = 0; i < nProcs; i++ )
+    {
+	int sz = (dim+1) * shareMatrix[i*nProcs + rank];
+	bufs[i] = NULL;
+	if ( i == rank || sz == 0 )
+	    continue;
+
+	char str[512]; sprintf( str, "%d: receiving from %d [%d]\n", rank, i, sz );
+	debug5 << str;
+	
+	bufs[i] = new float[sz];
+	MPI_Request req;
+	err = MPI_Irecv( bufs[i], sz, MPI_FLOAT, i, i, VISIT_MPI_COMM, &req );
+	if ( err != MPI_SUCCESS )
+	    EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Irecv() failure." );
+	requests.push_back( req );
+
+    }
+
+    // Wait till all the non-blocking send/recvs are done.
+    // NOTE:
+    // This is not the best way to do this. We should poll the status
+    // and do the copy as things get done.
+    MPI_Status *stats = new MPI_Status[ requests.size() ];
+    MPI_Waitall( requests.size(), &requests[0], stats );
+
+    //We have all the extra particles that we need in bufs[i]. Copy them into pts,ids.
+    for ( int i = 0; i < nProcs; i++ )
+    {
+	int cnt = shareMatrix[i*nProcs + rank];
+	if ( i == rank || cnt == 0 )
+	    continue;
+
+	//Copy ID, var.
+	float *bufPtr = bufs[i];
+	for ( int j = 0; j < cnt; j++ )
+	{
+	    *myIds++ = *bufPtr++; // ID
+	    for ( int k = 0; k < dim; k++ )
+		*myVars++ = *bufPtr++;
+	}
+    }
+
+    //Cleanup.
+    for ( int i = 0; i < nProcs; i++ )
+	if ( bufs[i] )
+	    delete [] bufs[i];
+    delete [] bufs;
+    
+
+    *myIdsPtr = myIds;
+    *myVarsPtr = myVars;
+}
+
+// ****************************************************************************
+// Method: parallelBuffer::parallelBuffer
+//
+// Purpose: 
+//   Constructor for dynamic arrays for holding data shared across processors.
+//
+//  Arguments:
+//      elemSz        The dimension of the tuples being held.
+//  
+// Programmer: Dave Pugmire
+// Creation:   Mon Dec  3 16:17:45 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+parallelBuffer::parallelBuffer( int elemSz )
+{
+    pArray = NULL;
+    buffSize = size = 0;
+    elemSize = elemSz;
+}
+
+
+// ****************************************************************************
+// Method: parallelBuffer::~parallelBuffer
+//
+// Purpose: 
+//   Desctructor
+//
+//  Arguments:
+//      data     data to add.
+//  
+// Programmer: Dave Pugmire
+// Creation:   Mon Dec  3 16:17:45 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+parallelBuffer::~parallelBuffer()
+{
+    if ( pArray )
+	free( pArray );
+    
+    pArray = NULL;
+    buffSize = size = 0;
+}
+
+// ****************************************************************************
+// Method: parallelBuffer::AddElement
+//
+// Purpose: 
+//   Add an element to the array, growing the array size if needed.
+//
+//  Arguments:
+//      data     data to add.
+//  
+// Programmer: Dave Pugmire
+// Creation:   Mon Dec  3 16:17:45 EST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+parallelBuffer::AddElement( float *data )
+{
+    // Allocate array if needed.
+    if ( buffSize == 0 )
+    {
+	buffSize = 64; //Experiment to see if this is too big/too small.
+	pArray = (float *)malloc( buffSize*elemSize*sizeof(float) );
+    }
+    // Grow array if needed.
+    else if ( size == buffSize )
+    {
+	buffSize = buffSize*2;
+	pArray = (float *)realloc( pArray, buffSize*elemSize*sizeof(float) );
+    }
+
+    //Copy into array.
+    memcpy( &pArray[size*elemSize], data, elemSize*sizeof(float) );
+    size++;
+}
+
+#endif
+
+
+
