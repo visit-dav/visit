@@ -118,6 +118,9 @@ QvisHistogramPlotWindow::~QvisHistogramPlotWindow()
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.
 //    
+//    Hank Childs, Tue Dec 11 20:01:14 PST 2007
+//    Add support for scaling by an arbitrary variable.
+//
 // ****************************************************************************
 
 void
@@ -146,14 +149,14 @@ QvisHistogramPlotWindow::CreateWindowContents()
     basedOnLabel->setEnabled(false);
     basedOn->setEnabled(false);
 
-    // Histogram Syle Group Box
+    // Histogram Style Group Box
     histGroupBox =new QGroupBox(central, "histGroupBox"); 
     histGroupBox->setTitle("Histogram Options");
     mainLayout->addMultiCellWidget(histGroupBox, 1, 1, 0, 1);
     QVBoxLayout *hgTopLayout = new QVBoxLayout(histGroupBox);
     hgTopLayout->setMargin(10);
     hgTopLayout->addSpacing(15);
-    QGridLayout *hgLayout = new QGridLayout(hgTopLayout, 8, 2);
+    QGridLayout *hgLayout = new QGridLayout(hgTopLayout, 9, 2);
     hgLayout->setSpacing(10);
     hgLayout->setColStretch(1,10);
 
@@ -164,8 +167,6 @@ QvisHistogramPlotWindow::CreateWindowContents()
     histogramType->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *histogramTypeLayout = new QHBoxLayout(histogramType);
     histogramTypeLayout->setSpacing(10);
-    QRadioButton *histogramTypeBinContributionAuto = new QRadioButton("Auto", histogramType);
-    histogramTypeLayout->addWidget(histogramTypeBinContributionAuto);
     QRadioButton *histogramTypeBinContributionFrequency = new QRadioButton("Frequency", histogramType);
     histogramTypeLayout->addWidget(histogramTypeBinContributionFrequency);
     QRadioButton *histogramTypeBinContributionWeighted = new QRadioButton("Weighted", histogramType);
@@ -174,25 +175,34 @@ QvisHistogramPlotWindow::CreateWindowContents()
             this, SLOT(histogramTypeChanged(int)));
     hgLayout->addWidget(histogramType, 0,1);
 
-    twoDAmountLabel = new QLabel("2D weight contribution", histGroupBox, "twoDAmountLabel");
-    hgLayout->addWidget(twoDAmountLabel,1,0);
+    weightTypeLabel = new QLabel("Weighted by", histGroupBox, "weightTypeLabel");
+    hgLayout->addWidget(weightTypeLabel,1,0);
 
-    twoDAmount = new QButtonGroup(histGroupBox, "twoDAmount");
-    twoDAmount->setFrameStyle(QFrame::NoFrame);
-    QHBoxLayout *twoDAmountLayout = new QHBoxLayout(twoDAmount);
-    twoDAmountLayout->setSpacing(10);
-    QRadioButton *twoDAmountTwoDAmountArea = new QRadioButton("Area", twoDAmount);
-    twoDAmountLayout->addWidget(twoDAmountTwoDAmountArea);
-    QRadioButton *twoDAmountTwoDAmountRevolvedVolume = new QRadioButton("RevolvedVolume", twoDAmount);
-    twoDAmountLayout->addWidget(twoDAmountTwoDAmountRevolvedVolume);
-    connect(twoDAmount, SIGNAL(clicked(int)),
-            this, SLOT(twoDAmountChanged(int)));
-    hgLayout->addWidget(twoDAmount, 1,1);
+    weightType = new QButtonGroup(histGroupBox, "weightType");
+    weightType->setFrameStyle(QFrame::NoFrame);
+    QHBoxLayout *weightTypeLayout = new QHBoxLayout(weightType);
+    weightTypeLayout->setSpacing(10);
+    QRadioButton *weightTypeVolumeArea = new QRadioButton("Area (2D) / Volume (3D)", 
+                                                          weightType);
+    weightTypeLayout->addWidget(weightTypeVolumeArea);
+    QRadioButton *weightTypeVariable = new QRadioButton("Variable", weightType);
+    weightTypeLayout->addWidget(weightTypeVariable);
+    connect(weightType, SIGNAL(clicked(int)),
+            this, SLOT(weightTypeChanged(int)));
+    hgLayout->addWidget(weightType, 1,1);
 
+    weightVariableLabel = new QLabel("Variable to Weight By", histGroupBox, "weightVariableLabel");
+    hgLayout->addWidget(weightVariableLabel,2,0);
+    int weightVariableMask = QvisVariableButton::Scalars;
+    weightVariable = new QvisVariableButton(true, true, true, weightVariableMask, histGroupBox, "weightVariable");
+    weightVariable->setDefaultVariable("default");
+    connect(weightVariable, SIGNAL(activated(const QString&)),
+            this, SLOT(weightVariableChanged(const QString&)));
+    hgLayout->addWidget(weightVariable, 2,1);
 
     // Add data scale
     QLabel *dataScaleLabel = new QLabel("Data Scale", histGroupBox, "dataScaleLabel");
-    hgLayout->addWidget(dataScaleLabel,2,0);
+    hgLayout->addWidget(dataScaleLabel,3,0);
 
     dataScale = new QButtonGroup(histGroupBox, "dataScale");
     connect(dataScale, SIGNAL(clicked(int)),this, SLOT(dataScaleChanged(int)));    
@@ -203,7 +213,7 @@ QvisHistogramPlotWindow::CreateWindowContents()
     dataScaleLayout->addWidget(logScale);
     QRadioButton *sqrtScale = new QRadioButton("Square root", dataScale);
     dataScaleLayout->addWidget(sqrtScale);
-    hgLayout->addWidget(dataScale, 2,1);
+    hgLayout->addWidget(dataScale, 3,1);
 
     specifyRange = new QCheckBox("Specify Range?", histGroupBox, "specifyRange");
     connect(specifyRange, SIGNAL(toggled(bool)),
@@ -354,6 +364,9 @@ QvisHistogramPlotWindow::CreateWindowContents()
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.
 //    
+//    Hank Childs, Tue Dec 11 20:01:14 PST 2007
+//    Add support for scaling by an arbitrary variable.
+//
 // ****************************************************************************
 
 void
@@ -389,16 +402,15 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
                 histogramType->setEnabled(true);
                 histogramTypeLabel->setEnabled(true);
 
-                if(atts->GetHistogramType() == HistogramAttributes::Weighted || 
-                   atts->GetHistogramType() == HistogramAttributes::Auto )
+                if(atts->GetHistogramType() == HistogramAttributes::Weighted)
                 {
-                    twoDAmount->setEnabled(true);
-                    twoDAmountLabel->setEnabled(true);
+                    weightType->setEnabled(true);
+                    weightTypeLabel->setEnabled(true);
                 }
                 else
                 {
-                    twoDAmount->setEnabled(false);
-                    twoDAmountLabel->setEnabled(false);
+                    weightType->setEnabled(false);
+                    weightTypeLabel->setEnabled(false);
                 }
             }
             else
@@ -407,8 +419,8 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
                 barGroupBox->setEnabled(true);
                 histogramType->setEnabled(false);
                 histogramTypeLabel->setEnabled(false);
-                twoDAmount->setEnabled(false);
-                twoDAmountLabel->setEnabled(false);
+                weightType->setEnabled(false);
+                weightTypeLabel->setEnabled(false);
             }
             if (atts->GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
             {
@@ -462,24 +474,50 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             break;
           case 1: //histogramType
             if (atts->GetHistogramType() == HistogramAttributes::Weighted ||
-                atts->GetHistogramType() == HistogramAttributes::Auto )
+                atts->GetHistogramType() == HistogramAttributes::Variable)
             {
-                twoDAmount->setEnabled(true);
-                twoDAmountLabel->setEnabled(true);
+                weightType->setEnabled(true);
+                weightTypeLabel->setEnabled(true);
             }
             else
             {
-                twoDAmount->setEnabled(false);
-                twoDAmountLabel->setEnabled(false);
+                weightType->setEnabled(false);
+                weightTypeLabel->setEnabled(false);
+            }
+            if (atts->GetHistogramType() == HistogramAttributes::Variable)
+            {
+                weightVariable->setEnabled(true);
+                if(weightVariableLabel)
+                    weightVariableLabel->setEnabled(true);
+            }
+            else
+            {
+                weightVariable->setEnabled(false);
+                if(weightVariableLabel)
+                    weightVariableLabel->setEnabled(false);
             }
             histogramType->blockSignals(true);
-            histogramType->setButton(atts->GetHistogramType());
+            if (atts->GetHistogramType() == HistogramAttributes::Frequency)
+                histogramType->setButton(0);
+            else if (atts->GetHistogramType() == HistogramAttributes::Weighted ||
+                     atts->GetHistogramType() == HistogramAttributes::Variable)
+                histogramType->setButton(1);
             histogramType->blockSignals(false);
+            if (atts->GetHistogramType() == HistogramAttributes::Weighted ||
+                atts->GetHistogramType() == HistogramAttributes::Variable)
+            {
+                weightType->blockSignals(true);
+                if (atts->GetHistogramType() == HistogramAttributes::Weighted)
+                    weightType->setButton(0);
+                else
+                    weightType->setButton(1);
+                weightType->blockSignals(false);
+            }
             break;
-          case 2: //twoDAmount
-            twoDAmount->blockSignals(true);
-            twoDAmount->setButton(atts->GetTwoDAmount());
-            twoDAmount->blockSignals(false);
+          case 2: //weightVariable
+            weightVariable->blockSignals(true);
+            weightVariable->setText(atts->GetWeightVariable().c_str());
+            weightVariable->blockSignals(false);
             break;
           case 3: //specifyRange
             if (atts->GetSpecifyRange() == true)
@@ -593,6 +631,9 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.
 //
+//    Hank Childs, Tue Dec 11 20:01:14 PST 2007
+//    Add support for scaling by an arbitrary variable.
+//
 // ****************************************************************************
 
 void
@@ -613,10 +654,10 @@ QvisHistogramPlotWindow::GetCurrentValues(int which_widget)
         // Nothing for histogramType
     }
 
-    // Do twoDAmount
+    // Do weightVariable
     if(which_widget == 2 || doAll)
     {
-        // Nothing for twoDAmount
+        // Nothing for weightVariable
     }
 
     // Do specifyRange
@@ -881,24 +922,48 @@ QvisHistogramPlotWindow::basedOnChanged(int val)
 void
 QvisHistogramPlotWindow::histogramTypeChanged(int val)
 {
-    if(val != atts->GetHistogramType())
+    if (val != atts->GetHistogramType())
     {
-        atts->SetHistogramType(HistogramAttributes::BinContribution(val));
+        if (val == 0)
+            atts->SetHistogramType(HistogramAttributes::Frequency);
+        else
+        {
+            if (weightType->selectedId() == 0)
+                atts->SetHistogramType(HistogramAttributes::Weighted);
+            else
+                atts->SetHistogramType(HistogramAttributes::Variable);
+        }
         Apply();
     }
 }
 
 
 void
-QvisHistogramPlotWindow::twoDAmountChanged(int val)
+QvisHistogramPlotWindow::weightTypeChanged(int val)
 {
-    if(val != atts->GetTwoDAmount())
+    HistogramAttributes::BinContribution bc;
+    if (val == 0)
+        bc = HistogramAttributes::Weighted;
+    else
+        bc = HistogramAttributes::Variable;
+        
+    if (bc != atts->GetHistogramType())
     {
-        atts->SetTwoDAmount(HistogramAttributes::TwoDAmount(val));
-        SetUpdate(false);
+        atts->SetHistogramType(bc);
+        //SetUpdate(false);
         Apply();
     }
 }
+
+
+void
+QvisHistogramPlotWindow::weightVariableChanged(const QString &varName)
+{
+    atts->SetWeightVariable(varName.latin1());
+    SetUpdate(false);
+    Apply();
+}
+
 
 void
 QvisHistogramPlotWindow::dataScaleChanged(int val)

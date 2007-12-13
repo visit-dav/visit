@@ -71,6 +71,9 @@
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.        
 //
+//    Hank Childs, Tue Dec 11 20:25:22 PST 2007
+//    Added support for weighting by a variable.
+//
 // ****************************************************************************
 
 class avtHistogramFilter : public avtStreamer
@@ -102,6 +105,7 @@ class avtHistogramFilter : public avtStreamer
 
     virtual void              FreqzExecute(vtkDataSet *);
     virtual void              WeightedExecute(vtkDataSet *);
+    virtual void              VariableExecute(vtkDataSet *);
     virtual void              ArrayVarExecute(vtkDataSet *, int);
 
     virtual int               ComputeBinIndex( const float &value ) const;

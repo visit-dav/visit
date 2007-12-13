@@ -200,6 +200,9 @@ avtHistogramPlot::GetMapper(void)
 //    Kathleen Bonnell, Thu Mar 22 09:19:55 PDT 2007 
 //    Added return of input if ENGINE not defined.
 //
+//    Hank Childs, Wed Dec 12 11:00:20 PST 2007
+//    Retire 2D amount ... it is now captured by mesh coord type.
+//
 // ****************************************************************************
 
 avtDataObject_p
@@ -221,7 +224,7 @@ avtHistogramPlot::ApplyOperators(avtDataObject_p input)
     {
         if (in_atts.GetSpatialDimension() == 2)
         {
-            if (atts.GetTwoDAmount() == HistogramAttributes::Area)
+            if (input->GetInfo().GetAttributes().GetMeshCoordType() == AVT_XY)
                 af = new avtVMetricArea;
             else
                 af = new avtRevolvedVolume;

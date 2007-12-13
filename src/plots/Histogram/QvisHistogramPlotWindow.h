@@ -72,6 +72,9 @@ class QvisVariableButton;
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.
 //   
+//    Hank Childs, Tue Dec 11 19:58:39 PST 2007
+//    Add support for scaling by an arbitrary variable.
+//
 // ****************************************************************************
 
 class QvisHistogramPlotWindow : public QvisPostableWindowObserver
@@ -96,7 +99,8 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
   private slots:
     void basedOnChanged(int val);
     void histogramTypeChanged(int val);
-    void twoDAmountChanged(int val);
+    void weightTypeChanged(int val);
+    void weightVariableChanged(const QString &varName);
     void dataScaleChanged(int val);
     void binsScaleChanged(int val);
     void specifyRangeChanged(bool val);
@@ -114,7 +118,8 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     int plotType;
     QButtonGroup *basedOn;
     QButtonGroup *histogramType;
-    QButtonGroup *twoDAmount;
+    QButtonGroup *weightType;
+    QvisVariableButton *weightVariable;
     QButtonGroup *dataScale;
     QButtonGroup *binsScale;
     QCheckBox *specifyRange;
@@ -130,7 +135,8 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     QvisColorButton *color;
     QLabel *basedOnLabel;
     QLabel *histogramTypeLabel;
-    QLabel *twoDAmountLabel;
+    QLabel *weightTypeLabel;
+    QLabel *weightVariableLabel;
     QLabel *minLabel;
     QLabel *maxLabel;
     QLabel *numBinsLabel;
