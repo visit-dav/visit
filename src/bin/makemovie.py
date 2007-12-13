@@ -2081,10 +2081,19 @@ class MakeMovie:
     #   I made it use the tmp directory in the filename. Add support for
     #   template files and stereo.
     #
+    #   Brad Whitlock, Wed Dec 12 16:15:49 PST 2007
+    #   Turn off animation caching if it is on so saving movies will work.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
         self.Debug(1, "GenerateFrames")
+
+        # Make sure that animation caching is off
+        anim = GetAnimationAttributes()
+        if anim.pipelineCachingMode > 0:
+            anim.pipelineCachingMode = 0
+            SetAnimationAttributes(anim)
 
         # Make sure that the movieFormats list is not empty
         if len(self.movieFormats) < 1:

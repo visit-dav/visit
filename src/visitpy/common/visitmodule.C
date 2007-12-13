@@ -124,6 +124,7 @@
 //
 // Extension include files.
 //
+#include <PyAnimationAttributes.h>
 #include <PyAnnotationAttributes.h>
 #include <PyColorAttribute.h>
 #include <PyColorAttributeList.h>
@@ -4799,6 +4800,81 @@ visit_ShowToolbars(PyObject *self, PyObject *args)
 
     // Return the success value.
     return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetAnimationAttributes
+//
+// Purpose:
+//   Tells the viewer to use the new animation attributes we're sending.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 12 15:16:17 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetAnimationAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *anim = NULL;
+    // Try and get the Animation pointer.
+    if(!PyArg_ParseTuple(args,"O",&anim))
+    {
+        VisItErrorFunc("SetAnimationAttributes: Canim parse object!");
+        return NULL;
+    }
+    if(!PyAnimationAttributes_Check(anim))
+    {
+        VisItErrorFunc("Argument is not a AnimationAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        AnimationAttributes *va = PyAnimationAttributes_FromPyObject(anim);
+
+        // Copy the object into the view attributes.
+        *(GetViewerState()->GetAnimationAttributes()) = *va;
+        GetViewerState()->GetAnimationAttributes()->Notify();
+        GetViewerMethods()->SetAnimationAttributes();
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_GetAnimationAttributes
+//
+// Purpose:
+//   Returns the Animation attributes for the active window.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 12 15:16:17 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetAnimationAttributes(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    PyObject *retval = PyAnimationAttributes_New();
+    AnimationAttributes *aa = PyAnimationAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's Animation atts into the return data structure.
+    *aa = *(GetViewerState()->GetAnimationAttributes());
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -12177,6 +12253,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Cyrus Harrison, Wed Nov 28 11:50:54 PST 2007
 //   Added SetCreateVectorMagnitudeExpressions
 //
+//   Brad Whitlock, Wed Dec 12 15:18:39 PST 2007
+//   Added Set/GetAnimationAttributes, which I thought I added a long time ago.
+//
 // ****************************************************************************
 
 static void
@@ -12279,6 +12358,8 @@ AddDefaultMethods()
     AddMethod("DrawPlots", visit_DrawPlots, visit_DrawPlots_doc);
     AddMethod("EnableTool", visit_EnableTool, visit_EnableTool_doc);
     AddMethod("ExportDatabase", visit_ExportDatabase, visit_ExportDatabase_doc);
+    AddMethod("GetAnimationAttributes", visit_GetAnimationAttributes,
+                                                NULL /* DOCUMENT ME*/);
     AddMethod("GetAnimationTimeout", visit_GetAnimationTimeout,
                                                 visit_GetAnimationTimeout_doc);
     AddMethod("GetAnnotationObject", visit_GetAnnotationObject,
@@ -12405,6 +12486,8 @@ AddDefaultMethods()
                                                 visit_SetActiveTimeSlider_doc);
     AddMethod("SetActiveWindow", visit_SetActiveWindow, 
                                                     visit_SetActiveWindow_doc);
+    AddMethod("SetAnimationAttributes", visit_SetAnimationAttributes,
+                                                NULL/* DOCUMENT ME*/);
     AddMethod("SetAnimationTimeout", visit_SetAnimationTimeout,
                                                 visit_SetAnimationTimeout_doc);
     AddMethod("SetAnnotationAttributes", visit_SetAnnotationAttributes,
@@ -12629,6 +12712,9 @@ AddDefaultMethods()
 //   Added ColorControlPoint, ColorControlPointList, ColorAttribute, 
 //   ColorAttributeList, GaussianControlPoint, GaussianControlPointList.
 //
+//   Brad Whitlock, Wed Dec 12 15:09:20 PST 2007
+//   Added AnimationAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -12637,6 +12723,7 @@ AddExtensions()
     int          i, nMethods;
     PyMethodDef *methods;
 
+    ADD_EXTENSION(PyAnimationAttributes_GetMethodTable);
     ADD_EXTENSION(PyAnnotationAttributes_GetMethodTable);
     ADD_EXTENSION(PyColorAttribute_GetMethodTable);
     ADD_EXTENSION(PyColorAttributeList_GetMethodTable);
@@ -12710,11 +12797,15 @@ AddExtensions()
 //   Hank Childs, Mon Feb 13 21:22:43 PST 2006
 //   Added PyConstructDDFAttributes.
 //
+//   Brad Whitlock, Wed Dec 12 15:10:10 PST 2007
+//   Added PyAnimationAttributes.
+//
 // ****************************************************************************
 
 static void
 InitializeExtensions()
 {
+    PyAnimationAttributes_StartUp(GetViewerState()->GetAnimationAttributes(), 0);
     PyAnnotationAttributes_StartUp(GetViewerState()->GetAnnotationAttributes(), 0);
     PyConstructDDFAttributes_StartUp(GetViewerState()->GetConstructDDFAttributes(), 0);
     PyExportDBAttributes_StartUp(GetViewerState()->GetExportDBAttributes(), 0);
@@ -12757,11 +12848,15 @@ InitializeExtensions()
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added mesh management attributes
 //
+//   Brad Whitlock, Wed Dec 12 15:14:22 PST 2007
+//   Added AnimationAttributes.
+//
 // ****************************************************************************
 
 static void
 CloseExtensions()
 {
+    PyAnimationAttributes_CloseDown();
     PyAnnotationAttributes_CloseDown();
     PyGlobalAttributes_CloseDown();
     PyMaterialAttributes_CloseDown();
