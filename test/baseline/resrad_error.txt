@@ -1,2 +1,2 @@
 Pseudocolor:  (ExpressionException)
-viewer: The expression failed because Parsing of your expression has failed.  Failures of the type VisIt's parser has encountered are often caused when an expression is given less arguments than that expression expects.
+viewer: The 'resrad(recenter(u)' expression failed because Parsing of your expression has failed.  Failures of the type VisIt's parser has encountered are often caused when an expression is given less arguments than that expression expects.
