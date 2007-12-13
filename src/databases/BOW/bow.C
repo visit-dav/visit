@@ -35,6 +35,7 @@
 *
 *****************************************************************************/
 
+#include <Utility.h>
 
 
 /********** bow.c created by lib **********/
@@ -737,13 +738,13 @@ static void find_tmpdir(char *tmpdir)
 static char *fioX_read(bowglobal bg,char *pathsrc)
 {
     int id,n;
-    static struct stat st_store;
-    static struct stat *st = &st_store;
+    static VisItStat_t st_store;
+    static VisItStat_t *st = &st_store;
     char *buf;
 
     /* open for read, get size stat */
     if ((id=FILE_OPEN(pathsrc,O_RDONLY))<0) RET((char *)0)
-    if (fstat(id,st)) { FILE_CLOSE(id); RET((char *)0) }
+    if (VisItFstat(id,st)) { FILE_CLOSE(id); RET((char *)0) }
     n=st->st_size;
     if (n<=0) { FILE_CLOSE(id); RET((char *)0) }
     buf=(char *)(*bg->alloc)(bg->opaque,n);
@@ -774,10 +775,10 @@ static int fioX_write(char *pathdst,char *buf,int size)
 
 static int fioX_size(char *pathsrc)
 {
-    static struct stat st_store;
-    static struct stat *st = &st_store;
+    static VisItStat_t st_store;
+    static VisItStat_t *st = &st_store;
 
-    if (stat(pathsrc,st)) return -1;
+    if (VisItStat(pathsrc,st)) return -1;
     return st->st_size;
 }
 
