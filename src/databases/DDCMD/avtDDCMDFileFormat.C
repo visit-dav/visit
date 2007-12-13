@@ -61,6 +61,7 @@
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
+#include <Utility.h>
 
 #include <object.h>
 
@@ -589,11 +590,11 @@ avtDDCMDFileFormat::DetermineProcessorReadOffset()
     for (int i = 0; i < nFiles; i++)
     {
         char          string[1024];
-        struct stat   statbuf;
+        VisItStat_t   statbuf;
 
         sprintf(string, "%s/cgrid#%6.6d", fname.c_str(), i);
 
-        int rc = stat(string, &statbuf);
+        int rc = VisItStat(string, &statbuf);
         fileSizeList[i] = statbuf.st_size; 
         fileSize += fileSizeList[i];
     } 
