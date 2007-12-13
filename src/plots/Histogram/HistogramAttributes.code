@@ -16,7 +16,7 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
         return true;
     if (numBins != obj.GetNumBins())
         return true;
-    if (twoDAmount != obj.GetTwoDAmount())
+    if (weightVariable != obj.GetWeightVariable())
         return true;
     if (zone != obj.GetZone())
         return true;

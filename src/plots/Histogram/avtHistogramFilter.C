@@ -44,6 +44,8 @@
 #include <float.h>
 
 #include <vtkCellData.h>
+#include <vtkCellDataToPointData.h>
+#include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkPointDataToCellData.h>
 #include <vtkPolyData.h>
@@ -201,6 +203,9 @@ avtHistogramFilter::PreExecute(void)
 //
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.    
+//
+//    Hank Childs, Wed Dec 12 21:59:49 PST 2007
+//    Add support for weighting by a variable.
 //
 // ****************************************************************************
 
@@ -466,48 +471,38 @@ avtHistogramFilter::PostExecute(void)
     {
         int topo = GetInput()->GetInfo().GetAttributes().GetTopologicalDimension();
         string yunits = "";
-        // default histogram type
-        if(atts.GetHistogramType() == HistogramAttributes::Auto)
+        if (atts.GetHistogramType() == HistogramAttributes::Frequency)
         {
-            // for point data default to a frequency histogram
-            if(topo == 0)
-            {
-                yunits = "# of Points";
-            } // for 3d data use weighted volume
-            else if(topo == 3)
-            {   
-                yunits = "Volume";
-            } // for 2d data use weighted with area or revolved volume
-            else // topo = 2
-            {
-                if (atts.GetTwoDAmount() == HistogramAttributes::Area)
-                    yunits = "Area";
-                else
-                    yunits = "Revolved Volume";
-            }
-               
-
-        }
-        else if(atts.GetHistogramType() == HistogramAttributes::Frequency)
-        {
-            if(topo == 0)
+            if (topo == 0)
                 yunits = "# of Points";
             else
                 yunits = "# of Cells";
         }
-        else
+        else if (atts.GetHistogramType() == HistogramAttributes::Weighted)
         {
-            if (topo==3)
+            // For particles, pretend we have frequency.
+            if (topo == 0)
+            {
+                yunits = "# of Points";
+            }
+            else if (topo==3)
             {
                 yunits = "Volume";
             }
             else // topo = 2 
             {
-                if (atts.GetTwoDAmount() == HistogramAttributes::Area)
+                if (GetInput()->GetInfo().GetAttributes().GetMeshCoordType() == AVT_XY)
                     yunits = "Area";
                 else
                     yunits = "Revolved Volume";
             }
+        }
+        else
+        {
+            if (atts.GetWeightVariable() == "default")
+                yunits = pipelineVariable;
+            else
+                yunits = atts.GetWeightVariable();
         }
 	string str = yunits;
 	if ( atts.GetBinScale() == HistogramAttributes::Log )
@@ -547,6 +542,9 @@ avtHistogramFilter::PostExecute(void)
 //    Cyrus Harrison, Thu Mar  8 08:08:38 PST 2007
 //    Add support for point histograms and frequency histograms
 //
+//    Hank Childs, Tue Dec 11 20:25:22 PST 2007
+//    Add support for variable weighting.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -556,21 +554,20 @@ avtHistogramFilter::ExecuteData(vtkDataSet *inDS, int chunk, std::string)
     {
         ArrayVarExecute(inDS,chunk);
     }
-    else if(atts.GetHistogramType() == HistogramAttributes::Auto)
+    else if (atts.GetHistogramType() == HistogramAttributes::Frequency)
     {
-        // use freqz for point data, weighted otherwise
-        if(GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
+        FreqzExecute(inDS);
+    }
+    else if (atts.GetHistogramType() == HistogramAttributes::Weighted)
+    {
+        if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
             FreqzExecute(inDS);
         else
             WeightedExecute(inDS);
     }
-    else if(atts.GetHistogramType() == HistogramAttributes::Frequency)
+    else if (atts.GetHistogramType() == HistogramAttributes::Variable)
     {
-        FreqzExecute(inDS);
-    }
-    else if(atts.GetHistogramType() == HistogramAttributes::Weighted)
-    {
-        WeightedExecute(inDS);
+        VariableExecute(inDS);
     }
     return NULL;
 }
@@ -691,6 +688,7 @@ avtHistogramFilter::FreqzExecute(vtkDataSet *inDS)
 //
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.    
+//
 // ****************************************************************************
 
 void
@@ -773,6 +771,128 @@ avtHistogramFilter::WeightedExecute(vtkDataSet *inDS)
 
     if (ownBinArr)
         bin_arr->Delete();
+}
+
+
+// ****************************************************************************
+//  Method: avtHistogramFilter::VariableExecute
+//
+//  Purpose:
+//      Histogram weighted by a variable
+//
+//  Programmer: Hank Childs
+//  Creation:   December 11, 2007
+//
+// ****************************************************************************
+
+void
+avtHistogramFilter::VariableExecute(vtkDataSet *inDS)
+{
+    const char *histIndexVarName = pipelineVariable;
+    const char *weightVarName    = atts.GetWeightVariable().c_str();
+    if (strcmp(weightVarName, "default") == 0)
+        weightVarName = histIndexVarName;
+
+    bool histIndexVarIsZonal = false;
+    bool weightVarIsZonal    = false;
+
+    if (inDS->GetCellData()->GetArray(histIndexVarName) != NULL)
+        histIndexVarIsZonal = true;
+    else if (inDS->GetPointData()->GetArray(histIndexVarName) == NULL)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+    if (inDS->GetCellData()->GetArray(weightVarName) != NULL)
+        weightVarIsZonal = true;
+    else if (inDS->GetPointData()->GetArray(weightVarName) == NULL)
+    {
+        EXCEPTION0(ImproperUseException);
+    }
+
+    int           nvals        = 0;
+    vtkDataArray *histIndexVar = NULL;
+    vtkDataArray *weightVar    = NULL;
+    bool          ownWeightVar = false;
+    if (histIndexVarIsZonal == weightVarIsZonal)
+    {
+        if (histIndexVarIsZonal)
+        {
+            nvals        = inDS->GetNumberOfCells();
+            histIndexVar = inDS->GetCellData()->GetArray(histIndexVarName);
+            weightVar    = inDS->GetCellData()->GetArray(weightVarName);
+        }
+        else
+        {
+            nvals        = inDS->GetNumberOfPoints();
+            histIndexVar = inDS->GetPointData()->GetArray(histIndexVarName);
+            weightVar    = inDS->GetPointData()->GetArray(weightVarName);
+        }
+    }
+    else
+    {
+        // Recenter to the the same centering as the histogram index variable.
+        vtkDataSet *new_in_ds = (vtkDataSet *) inDS->NewInstance();
+        new_in_ds->CopyStructure(inDS);
+
+        if (histIndexVarIsZonal)
+        {
+            nvals        = inDS->GetNumberOfCells();
+            histIndexVar = inDS->GetCellData()->GetArray(histIndexVarName);
+            new_in_ds->GetPointData()->AddArray(
+                                inDS->GetPointData()->GetArray(weightVarName));
+            vtkPointDataToCellData *pd2cd = vtkPointDataToCellData::New();
+            pd2cd->SetInput(new_in_ds);
+            pd2cd->Update();
+            weightVar = pd2cd->GetOutput()->GetCellData()->GetArray(weightVarName);
+            weightVar->Register(NULL);
+            pd2cd->Delete();
+        }
+        else
+        {
+            nvals        = inDS->GetNumberOfPoints();
+            histIndexVar = inDS->GetPointData()->GetArray(histIndexVarName);
+            new_in_ds->GetCellData()->AddArray(
+                                inDS->GetCellData()->GetArray(weightVarName));
+            vtkCellDataToPointData *cd2pd = vtkCellDataToPointData::New();
+            cd2pd->SetInput(new_in_ds);
+            cd2pd->Update();
+            weightVar = cd2pd->GetOutput()->GetPointData()->GetArray(weightVarName);
+            weightVar->Register(NULL);
+            cd2pd->Delete();
+        }
+
+        new_in_ds->Delete();
+        ownWeightVar = true;
+    }
+
+    unsigned char *ghosts = NULL;
+    if (inDS->GetCellData()->GetArray("avtGhostZones") != NULL)
+    {
+        vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
+                            inDS->GetCellData()->GetArray("avtGhostZones");
+        if (g->GetNumberOfTuples() == nvals)
+            ghosts = g->GetPointer(0);
+    }
+
+    //
+    // Now we will walk through each value and sort them into bins.
+    //
+    for (int i = 0 ; i < nvals ; i++)
+    {
+        if (ghosts != NULL && ghosts[i] != '\0')
+            continue;
+	float val = histIndexVar->GetTuple1(i);
+	int index = ComputeBinIndex( val );
+	if ( index < 0 )
+	    continue;
+        if (index >= workingNumBins)
+            index = workingNumBins-1;
+        float amount = weightVar->GetTuple1(i);
+        bins[index] += amount;
+    }
+
+    if (ownWeightVar)
+        weightVar->Delete();
 }
 
 
@@ -899,6 +1019,9 @@ avtHistogramFilter::RefashionDataObjectInfo(void)
 //    Hank Childs, Wed May 24 09:44:51 PDT 2006
 //    Better support for array variables.
 //
+//    Hank Childs, Tue Dec 11 20:25:22 PST 2007
+//    Add support for weighting by a variable.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -908,6 +1031,13 @@ avtHistogramFilter::PerformRestriction(avtPipelineSpecification_p spec)
     if (atts.GetBasedOn() == HistogramAttributes::ManyZonesForSingleVar)
     {
         newspec->NoDynamicLoadBalancing();
+
+        if (atts.GetHistogramType() == HistogramAttributes::Variable)
+        {
+            if (atts.GetWeightVariable() != "default")
+                newspec->GetDataSpecification()->AddSecondaryVariable(
+                                             atts.GetWeightVariable().c_str());
+        }
     }
     else
     {
