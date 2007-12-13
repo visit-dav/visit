@@ -8,7 +8,7 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install [-c open | closed | ornl | nersc] [-g group] [-gw] [-l] [-r] [-dmg]
+#    visit-install [-c open | closed | ornl | nersc] [-g group] [-gw] [-l] [-dmg]
 #                  [-beta | -private] version platform directory
 #
 #    The default is to install this version as the current version.
