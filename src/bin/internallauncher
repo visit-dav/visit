@@ -252,6 +252,9 @@ $0 = shift @ARGV;
 #    to engine_par as some installations don't pass the env vars to the
 #    executable.
 #
+#    Jeremy Meredith, Thu Dec 13 13:23:20 EST 2007
+#    Moved version parsing code to frontendlauncher.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -622,39 +625,10 @@ chomp($host   = `hostname`);
 ($sector      = $node) =~ tr/[0-9]//d;
 
 # -----------------------------------------------------------------------------
-#                             Parse the version
+#                              Get the version
 # -----------------------------------------------------------------------------
 
-# Hmm....   this doesn't seem very useful anymore, does it?
-# I'll leave it for now, but we can remove it anytime.
-
 $ver = $ENV{VISITVERSION};
-if (grep /^\d+\.\d+$/, $ver) {
-    ($ver_major = $ver) =~ s/^(\d+)\.\d+$/$1/;
-    ($ver_minor = $ver) =~ s/^\d+\.(\d+)$/$1/;
-    ($ver_tiny  = 0);
-    ($ver_beta  = 0);
-} elsif (grep /^\d+\.\d+\.\d+$/, $ver) {
-    ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+$/$1/;
-    ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+$/$1/;
-    ($ver_tiny  = $ver) =~ s/^\d+\.\d+\.(\d+)$/$1/;
-    ($ver_beta  = 0);
-} elsif (grep /^\d+\.\d+b\d+$/, $ver) {
-    ($ver_major = $ver) =~ s/^(\d+)\.\d+b\d+$/$1/;
-    ($ver_minor = $ver) =~ s/^\d+\.(\d+)b\d+$/$1/;
-    ($ver_tiny  = 0);
-    ($ver_beta  = $ver) =~ s/^\d+\.\d+b(\d+)$/$1/;
-} elsif (grep /^\d+\.\d+\.\d+b\d+$/, $ver) {
-    ($ver_major = $ver) =~ s/^(\d+)\.\d+\.\d+b\d+$/$1/;
-    ($ver_minor = $ver) =~ s/^\d+\.(\d+)\.\d+b\d+$/$1/;
-    ($ver_tiny  = $ver) =~ s/^\d+\.\d+\.(\d+)b\d+$/$1/;
-    ($ver_beta  = $ver) =~ s/^\d+\.\d+\.\d+b(\d+)$/$1/;
-} else {
-    $ver_major = 0;
-    $ver_minor = 0;
-    $ver_tiny  = 0;
-    $ver_beta  = 0;
-}
 
 # -----------------------------------------------------------------------------
 #                     Determine which executable to run
