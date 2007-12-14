@@ -457,6 +457,9 @@ avtLabelPlot::CustomizeBehavior(void)
 //   Mark C. Miller, Sat Dec  2 18:58:26 PST 2006
 //   Initialized e to fix valgrind error
 //
+//   Brad Whitlock, Thu Dec 13 14:57:09 PST 2007
+//   Set the cell and node origin into the renderer.
+//
 // ****************************************************************************
 
 void
@@ -479,6 +482,10 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
         // Could not get the information so set the flag to false.
         renderer->SetTreatAsASCII(false);
     }
+
+    // Tell the renderer about the cell and node origin.
+    renderer->SetCellOrigin(doi.GetAttributes().GetCellOrigin());
+    renderer->SetNodeOrigin(doi.GetAttributes().GetNodeOrigin());
 
     //
     // Tell the renderer whether the data is 3D or not so it can make

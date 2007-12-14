@@ -44,6 +44,9 @@
 //    I made tensors and arrays set maxLabelRows so the dynamic layout can
 //    do a little better.
 //
+//    Brad Whitlock, Thu Dec 13 15:10:54 PST 2007
+//    Added support for node origin.
+//
 // ****************************************************************************
 
 
@@ -298,6 +301,9 @@ debug3 << "Labelling nodes with original node indices: "
             ybase = iptr[2];
             zbase = iptr[4];
         }
+        xbase -= nodeOrigin;
+        ybase -= nodeOrigin;
+        zbase -= nodeOrigin;
 
         vtkDataArray *sDims = input->GetFieldData()->
             GetArray("avtOriginalStructuredDimensions");
@@ -379,7 +385,7 @@ debug3 << "Labelling nodes with original node indices: "
                     }
                     else
                     {
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", realNodeId);
+                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", realNodeId + nodeOrigin);
                     }
                 END_LABEL
             }
@@ -397,7 +403,7 @@ debug3 << "Labelling nodes with original node indices: "
         {
             // const float *vert = p->GetPoint(id);
             BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", id);
+                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", id + nodeOrigin);
             END_LABEL
         }
     }

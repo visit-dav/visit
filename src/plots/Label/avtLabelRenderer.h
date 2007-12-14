@@ -89,6 +89,9 @@ class vtkPolyData;
 //    Brad Whitlock, Tue Apr 25 10:28:17 PDT 2006
 //    I removed some methods that I moved to derived classes.
 //
+//    Brad Whitlock, Thu Dec 13 14:59:30 PST 2007
+//    Added methods to set node and cell origin.
+//
 // ****************************************************************************
 
 class avtLabelRenderer : public avtCustomRenderer
@@ -109,6 +112,8 @@ public:
     void                    SetGlobalLabel(const std::string &L);
     void                    SetUseGlobalLabel(bool val);
     void                    SetRendererAction(int);
+    void                    SetCellOrigin(int);
+    void                    SetNodeOrigin(int);
 
 protected:
     struct LabelInfo
@@ -142,6 +147,8 @@ protected:
     char                  *varname;
     bool                   treatAsASCII;
     bool                   renderLabels3D;
+    int                    cellOrigin;
+    int                    nodeOrigin;
     double                 fgColor[4];
     float                  spatialExtents[6];
     std::string            globalLabel;

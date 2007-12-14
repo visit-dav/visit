@@ -1291,13 +1291,15 @@ avtOpenGLLabelRenderer::TransformPoints(const float *inputPoints,
 // Creation:   Mon Aug 8 09:47:56 PDT 2005
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 13 15:46:37 PST 2007
+//   Pass the type of the label in (whether it's for a node or zone).
+//
 // ****************************************************************************
 
 void
 avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
     quantizedNormalIndices, const char *currentLabel,
-    const float *transformedPoint, int n)
+    const float *transformedPoint, int n, int t)
 {
     if(zBufferMode == ZBUFFER_USE_PROVIDED)
     {
@@ -1316,7 +1318,7 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
                        sy >= 0 && sy < zBufferHeight &&
                        transformedPoint[2] <= zBuffer[sy * zBufferWidth + sx]+zTolerance)
                     {
-                        AllowLabelInBin(transformedPoint, currentLabel, 0);
+                        AllowLabelInBin(transformedPoint, currentLabel, t);
                     }
                 }
                 transformedPoint += 3;
@@ -1336,7 +1338,7 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
                    sy >= 0 && sy < zBufferHeight &&
                   transformedPoint[2] <= zBuffer[sy * zBufferWidth + sx]+zTolerance)
                 {
-                    AllowLabelInBin(transformedPoint, currentLabel, 0);
+                    AllowLabelInBin(transformedPoint, currentLabel, t);
                 }
                 transformedPoint += 3;
                 currentLabel += MAX_LABEL_SIZE;
@@ -1363,7 +1365,7 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
                         glReadPixels(sx, sy, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, 
                                      (GLvoid*)&Z);
                         if(transformedPoint[2] <= Z+zTolerance)
-                            AllowLabelInBin(transformedPoint, currentLabel, 0);
+                            AllowLabelInBin(transformedPoint, currentLabel, t);
                     }
                 }
                 transformedPoint += 3;
@@ -1386,7 +1388,7 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
                     glReadPixels(sx, sy, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, 
                                  (GLvoid*)&Z);
                     if(transformedPoint[2] <= Z+zTolerance)
-                        AllowLabelInBin(transformedPoint, currentLabel, 0);
+                        AllowLabelInBin(transformedPoint, currentLabel, t);
                 }
                 transformedPoint += 3;
                 currentLabel += MAX_LABEL_SIZE;
@@ -1403,7 +1405,7 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
             for(int i = 0; i < n; ++i)
             {
                 if(visiblePoint[quantizedNormalIndices[i]])
-                    AllowLabelInBin(transformedPoint, currentLabel, 0);
+                    AllowLabelInBin(transformedPoint, currentLabel, t);
                 transformedPoint += 3;
                 currentLabel += MAX_LABEL_SIZE;
             }
@@ -1415,7 +1417,7 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
             //
             for(int i = 0; i < n; ++i)
             {
-                AllowLabelInBin(transformedPoint, currentLabel, 0);
+                AllowLabelInBin(transformedPoint, currentLabel, t);
                 transformedPoint += 3;
                 currentLabel += MAX_LABEL_SIZE;
             }
@@ -1441,6 +1443,10 @@ avtOpenGLLabelRenderer::PopulateBinsHelper(const unsigned char *
 //    Brad Whitlock, Thu Aug 4 11:22:46 PDT 2005
 //    I changed the interface to AllowLabelInBin and moved some code into
 //    PopulateBinsHelper.
+//
+//    Brad Whitlock, Thu Dec 13 15:47:55 PST 2007
+//    Pass 0 to PopulateBinsHelper to indicate that we're inserting
+//    node labels.
 //
 // ****************************************************************************
 
@@ -1493,7 +1499,7 @@ avtOpenGLLabelRenderer::PopulateBinsWithNodeLabels3D()
     float *transformedPoint = xformedPoints;
     const char *currentLabel = nodeLabelsCacheMap[input];
     PopulateBinsHelper(quantizedNormalIndices, currentLabel, transformedPoint,
-                       n);
+                       n, 0);
     visitTimer->StopTimer(stageTimer, "Binning the 3D node labels");
 
     delete [] xformedPoints;
@@ -1519,6 +1525,10 @@ avtOpenGLLabelRenderer::PopulateBinsWithNodeLabels3D()
 //    Brad Whitlock, Thu Aug 4 11:22:46 PDT 2005
 //    I changed the interface to AllowLabelInBin and moved some code into
 //    PopulateBinsHelper.
+//
+//    Brad Whitlock, Thu Dec 13 15:47:55 PST 2007
+//    Pass 1 to PopulateBinsHelper to indicate that we're inserting
+//    cell labels.
 //
 // ****************************************************************************
 
@@ -1565,7 +1575,7 @@ avtOpenGLLabelRenderer::PopulateBinsWithCellLabels3D()
     int n = cellCenters->GetNumberOfTuples();
     const char *currentLabel = cellLabelsCacheMap[input];
     PopulateBinsHelper(quantizedNormalIndices, currentLabel, transformedPoint,
-                       n);
+                       n, 1);
     visitTimer->StopTimer(stageTimer, "Binning the 3D cell labels");
   
     delete [] xformedPoints;
