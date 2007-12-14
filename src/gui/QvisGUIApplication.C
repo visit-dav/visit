@@ -327,11 +327,29 @@ LongFileName(const char *shortName)
 //
 // Modifications:
 //   
+//   Hank Childs, Fri Dec 14 11:09:45 PST 2007
+//   Issue an error message to the console if we cannot connect to the 
+//   X server.
+//
 // ****************************************************************************
 
 static void
 GUI_LogQtMessages(QtMsgType type, const char *msg)
 {
+    const int n_strs_to_print = 1;
+    const char *strs_to_print[n_strs_to_print] = 
+       { "cannot connect to X server" };
+    bool shouldPrint = false;
+    for (int i = 0 ; i < n_strs_to_print ; i++)
+    {
+        if (strstr(msg, strs_to_print[i]) != NULL)
+            shouldPrint = true;
+    }
+    if (shouldPrint)
+    {
+        cerr << "Error: " << msg << endl;
+    }
+
     switch(type)
     {
     case QtDebugMsg:
