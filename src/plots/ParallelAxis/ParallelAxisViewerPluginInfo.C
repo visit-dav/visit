@@ -236,6 +236,9 @@ ParallelAxisViewerPluginInfo::AllocAvtPlot()
 //      Cyrus Harrison, Wed Oct 24 16:23:54 PDT 2007
 //      Fixed parsing of array_compose_with_bins expressions
 //
+//      Hank Childs, Fri Dec 14 10:50:39 PST 2007
+//      Allow for variables of the form <dir/var>.
+//
 // ****************************************************************************
 
 void
@@ -353,12 +356,16 @@ TokenizeExtendedArrayExpression(
                     {
                         if (!isalpha(tokenChar) && !isdigit(tokenChar))
                         {
-                            if (tokenChar != '_') badExpression = true;
+                            if (tokenChar != '_' &&
+                                tokenChar != '<' && 
+                                tokenChar != '/' && 
+                                tokenChar != '>')
+                               badExpression = true;
                         }
                     }
                     
-                    if (!isalpha(token[0])) badExpression = true;
-                    
+                    if (!isalpha(token[0]) && token[0] != '<' && token[0]!='_') 
+                        badExpression = true;
                     if (strcmp(token, "NO_VALUE") == 0)
                         tokenType = PCP_NO_VALUE_TOKEN;
                     else if (strcmp(token, "no_value") == 0)
@@ -420,6 +427,11 @@ TokenizeExtendedArrayExpression(
 //  Programmer: Mark Blair
 //  Creation:   Wed Jan 31 12:05:19 PST 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Dec 14 10:50:39 PST 2007
+//    Allow for variables of the form <dir/var>.
+//
 // ****************************************************************************
 
 void
@@ -453,7 +465,15 @@ ParseExtendedArrayExpression(stringVector &axisVariableList,
 
     do
     {
-        axisVariableList.push_back(tokenList[tokenIndex]);
+        if (tokenList[tokenIndex][0] == '<')
+        {
+            // We have a variable of the form <dir/var>.  Remove the < and >'s.
+            std::string str = tokenList[tokenIndex].substr(1, 
+                                               tokenList[tokenIndex].size()-2);
+            axisVariableList.push_back(str);
+        }
+        else
+            axisVariableList.push_back(tokenList[tokenIndex]);
         
         valueMap = 0;
         
