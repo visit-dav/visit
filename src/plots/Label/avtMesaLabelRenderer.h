@@ -89,7 +89,7 @@ protected:
     void PopulateBinsWithCellLabels3D();
     void PopulateBinsWithNodeLabels3D();
     void PopulateBinsHelper(const unsigned char *, const char *, const float *,
-                            int);
+                            int, int);
     void ClearZBuffer();
     void InitializeZBuffer(bool, bool);
 

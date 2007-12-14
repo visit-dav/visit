@@ -43,6 +43,9 @@
 //    Brad Whitlock, Tue Aug 2 15:49:22 PST 2005
 //    Added support for materials and subsets.
 //
+//    Brad Whitlock, Thu Dec 13 15:10:26 PST 2007
+//    Added support for cell origin.
+//
 // ****************************************************************************
 
 //
@@ -323,6 +326,9 @@ debug3 << "Labelling cells with original cell indices: "
             ybase = iptr2[2];
             zbase = iptr2[4];
         }
+        xbase -= cellOrigin;
+        ybase -= cellOrigin;
+        zbase -= cellOrigin;
 
         vtkDataArray *sDims = input->GetFieldData()->
             GetArray("avtOriginalStructuredDimensions");
@@ -380,7 +386,7 @@ debug3 << "Labelling as indices" << endl;
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     unsigned int realCellId = originalCells->GetValue(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", realCellId);
+                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", realCellId + cellOrigin);
                 END_LABEL
             }
         }
@@ -392,7 +398,7 @@ debug3 << "Labelling as indices" << endl;
         {
             // float *vert = cellCenters->GetTuple3(id);
             BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", id);
+                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d", id + cellOrigin);
             END_LABEL
         }
     }

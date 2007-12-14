@@ -87,6 +87,9 @@
 //    Brad Whitlock, Tue Aug 2 15:26:43 PST 2005
 //    I removed the single cell/node stuff.
 //
+//    Brad Whitlock, Thu Dec 13 15:20:13 PST 2007
+//    Added cell and node origin.
+//
 // ****************************************************************************
 
 avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), globalLabel()
@@ -100,6 +103,8 @@ avtLabelRenderer::avtLabelRenderer() : avtCustomRenderer(), globalLabel()
     maxLabelRows = 0;
     MAX_LABEL_SIZE = 36;
     rendererAction = RENDERER_ACTION_NOTHING;
+    cellOrigin = 0;
+    nodeOrigin = 0;
 
     fgColor[0] = 1.;
     fgColor[1] = 1.;
@@ -402,6 +407,58 @@ void
 avtLabelRenderer::SetTreatAsASCII(bool val)
 {
     treatAsASCII = val;
+}
+
+// ****************************************************************************
+// Method: avtLabelRenderer::SetCellOrigin
+//
+// Purpose: 
+//   Sets the cell origin.
+//
+// Arguments:
+//   origin : The new cell origin.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 13 15:00:49 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelRenderer::SetCellOrigin(int origin)
+{
+    cellOrigin = origin;
+}
+
+// ****************************************************************************
+// Method: avtLabelRenderer::SetNodeOrigin
+//
+// Purpose: 
+//   Sets the node origin.
+//
+// Arguments:
+//  origin : The new node origin.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 13 15:02:15 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtLabelRenderer::SetNodeOrigin(int origin)
+{
+    nodeOrigin = origin;
 }
 
 // ****************************************************************************

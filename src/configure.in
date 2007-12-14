@@ -2040,6 +2040,7 @@ else
 
     SILO_LIB="-L$SILO_LIBDIR -lsilo"
 fi
+AC_SUBST(LIBSILO)
 
 #
 # Decide whether we should try to use libsiloh5 or just libsilo

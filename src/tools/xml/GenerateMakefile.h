@@ -223,6 +223,9 @@
 //    Allow the Writer plugin file to be renamed using the custom engine
 //    files mechanism.
 //
+//    Brad Whitlock, Thu Dec 13 16:14:12 PST 2007
+//    Fixed plugin install name on MacOS X.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -403,6 +406,7 @@ class MakefileGeneratorPlugin
         if (type=="operator")
         {
             out << "PLUGINDIR=operators" << endl;
+            out << "PLUGINNAME="<<name << "Operator" << endl;
             out << endl;
             out << "WIDGETS=Qvis"<<name<<"Window.h";
             if (customwfiles)
@@ -557,6 +561,7 @@ class MakefileGeneratorPlugin
         else if (type=="plot")
         {
             out << "PLUGINDIR=plots" << endl;
+            out << "PLUGINNAME="<<name << "Plot" << endl;
             out << endl;
             out << "WIDGETS=Qvis"<<name<<"PlotWindow.h";
             if (customwfiles)
@@ -714,6 +719,7 @@ class MakefileGeneratorPlugin
         else if (type=="database")
         {
             out << "PLUGINDIR=databases" << endl;
+            out << "PLUGINNAME="<<name << "Database" << endl;
             out << endl;
 
             out << "WIDGETS=" << endl;
