@@ -255,6 +255,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Thu Dec 13 13:23:20 EST 2007
 #    Moved version parsing code to frontendlauncher.
 #
+#    Jeremy Meredith, Fri Dec 14 15:33:57 EST 2007
+#    Added documentation for -forceversion option.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -503,6 +506,8 @@ $fullusage = "$usage
                              The directory argument should specify the 
                              path to a visit installation directory.
                              /bin is automatically appended to this path.
+        -forceversion <ver>  Force the given version.  Overrides all
+                             intelligent version selection logic.
         -publicpluginsonly   Disable all plugins but the default ones.
         -compiler <cc>       Require version built with the specified compiler.
         -switch <switch>     Require version built for the specified switch.

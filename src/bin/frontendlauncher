@@ -77,6 +77,10 @@ $0 = shift @ARGV;
 #    NOTE: When 1.7 is the latest likely version on any platform, the check
 #    for >=1.7 in that test may safely be removed.
 #
+#    Jeremy Meredith, Fri Dec 14 15:31:48 EST 2007
+#    Added a -forceversion command line option which can be used to
+#    intelligent override all version selection logic.
+#
 ###############################################################################
 
 
@@ -136,6 +140,13 @@ while (scalar(@ARGV) > 0) {
     {
         $ver  = shift; $ver_set  = 1;
         die "The '-v' version argument requires a value.\n" if (!defined $ver);
+    }
+    elsif ($arg eq "-forceversion")
+    {
+        $forceversion  = shift; $forceversion_set  = 1;
+        die "The '-forceversion' argument requires a value.\n"
+          if (!defined $forceversion);
+        push @visitargs, "-forceversion", $forceversion;
     }
     elsif ($arg eq "-beta")
     {
@@ -199,7 +210,15 @@ while (scalar(@ARGV) > 0) {
 # -----------------------------------------------------------------------------
 #                        Parse the requested version
 # -----------------------------------------------------------------------------
-if ($ver_set)
+# A forced version: (a) overrides any other -v argument, and (b) makes
+# no attempt to parse the version string, which bypasses the rest of
+# the intelligent version selection logic in this launcher script.
+if ($forceversion_set)
+{
+    $ver_set = 1;
+    $ver = $forceversion;
+}
+elsif ($ver_set)
 {
     if (grep /^\d+\.\d+$/, $ver) {
         # e.g. -v 1.7
