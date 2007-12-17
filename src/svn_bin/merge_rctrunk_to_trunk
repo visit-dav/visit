@@ -16,9 +16,14 @@
 #    Hank Childs, Wed Oct 10 09:45:14 PDT 2007
 #    If the user is not in the trunk, then exit immediately.
 #
+#    Hank Childs, Mon Dec 17 14:25:38 PST 2007
+#    See if there are checkouts before merging, force an SVN update before 
+#    merging, and disallow changes to VERSION.
+#
 # *****************************************************************************
 
 issueHelp="no"
+allowCheckouts="no"
 
 P=$(whence $0)
 P2=${P%/*}
@@ -27,23 +32,37 @@ P2=${P%/*}
 # Prevent print statements when changing directories
 CDPATH=""
 
+if [[ $# == 2 ]] ; then
+   if [[ "$2" != "-allow_checkouts" ]] ; then
+       issueHelp="yes"
+   else
+       allowCheckouts="yes"
+   fi
+elif [[ $# != 1 ]] ; then
+   issueHelp="yes"
+fi
+if [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
+   issueHelp="yes"
+fi
+
+if [[ "$issueHelp" != "yes" ]] ; then
+   if [[ ! -f .branchname ]] ; then
+      echo ""
+      echo "ERROR: You must run this script at the root of the trunk directory"
+      echo ""
+      issueHelp="yes"
+   elif [[ ! -f .rootpath ]] ; then
+      echo ""
+      echo "ERROR: You must run this script at the root of the trunk directory"
+      echo ""
+      issueHelp="yes"
+   fi
+fi
+
 BRANCH=""
 RCTRUNKNAME=""
-if [[ $# != 1 ]] ; then
-   issueHelp="yes"
-elif [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
-   issueHelp="yes"
-elif [[ ! -f .branchname ]] ; then
-   echo ""
-   echo "ERROR: You must run this script at the root of the trunk directory"
-   echo ""
-   issueHelp="yes"
-elif [[ ! -f .rootpath ]] ; then
-   echo ""
-   echo "ERROR: You must run this script at the root of the trunk directory"
-   echo ""
-   issueHelp="yes"
-else
+
+if [[ "$issueHelp" != "yes" ]] ; then
    TRUNKNAME=$(cat .branchname)
    if [[ "$TRUNKNAME" != "trunk" ]] ; then
       echo ""
@@ -54,59 +73,83 @@ else
       echo ""
       issueHelp="yes"
    fi
-   if [[ "$issueHelp" != "yes" ]] ; then
-       WHOLE_TRUNK="yes"
-       ROOTPATH=$(cat .rootpath)
-       if [[ "$ROOTPATH" != "/" ]] ; then
-          WHOLE_TRUNK="no"
-       else
-          if [[ ! -d src || ! -d data || ! -d docs || ! -d test || ! -d third_party || ! -d windowsbuild ]] ; then
-          WHOLE_TRUNK="no"
-          fi
-       fi
-       if [[ "$WHOLE_TRUNK" == "no" ]]; then
-          echo "Your checkout is not of the entire trunk.  The merge will only "
-          echo "take place over your checkout.  If you continue, any changes that "
-          echo "are on directories not in your current checkout of the trunk will be lost!"
-          stop="no"
-          while [[ "$stop" == "no" ]] ; do
-               echo "Do you want to continue? [yes/no]"
-               read answer
-               if [[ "$answer" == "yes" ]] ; then
-                  stop="yes"
-               fi
-               if [[ "$answer" == "no" ]] ; then
-                  stop="yes"
-               fi
-           done
-           if [[ "$answer" == "no" ]] ; then
-               exit 1
-           fi
-       fi
+fi
 
-       RCTRUNKNAME=$1
-       BRANCH=${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}${ROOTPATH}
-       svn ls $BRANCH 2>/dev/null > /dev/null
-       if [[ $? != 0 ]] ; then
-          echo "The RC TRUNK $1 does not appear to exist."
-          echo "(Looking for it at $BRANCH)"
-          echo "Try using the script ls_branches to locate the RC trunk."
-          issueHelp="yes"
+if [[ "$issueHelp" != "yes" ]] ; then
+    WHOLE_TRUNK="yes"
+    ROOTPATH=$(cat .rootpath)
+    if [[ "$ROOTPATH" != "/" ]] ; then
+       WHOLE_TRUNK="no"
+    else
+       if [[ ! -d src || ! -d data || ! -d docs || ! -d test || ! -d third_party || ! -d windowsbuild ]] ; then
+       WHOLE_TRUNK="no"
        fi
-   fi
+    fi
+    if [[ "$WHOLE_TRUNK" == "no" ]]; then
+       echo "Your checkout is not of the entire trunk.  The merge will only "
+       echo "take place over your checkout.  If you continue, any changes that "
+       echo "are on directories not in your current checkout of the trunk will be lost!"
+       stop="no"
+       while [[ "$stop" == "no" ]] ; do
+            echo "Do you want to continue? [yes/no]"
+            read answer
+            if [[ "$answer" == "yes" ]] ; then
+               stop="yes"
+            fi
+            if [[ "$answer" == "no" ]] ; then
+               stop="yes"
+            fi
+        done
+        if [[ "$answer" == "no" ]] ; then
+            exit 1
+        fi
+    fi
+
+    RCTRUNKNAME=$1
+    BRANCH=${VISIT_SVN_BRANCHES}/${RCTRUNKNAME}${ROOTPATH}
+    svn ls $BRANCH 2>/dev/null > /dev/null
+    if [[ $? != 0 ]] ; then
+       echo "The RC TRUNK $1 does not appear to exist."
+       echo "(Looking for it at $BRANCH)"
+       echo "Try using the script ls_branches to locate the RC trunk."
+       issueHelp="yes"
+    fi
 fi
 
 if [[ "$issueHelp" == "yes" ]] ; then
    echo ""
-   echo "Usage:   ${0##*/} <RC trunk>"
+   echo "Usage:   ${0##*/} <RC trunk> [-allow_checkouts]"
    echo ""
-   echo "Example: ${0##*/} 1.6.1RC"
-   echo "\tshould be run at the top level of your checked out trunk.  It will "
-   echo "\tmerge the work from the RC trunk into the trunk."
+   echo "Args:"
+   echo "\t-allow_checkouts\tForce merge, despite checkouts in the working copy of the trunk."
+   echo ""
+   echo "Example: ${0##*/} 1.7RC"
+   echo ""
+   echo "\tThis command should be run at the top level of your checked out "
+   echo "\ttrunk.  It will merge the work from the RC trunk into the trunk."
    echo ""
    
    exit 1
 fi
+
+for i in src data docs test third_party windowsbuild ; do
+  if [[ -d $i ]] ; then
+      cd $i
+      if [[ "$allowCheckouts" == "no" ]] ; then
+        echo "Checking for pre-existing checkouts on ${i}..."
+        files=$(svn status -q)
+        if [[ "$files" != "" ]] ; then
+            echo "I believe you have the following files checked out on ${i}:"
+            echo "$files"
+            echo "Aborting!"
+            exit 1
+        fi
+      fi
+      echo "Making sure your working copy of the trunk/$i is up to date"
+      svn update 
+      cd ..
+  fi
+done
 
 echo ""
 echo "Merging $BRANCH into the trunk"
@@ -124,8 +167,8 @@ echo ""
 echo "The revision of the last merge was $REV"
 echo ""
 
-for i in * ; do 
-  if [[ -d $i && "$i" != "tmp_forRev$$" ]] ; then
+for i in src data docs test third_party windowsbuild ; do
+  if [[ -d $i ]] ; then
       cd $i
       echo ""
       echo "Merging directory \"$i\""
@@ -135,6 +178,14 @@ for i in * ; do
   fi
 done
 NEW_REV=$(get_latest_rev)
+
+if [[ -f src/VERSION ]] ; then
+   status=$(svn status src/VERSION)
+   if [[ "$status" != "" ]] ; then
+      echo "Reverting change of file src/VERSION"
+      svn revert src/VERSION
+   fi
+fi
 
 cd tmp_forRev$$/svninfo
 echo "$NEW_REV" > Rev_toTrunk
