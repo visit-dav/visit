@@ -14,6 +14,9 @@
 #    Hank Childs, Sat Jun 23 16:38:02 PDT 2007
 #    Add support for release candidates.
 #
+#    Hank Childs, Mon Dec 17 15:22:36 PST 2007
+#    Fix bug with release candidates.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -56,8 +59,12 @@ DEST=${VISIT_SVN_BRANCHES}/${SVN_NERSC_NAME}/$1
 
 svn ls $DEST 2>/dev/null > /dev/null
 if [[ $? != 0 ]] ; then
-   echo "$DEST does not appear to be a valid branch."
-   exit 1
+   DEST=${VISIT_SVN_BRANCHES}/$1
+   svn ls $DEST 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "$DEST does not appear to be a valid branch."
+      exit 1
+   fi
 fi
 
 mkdir tmp_forRev$$
