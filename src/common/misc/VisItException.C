@@ -156,12 +156,12 @@ VisItException::Log(void)
     // so wrap this around a try and catch any exception it might throw.
     //
 #ifdef FAKE_EXCEPTIONS
-    (*log) << "(" << type << ") " << filename << ", line " << line << ": " 
+    (*log) << "Exception: (" << type << ") " << filename << ", line " << line << ": " 
            << msg << endl;
 #else
     try
     {
-        (*log) << "(" << type.c_str() << ") " << filename.c_str() << ", line " << line << ": " 
+        (*log) << "Exception: (" << type.c_str() << ") " << filename.c_str() << ", line " << line << ": " 
                << msg.c_str() << endl;
     }
     catch(...)

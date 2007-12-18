@@ -55,6 +55,23 @@ ExpressionException::ExpressionException(string name, string reason)
     msg = "The '" + name + "' expression failed because " + reason;
 }
 
+// ****************************************************************************
+//  Method: ExpressionException constructor
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   December 18, 2007
+//
+// ****************************************************************************
+ExpressionException::ExpressionException(const char *name, string reason)
+{
+    if (name == NULL)
+        msg = "The expression failed because " + reason;
+    else
+        msg = "The '" + string(name) + "' expression failed because " +
+              reason;
+}
+
+
 
 // ****************************************************************************
 //  Method: ExpressionParseException constructor
