@@ -971,6 +971,10 @@ avtFunctionExpr::CreateFilters(string functionName)
 //      which does not have nested-if blocks, too many of which cause
 //      a compile failure on Win32.
 //
+//      Sean Ahern, Tue Dec 18 16:17:58 EST 2007
+//      Set a temporary output variable name for those cases where parsing
+//      throws an exception.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -987,6 +991,9 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
                    string("\".");
         EXCEPTION1(ExpressionParseException, error);
     }
+
+    // Set a temporary variable name for good error messages.
+    f->SetOutputVariableName(functionName.c_str());
 
     // Have the filter process arguments as necessary.  It's important
     // that this happen before the next bit of code so that the pipeline
@@ -1029,7 +1036,8 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         f->AddInputVariableName(inputName.c_str());
     }
 
-    // Set the variable the function should output>
+    // Set the variable the function should output.  Reset the output variable
+    // name to something more precise than what we set above.
     state->PushName(outputName);
     f->SetOutputVariableName(outputName.c_str());
     
