@@ -65,12 +65,17 @@
 //    Sean Ahern, Mon Dec 10 09:53:05 EST 2007
 //    Required the expression name.
 //
+//    Jeremy Meredith, December 18, 2007
+//    Added a const char *name constructor to handle the case where the name
+//    is NULL.
+//
 // **************************************************************************** 
 
 class AVTEXCEPTION_API ExpressionException : public PipelineException
 {
   public:
                           ExpressionException(std::string name, std::string reason);
+                          ExpressionException(const char *name, std::string reason);
     virtual              ~ExpressionException() VISIT_THROW_NOTHING {;};
 };
 
