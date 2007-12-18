@@ -230,6 +230,9 @@
 #    Mark C. Miller, Tue Aug 28 16:23:20 PDT 2007
 #    Added ability for test to specify how to invoke VisIt to run itself.
 #    Added setting of $nowin="" for interactive mode
+#
+#    Mark C. Miller, Mon Dec 17 16:06:48 PST 2007
+#    Added ability to skip specific test cases in a .py file
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -714,21 +717,28 @@ for t in $testcases; do
     export VISIT_TEST_NAME
     export VISIT_TEST_MODES
     export VISIT_TOP_DIR
+    export VISIT_TEST_SKIP_CASES
     VISIT_TEST_CATEGORY=$category
     VISIT_TEST_NAME=$name
     VISIT_TEST_MODES=`echo $modes | tr ',' '\n' | grep -v nersc | tr '\n' ',' | cut -d',' -f1,2`
     # Note: the '-P' is necessary to get pwd
     # to return physical path (without links)
     VISIT_TOP_DIR=`(cd .. ; pwd -P)`
+    VISIT_TEST_SKIP_CASES=""
 
     # check if this test is in the current skip list
     skipIt=false
     for skipTest in $skipList; do
 	skipMode=`echo $skipTest | cut -d':' -f1`
 	skipFile=`echo $skipTest | cut -d':' -f2`
+	skipCases=`echo $skipTest | cut -d':' -f3`
 	if test "$modes" = "$skipMode" && test "$t" = "$skipFile"; then
-	   skipIt=true;
-	   break;
+	    if test -z "$skipCases"; then
+	        skipIt=true;
+	        break;
+	    else
+	        VISIT_TEST_SKIP_CASES=$skipCases
+	    fi
 	fi
     done
 
@@ -955,6 +965,12 @@ for t in $testcases; do
         echo -e "  <td align=center bgcolor=\"#880000\"><b><i>Killed</b></i></td>" >> html/index.html
         if test "$quiet" = "0"; then
             echo -e ">> Killed after $limitSeconds seconds when running test file: $t"
+        fi
+    elif test "$error" = "119"; then
+	echo -e "    $name:\tpartially skipped" >> summary
+        echo -e "  <td align=center bgcolor=\"#00ffff\"><b><i>Partially Skipped</b></i></td>" >> html/index.html
+        if test "$quiet" = "0"; then
+            echo -e ">> Passed with partial skips in test file: $t"
         fi
     else
 	echo -e "    $name:\tfailed, VisIt crashed" >> summary

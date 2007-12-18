@@ -635,6 +635,7 @@ def Test(file, altSWA=0):
     global trackingMemoryUsage
     global iactive
     global usePIL
+    global skipCases
 
     # if interactive, pause for user
     if iactive:
@@ -675,6 +676,7 @@ def Test(file, altSWA=0):
        LeakCheck(file, 5)
 
     # 0:No Diffs, 1:Acceptable Diffs, 2:Unacceptable Diffs, 3:Unknown
+    skipMe = file in skipCases
     diffState = 3 
     tPixs = pPixs = dPixs = 0
     dpix = davg = 0.0
@@ -696,6 +698,7 @@ def Test(file, altSWA=0):
             else:
 	        dpix = 0.0
                 diffState = 0
+    if skipMe: diffState = 4
 
     WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file)
 
@@ -710,6 +713,8 @@ def Test(file, altSWA=0):
         elif diffState == 2:
             log.write("    Test case '%s' FAILED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f\n" %
 	        (file, tPixs, pPixs, dPixs, dpix, davg))
+        elif diffState == 4:
+	    log.write("    Test case '%s' SKIPPED\n" % file)
         else:
             log.write("    Test case '%s' UNKNOWN:#pix=UNK , #nonbg=UNK , #diff=UNK , ~%%diffs=UNK,  avgdiff=UNK\n")
         log.close()
@@ -736,6 +741,7 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     if diffState == 0:   color = "#00ff00"
     elif diffState == 1: color = "#ffff00"
     elif diffState == 2: color = "#ff0000"
+    elif diffState == 4: color = "#0000ff"
     else:                color = "#ff00ff"
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, file, file))
@@ -763,11 +769,13 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     testcase.write("    <td align=center rowspan=9 bgcolor=%s>\n"%color)
     if (diffState <= 1):    testcase.write("        <b><h1><i>Passed</i></h1></b>\n");
     elif (diffState == 2):  testcase.write("        <b><h1><i>Failed</i></h1></b>\n");
+    elif (diffState == 4):  testcase.write("        <b><h1><i>Skipped</i></h1></b>\n");
     else:                   testcase.write("        <b><h1><i>Unknown</i></h1></b>\n");
     testcase.write("    </td>\n")
     testcase.write("    <td align=center>Baseline:</td>\n")
     if (diffState == 0):   testcase.write("    <td>Same As Current</td>\n")
     elif (diffState == 3): testcase.write("    <td>Not Available</td>\n")
+    elif (diffState == 4): testcase.write("    <td>Skipped</td>\n")
     else:                  testcase.write("    <td><img src=b_%s.jpg></img></td>\n" %(file))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
@@ -778,6 +786,7 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     testcase.write("    <td align=center rowspan=7>Diff Map:</td>\n")
     if (diffState == 0):     testcase.write("    <td rowspan=7>No Differences</td>\n")
     elif (diffState == 3):   testcase.write("    <td rowspan=7>Not Available</td>\n")
+    elif (diffState == 4):   testcase.write("    <td rowspan=7>Skipped</td>\n")
     else:                    testcase.write("    <td rowspan=7><img src=d_%s.jpg></img></td>\n" %(file))
     testcase.write("    <td align=center><i>Error Metric</i></td>\n")
     testcase.write("    <td align=center><i>Value</i></td>\n")
@@ -1059,6 +1068,7 @@ def TestText(file, inText):
     global html
     global maxds
     global trackingMemoryUsage
+    global skipCases
 
     # if interactive, pause for user
     if iactive:
@@ -1126,17 +1136,22 @@ def TestText(file, inText):
 
     # did the test fail? 
     failed = (nchanges > 0)
+    skipMe = file in skipCases
 
     # write data to the log file if there is one
     if (os.path.isfile("log")):
         log = open("log", 'a')
-        if failed: log.write("    Test case '%s' FAILED\n" % file) 
+        if failed:
+	    if skipMe: log.write("    Test case '%s' SKIPPED\n" % file) 
+	    else: log.write("    Test case '%s' FAILED\n" % file) 
         else : log.write("    Test case '%s' PASSED\n" % file) 
         log.close()
 
     # write to the html file
     color = "#00ff00"
-    if (failed):  color = "#ff0000"
+    if (failed):
+        if skipMe: color = "#0000ff"
+	else: color = "#ff0000"
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, file, file))
     html.write("  <td colspan=5 align=center>%d modifications totalling %d lines</td>\n" % (nchanges,nlines))
@@ -1148,7 +1163,8 @@ def TestText(file, inText):
 
     # set error codes 
     if failed:
-        maxds = 2
+        if skipMe: maxds = 4
+	else: maxds = 2
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
@@ -1198,6 +1214,7 @@ def Exit():
 	if (maxds == 0):         sys.exit(111)
         if (maxds == 1):         sys.exit(112)
         if (maxds == 2):         sys.exit(113)
+        if (maxds == 4):         sys.exit(119)
         sys.exit(114)
 
 
@@ -1357,6 +1374,7 @@ filename = os.environ['VISIT_TEST_NAME']
 filebase = filename[:-3]
 category = os.environ['VISIT_TEST_CATEGORY']
 modes    = string.split(os.environ['VISIT_TEST_MODES'],",")
+skipCases = string.split(os.environ['VISIT_TEST_SKIP_CASES'],",")
 
 if usePIL:
     from PIL import Image, ImageChops, ImageStat
