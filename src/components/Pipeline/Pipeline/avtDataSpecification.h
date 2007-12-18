@@ -41,6 +41,7 @@
 
 #ifndef AVT_DATA_SPECIFICATION_H
 #define AVT_DATA_SPECIFICATION_H
+
 #include <pipeline_exports.h>
 
 
@@ -186,6 +187,10 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //
 //    Hank Childs, Wed Jul 25 11:22:11 PDT 2007
 //    Add support for special representations of wireframe subset plots.
+//
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor to prevent
+//    accidental use of default, bitwise copy implementations.
 //
 // ****************************************************************************
 
@@ -459,6 +464,11 @@ class PIPELINE_API avtDataSpecification
     //
     std::vector<avtDataSelection_p>  selList;
 
+  private:
+    // This method is defined to prevent accidental use of a bitwise copy
+    // implementation.  If you want to re-define it to do something
+    // meaningful, that's fine.
+                       avtDataSpecification(const avtDataSpecification &) {;};
 };
 
 

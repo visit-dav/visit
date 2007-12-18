@@ -96,6 +96,10 @@ class     avtTerminatingSource;
 //    Mark C. Miller, Mon Oct 18 13:02:37 PDT 2004
 //    Added optional var args to GetDataExtents/GetSpatialExtents
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -117,6 +121,13 @@ class PIPELINE_API avtMetaData
 
     avtPipelineSpecification_p   GetPipelineSpecification(void);
     avtPipelineSpecification_p   GetPipelineSpecification(int);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtMetaData(const avtMetaData &) {;};
+    avtMetaData         &operator=(const avtMetaData &) { return *this; };
 };
 
 #endif

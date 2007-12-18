@@ -75,6 +75,10 @@
 //    Hank Childs, Sat Oct  6 14:02:06 PDT 2007
 //    Check in Timo Bremer's changes.  New virtual method StoreRay.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtExtractor
@@ -140,6 +144,13 @@ class PIPELINE_API avtExtractor
     inline float           XFromIndex(int);
     inline float           YFromIndex(int);
     inline float           ZFromIndex(int);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtExtractor(const avtExtractor &) {;};
+    avtExtractor        &operator=(const avtExtractor &) { return *this; };
 };
 
 

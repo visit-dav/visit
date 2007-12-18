@@ -41,6 +41,7 @@
 
 #ifndef AVT_RANGE_MAX_TABLE_H
 #define AVT_RANGE_MAX_TABLE_H
+
 #include <pipeline_exports.h>
 
 
@@ -52,6 +53,12 @@
 //
 //  Programmer: Hank Childs
 //  Creation:   December 7, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
 //
 // ****************************************************************************
 
@@ -69,6 +76,12 @@ class PIPELINE_API avtRangeMaxTable
     float                       *entries;
     float                       *powRange;
     int                          logRange;
+
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                        avtRangeMaxTable(const avtRangeMaxTable &) {;};
+    avtRangeMaxTable   &operator=(const avtRangeMaxTable &) { return *this; };
 };
 
 

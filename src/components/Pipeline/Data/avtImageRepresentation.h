@@ -81,6 +81,10 @@ class  vtkImageData;
 //    Hank Childs, Mon Feb  6 14:59:43 PST 2006
 //    Allow image to avoid copying the Z-buffer.
 //
+//    Hank Childs, Tue Dec 18 10:25:09 PST 2007
+//    Remove const return type of assignment operator, to prevent the compiler
+//    from defining a second assignment operator for the non-const case.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImageRepresentation
@@ -93,7 +97,7 @@ class PIPELINE_API avtImageRepresentation
                          avtImageRepresentation(const avtImageRepresentation &);
     virtual             ~avtImageRepresentation();
 
-    const avtImageRepresentation    &operator=(const avtImageRepresentation &);
+    avtImageRepresentation    &operator=(const avtImageRepresentation &);
 
     void                 GetSize(int *rowSize, int *colSize) const;
 

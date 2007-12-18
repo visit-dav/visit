@@ -341,9 +341,14 @@ avtImageRepresentation::DestructSelf(void)
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2000
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 18 10:25:09 PST 2007
+//    Remove const qualification of return type.
+//
 // ****************************************************************************
 
-const avtImageRepresentation &
+avtImageRepresentation &
 avtImageRepresentation::operator=(const avtImageRepresentation &rhs)
 {
     DestructSelf();

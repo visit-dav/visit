@@ -103,6 +103,10 @@ typedef enum
 //    Cyrus Harrison, Tue Mar 13 11:37:30 PDT 2007
 //    Add support for debug dumps without full vtk dataset dump (-info-dump)
 //
+//    Hank Childs, Tue Dec 18 10:25:09 PST 2007
+//    Remove const return type of assignment operator, to prevent the compiler
+//    from defining a second assignment operator for the non-const case.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRepresentation
@@ -116,7 +120,7 @@ class PIPELINE_API avtDataRepresentation
                         avtDataRepresentation(const avtDataRepresentation &);
     virtual            ~avtDataRepresentation();
 
-    const avtDataRepresentation    &operator=(const avtDataRepresentation &);
+    avtDataRepresentation    &operator=(const avtDataRepresentation &);
 
     vtkDataSet         *GetDataVTK(void);
     unsigned char      *GetDataString(int &, DataSetType &);

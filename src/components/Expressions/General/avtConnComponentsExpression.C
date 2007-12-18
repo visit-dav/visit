@@ -2631,6 +2631,10 @@ PartitionBoundary::AttemptSplit(PartitionBoundary *&b1, PartitionBoundary *&b2)
 //    Cyrus Harrison, Sat Aug 11 15:08:37 PDT 2007
 //    Added ghost neighbors optimization
 //
+//    Hank Childs, Tue Dec 18 13:50:12 PST 2007
+//    Do not use copy constructor for interval tree, since it was recently 
+//    declared to be private.
+//
 // ****************************************************************************
 
 void
@@ -2692,7 +2696,7 @@ avtConnComponentsExpression::SpatialPartition::CreatePartition
         // Construct an interval tree out of the boundaries.  We need this
         // because we want to be able to quickly determine which boundaries
         // a point falls in.
-        avtIntervalTree it = avtIntervalTree(nBins, 3);
+        avtIntervalTree it(nBins, 3);
         nBins = 0;
         for (i = 0 ; i < listSize ; i++)
         {

@@ -83,6 +83,10 @@
 //    Hank Childs, Thu Mar  1 16:57:34 PST 2007
 //    Add a method to get the dimension (for error checking).
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtIntervalTree
@@ -134,6 +138,13 @@ class PIPELINE_API avtIntervalTree
     void                      ConstructTree(void);
     void                      SetIntervals(void);
     int                       SplitSize(int);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtIntervalTree(const avtIntervalTree &) {;};
+    avtIntervalTree     &operator=(const avtIntervalTree &) { return *this; };
 };
 
 

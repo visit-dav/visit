@@ -109,6 +109,10 @@ class     avtWebpage;
 //    Hank Childs, Thu Dec 21 10:11:30 PST 2006
 //    Add support for debug dumps.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataValidity
@@ -251,6 +255,13 @@ class PIPELINE_API avtDataValidity
 
     bool                     errorOccurred;
     std::string              errorString;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtDataValidity(const avtDataValidity &) {;};
+    avtDataValidity     &operator=(const avtDataValidity &) { return *this; };
 };
 
 

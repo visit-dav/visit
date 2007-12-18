@@ -118,6 +118,11 @@ typedef void (*TraverseFunc)(avtDataRepresentation &, void *, bool &);
 //    Hank Childs, Thu Dec 21 10:06:47 PST 2006
 //    Add support for debug dumps.
 //
+//    Hank Childs, Tue Dec 18 10:25:09 PST 2007
+//    Change argument of assignment operator to be const, so that the compiler
+//    won't insert a second, undesired assignment operator that does have
+//    a const argument (and is used unexpectedly).
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataTree
@@ -139,7 +144,7 @@ class PIPELINE_API avtDataTree
    
     virtual                 ~avtDataTree();
 
-    avtDataTree             &operator =(avtDataTree&);
+    avtDataTree             &operator=(const avtDataTree&);
 
     avtDataTree_p            GetChild(int);
     avtDataRepresentation   &GetDataRepresentation(void); 

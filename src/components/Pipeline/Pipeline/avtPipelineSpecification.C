@@ -159,10 +159,13 @@ avtPipelineSpecification::~avtPipelineSpecification()
 //    Hank Childs, Sun Mar 13 09:49:16 PST 2005
 //    Add haveStructuredMeshOptimizations.
 //
+//    Hank Childs, Tue Dec 18 14:11:56 PST 2007
+//    Added const qualified argument.
+//
 // ****************************************************************************
 
 avtPipelineSpecification &
-avtPipelineSpecification::operator=(avtPipelineSpecification &ps)
+avtPipelineSpecification::operator=(const avtPipelineSpecification &ps)
 {
     data             = new avtDataSpecification(ps.data);
     pipelineIndex    = ps.pipelineIndex;

@@ -41,6 +41,7 @@
 
 #ifndef AVT_DATA_ATTRIBUTES_H
 #define AVT_DATA_ATTRIBUTES_H
+
 #include <pipeline_exports.h>
 
 #include <VisWindowTypes.h>
@@ -227,6 +228,10 @@ class     PlotInfoAttributes;
 //
 //    Hank Childs, Sun Oct 28 09:23:27 PST 2007
 //    Added containsExteriorBoundaryGhosts.
+//
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
 //
 // ****************************************************************************
 
@@ -598,6 +603,15 @@ class PIPELINE_API avtDataAttributes
     void                     WritePlotInfoAtts(avtDataObjectString &,
                                          const avtDataObjectWriter *);
     int                      ReadPlotInfoAtts(char *);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something 
+    // meaningful, that's fine.
+                             avtDataAttributes(const avtDataAttributes &) {;};
+    avtDataAttributes       &operator=(const avtDataAttributes &) 
+                                                            { return *this; };
+
 };
 
 

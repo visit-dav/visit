@@ -41,6 +41,7 @@
 
 #ifndef AVT_DATA_OBJECT_STRING_H
 #define AVT_DATA_OBJECT_STRING_H
+
 #include <pipeline_exports.h>
 
 
@@ -65,6 +66,10 @@
 //
 //    Hank Childs, Sun Sep 16 16:04:39 PDT 2001
 //    Re-worked to prevent copying of strings.
+//
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
 //
 // ****************************************************************************
 
@@ -94,6 +99,14 @@ class PIPELINE_API avtDataObjectString
     std::vector<int>          lens;
     std::vector<bool>         ownString;
     char                     *wholeString;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtDataObjectString(const avtDataObjectString &) {;};
+    avtDataObjectString &operator=(const avtDataObjectString &) 
+                                                            { return *this; };
 };
 
 

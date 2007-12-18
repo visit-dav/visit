@@ -74,6 +74,10 @@ class   vtkUnstructuredGrid;
 //    Hank Childs, Mon Jul  1 20:13:33 PDT 2002
 //    Added a bail-out option for when original zone numbers are not provided.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFacelist
@@ -98,6 +102,13 @@ class PIPELINE_API avtFacelist
     int                   *shapecnt;
     int                   *shapesize;
     int                   *zones;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtFacelist(const avtFacelist &) {;};
+    avtFacelist         &operator=(const avtFacelist &) { return *this; };
 };
 
 

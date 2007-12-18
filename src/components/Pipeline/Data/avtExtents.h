@@ -72,6 +72,11 @@ class   vtkMatrix4x4;
 //    Hank Childs, Wed Feb 25 09:00:17 PST 2004
 //    Added Print method.
 //
+//    Hank Childs, Tue Dec 18 11:38:40 PST 2007
+//    Remove const return type of assignment operator to ensure that compiler
+//    doesn't define a second assignment operator with a non-const return
+//    type that does a bitwise copy.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtExtents
@@ -90,7 +95,7 @@ class PIPELINE_API avtExtents
     void                  Set(const double *);
     void                  Clear(void);
 
-    const avtExtents     &operator=(const avtExtents &);
+    avtExtents           &operator=(const avtExtents &);
 
     void                  Merge(const avtExtents &);
     void                  Merge(const double *);

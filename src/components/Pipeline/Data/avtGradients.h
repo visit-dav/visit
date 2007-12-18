@@ -58,6 +58,10 @@
 //    Hank Childs, Wed Feb 13 15:52:21 PST 2002
 //    Added new routines for more efficient calculation of Sobel gradients.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtGradients
@@ -79,6 +83,13 @@ class PIPELINE_API avtGradients
   protected:
      int                    numGradients;
      double                *gradients;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtGradients(const avtGradients &) {;};
+    avtGradients        &operator=(const avtGradients &) { return *this; };
 };
 
 

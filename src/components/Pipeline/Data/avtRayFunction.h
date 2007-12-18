@@ -77,6 +77,10 @@ class     avtRay;
 //    Add method SetPrimaryIndex.  Also add methods for needing pixel
 //    indices.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtRayFunction
@@ -106,6 +110,13 @@ class PIPELINE_API avtRayFunction
 
     virtual bool         NeedsGradientsForFunction(void) = 0;
     inline int           IndexOfDepth(const float &, const int &);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtRayFunction(const avtRayFunction &) {;};
+    avtRayFunction      &operator=(const avtRayFunction &) { return *this; };
 };
 
 
