@@ -352,7 +352,13 @@ skipList="nersc,scalable,parallel:tests/databases/boxlib.py \
 	  nersc,parallel:tests/rendering/renderpoints.py \
 	  nersc,scalable,parallel:tests/databases/netcdf.py \
 	  nersc,parallel:tests/databases/diff.py \
-	  nersc,scalable,parallel:tests/databases/diff.py"
+	  nersc,scalable,parallel:tests/databases/diff.py \
+	  nersc,serial:tests/databases/silo.py:silo_03,silo_04 \
+	  nersc,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
+	  nersc,parallel:tests/databases/silo.py:silo_03,silo_04 \
+	  nersc,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
+	  nersc,scalable,parallel:tests/databases/silo.py:silo_03,silo_04 \
+	  nersc,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
 
 #
 # Make directory for where to store core files

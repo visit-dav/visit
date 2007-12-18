@@ -38,7 +38,9 @@
 // ************************************************************************* //
 //                           avtSiloFileFormat.C                             //
 // ************************************************************************* //
+#if !defined(DISABLE_EXTENTS_DUE_TO_BAD_ALE3D_FILES)
 #define DISABLE_EXTENTS_DUE_TO_BAD_ALE3D_FILES 1
+#endif
 
 #include <avtSiloFileFormat.h>
 
