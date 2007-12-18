@@ -1,2 +1,2 @@
 Pseudocolor:  (ExpressionException)
-viewer: The expression failed because The first argument of the database comparison expression must be a database.
+viewer: The 'conn_cmfe' expression failed because The first argument of the database comparison expression must be a database.
