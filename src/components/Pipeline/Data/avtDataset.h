@@ -108,6 +108,10 @@ class   avtWebpage;
 //    Hank Childs, Fri May 18 16:51:07 PDT 2007
 //    Add a constructor for creating a new data set with a specific data tree.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -155,6 +159,12 @@ class PIPELINE_API avtDataset : public avtDataObject
 
     virtual void             DerivedCopy(avtDataObject *);
     virtual void             DerivedMerge(avtDataObject *);
+
+  private:
+    // This method is defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define it to do something
+    // meaningful, that's fine.
+    avtDataset              &operator=(const avtDataset &) { return *this; };
 };
 
 

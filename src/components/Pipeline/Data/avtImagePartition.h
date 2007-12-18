@@ -71,6 +71,10 @@
 //    Hank Childs, Fri Sep 30 17:27:02 PDT 2005
 //    Add support for "produce overlaps".
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtImagePartition
@@ -129,6 +133,13 @@ class PIPELINE_API avtImagePartition
     int                    *stpAssignments;
     int                    *partitionStartsOnScanline;
     int                    *partitionStopsOnScanline;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                        avtImagePartition(const avtImagePartition &) {;};
+    avtImagePartition  &operator=(const avtImagePartition &) { return *this; };
 };
 
 

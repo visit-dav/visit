@@ -60,12 +60,17 @@
 //  Programmer: Markus Glatter
 //  Creation:   July 27, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRangeSelection : public avtDataSelection 
 {
   public:
-
                             avtDataRangeSelection();
                             avtDataRangeSelection(const std::string _var, 
                                                   const double _min, 
@@ -92,11 +97,17 @@ class PIPELINE_API avtDataRangeSelection : public avtDataSelection
     bool                    operator==(const avtDataRangeSelection &s) const;
 
   private:
-
     std::string var;
     double min;
     double max;
 
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                            avtDataRangeSelection(const avtDataRangeSelection&)
+                                                                           {;};
+    avtDataRangeSelection  &operator=(const avtDataRangeSelection &) 
+                                                             { return *this; };
 };
 
 typedef ref_ptr<avtDataRangeSelection> avtDataRangeSelection_p;

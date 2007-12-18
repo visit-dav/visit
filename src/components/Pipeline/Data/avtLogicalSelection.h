@@ -65,6 +65,10 @@
 //  Programmer: Mark C. Miller 
 //  Creation:   September 22, 2004 
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtLogicalSelection : public avtDataSelection 
@@ -102,6 +106,12 @@ class PIPELINE_API avtLogicalSelection : public avtDataSelection
      int stops[3];
      int strides[3];
 
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtLogicalSelection(const avtLogicalSelection &) {;};
+    avtLogicalSelection &operator=(const avtLogicalSelection &) 
+                                                            { return *this; };
 };
 
 typedef ref_ptr<avtLogicalSelection> avtLogicalSelection_p;

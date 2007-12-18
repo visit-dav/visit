@@ -66,6 +66,10 @@ class    avtOpacityMap;
 //    Hank Childs, Sat Jan 29 10:22:56 PST 2005
 //    Made ShouldOverwrite be pure virtual.  This is now an abstract type.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSamplePointArbitrator
@@ -80,6 +84,15 @@ class PIPELINE_API avtSamplePointArbitrator
 
   protected:
     int                      arbitrationVariable;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                              avtSamplePointArbitrator(const 
+                                               avtSamplePointArbitrator &) {;};
+    avtSamplePointArbitrator &operator=(const avtSamplePointArbitrator &) 
+                                                             { return *this; };
 };
 
 

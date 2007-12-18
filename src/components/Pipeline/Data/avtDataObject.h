@@ -82,6 +82,10 @@ class     avtWebpage;
 //    Hank Childs, Thu Dec 21 09:58:57 PST 2006
 //    Added method for debug dumps.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObject
@@ -132,6 +136,13 @@ class PIPELINE_API avtDataObject
     virtual void                     DerivedCopy(avtDataObject *);
     virtual void                     DerivedMerge(avtDataObject *);
     void                             CompatibleTypes(avtDataObject *);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtDataObject(const avtDataObject &) {;};
+    avtDataObject       &operator=(const avtDataObject &) { return *this; };
 };
 
 

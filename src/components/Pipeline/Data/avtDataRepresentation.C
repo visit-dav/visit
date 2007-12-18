@@ -336,9 +336,13 @@ avtDataRepresentation::~avtDataRepresentation()
 //
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
 //    Added compression data members
+//
+//    Hank Childs, Tue Dec 18 10:25:09 PST 2007
+//    Remove const qualification of return type.
+//
 // ****************************************************************************
 
-const avtDataRepresentation &
+avtDataRepresentation &
 avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
 {
     if (asVTK)

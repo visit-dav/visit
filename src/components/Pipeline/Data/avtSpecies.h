@@ -79,6 +79,10 @@ struct CellSpecInfo
 //
 //  Modifications:
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtSpecies
@@ -126,6 +130,12 @@ class PIPELINE_API avtSpecies
                                 const std::vector<std::vector<std::string> > &,
                                 int, const int*, int, const int*, int,
                                 const float *);
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtSpecies(const avtSpecies &) {;};
+    avtSpecies          &operator=(const avtSpecies &) { return *this; };
 };
 
 

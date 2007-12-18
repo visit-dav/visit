@@ -80,6 +80,11 @@ typedef ref_ptr<avtPipelineSpecification> avtPipelineSpecification_p;
 //    Hank Childs, Fri Jun 15 12:41:41 PDT 2007
 //    Added support for DebugDump.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and modify definition of assignment 
+//    operator to prevent accidental use of default, bitwise copy 
+//    implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtPipelineSpecification
@@ -119,7 +124,7 @@ class PIPELINE_API avtPipelineSpecification
     void                      AddFilter(void)  { nFilters++; };
     int                       GetNFilters(void)  { return nFilters; };
 
-    avtPipelineSpecification &operator=(avtPipelineSpecification &);
+    avtPipelineSpecification &operator=(const avtPipelineSpecification &);
     void                      DebugDump(avtWebpage *);
 
   protected:
@@ -130,6 +135,12 @@ class PIPELINE_API avtPipelineSpecification
     bool                      haveCurvilinearMeshOptimizations;
     bool                      haveRectilinearMeshOptimizations;
     int                       nFilters;
+
+  private:
+    // This method is defined to prevent accidental use of a bitwise copy
+    // implementation.  If you want to re-define it to do something
+    // meaningful, that's fine.
+                avtPipelineSpecification(const avtPipelineSpecification &) {;};
 };
 
 

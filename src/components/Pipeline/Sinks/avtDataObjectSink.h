@@ -41,8 +41,8 @@
 
 #ifndef AVT_DATA_OBJECT_SINK_H
 #define AVT_DATA_OBJECT_SINK_H
-#include <pipeline_exports.h>
 
+#include <pipeline_exports.h>
 
 #include <avtDataObject.h>
 
@@ -71,6 +71,10 @@
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSink
@@ -88,6 +92,14 @@ class PIPELINE_API avtDataObjectSink
     virtual void                  SetTypedInput(avtDataObject_p) = 0;
     virtual void                  ChangedInput(void);
     virtual bool                  UpdateInput(avtPipelineSpecification_p);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                            avtDataObjectSink(const avtDataObjectSink &) {;};
+    avtDataObjectSink      &operator=(const avtDataObjectSink &) 
+                                                           { return *this; };
 };
 
 

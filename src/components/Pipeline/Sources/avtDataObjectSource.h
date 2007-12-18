@@ -83,6 +83,10 @@ class     avtTerminatingSource;
 //    Hank Childs, Sat Feb 19 14:39:06 PST 2005
 //    Moved ReleaseData from avtFilter to this class.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSource
@@ -112,6 +116,14 @@ class PIPELINE_API avtDataObjectSource
     void                            CheckAbort(void);
     void                            UpdateProgress(int, int, const char *,
                                                    const char *);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtDataObjectSource(const avtDataObjectSource &) {;};
+    avtDataObjectSource &operator=(const avtDataObjectSource &) 
+                                                            { return *this; };
 };
 
 

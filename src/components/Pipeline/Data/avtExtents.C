@@ -146,9 +146,16 @@ avtExtents::Print(ostream &out)
 //  Programmer: Hank Childs
 //  Creation:   September 4, 2001
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Dec 18 11:38:40 PST 2007
+//    Remove const return type of assignment operator to ensure that compiler
+//    doesn't define a second assignment operator with a non-const return
+//    type that does a bitwise copy.
+//
 // ****************************************************************************
 
-const avtExtents &
+avtExtents &
 avtExtents::operator=(const avtExtents &exts)
 {
     if (extents != NULL)

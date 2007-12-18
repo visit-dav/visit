@@ -552,10 +552,13 @@ avtDataTree::~avtDataTree()
 //    Properly set array to NULL when it was deleted.  One case through logic
 //    allowed it the array to be deleted again in the destructor.
 //
+//    Hank Childs, Tue Dec 18 10:25:09 PST 2007
+//    Add const specification to argument.
+//
 // ****************************************************************************
 
 avtDataTree&
-avtDataTree::operator=(avtDataTree &rhs)
+avtDataTree::operator=(const avtDataTree &rhs)
 {
     if (this != &rhs)
     {

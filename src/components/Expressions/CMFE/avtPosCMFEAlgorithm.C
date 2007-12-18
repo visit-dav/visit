@@ -2226,6 +2226,10 @@ Boundary::AttemptSplit(Boundary *&b1, Boundary *&b2)
 //    Kathleen Bonnell, Mon Aug 14 16:40:30 PDT 2006
 //    API change for avtIntervalTree.
 //
+//    Hank Childs, Tue Dec 18 13:50:12 PST 2007
+//    Do not use copy constructor for interval tree, since it was recently 
+//    declared to be private.
+//
 // ****************************************************************************
 
 void
@@ -2287,7 +2291,7 @@ avtPosCMFEAlgorithm::SpatialPartition::CreatePartition(DesiredPoints &dp,
         // Construct an interval tree out of the boundaries.  We need this
         // because we want to be able to quickly determine which boundaries
         // a point falls in.
-        avtIntervalTree it = avtIntervalTree(nBins, 3);
+        avtIntervalTree it(nBins, 3);
         nBins = 0;
         for (i = 0 ; i < listSize ; i++)
         {

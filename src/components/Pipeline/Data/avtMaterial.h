@@ -149,6 +149,10 @@ struct MatZoneMap
 //    doing the same reordering to mixed variables, since they will get out
 //    of synch otherwise ['8082].
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMaterial
@@ -262,6 +266,12 @@ class PIPELINE_API avtMaterial
                                           const int *, int, const int *,
                                           const int *, const int *,
                                           const float *);
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtMaterial(const avtMaterial &) {;};
+    avtMaterial         &operator=(const avtMaterial &) { return *this; };
 };
 
 

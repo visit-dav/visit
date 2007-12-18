@@ -65,6 +65,10 @@
 //    Hank Childs, Thu Jul  4 13:02:54 PDT 2002
 //    Added names for mixed variables.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMixedVariable
@@ -83,6 +87,13 @@ class PIPELINE_API avtMixedVariable
     std::string         varname;
     float              *buffer;
     int                 mixlen;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtMixedVariable(const avtMixedVariable &) {;};
+    avtMixedVariable    &operator=(const avtMixedVariable &) { return *this; };
 };
 
 

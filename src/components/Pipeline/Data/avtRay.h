@@ -90,6 +90,10 @@
 //    Hank Childs, Mon Sep 11 15:10:50 PDT 2006
 //    Added friend status for the avtIntegrationRF.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtRay
@@ -138,6 +142,13 @@ class PIPELINE_API avtRay
     int                           numRuns;
     static avtSamplePointArbitrator *arbitrator;
     static bool                   kernelBasedSampling;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtRay(const avtRay &) {;};
+    avtRay              &operator=(const avtRay &) { return *this; };
 };
 
 

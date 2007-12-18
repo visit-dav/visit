@@ -83,6 +83,10 @@ class     avtWebpage;
 //    Hank Childs, Thu Dec 21 10:10:09 PST 2006
 //    Add support for debug dumps.
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectInformation
@@ -118,6 +122,15 @@ class PIPELINE_API avtDataObjectInformation
                                         int swapWithProc, int lenTag, int strTag);
     void                     SendResult(const ref_ptr<avtDataObjectWriter> dobw,
                                         int swapWithProc, int lenTag, int strTag);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                             avtDataObjectInformation(const 
+                                               avtDataObjectInformation &) {;};
+    avtDataObjectInformation      &operator=(const avtDataObjectInformation &) 
+                                                             { return *this; };
 };
 
 #endif

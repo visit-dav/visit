@@ -56,6 +56,10 @@
 //   Hank Childs, Fri Jun 15 15:55:30 PDT 2007
 //   Added OnPageLink, AddSectionForLinks, and GetName.
 //
+//   Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//   Define private copy constructor and assignment operator to prevent
+//   accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtWebpage
@@ -92,6 +96,13 @@ class PIPELINE_API avtWebpage
   protected:
     std::string   name;
     ofstream     *ofile;
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                         avtWebpage(const avtWebpage &) {;};
+    avtWebpage          &operator=(const avtWebpage &) { return *this; };
 };
 
 

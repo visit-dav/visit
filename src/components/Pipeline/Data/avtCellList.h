@@ -94,6 +94,10 @@ typedef struct
 //    Hank Childs, Fri Jan 27 14:50:38 PST 2006
 //    Added method "Restrict".
 //
+//    Hank Childs, Tue Dec 18 10:04:43 PST 2007
+//    Define private copy constructor and assignment operator to prevent
+//    accidental use of default, bitwise copy implementations.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtCellList
@@ -135,6 +139,13 @@ class PIPELINE_API avtCellList
                                          float (*)[AVT_VARIABLE_LIMIT], int, 
                                          const char *&);
     void                     UnserializePoint(float *, float *, const char *&);
+
+  private:
+    // These methods are defined to prevent accidental use of bitwise copy
+    // implementations.  If you want to re-define them to do something
+    // meaningful, that's fine.
+                             avtCellList(const avtCellList &) {;};
+    avtCellList             &operator=(const avtCellList &) { return *this; };
 };
 
 
