@@ -16,9 +16,13 @@
 #    Hank Childs, Thu Jul  5 16:13:57 PDT 2007
 #    Suppress SVN noise.
 #
+#    Hank Childs, Mon Dec 17 15:44:53 PST 2007
+#    Make sure that the trunk is up-to-date and has no checkouts.
+#
 # *****************************************************************************
 
 issueHelp="no"
+allowCheckouts="no"
 
 P=$(whence $0)
 P2=${P%/*}
@@ -29,25 +33,42 @@ CDPATH=""
 
 BRANCH=""
 BRANCHNAME=""
-if [[ $# != 1 ]] ; then
+
+if [[ $# == 2 ]] ; then
+   if [[ "$2" != "-allow_checkouts" ]] ; then
+       issueHelp="yes"
+   else
+       allowCheckouts="yes"
+   fi
+elif [[ $# != 1 ]] ; then
    issueHelp="yes"
-elif [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
+fi
+if [[ "$1" == "-help" || "$1" == "-h" || "$1" == "-?" ]] ; then
    issueHelp="yes"
-elif [[ ! -f .branchname ]] ; then
-   echo "ERROR: You must run this script at the top of your checkout directory"
-   echo ""
-   issueHelp="yes"
-elif [[ ! -f .rootpath ]] ; then
-   echo "ERROR: You must run this script at the top of your checkout directory"
-   echo ""
-   issueHelp="yes"
-else
+fi
+
+if [[ "$issueHelp" != "yes" ]] ; then
+   if [[ ! -f .branchname ]] ; then
+      echo "ERROR: You must run this script at the top of your checkout directory"
+      echo ""
+      issueHelp="yes"
+   elif [[ ! -f .rootpath ]] ; then
+      echo "ERROR: You must run this script at the top of your checkout directory"
+      echo ""
+      issueHelp="yes"
+   fi
+fi
+
+if [[ "$issueHelp" != "yes" ]] ; then
    TRUNKNAME=$(cat .branchname)
    if [[ "$TRUNKNAME" != "trunk" ]] ; then
       echo "You must be in the trunk when you run this script"
       echo ""
       issueHelp="yes"
    fi
+fi
+
+if [[ "$issueHelp" != "yes" ]] ; then
    WHOLE_TRUNK="yes"
    ROOTPATH=$(cat .rootpath)
    if [[ "$ROOTPATH" != "/" ]] ; then
@@ -90,15 +111,36 @@ fi
 
 if [[ "$issueHelp" == "yes" ]] ; then
    echo ""
-   echo "Usage:   ${0##*/} <branch>"
+   echo "Usage:   ${0##*/} <branch> [-allow_checkouts]"
+   echo ""
+   echo "Args:"    echo "\t-allow_checkouts\tForce merge, despite checkouts in the working copy of the trunk."
    echo ""
    echo "Example: ${0##*/} my_dev_work"
-   echo "\tshould be run at the top level of your checked out trunk.  It will "
-   echo "\tmerge the work from my_dev_work into the trunk."
+   echo "\tThis command should be run at the top level of your checked out "
+   echo "\ttrunk.  It will merge the work from my_dev_work into the trunk."
    echo ""
    
    exit 1
 fi
+
+for i in src data docs test third_party windowsbuild ; do
+  if [[ -d $i ]] ; then
+      cd $i
+      if [[ "$allowCheckouts" == "no" ]] ; then
+        echo "Checking for pre-existing checkouts on ${i}..."
+        files=$(svn status -q)
+        if [[ "$files" != "" ]] ; then
+            echo "I believe you have the following files checked out on ${i}:"
+            echo "$files"
+            echo "Aborting!"
+            exit 1
+        fi
+      fi
+      echo "Making sure your working copy of the trunk/$i is up to date"
+      svn update
+      cd ..
+  fi
+done
 
 echo ""
 echo "Merging $BRANCH into the trunk"
@@ -132,8 +174,8 @@ echo ""
 echo "The revision of the last merge was $REV"
 echo ""
 
-for i in * ; do 
-  if [[ -d $i && "$i" != "tmp_forRev$$" ]] ; then
+for i in src data docs test third_party windowsbuild ; do
+  if [[ -d $i ]] ; then
       cd $i
       echo ""
       echo "Merging directory \"$i\""
