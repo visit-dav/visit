@@ -23,6 +23,10 @@
 #    Mark C. Miller, Tue Nov  6 08:31:40 PST 2007
 #    Fixed problem removing uncleaned files manually.
 #   
+#    Hank Childs, Mon Dec 17 17:05:53 PST 2007
+#    Remove whole scripts from the skipList and replace them with the 
+#    individually failing tests.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -331,34 +335,25 @@ theDay=`date +%A`
 modes="nersc,serial nersc,parallel nersc,scalable,parallel"
 
 # set list of tests/modes to skip
-skipList="nersc,scalable,parallel:tests/databases/boxlib.py \
+skipList_dueTo_clientServer="\
           nersc,scalable,parallel:tests/hybrid/locus.py \
-          nersc,parallel:tests/hybrid/locus.py \
           nersc,scalable,parallel:tests/rendering/saveformats.py \
-	  nersc,parallel:tests/operators/defer_expr.py \
-	  nersc,scalable,parallel:tests/operators/defer_expr.py \
-	  nersc,optimized:tests/operators/defer_expr.py \
-          nersc,scalable,parallel:tests/queries/bestfitline.py \
-          nersc,parallel:tests/databases/ProteinDataBank.py \
-          nersc,scalable,parallel:tests/databases/ProteinDataBank.py \
-	  nersc,scalable,parallel:tests/operators/transform.py \
-	  nersc,serial:tests/operators/defer_expr.py \
-	  nersc,parallel:tests/databases/global_node_ids.py \
-	  nersc,parallel:tests/databases/netcdf.py \
-	  nersc,parallel:tests/databases/samrai.py \
-	  nersc,parallel:tests/hybrid/sil.py \
-	  nersc,parallel:tests/plots/label.py \
-	  nersc,parallel:tests/plots/ray_trace.py \
-	  nersc,parallel:tests/rendering/renderpoints.py \
-	  nersc,scalable,parallel:tests/databases/netcdf.py \
-	  nersc,parallel:tests/databases/diff.py \
-	  nersc,scalable,parallel:tests/databases/diff.py \
+          nersc,scalable,parallel:tests/queries/bestfitline.py"
+
+skipList_dueTo_parallelRendering="\
+          nersc,scalable,parallel:tests/databases/boxlib.py"
+
+skipList_dueTo_temporaryBugs="\
+	  nersc,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
+	  nersc,scalable,parallel:tests/operators/transform.py:ops_transform05 \
 	  nersc,serial:tests/databases/silo.py:silo_03,silo_04 \
 	  nersc,serial:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
 	  nersc,parallel:tests/databases/silo.py:silo_03,silo_04 \
 	  nersc,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05 \
 	  nersc,scalable,parallel:tests/databases/silo.py:silo_03,silo_04 \
 	  nersc,scalable,parallel:tests/rendering/scalable.py:scalable_01,scalable_02,scalable_03,scalable_04,scalable_05"
+
+skipList="$skipList_dueTo_clientServer $skipList_dueTo_parallelRendering $skipList_dueTo_temporaryBugs"
 
 #
 # Make directory for where to store core files
