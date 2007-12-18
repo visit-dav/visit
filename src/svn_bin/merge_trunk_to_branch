@@ -10,6 +10,9 @@
 #
 #  Modifications:
 #
+#    Hank Childs, Mon Dec 17 16:12:45 PST 2007
+#    Explicitly enumerate the list of directories to merge over.
+#
 # *****************************************************************************
 
 issueHelp="no"
@@ -52,8 +55,9 @@ if [[ "$issueHelp" == "yes" ]] ; then
    echo "Usage:   ${0##*/}"
    echo ""
    echo "Example: ${0##*/}"
-   echo "\tshould be run at the top level of your checked out branch.  It will "
-   echo "\tuse the contents of the file \".branchname\" to determine which branch "
+   echo ""
+   echo "\tThis command should be run at the top level of your checked out branch."
+   echo "\tIt will use the contents of the file \".branchname\" to determine which branch "
    echo "\tto merge the trunk into."
    echo ""
    
@@ -77,8 +81,8 @@ cd ../..
 echo "The revision of the last merge was $REV"
 echo ""
 
-for i in * ; do
-   if [[ -d $i  && "$i" != "tmp_forRev$$" ]] ; then
+for i in src data docs test third_party windowsbuild ; do
+   if [[ -d $i ]] ; then
        cd $i
        echo ""
        echo "Merging directory \"$i\""
