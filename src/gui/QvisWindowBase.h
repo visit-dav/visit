@@ -73,6 +73,9 @@ class DataNode;
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added StringToDoubleList utility which was duplicated in other gui classes 
 //
+//   Brad Whitlock, Wed Dec 19 14:49:45 PST 2007
+//   Added custom raise method.
+//
 // ****************************************************************************
 
 class GUI_API QvisWindowBase : public QMainWindow, public GUIBase
@@ -100,6 +103,7 @@ public:
 
 public slots:
     virtual void show();
+    virtual void raise();
 protected:
     bool saveWindowDefaults;
 private:

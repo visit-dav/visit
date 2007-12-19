@@ -382,7 +382,31 @@ QvisWindowBase::show()
         QMainWindow::move(wx, wy);
     }
 
-    QMainWindow::show();
+    if(isMinimized())
+        QMainWindow::showNormal();
+    else
+        QMainWindow::show();
+    QMainWindow::raise();
+}
+
+// ****************************************************************************
+// Method: QvisWindowBase::raise
+//
+// Purpose: 
+//   Show iconified windows normally before raising them.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Dec 19 14:48:45 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisWindowBase::raise()
+{
+    if(isMinimized())
+        QMainWindow::showNormal();
     QMainWindow::raise();
 }
 
