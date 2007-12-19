@@ -152,6 +152,9 @@ protected:
     void              TesselateCell(const int, const CellInfoVector &civ, 
                                     vtkPoints *points, 
                                     vtkUnstructuredGrid *ugrid);
+    void              TesselateCells2D(const int, const CellInfoVector &civ, 
+                                       vtkPoints *points, 
+                                       vtkUnstructuredGrid *ugrid);
 
     bool              ccmOpened;
     bool              ccmStateFound;
