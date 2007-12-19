@@ -65,9 +65,15 @@
 #include <DebugStream.h>
 #include <TimingsManager.h>
 
+#include <set>
+#include <deque>
+
 using     std::string;
 
-
+// Prototypes
+ostream &operator << (ostream &os, CCMIOEntity e);
+ostream &operator << (ostream &os, const CCMIONode &node);
+ostream &operator << (ostream &os, const CCMIOID &id);
 
 // ****************************************************************************
 //  Method: avtCCM constructor
@@ -441,26 +447,36 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     mmd->nodeOrigin = 1;
     md->Add(mmd);
 
-
     // Find variable data
     if (hasSolution)
     {
-        CCMIOID field, phase = solution;
-        int h = 0, phaseNum = 0, i=0;
+        debug5 << mName << "Reading variable information" << endl;
 
+        CCMIOID field, phase = solution;
+        int h = 0;
         bool oldFile = CCMIONextEntity(NULL, solution, kCCMIOFieldPhase, 
                                        &h, &phase) != kCCMIONoErr;
-        h = 0;
+
         while(oldFile ||
               CCMIONextEntity(NULL, solution, kCCMIOFieldPhase, &h, &phase) ==
                                                                    kCCMIONoErr)
         {
+            debug5 << mName << "CCMIONextEntity for solution " << solution
+                   << " returned h=" << h << ", phase = " << phase << endl;
+
+            int phaseNum = 0;
             if (oldFile)
                 phase = solution;
             else
             {
                 CCMIOGetEntityIndex(NULL, phase, &phaseNum);
             }
+
+            // This i needs to be set to 0 here because we're asking for the
+            // first field from the current phase. Since we're iterating
+            // over phases so far, we need to reset i to 0 here to get the
+            // first field.
+            int i = 0;
             while(CCMIONextEntity(NULL, phase, kCCMIOField, &i, &field) ==
                   kCCMIONoErr)
             {
@@ -472,9 +488,14 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 CCMIODimensionality cdims;
                 CCMIOID fieldData, mapID;
                 CCMIODataLocation type;
-                int j = 0;
 
+                debug5 << mName << "CCMIONextEntity for phase " << phase
+                       << " returned i=" << i << ", field = " << field << endl;
+
+                // Get the field's name, dims, and data type.
                 CCMIOReadField(&ccmErr, field, name, sName, &cdims, &datatype);
+                debug5 << mName << "CCMIOReadField for field " << field
+                       << " returned name=" << name << ", sName = " << sName << endl;
 
                 char *usename;
                 if (oldFile)
@@ -482,32 +503,56 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 else 
                     usename = sName;
 
+                // Read the field's units
                 if (CCMIOReadOptstr(NULL, field, "Units", &usize, NULL) ==
                     kCCMIONoErr)
                 {
                     units = new char[usize+1];
                     CCMIOReadOptstr(&ccmErr, field, "Units", NULL, units);
                 }
+
+                // Reset j to 0 to get the first field data. We read the field data
+                // to determine the variable centering.
+                int j = 0;
+                avtCentering centering = AVT_UNKNOWN_CENT;
                 while (CCMIONextEntity(NULL, field, kCCMIOFieldData, 
                        &j, &fieldData) == kCCMIONoErr)
                 {
+                    debug5 << mName << "CCMIONextEntity for field " << field
+                           << " returned kCCMIONoErr, j=" << j << ",fieldData=" << fieldData << endl;
+
+                    // Read information about the field.
                     CCMIOReadFieldDataf(&ccmErr, fieldData, &mapID, &type,
-                                       NULL, kCCMIOStart, kCCMIOEnd);
-                    avtCentering centering = AVT_UNKNOWN_CENT;
+                                        NULL, kCCMIOStart, kCCMIOEnd);
+                    if(ccmErr != kCCMIONoErr)
+                    {
+                        debug5 << mName << "CCMIOReadFieldDataf failed." << endl;
+                        continue;
+                    }
+
+                    // Determine the variable centering.
                     if (type == kCCMIOVertex)
                     { 
                         centering = AVT_NODECENT;
+                        debug4 << "Var " << usename << " is node centered" << endl;
                     } 
                     else if (type == kCCMIOCell)
                     { 
                         centering = AVT_ZONECENT;
+                        debug4 << "Var " << usename << " is zone centered" << endl;
                     } 
                     else if (type == kCCMIOFace)
                     { 
-                        debug4 << "Var is face-centered, ignoring for now. " << endl;
-                    } 
-                    if (centering == AVT_UNKNOWN_CENT)
-                        continue;
+                        debug4 << "Var " << usename << " is face-centered, ignoring for now. " << endl;
+                    }
+                }
+
+                // If we don't have metadata for the variable yet, add it.
+                if(varsToFields.find(usename) == varsToFields.end())
+                {
+                    // Variables with an unsupported centering are tagged invalid.
+                    bool validVariable = (centering != AVT_UNKNOWN_CENT);
+
                     if(cdims==kCCMIOScalar)
                     {
                         avtScalarMetaData *smd = new avtScalarMetaData(usename, 
@@ -517,6 +562,7 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                             smd->hasUnits = true;
                             smd->units = units;
                         }
+                        smd->validVariable = validVariable;
                         md->Add(smd);
                         varsToFields[usename] = field;
                     }
@@ -529,10 +575,10 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                             vmd->hasUnits = true;
                             vmd->units = units;
                         }
+                        vmd->validVariable = validVariable;
                         md->Add(vmd);
                         varsToFields[usename] = field;
                     }
-#if 0
                     else if(cdims==kCCMIOTensor)
                     {
                         avtTensorMetaData *tmd = new avtTensorMetaData(usename, 
@@ -542,11 +588,17 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                             tmd->hasUnits = true;
                             tmd->units = units;
                         }
+#if 1
+                        // Just make tensor vars display for now. Don't plot them.
+                        tmd->validVariable = false;
+#else
+                        tmd->validVariable = validVariable;
+#endif
                         md->Add(tmd);
                         varsToFields[usename] = field;
                     }
-#endif
                 }
+
                 if (units != NULL)
                 {
                     delete [] units;
@@ -578,6 +630,8 @@ avtCCMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Creation:   Thu Aug 2 15:01:17 PST 2007
 //
 //  Modifications:
+//    Brad Whitlock, Tue Dec 18 12:57:28 PST 2007
+//    Added support for 2D polygonal shapes.
 //
 // ****************************************************************************
 
@@ -713,8 +767,17 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
 
         ugrid = vtkUnstructuredGrid::New();
 
+        debug5 << "minFaceSize = " << minFaceSize
+               << ", maxFaceSize = " << maxFaceSize << endl;
+
         // Determine cell topology from face lists
-        if (minFaceSize <= 4 && maxFaceSize <= 4)
+        if (minFaceSize == 2 && maxFaceSize == 2)
+        {
+            // 2D edges that we must assemble into polygons and tessellate into 
+            // triangles that VisIt can digest.
+            TesselateCells2D(dom, cellInfo, points, ugrid); 
+        }
+        else if (minFaceSize <= 4 && maxFaceSize <= 4)
         {
             ugrid->SetPoints(points);
             // We have zoo elements that we can deal with.
@@ -723,7 +786,7 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
             bool unhandledCellType = false;
             for (i = 0; i < cellInfo.size(); i++)
             {
-                CellInfo ci = cellInfo[i]; 
+                const CellInfo &ci = cellInfo[i]; 
                 switch(ci.faces.size())
                 {
                     case 4 : 
@@ -786,6 +849,8 @@ avtCCMFileFormat::GetMesh(int dom, const char *meshname)
 vtkDataArray *
 avtCCMFileFormat::GetVar(int domain, const char *varname)
 {
+    const char *mName = "avtCCMFileFormat::GetVar: ";
+
     VarFieldMap::const_iterator pos = varsToFields.find(varname);
     if (pos == varsToFields.end())
         EXCEPTION1(InvalidVariableException, varname);
@@ -817,6 +882,7 @@ avtCCMFileFormat::GetVar(int domain, const char *varname)
             vtkUnsignedIntArray::SafeDownCast(originalCells[domain]);
         int numCells = ocarray->GetNumberOfTuples();
 
+        debug4 << mName << "numCells = " << numCells << endl;
         unsigned int *oc = ocarray->GetPointer(0);
         rv->SetNumberOfValues(numCells);
         for (unsigned int i = 0 ; i < numCells ; i++)
@@ -927,6 +993,7 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
                              floatVector &data, bool readingVector)
 
 {
+    const char *mName = "avtCCMFileFormat::ReadScalar: ";
     CCMIOSize n;
     CCMIOIndex fmax;
     int j = 0;
@@ -964,6 +1031,7 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
                 data.resize(3 * n);
             else
                 data.resize(n);
+            debug4 << mName << "Reading cell data n=" << n << endl;
             // If we want double precision we should use
             // CCMIOReadFieldDatad().
             CCMIOReadFieldDataf(&ccmErr, fieldData, &mapID, NULL,
@@ -977,6 +1045,7 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
                 data.resize(n);
             // If we want double precision we should use
             // CCMIOReadFieldDatad().
+            debug4 << mName << "Reading node data n=" << n << endl;
             CCMIOReadFieldDataf(&ccmErr, fieldData, &mapID, NULL,
                                 &data[0], kCCMIOStart, kCCMIOEnd);
         }
@@ -991,7 +1060,6 @@ avtCCMFileFormat::ReadScalar(CCMIOID field, intVector &mapData,
             debug1 << "  Error reading scalar data " << ccmErr << endl; 
     }
 }
-
 
 // ****************************************************************************
 //  Method: avtCCMFileFormat::TesselateCell
@@ -1016,8 +1084,9 @@ void
 avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ, 
                                 vtkPoints *points, vtkUnstructuredGrid *ugrid)
 {
+    const char *mName = "avtCCMFileFormat::TesselateCell: ";
     unsigned int i, j, k;
-    CellInfo  ci;
+    unsigned int tetCount = 0;
     vtkPoints *pts = vtkPoints::New();
     pts->Allocate(points->GetNumberOfPoints());
     VertexManager uniqueVerts(pts);
@@ -1031,7 +1100,7 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
 
     for (i = 0; i < civ.size(); i++)
     {
-        ci = civ[i];
+        const CellInfo &ci = civ[i];
         int nFaces  = ci.faces.size();
         int nPts = 0;
         double fbounds[6*nFaces];
@@ -1130,6 +1199,7 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
                 ((vtkUnsignedIntArray*)originalCells[dom])->
                     InsertNextTupleValue(oc);
             }
+            tetCount += tess.GetNumTriangles();
         }
         // prepare for next cell
         tess.ClearTriangles();
@@ -1140,8 +1210,168 @@ avtCCMFileFormat::TesselateCell(const int dom, const CellInfoVector &civ,
     pts->Delete();
     ugrid->GetCellData()->AddArray(originalCells[dom]);
     ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+
+    debug4 << mName << "Input number of polyhedral cells: " << civ.size() << endl;
+    debug4 << mName << "Output tetrahedral cells: " << tetCount << endl;
 }
 
+// ****************************************************************************
+// Method: avtCCMFileFormat::TesselateCells2D
+//
+// Purpose: 
+//   Adds the 2D cells to the unstructured grid, tessellating them as needed.
+//
+// Arguments:
+//   dom    : The domain number
+//   civ    : The cell information vector.
+//   points : The points that we'll allocate during tessellation.
+//   ugrid  : The return unstructured grid object.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 18 12:54:56 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+typedef std::pair<int,int> edge_pair;
+
+void
+avtCCMFileFormat::TesselateCells2D(const int dom, const CellInfoVector &civ, 
+                                   vtkPoints *points, vtkUnstructuredGrid *ugrid)
+{
+#ifndef MDSERVER
+    unsigned int i, j, k;
+    vtkPoints *pts = vtkPoints::New();
+    pts->Allocate(points->GetNumberOfPoints());
+    VertexManager uniqueVerts(pts);
+    PolygonToTriangles tess(&uniqueVerts);
+    unsigned int oc[2] = {dom, 0};
+
+    originalCells[dom] = vtkUnsignedIntArray::New();
+    originalCells[dom]->SetName("avtOriginalCellNumbers");
+    originalCells[dom]->SetNumberOfComponents(2);
+    originalCells[dom]->Allocate(civ.size()*3);
+
+    const double n[3] = {0., 0., 1.};
+
+    for (i = 0; i < civ.size(); i++)
+    {
+        const CellInfo &ci = civ[i];
+        tess.SetNormal(n);
+        tess.BeginPolygon();
+
+        // We need to sort the edges around the polygon so we can tessellate
+        // by adding the first vertex of each edge to define the contour. We
+        // could do a different approach making n-1 triangles for the number
+        // of edges in the shape but this way supports concave polygons whereas
+        // the other approach does not.
+
+        // Put all of the line segments in a pool of free edges.
+        std::set<edge_pair> freeEdges;
+        for (int f = 0; f < ci.faces.size(); f++)
+        {
+             edge_pair e01(ci.faces[f].nodes[0]-1, ci.faces[f].nodes[1]-1);
+             freeEdges.insert(e01);
+        }
+
+        while(freeEdges.size() > 0)
+        {
+            std::deque<int> shape;
+
+            // Get seed edge and remove it from the pool
+            edge_pair currentEdge;
+            if(freeEdges.begin() != freeEdges.end())
+            {
+                currentEdge = *freeEdges.begin();
+                freeEdges.erase(freeEdges.begin());
+            }
+            shape.push_back(currentEdge.first);
+            shape.push_back(currentEdge.second);
+
+            // Now, look for edges that contain either of the points in
+            // the current edge.
+            bool found;
+            do
+            {
+                found = false;
+                for(std::set<edge_pair>::iterator pos = freeEdges.begin();
+                    pos != freeEdges.end() && !found; ++pos)
+                {
+                    if(currentEdge.first == pos->first)
+                    {
+                        currentEdge.first = pos->second;
+                        shape.push_front(pos->second);
+                        freeEdges.erase(pos);
+                        found = true;
+                    }
+                    else if(currentEdge.first == pos->second)
+                    {
+                        currentEdge.first = pos->first;
+                        shape.push_front(pos->first);
+                        freeEdges.erase(pos);
+                        found = true;
+                    }
+                    else if(currentEdge.second == pos->first)
+                    {
+                        currentEdge.second = pos->second;
+                        shape.push_back(pos->second);
+                        freeEdges.erase(pos);
+                        found = true;
+                    }
+                    else if(currentEdge.second == pos->second)
+                    {
+                        currentEdge.second = pos->first;
+                        shape.push_back(pos->first);
+                        freeEdges.erase(pos);
+                        found = true;
+                    }
+                }
+            } while(found);
+
+            if(shape.size() > 2)
+            {
+                tess.BeginContour();
+                for(int v = 0; v < shape.size(); ++v)
+                    tess.AddVertex(points->GetPoint(shape[v]));
+                tess.EndContour();
+            }
+        }
+        tess.EndPolygon();
+
+        vtkIdType verts[4];
+        if (tess.GetNumTriangles() > 0)
+        {
+            for (k = 0; k < tess.GetNumTriangles(); k++)
+            {
+                int a, b, c;
+                tess.GetTriangle(k, a, b, c);
+                verts[0] = a; 
+                verts[1] = b; 
+                verts[2] = c; 
+                ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+
+                oc[1] = i; // looping on cells, i = current cell
+                ((vtkUnsignedIntArray*)originalCells[dom])->
+                    InsertNextTupleValue(oc);
+            }
+        }
+
+        // prepare for next cell
+        tess.ClearTriangles();
+    }
+
+    pts->Squeeze();
+    ugrid->SetPoints(pts);
+    pts->Delete();
+    ugrid->GetCellData()->AddArray(originalCells[dom]);
+    ugrid->GetCellData()->CopyFieldOn("avtOriginalCellNumbers");
+#endif
+}
 
 // ****************************************************************************
 // Method: avtCCMFileFormat::BuildHex
@@ -1161,7 +1391,7 @@ avtCCMFileFormat::BuildHex(const CellInfo &ci, vtkCellArray *cellArray,
                            intVector &cellTypes)
 {
     unsigned int i, j, k;
-    FaceInfoVector faces = ci.faces;
+    const FaceInfoVector &faces = ci.faces;
     intVector uniqueNodes; 
     bool useface;
     bool usedBF = false;
@@ -1230,7 +1460,7 @@ avtCCMFileFormat::BuildTet(const CellInfo &ci, vtkCellArray *cellArray,
                            intVector &cellTypes)
 {
     unsigned int i, j;
-    FaceInfoVector faces = ci.faces;
+    const FaceInfoVector &faces = ci.faces;
     intVector uniqueNodes; 
     bool lastNodeFound = false;
     vtkIdList *cellNodes = vtkIdList::New();
@@ -1299,7 +1529,7 @@ avtCCMFileFormat::BuildPyramid(const CellInfo &ci, vtkCellArray *cellArray,
                                intVector &cellTypes)
 {
     unsigned int i, j;
-    FaceInfoVector faces = ci.faces;
+    const FaceInfoVector &faces = ci.faces;
     intVector uniqueNodes; 
     int baseFace = 0;
     vtkIdList *cellNodes = vtkIdList::New();
@@ -1350,7 +1580,7 @@ avtCCMFileFormat::BuildWedge(const CellInfo &ci, vtkCellArray *cellArray,
                              intVector &cellTypes)
 {
     unsigned int i, j;
-    FaceInfoVector faces = ci.faces;
+    const FaceInfoVector &faces = ci.faces;
     vtkIdList *cellNodes = vtkIdList::New();
     for (i = 0; i < faces.size(); i++)
     {
@@ -1538,4 +1768,143 @@ avtCCMFileFormat::CellInfo::operator =(const avtCCMFileFormat::CellInfo &obj)
     faces = obj.faces;
 }
 
+// ****************************************************************************
+// Method: operator << (ostream &os, CCMIOEntity e)
+//
+// Purpose: 
+//   Prints a CCMIOEntity
+//
+// Arguments:
+//   os : The stream to which we'll print.
+//   e  : The value to print.
+//
+// Returns:    The input stream.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 18 15:16:45 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ostream &
+operator << (ostream &os, CCMIOEntity e)
+{
+    switch(e)
+    {
+    case kCCMIOBoundaryRegion:
+        os << "kCCMIOBoundaryRegion"; break;
+    case kCCMIOFieldData:
+        os << "kCCMIOFieldData"; break;
+    case kCCMIOFieldPhase:
+        os << "kCCMIOFieldPhase"; break;
+    case kCCMIOInternalFaces:
+        os << "kCCMIOInternalFaces"; break;
+    case kCCMIOMaxEntity:
+        os << "kCCMIOMaxEntity"; break;
+    case kCCMIOProblemDescription:
+        os << "kCCMIOProblemDescription"; break;
+    case kCCMIOReferenceData:
+        os << "kCCMIOReferenceData"; break;
+    case kCCMIOMap:
+        os << "kCCMIOMap"; break;
+    case kCCMIONull:
+        os << "kCCMIONull"; break;
+    case kCCMIOTopology:
+        os << "kCCMIOTopology"; break;
+    case kCCMIOVertices:
+        os << "kCCMIOVertices"; break;
+    case kCCMIOBoundaryFaces :
+        os << "kCCMIOBoundaryFaces "; break;
+    case kCCMIOCellType:
+        os << "kCCMIOCellType"; break;
+    case kCCMIOCells:
+        os << "kCCMIOCells"; break;
+    case kCCMIOField:
+        os << "kCCMIOField"; break;
+    case kCCMIOFieldSet :
+        os << "kCCMIOFieldSet "; break;
+    case kCCMIOInterfaces:
+        os << "kCCMIOInterfaces"; break;
+    case kCCMIOLagrangianData :
+        os << "kCCMIOLagrangianData "; break;
+    case kCCMIOModelConstants :
+        os << "kCCMIOModelConstants "; break;
+    case kCCMIOProcessor :
+        os << "kCCMIOProcessor "; break;
+    case kCCMIOProstarSet:
+        os << "kCCMIOProstarSet"; break;
+    case kCCMIORestart :
+        os << "kCCMIORestart "; break;
+    case kCCMIORestartData:
+        os << "kCCMIORestartData"; break;
+    case kCCMIOState :
+        os << "kCCMIOState "; break;
+    }
+
+    return os;
+}
+
+// ****************************************************************************
+// Method: operator << (ostream &os, const CCMIONode &node)
+//
+// Purpose: 
+//   Prints a CCMIONode
+//
+// Arguments:
+//   os : The stream to which we'll print.
+//   e  : The value to print.
+//
+// Returns:    The input stream.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 18 15:16:45 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ostream &
+operator << (ostream &os, const CCMIONode &node)
+{
+    _CCMIONode *n = (_CCMIONode *)&node;
+    os << "(node=" << n->node << ", parent=" << n->parent << ")";
+    return os;
+}
+
+// ****************************************************************************
+// Method: operator << (ostream &os, const CCMIOID &e)
+//
+// Purpose: 
+//   Prints a CCMIOID
+//
+// Arguments:
+//   os : The stream to which we'll print.
+//   e  : The value to print.
+//
+// Returns:    The input stream.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Dec 18 15:16:45 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+ostream &
+operator << (ostream &os, const CCMIOID &id)
+{
+    os << "(root=" << id.root
+       << ", node=" << id.node 
+       << ", id=" << id.id 
+       << ", type=" << id.type 
+       << ", version=" << id.version << ")";
+    return os;
+}
 

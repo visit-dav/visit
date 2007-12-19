@@ -1861,7 +1861,7 @@ else
             }
             print GDBFILE "set environment MESA_GLX_FX=$ENV{MESA_GLX_FX}\n";
             print GDBFILE "path $visitbindir\n";
-            if($os eq "darwin")
+            if($os eq "darwin" and ($exe_name eq "gui" or $exe_name eq "viewer")))
             {
                 print GDBFILE "file $real_exe\n";
             }
