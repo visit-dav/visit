@@ -64,6 +64,10 @@ class QVBox;
 //    Mark C. Miller, Sun Dec  3 12:20:11 PST 2006
 //    Added makeDefault and reset slots
 //
+//    Mark C. Miller, Wed Dec 19 11:32:58 PST 2007
+//    Made Qt objects and visual controls input to mmatts a little more
+//    user-friendly. However, mmatts themselves were not changed.
+//
 // ****************************************************************************
 
 class GUI_API QvisMeshManagementWindow : public QvisPostableWindowObserver
@@ -85,8 +89,10 @@ protected:
     void Apply(bool ignore = false);
     void GetCurrentValues(const QWidget *widget = 0);
 private slots:
-    void processDiscretizationToleranceText();
-    void processDiscretizationToleranceText(const QString &);
+    void processSmallestZoneText();
+    void processSmallestZoneText(const QString &);
+    void processFlatEnoughText();
+    void processFlatEnoughText(const QString &);
     void tabSelected(const QString &tabLabel);
     void renderCSGDirectChanged(bool);
     void discretizeBoundaryOnlyChanged(bool);
@@ -100,9 +106,10 @@ private:
     QCheckBox        *discretizeBoundaryOnly;
     QLabel           *discretizeModeLabel;
     QButtonGroup     *discretizationMode;
-    QLabel           *discretizationToleranceLabel;
-    QLineEdit        *discretizationToleranceLineEdit;
-
+    QLabel           *smallestZoneLabel;
+    QLineEdit        *smallestZoneLineEdit;
+    QLabel           *flatEnoughLabel;
+    QLineEdit        *flatEnoughLineEdit;
 
     QTabWidget       *tabs;
 
