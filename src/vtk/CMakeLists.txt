@@ -333,6 +333,12 @@ IF(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
   ELSE(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   ENDIF(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+  # Disable deprecation warnings for standard C and STL functions in VS2005
+  # and later
+  IF(CMAKE_COMPILER_2005)
+    ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE)
+    ADD_DEFINITIONS(-D_SCL_SECURE_NO_DEPRECATE)
+  ENDIF(CMAKE_COMPILER_2005) 
 ENDIF(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
 
 # Tell VTK source files they are being built inside VTK.
@@ -840,14 +846,6 @@ SUBDIRS(
   Graphics
   GenericFiltering
   IO)
-# For Visit, we don't build a lot in Hybrid, so must not build Widgets,
-# either.
-#IF(VTK_USE_RENDERING)
-#  SUBDIRS(Rendering)
-#  SUBDIRS(VolumeRendering)
-#  SUBDIRS(Hybrid)
-#  SUBDIRS(Widgets)
-#ENDIF(VTK_USE_RENDERING)
 IF(VTK_USE_RENDERING)
   SUBDIRS(Rendering)
   SUBDIRS(VolumeRendering)

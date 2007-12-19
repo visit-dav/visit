@@ -1,13 +1,10 @@
 SET(KIT Graphics)
 SET(UKIT GRAPHICS)
 SET(KIT_TCL_LIBS vtkFilteringTCL)
-IF(APPLE)
-  SET(KIT_PYTHON_LIBS vtkFilteringPythonD)
-ELSE(APPLE)
-  SET(KIT_PYTHON_LIBS vtkFilteringPython)
-ENDIF(APPLE)
+SET(KIT_PYTHON_LIBS vtkFilteringPythonD)
 SET(KIT_JAVA_LIBS vtkFilteringJava)
 SET(KIT_LIBS vtkFiltering)
+
 
 SET( Kit_SRCS
 vtkAppendFilter.cxx
@@ -21,9 +18,13 @@ vtkAxes.cxx
 vtkBandedPolyDataContourFilter.cxx
 vtkBlankStructuredGrid.cxx
 vtkBlankStructuredGridWithImage.cxx
+vtkBoxClipDataSet.cxx
 vtkBrownianPoints.cxx
 vtkButterflySubdivisionFilter.cxx
 vtkButtonSource.cxx
+vtkBSPCuts.cxx
+vtkBSPIntersections.cxx
+vtkCellCenterDepthSort.cxx
 vtkCellCenters.cxx
 vtkCellDataToPointData.cxx
 vtkCellDerivatives.cxx
@@ -49,10 +50,13 @@ vtkDecimatePro.cxx
 vtkDelaunay2D.cxx
 vtkDelaunay3D.cxx
 vtkDicer.cxx
+vtkDiscreteMarchingCubes.cxx
 vtkDiskSource.cxx
 vtkEdgePoints.cxx
 vtkElevationFilter.cxx
 vtkEllipticalButtonSource.cxx
+vtkExtractCells.cxx
+vtkExtractDataOverTime.cxx
 vtkExtractEdges.cxx
 vtkExtractGeometry.cxx
 vtkExtractGrid.cxx
@@ -68,40 +72,52 @@ vtkGlyph2D.cxx
 vtkGlyph3D.cxx
 vtkGlyphSource2D.cxx
 vtkGraphLayoutFilter.cxx
-vtkHierarchicalBoxCellDataToPointData.cxx
-vtkHierarchicalBoxContour.cxx
-vtkHierarchicalBoxCutter.cxx
-vtkHierarchicalBoxOutlineFilter.cxx
+vtkGridSynchronizedTemplates3D.cxx
+vtkHierarchicalDataSetGeometryFilter.cxx
 vtkHedgeHog.cxx
+vtkHierarchicalDataExtractDataSets.cxx
+vtkHierarchicalDataExtractLevel.cxx
+vtkHierarchicalDataLevelFilter.cxx
 vtkHull.cxx
 vtkHyperStreamline.cxx
 vtkIdFilter.cxx
 vtkImageDataGeometryFilter.cxx
+vtkImageMarchingCubes.cxx
 vtkImplicitTextureCoords.cxx
 vtkInterpolateDataSetAttributes.cxx
 vtkInterpolatingSubdivisionFilter.cxx
+vtkKdNode.cxx
+vtkKdTree.cxx
 vtkLineSource.cxx
 vtkLinearExtrusionFilter.cxx
 vtkLinearSubdivisionFilter.cxx
 vtkLinkEdgels.cxx
 vtkLoopSubdivisionFilter.cxx
+vtkMarchingContourFilter.cxx
+vtkMarchingCubes.cxx
+vtkMarchingSquares.cxx
 vtkMaskFields.cxx
 vtkMaskPoints.cxx
 vtkMaskPolyData.cxx
 vtkMassProperties.cxx
 vtkMergeDataObjectFilter.cxx
+vtkMergeCells.cxx
 vtkMergeFields.cxx
 vtkMergeFilter.cxx
 vtkMeshQuality.cxx
+vtkModelMetadata.cxx
 vtkOBBDicer.cxx
 vtkOBBTree.cxx
 vtkOutlineCornerFilter.cxx
 vtkOutlineCornerSource.cxx
 vtkOutlineFilter.cxx
 vtkOutlineSource.cxx
+vtkParametricFunctionSource.cxx
 vtkPlaneSource.cxx
+vtkPlanesIntersection.cxx
 vtkPlatonicSolidSource.cxx
 vtkPointDataToCellData.cxx
+vtkPointsProjectedHull.cxx
 vtkPointSource.cxx
 vtkPolyDataConnectivityFilter.cxx
 vtkPolyDataNormals.cxx
@@ -118,19 +134,25 @@ vtkQuadricDecimation.cxx
 vtkQuantizePolyDataPoints.cxx
 vtkRearrangeFields.cxx
 vtkRectangularButtonSource.cxx
+vtkRectilinearGridClip.cxx
 vtkRectilinearGridGeometryFilter.cxx
 vtkRectilinearGridToTetrahedra.cxx
+vtkRectilinearSynchronizedTemplates.cxx
 vtkRecursiveDividingCubes.cxx
 vtkReflectionFilter.cxx
+vtkRegularPolygonSource.cxx
 vtkReverseSense.cxx
 vtkRibbonFilter.cxx
 vtkRotationalExtrusionFilter.cxx
+vtkRotationFilter.cxx
 vtkRuledSurfaceFilter.cxx
 vtkSelectPolyData.cxx
 vtkShrinkFilter.cxx
 vtkShrinkPolyData.cxx
 vtkSimpleElevationFilter.cxx
+vtkSliceCubes.cxx
 vtkSmoothPolyDataFilter.cxx
+vtkSortDataArray.cxx
 vtkSpatialRepresentationFilter.cxx
 vtkSpherePuzzle.cxx
 vtkSpherePuzzleArrows.cxx
@@ -142,12 +164,16 @@ vtkStreamPoints.cxx
 vtkStreamTracer.cxx
 vtkStreamer.cxx
 vtkStripper.cxx
+vtkStructuredGridClip.cxx
 vtkStructuredGridGeometryFilter.cxx
 vtkStructuredGridOutlineFilter.cxx
 vtkStructuredPointsGeometryFilter.cxx
 vtkSubPixelPositionEdgels.cxx
 vtkSubdivideTetra.cxx
 vtkSuperquadricSource.cxx
+vtkSynchronizedTemplates2D.cxx
+vtkSynchronizedTemplates3D.cxx
+vtkSynchronizedTemplatesCutter3D.cxx
 vtkTensorGlyph.cxx
 vtkTextSource.cxx
 vtkTextureMapToCylinder.cxx
@@ -165,6 +191,7 @@ vtkTriangularTCoords.cxx
 vtkTubeFilter.cxx
 vtkVectorDot.cxx
 vtkVectorNorm.cxx
+vtkVisibilitySort.cxx
 vtkVoxelContoursToSurfaceFilter.cxx
 vtkWarpLens.cxx
 vtkWarpScalar.cxx
@@ -179,6 +206,7 @@ vtkButtonSource
 vtkDicer
 vtkInterpolatingSubdivisionFilter
 vtkStreamer
+vtkVisibilitySort.cxx
 ABSTRACT
 )
 
@@ -187,96 +215,11 @@ SET(Kit_EXTRA_CMDS)
 SET(Kit_TCL_EXTRA_SRCS)
 SET(Kit_PYTHON_EXTRA_SRCS)
 SET(Kit_JAVA_EXTRA_SRCS)
+SET(KIT_TCL_DEPS)
+SET(KIT_PYTHON_DEPS)
+SET(KIT_JAVA_DEPS)
 
-# -----------------------------------------------------------------
-# Start of common section
-
-# Setup vtkInstantiator registration for this library's classes.
-VTK_MAKE_INSTANTIATOR3(vtk${KIT}Instantiator KitInstantiator_SRCS
-                       "${Kit_SRCS}"
-                       VTK_${UKIT}_EXPORT
-                       ${VTK_BINARY_DIR} "")
-
-ADD_LIBRARY(vtk${KIT} ${Kit_SRCS} ${Kit_EXTRA_SRCS} ${KitInstantiator_SRCS})
-
-IF(VTK_APPLE_SHARED_FLAGS_NEEDED)
-  SET_TARGET_PROPERTIES(vtk${KIT} PROPERTIES LINK_FLAGS "-init _oft_init${KIT}")
-ENDIF(VTK_APPLE_SHARED_FLAGS_NEEDED)
-
-# Allow the user to customize their build with some local options
-#
-SET(LOCALUSERMACRODEFINED 0)
-INCLUDE (${VTK_BINARY_DIR}/${KIT}/LocalUserOptions.cmake OPTIONAL)
-INCLUDE (${VTK_SOURCE_DIR}/${KIT}/LocalUserOptions.cmake OPTIONAL)
-
-# if we are wrapping into Tcl then add the library and extra
-# source files
-#
-IF (VTK_WRAP_TCL)
-  VTK_WRAP_TCL2(vtk${KIT}TCL SOURCES KitTCL_SRCS 
-                ${Kit_SRCS}
-                COMMANDS ${Kit_TCL_EXTRA_CMDS})
-  ADD_LIBRARY(vtk${KIT}TCL ${KitTCL_SRCS} ${Kit_TCL_EXTRA_SRCS})
-  IF(APPLE OR WIN32)
-    TARGET_LINK_LIBRARIES (vtk${KIT}TCL vtk${KIT} ${KIT_TCL_LIBS})
-  ENDIF(APPLE OR WIN32)
-  INSTALL_TARGETS(/lib/vtk vtk${KIT}TCL)
-ENDIF (VTK_WRAP_TCL)
-
-# if we are wrapping into Python then add the library and extra
-# source files
-#
-IF (VTK_WRAP_PYTHON)
-  VTK_WRAP_PYTHON2(vtk${KIT}Python KitPython_SRCS ${Kit_SRCS})
-  IF (APPLE)
-    ADD_LIBRARY(vtk${KIT}PythonD ${KitPython_SRCS} ${Kit_PYTHON_EXTRA_SRCS})
-    ADD_LIBRARY(vtk${KIT}Python MODULE vtk${KIT}PythonInit.cxx)
-    TARGET_LINK_LIBRARIES(vtk${KIT}PythonD vtk${KIT} ${KIT_PYTHON_LIBS} ${PYTHON_LIBRARY})
-    TARGET_LINK_LIBRARIES(vtk${KIT}Python vtk${KIT}PythonD)
-    INSTALL_TARGETS(/lib/vtk vtk${KIT}PythonD)
-  ELSE (APPLE)
-    ADD_LIBRARY(vtk${KIT}Python MODULE ${KitPython_SRCS} ${Kit_PYTHON_EXTRA_SRCS})
-    IF(WIN32)
-      TARGET_LINK_LIBRARIES (vtk${KIT}Python vtk${KIT} ${KIT_PYTHON_LIBS})
-    ENDIF(WIN32)
-  ENDIF(APPLE)
-  IF(WIN32)
-    TARGET_LINK_LIBRARIES (vtk${KIT}Python
-                           debug ${PYTHON_DEBUG_LIBRARY}
-                           optimized ${PYTHON_LIBRARY})
-  ENDIF(WIN32)
-  INSTALL_TARGETS(/lib/vtk vtk${KIT}Python)
-ENDIF (VTK_WRAP_PYTHON)
-
-# if we are wrapping into Java then add the library and extra
-# source files
-#
-IF (VTK_WRAP_JAVA)
-  VTK_WRAP_JAVA2(vtk${KIT}Java KitJava_SRCS ${Kit_SRCS})
-  ADD_LIBRARY(vtk${KIT}Java SHARED ${KitJava_SRCS} ${Kit_JAVA_EXTRA_SRCS})
-  IF(APPLE OR WIN32)
-    TARGET_LINK_LIBRARIES(vtk${KIT}Java vtk${KIT} ${KIT_JAVA_LIBS})
-  ENDIF(APPLE OR WIN32)
-  INSTALL_TARGETS(/lib/vtk vtk${KIT}Java)
-ENDIF (VTK_WRAP_JAVA)
-
-IF(APPLE OR WIN32)
-  TARGET_LINK_LIBRARIES(vtk${KIT} ${KIT_LIBS})
-ENDIF(APPLE OR WIN32)
-
-INSTALL_TARGETS(/lib/vtk vtk${KIT})
-INSTALL_FILES(/include/vtk .h ${Kit_SRCS})
-
-VTK_EXPORT_KIT("${KIT}" "${UKIT}" "${Kit_SRCS}")
-
-# If the user defined a custom macro, execute it now and pass in all the srcs
-#
-IF(LOCALUSERMACRODEFINED)
-  LocalUserOptionsMacro( "${Kit_SRCS}"       "${Kit_EXTRA_SRCS}"
-                         "${KitTCL_SRCS}"    "${Kit_TCL_EXTRA_SRCS}"
-                         "${KitJava_SRCS}"   "${Kit_JAVA_EXTRA_SRCS}"
-                         "${KitPython_SRCS}" "${Kit_PYTHON_EXTRA_SRCS}")
-ENDIF(LOCALUSERMACRODEFINED)
-
-# End of common section
-# -----------------------------------------------------------------
+#-----------------------------------------------------------------------------
+# Include CMake code common to all kits.
+INCLUDE(${VTK_SOURCE_DIR}/CMake/KitCommonBlock.cmake)
+#-----------------------------------------------------------------------------

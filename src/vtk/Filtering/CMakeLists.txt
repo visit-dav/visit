@@ -1,23 +1,42 @@
 SET(KIT Filtering)
 SET(UKIT FILTERING)
 SET(KIT_TCL_LIBS vtkCommonTCL)
-IF(APPLE)
-  SET(KIT_PYTHON_LIBS vtkCommonPythonD)
-ELSE(APPLE)
-  SET(KIT_PYTHON_LIBS vtkCommonPython)
-ENDIF(APPLE)
+SET(KIT_PYTHON_LIBS vtkCommonPythonD)
 SET(KIT_JAVA_LIBS vtkCommonJava)
 SET(KIT_LIBS vtkCommon)
 
 SET( Kit_SRCS
-vtkApplyFilterCommand.cxx
+vtkAbstractMapper.cxx
+vtkActor2D.cxx
+vtkActor2DCollection.cxx
+vtkAlgorithm.cxx
+vtkAlgorithmOutput.cxx
+vtkCachedStreamingDemandDrivenPipeline.cxx
 vtkCardinalSpline.cxx
 vtkCastToConcrete.cxx
+vtkCell.cxx
+vtkCell3D.cxx
+vtkCellArray.cxx
+vtkCellData.cxx
+vtkCellLinks.cxx
 vtkCellLocator.cxx
+vtkCellTypes.cxx
 vtkColorTransferFunction.cxx
+vtkCompositeDataIterator.cxx
+vtkCompositeDataPipeline.cxx
+vtkCompositeDataSet.cxx
 vtkCone.cxx
+vtkConvexPointSet.cxx
+vtkCoordinate.cxx
 vtkCylinder.cxx
+vtkDataObject.cxx
+vtkDataObjectAlgorithm.cxx
+vtkDataObjectCollection.cxx
 vtkDataObjectSource.cxx
+vtkDataSet.cxx
+vtkDataSetAlgorithm.cxx
+vtkDataSetAttributes.cxx
+vtkDataSetCollection.cxx
 vtkDataSetSource.cxx
 vtkDataSetToDataSetFilter.cxx
 vtkDataSetToImageFilter.cxx
@@ -25,13 +44,40 @@ vtkDataSetToPolyDataFilter.cxx
 vtkDataSetToStructuredGridFilter.cxx
 vtkDataSetToStructuredPointsFilter.cxx
 vtkDataSetToUnstructuredGridFilter.cxx
-vtkHierarchicalBoxApplyFilterCommand.cxx
-vtkHierarchicalBoxSource.cxx
-vtkHierarchicalBoxToHierarchicalBoxFilter.cxx
-vtkHierarchicalBoxToPolyDataFilter.cxx
+vtkDemandDrivenPipeline.cxx
+vtkEmptyCell.cxx
+vtkExecutive.cxx
+vtkExplicitCell.cxx
+vtkFieldData.cxx
+vtkFilteringInformationKeyManager.cxx
+vtkGenericAdaptorCell.cxx
+vtkGenericAttribute.cxx
+vtkGenericAttributeCollection.cxx
+vtkGenericCell.cxx
+vtkGenericCellIterator.cxx
+vtkGenericCellTessellator.cxx
+vtkSimpleCellTessellator.cxx
+vtkGenericDataSet.cxx
+vtkGenericDataSetAlgorithm.cxx
+vtkGenericEdgeTable.cxx
+vtkGenericPointIterator.cxx
+vtkGenericSubdivisionErrorMetric.cxx
+vtkGeometricErrorMetric.cxx
+vtkAttributesErrorMetric.cxx
+vtkHexagonalPrism.cxx
+vtkHexahedron.cxx
+vtkHierarchicalBoxDataSet.cxx
+vtkHierarchicalDataInformation.cxx
+vtkHierarchicalDataIterator.cxx
+vtkHierarchicalDataSet.cxx
+vtkHierarchicalDataSetAlgorithm.cxx
+vtkImageAlgorithm.cxx
+vtkImageData.cxx
 vtkImageInPlaceFilter.cxx
+vtkImageIterator.cxx
 vtkImageMultipleInputFilter.cxx
 vtkImageMultipleInputOutputFilter.cxx
+vtkImageProgressIterator.cxx
 vtkImageSource.cxx
 vtkImageToImageFilter.cxx
 vtkImageToStructuredPoints.cxx
@@ -42,43 +88,116 @@ vtkImplicitSelectionLoop.cxx
 vtkImplicitSum.cxx
 vtkImplicitVolume.cxx
 vtkImplicitWindowFunction.cxx
+vtkInformation.cxx
+vtkInformationDataObjectKey.cxx
+vtkInformationDoubleKey.cxx
+vtkInformationDoubleVectorKey.cxx
+vtkInformationExecutivePortKey.cxx
+vtkInformationExecutivePortVectorKey.cxx
+vtkInformationIdTypeKey.cxx
+vtkInformationInformationKey.cxx
+vtkInformationInformationVectorKey.cxx
+vtkInformationIntegerKey.cxx
+vtkInformationIntegerPointerKey.cxx
+vtkInformationIntegerVectorKey.cxx
+vtkInformationKey.cxx
+vtkInformationKeyVectorKey.cxx
+vtkInformationObjectBaseKey.cxx
+vtkInformationRequestKey.cxx
+vtkInformationStringKey.cxx
+vtkInformationUnsignedLongKey.cxx
+vtkInformationVector.cxx
+vtkInterpolatedVelocityField.cxx
 vtkKochanekSpline.cxx
+vtkLine.cxx
+vtkLocator.cxx
+vtkMapper2D.cxx
 vtkMergePoints.cxx
-vtkMultiBlockApplyFilterCommand.cxx
+vtkNonLinearCell.cxx
+vtkOrderedTriangulator.cxx
+vtkParametricSpline.cxx
+vtkPentagonalPrism.cxx
 vtkPerlinNoise.cxx
 vtkPiecewiseFunction.cxx
+vtkPiecewiseFunctionAlgorithm.cxx
 vtkPiecewiseFunctionShiftScale.cxx
-vtkPiecewiseFunctionSource.cxx
-vtkPiecewiseFunctionToPiecewiseFunctionFilter.cxx
+vtkPixel.cxx
+vtkPointData.cxx
+vtkPointLocator.cxx
+vtkPointSet.cxx
+vtkPointSetAlgorithm.cxx
 vtkPointSetSource.cxx
 vtkPointSetToPointSetFilter.cxx
+vtkPolyData.cxx
+vtkPolyDataAlgorithm.cxx
 vtkPolyDataCollection.cxx
 vtkPolyDataSource.cxx
 vtkPolyDataToPolyDataFilter.cxx
+vtkPolyLine.cxx
+vtkPolyVertex.cxx
+vtkPolygon.cxx
+vtkProcessObject.cxx
+vtkPropAssembly.cxx
+vtkPyramid.cxx
+vtkQuad.cxx
+vtkQuadraticEdge.cxx
+vtkQuadraticHexahedron.cxx
+vtkQuadraticPyramid.cxx
+vtkQuadraticQuad.cxx
+vtkQuadraticTetra.cxx
+vtkQuadraticTriangle.cxx
+vtkQuadraticWedge.cxx
+vtkRectilinearGrid.cxx
+vtkRectilinearGridAlgorithm.cxx
 vtkRectilinearGridSource.cxx
 vtkRectilinearGridToPolyDataFilter.cxx
 vtkScalarTree.cxx
 vtkSimpleImageToImageFilter.cxx
 vtkSimpleScalarTree.cxx
+vtkSmoothErrorMetric.cxx
 vtkSphere.cxx
+vtkSource.cxx
 vtkSpline.cxx
+vtkStreamingDemandDrivenPipeline.cxx
+vtkStructuredGrid.cxx
+vtkStructuredGridAlgorithm.cxx
 vtkStructuredGridSource.cxx
 vtkStructuredGridToPolyDataFilter.cxx
 vtkStructuredGridToStructuredGridFilter.cxx
+vtkStructuredPoints.cxx
 vtkStructuredPointsCollection.cxx
 vtkStructuredPointsSource.cxx
 vtkStructuredPointsToPolyDataFilter.cxx
 vtkStructuredPointsToStructuredPointsFilter.cxx
 vtkStructuredPointsToUnstructuredGridFilter.cxx
 vtkSuperquadric.cxx
+vtkTetra.cxx
+vtkThreadedImageAlgorithm.cxx
+vtkTriangle.cxx
+vtkTriangleStrip.cxx
+vtkTrivialProducer.cxx
+vtkUniformGrid.cxx
+vtkUnstructuredGrid.cxx
+vtkUnstructuredGridAlgorithm.cxx
 vtkUnstructuredGridSource.cxx
 vtkUnstructuredGridToPolyDataFilter.cxx
 vtkUnstructuredGridToUnstructuredGridFilter.cxx
+vtkVertex.cxx
+vtkViewDependentErrorMetric.cxx
+vtkVoxel.cxx
+vtkWedge.cxx
+vtkViewport.cxx
+vtkGenericInterpolatedVelocityField.cxx
 )
 
 SET_SOURCE_FILES_PROPERTIES(
-vtkApplyFilterCommand
+vtkAbstractMapper
+vtkCell
+vtkCell3D
+vtkCompositeDataIterator
+vtkCompositeDataSet
 vtkDataObjectSource
+vtkDataSet
 vtkDataSetSource
 vtkDataSetToDataSetFilter
 vtkDataSetToImageFilter
@@ -86,25 +205,58 @@ vtkDataSetToPolyDataFilter
 vtkDataSetToStructuredGridFilter
 vtkDataSetToStructuredPointsFilter
 vtkDataSetToUnstructuredGridFilter
-vtkHierarchicalBoxSource
-vtkHierarchicalBoxToHierarchicalBoxFilter
-vtkHierarchicalBoxToPolyDataFilter
+vtkExecutive
+vtkExplicitCell
+vtkFilteringInformationKeyManager
+vtkGenericAdaptorCell
+vtkGenericAttribute
+vtkGenericCellIterator
+vtkGenericCellTessellator
+vtkGenericDataSet
+vtkGenericDataSetAlgorithm
+vtkGenericPointIterator
+vtkGenericSubdivisionErrorMetric
+vtkHierarchicalDataSetAlgorithm
+vtkImageAlgorithm
 vtkImageInPlaceFilter
+vtkImageIterator
 vtkImageMultipleInputFilter
 vtkImageMultipleInputOutputFilter
+vtkImageProgressIterator
 vtkImageSource
 vtkImageToImageFilter
 vtkImageTwoInputFilter
-vtkPiecewiseFunctionSource
-vtkPiecewiseFunctionToPiecewiseFunctionFilter
+vtkInformationDataObjectKey
+vtkInformationDoubleKey
+vtkInformationDoubleVectorKey
+vtkInformationExecutivePortKey
+vtkInformationExecutivePortVectorKey
+vtkInformationIdTypeKey
+vtkInformationInformationKey
+vtkInformationInformationVectorKey
+vtkInformationIntegerKey
+vtkInformationIntegerPointerKey
+vtkInformationIntegerVectorKey
+vtkInformationKey
+vtkInformationKeyVectorKey
+vtkInformationObjectBaseKey
+vtkInformationRequestKey
+vtkInformationStringKey
+vtkInformationUnsignedLongKey
+vtkLocator
+vtkMapper2D
+vtkNonLinearCell
+vtkPointSet
 vtkPointSetSource
 vtkPointSetToPointSetFilter
 vtkPolyDataSource
 vtkPolyDataToPolyDataFilter
+vtkProcessObject
 vtkRectilinearGridSource
 vtkRectilinearGridToPolyDataFilter
 vtkScalarTree
 vtkSimpleImageToImageFilter
+vtkSource
 vtkSpline
 vtkStructuredGridSource
 vtkStructuredGridToPolyDataFilter
@@ -113,10 +265,19 @@ vtkStructuredPointsSource
 vtkStructuredPointsToPolyDataFilter
 vtkStructuredPointsToStructuredPointsFilter
 vtkStructuredPointsToUnstructuredGridFilter
+vtkThreadedImageAlgorithm
 vtkUnstructuredGridSource
 vtkUnstructuredGridToPolyDataFilter
 vtkUnstructuredGridToUnstructuredGridFilter
+vtkViewport
   ABSTRACT
+)
+
+SET_SOURCE_FILES_PROPERTIES(
+  vtkFilteringInformationKeyManager.cxx
+  vtkImageIterator.cxx
+  vtkImageProgressIterator.cxx
+  WRAP_EXCLUDE
 )
 
 SET(Kit_EXTRA_SRCS)
@@ -124,96 +285,23 @@ SET(Kit_EXTRA_CMDS)
 SET(Kit_TCL_EXTRA_SRCS)
 SET(Kit_PYTHON_EXTRA_SRCS)
 SET(Kit_JAVA_EXTRA_SRCS)
+SET(KIT_TCL_DEPS)
+SET(KIT_PYTHON_DEPS)
+SET(KIT_JAVA_DEPS)
 
-# -----------------------------------------------------------------
-# Start of common section
+#-----------------------------------------------------------------------------
+# Include CMake code common to all kits.
+INCLUDE(${VTK_SOURCE_DIR}/CMake/KitCommonBlock.cmake)
+#-----------------------------------------------------------------------------
 
-# Setup vtkInstantiator registration for this library's classes.
-VTK_MAKE_INSTANTIATOR3(vtk${KIT}Instantiator KitInstantiator_SRCS
-                       "${Kit_SRCS}"
-                       VTK_${UKIT}_EXPORT
-                       ${VTK_BINARY_DIR} "")
+IF(NOT VTK_INSTALL_NO_DEVELOPMENT)
+  INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .h
+    vtkAMRBox
+    vtkCellType
+    )
 
-ADD_LIBRARY(vtk${KIT} ${Kit_SRCS} ${Kit_EXTRA_SRCS} ${KitInstantiator_SRCS})
-
-IF(VTK_APPLE_SHARED_FLAGS_NEEDED)
-  SET_TARGET_PROPERTIES(vtk${KIT} PROPERTIES LINK_FLAGS "-init _oft_init${KIT}")
-ENDIF(VTK_APPLE_SHARED_FLAGS_NEEDED)
-
-# Allow the user to customize their build with some local options
-#
-SET(LOCALUSERMACRODEFINED 0)
-INCLUDE (${VTK_BINARY_DIR}/${KIT}/LocalUserOptions.cmake OPTIONAL)
-INCLUDE (${VTK_SOURCE_DIR}/${KIT}/LocalUserOptions.cmake OPTIONAL)
-
-# if we are wrapping into Tcl then add the library and extra
-# source files
-#
-IF (VTK_WRAP_TCL)
-  VTK_WRAP_TCL2(vtk${KIT}TCL SOURCES KitTCL_SRCS 
-                ${Kit_SRCS}
-                COMMANDS ${Kit_TCL_EXTRA_CMDS})
-  ADD_LIBRARY(vtk${KIT}TCL ${KitTCL_SRCS} ${Kit_TCL_EXTRA_SRCS})
-  IF(APPLE OR WIN32)
-    TARGET_LINK_LIBRARIES (vtk${KIT}TCL vtk${KIT} ${KIT_TCL_LIBS})
-  ENDIF(APPLE OR WIN32)
-  INSTALL_TARGETS(/lib/vtk vtk${KIT}TCL)
-ENDIF (VTK_WRAP_TCL)
-
-# if we are wrapping into Python then add the library and extra
-# source files
-#
-IF (VTK_WRAP_PYTHON)
-  VTK_WRAP_PYTHON2(vtk${KIT}Python KitPython_SRCS ${Kit_SRCS})
-  IF (APPLE)
-    ADD_LIBRARY(vtk${KIT}PythonD ${KitPython_SRCS} ${Kit_PYTHON_EXTRA_SRCS})
-    ADD_LIBRARY(vtk${KIT}Python MODULE vtk${KIT}PythonInit.cxx)
-    TARGET_LINK_LIBRARIES(vtk${KIT}PythonD vtk${KIT} ${KIT_PYTHON_LIBS} ${PYTHON_LIBRARY})
-    TARGET_LINK_LIBRARIES(vtk${KIT}Python vtk${KIT}PythonD)
-    INSTALL_TARGETS(/lib/vtk vtk${KIT}PythonD)
-  ELSE (APPLE)
-    ADD_LIBRARY(vtk${KIT}Python MODULE ${KitPython_SRCS} ${Kit_PYTHON_EXTRA_SRCS})
-    IF(WIN32)
-      TARGET_LINK_LIBRARIES (vtk${KIT}Python vtk${KIT} ${KIT_PYTHON_LIBS})
-    ENDIF(WIN32)
-  ENDIF(APPLE)
-  IF(WIN32)
-    TARGET_LINK_LIBRARIES (vtk${KIT}Python
-                           debug ${PYTHON_DEBUG_LIBRARY}
-                           optimized ${PYTHON_LIBRARY})
-  ENDIF(WIN32)
-  INSTALL_TARGETS(/lib/vtk vtk${KIT}Python)
-ENDIF (VTK_WRAP_PYTHON)
-
-# if we are wrapping into Java then add the library and extra
-# source files
-#
-IF (VTK_WRAP_JAVA)
-  VTK_WRAP_JAVA2(vtk${KIT}Java KitJava_SRCS ${Kit_SRCS})
-  ADD_LIBRARY(vtk${KIT}Java SHARED ${KitJava_SRCS} ${Kit_JAVA_EXTRA_SRCS})
-  IF(APPLE OR WIN32)
-    TARGET_LINK_LIBRARIES(vtk${KIT}Java vtk${KIT} ${KIT_JAVA_LIBS})
-  ENDIF(APPLE OR WIN32)
-  INSTALL_TARGETS(/lib/vtk vtk${KIT}Java)
-ENDIF (VTK_WRAP_JAVA)
-
-IF(APPLE OR WIN32)
-  TARGET_LINK_LIBRARIES(vtk${KIT} ${KIT_LIBS})
-ENDIF(APPLE OR WIN32)
-
-INSTALL_TARGETS(/lib/vtk vtk${KIT})
-INSTALL_FILES(/include/vtk .h ${Kit_SRCS})
-
-VTK_EXPORT_KIT("${KIT}" "${UKIT}" "${Kit_SRCS}")
-
-# If the user defined a custom macro, execute it now and pass in all the srcs
-#
-IF(LOCALUSERMACRODEFINED)
-  LocalUserOptionsMacro( "${Kit_SRCS}"       "${Kit_EXTRA_SRCS}"
-                         "${KitTCL_SRCS}"    "${Kit_TCL_EXTRA_SRCS}"
-                         "${KitJava_SRCS}"   "${Kit_JAVA_EXTRA_SRCS}"
-                         "${KitPython_SRCS}" "${Kit_PYTHON_EXTRA_SRCS}")
-ENDIF(LOCALUSERMACRODEFINED)
-
-# End of common section
-# -----------------------------------------------------------------
+  INSTALL_FILES(${VTK_INSTALL_INCLUDE_DIR} .txx
+    vtkImageIterator
+    vtkImageProgressIterator
+    )
+ENDIF(NOT VTK_INSTALL_NO_DEVELOPMENT)
