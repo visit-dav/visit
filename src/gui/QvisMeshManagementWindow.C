@@ -117,6 +117,11 @@ QvisMeshManagementWindow::~QvisMeshManagementWindow()
 //
 //   Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //   Changed initialization based on existence of FI library 
+//
+//   Mark C. Miller, Wed Dec 19 11:32:58 PST 2007
+//   Made Qt objects for tolerances a little more both in code and in the
+//   running GUI. Changed discretizationTolerances to smallestZone and
+//   flatEnough.
 // ****************************************************************************
 
 void
@@ -171,15 +176,25 @@ QvisMeshManagementWindow::CreateWindowContents()
 #endif
     layoutCSGGroup->addWidget(discretizeAdaptive, 2, 2);
 
-    discretizationToleranceLabel = new QLabel("Tolerance(s)", pageCSGGroup,
-                                              "discretizationTolerance");
-    layoutCSGGroup->addWidget(discretizationToleranceLabel, 3, 0);
-    discretizationToleranceLineEdit = new QLineEdit(pageCSGGroup, "discretizationToleranceLineEdit");
-    connect(discretizationToleranceLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(processDiscretizationToleranceText()));
-    connect(discretizationToleranceLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(processDiscretizationToleranceText(const QString &)));
-    layoutCSGGroup->addMultiCellWidget(discretizationToleranceLineEdit, 3, 3, 1, 3);
+    smallestZoneLabel = new QLabel("Smallest Zone (% bbox diag)", pageCSGGroup,
+                                       "smallestZone");
+    layoutCSGGroup->addWidget(smallestZoneLabel, 3, 0);
+    smallestZoneLineEdit = new QLineEdit(pageCSGGroup, "smallestZoneLineEdit");
+    connect(smallestZoneLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processSmallestZoneText()));
+    connect(smallestZoneLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processSmallestZoneText(const QString &)));
+    layoutCSGGroup->addMultiCellWidget(smallestZoneLineEdit, 3, 3, 1, 3);
+
+    flatEnoughLabel = new QLabel("Flat Enough (recip. curvature)", pageCSGGroup,
+                                       "flatEnough");
+    layoutCSGGroup->addWidget(flatEnoughLabel, 4, 0);
+    flatEnoughLineEdit = new QLineEdit(pageCSGGroup, "flatEnoughLineEdit");
+    connect(flatEnoughLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processFlatEnoughText()));
+    connect(flatEnoughLineEdit, SIGNAL(textChanged(const QString &)),
+            this, SLOT(processFlatEnoughText(const QString &)));
+    layoutCSGGroup->addMultiCellWidget(flatEnoughLineEdit, 4, 4, 1, 3);
 }
 
 // ****************************************************************************
@@ -204,6 +219,11 @@ QvisMeshManagementWindow::CreateWindowContents()
 //   Mark C. Miller, Tue Dec  5 18:14:58 PST 2006
 //   Changed behavior based on existence of FI library 
 //
+//   Mark C. Miller, Wed Dec 19 11:32:58 PST 2007
+//   Made Qt objects for tolerances a little more both in code and in the
+//   running GUI. Changed discretizationTolerances to smallestZone and
+//   flatEnough.
+//
 // ****************************************************************************
 
 void
@@ -222,13 +242,14 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
         {
         case 0: // overall discretization tolerance
             {   const vector<double> tols = atts->GetDiscretizationTolerance();
-                for (int i = 0; i < tols.size(); i++)
-                {
-                    char tmp[32];
-                    SNPRINTF(tmp, sizeof(tmp), "%g ", tols[i]);
-                    temp += tmp;
-                }
-                discretizationToleranceLineEdit->setText(temp);
+                char tmp[32];
+                SNPRINTF(tmp, sizeof(tmp), "%g ", tols[0]);
+                temp += tmp;
+                smallestZoneLineEdit->setText(temp);
+		temp = "";
+                SNPRINTF(tmp, sizeof(tmp), "%g ", tols[1]);
+                temp += tmp;
+                flatEnoughLineEdit->setText(temp);
             }
             break;
         case 1: // discretization tolerance in X
@@ -291,13 +312,16 @@ QvisMeshManagementWindow::GetCurrentValues(const QWidget *widget)
 {
     const bool doAll = widget == 0;
 
-    vector<double> temp;
-    if (doAll || widget == discretizationToleranceLineEdit)
+    double temp;
+    if (doAll || widget == smallestZoneLineEdit)
     {
-        StringToDoubleList(discretizationToleranceLineEdit->
-                           displayText().latin1(), temp);
-        if (mmAtts->GetDiscretizationTolerance() != temp)
-            mmAtts->SetDiscretizationTolerance(temp);
+        bool okay = sscanf(smallestZoneLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+        if (okay && mmAtts->GetDiscretizationTolerance()[0] != temp)
+	{
+	    vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
+	    temp1[0] = temp;
+            mmAtts->SetDiscretizationTolerance(temp1);
+        }
     }
 
     if (doAll || widget == discretizationMode)
@@ -452,20 +476,57 @@ QvisMeshManagementWindow::discretizationModeChanged(int val)
 }
 
 void
-QvisMeshManagementWindow::processDiscretizationToleranceText()
+QvisMeshManagementWindow::processSmallestZoneText()
 {
-    doubleVector temp;
-    StringToDoubleList(discretizationToleranceLineEdit->displayText().latin1(), temp);
-    if (temp.size())
-        mmAtts->SetDiscretizationTolerance(temp);
-    Apply();
+    double temp = -1.0;
+    bool okay = sscanf(smallestZoneLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+
+    if (okay && temp >= 0.0)
+    {
+        vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
+	temp1[0] = temp;
+        mmAtts->SetDiscretizationTolerance(temp1);
+    }
 }
 
 void
-QvisMeshManagementWindow::processDiscretizationToleranceText(const QString &tols)
+QvisMeshManagementWindow::processSmallestZoneText(const QString &tols)
 {
-    doubleVector temp;
-    StringToDoubleList(tols.latin1(), temp);
-    if (temp.size())
-        mmAtts->SetDiscretizationTolerance(temp);
+    double temp = -1.0;
+    bool okay = sscanf(smallestZoneLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+
+    if (okay && temp >= 0.0)
+    {
+        vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
+	temp1[0] = temp;
+        mmAtts->SetDiscretizationTolerance(temp1);
+    }
+}
+
+void
+QvisMeshManagementWindow::processFlatEnoughText()
+{
+    double temp = -1.0;
+    bool okay = sscanf(flatEnoughLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+
+    if (okay && temp >= 0.0)
+    {
+        vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
+	temp1[1] = temp;
+        mmAtts->SetDiscretizationTolerance(temp1);
+    }
+}
+
+void
+QvisMeshManagementWindow::processFlatEnoughText(const QString &tols)
+{
+    double temp = -1.0;
+    bool okay = sscanf(flatEnoughLineEdit->displayText().latin1(), "%lg", &temp) == 1;
+
+    if (okay && temp >= 0.0)
+    {
+        vector<double> temp1 = mmAtts->GetDiscretizationTolerance();
+	temp1[1] = temp;
+        mmAtts->SetDiscretizationTolerance(temp1);
+    }
 }
