@@ -125,6 +125,9 @@ def ReadTop():
     if(sys.platform == 'sunos5'):
         p = os.popen("top -n 20 -b")
         indices = (0, 1, 6, 10)
+    elif(sys.platform == 'darwin'):
+        p = os.popen("top -n 20 -l 1 -U %s" % os.environ["LOGNAME"])
+        indices = (0, 1, 9, 1)
     else:
         p = os.popen("top n 1 b")
         indices = (0, 1, 5, 11)
@@ -148,18 +151,23 @@ def InterpretMemorySize(valString):
     retval = 0
     try:
         # Get the number
-        retval = int(valString[:-1])
+        offset = 1
+        if valString[-1] == "-" or valString[-1] == "+":
+            offset = 2
+        retval = eval(valString[:-offset])
         # Multiply by the units
-        units = valString[-1]
+        units = valString[-offset]
         if units == "K":
             retval = retval * 1000
         elif units == "M":
             retval = retval * 1000000
+        elif units == "G":
+            retval = retval * 1000000000
         else:
-            retval = int(valString) * 1000
+            retval = retval * 1000
     except ValueError:
         retval = 0
-    return retval
+    return int(retval)
 
 # ----------------------------------------------------------------------------
 # Function: AddMemorySample
@@ -180,9 +188,12 @@ def AddMemorySample():
 
         # Add the samples into the memoryHistory data.
         for k in info.keys():
-            userName = info[k][0]
+            validSample = 1
+            if(sys.platform != 'darwin'):
+                userName = info[k][0]
+                validSample = (userName == os.environ["LOGNAME"])
             # Only keep track of the data if it is for the user running the test suite.
-            if userName == os.environ["LOGNAME"]:
+            if validSample:
                 memSizeString = info[k][1]
                 procNameString = info[k][2]
                 # Get the curve name
@@ -368,7 +379,7 @@ def FinishTrackingMemoryUsage(html):
         curveLabel.text = k
         curveLabel.useForegroundForTextColor = 0
         curveLabel.textColor = curveColors[cIndex]
-        curveLabel.width = double(len(k)) * 0.1 / 8.
+        curveLabel.width = float(len(k)) * 0.1 / 8.
         curveLabel.position = (cX, cY)
         curveLabel.fontBold = 1
         cY = cY - 0.04
@@ -432,7 +443,7 @@ def FinishTrackingMemoryUsage(html):
     # Clean up
     xtitle.Delete()
     ytitle.Delete()
-    msgLabel.Delete()
+    megsLabel.Delete()
     DeleteAllPlots()
 
 
@@ -1218,6 +1229,7 @@ def Exit():
             FinishTrackingMemoryUsage(html)
         except:
             # We had an error finishing up the memory graph. Don't let it ruin our results.
+            html.write("<i>FinishTrackingMemoryUsage encountered an error. No memory graph was created.</i>\n")
             pass
     html.write("</body>\n")
     html.write("</html>\n")
