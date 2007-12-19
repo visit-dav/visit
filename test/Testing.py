@@ -270,7 +270,7 @@ def FinishTrackingMemoryUsage(html):
     global threadWorking
     global memoryHistory
     global category
-    global filebase
+    global pyfilebase
 
     # Tell the 2nd thread to stop sampling and wait for it to be done.
     keepSampling = 0
@@ -311,8 +311,8 @@ def FinishTrackingMemoryUsage(html):
              maxUsage = max(maxUsage, pt[1])
 
     # Create the name of a curve database
-    curveDB = "%s_%s_memusage.curve" % (category, filebase)
-    curveImage = "%s_%s_memusage" % (category, filebase)
+    curveDB = "%s_%s_memusage.curve" % (category, pyfilebase)
+    curveImage = "%s_%s_memusage" % (category, pyfilebase)
 
     # Now that it's done, write out a curve file.
     curveFile = open(curveDB, "wt")
@@ -593,6 +593,34 @@ def SaveFileInfo(fmt):
     else:
         return ("unknown", 0, 0, 0)
 
+def GenFileNames(file, ext):
+    global pyfilebase
+    global category
+    global modeStr
+
+    if not os.path.isdir("current/%s"%category):
+        os.system("mkdir current/%s"%category)
+    if not os.path.isdir("current/%s/%s"%(category,pyfilebase)):
+        os.system("mkdir current/%s/%s"%(category,pyfilebase))
+
+    if not os.path.isdir("diff/%s"%category):
+        os.system("mkdir diff/%s"%category)
+    if not os.path.isdir("diff/%s/%s"%(category,pyfilebase)):
+        os.system("mkdir diff/%s/%s"%(category,pyfilebase))
+
+    # create file names
+    cur  = "current/%s/%s/"%(category,pyfilebase)  + file + ext
+    diff = "diff/%s/%s/"%(category,pyfilebase)     + file + ext
+    base = "baseline/%s/%s/"%(category,pyfilebase) + file + ext
+    altbase=""
+    if modeStr != "":
+        altbase = "baseline/%s/%s/%s/"%(category,pyfilebase,modeStr) + file + ext
+        if (os.path.isfile(altbase)):
+            base = altbase
+
+    return (cur, diff, base, altbase)
+
+
 # ----------------------------------------------------------------------------
 # Function: Test
 #
@@ -635,6 +663,8 @@ def Test(file, altSWA=0):
     global trackingMemoryUsage
     global iactive
     global usePIL
+    global pyfilebase
+    global category
     global skipCases
 
     # if interactive, pause for user
@@ -649,13 +679,7 @@ def Test(file, altSWA=0):
 	print "***********************"
         next = sys.stdin.read(1)
 
-    # create file names
-    cur  = "current/"  + file + ".tif"
-    diff = "diff/"     + file + ".tif"
-    base = "baseline/" + file + ".tif"
-    altbase=""
-    if modeStr != "":
-        altbase = "baseline/%s/"%modeStr + file + ".tif"
+    (cur, diff, base, altbase) = GenFileNames(file, ".tif")
 
     # save the window in visit
     if altSWA != 0:
@@ -1083,14 +1107,7 @@ def TestText(file, inText):
         next = sys.stdin.read(1)
 
     # create file names
-    cur  = "current/"  + file + ".txt"
-    diff = "diff/"     + file + ".txt"
-    base = "baseline/" + file + ".txt"
-    altbase=""
-    if modeStr != "":
-        altbase = "baseline/%s/"%modeStr + file + ".txt"
-        if (os.path.isfile(altbase)):
-            base = altbase
+    (cur, diff, base, altbase) = GenFileNames(file, ".txt")
 
     if (os.path.isfile(base)):
         O = os.open(base, os.O_RDONLY)
@@ -1205,7 +1222,7 @@ def Exit():
     html.write("</body>\n")
     html.write("</html>\n")
     if leakcheck:
-	words = string.split(filename,".")
+	words = string.split(pyfilename,".")
 	tmpfilename = words[0] + "_leaks"
 	TestText(tmpfilename, leakHistory)
 	leakHistory=""
@@ -1370,8 +1387,8 @@ for arg in sys.argv:
 
 # find our file name
 visitTopDir = os.environ['VISIT_TOP_DIR']
-filename = os.environ['VISIT_TEST_NAME']
-filebase = filename[:-3]
+pyfilename = os.environ['VISIT_TEST_NAME']
+pyfilebase = pyfilename[:-3]
 category = os.environ['VISIT_TEST_CATEGORY']
 modes    = string.split(os.environ['VISIT_TEST_MODES'],",")
 skipCases = string.split(os.environ['VISIT_TEST_SKIP_CASES'],",")
@@ -1469,7 +1486,7 @@ if leakcheck:
     viewerProcAtts=GetProcessAttributes("viewer")
 
 # set up our html output
-html = open("html/%s_%s.html" % (category, filebase), 'wt')
+html = open("html/%s_%s.html" % (category, pyfilebase), 'wt')
 html.write("<SCRIPT TYPE=\"text/javascript\">\n")
 html.write("<!--\n")
 html.write("function popup(mylink, name)\n")
@@ -1485,13 +1502,13 @@ html.write("return false;\n")
 html.write("}\n")
 html.write("//-->\n")
 html.write("</SCRIPT>\n")
-html.write("<html><head><title>Results for %s/%s</title></head>\n" % (category,filename))
+html.write("<html><head><title>Results for %s/%s</title></head>\n" % (category,pyfilename))
 html.write("<body bgcolor=\"#a0a0f0\">\n")
-html.write("<H1>Results of VisIt Regression Test - <a href=%s_%s_py.html>%s/%s</a></H1>\n" % (category,filebase,category,filename))
+html.write("<H1>Results of VisIt Regression Test - <a href=%s_%s_py.html>%s/%s</a></H1>\n" % (category,pyfilebase,category,pyfilename))
 memLinkString = ""
 if trackingMemoryUsage == 1:
     memLinkString = "  <a href=\"#memusage\">(Memory usage)</a>"
-html.write("<H2><a href=%s_%s_timings.html>(Full Timings)</a>%s</H2>\n" % (category,filebase, memLinkString))
+html.write("<H2><a href=%s_%s_timings.html>(Full Timings)</a>%s</H2>\n" % (category,pyfilebase, memLinkString))
 html.write("<table border>\n")
 html.write(" <tr>\n")
 html.write("  <td rowspan=2><b><i>Test Case</b></i></td>\n")
@@ -1509,14 +1526,14 @@ html.write(" </tr>\n")
 html.write("\n")
 
 # colorize the source file, and write to an html file
-HtmlPython.ColorizePython(category, filename, filebase)
+HtmlPython.ColorizePython(category, pyfilename, pyfilebase)
 
 # add test file info to log file
 if (os.path.isfile("log")):
     log = open("log", 'a')
     log.write("\n")
     log.write(" - - - - - - - - - - - - - - -\n")
-    log.write("  Test script %s\n" % filename)
+    log.write("  Test script %s\n" % pyfilename)
     log.write("\n")
     log.close()
 
