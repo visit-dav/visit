@@ -1444,6 +1444,22 @@ _ACEOF
 echo "$as_me:$LINENO: result: $VERSION" >&5
 echo "${ECHO_T}$VERSION" >&6
 
+# Get the SVN version number.
+echo "$as_me:$LINENO: checking what subversion revision is" >&5
+echo $ECHO_N "checking what subversion revision is... $ECHO_C" >&6
+if test -r SVN_REVISION; then
+   SVN_REVISION=`cat SVN_REVISION`
+else
+   SVN_REVISION=`svn info . | grep "Revision:" | cut -d' ' -f2`
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define SVN_REVISION "$SVN_REVISION"
+_ACEOF
+
+echo "$as_me:$LINENO: result: $SVN_REVISION" >&5
+echo "${ECHO_T}$SVN_REVISION" >&6
+
 # Set the slash characters used in filenames.
 
 cat >>confdefs.h <<_ACEOF
@@ -5416,7 +5432,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:5419:" \
+echo "$as_me:5435:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5

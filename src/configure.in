@@ -748,6 +748,9 @@ dnl    Hank Childs, Thu Nov  8 15:09:28 PST 2007
 dnl    Add a configure flag to get around a bug with threads getting hangup
 dnl    signals.
 dnl
+dnl    Hank Childs, Fri Dec  7 16:52:10 PST 2007
+dnl    Put the SVN version of the /src directory into visit-config.h.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -800,6 +803,16 @@ AC_MSG_CHECKING(what version the package is)
 VERSION=`cat VERSION`
 AC_DEFINE_UNQUOTED(VERSION,"$VERSION",[VisIt version])
 AC_MSG_RESULT($VERSION)
+
+# Get the SVN version number.
+AC_MSG_CHECKING(what subversion revision is)
+if test -r SVN_REVISION; then
+   SVN_REVISION=`cat SVN_REVISION`
+else
+   SVN_REVISION=`svn info . | grep "Revision:" | cut -d' ' -f2`
+fi
+AC_DEFINE_UNQUOTED(SVN_REVISION,"$SVN_REVISION",[Subversion revision])
+AC_MSG_RESULT($SVN_REVISION)
 
 # Set the slash characters used in filenames.
 AC_DEFINE_UNQUOTED(SLASH_CHAR,'/',[Define the slash character])
