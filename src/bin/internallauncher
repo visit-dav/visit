@@ -258,6 +258,9 @@ $0 = shift @ARGV;
 #    Jeremy Meredith, Fri Dec 14 15:33:57 EST 2007
 #    Added documentation for -forceversion option.
 #
+#    Dave Pugmire, Mon Dec 17 12:42:34 EST 2007
+#    Add qsub/aprun launch option.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1694,6 +1697,13 @@ if ($procs_set or ($parallel and $parlaunch_set))
             elsif ($sublauncher eq "srun")
             {
                 @mpicmd = ("srun");
+                push @mpicmd, @sublaunchargs if $sublaunchargs_set;
+                push @mpicmd, "-n",  $procs if $procs_set;
+                push @mpicmd, "@visitcmd\n";
+            }
+            elsif ($sublauncher eq "aprun")
+            {
+                @mpicmd = ("aprun");
                 push @mpicmd, @sublaunchargs if $sublaunchargs_set;
                 push @mpicmd, "-n",  $procs if $procs_set;
                 push @mpicmd, "@visitcmd\n";
