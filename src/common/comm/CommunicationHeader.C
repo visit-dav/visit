@@ -37,6 +37,7 @@
 
 #include <CommunicationHeader.h>
 #include <Connection.h>
+#include <DebugStream.h>
 #include <IncompatibleVersionException.h>
 #include <IncompatibleSecurityTokenException.h>
 #include <CancelledConnectException.h>
@@ -54,9 +55,6 @@
 // Uncomment if we're debugging the communication header code.
 //
 //#define DEBUG_COMMUNICATION_HEADER
-#ifdef DEBUG_COMMUNICATION_HEADER
-#include <DebugStream.h>
-#endif
 
 
 // ****************************************************************************
@@ -213,6 +211,9 @@ CommunicationHeader::WriteHeader(Connection *conn, const std::string &version,
 //    Renamed VersionsCompatible to VisItVersionsCompatible because I moved
 //    the functions to a global namespace in -lutility.
 //
+//    Hank Childs, Wed Dec 19 08:48:23 PST 2007
+//    Add debug statement.
+//
 // ****************************************************************************
 
 void
@@ -249,6 +250,8 @@ CommunicationHeader::ReadHeader(Connection *conn, const std::string &version,
     // Check to see if the version numbers are compatible.
     if(!VisItVersionsCompatible((const char *)(buffer+5), version.c_str()))
     {
+        debug1 << "Versions are " << buffer << "(" << buffer+5 << ")," 
+               << version << endl;
         EXCEPTION0(IncompatibleVersionException);
     }
 

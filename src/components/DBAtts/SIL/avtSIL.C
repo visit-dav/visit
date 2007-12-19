@@ -55,6 +55,7 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidVariableException.h>
+#include <TimingsManager.h>
 
 
 using std::string;
@@ -757,11 +758,15 @@ avtSIL::TranslateCollectionInfo(int index, avtSILMatrix_p &mat, int &out_ind)
 //    Brad Whitlock, Tue Mar 13 11:09:25 PDT 2007
 //    Updated due to code generation changes.
 //
+//    Hank Childs, Wed Dec 19 08:39:46 PST 2007
+//    Add timing information.
+//
 // ****************************************************************************
 
 SILAttributes *
 avtSIL::MakeSILAttributes(void) const
 {
+    int t0 = visitTimer->StartTimer();
     int   i;
 
     SILAttributes *rv = new SILAttributes;
@@ -820,6 +825,7 @@ avtSIL::MakeSILAttributes(void) const
         delete atts;
     }
 
+    visitTimer->StopTimer(t0, "Setting up SIL attributes");
     return rv;
 }
 

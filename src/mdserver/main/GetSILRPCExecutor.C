@@ -43,6 +43,8 @@
 #include <DatabaseException.h>
 
 #include <DebugStream.h>
+#include <TimingsManager.h>
+
 
 // ****************************************************************************
 // Method: GetSILRPCExecutor::GetSILRPCExecutor
@@ -107,11 +109,16 @@ GetSILRPCExecutor::~GetSILRPCExecutor()
 //
 //   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //   Added treatAllDBsAsTimeVarying
+//
+//   Hank Childs, Wed Dec 19 08:44:24 PST 2007
+//   Add timing information.
+//
 // ****************************************************************************
 
 void
 GetSILRPCExecutor::Update(Subject *s)
 {
+    int t1 = visitTimer->StartTimer();
     GetSILRPC *rpc = (GetSILRPC *)s;
 
     debug2 << "GetSILRPCExecutor::Update - file="<<rpc->GetFile().c_str()<<"\n";
@@ -120,13 +127,17 @@ GetSILRPCExecutor::Update(Subject *s)
     TRY
     {
         // Either send a successful reply or send an error.
+        int t2 = visitTimer->StartTimer();
         parent->ReadSIL(rpc->GetFile(), rpc->GetTimeState(),
 	    rpc->GetTreatAllDBsAsTimeVarying());
+        visitTimer->StopTimer(t2, "Reading SIL");
 #ifdef DEBUG
         debug2 << "SIL=" << endl;
         parent->GetCurrentSIL()->Print(debug2);
 #endif
+        int t0 = visitTimer->StartTimer();
         rpc->SendReply(parent->GetCurrentSIL());
+        visitTimer->StopTimer(t0, "Sending SIL");
     }
     CATCH2(DatabaseException, dbe)
     {
@@ -137,4 +148,7 @@ GetSILRPCExecutor::Update(Subject *s)
         rpc->SendError("An unknown error has occurred", ve.GetExceptionType());
     }
     ENDTRY
+    visitTimer->StopTimer(t1, "SIL RPC Get");
 }
+
+

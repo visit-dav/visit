@@ -653,6 +653,9 @@ MDServerConnection::GetPluginErrors()
 //   Cyrus Harrison, Wed Nov 28 11:17:23 PST 2007
 //   Added flag for creation of vector magnitude expressions
 //
+//   Hank Childs, Wed Dec 19 08:39:46 PST 2007
+//   Added timing information.
+//
 // ****************************************************************************
 
 void
@@ -694,8 +697,10 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     avtDatabase *db = NULL;
     TRY
     {
+        int t0 = visitTimer->StartTimer();
         db = GetDatabase(file, ts, forceReadAllCyclesAndTimes,
                  plugins, forcedFileType, treatAllDBsAsTimeVarying);
+        visitTimer->StopTimer(t0, "Get database from inside ReadMetaData");
     }
     CATCH2(VisItException, e)
     {
@@ -708,8 +713,10 @@ MDServerConnection::ReadMetaData(std::string file, int timeState,
     {
         TRY
         {
+            int t0 = visitTimer->StartTimer();
             currentMetaData = db->GetMetaData(ts, forceReadAllCyclesAndTimes,
-                                  treatAllDBsAsTimeVarying);
+                                              treatAllDBsAsTimeVarying);
+            visitTimer->StopTimer(t0, "Get metadata from inside ReadMetaData");
         }
         CATCHALL(...)
         {
