@@ -18,7 +18,7 @@
 // The vtkSystemIncludes centralizes the inclusion of system include
 // files. (This is particularly important as VTK moves towards ANSI
 // C++.)  For example, this include file enables user's to build VTK
-// with STL (i.e., use std::ostream and other standard ANSI C++
+// with STL (i.e., use std: :ostream and other standard ANSI C++
 // functionality).  A configured flag in vtkConfigure.h
 // (VTK_USE_ANSI_STDLIB) must be set to enable ANSI C++ compliance.
 
@@ -40,26 +40,11 @@
 # include "vtkIOStream.h"    // Include the real C++ streams.
 #endif
 
-// define the type of floating point interface used for old and new versions
-// of VTK VTK42 and older use float and VTK 44 and newer use double for most
-// of the API calls
-#define vtkFloatingPointType vtkFloatingPointType 
-typedef double vtkFloatingPointType;
+// Setup the basic types to be used by VTK.
+#include "vtkType.h"
 
-// Choose an implementation for vtkIdType.
-#define VTK_HAS_ID_TYPE
-#ifdef VTK_USE_64BIT_IDS
-# define VTK_ID_TYPE_IS_NOT_BASIC_TYPE
-# define VTK_SIZEOF_ID_TYPE 8
-# ifdef _WIN32
-typedef __int64 vtkIdType;
-# else // _WIN32
-typedef long long vtkIdType;
-# endif // _WIN32
-#else // VTK_USE_64BIT_IDS
-# define VTK_SIZEOF_ID_TYPE VTK_SIZEOF_INT
-typedef int vtkIdType;
-#endif // VTK_USE_64BIT_IDS
+// this should be removed at some point
+#define VTK_USE_EXECUTIVES
 
 #define __VTK_SYSTEM_INCLUDES__INSIDE
 #include "vtkOStreamWrapper.h"    // Include the ostream wrapper.
@@ -71,80 +56,19 @@ typedef int vtkIdType;
 #include <stdlib.h>
 #include <string.h>
 
-// Some constants used throughout the code
-#define VTK_LARGE_FLOAT 1.0e+38F
-#ifdef VTK_USE_64BIT_IDS
-#  ifdef _WIN32
-#    define VTK_LARGE_ID 9223372036854775807i64 // 2^63 - 1
-#  else
-#    define VTK_LARGE_ID 9223372036854775807LL // 2^63 - 1
-#  endif
-#else
-#  define VTK_LARGE_ID 2147483647 // 2^31 - 1
+// Borland C++ defines several of the stdlib.h and string.h symbols in
+// sub-headers search.h and mem.h.  These sub-headers have using
+// declarations to pull functions from the std namespace to the global
+// namespace, but they are defined only if the header was not included
+// through the C++-style cstdlib or cstring header.  These outer
+// headers are included by the streams library in C++-style and
+// include blockers are put in place that prevent including the
+// C-style versions from ever including the sub-headers.  Therefore we
+// have to include the sub-headers here to get the using declarations.
+#if defined(__BORLANDC__)
+# include <mem.h>    /* mem... functions from string.h */
+# include <search.h> /* search functions from stdlib.h */
 #endif
-
-#define VTK_LARGE_INTEGER 2147483647 // 2^31 - 1
-
-// These types are returned by GetDataType to indicate pixel type.
-#define VTK_VOID            0
-#define VTK_BIT             1 
-#define VTK_CHAR            2
-#define VTK_UNSIGNED_CHAR   3
-#define VTK_SHORT           4
-#define VTK_UNSIGNED_SHORT  5
-#define VTK_INT             6
-#define VTK_UNSIGNED_INT    7
-#define VTK_LONG            8
-#define VTK_UNSIGNED_LONG   9
-#define VTK_FLOAT          10
-#define VTK_DOUBLE         11 
-#define VTK_ID_TYPE        12
-
-// These types are not currently supported by GetDataType, but are 
-// for completeness.
-#define VTK_STRING         13
-#define VTK_OPAQUE         14
-
-// Some constant required for correct template performance
-#define VTK_BIT_MIN            0
-#define VTK_BIT_MAX            1
-#define VTK_CHAR_MIN          -128
-#define VTK_CHAR_MAX           127
-#define VTK_UNSIGNED_CHAR_MIN  0
-#define VTK_UNSIGNED_CHAR_MAX  255
-#define VTK_SHORT_MIN         -32768
-#define VTK_SHORT_MAX          32767
-#define VTK_UNSIGNED_SHORT_MIN 0
-#define VTK_UNSIGNED_SHORT_MAX 65535
-#define VTK_INT_MIN          (-VTK_LARGE_INTEGER-1)
-#define VTK_INT_MAX            VTK_LARGE_INTEGER
-#define VTK_UNSIGNED_INT_MIN   0
-#define VTK_UNSIGNED_INT_MAX   4294967295UL
-#define VTK_LONG_MIN         (-VTK_LARGE_INTEGER-1)
-#define VTK_LONG_MAX           VTK_LARGE_INTEGER
-#define VTK_UNSIGNED_LONG_MIN  0
-#define VTK_UNSIGNED_LONG_MAX  4294967295UL
-#define VTK_FLOAT_MIN         -VTK_LARGE_FLOAT
-#define VTK_FLOAT_MAX          VTK_LARGE_FLOAT
-#define VTK_DOUBLE_MIN        -1.0e+299
-#define VTK_DOUBLE_MAX         1.0e+299
-
-// These types are returned to distinguish data object types
-#define VTK_POLY_DATA                       0
-#define VTK_STRUCTURED_POINTS               1
-#define VTK_STRUCTURED_GRID                 2
-#define VTK_RECTILINEAR_GRID                3
-#define VTK_UNSTRUCTURED_GRID               4
-#define VTK_PIECEWISE_FUNCTION              5
-#define VTK_IMAGE_DATA                      6
-#define VTK_DATA_OBJECT                     7
-#define VTK_DATA_SET                        8
-#define VTK_POINT_SET                       9
-#define VTK_UNIFORM_GRID                   10
-#define VTK_COMPOSITE_DATA_SET             11
-#define VTK_HIERARCHICAL_DATA_SET          12
-#define VTK_MULTI_BLOCK_DATA_SET           13
-#define VTK_HIERARCHICAL_BOX_DATA_SET      14
 
 // These types define error codes for vtk functions
 #define VTK_OK                 1
@@ -161,9 +85,6 @@ typedef int vtkIdType;
 
 #define VTK_TEXT_BOTTOM 0
 #define VTK_TEXT_TOP    2
-
-#define VTK_TEXT_VERTICAL   0
-#define VTK_TEXT_HORIZONTAL 1
 
 #define VTK_TEXT_GLOBAL_ANTIALIASING_SOME 0
 #define VTK_TEXT_GLOBAL_ANTIALIASING_NONE 1
@@ -218,7 +139,7 @@ typedef int vtkIdType;
 
 #ifdef VTK_USE_WIN32_THREADS
 #define VTK_THREAD_RETURN_VALUE 0
-#define VTK_THREAD_RETURN_TYPE DWORD __stdcall
+#define VTK_THREAD_RETURN_TYPE vtkWindowsDWORD __stdcall
 #endif
 
 #if !defined(VTK_USE_PTHREADS) && !defined(VTK_USE_WIN32_THREADS)
