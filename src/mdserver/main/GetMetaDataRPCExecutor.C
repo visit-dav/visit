@@ -43,6 +43,8 @@
 #include <DatabaseException.h>
 
 #include <DebugStream.h>
+#include <TimingsManager.h>
+
 
 // ****************************************************************************
 // Method: GetMetaDataRPCExecutor::GetMetaDataRPCExecutor
@@ -129,8 +131,11 @@ GetMetaDataRPCExecutor::~GetMetaDataRPCExecutor()
 //   Send flags from rpc for controlling creation of MeshQuality and 
 //   TimeDerivative expressions to the ReadMetaData call.
 //
-//   Cyrus Harrison, 
+//   Cyrus Harrison, Wed Nov 28 11:17:23 PST 2007
 //   Added flag for auto vector magnitude expression creation 
+//
+//   Hank Childs, Wed Dec 19 08:39:46 PST 2007
+//   Add timing information.
 //
 // ****************************************************************************
 
@@ -159,7 +164,9 @@ GetMetaDataRPCExecutor::Update(Subject *s)
         if(debug5_real)
             parent->GetCurrentMetaData()->Print(debug5_real);
 
+        int t0 = visitTimer->StartTimer();
         rpc->SendReply(parent->GetCurrentMetaData());
+        visitTimer->StopTimer(t0, "Sending MD");
     }
     CATCH2(DatabaseException, dbe)
     {

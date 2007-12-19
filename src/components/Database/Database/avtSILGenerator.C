@@ -48,6 +48,7 @@
 #include <avtSIL.h>
 
 #include <ImproperUseException.h>
+#include <TimingsManager.h>
 
 using std::string;
 using std::vector;
@@ -86,11 +87,15 @@ static SILCategoryRole CategoryFromCollectionClassName(string classStr);
 //    Jeremy Meredith, Mon Aug 28 16:25:07 EDT 2006
 //    Added scalar enumeration types.
 //
+//    Hank Childs, Wed Dec 19 08:39:46 PST 2007
+//    Add timing information.
+//
 // ****************************************************************************
 
 void
 avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
 {
+    int t0 = visitTimer->StartTimer();
     int   i;
 
     // skip to create custom SIL if the md object has any SIL information
@@ -218,6 +223,8 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
             sil->AddMatrix(matrix);
         }
     }
+
+    visitTimer->StopTimer(t0, "SIL generator to execute");
 }
 
 

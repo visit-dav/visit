@@ -639,6 +639,9 @@ ParentProcess::GetWriteConnection(int i) const
 //   Jeremy Meredith, Thu May 24 11:22:55 EDT 2007
 //   Added errno to unix output to determine the actual error.
 //
+//   Hank Childs, Wed Dec 19 08:51:45 PST 2007
+//   Added print statement.
+//
 // ****************************************************************************
 
 int
@@ -702,6 +705,9 @@ ParentProcess::GetClientSocketDescriptor(int port)
     int opt = 1;
     setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(int));
     debug5 << mName << "Calling connect" << endl;
+    debug5 << "(If you see no messages after this one, VisIt was not able\n"
+           << "to connect to the client machine.  Nine times out of ten, this\n"
+           << "is a firewall issue on the client machine.)" << endl;
     if (connect(s, (struct sockaddr *)&server, sizeof(server)) < 0)
     {
         debug5 << mName << "Could not connect! (error="<<errno<<")" << endl;
