@@ -190,6 +190,9 @@ NewHandler(void)
 //    If -vtk-debug is specified make sure the debug level is at least 1
 //    for the engine
 //
+//    Hank Childs, Tue Dec 18 15:53:10 PST 2007
+//    Add support for -svn_revision.
+//
 // ****************************************************************************
 
 void
@@ -244,6 +247,14 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
                  strcmp("-timings", argv[i]) == 0)
         {
             enableTimings = true;
+        }
+        else if (strcmp("-svn_revision",  argv[i]) == 0)
+        {
+            if (strcmp(SVN_REVISION, "") == 0)
+                cerr << "SVN revision is unknown!" << endl;
+            else
+                cerr << "Built from revision " << SVN_REVISION << endl;
+            exit(0);
         }
     }
 

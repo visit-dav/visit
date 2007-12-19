@@ -349,6 +349,8 @@ $usage = "
     Version options
     ---------------------------------------------------------------------------
         -version             Do NOT run VisIt. Just print the current version.
+        -svn_revision        Do NOT run VisIt. Just print the Subversion 
+                             revision it was built from.
         -beta                Run the current beta version.
         -v <version>         Run a specified version (e.g. '1.3.3').
 

@@ -102,6 +102,9 @@ $0 = shift @ARGV;
 #     Modified so that it would work correctly with the source tree
 #     organization of the subversion repository.
 #
+#     Hank Childs, Tue Dec 18 15:58:52 PST 2007    
+#     Create file SVN_VERSION
+#
 
 require "newgetopt.pl";
 
@@ -113,6 +116,8 @@ if (! -d "src")
     print STDERR $USAGE;
     exit(-1);
 }
+
+system("cd src; svn info . | grep \"Revision:\" | cut -d' ' -f2 > SVN_REVISION; cd ..");
 
 # Parse the argument list.
 &NGetOpt("withhelp","withtest");
@@ -220,4 +225,5 @@ Unable to remove temporary directory \"$dist\".
 EOF
 }
 
+system("rm -f ./src/SVN_REVISION");
 print "Finished.\nYour distribution is in the file \"$fulldist.tar.gz\".\n";
