@@ -281,6 +281,10 @@ avtSurfaceFilter::Equivalent(const AttributeGroup *a)
 //    Kathleen Bonnell, Tue Sep 11 08:52:45 PDT 2007 
 //    Changed 'and' to '&&' for compilation on Windows. 
 //
+//    Hank Childs, Tue Dec 18 17:02:57 PST 2007
+//    Beef up support for non-regular variables, especially including
+//    the case with the "ZeroFlag".
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -296,9 +300,25 @@ avtSurfaceFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
     if ((zf == false) && (!usingDefaultVar))
         varname = atts.GetVariable().c_str();
 
+    avtCentering cent = AVT_NODECENT; // right default if ZeroFlag is true
+
+    TRY
+    {
+        if (!zf)
+        {
+            cent = GetInput()->GetInfo().GetAttributes().GetCentering(varname);
+        }
+    }
+    CATCH(VisItException &v)
+    {
+        EXCEPTION1(VisItException, "VisIt could not determine which variable to "
+                        "elevate by.  Are you possibly applying the Elevate "
+                        "operator to a boundary or mesh plot?");
+    }
+    ENDTRY
+
     vtkCellDataToPointData *cd2pd = NULL;
-    if (GetInput()->GetInfo().GetAttributes().GetCentering(varname) == 
-                                                                  AVT_ZONECENT)
+    if (cent == AVT_ZONECENT)
     {
         //
         // The input is zone-centered, but this filter needs
