@@ -16,6 +16,7 @@
 <ul>
 <li>The slice operator's project feature was not correctly projecting the slice to the plane Z=0.  This bug was exhibited only with data sets that had very large spatial extents.</li>
 <li>Apply either the Displace operator or Transform operator followed by the Box operator would sometimes result in missing data.</li>
+<li>The Chombo reader used 32-bit integer arithmetic to calculate start offsets for boxes/patches, which would result in errors when loading large files. Calculations now use 64-bit integer arithmetic.
 <li>The plugin manager was incorrectly loading non-plugin files in some cases.</li>
 <li>The modules for the Java client have been updated to reflect changes made in release 1.7.</li>
 <li>Valid printf-style format strings for Label plot and Queries were incorrectly being deemed invalid on Mac.</li>

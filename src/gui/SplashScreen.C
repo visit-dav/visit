@@ -47,6 +47,7 @@
 #include <qpainter.h>
 #include <qpixmap.h>
 #include <visit-config.h>   // For version number
+#include <Utility.h>
 
 #define MULTIPLE_IMAGES
 #define TIMER_DURATION 2*1000     // 2 seconds
@@ -113,6 +114,9 @@
 //    window so window managers display something a little more sensible
 //    in the taskbar.
 //
+//    Brad Whitlock, Mon Dec 10 17:33:35 PST 2007
+//    Changed the version string that gets drawn into the splashscreen.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
@@ -163,25 +167,40 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
          pictures.push_back(QPixmap(VisIt4_xpm));
 #endif
 
-    // If we have a beta in the version number, draw "Beta" on the pictures.
-    QString ver(VERSION);
-    if(ver.right(1) == "b")
+    // If we have more stuff than just a version number in the version
+    // string then draw that information onto the splashscreen.
+    QString ver;
+    bool drawVersion = false;
+    int major = 0, minor = 0, patch = 0;
+    int ret = GetVisItVersionFromString(VERSION, major, minor, patch);
+    if(ret < 0)
+    {
+        ver = QString(VERSION);
+        drawVersion = true;
+    }
+    else if(patch > 0)
+    {
+        ver.sprintf("Patch %d", patch);
+        drawVersion = true;
+    }
+
+    if(drawVersion)
     {
         for(int i = 0; i < pictures.size(); ++i)
         {
             QPainter painter(&pictures[i]);
             double scale = 4.;
             painter.scale(scale, scale);
-            QFont font("helvetica", 24, QFont::Bold, true);
+            QFont font("helvetica", 20, QFont::Bold, true);
             font.setItalic(false);
             int x = 10;
             int y = pictures[i].height() - 10;
             int offset = 4;
             painter.setPen(black);
-            painter.drawText(int(x / scale), int(y / scale), "Beta");
+            painter.drawText(int(x / scale), int(y / scale), ver);
             painter.setPen(white);
             painter.drawText(int((x - offset) / scale),
-                             int((y - offset) / scale), "Beta");
+                             int((y - offset) / scale), ver);
         }
     }
 
