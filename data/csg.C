@@ -167,8 +167,14 @@ build_csg(DBfile *dbfile, char *name)
         pv[0] = var1_data;
         pname[0] = name1;
 
+#ifdef DB_SDX // Use existence of sdx driver to detect earlier versions.
+              // Sdx driver exists in 4.5.1 and earlier.
         DBPutCsgvar(dbfile, "var1", "csgmesh", 1, (const char**)pname,
                     (const void**)pv, 2, DB_DOUBLE, DB_ZONECENT, 0);
+#else
+        DBPutCsgvar(dbfile, "var1", "csgmesh", 1, pname,
+                    (const void**)pv, 2, DB_DOUBLE, DB_ZONECENT, 0);
+#endif
     }
 
     // output a material for this csg mesh

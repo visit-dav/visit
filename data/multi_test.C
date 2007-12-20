@@ -3029,8 +3029,14 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     // declare the "magnitude(vec)" expression hidden
     DBAddOption(optlists[3], DBOPT_HIDE_FROM_GUI, &one) ;
 
+#ifdef DB_SDX // Use existence of sdx driver to detect earlier versions.
+              // Sdx driver existes in 4.5.1 and earlier
     DBPutDefvars(dbfile, "defvars", 4, (const char**)pvnames, types,
                  (const char**)pdefns, optlists);
+#else
+    DBPutDefvars(dbfile, "defvars", 4, pvnames, types,
+                 (const char**)pdefns, optlists);
+#endif
     DBFreeOptlist(optlists[3]);
 #endif
 
