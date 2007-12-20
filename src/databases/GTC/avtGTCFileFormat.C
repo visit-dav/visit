@@ -693,6 +693,8 @@ avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **a
     
     // Everyone knows what to expect now. Do the send/recvs via nonblocking send/recv.
     std::vector<MPI_Request> requests;
+    std::vector<int> requestRank;
+    int numSends = 0;
     for ( int i = 0; i < nProcs; i++ )
     {
 	MPI_Request req;
@@ -700,18 +702,21 @@ avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **a
 	if ( sz == 0 )
 	    continue;
 
-	char str[512]; sprintf( str, "%d: sending to %d [%d]\n", rank, i, sz );
-	debug5 << str;
-	
 	err = MPI_Isend( array[i]->Get(0), sz, MPI_FLOAT, i, rank, VISIT_MPI_COMM, &req );
 	if ( err != MPI_SUCCESS )
 	    EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Isend() failure." );
+	char str[512]; sprintf( str, "%d: sending to %d [%d] R=%x\n", rank, i, sz, req );
+	debug5 << str;
+	
 	requests.push_back( req );
+	requestRank.push_back( i );
+	numSends++;
     }
 
     //Do the recvs.
     float **bufs = new float*[nProcs];
     float *myVars = *myVarsPtr, *myIds = *myIdsPtr;
+    int numRecvs = 0;
     
     for ( int i = 0; i < nProcs; i++ )
     {
@@ -720,48 +725,70 @@ avtGTCFileFormat::CommunicateData( int dim, int *shareMatrix, parallelBuffer **a
 	if ( i == rank || sz == 0 )
 	    continue;
 
-	char str[512]; sprintf( str, "%d: receiving from %d [%d]\n", rank, i, sz );
-	debug5 << str;
-	
 	bufs[i] = new float[sz];
 	MPI_Request req;
 	err = MPI_Irecv( bufs[i], sz, MPI_FLOAT, i, i, VISIT_MPI_COMM, &req );
 	if ( err != MPI_SUCCESS )
 	    EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Irecv() failure." );
+	
+	char str[512]; sprintf( str, "%d: receiving from %d [%d] R=%x\n", rank, i, sz, req );
+	debug5 << str;
+	
 	requests.push_back( req );
-
+	requestRank.push_back( i );
+	numRecvs++;
     }
 
-    // Wait till all the non-blocking send/recvs are done.
-    // NOTE:
-    // This is not the best way to do this. We should poll the status
-    // and do the copy as things get done.
-    MPI_Status *stats = new MPI_Status[ requests.size() ];
-    MPI_Waitall( requests.size(), &requests[0], stats );
-
-    //We have all the extra particles that we need in bufs[i]. Copy them into pts,ids.
-    for ( int i = 0; i < nProcs; i++ )
+    // Process the send/recvs as they complete.
+    int numRequests = numSends+numRecvs;
+    if ( numRequests > 0 )
     {
-	int cnt = shareMatrix[i*nProcs + rank];
-	if ( i == rank || cnt == 0 )
-	    continue;
-
-	//Copy ID, var.
-	float *bufPtr = bufs[i];
-	for ( int j = 0; j < cnt; j++ )
+	int num, nTotalReq = numRequests, *idxArray = new int[numRequests];
+	MPI_Status *statusArray = new MPI_Status[numRequests];
+	
+	while ( numRequests > 0 )
 	{
-	    *myIds++ = *bufPtr++; // ID
-	    for ( int k = 0; k < dim; k++ )
-		*myVars++ = *bufPtr++;
+	    err = MPI_Waitsome( nTotalReq, &requests[0], &num, idxArray, statusArray );
+	    if ( err != MPI_SUCCESS || num == MPI_UNDEFINED )
+		EXCEPTION1(InvalidDBTypeException, "GTC Reader: MPI_Waitany() failure." );
+
+	    debug5 << "Waitsome=: " << num << endl;
+	    for ( int i = 0; i < num; i++ )
+	    {
+		int idx = idxArray[i];
+		if ( idx < numSends )
+		{
+		    //Nothing to do for send.
+		}
+		else
+		{
+		    int src = requestRank[idx];
+		    int cnt = shareMatrix[src*nProcs + rank];
+
+		    //Copy ID, var.
+		    float *bufPtr = bufs[src];
+		    for ( int j = 0; j < cnt; j++ )
+		    {
+			*myIds++ = *bufPtr++; // ID
+			for ( int k = 0; k < dim; k++ )
+			    *myVars++ = *bufPtr++;
+		    }
+		    delete [] bufs[src];
+		    bufs[src] = NULL;
+		}
+		requests[idx] = MPI_REQUEST_NULL;
+	    }
+	    
+	    numRequests -= num;
 	}
+
+	delete [] idxArray;
+	delete [] statusArray;
     }
+
 
     //Cleanup.
-    for ( int i = 0; i < nProcs; i++ )
-	if ( bufs[i] )
-	    delete [] bufs[i];
     delete [] bufs;
-    
 
     *myIdsPtr = myIds;
     *myVarsPtr = myVars;
