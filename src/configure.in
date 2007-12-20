@@ -751,6 +751,9 @@ dnl
 dnl    Hank Childs, Fri Dec  7 16:52:10 PST 2007
 dnl    Put the SVN version of the /src directory into visit-config.h.
 dnl
+dnl    Cyrus Harrison, Tue Dec 18 11:53:59 PST 2007
+dnl    Added subdirectory components/Shapelets.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3686,6 +3689,7 @@ COMPONENT_FILES="components/Makefile
                  components/Plotter/Makefile
                  components/Preprocessor/Makefile
                  components/Queries/Makefile
+                 components/Shapelets/Makefile
                  components/View/Makefile
                  components/VisWindow/Makefile
                  components/QtVisWindow/Makefile"

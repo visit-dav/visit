@@ -72,6 +72,8 @@
     <Field name="floatFormat" label="floatFormat" type="string">
       %g
     </Field>
+    <Field name="xmlResult" label="xmlResult" type="string">
+    </Field>
     <Function name="Reset" user="true" member="true">
     </Function>
     <Function name="PrintSelf" user="true" member="true">

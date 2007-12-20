@@ -128,6 +128,9 @@ avtDatasetQuery::~avtDatasetQuery()
 //    Hank Childs, Sat Aug  4 12:31:43 PDT 2007
 //    Catch exceptions, as they lead to parallel hangs if we don't.
 //
+//    Cyrus Harrison, Wed Dec 19 15:11:36 PST 2007
+//    Added set of query xml result.
+//
 // ****************************************************************************
 
 void
@@ -191,6 +194,8 @@ avtDatasetQuery::PerformQuery(QueryAttributes *qA)
             //
             queryAtts.SetResultsMessage(resMsg);
             queryAtts.SetResultsValue(resValue);
+            queryAtts.SetXmlResult(xmlResult);
+            
         }
         else
         {

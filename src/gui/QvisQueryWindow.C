@@ -668,6 +668,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Cyrus Harrison, Fri Mar 16 14:03:41 PDT 200
 //   Added output file gui for the connected components summary query.
 //
+//   Cyrus Harrison, Wed Dec 19 14:53:19 PST 2007
+//   Added gui for shapelet decomposition query.
+//
 // ****************************************************************************
 
 void
@@ -824,6 +827,18 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
             labels[0]->setText("Output File");
             textFields[0]->setText("cc_summary.okc");
             showWidgets[0] = true;
+        }
+        else if (winT == QueryList::ShapeletsDecomp)
+        {
+            labels[0]->setText("Beta");
+            textFields[0]->setText("5.0");
+            showWidgets[0] = true;
+            labels[1]->setText("NMax");
+            textFields[1]->setText("5");
+            showWidgets[1] = true;
+            labels[2]->setText("Recomp Output (Vtk)");
+            textFields[2]->setText("[skip]");
+            showWidgets[2] = true;
         }
 
         // hide and show the right text widgets.
@@ -998,6 +1013,9 @@ QvisQueryWindow::ConnectPlotList(PlotList *pl)
 //   Cyrus Harrison, Wed Sep 26 09:15:13 PDT 2007
 //   Added check for valid floating point format string before executing
 //   query.
+//
+//   Cyrus Harrison, Wed Dec 19 14:53:19 PST 2007
+//   Added parsing for shapelet decomposition query.
 //
 // ****************************************************************************
 
@@ -1253,6 +1271,33 @@ QvisQueryWindow::Apply(bool ignore, bool doTime)
                 if (noErrors)
                     GetViewerMethods()->DatabaseQuery(names[index], vars, 
                                                       false,true);
+            }
+            else if (winT == QueryList::ShapeletsDecomp)
+            {
+                std::string ofile = "";
+                QString ofqs;
+                vars.push_back("default");
+                
+                doubleVector dvec;
+                dvec.resize(1);
+                if(!GetFloatingPointNumber(0, &dvec[0]))
+                    noErrors = false;
+                
+                int nmax = 0;
+                if(!GetNumber(1, &nmax))
+                    noErrors = false;
+
+                ofqs = textFields[2]->displayText();
+                ofile = ofqs.simplifyWhiteSpace().latin1();
+                if(ofile == "[skip]")
+                    vars.push_back("");
+                else
+                    vars.push_back(ofile);
+
+                if(noErrors)
+                    GetViewerMethods()->DatabaseQuery(names[index], vars, 
+                                                      false, nmax,0,false,
+                                                      dvec);
             }
 
             // Display a status message.

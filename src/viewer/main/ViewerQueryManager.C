@@ -3630,6 +3630,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Kathleen Bonnell, Fri Sep 28 14:52:09 PDT 2007 
 //    Made 'Volume2' be a non-public query (won't be available in window).
 //
+//    Cyrus Harrison, Tue Dec 18 14:18:07 PST 2007
+//    Added Shapelet Decomposition Query
+//
 // ****************************************************************************
 
 void
@@ -3659,7 +3662,7 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::Groups vr = QueryList::VariableRelated;
     QueryList::Groups sr = QueryList::ShapeRelated;
     QueryList::Groups ccl_r = QueryList::ConnectedComponentsRelated;
-
+    
     QueryList::WindowType basic = QueryList::Basic;
     QueryList::WindowType sp  = QueryList::SinglePoint;
     QueryList::WindowType dp  = QueryList::DoublePoint;
@@ -3670,7 +3673,8 @@ ViewerQueryManager::InitializeQueryList()
     QueryList::WindowType ad  = QueryList::ActualData;
     QueryList::WindowType ld  = QueryList::LineDistribution;
     QueryList::WindowType hf  = QueryList::HohlraumFlux;
-    QueryList::WindowType ccls_wt  = QueryList::ConnCompSummary;
+    QueryList::WindowType ccls_wt = QueryList::ConnCompSummary;
+    QueryList::WindowType shp_wt  = QueryList::ShapeletsDecomp;
     //QueryList::WindowType av = QueryList::ActualDataVars;
 
     QueryList::QueryMode qo = QueryList::QueryOnly;
@@ -3731,6 +3735,8 @@ ViewerQueryManager::InitializeQueryList()
     queryTypes->AddQuery("Connected Component Variable Sum", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Component Weighted Variable Sum", dq, ccl_r, basic, 1, 0, qo);
     queryTypes->AddQuery("Connected Components Summary", dq, ccl_r, ccls_wt, 1, 0, qo);
+    
+    queryTypes->AddQuery("Shapelet Decomposition", dq, vr, shp_wt, 1, 0, qo);
 
 
     int MinMaxVars = QUERY_SCALAR_VAR | QUERY_TENSOR_VAR | QUERY_VECTOR_VAR |

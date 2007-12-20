@@ -246,3 +246,4 @@ QueryList::RegularQueryAvailable(const std::string &name)
     }
     return canDoRegular;
 }
+

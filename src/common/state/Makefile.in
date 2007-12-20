@@ -284,6 +284,9 @@
 #    Eric Brugger, Fri Jun 29 09:31:52 PDT 2007
 #    Removed the setting of the NOT_DISTRIB variable.
 #
+#    Cyrus Harrison, Mon Dec 17 15:52:30 PST 2007
+#    Added XMLNode, Variant, and MapNode.
+#
 ##############################################################################
 
 ##
@@ -340,11 +343,12 @@ SRC=    AnimationAttributes.C \
         InteractorAttributes.C \
         KeepAliveRPC.C \
         KeyframeAttributes.C \
-	LightAttributes.C \
-	LightList.C \
-	Line.C \
+        LightAttributes.C \
+        LightList.C \
+        Line.C \
+        MapNode.C \
         MaterialAttributes.C \
-	MeshManagementAttributes.C \
+        MeshManagementAttributes.C \
         MessageAttributes.C \
         MovieAttributes.C \
         NamespaceAttributes.C \
@@ -361,11 +365,11 @@ SRC=    AnimationAttributes.C \
         Point.C \
         PointAttributes.C \
         PrinterAttributes.C \
-	ProcessAttributes.C \
+        ProcessAttributes.C \
         QueryAttributes.C \
         QueryList.C \
         QueryOverTimeAttributes.C \
-	QuitRPC.C \
+        QuitRPC.C \
         RenderingAttributes.C \
         ResampleAttributes.C \
         SaveWindowAttributes.C \
@@ -381,16 +385,18 @@ SRC=    AnimationAttributes.C \
         SurfaceFilterAttributes.C \
         SyncAttributes.C \
         TimeFormat.C \
+        Variant.C \
         View2DAttributes.C \
         View3DAttributes.C \
         ViewAttributes.C \
         ViewCurveAttributes.C \
-	VisItRPC.C \
+        VisItRPC.C \
         VisualCueInfo.C \
-	VisualCueList.C \
+        VisualCueList.C \
         WindowAttributes.C \
         WindowInformation.C \
-        Xfer.C
+        Xfer.C \
+        XMLNode.C 
 
 HDR=$(SRC:.C=.h)
 OBJ=$(SRC:.C=.o)

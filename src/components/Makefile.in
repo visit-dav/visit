@@ -107,13 +107,16 @@
 #   Hank Childs, Mon Feb 13 20:52:50 PST 2006
 #   Added DDF directory.
 #
+#   Cyrus Harrison, Tue Dec 11 15:41:01 PST 2007
+#   Added Shapelets directory.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 @DIRTARGETS@
 
-SUBDIRS=DBAtts Math Pipeline DDF MIR \
+SUBDIRS=DBAtts Math Pipeline DDF MIR Shapelets\
         View Filters Database Expressions Queries Plotter FileWriter \
         @VISWINDOW@ QtVisWindow
 

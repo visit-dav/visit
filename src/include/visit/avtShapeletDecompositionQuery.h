@@ -1,0 +1,1 @@
+../../components/Queries/Queries/avtShapeletDecompositionQuery.h
