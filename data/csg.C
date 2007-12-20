@@ -167,8 +167,8 @@ build_csg(DBfile *dbfile, char *name)
         pv[0] = var1_data;
         pname[0] = name1;
 
-        DBPutCsgvar(dbfile, "var1", "csgmesh", 1, pname, pv, 2, DB_DOUBLE,
-            DB_ZONECENT, 0);
+        DBPutCsgvar(dbfile, "var1", "csgmesh", 1, (const char**)pname,
+                    (const void**)pv, 2, DB_DOUBLE, DB_ZONECENT, 0);
     }
 
     // output a material for this csg mesh

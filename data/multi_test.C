@@ -3029,7 +3029,8 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
     // declare the "magnitude(vec)" expression hidden
     DBAddOption(optlists[3], DBOPT_HIDE_FROM_GUI, &one) ;
 
-    DBPutDefvars(dbfile, "defvars", 4, pvnames, types, pdefns, optlists);
+    DBPutDefvars(dbfile, "defvars", 4, (const char**)pvnames, types,
+                 (const char**)pdefns, optlists);
     DBFreeOptlist(optlists[3]);
 #endif
 
