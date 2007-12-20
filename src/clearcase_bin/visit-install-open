@@ -220,14 +220,14 @@ echo "       --------------------------"           >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-intel/bin       >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): hoth" $emailName < resultlog
 EOF
 
@@ -256,14 +256,14 @@ echo "       -----------------------------"        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/sun4-sunos5-sparc/bin  >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/sun4-sunos5-sparc/bin >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/sun4-sunos5-sparc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/sun4-sunos5-sparc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sun4-sunos5-sparc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/sun4-sunos5-sparc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sun4-sunos5-sparc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/sun4-sunos5-sparc/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/sun4-sunos5-sparc\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): sunspot" $emailName < resultlog
 EOF
 
@@ -292,16 +292,16 @@ echo "       --------------------------"           >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/sgi-irix6-mips2/bin    >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/sgi-irix6-mips2/bin   >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/sgi-irix6-mips2/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/sgi-irix6-mips2/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/sgi-irix6-mips2/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/sgi-irix6-mips2\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/sgi-irix6-mips2/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/sgi-irix6-mips2\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 cp resultlog \$HOME/quad_resultlog
-ssh thunder "cat quad_resultlog | /bin/mail  -s \"VisIt build ($dist): quad\" $emailName"
+ssh thunder "cat quad_resultlog | /bin/mail  -s \"VisIt install ($dist): quad\" $emailName"
 # give thunder time to mail it before removing the log
 sleep 10
 rm \$HOME/quad_resultlog
@@ -336,25 +336,25 @@ df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "            32 bit version"                  >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/ibm-aix-pwr/bin        >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/ibm-aix-pwr/bin       >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/ibm-aix-pwr/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/ibm-aix-pwr\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "            64 bit version"                  >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/ibm-aix-pwr64/bin      >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/ibm-aix-pwr64/bin     >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/ibm-aix-pwr64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/ibm-aix-pwr64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/ibm-aix-pwr64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/ibm-aix-pwr64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/ibm-aix-pwr64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): up" $emailName < resultlog
 EOF
 
@@ -385,14 +385,14 @@ echo "       ----------------------------"         >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-intel/bin        >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-intel/bin       >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): pengra" $emailName < resultlog
 EOF
 
@@ -421,14 +421,14 @@ echo "       -----------------------------"        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-ia64/bin         >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-ia64/bin        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-ia64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-ia64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-ia64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-ia64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-ia64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-ia64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-ia64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-ia64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-ia64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-ia64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): thunder" $emailName < resultlog
 EOF
 
@@ -457,14 +457,14 @@ echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-x86_64-ib/bin    >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64-ib/bin   >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-x86_64-ib/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64-ib\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64-ib/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64-ib\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): prism" $emailName < resultlog
 EOF
 
@@ -493,14 +493,14 @@ echo "       --------------------------"           >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /usr/gapps/visit/$ver/linux-x86_64/bin       >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-x86_64/bin      >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /usr/gapps/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): yana" $emailName < resultlog
 EOF
 
@@ -529,14 +529,14 @@ echo "       ---------------------------"          >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /opt/llnl/visit                              >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l /opt/llnl/visit/$ver/linux-x86_64/bin        >> resultlog 2>&1
+ls -l /opt/llnl/visit/$ver+/linux-x86_64/bin       >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls /opt/llnl/visit/$ver/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls /opt/llnl/visit/$ver/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls /opt/llnl/visit/$ver/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls /opt/llnl/visit/$ver+/linux-x86_64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /opt/llnl/visit/$ver+/linux-x86_64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /opt/llnl/visit/$ver+/linux-x86_64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls /opt/llnl/visit/$ver/linux-x86_64/plugins/databases/libI* | sed "s/\/opt\/llnl\/visit\/$ver\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls /opt/llnl/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/opt\/llnl\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): xchem" $emailName < resultlog
 EOF
 
@@ -565,14 +565,14 @@ echo "       -----------------------------"        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k visit                                        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l visit/$ver/linux-ia64/bin                    >> resultlog 2>&1
+ls -l visit/$ver+/linux-ia64/bin                   >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls visit/$ver/linux-ia64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls visit/$ver/linux-ia64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls visit/$ver/linux-ia64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls visit/$ver+/linux-ia64/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls visit/$ver+/linux-ia64/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls visit/$ver+/linux-ia64/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls visit/$ver/linux-ia64/plugins/databases/libI* | sed "s/visit\/$ver\/linux-ia64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls visit/$ver+/linux-ia64/plugins/databases/libI* | sed "s/visit\/$ver+\/linux-ia64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): davinci" $emailName < resultlog
 EOF
 
@@ -601,14 +601,14 @@ echo "       -----------------------------"        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k visit                                        >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-ls -l visit/$ver/linux-intel/bin                   >> resultlog 2>&1
+ls -l visit/$ver+/linux-intel/bin                  >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
-echo "number of database plugins = "\`ls visit/$ver/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
-echo "number of operator plugins = "\`ls visit/$ver/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
-echo "number of plot plugins = "\`ls visit/$ver/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo "number of database plugins = "\`ls visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
-ls visit/$ver/linux-intel/plugins/databases/libI* | sed "s/visit\/$ver\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+ls visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
 mail -s "VisIt install ($ver): ellipse" $emailName < resultlog
 EOF
 
