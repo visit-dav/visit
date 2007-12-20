@@ -15,19 +15,26 @@
 enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Features added in version 1.8.0</font></b></p>
 <ul>
+<li>VisIt now allows you to change your username when attempting to connect to a remote host.</li>
 <li>VisIt now displays console output from components that it launches on remote computers. For example, this makes it possible to see the launch string used for a parallel batch system on a remote computer.</li>
 <li><p>VisIt now supports setting the background for a visualization to a user-specified image. VisIt can display the background image under all of its plots and can optionally tile the image. You can choose to set an image background by opening the <b>Colors</b> tab of the <b>Annotation Window</b> and from there, you can choose the <i>Image</i> background style. Once you choose the <i>Image</i> background style, you must choose an image file by entering a filename into the <b>Background image</b> file box. Note that you currently must provide a file local to the computer on which you ran VisIt. <i>Support for image annotations in distributed mode will be added in a future version of VisIt.</i></p>
 <p>In addition to support for flat background images, VisIt also now supports <i>Image sphere</i> backgrounds. This style of background image takes a flat image and warps it around a sphere that contains the whole visualization. As you move the camera in the visualization window via rotations, the visible region of the image sphere will change, simulating movement within a larger environment. Image spheres are useful for adding backgrounds such as star fields to your visualization. It is also possible to tile images by setting the number of repetitions in X and Y.</p></li>
 <li>VisIt has a new 3D text annotation type that can be used to insert extruded text into a 3D visualization. The new annotation object is available on the Objects tab of the Annotation Window.</li>
+<li>VisIt has a new feature for checking which Subversion revision it was built against.  This feature is useful for determining mismatches when having problems running client-server.  You can access this by running "visit -svn_version".</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.8.0</font></b></p>
 <ul>
 <li>VisIt no longer fails to save movies when the <i>Animation caching</i> setting is used in the <b>Animation Window</b>.</li>
 <li>VisIt's CCM reader has been extended so it supports 2D polygonal cells in addition to previously supporting 3D polyhedral cells.</li>
+<li>For an AMR mesh, if the number of patches per level changes from time slice to time slice, but the total number of patches stays the same, VisIt now correctly honors material selection when changing time slices.</li>
 <li>VisIt's Label plot now takes cell and node origins into account when labelling mesh cells and nodes.</li>
 <li>VisIt's Label plot no longer uses incorrect label colors when using custom colors for node and cell labels when the <i>Restrict number of labels</i> setting is used.</li>
 <li>VisIt's Revolve operator does not work with 2D Boundary plots.</li>
+<li>VisIt's Elevate operator can now work on Boundary plots with the option "elevate by zero height."</li>
 <li>VisIt does not show windows that have been iconified when you choose the menu option that should open the window.</li>
+<li>The parallel coordinate plot can now work with expressions that have the angle brackets used for specifying variables in subdirectories.</li>
+<li>The Derived Data Function feature (available only through the CLI) now correctly ignores points that are not incident to any zones, which is a common case when doing material selection.</li>
+<li>The Derived Data Function feature (available only through the CLI) can now correctly work with expressions that use the coordinates of the mesh.</li>
 </ul>
 <p>Click the following link to view the release notes for the previous version
 of VisIt: <a href="relnotes1.7.html">VisIt 1.7 Release Notes</a>.</p>
