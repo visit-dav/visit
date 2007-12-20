@@ -683,6 +683,9 @@ avtGTCFileFormat::GetDataShareMatrix( parallelBuffer **array )
 // Creation:   Mon Dec  3 16:17:45 EST 2007
 //
 // Modifications:
+//
+//  Dave Pugmire, Thu Dec 20 16:23:48 EST 2007
+//  Use MPI_Waitsome instead of MPI_Waitall. Process things as they become ready.
 //   
 // ****************************************************************************
 void
