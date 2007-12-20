@@ -67,6 +67,7 @@
 
 #include <NonQueryableInputException.h>
 #include <DebugStream.h>
+#include <MapNode.h>
 
 using std::vector;
 using std::string;
@@ -570,6 +571,9 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
 //    Removed MPI calls, use methods from avtParallel instead.  Reworked as
 //    result values now stored in MinMaxInfo objects. 
 //
+//    Cyrus Harrison, 
+//    Added use of MapNode to create structured XML query output.
+// 
 // ****************************************************************************
 
 void
@@ -636,6 +640,23 @@ avtMinMaxQuery::PostExecute(void)
         CreateMessage(nMax, maxInfo1, maxInfo2, maxMsg, resVals);
         CreateResultMessage((nMin > nMax ? nMin : nMax));
         SetResultValues(resVals);
+        MapNode result_node;
+        
+        if(doMax && doMin)
+        {
+            result_node["min"] = minInfo1.GetValue();
+            result_node["max"] = maxInfo1.GetValue();
+        }
+        else if(doMax)
+        {
+            result_node = maxInfo1.GetValue();
+        }
+        else if(doMin)
+        {
+            result_node = minInfo1.GetValue();
+        }
+        
+        SetXmlResult(result_node.ToXML());
     }
 }
 

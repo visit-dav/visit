@@ -98,6 +98,9 @@ class vtkDataSet;
 //    Kathleen Bonnell, Mon Jan  3 15:12:19 PST 2005 
 //    Removed PerformQueryInTime. 
 //
+//    Cyrus Harrison, Tue Dec 18 08:16:10 PST 2007
+//    Added GetXmlResult(), SetXmlResult() and xmlResult.
+//
 // ****************************************************************************
 
 class QUERY_API avtDatasetQuery : public avtDataObjectQuery, 
@@ -121,7 +124,11 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
     virtual doubleVector     GetResultValues(void) { return resValue; };
     virtual void             SetResultValues(const doubleVector &d)
                                  { resValue = d; };
-
+    
+    virtual std::string      GetXmlResult(void) { return xmlResult; };
+    virtual void             SetXmlResult(const std::string &xml) 
+                                 { xmlResult= xml; }; 
+                                 
   protected:
 
     virtual void             PreExecute(void);
@@ -141,6 +148,7 @@ class QUERY_API avtDatasetQuery : public avtDataObjectQuery,
     virtual void             Execute(avtDataTree_p);
     std::string              resMsg;
     doubleVector             resValue;
+    std::string              xmlResult;
 };
 
 

@@ -1,0 +1,90 @@
+/*****************************************************************************
+*
+* Copyright (c) 2000 - 2007, The Regents of the University of California
+* Produced at the Lawrence Livermore National Laboratory
+* All rights reserved.
+*
+* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The
+* full copyright notice is contained in the file COPYRIGHT located at the root
+* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+*
+* Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+* modification, are permitted provided that the following conditions are met:
+*
+*  - Redistributions of  source code must  retain the above  copyright notice,
+*    this list of conditions and the disclaimer below.
+*  - Redistributions in binary form must reproduce the above copyright notice,
+*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+*    documentation and/or materials provided with the distribution.
+*  - Neither the name of the UC/LLNL nor  the names of its contributors may be
+*    used to  endorse or  promote products derived from  this software without
+*    specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF
+* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR
+* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+* LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+* OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*
+*****************************************************************************/
+
+#include <avtShapeletBasis2D.h>
+#include <math.h>
+using namespace std;
+
+
+// ****************************************************************************
+//  Method:  avtShapeletTemplate1D::avtShapeletTemplate1D
+//
+//  Purpose:
+//     Constructs a sampled 2D Shapelet Basis function from two 1D basis
+//     functions.
+//  
+//  Programmer:  Cyrus Harrison
+//  Creation:    December 6, 2007
+//
+// ****************************************************************************
+
+avtShapeletBasis2D::avtShapeletBasis2D(const avtShapeletBasis1D *x_basis,
+                                       const avtShapeletBasis1D *y_basis)
+: beta(x_basis->Beta()), 
+  n1(x_basis->N()), n2(y_basis->N()),
+  width(x_basis->Length()), height(y_basis->Length())
+{
+    values.resize(width * height);
+    // construct the basis with the tensor product of the two 1D basis
+    // functions
+    int idx=0;
+    for(int j=0;j<height;j++)
+    {
+        for(int i=0;i<width;i++)
+        {
+            values[idx] = x_basis->ValueAt(i) * y_basis->ValueAt(j);
+            idx++;
+        }
+    }
+
+}
+
+
+// ****************************************************************************
+//  Method:  avtShapeletBasis2D::~avtShapeletBasis2D
+//
+//  Purpose:
+//     Shaplet Basis destructor.
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    December 6, 2007
+//
+// ****************************************************************************
+
+avtShapeletBasis2D::~avtShapeletBasis2D()
+{;}
+

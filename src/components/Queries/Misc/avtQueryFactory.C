@@ -80,6 +80,7 @@
 #include <avtOriginalDataNumNodesQuery.h>
 #include <avtOriginalDataNumZonesQuery.h>
 #include <avtOriginalDataSpatialExtentsQuery.h>
+#include <avtShapeletDecompositionQuery.h>
 #include <avtSkewnessQuery.h>
 #include <avtSphericalCompactnessFactorQuery.h>
 #include <avtTimeQuery.h>
@@ -261,6 +262,9 @@ avtQueryFactory::Instance()
 //
 //    Kathleen Bonnell, Tue Nov 20 10:33:49 PST 2007 
 //    Added Locate and Pick Zone/Node queries. 
+//
+//    Cyrus Harrison, Tue Dec 18 14:15:58 PST 2007
+//    Added Shapelet Decomposition Query.
 //
 // ****************************************************************************
 
@@ -585,8 +589,34 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     {
         query = new avtLocateAndPickNodeQuery();
     }
+    else if( qname == "Shapelet Decomposition")
+    {
+        avtShapeletDecompositionQuery *shapelet_query = 
+                                            new avtShapeletDecompositionQuery();
+        if(qa->GetDarg1().size() == 1)
+        {
+            if(qa->GetDarg1()[0] < 1.0)
+                EXCEPTION1(VisItException, 
+                            "Shapelet Decomposition requries "
+                            "beta and nmax >= 1.");
+            shapelet_query->SetBeta(qa->GetDarg1()[0]);
+        }
+        else
+            shapelet_query->SetBeta(1.0);
+        if(qa->GetElement() < 1)
+            shapelet_query->SetNMax(1);
+        else
+            shapelet_query->SetNMax(qa->GetElement()); // Element == int arg1
+        shapelet_query->SetDecompOutputFileName("");
+        
+        if(qa->GetVariables().size() >1)
+            shapelet_query->SetRecompOutputFileName(qa->GetVariables()[1]);
+        else
+            shapelet_query->SetRecompOutputFileName("");
+        query = shapelet_query;
+    }
 
-
+    
     if (query == NULL && !foundAQuery)
     {
         EXCEPTION1(VisItException, "No query to execute was found. "

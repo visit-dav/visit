@@ -164,6 +164,10 @@
 #include <PyWindowInformation.h>
 #include <PyavtDatabaseMetaData.h>
 
+// Variant & MapNode Helpers:
+#include <PyVariant.h>
+#include <PyMapNode.h>
+
 #include <MethodDoc.h>
 
 #include <avtSILRestrictionTraverser.h>
@@ -251,7 +255,7 @@ public:
     VisItMessageObserver(Subject *s) : Observer(s), lastError("")
     {
         errorFlag = 0;
-	suppressLevel = 4;
+    suppressLevel = 4;
     };
 
     virtual ~VisItMessageObserver() { };
@@ -263,8 +267,8 @@ public:
     int SetSuppressLevel(int newLevel)
     {
         int oldLevel = suppressLevel;
-	suppressLevel = newLevel;
-	return oldLevel;
+    suppressLevel = newLevel;
+    return oldLevel;
     };
 
     int GetSuppressLevel() const { return suppressLevel; };
@@ -281,7 +285,7 @@ public:
             errorFlag = 1;
             lastError = m->GetText();
 
-	    if (suppressLevel > 1)
+        if (suppressLevel > 1)
                 fprintf(stderr, "VisIt: Error - %s\n", m->GetText().c_str());
 //            // This can't really be done this way since this code is only
 //            // ever called by the 2nd thread. It cannot use Python.
@@ -290,7 +294,7 @@ public:
         else if(m->GetSeverity() == MessageAttributes::ErrorClear)
             errorFlag = 0;
         else if(m->GetSeverity() == MessageAttributes::Warning &&
-	        suppressLevel > 2)
+            suppressLevel > 2)
             fprintf(stderr, "VisIt: Warning - %s\n", m->GetText().c_str());
         else if (suppressLevel > 3)
             fprintf(stderr, "VisIt: Message - %s\n", m->GetText().c_str());
@@ -7432,6 +7436,58 @@ visit_GetQueryOutputValue(PyObject *self, PyObject *args)
     return retval;
 }
 
+// ****************************************************************************
+// Function: visit_GetQueryOutputXML
+//
+// Purpose:
+//   Returns the xml string result set by a query.
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   December 17, 2007
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetQueryOutputXML(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    
+    QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
+    std::string xml_string = qa->GetXmlResult();
+    return PyString_FromString(xml_string.c_str());
+}
+
+
+// ****************************************************************************
+// Function: visit_GetQueryOutputObject
+//
+// Purpose:
+//   Returns a python dictonary created from an xml query result.
+//   Assumes the xml query result is a serialized MapNode.
+//
+//
+// Programmer: Cyrus Harrison
+// Creation:   December 17, 2007 
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetQueryOutputObject(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    QueryAttributes *qa = GetViewerState()->GetQueryAttributes();
+    string xml_string = qa->GetXmlResult();
+    XMLNode xml_node(xml_string);
+    MapNode node(xml_node);
+    return PyMapNode_Wrap(node);
+}
+
+
 
 // ****************************************************************************
 // Function: visit_GetOutputArray
@@ -9320,6 +9376,10 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Patched to call PyErr_Clear() after each failed attempt to parse
 //   the tuple.  
 //
+//   Cyrus Harrison, Tue Dec 18 21:06:34 PST 2007
+//   Added support for Shapelet Decomposition, removed nested parsing
+//   because it was getting real hairy.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9327,36 +9387,70 @@ visit_Query(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
     char *queryName = NULL;
+    char *output_name = NULL;
     int arg1 = 0, arg2 = 0;
     doubleVector darg1(3), darg2(3);
     PyObject *tuple = NULL;
-    if (!PyArg_ParseTuple(args, "sidddddd|O", &queryName, &arg1,
-                          &(darg1[0]), &(darg1[1]), &(darg1[2]),
-                          &(darg2[0]), &(darg2[1]), &(darg2[2]), &tuple))
+    
+    bool parse_success = false;
+    
+    parse_success = PyArg_ParseTuple(args, "sidddddd|O", &queryName, &arg1,
+                                     &(darg1[0]), &(darg1[1]), &(darg1[2]),
+                                     &(darg2[0]), &(darg2[1]), &(darg2[2]),
+                                     &tuple);
+    if(!parse_success)
     {
         PyErr_Clear();
         darg1.resize(1);
         darg2.resize(1);
-        if (!PyArg_ParseTuple(args, "siidd|O", &queryName, &arg1,
-                              &arg2, &(darg1[0]), &(darg2[0]), &tuple))
-        {
-            PyErr_Clear();
-            darg1.resize(0);
-            darg2.resize(0);
-            if (!PyArg_ParseTuple(args, "sii|O", &queryName, &arg1, &arg2, &tuple))
-            {
-                PyErr_Clear();
-                if (!PyArg_ParseTuple(args, "si|O", &queryName, &arg1, &tuple))
-                {
-                    PyErr_Clear();
-                    if (!PyArg_ParseTuple(args, "s|O", &queryName, &tuple))
-                    {
-                        return NULL;
-                    }
-                }
-            }
-        }
+        parse_success = PyArg_ParseTuple(args, "siidd|O", &queryName, &arg1,
+                                         &arg2, &(darg1[0]), &(darg2[0]), 
+                                         &tuple);
     }
+    
+    // shapelets
+    if(!parse_success)
+    {
+        PyErr_Clear();
+        darg1.resize(1);
+        darg2.resize(0);
+        parse_success = PyArg_ParseTuple(args, "sdis|O", &queryName, 
+                                         &(darg1[0]), &arg1, &output_name,
+                                         &tuple);
+    }
+    // shapelets (with output)
+    if(!parse_success)
+    {
+        PyErr_Clear();
+        parse_success = PyArg_ParseTuple(args, "sdi|O", &queryName, 
+                                         &(darg1[0]), &arg1, &tuple);
+    }
+    
+    if(!parse_success)
+    {
+        PyErr_Clear();
+        darg1.resize(0);
+        parse_success = PyArg_ParseTuple(args, "sii|O", &queryName,
+                                         &arg1, &arg2, &tuple);
+    }
+    
+    if(!parse_success)
+    {
+        PyErr_Clear();
+        parse_success = PyArg_ParseTuple(args, "si|O", &queryName, &arg1,
+                                         &tuple);
+    }
+    
+    if(!parse_success)
+    {
+        PyErr_Clear();
+        parse_success = PyArg_ParseTuple(args, "s|O", &queryName, &tuple);
+    }
+    
+    // we could not parse the args!
+    if(!parse_success)
+        return NULL;
+    
     // Check for global flag.
     std::string qname(queryName);
     bool doGlobal = false;
@@ -9375,6 +9469,14 @@ visit_Query(PyObject *self, PyObject *args)
     // Check the tuple argument.
     stringVector vars;
     GetStringVectorFromPyObject(tuple, vars);
+    
+    // magic for Shapelet Decomposition call
+    if(output_name != NULL)
+    {
+        vars.push_back("default");
+        vars.push_back(std::string(output_name));
+    }
+
     if (vars.size() == 1)
     {
         if (strcmp(vars[0].c_str(), "original") == 0)
@@ -12256,6 +12358,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Brad Whitlock, Wed Dec 12 15:18:39 PST 2007
 //   Added Set/GetAnimationAttributes, which I thought I added a long time ago.
 //
+//   Cyrus Harrison, Mon Dec 17 14:49:25 PST 2007
+//   Added GetQueryOutputXML() and GetQueryOutputObject() 
+//
 // ****************************************************************************
 
 static void
@@ -12407,6 +12512,11 @@ AddDefaultMethods()
                                                      visit_GetQueryOutput_doc);
     AddMethod("GetQueryOutputValue", visit_GetQueryOutputValue,
                                                      visit_GetQueryOutput_doc);
+    AddMethod("GetQueryOutputXML", visit_GetQueryOutputXML,
+                                                     visit_GetQueryOutput_doc);
+    AddMethod("GetQueryOutputObject", visit_GetQueryOutputObject,
+                                                     visit_GetQueryOutput_doc);
+    
     AddMethod("GetOutputArray", visit_GetOutputArray,
                                                      visit_GetOutputArray_doc);
     AddMethod("GetRenderingAttributes", visit_GetRenderingAttributes,
