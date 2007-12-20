@@ -665,6 +665,9 @@ def GenFileNames(file, ext):
 #
 #   Mark C. Miller, Wed Nov 29 08:19:52 PST 2006 
 #   Changed meddiff to avgdiff
+#
+#   Sean Ahern, Thu Dec 20 14:48:14 EST 2007
+#   Made diffState be a string so its easier to understand.
 # ----------------------------------------------------------------------------
 
 def Test(file, altSWA=0):
@@ -710,9 +713,8 @@ def Test(file, altSWA=0):
        SetSaveWindowAttributes(sa)
        LeakCheck(file, 5)
 
-    # 0:No Diffs, 1:Acceptable Diffs, 2:Unacceptable Diffs, 3:Unknown
+    diffState = 'Unknown'
     skipMe = file in skipCases
-    diffState = 3 
     tPixs = pPixs = dPixs = 0
     dpix = davg = 0.0
     if usePIL:
@@ -721,34 +723,35 @@ def Test(file, altSWA=0):
             dpix = dPixs * 100.0 / pPixs
             if dpix > pixdifftol:
                 if davg > avgdifftol:
-                    diffState = 2
+                    diffState = 'Unacceptable'
                 else:
-                    diffState = 1
+                    diffState = 'Acceptable'
             else:
-                diffState = 1
+                diffState = 'Acceptable'
         else:
             if dPixs != 0:
 	        dpix = 1000000.0
-                diffState = 2
+                diffState = 'Unacceptable'
             else:
 	        dpix = 0.0
-                diffState = 0
-    if skipMe: diffState = 4
+                diffState = 'None'
+    if skipMe:
+        diffState = 'Skipped'
 
     WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file)
 
     # write data to the log file if there is one
     if (os.path.isfile("log")):
         log = open("log", 'a')
-        if diffState == 0:
+        if diffState == 'None':
 	    log.write("    Test case '%s' PASSED\n" % file)
-        elif diffState == 1:
+        elif diffState == 'Acceptable':
             log.write("    Test case '%s' PASSED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f\n" %
 	        (file, tPixs, pPixs, dPixs, dpix, davg))
-        elif diffState == 2:
+        elif diffState == 'Unacceptable':
             log.write("    Test case '%s' FAILED: #pix=%06d, #nonbg=%06d, #diff=%06d, ~%%diffs=%.3f, avgdiff=%3.3f\n" %
 	        (file, tPixs, pPixs, dPixs, dpix, davg))
-        elif diffState == 4:
+        elif diffState == 'Skipped':
 	    log.write("    Test case '%s' SKIPPED\n" % file)
         else:
             log.write("    Test case '%s' UNKNOWN:#pix=UNK , #nonbg=UNK , #diff=UNK , ~%%diffs=UNK,  avgdiff=UNK\n")
@@ -759,7 +762,14 @@ def Test(file, altSWA=0):
        AddMemorySample()
 
     # update maxmimum diff state 
-    maxds = max(maxds, diffState)
+    diffVals = {
+        'None' :  0,
+        'Acceptable' : 1,
+        'Unacceptable' : 2,
+        'Unknown' : 3,
+        'Skipped' : 4
+    }
+    maxds = max(maxds, diffVals[diffState])
 
 # ----------------------------------------------------------------------------
 # Function: WriteHTMLForOneTestImage 
@@ -773,20 +783,20 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
 
     # write to the html file
     color = "#ffffff"
-    if diffState == 0:   color = "#00ff00"
-    elif diffState == 1: color = "#ffff00"
-    elif diffState == 2: color = "#ff0000"
-    elif diffState == 4: color = "#0000ff"
-    else:                color = "#ff00ff"
+    if diffState == 'None':             color = "#00ff00"
+    elif diffState == 'Acceptable':     color = "#ffff00"
+    elif diffState == 'Unacceptable':   color = "#ff0000"
+    elif diffState == 'Skipped':        color = "#0000ff"
+    else:                               color = "#ff00ff"
     html.write(" <tr>\n")
     html.write("  <td bgcolor=\"%s\"><a href=\"%s.html\">%s</a></td>\n" % (color, file, file))
     html.write("  <td align=center>%.2f</td>\n" % (dpix))
     html.write("  <td align=center>%.2f</td>\n" % (davg))
-    if (diffState == 3):
+    if (diffState == 'Unknown'):
         html.write("  <td align=center>Not Available</td>\n")
         html.write("  <td align=center><a href=\"c_%s.jpg\" onclick='return popup(\"c_%s.jpg\",\"image\");'><img src=\"c_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
         html.write("  <td align=center>Not Available</td>\n")
-    elif (diffState > 0):
+    elif (diffState != 'None'):
         html.write("  <td align=center><a href=\"b_%s.jpg\" onclick='return popup(\"b_%s.jpg\",\"image\");'><img src=\"b_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
         html.write("  <td align=center><a href=\"c_%s.jpg\" onclick='return popup(\"c_%s.jpg\",\"image\");'><img src=\"c_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
         html.write("  <td align=center><a href=\"d_%s.jpg\" onclick='return popup(\"d_%s.jpg\",\"image\");'><img src=\"d_%s_thumb.jpg\"></a></td>\n" % (file,file,file))
@@ -802,16 +812,24 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     testcase.write("<table border=5><tr><td></td></tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center rowspan=9 bgcolor=%s>\n"%color)
-    if (diffState <= 1):    testcase.write("        <b><h1><i>Passed</i></h1></b>\n");
-    elif (diffState == 2):  testcase.write("        <b><h1><i>Failed</i></h1></b>\n");
-    elif (diffState == 4):  testcase.write("        <b><h1><i>Skipped</i></h1></b>\n");
-    else:                   testcase.write("        <b><h1><i>Unknown</i></h1></b>\n");
+    if (diffState == 'None' or diffState == 'Acceptable'):
+        testcase.write("        <b><h1><i>Passed</i></h1></b>\n");
+    elif (diffState == 'Unacceptable'):
+        testcase.write("        <b><h1><i>Failed</i></h1></b>\n");
+    elif (diffState == 'Skipped'):
+        testcase.write("        <b><h1><i>Skipped</i></h1></b>\n");
+    else:
+        testcase.write("        <b><h1><i>Unknown</i></h1></b>\n");
     testcase.write("    </td>\n")
     testcase.write("    <td align=center>Baseline:</td>\n")
-    if (diffState == 0):   testcase.write("    <td>Same As Current</td>\n")
-    elif (diffState == 3): testcase.write("    <td>Not Available</td>\n")
-    elif (diffState == 4): testcase.write("    <td>Skipped</td>\n")
-    else:                  testcase.write("    <td><img src=b_%s.jpg></img></td>\n" %(file))
+    if (diffState == 'None'):
+        testcase.write("    <td>Same As Current</td>\n")
+    elif (diffState == 'Unknown'):
+        testcase.write("    <td>Not Available</td>\n")
+    elif (diffState == 'Skipped'):
+        testcase.write("    <td>Skipped</td>\n")
+    else:
+        testcase.write("    <td><img src=b_%s.jpg></img></td>\n" %(file))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center>Current:</td>\n")
@@ -819,10 +837,14 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center rowspan=7>Diff Map:</td>\n")
-    if (diffState == 0):     testcase.write("    <td rowspan=7>No Differences</td>\n")
-    elif (diffState == 3):   testcase.write("    <td rowspan=7>Not Available</td>\n")
-    elif (diffState == 4):   testcase.write("    <td rowspan=7>Skipped</td>\n")
-    else:                    testcase.write("    <td rowspan=7><img src=d_%s.jpg></img></td>\n" %(file))
+    if (diffState == 'None'):
+        testcase.write("    <td rowspan=7>No Differences</td>\n")
+    elif (diffState == 'Unknown'):
+        testcase.write("    <td rowspan=7>Not Available</td>\n")
+    elif (diffState == 'Skipped'):
+        testcase.write("    <td rowspan=7>Skipped</td>\n")
+    else:
+        testcase.write("    <td rowspan=7><img src=d_%s.jpg></img></td>\n" %(file))
     testcase.write("    <td align=center><i>Error Metric</i></td>\n")
     testcase.write("    <td align=center><i>Value</i></td>\n")
     testcase.write("  </tr>\n")
@@ -1486,7 +1508,7 @@ haveParallelEngine = 1L
 if parallel:
    haveParallelEngine = OpenComputeEngine("localhost", ("-np", "2"))
    if haveParallelEngine == 0L:
-      diffState=3
+      diffState='Unknown'
       Exit()
 else:
    OpenComputeEngine("localhost")
