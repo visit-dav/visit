@@ -20,10 +20,13 @@
 #    See if there are checkouts before merging, force an SVN update before 
 #    merging, and disallow changes to VERSION.
 #
+#    Hank Childs, Thu Dec 20 09:21:03 PST 2007
+#    Renamed -allow_checkouts to -allow_local_mods
+#
 # *****************************************************************************
 
 issueHelp="no"
-allowCheckouts="no"
+allowLocalMods="no"
 
 P=$(whence $0)
 P2=${P%/*}
@@ -33,10 +36,10 @@ P2=${P%/*}
 CDPATH=""
 
 if [[ $# == 2 ]] ; then
-   if [[ "$2" != "-allow_checkouts" ]] ; then
+   if [[ "$2" != "-allow_local_mods" ]] ; then
        issueHelp="yes"
    else
-       allowCheckouts="yes"
+       allowLocalMods="yes"
    fi
 elif [[ $# != 1 ]] ; then
    issueHelp="yes"
@@ -118,10 +121,10 @@ fi
 
 if [[ "$issueHelp" == "yes" ]] ; then
    echo ""
-   echo "Usage:   ${0##*/} <RC trunk> [-allow_checkouts]"
+   echo "Usage:   ${0##*/} <RC trunk> [-allow_local_mods]"
    echo ""
    echo "Args:"
-   echo "\t-allow_checkouts\tForce merge, despite checkouts in the working copy of the trunk."
+   echo "\t-allow_local_mods\tForce merge, despite modifications in the working copy of the trunk."
    echo ""
    echo "Example: ${0##*/} 1.7RC"
    echo ""
@@ -135,13 +138,14 @@ fi
 for i in src data docs test third_party windowsbuild ; do
   if [[ -d $i ]] ; then
       cd $i
-      if [[ "$allowCheckouts" == "no" ]] ; then
-        echo "Checking for pre-existing checkouts on ${i}..."
+      if [[ "$allowLocalMods" == "no" ]] ; then
+        echo "Checking for pre-existing modifications on ${i}..."
         files=$(svn status -q)
         if [[ "$files" != "" ]] ; then
-            echo "I believe you have the following files checked out on ${i}:"
+            echo "I believe you have the following files modified out on ${i}:"
             echo "$files"
             echo "Aborting!"
+            echo "(You can force this merge by reinvoking with -allow_local_mods)"
             exit 1
         fi
       fi
