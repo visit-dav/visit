@@ -829,11 +829,11 @@ def WriteHTMLForOneTestImage(diffState, dpix, tPixs, pPixs, dPixs, davg, file):
     elif (diffState == 'Skipped'):
         testcase.write("    <td>Skipped</td>\n")
     else:
-        testcase.write("    <td><img src=b_%s.jpg></img></td>\n" %(file))
+        testcase.write("""    <td><a href="" onMouseOver="document.b.src='c_%s.jpg'" onMouseOut="document.b.src='b_%s.jpg'"><img name="b" border=0 src="b_%s.jpg"></img></a></td>\n"""%(file,file,file))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center>Current:</td>\n")
-    testcase.write("    <td><img src=c_%s.jpg></img></td>\n" %(file))
+    testcase.write("""    <td><a href="" onMouseOver="document.c.src='b_%s.jpg'" onMouseOut="document.c.src='c_%s.jpg'"><img name="c" border=0 src="c_%s.jpg"></img></td>\n"""%(file,file,file))
     testcase.write("  </tr>\n")
     testcase.write("  <tr>\n")
     testcase.write("    <td align=center rowspan=7>Diff Map:</td>\n")
