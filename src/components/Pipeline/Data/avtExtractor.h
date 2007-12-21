@@ -79,6 +79,9 @@
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Hank Childs, Thu Dec 20 17:02:48 PST 2007
+//    Change signature of InterpolateToPlane to avoid confusing the compiler.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtExtractor
@@ -115,10 +118,9 @@ class PIPELINE_API avtExtractor
     void                   OrientTriangle(float [3], float [3],
                                           float [3][AVT_VARIABLE_LIMIT], int);
     inline void            InterpolateToPlane(const float[3], const float[3],
-                                              const float [AVT_VARIABLE_LIMIT],
-                                              const float [AVT_VARIABLE_LIMIT],
+                                              const float *, const float *,
                                               const float &, float &, float &,
-                                              float [AVT_VARIABLE_LIMIT], int);
+                                              float *, int);
 
     int                    ConstructBounds(const float (*)[3], int);
     void                   ContributeSmallCell(const float (*)[3],
@@ -429,14 +431,16 @@ avtExtractor::ZFromIndex(int zi)
 //    Hank Childs, Tue Nov 13 16:52:15 PST 2001
 //    Allow for multiple variables.
 //
+//    Hank Childs, Thu Dec 20 17:02:48 PST 2007
+//    Change signature to avoid confusing the compiler.
+//
 // ****************************************************************************
 
 void
 avtExtractor::InterpolateToPlane(const float v1[3], const float v2[3],
-                                 const float val1[AVT_VARIABLE_LIMIT],
-                                 const float val2[AVT_VARIABLE_LIMIT],
+                                 const float *val1, const float *val2,
                                  const float &x, float &y, float &z, 
-                                 float v[AVT_VARIABLE_LIMIT], int nVars)
+                                 float *v, int nVars)
 {
     //
     // Make sure this is not from a degenerate cell.
