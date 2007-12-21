@@ -173,7 +173,7 @@ build_csg(DBfile *dbfile, char *name)
                     (const void**)pv, 2, DB_DOUBLE, DB_ZONECENT, 0);
 #else
         DBPutCsgvar(dbfile, "var1", "csgmesh", 1, pname,
-                    (const void**)pv, 2, DB_DOUBLE, DB_ZONECENT, 0);
+                    pv, 2, DB_DOUBLE, DB_ZONECENT, 0);
 #endif
     }
 
