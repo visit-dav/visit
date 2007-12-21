@@ -227,12 +227,14 @@ VisItRPC::SendReply(int s, AttributeSubject *d)
     reply.SetStatus(s);
     reply.SetData(d);
     reply.Notify();
+    reply.SetData(0);
 }
 
 void
 VisItRPC::SendAbort()
 {
     reply.SetStatus(abort);
+    reply.SetData(0);
     reply.SetMessage("Operation aborted.");
     reply.Notify();
 }
@@ -241,6 +243,7 @@ void
 VisItRPC::SendError()
 {
     reply.SetStatus(error);
+    reply.SetData(0);
     reply.SetMessage("NoErrorMsgSet");
     reply.Notify();
 }
@@ -249,6 +252,7 @@ void
 VisItRPC::SendError(const std::string &msg)
 {
     reply.SetStatus(error);
+    reply.SetData(0);
     reply.SetMessage(msg);
     reply.Notify();
 }
@@ -258,6 +262,7 @@ VisItRPC::SendError(const std::string &msg, const std::string &etype)
 {
     reply.SetStatus(error);
     reply.SetMessage(msg);
+    reply.SetData(0);
     reply.SetExceptionType(etype);
     reply.Notify();
 }
@@ -267,6 +272,7 @@ VisItRPC::SendWarning(const std::string &msg)
 {
     reply.SetStatus(warning);
     reply.SetMessage(msg);
+    reply.SetData(0);
     reply.Notify();
 }
 
