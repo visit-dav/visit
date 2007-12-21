@@ -3035,7 +3035,7 @@ build_multi(DBfile *dbfile, int meshtype, int vartype, int dim, int nblocks_x,
                  (const char**)pdefns, optlists);
 #else
     DBPutDefvars(dbfile, "defvars", 4, pvnames, types,
-                 (const char**)pdefns, optlists);
+                 pdefns, optlists);
 #endif
     DBFreeOptlist(optlists[3]);
 #endif
