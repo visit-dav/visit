@@ -9380,6 +9380,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Added support for Shapelet Decomposition, removed nested parsing
 //   because it was getting real hairy.
 //
+//   Cyrus Harrison, Thu Dec 20 17:15:58 PST 2007
+//   Fixed parsing conflict.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9418,6 +9421,7 @@ visit_Query(PyObject *self, PyObject *args)
                                          &(darg1[0]), &arg1, &output_name,
                                          &tuple);
     }
+    
     // shapelets (with output)
     if(!parse_success)
     {
@@ -9425,7 +9429,19 @@ visit_Query(PyObject *self, PyObject *args)
         parse_success = PyArg_ParseTuple(args, "sdi|O", &queryName, 
                                          &(darg1[0]), &arg1, &tuple);
     }
-    
+
+    if(parse_success)
+    {
+        // non shapelets case may parse with above case, correct for this
+        std::string qname(queryName);
+        if(qname != "Shapelet Decomposition")
+        {
+            arg2 = arg1;
+            arg1 = (int)darg1[0];
+            darg1.resize(0);
+        }
+    }
+
     if(!parse_success)
     {
         PyErr_Clear();
@@ -9433,6 +9449,7 @@ visit_Query(PyObject *self, PyObject *args)
         parse_success = PyArg_ParseTuple(args, "sii|O", &queryName,
                                          &arg1, &arg2, &tuple);
     }
+    
     
     if(!parse_success)
     {
