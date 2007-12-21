@@ -596,6 +596,9 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Jeremy Meredith, Wed Aug 29 15:27:16 EDT 2007
 //   Added depth cueing.  Simplified and corrected window sensitivity.
 //
+//   Brad Whitlock, Mon Dec 17 10:25:23 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -618,18 +621,18 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
 
         switch(i)
         {
-        case 0: //antialiasing
+        case RenderingAttributes::ID_antialiasing:
             antialiasingToggle->blockSignals(true);
             antialiasingToggle->setChecked(renderAtts->GetAntialiasing());
             antialiasingToggle->blockSignals(false);
             break;
-        case 1: //geometryRepresentation
+        case RenderingAttributes::ID_geometryRepresentation:
             itmp = (int)renderAtts->GetGeometryRepresentation();
             objectRepresentation->blockSignals(true);
             objectRepresentation->setButton(itmp);
             objectRepresentation->blockSignals(false);
             break;
-        case 2: //displayLists
+        case RenderingAttributes::ID_displayListMode:
             itmp = (int) renderAtts->GetDisplayListMode();
             if (itmp == 2) // Auto for atts's enum type order
                 itmp2 = 0; // Order of Auto in window
@@ -641,22 +644,22 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             dlMode->setButton(itmp2);
             dlMode->blockSignals(false);
             break;
-        case 3: //stereoRendering
+        case RenderingAttributes::ID_stereoRendering:
             stereoToggle->blockSignals(true);
             stereoToggle->setChecked(renderAtts->GetStereoRendering());
             stereoToggle->blockSignals(false);
             break;
-        case 4: //stereoType
+        case RenderingAttributes::ID_stereoType:
             stereoType->blockSignals(true);
             stereoType->setButton((int)renderAtts->GetStereoType());
             stereoType->blockSignals(false);
             break;
-        case 5: //notifyForEachRender
+        case RenderingAttributes::ID_notifyForEachRender:
             renderNotifyToggle->blockSignals(true);
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
             break;
-        case 6: //scalrenActivationMode
+        case RenderingAttributes::ID_scalableActivationMode:
             RenderingAttributes::TriStateMode rtmp;
             rtmp = renderAtts->GetScalableActivationMode();
             scalrenActivationMode->blockSignals(true);
@@ -668,7 +671,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
                scalrenActivationMode->setButton(0);
             scalrenActivationMode->blockSignals(false);
             break;
-        case 7: //scalrenAutoThreshold
+        case RenderingAttributes::ID_scalableAutoThreshold:
         {
             QString suffix;           
             int step, widgetVal;
@@ -681,54 +684,54 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             scalrenAutoThreshold->blockSignals(false);
             break;
         }
-        case 8: //specularFlag
+        case RenderingAttributes::ID_specularFlag:
             specularToggle->blockSignals(true);
             specularToggle->setChecked(renderAtts->GetSpecularFlag());
             specularToggle->blockSignals(false);
             break;
-        case 9: //specularCoeff
+        case RenderingAttributes::ID_specularCoeff:
             specularStrengthSlider->blockSignals(true);
             specularStrengthSlider->setValue(int(renderAtts->GetSpecularCoeff()*100.));
             specularStrengthSlider->blockSignals(false);
             break;
-        case 10: //specularPower
+        case RenderingAttributes::ID_specularPower:
             specularPowerSlider->blockSignals(true);
             specularPowerSlider->setValue(int(renderAtts->GetSpecularPower()*10.));
             specularPowerSlider->blockSignals(false);
             break;
-        case 11: //specularColor
+        case RenderingAttributes::ID_specularColor:
             // Not user-modifiable at this time
             break;
-        case 12: //shadowFlag
+        case RenderingAttributes::ID_doShadowing:
             shadowToggle->blockSignals(true);
             shadowToggle->setChecked(renderAtts->GetDoShadowing());
             shadowToggle->blockSignals(false);
             break;
-        case 13: //shadowStrength
+        case RenderingAttributes::ID_shadowStrength:
             shadowStrengthSlider->blockSignals(true);
             shadowStrengthSlider->setValue(int(renderAtts->GetShadowStrength()*100.));
             shadowStrengthSlider->blockSignals(false);
             break;
-        case 14: //doDepthCueing
+        case RenderingAttributes::ID_doDepthCueing:
             depthCueingToggle->blockSignals(true);
             depthCueingToggle->setChecked(renderAtts->GetDoDepthCueing());
             depthCueingToggle->blockSignals(false);
             break;
-        case 15: //startCuePoint
+        case RenderingAttributes::ID_startCuePoint:
             depthCueingStartEdit->blockSignals(true);
             dptr = renderAtts->GetStartCuePoint();
             tmp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
             depthCueingStartEdit->setText(tmp);
             depthCueingStartEdit->blockSignals(false);
             break;
-        case 16: //endCuePoint
+        case RenderingAttributes::ID_endCuePoint:
             depthCueingEndEdit->blockSignals(true);
             dptr = renderAtts->GetEndCuePoint();
             tmp.sprintf("%g %g %g", dptr[0], dptr[1], dptr[2]);
             depthCueingEndEdit->setText(tmp);
             depthCueingEndEdit->blockSignals(false);
             break;
-        case 17: //scalrenCompressMode
+        case RenderingAttributes::ID_compressionActivationMode:
             itmp = (int) renderAtts->GetCompressionActivationMode();
             if (itmp == 2) // Auto for atts's enum type order
                 itmp2 = 0; // Order of Auto in window
@@ -740,7 +743,7 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             scalrenCompressMode->setButton(itmp2);
             scalrenCompressMode->blockSignals(false);
             break;
-        case 18: //colorTexturingFlag
+        case RenderingAttributes::ID_colorTexturingFlag:
             colorTexturingToggle->blockSignals(true);
             colorTexturingToggle->setChecked(renderAtts->GetColorTexturingFlag());
             colorTexturingToggle->blockSignals(false);
@@ -829,6 +832,10 @@ QvisRenderingWindow::UpdateWindowSensitivity()
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added seconds per frame for < 1 fps cases 
+//
+//   Brad Whitlock, Mon Dec 17 10:30:33 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -851,28 +858,28 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
 
         switch(i)
         {
-        case 0: //activeSource
-        case 1: //activeTimeSlider
-        case 2: //timeSliders
-        case 3: //timeSliderCurrentStates
-        case 4: //animationMode
-        case 5: //windowMode
-        case 6: //boundingBoxNavigate
-        case 7: //spin
-        case 8: //fullFrame
-        case 9: //perspective
-        case 10: //lockView
-        case 11: //lockTools
-        case 12: //lockTime
-        case 13: //viewExtentsType
-        case 14: //viewDimension
-        case 15: //viewKeyframes
-        case 16: //cameraViewMode
+        case WindowInformation::ID_activeSource:
+        case WindowInformation::ID_activeTimeSlider:
+        case WindowInformation::ID_timeSliders:
+        case WindowInformation::ID_timeSliderCurrentStates:
+        case WindowInformation::ID_animationMode:
+        case WindowInformation::ID_interactionMode:
+        case WindowInformation::ID_boundingBoxNavigate:
+        case WindowInformation::ID_spin:
+        case WindowInformation::ID_fullFrame:
+        case WindowInformation::ID_perspective:
+        case WindowInformation::ID_lockView:
+        case WindowInformation::ID_lockTools:
+        case WindowInformation::ID_lockTime:
+        case WindowInformation::ID_viewExtentsType:
+        case WindowInformation::ID_viewDimension:
+        case WindowInformation::ID_viewKeyframes:
+        case WindowInformation::ID_cameraViewMode:
             break;
-        case 17: // usingScalableRendering
+        case WindowInformation::ID_usingScalableRendering:
             scalrenUsingLabel->setText(windowInfo->GetUsingScalableRendering() ? "yes" : "no");
             break;
-        case 18: //lastRenderMin
+        case WindowInformation::ID_lastRenderMin:
             // Determine the fps.
             if(windowInfo->GetLastRenderMin() > 0. &&
                windowInfo->GetLastRenderMin() < 1.e05)
@@ -882,7 +889,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             tmp.sprintf("%1.3g", fps);
             fpsMaxLabel->setText(tmp);
             break;
-        case 19: //lastRenderAvg
+        case WindowInformation::ID_lastRenderAvg:
             // Determine the fps.
             if(windowInfo->GetLastRenderAvg() > 0.)
                 fps = 1. / windowInfo->GetLastRenderAvg();
@@ -900,7 +907,7 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             tmp.sprintf("%1.3g", fps);
             fpsAvgLabel->setText(tmp);
             break;
-        case 20: //lastRenderMax
+        case WindowInformation::ID_lastRenderMax:
             // Determine the fps.
             if(windowInfo->GetLastRenderMax() > 0.)
                 fps = 1. / windowInfo->GetLastRenderMax();
@@ -909,11 +916,11 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
             tmp.sprintf("%1.3g", fps);
             fpsMinLabel->setText(tmp);
             break;
-        case 21: //numPrimitives
+        case WindowInformation::ID_numPrimitives:
             tmp.sprintf("%d", windowInfo->GetNumPrimitives());
             approxNumPrimitives->setText(tmp);
             break;
-        case 22: //extents
+        case WindowInformation::ID_extents:
             for(j = 0; j < 6; ++j)
             {
                 double d = windowInfo->GetExtents()[j];
@@ -923,6 +930,9 @@ QvisRenderingWindow::UpdateInformation(bool doAll)
                     tmp.setNum(windowInfo->GetExtents()[j]);
                 extents[j]->setText(tmp);
             }
+            break;
+        case WindowInformation::ID_windowSize:
+        case WindowInformation::ID_winMode:
             break;
         }            
     }

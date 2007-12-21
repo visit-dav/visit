@@ -67,7 +67,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Thu Sep 22 16:56:20 PST 2005
+// Creation:   Mon Dec 17 11:54:23 PDT 2007
 //
 // Modifications:
 //   
@@ -91,7 +91,7 @@ QvisMergeWindow::QvisMergeWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Thu Sep 22 16:56:20 PST 2005
+// Creation:   Mon Dec 17 11:54:23 PDT 2007
 //
 // Modifications:
 //   
@@ -109,7 +109,7 @@ QvisMergeWindow::~QvisMergeWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Thu Sep 22 16:56:20 PST 2005
+// Creation:   Mon Dec 17 11:54:23 PDT 2007
 //
 // Modifications:
 //   
@@ -143,7 +143,7 @@ QvisMergeWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Thu Sep 22 16:56:20 PST 2005
+// Creation:   Mon Dec 17 11:54:23 PDT 2007
 //
 // Modifications:
 //   
@@ -174,12 +174,16 @@ QvisMergeWindow::UpdateWindow(bool doAll)
         QColor                tempcolor;
         switch(i)
         {
-          case 0: //parallelMerge
+          case MergeOperatorAttributes::ID_parallelMerge:
+            parallelMerge->blockSignals(true);
             parallelMerge->setChecked(atts->GetParallelMerge());
+            parallelMerge->blockSignals(false);
             break;
-          case 1: //tolerance
+          case MergeOperatorAttributes::ID_tolerance:
+            tolerance->blockSignals(true);
             temp.setNum(atts->GetTolerance());
             tolerance->setText(temp);
+            tolerance->blockSignals(false);
             break;
         }
     }
@@ -193,7 +197,7 @@ QvisMergeWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Thu Sep 22 16:56:20 PST 2005
+// Creation:   Mon Dec 17 11:54:23 PDT 2007
 //
 // Modifications:
 //   
@@ -205,14 +209,8 @@ QvisMergeWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do parallelMerge
-    if(which_widget == 0 || doAll)
-    {
-        // Nothing for parallelMerge
-    }
-
     // Do tolerance
-    if(which_widget == 1 || doAll)
+    if(which_widget == MergeOperatorAttributes::ID_tolerance || doAll)
     {
         temp = tolerance->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -244,6 +242,7 @@ void
 QvisMergeWindow::parallelMergeChanged(bool val)
 {
     atts->SetParallelMerge(val);
+    SetUpdate(false);
     Apply();
 }
 
@@ -251,7 +250,7 @@ QvisMergeWindow::parallelMergeChanged(bool val)
 void
 QvisMergeWindow::toleranceProcessText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(MergeOperatorAttributes::ID_tolerance);
     Apply();
 }
 

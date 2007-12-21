@@ -831,6 +831,9 @@ Definition:
 //   Cyrus Harrison, Mon Sep 17 14:12:30 PDT 2007
 //   Add floatFormat
 //
+//   Brad Whitlock, Fri Dec 14 16:01:15 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 bool
@@ -844,105 +847,105 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // Create a node for PickAttributes.
     DataNode *node = new DataNode("PickAttributes");
 
-    if(completeSave || !FieldsEqual(0, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_variables, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("variables", variables));
     }
 
-    if(completeSave || !FieldsEqual(1, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_displayIncidentElements, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("displayIncidentElements", displayIncidentElements));
     }
 
-    if(completeSave || !FieldsEqual(2, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showNodeId, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showNodeId", showNodeId));
     }
 
-    if(completeSave || !FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showNodeDomainLogicalCoords, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showNodeDomainLogicalCoords", 
                                     showNodeDomainLogicalCoords));
     }
 
-    if(completeSave || !FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showNodeBlockLogicalCoords, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showNodeBlockLogicalCoords", 
                                     showNodeBlockLogicalCoords));
     }
 
-    if(completeSave || !FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showNodePhysicalCoords, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showNodePhysicalCoords", 
                                     showNodePhysicalCoords));
     }
 
-    if(completeSave || !FieldsEqual(6, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showZoneId, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showZoneId", 
                                     showZoneId));
     }
 
-    if(completeSave || !FieldsEqual(7, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showZoneDomainLogicalCoords, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showZoneDomainLogicalCoords", 
                                     showZoneDomainLogicalCoords));
     }
 
-    if(completeSave || !FieldsEqual(8, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showZoneBlockLogicalCoords, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showZoneBlockLogicalCoords", 
                                     showZoneBlockLogicalCoords));
     }
 
-    if(completeSave || !FieldsEqual(37, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_doTimeCurve, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("doTimeCurve", 
                                     doTimeCurve));
     }
 
-    if(completeSave || !FieldsEqual(62, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_createSpreadsheet, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("createSpreadsheet", 
                                     createSpreadsheet));
     }
 
-    if(completeSave || !FieldsEqual(42, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_conciseOutput, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("conciseOutput", conciseOutput));
     }
 
-    if(completeSave || !FieldsEqual(43, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showTimeStep, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showTimeStep", showTimeStep));
     }
 
-    if(completeSave || !FieldsEqual(44, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_showMeshName, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("showMeshName", showMeshName));
     }
 
-    if(completeSave || !FieldsEqual(52, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_displayGlobalIds, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("displayGlobalIds", displayGlobalIds));
     }
     
-    if(completeSave || !FieldsEqual(64, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_floatFormat, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("floatFormat", floatFormat));

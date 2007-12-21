@@ -83,6 +83,8 @@
 
 #define VARIABLE_CUTOFF           100
 
+#define DELETE_MENU_TO_FREE_POPUPS
+
 using std::string;
 using std::vector;
 
@@ -400,6 +402,9 @@ QvisPlotManagerWidget::SetSourceVisible(bool val)
 //   Brad Whitlock, Mon Jul 24 17:45:04 PST 2006
 //   I wrapped the menu in a widget to prevent it from shrinking.
 //
+//   Brad Whitlock, Thu Dec 20 12:13:33 PST 2007
+//   Moved variable menu creation to a helper method.
+//  
 // ****************************************************************************
 
 void
@@ -475,12 +480,74 @@ QvisPlotManagerWidget::CreateMenus(QMenuBar *menuBar)
     //
     // Create an empty variable menu.
     //
-    varMenu = new QvisVariablePopupMenu(-1, plotMenuBar, "varMenu");
+    plotMenuBar->insertSeparator();
+    CreateVariableMenu();
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::CreateVariableMenu
+//
+// Purpose: 
+//   Create the variable menu.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 20 12:13:16 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::CreateVariableMenu()
+{
+    // Add an empty variable menu to the plot menu bar
+    varMenu = new QvisVariablePopupMenu(-1, 0, "varMenu");
     connect(varMenu, SIGNAL(activated(int, const QString &)),
             this, SLOT(changeVariable(int, const QString &)));
-    plotMenuBar->insertSeparator();
-    varMenuId = plotMenuBar->insertItem( tr("Variables"), varMenu );
+    varMenuId = plotMenuBar->insertItem( tr("Variables"), varMenu);
     plotMenuBar->setItemEnabled(varMenuId, false);
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::DestroyVariableMenu
+//
+// Purpose: 
+//   Destroy the variable menu.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 20 12:13:04 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::DestroyVariableMenu()
+{
+    if(varMenu)
+    {
+        // Remove the variable menu from the plot menu bar
+        plotMenuBar->removeItem(varMenuId);
+
+        // Delete the variable menu.
+        disconnect(varMenu, SIGNAL(activated(int, const QString &)),
+                   this, SLOT(changeVariable(int, const QString &)));
+        delete varMenu;
+        varMenu = 0;
+        varMenuId = -1;
+    }
 }
 
 // ****************************************************************************
@@ -643,7 +710,7 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
     else if(TheChangedSubject == globalAtts)
     {
         // Update the source list.
-        if(globalAtts->IsSelected(0))
+        if(globalAtts->IsSelected(GlobalAttributes::ID_sources))
             UpdateSourceList(false);
 
         // Set the "Apply operator toggle."
@@ -662,7 +729,7 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
     else if(TheChangedSubject == windowInfo)
     {
         // Update the source list when the active source changes.
-        if(windowInfo->IsSelected(0))
+        if(windowInfo->IsSelected(WindowInformation::ID_activeSource))
         {
             UpdateSourceList(true);
 
@@ -672,7 +739,7 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         }
 
         // handle changes in time slider current states
-        if (windowInfo->IsSelected(3))
+        if (windowInfo->IsSelected(WindowInformation::ID_timeSliderCurrentStates))
         {
             const avtDatabaseMetaData *md =
                 fileServer->GetMetaData(fileServer->GetOpenFile(),
@@ -971,6 +1038,9 @@ QvisPlotManagerWidget::UpdateHideDeleteDrawButtonsEnabledState() const
 //   Brad Whitlock, Tue Apr 25 16:30:59 PST 2006
 //   I set the new varMask member in the PluginEntry struct.
 //
+//   Brad Whitlock, Thu Dec 20 10:32:59 PST 2007
+//   Changed the code so it calls other methods that we can reuse.
+//
 // ****************************************************************************
 
 void
@@ -978,43 +1048,110 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
     const char **iconData)
 {
     PluginEntry entry;
-
-    // Create the sub-menus.
-    entry.varMenu = new QvisVariablePopupMenu(plotPlugins.size(), plotMenu,
-                                              plotName);
+    entry.pluginName = plotName;
+    entry.menuName = QString(plotName) + QString(" . . .");
+    entry.varMenu = 0;
     entry.varTypes = varTypes;
     entry.varMask = 1;
-    connect(entry.varMenu, SIGNAL(activated(int, const QString &)),
-            this, SLOT(addPlotHelper(int, const QString &)));
+    entry.id = -1;
+
+    if(iconData)
+    {
+        QPixmap iconPixmap(iconData);
+        entry.icon = QIconSet(iconPixmap);
+
+        // Add the plot type to the plot attributes list.
+        plotAttsMenu->insertItem(entry.icon, entry.menuName, plotAttsMenu->count());
+    }
+    else
+    {
+        // Add the plot type to the plot attributes list.
+        plotAttsMenu->insertItem(entry.menuName, plotAttsMenu->count());
+    }
+
     // Add the plot plugin information to the plugin list.
     plotPlugins.push_back(entry);
 
-    // Add the plot to the menus.
-    int id;
-    QString menuName(plotName);
-    menuName += QString(" . . .");
-    if(iconData)
+    // Create the variable menu part of the plot
+    CreatePlotMenuItem(plotPlugins.size()-1);
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::DestroyPlotMenuItem
+//
+// Purpose: 
+//   Destroys the i'th plot menu.
+//
+// Arguments:
+//   index : The index of the plot menu to destroy.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 20 12:02:32 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::DestroyPlotMenuItem(int index)
+{
+    PluginEntry &entry = plotPlugins[index];
+    if(entry.varMenu != 0)
     {
-        // Add the plot type to the plot menu.
-        QPixmap iconPixmap(iconData);
-        QIconSet icon(iconPixmap);
+        disconnect(entry.varMenu, SIGNAL(activated(int, const QString &)),
+                   this, SLOT(addPlotHelper(int, const QString &)));
+        delete entry.varMenu;
+        entry.varMenu = 0;
+    }
+}
 
-        id = plotMenu->insertItem(icon, plotName, entry.varMenu,
-                                  plotMenu->count());
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::CreatePlotMenuItem
+//
+// Purpose: 
+//   Creates the i'th plot menu.
+//
+// Arguments:
+//   index : The index of the plot menu to create.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 20 12:03:16 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
 
-        // Add the plot type to the plot attributes list.
-        plotAttsMenu->insertItem(icon, menuName, plotAttsMenu->count());
+void
+QvisPlotManagerWidget::CreatePlotMenuItem(int index)
+{
+    PluginEntry &entry = plotPlugins[index];
+
+    // Create the plot variable sub-menu.
+    entry.varMenu = new QvisVariablePopupMenu(index, 0, entry.pluginName.latin1());
+    connect(entry.varMenu, SIGNAL(activated(int, const QString &)),
+            this, SLOT(addPlotHelper(int, const QString &)));
+
+    // Add the plot to the plot variable menu.
+    if(!entry.icon.isNull())
+    {
+        entry.id = plotMenu->insertItem(entry.icon, entry.pluginName, entry.varMenu,
+                                        index);
     }
     else
     {
         // Add the plot type to the plot menu.
-        id = plotMenu->insertItem(plotName, entry.varMenu, plotMenu->count());
-
-        // Add the plot type to the plot attributes list.
-        plotAttsMenu->insertItem(menuName, plotAttsMenu->count());
+        entry.id = plotMenu->insertItem(entry.pluginName, entry.varMenu, index);
     }
 
-    plotMenu->setItemEnabled(id, false);
+    plotMenu->setItemEnabled(entry.id, false);
 }
 
 // ****************************************************************************
@@ -1044,6 +1181,9 @@ QvisPlotManagerWidget::AddPlotType(const char *plotName, const int varTypes,
 //   Brad Whitlock, Tue Apr 25 16:32:06 PST 2006
 //   Added support for operators that set the contents of the variable menu.
 //
+//   Brad Whitlock, Thu Dec 20 10:34:29 PST 2007
+//   Fill in some new PluginEntry members.
+//
 // ****************************************************************************
 
 void
@@ -1051,16 +1191,15 @@ QvisPlotManagerWidget::AddOperatorType(const char *operatorName,
     const int varTypes, const int varMask, bool userSelectable,
     const char **iconData)
 {
-    QString menuName(operatorName);
-    menuName += QString(" . . .");
     int id = operatorMenu->count() - 3;
 
     // Add the operator plugin information to the operator plugin list.
     PluginEntry entry;
+    entry.pluginName = operatorName;
+    entry.menuName = QString(operatorName) + QString(" . . .");
     entry.varMenu = 0;
     entry.varTypes = varTypes;
     entry.varMask = varMask;
-    operatorPlugins.push_back(entry);
 
     if(iconData)
     {
@@ -1069,20 +1208,22 @@ QvisPlotManagerWidget::AddOperatorType(const char *operatorName,
         QIconSet icon(iconPixmap);
 
         // Create the sub-menus.
-        operatorMenu->insertItem(icon, operatorName, id, id);
+        entry.id = operatorMenu->insertItem(icon, entry.pluginName, id, id);
 
         // Add the operator type to the operator attributes list.
-        operatorAttsMenu->insertItem(icon, menuName, operatorAttsMenu->count());
+        operatorAttsMenu->insertItem(icon, entry.menuName, operatorAttsMenu->count());
     }
     else
     {
         // Create the sub-menus.
-        operatorMenu->insertItem(operatorName, id, id);
+        entry.id = operatorMenu->insertItem(entry.pluginName, id, id);
+
         // Add the operator type to the operator attributes list.
-        operatorAttsMenu->insertItem(menuName, operatorAttsMenu->count());
+        operatorAttsMenu->insertItem(entry.menuName, operatorAttsMenu->count());
     }
 
-    operatorMenu->setItemEnabled(id, userSelectable);
+    operatorPlugins.push_back(entry);
+    operatorMenu->setItemEnabled(entry.id, userSelectable);
 }
 
 // ****************************************************************************
@@ -1144,6 +1285,7 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added support to treat all databases as time varying
+//
 // ****************************************************************************
 
 bool
@@ -1178,7 +1320,7 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
     }
     else
     {
-        // any metadata and sill will do
+        // any metadata and sil will do
         const avtSIL *sil =
             fileServer->GetSIL(filename,
                                GetStateForSource(filename),
@@ -1251,11 +1393,16 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
 //   Brad Whitlock, Wed Mar 22 09:08:31 PDT 2006
 //   I added code to time menu creation.
 //
+//   Brad Whitlock, Thu Dec 20 12:01:40 PST 2007
+//   I changed how the menus are made so that we destroy menus when needed
+//   since clearing them does not seem to really destroy them.
+//
 // ****************************************************************************
 
 void
 QvisPlotManagerWidget::UpdatePlotVariableMenu()
 {
+    const char *mName = "QvisPlotManagerWidget::UpdatePlotVariableMenu: ";
     int total = visitTimer->StartTimer();
     int id = visitTimer->StartTimer();
 
@@ -1267,22 +1414,37 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         fileServer->GetOpenFile());
     visitTimer->StopTimer(id, "PopulateVariableLists");
 
+    debug4 << mName << "Need to update menus: " << (needsUpdate?"true":"false") << endl;
+
     // Update the various menus
     if(needsUpdate)
     {
         id = visitTimer->StartTimer();
+
+        // Clear out the plot menu and destroy all of the plot menus in it so
+        // we can recreate the menu,
+#ifdef DELETE_MENU_TO_FREE_POPUPS
+        plotMenu->clear();
+        for(int i = 0; i < plotPlugins.size(); ++i)
+            DestroyPlotMenuItem(i);
+#endif
+
+        // Recreate the plot menu and update the menus so they have the right 
+        // variables.
         this->maxVarCount = 0;
         for(int i = 0; i < plotPlugins.size(); ++i)
         {
+#ifdef DELETE_MENU_TO_FREE_POPUPS
+            CreatePlotMenuItem(i);
+#else
             plotPlugins[i].varMenu->clear();
+#endif
             int varCount = menuPopulator.UpdateSingleVariableMenu(
                 plotPlugins[i].varMenu, plotPlugins[i].varTypes,
                 this, SLOT(addPlotHelper(int, const QString &)));
             this->maxVarCount = (varCount > this->maxVarCount) ? varCount : this->maxVarCount;
             bool hasEntries = (varCount > 0);
-            // If the menu has a different enabled state, set it now.
-            if(hasEntries != plotMenu->isItemEnabled(i))
-                plotMenu->setItemEnabled(i, hasEntries);
+            plotMenu->setItemEnabled(i, hasEntries);
         }
         visitTimer->StopTimer(id, "Updating menus");
 
@@ -1474,6 +1636,9 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
 //   Added support for operators setting the type of variables that we want
 //   to appear in the variable list.
 //
+//   Brad Whitlock, Thu Dec 20 12:15:21 PST 2007
+//   Changed how the variable menu gets cleared.
+//
 // ****************************************************************************
 
 void
@@ -1507,8 +1672,15 @@ QvisPlotManagerWidget::UpdateVariableMenu()
             bool flagsDiffer = (plotVarFlags != varMenuFlags);
             if(changeVarLists || flagsDiffer || varMenu->count() == 0)
             {
-                // Set the variable list based on the first active plot.
+                // Destroy and recreate the variable menu so we actually
+                // delete menu items when we no longer need them.
+#ifdef DELETE_MENU_TO_FREE_POPUPS
+                DestroyVariableMenu();
+                CreateVariableMenu();
+#else
                 varMenu->clear();
+#endif
+                // Set the variable list based on the first active plot.
                 int varCount = varMenuPopulator.UpdateSingleVariableMenu(varMenu,
                     plotVarFlags, this, SLOT(changeVariable(int, const QString &)));
                 varMenuFlags = plotVarFlags;

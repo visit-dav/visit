@@ -35,7 +35,9 @@ Definition:
 // Creation:   Thu Dec 18 11:24:07 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 14 16:04:18 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 bool
@@ -49,7 +51,7 @@ ExpressionList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // Create a node for ExpressionList.
     DataNode *node = new DataNode("ExpressionList");
 
-    if(completeSave || !FieldsEqual(0, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_expressions, &defaultObject))
     {
         for(int i = 0; i < expressions.size(); ++i)
         {

@@ -468,6 +468,9 @@ QvisColorTableWindow::SetFromNode(DataNode *parentNode, const int *borders)
 //   I changed the code so it only uses the first colortable name as a last
 //   resort if the active color table is set to something invalid.
 //
+//   Brad Whitlock, Fri Dec 14 16:59:58 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -524,16 +527,16 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // names
+        case ColorTableAttributes::ID_names:
             updateNames = true;
             break;
-        case 1: // colorTables
+        case ColorTableAttributes::ID_colorTables:
             updateColorPoints = true;
             break;
-        case 2: // activeContinuous
+        case ColorTableAttributes::ID_activeContinuous:
             updateNames = true;
             break;
-        case 3: // activeDiscrete
+        case ColorTableAttributes::ID_activeDiscrete:
             updateNames = true;
             break;
         }

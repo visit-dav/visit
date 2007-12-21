@@ -132,6 +132,9 @@
 //    Cyrus Harrison, Thu Mar  8 16:20:50 PST 2007
 //    Fixed problem with uninitialized labels for bool types.
 //
+//    Brad Whitlock, Mon Dec 17 11:21:58 PST 2007
+//    Made it use new Attribute ids instead of ints.
+//
 // ****************************************************************************
 
 class WindowGeneratorField : public virtual Field
@@ -164,6 +167,7 @@ class WindowGeneratorField : public virtual Field
     {
         c << "    //writeSourceCreate unknown for " << type << " (variable " << name << ")" << endl;
     }
+    virtual bool               providesSourceGetCurrent() const { return false; }
     virtual void               writeSourceGetCurrent(ostream &c)
     {
         c << "        //writeSourceGetCurrent unknown for " << type << " (variable " << name << ")" << endl;
@@ -217,6 +221,7 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
         }
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
+    virtual bool            providesSourceGetCurrent() const { return !rangeSet; }
     virtual void            writeSourceGetCurrent(ostream &c)
     {
         if (rangeSet)
@@ -259,7 +264,7 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
             c << "            "<<name<<"->blockSignals(false);" << endl;
         }
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, ostream &c, bool isEnabler)
     {
         if (rangeSet)
         {
@@ -277,7 +282,7 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
             c << "void" << endl;
             c << windowname<<"::"<<name<<"ProcessText()" << endl;
             c << "{" << endl;
-            c << "    GetCurrentValues("<<index<<");" << endl;
+            c << "    GetCurrentValues("<<classname << "::ID_" << Name<<");" << endl;
             c << "    Apply();" << endl;
             c << "}" << endl;
         }
@@ -325,11 +330,13 @@ class WindowGeneratorBool : public virtual Bool , public virtual WindowGenerator
     }
     virtual void            writeSourceCreate(ostream &c)
     {
-        c << "    "<<name<<"Label = NULL;" << endl;
         c << "    "<<name<<" = new QCheckBox(\""<<label<<"\", central, \""<<name<<"\");" << endl;
         c << "    connect("<<name<<", SIGNAL(toggled(bool))," << endl
           << "            this, SLOT("<<name<<"Changed(bool)));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",0);" << endl;
+    }
+    virtual void               writeHeaderLabelData(ostream &h)
+    {
     }
     virtual void            writeSourceGetCurrent(ostream &c)
     {
@@ -379,6 +386,7 @@ class WindowGeneratorFloat : public virtual Float , public virtual WindowGenerat
           << "            this, SLOT("<<name<<"ProcessText()));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
+    virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(ostream &c)
     {
         c << "        temp = "<<name<<"->displayText().simplifyWhiteSpace();" << endl;
@@ -405,12 +413,12 @@ class WindowGeneratorFloat : public virtual Float , public virtual WindowGenerat
         c << "            "<<name<<"->setText(temp);" << endl;
         c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
         c << "{" << endl;
-        c << "    GetCurrentValues("<<index<<");" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -441,6 +449,7 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
           << "            this, SLOT("<<name<<"ProcessText()));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
+    virtual bool               providesSourceGetCurrent() const { return true; }
     virtual void               writeSourceGetCurrent(ostream &c)
     {
         c << "        temp = "<<name<<"->displayText().simplifyWhiteSpace();" << endl;
@@ -508,12 +517,12 @@ class WindowGeneratorFloatArray : public virtual FloatArray , public virtual Win
         c << "            "<<name<<"->setText(temp);" << endl;
         c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void               writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
+    virtual void               writeSourceCallback(QString &classname, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
         c << "{" << endl;
-        c << "    GetCurrentValues("<<index<<");" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -544,6 +553,7 @@ class WindowGeneratorDouble : public virtual Double , public virtual WindowGener
           << "            this, SLOT("<<name<<"ProcessText()));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
+    virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(ostream &c)
     {
         c << "        temp = "<<name<<"->displayText().simplifyWhiteSpace();" << endl;
@@ -570,12 +580,12 @@ class WindowGeneratorDouble : public virtual Double , public virtual WindowGener
         c << "            "<<name<<"->setText(temp);" << endl;
         c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
         c << "{" << endl;
-        c << "    GetCurrentValues("<<index<<");" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -606,6 +616,7 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
           << "            this, SLOT("<<name<<"ProcessText()));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
+    virtual bool               providesSourceGetCurrent() const { return true; }
     virtual void               writeSourceGetCurrent(ostream &c)
     {
         c << "        temp = "<<name<<"->displayText().simplifyWhiteSpace();" << endl;
@@ -673,12 +684,12 @@ class WindowGeneratorDoubleArray : public virtual DoubleArray , public virtual W
         c << "            "<<name<<"->setText(temp);" << endl;
         c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void               writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
+    virtual void               writeSourceCallback(QString &classname, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
         c << "{" << endl;
-        c << "    GetCurrentValues("<<index<<");" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -752,6 +763,7 @@ class WindowGeneratorString : public virtual String , public virtual WindowGener
           << "            this, SLOT("<<name<<"ProcessText()));" << endl;
         c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
     }
+    virtual bool            providesSourceGetCurrent() const { return true; }
     virtual void            writeSourceGetCurrent(ostream &c)
     {
         c << "        temp = "<<name<<"->displayText();" << endl;
@@ -777,12 +789,12 @@ class WindowGeneratorString : public virtual String , public virtual WindowGener
         c << "            "<<name<<"->setText(temp);" << endl;
         c << "            "<<name<<"->blockSignals(false);" << endl;
     }
-    virtual void            writeSourceCallback(QString &, QString &windowname, ostream &c, bool isEnabler)
+    virtual void            writeSourceCallback(QString &classname, QString &windowname, ostream &c, bool isEnabler)
     {
         c << "void" << endl;
         c << windowname<<"::"<<name<<"ProcessText()" << endl;
         c << "{" << endl;
-        c << "    GetCurrentValues("<<index<<");" << endl;
+        c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
         c << "    Apply();" << endl;
         c << "}" << endl;
     }
@@ -1721,7 +1733,7 @@ class WindowGeneratorAttribute
             if (fields[i]->internal) continue;
 
             WindowGeneratorField *field   = fields[i];
-            c << "          case "<<i<<": //"<<field->name << endl;
+            c << "          case "<<name<<"::ID_"<<field->name << ":" << endl;
 
             vector<Field*> enablees;
             int j;
@@ -1783,9 +1795,10 @@ class WindowGeneratorAttribute
         c << endl;
         for (i=0; i<fields.size(); i++)
         {
-            if (fields[i]->internal) continue;
+            if (fields[i]->internal || !fields[i]->providesSourceGetCurrent())
+                continue;
             c << "    // Do " << fields[i]->name << endl;
-            c << "    if(which_widget == "<<i<<" || doAll)" << endl;
+            c << "    if(which_widget == "<<name << "::ID_" << fields[i]->name<<" || doAll)" << endl;
             c << "    {" << endl;
             fields[i]->writeSourceGetCurrent(c);
             c << "    }" << endl;

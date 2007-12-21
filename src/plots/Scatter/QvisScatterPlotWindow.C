@@ -552,6 +552,9 @@ QvisScatterPlotWindow::CreateWindowContents()
 //   Brad Whitlock, Thu Aug 25 10:07:12 PDT 2005
 //   I added the Sphere point type.
 //
+//   Brad Whitlock, Mon Dec 17 12:13:04 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -575,33 +578,33 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
         QColor tempcolor;
         switch(i)
         {
-        case 0: //var1Role
+        case ScatterAttributes::ID_var1Role:
             var1Role->blockSignals(true);
             var1Role->setCurrentItem(atts->GetVar1Role());
             var1Role->blockSignals(false);
             rolesChanged = true;
             break;
-        case 1: //var1MinFlag
+        case ScatterAttributes::ID_var1MinFlag:
             var1Min->setEnabled(atts->GetVar1MinFlag());
             var1MinFlag->blockSignals(true);
             var1MinFlag->setChecked(atts->GetVar1MinFlag());
             var1MinFlag->blockSignals(false);
             break;
-        case 2: //var1MaxFlag
+        case ScatterAttributes::ID_var1MaxFlag:
             var1Max->setEnabled(atts->GetVar1MaxFlag());
             var1MaxFlag->blockSignals(true);
             var1MaxFlag->setChecked(atts->GetVar1MaxFlag());
             var1MaxFlag->blockSignals(false);
             break;
-        case 3: //var1Min
+        case ScatterAttributes::ID_var1Min:
             temp.sprintf("%g", atts->GetVar1Min());
             var1Min->setText(temp);
             break;
-        case 4: //var1Max
+        case ScatterAttributes::ID_var1Max:
             temp.sprintf("%g", atts->GetVar1Max());
             var1Max->setText(temp);
             break;
-        case 5: //var1Scaling
+        case ScatterAttributes::ID_var1Scaling:
             if (atts->GetVar1Scaling() == ScatterAttributes::Skew)
             {
                 var1SkewFactor->setEnabled(true);
@@ -616,42 +619,42 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             var1Scaling->setButton(atts->GetVar1Scaling());
             var1Scaling->blockSignals(false);
             break;
-        case 6: //var1SkewFactor
+        case ScatterAttributes::ID_var1SkewFactor:
             temp.sprintf("%g", atts->GetVar1SkewFactor());
             var1SkewFactor->setText(temp);
             break;
-        case 7: //var2Role
+        case ScatterAttributes::ID_var2Role:
             var2Role->blockSignals(true);
             var2Role->setCurrentItem(atts->GetVar2Role());
             var2Role->blockSignals(false);
             rolesChanged = true;
             break;
-        case 8: //var2
+        case ScatterAttributes::ID_var2:
             temp = atts->GetVar2().c_str();
             var2->setText(temp);
             varsChanged = true;
             break;
-        case 9: //var2MinFlag
+        case ScatterAttributes::ID_var2MinFlag:
             var2Min->setEnabled(atts->GetVar2MinFlag());
             var2MinFlag->blockSignals(true);
             var2MinFlag->setChecked(atts->GetVar2MinFlag());
             var2MinFlag->blockSignals(false);
             break;
-        case 10: //var2MaxFlag
+        case ScatterAttributes::ID_var2MaxFlag:
             var2Max->setEnabled(atts->GetVar2MaxFlag());
             var2MaxFlag->blockSignals(true);
             var2MaxFlag->setChecked(atts->GetVar2MaxFlag());
             var2MaxFlag->blockSignals(false);
             break;
-        case 11: //var2Min
+        case ScatterAttributes::ID_var2Min:
             temp.sprintf("%g", atts->GetVar2Min());
             var2Min->setText(temp);
             break;
-        case 12: //var2Max
+        case ScatterAttributes::ID_var2Max:
             temp.sprintf("%g", atts->GetVar2Max());
             var2Max->setText(temp);
             break;
-        case 13: //var2Scaling
+        case ScatterAttributes::ID_var2Scaling:
             if (atts->GetVar2Scaling() == ScatterAttributes::Skew)
             {
                 var2SkewFactor->setEnabled(true);
@@ -666,42 +669,42 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             var2Scaling->setButton(atts->GetVar2Scaling());
             var2Scaling->blockSignals(false);
             break;
-        case 14: //var2SkewFactor
+        case ScatterAttributes::ID_var2SkewFactor:
             temp.sprintf("%g", atts->GetVar2SkewFactor());
             var2SkewFactor->setText(temp);
             break;
-        case 15: //var3Role
+        case ScatterAttributes::ID_var3Role:
             var3Role->blockSignals(true);
             var3Role->setCurrentItem(atts->GetVar3Role());
             var3Role->blockSignals(false);
             rolesChanged = true;
             break;
-        case 16: //var3
+        case ScatterAttributes::ID_var3:
             temp = atts->GetVar3().c_str();
             var3->setText(temp);
             varsChanged = true;
             break;
-        case 17: //var3MinFlag
+        case ScatterAttributes::ID_var3MinFlag:
             var3Min->setEnabled(atts->GetVar3MinFlag());
             var3MinFlag->blockSignals(true);
             var3MinFlag->setChecked(atts->GetVar3MinFlag());
             var3MinFlag->blockSignals(false);
             break;
-        case 18: //var3MaxFlag
+        case ScatterAttributes::ID_var3MaxFlag:
             var3Max->setEnabled(atts->GetVar3MaxFlag());
             var3MaxFlag->blockSignals(true);
             var3MaxFlag->setChecked(atts->GetVar3MaxFlag());
             var3MaxFlag->blockSignals(false);
             break;
-        case 19: //var3Min
+        case ScatterAttributes::ID_var3Min:
             temp.sprintf("%g", atts->GetVar3Min());
             var3Min->setText(temp);
             break;
-        case 20: //var3Max
+        case ScatterAttributes::ID_var3Max:
             temp.sprintf("%g", atts->GetVar3Max());
             var3Max->setText(temp);
             break;
-        case 21: //var3Scaling
+        case ScatterAttributes::ID_var3Scaling:
             if (atts->GetVar3Scaling() == ScatterAttributes::Skew)
             {
                 var3SkewFactor->setEnabled(true);
@@ -716,42 +719,42 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             var3Scaling->setButton(atts->GetVar3Scaling());
             var3Scaling->blockSignals(false);
             break;
-        case 22: //var3SkewFactor
+        case ScatterAttributes::ID_var3SkewFactor:
             temp.sprintf("%g", atts->GetVar3SkewFactor());
             var3SkewFactor->setText(temp);
             break;
-        case 23: //var4Role
+        case ScatterAttributes::ID_var4Role:
             var4Role->blockSignals(true);
             var4Role->setCurrentItem(atts->GetVar4Role());
             var4Role->blockSignals(false);
             rolesChanged = true;
             break;
-        case 24: //var4
+        case ScatterAttributes::ID_var4:
             temp = atts->GetVar4().c_str();
             var4->setText(temp);
             varsChanged = true;
             break;
-        case 25: //var4MinFlag
+        case ScatterAttributes::ID_var4MinFlag:
             var4Min->setEnabled(atts->GetVar4MinFlag());
             var4MinFlag->blockSignals(true);
             var4MinFlag->setChecked(atts->GetVar4MinFlag());
             var4MinFlag->blockSignals(false);
             break;
-        case 26: //var4MaxFlag
+        case ScatterAttributes::ID_var4MaxFlag:
             var4Max->setEnabled(atts->GetVar4MaxFlag());
             var4MaxFlag->blockSignals(true);
             var4MaxFlag->setChecked(atts->GetVar4MaxFlag());
             var4MaxFlag->blockSignals(false);
             break;
-        case 27: //var4Min
+        case ScatterAttributes::ID_var4Min:
             temp.sprintf("%g", atts->GetVar4Min());
             var4Min->setText(temp);
             break;
-        case 28: //var4Max
+        case ScatterAttributes::ID_var4Max:
             temp.sprintf("%g", atts->GetVar4Max());
             var4Max->setText(temp);
             break;
-        case 29: //var4Scaling
+        case ScatterAttributes::ID_var4Scaling:
             if (atts->GetVar4Scaling() == ScatterAttributes::Skew)
             {
                 var4SkewFactor->setEnabled(true);
@@ -766,37 +769,37 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             var4Scaling->setButton(atts->GetVar4Scaling());
             var4Scaling->blockSignals(false);
             break;
-        case 30: //var4SkewFactor
+        case ScatterAttributes::ID_var4SkewFactor:
             temp.sprintf("%g", atts->GetVar4SkewFactor());
             var4SkewFactor->setText(temp);
             break;
-        case 31: //pointSize
+        case ScatterAttributes::ID_pointSize:
             updatePointSize = true;
             break;
-        case 32: //pointSizePixels
+        case ScatterAttributes::ID_pointSizePixels:
             updatePointSize = true;
             break;
-        case 33: //pointType
+        case ScatterAttributes::ID_pointType:
             pointType->blockSignals(true);
             pointType->setCurrentItem(atts->GetPointType());
             pointType->blockSignals(false);
             updatePointSize = true;
             break;
-        case 34: //scaleCube
+        case ScatterAttributes::ID_scaleCube:
             scaleCube->blockSignals(true);
             scaleCube->setChecked(atts->GetScaleCube());
             scaleCube->blockSignals(false);
             break;
-        case 35: //colorTableName
+        case ScatterAttributes::ID_colorTableName:
             colorTableName->setColorTable(atts->GetColorTableName().c_str());
             break;
-        case 36: //singleColor
+        case ScatterAttributes::ID_singleColor:
             tempcolor = QColor(atts->GetSingleColor().Red(),
                                atts->GetSingleColor().Green(),
                                atts->GetSingleColor().Blue());
             singleColor->setButtonColor(tempcolor);
             break;
-        case 37: //foregroundFlag
+        case ScatterAttributes::ID_foregroundFlag:
             if(singleColorLabel->isEnabled() == atts->GetForegroundFlag())
             {
                 singleColorLabel->setEnabled(!atts->GetForegroundFlag());
@@ -806,7 +809,7 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             foregroundFlag->setChecked(atts->GetForegroundFlag());
             foregroundFlag->blockSignals(false);
             break;
-        case 38: //legendFlag
+        case ScatterAttributes::ID_legendFlag:
             legendFlag->blockSignals(true);
             legendFlag->setChecked(atts->GetLegendFlag());
             legendFlag->blockSignals(false);
@@ -916,26 +919,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do var1Role
-    if(which_widget == 0 || doAll)
-    {
-        // Nothing for var1Role
-    }
-
-    // Do var1MinFlag
-    if(which_widget == 1 || doAll)
-    {
-        // Nothing for var1MinFlag
-    }
-
-    // Do var1MaxFlag
-    if(which_widget == 2 || doAll)
-    {
-        // Nothing for var1MaxFlag
-    }
-
     // Do var1Min
-    if(which_widget == 3 || doAll)
+    if(which_widget == ScatterAttributes::ID_var1Min || doAll)
     {
         temp = var1Min->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -956,7 +941,7 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do var1Max
-    if(which_widget == 4 || doAll)
+    if(which_widget == ScatterAttributes::ID_var1Max || doAll)
     {
         temp = var1Max->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -976,14 +961,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do var1Scaling
-    if(which_widget == 5 || doAll)
-    {
-        // Nothing for var1Scaling
-    }
-
     // Do var1SkewFactor
-    if(which_widget == 6 || doAll)
+    if(which_widget == ScatterAttributes::ID_var1SkewFactor || doAll)
     {
         temp = var1SkewFactor->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1003,26 +982,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do var2Role
-    if(which_widget == 7 || doAll)
-    {
-        // Nothing for var2Role
-    }
-
-    // Do var2MinFlag
-    if(which_widget == 9 || doAll)
-    {
-        // Nothing for var2MinFlag
-    }
-
-    // Do var2MaxFlag
-    if(which_widget == 10 || doAll)
-    {
-        // Nothing for var2MaxFlag
-    }
-
     // Do var2Min
-    if(which_widget == 11 || doAll)
+    if(which_widget == ScatterAttributes::ID_var2Min || doAll)
     {
         temp = var2Min->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1043,7 +1004,7 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do var2Max
-    if(which_widget == 12 || doAll)
+    if(which_widget == ScatterAttributes::ID_var2Max || doAll)
     {
         temp = var2Max->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1063,14 +1024,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do var2Scaling
-    if(which_widget == 13 || doAll)
-    {
-        // Nothing for var2Scaling
-    }
-
     // Do var2SkewFactor
-    if(which_widget == 14 || doAll)
+    if(which_widget == ScatterAttributes::ID_var2SkewFactor|| doAll)
     {
         temp = var2SkewFactor->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1090,26 +1045,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do var3Role
-    if(which_widget == 15 || doAll)
-    {
-        // Nothing for var3Role
-    }
-
-    // Do var3MinFlag
-    if(which_widget == 17 || doAll)
-    {
-        // Nothing for var3MinFlag
-    }
-
-    // Do var3MaxFlag
-    if(which_widget == 18 || doAll)
-    {
-        // Nothing for var3MaxFlag
-    }
-
     // Do var3Min
-    if(which_widget == 19 || doAll)
+    if(which_widget == ScatterAttributes::ID_var2Min || doAll)
     {
         temp = var3Min->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1130,7 +1067,7 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do var3Max
-    if(which_widget == 20 || doAll)
+    if(which_widget == ScatterAttributes::ID_var3Max || doAll)
     {
         temp = var3Max->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1150,14 +1087,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do var3Scaling
-    if(which_widget == 21 || doAll)
-    {
-        // Nothing for var3Scaling
-    }
-
     // Do var3SkewFactor
-    if(which_widget == 22 || doAll)
+    if(which_widget == ScatterAttributes::ID_var2SkewFactor || doAll)
     {
         temp = var3SkewFactor->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1177,26 +1108,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do var4Role
-    if(which_widget == 23 || doAll)
-    {
-        // Nothing for var4Role
-    }
-
-    // Do var4MinFlag
-    if(which_widget == 25 || doAll)
-    {
-        // Nothing for var4MinFlag
-    }
-
-    // Do var4MaxFlag
-    if(which_widget == 26 || doAll)
-    {
-        // Nothing for var4MaxFlag
-    }
-
     // Do var4Min
-    if(which_widget == 27 || doAll)
+    if(which_widget == ScatterAttributes::ID_var4Min || doAll)
     {
         temp = var4Min->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1217,7 +1130,7 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do var4Max
-    if(which_widget == 28 || doAll)
+    if(which_widget == ScatterAttributes::ID_var4Max || doAll)
     {
         temp = var4Max->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1237,14 +1150,8 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do var4Scaling
-    if(which_widget == 29 || doAll)
-    {
-        // Nothing for var4Scaling
-    }
-
     // Do var4SkewFactor
-    if(which_widget == 30 || doAll)
+    if(which_widget == ScatterAttributes::ID_var4SkewFactor || doAll)
     {
         temp = var4SkewFactor->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1265,7 +1172,7 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do pointSize
-    if(which_widget == 31 || doAll)
+    if(which_widget == ScatterAttributes::ID_pointSize || doAll)
     {
         temp = pointSize->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -1305,43 +1212,6 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
             }
         }
     }
-
-    // Do pointType
-    if(which_widget == 32 || doAll)
-    {
-        // Nothing for pointType
-    }
-
-    // Do scaleCube
-    if(which_widget == 33 || doAll)
-    {
-        // Nothing for scaleCube
-    }
-
-    // Do colorTableName
-    if(which_widget == 34 || doAll)
-    {
-        // Nothing for colorTableName
-    }
-
-    // Do singleColor
-    if(which_widget == 35 || doAll)
-    {
-        // Nothing for singleColor
-    }
-
-    // Do foregroundFlag
-    if(which_widget == 36 || doAll)
-    {
-        // Nothing for foregroundFlag
-    }
-
-    // Do legendFlag
-    if(which_widget == 37 || doAll)
-    {
-        // Nothing for legendFlag
-    }
-
 }
 
 
@@ -1526,7 +1396,7 @@ QvisScatterPlotWindow::var1MaxFlagChanged(bool val)
 void
 QvisScatterPlotWindow::var1MinProcessText()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(ScatterAttributes::ID_var1Min);
     Apply();
 }
 
@@ -1534,7 +1404,7 @@ QvisScatterPlotWindow::var1MinProcessText()
 void
 QvisScatterPlotWindow::var1MaxProcessText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(ScatterAttributes::ID_var1Max);
     Apply();
 }
 
@@ -1553,7 +1423,7 @@ QvisScatterPlotWindow::var1ScalingChanged(int val)
 void
 QvisScatterPlotWindow::var1SkewFactorProcessText()
 {
-    GetCurrentValues(6);
+    GetCurrentValues(ScatterAttributes::ID_var1SkewFactor);
     Apply();
 }
 
@@ -1595,7 +1465,7 @@ QvisScatterPlotWindow::var2MaxFlagChanged(bool val)
 void
 QvisScatterPlotWindow::var2MinProcessText()
 {
-    GetCurrentValues(11);
+    GetCurrentValues(ScatterAttributes::ID_var2Min);
     Apply();
 }
 
@@ -1603,7 +1473,7 @@ QvisScatterPlotWindow::var2MinProcessText()
 void
 QvisScatterPlotWindow::var2MaxProcessText()
 {
-    GetCurrentValues(12);
+    GetCurrentValues(ScatterAttributes::ID_var2Max);
     Apply();
 }
 
@@ -1622,7 +1492,7 @@ QvisScatterPlotWindow::var2ScalingChanged(int val)
 void
 QvisScatterPlotWindow::var2SkewFactorProcessText()
 {
-    GetCurrentValues(14);
+    GetCurrentValues(ScatterAttributes::ID_var2SkewFactor);
     Apply();
 }
 
@@ -1664,7 +1534,7 @@ QvisScatterPlotWindow::var3MaxFlagChanged(bool val)
 void
 QvisScatterPlotWindow::var3MinProcessText()
 {
-    GetCurrentValues(19);
+    GetCurrentValues(ScatterAttributes::ID_var3Min);
     Apply();
 }
 
@@ -1672,7 +1542,7 @@ QvisScatterPlotWindow::var3MinProcessText()
 void
 QvisScatterPlotWindow::var3MaxProcessText()
 {
-    GetCurrentValues(20);
+    GetCurrentValues(ScatterAttributes::ID_var3Max);
     Apply();
 }
 
@@ -1691,7 +1561,7 @@ QvisScatterPlotWindow::var3ScalingChanged(int val)
 void
 QvisScatterPlotWindow::var3SkewFactorProcessText()
 {
-    GetCurrentValues(22);
+    GetCurrentValues(ScatterAttributes::ID_var3SkewFactor);
     Apply();
 }
 
@@ -1733,7 +1603,7 @@ QvisScatterPlotWindow::var4MaxFlagChanged(bool val)
 void
 QvisScatterPlotWindow::var4MinProcessText()
 {
-    GetCurrentValues(27);
+    GetCurrentValues(ScatterAttributes::ID_var4Min);
     Apply();
 }
 
@@ -1741,7 +1611,7 @@ QvisScatterPlotWindow::var4MinProcessText()
 void
 QvisScatterPlotWindow::var4MaxProcessText()
 {
-    GetCurrentValues(28);
+    GetCurrentValues(ScatterAttributes::ID_var4Max);
     Apply();
 }
 
@@ -1760,7 +1630,7 @@ QvisScatterPlotWindow::var4ScalingChanged(int val)
 void
 QvisScatterPlotWindow::var4SkewFactorProcessText()
 {
-    GetCurrentValues(30);
+    GetCurrentValues(ScatterAttributes::ID_var4SkewFactor);
     Apply();
 }
 
@@ -1768,7 +1638,7 @@ QvisScatterPlotWindow::var4SkewFactorProcessText()
 void
 QvisScatterPlotWindow::pointSizeProcessText()
 {
-    GetCurrentValues(31);
+    GetCurrentValues(ScatterAttributes::ID_pointSize);
     Apply();
 }
 
@@ -1798,7 +1668,7 @@ QvisScatterPlotWindow::pointTypeChanged(int val)
 {
     if(val != atts->GetPointType())
     {
-        GetCurrentValues(31);
+        GetCurrentValues(ScatterAttributes::ID_pointSize);
         atts->SetPointType(ScatterAttributes::PointType(val));
         Apply();
     }

@@ -829,6 +829,9 @@ QvisFilePanel::RepopulateFileList()
 //   time sliders when there are multiple time sliders whose names only
 //   differ by the path to their database.
 //
+//   Brad Whitlock, Mon Dec 17 11:02:28 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -844,7 +847,7 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
     int activeTS = windowInfo->GetActiveTimeSlider();
 
     // activeSource changed.  Update the file server.
-    if(windowInfo->IsSelected(0) || doAll)
+    if(windowInfo->IsSelected(WindowInformation::ID_activeSource) || doAll)
     {
         OpenActiveSourceInFileServer();
     }
@@ -854,9 +857,9 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
     // we need to update the file selection. Note - without this code, the
     // file selection never updates from what the user clicked.
     //
-    if((windowInfo->IsSelected(0) || /*activeSource*/
-        windowInfo->IsSelected(1) || /*activeTimeSlider*/
-        windowInfo->IsSelected(3) || /*timeSliderCurrentStates*/
+    if((windowInfo->IsSelected(WindowInformation::ID_activeSource) ||
+        windowInfo->IsSelected(WindowInformation::ID_activeTimeSlider) ||
+        windowInfo->IsSelected(WindowInformation::ID_timeSliderCurrentStates) ||
         doAll) &&
         showSelectedFiles)
     {
@@ -866,7 +869,7 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
     }
 
     // timeSliders changed. That's the list of time slider names.
-    if(windowInfo->IsSelected(2) /*timeSliders*/ || doAll)
+    if(windowInfo->IsSelected(WindowInformation::ID_timeSliders) || doAll)
     {
         //
         // Set the values in the active time slider selector and set its
@@ -950,8 +953,8 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
     }
 
     // Update the animation controls.
-    if(windowInfo->IsSelected(1) /*activeTimeSlider*/ ||
-       windowInfo->IsSelected(3) /*timeSliderCurrentStates*/ || doAll)
+    if(windowInfo->IsSelected(WindowInformation::ID_activeTimeSlider) ||
+       windowInfo->IsSelected(WindowInformation::ID_timeSliderCurrentStates) || doAll)
     {
         DatabaseCorrelationList *cL = GetViewerState()->
             GetDatabaseCorrelationList();
@@ -997,7 +1000,7 @@ QvisFilePanel::UpdateAnimationControls(bool doAll)
     }
 
     // If the VCR controls are selected (animationMode), set the mode.
-    if(windowInfo->IsSelected(4) || doAll)
+    if(windowInfo->IsSelected(WindowInformation::ID_animationMode) || doAll)
     {
         vcrControls->blockSignals(true);
         vcrControls->SetActiveButton(windowInfo->GetAnimationMode());

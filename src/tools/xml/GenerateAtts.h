@@ -177,6 +177,9 @@ using std::vector;
 //    Print out a warning if someone declares a builtin function that is
 //    being ignored.
 //
+//    Brad Whitlock, Fri Dec 14 14:13:02 PST 2007
+//    Add case identifiers for fields.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -249,6 +252,10 @@ class AttsGeneratorField : public virtual Field
     virtual QString DataNodeConversion()
     {
         return "BadType";
+    }
+    virtual QString FieldID() const
+    {
+        return QString("ID_") + name;
     }
     virtual void AddAttributeIncludes(UniqueStringList &sl) const
     {
@@ -332,7 +339,7 @@ class AttsGeneratorField : public virtual Field
         if (!isArray)
         {
             c << "    " << name << " = " << name << "_;" << endl;
-            c << "    Select(" << index << ", "
+            c << "    Select(" << FieldID() << ", "
               << "(void *)&" << name << ");" << endl;
         }
         else
@@ -347,7 +354,7 @@ class AttsGeneratorField : public virtual Field
                 c << "    for(int i = 0; i < " << length << "; ++i)" << endl;
                 c << "        " << name << "[i] = " << name << "_[i];"<< endl;
             }
-            c << "    Select(" << index << ", (void *)" << name << ", " << length << ");" << endl;
+            c << "    Select(" << FieldID() << ", (void *)" << name << ", " << length << ");" << endl;
         }
 
         if (codeFile && codeFile->code.count(QString("Set")+Name) && !codeFile->code[QString("Set")+Name].second.isNull())
@@ -415,12 +422,12 @@ class AttsGeneratorField : public virtual Field
         c << "{" << endl;
         if (isArray)
         {
-            c << "    Select(" << index << ", (void *)"
+            c << "    Select(" << FieldID() << ", (void *)"
               << name << ", " << length  << ");";
         }
         else
         {
-            c << "    Select(" << index << ", (void *)&"
+            c << "    Select(" << FieldID() << ", (void *)&"
               << name << ");";
         }
         c << endl << "}" << endl << endl;
@@ -1194,7 +1201,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    " << name << ".push_back(new" << s << ");" << endl;
         c << endl;
         c << "    // Indicate that things have changed by selecting it." << endl;
-        c << "    Select(" << index << ", (void *)&" << name << ");" << endl;
+        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << endl;
         c << "}" << endl << endl;
 
         // Write the Clear method
@@ -1211,7 +1218,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    " << name << ".clear();" << endl;
         c << endl;
         c << "    // Indicate that things have changed by selecting the list." << endl;
-        c << "    Select(" << index << ", (void *)&" << name << ");" << endl;
+        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << endl;
         c << "}" << endl << endl;
 
         // Write the Remove method
@@ -1235,7 +1242,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
         c << "    }" << endl;
         c << endl;
         c << "    // Indicate that things have changed by selecting the list." << endl;
-        c << "    Select(" << index << ", (void *)&" << name << ");" << endl;
+        c << "    Select(" << FieldID() << ", (void *)&" << name << ");" << endl;
         c << "}" << endl << endl;
 
         // Write the GetNum method
@@ -1296,7 +1303,7 @@ class AttsGeneratorAttVector : public virtual AttVector , public virtual AttsGen
     }
     virtual void WriteSourceSubAttributeGroup(ostream &c)
     {
-        c << "    case " << index << ":" << endl;
+        c << "    case " << FieldID() << ":" << endl;
         c << "        retval = new " << attType << ";" << endl;
         c << "        break;" << endl;
     }
@@ -1712,9 +1719,30 @@ class AttsGeneratorAttribute
         {
             if(fields[i]->accessType == Field::AccessPrivate)
             fields[i]->WriteHeaderSelectFunction(h);
+        }
     }
+    void WriteHeaderFieldIDs(ostream &h)
+    {
+        if(fields.size() > 0)
+        {
+            h << "    // IDs that can be used to identify fields in case statements" << endl;
+            h << "    enum {" << endl;
+        }
+        for (int i=0; i<fields.size(); i++)
+        {
+            h << "        " << fields[i]->FieldID();
+            if(i == 0)
+                h << " = 0";
+            if(i < fields.size()-1)
+                h << ",";
+            h << endl;
+        }
+        if(fields.size() > 0)
+        {
+            h << "    };" << endl;
+            h << endl;
+        }
     }
-
     void WriteHeaderEnumConversions(ostream &h)
     {
         // Write the enums functions
@@ -1899,20 +1927,27 @@ class AttsGeneratorAttribute
         bool hasPrivateFields = false;
         bool hasProtectedFields = false;
         bool hasPublicFields = false;
+        bool onlyHasPublicFields = true;
         for (i=0; i<fields.size(); i++)
         {
             if(fields[i]->accessType == Field::AccessPrivate)
+            {
                 hasPrivateFields = true;
+                onlyHasPublicFields = false;
+            }
             if(fields[i]->accessType == Field::AccessProtected)
+            {
                 hasProtectedFields = true;
+                onlyHasPublicFields = false;
+            }
             if(fields[i]->accessType == Field::AccessPublic)
                 hasPublicFields = true;
         }
 
         if(hasPrivateFields)
         {
-        h << endl;
-        h << "    // Property setting methods" << endl;
+            h << endl;
+            h << "    // Property setting methods" << endl;
         }
         // Write out all the set prototypes
         for (i=0; i<fields.size(); i++)
@@ -1925,8 +1960,8 @@ class AttsGeneratorAttribute
         int totalWidth = CalculateTotalWidth(true);
         if(hasPrivateFields)
         {
-        h << endl;
-        h << "    // Property getting methods" << endl;
+            h << endl;
+            h << "    // Property getting methods" << endl;
         }
         // Write out all the get prototypes
         for (i=0; i<fields.size(); i++)
@@ -1997,6 +2032,11 @@ class AttsGeneratorAttribute
                 h << "    " << functions[i]->decl << endl;
             }
         }
+        h << endl;
+
+        // Write field IDs
+        if(!onlyHasPublicFields)
+            WriteHeaderFieldIDs(h);
 
         // If there are any AttributeGroupVectors, we'll need this method.
         if (HaveAGVectors())
@@ -2032,9 +2072,9 @@ class AttsGeneratorAttribute
         // Write out all the private attributes
         if(hasPrivateFields)
         {
-        h << "private:" << endl;
-        for (i=0; i<fields.size(); i++)
-        {
+            h << "private:" << endl;
+            for (i=0; i<fields.size(); i++)
+            {
                 if(fields[i]->accessType != Field::AccessPrivate)
                     continue;
                 fields[i]->WriteHeaderAttribute(h, totalWidth);
@@ -2403,6 +2443,23 @@ class AttsGeneratorAttribute
         c << "    return !(this->operator == (obj));" << endl;
         c << "}" << endl << endl;
     }
+    int MaxFieldLength() const
+    {
+        int maxlen = 0;
+        for (int i=0; i<fields.size(); i++)
+        {
+            int len = fields[i]->FieldID().length();
+            maxlen = (len > maxlen) ? len : maxlen;
+        }
+        return maxlen;
+    }
+    QString PadStringWithSpaces(const QString &s, int len) const
+    {
+        QString ret(s);
+        while(ret.length() < len)
+            ret += QString(" ");
+        return ret;
+    }
     void WriteSourceSelectAll(ostream &c)
     {
         // Write the method comment.
@@ -2413,17 +2470,18 @@ class AttsGeneratorAttribute
         c << "void" << endl;
         c << name << "::SelectAll()" << endl;
         c << "{" << endl;
-
+        int maxlen = MaxFieldLength() + 2;
         for (int i=0; i<fields.size(); i++)
         {
+            QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(", "), maxlen));
             if (fields[i]->isArray)
             {
-                c << "    Select(" << i << ", (void *)"
+                c << "    Select(" << fieldID << "(void *)"
                   << fields[i]->name << ", " << fields[i]->length  << ");";
             }
             else
             {
-                c << "    Select(" << i << ", (void *)&"
+                c << "    Select(" << fieldID << "(void *)&"
                   << fields[i]->name << ");";
             }
             c << endl;
@@ -2500,7 +2558,7 @@ class AttsGeneratorAttribute
             QString forceAdd("false"); 
             if(fields[i]->type != "color")
             {
-                c << "    if(completeSave || !FieldsEqual(" << i << ", &defaultObject))" << endl;
+                c << "    if(completeSave || !FieldsEqual(" << fields[i]->FieldID() << ", &defaultObject))" << endl;
                 c << "    {" << endl;
             }
             else
@@ -2608,6 +2666,8 @@ class AttsGeneratorAttribute
         WriteMethodComment(c, name, "GetFieldName",
             "This method returns the name of a field given its index.");
 
+        int maxlen = MaxFieldLength() + 1;
+
         c << "std::string" << endl;
         c << name << "::GetFieldName(int index) const" << endl;
         c << "{" << endl;
@@ -2615,8 +2675,11 @@ class AttsGeneratorAttribute
         c << "    {" << endl;
         int i;
         for (i=0; i<fields.size(); i++)
-            c << "        case "<<i<<":  return \""<<fields[i]->label<<"\";" << endl;
-        c << "        default:  return \"invalid index\";" << endl;
+        {
+            QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
+            c << "    case "<<fieldID<<" return \""<<fields[i]->name<<"\";" << endl;
+        }
+        c << "    default:  return \"invalid index\";" << endl;
         c << "    }" << endl;
         c << "}" << endl;
         c << endl;
@@ -2630,8 +2693,11 @@ class AttsGeneratorAttribute
         c << "    switch (index)" << endl;
         c << "    {" << endl;
         for (i=0; i<fields.size(); i++)
-            c << "        case "<<i<<":  return FieldType_"<<fields[i]->GetFieldType()<<";" << endl;
-        c << "        default:  return FieldType_unknown;" << endl;
+        {
+            QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
+            c << "    case "<<fieldID<<" return FieldType_"<<fields[i]->GetFieldType()<<";" << endl;
+        }
+        c << "    default:  return FieldType_unknown;" << endl;
         c << "    }" << endl;
         c << "}" << endl;
         c << endl;
@@ -2645,8 +2711,11 @@ class AttsGeneratorAttribute
         c << "    switch (index)" << endl;
         c << "    {" << endl;
         for (i=0; i<fields.size(); i++)
-            c << "        case "<<i<<":  return \""<<fields[i]->type<<"\";" << endl;
-        c << "        default:  return \"invalid index\";" << endl;
+        {
+            QString fieldID(PadStringWithSpaces(fields[i]->FieldID() + QString(":"), maxlen));
+            c << "    case "<<fieldID<<" return \""<<fields[i]->type<<"\";" << endl;
+        }
+        c << "    default:  return \"invalid index\";" << endl;
         c << "    }" << endl;
         c << "}" << endl;
         c << endl;
@@ -2673,7 +2742,7 @@ class AttsGeneratorAttribute
         // Create a big boolean return statement.
         for (i=0; i<fields.size(); i++)
         {
-            c << "    case "<<i<<":" << endl;
+            c << "    case "<<fields[i]->FieldID()<<":" << endl;
             c << "        {  // new scope" << endl;
             fields[i]->WriteSourceComparisonPrecalc(c, "        ");
             c << "        retval = ";
@@ -2752,10 +2821,10 @@ class AttsGeneratorAttribute
             {
                 if (!constants[i]->def.simplifyWhiteSpace().isEmpty())
                 {
-                c << constants[i]->def;
-                c << endl;
+                    c << constants[i]->def;
+                    c << endl;
+                }
             }
-        }
         }
 
         // Write out enum conversions.
@@ -2828,7 +2897,7 @@ class AttsGeneratorAttribute
                 if(fields[i]->accessType != Field::AccessPrivate)
                     continue;
                 fields[i]->WriteSourceSelectFunction(c, name);
-        }
+            }
         }
 
         if (HaveAGVectors())
@@ -2841,7 +2910,7 @@ class AttsGeneratorAttribute
                 if(fields[i]->accessType != Field::AccessPrivate)
                     continue;
                 fields[i]->WriteSourceAGVectorFunctions(c, name, purpose);
-        }
+            }
         }
 
         if (HaveSoloAGVector())
@@ -2853,10 +2922,10 @@ class AttsGeneratorAttribute
         // Write out all the keyframe methods
         if(keyframe)
         {
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl;
-        c << "// Keyframing methods" << endl;
-        c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
-        WriteSourceKeyframeFunctions(c);
+            c << "///////////////////////////////////////////////////////////////////////////////" << endl;
+            c << "// Keyframing methods" << endl;
+            c << "///////////////////////////////////////////////////////////////////////////////" << endl << endl;
+            WriteSourceKeyframeFunctions(c);
         }
 
         c << "///////////////////////////////////////////////////////////////////////////////" << endl;

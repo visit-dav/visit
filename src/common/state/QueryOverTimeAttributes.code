@@ -12,7 +12,9 @@ Definition:
 // Creation:   May 26, 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 14 15:59:43 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 bool
@@ -26,43 +28,43 @@ QueryOverTimeAttributes::CreateNode(DataNode *parentNode, bool completeSave, boo
     // Create a node for QueryOverTimeAttributes.
     DataNode *node = new DataNode("QueryOverTimeAttributes");
 
-    if(completeSave || !FieldsEqual(0, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_timeType, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("timeType", TimeType_ToString(timeType)));
     }
 
-    if(completeSave || !FieldsEqual(1, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_startTimeFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("startTimeFlag", startTimeFlag));
     }
 
-    if(completeSave || !FieldsEqual(2, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_startTime, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("startTime", startTime));
     }
 
-    if(completeSave || !FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_endTimeFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("endTimeFlag", endTimeFlag));
     }
 
-    if(completeSave || !FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_endTime, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("endTime", endTime));
     }
 
-    if(completeSave || !FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_stride, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("stride", stride));
     }
 
-    if(completeSave || !FieldsEqual(6, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_createWindow, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("createWindow", createWindow));

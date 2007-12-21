@@ -58,10 +58,6 @@ def main():
 	    os.chdir(dirName)
 	    
         bname = f[index+1:-5]
-        command = "cleartool checkout -c \"regenerated\" %sAttributes.C" % bname
-        systemCommand(command)
-        command = "cleartool checkout -c \"regenerated\" %sAttributes.h" % bname
-        systemCommand(command)
         command = "../../bin/xml2atts -clobber %s.xml" % bname
         systemCommand(command)
 	

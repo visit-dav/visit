@@ -1277,6 +1277,9 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Brad Whitlock, Fri Jun 15 17:48:09 PST 2007
 //   Load the CLI if the visitrc file exists.
 //
+//   Brad Whitlock, Thu Dec 20 16:05:28 PST 2007
+//   Added code to delete the splash screen in order to save memory.
+//
 // ****************************************************************************
 
 void
@@ -1421,6 +1424,16 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(stagedInit, "FinalInitialization");
         visitTimer->StopTimer(completeInit, "VisIt to be ready");
         moreInit = false;
+        ++initStage;
+        break;
+    case 12:
+        // If we have a splashscreen, we've hidden it by now. Delete it to
+        // save memory.
+        if(splash)
+        {
+            delete splash;
+            splash = 0;
+        }
         ++initStage;
         break;
     default:
@@ -1931,11 +1944,11 @@ QvisGUIApplication::CustomizeAppearance(bool notify)
 {
     const char *mName = "QvisGUIApplication::CustomizeAppearance: ";
     AppearanceAttributes *aa = GetViewerState()->GetAppearanceAttributes();
-    bool backgroundSelected = aa->IsSelected(0);
-    bool foregroundSelected = aa->IsSelected(1);
-    bool fontSelected = aa->IsSelected(2);
-    bool styleSelected = aa->IsSelected(3);
-    bool orientationSelected = aa->IsSelected(4);
+    bool backgroundSelected = aa->IsSelected(AppearanceAttributes::ID_background);
+    bool foregroundSelected = aa->IsSelected(AppearanceAttributes::ID_foreground);
+    bool fontSelected = aa->IsSelected(AppearanceAttributes::ID_fontName);
+    bool styleSelected = aa->IsSelected(AppearanceAttributes::ID_style);
+    bool orientationSelected = aa->IsSelected(AppearanceAttributes::ID_orientation);
 
     debug1 << mName << "Called with notify=" << (notify?"true":"false") << endl;
 

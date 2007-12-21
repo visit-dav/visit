@@ -213,6 +213,9 @@ QvisMaterialWindow::CreateWindowContents()
 //    Changed algorithm selection to a multiple-choice.
 //    Added VF for isovolume method.
 //
+//    Brad Whitlock, Fri Dec 14 17:38:49 PST 2007
+//    Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -241,19 +244,19 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case 0: //smoothing
+          case MaterialAttributes::ID_smoothing:
             smoothing->setChecked(atts->GetSmoothing());
             break;
-          case 1: //forceMIR
+          case MaterialAttributes::ID_forceMIR:
             forceMIR->setChecked(atts->GetForceMIR());
             break;
-          case 2: //cleanZonesOnly
+          case MaterialAttributes::ID_cleanZonesOnly:
             cleanZonesOnly->setChecked(atts->GetCleanZonesOnly());
             break;
-          case 3: //needValidConnectivity
+          case MaterialAttributes::ID_needValidConnectivity:
             forceFullConnectivity->setChecked(atts->GetNeedValidConnectivity());
             break;
-          case 4: //algorithm
+          case MaterialAttributes::ID_algorithm:
             if (atts->GetAlgorithm() == MaterialAttributes::Isovolume)
             {
                 isoVolumeFraction->setEnabled(true);
@@ -266,17 +269,17 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
             }
             algorithm->setCurrentItem(atts->GetAlgorithm());
             break;
-          case 5: //simplifyHeavilyMixedZones
+          case MaterialAttributes::ID_simplifyHeavilyMixedZones:
             simplifyHeavilyMixedZones->setChecked(
                                          atts->GetSimplifyHeavilyMixedZones());
             maxMatsPerZone->setEnabled(atts->GetSimplifyHeavilyMixedZones());
             maxMatsPerZoneLabel->setEnabled(atts->GetSimplifyHeavilyMixedZones());
             break;
-          case 6: //maxMatsPerZone
+          case MaterialAttributes::ID_maxMaterialsPerZone:
             temp.sprintf("%d", atts->GetMaxMaterialsPerZone());
             maxMatsPerZone->setText(temp);
             break;
-          case 7: //isoVolumeFraction
+          case MaterialAttributes::ID_isoVolumeFraction:
             temp.setNum(atts->GetIsoVolumeFraction());
             isoVolumeFraction->setText(temp);
             break;
@@ -317,6 +320,9 @@ QvisMaterialWindow::UpdateWindow(bool doAll)
 //    Changed algorithm selection to a multiple-choice.
 //    Added VF for isovolume method.
 //
+//    Brad Whitlock, Fri Dec 14 17:40:16 PST 2007
+//    Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -326,43 +332,43 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do smoothing
-    if(which_widget == 0 || doAll)
+    if(which_widget == MaterialAttributes::ID_smoothing || doAll)
     {
         // Nothing for smoothing
     }
 
     // Do forceMIR
-    if(which_widget == 1 || doAll)
+    if(which_widget == MaterialAttributes::ID_forceMIR || doAll)
     {
         // Nothing for forceMIR
     }
 
     // Do cleanZonesOnly
-    if(which_widget == 2 || doAll)
+    if(which_widget == MaterialAttributes::ID_cleanZonesOnly || doAll)
     {
         // Nothing for cleanZonesOnly
     }
 
-    // Do forceFullConnectivity
-    if(which_widget == 3 || doAll)
+    // Do needValidConnectivity
+    if(which_widget == MaterialAttributes::ID_needValidConnectivity || doAll)
     {
-        // Nothing for forceFullConnectivity
+        // Nothing for needValidConnectivity
     }
 
     // Do algorithm
-    if(which_widget == 4 || doAll)
+    if(which_widget == MaterialAttributes::ID_algorithm || doAll)
     {
         // Nothing for algorithm
     }
 
     // Do simplifyHeavilyMixedZones
-    if(which_widget == 5 || doAll)
+    if(which_widget == MaterialAttributes::ID_simplifyHeavilyMixedZones || doAll)
     {
-        // Nothing for simplifyHeavilyMixedZone
+        // Nothing for simplifyHeavilyMixedZones
     }
 
     // Do maxMatsPerZone
-    if(which_widget == 6 || doAll)
+    if(which_widget == MaterialAttributes::ID_maxMaterialsPerZone || doAll)
     {
         temp = maxMatsPerZone->displayText().simplifyWhiteSpace();
         bool okay = !temp.isEmpty();
@@ -386,7 +392,7 @@ QvisMaterialWindow::GetCurrentValues(int which_widget)
     }
 
     // Do isoVolumeFraction
-    if(which_widget == 7 || doAll)
+    if(which_widget == MaterialAttributes::ID_isoVolumeFraction || doAll)
     {
         temp = isoVolumeFraction->displayText().simplifyWhiteSpace();
         bool okay = !temp.isEmpty();
@@ -565,7 +571,7 @@ QvisMaterialWindow::simplifyHeavilyMixedZonesChanged(bool val)
 void
 QvisMaterialWindow::maxMatsPerZoneProcessText()
 {
-    GetCurrentValues(6);
+    GetCurrentValues(MaterialAttributes::ID_maxMaterialsPerZone);
     Apply();
 }
 
@@ -583,7 +589,7 @@ QvisMaterialWindow::algorithmChanged(int val)
 void
 QvisMaterialWindow::isoVolumeFractionProcessText()
 {
-    GetCurrentValues(7);
+    GetCurrentValues(MaterialAttributes::ID_isoVolumeFraction);
     Apply();
 }
 

@@ -1521,6 +1521,9 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Wed Nov 14 11:34:45 PDT 2007
 //   Added background image support.
 //
+//   Brad Whitlock, Fri Dec 14 16:41:02 PST 2007
+//   Made it use ids for case labels.
+//
 // ****************************************************************************
 
 void
@@ -1552,13 +1555,13 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
 
         switch(i)
         {
-        case 0: // axesFlag2D
+        case AnnotationAttributes::ID_axesFlag2D:
             axesFlagToggle2D->blockSignals(true);
             axesFlagToggle2D->setChecked(annotationAtts->GetAxesFlag2D());
             axesFlagToggle2D->blockSignals(false);
             axesGroup2D->setEnabled(annotationAtts->GetAxesFlag2D());
             break;
-        case 1: // axesAutoSetTicks2D
+        case AnnotationAttributes::ID_axesAutoSetTicks2D:
             axesAutoSetTicksToggle2D->blockSignals(true);
             axesAutoSetTicksToggle2D->setChecked(annotationAtts->GetAxesAutoSetTicks2D());
             axesAutoSetTicksToggle2D->blockSignals(false);
@@ -1577,7 +1580,7 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             xMinorTickSpacingLineEdit2D->setEnabled(!axesAutoSetTicks);
             yMinorTickSpacingLineEdit2D->setEnabled(!axesAutoSetTicks);
             break;
-        case 2: // labelAutoSetScaling2D
+        case AnnotationAttributes::ID_labelAutoSetScaling2D:
             labelAutoSetScalingToggle2D->blockSignals(true);
             labelAutoSetScalingToggle2D->setChecked(annotationAtts->GetLabelAutoSetScaling2D());
             labelAutoSetScalingToggle2D->blockSignals(false);
@@ -1587,136 +1590,136 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             xLabelScalingLineEdit2D->setEnabled(!labelAutoSetScaling);
             yLabelScalingLineEdit2D->setEnabled(!labelAutoSetScaling);
             break;
-        case 3: // xAxisLabels2D
-        case 4: // yAxisLabels2D
+        case AnnotationAttributes::ID_xAxisLabels2D:
+        case AnnotationAttributes::ID_yAxisLabels2D:
             setAxisLabels2D = true;
             break;
-        case 5: // xAxisTitle2D
-        case 6: // yAxisTitle2D
+        case AnnotationAttributes::ID_xAxisTitle2D:
+        case AnnotationAttributes::ID_yAxisTitle2D:
             setAxisTitles2D = true;
             break;
-        case 7: // xGridLines2D
-        case 8: // yGridLines2D
+        case AnnotationAttributes::ID_xGridLines2D:
+        case AnnotationAttributes::ID_yGridLines2D:
             setGridLines2D = true;
             break;
-        case 9: // xMajorTickMinimum2D
+        case AnnotationAttributes::ID_xMajorTickMinimum2D:
             temp.setNum(annotationAtts->GetXMajorTickMinimum2D());
             xMajorTickMinimumLineEdit2D->setText(temp);
             break;
-        case 10: // yMajorTickMinimum2D
+        case AnnotationAttributes::ID_yMajorTickMinimum2D:
             temp.setNum(annotationAtts->GetYMajorTickMinimum2D());
             yMajorTickMinimumLineEdit2D->setText(temp);
             break;
-        case 11: // xMajorTickMaximum2D
+        case AnnotationAttributes::ID_xMajorTickMaximum2D:
             temp.setNum(annotationAtts->GetXMajorTickMaximum2D());
             xMajorTickMaximumLineEdit2D->setText(temp);
             break;
-        case 12: // yMajorTickMaximum2D
+        case AnnotationAttributes::ID_yMajorTickMaximum2D:
             temp.setNum(annotationAtts->GetYMajorTickMaximum2D());
             yMajorTickMaximumLineEdit2D->setText(temp);
             break;
-        case 13: // xMajorTickSpacing2D
+        case AnnotationAttributes::ID_xMajorTickSpacing2D:
             temp.setNum(annotationAtts->GetXMajorTickSpacing2D());
             xMajorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 14: // yMajorTickSpacing2D
+        case AnnotationAttributes::ID_yMajorTickSpacing2D:
             temp.setNum(annotationAtts->GetYMajorTickSpacing2D());
             yMajorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 15: // xMinorTickSpacing2D
+        case AnnotationAttributes::ID_xMinorTickSpacing2D:
             temp.setNum(annotationAtts->GetXMinorTickSpacing2D());
             xMinorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 16: // yMinorTickSpacing2D
+        case AnnotationAttributes::ID_yMinorTickSpacing2D:
             temp.setNum(annotationAtts->GetYMinorTickSpacing2D());
             yMinorTickSpacingLineEdit2D->setText(temp);
             break;
-        case 17: // xLabelFontHeight2D
+        case AnnotationAttributes::ID_xLabelFontHeight2D:
             temp.setNum(annotationAtts->GetXLabelFontHeight2D());
             xLabelFontHeightLineEdit2D->setText(temp);
             break;
-        case 18: // yLabelFontHeight2D
+        case AnnotationAttributes::ID_yLabelFontHeight2D:
             temp.setNum(annotationAtts->GetYLabelFontHeight2D());
             yLabelFontHeightLineEdit2D->setText(temp);
             break;
-        case 19: // xTitleFontHeight2D
+        case AnnotationAttributes::ID_xTitleFontHeight2D:
             temp.setNum(annotationAtts->GetXTitleFontHeight2D());
             xTitleFontHeightLineEdit2D->setText(temp);
             break;
-        case 20: // yTitleFontHeight2D
+        case AnnotationAttributes::ID_yTitleFontHeight2D:
             temp.setNum(annotationAtts->GetYTitleFontHeight2D());
             yTitleFontHeightLineEdit2D->setText(temp);
             break;
-        case 21: // xLabelScaling2D
+        case AnnotationAttributes::ID_xLabelScaling2D:
             temp.sprintf("%d", annotationAtts->GetXLabelScaling2D());
             xLabelScalingLineEdit2D->setText(temp);
             break;
-        case 22: // yLabelScaling2D
+        case AnnotationAttributes::ID_yLabelScaling2D:
             temp.sprintf("%d", annotationAtts->GetYLabelScaling2D());
             yLabelScalingLineEdit2D->setText(temp);
             break;
-        case 23: // axesLineWidth2D
+        case AnnotationAttributes::ID_axesLineWidth2D:
             axesLineWidth2D->blockSignals(true);
             axesLineWidth2D->SetLineWidth(annotationAtts->GetAxesLineWidth2D());
             axesLineWidth2D->blockSignals(false);
             break;
-        case 24: // axesTickLocation2D
+        case AnnotationAttributes::ID_axesTickLocation2D:
             axesTickLocationComboBox2D->blockSignals(true);
             axesTickLocationComboBox2D->setCurrentItem(annotationAtts->GetAxesTickLocation2D());
             axesTickLocationComboBox2D->blockSignals(false);
             break;
-        case 25: // axesTicks2D
+        case AnnotationAttributes::ID_axesTicks2D:
             axesTicksComboBox2D->blockSignals(true);
             axesTicksComboBox2D->setCurrentItem(annotationAtts->GetAxesTicks2D());
             axesTicksComboBox2D->blockSignals(false);
             break;
-        case 26: // xAxisUserTitle2D
+        case AnnotationAttributes::ID_xAxisUserTitle2D:
             xAxisUserTitleLineEdit2D->setText(annotationAtts->GetXAxisUserTitle2D().c_str());
             break;
-        case 27: // yAxisUserTitle2D
+        case AnnotationAttributes::ID_yAxisUserTitle2D:
             yAxisUserTitleLineEdit2D->setText(annotationAtts->GetYAxisUserTitle2D().c_str());
             break;
-        case 28: // xAxisUserTitleFlag2D
+        case AnnotationAttributes::ID_xAxisUserTitleFlag2D:
             xAxisUserTitleToggle2D->blockSignals(true);
             xAxisUserTitleToggle2D->setChecked(annotationAtts->GetXAxisUserTitleFlag2D());
             xAxisUserTitleToggle2D->blockSignals(false);
 
             xAxisUserTitleLineEdit2D->setEnabled(annotationAtts->GetXAxisUserTitleFlag2D());
             break;
-        case 29: // yAxisUserTitleFlag2D
+        case AnnotationAttributes::ID_yAxisUserTitleFlag2D:
             yAxisUserTitleToggle2D->blockSignals(true);
             yAxisUserTitleToggle2D->setChecked(annotationAtts->GetYAxisUserTitleFlag2D());
             yAxisUserTitleToggle2D->blockSignals(false);
 
             yAxisUserTitleLineEdit2D->setEnabled(annotationAtts->GetYAxisUserTitleFlag2D());
             break;
-        case 30: // xAxisUserUnits2D
+        case AnnotationAttributes::ID_xAxisUserUnits2D:
             xAxisUserUnitsLineEdit2D->setText(annotationAtts->GetXAxisUserUnits2D().c_str());
             break;
-        case 31: // yAxisUserUnits2D
+        case AnnotationAttributes::ID_yAxisUserUnits2D:
             yAxisUserUnitsLineEdit2D->setText(annotationAtts->GetYAxisUserUnits2D().c_str());
             break;
-        case 32: // xAxisUserUnitsFlag2D
+        case AnnotationAttributes::ID_xAxisUserUnitsFlag2D:
             xAxisUserUnitsToggle2D->blockSignals(true);
             xAxisUserUnitsToggle2D->setChecked(annotationAtts->GetXAxisUserUnitsFlag2D());
             xAxisUserUnitsToggle2D->blockSignals(false);
 
             xAxisUserUnitsLineEdit2D->setEnabled(annotationAtts->GetXAxisUserUnitsFlag2D());
             break;
-        case 33: // yAxisUserUnitsFlag2D
+        case AnnotationAttributes::ID_yAxisUserUnitsFlag2D:
             yAxisUserUnitsToggle2D->blockSignals(true);
             yAxisUserUnitsToggle2D->setChecked(annotationAtts->GetYAxisUserUnitsFlag2D());
             yAxisUserUnitsToggle2D->blockSignals(false);
 
             yAxisUserUnitsLineEdit2D->setEnabled(annotationAtts->GetYAxisUserUnitsFlag2D());
             break;
-        case 34: // axesFlag
+        case AnnotationAttributes::ID_axesFlag:
             axes3DFlagToggle->blockSignals(true);
             axes3DFlagToggle->setChecked(annotationAtts->GetAxesFlag());
             axes3DFlagToggle->blockSignals(false);
             axes3DGroup->setEnabled(annotationAtts->GetAxesFlag());
             break;
-        case 35: // axesAutoSetTicks
+        case AnnotationAttributes::ID_axesAutoSetTicks:
 #if 0
             axesAutoSetTicksToggle->blockSignals(true);
             axesAutoSetTicksToggle->setChecked(annotationAtts->GetAutoSetTicks());
@@ -1724,7 +1727,7 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             // Make the tick locations text fields not enabled.
 #endif
             break;
-        case 36: // labelAutoSetScaling
+        case AnnotationAttributes::ID_labelAutoSetScaling:
             labelAutoSetScalingToggle->blockSignals(true);
             labelAutoSetScalingToggle->setChecked(
                 annotationAtts->GetLabelAutoSetScaling());
@@ -1736,172 +1739,172 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             yLabelScalingLineEdit->setEnabled(!labelAutoSetScaling);
             zLabelScalingLineEdit->setEnabled(!labelAutoSetScaling);
             break;
-        case 37: // xAxisLabels
-        case 38: // yAxisLabels
-        case 39: // zAxisLabels
+        case AnnotationAttributes::ID_xAxisLabels:
+        case AnnotationAttributes::ID_yAxisLabels:
+        case AnnotationAttributes::ID_zAxisLabels:
             setAxisLabels = true;
             break;
-        case 40: // xAxisTitle
-        case 41: // yAxisTitle
-        case 42: // zAxisTitle
+        case AnnotationAttributes::ID_xAxisTitle:
+        case AnnotationAttributes::ID_yAxisTitle:
+        case AnnotationAttributes::ID_zAxisTitle:
             setAxisTitles = true;
             break;
-        case 43: // xGridLines
-        case 44: // yGridLines
-        case 45: // zGridLines
+        case AnnotationAttributes::ID_xGridLines:
+        case AnnotationAttributes::ID_yGridLines:
+        case AnnotationAttributes::ID_zGridLines:
             setGridLines = true;
             break;
-        case 46: // xAxisTicks
-        case 47: // yAxisTicks
-        case 48: // zAxisTicks
+        case AnnotationAttributes::ID_xAxisTicks:
+        case AnnotationAttributes::ID_yAxisTicks:
+        case AnnotationAttributes::ID_zAxisTicks:
             setAxisTicks = true;
             break;
-        case 49: // xMajorTickMinimum
-        case 50: // yMajorTickMinimum
-        case 51: // zMajorTickMinimum
-        case 52: // xMajorTickMaximum
-        case 53: // yMajorTickMaximum
-        case 54: // zMajorTickMaximum
-        case 55: // xMajorTickSpacing
-        case 56: // yMajorTickSpacing
-        case 57: // zMajorTickSpacing
-        case 58: // xMinorTickSpacing
-        case 59: // yMinorTickSpacing
-        case 60: // zMinorTickSpacing
-        case 61: // xLabelFontHeight
-        case 62: // yLabelFontHeight
-        case 63: // zLabelFontHeight
-        case 64: // xTitleFontHeight
-        case 65: // yTitleFontHeight
-        case 66: // zTitleFontHeight
+        case AnnotationAttributes::ID_xMajorTickMinimum:
+        case AnnotationAttributes::ID_yMajorTickMinimum:
+        case AnnotationAttributes::ID_zMajorTickMinimum:
+        case AnnotationAttributes::ID_xMajorTickMaximum:
+        case AnnotationAttributes::ID_yMajorTickMaximum:
+        case AnnotationAttributes::ID_zMajorTickMaximum:
+        case AnnotationAttributes::ID_xMajorTickSpacing:
+        case AnnotationAttributes::ID_yMajorTickSpacing:
+        case AnnotationAttributes::ID_zMajorTickSpacing:
+        case AnnotationAttributes::ID_xMinorTickSpacing:
+        case AnnotationAttributes::ID_yMinorTickSpacing:
+        case AnnotationAttributes::ID_zMinorTickSpacing:
+        case AnnotationAttributes::ID_xLabelFontHeight:
+        case AnnotationAttributes::ID_yLabelFontHeight:
+        case AnnotationAttributes::ID_zLabelFontHeight:
+        case AnnotationAttributes::ID_xTitleFontHeight:
+        case AnnotationAttributes::ID_yTitleFontHeight:
+        case AnnotationAttributes::ID_zTitleFontHeight:
             // IMPLEMENT
             break;
-        case 67: // xLabelScaling
+        case AnnotationAttributes::ID_xLabelScaling:
             temp.sprintf("%d", annotationAtts->GetXLabelScaling());
             xLabelScalingLineEdit->setText(temp);
             break;
-        case 68: // yLabelScaling
+        case AnnotationAttributes::ID_yLabelScaling:
             temp.sprintf("%d", annotationAtts->GetYLabelScaling());
             yLabelScalingLineEdit->setText(temp);
             break;
-        case 69: // zLabelScaling
+        case AnnotationAttributes::ID_zLabelScaling:
             temp.sprintf("%d", annotationAtts->GetZLabelScaling());
             zLabelScalingLineEdit->setText(temp);
             break;
-        case 70: // xAxisUserTitle
+        case AnnotationAttributes::ID_xAxisUserTitle:
             xAxisUserTitleLineEdit->setText(annotationAtts->GetXAxisUserTitle().c_str());
             break;
-        case 71: // yAxisUserTitle
+        case AnnotationAttributes::ID_yAxisUserTitle:
             yAxisUserTitleLineEdit->setText(annotationAtts->GetYAxisUserTitle().c_str());
             break;
-        case 72: // yAxisUserTitle
+        case AnnotationAttributes::ID_zAxisUserTitle:
             zAxisUserTitleLineEdit->setText(annotationAtts->GetZAxisUserTitle().c_str());
             break;
-        case 73: // xAxisUserTitleFlag
+        case AnnotationAttributes::ID_xAxisUserTitleFlag:
             xAxisUserTitleToggle->blockSignals(true);
             xAxisUserTitleToggle->setChecked(annotationAtts->GetXAxisUserTitleFlag());
             xAxisUserTitleToggle->blockSignals(false);
 
             xAxisUserTitleLineEdit->setEnabled(annotationAtts->GetXAxisUserTitleFlag());
             break;
-        case 74: // yAxisUserTitleFlag
+        case AnnotationAttributes::ID_yAxisUserTitleFlag:
             yAxisUserTitleToggle->blockSignals(true);
             yAxisUserTitleToggle->setChecked(annotationAtts->GetYAxisUserTitleFlag());
             yAxisUserTitleToggle->blockSignals(false);
 
             yAxisUserTitleLineEdit->setEnabled(annotationAtts->GetYAxisUserTitleFlag());
             break;
-        case 75: // zAxisUserTitleFlag
+        case AnnotationAttributes::ID_zAxisUserTitleFlag:
             zAxisUserTitleToggle->blockSignals(true);
             zAxisUserTitleToggle->setChecked(annotationAtts->GetZAxisUserTitleFlag());
             zAxisUserTitleToggle->blockSignals(false);
 
             zAxisUserTitleLineEdit->setEnabled(annotationAtts->GetZAxisUserTitleFlag());
             break;
-        case 76: // xAxisUserUnits
+        case AnnotationAttributes::ID_xAxisUserUnits:
             xAxisUserUnitsLineEdit->setText(annotationAtts->GetXAxisUserUnits().c_str());
             break;
-        case 77: // yAxisUserUnits
+        case AnnotationAttributes::ID_yAxisUserUnits:
             yAxisUserUnitsLineEdit->setText(annotationAtts->GetYAxisUserUnits().c_str());
             break;
-        case 78: // zAxisUserUnits
+        case AnnotationAttributes::ID_zAxisUserUnits:
             zAxisUserUnitsLineEdit->setText(annotationAtts->GetZAxisUserUnits().c_str());
             break;
-        case 79: // xAxisUserUnitsFlag
+        case AnnotationAttributes::ID_xAxisUserUnitsFlag:
             xAxisUserUnitsToggle->blockSignals(true);
             xAxisUserUnitsToggle->setChecked(annotationAtts->GetXAxisUserUnitsFlag());
             xAxisUserUnitsToggle->blockSignals(false);
 
             xAxisUserUnitsLineEdit->setEnabled(annotationAtts->GetXAxisUserUnitsFlag());
             break;
-        case 80: // yAxisUserUnitsFlag
+        case AnnotationAttributes::ID_yAxisUserUnitsFlag:
             yAxisUserUnitsToggle->blockSignals(true);
             yAxisUserUnitsToggle->setChecked(annotationAtts->GetYAxisUserUnitsFlag());
             yAxisUserUnitsToggle->blockSignals(false);
 
             yAxisUserUnitsLineEdit->setEnabled(annotationAtts->GetYAxisUserUnitsFlag());
             break;
-        case 81: // zAxisUserUnitsFlag
+        case AnnotationAttributes::ID_zAxisUserUnitsFlag:
             zAxisUserUnitsToggle->blockSignals(true);
             zAxisUserUnitsToggle->setChecked(annotationAtts->GetZAxisUserUnitsFlag());
             zAxisUserUnitsToggle->blockSignals(false);
 
             zAxisUserUnitsLineEdit->setEnabled(annotationAtts->GetZAxisUserUnitsFlag());
             break;
-        case 82: // axesTickLocation
+        case AnnotationAttributes::ID_axesTickLocation:
             axes3DTickLocationComboBox->blockSignals(true);
             axes3DTickLocationComboBox->setCurrentItem(annotationAtts->GetAxesTickLocation());
             axes3DTickLocationComboBox->blockSignals(false);
             break;
-        case 83: // axesType
+        case AnnotationAttributes::ID_axesType:
             axes3DTypeComboBox->blockSignals(true);
             axes3DTypeComboBox->setCurrentItem(annotationAtts->GetAxesType());
             axes3DTypeComboBox->blockSignals(false);
             break;
-        case 84: // triadFlag
+        case AnnotationAttributes::ID_triadFlag:
             triadFlagToggle->blockSignals(true);
             triadFlagToggle->setChecked(annotationAtts->GetTriadFlag());
             triadFlagToggle->blockSignals(false);
             break;
-        case 85: // bboxFlag
+        case AnnotationAttributes::ID_bboxFlag:
             bboxFlagToggle->blockSignals(true);
             bboxFlagToggle->setChecked(annotationAtts->GetBboxFlag());
             bboxFlagToggle->blockSignals(false);
             break;
-        case 86: // backgroundColor
+        case AnnotationAttributes::ID_backgroundColor:
             cptr = annotationAtts->GetBackgroundColor().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             backgroundColorButton->blockSignals(true);
             backgroundColorButton->setButtonColor(c);
             backgroundColorButton->blockSignals(false);
             break;
-        case 87: // foregroundColor
+        case AnnotationAttributes::ID_foregroundColor:
             cptr = annotationAtts->GetForegroundColor().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             foregroundColorButton->blockSignals(true);
             foregroundColorButton->setButtonColor(c);
             foregroundColorButton->blockSignals(false);
             break;
-        case 88: // gradientBackgroundStyle
+        case AnnotationAttributes::ID_gradientBackgroundStyle:
             gradientStyleComboBox->blockSignals(true);
             gradientStyleComboBox->setCurrentItem(annotationAtts->GetGradientBackgroundStyle());
             gradientStyleComboBox->blockSignals(false);
             break;
-        case 89: // gradientColor1
+        case AnnotationAttributes::ID_gradientColor1:
             cptr = annotationAtts->GetGradientColor1().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             gradientColor1Button->blockSignals(true);
             gradientColor1Button->setButtonColor(c);
             gradientColor1Button->blockSignals(false);
             break;
-        case 90: // gradientColor2
+        case AnnotationAttributes::ID_gradientColor2:
             cptr = annotationAtts->GetGradientColor2().GetColor();
             c = QColor(int(cptr[0]), int(cptr[1]), int(cptr[2]));
             gradientColor2Button->blockSignals(true);
             gradientColor2Button->setButtonColor(c);
             gradientColor2Button->blockSignals(false);
             break;
-        case 91: // backgroundMode
+        case AnnotationAttributes::ID_backgroundMode:
             vals[0] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Solid;
             vals[1] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Gradient;
             vals[2] = annotationAtts->GetBackgroundMode()==AnnotationAttributes::Image;
@@ -1923,36 +1926,36 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             imageRepeatY->setEnabled(vals[2] || vals[3]);
             imageRepeatYLabel->setEnabled(vals[2] || vals[3]);
             break;
-        case 92: // backgroundImage
+        case AnnotationAttributes::ID_backgroundImage:
             backgroundImage->setText(annotationAtts->GetBackgroundImage().c_str());
             break;
-        case 93: // userInfo
+        case AnnotationAttributes::ID_userInfoFlag:
             userInfo->blockSignals(true);
             userInfo->setChecked(annotationAtts->GetUserInfoFlag());
             userInfo->blockSignals(false);
             break;
-        case 94: // databaseInfo
+        case AnnotationAttributes::ID_databaseInfoFlag:
             databaseInfo->blockSignals(true);
             databaseInfo->setChecked(annotationAtts->GetDatabaseInfoFlag());
             databaseInfo->blockSignals(false);
             break;
-        case 95: // databaseInfo path expansion
+        case AnnotationAttributes::ID_databaseInfoExpansionMode:
             databasePathExpansionMode->blockSignals(true);
             databasePathExpansionMode->setCurrentItem(
                                 annotationAtts->GetDatabaseInfoExpansionMode());
             databasePathExpansionMode->blockSignals(false);
             break;
-        case 96: // legendInfo
+        case AnnotationAttributes::ID_legendInfoFlag:
             legendInfo->blockSignals(true);
             legendInfo->setChecked(annotationAtts->GetLegendInfoFlag());
             legendInfo->blockSignals(false);
             break;
-        case 97: // imageRepeatX
+        case AnnotationAttributes::ID_imageRepeatX:
             imageRepeatX->blockSignals(true);
             imageRepeatX->setValue(annotationAtts->GetImageRepeatX());
             imageRepeatX->blockSignals(false);
             break;
-        case 98: // imageRepeatY
+        case AnnotationAttributes::ID_imageRepeatY:
             imageRepeatY->blockSignals(true);
             imageRepeatY->setValue(annotationAtts->GetImageRepeatY());
             imageRepeatY->blockSignals(false);

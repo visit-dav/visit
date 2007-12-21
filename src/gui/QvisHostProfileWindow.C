@@ -824,6 +824,8 @@ QvisHostProfileWindow::CreateHardwareAccelerationTab(QWidget *parent)
 // Creation:   Wed Sep 20 15:13:03 PST 2000
 //
 // Modifications:
+//   Brad Whitlock, Fri Dec 14 17:23:44 PST 2007
+//   Made it use ids.
 //   
 // ****************************************************************************
 
@@ -837,10 +839,10 @@ QvisHostProfileWindow::UpdateWindow(bool doAll)
     ReplaceLocalHost();
 
     // Update the profile name list.
-    if(profiles->IsSelected(0) || doAll)
+    if(profiles->IsSelected(HostProfileList::ID_profiles) || doAll)
         UpdateProfileList();
     // Update the active profile area.
-    if(profiles->IsSelected(1) || doAll)
+    if(profiles->IsSelected(HostProfileList::ID_activeProfile) || doAll)
         UpdateActiveProfile();
 }
 

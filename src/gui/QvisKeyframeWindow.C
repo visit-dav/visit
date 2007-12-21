@@ -1012,6 +1012,9 @@ QvisKeyframeWindow::UpdatePlotList()
 //    done automatically for us by a flag in the header, which seems to
 //    fix a couple bugs.
 //
+//    Brad Whitlock, Fri Dec 14 17:29:46 PST 2007
+//    Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -1034,13 +1037,13 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
 
             switch(i)
             {
-            case 0: //enabled
+            case KeyframeAttributes::ID_enabled:
                 keyframeEnabledCheck->blockSignals(true);
                 keyframeEnabledCheck->setChecked(kfAtts->GetEnabled());
                 keyframeEnabledCheck->blockSignals(false);
                 ts->setEnabled(kfAtts->GetEnabled());
                 break;
-            case 1: // nFrames
+            case KeyframeAttributes::ID_nFrames:
                 UpdateWindowInformation();
                 break;
             }
@@ -1049,9 +1052,9 @@ QvisKeyframeWindow::UpdateWindow(bool doAll)
     if (SelectedSubject() == windowInfo)
     {
         // Be selective over what to update everything for.
-        if(windowInfo->IsSelected(2)  || // timeSliders
-           windowInfo->IsSelected(3)  || // timeSliderCurrentStates
-           windowInfo->IsSelected(15))   // viewKeyFrames
+        if(windowInfo->IsSelected(WindowInformation::ID_timeSliders) ||
+           windowInfo->IsSelected(WindowInformation::ID_timeSliderCurrentStates) ||
+           windowInfo->IsSelected(WindowInformation::ID_viewKeyframes))
         {
             UpdateWindowInformation();
         }

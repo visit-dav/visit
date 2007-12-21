@@ -261,6 +261,9 @@ $0 = shift @ARGV;
 #    Dave Pugmire, Mon Dec 17 12:42:34 EST 2007
 #    Add qsub/aprun launch option.
 #
+#    Brad Whitlock, Thu Dec 20 17:19:56 PST 2007
+#    Added -debug-malloc for the Mac.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -622,6 +625,33 @@ $fullusage = "$usage
 			     and the visit component name are treated as args
 			     to the tool.
 
+        -debug-malloc <args> <comp>
+                             Run the component with the libMallocDebug library
+                             on MacOS X systems. The libMallocDebug library
+                             lets the MallocDebug application attach to the
+                             instrumented application and retrieve memory
+                             allocation statistics. The -debug-malloc flag
+                             also sets up the environment for the leaks and
+                             heap tools.
+
+                             Printing heap allocations:
+                             % visit -debug-malloc gui &
+                             % Get the gui's <pid>
+                             % heap <pid>
+
+                             Printing memory leaks:
+                             % visit -debug-malloc gui &
+                             % Get the gui's <pid>
+                             % leaks <pid>
+
+                             Run with MallocDebug:
+                             Perl does not seem to be happy with libMallocDebug
+                             so you can run the GUI like this:
+                             % visit -cli 
+                             >>> OpenGUI('-debug-malloc', 'MallocDebug', 'gui')
+                             Connect to the gui with MallocDebug and do your
+                             sampling.
+
         -numrestarts <#>     Number of attempts to restart a failed engine.
         -quiet               Don't print the Running message.
         -protocol            Print the definitions of the state objects that
@@ -674,6 +704,8 @@ $debug_valgrind = "";
 @debug_valgrind_args = ();
 $debug_strace   = "";
 @debug_strace_args = ();
+$debug_malloc   = "";
+@debug_malloc_args = ();
 $add_movie_args = 0;
 $add_diff_args  = 0;
 $add_diffsum_args = 0;
@@ -794,7 +826,7 @@ while (scalar(@ARGV) > 0) {
                                             }
                                           }
                                         }
-    elsif ($arg eq "-strace" )       {
+    elsif ($arg eq "-strace" )          {
                                           $debug_strace = shift;
                                           if (!IsAVisItComponentName($debug_strace))
                                           {
@@ -813,6 +845,38 @@ while (scalar(@ARGV) > 0) {
                                             {
                                               push @visitargs, "-strace", @debug_strace_args, $debug_strace;
                                             }
+                                          }
+                                        }
+    elsif ($arg eq "-debug-malloc" )    {
+                                          $debug_malloc = shift;
+                                          while (!IsAVisItComponentName($debug_malloc))
+                                          {
+					    push @debug_malloc_args, $debug_malloc;
+                                            $debug_malloc = shift;
+                                          }
+                                          if (scalar(@debug_malloc_args) == 0)
+                                          {
+                                            push @visitargs, "-debug-malloc", $debug_malloc;
+                                          }
+                                          else
+                                          {
+                                            push @visitargs, "-debug-malloc", @debug_malloc_args, $debug_malloc;
+                                          }
+                                          if ($exe_name eq $debug_malloc)
+                                          {
+                                             $ENV{MallocStackLogging} = "1";
+                                             if (scalar(@debug_malloc_args) > 0 and $debug_malloc_args[0] eq "MallocDebug")
+                                             {
+                                                 $ENV{DYLD_INSERT_LIBRARIES} = "/usr/lib/libMallocDebug.A.dylib";
+                                             }
+                                          }
+                                          else
+                                          {
+                                             delete $ENV{MallocStackLogging};
+                                             if (scalar(@debug_malloc_args) > 0 and $debug_malloc_args[0] eq "MallocDebug")
+                                             {
+                                                 delete $ENV{DYLD_INSERT_LIBRARIES};
+                                             }
                                           }
                                         }
     elsif ($arg eq "-guesshost" )       { $guesshost = 1; }

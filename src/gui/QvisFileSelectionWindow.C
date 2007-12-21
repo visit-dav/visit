@@ -467,6 +467,9 @@ QvisFileSelectionWindow::UpdateWindow(bool doAll)
 //   I added smart file grouping and I made it call UpdateHostComboBox so
 //   hosts are always added to the host combo box in the same way.
 //
+//   Brad Whitlock, Fri Dec 14 17:20:27 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -478,7 +481,9 @@ QvisFileSelectionWindow::UpdateWindowFromFiles(bool doAll)
     currentDirToggle->blockSignals(false);
 
     // Set the file grouping combo box.
-    if(fileServer->IsSelected(7) || fileServer->IsSelected(9) || doAll)
+    if(fileServer->IsSelected(FileServerList::ID_automaticFileGroupingFlag) ||
+       fileServer->IsSelected(FileServerList::ID_smartFileGroupingFlag) ||
+       doAll)
     {
         int index = 0;
         if(fileServer->GetAutomaticFileGrouping())

@@ -90,7 +90,9 @@ ColorTableObserver::~ColorTableObserver()
 // Creation:   Wed Jun 20 13:37:56 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 17 11:06:50 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -106,7 +108,8 @@ ColorTableObserver::Update(Subject *)
 
     // If the names or the color table attributes are changing, then we
     // have to update the widget.
-    if(colorAtts->IsSelected(0) || colorAtts->IsSelected(1))
+    if(colorAtts->IsSelected(ColorTableAttributes::ID_names) ||
+       colorAtts->IsSelected(ColorTableAttributes::ID_colorTables))
     {
         // Clear all of the color tables.
         QvisColorTableButton::clearAllColorTables();

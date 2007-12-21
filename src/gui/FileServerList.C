@@ -260,21 +260,24 @@ FileServerList::~FileServerList()
 //   Brad Whitlock, Thu Jul 29 13:41:33 PST 2004
 //   I added smartFileGroupingFlag.
 //
+//   Brad Whitlock, Fri Dec 14 17:10:19 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
 FileServerList::SelectAll()
 {
-    Select(0, (void *)&hostFlag);
-    Select(1, (void *)&pathFlag);
-    Select(2, (void *)&filterFlag);
-    Select(3, (void *)&fileListFlag);
-    Select(4, (void *)&appliedFileListFlag);
-    Select(5, (void *)&fileAction);
-    Select(6, (void *)&useCurrentDirectoryFlag);
-    Select(7, (void *)&automaticFileGroupingFlag);
-    Select(8, (void *)&recentPathsFlag);
-    Select(9, (void *)&smartFileGroupingFlag);
+    Select(ID_hostFlag,                  (void *)&hostFlag);
+    Select(ID_pathFlag,                  (void *)&pathFlag);
+    Select(ID_filterFlag,                (void *)&filterFlag);
+    Select(ID_fileListFlag,              (void *)&fileListFlag);
+    Select(ID_appliedFileListFlag,       (void *)&appliedFileListFlag);
+    Select(ID_fileAction,                (void *)&fileAction);
+    Select(ID_useCurrentDirectoryFlag,   (void *)&useCurrentDirectoryFlag);
+    Select(ID_automaticFileGroupingFlag, (void *)&automaticFileGroupingFlag);
+    Select(ID_recentPathsFlag,           (void *)&recentPathsFlag);
+    Select(ID_smartFileGroupingFlag,     (void *)&smartFileGroupingFlag);
 }
 
 // *************************************************************************************
@@ -336,7 +339,7 @@ FileServerList::Initialize()
             // Try to get the file list from the MD Server.
             fileList = *(info->second->server->GetFileList(filter,
                 automaticFileGroupingFlag, smartFileGroupingFlag));
-            Select(3, (void *)&fileListFlag);
+            Select(ID_fileListFlag, (void *)&fileListFlag);
 
             // Copy virtual files from the fileList into the
             // virtualFiles map.
@@ -346,7 +349,7 @@ FileServerList::Initialize()
             appliedFileList = GetFilteredFileList();
 
             // Select the applied file list.
-            Select(4, (void *)&appliedFileListFlag);
+            Select(ID_appliedFileListFlag, (void *)&appliedFileListFlag);
         }
         CATCH(GetFileListException)
         {
@@ -519,7 +522,7 @@ FileServerList::SilentNotify()
                                                       smartFileGroupingFlag);
                         // copy the file list into the local file list.
                         fileList = *fl;
-                        Select(3, (void *)&fileListFlag);
+                        Select(ID_fileListFlag, (void *)&fileListFlag);
 
                         // Copy virtual files from the fileList into the
                         // virtualFiles map.
@@ -528,12 +531,13 @@ FileServerList::SilentNotify()
 
                     // Changing hosts requires the path, filter, and file list
                     // to be updated too. Select them.
-                    Select(1, (void *)&pathFlag);
-                    Select(2, (void *)&filterFlag);
+                    Select(ID_pathFlag, (void *)&pathFlag);
+                    Select(ID_filterFlag, (void *)&filterFlag);
                 }
 
                 if(pathFlag || (filterFlag && automaticFileGroupingFlag) ||
-                   IsSelected(7) || IsSelected(9))
+                   IsSelected(ID_automaticFileGroupingFlag) ||
+                   IsSelected(ID_smartFileGroupingFlag))
                 {
                     TRY
                     {
@@ -550,7 +554,7 @@ FileServerList::SilentNotify()
                                                       automaticFileGroupingFlag,
                                                       smartFileGroupingFlag);
                         fileList = *fl;
-                        Select(3, (void *)&fileListFlag);
+                        Select(ID_fileListFlag, (void *)&fileListFlag);
 
                         // Copy virtual files from the fileList into the
                         // virtualFiles map.
@@ -726,11 +730,11 @@ FileServerList::SetHost(const string &host)
         // Set the new active host.
         hostFlag = true;
         activeHost = host;
-        Select(0, (void *)&hostFlag);
+        Select(ID_hostFlag, (void *)&hostFlag);
 
         // Set the file action to none.
         fileAction = FILE_NOACTION;
-        Select(5, (void *)&fileAction);
+        Select(ID_fileAction, (void *)&fileAction);
 
         // Use the path for the new host.
         SetPath(servers[host]->path);
@@ -927,11 +931,11 @@ FileServerList::SetPath(const string &path)
         {
             // Set the file action to none.
             fileAction = FILE_NOACTION;
-            Select(5, (void *)&fileAction);
+            Select(ID_fileAction, (void *)&fileAction);
 
             pathFlag = true;
             pos->second->path = path;
-            Select(1, (void *)&pathFlag);
+            Select(ID_pathFlag, (void *)&pathFlag);
         }
     }
 }
@@ -1035,11 +1039,11 @@ FileServerList::SetFilter(const string &newFilter)
     {
         // Set the file action to none.
         fileAction = FILE_NOACTION;
-        Select(5, (void *)&fileAction);
+        Select(ID_fileAction, (void *)&fileAction);
 
         filterFlag = true;
         filter = newFilter;
-        Select(2, (void *)&filterFlag);
+        Select(ID_filterFlag, (void *)&filterFlag);
     }
 }
 
@@ -1141,12 +1145,12 @@ FileServerList::SetAppliedFileList(const QualifiedFilenameVector &newFiles,
 
     // Set the file action to none.
     fileAction = FILE_NOACTION;
-    Select(5, (void *)&fileAction);
+    Select(ID_fileAction, (void *)&fileAction);
 
     // Overwrite the applied file list with a new one.
     appliedFileList = newFiles;
     appliedFileListFlag = true;
-    Select(4, (void *)&appliedFileListFlag);
+    Select(ID_appliedFileListFlag, (void *)&appliedFileListFlag);
 }
 
 // ****************************************************************************
@@ -1171,7 +1175,7 @@ void
 FileServerList::SetUseCurrentDirectory(bool val)
 {
     useCurrentDirectoryFlag = val;
-    Select(6, (void *)&useCurrentDirectoryFlag);
+    Select(ID_useCurrentDirectoryFlag, (void *)&useCurrentDirectoryFlag);
 }
 
 // ****************************************************************************
@@ -1194,7 +1198,7 @@ void
 FileServerList::SetAutomaticFileGrouping(bool val)
 {
     automaticFileGroupingFlag = val;
-    Select(7, (void *)&automaticFileGroupingFlag);
+    Select(ID_automaticFileGroupingFlag, (void *)&automaticFileGroupingFlag);
 }
 
 // ****************************************************************************
@@ -1217,7 +1221,7 @@ void
 FileServerList::SetSmartFileGrouping(bool val)
 {
     smartFileGroupingFlag = val;
-    Select(9, (void *)&smartFileGroupingFlag);
+    Select(ID_smartFileGroupingFlag, (void *)&smartFileGroupingFlag);
 }
 
 // ****************************************************************************
@@ -1417,7 +1421,7 @@ FileServerList::CloseFile()
     openFile = QualifiedFilename();
     openFileTimeState = -1;
     fileAction = FILE_CLOSE;
-    Select(5, (void *)&fileAction);
+    Select(ID_fileAction, (void *)&fileAction);
 }
 
 // ****************************************************************************
@@ -1486,7 +1490,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
     {
         // The metadata has been read previously.
         fileAction = action;
-        Select(5, (void *)&fileAction);
+        Select(ID_fileAction, (void *)&fileAction);
         // We made it to here then really set the open file.
         openFile = filename;
         openFileTimeState = timeState;
@@ -1545,7 +1549,7 @@ FileServerList::OpenAndGetMetaData(const QualifiedFilename &filename,
                 openFile = filename;
                 openFileTimeState = timeState;
                 fileAction = action;
-                Select(5, (void *)&fileAction);
+                Select(ID_fileAction, (void *)&fileAction);
             }
             CATCH2(GetMetaDataException, gmde)
             {
@@ -1968,7 +1972,7 @@ FileServerList::AddPathToRecentList(const string &host,
         if(!exists)
         {
             pos->second.push_back(path);
-            Select(8, (void *)&recentPathsFlag);
+            Select(ID_recentPathsFlag, (void *)&recentPathsFlag);
         }
     }
     else
@@ -1976,7 +1980,7 @@ FileServerList::AddPathToRecentList(const string &host,
         stringVector tmp;
         tmp.push_back(path);
         recentPaths[host] = tmp;
-        Select(8, (void *)&recentPathsFlag);
+        Select(ID_recentPathsFlag, (void *)&recentPathsFlag);
     }
 }
 
@@ -1997,7 +2001,7 @@ void
 FileServerList::ClearRecentPathList()
 {
     recentPaths.clear();
-    Select(8, (void *)&recentPathsFlag);
+    Select(ID_recentPathsFlag, (void *)&recentPathsFlag);
 }
 
 // ****************************************************************************
@@ -2273,67 +2277,67 @@ FileServerList::SetFromNode(DataNode *parentNode)
 bool
 FileServerList::HostChanged() const
 {
-    return IsSelected(0);
+    return IsSelected(ID_hostFlag);
 }
 
 bool
 FileServerList::PathChanged() const
 {
-    return IsSelected(1);
+    return IsSelected(ID_pathFlag);
 }
 
 bool
 FileServerList::FilterChanged()   const
 {
-    return IsSelected(2);
+    return IsSelected(ID_filterFlag);
 }
 
 bool
 FileServerList::FileListChanged() const
 {
-    return IsSelected(3);
+    return IsSelected(ID_fileListFlag);
 }
 
 bool
 FileServerList::AppliedFileListChanged() const
 {
-    return IsSelected(4);
+    return IsSelected(ID_appliedFileListFlag);
 }
 
 bool
 FileServerList::FileChanged() const
 {
-    return IsSelected(5);
+    return IsSelected(ID_fileAction);
 }
 
 bool
 FileServerList::OpenedFile() const
 {
-    return (IsSelected(5) && (fileAction == FILE_OPEN));
+    return (IsSelected(ID_fileAction) && (fileAction == FILE_OPEN));
 }
 
 bool
 FileServerList::ReplacedFile() const
 {
-    return (IsSelected(5) && (fileAction == FILE_REPLACE));
+    return (IsSelected(ID_fileAction) && (fileAction == FILE_REPLACE));
 }
 
 bool
 FileServerList::OverlayedFile() const
 {
-    return (IsSelected(5) && (fileAction == FILE_OVERLAY));
+    return (IsSelected(ID_fileAction) && (fileAction == FILE_OVERLAY));
 }
 
 bool
 FileServerList::ClosedFile() const
 {
-    return (IsSelected(5) && (fileAction == FILE_CLOSE));
+    return (IsSelected(ID_fileAction) && (fileAction == FILE_CLOSE));
 }
 
 bool
 FileServerList::RecentPathsChanged() const
 {
-    return IsSelected(8);
+    return IsSelected(ID_recentPathsFlag);
 }
 
 //
@@ -2726,7 +2730,7 @@ FileServerList::CreateGroupList(const string &filename,
 
     // Reread the file list from the server
     pathFlag = true;
-    Select(1, (void *)&pathFlag);
+    Select(ID_pathFlag, (void *)&pathFlag);
     Notify();
 }
 
@@ -3052,7 +3056,7 @@ FileServerList::SetOpenFileMetaData(const avtDatabaseMetaData *md, int timeState
         *(fileMetaData[openFile.FullName()]) = *md;
         // hack to have it return that the file changed
         fileAction=FILE_OPEN;
-        Select(5, (void *)&fileAction);
+        Select(ID_fileAction, (void *)&fileAction);
     }
     else
     {
@@ -3090,7 +3094,7 @@ FileServerList::SetOpenFileSIL(const avtSIL *sil)
         *(SILData[openFile.FullName()]) = *sil;
         // hack to have it return that the file changed
         fileAction=FILE_OPEN;
-        Select(5, (void *)&fileAction);
+        Select(ID_fileAction, (void *)&fileAction);
     }
     else
     {

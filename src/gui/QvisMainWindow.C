@@ -911,8 +911,8 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
         // Update the things in the main window that need the
         // viewer proxy's global attributes.
         UpdateGlobalArea(false);
-        UpdateWindowMenu(globalAtts->IsSelected(1) ||
-                         globalAtts->IsSelected(2));
+        UpdateWindowMenu(globalAtts->IsSelected(GlobalAttributes::ID_windows) ||
+                         globalAtts->IsSelected(GlobalAttributes::ID_activeWindow));
     }
     else if(TheChangedSubject == plotList)
     {
@@ -977,6 +977,9 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
 //   Eric Brugger, Thu Jun 30 09:17:12 PDT 2005
 //   Added a 2x3 window layout and removed the 4x4 window layout.
 //
+//   Brad Whitlock, Fri Dec 14 17:34:28 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -995,19 +998,19 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
 
         switch(i)
         {
-        case 0: // sources
+        case GlobalAttributes::ID_sources:
             UpdateFileMenuPopup(reopenPopup, reopenPopupId);
             UpdateFileMenuPopup(closePopup, closePopupId);
             break;
-        case 1: // windows
+        case GlobalAttributes::ID_windows:
             UpdateWindowList(true);
             break;
-        case 2: // activeWindow
+        case GlobalAttributes::ID_activeWindow:
             UpdateWindowList(false);
             break;
-        case 3: // iconifiedFlag
+        case GlobalAttributes::ID_iconifiedFlag:
             break;
-        case 4: // autoUpdateflag
+        case GlobalAttributes::ID_autoUpdateFlag:
             autoUpdateCheckBox->blockSignals(true);
             autoUpdateCheckBox->setChecked(globalAtts->GetAutoUpdateFlag());
             autoUpdateCheckBox->blockSignals(false);
@@ -1015,16 +1018,16 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
             // Set GUIBase's autoupdate flag.
             autoUpdate = globalAtts->GetAutoUpdateFlag();
             break;
-        case 5: // replacePlots
+        case GlobalAttributes::ID_replacePlots:
             replacePlotsCheckBox->blockSignals(true);
             replacePlotsCheckBox->setChecked(globalAtts->GetReplacePlots());
             replacePlotsCheckBox->blockSignals(false);
             break;
-        case 6: // applyOperator
+        case GlobalAttributes::ID_applyOperator:
             break;
-        case 7: // executing
+        case GlobalAttributes::ID_executing:
             break;
-        case 8: // windowLayout
+        case GlobalAttributes::ID_windowLayout:
         { // new scope
             layoutPopup->setItemChecked(0,globalAtts->GetWindowLayout() == 1);
             layoutPopup->setItemChecked(1,globalAtts->GetWindowLayout() == 2);
@@ -1036,23 +1039,23 @@ QvisMainWindow::UpdateGlobalArea(bool doAll)
                 layoutPopup->setItemEnabled(j, true);
         }
             break;
-        case 9: // makeDefaultConfirm
+        case GlobalAttributes::ID_makeDefaultConfirm:
             // Set GUIBase's makeDefaultConfirm flag.
             makeDefaultConfirm = globalAtts->GetMakeDefaultConfirm();
             break;
-        case 10: // cloneWindowOnFirstRef
+        case GlobalAttributes::ID_cloneWindowOnFirstRef:
             break;
-        case 11: // maintainView
+        case GlobalAttributes::ID_maintainView:
             maintainViewCheckBox->blockSignals(true);
             maintainViewCheckBox->setChecked(globalAtts->GetMaintainView());
             maintainViewCheckBox->blockSignals(false);
             break;
-        case 12: // maintainData
+        case GlobalAttributes::ID_maintainData:
             maintainDataCheckBox->blockSignals(true);
             maintainDataCheckBox->setChecked(globalAtts->GetMaintainData());
             maintainDataCheckBox->blockSignals(false);
             break;
-        case 13: // automaticallyAddOperator
+        case GlobalAttributes::ID_automaticallyAddOperator:
             break;
         }
     } // end for

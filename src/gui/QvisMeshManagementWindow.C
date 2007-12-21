@@ -224,6 +224,9 @@ QvisMeshManagementWindow::CreateWindowContents()
 //   running GUI. Changed discretizationTolerances to smallestZone and
 //   flatEnough.
 //
+//   Brad Whitlock, Wed Dec 19 15:01:30 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -240,7 +243,7 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // overall discretization tolerance
+        case MeshManagementAttributes::ID_discretizationTolerance:
             {   const vector<double> tols = atts->GetDiscretizationTolerance();
                 char tmp[32];
                 SNPRINTF(tmp, sizeof(tmp), "%g ", tols[0]);
@@ -252,13 +255,13 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                 flatEnoughLineEdit->setText(temp);
             }
             break;
-        case 1: // discretization tolerance in X
+        case MeshManagementAttributes::ID_discretizationToleranceX:
             break;
-        case 2: // discretization tolerance in Y
+        case MeshManagementAttributes::ID_discretizationToleranceY:
             break;
-        case 3: // discretization tolerance in Z
+        case MeshManagementAttributes::ID_discretizationToleranceZ:
             break;
-        case 4: // discretization mode 
+        case MeshManagementAttributes::ID_discretizationMode:
             {
                 MeshManagementAttributes::DiscretizationModes dMode;
                 dMode = atts->GetDiscretizationMode();
@@ -279,12 +282,12 @@ QvisMeshManagementWindow::UpdateWindow(bool doAll)
                 discretizationMode->blockSignals(false);
             }
             break;
-        case 5: // discretize boundary only
+        case MeshManagementAttributes::ID_discretizeBoundaryOnly:
             discretizeBoundaryOnly->blockSignals(true);
             discretizeBoundaryOnly->setChecked(atts->GetDiscretizeBoundaryOnly());
             discretizeBoundaryOnly->blockSignals(false);
             break;
-        case 6: // pass native CSG 
+        case MeshManagementAttributes::ID_passNativeCSG:
             renderCSGDirect->blockSignals(true);
             renderCSGDirect->setChecked(atts->GetPassNativeCSG());
             renderCSGDirect->blockSignals(false);

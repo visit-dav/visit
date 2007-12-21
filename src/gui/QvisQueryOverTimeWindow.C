@@ -215,7 +215,9 @@ QvisQueryOverTimeWindow::CreateWindowContents()
 // Creation:   Wed Mar 31 08:46:20 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Mon Dec 17 09:40:53 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -235,10 +237,10 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case 0: //timeType
+          case QueryOverTimeAttributes::ID_timeType:
             timeType->setButton(atts->GetTimeType());
             break;
-          case 1: //startTimeFlag
+          case QueryOverTimeAttributes::ID_startTimeFlag:
             if (atts->GetStartTimeFlag() == true)
             {
                 startTime->setEnabled(true);
@@ -249,11 +251,11 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
             }
             startTimeFlag->setChecked(atts->GetStartTimeFlag());
             break;
-          case 2: //startTime
+          case QueryOverTimeAttributes::ID_startTime:
             temp.sprintf("%d", atts->GetStartTime());
             startTime->setText(temp);
             break;
-          case 3: //endTimeFlag
+          case QueryOverTimeAttributes::ID_endTimeFlag:
             if (atts->GetEndTimeFlag() == true)
             {
                 endTime->setEnabled(true);
@@ -264,15 +266,15 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
             }
             endTimeFlag->setChecked(atts->GetEndTimeFlag());
             break;
-          case 4: //endTime
+          case QueryOverTimeAttributes::ID_endTime:
             temp.sprintf("%d", atts->GetEndTime());
             endTime->setText(temp);
             break;
-          case 5: //stride
+          case QueryOverTimeAttributes::ID_stride:
             temp.sprintf("%d", atts->GetStride());
             stride->setText(temp);
             break;
-          case 6: //createWindow
+          case QueryOverTimeAttributes::ID_createWindow:
             if (atts->GetCreateWindow() == false)
             {
                 windowId->setEnabled(true);
@@ -285,7 +287,7 @@ QvisQueryOverTimeWindow::UpdateWindow(bool doAll)
             }
             createWindow->setChecked(atts->GetCreateWindow());
             break;
-          case 7: //windowId
+          case QueryOverTimeAttributes::ID_windowId:
             temp.sprintf("%d", atts->GetWindowId());
             windowId->setText(temp);
             break;
@@ -314,19 +316,19 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do timeType
-    if(which_widget == 0 || doAll)
+    if(which_widget == QueryOverTimeAttributes::ID_timeType || doAll)
     {
         // Nothing for timeType
     }
 
     // Do startTimeFlag
-    if(which_widget == 1 || doAll)
+    if(which_widget == QueryOverTimeAttributes::ID_startTimeFlag || doAll)
     {
         // Nothing for startTimeFlag
     }
 
     // Do startTime
-    if(which_widget == 2 || doAll)
+    if(which_widget == QueryOverTimeAttributes::ID_startTime || doAll)
     {
         temp = startTime->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -347,13 +349,13 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     }
 
     // Do endTimeFlag
-    if(which_widget == 3 || doAll)
+    if(which_widget == QueryOverTimeAttributes::ID_endTimeFlag || doAll)
     {
         // Nothing for endTimeFlag
     }
 
     // Do endTime
-    if(which_widget == 4 || doAll)
+    if(which_widget == QueryOverTimeAttributes::ID_endTime || doAll)
     {
         temp = endTime->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -374,7 +376,7 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     }
 
     // Do stride
-    if(which_widget == 5 || doAll)
+    if(which_widget == QueryOverTimeAttributes::ID_stride || doAll)
     {
         temp = stride->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -395,13 +397,13 @@ QvisQueryOverTimeWindow::GetCurrentValues(int which_widget)
     }
 
     // Do createWindow
-    if(which_widget == 6 || doAll)
+    if(which_widget == QueryOverTimeAttributes::ID_createWindow || doAll)
     {
         // Nothing for createWindow
     }
 
     // Do windowId
-    if(which_widget == 7 || doAll)
+    if(which_widget == QueryOverTimeAttributes::ID_windowId || doAll)
     {
         temp = windowId->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -541,7 +543,7 @@ QvisQueryOverTimeWindow::startTimeFlagChanged(bool val)
 void
 QvisQueryOverTimeWindow::startTimeProcessText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(QueryOverTimeAttributes::ID_startTime);
     Apply();
 }
 
@@ -557,7 +559,7 @@ QvisQueryOverTimeWindow::endTimeFlagChanged(bool val)
 void
 QvisQueryOverTimeWindow::endTimeProcessText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(QueryOverTimeAttributes::ID_endTime);
     Apply();
 }
 
@@ -565,7 +567,7 @@ QvisQueryOverTimeWindow::endTimeProcessText()
 void
 QvisQueryOverTimeWindow::strideProcessText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(QueryOverTimeAttributes::ID_stride);
     Apply();
 }
 
@@ -581,7 +583,7 @@ QvisQueryOverTimeWindow::createWindowChanged(bool val)
 void
 QvisQueryOverTimeWindow::windowIdProcessText()
 {
-    GetCurrentValues(7);
+    GetCurrentValues(QueryOverTimeAttributes::ID_windowId);
     Apply();
 }
 

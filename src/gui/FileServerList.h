@@ -201,7 +201,11 @@ class MessageAttributes;
 //   Cyrus Harrison, Wed Nov 28 13:24:51 PST 2007
 //   Added flag for auto creation of vector magnitude expressions
 //
+//   Brad Whitlock, Fri Dec 14 17:16:51 PST 2007
+//   Added ids for the fields that make up the object.
+//
 // ****************************************************************************
+
 class GUI_API FileServerList : public AttributeSubject
 {
     typedef struct
@@ -321,6 +325,20 @@ public:
     bool ClosedFile() const;
 
     MessageAttributes *GetMessageAttributes();
+
+    enum {
+        ID_hostFlag,
+        ID_pathFlag,
+        ID_filterFlag,
+        ID_fileListFlag,
+        ID_appliedFileListFlag,
+        ID_fileAction,
+        ID_useCurrentDirectoryFlag,
+        ID_automaticFileGroupingFlag,
+        ID_recentPathsFlag,
+        ID_smartFileGroupingFlag
+    };
+
 private:
     virtual void SelectAll();
     void StartServer(const string &host);

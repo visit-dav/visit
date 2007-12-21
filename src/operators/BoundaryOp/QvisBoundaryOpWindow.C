@@ -176,7 +176,7 @@ QvisBoundaryOpWindow::UpdateWindow(bool doAll)
         QColor                tempcolor;
         switch(i)
 	{
-	    case 0: //smoothingLevel
+	    case BoundaryOpAttributes::ID_smoothingLevel:
 		smoothingLevelButtons->blockSignals(true);
 		smoothingLevelButtons->setButton(atts->GetSmoothingLevel());
 		smoothingLevelButtons->blockSignals(false);

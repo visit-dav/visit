@@ -469,6 +469,9 @@ QvisPickWindow::CreateWindowContents()
 //   Kathleen Bonnell, Fri Nov  9 14:00:27 PST 2007 
 //   Added timePreserveCoord and fixed some select numbers to match atts. 
 //
+//   Brad Whitlock, Mon Dec 17 09:33:48 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -493,7 +496,8 @@ QvisPickWindow::UpdateWindow(bool doAll)
     //
 
     // 10 == pickLetter 9 == clearWindow
-    if (pickAtts->IsSelected(10) || pickAtts->IsSelected(9) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_pickLetter) ||
+        pickAtts->IsSelected(PickAttributes::ID_clearWindow) || doAll)
     {
         bool clearWindow = (savePicks ? false : 
                             pickAtts->GetClearWindow());
@@ -509,7 +513,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
 
     //  If variables changes, 
     //
-    if (pickAtts->IsSelected(0) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_variables) || doAll)
     {
         stringVector userVars = pickAtts->GetVariables();
         std::string allVars2;
@@ -522,7 +526,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // displayIncidentElements
-    if (pickAtts->IsSelected(1) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_displayIncidentElements) || doAll)
     {
         displayIncEls->blockSignals(true);
         displayIncEls->setChecked(pickAtts->GetDisplayIncidentElements());
@@ -530,7 +534,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
  
    }
     // showNodeId
-    if (pickAtts->IsSelected(2) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showNodeId) || doAll)
     {
         nodeId->blockSignals(true);
         nodeId->setChecked(pickAtts->GetShowNodeId());
@@ -538,7 +542,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // showNodeDomainLogicalCoords
-    if (pickAtts->IsSelected(3) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showNodeDomainLogicalCoords) || doAll)
     {
         nodeDomLog->blockSignals(true);
         nodeDomLog->setChecked(pickAtts->GetShowNodeDomainLogicalCoords());
@@ -546,15 +550,15 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // showNodeBlockLogicalCoords
-    if (pickAtts->IsSelected(4) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showNodeBlockLogicalCoords) || doAll)
     {
         nodeBlockLog->blockSignals(true);
         nodeBlockLog->setChecked(pickAtts->GetShowNodeBlockLogicalCoords());
         nodeBlockLog->blockSignals(false);
     }
 
-    // showNodePhysicalLogicalCoords
-    if (pickAtts->IsSelected(5) || doAll)
+    // showNodePhysical Coords
+    if (pickAtts->IsSelected(PickAttributes::ID_showNodePhysicalCoords) || doAll)
     {
         nodePhysical->blockSignals(true);
         nodePhysical->setChecked(pickAtts->GetShowNodePhysicalCoords());
@@ -562,7 +566,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // showZoneId
-    if (pickAtts->IsSelected(6) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showZoneId) || doAll)
     {
         zoneId->blockSignals(true);
         zoneId->setChecked(pickAtts->GetShowZoneId());
@@ -570,7 +574,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // showZoneDomainLogicalCoords
-    if (pickAtts->IsSelected(7) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showZoneDomainLogicalCoords) || doAll)
     {
         zoneDomLog->blockSignals(true);
         zoneDomLog->setChecked(pickAtts->GetShowZoneDomainLogicalCoords());
@@ -578,7 +582,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // showZoneBlockLogicalCoords
-    if (pickAtts->IsSelected(8) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showZoneBlockLogicalCoords) || doAll)
     {
         zoneBlockLog->blockSignals(true);
         zoneBlockLog->setChecked(pickAtts->GetShowZoneBlockLogicalCoords());
@@ -586,7 +590,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // doTimeCurve
-    if (pickAtts->IsSelected(37) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_doTimeCurve) || doAll)
     {
         timeCurveCheckBox->blockSignals(true);
         timeCurveCheckBox->setChecked(pickAtts->GetDoTimeCurve());
@@ -595,15 +599,15 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // conciseOutput
-    if (pickAtts->IsSelected(42) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_conciseOutput) || doAll)
     {
         conciseOutputCheckBox->blockSignals(true);
         conciseOutputCheckBox->setChecked(pickAtts->GetConciseOutput());
         conciseOutputCheckBox->blockSignals(false);
     }
 
-    // showTimestep
-    if (pickAtts->IsSelected(43) || doAll)
+    // showTimeStep
+    if (pickAtts->IsSelected(PickAttributes::ID_showTimeStep) || doAll)
     {
         showTimestepCheckBox->blockSignals(true);
         showTimestepCheckBox->setChecked(pickAtts->GetShowTimeStep());
@@ -611,7 +615,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // showMeshName
-    if (pickAtts->IsSelected(44) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_showMeshName) || doAll)
     {
         showMeshNameCheckBox->blockSignals(true);
         showMeshNameCheckBox->setChecked(pickAtts->GetShowMeshName());
@@ -619,7 +623,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // displayGlobalIds
-    if (pickAtts->IsSelected(52) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_displayGlobalIds) || doAll)
     {
         displayGlobalIds->blockSignals(true);
         displayGlobalIds->setChecked(pickAtts->GetDisplayGlobalIds());
@@ -627,7 +631,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // displayPickLetter
-    if (pickAtts->IsSelected(56) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_displayPickLetter) || doAll)
     {
         displayPickLetter->blockSignals(true);
         displayPickLetter->setChecked(pickAtts->GetDisplayPickLetter());
@@ -635,7 +639,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // createSpreadsheet
-    if (pickAtts->IsSelected(62) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_createSpreadsheet) || doAll)
     {
         spreadsheetCheckBox->blockSignals(true);
         spreadsheetCheckBox->setChecked(pickAtts->GetCreateSpreadsheet());
@@ -643,7 +647,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
     
     // floatFormat
-    if (pickAtts->IsSelected(64) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_floatFormat) || doAll)
     {
         floatFormatLineEdit->blockSignals(true);
         floatFormatLineEdit->setText(pickAtts->GetFloatFormat().c_str());
@@ -651,7 +655,7 @@ QvisPickWindow::UpdateWindow(bool doAll)
     }
 
     // timePreserveCoord
-    if (pickAtts->IsSelected(65) || doAll)
+    if (pickAtts->IsSelected(PickAttributes::ID_timePreserveCoord) || doAll)
     {
         preserveCoord->blockSignals(true);
         preserveCoord->setCurrentItem((int)pickAtts->GetTimePreserveCoord());
@@ -775,6 +779,9 @@ QvisPickWindow::UpdatePage()
 //   Cyrus Harrison, Wed Sep 26 09:50:46 PDT 2007
 //   Added validation of the floating point format string.
 //
+//   Brad Whitlock, Mon Dec 17 09:34:38 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -791,7 +798,7 @@ QvisPickWindow::GetCurrentValues(int which_widget)
     //
     // Do the user-selectedVars.
     //
-    if (which_widget == 0 || doAll)
+    if (which_widget == PickAttributes::ID_variables || doAll)
     {
         QString temp;
         stringVector userVars;
@@ -807,7 +814,7 @@ QvisPickWindow::GetCurrentValues(int which_widget)
  
         pickAtts->SetVariables(userVars);
     }
-    if (which_widget == 1 || doAll)
+    if (which_widget == PickAttributes::ID_floatFormat || doAll)
     {
         string format = floatFormatLineEdit
                                ->displayText().simplifyWhiteSpace().latin1();
@@ -992,7 +999,7 @@ QvisPickWindow::apply()
 void
 QvisPickWindow::variableProcessText()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(PickAttributes::ID_variables);
     Apply();
 }
 
@@ -1011,7 +1018,7 @@ QvisPickWindow::variableProcessText()
 void
 QvisPickWindow::floatFormatProcessText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(PickAttributes::ID_floatFormat);
     Apply();
 }
 
