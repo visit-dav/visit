@@ -27,6 +27,9 @@
 #    Remove whole scripts from the skipList and replace them with the 
 #    individually failing tests.
 #
+#    Hank Childs, Thu Dec 20 17:20:52 PST 2007
+#    Added QueryGlobalId to the skip list.
+#
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
 svnHost=svn.nersc.gov
@@ -344,6 +347,9 @@ skipList_dueTo_parallelRendering="\
           nersc,scalable,parallel:tests/databases/boxlib.py"
 
 skipList_dueTo_temporaryBugs="\
+	  nersc,scalable,parallel:tests/queries/database.py:QueryGlobalId \
+	  nersc,parallel:tests/queries/database.py:QueryGlobalId \
+	  nersc,serial:tests/queries/database.py:QueryGlobalId \
 	  nersc,scalable,parallel:tests/databases/netcdf.py:netcdf_1_00,netcdf_1_02 \
 	  nersc,scalable,parallel:tests/operators/transform.py:ops_transform05 \
 	  nersc,serial:tests/databases/silo.py:silo_03,silo_04 \
