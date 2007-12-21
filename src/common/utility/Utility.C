@@ -496,12 +496,12 @@ ReadAndProcessDirectory(const std::string &directory,
         while ((ent = readdir(dir)) != NULL)
         {
             // Get information about the file.
-            struct stat s;
+            VisItStat_t s;
             string fileName(directory);
             if(directory.substr(directory.size() - 1, 1) != "/")
                 fileName += "/";
             fileName += ent->d_name;
-            stat(fileName.c_str(), &s);
+            VisItStat(fileName.c_str(), &s);
 
             mode_t mode = s.st_mode;
             bool isdir = S_ISDIR(mode);
@@ -1120,8 +1120,8 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 
     // Does the file exist?
     bool firstTime = false;
-    struct stat s;
-    if(stat(rcFile.c_str(), &s) == -1)
+    VisItStat_t s;
+    if(VisItStat(rcFile.c_str(), &s) == -1)
         firstTime = true;
 
     ConfigStateEnum code2;
