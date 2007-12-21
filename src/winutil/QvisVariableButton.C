@@ -44,6 +44,8 @@
 #include <qtooltip.h>
 #include <PlotPluginInfo.h>
 
+#define DELETE_MENU_TO_FREE_POPUPS
+
 //
 // String representation of the types of variables and they are in
 // the order that we want them to appear in the menu; not their
@@ -149,13 +151,67 @@ QvisVariableButton::VariablePopupInfo::Initialize()
 
         varMenus = new QvisVariablePopupMenu*[N_VAR_CATEGORIES];        
         for(int i = 0; i < N_VAR_CATEGORIES; ++i)
-        {
-            varMenus[i] = new QvisVariablePopupMenu(0, 0,
-                categoryMenuNames[i]);
-            QObject::connect(varMenus[i],
-                SIGNAL(activated(int, const QString &)),
-                helper, SLOT(activated(int, const QString &)));
-        }
+            CreateMenu(i);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisVariableButton::VariablePopupInfo::CreateMenu
+//
+// Purpose: 
+//   Create the i'th menu.
+//
+// Arguments:
+//   i : The index of the menu to create.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 20 12:39:47 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVariableButton::VariablePopupInfo::CreateMenu(int i)
+{
+    varMenus[i] = new QvisVariablePopupMenu(0, 0, categoryMenuNames[i]);
+    QObject::connect(varMenus[i], SIGNAL(activated(int, const QString &)),
+                     helper, SLOT(activated(int, const QString &)));
+}
+
+// ****************************************************************************
+// Method: QvisVariableButton::VariablePopupInfo::DeleteMenu
+//
+// Purpose: 
+//   Destroy the i'th menu.
+//
+// Arguments:
+//   i : The index of the menu to destroy.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 20 12:40:11 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisVariableButton::VariablePopupInfo::DeleteMenu(int i)
+{
+    if(varMenus[i] != 0)
+    { 
+        QObject::disconnect(varMenus[i], SIGNAL(activated(int, const QString &)),
+                            helper, SLOT(activated(int, const QString &)));
+        delete varMenus[i];
+        varMenus[i] = 0;
     }
 }
 
@@ -173,7 +229,10 @@ QvisVariableButton::VariablePopupInfo::Initialize()
 // Creation:   Thu Dec 9 16:43:03 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Dec 20 12:38:49 PST 2007
+//   I made it delete and recreate the menus when updating them so we really
+//   free up the menus that get created.
+//
 // ****************************************************************************
 
 void
@@ -184,8 +243,13 @@ QvisVariableButton::VariablePopupInfo::UpdateMenus(VariableMenuPopulator *pop)
     // Insert the real list of variables.
     for(int i = 0; i < N_VAR_CATEGORIES; ++i)
     {
-        // Update the menu with only 1 type of variable.
+#ifdef DELETE_MENU_TO_FREE_POPUPS
+        DeleteMenu(i);
+        CreateMenu(i);
+#else
         varMenus[i]->clear();
+#endif
+        // Update the menu with only 1 type of variable.
         pop->UpdateSingleVariableMenu(varMenus[i], categoryMasks[i],
             helper, SLOT(activated(int, const QString &)));
     }

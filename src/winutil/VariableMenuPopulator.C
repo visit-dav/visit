@@ -309,6 +309,13 @@ VariableMenuPopulator::ClearGroupingInfo()
 //
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added support to treat all databases as time varying
+//
+//   Brad Whitlock, Thu Dec 20 17:10:57 PST 2007
+//   Added code to compare the variable lists before and after to see if the
+//   variable menus need to really be created. We often call this routine
+//   many times for the same "treat as time varying" file and we don't have
+//   to recreate menus each time; only when the variable lists change.
+//
 // ****************************************************************************
 
 bool
@@ -319,7 +326,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     if(md == 0 || sil == 0 || exprList == 0)
         return false;
 
-    const char *mName = "VariableMenuPopulator::PopulateVariableLists";
+    const char *mName = "VariableMenuPopulator::PopulateVariableLists: ";
     int total = visitTimer->StartTimer();
     int id = visitTimer->StartTimer();
 
@@ -358,6 +365,20 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     if(!expressionsSame)
         cachedExpressionList = newExpressionList;
 
+    // Save off the current variable lists so we can compare in the 
+    // treatAllDBsAsTimeVarying case.
+    VariableList old_meshVars(meshVars);
+    VariableList old_scalarVars(scalarVars);
+    VariableList old_vectorVars(vectorVars);
+    VariableList old_materialVars(materialVars);
+    VariableList old_subsetVars(subsetVars);
+    VariableList old_speciesVars(speciesVars);
+    VariableList old_curveVars(curveVars);
+    VariableList old_tensorVars(tensorVars);
+    VariableList old_symmTensorVars(symmTensorVars);
+    VariableList old_labelVars(labelVars);
+    VariableList old_arrayVars(arrayVars);
+
     // Clear out the variable lists and set their sorting method..
     meshVars.Clear();        meshVars.SetSorted(md->GetMustAlphabetizeVariables());
     scalarVars.Clear();      scalarVars.SetSorted(md->GetMustAlphabetizeVariables());
@@ -373,7 +394,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
 
     // Clear out the variable grouping info.
     ClearGroupingInfo();
-    visitTimer->StopTimer(id, "Clearing vectors nad grouping info");
+    visitTimer->StopTimer(id, "Clearing vectors and grouping info");
 
     // Do stuff with the metadata
     id = visitTimer->StartTimer(); 
@@ -518,10 +539,35 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             AddExpression(expr);
     }
 
+    // Determine the return value.
+    bool populationWillCauseUpdate = true;
+    if(treatAllDBsAsTimeVarying || variableMetaData)
+    {
+        // This is a last opportunity for us to return false for the case where
+        // we're treating all DB's as time varying. Remember, this update routine
+        // could be called many times with the same inputs. We don't want to return
+        // true for treatAllDBsAsTimeVarying or sims or mustRepopulateOnStateChange
+        // if we've already cached the variables for its inputs on a previous call.
+        // Returning true more than we need to causes the menus to be regenerated 
+        // downstream, which is pretty costly.
+        populationWillCauseUpdate =
+            old_meshVars != meshVars ||
+            old_scalarVars != scalarVars ||
+            old_vectorVars != vectorVars ||
+            old_materialVars != materialVars ||
+            old_subsetVars != subsetVars ||
+            old_speciesVars != speciesVars ||
+            old_curveVars != curveVars ||
+            old_tensorVars != tensorVars ||
+            old_symmTensorVars != symmTensorVars ||
+            old_labelVars != labelVars ||
+            old_arrayVars != arrayVars;
+    }
+
     visitTimer->StopTimer(id, "Adding expressions");
     visitTimer->StopTimer(total, mName);
 
-    return true;
+    return populationWillCauseUpdate;
 }
 
 // ****************************************************************************
@@ -1081,6 +1127,16 @@ VariableMenuPopulator::VariableList::VariableList() : sortedVariables(),
     unsortedVariableIndex = -1;
 }
 
+VariableMenuPopulator::VariableList::VariableList(const VariableMenuPopulator::VariableList &obj) : 
+    sortedVariables(obj.sortedVariables),
+    sortedVariablesIterator(obj.sortedVariablesIterator),
+    unsortedVariableNames(obj.unsortedVariableNames),
+    unsortedVariableValid(obj.unsortedVariableValid)
+{
+    sorted = obj.sorted;
+    unsortedVariableIndex = obj.unsortedVariableIndex;
+}
+
 // ****************************************************************************
 // Method: VariableMenuPopulator::VariableList::~VariableList
 //
@@ -1096,6 +1152,72 @@ VariableMenuPopulator::VariableList::VariableList() : sortedVariables(),
 
 VariableMenuPopulator::VariableList::~VariableList()
 {
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::operator == 
+//
+// Purpose: 
+//   == operator
+//
+// Arguments:
+//   obj : The variable list object that we're comparing.
+//
+// Returns:    true if the object is equal to this object; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 14 12:05:47 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VariableMenuPopulator::VariableList::operator == (const VariableMenuPopulator::VariableList &obj) const
+{
+    bool equal = false;
+    if(sorted == obj.sorted)
+    {
+        if(sorted)
+        {
+            equal = sortedVariables == obj.sortedVariables;
+        }
+        else
+        {
+            equal = unsortedVariableNames == obj.unsortedVariableNames &&
+                    unsortedVariableValid == obj.unsortedVariableValid;
+        }
+    }
+
+    return equal;
+}
+
+// ****************************************************************************
+// Method: VariableMenuPopulator::VariableList::operator != 
+//
+// Purpose: 
+//   != operator.
+//
+// Arguments:
+//   obj : The variable list object that we're comparing.
+//
+// Returns:    false if the object is equal to this object; true otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Dec 14 12:07:08 PST 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VariableMenuPopulator::VariableList::operator != (const VariableMenuPopulator::VariableList &obj) const
+{
+    return !this->operator == (obj);
 }
 
 // ****************************************************************************

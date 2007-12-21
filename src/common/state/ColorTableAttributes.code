@@ -301,6 +301,9 @@ Definition:
 //   Brad Whitlock, Tue Mar 13 10:40:04 PDT 2007
 //   Updated due to code generator changes.
 //
+//   Brad Whitlock, Fri Dec 14 16:07:50 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 bool
@@ -327,11 +330,11 @@ ColorTableAttributes::CreateNode(DataNode *parentNode, bool, bool)
             DataNode *ctNode = new DataNode(tmp);
             // Add the color table attributes to the ctNode.
             ctNode->AddNode(new DataNode("ctName", names[i]));
-            if(!ccpl.FieldsEqual(1, &defaultObject))
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_equalSpacingFlag, &defaultObject))
                 ctNode->AddNode(new DataNode("equal", ccpl.GetEqualSpacingFlag()));
-            if(!ccpl.FieldsEqual(2, &defaultObject))
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_smoothingFlag, &defaultObject))
                 ctNode->AddNode(new DataNode("smooth", ccpl.GetSmoothingFlag()));
-            if(!ccpl.FieldsEqual(3, &defaultObject))
+            if(!ccpl.FieldsEqual(ColorControlPointList::ID_discreteFlag, &defaultObject))
                 ctNode->AddNode(new DataNode("discrete", ccpl.GetDiscreteFlag()));
 
             // Add the control points to the vector that we'll save out.

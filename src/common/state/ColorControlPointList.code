@@ -349,25 +349,25 @@ ColorControlPointList::CompactCreateNode(DataNode *parentNode, bool completeSave
         addToParent = true;
     }
 
-    if(completeSave || !FieldsEqual(1, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_smoothingFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("smoothingFlag", smoothingFlag));
     }
 
-    if(completeSave || !FieldsEqual(2, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_equalSpacingFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("equalSpacingFlag", equalSpacingFlag));
     }
 
-    if(completeSave || !FieldsEqual(3, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_discreteFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("discreteFlag", discreteFlag));
     }
 
-    if(completeSave || !FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_externalFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("externalFlag", externalFlag));

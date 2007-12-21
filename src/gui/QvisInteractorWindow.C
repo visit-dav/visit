@@ -200,6 +200,9 @@ QvisInteractorWindow::CreateWindowContents()
 //   Eric Brugger, Mon Dec 27 11:50:27 PST 2004
 //   I added a dolly navigation mode.
 //
+//   Brad Whitlock, Fri Dec 14 17:25:15 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -217,16 +220,16 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case 0: //showGuidelines
+          case InteractorAttributes::ID_showGuidelines:
             showGuidelines->setChecked(atts->GetShowGuidelines());
             break;
-          case 1: //clampSquare
+          case InteractorAttributes::ID_clampSquare:
             clampSquare->setChecked(atts->GetClampSquare());
             break;
-          case 2: //fillViewportOnZoom
+          case InteractorAttributes::ID_fillViewportOnZoom:
             fillViewportOnZoom->setChecked(atts->GetFillViewportOnZoom());
             break;
-          case 3: //navigationMode
+          case InteractorAttributes::ID_navigationMode:
             if (atts->GetNavigationMode() == InteractorAttributes::Trackball)
                 navigationMode->setButton(0);
             else if (atts->GetNavigationMode() == InteractorAttributes::Dolly)
@@ -264,27 +267,27 @@ QvisInteractorWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do showGuidelines
-    if(which_widget == 0 || doAll)
+    if(which_widget == InteractorAttributes::ID_showGuidelines || doAll)
     {
         // Nothing for showGuidelines
     }
 
     // Do clampSquare
-    if(which_widget == 1 || doAll)
+    if(which_widget == InteractorAttributes::ID_clampSquare || doAll)
     {
         // Nothing for clampSquare
     }
 
     // Do fillViewportOnZoom
-    if(which_widget == 2 || doAll)
+    if(which_widget == InteractorAttributes::ID_fillViewportOnZoom || doAll)
     {
         // Nothing for fillViewportOnZoom
     }
 
     // Do navigateMode
-    if(which_widget == 3 || doAll)
+    if(which_widget == InteractorAttributes::ID_navigationMode || doAll)
     {
-        // Nothing for navigateMode
+        // Nothing for navigationMode
     }
 }
 

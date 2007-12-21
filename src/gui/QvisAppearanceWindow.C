@@ -221,6 +221,9 @@ QvisAppearanceWindow::CreateWindowContents()
 //   Brad Whitlock, Thu Mar 15 15:26:07 PST 2007
 //   Added font support.
 //
+//   Brad Whitlock, Fri Dec 14 16:57:53 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -239,7 +242,7 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // background
+        case AppearanceAttributes::ID_background:
         { // new scope
             QColor bg(atts->GetBackground().c_str());
             backgroundColorButton->blockSignals(true);
@@ -247,7 +250,7 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
             backgroundColorButton->blockSignals(false);
         }
             break;
-        case 1: //foreground
+        case AppearanceAttributes::ID_foreground:
         { // new scope
             QColor fg(atts->GetForeground().c_str());
             foregroundColorButton->blockSignals(true);
@@ -255,12 +258,12 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
             foregroundColorButton->blockSignals(false);
         }
             break;
-        case 2: // fontName
+        case AppearanceAttributes::ID_fontName:
             fontName->blockSignals(true);
             fontName->setText(atts->GetFontName().c_str());
             fontName->blockSignals(false);
             break;
-        case 3: // style
+        case AppearanceAttributes::ID_style:
             for(j = 0; j < numStyleNames; ++j)
             {
                 if(atts->GetStyle() == styleNames[j])
@@ -272,7 +275,7 @@ QvisAppearanceWindow::UpdateWindow(bool doAll)
                 }
             }
             break;
-        case 4: // orientation
+        case AppearanceAttributes::ID_orientation:
             orientationComboBox->blockSignals(true);
             if(atts->GetOrientation() == 0)
                 orientationComboBox->setCurrentItem(0);

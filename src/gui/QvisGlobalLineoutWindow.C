@@ -269,7 +269,10 @@ QvisGlobalLineoutWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Thu Nov  2 14:01:01 PST 2006 
 //   Added freezInTime.
-//   
+//
+//   Brad Whitlock, Fri Dec 14 17:22:35 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -288,7 +291,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
         }
         switch(i)
         {
-          case 0: //Dynamic
+          case GlobalLineoutAttributes::ID_Dynamic:
             dynamic->setChecked(atts->GetDynamic());
             if (atts->GetDynamic())
             {
@@ -302,7 +305,7 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             colorLabel->setEnabled(atts->GetDynamic() && 
                 atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
             break;
-          case 1: //createWindow
+          case GlobalLineoutAttributes::ID_createWindow:
             if (atts->GetCreateWindow() == false)
             {
                 windowId->setEnabled(true);
@@ -315,11 +318,11 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             }
             createWindow->setChecked(atts->GetCreateWindow());
             break;
-          case 2: //windowId
+          case GlobalLineoutAttributes::ID_windowId:
             temp.sprintf("%d", atts->GetWindowId());
             windowId->setText(temp);
             break;
-          case 3: //samplingOn
+          case GlobalLineoutAttributes::ID_samplingOn:
             if (atts->GetSamplingOn() == true)
             {
                 numSamples->setEnabled(true);
@@ -332,14 +335,14 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             }
             samplingOn->setChecked(atts->GetSamplingOn());
             break;
-          case 4: //numSamples
+          case GlobalLineoutAttributes::ID_numSamples:
             temp.sprintf("%d", atts->GetNumSamples());
             numSamples->setText(temp);
             break;
-          case 5: //createReflineLabels
+          case GlobalLineoutAttributes::ID_createReflineLabels:
             createReflineLabels->setChecked(atts->GetCreateReflineLabels());
             break;
-          case 6: //curveOption
+          case GlobalLineoutAttributes::ID_curveOption:
             curveOptions->setCurrentItem(atts->GetCurveOption());
             curveOptions->setEnabled(atts->GetDynamic()) ;
             curveLabel->setEnabled(atts->GetDynamic()) ;
@@ -348,10 +351,10 @@ QvisGlobalLineoutWindow::UpdateWindow(bool doAll)
             colorLabel->setEnabled(atts->GetDynamic() && 
                 atts->GetCurveOption() == GlobalLineoutAttributes::CreateCurve);
             break;
-          case 7: //colorOption
+          case GlobalLineoutAttributes::ID_colorOption:
             colorOptions->setCurrentItem(atts->GetColorOption());
             break;
-          case 8: //freezeInTime
+          case GlobalLineoutAttributes::ID_freezeInTime:
             freezeInTime->setChecked(atts->GetFreezeInTime());
             if (atts->GetFreezeInTime())
                 dynamic->setChecked(false);

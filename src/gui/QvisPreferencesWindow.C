@@ -310,6 +310,9 @@ QvisPreferencesWindow::CreateWindowContents()
 //   UpdateWindow from being called  - making the window out of sync with
 //   the app values.
 //
+//   Brad Whitlock, Fri Dec 14 14:02:26 PST 2007
+//   Make sure the SetTreatAllDBsAsTimeVarying flag gets set in the file server.
+//
 // ****************************************************************************
 
 void
@@ -322,13 +325,16 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 
     if (TheChangedSubject == atts)
     {
-        if(atts->IsSelected(16))
+        if(atts->IsSelected(GlobalAttributes::ID_treatAllDBsAsTimeVarying))
+            fileServer->SetTreatAllDBsAsTimeVarying(
+                atts->GetTreatAllDBsAsTimeVarying());
+        if(atts->IsSelected(GlobalAttributes::ID_createMeshQualityExpressions))
             fileServer->SetCreateMeshQualityExpressions(
                 atts->GetCreateMeshQualityExpressions());
-        if(atts->IsSelected(17))
+        if(atts->IsSelected(GlobalAttributes::ID_createTimeDerivativeExpressions))
             fileServer->SetCreateTimeDerivativeExpressions(
                 atts->GetCreateTimeDerivativeExpressions());
-        if(atts->IsSelected(18))
+        if(atts->IsSelected(GlobalAttributes::ID_createVectorMagnitudeExpressions))
             fileServer->SetCreateVectorMagnitudeExpressions(
                 atts->GetCreateVectorMagnitudeExpressions());
     }
@@ -365,12 +371,15 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
 //   Added toggle for createVectorMagnitude
 //
+//   Brad Whitlock, Fri Dec 14 15:53:39 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
 QvisPreferencesWindow::UpdateWindow(bool doAll)
 {
-    if (doAll || atts->IsSelected(9))
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_makeDefaultConfirm))
     {
         //
         // Prompt before making default attributes.
@@ -381,7 +390,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         makeDefaultConfirmToggle->blockSignals(false);
     }
 
-    if (doAll || atts->IsSelected(10))
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_cloneWindowOnFirstRef))
     {
         //
         // Clone window on first reference
@@ -392,7 +401,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         cloneWindowOnFirstRefToggle->blockSignals(false);
     }
 
-    if (doAll || atts->IsSelected(13))
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_automaticallyAddOperator))
     {
         //
         // Automatically add operator.
@@ -403,7 +412,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         automaticallyApplyOperatorToggle->blockSignals(false);
     }
 
-    if (doAll || atts->IsSelected(14))
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_tryHarderCyclesTimes))
     {
         //
         // Try harder to get accurate cycles and times 
@@ -414,7 +423,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         tryHarderCyclesTimesToggle->blockSignals(false);
     }
 
-    if (doAll || atts->IsSelected(15))
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_treatAllDBsAsTimeVarying))
     {
         treatAllDBsAsTimeVaryingToggle->blockSignals(true);
         treatAllDBsAsTimeVaryingToggle->setChecked(
@@ -422,7 +431,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         treatAllDBsAsTimeVaryingToggle->blockSignals(false);
     }
 
-    if (doAll || atts->IsSelected(16))
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_createMeshQualityExpressions))
     {
         createMeshQualityToggle->blockSignals(true);
         createMeshQualityToggle->setChecked(
@@ -430,7 +439,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         createMeshQualityToggle->blockSignals(false);
     }
 
-    if (doAll || atts->IsSelected(17))
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_createTimeDerivativeExpressions))
     {
         createTimeDerivativeToggle->blockSignals(true);
         createTimeDerivativeToggle->setChecked(
@@ -438,7 +447,7 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         createTimeDerivativeToggle->blockSignals(false);
     }
 
-    if (doAll || atts->IsSelected(18))
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_createVectorMagnitudeExpressions))
     {
         createVectorMagnitudeToggle->blockSignals(true);
         createVectorMagnitudeToggle->setChecked(

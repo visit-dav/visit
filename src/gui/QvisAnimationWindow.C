@@ -193,17 +193,17 @@ QvisAnimationWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // pipelineCaching.
+        case AnimationAttributes::ID_pipelineCachingMode:
             pipelineCachingToggle->blockSignals(true);
             pipelineCachingToggle->setChecked(atts->GetPipelineCachingMode());
             pipelineCachingToggle->blockSignals(false);
             break;
-        case 1: // timeout
+        case AnimationAttributes::ID_timeout:
             timeoutSlider->blockSignals(true);
             timeoutSlider->setValue(SLOWEST_TIMEOUT - atts->GetTimeout());
             timeoutSlider->blockSignals(false);
             break;
-        case 2: // loopAnimation.
+        case AnimationAttributes::ID_playbackMode:
             playbackModeButtonGroup->blockSignals(true);
             playbackModeButtonGroup->setButton(int(atts->GetPlaybackMode()));
             playbackModeButtonGroup->blockSignals(false);

@@ -295,6 +295,9 @@ QvisExportDBWindow::CreateWindowContents()
 //   Added trigger of the full file format update when we have to choose
 //   one for the user (because none was selected).
 //
+//   Brad Whitlock, Fri Dec 14 17:06:39 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -325,7 +328,7 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
 
         switch (i)
         {
-          case 0: // db type
+          case ExportDBAttributes::ID_db_type:
             {
                 fileFormatComboBox->blockSignals(true);
                 int count = fileFormatComboBox->count();
@@ -363,16 +366,16 @@ QvisExportDBWindow::UpdateWindow(bool doAll)
                 directoryNameLabel->setEnabled(enableDir);
             }
             break;
-          case 1: // db type fullname
+          case ExportDBAttributes::ID_db_type_fullname:
             break;
-          case 2: // format
+          case ExportDBAttributes::ID_filename:
             filenameLineEdit->setText(exportDBAtts->GetFilename().c_str());
             break;
-          case 3: // directory name
+          case ExportDBAttributes::ID_dirname:
             directoryNameLineEdit->setText(
                                      exportDBAtts->GetDirname().c_str());
             break;
-          case 4: // variables
+          case ExportDBAttributes::ID_variables:
             {
                 stringVector vars = exportDBAtts->GetVariables();
                 std::string allVars;

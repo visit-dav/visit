@@ -218,7 +218,9 @@ QvisDatabaseCorrelationListWindow::CreateWindowContents()
 // Creation:   Mon Mar 29 12:16:22 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Dec 14 17:02:52 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -227,7 +229,7 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
     if(correlationList == 0)
         return;
 
-    if(correlationList->IsSelected(0) || doAll)
+    if(correlationList->IsSelected(DatabaseCorrelationList::ID_correlations) || doAll)
     {
         //
         // Update the list of correlation names.
@@ -269,14 +271,14 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
         UpdateButtons();
     }
 
-    if(correlationList->IsSelected(1) || doAll)
+    if(correlationList->IsSelected(DatabaseCorrelationList::ID_needPermission) || doAll)
     {
         promptUser->blockSignals(true);
         promptUser->setChecked(correlationList->GetNeedPermission());
         promptUser->blockSignals(false);
     }
 
-    if(correlationList->IsSelected(2) || doAll)
+    if(correlationList->IsSelected(DatabaseCorrelationList::ID_defaultCorrelationMethod) || doAll)
     {
         defaultCorrelationMethod->blockSignals(true);
         defaultCorrelationMethod->setCurrentItem(
@@ -284,7 +286,7 @@ QvisDatabaseCorrelationListWindow::UpdateWindow(bool doAll)
         defaultCorrelationMethod->blockSignals(false);
     }
 
-    if(correlationList->IsSelected(3) || doAll)
+    if(correlationList->IsSelected(DatabaseCorrelationList::ID_whenToCorrelate) || doAll)
     {
         whenToCorrelate->blockSignals(true);
         whenToCorrelate->setCurrentItem((int)correlationList->GetWhenToCorrelate());

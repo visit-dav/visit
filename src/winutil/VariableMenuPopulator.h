@@ -102,9 +102,13 @@ class QObject;
 //   Brad Whitlock, Wed Mar 22 12:05:43 PDT 2006
 //   I added GroupingInfo and added another argument to UpdateSingleMenu.
 //
-//    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
-//    Added bool to support to treat all databases as time varying to 
-//    PopulateVariableLists
+//   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
+//   Added bool to support to treat all databases as time varying to 
+//   PopulateVariableLists.
+//
+//   Brad Whitlock, Fri Dec 14 12:00:55 PST 2007
+//   Added methods to the VariableList class.
+//
 // ****************************************************************************
 
 class WINUTIL_API VariableMenuPopulator
@@ -135,6 +139,7 @@ private:
     {
     public:
         VariableList();
+        VariableList(const VariableList &);
         virtual ~VariableList();
         void SetSorted(bool val) { sorted = val; };
         bool GetSorted() const { return sorted; };
@@ -145,6 +150,8 @@ private:
         void InitTraversal();
         bool GetNextVariable(std::string &var, bool &validVar);
         bool IsGroupingRequired(StringStringMap& origNameToGroupedName);
+        bool operator == (const VariableList &) const;
+        bool operator != (const VariableList &) const;
     private:
         bool                    sorted;
         StringBoolMap           sortedVariables;

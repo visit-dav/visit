@@ -27,6 +27,6 @@
     <Field name="duration" label="duration" type="int">
       5000
     </Field>
-    <Constant name="DEFAULT_DURATION" member="false">
+    <Constant name="DEFAULT_DURATION" member="true">
     </Constant>
   </Attribute>

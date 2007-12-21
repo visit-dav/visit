@@ -40,6 +40,8 @@ def systemCommand(command):
 # Date:       Tue May 20 10:00:56 PDT 2003
 #
 # Modifications:
+#   Brad Whitlock, Fri Dec 14 15:56:16 PST 2007
+#   Removed cleartool commands.
 #
 ###############################################################################
 
@@ -50,10 +52,6 @@ def main():
     # Check out each XML file and regenerate the C and h files.
     for f in files:
         bname = f[:-5]
-        command = "cleartool checkout -c \"regenerated\" %s.C" % bname
-        systemCommand(command)
-        command = "cleartool checkout -c \"regenerated\" %s.h" % bname
-        systemCommand(command)
         command = "../../bin/xml2atts -clobber %s" % f
         systemCommand(command)
 

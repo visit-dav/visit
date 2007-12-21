@@ -72,9 +72,13 @@ class  QvisVariablePopupMenu;
 // Some typedefs used for plugin management.
 typedef struct
 {
+    QString                pluginName;
+    QString                menuName;
+    QIconSet               icon;
     QvisVariablePopupMenu *varMenu;
-    int                   varTypes;
-    int                   varMask;
+    int                    varTypes;
+    int                    varMask;
+    int                    id;
 } PluginEntry;
 
 typedef std::vector<PluginEntry> PluginEntryVector;
@@ -180,6 +184,8 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   adding Context Menu to the Active Plots list
 //   hideThisPlot, deleteThisPlot, drawThisPlot
 //
+//   Brad Whitlock, Thu Dec 20 11:05:48 PST 2007
+//   Added methods to make recreating the plot menu easier.
 //
 // ****************************************************************************
 
@@ -229,6 +235,10 @@ protected:
     virtual void keyReleaseEvent(QKeyEvent *key);
 private:
     void CreateMenus(QMenuBar *);
+    void DestroyPlotMenuItem(int index);
+    void CreatePlotMenuItem(int index);
+    void DestroyVariableMenu();
+    void CreateVariableMenu();
     void UpdatePlotList();
     bool PopulateVariableLists(VariableMenuPopulator &,
                                const QualifiedFilename &filename);

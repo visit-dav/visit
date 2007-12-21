@@ -667,6 +667,9 @@ QvisViewWindow::UpdateWindow(bool doAll)
 //   Kathleen Bonnell, Thu Mar 22 16:07:56 PDT 2007
 //   I added domainScale, RangeScale.
 //
+//   Brad Whitlock, Mon Dec 17 10:47:02 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -684,32 +687,32 @@ QvisViewWindow::UpdateCurve(bool doAll)
 
         switch(i)
         {
-        case 0: // domainCoords
+        case ViewCurveAttributes::ID_domainCoords:
           { const double *v = viewCurve->GetDomainCoords();
             temp.sprintf("%g %g", v[0], v[1]);
             domainLineEdit->setText(temp);
             break;
           }
-        case 1: // rangeCoords
+        case ViewCurveAttributes::ID_rangeCoords:
           { const double *v = viewCurve->GetRangeCoords();
             temp.sprintf("%g %g", v[0], v[1]);
             rangeLineEdit->setText(temp);
             break;
           }
-        case 2: // viewportCoords
+        case ViewCurveAttributes::ID_viewportCoords:
           { const double *v = viewCurve->GetViewportCoords();
             temp.sprintf("%g %g %g %g", v[0], v[1], v[2], v[3]);
             viewportCurveLineEdit->setText(temp);
             break;
           }
-        case 3: // domainScale
+        case ViewCurveAttributes::ID_domainScale:
           {
             domainScaleMode->blockSignals(true);
             domainScaleMode->setButton(viewCurve->GetDomainScale());
             domainScaleMode->blockSignals(false);
           }
           break;
-        case 4: // rangeScale
+        case ViewCurveAttributes::ID_rangeScale:
           {
             rangeScaleMode->blockSignals(true);
             rangeScaleMode->setButton(viewCurve->GetRangeScale());
@@ -751,6 +754,9 @@ QvisViewWindow::UpdateCurve(bool doAll)
 //   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007 
 //   I added radio buttons for 2d log scaling.
 //
+//   Brad Whitlock, Mon Dec 17 10:48:04 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -768,19 +774,19 @@ QvisViewWindow::Update2D(bool doAll)
 
         switch(i)
         {
-        case 0: // windowcoords
+        case View2DAttributes::ID_windowCoords:
           { const double *w = view2d->GetWindowCoords();
             temp.sprintf("%g %g %g %g", w[0], w[1], w[2], w[3]);
             windowLineEdit->setText(temp);
             break;
           }
-        case 1: // viewportcoords
+        case View2DAttributes::ID_viewportCoords:
           { const double *v = view2d->GetViewportCoords();
             temp.sprintf("%g %g %g %g", v[0], v[1], v[2], v[3]);
             viewportLineEdit->setText(temp);
             break;
           }
-        case 2: // fullframe.
+        case View2DAttributes::ID_fullFrameActivationMode:
             View2DAttributes::TriStateMode itmp;
             itmp = view2d->GetFullFrameActivationMode();
             fullFrameActivationMode->blockSignals(true);
@@ -792,20 +798,18 @@ QvisViewWindow::Update2D(bool doAll)
                fullFrameActivationMode->setButton(0);
             fullFrameActivationMode->blockSignals(false);
             break;
-        case 3: // xScale
-          {
+        case View2DAttributes::ID_fullFrameAutoThreshold:
+            break;
+        case View2DAttributes::ID_xScale:
             xScaleMode->blockSignals(true);
             xScaleMode->setButton(view2d->GetXScale());
             xScaleMode->blockSignals(false);
-          }
-          break;
-        case 4: // yScale
-          {
+            break;
+        case View2DAttributes::ID_yScale:
             yScaleMode->blockSignals(true);
             yScaleMode->setButton(view2d->GetYScale());
             yScaleMode->blockSignals(false);
-          }
-          break;
+            break;
         }
     }
 }
@@ -845,6 +849,10 @@ QvisViewWindow::Update2D(bool doAll)
 //
 //   Mark C. Miller, Thu Jul 21 12:52:42 PDT 2005
 //   Fixed confusion in indices for eyeAngle and perspective members
+//
+//   Brad Whitlock, Mon Dec 17 10:48:15 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -862,69 +870,69 @@ QvisViewWindow::Update3D(bool doAll)
 
         switch(i)
         {
-        case 0: // view normal.
+        case View3DAttributes::ID_viewNormal:
             temp.sprintf("%g %g %g",
                          view3d->GetViewNormal()[0],
                          view3d->GetViewNormal()[1],
                          view3d->GetViewNormal()[2]);
             normalLineEdit->setText(temp);
             break;
-        case 1: // focus
+        case View3DAttributes::ID_focus:
             temp.sprintf("%g %g %g",
                          view3d->GetFocus()[0],
                          view3d->GetFocus()[1],
                          view3d->GetFocus()[2]);
             focusLineEdit->setText(temp);
             break;
-        case 2: // upvector
+        case View3DAttributes::ID_viewUp:
             temp.sprintf("%g %g %g",
                          view3d->GetViewUp()[0],
                          view3d->GetViewUp()[1],
                          view3d->GetViewUp()[2]);
             upvectorLineEdit->setText(temp);
             break;
-        case 3: // viewAngle
+        case View3DAttributes::ID_viewAngle:
             temp.setNum(view3d->GetViewAngle());
             viewAngleLineEdit->setText(temp);
             break;
-        case 4: // parallelScale
+        case View3DAttributes::ID_parallelScale:
             temp.setNum(view3d->GetParallelScale());
             parallelScaleLineEdit->setText(temp);
             break;
-        case 5: // near
+        case View3DAttributes::ID_nearPlane:
             temp.setNum(view3d->GetNearPlane());
             nearLineEdit->setText(temp);
             break;
-        case 6: // far
+        case View3DAttributes::ID_farPlane:
             temp.setNum(view3d->GetFarPlane());
             farLineEdit->setText(temp);
             break;
-        case 7: // imagePan
+        case View3DAttributes::ID_imagePan:
             temp.sprintf("%g %g",
                          view3d->GetImagePan()[0],
                          view3d->GetImagePan()[1]);
             imagePanLineEdit->setText(temp);
             break;
-        case 8: // imageZoom
+        case View3DAttributes::ID_imageZoom:
             temp.setNum(view3d->GetImageZoom());
             imageZoomLineEdit->setText(temp);
             break;
-        case 9: // perspective.
+        case View3DAttributes::ID_perspective:
             perspectiveToggle->blockSignals(true);
             perspectiveToggle->setChecked(view3d->GetPerspective());
             perspectiveToggle->blockSignals(false);
             break;
-        case 10: // eyeAngle
+        case View3DAttributes::ID_eyeAngle:
             temp.setNum(view3d->GetEyeAngle());
             eyeAngleLineEdit->setText(temp);
             UpdateEyeAngleSliderFromAtts();
             break;
-        case 11: // centerOfRotationSet.
+        case View3DAttributes::ID_centerOfRotationSet:
             centerToggle->blockSignals(true);
             centerToggle->setChecked(view3d->GetCenterOfRotationSet());
             centerToggle->blockSignals(false);
             break;
-        case 12: // centerOfRotation.
+        case View3DAttributes::ID_centerOfRotation:
             temp.sprintf("%g %g %g",
                          view3d->GetCenterOfRotation()[0],
                          view3d->GetCenterOfRotation()[1],
@@ -964,6 +972,9 @@ QvisViewWindow::Update3D(bool doAll)
 //   Hank Childs, Mon Jun 11 21:51:55 PDT 2007
 //   If there is a command in the command line edit, process it.
 //
+//   Brad Whitlock, Mon Dec 17 11:11:11 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -984,23 +995,23 @@ QvisViewWindow::UpdateGlobal(bool doAll)
 
         switch(i)
         {
-        case 10: // lockView
+        case WindowInformation::ID_lockView:
             lockedViewToggle->blockSignals(true);
             lockedViewToggle->setChecked(windowInfo->GetLockView());
             lockedViewToggle->blockSignals(false);
             break;
-        case 13: // viewExtentsType
+        case WindowInformation::ID_viewExtentsType:
             extentComboBox->blockSignals(true);
             extentComboBox->setCurrentItem(windowInfo->GetViewExtentsType());
             extentComboBox->blockSignals(false);
             break;
-        case 16: // cameraViewMode
+        case WindowInformation::ID_cameraViewMode:
             copyViewFromCameraToggle->blockSignals(true);
             copyViewFromCameraToggle->setChecked(
                                               windowInfo->GetCameraViewMode());
             copyViewFromCameraToggle->blockSignals(false);
             break;
-        case 24: // winMode
+        case WindowInformation::ID_winMode:
             if (!activeTabSetBySlot)
             {
                 tabs->blockSignals(true);

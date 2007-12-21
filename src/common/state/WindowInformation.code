@@ -79,6 +79,9 @@ Definition:
 //   Brad Whitlock, Fri Jan 23 16:21:10 PST 2004
 //   I changed the attribute numbering.
 //
+//   Brad Whitlock, Fri Dec 14 15:59:21 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 bool
@@ -93,43 +96,43 @@ WindowInformation::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     // Create a node for WindowInformation.
     DataNode *node = new DataNode("WindowInformation");
 
-    if(completeSave || !FieldsEqual(6, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_boundingBoxNavigate, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("boundingBoxNavigate", boundingBoxNavigate));
     }
 
-    if(completeSave || !FieldsEqual(8, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_fullFrame, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("fullFrame", fullFrame));
     }
 
-    if(completeSave || !FieldsEqual(9, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_perspective, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("perspective", perspective));
     }
 
-    if(completeSave || !FieldsEqual(10, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_lockView, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockView", lockView));
     }
 
-    if(completeSave || !FieldsEqual(11, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_lockTools, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockTools", lockTools));
     }
 
-    if(completeSave || !FieldsEqual(12, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_lockTime, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("lockTime", lockTime));
     }
 
-    if(completeSave || !FieldsEqual(13, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_viewExtentsType, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("viewExtentsType", viewExtentsType));

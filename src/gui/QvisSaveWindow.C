@@ -418,6 +418,10 @@ QvisSaveWindow::CreateWindowContents()
 //   Dave Bremer, Fri Sep 28 17:18:41 PDT 2007
 //   bool field for "maintain aspect" was changed to an enum 
 //   to constrain resolution.
+//
+//   Brad Whitlock, Mon Dec 17 10:38:20 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -438,24 +442,24 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-        case 0: // use current directory
+        case SaveWindowAttributes::ID_outputToCurrentDirectory:
             outputToCurrentDirectoryCheckBox->blockSignals(true);
             outputToCurrentDirectoryCheckBox->setChecked(
                 saveWindowAtts->GetOutputToCurrentDirectory());
             outputToCurrentDirectoryCheckBox->blockSignals(false);
             break;
-        case 1: // output directory
+        case SaveWindowAttributes::ID_outputDirectory:
             outputDirectoryLineEdit->setText(saveWindowAtts->GetOutputDirectory().c_str());
             break;
-        case 2: // file name
+        case SaveWindowAttributes::ID_fileName:
             filenameLineEdit->setText(saveWindowAtts->GetFileName().c_str());
             break;
-        case 3: // family
+        case SaveWindowAttributes::ID_family:
             familyCheckBox->blockSignals(true);
             familyCheckBox->setChecked(saveWindowAtts->GetFamily());
             familyCheckBox->blockSignals(false);
             break;
-        case 4: // format
+        case SaveWindowAttributes::ID_format:
             fileFormatComboBox->blockSignals(true);
             fileFormatComboBox->setCurrentItem(saveWindowAtts->GetFormat());
             fileFormatComboBox->blockSignals(false);
@@ -494,15 +498,15 @@ QvisSaveWindow::UpdateWindow(bool doAll)
                 forceMergeCheckBox->setEnabled(true);
             }
             break;
-        case 5: // width
+        case SaveWindowAttributes::ID_width:
             temp.sprintf("%d", saveWindowAtts->GetWidth());
             widthLineEdit->setText(temp);
             break;
-        case 6: // height
+        case SaveWindowAttributes::ID_height:
             temp.sprintf("%d", saveWindowAtts->GetHeight());
             heightLineEdit->setText(temp);
             break;
-        case 7: // screen capture
+        case SaveWindowAttributes::ID_screenCapture:
             screenCaptureCheckBox->blockSignals(true);
             screenCaptureCheckBox->setChecked(saveWindowAtts->GetScreenCapture());
             screenCaptureCheckBox->blockSignals(false);
@@ -510,42 +514,42 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             // Set the enabled state of the resolution widgets.
             resolutionBox->setEnabled(!saveWindowAtts->GetScreenCapture());
             break;
-        case 8: // save tiled
+        case SaveWindowAttributes::ID_saveTiled:
             saveTiledCheckBox->blockSignals(true);
             saveTiledCheckBox->setChecked(saveWindowAtts->GetSaveTiled());
             saveTiledCheckBox->blockSignals(false);
             break;
-        case 9: // quality
+        case SaveWindowAttributes::ID_quality:
             qualitySlider->blockSignals(true);
             qualitySlider->setValue(saveWindowAtts->GetQuality());
             qualitySlider->blockSignals(false);
             break;
-        case 10: // progressive
+        case SaveWindowAttributes::ID_progressive:
             progressiveCheckBox->blockSignals(true);
             progressiveCheckBox->setChecked(saveWindowAtts->GetProgressive());
             progressiveCheckBox->blockSignals(false);
             break;
-        case 11: // binary
+        case SaveWindowAttributes::ID_binary:
             binaryCheckBox->blockSignals(true);
             binaryCheckBox->setChecked(saveWindowAtts->GetBinary());
             binaryCheckBox->blockSignals(false);
             break;
-        case 13: // stereo
+        case SaveWindowAttributes::ID_stereo:
             stereoCheckBox->blockSignals(true);
             stereoCheckBox->setChecked(saveWindowAtts->GetStereo());
             stereoCheckBox->blockSignals(false);
             break;
-        case 14: // tiffCompression
+        case SaveWindowAttributes::ID_compression:
             compressionTypeComboBox->blockSignals(true);
             compressionTypeComboBox->setCurrentItem(saveWindowAtts->GetCompression());
             compressionTypeComboBox->blockSignals(false);
             break;
-        case 15: // forceMerge
+        case SaveWindowAttributes::ID_forceMerge:
             forceMergeCheckBox->blockSignals(true);
             forceMergeCheckBox->setChecked(saveWindowAtts->GetForceMerge());
             forceMergeCheckBox->blockSignals(false);
             break;
-        case 16: // resConstraint
+        case SaveWindowAttributes::ID_resConstraint:
             noResButton->blockSignals(true);
             oneToOneResButton->blockSignals(true);
             screenResButton->blockSignals(true);
@@ -629,6 +633,10 @@ QvisSaveWindow::UpdateWindow(bool doAll)
 //   Dave Bremer, Thu Oct 11 18:56:56 PDT 2007
 //   Added a check for windows larger than the max Mesa can handle, and
 //   revert the value if it's too high.
+//
+//   Brad Whitlock, Mon Dec 17 10:38:47 PST 2007
+//   Made it use ids.
+//
 // ****************************************************************************
 
 void
@@ -638,7 +646,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do the host name
-    if(which_widget == 0 || doAll)
+    if(which_widget == SaveWindowAttributes::ID_outputDirectory || doAll)
     {
         temp = outputDirectoryLineEdit->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -657,7 +665,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
     }
 
     // Do the file name
-    if(which_widget == 1 || doAll)
+    if(which_widget == SaveWindowAttributes::ID_fileName || doAll)
     {
         temp = filenameLineEdit->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -677,7 +685,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
 
     // Do the image width
     bool setWidth = false;
-    if(which_widget == 2 || doAll)
+    if(which_widget == SaveWindowAttributes::ID_width || doAll)
     {
         temp = widthLineEdit->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -709,7 +717,7 @@ QvisSaveWindow::GetCurrentValues(int which_widget)
 
     // Do the image height
     bool setHeight = false;
-    if(which_widget == 3 || doAll)
+    if(which_widget == SaveWindowAttributes::ID_height || doAll)
     {
         temp = heightLineEdit->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -857,7 +865,7 @@ QvisSaveWindow::outputToCurrentDirectoryToggled(bool val)
 void
 QvisSaveWindow::processOutputDirectoryText()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(SaveWindowAttributes::ID_outputDirectory);
     Apply();
 }
 
@@ -877,7 +885,7 @@ QvisSaveWindow::processOutputDirectoryText()
 void
 QvisSaveWindow::processFilenameText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(SaveWindowAttributes::ID_fileName);
     Apply();
 }
 
@@ -1032,7 +1040,7 @@ QvisSaveWindow::resConstraintToggled(bool val)
 void
 QvisSaveWindow::processWidthText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(SaveWindowAttributes::ID_width);
     // If we're maintaining the 1:1 aspect ratio, udpate
     // the height too.
     if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::EqualWidthHeight)
@@ -1064,7 +1072,7 @@ QvisSaveWindow::processWidthText()
 void
 QvisSaveWindow::processHeightText()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(SaveWindowAttributes::ID_height);
     // If we're maintaining the 1:1 aspect ratio, udpate
     // the width too.
     if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::EqualWidthHeight)
@@ -1288,7 +1296,7 @@ QvisSaveWindow::selectOutputDirectory()
     if(!dirName.isEmpty())
     {
         outputDirectoryLineEdit->setText(dirName);
-        GetCurrentValues(0);
+        GetCurrentValues(SaveWindowAttributes::ID_outputDirectory);
         Apply();
     }
 }

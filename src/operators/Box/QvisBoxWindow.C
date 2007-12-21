@@ -204,30 +204,30 @@ QvisBoxWindow::UpdateWindow(bool doAll)
 
         switch(i)
         {
-          case 0: //amount
+          case BoxAttributes::ID_amount:
             amount->setButton(atts->GetAmount());
             break;
-          case 1: //minx
+          case BoxAttributes::ID_minx:
             temp.setNum(atts->GetMinx());
             minx->setText(temp);
             break;
-          case 2: //maxx
+          case BoxAttributes::ID_maxx:
             temp.setNum(atts->GetMaxx());
             maxx->setText(temp);
             break;
-          case 3: //miny
+          case BoxAttributes::ID_miny:
             temp.setNum(atts->GetMiny());
             miny->setText(temp);
             break;
-          case 4: //maxy
+          case BoxAttributes::ID_maxy:
             temp.setNum(atts->GetMaxy());
             maxy->setText(temp);
             break;
-          case 5: //minz
+          case BoxAttributes::ID_minz:
             temp.setNum(atts->GetMinz());
             minz->setText(temp);
             break;
-          case 6: //maxz
+          case BoxAttributes::ID_maxz:
             temp.setNum(atts->GetMaxz());
             maxz->setText(temp);
             break;
@@ -255,14 +255,8 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
     bool okay, doAll = (which_widget == -1);
     QString msg, temp;
 
-    // Do amount
-    if(which_widget == 0 || doAll)
-    {
-        // Nothing for amount
-    }
-
     // Do minx
-    if(which_widget == 1 || doAll)
+    if(which_widget == BoxAttributes::ID_minx || doAll)
     {
         temp = minx->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -283,7 +277,7 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
     }
 
     // Do maxx
-    if(which_widget == 2 || doAll)
+    if(which_widget == BoxAttributes::ID_maxx || doAll)
     {
         temp = maxx->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -304,7 +298,7 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
     }
 
     // Do miny
-    if(which_widget == 3 || doAll)
+    if(which_widget == BoxAttributes::ID_miny || doAll)
     {
         temp = miny->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -325,7 +319,7 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
     }
 
     // Do maxy
-    if(which_widget == 4 || doAll)
+    if(which_widget == BoxAttributes::ID_maxy || doAll)
     {
         temp = maxy->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -346,7 +340,7 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
     }
 
     // Do minz
-    if(which_widget == 5 || doAll)
+    if(which_widget == BoxAttributes::ID_minz || doAll)
     {
         temp = minz->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -367,7 +361,7 @@ QvisBoxWindow::GetCurrentValues(int which_widget)
     }
 
     // Do maxz
-    if(which_widget == 6 || doAll)
+    if(which_widget == BoxAttributes::ID_maxz || doAll)
     {
         temp = maxz->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -412,7 +406,7 @@ QvisBoxWindow::amountChanged(int val)
 void
 QvisBoxWindow::minxProcessText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(BoxAttributes::ID_minx);
     Apply();
 }
 
@@ -420,7 +414,7 @@ QvisBoxWindow::minxProcessText()
 void
 QvisBoxWindow::maxxProcessText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(BoxAttributes::ID_maxx);
     Apply();
 }
 
@@ -428,7 +422,7 @@ QvisBoxWindow::maxxProcessText()
 void
 QvisBoxWindow::minyProcessText()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(BoxAttributes::ID_miny);
     Apply();
 }
 
@@ -436,7 +430,7 @@ QvisBoxWindow::minyProcessText()
 void
 QvisBoxWindow::maxyProcessText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(BoxAttributes::ID_maxy);
     Apply();
 }
 
@@ -444,7 +438,7 @@ QvisBoxWindow::maxyProcessText()
 void
 QvisBoxWindow::minzProcessText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(BoxAttributes::ID_minz);
     Apply();
 }
 
@@ -452,7 +446,7 @@ QvisBoxWindow::minzProcessText()
 void
 QvisBoxWindow::maxzProcessText()
 {
-    GetCurrentValues(6);
+    GetCurrentValues(BoxAttributes::ID_maxz);
     Apply();
 }
 

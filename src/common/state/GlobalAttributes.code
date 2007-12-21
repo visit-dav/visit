@@ -66,6 +66,9 @@ Definition:
 //   Cyrus Harrison, Wed Nov 28 15:22:42 PST 2007
 //   Added createVectorMagnitudeExpressions
 //
+//   Brad Whitlock, Fri Dec 14 15:02:46 PST 2007
+//   Made it use IDs.
+//
 // ****************************************************************************
 
 bool
@@ -80,88 +83,88 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     // Create a node for GlobalAttributes.
     DataNode *node = new DataNode("GlobalAttributes");
 
-    if(completeSave || !FieldsEqual(4, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_autoUpdateFlag, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("autoUpdateFlag", autoUpdateFlag));
     }
 
-    if(completeSave || !FieldsEqual(5, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_replacePlots, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("replacePlots", replacePlots));
     }
 
-    if(completeSave || !FieldsEqual(6, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_applyOperator, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("applyOperator", applyOperator));
     }
 
-    if(completeSave || !FieldsEqual(8, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_windowLayout, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("windowLayout", windowLayout));
     }
 
-    if(completeSave || !FieldsEqual(9, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_makeDefaultConfirm, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("makeDefaultConfirm", makeDefaultConfirm));
     }
 
-    if(completeSave || !FieldsEqual(10, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_cloneWindowOnFirstRef, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("cloneWindowOnFirstRef",
                                     cloneWindowOnFirstRef));
     }
 
-    if(completeSave || !FieldsEqual(11, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_maintainView, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("maintainView", maintainView));
     }
 
-    if(completeSave || !FieldsEqual(12, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_maintainData, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("maintainData", maintainData));
     }
 
-    if(completeSave || !FieldsEqual(13, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_automaticallyAddOperator, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("automaticallyAddOperator",
             automaticallyAddOperator));
     }
 
-    if(completeSave || !FieldsEqual(14, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_tryHarderCyclesTimes, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("tryHarderCyclesTimes",
             tryHarderCyclesTimes));
     }
 
-    if(completeSave || !FieldsEqual(15, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_treatAllDBsAsTimeVarying, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("treatAllDBsAsTimeVarying",
                       treatAllDBsAsTimeVarying));
     }
-    if(completeSave || !FieldsEqual(16, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_createMeshQualityExpressions, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("createMeshQualityExpressions",
                       createMeshQualityExpressions));
     }
-    if(completeSave || !FieldsEqual(17, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_createTimeDerivativeExpressions, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("createTimeDerivativeExpressions",
                       createTimeDerivativeExpressions));
     }
-    if(completeSave || !FieldsEqual(18, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_createVectorMagnitudeExpressions, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("createVectorMagnitudeExpressions",

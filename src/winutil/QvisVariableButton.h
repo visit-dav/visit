@@ -73,6 +73,9 @@ class VariableMenuPopulator;
 //   Added another constructor and some properties so they can be exposed
 //   in Qt designer.
 //
+//   Brad Whitlock, Thu Dec 20 12:42:30 PST 2007
+//   Added methods to delete menu items.
+//
 // ****************************************************************************
 
 class WINUTIL_API QvisVariableButton : public QPushButton
@@ -139,6 +142,8 @@ private:
 
         void Initialize();
         void UpdateMenus(VariableMenuPopulator *pop);
+        void CreateMenu(int);
+        void DeleteMenu(int);
         void connect(QvisVariableButton *);
         void disconnect();
 

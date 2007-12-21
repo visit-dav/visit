@@ -414,6 +414,8 @@ QvisFileOpenWindow::UpdateWindow(bool doAll)
 // Note: Taken largely from QvisFileSelectWindow
 //
 // Modifications:
+//   Brad Whitlock, Fri Dec 14 17:18:39 PST 2007
+//   Made it use ids.
 //
 // ****************************************************************************
 
@@ -426,7 +428,9 @@ QvisFileOpenWindow::UpdateWindowFromFiles(bool doAll)
     currentDirToggle->blockSignals(false);
 
     // Set the file grouping combo box.
-    if(fileServer->IsSelected(7) || fileServer->IsSelected(9) || doAll)
+    if(fileServer->IsSelected(FileServerList::ID_automaticFileGroupingFlag) ||
+       fileServer->IsSelected(FileServerList::ID_smartFileGroupingFlag) ||
+       doAll)
     {
         int index = 0;
         if(fileServer->GetAutomaticFileGrouping())
