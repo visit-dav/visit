@@ -150,7 +150,7 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //  Modifications:
 //
 //    Kathleen Bonnell, Tue Nov 20 12:35:54 PST 2001
-//    Initialize requireOriginalCells. 
+//    Initialize requireOriginalCells.
 //
 //    Hank Childs, Mon Jan  5 16:04:57 PST 2004
 //    Initialize uniqueNetworkId.
@@ -164,8 +164,8 @@ void                      *NetworkManager::progressCallbackArgs = NULL;
 //    Mark C. Miller, Tue May 25 20:44:10 PDT 2004
 //    Removed unnecessary scope. Set annotationAttributes data member
 //
-//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004 
-//    Initialize requireOriginalNodes. 
+//    Kathleen Bonnell, Wed Jun  2 09:48:29 PDT 2004
+//    Initialize requireOriginalNodes.
 //
 //    Mark C. Miller, Tue Jan  4 10:23:19 PST 2005
 //    Made the viswin part of a map of EngineVisWinInfo objects
