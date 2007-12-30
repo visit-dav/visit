@@ -351,7 +351,7 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
     debug3 << "NetworkManager::ClearNetworksWithDatabase()" << endl;
     int i;
 
-    // 
+    //
     // Clear out the networks before the databases.  This is because if we
     // delete the databases first, the networks will have dangling pointers.
     //
@@ -1657,8 +1657,8 @@ NetworkManager::UpdatePlotAtts(int id, const AttributeGroup *atts)
 //    Made changes to support scalable rendering
 //
 //    Brad Whitlock, Thu Jan 16 11:07:10 PDT 2003
-//    I replaced the return in the TRY/CATCH block with CATCH_RETURN2 so that
-//    fake exceptions work again.
+//    I replaced the return in the TRY/CATCH/ENDTRY block with CATCH_RETURN2 so
+//    that fake exceptions work again.
 //
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Modifed to use local GetScalableThreshold method
