@@ -86,5 +86,3 @@ class avtResamplePluginFilter : virtual public avtPluginFilter,
 
 
 #endif
-
-

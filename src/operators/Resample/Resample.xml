@@ -1,27 +1,30 @@
 <?xml version="1.0"?>
-  <Plugin name="Resample" type="operator" label="Resample" version="1.0" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" iconFile="Resample.xpm">
+  <Plugin name="Resample" type="operator" label="Resample" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Resample.xpm">
     <Files components="E">
       avtResamplePluginFilter.C
     </Files>
-    <Attribute name="ResamplePluginAttributes" purpose="Atts for Resample operator" persistent="true" exportAPI="" exportInclude="">
+    <Attribute name="ResamplePluginAttributes" purpose="Atts for Resample operator" persistent="true" keyframe="true" exportAPI="" exportInclude="">
       <Enum name="TieResolver">
         random
         largest
         smallest
       </Enum>
-      <Field name="startX" label="Start X" type="double">
+      <Field name="useExtents" label="Resample Entire Extents" type="bool">
+        true
+      </Field>
+      <Field name="startX" label="Start X" type="double" enabler="useExtents:false">
         0.000000
       </Field>
-      <Field name="endX" label="End X" type="double">
+      <Field name="endX" label="End X" type="double" enabler="useExtents:false">
         1.000000
       </Field>
       <Field name="samplesX" label="Samples in X" type="int">
         10
       </Field>
-      <Field name="startY" label="Start Y" type="double">
+      <Field name="startY" label="Start Y" type="double" enabler="useExtents:false">
         0.000000
       </Field>
-      <Field name="endY" label="End Y" type="double">
+      <Field name="endY" label="End Y" type="double" enabler="useExtents:false">
         1.000000
       </Field>
       <Field name="samplesY" label="Samples in Y" type="int">
@@ -49,7 +52,7 @@
         0.000000
       </Field>
       <Field name="distributedResample" label="Distribute resampled data\nset across all processors\n(parallel only)?" type="bool">
-        false
+        true
       </Field>
     </Attribute>
   </Plugin>
