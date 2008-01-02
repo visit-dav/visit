@@ -202,7 +202,7 @@ XMLEditFields::XMLEditFields(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(variableNameGroup, row,row+2,3,4);
     row++;
 
-    ignoreeq = new QCheckBox("Ignore equality", this);
+    ignoreeq = new QCheckBox("Ignore field for attribute\nequality calculations", this);
     topLayout->addMultiCellWidget(ignoreeq, row,row, 0,2);
     row++;
 
