@@ -141,6 +141,7 @@ rm $VISITSRC.tar
 
 rm -rf $VISITSRC/data
 cd $VISITSRC/src
+set SVN_REVISION = `cat SVN_REVISION`
 mv ./* ../
 cd $VisItDev 
 rmdir $VISITSRC/src
@@ -203,8 +204,7 @@ rm -rf $VISITSRC/viewer/main/icons
 
 # Replace the version in visit-config.h with the current version and move
 # visit-config.h into the include/visit directory
-sed -e "s/XXX/$VERSION/" include/visit-config.h > include/VisIt/visit-config.h
-sed -e "s/XXX/$SVN_REVISION/" include/visit-config.h > include/VisIt/visit-config.h
+sed -e "s/XXX/$VERSION/" -e "s/YYY/$SVN_REVISION/" include/visit-config.h > include/VisIt/visit-config.h
 rm -f include/visit-config.h
 
 echo "Copying tool include files to include/Tools...".
