@@ -44,7 +44,7 @@
 #define AVT_CHGCAR_FILE_FORMAT_H
 
 #include <avtFileFormatInterface.h>
-#include <avtSTSDFileFormat.h>
+#include <avtMTSDFileFormat.h>
 
 class vtkDoubleArray;
 
@@ -62,9 +62,12 @@ class vtkDoubleArray;
 //    Added a special case where axis-aligned unit cell vectors
 //    construct a *true* rectilinear grid, not a transformed one.
 //
+//    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
+//    Support multiple concatenated CHGCAR's in a single file; now MTSD.
+//
 // ****************************************************************************
 
-class avtCHGCARFileFormat : public avtSTSDFileFormat
+class avtCHGCARFileFormat : public avtMTSDFileFormat
 {
   public:
     static bool        Identify(const std::string&);
@@ -74,15 +77,19 @@ class avtCHGCARFileFormat : public avtSTSDFileFormat
                        avtCHGCARFileFormat(const char *filename);
     virtual           ~avtCHGCARFileFormat() {;};
 
+    virtual int            GetNTimesteps(void);
+
     virtual const char    *GetType(void)   { return "CHGCAR"; };
     virtual void           FreeUpResources(void); 
 
-    virtual vtkDataSet    *GetMesh(const char *);
-    virtual vtkDataArray  *GetVar(const char *);
-    virtual vtkDataArray  *GetVectorVar(const char *);
+    virtual vtkDataSet    *GetMesh(int, const char *);
+    virtual vtkDataArray  *GetVar(int, const char *);
+    virtual vtkDataArray  *GetVectorVar(int, const char *);
 
   protected:
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+
+    std::vector<istream::pos_type>   file_positions;
 
     int origdims[3];
     int meshdims[3];
@@ -91,11 +98,14 @@ class avtCHGCARFileFormat : public avtSTSDFileFormat
     ifstream in;
     std::string filename;
     bool metadata_read;
-    bool values_read;
+    int  values_read;
     vtkDoubleArray *values;
+    int ntimesteps;
+    int natoms;
 
+    void OpenFileAtBeginning();
     void ReadAllMetaData();
-    void ReadValues();
+    void ReadValues(int);
 };
 
 

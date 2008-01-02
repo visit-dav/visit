@@ -51,7 +51,7 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
-#include <avtSTSDFileFormatInterface.h>
+#include <avtMTSDFileFormatInterface.h>
 
 #include <Expression.h>
 
@@ -62,6 +62,7 @@
 using     std::string;
 
 #define  ALLOW_TRANSFORMED_RECTILINEAR_GRIDS
+#define  VALUES_PER_LINE 10
 
 // ****************************************************************************
 //  Method: avtCHGCAR constructor
@@ -69,21 +70,24 @@ using     std::string;
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
+//    Support multiple concatenated CHGCAR's in a single file; now MTSD.
+//
 // ****************************************************************************
 
 avtCHGCARFileFormat::avtCHGCARFileFormat(const char *fn)
-    : avtSTSDFileFormat(fn)
+    : avtMTSDFileFormat(&fn, 1)
 {
     filename = fn;
-    in.open(fn);
-    if (!in)
-    {
-        EXCEPTION1(InvalidFilesException, fn);
-    }
+    OpenFileAtBeginning();
 
     metadata_read = false;
-    values_read = false;
+    values_read = -1;
     values = NULL;
+
+    ntimesteps = 0;
+    natoms = 0;
 
     origdims[0] = 0;
     origdims[1] = 0;
@@ -111,6 +115,11 @@ avtCHGCARFileFormat::avtCHGCARFileFormat(const char *fn)
 //    Jeremy Meredith, Tue Feb 27 11:10:46 EST 2007
 //    Don't delete "values" if it's a NULL pointer.
 //
+//    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
+//    Support multiple concatenated CHGCAR's in a single file.
+//    values_read is now an int refering to the timestep whose values
+//    have been read (or -1 if none).
+//
 // ****************************************************************************
 
 void
@@ -119,7 +128,7 @@ avtCHGCARFileFormat::FreeUpResources(void)
     if (values)
         values->Delete();
     values = NULL;
-    values_read = false;
+    values_read = -1;
 }
 
 
@@ -236,10 +245,13 @@ avtCHGCARFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Added a special case where axis-aligned unit cell vectors
 //    construct a *true* rectilinear grid, not a transformed one.
 //
+//    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
+//    Support multiple concatenated CHGCAR's in a single file; now MTSD.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtCHGCARFileFormat::GetMesh(const char *meshname)
+avtCHGCARFileFormat::GetMesh(int ts, const char *meshname)
 {
 #ifdef ALLOW_TRANSFORMED_RECTILINEAR_GRIDS
     if (strcmp(meshname, "mesh") != 0)
@@ -343,12 +355,15 @@ avtCHGCARFileFormat::GetMesh(const char *meshname)
 //    adding a new reference to it -- it was deleted elsewhere in visit
 //    when we didn't know about it.
 //
+//    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
+//    Support multiple concatenated CHGCAR's in a single file; now MTSD.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtCHGCARFileFormat::GetVar(const char *varname)
+avtCHGCARFileFormat::GetVar(int ts, const char *varname)
 {
-    ReadValues();
+    ReadValues(ts);
 
     if (string(varname) == "charge")
     {
@@ -374,10 +389,14 @@ avtCHGCARFileFormat::GetVar(const char *varname)
 //  Programmer: Jeremy Meredith
 //  Creation:   August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
+//    Support multiple concatenated CHGCAR's in a single file; now MTSD.
+//
 // ****************************************************************************
 
 vtkDataArray *
-avtCHGCARFileFormat::GetVectorVar(const char *varname)
+avtCHGCARFileFormat::GetVectorVar(int ts, const char *varname)
 {
     return NULL;
 }
@@ -395,14 +414,29 @@ avtCHGCARFileFormat::GetVectorVar(const char *varname)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
+//    Support multiple concatenated CHGCAR's in a single file.
+//    values_read is now an int refering to the timestep whose values
+//    have been read (or -1 if none).  Use saved file positions.
+//
 // ****************************************************************************
 void
-avtCHGCARFileFormat::ReadValues()
+avtCHGCARFileFormat::ReadValues(int timestep)
 {
-    if (values_read)
+    if (values_read == timestep)
         return;
 
-    values_read = true;
+    if (values)
+    {
+        values->Delete();
+        values = NULL;
+    }
+
+    OpenFileAtBeginning();
+    in.seekg(file_positions[timestep]);
+
+    values_read = timestep;
 
     int nvalues = meshdims[0]*meshdims[1]*meshdims[2];
 
@@ -453,6 +487,11 @@ avtCHGCARFileFormat::ReadValues()
 //    Added a special case where axis-aligned unit cell vectors
 //    construct a *true* rectilinear grid, not a transformed one.
 //
+//    Jeremy Meredith, Wed Jan  2 14:09:05 EST 2008
+//    Support multiple concatenated CHGCAR's in a single file.
+//    Save file positions for time steps, assuming 10 values per line
+//    and an overall file structure matching the examples I've seen so far.
+//
 // ****************************************************************************
 void
 avtCHGCARFileFormat::ReadAllMetaData()
@@ -494,7 +533,7 @@ avtCHGCARFileFormat::ReadAllMetaData()
     in.getline(line, 132); // get atom counts
     string atomcountline(line);
 
-    int natoms = 0;
+    natoms = 0;
     int tmp;
     std::istringstream count_in(atomcountline);
     while (count_in >> tmp)
@@ -516,6 +555,18 @@ avtCHGCARFileFormat::ReadAllMetaData()
     meshdims[2] = origdims[2]+1;
 
     in.getline(line,132); // skip rest of dims line
+
+    // Mark the start of the volumetric grid data
+    int values_per_vol = origdims[0]*origdims[1]*origdims[2];
+    int lines_per_vol = (values_per_vol+VALUES_PER_LINE-1)/VALUES_PER_LINE;
+    int lines_per_step = 7 + natoms + 2 + lines_per_vol;
+    while (in)
+    {
+        file_positions.push_back(in.tellg());
+        ntimesteps++;
+        for (int i=0; i<lines_per_step; i++)
+            in.getline(line,132);
+    }
 }
 
 // ****************************************************************************
@@ -571,20 +622,74 @@ avtCHGCARFileFormat::Identify(const std::string &filename)
 //  Programmer:  Jeremy Meredith
 //  Creation:    August 29, 2006
 //
+//  Modifications:
+//    Jeremy Meredith, Wed Jan  2 14:11:38 EST 2008
+//    Now MTSD.
+//
 // ****************************************************************************
 avtFileFormatInterface *
 avtCHGCARFileFormat::CreateInterface(const char *const *list,
                                      int nList, int nBlock)
 {
-    avtSTSDFileFormat ***ffl = new avtSTSDFileFormat**[nList];
-    int nTimestep = nList / nBlock;
-    for (int i = 0 ; i < nTimestep ; i++)
+    avtMTSDFileFormat **ffl = new avtMTSDFileFormat*[nList];
+    for (int i = 0 ; i < nList ; i++)
     {
-        ffl[i] = new avtSTSDFileFormat*[nBlock];
-        for (int j = 0 ; j < nBlock ; j++)
+        ffl[i] = new avtCHGCARFileFormat(list[i]);
+    }
+    return new avtMTSDFileFormatInterface(ffl, nList);
+}
+
+
+// ****************************************************************************
+//  Method:  avtCHGCARFileFormat::OpenFileAtBeginning
+//
+//  Purpose:
+//    Opens the file, or else seeks to the beginning.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  2, 2008
+//
+// ****************************************************************************
+void
+avtCHGCARFileFormat::OpenFileAtBeginning()
+{
+    if (!in.is_open())
+    {
+        in.open(filename.c_str());
+        if (!in)
         {
-            ffl[i][j] = new avtCHGCARFileFormat(list[i*nBlock + j]);
+            EXCEPTION1(InvalidFilesException, filename.c_str());
         }
     }
-    return new avtSTSDFileFormatInterface(ffl, nTimestep, nBlock);
+    else
+    {
+        in.clear();
+        in.seekg(0, ios::beg);
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtCHGCARFileFormat::GetNTimesteps
+//
+//  Purpose:
+//    return the number of timesteps
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January  2, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+int
+avtCHGCARFileFormat::GetNTimesteps(void)
+{
+    ReadAllMetaData();
+    return ntimesteps;
 }
