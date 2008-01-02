@@ -1081,6 +1081,9 @@ Engine::ProcessInput()
 //    Dave Pugmire, Mon Dec 10 15:57:32 EST 2007
 //    Added -plugindir option
 //
+//    Kathleen Bonnell, Wed Jan  2 08:15:07 PST 2008 
+//    Fix -plugindir for Windows platform. 
+//
 // ****************************************************************************
 
 void
@@ -1235,8 +1238,14 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-plugindir") == 0  && (i+1) < argc )
         {
+#ifndef WIN32
 	    string pluginDir = argv[i+1];
 	    setenv( "VISITPLUGINDIR", pluginDir.c_str(), 1 );
+#else
+	    string pluginDir("VISITPLUGINDIR=");
+            pluginDir += argv[i+1];
+            putenv(pluginDir.c_str()); 
+#endif
 	    ++i;
         }
 	

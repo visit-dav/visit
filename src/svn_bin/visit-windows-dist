@@ -72,6 +72,9 @@
 #   and libs from old MSVC6 directories, as all others have now been built
 #   with MSVC7.
 #
+#   Kathleen Bonnell, Fri Dec 21 13:48:10 PST 2007 
+#   Capture 'SVN_REVISION' for the windows version of visit-config.h.
+# 
 #------------------------------------------------------------------------------
 
 # Need another way to determine we are starting in the right directory.
@@ -201,6 +204,7 @@ rm -rf $VISITSRC/viewer/main/icons
 # Replace the version in visit-config.h with the current version and move
 # visit-config.h into the include/visit directory
 sed -e "s/XXX/$VERSION/" include/visit-config.h > include/VisIt/visit-config.h
+sed -e "s/XXX/$SVN_REVISION/" include/visit-config.h > include/VisIt/visit-config.h
 rm -f include/visit-config.h
 
 echo "Copying tool include files to include/Tools...".

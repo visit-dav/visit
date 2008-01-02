@@ -39,7 +39,7 @@
 #define AVTSHAPELETS_EXPORTS_H
 
 #if defined(_WIN32)
-#ifdef AVTSHAPELETS_EXPORTS_H
+#ifdef AVTSHAPELETS_EXPORTS
 #define AVTSHAPELETS_API __declspec(dllexport)
 #else
 #define AVTSHAPELETS_API __declspec(dllimport)

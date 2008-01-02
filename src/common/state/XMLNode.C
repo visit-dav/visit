@@ -343,13 +343,17 @@ XMLNode::DeleteChild(int index)
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 13, 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jan  2 08:15:07 PST 2008
+//    Fix compile error. (start = 0, instead of start ==0).
+//
 // ****************************************************************************
 
 int 
 XMLNode::FindIndex(const string &name, int start) const
 {
     if(start < 0)
-        start == 0;
+        start = 0;
     if(start > children.size())
         return -1;
         

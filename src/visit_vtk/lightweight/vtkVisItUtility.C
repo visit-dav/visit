@@ -981,7 +981,7 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
 // ****************************************************************************
 
 void
-vtkVisItUtility::WriteDataSet(vtkDataSet *ds, char *fname)
+vtkVisItUtility::WriteDataSet(vtkDataSet *ds, const char *fname)
 {
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
     writer->SetInput(ds);

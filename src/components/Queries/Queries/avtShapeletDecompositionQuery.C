@@ -49,8 +49,8 @@
 #include <avtSourceFromAVTDataset.h>
 
 #include <vtkCellData.h>
-#include <vtkDataSetWriter.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkVisItUtility.h>
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
@@ -183,6 +183,9 @@ avtShapeletDecompositionQuery::PostExecute(void)
 //  Programmer: Cyrus Harrison
 //  Creation:   December 18, 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jan  2 08:15:07 PST 2008
+//    Use vtkVisItUtility to write dataset, to fix compile problem on Windows.
 //
 // ****************************************************************************
 
@@ -250,11 +253,8 @@ avtShapeletDecompositionQuery::Execute(vtkDataSet *ds, const int dom)
         if(recompOutputFileName != "")
         {
             // save output 
-            vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-            wrtr->SetInput(recomp_res);
-            wrtr->SetFileName(recompOutputFileName.c_str());
-            wrtr->Write();
-            wrtr->Delete();
+            vtkVisItUtility::WriteDataSet(recomp_res, 
+                                          recompOutputFileName.c_str());
         }
         // delete recomp image
         recomp_res->Delete();
