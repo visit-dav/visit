@@ -40,6 +40,7 @@
 // ************************************************************************* //
 
 #include <avtResamplePluginFilter.h>
+#include <avtExtents.h>
 
 #include <avtResampleFilter.h>
 #include <ResampleAttributes.h>
@@ -110,6 +111,9 @@ avtResamplePluginFilter::Create()
 //    Hank Childs, Fri Sep 30 09:16:06 PDT 2005
 //    Add support for distributed resampling.
 //
+//    Sean Ahern, Wed Jan  2 16:01:48 EST 2008
+//    Added support for specifying that the whole extents should be used.
+//
 // ****************************************************************************
 
 void
@@ -134,7 +138,7 @@ avtResamplePluginFilter::SetAtts(const AttributeGroup *a)
         res_atts.SetDepth(atts.GetSamplesZ());
     else
         res_atts.SetDepth(1);
-    res_atts.SetUseBounds(true);
+    res_atts.SetUseBounds(!atts.GetUseExtents());
     res_atts.SetMinX(atts.GetStartX());
     res_atts.SetMaxX(atts.GetEndX());
     res_atts.SetMinY(atts.GetStartY());

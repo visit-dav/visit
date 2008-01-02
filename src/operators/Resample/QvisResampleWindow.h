@@ -64,7 +64,7 @@ class QvisVariableButton;
 // Notes:      This class was automatically generated!
 
 // Programmer: xml2window
-// Creation:   Fri Sep 30 09:09:25 PDT 2005
+// Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
 //   
@@ -85,6 +85,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     void UpdateWindow(bool doAll);
     virtual void GetCurrentValues(int which_widget);
   private slots:
+    void useExtentsChanged(bool val);
     void startXProcessText();
     void endXProcessText();
     void samplesXProcessText();
@@ -100,6 +101,7 @@ class QvisResampleWindow : public QvisOperatorWindow
     void defaultValueProcessText();
     void distributedResampleChanged(bool val);
   private:
+    QCheckBox *useExtents;
     QLineEdit *startX;
     QLineEdit *endX;
     QLineEdit *samplesX;
@@ -120,14 +122,12 @@ class QvisResampleWindow : public QvisOperatorWindow
     QLabel *startYLabel;
     QLabel *endYLabel;
     QLabel *samplesYLabel;
-    QLabel *is3DLabel;
     QLabel *startZLabel;
     QLabel *endZLabel;
     QLabel *samplesZLabel;
     QLabel *tieResolverLabel;
     QLabel *tieResolverVariableLabel;
     QLabel *defaultValueLabel;
-    QLabel *distributedResampleLabel;
 
     ResamplePluginAttributes *atts;
 };

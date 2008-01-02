@@ -67,7 +67,7 @@ using std::string;
 //   Constructor
 //
 // Programmer: xml2window
-// Creation:   Fri Sep 30 09:26:57 PDT 2005
+// Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
 //   
@@ -91,7 +91,7 @@ QvisResampleWindow::QvisResampleWindow(const int type,
 //   Destructor
 //
 // Programmer: xml2window
-// Creation:   Fri Sep 30 09:26:57 PDT 2005
+// Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
 //   
@@ -109,7 +109,7 @@ QvisResampleWindow::~QvisResampleWindow()
 //   Creates the widgets for the window.
 //
 // Programmer: xml2window
-// Creation:   Fri Sep 30 09:26:57 PDT 2005
+// Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
 //   
@@ -118,79 +118,84 @@ QvisResampleWindow::~QvisResampleWindow()
 void
 QvisResampleWindow::CreateWindowContents()
 {
-    QGridLayout *mainLayout = new QGridLayout(topLayout, 14,2,  10, "mainLayout");
+    QGridLayout *mainLayout = new QGridLayout(topLayout, 15,2,  10, "mainLayout");
 
+
+    useExtents = new QCheckBox("Resample Entire Extents", central, "useExtents");
+    connect(useExtents, SIGNAL(toggled(bool)),
+            this, SLOT(useExtentsChanged(bool)));
+    mainLayout->addWidget(useExtents, 0,0);
 
     startXLabel = new QLabel("Start X", central, "startXLabel");
-    mainLayout->addWidget(startXLabel,0,0);
+    mainLayout->addWidget(startXLabel,1,0);
     startX = new QLineEdit(central, "startX");
     connect(startX, SIGNAL(returnPressed()),
             this, SLOT(startXProcessText()));
-    mainLayout->addWidget(startX, 0,1);
+    mainLayout->addWidget(startX, 1,1);
 
     endXLabel = new QLabel("End X", central, "endXLabel");
-    mainLayout->addWidget(endXLabel,1,0);
+    mainLayout->addWidget(endXLabel,2,0);
     endX = new QLineEdit(central, "endX");
     connect(endX, SIGNAL(returnPressed()),
             this, SLOT(endXProcessText()));
-    mainLayout->addWidget(endX, 1,1);
+    mainLayout->addWidget(endX, 2,1);
 
     samplesXLabel = new QLabel("Samples in X", central, "samplesXLabel");
-    mainLayout->addWidget(samplesXLabel,2,0);
+    mainLayout->addWidget(samplesXLabel,3,0);
     samplesX = new QLineEdit(central, "samplesX");
     connect(samplesX, SIGNAL(returnPressed()),
             this, SLOT(samplesXProcessText()));
-    mainLayout->addWidget(samplesX, 2,1);
+    mainLayout->addWidget(samplesX, 3,1);
 
     startYLabel = new QLabel("Start Y", central, "startYLabel");
-    mainLayout->addWidget(startYLabel,3,0);
+    mainLayout->addWidget(startYLabel,4,0);
     startY = new QLineEdit(central, "startY");
     connect(startY, SIGNAL(returnPressed()),
             this, SLOT(startYProcessText()));
-    mainLayout->addWidget(startY, 3,1);
+    mainLayout->addWidget(startY, 4,1);
 
     endYLabel = new QLabel("End Y", central, "endYLabel");
-    mainLayout->addWidget(endYLabel,4,0);
+    mainLayout->addWidget(endYLabel,5,0);
     endY = new QLineEdit(central, "endY");
     connect(endY, SIGNAL(returnPressed()),
             this, SLOT(endYProcessText()));
-    mainLayout->addWidget(endY, 4,1);
+    mainLayout->addWidget(endY, 5,1);
 
     samplesYLabel = new QLabel("Samples in Y", central, "samplesYLabel");
-    mainLayout->addWidget(samplesYLabel,5,0);
+    mainLayout->addWidget(samplesYLabel,6,0);
     samplesY = new QLineEdit(central, "samplesY");
     connect(samplesY, SIGNAL(returnPressed()),
             this, SLOT(samplesYProcessText()));
-    mainLayout->addWidget(samplesY, 5,1);
+    mainLayout->addWidget(samplesY, 6,1);
 
     is3D = new QCheckBox("3D resampling", central, "is3D");
     connect(is3D, SIGNAL(toggled(bool)),
             this, SLOT(is3DChanged(bool)));
-    mainLayout->addWidget(is3D, 6,0);
+    mainLayout->addWidget(is3D, 7,0);
 
     startZLabel = new QLabel("Start Z", central, "startZLabel");
-    mainLayout->addWidget(startZLabel,7,0);
+    mainLayout->addWidget(startZLabel,8,0);
     startZ = new QLineEdit(central, "startZ");
     connect(startZ, SIGNAL(returnPressed()),
             this, SLOT(startZProcessText()));
-    mainLayout->addWidget(startZ, 7,1);
+    mainLayout->addWidget(startZ, 8,1);
 
     endZLabel = new QLabel("End Z", central, "endZLabel");
-    mainLayout->addWidget(endZLabel,8,0);
+    mainLayout->addWidget(endZLabel,9,0);
     endZ = new QLineEdit(central, "endZ");
     connect(endZ, SIGNAL(returnPressed()),
             this, SLOT(endZProcessText()));
-    mainLayout->addWidget(endZ, 8,1);
+    mainLayout->addWidget(endZ, 9,1);
 
     samplesZLabel = new QLabel("Samples in Z", central, "samplesZLabel");
-    mainLayout->addWidget(samplesZLabel,9,0);
+    mainLayout->addWidget(samplesZLabel,10,0);
     samplesZ = new QLineEdit(central, "samplesZ");
     connect(samplesZ, SIGNAL(returnPressed()),
             this, SLOT(samplesZProcessText()));
-    mainLayout->addWidget(samplesZ, 9,1);
+    mainLayout->addWidget(samplesZ, 10,1);
 
     tieResolverLabel = new QLabel("Resolve ties", central, "tieResolverLabel");
-    mainLayout->addWidget(tieResolverLabel,10,0);
+    mainLayout->addWidget(tieResolverLabel,11,0);
     tieResolver = new QButtonGroup(central, "tieResolver");
     tieResolver->setFrameStyle(QFrame::NoFrame);
     QHBoxLayout *tieResolverLayout = new QHBoxLayout(tieResolver);
@@ -203,28 +208,28 @@ QvisResampleWindow::CreateWindowContents()
     tieResolverLayout->addWidget(tieResolverTieResolversmallest);
     connect(tieResolver, SIGNAL(clicked(int)),
             this, SLOT(tieResolverChanged(int)));
-    mainLayout->addWidget(tieResolver, 10,1);
+    mainLayout->addWidget(tieResolver, 11,1);
 
     tieResolverVariableLabel = new QLabel("Variable to resolve ties", central, "tieResolverVariableLabel");
-    mainLayout->addWidget(tieResolverVariableLabel,11,0);
+    mainLayout->addWidget(tieResolverVariableLabel,12,0);
     int tieResolverVariableMask = QvisVariableButton::Scalars;
     tieResolverVariable = new QvisVariableButton(true, true, true, tieResolverVariableMask, central, "tieResolverVariable");
     tieResolverVariable->setDefaultVariable("default");
     connect(tieResolverVariable, SIGNAL(activated(const QString&)),
             this, SLOT(tieResolverVariableChanged(const QString&)));
-    mainLayout->addWidget(tieResolverVariable, 11,1);
+    mainLayout->addWidget(tieResolverVariable, 12,1);
 
     defaultValueLabel = new QLabel("Value for uncovered regions", central, "defaultValueLabel");
-    mainLayout->addWidget(defaultValueLabel,12,0);
+    mainLayout->addWidget(defaultValueLabel,13,0);
     defaultValue = new QLineEdit(central, "defaultValue");
     connect(defaultValue, SIGNAL(returnPressed()),
             this, SLOT(defaultValueProcessText()));
-    mainLayout->addWidget(defaultValue, 12,1);
+    mainLayout->addWidget(defaultValue, 13,1);
 
     distributedResample = new QCheckBox("Distribute resampled data\nset across all processors\n(parallel only)?", central, "distributedResample");
     connect(distributedResample, SIGNAL(toggled(bool)),
             this, SLOT(distributedResampleChanged(bool)));
-    mainLayout->addWidget(distributedResample, 13,0);
+    mainLayout->addWidget(distributedResample, 14,0);
 
 }
 
@@ -236,7 +241,7 @@ QvisResampleWindow::CreateWindowContents()
 //   Updates the widgets in the window when the subject changes.
 //
 // Programmer: xml2window
-// Creation:   Fri Sep 30 09:26:57 PDT 2005
+// Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
 //   
@@ -267,97 +272,165 @@ QvisResampleWindow::UpdateWindow(bool doAll)
         QColor                tempcolor;
         switch(i)
         {
-          case 0: //startX
+          case ResamplePluginAttributes::ID_useExtents:
+            if (atts->GetUseExtents() == false)
+            {
+                // Not using full extents.  Prompt for the dimensions.
+                startX->setEnabled(true);
+                startXLabel->setEnabled(true);
+                endX->setEnabled(true);
+                endXLabel->setEnabled(true);
+                startY->setEnabled(true);
+                startYLabel->setEnabled(true);
+                endY->setEnabled(true);
+                endYLabel->setEnabled(true);
+                if (atts->GetIs3D() == true)
+                {
+                    startZ->setEnabled(true);
+                    startZLabel->setEnabled(true);
+                    endZ->setEnabled(true);
+                    endZLabel->setEnabled(true);
+                }
+            }
+            else
+            {
+                // Using full extents.
+                startX->setEnabled(false);
+                startXLabel->setEnabled(false);
+                endX->setEnabled(false);
+                endXLabel->setEnabled(false);
+                startY->setEnabled(false);
+                startYLabel->setEnabled(false);
+                endY->setEnabled(false);
+                endYLabel->setEnabled(false);
+                startZ->setEnabled(false);
+                startZLabel->setEnabled(false);
+                endZ->setEnabled(false);
+                endZLabel->setEnabled(false);
+            }
+            useExtents->blockSignals(true);
+            useExtents->setChecked(atts->GetUseExtents());
+            useExtents->blockSignals(false);
+            break;
+          case ResamplePluginAttributes::ID_startX:
+            startX->blockSignals(true);
             temp.setNum(atts->GetStartX());
             startX->setText(temp);
+            startX->blockSignals(false);
             break;
-          case 1: //endX
+          case ResamplePluginAttributes::ID_endX:
+            endX->blockSignals(true);
             temp.setNum(atts->GetEndX());
             endX->setText(temp);
+            endX->blockSignals(false);
             break;
-          case 2: //samplesX
+          case ResamplePluginAttributes::ID_samplesX:
+            samplesX->blockSignals(true);
             temp.sprintf("%d", atts->GetSamplesX());
             samplesX->setText(temp);
+            samplesX->blockSignals(false);
             break;
-          case 3: //startY
+          case ResamplePluginAttributes::ID_startY:
+            startY->blockSignals(true);
             temp.setNum(atts->GetStartY());
             startY->setText(temp);
+            startY->blockSignals(false);
             break;
-          case 4: //endY
+          case ResamplePluginAttributes::ID_endY:
+            endY->blockSignals(true);
             temp.setNum(atts->GetEndY());
             endY->setText(temp);
+            endY->blockSignals(false);
             break;
-          case 5: //samplesY
+          case ResamplePluginAttributes::ID_samplesY:
+            samplesY->blockSignals(true);
             temp.sprintf("%d", atts->GetSamplesY());
             samplesY->setText(temp);
+            samplesY->blockSignals(false);
             break;
-          case 6: //is3D
+          case ResamplePluginAttributes::ID_is3D:
             if (atts->GetIs3D() == true)
             {
-                startZ->setEnabled(true);
-                startZLabel->setEnabled(true);
+                samplesZ->setEnabled(true);
+                samplesZLabel->setEnabled(true);
+                if (atts->GetUseExtents() == false)
+                {
+                    startZ->setEnabled(true);
+                    startZLabel->setEnabled(true);
+                    endZ->setEnabled(true);
+                    endZLabel->setEnabled(true);
+                }
+                else
+                {
+                    startZ->setEnabled(false);
+                    startZLabel->setEnabled(false);
+                    endZ->setEnabled(false);
+                    endZLabel->setEnabled(false);
+                }
             }
             else
             {
                 startZ->setEnabled(false);
                 startZLabel->setEnabled(false);
-            }
-            if (atts->GetIs3D() == true)
-            {
-                endZ->setEnabled(true);
-                endZLabel->setEnabled(true);
-            }
-            else
-            {
                 endZ->setEnabled(false);
                 endZLabel->setEnabled(false);
-            }
-            if (atts->GetIs3D() == true)
-            {
-                samplesZ->setEnabled(true);
-                samplesZLabel->setEnabled(true);
-            }
-            else
-            {
                 samplesZ->setEnabled(false);
                 samplesZLabel->setEnabled(false);
             }
+            is3D->blockSignals(true);
             is3D->setChecked(atts->GetIs3D());
+            is3D->blockSignals(false);
             break;
-          case 7: //startZ
+          case ResamplePluginAttributes::ID_startZ:
+            startZ->blockSignals(true);
             temp.setNum(atts->GetStartZ());
             startZ->setText(temp);
+            startZ->blockSignals(false);
             break;
-          case 8: //endZ
+          case ResamplePluginAttributes::ID_endZ:
+            endZ->blockSignals(true);
             temp.setNum(atts->GetEndZ());
             endZ->setText(temp);
+            endZ->blockSignals(false);
             break;
-          case 9: //samplesZ
+          case ResamplePluginAttributes::ID_samplesZ:
+            samplesZ->blockSignals(true);
             temp.sprintf("%d", atts->GetSamplesZ());
             samplesZ->setText(temp);
+            samplesZ->blockSignals(false);
             break;
-          case 10: //tieResolver
+          case ResamplePluginAttributes::ID_tieResolver:
             if (atts->GetTieResolver() == ResamplePluginAttributes::smallest || atts->GetTieResolver() == ResamplePluginAttributes::largest)
             {
                 tieResolverVariable->setEnabled(true);
-                tieResolverVariableLabel->setEnabled(true);
+                if(tieResolverVariableLabel)
+                    tieResolverVariableLabel->setEnabled(true);
             }
             else
             {
                 tieResolverVariable->setEnabled(false);
-                tieResolverVariableLabel->setEnabled(false);
+                if(tieResolverVariableLabel)
+                    tieResolverVariableLabel->setEnabled(false);
             }
+            tieResolver->blockSignals(true);
             tieResolver->setButton(atts->GetTieResolver());
+            tieResolver->blockSignals(false);
             break;
-          case 11: //tieResolverVariable
+          case ResamplePluginAttributes::ID_tieResolverVariable:
+            tieResolverVariable->blockSignals(true);
             tieResolverVariable->setText(atts->GetTieResolverVariable().c_str());
+            tieResolverVariable->blockSignals(false);
             break;
-          case 12: //defaultValue
+          case ResamplePluginAttributes::ID_defaultValue:
+            defaultValue->blockSignals(true);
             temp.setNum(atts->GetDefaultValue());
             defaultValue->setText(temp);
+            defaultValue->blockSignals(false);
             break;
-          case 13: //distributedResample
+          case ResamplePluginAttributes::ID_distributedResample:
+            distributedResample->blockSignals(true);
             distributedResample->setChecked(atts->GetDistributedResample());
+            distributedResample->blockSignals(false);
             break;
         }
     }
@@ -371,7 +444,7 @@ QvisResampleWindow::UpdateWindow(bool doAll)
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
-// Creation:   Fri Sep 30 09:26:57 PDT 2005
+// Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
 //   
@@ -384,7 +457,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do startX
-    if(which_widget == 0 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_startX || doAll)
     {
         temp = startX->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -405,7 +478,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do endX
-    if(which_widget == 1 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_endX || doAll)
     {
         temp = endX->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -426,7 +499,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do samplesX
-    if(which_widget == 2 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_samplesX || doAll)
     {
         temp = samplesX->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -447,7 +520,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do startY
-    if(which_widget == 3 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_startY || doAll)
     {
         temp = startY->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -468,7 +541,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do endY
-    if(which_widget == 4 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_endY || doAll)
     {
         temp = endY->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -489,7 +562,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do samplesY
-    if(which_widget == 5 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_samplesY || doAll)
     {
         temp = samplesY->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -509,14 +582,8 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do is3D
-    if(which_widget == 6 || doAll)
-    {
-        // Nothing for is3D
-    }
-
     // Do startZ
-    if(which_widget == 7 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_startZ || doAll)
     {
         temp = startZ->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -537,7 +604,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do endZ
-    if(which_widget == 8 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_endZ || doAll)
     {
         temp = endZ->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -558,7 +625,7 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do samplesZ
-    if(which_widget == 9 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_samplesZ || doAll)
     {
         temp = samplesZ->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -578,20 +645,8 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do tieResolver
-    if(which_widget == 10 || doAll)
-    {
-        // Nothing for tieResolver
-    }
-
-    // Do tieResolverVariable
-    if(which_widget == 11 || doAll)
-    {
-        // Nothing for tieResolverVariable
-    }
-
     // Do defaultValue
-    if(which_widget == 12 || doAll)
+    if(which_widget == ResamplePluginAttributes::ID_defaultValue || doAll)
     {
         temp = defaultValue->displayText().simplifyWhiteSpace();
         okay = !temp.isEmpty();
@@ -611,12 +666,6 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do distributedResample
-    if(which_widget == 13 || doAll)
-    {
-        // Nothing for distributedResample
-    }
-
 }
 
 
@@ -626,9 +675,17 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
 
 
 void
+QvisResampleWindow::useExtentsChanged(bool val)
+{
+    atts->SetUseExtents(val);
+    Apply();
+}
+
+
+void
 QvisResampleWindow::startXProcessText()
 {
-    GetCurrentValues(0);
+    GetCurrentValues(ResamplePluginAttributes::ID_startX);
     Apply();
 }
 
@@ -636,7 +693,7 @@ QvisResampleWindow::startXProcessText()
 void
 QvisResampleWindow::endXProcessText()
 {
-    GetCurrentValues(1);
+    GetCurrentValues(ResamplePluginAttributes::ID_endX);
     Apply();
 }
 
@@ -644,7 +701,7 @@ QvisResampleWindow::endXProcessText()
 void
 QvisResampleWindow::samplesXProcessText()
 {
-    GetCurrentValues(2);
+    GetCurrentValues(ResamplePluginAttributes::ID_samplesX);
     Apply();
 }
 
@@ -652,7 +709,7 @@ QvisResampleWindow::samplesXProcessText()
 void
 QvisResampleWindow::startYProcessText()
 {
-    GetCurrentValues(3);
+    GetCurrentValues(ResamplePluginAttributes::ID_startY);
     Apply();
 }
 
@@ -660,7 +717,7 @@ QvisResampleWindow::startYProcessText()
 void
 QvisResampleWindow::endYProcessText()
 {
-    GetCurrentValues(4);
+    GetCurrentValues(ResamplePluginAttributes::ID_endY);
     Apply();
 }
 
@@ -668,7 +725,7 @@ QvisResampleWindow::endYProcessText()
 void
 QvisResampleWindow::samplesYProcessText()
 {
-    GetCurrentValues(5);
+    GetCurrentValues(ResamplePluginAttributes::ID_samplesY);
     Apply();
 }
 
@@ -684,7 +741,7 @@ QvisResampleWindow::is3DChanged(bool val)
 void
 QvisResampleWindow::startZProcessText()
 {
-    GetCurrentValues(7);
+    GetCurrentValues(ResamplePluginAttributes::ID_startZ);
     Apply();
 }
 
@@ -692,7 +749,7 @@ QvisResampleWindow::startZProcessText()
 void
 QvisResampleWindow::endZProcessText()
 {
-    GetCurrentValues(8);
+    GetCurrentValues(ResamplePluginAttributes::ID_endZ);
     Apply();
 }
 
@@ -700,7 +757,7 @@ QvisResampleWindow::endZProcessText()
 void
 QvisResampleWindow::samplesZProcessText()
 {
-    GetCurrentValues(9);
+    GetCurrentValues(ResamplePluginAttributes::ID_samplesZ);
     Apply();
 }
 
@@ -728,7 +785,7 @@ QvisResampleWindow::tieResolverVariableChanged(const QString &varName)
 void
 QvisResampleWindow::defaultValueProcessText()
 {
-    GetCurrentValues(12);
+    GetCurrentValues(ResamplePluginAttributes::ID_defaultValue);
     Apply();
 }
 
@@ -737,6 +794,7 @@ void
 QvisResampleWindow::distributedResampleChanged(bool val)
 {
     atts->SetDistributedResample(val);
+    SetUpdate(false);
     Apply();
 }
 
