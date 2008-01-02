@@ -282,7 +282,7 @@ class WindowGeneratorInt : public virtual Int , public virtual WindowGeneratorFi
             c << "void" << endl;
             c << windowname<<"::"<<name<<"ProcessText()" << endl;
             c << "{" << endl;
-            c << "    GetCurrentValues("<<classname << "::ID_" << Name<<");" << endl;
+            c << "    GetCurrentValues("<<classname << "::ID_" << name<<");" << endl;
             c << "    Apply();" << endl;
             c << "}" << endl;
         }
