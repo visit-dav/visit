@@ -39,11 +39,12 @@
 #define PY_MAP_NODE_H
 #include <Python.h>
 #include <MapNode.h>
+#include <visitpy_exports.h>
 //
 // Helper to convert a VisIt MapNode to a python dictonary.
 //
 
-PyObject *PyMapNode_Wrap(const MapNode&);
+VISITPY_API PyObject *PyMapNode_Wrap(const MapNode&);
 
 #endif
 

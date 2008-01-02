@@ -88,7 +88,7 @@ namespace vtkVisItUtility
     VISIT_VTK_LIGHT_API void       GetCellCenter(vtkCell* cell, double center[3]);
     VISIT_VTK_LIGHT_API bool       ContainsMixedGhostZoneTypes(vtkDataSet *);
     VISIT_VTK_LIGHT_API bool       CellContainsPoint(vtkCell *, const double *);
-    VISIT_VTK_LIGHT_API void       WriteDataSet(vtkDataSet*, char *);
+    VISIT_VTK_LIGHT_API void       WriteDataSet(vtkDataSet*, const char *);
     VISIT_VTK_LIGHT_API vtkRectilinearGrid *Create1DRGrid(int nXCoords,
                                                           int type = VTK_FLOAT); 
     VISIT_VTK_LIGHT_API bool       PointsEqual(double p1[3], double p2[3]);

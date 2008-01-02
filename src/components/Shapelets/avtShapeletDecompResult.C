@@ -90,6 +90,10 @@ avtShapeletDecompResult::avtShapeletDecompResult
 //  Programmer:  Cyrus Harrison
 //  Creation:    December 12, 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Wed Jan  2 08:15:07 PST 2008
+//    Added return.
+//
 // ****************************************************************************
 avtShapeletDecompResult &
 avtShapeletDecompResult::operator=(const avtShapeletDecompResult& dresult)
@@ -102,6 +106,7 @@ avtShapeletDecompResult::operator=(const avtShapeletDecompResult& dresult)
         height = dresult.height;
         coeffs = dresult.coeffs;
     }
+    return *this;
 }
 
 
