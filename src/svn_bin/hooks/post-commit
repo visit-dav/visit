@@ -1,0 +1,11 @@
+#!/bin/sh
+# This follows the same idea as the `pre-commit' script, but is meant to be run
+# after the commit is accepted/completed/finalized.  This would be a good place
+# to inform a buildbot to start an automated build, for example.
+
+REPOS="$1"
+REV="$2"
+
+# background it -- this might take some time, and shouldnt slow down the
+# users commit.
+bash ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
