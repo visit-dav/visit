@@ -26,6 +26,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p>In addition to support for flat background images, VisIt also now supports <i>Image sphere</i> backgrounds. This style of background image takes a flat image and warps it around a sphere that contains the whole visualization. As you move the camera in the visualization window via rotations, the visible region of the image sphere will change, simulating movement within a larger environment. Image spheres are useful for adding backgrounds such as star fields to your visualization. It is also possible to tile images by setting the number of repetitions in X and Y.</p></li>
 <li>VisIt has a new 3D text annotation type that can be used to insert extruded text into a 3D visualization. The new annotation object is available on the Objects tab of the Annotation Window.</li>
 <li>VisIt has a new feature for checking which Subversion revision it was built against.  This feature is useful for determining mismatches when having problems running client-server.  You can access this by running "visit -svn_version".</li>
+<li>VisIt now provides a Shapelet Decomposition Query that calculates the cartesian shapelet coefficients of an image using the overlap integral decomposition method.</li>
+<li>VisIt's query infrastructure was extended to allow queries to return structured data to the CLI. This type of result is obtained via the GetQueryOutputObject() python method and is currently only implemented by the Shapelet Decomposition query.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.8.0</font></b></p>
 <ul>
