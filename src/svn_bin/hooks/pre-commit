@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# VisIt pre-commit hook script.
+#
+# Subversion requires a specific name for hook scripts.  To avoid getting us in
+# a situation where we want to add a pre-commit script, but we've already
+# implemented one, this script is a `meta-script' which simply runs others.  To
+# add a new hook script, you should add a `runtest' line before the `exit 0' at
+# the bottom of this file.  The argument to runtest is a script which must
+# reside in the `hooks' directory of our repository.
+# All pre-commit scripts take REPOSITORY_PATH and TRANSACTION_ID as arguments,
+# in that order.  See the subversion redbook for more information.
+
+REPOS="$1"
+TXN="$2"
+
+function runtest_sh()
+{
+	TEST="$@"
+	bash ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
+	if [ $? != 0 ]; then
+		exit 1
+	fi
+}
+function runtest_py()
+{
+    TEST="$@"
+    /usr/bin/python ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
+	if [ $? != 0 ]; then
+		exit 1
+	fi
+}
+
+runtest_sh "verify_versioning.sh"
+# Cyrus says the TRY/ENDTRY test is rejecting too much valid code right now.
+# Until we have time to make it a bit smarter, we're disabling that test.
+#runtest_py "exceptions.py"
+
+# All checks passed, so allow the commit.
+exit 0
