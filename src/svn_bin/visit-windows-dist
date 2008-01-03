@@ -152,7 +152,6 @@ rm -rf $VISITSRC/tools/mpeg_encode
 
 # Copy windowsbuild/VisItBuildInstructionsOnWindows.doc to $VisItDev
 cp $TOPDIR/windowsbuild/VisItBuildInstructionsOnWindows.doc .
-cp $TOPDIR/windowsbuild/BUILD_NOTES.txt .
 
 # Move windowsbuild/include to $VisItDev/include.
 cp -R $TOPDIR/windowsbuild/include .
@@ -231,17 +230,17 @@ cp $TOPDIR/src/include/vtk/Filtering/*.txx include/VTK
 # Copy vtkstd
 cp -R $TOPDIR/src/include/vtk/vtkstd include/VTK
 # Copy mangled mesa
-mkdir include/VTK/MangleMesaInclude
-cp $TOPDIR/src/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
+#mkdir include/VTK/MangleMesaInclude
+#cp $TOPDIR/src/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
 
 
 #
 # Create an include/Mesa directory and copy the Mesa files to it.
 #
-echo "Copying Mesa include files to include/Mesa..."
-mkdir include/Mesa
-mkdir include/Mesa/GL
-cp $TOPDIR/src/include/mesa/GL/*.h include/Mesa/GL
+#echo "Copying Mesa include files to include/Mesa..."
+#mkdir include/Mesa
+#mkdir include/Mesa/GL
+#cp $TOPDIR/src/include/mesa/GL/*.h include/Mesa/GL
 
 cd $VisItDev
 
@@ -251,7 +250,7 @@ cd $VisItDev
 #
 echo "Creating bin directory..."
 cp -R $TOPDIR/windowsbuild/bin .
-foreach configdir (MSVC7.Net/Debug MSVC7.Net/Release)
+foreach configdir (MSVC7.Net/Debug MSVC7.Net/Release MSVC8.Net/Debug MSVC8.Net/Release)
     echo "copying makemovie scripts ..."
     # Copy the makemovie scripts to the right bin dir.
     cp $VISITSRC/bin/makemovie.py bin/$configdir
@@ -281,8 +280,9 @@ end
 
 # Unzip the Python tar file in bin/MSVC7.Net/Release so we have Python modules
 # available when we try to distribute VisIt on Windows.
-echo "Extracting python modules.... "
+echo "Extracting python modules for MSVC7.Net .... "
 cd bin/MSVC7.Net/Release
+cp PythonLib-2.5.tar.gz ../../MSVC8.Net/Release
 gunzip PythonLib-2.5.tar.gz
 tar xf PythonLib-2.5.tar
 rm -f  PythonLib-2.5.tar
@@ -290,6 +290,18 @@ rm -f  PythonLib-2.5.tar
 gunzip PythonDLL-2.5.tar.gz
 tar xf PythonDLL-2.5.tar
 rm -f  PythonDLL-2.5.tar
+cd $VisItDev
+
+echo "Extracting python modules for MSVC8.Net .... "
+cd bin/MSVC8.Net/Release
+gunzip PythonLib-2.5.tar.gz
+tar xf PythonLib-2.5.tar
+rm -f  PythonLib-2.5.tar
+
+gunzip PythonDLL-2.5.tar.gz
+tar xf PythonDLL-2.5.tar
+rm -f  PythonDLL-2.5.tar
+
 cd $VisItDev
 
 # Remove the help files since we've copied them into different directories.
@@ -304,9 +316,19 @@ cd $VisItDev
 #
 # We don't maintain debug DLLs and libs so copy from the Release to Debug
 #
+echo "Copying dlls from release to debug for MSVC7.Net"
 cd $VisItDev/bin/MSVC7.Net/Release
 cp *.dll ../Debug/
+echo "Copying libs from release to debug for MSVC7.Net"
 cd $VisItDev/lib/MSVC7.Net/Release
+cp *.lib ../Debug/
+cd $VisItDev
+
+echo "Copying dlls from release to debug for MSVC8.Net"
+cd $VisItDev/bin/MSVC8.Net/Release
+cp *.dll ../Debug/
+echo "Copying libs from release to debug for MSVC8.Net"
+cd $VisItDev/lib/MSVC8.Net/Release
 cp *.lib ../Debug/
 cd $VisItDev
 
@@ -322,6 +344,9 @@ cp -R $TOPDIR/windowsbuild/installation .
 # Move the windowsbuild/projects directory up to $VisItDev.
 echo "Creating projects-MSVC7.Net directory..."
 cp -R $TOPDIR/windowsbuild/projects-MSVC7.Net .
+
+echo "Creating projects-MSVC8.Net directory..."
+cp -R $TOPDIR/windowsbuild/projects-MSVC8.Net .
 
 # Copy the windowsbuild/script directory up to $VisItDev.
 echo "Creating script directory..."
