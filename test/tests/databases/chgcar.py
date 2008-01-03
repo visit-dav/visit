@@ -45,6 +45,7 @@ ReplaceDatabase("../data/CHGCAR")
 
 AddOperator("Resample")
 ResamplePluginAtts = ResamplePluginAttributes()
+ResamplePluginAtts.useExtents = 0
 ResamplePluginAtts.startX = 1
 ResamplePluginAtts.endX = 6
 ResamplePluginAtts.samplesX = 80
