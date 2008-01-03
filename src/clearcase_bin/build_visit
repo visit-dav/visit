@@ -438,7 +438,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION-"1.7"}
+export VISIT_VERSION=${VISIT_VERSION-"1.8"}
 export VISIT_FILE=${VISIT_FILE-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
@@ -1151,12 +1151,12 @@ function check_more_options
             $DLG --backtitle "$DLG_BACKTITLE" \
             --title "Variable setting" \
             --checklist \
-"These variables use these system dependent defaults, but can be overridden \"
-through this interface or using environment varaibles\n\n"\
-"Version, is the VisIt version number to build\n"\
-"Tarball, is the name of the distribution tarball\n"\
-"Group, is the group name for installed libraries\n"\
-"Path, is the location for 3rd party libraries\n"\
+"These variables use these system dependent defaults, but can be overridden"\
+"through this interface or using environment variables.\n\n"\
+"Version: the VisIt version number to build\n"\
+"Tarball: the name of the distribution tarball\n"\
+"Group: the group name for installed libraries\n"\
+"Path: the location for 3rd party libraries\n"\
 "Select the variables you wish to modify" 20 $DLG_WIDTH 5 \
            "Version"  "$VISIT_VERSION"     "off" \
            "Tarball"  "$VISIT_FILE"        "off" \
@@ -1355,15 +1355,15 @@ function check_variables
             $DLG --backtitle "$DLG_BACKTITLE" \
             --title "Variable setting" \
             --checklist \
-"These variables use these system dependent defaults, but can be overridden \"
-through this interface or using environment varaibles\n\n"\
-"OPSYS, is the default value returned from uname -s\n"\
-"ARCH, architecure info (Darwin, linux, aix, irix64)\n"\
-"C_COMPILER and CXX_COMPILER, are the C and C++ compiler respectively\n"\
-"C_OPT_FLAGS and CXX_OPT_FLAGS, are the CFLAGS and CXXFLAGS to use\n"\
-"THIRD_PARTY_PATH, is the location for 3rd party libraries\n"\
-"VISITARCH, unique architecure info, appended to library path installation\n"\
-"Select the variables you wish to modify" 28 $DLG_WIDTH 8 \
+"These variables use these system dependent defaults, but can be overridden "\
+"through this interface or using environment variables.\n\n"\
+"OPSYS: the default value returned from 'uname -s'\n"\
+"ARCH: architecure info (Darwin, linux, aix, irix64, ...)\n"\
+"C_COMPILER and CXX_COMPILER: the C and C++ compiler, respectively\n"\
+"C_OPT_FLAGS and CXX_OPT_FLAGS: the CFLAGS and CXXFLAGS to use\n"\
+"THIRD_PARTY_PATH: location for 3rd party libraries\n"\
+"VISITARCH: unique architecture info, appended to library path installation\n\n"\
+"Select the variables you wish to modify:" 28 $DLG_WIDTH 8 \
            "OPSYS"            "$OPSYS"             "off" \
            "ARCH"             "$ARCH"              "off" \
            "C_COMPILER"       "$C_COMPILER"        "off" \
@@ -6236,17 +6236,17 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
 "This program will build VisIt and its required "\
 "3rd party sources, downloading any missing source packages "\
 "before building. The required and optional 3rd party libraries "\
-"are built and installed before VisIt is built so please be patient. "\
+"are built and installed before VisIt is built, so please be patient. "\
 "Note that you can build a parallel version of VisIt by "\
-"specifying the location of your MPI installation when prompted.\n"\
-"Select the build options" 0 0 0 \
-           "Optional"   "select optional 3rd party libraries"  $ON_OPTIONAL \
+"specifying the location of your MPI installation when prompted.\n\n"\
+"Select the build options:" 0 0 0 \
+           "Optional"   "select optional 3rd party libraries"  $ON_OPTIONAL\
            "SVN"        "get sources from SVN server"          $ON_SVN\
-           "Tarball"    "specify VisIt tarball name"      $ON_USE_VISIT_FILE \
-           "Parallel"   "specify parallel build flags"    $ON_parallel \
-           "Python"     "enable VisIt python module"      $ON_MODULE \
-           "Java"       "enable java client library"      $ON_JAVA \
-           "Variables"  "specify build variable values"   $ON_verify \
+           "Tarball"    "specify VisIt tarball name"      $ON_USE_VISIT_FILE\
+           "Parallel"   "specify parallel build flags"    $ON_parallel\
+           "Python"     "enable VisIt python module"      $ON_MODULE\
+           "Java"       "enable java client library"      $ON_JAVA\
+           "Variables"  "specify build variable values"   $ON_verify\
            "More"       "select more options"             $ON_MORE  2> tmp$$
     retval=$?
 
@@ -6303,7 +6303,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     --title "Select 3rd party libraries" \
     --checklist \
 "Select the optional 3rd party libraries "\
-"to be built and installed" 0 0 0 \
+"to be built and installed:" 0 0 0 \
            "Boxlib"   "2.5    $BOXLIB_FILE"    $ON_BOXLIB \
            "CFITSIO"  "3006   $CFITSIO_FILE"   $ON_CFITSIO \
            "CGNS"     "2.4.3  $CGNS_FILE"      $ON_CGNS \
@@ -6379,22 +6379,22 @@ if [[ "$DO_MORE" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     $DLG --backtitle "$DLG_BACKTITLE" \
     --title "More build options" \
     --checklist \
-"Version, specify version of VisIt to download and build\n"\
-"Build, build VisIt, disable to build 3rd party only\n"\
-"Required, build required 3rd party libraries\n"\
-"Logging, display build log to stdout not\n"\
-"Symbol, turn on -g, debugging flag\n"\
-"Group, specify the group name for install\n"\
-"Path, specify the root directory for libraries\n"\
-"Absolute, Change the install name path for Darwin dynamic libraries "\
-"to used the above Path not the default [@executable_path/../lib]\n"\
-"Trace, print a trace of commands and arguments\n"\
-"Select built and installed options" 0 0 0 \
+"Version: specify version of VisIt to download and build\n"\
+"Build: build VisIt, disable to build 3rd party only\n"\
+"Required: build required 3rd party libraries\n"\
+"Logging: display build log to stdout\n"\
+"Symbol: turn on -g, debugging flag\n"\
+"Group: specify the group name for install\n"\
+"Path: specify the root directory for libraries\n"\
+"Absolute: Change the default install name path for Darwin dynamic libraries "\
+"to use the given Path rather than the default [@executable_path/../lib]\n"\
+"Trace: print a trace of commands and arguments during build\n\n"\
+"Select build and installed options:" 0 0 0 \
            "Version"   "specify VisIt version [$VISIT_VERSION]" $ON_VERSION \
            "Build"     "enable building VisIt"                  $ON_VISIT \
            "Required"  "enable required 3rd party libraries"    $ON_THIRD_PARTY\
            "Logging"   "disable logging to file"                $ON_LOG \
-           "Symbol"    "enable compiling with symbol tables"    $ON_DEBUG \
+           "Symbol"    "enable debug compiling"                 $ON_DEBUG \
            "Group"     "specify group name for install"         $ON_GROUP \
            "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
            "Absolute"  "change the behavior of install name"    $ON_ABS_PATH \
@@ -6501,11 +6501,13 @@ fi
 if [[ "$DO_QT" == "yes" ]] ; then
    if [[ "$GRAPHICAL" == "yes" ]] ; then
        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-       "During the build process, this script will build Qt.  When Qt is "\
-"built, this script confirms that you accept their license. "\
-"So please choose \"Yes\" to accept (in advance) their license "\
-"offer for the Qt/X11 Free Edition, licensed under the Q Public License"\
-"(QPL) or the GNU General Public License (GPL)" 0 0
+       "During the build process, this script will build Qt "\
+"and confirm that you accept their license. "\
+"Please choose \"Yes\" to accept (in advance) their license "\
+"for the Qt/X11 Free Edition, licensed under the Q Public License "\
+"(QPL) or the GNU General Public License (GPL).\n\nVisit "\
+"http://trolltech.com/products/qt/licenses/licensing/opensource to view "\
+"either license." 0 0
        if [[ $? == 1 ]] ; then
            choice=`$DLG --backtitle "$DLG_BACKTITLE" --radiolist \
 "You chose not to accept Qt\'s license. VisIt requires Qt. "\
@@ -6517,11 +6519,14 @@ if [[ "$DO_QT" == "yes" ]] ; then
            fi
        fi
    else
-      echo "During this build process, this script will build Qt.  When Qt is "
-      echo "built, this script confirms that you accept their license."
-      echo "So please type \"yes\" to accept (in advance) their license "
-      echo "offer for the Qt/X11 Free Edition, licensed under the Q Public "
+      echo "During this build process, this script will build Qt and"
+      echo "confirm that you accept their license."
+      echo "Please type \"yes\" to accept (in advance) their license"
+      echo "offer for the Qt/X11 Free Edition, licensed under the Q Public"
       echo "License (QPL) or the GNU General Public License (GPL)"
+      echo ""
+      echo "Visit http://trolltech.com/products/qt/licenses/licensing/opensource"
+      echo "to view either license."
       read RESPONSE
       while [[ "$RESPONSE" != "yes" ]] ; do
          echo "Please type \"yes\" to accept their license offer for the "
