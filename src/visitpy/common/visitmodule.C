@@ -9383,6 +9383,9 @@ visit_WriteConfigFile(PyObject *self, PyObject *args)
 //   Cyrus Harrison, Thu Dec 20 17:15:58 PST 2007
 //   Fixed parsing conflict.
 //
+//   Cyrus Harrison, Thu Jan  3 11:42:16 PST 2008
+//   Another stab at fixing the parsing conflict. 
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9432,9 +9435,9 @@ visit_Query(PyObject *self, PyObject *args)
 
     if(parse_success)
     {
-        // non shapelets case may parse with above case, correct for this
+        // args for Zone Center and Node Coords need a special fix here.
         std::string qname(queryName);
-        if(qname != "Shapelet Decomposition")
+        if(qname == "Zone Center" || qname == "Node Coords" )
         {
             arg2 = arg1;
             arg1 = (int)darg1[0];
