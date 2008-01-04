@@ -177,15 +177,8 @@ Test("defer_expr_10")
 
 DeleteAllPlots()
 r = ResamplePluginAttributes()
-r.startX = -10
-r.endX = 10
 r.samplesX = 50
-r.startY = -10
-r.endY = 10
 r.samplesY = 50
-r.is3D = 1
-r.startZ = -10
-r.endZ = 10
 r.samplesZ = 50
 r.defaultValue = -100
 r.distributedResample = 0
