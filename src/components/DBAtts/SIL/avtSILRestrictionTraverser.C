@@ -474,6 +474,8 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
 //    Hank Childs, Fri Nov 22 14:06:36 PST 2002
 //    Moved into the SIL restriction traverser class.
 //
+//    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
+//    Updated to handle avtSILArrays
 // ****************************************************************************
  
 bool
@@ -508,21 +510,32 @@ avtSILRestrictionTraverser::UsesAllData(void)
         for (int j = 0; j < mapsOut.size(); j++)
         {
             int collIndex = mapsOut[j];
-            if (silr->RealCollection(collIndex))
+            avtSILArray_p  pArray = NULL;
+            avtSILMatrix_p pMat = NULL;
+            int newCollIndex = 0;
+            avtSIL::EntryType t = silr->GetCollectionSource(collIndex, pArray, 
+                                                            pMat, newCollIndex);
+            if (t == avtSIL::COLLECTION)
             {
-                avtSILCollection_p coll = silr->GetSILCollection(mapsOut[j]);
+                avtSILCollection_p coll = silr->GetSILCollection(collIndex);
                 const vector<int> &subsets = coll->GetSubsetList();
                 for (int k = 0; k < subsets.size(); k++)
                 {
                     setList.push_back(subsets[k]);
                 }
             }
+            else if (t == avtSIL::ARRAY)
+            {
+                SetState ss = pArray->GetSetState(useSet);
+                if (ss != AllUsed)
+                {
+                    subMapDoesntUseAllData = true;
+                    break;
+                }
+            }
             else
             {
-                avtSILMatrix_p mat;
-                int newCollIndex = 0;
-                silr->TranslateCollectionInfo(collIndex, mat, newCollIndex);
-                SetState ss = mat->GetSetState(useSet, newCollIndex);
+                SetState ss = pMat->GetSetState(useSet, newCollIndex);
                 if (ss != AllUsed)
                 {
                     subMapDoesntUseAllData = true;
@@ -729,14 +742,17 @@ avtSILRestrictionTraverser::GetMaterials(int chunk, bool &sms)
 //    Hank Childs, Fri Nov 22 14:06:36 PST 2002
 //    Moved into the SIL restriction traverser class.
 //
+//    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
+//    Updated to handle avtSILArrays
 // ****************************************************************************
  
 void
 avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
 {
     int timingsHandle = visitTimer->StartTimer();
- 
-    vector<bool> setIsInProcessList(silr->GetNumRealSets(), false);
+
+    //TODO:  See if this increased size is a problem. -DJB
+    vector<bool> setIsInProcessList(silr->GetNumSets(), false);
  
     vector<int> setsToProcess;
     setsToProcess.push_back(silr->topSet);
@@ -754,7 +770,12 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
         const vector<int> &mapsOut = currentSet->GetMapsOut();
         for (int j = 0 ; j < mapsOut.size() ; j++)
         {
-            if (silr->RealCollection(mapsOut[j]))
+            avtSILArray_p  pArray = NULL;
+            avtSILMatrix_p pMat = NULL;
+            int newCollIndex = 0;
+            avtSIL::EntryType t = silr->GetCollectionSource(mapsOut[j], pArray, 
+                                                            pMat, newCollIndex);
+            if (t == avtSIL::COLLECTION || t == avtSIL::ARRAY)
             {
                 avtSILCollection_p coll = silr->GetSILCollection(mapsOut[j]);
                 if (coll->GetRole() == SIL_MATERIAL)
@@ -792,6 +813,7 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
                 {
                     const avtSILNamespace *ns = coll->GetSubsets();
                     const vector<int> &subsets = ns->GetAllElements();
+
                     for (int k = 0 ; k < subsets.size() ; k++)
                     {
                         if (!setIsInProcessList[subsets[k]])
@@ -804,14 +826,11 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
             }
             else
             {
-                int rel_coll_ind;
-                avtSILMatrix_p mat;
-                silr->TranslateCollectionInfo(mapsOut[j], mat, rel_coll_ind);
-                if (mat->GetRoleForCollection(rel_coll_ind) == SIL_MATERIAL)
+                if (pMat->GetRoleForCollection(newCollIndex) == SIL_MATERIAL)
                 {
                     MaterialList l;
-                    bool shouldMatSel = mat->GetMaterialList(rel_coll_ind, l,
-                                                             useSet);
+                    bool shouldMatSel = pMat->GetMaterialList(newCollIndex, l,
+                                                              useSet);
                     AddMaterialList(chunk, l, shouldMatSel);
                 }
             }

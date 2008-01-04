@@ -102,6 +102,9 @@
 #    Brad Whitlock, Wed Mar 7 15:27:41 PST 2007
 #    Added new metadata objects resulting from code autogeneration.
 #
+#    Dave Bremer, Wed Dec 19 12:33:29 PST 2007
+#    Added avtSILArray.C to the build.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -131,6 +134,7 @@ MetaData_src= \
   MetaData/avtVectorMetaData.C
 SIL_src= \
   SIL/avtSIL.C \
+  SIL/avtSILArray.C \
   SIL/avtSILCollection.C \
   SIL/avtSILEnumeratedNamespace.C \
   SIL/avtSILMatrix.C \

@@ -107,12 +107,18 @@ avtSILMatrix::avtSILMatrix(const SILMatrixAttributes &atts)
 //  Programmer: Hank Childs
 //  Creation:   November 18, 2002
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 10:31:43 PST 2007
+//    Init setsStartAt and collectionsStartAt.
 // ****************************************************************************
 
 avtSILMatrix::avtSILMatrix(const avtSILMatrix *sm)
 {
     Initialize(sm->set1, sm->role1, sm->category1, sm->set2, sm->role2,
                sm->category2);
+
+    setsStartAt = sm->setsStartAt;
+    collectionsStartAt = sm->collectionsStartAt;
 }
 
 
@@ -126,6 +132,10 @@ avtSILMatrix::avtSILMatrix(const avtSILMatrix *sm)
 //  Programmer: Hank Childs
 //  Creation:   November 15, 2002
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 10:31:43 PST 2007
+//    Scan set1 and set2 to see if they are sequential, so that fast queries 
+//    for set containment can be performed.
 // ****************************************************************************
 
 void
@@ -144,6 +154,26 @@ avtSILMatrix::Initialize(const vector<int> &s1, SILCategoryRole r1,
     set2        = s2;
     role2       = r2;
     category2   = n2;
+
+    int ii;
+    set1IsSequential = true;
+    for (ii = 1; ii < set1.size(); ii++)
+    {
+        if (set1[ii-1] + 1 != set1[ii])
+        {
+            set1IsSequential = false;
+            break;
+        }
+    }
+    set2IsSequential = true;
+    for (ii = 1; ii < set2.size(); ii++)
+    {
+        if (set2[ii-1] + 1 != set2[ii])
+        {
+            set2IsSequential = false;
+            break;
+        }
+    }
 }
 
 
@@ -523,5 +553,58 @@ avtSILMatrix::GetNumCollections(void) const
 {
     return set1.size()+set2.size();
 }
+
+
+
+
+// ****************************************************************************
+//  Method: avtSILMatrix::SetIsInCollection
+//
+//  Purpose:
+//      Determines whether this set 
+//
+//  Returns:  A collection index corresponding to the set, or -1 if no match
+//      
+//  Programmer: Dave Bremer
+//  Creation:   Thu Dec 20 10:31:43 PST 2007
+//
+// ****************************************************************************
+int
+avtSILMatrix::SetIsInCollection(int set) const
+{
+    int ii;
+    if (set1IsSequential)
+    {
+        if (set1[0] <= set && set < set1[0]+set1.size())
+            return (GetStartCollection() + set - set1[0]);
+    }
+    else
+    {
+        for (ii = 0; ii < set1.size(); ii++)
+        {
+            if (set1[ii] == set)
+                return (GetStartCollection() + ii);
+        }
+    }
+    if (set2IsSequential)
+    {
+        if (set2[0] <= set && set < set2[0]+set2.size())
+            return (GetStartCollection() + set1.size() + set - set2[0]);
+    }
+    else
+    {
+        for (ii = 0; ii < set2.size(); ii++)
+        {
+            if (set2[ii] == set)
+                return (GetStartCollection() + set1.size() + ii);
+        }
+    }
+    return -1;
+}
+
+
+
+
+
 
 

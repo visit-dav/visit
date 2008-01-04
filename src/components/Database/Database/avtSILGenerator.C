@@ -259,16 +259,57 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
 //     Added onlyCreateSets argument
 //
 //     Dave Bremer, Mon Feb 12 17:20:43 PST 2007
-//     Add support format strings.
+//     Added support for format strings.
 //
+//     Dave Bremer, Wed Dec 19 12:18:03 PST 2007
+//     Added code to use an avtSILArray in place of a bunch of sets.
 // ****************************************************************************
 
 void
 avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
-                               vector<int> &list, const string &title,
-                               const string &unit, const vector<string> &names,
-                               SILCategoryRole cat, bool onlyCreateSets)
+                            vector<int> &list, const string &title,
+                            const string &unit, const vector<string> &names,
+                            SILCategoryRole cat, bool onlyCreateSets)
 {
+//This #if turns on the use of SIL arrays.  Set to 0 to disable them.
+#if 1
+    list.reserve(list.size() + num);
+    if (names.size() == num  ||  onlyCreateSets)
+    {
+        for (int i = 0 ; i < num ; i++)
+        {
+            char name[1024];
+            if (names.size() == num)
+            {
+                strcpy(name, names[i].c_str());
+            }
+    
+            // determine "identifier" for the set (only "domains" get non -1) 
+            int ident = -1;
+            if (cat == SIL_DOMAIN)
+            ident = i; 
+    
+            avtSILSet_p set = new avtSILSet(name, ident);
+    
+            int dIndex = sil->AddSubset(set);
+            list.push_back(dIndex);
+        }
+    }
+    else 
+    {
+        int iFirstSet = sil->GetNumSets();
+        avtSILArray_p  pArray = new avtSILArray(unit, num, origin, (cat==SIL_DOMAIN),
+                                                title, cat, parent);
+        sil->AddArray(pArray);
+
+        for (int ii = 0; ii < num; ii++)
+            list.push_back(iFirstSet + ii);
+
+        //If an array was used, skip the collection creation code below, 
+        //because the SIL array contains the collection already.
+        return;
+    }
+#else
     for (int i = 0 ; i < num ; i++)
     {
         char name[1024];
@@ -294,6 +335,7 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
         int dIndex = sil->AddSubset(set);
         list.push_back(dIndex);
     }
+#endif
 
     // sometimes, we only want to create sets and put them in collections later
     if (onlyCreateSets)
@@ -338,16 +380,16 @@ avtSILGenerator::AddSubsets(avtSIL *sil, int parent, int num, int origin,
 //    Jeremy Meredith, Wed Aug 24 12:42:53 PDT 2005
 //    Added an origin.
 //
-//     Dave Bremer, Mon Feb 12 17:20:43 PST 2007
-//     Add support format strings.
+//    Dave Bremer, Mon Feb 12 17:20:43 PST 2007
+//    Added support for format strings.
 //
 // ****************************************************************************
  
 void
 avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
-                       const vector<int> &domList, const vector<int> &groupIds,
-                       const string &gTitle, const string &piece,
-                       const string &bTitle)
+                           const vector<int> &domList, const vector<int> &groupIds,
+                           const string &gTitle, const string &piece,
+                           const string &bTitle)
 {
     int  i;
  
@@ -358,9 +400,9 @@ avtSILGenerator::AddGroups(avtSIL *sil, int top, int numGroups, int origin,
     for (i = 0 ; i < numGroups ; i++)
     {
         char name[1024];
-        if (strstr(piece.c_str(), "%") != NULL) {
+        if (strstr(piece.c_str(), "%") != NULL)
             sprintf(name, piece.c_str(), i+origin);
-        } else
+        else
             sprintf(name, "%s%d", piece.c_str(), i+origin);
  
         avtSILSet_p set = new avtSILSet(name, -1);

@@ -192,3 +192,19 @@ avtSILCollection::Print(ostream &out) const
 }
 
 
+// ****************************************************************************
+//  Method: avtSILCollection::ContainsElement
+//
+//  Purpose:
+//      Returns true if the element is contained in this collection.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Thu Dec 20 14:23:29 PST 2007
+//
+// ****************************************************************************
+
+bool
+avtSILCollection::ContainsElement(int e) const
+{
+    return (subsets->ContainsElement(e));
+}

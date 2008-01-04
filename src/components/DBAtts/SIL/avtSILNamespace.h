@@ -69,6 +69,8 @@ class     NamespaceAttributes;
 //    Hank Childs, Wed Jan  9 15:37:41 PST 2002
 //    Add virtual destructor to clean up memory leaks.
 //
+//    Dave Bremer, Wed Dec 19 12:38:52 PST 2007
+//    Added code to query for an element.
 // ****************************************************************************
 
 class DBATTS_API avtSILNamespace
@@ -78,6 +80,7 @@ class DBATTS_API avtSILNamespace
 
     virtual const std::vector<int>  &GetAllElements(void) const = 0;
     virtual NamespaceAttributes     *GetAttributes(void) const = 0;
+    virtual bool                     ContainsElement(int e) const = 0;
     static avtSILNamespace          *GetNamespace(const NamespaceAttributes *);
 };
 

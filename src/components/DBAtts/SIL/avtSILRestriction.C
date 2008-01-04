@@ -445,6 +445,8 @@ avtSILRestriction::EnableCorrectnessChecking(void)
 //    Hank Childs, Mon Jun 27 16:08:09 PDT 2005
 //    If we are just re-setting the current top set, treat it as a no-op.
 //
+//    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
+//    Rewrote a bit of code, because the isWhole array was eliminated.
 // ****************************************************************************
 
 void
@@ -456,9 +458,16 @@ avtSILRestriction::SetTopSet(int ts)
     int ns = GetNumSets();
     if (ts < 0 || ts >= ns)
     {
-        EXCEPTION2(BadIndexException, ts, isWhole.size());
+        EXCEPTION2(BadIndexException, ts, ns);
     }
-    if (!isWhole[ts])
+
+    int i, found = 0;
+    for (i = 0 ; i < wholesList.size() && !found; i++)
+    {
+        if (wholesList[i] == ts)
+            found = 1;
+    }
+    if (!found)
     {
         EXCEPTION0(ImproperUseException);
     }
@@ -475,7 +484,7 @@ avtSILRestriction::SetTopSet(int ts)
     // Turn off the other whole sets that were not selected as "top".
     //
     int listSize = wholesList.size();
-    for (int i = 0 ; i < listSize ; i++)
+    for (i = 0 ; i < listSize ; i++)
     {
         if (wholesList[i] != topSet)
         {
@@ -564,6 +573,8 @@ avtSILRestriction::SetTopSet(const char *meshname)
 //    Hank Childs, Thu Nov 14 10:30:56 PST 2002
 //    Remove access to 'sets' data member to enable SIL matrices.
 //
+//    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
+//    Updated to handle avtSILArrays
 // ****************************************************************************
 
 SetState
@@ -597,9 +608,14 @@ avtSILRestriction::EnsureRestrictionCorrectness(int setId)
         for (int i = 0; i < mapsOut.size(); i++)
         {
             int collIndex = mapsOut[i];
-            if (RealCollection(collIndex))
+            avtSILArray_p  pArray = NULL;
+            avtSILMatrix_p pMat;
+            int newCollIndex = 0;
+            EntryType t = GetCollectionSource(collIndex, pArray, pMat, newCollIndex);
+                                              
+            if (t == avtSIL::COLLECTION || t == avtSIL::ARRAY)
             {
-                avtSILCollection_p coll = GetSILCollection(mapsOut[i]);
+                avtSILCollection_p coll = GetSILCollection(collIndex);
                 const vector<int> &subsets = coll->GetSubsetList();
                 for (int j = 0; j < subsets.size(); j++)
                 {
@@ -614,10 +630,7 @@ avtSILRestriction::EnsureRestrictionCorrectness(int setId)
             }
             else
             {
-                avtSILMatrix_p mat;
-                int newCollIndex = 0;
-                TranslateCollectionInfo(collIndex, mat, newCollIndex);
-                SetState s = mat->GetSetState(useSet, newCollIndex);
+                SetState s = pMat->GetSetState(useSet, newCollIndex);
                 if(s == NoneUsed)
                     ++NoneUsedCount;
                 else if(s == SomeUsed)
@@ -1101,6 +1114,8 @@ avtSILRestriction::RestrictDomainsForLoadBalance(const vector<int> &domains)
 //    Hank Childs, Thu Nov 13 16:52:23 PST 2003
 //    Pass 'forLoadBalance' argument on to SIL matrix 'TurnSet' call.
 //
+//    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
+//    Updated to handle avtSILArrays
 // ****************************************************************************
 
 void
@@ -1166,11 +1181,17 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
             const vector<int> &mapsOut = currentSet->GetMapsOut();
             for (int j = 0 ; j < mapsOut.size() ; j++)
             {
-                if (RealCollection(mapsOut[j]))
+                avtSILArray_p  pArray = NULL;
+                avtSILMatrix_p pDummyMat;
+                int dummy = 0;
+                EntryType t = GetCollectionSource(mapsOut[j], pArray, pDummyMat, dummy);
+
+                if (t == avtSIL::COLLECTION || t == avtSIL::ARRAY)
                 {
                     avtSILCollection_p coll = GetSILCollection(mapsOut[j]);
                     const vector<int> &subsets =
                                           coll->GetSubsets()->GetAllElements();
+                    setsToProcess.reserve( setsToProcess.size() + subsets.size());
                     for (int k = 0 ; k < subsets.size() ; k++)
                     {
                         setsToProcess.push_back(subsets[k]);
@@ -1205,7 +1226,12 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
                 const vector<int> &mapsOut = set->GetMapsOut();
                 for (int k = 0 ; k < mapsOut.size() ; k++)
                 {
-                    if (RealCollection(mapsOut[k]))
+                    avtSILArray_p  pArray = NULL;
+                    avtSILMatrix_p pMat = NULL;
+                    int newCollIndex = 0;
+                    EntryType t = GetCollectionSource(mapsOut[k], pArray, 
+                                                      pMat, newCollIndex);
+                    if (t == avtSIL::COLLECTION)
                     {
                         avtSILCollection_p coll = GetSILCollection(mapsOut[k]);
                         const vector<int> &subsets = coll->GetSubsetList();
@@ -1214,12 +1240,13 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
                             setsToTurnOff.push_back(subsets[l]);
                         }
                     }
+                    else if (t == avtSIL::ARRAY)
+                    {
+                        pArray->TurnSet(useSet, NoneUsed, forLoadBalance);
+                    }
                     else
                     {
-                        avtSILMatrix_p mat;
-                        int newCollIndex = 0;
-                        TranslateCollectionInfo(mapsOut[k], mat, newCollIndex);
-                        mat->TurnSet(useSet, newCollIndex, NoneUsed,
+                        pMat->TurnSet(useSet, newCollIndex, NoneUsed,
                                      forLoadBalance);
                     }
                 }

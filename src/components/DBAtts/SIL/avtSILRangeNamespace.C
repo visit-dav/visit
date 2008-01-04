@@ -130,3 +130,24 @@ avtSILRangeNamespace::GetAttributes(void) const
 }
 
 
+// ****************************************************************************
+//  Method: avtSILRangeNamespace::ContainsElement
+//
+//  Purpose:
+//      Determine whether the element is contained in this namespace.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Thu Dec 20 10:31:43 PST 2007
+//
+// ****************************************************************************
+
+bool
+avtSILRangeNamespace::ContainsElement(int e) const
+{
+    return (e >= minRange && e <= maxRange);
+}
+
+
+
+
+

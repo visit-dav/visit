@@ -84,6 +84,9 @@ typedef enum
 //  Programmer: Hank Childs
 //  Creation:   March 8, 2001
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 14:23:29 PST 2007
+//    Added the ContainsElement method
 // ****************************************************************************
 
 class DBATTS_API avtSILCollection
@@ -105,6 +108,8 @@ class DBATTS_API avtSILCollection
     void                    Print(ostream &) const;
 
     const std::vector<int> &GetSubsetList(void) const;
+
+    bool                    ContainsElement(int e) const;
 
   protected:
     std::string             category;

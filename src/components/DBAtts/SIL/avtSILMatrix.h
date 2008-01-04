@@ -77,6 +77,9 @@ class     SILMatrixAttributes;
 //    Added argument forLoadBalance to TurnSet.  This was causing a serious
 //    bug with AMR.
 //
+//    Dave Bremer, Thu Dec 20 10:31:43 PST 2007
+//    Added method to see if a set is contained in one of this matrix's 
+//    collections.
 // ****************************************************************************
 
 class DBATTS_API avtSILMatrix
@@ -95,7 +98,8 @@ class DBATTS_API avtSILMatrix
     void                  SetStartSet(int ssa) { setsStartAt = ssa; };
     void                  SetStartCollection(int csa) 
                                                  { collectionsStartAt = csa; };
-    
+    int                   GetStartCollection() const { return collectionsStartAt; }
+
     avtSILSet_p           GetSILSet(int index) const;
     avtSILCollection_p    GetSILCollection(int index) const;
 
@@ -108,6 +112,7 @@ class DBATTS_API avtSILMatrix
                                      const std::vector<unsigned char> &) const;
     void                  TurnSet(std::vector<unsigned char> &, int,
                                   SetState, bool forLoadBalance) const;
+    int                   SetIsInCollection(int set) const;
 
     SILMatrixAttributes  *MakeAttributes(void) const;
 
@@ -126,10 +131,12 @@ class DBATTS_API avtSILMatrix
     std::vector<int>      set1;
     std::string           category1;
     SILCategoryRole       role1;
+    bool                  set1IsSequential;
 
     std::vector<int>      set2;
     std::string           category2;
     SILCategoryRole       role2;
+    bool                  set2IsSequential;
 
     void                  Initialize(const std::vector<int> &,
                                      SILCategoryRole, const std::string &, 

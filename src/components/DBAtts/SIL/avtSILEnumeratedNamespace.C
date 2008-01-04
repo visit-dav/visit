@@ -61,6 +61,15 @@ using std::vector;
 avtSILEnumeratedNamespace::avtSILEnumeratedNamespace(const vector<int> &els)
 {
     elements = els;
+    sequentialElems = true;
+    for (int ii = 1; ii < els.size(); ii++)
+    {
+        if (els[ii-1]+1 != els[ii])
+        {
+            sequentialElems = false;
+            break;
+        }
+    }
 }
 
 
@@ -109,6 +118,39 @@ avtSILEnumeratedNamespace::GetAttributes(void) const
     rv->SetSubsets(elements);
 
     return rv;
+}
+
+
+
+// ****************************************************************************
+//  Method: avtSILEnumeratedNamespace::ContainsElement
+//
+//  Purpose:
+//      Determine whether the element is contained in this namespace.  This 
+//      class detects the common case of a sequence of elements, and uses that
+//      info to speed up the query.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Thu Dec 20 10:31:43 PST 2007
+//
+// ****************************************************************************
+
+bool
+avtSILEnumeratedNamespace::ContainsElement(int e) const
+{
+    if (sequentialElems)
+    {
+        return (e >= elements[0] && e <= elements[elements.size()-1]);
+    }
+    else
+    {
+        for (int ii = 0; ii < elements.size(); ii++)
+        {
+            if (elements[ii] == e)
+                return true;
+        }
+    }
+    return false;
 }
 
 

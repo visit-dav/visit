@@ -49,6 +49,7 @@
 
 #include <NamespaceAttributes.h>
 #include <SILAttributes.h>
+#include <SILArrayAttributes.h>
 #include <SILMatrixAttributes.h>
 
 #include <BadIndexException.h>
@@ -68,11 +69,13 @@ using std::vector;
 //  Programmer: Hank Childs
 //  Creation:   December 5, 2002
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Removed the haveAddedMatrices flag
 // ****************************************************************************
 
 avtSIL::avtSIL()
 {
-    haveAddedMatrices = false;
 }
 
 
@@ -99,60 +102,69 @@ avtSIL::avtSIL()
 //    Brad Whitlock, Tue Mar 13 11:07:55 PDT 2007
 //    Updated due to code generation changes.
 //
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Changed to add sets, arrays, matrices, and collections in order
+//
 // ****************************************************************************
 
 avtSIL::avtSIL(const SILAttributes &atts)
 {
-    haveAddedMatrices = false;
+    int ii, iCurrSet = 0, iCurrMat = 0, iCurrArray = 0, iCurrCol = 0;
+    const intVector      &attsOrder = atts.GetOrder();
 
-    int   i;
-
-    //
-    // Add the sets to the SIL.
-    //
-    int nSets = atts.GetNSets();
     const vector<string> &setNames = atts.GetSetNames();
     const vector<int>    &setIDs   = atts.GetSetIds();
-    const vector<int>    &setTypes = atts.GetIsWhole();
-    for (i = 0 ; i < nSets ; i++)
+
+    const vector<string> &cats     = atts.GetCategory();
+    const vector<int>    &role     = atts.GetRole();
+    const vector<int>    &superset = atts.GetSuperset();
+
+    for (ii = 0; ii < attsOrder.size(); ii++)
     {
-        avtSILSet_p set = new avtSILSet(setNames[i], setIDs[i]);
-        if (setTypes[i] == 0)
+        if ((EntryType)attsOrder[ii] == WHOLE_SET)
         {
+            avtSILSet_p set = new avtSILSet(setNames[iCurrSet], setIDs[iCurrSet]);
             AddWhole(set);
+            iCurrSet++;
         }
-        else
+        else if ((EntryType)attsOrder[ii] == SUBSET)
         {
+            avtSILSet_p set = new avtSILSet(setNames[iCurrSet], setIDs[iCurrSet]);
             AddSubset(set);
+            iCurrSet++;
+        }
+        else if ((EntryType)attsOrder[ii] == ARRAY)
+        {
+            const SILArrayAttributes &a = atts.GetArrays(iCurrArray);
+            avtSILArray_p arr = new avtSILArray(a);
+            AddArray(arr);
+            iCurrArray++;
+        }
+        else if ((EntryType)attsOrder[ii] == MATRIX)
+        {
+            const SILMatrixAttributes &ma = atts.GetMatrices(iCurrMat);
+            avtSILMatrix_p matrix = new avtSILMatrix(ma);
+            AddMatrix(matrix);
+            iCurrMat++;
+        }
+        else if ((EntryType)attsOrder[ii] == COLLECTION)
+        {
+            const NamespaceAttributes &nsa = atts.GetNspace(iCurrCol);
+            avtSILNamespace *ns = avtSILNamespace::GetNamespace(&nsa);
+            SILCategoryRole r = (SILCategoryRole) role[iCurrCol];
+            avtSILCollection_p coll = new avtSILCollection(cats[iCurrCol], r,
+                                                           superset[iCurrCol], ns);
+            AddCollection(coll);
+            iCurrCol++;
         }
     }
+    if (order.size() != attsOrder.size())
+        EXCEPTION0(ImproperUseException);
 
-    //
-    // Add the collections to the SIL.
-    //
-    int nColls = atts.GetNCollections();
-    const vector<string> &cats = atts.GetCategory();
-    const vector<int> &role = atts.GetRole();
-    const vector<int> &superset = atts.GetSuperset();
-    for (i = 0 ; i < nColls ; i++)
+    for (ii = 0; ii < order.size(); ii++)
     {
-        const NamespaceAttributes &nsa = atts.GetNspace(i);
-        avtSILNamespace *ns = avtSILNamespace::GetNamespace(&nsa);
-        SILCategoryRole r = (SILCategoryRole) role[i];
-        avtSILCollection_p coll = new avtSILCollection(cats[i], r,
-                                                       superset[i], ns);
-        AddCollection(coll);
-    }
-
-    //
-    // Add the matrices to the SIL.
-    //
-    int nMatrices = atts.GetNumMatrices();
-    for (i = 0 ; i < nMatrices ; i++)
-    {
-        const SILMatrixAttributes &ma = atts.GetMatrices(i);
-        avtSILMatrix_p matrix = new avtSILMatrix(ma);
-        AddMatrix(matrix);
+        if ((int)order[ii] != attsOrder[ii])
+            EXCEPTION0(ImproperUseException);
     }
 }
 
@@ -166,11 +178,13 @@ avtSIL::avtSIL(const SILAttributes &atts)
 //  Programmer: Hank Childs
 //  Creation:   May 21, 2001
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Removed the haveAddedMatrices flag
 // ****************************************************************************
 
 avtSIL::avtSIL(avtSIL *sil)
 {
-    haveAddedMatrices = false;
     *this = *sil;
 }
 
@@ -186,46 +200,45 @@ avtSIL::avtSIL(avtSIL *sil)
 //    Hank Childs, Thu Dec  5 08:40:50 PST 2002
 //    Clear out the object before copying over the new attributes.
 //
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Added a check for assignment to self.  Sse the assignment operator to copy
+//    vectors rather than using pushbacks, for a speed gain.  Change matrix
+//    handling a little to allow removal of the ReAddMatrix method.
+//
 // ****************************************************************************
 
 const avtSIL &
 avtSIL::operator=(const avtSIL &sil)
 {
-    int  i;
+    if (this == &sil)
+        return *this;
     
+    int  i;
     //
     // First, clear out what we have in this object.
     //
     collections.clear();
     sets.clear();
-    isWhole.clear();
     wholesList.clear();
     matrices.clear();
-    haveAddedMatrices = false;
+    arrays.clear();
 
     //
     // Now copy over the other SILs attributes.
     //
-    for (i = 0 ; i < sil.collections.size() ; i++)
-    {
-        collections.push_back(sil.collections[i]);
-    }
-    for (i = 0 ; i < sil.sets.size() ; i++)
-    {
-        sets.push_back(sil.sets[i]);
-    }
-    for (i = 0 ; i < sil.isWhole.size() ; i++)
-    {
-        isWhole.push_back(sil.isWhole[i]);
-    }
-    for (i = 0 ; i < sil.wholesList.size() ; i++)
-    {
-        wholesList.push_back(sil.wholesList[i]);
-    }
+    collections = sil.collections;
+    sets = sil.sets;
+    wholesList = sil.wholesList;
+    order = sil.order;
+    arrays = sil.arrays;
+
+    // I think we make a copy of the matrix so we can change the
+    // copy of 'this' that it has.
     for (i = 0 ; i < sil.matrices.size() ; i++)
     {
         avtSILMatrix_p new_sm = new avtSILMatrix(*(sil.matrices[i]));
-        ReAddMatrix(new_sm);
+        new_sm->SetSIL(this);
+        matrices.push_back(new_sm);
     }
 
     return *this;
@@ -247,39 +260,36 @@ avtSIL::operator=(const avtSIL &sil)
 //  Creation:   March 8, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Wed Dec  4 07:44:09 PST 2002
 //    Do not allow collections to be added after SIL matrices.
+//
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Rewritten to allow sets, collections, arrays, and matrices to be 
+//    added in any order.
 //
 // ****************************************************************************
 
 void
 avtSIL::AddCollection(avtSILCollection_p c)
 {
-    if (haveAddedMatrices)
-    {
-        debug1 << "All normal collections must be added before SIL matrices "
-               << "are added." << endl;
-        EXCEPTION0(ImproperUseException);
-    }
- 
     //
     // Add this collection to our list of collections.
     //
     collections.push_back(c);
+    order.push_back(COLLECTION);
 
     //
     // We just put our collection in the vector, so our index is one less than
     // the size (ie the maximum element).
     //
-    int  collIndex   = collections.size()-1;
+    int  collIndex = GetNumCollections() - 1;
 
     //
     // Check to make sure that the index of the superset for this collection
     // is valid.
     //
     int  supersetIndex = c->GetSupersetIndex();
-    int  setsSize      = sets.size();
+    int  setsSize      = GetNumSets();
     if (supersetIndex < 0 || supersetIndex >= setsSize)
     {
         EXCEPTION2(BadIndexException, supersetIndex, setsSize);
@@ -288,7 +298,12 @@ avtSIL::AddCollection(avtSILCollection_p c)
     //
     // Tell the superset that it has a map going out.
     //
-    sets[supersetIndex]->AddMapOut(collIndex);
+    bool isTemp;
+    GetSILSet(supersetIndex, isTemp)->AddMapOut(collIndex);
+    if (isTemp)
+        EXCEPTION1(ImproperUseException, 
+                   "Trying to add a collection as a "
+                   "child of a matrix or array");
 
     //
     // The namespace knows all of the subsets that for the collection.
@@ -302,12 +317,12 @@ avtSIL::AddCollection(avtSILCollection_p c)
     //
     for (int i = 0 ; i < v.size() ; i++)
     {
-        int  subset = v[i];
+        int subset = v[i];
         if (subset < 0 || subset >= setsSize)
         {
             EXCEPTION2(BadIndexException, subset, setsSize);
         }
-        sets[subset]->AddMapIn(collIndex);
+        GetSILSet(subset, isTemp)->AddMapIn(collIndex);
     }
 }
 
@@ -327,15 +342,18 @@ avtSIL::AddCollection(avtSILCollection_p c)
 //  Programmer: Hank Childs
 //  Creation:   March 8, 2001
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Rewritten to allow sets, collections, arrays, and matrices to be 
+//    added in any order.
+//
 // ****************************************************************************
 
 int
 avtSIL::AddSubset(avtSILSet_p s)
 {
-    int index = AddSet(s);
-    isWhole.push_back(false);
-
-    return index;
+    order.push_back(SUBSET);
+    return AddSet(s);
 }
 
 
@@ -355,9 +373,12 @@ avtSIL::AddSubset(avtSILSet_p s)
 //  Creation:   March 9, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Mon May 21 09:10:46 PDT 2001
 //    Update wholesList.
+//
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Rewritten to allow sets, collections, arrays, and matrices to be 
+//    added in any order.
 //
 // ****************************************************************************
 
@@ -365,8 +386,8 @@ int
 avtSIL::AddWhole(avtSILSet_p w)
 {
     int index = AddSet(w);
-    isWhole.push_back(true);
     wholesList.push_back(index);
+    order.push_back(WHOLE_SET);
 
     return index;
 }
@@ -392,55 +413,50 @@ avtSIL::AddWhole(avtSILSet_p w)
 //    Hank Childs, Wed Dec  4 07:44:09 PST 2002
 //    Do not allow collections to be added after SIL matrices.
 //
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Rewritten to allow sets, collections, arrays, and matrices to be 
+//    added in any order.
+//
 // ****************************************************************************
 
 int
 avtSIL::AddSet(avtSILSet_p s)
 {
-    if (haveAddedMatrices)
-    {
-        debug1 << "All normal sets must be added before SIL matrices "
-               << "are added." << endl;
-        EXCEPTION0(ImproperUseException);
-    }
-
     sets.push_back(s);
-
-    //
-    // 's' is the last set in 'sets', so its index is one less than the size
-    // of 'sets'.
-    //
-    return (sets.size()-1);
+    return (GetNumSets()-1);
 }
 
 
 // ****************************************************************************
-//  Method: avtSIL::ReAddMatrix
+//  Method: avtSIL::AddArray
 //
 //  Purpose:
-//      Adds a SIL matrix to the SIL.
+//      Adds a SIL array to the SIL.
 //
-//  Programmer: Hank Childs
-//  Creation:   November 14, 2002
+//  Programmer: Dave Bremer
+//  Creation:   Dec 18, 2007
 //
 //  Modifications:
-//
-//    Hank Childs, Wed Aug  6 22:22:31 PDT 2003
-//    Fix some bugs with multiple SIL matrices.
 //
 // ****************************************************************************
 
 void
-avtSIL::ReAddMatrix(avtSILMatrix_p m)
+avtSIL::AddArray(avtSILArray_p  a)
 {
-    haveAddedMatrices = true;
-    m->SetSIL(this);
-    m->SetStartSet(GetNumSets());
-    m->SetStartCollection(GetNumCollections());
-    matrices.push_back(m);
+    int iColIndex = GetNumCollections();
 
-    // Since we are re-adding the matrix, all of the sets already know 
-    // about it, so no more work is needed.
+    a->SetFirstSetIndex(GetNumSets());
+    a->SetCollectionIndex(iColIndex);
+
+    bool isTemp;
+    GetSILSet(a->GetParent(), isTemp)->AddMapOut(iColIndex);
+    if (isTemp)
+        EXCEPTION1(ImproperUseException,
+                   "Trying to add an array as a "
+                   "child of a matrix or array set");
+
+    arrays.push_back(a);
+    order.push_back(ARRAY);
 }
 
 
@@ -458,6 +474,10 @@ avtSIL::ReAddMatrix(avtSILMatrix_p m)
 //    Hank Childs, Wed Aug  6 22:22:31 PDT 2003
 //    Fix some bugs with multiple SIL matrices.
 //
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Rewritten to allow sets, collections, arrays, and matrices to be 
+//    added in any order.
+//
 // ****************************************************************************
 
 void
@@ -470,24 +490,33 @@ avtSIL::AddMatrix(avtSILMatrix_p m)
 
     m->SetSIL(this);
     m->SetStartSet(GetNumSets());
-    m->SetStartCollection(GetNumCollections());
+    m->SetStartCollection(coll_count);
     matrices.push_back(m);
 
     const vector<int> &set1 = m->GetSet1();
     int rowsize = set1.size();
+
     for (i = 0 ; i < rowsize ; i++)
     {
-        sets[set1[i]]->AddMatrixRow(matrix_index, i, coll_count++);
+        bool isTemp;
+        avtSILSet_p pSet = GetSILSet(set1[i], isTemp);
+        if (!isTemp)
+            pSet->AddMatrixMapOut(coll_count);
+        coll_count++;
     }
 
     const vector<int> &set2 = m->GetSet2();
     int columnsize = set2.size();
     for (i = 0 ; i < columnsize ; i++)
     {
-        sets[set2[i]]->AddMatrixColumn(matrix_index, i, coll_count++);
+        bool isTemp;
+        avtSILSet_p pSet = GetSILSet(set2[i], isTemp);
+        if (!isTemp)
+            pSet->AddMatrixMapOut(coll_count);
+        coll_count++;
     }
-
-    haveAddedMatrices = true;
+    
+    order.push_back(MATRIX);
 }
 
 
@@ -495,23 +524,33 @@ avtSIL::AddMatrix(avtSILMatrix_p m)
 //  Method: avtSIL::GetNumSets
 //
 //  Purpose:
-//      Gets the number of sets in the SIL plus the number in the matrices.
+//      Gets the number of sets in the SIL plus the number in the matrices
+//      and arrays.
 //
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2002
 //
+//  Modifications:
+//
+//    Dave Bremer, Tue Dec 18 16:21:57 PST 2007
+//    Add in the sets contained in the arrays into the total.
 // ****************************************************************************
 
 int
 avtSIL::GetNumSets(void) const
 {
     int nsets = sets.size();
+    int i;
     int nmatrix = matrices.size();
-    for (int i = 0 ; i < nmatrix ; i++)
+    for (i = 0 ; i < nmatrix ; i++)
     {
         nsets += matrices[i]->GetNumSets();
     }
-
+    int narrays = arrays.size();
+    for (i = 0 ; i < narrays ; i++)
+    {
+        nsets += arrays[i]->GetNumSets();
+    }
     return nsets;
 }
 
@@ -525,6 +564,10 @@ avtSIL::GetNumSets(void) const
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2002
 //
+//  Modifications:
+//
+//    Dave Bremer, Tue Dec 18 16:21:57 PST 2007
+//    Add the collections contained in the arrays to the total.
 // ****************************************************************************
 
 int
@@ -536,6 +579,7 @@ avtSIL::GetNumCollections(void) const
     {
         ncoll += matrices[i]->GetNumCollections();
     }
+    ncoll += arrays.size();
 
     return ncoll;
 }
@@ -554,31 +598,148 @@ avtSIL::GetNumCollections(void) const
 //    Kathleen Bonnell, Mon Jan  3 13:23:26 PST 2005
 //    Added test for negative index.
 //
+//    Dave Bremer, Tue Dec 18 16:24:08 PST 2007
+//    Made this a stub method.
 // ****************************************************************************
 
 avtSILSet_p
 avtSIL::GetSILSet(int index) const
 {
+    bool dummy;
+    return GetSILSet(index, dummy);
+}
+
+
+
+
+// ****************************************************************************
+//  Method: avtSIL::GetSILSet
+//
+//  Purpose:
+//      Gets a set from a SIL.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 14, 2002
+//
+//  Modifications:
+//    Dave Bremer, Tue Dec 18 16:24:08 PST 2007
+//    Totally rewrote this because sets, matrices, and arrays can now be added
+//    in any order.  Sets can be made on demand from arrays or matrices, and 
+//    maps in and out may have to be added on demand.
+// ****************************************************************************
+
+avtSILSet_p
+avtSIL::GetSILSet(int index, bool &isTemporary) const
+{
     if (index < 0)
         EXCEPTION2(BadIndexException, index, GetNumSets());
 
-    if (index < sets.size())
-    {
-        return sets[index];
-    }
+    int tmpIndex = index, ii = 0, jj = 0, 
+        iCurrSet = 0, iCurrMat = 0, iCurrArray = 0;
 
-    int tmp_index = index - sets.size();
-    int nmatrices = matrices.size();
-    for (int i = 0 ; i < nmatrices ; i++)
+    for (ii = 0; ii < order.size(); ii++)
     {
-         if (tmp_index < matrices[i]->GetNumSets())
-         {
-             return matrices[i]->GetSILSet(tmp_index);
-         }
-         tmp_index -= matrices[i]->GetNumSets();
+        if (order[ii] == WHOLE_SET || order[ii] == SUBSET)
+        {
+            if (tmpIndex == 0)
+            {
+                isTemporary = false;
+                return sets[iCurrSet];
+            }
+            else
+            {
+                tmpIndex--;
+                iCurrSet++;
+            }
+        }
+        else if (order[ii] == ARRAY)
+        {
+            if (tmpIndex < arrays[iCurrArray]->GetNumSets())
+            {
+                isTemporary = true;
+                avtSILSet_p rv = arrays[iCurrArray]->GetSILSet(tmpIndex);
+                AddMapsToTemporarySet(rv, index);
+                return rv;
+            }
+            else
+            {
+                tmpIndex -= arrays[iCurrArray]->GetNumSets();
+                iCurrArray++;
+            }
+        }
+        else if (order[ii] == MATRIX)
+        {
+            if (tmpIndex < matrices[iCurrMat]->GetNumSets())
+            {
+                isTemporary = true;
+                avtSILSet_p rv = matrices[iCurrMat]->GetSILSet(tmpIndex);
+                //AddMapsToTemporarySet(rv, index);
+                return rv;
+            }
+            else
+            {
+                tmpIndex -= matrices[iCurrMat]->GetNumSets();
+                iCurrMat++;
+            }
+        }
     }
-
     EXCEPTION2(BadIndexException, index, GetNumSets());
+}
+
+
+
+// ****************************************************************************
+//  Method: avtSIL::AddMapsToTemporarySet
+//
+//  Purpose:
+//      SILSets generated on the fly, coming from an array or matrix, may need
+//      to have maps in or out added
+//
+//  Programmer: Dave Bremer
+//  Creation:   Tue Dec 18 17:29:13 PST 2007
+//
+// ****************************************************************************
+
+void
+avtSIL::AddMapsToTemporarySet(avtSILSet_p pSet, int setIndex) const
+{
+    //Add maps out for a SILSet created on demand, and contained by a matrix
+    int ii;
+    for (ii = 0; ii < matrices.size(); ii++)
+    {
+        int col = matrices[ii]->SetIsInCollection(setIndex);
+        if (col >= 0)
+        {
+            pSet->AddMatrixMapOut(col);
+        }
+    }
+
+    //Add maps in for a SILSet created on demand, and contained 
+    //in another collection
+    int iCurrCol = 0, //index of next elem in collections.
+        iColID = 0,   //ID of the next collection
+        iCurrMat = 0;
+    for (ii = 0; ii < order.size(); ii++)
+    {
+        if (order[ii] == COLLECTION)
+        {
+            if (collections[iCurrCol]->ContainsElement(setIndex))
+            {
+                pSet->AddMapIn(iColID);
+            }
+            iCurrCol++;
+            iColID++;
+        }
+        else if (order[ii] == ARRAY)
+        {
+            iColID++;
+        }
+        else if (order[ii] == MATRIX)
+        {
+            iColID += matrices[iCurrMat]->GetNumCollections();
+            iCurrMat++;
+        }
+    }
 }
 
 
@@ -591,27 +752,59 @@ avtSIL::GetSILSet(int index) const
 //  Programmer: Hank Childs
 //  Creation:   November 14, 2002
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Rewritten to allow sets, collections, arrays, and matrices to be 
+//    added in any order.
+//
 // ****************************************************************************
 
 avtSILCollection_p
 avtSIL::GetSILCollection(int index) const
 {
-    if (index < collections.size())
-    {
-        return collections[index];
-    }
+    if (index < 0)
+        EXCEPTION2(BadIndexException, index, GetNumCollections());
 
-    int tmp_index = index - collections.size();
-    int nmatrices = matrices.size();
-    for (int i = 0 ; i < nmatrices ; i++)
+    int tmpIndex = index, ii = 0, iCurrCol = 0, iCurrMat = 0, iCurrArray = 0;
+    for (ii = 0; ii < order.size(); ii++)
     {
-         if (tmp_index < matrices[i]->GetNumCollections())
-         {
-             return matrices[i]->GetSILCollection(tmp_index);
-         }
-         tmp_index -= matrices[i]->GetNumCollections();
+        if (order[ii] == COLLECTION)
+        {
+            if (tmpIndex == 0)
+            {
+                return collections[iCurrCol];
+            }
+            else
+            {
+                tmpIndex--;
+                iCurrCol++;
+            }
+        }
+        else if (order[ii] == ARRAY)
+        {
+            if (tmpIndex == 0)
+            {
+                return arrays[iCurrArray]->GetSILCollection();
+            }
+            else
+            {
+                tmpIndex--;
+                iCurrArray++;
+            }
+        }
+        else if (order[ii] == MATRIX)
+        {
+            if (tmpIndex < matrices[iCurrMat]->GetNumCollections())
+            {
+                return matrices[iCurrMat]->GetSILCollection(tmpIndex);
+            }
+            else
+            {
+                tmpIndex -= matrices[iCurrMat]->GetNumCollections();
+                iCurrMat++;
+            }
+        }
     }
-
     EXCEPTION2(BadIndexException, index, GetNumCollections());
 }
 
@@ -620,38 +813,84 @@ avtSIL::GetSILCollection(int index) const
 //  Method: avtSIL::GetSetIndex
 //
 //  Purpose:
-//      Returns the set index of a set.
+//      Returns the set index given a set name.
 //
 //  Arguments:
 //      name    The name of the set.
+//    collID    The ID of the collection for this set, or -999 if unused.
 //
 //  Returns:    The index of the set.
 //
 //  Programmer: Hank Childs
 //  Creation:   March 12, 2001
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Rewritten to allow sets, collections, arrays, and matrices to be 
+//    added in any order.  Merged the two very similar GetSetIndex methods
+//    into one in which matching collID may not be required.
 // ****************************************************************************
 
 int
-avtSIL::GetSetIndex(std::string name) const
+avtSIL::GetSetIndex(const std::string &name, int collID) const
 {
-    int index = -1;
-    int size = sets.size();
-    for (int i = 0 ; i < size ; i++)
+    int ii, index = -1, iTotalSets = 0, iCurrSet = 0, iCurrMat = 0, iCurrArray = 0;
+    for (ii = 0; ii < order.size(); ii++)
     {
-        avtSILSet_p set = sets[i];
-        if (set->GetName() == name)
+        if (order[ii] == WHOLE_SET || order[ii] == SUBSET)
         {
-            index = i;
-            break;
+            if (sets[iCurrSet]->GetName() == name)
+            {
+                const intVector &mapsIn = sets[iCurrSet]->GetMapsIn();
+                if (collID == -999 ||
+                    std::find(mapsIn.begin(), mapsIn.end(), collID) != mapsIn.end())
+                {
+                    index = iTotalSets;
+                    break;
+                }
+            }
+            else
+            {
+                iTotalSets++;
+                iCurrSet++;
+            }
+        }
+        else if (order[ii] == ARRAY)
+        {
+            int tmpIndex = arrays[iCurrArray]->GetSetIndex(name);
+            if (tmpIndex != -1)
+            {
+                if (collID == -999)
+                {
+                    index = tmpIndex;
+                    break;
+                }
+                else
+                {
+                    avtSILSet_p pSet = GetSILSet(tmpIndex);
+
+                    const intVector &mapsIn = pSet->GetMapsIn();
+                    if (std::find(mapsIn.begin(), mapsIn.end(), collID) != mapsIn.end())
+                    {
+                        index = tmpIndex;
+                        break;
+                    }
+                }
+            }
+
+            iTotalSets += arrays[iCurrArray]->GetNumSets();
+            iCurrArray++;
+        }
+        else if (order[ii] == MATRIX)
+        {
+            iTotalSets += matrices[iCurrMat]->GetNumSets();
+            iCurrMat++;
         }
     }
-
     if (index == -1)
     {
         EXCEPTION1(InvalidVariableException, name);
     }
-
     return index;
 }
 
@@ -663,7 +902,7 @@ avtSIL::GetSetIndex(std::string name) const
 //      Returns the index of a collection.
 //
 //  Arguments:
-//      name    The category of the collection.
+//      name      The category of the collection.
 //      superset  The superset to which this collection should belong.
 //
 //  Returns:    The index of the collection.
@@ -675,66 +914,130 @@ avtSIL::GetSetIndex(std::string name) const
 //    Kathleen Bonnell, Thu Jan 26 07:44:00 PST 2006
 //    Added int superset arg.
 //
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Rewritten to allow sets, collections, arrays, and matrices to be 
+//    added in any order.
+//
 // ****************************************************************************
 
 int
 avtSIL::GetCollectionIndex(std::string name, int superset) const
 {
-    int index = -1;
-    int size = collections.size();
-    for (int i = 0 ; i < size ; i++)
+    int ii, index = -1, iTotalCols = 0, iCurrCol = 0, iCurrMat = 0, iCurrArray = 0;
+    for (ii = 0; ii < order.size(); ii++)
     {
-        avtSILCollection_p coll = collections[i];
-        if (coll->GetCategory() == name && coll->GetSupersetIndex() == superset)
+        if (order[ii] == COLLECTION)
         {
-            index = i;
-            break;
+            if (collections[iCurrCol]->GetCategory() == name &&
+                collections[iCurrCol]->GetSupersetIndex() == superset )
+            {
+                index = iTotalCols;
+                break;
+            }
+            else
+            {
+                iTotalCols++;
+                iCurrCol++;
+            }
+        }
+        else if (order[ii] == ARRAY)
+        {
+            avtSILCollection_p  pCol = arrays[iCurrArray]->GetSILCollection();
+            if (pCol->GetCategory() == name &&
+                pCol->GetSupersetIndex() == superset )
+            {
+                index = iTotalCols;
+                break;
+            }
+            else
+            {
+                iTotalCols++;
+                iCurrArray++;
+            }
+        }
+        else if (order[ii] == MATRIX)
+        {
+            iTotalCols += matrices[iCurrMat]->GetNumCollections();
+            iCurrMat++;
         }
     }
-
     if (index == -1)
     {
         EXCEPTION1(InvalidVariableException, name);
     }
-
     return index;
 }
 
 
 // ****************************************************************************
-//  Method: avtSIL::TranslateCollectionInfo
+//  Method: avtSIL::GetCollectionSource
 //
 //  Purpose:
-//      Translates the collection information to something relative to a SIL
-//      matrix.
+//      Returns an int indicating whether the collection was added explicitly,
+//      or implicitly through an array or matrix.  If one of the latter, 
+//      either outArray or both outMatrix and outIndex will be filled in.
+//      This method replaces both RealCollection and TranslateCollectionInfo.
 //
-//  Programmer: Hank Childs
-//  Creation:   November 20, 2002
+//  Returns:    An enum:  COLLECTION, ARRAY, or MATRIX, and potentially fills
+//              in the output vals.
 //
+//  Programmer: Dave Bremer
+//  Creation:   Thu Dec 20 14:58:20 PST 2007
 // ****************************************************************************
 
-void
-avtSIL::TranslateCollectionInfo(int index, avtSILMatrix_p &mat, int &out_ind)
+avtSIL::EntryType
+avtSIL::GetCollectionSource(int index, 
+                            avtSILArray_p  &outArray, 
+                            avtSILMatrix_p &outMatrix, int &outIndex)
 {
-    if (index < collections.size())
-    {
-        EXCEPTION0(ImproperUseException);
-    }
+    outArray = NULL;
+    outMatrix = NULL;
+    outIndex = -1;
 
-    int tmp_index = index - collections.size();
-    int nmatrices = matrices.size();
-    for (int i = 0 ; i < nmatrices ; i++)
-    {
-         if (tmp_index < matrices[i]->GetNumCollections())
-         {
-             mat = matrices[i];
-             out_ind = tmp_index;
-             return;
-         }
-         tmp_index -= matrices[i]->GetNumCollections();
-    }
+    if (index < 0)
+        EXCEPTION2(BadIndexException, index, GetNumCollections());
 
-    EXCEPTION0(ImproperUseException);
+    int tmpIndex = index, ii = 0, iCurrArray = 0, iCurrMat = 0;
+    for (ii = 0; ii < order.size(); ii++)
+    {
+        if (order[ii] == COLLECTION)
+        {
+            if (tmpIndex == 0)
+            {
+                return COLLECTION;
+            }
+            else
+                tmpIndex--;
+        }
+        else if (order[ii] == ARRAY)
+        {
+            if (tmpIndex == 0)
+            {
+                outArray = arrays[iCurrArray];
+                return ARRAY;
+            }
+            else
+            {
+                iCurrArray++;
+                tmpIndex--;
+            }
+        }
+        else if (order[ii] == MATRIX)
+        {
+            if (tmpIndex < matrices[iCurrMat]->GetNumCollections())
+            {
+                outMatrix = matrices[iCurrMat];
+                outIndex  = tmpIndex;
+                return MATRIX;
+            }
+            else
+            {
+                tmpIndex -= matrices[iCurrMat]->GetNumCollections();
+                iCurrMat++;
+            }
+        }
+    }
+    EXCEPTION2(BadIndexException, index, GetNumCollections());
 }
 
 
@@ -761,6 +1064,9 @@ avtSIL::TranslateCollectionInfo(int index, avtSILMatrix_p &mat, int &out_ind)
 //    Hank Childs, Wed Dec 19 08:39:46 PST 2007
 //    Add timing information.
 //
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    Added the copying of order and array data, and removed the isWhole array
+//
 // ****************************************************************************
 
 SILAttributes *
@@ -771,24 +1077,26 @@ avtSIL::MakeSILAttributes(void) const
 
     SILAttributes *rv = new SILAttributes;
 
+    vector<int>  tmpOrder(order.size());
+    for (i = 0 ; i < order.size() ; i++)
+        tmpOrder[i] = (int)order[i];
+
+    rv->SetOrder(tmpOrder);
+
     //
     // Add the sets.
     //
     int nSets = sets.size();
     rv->SetNSets(nSets);
     vector<string> names;
-    vector<int>    iw;
     vector<int>    ids;
     for (i = 0 ; i < nSets ; i++)
     {
         avtSILSet_p s = sets[i];
         names.push_back(s->GetName());
-        int iw_val = (isWhole[i] ? 0 : 1);
-        iw.push_back(iw_val);
         ids.push_back(s->GetIdentifier());
     }
     rv->SetSetNames(names);
-    rv->SetIsWhole(iw);
     rv->SetSetIds(ids);
 
     //
@@ -825,6 +1133,17 @@ avtSIL::MakeSILAttributes(void) const
         delete atts;
     }
 
+    //
+    // Add the arrays.
+    //
+    int nArrays = arrays.size();
+    for (i = 0 ; i < nArrays ; i++)
+    {
+        SILArrayAttributes *atts = arrays[i]->MakeAttributes();
+        rv->AddArrays(*atts);
+        delete atts;
+    }
+
     visitTimer->StopTimer(t0, "Setting up SIL attributes");
     return rv;
 }
@@ -850,6 +1169,8 @@ avtSIL::MakeSILAttributes(void) const
 //    Brad Whitlock, Mon Oct 20 15:20:37 PST 2003
 //    I made it work on Windows again.
 //
+//    Dave Bremer, Thu Dec 20 16:49:10 PST 2007
+//    No longer printing whether a set is whole or not.
 // ****************************************************************************
 
 void
@@ -875,15 +1196,8 @@ avtSIL::Print(ostream &out,
         useInfo = false;
     for (i = 0 ; i < nSets ; i++)
     {
-        if (isWhole[i])
-        {
-            out << "Whole Set ";
-        }
-        else
-        {
-            out << "Subset ";
-        }
-        out << i << " " << (useInfo ? perSetInfo[i].c_str() : "") << endl;
+        out << "Set" << i << " " << (useInfo ? perSetInfo[i].c_str() : "") << endl;
+
         avtSILSet_p s = sets[i];
         s->Print(out);
     }
@@ -913,47 +1227,5 @@ avtSIL::Print(ostream &out,
     }
 }
 
-
-// ****************************************************************************
-//  Method: avtSIL::GetSetIndex
-//
-//  Purpose:
-//    Returns the set index of a set.
-//
-//  Arguments:
-//    name      The name of the set.
-//    collID    The ID of the collection for this set.
-//
-//  Returns:    The index of the set.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   January 26, 2005 
-//
-// ****************************************************************************
-
-int
-avtSIL::GetSetIndex(std::string name, int collId) const
-{
-    int index = -1;
-    int size = sets.size();
-    for (int i = 0 ; i < size ; i++)
-    {
-        avtSILSet_p set = sets[i];
-        intVector mapsIn = set->GetMapsIn();
-        if (set->GetName() == name &&
-            std::find(mapsIn.begin(), mapsIn.end(), collId) != mapsIn.end())
-        {
-            index = i;
-            break;
-        }
-    }
-
-    if (index == -1)
-    {
-        EXCEPTION1(InvalidVariableException, name);
-    }
-
-    return index;
-}
 
 

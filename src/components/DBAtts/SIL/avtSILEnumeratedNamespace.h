@@ -58,6 +58,9 @@
 //  Programmer: Hank Childs
 //  Creation:   March 9, 2001
 //
+//  Modifications:
+//    Dave Bremer, Wed Dec 19 12:38:52 PST 2007
+//    Added code to query for an element.
 // ****************************************************************************
 
 class DBATTS_API avtSILEnumeratedNamespace : public avtSILNamespace
@@ -68,9 +71,11 @@ class DBATTS_API avtSILEnumeratedNamespace : public avtSILNamespace
 
     virtual const std::vector<int>  &GetAllElements(void) const;
     virtual NamespaceAttributes     *GetAttributes(void) const;
+    virtual bool                     ContainsElement(int e) const;
 
   protected:
     std::vector<int>    elements;
+    bool                sequentialElems;
 };
 
 
