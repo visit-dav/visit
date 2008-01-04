@@ -49,6 +49,7 @@
 
 #include <avtSILCollection.h>
 #include <avtSILMatrix.h>
+#include <avtSILArray.h>
 #include <avtSILSet.h>
 
 
@@ -107,6 +108,10 @@ class   SILAttributes;
 //    Added int arg to GetCollectionIndex, added overloaded GetSetIndex
 //    with an int arg.
 //
+//    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
+//    Added SIL arrays to hold sets that can be created using a name
+//    template, and added the ability to add sets, arrays, and matrices in
+//    any order.
 // ****************************************************************************
 
 class DBATTS_API avtSIL
@@ -118,13 +123,13 @@ class DBATTS_API avtSIL
     virtual                          ~avtSIL() {;};
     const avtSIL                     &operator=(const avtSIL &);
 
-    void                              AddCollection(avtSILCollection_p);
-    int                               AddSubset(avtSILSet_p);
     int                               AddWhole(avtSILSet_p);
+    int                               AddSubset(avtSILSet_p);
+    void                              AddArray(avtSILArray_p);
     void                              AddMatrix(avtSILMatrix_p);
+    void                              AddCollection(avtSILCollection_p);
 
-    int                               GetSetIndex(std::string) const;
-    int                               GetSetIndex(std::string, int) const;
+    int                               GetSetIndex(const std::string &name, int collID = -999) const;
     int                               GetCollectionIndex(std::string, int) const;
 
     void                              Print(ostream &) const;
@@ -139,31 +144,42 @@ class DBATTS_API avtSIL
                                           { return wholesList; }
 
     avtSILSet_p                       GetSILSet(int index) const;
+    avtSILSet_p                       GetSILSet(int index, bool &isTemporary) const;
     avtSILCollection_p                GetSILCollection(int index) const;
 
     int                               GetNumSets() const;
     int                               GetNumCollections() const;
 
+    typedef enum { 
+        WHOLE_SET, 
+        SUBSET, 
+        ARRAY, 
+        MATRIX, 
+        COLLECTION } EntryType;
+
   protected:
-    std::vector<bool>                 isWhole;
     std::vector<int>                  wholesList;
 
     int                               AddSet(avtSILSet_p);
     int                               GetNumRealSets() const
                                            { return sets.size(); };
-    bool                              RealCollection(int ind)
-                                        { return (ind < collections.size()); };
-    void                              TranslateCollectionInfo(int,
-                                                      avtSILMatrix_p &, int &);
+    EntryType                         GetCollectionSource(int index, 
+                                                          avtSILArray_p  &outArray, 
+                                                          avtSILMatrix_p &outMatrix, int &outIndex);
+    void                              AddMapsToTemporarySet(avtSILSet_p pSet, int setIndex) const;
 
   private:
                                       avtSIL(const avtSIL &) {;};
-    void                              ReAddMatrix(avtSILMatrix_p);
 
     std::vector<avtSILSet_p>          sets;
-    std::vector<avtSILCollection_p>   collections;
     std::vector<avtSILMatrix_p>       matrices;
-    bool                              haveAddedMatrices;
+    std::vector<avtSILArray_p>        arrays;
+    std::vector<avtSILCollection_p>   collections;
+
+    std::vector<EntryType>            order; //order in which things were added.
+                                             //the set and collection indices 
+                                             //are inferred from this.
+
 };
 
 

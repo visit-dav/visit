@@ -36,78 +36,84 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                avtSILSet.h                                //
+//                               avtSILArray.h                              //
 // ************************************************************************* //
 
-#ifndef AVT_SIL_SET_H
-#define AVT_SIL_SET_H
+#ifndef AVT_SIL_ARRAY_H
+#define AVT_SIL_ARRAY_H
+
 #include <dbatts_exports.h>
-
-
-#include <visitstream.h>
-
 #include <string>
-#include <vector>
-
 #include <ref_ptr.h>
+#include <avtSILSet.h>
+#include <avtSILCollection.h>
+#include <avtTypes.h>
+
+class SILArrayAttributes;
 
 
 // ****************************************************************************
-//  Class: avtSILSet
+//  Class: avtSILArray
 //
-//  Purpose:
-//      This is the representation of a set for a SIL.  It contains the name
-//      of the set and links to all of the collections involving that set.
+//  Purpose:    
+//      Conceptually it contains a number of avtSILSets that would be created
+//      with names that follow a pattern, and which can be grouped into one
+//      collection.
 //
-//  Programmer: Hank Childs
-//  Creation:   March 8, 2001
+//  Programmer: Dave Bremer
+//  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
-//  Modifications:
-//
-//    Hank Childs, Mon May 21 09:12:17 PDT 2001
-//    Add methods to make more usable.
-//
-//    Hank Childs, Fri Nov 15 10:25:02 PST 2002
-//    Add concept of matrices.
-//
-//    Dave Bremer, Thu Dec 20 10:31:43 PST 2007
-//    Removed unused data used in matrix operations, and consolidated
-//    AddMatrixRow and AddMatrixColumn into AddMatrixMapOut.
 // ****************************************************************************
 
-class DBATTS_API avtSILSet
+class DBATTS_API avtSILArray
 {
   public:
-                            avtSILSet(const std::string &name, int id);
-    virtual                ~avtSILSet() {;};
+                        avtSILArray(const std::string &pfx, int nSets, 
+                                    int firstSetName,  bool uniqueIDs,
+                                    const std::string &cat,
+                                    SILCategoryRole r, int parent);
+                        avtSILArray(const SILArrayAttributes &atts);
+    virtual            ~avtSILArray() {;};
 
-    const std::string      &GetName(void) const
-                                        { return name; };
 
-    void                    AddMapIn(int);
-    void                    AddMapOut(int);
-    void                    AddMatrixMapOut(int);
+    int                 GetNumSets() const   { return iNumSets; }
+    avtSILSet_p         GetSILSet(int index) const;
+    avtSILCollection_p  GetSILCollection() const;
 
-    int                     GetIdentifier(void) { return id; };
+    int                 GetParent() const    { return iColParent; }
+    void                SetFirstSetIndex(int s)    {iFirstSet = s;}
+    void                SetCollectionIndex(int c)  {iColIndex = c;}
+    SetState            GetSetState(const std::vector<unsigned char> &useSet) const;
+    void                TurnSet(std::vector<unsigned char> &useSet,
+                                SetState val, bool forLoadBalance) const;
+    int                 GetSetIndex(const std::string &name) const;
 
-    void                    Print(ostream &) const;
-
-    const std::vector<int> &GetMapsIn(void) const  { return mapsIn; };
-    const std::vector<int> &GetMapsOut(void) const { return allMapsOut; };
-    const std::vector<int> &GetRealMapsOut(void) const { return mapsOut; };
+    SILArrayAttributes *MakeAttributes(void) const;
 
   protected:
-    std::string             name;
-    int                     id;
-    std::vector<int>        mapsIn;
-    std::vector<int>        mapsOut;
-    std::vector<int>        allMapsOut;
+    //For making the sets
+    std::string      prefix;
+    int              iNumSets;
+    int              iFirstSetName;  //Often 0 or 1, depending for example on a 
+                                     //code's block numbering preference
+    bool             bUseUniqueIDs;
+
+    //For making the collection
+    int              iFirstSet;      //Index of first set in the collection, 
+                                     //in the containing SIL's index space.
+    int              iColIndex;      //Index of this collection, in the 
+                                     //containing SIL.
+    std::string      category;
+    SILCategoryRole  role;
+    int              iColParent;
+
 };
 
 
-typedef ref_ptr<avtSILSet> avtSILSet_p;
+typedef ref_ptr<avtSILArray> avtSILArray_p;
 
 
 #endif
+
 
 

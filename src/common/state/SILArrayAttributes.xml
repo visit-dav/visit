@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+  <Attribute name="SILArrayAttributes" purpose="This class contain the information needed to represent a SIL Array." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="prefix" label="prefix" type="string">
+    </Field>
+    <Field name="numSets" label="numSets" type="int">
+      0
+    </Field>
+    <Field name="firstSetName" label="firstSetName" type="int">
+      0
+    </Field>
+    <Field name="useUniqueIDs" label="useUniqueIDs" type="bool">
+      false
+    </Field>
+    <Field name="firstSet" label="firstSet" type="int">
+      0
+    </Field>
+    <Field name="colIndex" label="colIndex" type="int">
+      0
+    </Field>
+    <Field name="category" label="category" type="string">
+    </Field>
+    <Field name="role" label="role" type="int">
+      0
+    </Field>
+    <Field name="colParent" label="colParent" type="int">
+      0
+    </Field>
+  </Attribute>

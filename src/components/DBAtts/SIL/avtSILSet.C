@@ -61,9 +61,11 @@ using std::vector;
 //    Hank Childs, Fri Jun 15 10:42:51 PDT 2001
 //    Added identifier argument.
 //
+//    Dave Bremer, Thu Dec 20 10:31:43 PST 2007
+//    Changed input type from "string" to "const string &"
 // ****************************************************************************
 
-avtSILSet::avtSILSet(string n, int i)
+avtSILSet::avtSILSet(const string &n, int i)
 {
     name = n;
     id   = i;
@@ -110,52 +112,29 @@ avtSILSet::AddMapOut(int out)
 
 
 // ****************************************************************************
-//  Method: avtSILSet::AddMatrixRow
+//  Method: avtSILSet::AddMatrixMapOut
 //
 //  Purpose:
-//      Tells the set that it is a member in a matrix as a row.
+//      Tells the set that it is a member in a matrix
 //
 //  Arguments:
-//      mat     The index of the matrix.
-//      row     The index of this set in the matrix.
 //      coll    The index of the collection this corresponds to in the SIL.
 //
 //  Programmer: Hank Childs
 //  Creation:   November 15, 2002
 //
+//  Modifications:
+//    Dave Bremer, Thu Dec 20 10:31:43 PST 2007
+//    There used to be two methods named AddMatrixRow and AddMatrixColumn.  I
+//    removed some unused class data, and then there was no reason to distinguish
+//    between the two use cases, so the methods have been consolidated into this
+//    AddMatrixMapOut method.
 // ****************************************************************************
 
 void
-avtSILSet::AddMatrixRow(int mat, int row, int coll)
+avtSILSet::AddMatrixMapOut(int coll)
 {
     allMapsOut.push_back(coll);
-    idOfMatrixRow.push_back(mat);
-    idInMatrixRow.push_back(row);
-}
-
-
-// ****************************************************************************
-//  Method: avtSILSet::AddMatrixColumn
-//
-//  Purpose:
-//      Tells the set that it is a member in a matrix as a column.
-//
-//  Arguments:
-//      mat     The index of the matrix.
-//      column  The index of this set in the matrix.
-//      coll    The index of the collection this corresponds to in the SIL.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 15, 2002
-//
-// ****************************************************************************
-
-void
-avtSILSet::AddMatrixColumn(int mat, int column, int coll)
-{
-    allMapsOut.push_back(coll);
-    idOfMatrixColumn.push_back(mat);
-    idInMatrixColumn.push_back(column);
 }
 
 
