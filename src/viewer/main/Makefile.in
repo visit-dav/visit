@@ -329,6 +329,10 @@
 #    Brad Whitlock, Wed Nov 21 14:54:43 PST 2007
 #    Made ViewerServerManager get fed through moc since it now has a slot.
 #
+#    Jeremy Meredith, Fri Jan  4 13:31:01 EST 2008
+#    Added VIEWER_MESA_STUB_CPPFLAGS back into CPPFLAGS.  They were
+#    clobbered some time in the past.
+#
 ##############################################################################
 
 ##
@@ -355,7 +359,7 @@ LIBS=-L../../lib -L../../vtkqt -lengineproxy -lenginerpc -lviewerrpc \
 LDFLAGS=@LDFLAGS@ @QT_LDFLAGS@
 LIBDEP=
 CXXFLAGS=@CXXFLAGS@ @QT_CXXFLAGS@ 
-CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
+CPPFLAGS=@PLATFORM_CPPFLAGS@ @CPPFLAGS@ @VIEWER_MESA_STUB_CPPFLAGS@ $(VTK_INCLUDE) -I../../vtkqt \
          -I./icons -I../../include -I../../include/visit -I.
 
 
