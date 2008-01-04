@@ -44,6 +44,7 @@
 #          Qt		qt-x11-free-3.3.8.tar.gz
 #                    or qt-mac-free-3.3.8.tar.gz (Mac)
 #          Mesa         MesaLib-6.4.2.tar.gz
+#                    or Mesa-5.0-mangled.tar.gz (Linux)
 #          Python	Python-2.5.tgz
 #          VTK		vtk-5.0.0c.tar.gz
 #          CMake	cmake-2.4.5.tar.gz
@@ -257,6 +258,9 @@
 #     Put a check for wget version 1.8
 #     Added explicit check for mesa 6.4.2
 #
+#     Thomas R. Treadway, Fri Jan  4 10:23:18 PST 2008
+#     Linux defaults to Mesa-5.0, because of driver problems
+#
 # *****************************************************************************
 
 
@@ -451,9 +455,15 @@ export VTK_VERSION=${VTK_VERSION-"5.0.0c"}
 
 export CMAKE_FILE=${CMAKE_FILE-"cmake-2.4.5.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION-"2.4.5"}
+if [[ "$OPSYS" == "Linux" ]]; then
+export MESA_FILE=${MESA_FILE-"Mesa-5.0-mangled.tar.gz"}
+export MESA_VERSION=${MESA_VERSION-"5.0"}
+export MESA_DIR=${MESA_DIR-"Mesa-5.0"}  # The directory in the tarball
+else
 export MESA_FILE=${MESA_FILE-"MesaLib-6.4.2.tar.gz"}
 export MESA_VERSION=${MESA_VERSION-"6.4.2"}
 export MESA_DIR=${MESA_DIR-"Mesa-6.4.2"}  # The directory in the tarball
+fi
 
 # The old Python version at LLNL does not work on Mac, we need a newer version
 export PYTHON_FILE_SUFFIX="tgz" # This is for the new version. 
