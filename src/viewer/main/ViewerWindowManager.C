@@ -2006,6 +2006,12 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    Modified so that the screen capture behavior depends on whether it is
 //    using the mesa stub library or not.
 //
+//    Jeremy Meredith, Fri Jan  4 13:27:37 EST 2008
+//    Added a warning about attempting to save when nowin mode and screen
+//    capture are enabled, but Mesa has been stubbed out.  There was a
+//    previous warning when animation caching was also enabled, but this
+//    wasn't broad enough.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -2031,19 +2037,13 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
             }
             else
             {
-                if (windows[index]->GetAnimationAttributes()->GetPipelineCachingMode())
-                {
-                    Warning("Currently, you cannot save images when in nowin"
-                            " mode and have animation caching turned on. Turn"
-                            " off animation caching to save your windows.");
-                }
-                else
-                {
-                    avtDataObject_p extImage;
-                    windows[index]->ExternalRenderManual(extImage,
-                        windowLimits[0][0].width, windowLimits[0][0].height);
-                    CopyTo(retval, extImage);
-                }
+                Warning("Currently, you cannot save images when in nowin"
+                        " mode using screen capture and Mesa has been"
+                        " stubbed out in the viewer.  Either disable"
+                        " screen capture, or rebuild without the Mesa"
+                        " stub library.  Note that the Mesa stub"
+                        " library was in place to prevent compatibility"
+                        " problems with some graphics drivers.");
             }
 #else
             retval = windows[index]->ScreenCapture();
