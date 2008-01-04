@@ -448,6 +448,9 @@ QvisResampleWindow::UpdateWindow(bool doAll)
 // Creation:   Wed Jan 2 13:43:29 PST 2008
 //
 // Modifications:
+//      Sean Ahern, Fri Jan  4 16:38:06 EST 2008
+//      Prevented the text widgets from setting themselves (thus turning off
+//      useExtents) if useExtents is set.
 //   
 // ****************************************************************************
 
@@ -458,44 +461,47 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     QString msg, temp;
 
     // Do startX
-    if(which_widget == ResamplePluginAttributes::ID_startX || doAll)
+    if (atts->GetUseExtents() == false)
     {
-        temp = startX->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if(which_widget == ResamplePluginAttributes::ID_startX || doAll)
         {
-            double val = temp.toDouble(&okay);
-            atts->SetStartX(val);
+            temp = startX->displayText().simplifyWhiteSpace();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetStartX(val);
+            }
+
+            if(!okay)
+            {
+                msg.sprintf("The value of startX was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetStartX());
+                Message(msg);
+                atts->SetStartX(atts->GetStartX());
+            }
         }
 
-        if(!okay)
+        // Do endX
+        if(which_widget == ResamplePluginAttributes::ID_endX || doAll)
         {
-            msg.sprintf("The value of startX was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetStartX());
-            Message(msg);
-            atts->SetStartX(atts->GetStartX());
-        }
-    }
+            temp = endX->displayText().simplifyWhiteSpace();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetEndX(val);
+            }
 
-    // Do endX
-    if(which_widget == ResamplePluginAttributes::ID_endX || doAll)
-    {
-        temp = endX->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double val = temp.toDouble(&okay);
-            atts->SetEndX(val);
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of endX was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetEndX());
-            Message(msg);
-            atts->SetEndX(atts->GetEndX());
+            if(!okay)
+            {
+                msg.sprintf("The value of endX was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetEndX());
+                Message(msg);
+                atts->SetEndX(atts->GetEndX());
+            }
         }
     }
 
@@ -521,44 +527,47 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do startY
-    if(which_widget == ResamplePluginAttributes::ID_startY || doAll)
+    if (atts->GetUseExtents() == false)
     {
-        temp = startY->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if(which_widget == ResamplePluginAttributes::ID_startY || doAll)
         {
-            double val = temp.toDouble(&okay);
-            atts->SetStartY(val);
+            temp = startY->displayText().simplifyWhiteSpace();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetStartY(val);
+            }
+
+            if(!okay)
+            {
+                msg.sprintf("The value of startY was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetStartY());
+                Message(msg);
+                atts->SetStartY(atts->GetStartY());
+            }
         }
 
-        if(!okay)
+        // Do endY
+        if(which_widget == ResamplePluginAttributes::ID_endY || doAll)
         {
-            msg.sprintf("The value of startY was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetStartY());
-            Message(msg);
-            atts->SetStartY(atts->GetStartY());
-        }
-    }
+            temp = endY->displayText().simplifyWhiteSpace();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetEndY(val);
+            }
 
-    // Do endY
-    if(which_widget == ResamplePluginAttributes::ID_endY || doAll)
-    {
-        temp = endY->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double val = temp.toDouble(&okay);
-            atts->SetEndY(val);
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of endY was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetEndY());
-            Message(msg);
-            atts->SetEndY(atts->GetEndY());
+            if(!okay)
+            {
+                msg.sprintf("The value of endY was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetEndY());
+                Message(msg);
+                atts->SetEndY(atts->GetEndY());
+            }
         }
     }
 
@@ -584,44 +593,47 @@ QvisResampleWindow::GetCurrentValues(int which_widget)
     }
 
     // Do startZ
-    if(which_widget == ResamplePluginAttributes::ID_startZ || doAll)
+    if (atts->GetUseExtents() == false)
     {
-        temp = startZ->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
+        if(which_widget == ResamplePluginAttributes::ID_startZ || doAll)
         {
-            double val = temp.toDouble(&okay);
-            atts->SetStartZ(val);
+            temp = startZ->displayText().simplifyWhiteSpace();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetStartZ(val);
+            }
+
+            if(!okay)
+            {
+                msg.sprintf("The value of startZ was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetStartZ());
+                Message(msg);
+                atts->SetStartZ(atts->GetStartZ());
+            }
         }
 
-        if(!okay)
+        // Do endZ
+        if(which_widget == ResamplePluginAttributes::ID_endZ || doAll)
         {
-            msg.sprintf("The value of startZ was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetStartZ());
-            Message(msg);
-            atts->SetStartZ(atts->GetStartZ());
-        }
-    }
+            temp = endZ->displayText().simplifyWhiteSpace();
+            okay = !temp.isEmpty();
+            if(okay)
+            {
+                double val = temp.toDouble(&okay);
+                atts->SetEndZ(val);
+            }
 
-    // Do endZ
-    if(which_widget == ResamplePluginAttributes::ID_endZ || doAll)
-    {
-        temp = endZ->displayText().simplifyWhiteSpace();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double val = temp.toDouble(&okay);
-            atts->SetEndZ(val);
-        }
-
-        if(!okay)
-        {
-            msg.sprintf("The value of endZ was invalid. "
-                "Resetting to the last good value of %g.",
-                atts->GetEndZ());
-            Message(msg);
-            atts->SetEndZ(atts->GetEndZ());
+            if(!okay)
+            {
+                msg.sprintf("The value of endZ was invalid. "
+                    "Resetting to the last good value of %g.",
+                    atts->GetEndZ());
+                Message(msg);
+                atts->SetEndZ(atts->GetEndZ());
+            }
         }
     }
 
