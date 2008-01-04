@@ -253,6 +253,10 @@
 #     Thomas R. Treadway, Mon Nov 26 10:03:38 PST 2007
 #     Changed web pages from www.llnl.gov/VisIt to wci.llnl.gov/codes/visit 
 #
+#     Thomas R. Treadway, Thu Jan  3 17:24:29 PST 2008
+#     Put a check for wget version 1.8
+#     Added explicit check for mesa 6.4.2
+#
 # *****************************************************************************
 
 
@@ -431,6 +435,7 @@ else
    export SVN_ROOT_PATH="svn+ssh://$SVN_NERSC_NAME@svn.nersc.gov/svn/visit"
 fi
 
+export WGET_OPTS=${WGET_OPTS-"--no-check-certificate"}
 #
 # TARBALL LOCATIONS AND VERSIONS
 #
@@ -605,7 +610,7 @@ function download_file
                 # MaxOS X comes with curl
                 curl -ksfo $2 "https://wci.llnl.gov/codes/visit/$2"
             else
-                wget --no-check-certificate -o /dev/null \
+                wget $WGET_OPTS -o /dev/null \
                    "https://wci.llnl.gov/codes/visit/$2" 
                 if [[ $? != 0 ]] ; then
                    echo ""
@@ -620,7 +625,7 @@ function download_file
             if [[ "$OPSYS" == "Darwin" ]]; then
                 curl -ksfo $2 "https://wci.llnl.gov/codes/visit/$1/$2"
             else
-                wget --no-check-certificate -o /dev/null \
+                wget $WGET_OPTS -o /dev/null \
                    "https://wci.llnl.gov/codes/visit/$1/$2" 
                 if [[ $? != 0 ]] ; then
                    echo ""
@@ -1480,8 +1485,9 @@ function build_mesa
     #
     # Patching mesa.
     #
-    info_box "Patching Mesa . . ." 1>&3
-    patch -p0 <<\EOF
+    if [[ ${MESA_VERSION} == 6.4.2 ]] ; then
+       info_box "Patching Mesa . . ." 1>&3
+       patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/default Mesa-6.4.2/configs/default
 *** Mesa-6.4.2.orig/configs/default	Wed Feb  1 09:47:36 2006
 --- Mesa-6.4.2/configs/default	Wed May 23 16:43:22 2007
@@ -1573,13 +1579,13 @@ diff -c Mesa-6.4.2.orig/configs/default Mesa-6.4.2/configs/default
   OSMESA_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB)
   GLU_LIB_DEPS = -L$(LIB_DIR) -l$(GL_LIB) -lm
 EOF
-    if [[ $? != 0 ]] ; then
-        echo "Unable to patch Mesa. Wrong version?"
-        return 1
-    fi
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        info_box "Patching Mesa for Darwin . . ." 1>&3
-        patch -p0 <<\EOF
+       if [[ $? != 0 ]] ; then
+           echo "Unable to patch Mesa. Wrong version?"
+           return 1
+       fi
+       if [[ "$OPSYS" == "Darwin" ]]; then
+           info_box "Patching Mesa for Darwin . . ." 1>&3
+           patch -p0 <<\EOF
 diff -p -r Mesa-6.4.2.orig/configs/darwin Mesa-6.4.2/configs/darwin
 *** Mesa-6.4.2.orig/configs/darwin	Wed Jun 29 19:34:07 2005
 --- Mesa-6.4.2/configs/darwin	Wed May 23 11:31:16 2007
@@ -1664,9 +1670,9 @@ diff -p -r Mesa-6.4.2.orig/src/mesa/sources Mesa-6.4.2/src/mesa/sources
   OSMESA_DRIVER_SOURCES = \
   	drivers/osmesa/osmesa.c
 EOF
-    elif [[ "$OPSYS" == "Linux" ]]; then
-        info_box "Patching Mesa for Linux . . ." 1>&3
-        patch -p0 <<\EOF
+       elif [[ "$OPSYS" == "Linux" ]]; then
+           info_box "Patching Mesa for Linux . . ." 1>&3
+           patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/linux Mesa-6.4.2/configs/linux
 *** Mesa-6.4.2.orig/configs/linux	Thu Feb  2 19:54:06 2006
 --- Mesa-6.4.2/configs/linux	Wed May 23 17:43:25 2007
@@ -1688,9 +1694,9 @@ diff -c Mesa-6.4.2.orig/configs/linux Mesa-6.4.2/configs/linux
   X11_INCLUDES = -I/usr/X11R6/include
   
 EOF
-    elif [[ "$OPSYS" == "AIX" ]]; then
-        info_box "Patching Mesa for AIX . . ." 1>&3
-        patch -p0 <<\EOF
+       elif [[ "$OPSYS" == "AIX" ]]; then
+           info_box "Patching Mesa for AIX . . ." 1>&3
+           patch -p0 <<\EOF
 diff -c Mesa-6.4.2.orig/configs/aix Mesa-6.4.2/configs/aix
 *** Mesa-6.4.2.orig/configs/aix	Mon Sep 13 14:04:48 2004
 --- Mesa-6.4.2/configs/aix	Wed May 23 17:46:34 2007
@@ -1775,9 +1781,9 @@ diff -c Mesa-6.4.2.orig/src/mesa/swrast/s_tritemp.h Mesa-6.4.2/src/mesa/swrast/s
   
                  /*
 EOF
-    elif [[ "$OPSYS" == "SunOS" ]]; then
-        info_box "Patching Mesa . . ." 1>&3
-        patch -p0 <<\EOF
+       elif [[ "$OPSYS" == "SunOS" ]]; then
+           info_box "Patching Mesa . . ." 1>&3
+           patch -p0 <<\EOF
 diff -p -r Mesa-6.4.2.orig/configs/solaris-x86-gcc Mesa-6.4.2/configs/solaris-x86-gcc
 *** Mesa-6.4.2.orig/configs/solaris-x86-gcc	Mon Sep 13 14:04:48 2004
 --- Mesa-6.4.2/configs/solaris-x86-gcc	Wed May 23 11:34:25 2007
@@ -1818,10 +1824,11 @@ diff -p -r Mesa-6.4.2.orig/configs/solaris-x86-gcc Mesa-6.4.2/configs/solaris-x8
   GLUT_LIB_NAME = libglut.a
   GLW_LIB_NAME = libGLw.a
 EOF
-    fi
-    if [[ $? != 0 ]] ; then
-        echo "Unable to patch Mesa. Wrong version?"
-        return 1
+       fi
+       if [[ $? != 0 ]] ; then
+           echo "Unable to patch Mesa. Wrong version?"
+           return 1
+       fi
     fi
 
     #
@@ -6568,6 +6575,13 @@ fi
 # Now make sure that we have everything we need to build VisIt, so we can bail
 # out early if we are headed for failure.
 #
+if [[ "$OPSYS" != "Darwin" ]]; then
+    WGET_MINOR_VERSION=$(wget --version| head -n 1|cut -d. -f 2)
+    # version 1.7 pre-dates ssl integration
+    if [[ "${WGET_MINOR_VERSION}" == "8" ]] ; then
+       WGET_OPTS=""
+    fi
+fi
 check_files
 if [[ $? != 0 ]] ; then
    echo "Stopping build because necessary files aren't available."
