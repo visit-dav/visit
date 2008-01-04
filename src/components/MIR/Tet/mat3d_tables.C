@@ -1,10 +1,11 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2007, The Regents of the University of California
+* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-400142
 * All rights reserved.
 *
-* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The
+* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
 * full copyright notice is contained in the file COPYRIGHT located at the root
 * of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
 *
@@ -15,17 +16,17 @@
 *    this list of conditions and the disclaimer below.
 *  - Redistributions in binary form must reproduce the above copyright notice,
 *    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
-*    documentation and/or materials provided with the distribution.
-*  - Neither the name of the UC/LLNL nor  the names of its contributors may be
-*    used to  endorse or  promote products derived from  this software without
+*    documentation and/or other materials provided with the distribution.
+*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+*    be used to endorse or promote products derived from this software without
 *    specific prior written permission.
 *
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
 * AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
-* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF
-* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR
-* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL
+* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
 * DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
 * SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
 * CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
@@ -1431,11 +1432,12 @@ static void WriteCopyright(ostream &out)
 {
     out << "/*****************************************************************************" << endl;
     out << "*" << endl;
-    out << "* Copyright (c) 2000 - 2007, The Regents of the University of California" << endl;
-    out << "* Produced at the Lawrence Livermore National Laboratory" << endl;
+    out << "* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC" << endl;
+    out << "* Produced at the Lawrence Livermore National Laboratory
+* LLNL-CODE-400142" << endl;
     out << "* All rights reserved." << endl;
     out << "*" << endl;
-    out << "* This file is part of VisIt. For details, see http://www.llnl.gov/visit/. The" << endl;
+    out << "* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The" << endl;
     out << "* full copyright notice is contained in the file COPYRIGHT located at the root" << endl;
     out << "* of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html." << endl;
     out << "*" << endl;
@@ -1446,17 +1448,17 @@ static void WriteCopyright(ostream &out)
     out << "*    this list of conditions and the disclaimer below." << endl;
     out << "*  - Redistributions in binary form must reproduce the above copyright notice," << endl;
     out << "*    this  list of  conditions  and  the  disclaimer (as noted below)  in  the" << endl;
-    out << "*    documentation and/or materials provided with the distribution." << endl;
-    out << "*  - Neither the name of the UC/LLNL nor  the names of its contributors may be" << endl;
-    out << "*    used to  endorse or  promote products derived from  this software without" << endl;
+    out << "*    documentation and/or other materials provided with the distribution." << endl;
+    out << "*  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may" << endl;
+    out << "*    be used to endorse or promote products derived from this software without" << endl;
     out << "*    specific prior written permission." << endl;
     out << "*" << endl;
     out << "* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS \"AS IS\"" << endl;
     out << "* AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE" << endl;
     out << "* IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE" << endl;
-    out << "* ARE  DISCLAIMED.  IN  NO  EVENT  SHALL  THE  REGENTS  OF  THE  UNIVERSITY OF" << endl;
-    out << "* CALIFORNIA, THE U.S.  DEPARTMENT  OF  ENERGY OR CONTRIBUTORS BE  LIABLE  FOR" << endl;
-    out << "* ANY  DIRECT,  INDIRECT,  INCIDENTAL,  SPECIAL,  EXEMPLARY,  OR CONSEQUENTIAL" << endl;
+    out << "* ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY," << endl;
+    out << "* LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY" << endl;
+    out << "* DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL" << endl;
     out << "* DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR" << endl;
     out << "* SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER" << endl;
     out << "* CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT" << endl;
