@@ -443,8 +443,8 @@ Grammar::WriteStateInitialization(const string &name, ostream &o)
     o << "/*****************************************************************************" << endl;
     o << "*" << endl;
     o << "* Copyright (c) 2000 - 2008, Lawrence Livermore National Security, LLC" << endl;
-    o << "* Produced at the Lawrence Livermore National Laboratory
-* LLNL-CODE-400142" << endl;
+    o << "* Produced at the Lawrence Livermore National Laboratory" << endl;
+    o << "* LLNL-CODE-400142" << endl;
     o << "* All rights reserved." << endl;
     o << "*" << endl;
     o << "* This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The" << endl;
