@@ -45,7 +45,7 @@
 #else
 #define DATABASE_API __declspec(dllimport)
 #endif
-#if defined(USING_MSVC6) || defined(USING_MSVC7)
+#if defined(_MSC_VER)
 // Turn off warning about possible loss of data
 #pragma warning(disable:4244)
 // Turn off warning about inheritance via dominance

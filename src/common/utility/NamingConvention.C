@@ -830,7 +830,7 @@ Ares::Ares(const char * const *list, const char * const *dirList, int listN)
             //
             // The state is everything after the prefix and before the ".root".
             //
-            char *root = strstr(list[i], ".root");
+            const char *root = strstr(list[i], ".root");
             int   stateLength = root - (list[i] + length);
             strncpy(tmp, list[i]+length, stateLength);
             tmp[stateLength] = '\0';
@@ -844,9 +844,9 @@ Ares::Ares(const char * const *list, const char * const *dirList, int listN)
             rootFile[i]  = false;
             validFile[i] = true;
                
-            char *firstHyphen  = strstr(list[i], "-");
-            char *secondHyphen = strstr(firstHyphen+1, "-");
-            char *state = secondHyphen+1;
+            const char *firstHyphen  = strstr(list[i], "-");
+            const char *secondHyphen = strstr(firstHyphen+1, "-");
+            const char *state = secondHyphen+1;
             const char *end = strstr(state, ".");
             if (end == NULL)
             {
@@ -1098,7 +1098,7 @@ Exodus::IsFormat(const char * const *list, int listSize)
 
     for (int i = 0 ; i < listSize ; i++)
     {
-        char *suffix = strstr(list[i], ".root");
+        const char *suffix = strstr(list[i], ".root");
         if (suffix != NULL)
         {
             //
@@ -1199,7 +1199,7 @@ Exodus::Exodus(const char * const *list, const char * const *dirList,int listN)
 
     for (int i = 0 ; i < listN ; i++)
     {
-        char *suffix = strstr(list[i], ".root");
+        const char *suffix = strstr(list[i], ".root");
         if (suffix != NULL)
         {
             rootFile[i]  = true;
@@ -1261,7 +1261,7 @@ SiloObj::IsFormat(const char * const *list, int listSize)
 
     for (int i = 0 ; i < listSize ; i++)
     {
-        char *visit = strstr(list[i] + prefix, ".visit");
+        const char *visit = strstr(list[i] + prefix, ".visit");
         if (visit != NULL)
         {
             char str[1024];
@@ -1273,7 +1273,7 @@ SiloObj::IsFormat(const char * const *list, int listSize)
         }
         else
         {
-            char *mesh = strstr(list[i]+prefix, ".mesh");
+            const char *mesh = strstr(list[i]+prefix, ".mesh");
             if (mesh != NULL)
             {
                 char str[1024];

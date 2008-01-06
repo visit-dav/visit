@@ -229,9 +229,26 @@ cp $TOPDIR/src/include/vtk/Common/*.txx    include/VTK
 cp $TOPDIR/src/include/vtk/Filtering/*.txx include/VTK
 # Copy vtkstd
 cp -R $TOPDIR/src/include/vtk/vtkstd include/VTK
+# Copy vtkexpat
+cp $TOPDIR/src/include/vtk/Utilities/vtk_expat.h include/VTK
+cp -R $TOPDIR/src/include/vtk/Utilities/vtkexpat include/VTK
+# Copy vtktiff
+cp $TOPDIR/src/include/vtk/Utilities/vtk_tiff.h include/VTK
+cp -R $TOPDIR/src/include/vtk/Utilities/vtktiff include/VTK
+# Copy vtkzlib
+cp $TOPDIR/src/include/vtk/Utilities/vtk_zlib.h include/VTK
+cp -R $TOPDIR/src/include/vtk/Utilities/vtkzlib include/VTK
+
 # Copy mangled mesa
 #mkdir include/VTK/MangleMesaInclude
 #cp $TOPDIR/src/include/vtk/MangleMesaInclude/*.h include/VTK/MangleMesaInclude
+
+#overwrite the linux version with windows version headers
+cd include/VTK
+mv MSVC/vtk*.h .
+mv MSVC/tiffDllConfig.h ./vtktiff/
+mv MSVC/zlibDllConfig.h ./vtkzlib/
+rm -rf MSVC
 
 
 #

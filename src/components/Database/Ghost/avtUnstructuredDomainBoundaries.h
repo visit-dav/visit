@@ -168,7 +168,7 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
     vector<vtkDataArray*>        ExchangeData(vector<int> &domainNum,
                                               bool isPointData,
                                               vector<vtkDataArray*> &data
-#if defined(_WIN32) && defined(USING_MSVC6)
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)
     // Extra argument to help the compiler instantiate the right function.
                                               , T signature
 #endif
@@ -202,7 +202,8 @@ class DATABASE_API avtUnstructuredDomainBoundaries : public avtDomainBoundaries
                                            int **&, float ***&);
                       
 
-#if !defined(USING_MSVC6)
+#if !(defined(_MSC_VER) && (_MSC_VER <= 1200)) 
+// not using MSVC 6 or earlier
     template <class T>
     void            CommunicateDataInformation(const vector<int> &domain2proc,
                                                const vector<int> &domainNum,

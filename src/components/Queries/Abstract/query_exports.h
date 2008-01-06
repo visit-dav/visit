@@ -45,7 +45,7 @@
 #else
 #define QUERY_API __declspec(dllimport)
 #endif
-#if defined(USING_MSVC6) || defined(USING_MSVC7)
+#if defined(_MSC_VER)
 // Turn off warning about inheritance by dominance.
 #pragma warning(disable:4250)
 // Turn off warning about lack of DLL interface

@@ -453,7 +453,7 @@ StringHelpers::ExtractRESubstr(const char *strToSearch, const char *re)
     int matchToExtract;
     if (re[0] != '<')
         return retval;
-    char *last = strrchr(re, '>'); 
+    const char *last = strrchr(re, '>'); 
     if (last == 0)
         return retval;
     if (*(last+1) == '\0')

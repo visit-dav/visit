@@ -194,7 +194,7 @@ array_ref_ptr<T>::RemoveReference(void)
     }
 }
 
-#if defined(_WIN32) && defined(USING_MSVC6)
+#if defined(_MSC_VER) && (_MSC_VER <= 1200) // MSVC 6
 template <class T, class S>
 #else
 template <class T>

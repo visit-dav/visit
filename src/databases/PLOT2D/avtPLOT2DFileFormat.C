@@ -86,7 +86,7 @@ avtPLOT2DFileFormat::avtPLOT2DFileFormat(const char *fname)
     {
         EXCEPTION1(InvalidFilesException, fname);
     }
-    char *start_of_ext = strstr(fname, ".p2d");
+    const char *start_of_ext = strstr(fname, ".p2d");
     char soln_file[1024];
     strncpy(soln_file, fname, start_of_ext - fname);
     strcpy(soln_file + (start_of_ext - fname), ".q");

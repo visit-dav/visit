@@ -2815,7 +2815,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname)
     else if (strstr(fname, ".x") != NULL)
     {
         char soln_file[1024];
-        char *q = strstr(fname, ".x");
+        const char *q = strstr(fname, ".x");
         strncpy(soln_file, fname, q-fname);
         strcpy(soln_file + (q-fname), ".q");
           
@@ -2826,7 +2826,7 @@ avtPLOT3DFileFormat::avtPLOT3DFileFormat(const char *fname)
     else if (strstr(fname, ".q") != NULL)
     {
         char points_file[1024];
-        char *x = strstr(fname, ".q");
+        const char *x = strstr(fname, ".q");
         strncpy(points_file, fname, x-fname);
         strcpy(points_file + (x-fname), ".x");
   
