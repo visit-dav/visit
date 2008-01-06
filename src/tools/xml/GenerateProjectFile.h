@@ -601,7 +601,7 @@ protected:
         out << "# PROP Ignore_Export_Lib 0" << endl;
         out << "# PROP Target_Dir \"\"" << endl;
         out << "# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /YX /FD /c" << endl;
-        out << "# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I \"..\\..\\visit\\" << pluginType << "\\" << name << "\" /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"USING_MSVC6\" ";
+        out << "# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I \"..\\..\\visit\\" << pluginType << "\\" << name << "\" /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" ";
         if(exports != "")
             out << "/D \"" << exports << "\" ";
         out << "/D \"GENERAL_PLUGIN_EXPORTS\" /YX /FD /TP /c" << endl;
@@ -637,7 +637,7 @@ protected:
         if(pluginComponent == 'S')
             debugDef = "";
         out << "# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D \"WIN32\" " << debugDef<< "/D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /YX /FD /GZ /c" << endl;
-        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\" << pluginType << "\\" << name << "\" /D \"WIN32\" " << debugDef << "/D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"USING_MSVC6\" ";
+        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\" << pluginType << "\\" << name << "\" /D \"WIN32\" " << debugDef << "/D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" ";
         if(exports != "")
             out << "/D \"" << exports << "\" ";
         out << "/D \"GENERAL_PLUGIN_EXPORTS\" ";
@@ -711,7 +711,7 @@ protected:
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\"$(QTDIR)\\include;..\\..\\visit\\" << pluginType << "\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\mesa;..\\..\\include\\Python-2.5;..\\..\\include\\zlib\"" << endl;
-        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS";
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;GENERAL_PLUGIN_EXPORTS";
         if (exports != "")
             out << ";" << exports;
         out << "\"" << endl;
@@ -794,7 +794,7 @@ protected:
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\"$(QTDIR)\\include;..\\..\\visit\\" << pluginType << "\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\mesa;..\\..\\include\\Python-2.5;..\\..\\include\\zlib\"" << endl;
-        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS";
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;GENERAL_PLUGIN_EXPORTS";
         if (exports != "")
             out << ";" << exports;
         out << "\"" << endl;
@@ -1392,7 +1392,7 @@ protected:
         out << "# PROP Ignore_Export_Lib 0\n";
         out << "# PROP Target_Dir \"\"\n";
         out << "# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"" << name << pluginType << "_EXPORTS\" /YX /FD /c\n";
-        out << "# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I \"..\\..\\visit\\databases\\" << name << "\" /D \"NDEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" " << pluginDefs << " /D \"USING_MSVC6\" /YX /FD /TP /c\n";
+        out << "# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I \"..\\..\\visit\\databases\\" << name << "\" /D \"NDEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" " << pluginDefs << " /YX /FD /TP /c\n";
         out << "# ADD BASE MTL /nologo /D \"NDEBUG\" /mktyplib203 /win32\n";
         out << "# ADD MTL /nologo /D \"NDEBUG\" /mktyplib203 /win32\n";
         out << "# ADD BASE RSC /l 0x409 /d \"NDEBUG\"\n";
@@ -1422,7 +1422,7 @@ protected:
         out << "# PROP Ignore_Export_Lib 0\n";
         out << "# PROP Target_Dir \"\"\n";
         out << "# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"" << name << pluginType << "_EXPORTS\" /YX /FD /GZ /c\n";
-        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\databases\\" << name << "\" /D \"_DEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" "<< pluginDefs << " /D \"USING_MSVC6\" /YX /FD /GZ /TP /c\n";
+        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\databases\\" << name << "\" /D \"_DEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" "<< pluginDefs << " /YX /FD /GZ /TP /c\n";
         out << "# ADD BASE MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32\n";
         out << "# ADD MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32\n";
         out << "# ADD BASE RSC /l 0x409 /d \"_DEBUG\"\n";
@@ -1496,7 +1496,7 @@ protected:
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\"..\\..\\visit\\databases\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\silo;..\\..\\include\\zlib\"" << endl;
-        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;USING_MSVC7;" << pluginDefs << "\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL" << pluginDefs << "\"" << endl;
         out << "\t\t\t\tStringPooling=\"TRUE\"" << endl;
         out << "\t\t\t\tRuntimeLibrary=\"2\"" << endl;
         out << "\t\t\t\tEnableFunctionLevelLinking=\"TRUE\"" << endl;
@@ -1562,7 +1562,7 @@ protected:
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\"..\\..\\visit\\databases\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\silo;..\\..\\include\\zlib\"" << endl;
-        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;USING_MSVC7;" << pluginDefs << "\"" << endl;;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL" << pluginDefs << "\"" << endl;;
         out << "\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
         out << "\t\t\t\tRuntimeLibrary=\"3\"" << endl;
         out << "\t\t\t\tUsePrecompiledHeader=\"2\"" << endl;
@@ -1769,7 +1769,7 @@ protected:
         out << "# PROP Ignore_Export_Lib 0\n";
         out << "# PROP Target_Dir \"\"\n";
         out << "# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D \"WIN32\" /D \"NDEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"" << name << "I_EXPORTS\" /YX /FD /c\n";
-        out << "# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I \"..\\..\\visit\\databases\\" << name << "\" /D \"NDEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" /D \"USING_MSVC6\" /YX /FD /TP /c\n";
+        out << "# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I \"..\\..\\visit\\databases\\" << name << "\" /D \"NDEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" /YX /FD /TP /c\n";
         out << "# ADD BASE MTL /nologo /D \"NDEBUG\" /mktyplib203 /win32\n";
         out << "# ADD MTL /nologo /D \"NDEBUG\" /mktyplib203 /win32\n";
         out << "# ADD BASE RSC /l 0x409 /d \"NDEBUG\"\n";
@@ -1799,7 +1799,7 @@ protected:
         out << "# PROP Ignore_Export_Lib 0\n";
         out << "# PROP Target_Dir \"\"\n";
         out << "# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D \"WIN32\" /D \"_DEBUG\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"" << name << "I_EXPORTS\" /YX /FD /GZ /c\n";
-        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\databases\\" << name << "\" /D \"_DEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" /D \"USING_MSVC6\" /YX /FD /GZ /TP /c\n";
+        out << "# ADD CPP /nologo /G6 /MDd /W3 /Gm /GX /ZI /Od /I \"..\\..\\visit\\databases\\" << name << "\" /D \"_DEBUG\" /D \"WIN32\" /D \"_WINDOWS\" /D \"_MBCS\" /D \"_USRDLL\" /D \"GENERAL_PLUGIN_EXPORTS\" /YX /FD /GZ /TP /c\n";
         out << "# ADD BASE MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32\n";
         out << "# ADD MTL /nologo /D \"_DEBUG\" /mktyplib203 /win32\n";
         out << "# ADD BASE RSC /l 0x409 /d \"_DEBUG\"\n";
@@ -1860,7 +1860,7 @@ protected:
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\"..\\..\\visit\\databases\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\silo;..\\..\\include\\zlib\"" << endl;
-        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS\"" << endl;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;NDEBUG;_WINDOWS;_USRDLL;GENERAL_PLUGIN_EXPORTS\"" << endl;
         out << "\t\t\t\tStringPooling=\"TRUE\"" << endl;
         out << "\t\t\t\tRuntimeLibrary=\"2\"" << endl;
         out << "\t\t\t\tEnableFunctionLevelLinking=\"TRUE\"" << endl;
@@ -1926,7 +1926,7 @@ protected:
         out << "\t\t\t\tOptimizeForProcessor=\"2\"" << endl;
         out << "\t\t\t\tEnableEnhancedInstructionSet=\"1\"" << endl;
         out << "\t\t\t\tAdditionalIncludeDirectories=\"..\\..\\visit\\databases\\" << name << ";..\\..\\include\\VisIt;..\\..\\include\\vtk;..\\..\\include\\vtk\\MSVC7.Net;..\\..\\include\\silo;..\\..\\include\\zlib\"" << endl;
-        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;USING_MSVC7;GENERAL_PLUGIN_EXPORTS\"" << endl;;
+        out << "\t\t\t\tPreprocessorDefinitions=\"WIN32;_DEBUG;_WINDOWS;_USRDLL;GENERAL_PLUGIN_EXPORTS\"" << endl;;
         out << "\t\t\t\tBasicRuntimeChecks=\"3\"" << endl;
         out << "\t\t\t\tRuntimeLibrary=\"3\"" << endl;
         out << "\t\t\t\tUsePrecompiledHeader=\"2\"" << endl;

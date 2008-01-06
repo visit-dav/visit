@@ -45,7 +45,7 @@
 #else
 #define DBATTS_API __declspec(dllimport)
 #endif
-#if defined(USING_MSVC6) || defined(USING_MSVC7)
+#if defined(_MSC_VER)
 // Turn off warning about signed/unsigned comparison.
 #pragma warning(disable:4018)
 // Turn off warning about lack of DLL interface.

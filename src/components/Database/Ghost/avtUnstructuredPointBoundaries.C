@@ -248,7 +248,7 @@ avtUnstructuredPointBoundaries::Generate(vector<int> domainNum,
             }
 
             vector<int> givenCells, givenPoints;
-#if defined(_WIN32) && defined(USING_MSVC6)
+#if defined(_MSC_VER) && (_MSC_VER <= 1200) // MSVC 6
             for(std::set<int>::const_iterator cell_it = cells.begin();
                 cell_it != cells.end(); ++cell_it)
                 givenCells.push_back(*cell_it);

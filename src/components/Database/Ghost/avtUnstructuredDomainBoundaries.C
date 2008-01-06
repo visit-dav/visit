@@ -92,7 +92,8 @@ namespace
 // Use the preprocessor to help ensure that the right template ExchangeData
 // function is instantiated.
 //
-#if defined(_WIN32) && defined(USING_MSVC6)
+#if defined(_MSC_VER) && (_MSC_VER <= 1200) 
+// MSVC 6
 static float         hack_float;
 static char          hack_char;
 static unsigned char hack_unsigned_char;
@@ -1241,7 +1242,7 @@ vector<vtkDataArray*>
 avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
                                               bool                isPointData,
                                               vector<vtkDataArray*> &data
-#if defined(_WIN32) && defined(USING_MSVC6)
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)
                                               , T signature
 #endif
                                              )
@@ -1251,7 +1252,7 @@ avtUnstructuredDomainBoundaries::ExchangeData(vector<int>         &domainNum,
     T ***gainedData;
     int **nGainedTuples;
 
-#if defined(_WIN32) && defined(USING_MSVC6)
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)
 //
 // This code is an "inline" copy of the CommunicateDataInformation method
 // without the various parallel ifdefs. The MSVC 6.0 compiler refused to
@@ -2442,7 +2443,8 @@ avtUnstructuredDomainBoundaries::CommunicateMaterialInformation(
 //    Mark C. Miller, Mon Jan 22 22:09:01 PST 2007
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
-#if !defined(_WIN32) || (defined(_WIN32) && !defined(USING_MSVC6))
+#if !(defined(_MSC_VER) && (_MSC_VER <= 1200))
+// not on windows or not on windows using MSVC 6
 template <class T>
 void
 avtUnstructuredDomainBoundaries::CommunicateDataInformation(

@@ -51,11 +51,15 @@
 
 #include <Utility.h>
 #include <VisItException.h>
-
+#ifdef WIN32
+#define VISITCLI_API __declspec(dllimport)
+#else
+#define VISITCLI_API
+#endif
 // For the VisIt module.
 extern "C" void cli_initvisit(int, bool, int, char **, int, char **);
 extern "C" void cli_runscript(const char *);
-extern "C" int Py_Main(int, char **);
+extern "C" VISITCLI_API int Py_Main(int, char **);
 
 // ****************************************************************************
 // Function: main

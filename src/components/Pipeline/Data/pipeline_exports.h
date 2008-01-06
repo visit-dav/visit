@@ -45,7 +45,7 @@
 #else
 #define PIPELINE_API __declspec(dllimport)
 #endif
-#if defined(USING_MSVC6) || defined(USING_MSVC7)
+#if defined(_MSC_VER)
 // Turn off warning about inheritance by dominance.
 #pragma warning(disable:4250)
 // Turn off warning about lack of DLL interface
@@ -59,7 +59,7 @@
 
 // Define VISIT_LONG_LONG so the Windows compiler can handle it.
 #ifndef VISIT_LONG_LONG
-#if defined(USING_MSVC6)
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)
 #define VISIT_LONG_LONG __int64
 #else
 #define VISIT_LONG_LONG long long
