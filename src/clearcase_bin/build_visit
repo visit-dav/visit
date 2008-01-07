@@ -299,7 +299,8 @@ elif [[ "$OPSYS" == "Linux" ]]; then
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
-      export MESA_TARGET=${MESA_TARGET-"linux-x86-64"}
+###   export MESA_TARGET=${MESA_TARGET-"linux-x86-64"}
+      export MESA_TARGET=${MESA_TARGET-"linux-x86"}
       QT_PLATFORM="linux-g++-64"
    elif [[ "$(uname -m)" == "ia64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
