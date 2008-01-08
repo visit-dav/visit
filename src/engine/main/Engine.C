@@ -1085,6 +1085,10 @@ Engine::ProcessInput()
 //    Kathleen Bonnell, Wed Jan  2 08:15:07 PST 2008 
 //    Fix -plugindir for Windows platform. 
 //
+//    Eric Brugger, Mon Jan  7 11:51:12 PST 2008
+//    Made to use putenv instead of setenv if on Windows or HAVE_SETENV is
+//    not defined.
+//
 // ****************************************************************************
 
 void
@@ -1239,13 +1243,13 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-plugindir") == 0  && (i+1) < argc )
         {
-#ifndef WIN32
-	    string pluginDir = argv[i+1];
-	    setenv( "VISITPLUGINDIR", pluginDir.c_str(), 1 );
+#if defined(WIN32) || !defined(HAVE_SETENV)
+            char *pluginDir = new char[strlen(argv[i+1])+1+30];
+            sprintf(pluginDir, "VISITPLUGINDIR=%s", argv[i+1]);
+            putenv(pluginDir); 
+            delete [] pluginDir;
 #else
-	    string pluginDir("VISITPLUGINDIR=");
-            pluginDir += argv[i+1];
-            putenv(pluginDir.c_str()); 
+	    setenv( "VISITPLUGINDIR", argv[i+1], 1 );
 #endif
 	    ++i;
         }

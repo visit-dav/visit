@@ -754,6 +754,9 @@ dnl
 dnl    Cyrus Harrison, Tue Dec 18 11:53:59 PST 2007
 dnl    Added subdirectory components/Shapelets.
 dnl
+dnl    Eric Brugger, Mon Jan  7 11:54:11 PST 2008
+dnl    Added a test for the function setenv.
+dnl
 dnl --------------------------------------------------------------------------
 
 dnl
@@ -3463,6 +3466,7 @@ AC_SUBST(CREATE_CCMIO_LINK)
 #
 
 AC_CHECK_FUNCS(memmove)
+AC_CHECK_FUNCS(setenv)
 
 #
 # Checks for typedefs, structures, and compiler characteristics.
