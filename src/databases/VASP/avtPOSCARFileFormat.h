@@ -36,95 +36,75 @@
 *
 *****************************************************************************/
 
+
+// ************************************************************************* //
+//                            avtPOSCARFileFormat.h                           //
+// ************************************************************************* //
+
+#ifndef AVT_POSCAR_FILE_FORMAT_H
+#define AVT_POSCAR_FILE_FORMAT_H
+
 #include <avtFileFormatInterface.h>
-#include <DebugStream.h>
-#include <VisItException.h>
-#include <InvalidDBTypeException.h>
-#include <InvalidFilesException.h>
-#include <string>
-
-#include <avtOUTCARFileFormat.h>
-#include <avtCHGCARFileFormat.h>
-#include <avtPOSCARFileFormat.h>
+#include <avtSTSDFileFormat.h>
 
 // ****************************************************************************
-// Method: VASP_CreateFileFormatInterface
+//  Class: avtPOSCARFileFormat
 //
-// Purpose:
-//   Opens the first VASP file in the list and attempts to use the various
-//   file formats to create a file format interface.
+//  Purpose:
+//      Reads in POSCAR files as a plugin to VisIt.
 //
-// Arguments:
-//   list   : The list of filenames.
-//   nList  : The number of filenames in the list.
-//   nBlock : The number of files in a timestep.
+//  Programmer: Jeremy Meredith
+//  Creation:   January  8, 2008
 //
-// Returns:    A file format interface or 0 if no file format interface
-//             was created.
-//
-// Programmer: Jeremy Meredith
-// Creation:   August 29, 2006
-//
-// Modifications:
-//    Jeremy Meredith, Tue Jan  8 10:35:45 EST 2008
-//    Added POSCAR support.
+//  Modifications:
 //
 // ****************************************************************************
 
-avtFileFormatInterface *
-VASP_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
+class avtPOSCARFileFormat : public avtSTSDFileFormat
 {
-    avtFileFormatInterface *ffi = 0;
+  public:
+    static bool        Identify(const std::string&);
+    static avtFileFormatInterface *CreateInterface(
+                       const char *const *list, int nList, int nBlock);
 
-    if (list != 0 && nList > 0)
-    {
-        // Determine the type of reader that we want to use.
-        int flavor = -1;
-        TRY
-        {
-            std::string fn(list[0]);
-            if(flavor == -1 && avtOUTCARFileFormat::Identify(fn))
-            {
-                flavor = 0;
-                debug4 << "Database is avtOUTCARFileFormat" << endl;
-            }
+                       avtPOSCARFileFormat(const char *filename);
+    virtual           ~avtPOSCARFileFormat() {;};
 
-            if(flavor == -1 && avtCHGCARFileFormat::Identify(fn))
-            {
-                flavor = 1;
-                debug4 << "Database is avtCHGCARFileFormat" << endl;
-            }
+    virtual const char    *GetType(void)   { return "POSCAR"; };
+    virtual void           FreeUpResources(void); 
 
-            if(flavor == -1 && avtPOSCARFileFormat::Identify(fn))
-            {
-                flavor = 2;
-                debug4 << "Database is avtPOSCARFileFormat" << endl;
-            }
+    virtual vtkDataSet    *GetMesh(const char *);
+    virtual vtkDataArray  *GetVar(const char *);
+    virtual vtkDataArray  *GetVectorVar(const char *);
 
-            if(flavor == -1)
-            {
-                EXCEPTION1(InvalidFilesException, list[0]);
-            }
-        }
-        CATCH(VisItException)
-        {
-            RETHROW;
-        }
-        ENDTRY
+  protected:
+    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
 
-        switch(flavor)
-        {
-          case 0:
-            ffi = avtOUTCARFileFormat::CreateInterface(list, nList, nBlock);
-            break;
-          case 1:
-            ffi = avtCHGCARFileFormat::CreateInterface(list, nList, nBlock);
-            break;
-          case 2:
-            ffi = avtPOSCARFileFormat::CreateInterface(list, nList, nBlock);
-            break;
-        }
-    }
+    std::vector<istream::pos_type>   file_positions;
 
-    return ffi;
-}
+    double unitCell[3][3];
+
+    ifstream in;
+    std::string filename;
+    bool file_read;
+
+    int natoms;
+
+    std::vector<float> x;
+    std::vector<float> y;
+    std::vector<float> z;
+    std::vector<int> species;
+
+    std::vector<int> cx;
+    std::vector<int> cy;
+    std::vector<int> cz;
+
+    std::vector<int> species_counts;
+    std::vector<int> element_map;
+
+    void OpenFileAtBeginning();
+    void ReadFile();
+};
+
+
+#endif

@@ -8,11 +8,13 @@
       avtVASPFileFormat.C
       avtOUTCARFileFormat.C
       avtCHGCARFileFormat.C
+      avtPOSCARFileFormat.C
     </Files>
     <Files components="E">
       avtVASPFileFormat.C
       avtOUTCARFileFormat.C
       avtCHGCARFileFormat.C
+      avtPOSCARFileFormat.C
     </Files>
     <Attribute name="" purpose="" persistent="true" exportAPI="" exportInclude="">
     </Attribute>
