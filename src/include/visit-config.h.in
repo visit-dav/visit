@@ -69,6 +69,9 @@
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
 
+/* Define to 1 if you have the `setenv' function. */
+#undef HAVE_SETENV
+
 /* Define if socklen_t is defined. */
 #undef HAVE_SOCKLEN_T
 

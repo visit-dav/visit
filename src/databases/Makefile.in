@@ -292,6 +292,9 @@
 #   Made the simulation plugins dependent on a variable determined during
 #   configure, like the 3rd-party-dependent plugins.
 #
+#   Eric Brugger, Mon Jan  7 11:55:46 PST 2008
+#   Added XDMF reader.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -368,6 +371,7 @@ REQUIRED=\
  Vista \
  VTK \
  WavefrontOBJ \
+ XDMF \
  Xmdv \
  XYZ \
  ZipWrapper
