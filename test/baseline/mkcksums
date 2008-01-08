@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Files changed since ckecksum file was last updated..."
-newFiles=`find . -newer cksums.txt \( -name '*.tif' -o -name '*.txt' \) -print`
+newFiles=`find . -name .svn -prune -o -newer cksums.txt \( -name '*.tif' -o -name '*.txt' \) -print`
 
 rm -f newFiles.txt
 for file in $newFiles
@@ -22,10 +22,8 @@ if test ! -f newFiles.txt ; then
    exit 0
 fi
 
-/usr/xpg4/bin/grep -v -f newFiles.txt cksums.txt > newcksums.txt
+grep -v -f newFiles.txt cksums.txt > newcksums.txt
 rm -f newFiles.txt
-
-cleartool co -c 'updating' cksums.txt
 mv newcksums.txt cksums.txt
 
 for file in $newFiles
@@ -42,7 +40,3 @@ do
         cksum $base.txt >> cksums.txt
     fi
 done
-
-echo "About to update checksum file..."
-
-cleartool ci -c 'updating' cksums.txt

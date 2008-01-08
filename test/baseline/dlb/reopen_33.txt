@@ -1,2 +1,0 @@
-Pseudocolor:  (InvalidFilesException)
-The database had an error opening /data_vobs/VisIt/test/wave0080.silo. It may be an invalid file.
