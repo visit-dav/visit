@@ -953,7 +953,7 @@ VisitInteractor::EndBoundingBox(void)
 //  Modificatios:
 //    Gunther H. Weber, Tue Aug  7 11:25:52 PDT 2007
 //    Split into two functions, one computing the zoom factor from the
-//    mouse move and one computing the zommed view so that mouse wheel 
+//    mouse move and one computing the zoomed view so that mouse wheel 
 //    events can make use of this function.
 //
 //    Gunther H. Weber, Fri Sep 28 14:05:10 PDT 2007

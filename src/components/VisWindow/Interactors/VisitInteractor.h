@@ -121,6 +121,9 @@ typedef   void (*ViewCallback)(VisWindow *);
 //    zoom factor from the mouse move and one computing the zommed view so that
 //    mouse wheel events can make use of this function.
 //
+//    Hank Childs, Tue Jan  8 11:22:44 PST 2008
+//    Disallow mouse wheel movements where they are not intended.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
@@ -138,6 +141,11 @@ class VISWINDOW_API VisitInteractor : public vtkInteractorStyleTrackballCamera
     virtual void                OnRightButtonDown();
     virtual void                OnRightButtonUp();
     virtual void                OnChar();
+
+    // Define these to make sure they are no-ops, and that we don't get the
+    // VTK behavior.  Derived classes are welcome to redefine them.
+    virtual void                OnMouseWheelForward() {;};
+    virtual void                OnMouseWheelBackward() {;};
 
     virtual void                OnMouseMove();
 

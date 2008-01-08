@@ -295,6 +295,9 @@
 #   Eric Brugger, Mon Jan  7 11:55:46 PST 2008
 #   Added XDMF reader.
 #
+#   Hank Childs, Tue Jan  8 13:43:59 PST 2008
+#   Move XDMF to HDF5 section.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -309,7 +312,7 @@ CGNS=CGNS
 EXODUS=Exodus TimeVaryingExodus
 GDAL=GDAL
 HDF4=Cosmos Enzo ZeusMP
-HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC H5Nimrod  M3D
+HDF5=Tetrad SAMRAI CosmosPP Pixie FLASH Chombo GTC H5Nimrod  M3D XDMF 
 MILI=Mili
 NETCDF=NETCDF S3D
 PDB=KullLite PDB Cale
@@ -371,7 +374,6 @@ REQUIRED=\
  Vista \
  VTK \
  WavefrontOBJ \
- XDMF \
  Xmdv \
  XYZ \
  ZipWrapper
