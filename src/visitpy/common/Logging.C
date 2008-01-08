@@ -1623,6 +1623,12 @@ static void log_RequestMetaDataRPC(ViewerRPC *rpc, char *str)
              rpc->GetDatabase().c_str(), rpc->GetStateNumber());
 }
 
+static void log_SetQueryFloatFormatRPC(ViewerRPC *rpc, char *str)
+{
+    SNPRINTF(str, SLEN, "SetQueryFloatFormat(\"%s\")\n", 
+                        rpc->GetStringArg1().c_str());
+}
+
 // ****************************************************************************
 // Method: LogRPCs
 //
@@ -1645,6 +1651,9 @@ static void log_RequestMetaDataRPC(ViewerRPC *rpc, char *str)
 //
 //   Brad Whitlock, Tue May 8 16:32:06 PST 2007
 //   Added debug5 logging.
+//
+//   Cyrus Harrison, Tue Jan  8 08:01:51 PST 2008
+//   Added SetQueryFloatFormatRPC.
 //
 // ****************************************************************************
 
@@ -2155,7 +2164,10 @@ LogRPCs(Subject *subj, void *)
     case ViewerRPC::RequestMetaDataRPC:
         log_RequestMetaDataRPC(rpc, str);
         break;
-
+    case ViewerRPC::SetQueryFloatFormatRPC:
+        log_SetQueryFloatFormatRPC(rpc, str);
+        break;
+        
     // RPCs that we don't want to log:
     case ViewerRPC::CloseRPC:
     case ViewerRPC::DetachRPC:
