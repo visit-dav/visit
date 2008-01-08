@@ -1556,59 +1556,63 @@ avtXDMFFileFormat::GetCurvilinearMesh(MeshInfo *meshInfo)
         break;
 
       case MeshInfo::TYPE_XY:
-        float *coords = new float[2*nnodes];
-        if (!ReadHDFDataItem(meshInfo->meshData[0], coords, 2 * nnodes))
         {
+            float *coords = new float[2*nnodes];
+            if (!ReadHDFDataItem(meshInfo->meshData[0], coords, 2 * nnodes))
+            {
+                delete [] coords;
+                sgrid->Delete();
+                return NULL;
+            }
+            for (int i = 0; i < nnodes; i++)
+            {
+                *pts++ = *coords++;
+                *pts++ = *coords++;
+                *pts++ = 0.;
+            }
             delete [] coords;
-            sgrid->Delete();
-            return NULL;
         }
-        for (int i = 0; i < nnodes; i++)
-        {
-            *pts++ = *coords++;
-            *pts++ = *coords++;
-            *pts++ = 0.;
-        }
-        delete [] coords;
         break;
 
       case MeshInfo::TYPE_VXVYVZ:
-        float *xcoords = new float[nnodes];
-        float *ycoords = new float[nnodes];
-        float *zcoords = new float[nnodes];
-        if (!ReadHDFDataItem(meshInfo->meshData[0], xcoords, nnodes))
         {
-            delete [] xcoords; delete [] ycoords; delete [] zcoords;
-            sgrid->Delete();
-            return NULL;
-        }
-        if (!ReadHDFDataItem(meshInfo->meshData[1], ycoords, nnodes))
-        {
-            delete [] xcoords; delete [] ycoords; delete [] zcoords;
-            sgrid->Delete();
-            return NULL;
-        }
-        if (!ReadHDFDataItem(meshInfo->meshData[2], zcoords, nnodes))
-        {
-            for (int i = 0; i < nnodes; i++)
+            float *xcoords = new float[nnodes];
+            float *ycoords = new float[nnodes];
+            float *zcoords = new float[nnodes];
+            if (!ReadHDFDataItem(meshInfo->meshData[0], xcoords, nnodes))
             {
-                *pts++ = *xcoords++;
-                *pts++ = *ycoords++;
-                *pts++ = 0.;
+                delete [] xcoords; delete [] ycoords; delete [] zcoords;
+                sgrid->Delete();
+                return NULL;
             }
-        }
-        else
-        {
-            for (int i = 0; i < nnodes; i++)
+            if (!ReadHDFDataItem(meshInfo->meshData[1], ycoords, nnodes))
             {
-                *pts++ = *xcoords++;
-                *pts++ = *ycoords++;
-                *pts++ = *zcoords++;
+                delete [] xcoords; delete [] ycoords; delete [] zcoords;
+                sgrid->Delete();
+                return NULL;
             }
+            if (!ReadHDFDataItem(meshInfo->meshData[2], zcoords, nnodes))
+            {
+                for (int i = 0; i < nnodes; i++)
+                {
+                    *pts++ = *xcoords++;
+                    *pts++ = *ycoords++;
+                    *pts++ = 0.;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < nnodes; i++)
+                {
+                    *pts++ = *xcoords++;
+                    *pts++ = *ycoords++;
+                    *pts++ = *zcoords++;
+                }
+            }
+            delete [] xcoords;
+            delete [] ycoords;
+            delete [] zcoords;
         }
-        delete [] xcoords;
-        delete [] ycoords;
-        delete [] zcoords;
         break;
 
       default:
