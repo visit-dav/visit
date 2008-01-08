@@ -37,6 +37,9 @@
 *****************************************************************************/
 
 #include <SliceAttributes.h>
+
+#include <math.h>
+
 #include <DataNode.h>
 #include <PlaneAttributes.h>
 

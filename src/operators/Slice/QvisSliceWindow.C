@@ -36,6 +36,7 @@
 *
 *****************************************************************************/
 
+#include <math.h>
 #include <stdio.h> // for sscanf
 
 #include <qbuttongroup.h>
