@@ -341,6 +341,10 @@ protected:
 
   int ReadDataSetData(vtkDataSet *ds);
 
+  void IssueReadWarning(double d);
+  void IssueReadWarning(const char *buf, int eval);
+  double ReadVal(int mode=0);
+
   // This supports getting additional information from vtk files
   int  NumberOfScalarsInFile;
   char **ScalarsNameInFile;
@@ -393,6 +397,9 @@ protected:
   virtual int RequestInformation(vtkInformation *, vtkInformationVector **,
                                  vtkInformationVector *)
     { return 1; }
+
+
+  int numReadWarnings;
 
 private:
   vtkVisItDataReader(const vtkVisItDataReader&);  // Not implemented.

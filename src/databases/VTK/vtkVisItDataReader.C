@@ -38,10 +38,14 @@
 #include "vtkUnsignedLongArray.h"
 #include "vtkUnsignedShortArray.h"
 
+#include "snprintf.h"
 #include "Utility.h"
+#include "avtCallback.h"
 
 #include <ctype.h>
 #include <sys/stat.h>
+#include <stdlib.h>
+#include <errno.h>
 
 vtkCxxRevisionMacro(vtkVisItDataReader, "$Revision: 1.133 $");
 vtkStandardNewMacro(vtkVisItDataReader);
@@ -106,6 +110,8 @@ vtkVisItDataReader::vtkVisItDataReader()
 
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);
+
+  this->numReadWarnings = 0;
 }  
 
 vtkVisItDataReader::~vtkVisItDataReader()
@@ -248,6 +254,38 @@ int vtkVisItDataReader::ReadString(char result[256])
   return 1;
 }
 
+void
+vtkVisItDataReader::IssueReadWarning(double val)
+{
+    if (numReadWarnings > 5)
+        return;
+
+    char msg[256];
+    SNPRINTF(msg, sizeof(msg), "Error reading VTK file near value %f%s",
+        val, numReadWarnings==5?"\nFurther warnings will be suppressed.":"");
+    if (!avtCallback::IssueWarning(msg))
+        cerr << msg << endl;
+
+    numReadWarnings++;
+}
+
+void
+vtkVisItDataReader::IssueReadWarning(const char *buf, int eval)
+{
+    if (numReadWarnings > 5)
+        return;
+
+    char msg[256];
+    SNPRINTF(msg, sizeof(msg), "Error reading VTK file near value %s."
+        "\nThe system error message is \"%s\"\n%s",
+        buf, eval==-131?"Not integral value":strerror(eval),
+	numReadWarnings==5?"\nFurther warnings will be suppressed.":"");
+    if (!avtCallback::IssueWarning(msg))
+        cerr << msg << endl;
+
+    numReadWarnings++;
+}
+
 // Internal function to read in an integer value.
 // Returns zero if there was an error.
 
@@ -255,7 +293,58 @@ int vtkVisItDataReader::ReadString(char result[256])
 //  Modifications:
 //    Kathleen Bonnell, Wed Jul 13 18:28:51 PDT 2005
 //    Read the data as char instead of int.
+//
+//    Mark C. Miller, Tue Jan  8 15:42:05 PST 2008
+//    Made all methods read into double and then cast value. Also, added
+//    warnings.
 // ***************************************************************************
+double vtkVisItDataReader::ReadVal(int mode)
+{
+    double retval = 0.0;
+    char buf[256];
+    *this->IS >> buf;
+
+    char *tmpstr;
+    errno = 0;
+    if      (mode == 0) // double
+    {
+        retval = strtod(buf, &tmpstr);
+        if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
+            IssueReadWarning(buf, errno);
+    }
+    else if (mode == 1) // float
+    {
+        retval = (double) strtof(buf, &tmpstr);
+        if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
+            IssueReadWarning(buf, errno);
+    }
+    else if (mode == 2) // integral
+    {
+        retval = (double) strtol(buf, &tmpstr, 10);
+        if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
+            IssueReadWarning(buf, errno);
+        else // see if we've got a decimal fraction portion
+	{
+	    char *tmpstr1;
+	    double val = strtod(tmpstr, &tmpstr1);
+	    bool ok = false;
+	    if ((tmpstr1 == 0) || ((val == 0.0) && (tmpstr1 == tmpstr)))
+	        ok = true;
+	    if (!ok)
+                IssueReadWarning(buf, -131);
+	}
+    }
+    else                // fail-safe as double
+    {
+        retval = strtod(buf, &tmpstr);
+        if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
+            IssueReadWarning(buf, errno);
+    }
+
+
+    return retval;
+}
+
 int vtkVisItDataReader::Read(char *result)
 {
   char charData;
@@ -284,9 +373,11 @@ int vtkVisItDataReader::Read(unsigned char *result)
 
 int vtkVisItDataReader::Read(short *result)
 {
-  *this->IS >> *result;
-  if (this->IS->fail())
+  *result = (short) ReadVal(2);
+  if (!this->IS->good())
     {
+    IssueReadWarning(*result);
+    *result = 0;
     return 0;
     }
   return 1;
@@ -294,9 +385,11 @@ int vtkVisItDataReader::Read(short *result)
 
 int vtkVisItDataReader::Read(unsigned short *result)
 {
-  *this->IS >> *result;
-  if (this->IS->fail())
+  *result = (unsigned short) ReadVal(2);
+  if (!this->IS->good())
     {
+    IssueReadWarning(*result);
+    *result = 0;
     return 0;
     }
   return 1;
@@ -304,9 +397,11 @@ int vtkVisItDataReader::Read(unsigned short *result)
 
 int vtkVisItDataReader::Read(int *result)
 {
-  *this->IS >> *result;
-  if (this->IS->fail())
+  *result = (int) ReadVal(2);
+  if (!this->IS->good())
     {
+    IssueReadWarning(*result);
+    *result = 0;
     return 0;
     }
   return 1;
@@ -314,9 +409,11 @@ int vtkVisItDataReader::Read(int *result)
 
 int vtkVisItDataReader::Read(unsigned int *result)
 {
-  *this->IS >> *result;
-  if (this->IS->fail())
+  *result = (unsigned int) ReadVal(2);
+  if (!this->IS->good())
     {
+    IssueReadWarning(*result);
+    *result = 0;
     return 0;
     }
   return 1;
@@ -324,9 +421,11 @@ int vtkVisItDataReader::Read(unsigned int *result)
 
 int vtkVisItDataReader::Read(long *result)
 {
-  *this->IS >> *result;
-  if (this->IS->fail())
+  *result = (long) ReadVal(2);
+  if (!this->IS->good())
     {
+    IssueReadWarning(*result);
+    *result = 0;
     return 0;
     }
   return 1;
@@ -334,9 +433,11 @@ int vtkVisItDataReader::Read(long *result)
 
 int vtkVisItDataReader::Read(unsigned long *result)
 {
-  *this->IS >> *result;
-  if (this->IS->fail())
+  *result = (unsigned long) ReadVal(2);
+  if (!this->IS->good())
     {
+    IssueReadWarning(*result);
+    *result = 0;
     return 0;
     }
   return 1;
@@ -344,9 +445,11 @@ int vtkVisItDataReader::Read(unsigned long *result)
 
 int vtkVisItDataReader::Read(float *result)
 {
-  *this->IS >> *result;
-  if (this->IS->fail())
+  *result = (float) ReadVal(1);
+  if (!this->IS->good())
     {
+    IssueReadWarning(*result);
+    *result = 0;
     return 0;
     }
   return 1;
@@ -354,9 +457,11 @@ int vtkVisItDataReader::Read(float *result)
 
 int vtkVisItDataReader::Read(double *result)
 {
-  *this->IS >> *result;
-  if (this->IS->fail()) 
+  *result = ReadVal(0);
+  if (!this->IS->good())
     {
+    IssueReadWarning(*result);
+    *result = 0;
     return 0;
     }
   return 1;
