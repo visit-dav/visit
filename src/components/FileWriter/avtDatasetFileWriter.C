@@ -64,6 +64,7 @@
 #include <ColorTableAttributes.h>
 #include <ColorControlPointList.h>
 #include <ColorControlPoint.h>
+#include <AtomicProperties.h>
 
 #include <avtCommonDataFunctions.h>
 
@@ -1083,6 +1084,10 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    Jeremy Meredith, Thu May 31 15:31:31 EDT 2007
 //    Added suppport for volume rendering rectilinear grids
 //
+//    Jeremy Meredith, Wed Jan  9 13:12:22 EST 2008
+//    Added support for a user-defined function to scale vector and
+//    vertex glyphs.  Added new atomic properties include file.
+//
 // ****************************************************************************
 
 void
@@ -1161,12 +1166,40 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     ctfile.close();
 
     //
+    // And make a .inc file with the current atomic properties
+    //
+    ofstream atomfile("atomicproperties.inc");
+    atomfile << "#declare atomic_radius = array["<<MAX_ELEMENT_NUMBER<<"]\n";
+    atomfile << "{" << endl;
+    for (int i=0; i<MAX_ELEMENT_NUMBER; i++)
+    {
+        atomfile << "  " << atomic_radius[i];
+        if (i<MAX_ELEMENT_NUMBER-1)
+            atomfile << ",";
+        atomfile << endl;
+    }
+    atomfile << "};" << endl;
+    atomfile << endl;
+    atomfile << "#declare covalent_radius = array["<<MAX_ELEMENT_NUMBER<<"]\n";
+    atomfile << "{" << endl;
+    for (int i=0; i<MAX_ELEMENT_NUMBER; i++)
+    {
+        atomfile << "  " << covalent_radius[i];
+        if (i<MAX_ELEMENT_NUMBER-1)
+            atomfile << ",";
+        atomfile << endl;
+    }
+    atomfile << "};" << endl;
+    atomfile.close();
+
+    //
     // And make a .pov file with initial values for the user to play with
     //
     char masterfilename[1024];
     sprintf(masterfilename, "%s.pov", basename);
     ofstream masterfile(masterfilename);
     masterfile << "#include \"colortables.inc\"" << endl;
+    masterfile << "#include \"atomicproperties.inc\"" << endl;
     masterfile << "#include \"math.inc\"" << endl;
     masterfile << "#include \"transforms.inc\"" << endl;
     masterfile << endl;
@@ -1182,6 +1215,16 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     masterfile << "#declare LineWidth     = 0.1; // absolute scale only" << endl;
     masterfile << "#declare VecFixedSize  = 1.0; // absolute scale" << endl;
     masterfile << "#declare VecScaleSize  = 0.0; // scale by value" << endl;
+    masterfile << endl;
+    masterfile << "// Default scale function for vertex glyph objects with a scalar value" << endl;
+    masterfile << "#macro VertScaleFunction(value)" << endl;
+    masterfile << "  VertFixedSize + value*VertScaleSize" << endl;
+    masterfile << "#end" << endl;
+    masterfile << endl;
+    masterfile << "// Default scale function for vector glyph objects" << endl;
+    masterfile << "#macro VecScaleFunction(vec)" << endl;
+    masterfile << "  VecFixedSize + vlength(vec)*VecScaleSize" << endl;
+    masterfile << "#end" << endl;
     masterfile << endl;
     masterfile << "// Glyph objects (normalized to unit-1 size)" << endl;
     masterfile << "#declare VertGlyph = object { sphere {<0,0,0>,1} };" << endl;
@@ -1377,6 +1420,10 @@ avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
 //    Added volume rendering support through dense-media in a bounding box,
 //    using a 32-bit density file, and with transfer functions implemented
 //    using independent density maps for color and opacity.
+//
+//    Jeremy Meredith, Wed Jan  9 13:12:22 EST 2008
+//    Added support for a user-defined function to scale vector and
+//    vertex glyphs.
 //
 // ****************************************************************************
 
@@ -1722,7 +1769,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
         out << "    object {"<<endl;
         out << "        VertGlyph"<<endl;
         if (ptscalars || cellscalars)
-            out << "        scale VertFixedSize+vertvalue*VertScaleSize"<<endl;
+            out << "        scale VertScaleFunction(vertvalue)"<<endl;
         else
             out << "        scale VertFixedSize"<<endl;
         out << "        translate pts"<<idxstr<<"[verts"<<idxstr<<"[vertctr][1]]"<<endl;
@@ -1780,7 +1827,7 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
         out << "    object {"<<endl;
         out << "        VecGlyph" << endl;
         out << "        Point_At_Trans(vec)"<<endl;
-        out << "        scale (VecFixedSize + VecScaleSize*vlength(vec))"<<endl;
+        out << "        scale VecScaleFunction(vec)"<<endl;
         out << "        translate pts"<<idxstr<<"[verts"<<idxstr<<"[vecctr][1]]"<<endl;
         out << "        #if (ConstantVecColor)" << endl;
         out << "        pigment { VecPigment }" << endl;
