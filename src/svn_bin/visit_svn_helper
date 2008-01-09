@@ -1,3 +1,18 @@
+#  Script: visit_svn_help
+#
+#  Purpose:
+#      A common location for SVN routines.
+#
+#  Programmer: Hank Childs
+#  Creation:   May 12, 2007
+#
+#  Modifications:
+#
+#    Hank Childs, Wed Jan  9 08:44:30 PST 2008
+#    Fix typo, add svn_mv_dir.
+#
+# *****************************************************************************
+
 
 ##
 ##
@@ -192,7 +207,7 @@ function svn_cp_dir
    # Confirm presence of $SRC
    svn ls $SRC 2>/dev/null > /dev/null
    if [[ $? != 0 ]] ; then
-      echo "Cannot locate release candidate ($SRC) for copying.  Aborting!"
+      echo "Cannot locate directory ($SRC) for copying.  Aborting!"
       echo "(Try using ls_branches to locate the directory.)"
       exit 1
    fi
@@ -206,6 +221,37 @@ function svn_cp_dir
 
    echo "Creating ${DEST}...."
    svn copy $SRC $DEST -m "Making copy of $SRC as $DEST"
+   if [[ $? == 0 ]] ; then
+      echo "Successful."
+   else
+      echo "Not successful."
+      exit 1
+   fi
+}
+
+
+function svn_mv_dir
+{
+   SRC=$1
+   DEST=$2
+
+   # Confirm presence of $SRC
+   svn ls $SRC 2>/dev/null > /dev/null
+   if [[ $? != 0 ]] ; then
+      echo "Cannot locate directory ($SRC) for moving.  Aborting!"
+      echo "(Try using ls_branches to locate the directory.)"
+      exit 1
+   fi
+
+   # Confirm that $DEST does not already exist
+   svn ls $DEST 2>/dev/null > /dev/null
+   if [[ $? == 0 ]] ; then
+      echo "Destination ($DEST) already exists.  Aborting!"
+      exit 1
+   fi
+
+   echo "Creating ${DEST}...."
+   svn move $SRC $DEST -m "Making copy of $SRC as $DEST"
    if [[ $? == 0 ]] ; then
       echo "Successful."
    else
