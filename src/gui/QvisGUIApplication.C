@@ -5665,6 +5665,9 @@ QvisGUIApplication::DeIconifyWindows()
 //   Brad Whitlock, Thu Jun 19 11:54:27 PDT 2003
 //   I added code to create the splashscreen if it has not been created.
 //
+//   Brad Whitlock, Tue Jan  8 14:36:23 PST 2008
+//   I hooked up the splashscreen's buttons to the Help window.
+//
 // ****************************************************************************
 
 void
@@ -5672,6 +5675,17 @@ QvisGUIApplication::AboutVisIt()
 {
     if(splash == 0)
         splash = new SplashScreen(true, "splash");
+
+    // Hook up the splashscreen's buttons to the help window.
+    QvisHelpWindow *hw = (QvisHelpWindow *)GetInitializedWindowPointer(WINDOW_HELP);
+    if(hw != 0)
+    {
+        disconnect(splash, SIGNAL(showCopyright()), hw, SLOT(displayCopyright()));
+        connect(splash, SIGNAL(showCopyright()), hw, SLOT(displayCopyright()));
+
+        disconnect(splash, SIGNAL(showContributors()), hw, SLOT(displayContributors()));
+        connect(splash, SIGNAL(showContributors()), hw, SLOT(displayContributors()));
+    }
 
     splash->About();
 }

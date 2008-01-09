@@ -77,6 +77,9 @@ class QvisHelpListViewItem;
 //   Brad Whitlock, Thu Feb 17 12:14:33 PDT 2005
 //   Added synchronizeContents.
 //
+//   Brad Whitlock, Tue Jan  8 14:37:12 PST 2008
+//   Added displayContributors.
+//
 // ****************************************************************************
 
 class GUI_API QvisHelpWindow : public QvisDelayedWindow
@@ -93,6 +96,7 @@ public slots:
     void displayCopyright();
     void displayReleaseNotes();
     void displayReleaseNotesIfAvailable();
+    void displayContributors();
     virtual void show();
 private slots:
     void activeTabChanged(QWidget *);

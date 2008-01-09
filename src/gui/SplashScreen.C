@@ -47,7 +47,7 @@
 #include <qprogressbar.h>
 #include <qpainter.h>
 #include <qpixmap.h>
-#include <visit-config.h>   // For version number
+#include <visit-config.h>   // For version number, svn revision
 #include <Utility.h>
 
 #define MULTIPLE_IMAGES
@@ -118,6 +118,9 @@
 //    Brad Whitlock, Mon Dec 10 17:33:35 PST 2007
 //    Changed the version string that gets drawn into the splashscreen.
 //
+//    Brad Whitlock, Mon Jan  7 16:30:14 PST 2008
+//    Changed how the splashscreen looks.
+//
 // ****************************************************************************
 
 SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
@@ -140,7 +143,7 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     setLineWidth(4);
     setMargin(10);
 
-    QVBoxLayout *topLayout = new QVBoxLayout(this);
+    topLayout = new QVBoxLayout(this);
     topLayout->setSpacing(5);
     topLayout->setMargin(5);
 
@@ -167,7 +170,6 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     if(firstPicture == 3 || cyclePictures)
          pictures.push_back(QPixmap(VisIt4_xpm));
 #endif
-
     // If we have more stuff than just a version number in the version
     // string then draw that information onto the splashscreen.
     QString ver;
@@ -194,14 +196,11 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
             painter.scale(scale, scale);
             QFont font("helvetica", 20, QFont::Bold, true);
             font.setItalic(false);
-            int x = 10;
-            int y = pictures[i].height() - 10;
+            int x = pictures[i].width() - 2*(10 + QFontMetrics(font).width(ver));
+            int y = pictures[i].height() - 8;
             int offset = 4;
             painter.setPen(black);
             painter.drawText(int(x / scale), int(y / scale), ver);
-            painter.setPen(white);
-            painter.drawText(int((x - offset) / scale),
-                             int((y - offset) / scale), ver);
         }
     }
 
@@ -211,24 +210,38 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
     pictureLabel->setBackgroundMode(NoBackground);
     topLayout->addWidget(pictureLabel, 0, AlignCenter);
 
+    QHBoxLayout *lrLayout = new QHBoxLayout(topLayout);
+    lLayout = new QVBoxLayout(lrLayout);
+    rLayout = new QVBoxLayout(lrLayout);
+    rLayout->addStretch(1);
+
+    lLayout->addWidget(new QLabel(
+        "(c) 2000-2008 LLNS. All Rights Reserved.", this, "(C)"));
+
+    QString versionText;
+    versionText.sprintf("VisIt %s, svn revision %s", VERSION, SVN_REVISION);
+    lLayout->addWidget(new QLabel(versionText, this, "versionText"));
+    lLayout->addWidget(new QLabel("January 2008", this, "dateCompiled"));
+
+    copyrightButton = 0;
+    contributorButton = 0;
+    dismissButton = 0;
+
+    QFrame *splitter1 = new QFrame(this, "splitter1");
+    splitter1->setFrameStyle(QFrame::HLine + QFrame::Raised);
+    topLayout->addWidget(splitter1);
+
     // Put in a label for text
     text = new QLabel(this);
     text->setText("Starting VisIt...");
     topLayout->addWidget(text, 0, AlignLeft);
-    topLayout->addSpacing(10);
+    topLayout->addSpacing(5);
 
     // Add a progress bar
     progress = new QProgressBar(this);
     progress->setProgress(0);
     progress->setMinimumWidth(pictures[curPicture].width());
     topLayout->addWidget(progress, 0, AlignLeft);
-
-    // Add a dismiss button
-    dismissButton = new QPushButton("Dismiss", this, "dismissButton");
-    connect(dismissButton, SIGNAL(clicked()),
-            this, SLOT(hide()));
-    dismissButton->hide();
-    topLayout->addWidget(dismissButton, 0, AlignCenter);
     topLayout->addSpacing(5);
 }
 
@@ -247,6 +260,52 @@ SplashScreen::SplashScreen(bool cyclePictures, const char *name) :
 
 SplashScreen::~SplashScreen()
 {
+}
+
+// ****************************************************************************
+// Method: SplashScreen::CreateAboutButtons
+//
+// Purpose: 
+//   Creates the extra buttons for when the window is used for the About window.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan  8 14:14:03 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SplashScreen::CreateAboutButtons()
+{
+    // Add a copyright button
+    if(copyrightButton == 0)
+    {
+        copyrightButton = new QPushButton("Copyright...", this, "copyrightButton");
+        connect(copyrightButton, SIGNAL(clicked()),
+                this, SLOT(emitShowCopyright()));
+        rLayout->addWidget(copyrightButton, Qt::AlignRight);
+    }
+
+    // Add a contributor button.
+    if(contributorButton == 0)
+    {
+        contributorButton = new QPushButton("Contributors...", this, "contributorButton");
+        connect(contributorButton, SIGNAL(clicked()),
+                this, SLOT(emitShowContributors()));
+        rLayout->addWidget(contributorButton, Qt::AlignRight);
+        rLayout->addStretch(1);
+    }
+
+    // Add a dismiss button
+    if(dismissButton == 0)
+    {
+        dismissButton = new QPushButton("Dismiss", this, "dismissButton");
+        connect(dismissButton, SIGNAL(clicked()),
+                this, SLOT(hide()));
+        topLayout->addWidget(dismissButton, 0, AlignCenter);
+        topLayout->addSpacing(5);
+    }
 }
 
 // ****************************************************************************
@@ -359,6 +418,9 @@ SplashScreen::About()
 //    Brad Whitlock, Wed Jun 18 17:50:31 PST 2003
 //    Made it work with the splashscreen as a widget.
 //
+//    Brad Whitlock, Tue Jan  8 13:51:23 PST 2008
+//    Hide/Show the new buttons.
+//
 // ****************************************************************************
 
 void
@@ -373,13 +435,21 @@ SplashScreen::SetDisplayAsSplashScreen(bool asSplash)
         // Go to about mode.
         text->setText("");
         progress->hide();
+        CreateAboutButtons();
         dismissButton->show();
+        copyrightButton->show();
+        contributorButton->show();
     }
     else
     {
         // Go to splashscreen mode.
         progress->show();
-        dismissButton->hide();
+        if(dismissButton != 0)
+            dismissButton->hide();
+        if(copyrightButton != 0)
+            copyrightButton->hide();
+        if(contributorButton != 0)
+            contributorButton->hide();
     }
 
     // Save the mode
@@ -412,4 +482,19 @@ SplashScreen::nextPicture()
 
         pictureLabel->setPixmap(pictures[curPicture]);
     }
+}
+
+
+void
+SplashScreen::emitShowCopyright()
+{
+    hide();
+    emit showCopyright();
+}
+
+void
+SplashScreen::emitShowContributors()
+{
+    hide();
+    emit showContributors();
 }
