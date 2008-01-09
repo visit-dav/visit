@@ -298,8 +298,10 @@ vtkVisItDataReader::IssueReadWarning(const char *buf, int eval)
 //    Made all methods read into double and then cast value. Also, added
 //    warnings.
 //
-//    Mark C. Miller, Wed Jan  9 15:37:49 PST 2008
-//    Made the float case gracefully handle underflows (to zero)
+//    Mark C. Miller, Wed Jan  9 15:48:57 PST 2008
+//    Decided to silence warnings for underflow for float case, comitted
+//    that change and then decided to back it out.
+>>>>>>> .merge-right.r2887
 // ***************************************************************************
 double vtkVisItDataReader::ReadVal(int mode)
 {
@@ -318,13 +320,7 @@ double vtkVisItDataReader::ReadVal(int mode)
     else if (mode == 1) // float
     {
         retval = (double) strtof(buf, &tmpstr);
-	
-	// warn on overflows but be graceful about underflows
-	if ((retval != 0.0) && (errno == ERANGE))
-            IssueReadWarning(buf, errno);
-	else if ((retval == 0.0) && (errno == ERANGE))
-	    ; // no-op
-        else if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
+        if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
             IssueReadWarning(buf, errno);
     }
     else if (mode == 2) // integral
