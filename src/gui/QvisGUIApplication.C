@@ -219,6 +219,10 @@
 #define WINDOW_FILE_OPEN        31
 #define WINDOW_MACRO            32
 
+#define BEGINSWITHQUOTE(A) (A[0] == '\'' || A[0] == '\"')
+#define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
+#define HASSPACE(A) (strstr(A, " ") != NULL)
+
 const char *QvisGUIApplication::windowNames[] = {
 "File selection",
 "File information",
@@ -1624,6 +1628,11 @@ QvisGUIApplication::Quit()
 //    Brad Whitlock, Thu Mar 15 17:32:57 PST 2007
 //    Changed how -font is handled.
 //
+//    Kathleen Bonnell, Tue Jan  8 18:04:05 PST 2008 
+//    Catenate multiple args into single path for -o option on Windows when
+//    encountering an arg that begins with a quote (fixes problem with
+//    using path-with-spaces and the -o arg on the command-line).
+//
 // ****************************************************************************
 
 void
@@ -1665,13 +1674,37 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
            current == std::string("-o") ||
            current == std::string("-sessionfile"))
         {
+            int nArgsSkip = 2;
             // Process the -o argument.
             if(current == std::string("-o"))
             {
                 if(i + 1 < argc)
                 {
 #if defined(_WIN32)
-                    std::string tmpFileName(LongFileName(argv[i+1]));
+                    std::string tmpFileName;
+                    if (BEGINSWITHQUOTE(argv[i+1]) && !ENDSWITHQUOTE(argv[i+1]))
+                    {
+                        // If there were spaces originally, then this WAS 
+                        // surrounded by quotes, now it has been split up into 
+                        // separate args, the first beginnning with a quote, the
+                        // last ending with a quote, catenate them together 
+                        // into a single quote-surrounded arg.
+                        std::string tmpArg(argv[i+1]);
+                        nArgsSkip = 1;
+                        for (int j = i+2; j < argc; j++)
+                        {
+                            nArgsSkip++;
+                            tmpArg += " ";
+                            tmpArg += argv[j];
+                            if (ENDSWITHQUOTE(argv[j]))
+                                break;
+                        }
+                        tmpFileName = LongFileName(tmpArg.c_str());
+                    }
+                    else
+                    {
+                        tmpFileName = LongFileName(argv[i+1]);
+                    }
 #else
                     std::string tmpFileName(argv[i+1]);
 #endif
@@ -1738,9 +1771,9 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 }                
             }
 
-            for(int j = i; j + 2 < argc; ++j)
-               argv[j] = argv[j + 2];
-            argc -= 2;
+            for(int j = i; j + nArgsSkip < argc; ++j)
+               argv[j] = argv[j + nArgsSkip];
+            argc -= nArgsSkip;
             --i;
         }
 
