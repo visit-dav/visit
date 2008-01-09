@@ -109,6 +109,10 @@ avtXDMFFileFormat::~avtXDMFFileFormat()
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jan  8 17:51:30 PST 2008
+//    Use 'const' with return of ststr to suppress error on Windows with MSVC8.
+//
 // ****************************************************************************
 
 int
@@ -125,7 +129,7 @@ avtXDMFFileFormat::DetermineFileAndDataset(const char *input,
     //
     // Find the ':' in the string.
     //
-    char *ptr2 = strstr(ptr, ":");
+    const char *ptr2 = strstr(ptr, ":");
     if (ptr2 == NULL)
     {
         avtCallback::IssueWarning("Dataset specifier missing a colon.");
@@ -135,7 +139,7 @@ avtXDMFFileFormat::DetermineFileAndDataset(const char *input,
     //
     // Find the end of the dataset name.
     //
-    char *ptr3 = ptr2 + 1;
+    const char *ptr3 = ptr2 + 1;
     while (!isspace(*ptr3))
         ptr3++;
 
@@ -624,11 +628,16 @@ avtXDMFFileFormat::ParseTopology(string &topologyType,
 //  Programmer: Eric Brugger
 //  Creation:   Fri Nov 16 13:08:36 PST 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jan  8 17:51:30 PST 2008
+//    Remove 'struct' from in front of DataItem, to remove compile error on 
+//    Windows.
+//
 // ****************************************************************************
 
 void
 avtXDMFFileFormat::ParseGeometry(string &geometryType, int &nDataItem,
-    struct DataItem **geometryData)
+    DataItem **geometryData)
 {
     //
     // Process the attributes in the start tag.

@@ -1165,6 +1165,10 @@ avtHistogramFilter::SetWorkingMin( double dataMin )
 //  Programmer: Dave Pugmire
 //  Creation:   November 01, 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jan  8 17:49:47 PST 2008
+//    Added default return.
+//
 // ****************************************************************************
 
 double
@@ -1178,6 +1182,8 @@ avtHistogramFilter::GetWorkingMin() const
 	return logWorkingRange[0];
     case HistogramAttributes::SquareRoot:
 	return sqrtWorkingRange[0];	
+    default:
+        return workingRange[0];
     }
 }
 
@@ -1212,6 +1218,10 @@ avtHistogramFilter::SetWorkingMax( double dataMax )
 //  Programmer: Dave Pugmire
 //  Creation:   November 01, 2007
 //
+//  Modifications:
+//    Kathleen Bonnell, Tue Jan  8 17:49:47 PST 2008
+//    Added default return.
+//
 // ****************************************************************************
 
 double
@@ -1225,6 +1235,8 @@ avtHistogramFilter::GetWorkingMax() const
 	return logWorkingRange[1];
     case HistogramAttributes::SquareRoot:	
 	return sqrtWorkingRange[1];	
+    default :
+        return workingRange[1];
     }
 }
 

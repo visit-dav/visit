@@ -45,6 +45,11 @@
 #include <Winbase.h>
 #include <sys/stat.h>
 
+#if _MSC_VER <= 1310
+#define _VISIT_MSVC "MSVC7.Net"
+#else if _MSC_VER <= 1400
+#define _VISIT_MSVC "MSVC8.Net"
+#endif
 
 /*
  * Macros
@@ -170,6 +175,10 @@ int ReadKey(const char *key, char **keyval);
  *   for args beginning with quotes so that the entire arg can be concatenated
  *   into 1 argument surrounded by quotes. 
  *
+ *   Kathleen Bonnell, Tue Jan  8 18:09:38 PST 2008 
+ *   When parsing args, moved around the order of testing for spaces and
+ *   surrounding quotes, to fix problem with path-with-spaces used with -o. 
+ * 
  *****************************************************************************/
 
 int
@@ -282,15 +291,12 @@ main(int argc, char *argv[])
         }
         else
         {
-            if (!BEGINSWITHQUOTE(argv[i]))
+            if (!BEGINSWITHQUOTE(argv[i]) && HASSPACE(argv[i]))
             {
-                PUSHARG(argv[i]);
+                sprintf(tmpArg, "\'%s\'", argv[i]);
+                PUSHARG(tmpArg);
             }
-            else if (BEGINSWITHQUOTE(argv[i]) && ENDSWITHQUOTE(argv[i]))
-            {
-                PUSHARG(argv[i]);
-            }
-            else
+            else if (BEGINSWITHQUOTE(argv[i]) && !ENDSWITHQUOTE(argv[i]))
             {
                 strcpy(tmpArg, argv[i]);
                 nArgsSkip = 1;
@@ -307,6 +313,10 @@ main(int argc, char *argv[])
                 tmpArg[tmplen] = '\0';
                 PUSHARG(tmpArg);
                 i += (nArgsSkip -1);
+            }
+            else 
+            {
+                PUSHARG(argv[i]);
             }
         }
     }
@@ -342,7 +352,7 @@ main(int argc, char *argv[])
     for(i = 0; i < nComponentArgs; ++i)
     {
         size += (strlen(componentArgs[i]) + 1);
-        if (HASSPACE(componentArgs[i]))
+        if (!BEGINSWITHQUOTE(componentArgs[i]) && HASSPACE(componentArgs[i]))
             size += 2;
     }
     if(addMovieArguments)
@@ -375,7 +385,7 @@ main(int argc, char *argv[])
     cptr2 = printCommand + strlen(printCommand);
     for(i = 0; i < nComponentArgs; ++i)
     {
-        if (HASSPACE(componentArgs[i]))
+        if (!BEGINSWITHQUOTE(componentArgs[i])&& HASSPACE(componentArgs[i]))
         {
             sprintf(cptr, " \'%s\'", componentArgs[i]);
             cptr += (strlen(componentArgs[i]) + 3);
@@ -391,7 +401,7 @@ main(int argc, char *argv[])
 
         if(skipping == 0) 
         {
-            if (HASSPACE(componentArgs[i]))
+            if (!BEGINSWITHQUOTE(componentArgs[i])&& HASSPACE(componentArgs[i]))
             {
                 sprintf(cptr2, " \'%s\'", componentArgs[i]);
                 cptr2 += (strlen(componentArgs[i]) + 3);
@@ -566,23 +576,27 @@ ReadKey(const char *key, char **keyval)
  *   not be found.  Create the directory if it does not exist, and add 
  *   "My images" subdir for saving windows.
  *
+ *   Kathleen Bonnell, Tue Jan  8 18:09:38 PST 2008 
+ *   Account for the fact that VisIt may be built with MSVC8, so location of
+ *   config dir and binaries differs -- use new _VISIT_MSVC define. 
+ *   
  *****************************************************************************/
 
 char *
 AddEnvironment(int useShortFileName)
 {
     char *tmp, *visitpath = 0, *ssh = 0, *sshargs = 0, *visitsystemconfig = 0;
-	char *visituserpath=0, expvisituserpath[512], tmpdir[512];
+    char *visituserpath=0, expvisituserpath[512], tmpdir[512];
     int haveVISITHOME = 0, haveSSH = 0, haveSSHARGS = 0,
         haveVISITSYSTEMCONFIG = 0, haveVISITUSERHOME=0;
-	struct _stat fs;
+    struct _stat fs;
 
     /* Try and read values from the registry. */
     haveVISITHOME         = ReadKey("VISITHOME", &visitpath);
     haveSSH               = ReadKey("SSH", &ssh);
     haveSSHARGS           = ReadKey("SSHARGS", &sshargs);
     haveVISITSYSTEMCONFIG = ReadKey("VISITSYSTEMCONFIG", &visitsystemconfig);
-	haveVISITUSERHOME     = ReadKey("VISITUSERHOME", &visituserpath);
+    haveVISITUSERHOME     = ReadKey("VISITUSERHOME", &visituserpath);
 
     /* We could not get the value associated with the key. It may mean
      * that VisIt was not installed properly. Use a default value.
@@ -595,10 +609,11 @@ AddEnvironment(int useShortFileName)
 
         if(haveVISITDEVDIR)
         {
+            char configDir[512];
 #if defined(_DEBUG)
-            static const char *configDir = "\\bin\\MSVC7.Net\\Debug";
+            sprintf(configDir, "\\bin\\%s\\Debug", _VISIT_MSVC);
 #else
-            static const char *configDir = "\\bin\\MSVC7.Net\\Release";
+            sprintf(configDir, "\\bin\\%s\\Release", _VISIT_MSVC);
 #endif
             visitpath = (char *)malloc(strlen(visitdevdir) + strlen(configDir) + 1);
             sprintf(visitpath, "%s%s", visitdevdir, configDir);
@@ -606,11 +621,12 @@ AddEnvironment(int useShortFileName)
         else
         {
             char tmpdir[512];
-            /* The location of the binaries are different for MSVC7.Net */
 #if defined(_DEBUG)
-            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\MSVC7.Net\\Debug", VERSION);
+            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\%s\\Debug", VERSION, 
+                    _VISIT_MSVC);
 #else
-            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\MSVC7.Net\\Release", VERSION);
+            sprintf(tmpdir, "C:\\VisItDev%s\\bin\\%s\\Release", VERSION, 
+                     _VISIT_MSVC);
 #endif
             visitpath = (char *)malloc(strlen(tmpdir) + 1);
             strcpy(visitpath, tmpdir);
