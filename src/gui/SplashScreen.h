@@ -48,6 +48,7 @@ class QPushButton;
 class QProgressBar;
 class QPainter;
 class QTimer;
+class QVBoxLayout;
 
 // ****************************************************************************
 // Class: SplashScreen
@@ -67,6 +68,9 @@ class QTimer;
 //   Brad Whitlock, Wed Jun 18 17:53:09 PST 2003
 //   I changed this class so it is a simple widget.
 //
+//   Brad Whitlock, Tue Jan  8 13:43:02 PST 2008
+//   Added signals for showing copyright and contributors.
+//
 // ****************************************************************************
 
 class SplashScreen : public QFrame
@@ -79,11 +83,19 @@ public:
     void Progress(const char *msg, int progress);
     void SetDisplayAsSplashScreen(bool mode);
     void About();
+signals:
+    void showCopyright();
+    void showContributors();
 public slots:
     virtual void show();
     virtual void hide();
     void nextPicture();
+private slots:
+    void emitShowCopyright();
+    void emitShowContributors();
 protected:
+    void CreateAboutButtons();
+
     QLabel                 *pictureLabel;
     std::vector<QPixmap>   pictures;
     int                    curPicture;
@@ -92,6 +104,11 @@ protected:
     QLabel                 *text;
     QProgressBar           *progress;
     QPushButton            *dismissButton;
+    QPushButton            *copyrightButton;
+    QPushButton            *contributorButton;
+    QVBoxLayout            *topLayout;
+    QVBoxLayout            *lLayout;
+    QVBoxLayout            *rLayout;
 };
 
 #endif

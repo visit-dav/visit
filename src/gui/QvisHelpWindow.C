@@ -330,6 +330,9 @@ QvisHelpWindow::CreateWindowContents()
 //   so it does not distract the user if running a help-less distribution
 //   for the first time.
 //
+//   Brad Whitlock, Tue Jan  8 14:55:51 PST 2008
+//   Added a contrib page.
+//
 // ****************************************************************************
 
 void
@@ -385,7 +388,12 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
                   "No online help will be available.\n";
     }
 
-    // Create a root node for the VisIt FAQ page.
+    QvisHelpListViewItem *contribPage = new QvisHelpListViewItem(
+        helpContents, 0);
+    contribPage->setText(0, "VisIt Contributors");
+    contribPage->setDocument("contributors.html");
+    contribPage->setPixmap(0, helpIcon);
+
     QvisHelpListViewItem *copyrightPage = new QvisHelpListViewItem(
         helpContents, 0);
     copyrightPage->setText(0, "Copyright");
@@ -398,14 +406,12 @@ QvisHelpWindow::LoadHelp(const QString &fileName)
     faqPage->setDocument("faq.html");
     faqPage->setPixmap(0, helpIcon);
 
-    // Create a root node for the VisIt args page.
     QvisHelpListViewItem *argsPage = new QvisHelpListViewItem(
         helpContents, 0);
     argsPage->setText(0, "Command line arguments");
     argsPage->setDocument("args.html");
     argsPage->setPixmap(0, helpIcon);
 
-    // Create a root node for the VisIt release notes.
     QvisHelpListViewItem *releaseNotes = new QvisHelpListViewItem(
         helpContents, 0);
     QString relNotes;
@@ -1116,6 +1122,28 @@ QvisHelpWindow::displayCopyright()
 {
     show();
     QString page("copyright.html");
+    displayPage(page);
+    synchronizeContents(page);
+}
+
+// ****************************************************************************
+// Method: QvisHelpWindow::displayContributors
+//
+// Purpose: 
+//   This is a Qt slot function that displays VisIt's contributors.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan  8 14:38:37 PST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisHelpWindow::displayContributors()
+{
+    show();
+    QString page("contributors.html");
     displayPage(page);
     synchronizeContents(page);
 }
