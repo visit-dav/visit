@@ -1425,6 +1425,10 @@ avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
 //    Added support for a user-defined function to scale vector and
 //    vertex glyphs.
 //
+//    Jeremy Meredith, Thu Jan 10 11:25:35 EST 2008
+//    Write out all the cell and point scalar arrays, not just the
+//    active one.
+//
 // ****************************************************************************
 
 void
@@ -1672,6 +1676,46 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
             out << endl;
         }
         out << "};"<<endl;
+        out << endl;
+    }
+
+    //
+    // Write out the all of the point scalars
+    //
+    for (int i=0; i<pd->GetPointData()->GetNumberOfArrays(); i++)
+    {
+        vtkDataArray *array = pd->GetPointData()->GetArray(i);
+        out << "#declare ptscalars_"<<array->GetName()<<idxstr<<" = array[npts"<<idxstr<<"]" << endl;
+        out << "{"<<endl;
+        for (int i=0; i<numPoints; i++)
+        {
+            double val = array->GetComponent(i, 0);
+            out << "  " << val;
+            if (i < numPoints-1)
+                out << ",";
+            out << endl;
+        }
+        out << "};" << endl;
+        out << endl;
+    }
+
+    //
+    // Write out the all of the cell scalars
+    //
+    for (int i=0; i<pd->GetCellData()->GetNumberOfArrays(); i++)
+    {
+        vtkDataArray *array = pd->GetCellData()->GetArray(i);
+        out << "#declare cellscalars_"<<array->GetName()<<idxstr<<" = array[ncells"<<idxstr<<"]" << endl;
+        out << "{"<<endl;
+        for (int i=0; i<numCells; i++)
+        {
+            double val = array->GetComponent(i, 0);
+            out << "  " << val;
+            if (i < numCells-1)
+                out << ",";
+            out << endl;
+        }
+        out << "};" << endl;
         out << endl;
     }
 
