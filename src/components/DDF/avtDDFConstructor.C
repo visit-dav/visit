@@ -57,6 +57,7 @@
 #include <avtR2Faverage.h>
 #include <avtR2Fminimum.h>
 #include <avtR2Fmaximum.h>
+#include <avtR2Fcount.h>
 #include <avtR2Fstddev.h>
 #include <avtR2Fsum.h>
 #include <avtR2Fvariance.h>
@@ -137,6 +138,9 @@ avtDDFConstructor::~avtDDFConstructor()
 //    Hank Childs, Mon Dec 10 16:54:53 PST 2007
 //    Make sure, for unstructured grids, we are only using nodes that are
 //    referenced by cells.
+//
+//    Sean Ahern, Thu Jan 10 16:01:06 EST 2008
+//    Added a "count" statistical operator.
 //
 // ****************************************************************************
 
@@ -244,6 +248,9 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
         break;
       case ConstructDDFAttributes::Maximum:
         R2Foperator = new avtR2Fmaximum(nBins, atts->GetUndefinedValue());
+        break;
+      case ConstructDDFAttributes::Count:
+        R2Foperator = new avtR2Fcount(nBins);
         break;
       case ConstructDDFAttributes::StandardDeviation:
         R2Foperator = new avtR2Fstddev(nBins, atts->GetUndefinedValue());

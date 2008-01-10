@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="ConstructDDFAttributes" purpose="Attributes for constructing DDFs" persistent="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+  <Attribute name="ConstructDDFAttributes" purpose="Attributes for constructing DDFs" persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
     <Enum name="BinningScheme">
       Uniform
       Unknown
@@ -14,6 +14,7 @@
       Median
       InterquartileRange
       Sum
+      Count
     </Enum>
     <Field name="ddfName" label="ddfName" type="string">
     </Field>
