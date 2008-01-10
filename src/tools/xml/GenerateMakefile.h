@@ -227,6 +227,9 @@
 //    Brad Whitlock, Thu Dec 13 16:14:12 PST 2007
 //    Fixed plugin install name on MacOS X.
 //
+//   Hank Childs, Thu Jan 10 14:33:30 PST 2008
+//   Added filenames, specifiedFilenames.
+//
 // ****************************************************************************
 
 class MakefileGeneratorPlugin
@@ -245,11 +248,13 @@ class MakefileGeneratorPlugin
     bool    hasEngineSpecificCode;
     bool    onlyEnginePlugin;
     bool    noEnginePlugin;
+    bool    specifiedFilenames;  // for DB plugins
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
     vector<QString> libs;
     vector<QString> extensions; // for DB plugins
+    vector<QString> filenames;  // for DB plugins
     bool customgfiles;
     vector<QString> gfiles;     // gui
     bool customsfiles;

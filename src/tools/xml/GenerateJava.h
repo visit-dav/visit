@@ -1514,7 +1514,6 @@ class AttsFieldFactory
 };
 
 // ----------------------------------------------------------------------------
-//
 // ----------------------------------------------------------------------------
 
 class AttsGeneratorAttribute
@@ -1993,6 +1992,11 @@ class AttsGeneratorAttribute
 };
 
 // ----------------------------------------------------------------------------
+//  Modifications:
+//
+//   Hank Childs, Thu Jan 10 14:33:30 PST 2008
+//   Added filenames, specifiedFilenames.
+//
 // ----------------------------------------------------------------------------
 class AttsGeneratorPlugin
 {
@@ -2006,11 +2010,13 @@ class AttsGeneratorPlugin
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
     bool    hasEngineSpecificCode;
+    bool    specifiedFilenames;  // for DB plugins
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
     vector<QString> libs;
     vector<QString> extensions; // for DB plugins
+    vector<QString> filenames;  // for DB plugins
     bool customgfiles;
     vector<QString> gfiles;     // gui
     bool customsfiles;

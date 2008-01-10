@@ -183,6 +183,9 @@ ParseCharacters(const QString &buff)
 //    Brad Whitlock, Wed Feb 28 18:34:33 PST 2007
 //    Added support for fields that should be public. Added keyframe flag.
 //
+//    Hank Childs, Thu Jan 10 14:51:51 PST 2008
+//    Added support for explicit filenames.
+//
 // ****************************************************************************
 
 class XMLParser : public QXmlDefaultHandler
@@ -252,6 +255,10 @@ class XMLParser : public QXmlDefaultHandler
             {
                 currentPlugin->extensions.push_back(strings[i]);
             }
+            else if (currentTag == "Filenames")
+            {
+                currentPlugin->filenames.push_back(strings[i]);
+            }
         }
         return true;
     }
@@ -272,6 +279,7 @@ class XMLParser : public QXmlDefaultHandler
             QString dbtype    = atts.value("dbtype");
             QString haswriter = atts.value("haswriter");
             QString hasoptions= atts.value("hasoptions");
+            QString specifiedFilename = atts.value("specifiedFilename");
             QString version   = atts.value("version");
             QString iconFile  = atts.value("iconFile");
             QString enabled   = atts.value("enabled");
@@ -297,7 +305,10 @@ class XMLParser : public QXmlDefaultHandler
             {
                 currentPlugin->hasEngineSpecificCode = Text2Bool(engspecific);
             }
-
+            if (!specifiedFilename.isNull())
+            {
+                currentPlugin->specifiedFilenames = Text2Bool(specifiedFilename);
+            }
         }
         else if (tag == "Attribute")
         {
@@ -399,6 +410,9 @@ class XMLParser : public QXmlDefaultHandler
         {
         }
         else if (tag == "Extensions")
+        {
+        }
+        else if (tag == "Filenames")
         {
         }
         else if (tag == "Files")
@@ -604,6 +618,9 @@ class XMLParser : public QXmlDefaultHandler
         {
         }
         else if (tag == "Extensions")
+        {
+        }
+        else if (tag == "Filenames")
         {
         }
         else if (tag == "Files")

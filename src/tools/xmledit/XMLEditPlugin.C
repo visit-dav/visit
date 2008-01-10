@@ -77,12 +77,15 @@
 //    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
 //    Added array variable type.
 //
+//    Hank Childs, Thu Jan 10 13:56:32 PST 2008
+//    Added the ability to have a plugin only open explicit filenames.
+//
 // ****************************************************************************
 
 XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     : QFrame(p, n)
 {
-    QGridLayout *topLayout = new QGridLayout(this, 13,2, 5);
+    QGridLayout *topLayout = new QGridLayout(this, 15,2, 5);
     int row = 0;
 
     attpluginGroup = new QButtonGroup();
@@ -192,6 +195,16 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
     topLayout->addMultiCellWidget(extensions, row,row, 1,2);
     row++;
 
+    specifiedFilenames = new QCheckBox("Format uses explicit filenames", this);
+    specifiedFilenames->setChecked(false);
+    topLayout->addMultiCellWidget(specifiedFilenames, row,row, 0,1);
+    row++;
+
+    topLayout->addWidget(new QLabel("Filenames", this), row, 0);
+    filenames = new QLineEdit(this);
+    topLayout->addMultiCellWidget(filenames, row,row, 1,2);
+    row++;
+
     topLayout->setRowStretch(row, 100);
     row++;
 
@@ -243,6 +256,10 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
             this, SLOT(hasOptionsChanged(bool)));
     connect(enabledByDefault, SIGNAL(toggled(bool)),
             this, SLOT(enabledByDefaultChanged(bool)));
+    connect(specifiedFilenames, SIGNAL(toggled(bool)),
+            this, SLOT(specifiedFilenamesChanged(bool)));
+    connect(filenames, SIGNAL(textChanged(const QString &)),
+            this,  SLOT(filenamesTextChanged(const QString &)));
 }
 
 // ****************************************************************************
@@ -273,6 +290,9 @@ XMLEditPlugin::XMLEditPlugin(QWidget *p, const QString &n)
 //    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
 //    Added support for arrays.
 //
+//    Hank Childs, Thu Jan 10 13:56:32 PST 2008
+//    Added the ability to have a plugin only open explicit filenames.
+//
 // ****************************************************************************
 
 void
@@ -301,6 +321,7 @@ XMLEditPlugin::UpdateWindowContents()
 
         dbType->setCurrentItem(0);
         extensions->setText("");
+        filenames->setText("");
         if (xmldoc->plugin->type == "plot")
         {
             iconFile->setText(xmldoc->plugin->iconFile);
@@ -345,9 +366,11 @@ XMLEditPlugin::UpdateWindowContents()
             hasIcon->setChecked(false);
             hasWriter->setChecked(xmldoc->plugin->haswriter);
             hasOptions->setChecked(xmldoc->plugin->hasoptions);
+            specifiedFilenames->setChecked(xmldoc->plugin->specifiedFilenames);
 
             pluginType->setCurrentItem(3);
             extensions->setText(JoinValues(xmldoc->plugin->extensions, ' '));
+            filenames->setText(JoinValues(xmldoc->plugin->filenames, ' '));
             if      (xmldoc->plugin->dbtype == "STSD")
                 dbType->setCurrentItem(1);
             else if (xmldoc->plugin->dbtype == "MTSD")
@@ -365,6 +388,7 @@ XMLEditPlugin::UpdateWindowContents()
             hasIcon->setChecked(false);
             hasWriter->setChecked(false);
             hasOptions->setChecked(false);
+            specifiedFilenames->setChecked(false);
             enabledByDefault->setChecked(true);
             pluginType->setCurrentItem(0);
         }
@@ -390,9 +414,11 @@ XMLEditPlugin::UpdateWindowContents()
         iconFile->setText("");
         hasWriter->setChecked(false);
         hasOptions->setChecked(false);
+        specifiedFilenames->setChecked(false);
         pluginType->setCurrentItem(0);
         dbType->setCurrentItem(0);
         extensions->setText("");
+        filenames->setText("");
         enabledByDefault->setChecked(true);
     }
 
@@ -429,6 +455,9 @@ XMLEditPlugin::UpdateWindowContents()
 //    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
 //    Added array vars.
 //
+//    Hank Childs, Thu Jan 10 13:56:32 PST 2008
+//    Added the ability to have a plugin only open explicit filenames.
+//
 // ****************************************************************************
 
 void
@@ -456,9 +485,11 @@ XMLEditPlugin::UpdateWindowSensitivity()
     varTypeArray->setEnabled(plot);
     dbType->setEnabled(db);
     extensions->setEnabled(db);
+    filenames->setEnabled(db && xmldoc->plugin->specifiedFilenames);
     hasIcon->setEnabled(op || plot);
     hasWriter->setEnabled(db);
     hasOptions->setEnabled(db);
+    specifiedFilenames->setEnabled(db);
     enabledByDefault->setEnabled(plugin);
     bool val = (op || plot) && (xmldoc->plugin->iconFile.length() > 0);
     iconFile->setEnabled(val);
@@ -493,6 +524,9 @@ XMLEditPlugin::UpdateWindowSensitivity()
 //    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
 //    Added array vars.
 //
+//    Hank Childs, Thu Jan 10 13:56:32 PST 2008
+//    Added the ability to have a plugin only open explicit filenames.
+//
 // ****************************************************************************
 
 void
@@ -515,10 +549,12 @@ XMLEditPlugin::BlockAllSignals(bool block)
     varTypeArray->blockSignals(block);
     dbType->blockSignals(block);
     extensions->blockSignals(block);
+    filenames->blockSignals(block);
     hasIcon->blockSignals(block);
     iconFile->blockSignals(block);
     hasWriter->blockSignals(block);
     hasOptions->blockSignals(block);
+    specifiedFilenames->blockSignals(block);
     enabledByDefault->blockSignals(block);
 }
 
@@ -682,6 +718,27 @@ XMLEditPlugin::hasWriterChanged(bool val)
 }
 
 // ****************************************************************************
+// Method: XMLEditPlugin::specifiedFilenamesChanged
+//
+// Programmer: Hank Childs
+// Creation:   January 10, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+XMLEditPlugin::specifiedFilenamesChanged(bool val)
+{
+    if (xmldoc->docType != "Plugin")
+        return;
+
+    xmldoc->plugin->specifiedFilenames = val;
+
+    UpdateWindowSensitivity();
+}
+
+// ****************************************************************************
 // Method: XMLEditPlugin::hasOptionsChanged
 //
 // Programmer: Hank Childs
@@ -783,6 +840,23 @@ XMLEditPlugin::extensionsTextChanged(const QString &text)
         return;
 
     xmldoc->plugin->extensions = SplitValues(text);
+}
+
+// ****************************************************************************
+//  Method:  XMLEditPlugin::filenamesTextChanged
+//
+//  Programmer:  Hank Childs
+//  Creation:    January 10, 2008
+//
+// ****************************************************************************
+
+void
+XMLEditPlugin::filenamesTextChanged(const QString &text)
+{
+    if (xmldoc->docType != "Plugin")
+        return;
+
+    xmldoc->plugin->filenames = SplitValues(text);
 }
 
 // ****************************************************************************
