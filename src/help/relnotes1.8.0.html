@@ -28,6 +28,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt has a new feature for checking which Subversion revision it was built against.  This feature is useful for determining mismatches when having problems running client-server.  You can access this by running "visit -svn_version".</li>
 <li>VisIt now provides a Shapelet Decomposition Query that calculates the cartesian shapelet coefficients of an image using the overlap integral decomposition method.</li>
 <li>VisIt's query infrastructure was extended to allow queries to return structured data to the CLI. This type of result is obtained via the GetQueryOutputObject() python method and is currently only implemented by the Shapelet Decomposition query.</li>
+<li>Options can now be set when exporting databases in the GUI and CLI</li>
+<li>The VASP file reader has been enhanced to support POSCAR files and multi-timestep CHG/CHGCAR files.</li>
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.8.0</font></b></p>
 <ul>
@@ -38,7 +40,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>For an AMR mesh, if the number of patches per level changes from time slice to time slice, but the total number of patches stays the same, VisIt now correctly honors material selection when changing time slices.</li>
 <li>VisIt's Label plot now takes cell and node origins into account when labelling mesh cells and nodes.</li>
 <li>VisIt's Label plot no longer uses incorrect label colors when using custom colors for node and cell labels when the <i>Restrict number of labels</i> setting is used.</li>
-<li>VisIt's Revolve operator does not work with 2D Boundary plots.</li>
+<li>VisIt's Revolve operator now works with 2D Boundary plots.</li>
 <li>VisIt's Elevate operator can now work on Boundary plots with the option "elevate by zero height."</li>
 <li>VisIt does not show windows that have been iconified when you choose the menu option that should open the window.</li>
 <li>The parallel coordinate plot can now work with expressions that have the angle brackets used for specifying variables in subdirectories.</li>
@@ -46,6 +48,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>The Derived Data Function feature (available only through the CLI) now correctly ignores points that are not incident to any zones, which is a common case when doing material selection.</li>
 <li>The Derived Data Function feature (available only through the CLI) can now correctly work with expressions that use the coordinates of the mesh.</li>
 <li>The "Treat all databases as time-varying" setting does not take effect when it is saved in the settings.</li>
+<li>The simulation interface infrastructure now supports Mac OS X.</li>
+<li>VisIt will return a proper error message when screen capture is attempted without onscreen windows and Mesa is disabled<./li>
 </ul>
 <p>Click the following link to view the release notes for the 1.7.1 patch version
 of VisIt: <a href="relnotes1.7.1.html">VisIt 1.7.1 Release Notes</a>.</p>
