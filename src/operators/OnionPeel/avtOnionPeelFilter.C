@@ -51,6 +51,7 @@
 #include <vtkPolyDataOnionPeelFilter.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <avtSILNamespace.h>
 #include <avtSILRestrictionTraverser.h>
 #include <avtTerminatingSource.h>
 
@@ -592,6 +593,10 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Don't use CompactSILAtts, since its indexing does match up cleanly
 //    with avtSILRestriction.
 //
+//    Hank Childs, Wed Jan  9 16:10:33 PST 2008
+//    Beef up logic to handle species selection.  We were turning those sets
+//    off, which resulted in all zeroes.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -648,8 +653,35 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     TRY
     {
         silr = rv->GetDataSpecification()->GetRestriction();
+
+        // If we've got species info, we need to maintain that.
+        // So see which species are on.
+        std::vector<int>  species;
+        std::vector<bool> setState;
+        unsigned int i;
+
+        int topset = silr->GetTopSet();
+        const std::vector<int> &mapsOut = silr->GetSILSet(topset)->GetRealMapsOut();
+        for (i = 0 ; i < mapsOut.size() ; i++)
+        {
+            avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
+            if (coll->GetRole() == SIL_SPECIES)
+            {
+                species = coll->GetSubsets()->GetAllElements();
+            }
+        }
+        for (i = 0 ; i < species.size() ; i++)
+            setState.push_back(trav.UsesData(species[i]));
+        // End logic for seeing which species is on.
+
         silr->TurnOffAll();
         silr->TurnOnSet(setID);
+
+        // Turn sets back on if species are on.
+        for (i = 0 ; i < species.size() ; i++)
+            if (setState[i])
+                silr->TurnOnSet(species[i]);
+
     }
     CATCH(InvalidVariableException)
     {
