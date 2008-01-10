@@ -10,7 +10,7 @@
 #              operators - elevate
 #              selection - none
 #
-#  Defect ID:  '5379, '6260, '6768
+#  Defect ID:  '5379, '5934 '6260, '6768
 #
 #  Programmer: Hank Childs
 #  Date:       February 3, 2005
@@ -22,6 +22,9 @@
 #
 #    Hank Childs, Tue Nov 15 07:17:22 PST 2005
 #    Add tests for macro expressions as secondary variables.
+#
+#    Hank Childs, Thu Jan 10 15:52:00 PST 2008
+#    Add test for recenter expression with material plot.
 #
 # ----------------------------------------------------------------------------
 
@@ -114,5 +117,16 @@ elevate_atts.variable = "vv"
 SetOperatorOptions(elevate_atts)
 DrawPlots()
 Test("elevate10")
+
+# Filled boundary with recentered expression
+DeleteAllPlots()
+OpenDatabase("../data/rect2d.silo")
+DefineScalarExpression("d2", "recenter(d)")
+AddPlot("FilledBoundary", "mat1")
+AddOperator("Elevate")
+elevate_atts.variable = "d2"
+SetOperatorOptions(elevate_atts)
+DrawPlots()
+Test("elevate11")
 
 Exit()
