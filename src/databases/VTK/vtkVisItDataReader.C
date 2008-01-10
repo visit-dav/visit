@@ -301,7 +301,6 @@ vtkVisItDataReader::IssueReadWarning(const char *buf, int eval)
 //    Mark C. Miller, Wed Jan  9 15:48:57 PST 2008
 //    Decided to silence warnings for underflow for float case, comitted
 //    that change and then decided to back it out.
->>>>>>> .merge-right.r2887
 // ***************************************************************************
 double vtkVisItDataReader::ReadVal(int mode)
 {
