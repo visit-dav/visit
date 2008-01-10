@@ -135,6 +135,9 @@
 //    Hank Childs, Tue Nov 27 09:10:45 PST 2007
 //    Fix type (cyle -> cycle).
 //
+//   Hank Childs, Thu Jan 10 14:33:30 PST 2008
+//   Added filenames, specifiedFilenames.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -197,11 +200,13 @@ class AVTGeneratorPlugin
     bool    enabledByDefault;
     bool    has_MDS_specific_code;
     bool    hasEngineSpecificCode;
+    bool    specifiedFilenames;  // for DB plugins
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
     vector<QString> libs;
     vector<QString> extensions; // for DB plugins
+    vector<QString> filenames;  // for DB plugins
     bool customgfiles;
     vector<QString> gfiles;     // gui
     bool customsfiles;

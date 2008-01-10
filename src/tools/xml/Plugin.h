@@ -96,6 +96,9 @@
 //    Cyrus Harrison, Wed Mar  7 09:11:05 PST 2007
 //    Allow for engine-specific code in a plugin's source files.
 //
+//    Hank Childs, Thu Jan 10 14:06:42 PST 2008
+//    Add specifiedFilenames and filenames.
+//
 // ****************************************************************************
 
 class Plugin
@@ -111,6 +114,7 @@ class Plugin
 
     bool haswriter;
     bool hasoptions;
+    bool specifiedFilenames;  // For DB plugins
     bool enabledByDefault;
     bool has_MDS_specific_code;
     bool hasEngineSpecificCode;
@@ -121,6 +125,7 @@ class Plugin
     vector<QString> ldflags;
     vector<QString> libs;
     vector<QString> extensions; // for DB plugins
+    vector<QString> filenames; // for DB plugins
     bool customgfiles;
     vector<QString> gfiles;     // gui
     bool customsfiles;
@@ -153,6 +158,7 @@ class Plugin
            onlyEnginePlugin(onlyengine), noEnginePlugin(noengine), atts(NULL)
     {
         enabledByDefault = true;
+        specifiedFilenames = false;
         has_MDS_specific_code = false;
         hasEngineSpecificCode = false;
         customgfiles = false;
@@ -225,6 +231,7 @@ class Plugin
             WriteTagAttr(out, "dbtype", dbtype);
             WriteTagAttr(out, "haswriter", Bool2Text(haswriter));
             WriteTagAttr(out, "hasoptions", Bool2Text(hasoptions));
+            WriteTagAttr(out, "specifiedFilenames", Bool2Text(specifiedFilenames));
         }
         FinishOpenTag(out);
 
@@ -254,6 +261,13 @@ class Plugin
             WriteOpenTag(out, "Extensions", indent);
             WriteValues(out, extensions, indent);
             WriteCloseTag(out, "Extensions", indent);
+        }
+
+        if (type == "database" && filenames.size() > 0)
+        {
+            WriteOpenTag(out, "Filenames", indent);
+            WriteValues(out, filenames, indent);
+            WriteCloseTag(out, "Filenames", indent);
         }
 
         if (customgfiles)

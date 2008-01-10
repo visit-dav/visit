@@ -79,6 +79,9 @@ class QCheckBox;
 //    Hank Childs, Tue Jul 19 14:08:19 PDT 2005
 //    Added array var type.
 //
+//    Hank Childs, Thu Jan 10 13:56:32 PST 2008
+//    Added the ability to have a plugin only open explicit filenames.
+//
 // ****************************************************************************
 
 class XMLEditPlugin : public QFrame
@@ -104,6 +107,8 @@ class XMLEditPlugin : public QFrame
     void varTypesChanged();
     void dbTypeChanged(int);
     void extensionsTextChanged(const QString&);
+    void filenamesTextChanged(const QString&);
+    void specifiedFilenamesChanged(bool);
   private:
     XMLDocument     *xmldoc;
 
@@ -130,6 +135,8 @@ class XMLEditPlugin : public QFrame
     QCheckBox       *varTypeArray;
     QComboBox       *dbType;
     QLineEdit       *extensions;
+    QLineEdit       *filenames;
+    QCheckBox       *specifiedFilenames;
 };
 
 #endif

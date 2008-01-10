@@ -98,6 +98,9 @@
 //    Change Python include to version 2.5.  Changed %QTDIR% to $(QTDIR),
 //    and qt-mt302.lib to $(QTLIB).
 //
+//    Hank Childs, Thu Jan 10 14:33:30 PST 2008
+//    Added filenames, specifiedFilenames.
+//
 // ****************************************************************************
 
 class ProjectFileGeneratorPlugin
@@ -116,11 +119,13 @@ class ProjectFileGeneratorPlugin
     bool    hasEngineSpecificCode;
     bool    onlyEnginePlugin;
     bool    noEnginePlugin;
+    bool    specifiedFilenames;  // for DB plugins
 
     vector<QString> cxxflags;
     vector<QString> ldflags;
     vector<QString> libs;
     vector<QString> extensions; // for DB plugins
+    vector<QString> filenames;  // for DB plugins
     bool customgfiles;
     vector<QString> gfiles;     // gui
     bool customsfiles;
