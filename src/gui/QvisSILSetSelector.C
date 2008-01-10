@@ -463,6 +463,9 @@ QvisSILSetSelector::subsetNameChanged()
 //   Kathleen Bonnell, Thu Jun 14 12:13:03 PDT 2007
 //   Added userCategory.
 //   
+//   Hank Childs, Wed Jan  9 17:29:03 PST 2008
+//   Call method categoryNameChanged, so the subset names will be set up.
+//
 // ****************************************************************************
 
 void 
@@ -477,6 +480,7 @@ QvisSILSetSelector::SetCategoryName(const QString &name)
         idx = (idx == -1 ? 0 : idx);
         categoryName->setCurrentItem(idx);
         categoryName->setEditText(categoryName->currentText());
+        categoryNameChanged();
         lastGoodCategory = categoryName->currentText();
     }
     blockSignals(false);
