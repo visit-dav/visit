@@ -147,13 +147,34 @@ avtRecenterFilter::DeriveVariable(vtkDataSet *in_ds)
 //  Programmer: Hank Childs
 //  Creation:   December 10, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Wed Jan  9 10:26:39 PST 2008
+//    Make sure we are giving information about the correct variable.
+//
 // ****************************************************************************
 
 bool
 avtRecenterFilter::IsPointVariable(void)
 {
-    bool oldVar = avtSingleInputExpressionFilter::IsPointVariable();
-    return (!oldVar);
+    bool isPoint  = true;
+    bool foundOne = false;
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+
+    if (activeVariable != NULL)
+    {
+        if (atts.ValidVariable(activeVariable))
+        {
+            isPoint = (atts.GetCentering(activeVariable) != AVT_ZONECENT);
+            foundOne = true;
+        }
+    }
+
+    if (!foundOne)
+        if (atts.ValidActiveVariable())
+            isPoint = (atts.GetCentering() != AVT_ZONECENT);
+
+    return (!isPoint);
 }
 
 
