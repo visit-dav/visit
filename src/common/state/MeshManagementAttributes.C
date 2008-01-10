@@ -457,7 +457,9 @@ MeshManagementAttributes::CreateNode(DataNode *parentNode, bool completeSave, bo
 // Creation:   Thu Dec 20 09:40:39 PDT 2007
 //
 // Modifications:
-//   
+//
+//   Mark C. Miller, Thu Jan 10 14:55:56 PST 2008
+//   Made it backward compatible for older config files.
 // ****************************************************************************
 
 void
@@ -473,7 +475,15 @@ MeshManagementAttributes::SetFromNode(DataNode *parentNode)
 
     DataNode *node;
     if((node = searchNode->GetNode("discretizationTolerance")) != 0)
-        SetDiscretizationTolerance(node->AsDoubleVector());
+    {
+	if (node->AsDoubleVector().size() == 3)
+            SetDiscretizationTolerance(node->AsDoubleVector());
+        else
+	{
+	    MeshManagementAttributes tmp;
+	    SetDiscretizationTolerance(tmp.GetDiscretizationTolerance());
+	}
+    }
     if((node = searchNode->GetNode("discretizationToleranceX")) != 0)
         SetDiscretizationToleranceX(node->AsDoubleVector());
     if((node = searchNode->GetNode("discretizationToleranceY")) != 0)
