@@ -1021,28 +1021,15 @@ WriteKey(const char *ver, const char *key, const char *keyval)
 //   Brad Whitlock, Wed Mar 2 11:59:15 PDT 2005
 //   Changed interface to ReadKey.
 //
+//   Kathleen Bonnell, Thu Jan 10 14:01:59 PST 2008 
+//   Removed Windows-specific code as it didn't work right on diskless boxes. 
+//
 // ****************************************************************************
 
 int
 ConfigStateGetRunCount(ConfigStateEnum &code)
 {
     int nStartups = 1;
-#if defined(_WIN32)
-    // Get the number of startups from the registry.
-    char *rc = 0;
-    if(ReadKey(VERSION, "VISITRC", &rc) == 1)
-    {
-        if(sscanf(rc, "%d", &nStartups) == 1)
-        { 
-            if(nStartups < 0)
-                nStartups = 1;
-        }
-        free(rc);
-        code = CONFIGSTATE_SUCCESS;
-    }
-    else
-        code = CONFIGSTATE_IOERROR;
-#else
     std::string rcFile(GetUserVisItDirectory());
     rcFile += "state";
     rcFile += VERSION;
@@ -1061,7 +1048,6 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
     }
     else
         code = CONFIGSTATE_IOERROR;
-#endif
 
     return nStartups;
 }
@@ -1088,32 +1074,14 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
 //   Brad Whitlock, Mon Jul 11 09:58:13 PDT 2005
 //   I fixed a win32 coding problem.
 //
+//   Kathleen Bonnell, Thu Jan 10 14:01:59 PST 2008 
+//   Removed Windows-specific code as it didn't work right on diskless boxes. 
+//
 // ****************************************************************************
 
 void
 ConfigStateIncrementRunCount(ConfigStateEnum &code)
 {
-#if defined(_WIN32)
-    bool firstTime = false;
-    ConfigStateEnum code2;
-    int nStartups = ConfigStateGetRunCount(code2);
-    if(code2 == CONFIGSTATE_IOERROR)
-    {
-        firstTime = true;
-        nStartups = 0;
-    }
-    else if(code2 == CONFIGSTATE_SUCCESS)
-    {
-        firstTime = (nStartups == 0);
-    }
-
-    char keyval[100];
-    SNPRINTF(keyval, 100, "%d", nStartups+1);
-    if(WriteKey(VERSION, "VISITRC", keyval) == 1)
-        code = firstTime ? CONFIGSTATE_FIRSTTIME : CONFIGSTATE_SUCCESS;
-    else
-        code = CONFIGSTATE_IOERROR;
-#else
     std::string rcFile(GetUserVisItDirectory());
     rcFile += "state";
     rcFile += VERSION;
@@ -1138,7 +1106,6 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
     }
     else
         code = CONFIGSTATE_IOERROR;
-#endif
 }
 
 // ****************************************************************************
@@ -1304,6 +1271,14 @@ GetVisItInstallationDirectory()
     return GetVisItInstallationDirectory(VERSION);
 }
 
+#if _MSC_VER <= 1310
+#define _VISIT_MSVC_VER "MSVC7.Net"
+#elif _MSC_VER <= 1400
+#define _VISIT_MSVC_VER "MSVC8.Net"
+#else
+#define _VISIT_MSVC_VER ""
+#endif
+
 std::string
 GetVisItInstallationDirectory(const char *version)
 {
@@ -1325,7 +1300,7 @@ GetVisItInstallationDirectory(const char *version)
             visitdev = std::string("C:\\VisItDev") + std::string(version);
         else
             visitdev = std::string(devdir);
-        installDir = visitdev + "\\bin\\MSVC7.Net\\Release";
+        installDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
     }
     return installDir;
 #else
@@ -1407,7 +1382,7 @@ GetVisItArchitectureDirectory(const char *version)
             visitdev = std::string("C:\\VisItDev") + std::string(version);
         else
             visitdev = std::string(devdir);
-        archDir = visitdev + "\\bin\\MSVC7.Net\\Release";
+        archDir = visitdev + "\\bin\\" + _VISIT_MSVC_VER + "\\Release";
     }
     return archDir;
 #else

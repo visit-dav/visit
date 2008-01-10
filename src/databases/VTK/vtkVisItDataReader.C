@@ -301,6 +301,10 @@ vtkVisItDataReader::IssueReadWarning(const char *buf, int eval)
 //    Mark C. Miller, Wed Jan  9 15:48:57 PST 2008
 //    Decided to silence warnings for underflow for float case, comitted
 //    that change and then decided to back it out.
+//
+//    Kathleen Bonnell, Thu Jan 10 15:13:33 PST 2008 
+//    strtof not available on Windows, use strtod instead for Windows.
+//
 // ***************************************************************************
 double vtkVisItDataReader::ReadVal(int mode)
 {
@@ -318,7 +322,11 @@ double vtkVisItDataReader::ReadVal(int mode)
     }
     else if (mode == 1) // float
     {
+#ifndef _WIN32
         retval = (double) strtof(buf, &tmpstr);
+#else
+        retval = (double) strtod(buf, &tmpstr);
+#endif
         if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
             IssueReadWarning(buf, errno);
     }

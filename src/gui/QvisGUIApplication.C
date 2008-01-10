@@ -263,7 +263,79 @@ const char *QvisGUIApplication::windowNames[] = {
 static void QPrinterToPrinterAttributes(QPrinter *, PrinterAttributes *);
 static void PrinterAttributesToQPrinter(PrinterAttributes *, QPrinter *);
 
+// ****************************************************************************
+// Function: StripSurroundingQuotes
+//
+// Purpose: 
+//   Removes quotes ' or " from beginning and end of string.
+//
+// Arguments:
+//   s1 : The string
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   January 9, 2008 
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+StripSurroundingQuotes(std::string & s1)
+{
+    if(s1.size() > 0 && (s1[0] == '\'' || s1[0] == '\"'))
+    {
+        s1 = s1.substr(1, s1.size()-1);
+    }
+    if(s1.size() > 0 && (s1[s1.size()-1] == '\'' || s1[s1.size()-1] == '\"'))
+    {
+        s1 = s1.substr(0, s1.size()-1);
+    }
+}
+
+
 #if defined(_WIN32)
+// ****************************************************************************
+// Function: GetNextArg
+//
+// Purpose: 
+//   Retrieves the next arg from the arg list, catentating successive
+//   args if necessary. 
+//
+// Arguments:
+//   argc      Number of args
+//   argv      The args list
+//   start     The next place in the args list to look
+//   nargs     The number of args in argv used to created this next arg.
+//
+// Returns:    The next arg from the list.
+//
+// Programmer: Kathleen Bonnell 
+// Creation:   January 9, 2008 
+//
+// Modifications:
+//   
+// ****************************************************************************
+std::string
+GetNextArg(int argc, char **argv, int start, int &nargs)
+{
+    std::string tmpArg(argv[start]);
+    if (BEGINSWITHQUOTE(argv[start]) && !ENDSWITHQUOTE(argv[start]))
+    {
+        // A path-with-spaces on Windows will get surrounded by quotes,
+        // but some system calls will still split the single arg into many,
+        // breaking on the spaces.  They need to be catenated back together
+        // into a single argument.
+        for (int j = start+1; j < argc; j++)
+        {
+            nargs++;
+            tmpArg += " ";
+            tmpArg += argv[j];
+            if (ENDSWITHQUOTE(argv[j]))
+                break;
+        }
+    }
+    return tmpArg;
+}
+
 // ****************************************************************************
 // Function: LongFileName
 //
@@ -281,11 +353,13 @@ static void PrinterAttributesToQPrinter(PrinterAttributes *, QPrinter *);
 // Creation:   Tue Nov 11 18:39:36 PST 2003
 //
 // Modifications:
-//   
+//   Kathleen Bonnell, Wed Jan  9 11:17:40 PST 2008
+//   Changed arg type from const char * to const std::string.
+//
 // ****************************************************************************
 
 std::string
-LongFileName(const char *shortName)
+LongFileName(const std::string &shortName)
 {
     std::string retval(shortName);
 
@@ -304,7 +378,7 @@ LongFileName(const char *shortName)
             typedef DWORD (pathFuncType)(LPCTSTR, LPTSTR, DWORD);
             pathFuncType *lfn = (pathFuncType *)func;
             char *buf = new char[1000];
-            if(lfn(shortName, buf, 1000) != 0)
+            if(lfn(shortName.c_str(), buf, 1000) != 0)
                 retval = std::string(buf);
             delete [] buf;
         }
@@ -1633,6 +1707,11 @@ QvisGUIApplication::Quit()
 //    encountering an arg that begins with a quote (fixes problem with
 //    using path-with-spaces and the -o arg on the command-line).
 //
+//    Kathleen Bonnell, Wed Jan  9 11:17:40 PST 2008 
+//    Moved catenation of arg into its own function, GetNextArg.  Moved code
+//    that removes surrounding quotes to its own function. Use GetNextArg and 
+//    StripSurroundingQuotes for sessionfile option.  
+//   
 // ****************************************************************************
 
 void
@@ -1681,46 +1760,13 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                 if(i + 1 < argc)
                 {
 #if defined(_WIN32)
-                    std::string tmpFileName;
-                    if (BEGINSWITHQUOTE(argv[i+1]) && !ENDSWITHQUOTE(argv[i+1]))
-                    {
-                        // If there were spaces originally, then this WAS 
-                        // surrounded by quotes, now it has been split up into 
-                        // separate args, the first beginnning with a quote, the
-                        // last ending with a quote, catenate them together 
-                        // into a single quote-surrounded arg.
-                        std::string tmpArg(argv[i+1]);
-                        nArgsSkip = 1;
-                        for (int j = i+2; j < argc; j++)
-                        {
-                            nArgsSkip++;
-                            tmpArg += " ";
-                            tmpArg += argv[j];
-                            if (ENDSWITHQUOTE(argv[j]))
-                                break;
-                        }
-                        tmpFileName = LongFileName(tmpArg.c_str());
-                    }
-                    else
-                    {
-                        tmpFileName = LongFileName(argv[i+1]);
-                    }
+                    std::string tmpFileName = 
+                        LongFileName(GetNextArg(argc, argv, i+1, nArgsSkip));
 #else
                     std::string tmpFileName(argv[i+1]);
 #endif
                     // Remove quotes around the string if any exist.
-                    if(tmpFileName.size() > 0 &&
-                       (tmpFileName[0] == '\'' || tmpFileName[0] == '\"'))
-                    {
-                        tmpFileName = tmpFileName.substr(1, tmpFileName.size()-1);
-                    }
-                    // Remove quotes around the string if any exist.
-                    if(tmpFileName.size() > 0 &&
-                       (tmpFileName[tmpFileName.size()-1] == '\'' ||
-                        tmpFileName[tmpFileName.size()-1] == '\"'))
-                    {
-                        tmpFileName = tmpFileName.substr(0, tmpFileName.size()-1);
-                    }
+                    StripSurroundingQuotes(tmpFileName);
 
                     // If the string contains a "*" and the end of the string is
                     // not " database" then add that suffix.
@@ -1759,7 +1805,10 @@ QvisGUIApplication::ProcessArguments(int &argc, char **argv)
                     // Set the name of the session file that we're going to
                     // load once the GUI's done initializing.
 #if defined(_WIN32)
-                    sessionFile = QString(LongFileName(argv[i+1]).c_str());
+                    std::string tmpSession = 
+                        LongFileName(GetNextArg(argc, argv, i+1, nArgsSkip));
+                    StripSurroundingQuotes(tmpSession);
+                    sessionFile = QString(tmpSession.c_str());
 #else
                     sessionFile = QString(argv[i+1]);
 #endif
