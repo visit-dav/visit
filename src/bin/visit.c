@@ -47,8 +47,10 @@
 
 #if _MSC_VER <= 1310
 #define _VISIT_MSVC "MSVC7.Net"
-#else if _MSC_VER <= 1400
+#elif _MSC_VER <= 1400
 #define _VISIT_MSVC "MSVC8.Net"
+#else
+#define _VISIT_MSVC ""
 #endif
 
 /*

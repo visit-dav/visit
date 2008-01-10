@@ -246,8 +246,8 @@ cp -R $TOPDIR/src/include/vtk/Utilities/vtkzlib include/VTK
 #overwrite the linux version with windows version headers
 cd include/VTK
 mv MSVC/vtk*.h .
-mv MSVC/tiffDllConfig.h ./vtktiff/
-mv MSVC/zlibDllConfig.h ./vtkzlib/
+mv -f MSVC/tiffDllConfig.h ./vtktiff/
+mv -f MSVC/zlibDllConfig.h ./vtkzlib/
 rm -rf MSVC
 
 
