@@ -26,12 +26,12 @@ if  (! -d "src")
 sub get ($@)
 {
     my ($dir, $recursearg) = @_;
-    @tmpfiles = `svn ls $recursearg $dir | egrep -v /\$`;
+    @tmpfiles = `svn status -v $recursearg $dir | grep -v '^?' | tr -s ' ' | cut -d' ' -f5 | grep -v -x \.`;
     my @files = ();
     foreach (@tmpfiles)
     {
         chomp;
-        push @files, "$dir/$_";
+        push @files, "$_";
     }
     return @files
 }
@@ -39,13 +39,13 @@ sub get ($@)
 sub get_svn_recursive ($@)
 {
     my ($dir) = @_;
-    return get($dir, "-R");
+    return get($dir, "");
 }
 
 sub get_svn_norecursive ($@)
 {
     my ($dir) = @_;
-    return get($dir, "");
+    return get($dir, "-N");
 }
 
 sub get_norecursive ($@)
