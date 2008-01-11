@@ -156,6 +156,11 @@
 #    $version+, to avoid the possibility that it would be recognized
 #    as a patch.
 #
+#    Eric Brugger, Fri Jan 11 10:15:40 PST 2008
+#    I corrected a test checking for write permission in the install
+#    directory inadvertently also required that the install directory
+#    already exist.
+#
 #-----------------------------------------------------------------------
 
 set Compress = COMPRESS
@@ -302,15 +307,28 @@ if (`echo "$dir" | grep "^/"` == "") then
    set dir = `pwd`/"$dir"
 endif
 
-touch $dir/test.$$
-if (! -e $dir/test.$$) then
-   echo ""
-   echo "You do not have write permission to $dir"
-   echo "Bailing out"
-   echo ""
-   exit (2)
+if (-e $dir) then
+   touch $dir/test.$$
+   if (! -e $dir/test.$$) then
+      echo ""
+      echo "You do not have write permission to $dir"
+      echo "Bailing out"
+      echo ""
+      exit (2)
+   else
+      rm $dir/test.$$
+   endif
 else
-   rm $dir/test.$$
+   touch $dir.test.$$
+   if (! -e $dir.test.$$) then
+      echo ""
+      echo "You do not have write permission to create $dir"
+      echo "Bailing out"
+      echo ""
+      exit (2)
+   else
+      rm $dir.test.$$
+   endif
 endif
 
 while ($config == prompt)

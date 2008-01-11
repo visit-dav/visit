@@ -55,6 +55,12 @@
 // Programmer: Cyrus Harrison
 // Creation:   Mon Dec 17 15:20:25 PST 2007
 //
+// Modifications:
+//   Eric Brugger, Fri Jan 11 09:54:04 PST 2008
+//   I added some Python version specific coding to get around a problem
+//   with older versions not having a const qualifier for the string argument
+//   to PyDict_SetItemString.
+//
 // ****************************************************************************
 
 PyObject *
@@ -83,7 +89,14 @@ PyMapNode_Wrap(const MapNode &node)
         if(child_node == NULL)
             continue;
         PyObject *child = PyMapNode_Wrap(*child_node);
-        PyDict_SetItemString(dict, entry_names[i].c_str(),child);   
+#if (PY_MAJOR_VERSION < 2) || ((PY_MAJOR_VERSION == 2) && (PY_MINOR_VERSION < 5))
+        char *str = new char[entry_names[i].length()+1]
+        strcpy(str, entry_names[i].c_str());
+        PyDict_SetItemString(dict, str, child);   
+        delete [] str;
+#else
+        PyDict_SetItemString(dict, entry_names[i].c_str(), child);   
+#endif
     }
 
     return dict;
