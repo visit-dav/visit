@@ -305,6 +305,10 @@ vtkVisItDataReader::IssueReadWarning(const char *buf, int eval)
 //    Kathleen Bonnell, Thu Jan 10 15:13:33 PST 2008 
 //    strtof not available on Windows, use strtod instead for Windows.
 //
+//    Eric Brugger, Fri Jan 11 13:11:57 PST 2008
+//    Made to use strtod instead of strtof if on Windows or HAVE_STRTOF is
+//    not defined.
+//
 // ***************************************************************************
 double vtkVisItDataReader::ReadVal(int mode)
 {
@@ -322,10 +326,10 @@ double vtkVisItDataReader::ReadVal(int mode)
     }
     else if (mode == 1) // float
     {
-#ifndef _WIN32
-        retval = (double) strtof(buf, &tmpstr);
-#else
+#if defined(_WIN32) || !defined(HAVE_STRTOF)
         retval = (double) strtod(buf, &tmpstr);
+#else
+        retval = (double) strtof(buf, &tmpstr);
 #endif
         if (((retval == 0.0) && (tmpstr == buf)) || (errno != 0))
             IssueReadWarning(buf, errno);
