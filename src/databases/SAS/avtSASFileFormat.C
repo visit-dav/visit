@@ -1034,12 +1034,12 @@ avtSASFileFormat::FindChannel(int globalChannelID, int *length, int *fileoffset)
             else if (aChannels[mid*3] > globalChannelID)
             {
                 max = mid-1;
-                mid = (max+mid)/2;
+                mid = (max+min)/2;
             }
             else
             {
                 min = mid+1;
-                mid = (max+mid)/2;
+                mid = (max+min)/2;
             }
         }
         return false;
