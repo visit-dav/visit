@@ -153,6 +153,7 @@
 #include <avtConnComponentsExpression.h>
 #include <avtTensorContractionFilter.h>
 #include <avtViscousStressFilter.h>
+#include <avtPerformColorTableLookupFilter.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -461,6 +462,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //
 //    Jeremy Meredith, Thu Aug 30 16:02:01 EDT 2007
 //    Added hsvcolor.
+//
+//    Gunther H. Weber, Wed Jan  9 10:22:55 PST 2008
+//    Added colorlookup.
 //
 // ****************************************************************************
 
@@ -859,6 +863,8 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtColorComposeFilter(4);
     if (functionName == "hsvcolor")
         return new avtHSVColorComposeFilter;
+    if (functionName == "colorlookup")
+        return new avtPerformColorTableLookupFilter;
 
     return NULL;
 }

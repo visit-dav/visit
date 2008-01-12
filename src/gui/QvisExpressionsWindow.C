@@ -127,6 +127,9 @@
 //    Jeremy Meredith, Thu Aug 30 16:02:58 EDT 2007
 //    Added hsvcolor.
 //
+//    Gunther H. Weber, Thu Jan 10 12:00:23 PST 2008
+//    Added colorlookup.
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -221,6 +224,7 @@ const char *expr_trig[] = {
 const char *expr_vector[] = {
     "color",
     "color4",
+    "colorlookup",
     "cross",
     "dot",
     "hsvcolor",
