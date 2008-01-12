@@ -1100,3 +1100,44 @@ avtActor::GetZPosition()
     return drawable->GetZPosition();
 }
 
+// ****************************************************************************
+// Method: avtActor::ReducedDetailModeOn
+//
+// Purpose: 
+//   Set whether the actor should use reduced detail when rendering.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:00:22 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtActor::ReducedDetailModeOn()
+{
+    drawable->ReducedDetailModeOn();
+}
+
+// ****************************************************************************
+// Method: avtActor::ReducedDetailModeOff
+//
+// Purpose: 
+//   Turn off reduced detail mode.
+//
+// Returns:
+//   True if the actor needs a re-render to return to regular appearance;
+//   false otherwise.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:00:22 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtActor::ReducedDetailModeOff()
+{
+    return drawable->ReducedDetailModeOff();
+}

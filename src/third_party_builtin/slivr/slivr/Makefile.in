@@ -33,36 +33,44 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Modifications:
-#   Brad Whitlock, Fri Apr 7 15:08:10 PST 2006
-#   Added GLEW library.
-#
-#   Eric Brugger, Tue Mar 20 09:46:13 PDT 2007
-#   Added mesa stub library.
-#
-#   Cyrus Harrison, Tue Jul 24 14:32:07 PDT 2007
-#   Added support for conditional compile of mesa_stub lib
-#
-#   Jeremy Meredith, Fri Sep  7 11:01:36 EDT 2007
-#   Added ALLSUBDIRS so make distclean does a better job.
-#
-#   Brad Whitlock, Thu Jan 10 11:16:55 PST 2008
-#   Added slivr.
 #
 ##############################################################################
 
+
+##
+## Programs and options...
+##
 @SET_MAKE@
 @VARIABLES@
-@DIRTARGETS@
 
-SUBDIRS=@BUILD_MESA_STUB@ @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@ @BUILD_SLIVR@
-ALLSUBDIRS=mesa_stub bzip2 glew bilib slivr
+##
+## Standard targets...
+##
+all: message slivr
 
+clean:
+	$(RM) SLIVRConfig.cmake.in
+	$(RM) -rf slivr
+	$(RM) -rf $(TOPDIR)/include/slivr
+	$(RM) -rf $(TOPDIR)/lib/slivr
+	$(RM) $(TOPDIR)/lib/libslivrG.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libslivrV.@SHLIB_SOEXT@
+
+SLIVRConfig.cmake.in:
+	gunzip < slivr-rev-106.tar.gz | tar xvf - > /dev/null
+	cp slivr/SLIVRConfig.cmake.in .
+
+slivr: SLIVRConfig.cmake.in
+	cd slivr && $(CMAKE) -D CMAKE_C_COMPILER:FILEPATH=$(CC) -D CMAKE_CXX_COMPILER:FILEPATH=$(CXX) -D BUILD_SHARED_LIBS:STRING=ON -D GLEW_INCLUDE:STRING=$(TOPDIR)/include/glew -D GLEW_LIBRARY:STRING=$(TOPDIR)/lib -D TEEM_DIR:STRING=$(TOPDIR)/lib/TEEM-1.9 -D CMAKE_INSTALL_PREFIX:PATH=$(TOPDIR) @SLIVR_CMAKE_SHARED_LINKER_FLAGS@ .
+	cd slivr && $(MAKE)
+	cd slivr && $(MAKE) install
+
+##
+## Other targets
+##
 message:
 	@echo
 	@echo "****************************************************************************"
+	@echo "*** Building SLIVR"
 	@echo "****************************************************************************"
-	@echo "***"
-	@echo "*** Building VisIt's Third Party Builtin Libraries"
-	@echo "***"
-	@echo "****************************************************************************"
-	@echo "****************************************************************************"
+

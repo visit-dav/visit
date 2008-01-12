@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
-  <Plugin name="Volume" type="plot" label="Volume" version="1.1" enabled="true" mdspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Volume.xpm">
+  <Plugin name="Volume" type="plot" label="Volume" version="1.1" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Volume.xpm">
     <CXXFLAGS>
+      $(SLIVR_INCLUDE)
       $(GLEW_INCLUDE)
     </CXXFLAGS>
     <LIBS>
-      $(GLEW_LIBS) $(GL_LIBS)
+      $(SLIVR_LIBS)
+      $(GLEW_LIBS)
+      $(GL_LIBS)
     </LIBS>
     <Files components="V">
       avtVolumeRenderer.C
@@ -13,6 +16,7 @@
       avtMesaSplattingVolumeRenderer.C
       avtOpenGL3DTextureVolumeRenderer.C
       avtMesa3DTextureVolumeRenderer.C
+      avtOpenGLSLIVRVolumeRenderer.C
       BoundingBoxContourer.C
     </Files>
     <Files components="E">
@@ -22,14 +26,16 @@
       avtMesaSplattingVolumeRenderer.C
       avtOpenGL3DTextureVolumeRenderer.C
       avtMesa3DTextureVolumeRenderer.C
+      avtOpenGLSLIVRVolumeRenderer.C
       BoundingBoxContourer.C
     </Files>
-    <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" codefile="VolumeAttributes.code">
+    <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">
         Splatting
         Texture3D
         RayCasting
         RayCastingIntegration
+        SLIVR
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -116,6 +122,9 @@
       <Field name="sampling" label="Sampling Type" type="enum" subtype="SamplingType" enabler="rendererType:RayCasting">
         Rasterization
       </Field>
+      <Field name="rendererSamples" label="Render samples" type="float" enabler="rendererType:SLIVR">
+        3.
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="GradientWontChange" user="true" member="true">
@@ -135,6 +144,8 @@
       <Function name="SetEqualSpacingFlag" user="true" member="true">
       </Function>
       <Function name="GetEqualSpacingFlag" user="true" member="true">
+      </Function>
+      <Function name="AnyNonTransferFunctionMembersAreDifferent" user="true" member="true">
       </Function>
       <Include file="source" quoted="false">
         ColorControlPoint.h

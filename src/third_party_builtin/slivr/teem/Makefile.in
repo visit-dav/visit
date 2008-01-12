@@ -33,36 +33,81 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Modifications:
-#   Brad Whitlock, Fri Apr 7 15:08:10 PST 2006
-#   Added GLEW library.
-#
-#   Eric Brugger, Tue Mar 20 09:46:13 PDT 2007
-#   Added mesa stub library.
-#
-#   Cyrus Harrison, Tue Jul 24 14:32:07 PDT 2007
-#   Added support for conditional compile of mesa_stub lib
-#
-#   Jeremy Meredith, Fri Sep  7 11:01:36 EDT 2007
-#   Added ALLSUBDIRS so make distclean does a better job.
-#
-#   Brad Whitlock, Thu Jan 10 11:16:55 PST 2008
-#   Added slivr.
 #
 ##############################################################################
 
+##
+## Programs and options...
+##
 @SET_MAKE@
 @VARIABLES@
-@DIRTARGETS@
 
-SUBDIRS=@BUILD_MESA_STUB@ @BUILD_BZIP2@ @BUILD_GLEW@ @BUILD_BILIB@ @BUILD_SLIVR@
-ALLSUBDIRS=mesa_stub bzip2 glew bilib slivr
+##
+## Standard targets...
+##
+all: message teem
 
+clean:
+	$(RM) README.txt
+	$(RM) -rf teem-1.9.0-src
+	$(RM) -rf $(TOPDIR)/include/teem
+	$(RM) -rf $(TOPDIR)/bin/teem
+	$(RM) -rf $(TOPDIR)/lib/TEEM-1.9
+	$(RM) $(TOPDIR)/lib/libair.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libalan.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libbane.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libbiff.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libdye.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libecho.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libell.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libgage.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libhest.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/liblimn.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libnrrd.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libten.@SHLIB_SOEXT@
+	$(RM) $(TOPDIR)/lib/libunrrdu.@SHLIB_SOEXT@
+
+README.txt:
+	gunzip < teem-1.9.0-src.tar.gz | tar xvf - > /dev/null
+	cp teem-1.9.0-src/README.txt .
+
+build_teem: README.txt
+	cd teem-1.9.0-src && $(CMAKE) -D CMAKE_C_COMPILER:FILEPATH=$(CC) -D BUILD_SHARED_LIBS:STRING=ON -D CMAKE_INSTALL_PREFIX:STRING=$(TOPDIR) @TEEM_CMAKE_C_FLAGS@ .
+	cd teem-1.9.0-src && $(MAKE)
+	cd teem-1.9.0-src && $(MAKE) install
+	$(RM) -rf $(TOPDIR)/bin/teem
+	mkdir $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/affine     $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/airSanity  $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/cubic      $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/emap       $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/gkms       $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/idx2pos    $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/ilk        $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/miter      $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/mrender    $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/ninspect   $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/nrrdSanity $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/overrgb    $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/pos2idx    $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/pprobe     $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/qbert      $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/spots      $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/talkweb    $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/tend       $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/undos      $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/ungantry   $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/unu        $(TOPDIR)/bin/teem
+	mv $(TOPDIR)/bin/vprobe     $(TOPDIR)/bin/teem
+
+teem: build_teem
+
+##
+## Other targets
+##
 message:
 	@echo
 	@echo "****************************************************************************"
+	@echo "*** Building TEEM"
 	@echo "****************************************************************************"
-	@echo "***"
-	@echo "*** Building VisIt's Third Party Builtin Libraries"
-	@echo "***"
-	@echo "****************************************************************************"
-	@echo "****************************************************************************"
+

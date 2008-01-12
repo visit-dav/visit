@@ -84,6 +84,9 @@ typedef void (*OverrideRenderCallback)(void *, avtDataObject_p &);
 //    Kathleen Bonnell,  Thu Sep  2 11:44:09 PDT 2004
 //    Added SetSurfaceRepresentation and SetSpecularProperties. 
 //
+//    Brad Whitlock, Wed Aug 22 11:38:46 PDT 2007
+//    Added reduced detail mode.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtCustomRenderer
@@ -117,6 +120,9 @@ class PLOTTER_API avtCustomRenderer
                                                OverrideRenderCallback, void *);
     void                    SetVTKRenderer(vtkRenderer *r);
     virtual void            SetAlternateDisplay(void *dpy);
+
+    virtual void            ReducedDetailModeOn() {; }
+    virtual bool            ReducedDetailModeOff() { return false; }
 
   protected:
     avtViewInfo             view;

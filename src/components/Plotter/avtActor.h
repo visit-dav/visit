@@ -141,6 +141,9 @@ class     avtTransparencyActor;
 //    Hank Childs, Fri Aug 31 10:28:10 PDT 2007
 //    Added AdaptsToAnyWindowMode.
 //
+//    Brad Whitlock, Thu Jan 10 14:57:03 PST 2008
+//    Added reduced detail mode.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtActor
@@ -199,6 +202,9 @@ class PLOTTER_API avtActor
     void                          MakePickable(void);
     void                          MakeUnPickable(void);
     double                        GetZPosition(void);
+
+    void                          ReducedDetailModeOn();
+    bool                          ReducedDetailModeOff();
 
     const char                   *GetActorName() const;
     void                          SetActorName(const char *);

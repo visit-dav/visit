@@ -39,6 +39,9 @@
 /* Define if you have the GLEW library. */
 #undef HAVE_LIBGLEW
 
+/* Define if you have the slivr library. */
+#undef HAVE_LIBSLIVR
+
 /* Define if you have the hdf5 library. */
 #undef HAVE_LIBHDF5
 

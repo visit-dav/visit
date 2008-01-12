@@ -343,6 +343,44 @@ avtUserDefinedMapper::SetAlternateDisplay(void *dpy)
 }
 
 // ****************************************************************************
+// Method: avtUserDefinedMapper::ReducedDetailModeOn
+//
+// Purpose: 
+//   Tells the renderer to enter reduced detail mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:37:51 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtUserDefinedMapper::ReducedDetailModeOn()
+{
+    renderer->ReducedDetailModeOn();
+}
+
+// ****************************************************************************
+// Method: avtUserDefinedMapper::ReducedDetailModeOff
+//
+// Purpose: 
+//   Tells the renderer to exit reduced detail mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:37:51 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtUserDefinedMapper::ReducedDetailModeOff()
+{
+    return renderer->ReducedDetailModeOff();
+}
+
+// ****************************************************************************
 //  Method: vtkUserDefinedMapperBridge::New
 //
 //  Purpose:

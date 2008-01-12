@@ -1558,6 +1558,10 @@ VisWinPlots::GetAllDatasets(void)
 //  Programmer: Jeremy Meredith
 //  Creation:   July 26, 2002
 //
+//  Modifications:
+//    Brad Whitlock, Wed Aug 22 10:54:35 PDT 2007
+//    Set individual plots into reduced detail mode.
+//
 // **************************************************************************** 
 
 void
@@ -1568,6 +1572,13 @@ VisWinPlots::MotionBegin(void)
     // We don't need to re-render even if the actor has geometry since
     // we are switching to a lower quality mode of operation.
     //
+
+    // Switch the plots that can accept it into reduced detail mode.
+    std::vector< avtActor_p >::iterator it;
+    for (it = plots.begin() ; it != plots.end() ; it++)
+    {
+        (*it)->ReducedDetailModeOn();
+    }
 }
 
 
@@ -1585,6 +1596,9 @@ VisWinPlots::MotionBegin(void)
 //    Made perfect sorting a permanent mode instead of active for only
 //    a single frame.  It is now disabled by the MotionBegin method.
 //
+//    Brad Whitlock, Wed Aug 22 12:08:02 PDT 2007
+//    Return plots from reduced detail mode.
+//
 // **************************************************************************** 
 
 void
@@ -1597,6 +1611,13 @@ VisWinPlots::MotionEnd(void)
         // up its changes.
         //
         sceneHasChanged = true;
+    }
+
+    // Switch the plots that can accept it out of reduced detail mode.
+    std::vector< avtActor_p >::iterator it;
+    for (it = plots.begin() ; it != plots.end() ; it++)
+    {
+        sceneHasChanged |= (*it)->ReducedDetailModeOff();
     }
 
     if (sceneHasChanged)
