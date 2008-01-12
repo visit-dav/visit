@@ -184,6 +184,9 @@
 #   Jeremy Meredith, Thu Aug 30 16:04:41 EDT 2007
 #   Added avtHSVColorComposeFilter.C.
 #
+#   Gunther H. Weber, Wed Jan  9 10:21:48 PST 2008
+#   Added avtPerformColorTableLookupFilter.C
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -271,6 +274,7 @@ General_src= \
   General/avtNMatsFilter.C \
   General/avtNeighborEvaluatorFilter.C \
   General/avtNormalizeFilter.C \
+  General/avtPerformColorTableLookupFilter.C \
   General/avtProcessorIdFilter.C \
   General/avtRelativeDifferenceFilter.C \
   General/avtResradFilter.C \
@@ -282,7 +286,7 @@ General_src= \
   General/avtVariableSkewFilter.C \
   General/avtVectorComposeFilter.C \
   General/avtVectorDecomposeFilter.C \
-  General/avtViscousStressFilter.C\
+  General/avtViscousStressFilter.C \
   General/avtZoneTypeFilter.C
 
 
