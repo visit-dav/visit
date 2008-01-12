@@ -22,7 +22,20 @@ enhancements and bug-fixes that were added to this release.</p>
     statistical operator.  This operator simply counts the number of data
     points that lie within a given bin.  This allows for easy generation of
     multidimensional histograms.</li>
-<li>VisIt can now be built with support for the SLIVR volume rendering library from SCI, University of Utah. SLIVR provides an advanced hardware-accelerated volume renderer and when it is available, the Volume plot attributes window provides a "SCI, University of Utah (SLIVR)" rendering method.</li>
+    <li>VisIt can now be built with support for the SLIVR volume rendering
+    library from SCI, University of Utah. SLIVR provides an advanced
+    hardware-accelerated volume renderer and when it is available, the Volume
+    plot attributes window provides a "SCI, University of Utah (SLIVR)"
+    rendering method.</li>
+    <li>A new "colorlookup" operator is now available for use in VisIt's
+    expressions. This operator maps a scalar variable to a (color) vector
+    variable by performing a lookup in one of VisIt's color tables. It can
+    be used to "simulate" a Pseudocolor plot by means of a Truecolor plot,
+    allowing users to perform several lookups and blend colors using
+    expressions. CAVEAT: Unlike in the Pseudocolor plot, interpolation is
+    performed AFTER a color table lookup instead of before. As a result,
+    VisIt will interpolate colors after the lookup instead of values before
+    lookup. 
 </ul>
 <p><b><font size="4">Bugs fixed in version 1.9.0</font></b></p>
 <ul>
