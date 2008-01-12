@@ -109,6 +109,9 @@ class     avtTransparencyActor;
 //    Brad Whitlock, Mon Sep 18 11:21:54 PDT 2006
 //    Added color texturing method.
 //
+//    Brad Whitlock, Wed Aug 22 11:27:17 PDT 2007
+//    Added reduced detail methods.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtDrawable
@@ -147,6 +150,9 @@ class PLOTTER_API avtDrawable
     virtual void               MakePickable(void){;};
     virtual void               MakeUnPickable(void){;};
     virtual double             GetZPosition(void){ return 0.;};
+
+    virtual void               ReducedDetailModeOn() {; }
+    virtual bool               ReducedDetailModeOff() { return false; }
 };
 
 

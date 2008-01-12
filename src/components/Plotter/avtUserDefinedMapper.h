@@ -104,6 +104,9 @@ class PLOTTER_API avtUserDefinedMapper : public avtMapper
                                                       const ColorAttribute&);
 
     virtual void               SetAlternateDisplay(void *);
+
+    virtual void               ReducedDetailModeOn();
+    virtual bool               ReducedDetailModeOff();
   protected:
     avtCustomRenderer_p        renderer;
     vtkDataSetMapper          *CreateMapper(void);

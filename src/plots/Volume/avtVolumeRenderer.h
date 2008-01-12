@@ -92,6 +92,8 @@ class avtVolumeRenderer : public avtCustomRenderer
     virtual void            ReleaseGraphicsResources();
     virtual void            Render(vtkDataSet *);
 
+    virtual void            ReducedDetailModeOn();
+    virtual bool            ReducedDetailModeOff();
   protected:
     avtVolumeRendererImplementation  *rendererImplementation;
     bool                              currentRendererIsValid;
@@ -104,6 +106,8 @@ class avtVolumeRenderer : public avtCustomRenderer
     float                   vmin,vmax,vsize;
     float                   omin,omax,osize;
     float                  *gx, *gy, *gz, *gm, *gmn;
+
+    bool                    reducedDetail;
 
     bool                    GetScalars(vtkDataSet*,vtkDataArray*&,vtkDataArray *&);
     void                    GetRange(vtkDataArray *, float &, float &);

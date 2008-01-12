@@ -366,3 +366,39 @@ VolumeAttributes::GetEqualSpacingFlag() const
     return colorControlPoints.GetEqualSpacingFlag();
 }
 
+Function: AnyNonTransferFunctionMembersAreDifferent
+Declaration: bool AnyNonTransferFunctionMembersAreDifferent(const VolumeAttributes &) const;
+Definition:
+// ****************************************************************************
+// Method: VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent
+//
+// Purpose: 
+//   This method returns true if any non-transfer function members are different.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 6 10:23:59 PDT 2001
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+VolumeAttributes::AnyNonTransferFunctionMembersAreDifferent(const VolumeAttributes &rhs) const
+{
+    bool same = true;
+    for(int i = 0; i < NumAttributes(); ++i)
+    {
+        // Skip any of the transfer function members.
+        if(i == ID_colorControlPoints || 
+           i == ID_opacityAttenuation || 
+           i == ID_freeformFlag || 
+           i == ID_opacityControlPoints ||
+           i == ID_freeformOpacity)
+        {
+            continue;
+        }
+        same &= FieldsEqual(i, &rhs);
+    }
+
+    return !same;
+}

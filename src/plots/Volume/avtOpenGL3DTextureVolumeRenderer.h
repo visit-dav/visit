@@ -59,6 +59,8 @@
 //  Creation:   October  1, 2003
 //
 //  Modifications:
+//    Brad Whitlock, Thu Jan 10 14:47:34 PST 2008
+//    Added reducedDetail argument.
 //
 // ****************************************************************************
 
@@ -76,7 +78,8 @@ class avtOpenGL3DTextureVolumeRenderer : public avtVolumeRendererImplementation
                                    const VolumeAttributes&,
                                    float vmin, float vmax, float vsize,
                                    float omin, float omax, float osize,
-                                   float *gx, float *gy, float *gz, float *gmn);
+                                   float *gx, float *gy, float *gz, float *gmn,
+                                   bool reducedDetail);
 
     unsigned char          *volumetex;
     unsigned int            volumetexId;

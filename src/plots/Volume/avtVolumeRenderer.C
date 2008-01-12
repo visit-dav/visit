@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include "avtVolumeRenderer.h"
-
+#include <visit-config.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
@@ -55,6 +55,9 @@
 #include <avtMesaSplattingVolumeRenderer.h>
 #include <avtOpenGL3DTextureVolumeRenderer.h>
 #include <avtMesa3DTextureVolumeRenderer.h>
+#ifdef HAVE_LIBSLIVR
+#include <avtOpenGLSLIVRVolumeRenderer.h>
+#endif
 
 #include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
@@ -81,6 +84,9 @@ static float ValueSkewed(const float, const float *, const float);
 //    Jeremy Meredith, Tue Sep 30 11:44:21 PDT 2003
 //    Pulled out the reference to alphatex.  It belonged in the subclass.
 //
+//    Brad Whitlock, Thu Jan 10 14:44:42 PST 2008
+//    Added reducedDetail.
+//
 // ****************************************************************************
 avtVolumeRenderer::avtVolumeRenderer()
 {
@@ -88,6 +94,7 @@ avtVolumeRenderer::avtVolumeRenderer()
 
     rendererImplementation = NULL;
     currentRendererIsValid = false;
+    reducedDetail = false;
 
     gx  = NULL;
     gy  = NULL;
@@ -164,7 +171,54 @@ avtVolumeRenderer::New(void)
 {
     return new avtVolumeRenderer;
 }
- 
+
+// ****************************************************************************
+// Method: avtVolumeRenderer::ReducedDetailModeOn
+//
+// Purpose: 
+//   Turns on reduced detail mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:55:40 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVolumeRenderer::ReducedDetailModeOn()
+{
+    reducedDetail = true;
+}
+
+// ****************************************************************************
+// Method: avtVolumeRenderer::ReducedDetailModeOff
+//
+// Purpose: 
+//   Turns off reduced detail mode.
+//
+// Returns:    True if we're using the SLIVR renderer; false otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:55:56 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtVolumeRenderer::ReducedDetailModeOff()
+{
+    reducedDetail = false;
+#ifdef HAVE_LIBSLIVR
+    return (atts.GetRendererType() == VolumeAttributes::SLIVR);
+#else
+    return false;
+#endif
+}
+
 // ****************************************************************************
 //  Method:  avtVolumeRenderer::Render
 //
@@ -183,6 +237,9 @@ avtVolumeRenderer::New(void)
 //    Hank Childs, Sat Dec  3 20:37:07 PST 2005
 //    Change test for whether or not we are doing software rendering.
 //
+//    Brad Whitlock, Thu Jan 10 14:42:59 PST 2008
+//    Added support for SLIVR.
+//
 // ****************************************************************************
 void
 avtVolumeRenderer::Render(vtkDataSet *ds)
@@ -196,6 +253,14 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         {
             if (atts.GetRendererType() == VolumeAttributes::Splatting)
                 rendererImplementation = new avtMesaSplattingVolumeRenderer;
+#ifdef HAVE_LIBSLIVR
+            else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
+            {
+                rendererImplementation = new avtMesa3DTextureVolumeRenderer;
+                avtCallback::IssueWarning("SLIVR is not currently supported for "
+                    "offscreen rendering. VisIt is reverting to 3D texturing.");
+            }
+#endif
             else // it == VolumeAttributes::Texture3D
                 rendererImplementation = new avtMesa3DTextureVolumeRenderer;
         }
@@ -203,6 +268,10 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         { 
             if (atts.GetRendererType() == VolumeAttributes::Splatting)
                 rendererImplementation = new avtOpenGLSplattingVolumeRenderer;
+#ifdef HAVE_LIBSLIVR
+            else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
+                rendererImplementation = new avtOpenGLSLIVRVolumeRenderer;
+#endif
             else // it == VolumeAttributes::Texture3D
                 rendererImplementation = new avtOpenGL3DTextureVolumeRenderer;
         }
@@ -225,7 +294,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         rendererImplementation->Render(grid, data, opac, view, atts,
                                        vmin, vmax, vsize,
                                        omin, omax, osize,
-                                       gx, gy, gz, gmn);
+                                       gx, gy, gz, gmn, reducedDetail);
 }
 
 

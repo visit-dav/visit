@@ -56,6 +56,10 @@ struct avtViewInfo;
 //  Programmer:  Jeremy Meredith
 //  Creation:    October  2, 2003
 //
+//  Modifications:
+//    Brad Whitlock, Thu Jan 10 14:46:11 PST 2008
+//    Added reducedDetail flag.
+//
 // ****************************************************************************
 class avtVolumeRendererImplementation
 {
@@ -69,7 +73,8 @@ class avtVolumeRendererImplementation
                           const VolumeAttributes&,
                           float vmin, float vmax, float vsize,
                           float omin, float omax, float osize,
-                          float *gx, float *gy, float *gz, float *gmn) = 0;
+                          float *gx, float *gy, float *gz, float *gmn, 
+                          bool reducedDetail) = 0;
 };
 
 #endif

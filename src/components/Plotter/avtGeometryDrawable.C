@@ -672,4 +672,45 @@ avtGeometryDrawable::GetZPosition()
     return zpos;
 }
 
+// ****************************************************************************
+// Method: avtGeometryDrawable::ReducedDetailModeOn
+//
+// Purpose: 
+//   Turn on reduced detail mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:30:08 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtGeometryDrawable::ReducedDetailModeOn()
+{
+    if(mapper != NULL)
+        mapper->ReducedDetailModeOn();
+}
+
+// ****************************************************************************
+// Method: avtGeometryDrawable::ReducedDetailModeOff
+//
+// Purpose: 
+//   Turn off reduced detail mode.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Aug 22 11:30:08 PDT 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+avtGeometryDrawable::ReducedDetailModeOff()
+{
+    bool retval = false;
+    if(mapper != NULL)
+        retval = mapper->ReducedDetailModeOff();
+    return retval;
+}
 

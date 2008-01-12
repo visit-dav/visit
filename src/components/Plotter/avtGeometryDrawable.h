@@ -104,6 +104,9 @@ class     ColorAttribute;
 //    Brad Whitlock, Mon Sep 18 11:23:02 PDT 2006
 //    Added SetColorTexturingFlag.
 //
+//    Brad Whitlock, Wed Aug 22 11:40:09 PDT 2007
+//    Added reduced detail mode.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtGeometryDrawable : public avtDrawable
@@ -145,6 +148,8 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
     virtual void                MakeUnPickable(void);
     virtual double              GetZPosition(void);
 
+    virtual void                ReducedDetailModeOn();
+    virtual bool                ReducedDetailModeOff();
   protected:
     int                         nActors;
     vtkActor                  **actors;

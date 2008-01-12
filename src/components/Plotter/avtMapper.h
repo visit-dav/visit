@@ -111,6 +111,9 @@ class   ColorAttribute;
 //    Brad Whitlock, Mon Sep 18 11:26:26 PDT 2006
 //    Added SetColorTexturingFlag.
 //
+//    Brad Whitlock, Wed Aug 22 11:32:25 PDT 2007
+//    Added reduced detail mode.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
@@ -152,6 +155,9 @@ class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
                                    { return false; };
 
     virtual void               SetAlternateDisplay(void *) {; }
+
+    virtual void               ReducedDetailModeOn() {; }
+    virtual bool               ReducedDetailModeOff() { return false; }
 
   protected:
     bool                       immediateMode;

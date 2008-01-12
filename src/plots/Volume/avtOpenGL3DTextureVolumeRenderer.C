@@ -212,6 +212,9 @@ avtOpenGL3DTextureVolumeRenderer::~avtOpenGL3DTextureVolumeRenderer()
 //    Fixed 3D texture detection problem for Mac OS by checking for
 //    GL_VERSION_1_2 before using GLEW.
 //
+//    Brad Whitlock, Thu Jan 10 14:47:34 PST 2008
+//    Added reducedDetail argument.
+//
 // ****************************************************************************
 
 void
@@ -223,7 +226,7 @@ avtOpenGL3DTextureVolumeRenderer::Render(vtkRectilinearGrid *grid,
                                          float vmin, float vmax, float vsize,
                                          float omin, float omax, float osize,
                                          float *gx, float *gy, float *gz,
-                                         float *gmn)
+                                         float *gmn, bool reducedDetail)
 {
     static bool haveIssuedWarning = false;
 #ifndef VTK_IMPLEMENT_MESA_CXX

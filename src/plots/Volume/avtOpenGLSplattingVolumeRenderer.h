@@ -82,7 +82,7 @@ class avtOpenGLSplattingVolumeRenderer : public avtVolumeRendererImplementation
                                    float vmin, float vmax, float vsize,
                                    float omin, float omax, float osize,
                                    float *gx, float *gy, float *gz,
-                                   float *gmn);
+                                   float *gmn, bool);
 
     float                  *alphatex;
     unsigned int            alphatexId;

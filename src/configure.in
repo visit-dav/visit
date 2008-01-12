@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce configure.
 dnl 
 dnl 
 dnl 
-dnl                            Copyright 2000 - 2007
+dnl                            Copyright 2000 - 2008
 dnl                 The Regents of the University of California.
 dnl                             All rights reserved.
 dnl 
@@ -757,6 +757,10 @@ dnl
 dnl    Eric Brugger, Mon Jan  7 11:54:11 PST 2008
 dnl    Added a test for the function setenv.
 dnl
+dnl    Brad Whitlock, Thu Jan 10 10:29:40 PST 2008
+dnl    Added support for building SLIVR library and its dependencies 
+dnl    (cmake, teem).
+dnl
 dnl    Eric Brugger, Fri Jan 11 12:16:03 PST 2008
 dnl    Added a test for the function strtof.
 dnl
@@ -885,6 +889,34 @@ fi
 # Check for platform specific flags.
 #
 AC_SUBST(PLATFORM_CPPFLAGS)
+
+#
+# Check for CMake
+#
+CMAKE=""
+AC_ARG_WITH(cmake,
+	    [  --with-cmake=path to cmake     Location of cmake utility.],
+           cmake_specified="yes",
+           cmake_specified="no"
+           )
+if test "$cmake_specified" = "yes"; then
+   AC_MSG_CHECKING(for cmake)
+   if test "$withval" != "no"; then
+      CMAKE="$withval"
+   fi
+   AC_MSG_RESULT($CMAKE)
+else
+   if test "$DEFAULT_CMAKE" != ""; then
+       # Get the cmake value from the config-site file.
+       AC_MSG_CHECKING(for cmake)
+       CMAKE="$DEFAULT_CMAKE"
+       AC_MSG_RESULT($CMAKE)
+   else
+       # No cmake was specified, look for it.
+       AC_PATH_PROG([CMAKE], [cmake], "")
+   fi
+fi
+AC_SUBST(CMAKE)
 
 #
 # Set up fake exceptions if requested.
@@ -1417,6 +1449,45 @@ AC_SUBST(JAVA_TARGET)
 AC_SUBST(JAR)
 AC_SUBST(JAVAFLAGS)
 AC_SUBST(JAVAPLUGINFLAGS)
+
+#
+# Check to see if the SLIVR is enabled.
+#
+AC_ARG_ENABLE(slivr,
+   [  --enable-slivr           build with the SLIVR volume rendering library],
+   UseSLIVR=$enableval, UseSLIVR=no)
+
+AC_MSG_CHECKING(if SLIVR is enabled)
+TEEM_CMAKE_C_FLAGS=""
+SLIVR_CMAKE_SHARED_LINKER_FLAGS=""
+if test "$UseSLIVR" = "yes"; then
+    if test "$CMAKE" != "" ; then
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_LIBSLIVR, [1], [Define if you have the SLIVR library.])
+        BUILD_SLIVR="slivr"
+        SLIVR_INCLUDE="-I$""(TOPDIR)/include/teem -I$""(TOPDIR)/include/slivr"
+        SLIVR_LIBS="-lslivrV -lslivrG -lnrrd -lair -lbiff -lhest"
+        if test "$SHORT_UNAME" = "darwin"; then
+            TEEM_CMAKE_C_FLAGS="-D CMAKE_C_FLAGS:STRING=-fno-common"
+            SLIVR_CMAKE_SHARED_LINKER_FLAGS="-D CMAKE_SHARED_LINKER_FLAGS:STRING=-Wl,-undefined,dynamic_lookup"
+        fi
+    else
+        AC_MSG_RESULT(no because cmake was not found)
+        BUILD_SLIVR=""
+        SLIVR_INCLUDE=""
+        SLIVR_LIBS=""
+    fi
+else
+    AC_MSG_RESULT(no)
+    BUILD_SLIVR=""
+    SLIVR_INCLUDE=""
+    SLIVR_LIBS=""
+fi
+AC_SUBST(BUILD_SLIVR)
+AC_SUBST(SLIVR_INCLUDE)
+AC_SUBST(SLIVR_LIBS)
+AC_SUBST(TEEM_CMAKE_C_FLAGS)
+AC_SUBST(SLIVR_CMAKE_SHARED_LINKER_FLAGS)
 
 #
 # Check if the help directory is present.
@@ -3725,7 +3796,10 @@ THIRD_PARTY_BUILTIN_FILES="third_party_builtin/Makefile
                            third_party_builtin/bzip2/Makefile
                            third_party_builtin/glew/Makefile
                            third_party_builtin/bilib/Makefile
-                           third_party_builtin/mesa_stub/Makefile"
+                           third_party_builtin/mesa_stub/Makefile
+                           third_party_builtin/slivr/Makefile
+                           third_party_builtin/slivr/slivr/Makefile
+                           third_party_builtin/slivr/teem/Makefile"
 
 if test "$enable_scripting" = "yes"; then
     VISITPY_FILES="visitpy/Makefile

@@ -112,6 +112,9 @@ class QvisVariableButton;
 //    Added data members for showing color spectrum in the opacity
 //    editor and also for an inverse linear ramp.
 //
+//    Brad Whitlock, Fri Jan 11 15:29:40 PST 2008
+//    Added renderSamples for SLIVR.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -137,6 +140,7 @@ protected:
     void GetCurrentValues(int which_widget);
     void CopyGaussianOpacitiesToFreeForm();
     void SetResampleTargetSliderFromAtts();
+    void SetRendererSamplesSliderFromAtts();
 private slots:
     void addControlPoint();
     void removeControlPoint();
@@ -173,6 +177,9 @@ private slots:
     void processSkewText();
     void scaleClicked(int scale);
     void colorTableClicked(bool useDefault, const QString &ctName);
+    void rendererSamplesProcessText();
+    void rendererSamplesSliderChanged(int val);
+    void rendererSamplesSliderReleased();
 private:
     int                      plotType;
     VolumeAttributes         *volumeAtts;
@@ -220,13 +227,19 @@ private:
     QRadioButton             *kernelButton;
     QRadioButton             *centeredDiffButton;
     QRadioButton             *sobelButton;
+    QLabel                   *resampleTargetLabel;
     QLineEdit                *resampleTarget;
     QSlider                  *resampleTargetSlider;
+    QLabel                   *num3DSlicesLabel;
     QLineEdit                *num3DSlices;
+    QLabel                   *samplesPerRayLabel;
     QLineEdit                *samplesPerRay;
     QButtonGroup             *scalingButtons;
     QLabel                   *skewLabel;
     QLineEdit                *skewLineEdit;
+    QLabel                   *rendererSamplesLabel;
+    QSlider                  *rendererSamplesSlider;
+    QLineEdit                *rendererSamples;
 };
 
 #endif
