@@ -201,6 +201,11 @@ void vtkDataSetRemoveGhostCells::GenericExecute()
 //    Hank Childs, Sun Oct 28 10:48:50 PST 2007
 //    Added support for GhostZoneTypesToRemove.
 //
+//    Hank Childs & Cyrus Harrison, Mon Jan 14 08:36:03 PST 2008
+//    Removed shallow copy of input dataset b/c this would copy the links
+//    (if they existed) potentially providing bogus connectivity info after
+//    the ghost zones were removed.
+//
 // ****************************************************************************
 
 void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
@@ -212,12 +217,19 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
   vtkUnstructuredGrid *input  = (vtkUnstructuredGrid*)this->GetInput();
   vtkUnstructuredGrid *output = (vtkUnstructuredGrid*)this->GetOutput();
  
-  output->ShallowCopy(input);
+  output->vtkPointSet::ShallowCopy(input);
+  output->SetPoints(input->GetPoints());
+  output->GetPointData()->ShallowCopy(input->GetPointData());
+  output->GetFieldData()->ShallowCopy(input->GetFieldData());
 
-  vtkDataArray *arr = output->GetCellData()->GetArray("avtGhostZones");
+  vtkDataArray *arr = input->GetCellData()->GetArray("avtGhostZones");
   if (arr == NULL)
+  {
+      output->GetCellData()->ShallowCopy(input->GetCellData());
+      output->SetCells(input->GetCellTypesArray(), input->GetCellLocationsArray(),
+                       input->GetCells());
       return;
-
+  }
   if (arr->GetDataType() != VTK_UNSIGNED_CHAR)
   {
       vtkErrorMacro("Can only operate on unsigned char ghost data");
@@ -225,7 +237,7 @@ void vtkDataSetRemoveGhostCells::UnstructuredGridExecute()
   }
   vtkUnsignedCharArray *ghosts = (vtkUnsignedCharArray *) arr;
 
-  vtkIdType ncells = output->GetNumberOfCells();
+  vtkIdType ncells = input->GetNumberOfCells();
   int totalSize = input->GetCells()->GetSize();
 
   // Over-allocate for now.
