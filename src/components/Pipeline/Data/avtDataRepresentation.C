@@ -65,8 +65,11 @@
 #include <NoInputException.h>
 #include <ImproperUseException.h>
 #include <DebugStream.h>
+#include <visitstream.h>
+#include <snprintf.h>
 
 using std::string;
+using std::ostringstream;
 
 //
 // Static members
@@ -908,8 +911,11 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Hank Childs, Fri Dec  7 09:59:34 PST 2007
 //    Added reference counts to output.
 //
-// ****************************************************************************
-
+//    Cyrus Harrison, Thu Jan 10 10:52:42 PST 2008
+//    Add more information about number of tuples, components and fixed 
+//    bug where some info was droped in the output string.
+//
+// **************************************************************************** 
 const char *
 avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 {
@@ -918,21 +924,23 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         return "EMPTY DATA SET";
     }
 
+    ostringstream oss;
+    
     const int strsize = 4096;
     char name[strsize];
+    static char str[strsize];
 
     if(datasetDump)
     {
         static int times = 0;
-
         
         if (PAR_Size() > 1)
         {
             int rank = PAR_Rank();
-            sprintf(name, "%s%d.%d.vtk", prefix, times, rank);
+            SNPRINTF(name,strsize,"%s%d.%d.vtk", prefix, times, rank);
         }
         else
-            sprintf(name, "%s%d.vtk", prefix, times);
+            SNPRINTF(name,strsize,"%s%d.vtk", prefix, times);
         times++;
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
         wrtr->SetInput(asVTK);
@@ -941,65 +949,63 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         wrtr->Delete();
     }
 
-    const char *type = "<unknown mesh type>";
+    string mesh_type = "<unknown mesh type>";
     int nzones = asVTK->GetNumberOfCells();
     int nnodes = asVTK->GetNumberOfPoints();
     int dims[3] = { -1, -1, -1 };
     int vtktype = asVTK->GetDataObjectType();
     int ptcnt = -1;
+
     switch (vtktype)
     {
       case VTK_RECTILINEAR_GRID:
-        type = "rectilinear mesh";
+        mesh_type = "rectilinear mesh";
         ((vtkRectilinearGrid *) asVTK)->GetDimensions(dims);
         break;
 
       case VTK_STRUCTURED_GRID:
-        type = "curvilinear mesh";
+        mesh_type = "curvilinear mesh";
         ((vtkStructuredGrid *) asVTK)->GetDimensions(dims);
         ptcnt=((vtkStructuredGrid *) asVTK)->GetPoints()->GetReferenceCount();
         break;
 
       case VTK_UNSTRUCTURED_GRID:
-        type = "unstructured mesh";
+        mesh_type = "unstructured mesh";
         ptcnt=((vtkUnstructuredGrid *) asVTK)->GetPoints()->GetReferenceCount();
         break;
 
       case VTK_POLY_DATA:
-        type = "poly data mesh";
+        mesh_type = "poly data mesh";
         ptcnt=((vtkPolyData *) asVTK)->GetPoints()->GetReferenceCount();
         break;
     }
 
-    static char str[strsize];
-
-    str[0] = '\0';
-    char *cur = str + 0;
-
     if (datasetDump)
     {
-        sprintf(cur, "%s, ", name);
+        oss << name << "<br> " << mesh_type << " ";
     }
-    cur = cur + strlen(cur);
-
-    if (dims[0] > 0)
-        sprintf(cur, "%s, ncells = %d, npts = %d, dims = %d, %d, %d",
-                type, nzones, nnodes, dims[0], dims[1], dims[2]);
-    else
-        sprintf(str, "%s, ncells = %d, npts = %d",
-                type, nzones, nnodes);
-    cur = cur + strlen(cur);
-    sprintf(cur, "<br>");
-    cur = cur + strlen(cur);
     
-    if (ptcnt >= 0)
-        sprintf(cur, "Refs to mesh = %d, to points = %d <br>", 
-                asVTK->GetReferenceCount(), ptcnt);
+    if (dims[0] > 0)
+    {
+        oss << "ncells = " << nzones << " npts = " <<  nnodes 
+            << " dims = " << dims[0] << "," << dims[1] << "," << dims[2];
+    }
     else
-        sprintf(cur, "Refs to mesh = %d <br>", asVTK->GetReferenceCount());
-    cur = cur + strlen(cur);
-
-    int remain = strsize - strlen(str) - 1;
+    {
+        oss << "ncells = " << nzones << " npts = " <<  nnodes;
+    }
+    
+    oss << "<br>";
+   
+    if (ptcnt >= 0)
+    {
+        oss << "Refs to mesh = " << asVTK->GetReferenceCount() 
+            << ", to points = "  << ptcnt << "<br>";
+    }
+    else
+    {
+        oss << "Refs to mesh = " << asVTK->GetReferenceCount() << "<br>";
+    }
 
     // Do field data.
     vtkFieldData *data[3];
@@ -1013,37 +1019,33 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 
     for (int fd = 0 ; fd < 3 ; fd++)
     {
-        if (remain > 0) 
+        oss << "<b>" << names[fd] << "_data:</b>";
+        if(data[fd]->GetNumberOfArrays() == 0)
         {
-            char appendStr[strsize];
-            sprintf(appendStr, "%s_data_names = [", names[fd]);
-	    strncat(str, appendStr, remain);
-	    remain -= strlen(appendStr);	
+            oss << " (None)<br>" << endl;
         }
-
-        for (int i=0; i<data[fd]->GetNumberOfArrays() && remain>0; i++)
+        else
         {
-            char tmpString[strsize];
-            sprintf(tmpString, "%s (refs = %d)", 
-                       data[fd]->GetArray(i)->GetName(),
-                       data[fd]->GetArray(i)->GetReferenceCount());
-	    strncat(str, tmpString, remain); 
-	    remain -= strlen(tmpString);
-	    if (remain > 0)
-	    {
-	        strncat(str, " ", remain); 
-	        remain--;
-	    }
-        }
-
-        if (remain > 0)
-        {
-	    const char *appendStr = (fd == 2 ? " ]" : " ]<br>");
-	    strncat(str, appendStr, remain);
-	    remain -= strlen(appendStr);	
+            oss << "<ul>";
+            for (int i=0; i<data[fd]->GetNumberOfArrays(); i++)
+            {
+                oss << "<li>" << data[fd]->GetArray(i)->GetName() 
+                    << "<ul>" 
+                    << "<li>" 
+                    << "refs = "  << data[fd]->GetArray(i)->GetReferenceCount()
+                    << "</li><li>" 
+                    << "vals = " << data[fd]->GetArray(i)->GetNumberOfTuples()
+                    << "</li><li>" 
+                    << "ncomps = " 
+                    << data[fd]->GetArray(i)->GetNumberOfComponents()
+                    << "</li></ul>"
+                    << "</li>";
+            }
+            oss << "</ul>";
         }
     }
-
+    
+    SNPRINTF(str,strsize,oss.str().c_str());
     return str;
 }
 
