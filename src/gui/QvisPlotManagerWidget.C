@@ -251,6 +251,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
             this, SLOT(copyToWinThisPlot()));
     connect(plotListBox, SIGNAL(redrawThisPlot()),
             this, SLOT(redrawThisPlot()));
+    connect(plotListBox, SIGNAL(disconnectThisPlot()),
+            this, SLOT(disconnectThisPlot()));
 	    
     topLayout->addMultiCellWidget(plotListBox, 2, 2, 0, 3);
 
@@ -2364,22 +2366,22 @@ QvisPlotManagerWidget::copyThisPlot()
 void
 QvisPlotManagerWidget::copyToWinThisPlot()
 {
-//et this is part of the context menu - I'll get back to it asap...
+// this is part of the context menu - INCOMPLETE
     QMessageBox::information( this, tr("Copy This Plot To Window"), tr("Not Yet Implemented..."), 
                               QMessageBox::Cancel | QMessageBox::Default);
     
     // add in a pop-up menu to allow user to select target window:
-    //et win1Act = new QAction(tr("Window 1"), 0, this);
-    //et win1Act->setStatusTip(tr("Copy Plot to Window 1"));
-    //et connect( win1Act, SIGNAL(toggled(bool)), this, SIGNAL(CopyPlotToWin(1)));
+    win1Act = new QAction(tr("Window 1"), 0, this);
+    win1Act->setStatusTip(tr("Copy Plot to Window 1"));
+    connect( win1Act, SIGNAL(toggled(bool)), this, SIGNAL(CopyPlotToWin(1)));
     
-    //et win2Act = new QAction(tr("Window 2"), 0, this);
-    //et win2Act->setStatusTip(tr("Copy Plot to Window 2"));
-    //et connect( win2Act, SIGNAL(toggled(bool)), this, SIGNAL(copyPlotToWin(2)));
+    win2Act = new QAction(tr("Window 2"), 0, this);
+    win2Act->setStatusTip(tr("Copy Plot to Window 2"));
+    connect( win2Act, SIGNAL(toggled(bool)), this, SIGNAL(copyPlotToWin(2)));
 
-    //et WindowChoiceMenu = new QPopupMenu(this);
-    //et win1Act->addTo( WindowChoiceMenu );
-    //et win2Act->addTo( WindowChoiceMenu );
+    WindowChoiceMenu = new QPopupMenu(this);
+    win1Act->addTo( WindowChoiceMenu );
+    win2Act->addTo( WindowChoiceMenu );
     
 }
 
@@ -2401,9 +2403,9 @@ QvisPlotManagerWidget::copyToWinThisPlot()
 void
 QvisPlotManagerWidget::copyPlotToWin(int winIndex)
 {
-//et this is part of the context menu - I'll get back to it asap...
+// this is part of the context menu - INCOMPLETE...
     // Copy the active plot.
-    //et GetViewerMethods()->CopyActivePlots();
+
     QMessageBox::information( this, tr("Copy This Plot To Window"), tr("Not Yet Implemented..."), 
                               QMessageBox::Cancel | QMessageBox::Default);
 }
@@ -2430,6 +2432,28 @@ QvisPlotManagerWidget::redrawThisPlot()
     drawThisPlot();		      
 }
 
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::disconnectThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to disconnect 
+//   the active plot from the TimeSlider
+//   (Used by the Right-Click Context Menu in the Plot List Box)
+//
+// Programmer: Ellen Tarwater
+// Creation:   Weds, Nov 28, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisPlotManagerWidget::disconnectThisPlot()
+{
+
+    // Disconnect the active plot from the time slider:
+    GetViewerMethods()->SetPlotFollowsTime();
+			      
+}
 // ****************************************************************************
 // Method: QvisPlotManagerWidget::setActivePlot
 //

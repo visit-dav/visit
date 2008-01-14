@@ -183,7 +183,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //
 //   Ellen Tarwate, Fri, May 25
 //   adding Context Menu to the Active Plots list
-//   hideThisPlot, deleteThisPlot, drawThisPlot
+//   hideThisPlot, deleteThisPlot, drawThisPlot,
+//   copyThisPlot, clearThisPlot, redrawThisPlot,
+//   copyToWinThisPlot, disconnectThisPlot...
 //
 //   Brad Whitlock, Thu Dec 20 11:05:48 PST 2007
 //   Added methods to make recreating the plot menu easier.
@@ -224,6 +226,7 @@ public slots:
     void copyThisPlot();
     void copyToWinThisPlot();
     void redrawThisPlot();
+    void disconnectThisPlot();
     void setActivePlot();
     
 signals:
@@ -277,9 +280,9 @@ private:
     QPushButton             *deleteButton;
     QPushButton             *drawButton;
     QCheckBox               *applyOperatorToggle;
-    //et QPopupMenu              *WindowChoiceMenu;  //et comming soon for context menu...
-    //et QAction                 *win1Act;
-    //et QAction                 *win2Act;
+    QPopupMenu              *WindowChoiceMenu;  
+    QAction                 *win1Act;
+    QAction                 *win2Act;
 
     // Menu widgets
     QMenuBar                *plotMenuBar;

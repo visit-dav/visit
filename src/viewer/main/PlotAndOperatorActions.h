@@ -324,6 +324,30 @@ public:
 };
 
 // ****************************************************************************
+// Class: SetPlotFollowsTimeAction
+//
+// Purpose:
+//   This action disconnects the window's active plots from the time slider.
+//
+// Notes:      
+//
+// Programmer: Ellen Tarwater	
+// Creation:   Thurs, Dec 6, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class SetPlotFollowsTimeAction : public ViewerAction
+{
+public:
+    SetPlotFollowsTimeAction(ViewerWindow *);
+    virtual ~SetPlotFollowsTimeAction();
+    virtual void Execute();
+    virtual bool Enabled() const;
+};
+
+// ****************************************************************************
 // Class: DeleteActivePlotsAction
 //
 // Purpose:

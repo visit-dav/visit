@@ -2372,3 +2372,85 @@ CopyPlotAction::Enabled() const
     return (window->GetPlotList()->GetNumPlots() > 0);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+///
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: SetPlotFollowsTimeAction::SetPlotFollowsTimeAction
+//
+// Purpose: 
+//   Constructor for the SetPlotFollowsTimeAction class.
+//
+// Arguments:
+//   win : The window that owns the action.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Thurs, Dec 6, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SetPlotFollowsTimeAction::SetPlotFollowsTimeAction(ViewerWindow *win) : ViewerAction(win,
+    "SetPlotFollowsTimeAction")
+{
+    SetAllText("Disconnect Plot from Time Slider");
+    // Think of an icon...
+}
+
+// ****************************************************************************
+// Method: SetPlotFollowsTimeAction::~SetPlotFollowsTimeAction
+//
+// Purpose: 
+//   Destructor for the SetPlotFollowsTimeAction class.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Thurs, Dec 6, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+SetPlotFollowsTimeAction::~SetPlotFollowsTimeAction()
+{
+}
+
+// ****************************************************************************
+// Method: SetPlotFollowsTimeAction::Execute
+//
+// Purpose: 
+//   Disconnects the active plot from the time slider.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Thurs, Dec 6, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SetPlotFollowsTimeAction::Execute()
+{
+     window->GetPlotList()->SetPlotFollowsTime();
+}
+
+// ****************************************************************************
+// Method: SetPlotFollowsTimeAction::Enabled
+//
+// Purpose: 
+//   Returns whether the action is enabled.
+//
+// Programmer: Ellen Tarwater
+// Creation:   Thurs, Dec 6, 2007
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+SetPlotFollowsTimeAction::Enabled() const
+{
+    return (window->GetPlotList()->GetNumPlots() > 0);
+}
+

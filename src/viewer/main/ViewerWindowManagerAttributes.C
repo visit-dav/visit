@@ -918,6 +918,9 @@ ViewerWindowManagerAttributes::FieldsEqual(int index_, const AttributeGroup *rhs
 //   Brad Whitlock, Tue Mar 7 18:14:18 PST 2006
 //   Added RedoView.
 //
+//   Ellen Tarwater, Thurs, Dec 27, 2007
+//   Added SetPlotFollowsTimeRPC.
+//
 // ****************************************************************************
 
 void
@@ -1011,6 +1014,7 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
         plotGroup.AddAction(ViewerRPC::AddPlotRPC);
         plotGroup.AddAction(ViewerRPC::DrawPlotsRPC);
         plotGroup.AddAction(ViewerRPC::HideActivePlotsRPC);
+	plotGroup.AddAction(ViewerRPC::SetPlotFollowsTimeRPC);
         plotGroup.AddAction(ViewerRPC::DeleteActivePlotsRPC);
         AddActionGroup(actionNode, plotGroup);
     }

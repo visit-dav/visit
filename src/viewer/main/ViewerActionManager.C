@@ -409,8 +409,11 @@ public:
 //   Brad Whitlock, Mon Feb 12 17:55:07 PST 2007
 //   Added ViewerBase base class.
 //
-//   Ellen Tarwater, Mon Sept 24, 1007
+//   Ellen Tarwater, Mon Sept 24, 2007
 //   Added CopyPlotAction.
+//
+//   Ellen Tarwater, Weds, Dec 26, 2007
+//   Added SetPlotFollowsTimeAction.
 //
 // ****************************************************************************
 
@@ -488,6 +491,7 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
     AddAction(new DeletePlotDatabaseKeyframeAction(win), ViewerRPC::DeletePlotDatabaseKeyframeRPC);
     AddAction(new MovePlotDatabaseKeyframeAction(win), ViewerRPC::MovePlotDatabaseKeyframeRPC);
     AddAction(new CopyPlotAction(win), ViewerRPC::CopyActivePlotsRPC);
+    AddAction(new SetPlotFollowsTimeAction(win),ViewerRPC::SetPlotFollowsTimeRPC);
 }
 
 // ****************************************************************************

@@ -1887,6 +1887,29 @@ ViewerMethods::HideActivePlots()
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::SetPlotFollowsTime
+//
+//  Purpose:
+//    Disconnect the active plot from the time slider.
+//
+//  Programmer: Ellen Tarwater
+//  Creation:   December 6, 2007
+//
+// ****************************************************************************
+void
+ViewerMethods::SetPlotFollowsTime()
+{
+    //
+    // Set the rpc type and arguments.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetPlotFollowsTimeRPC);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+// ****************************************************************************
 //  Method: ViewerMethods::DrawPlots
 //
 //  Purpose:

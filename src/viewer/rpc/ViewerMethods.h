@@ -88,6 +88,9 @@ class ViewerState;
 //   Cyrus Harrison, Wed Nov 28 14:38:19 PST 2007
 //   Added SetCreateVectorMagnitudeExpressions
 //
+//   Ellen Tarwater, Thurs, Dec 6, 2007
+//   Added SetPlotFollowsTime
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -170,6 +173,7 @@ public:
     void MovePlotDatabaseKeyframe(int plotId, int oldFrame, int newFrame);
     void DeleteActivePlots();
     void HideActivePlots();
+    void SetPlotFollowsTime();
     void DrawPlots(bool drawAllPlots = true);
     void SetActivePlots(const intVector &activePlotIds);
     void SetActivePlots(const intVector &activePlotIds,
