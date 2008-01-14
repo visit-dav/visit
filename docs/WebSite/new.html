@@ -226,6 +226,7 @@ function MM_initTimelines() { //v4.0
 <h1>What's New</h1>
 <p>This page provides information about what's new with VisIt, including general news about the tool as well as new features that have been recently added.</p>
 <ol>
+  <li><a href="#January2008">January, 2008</a></li>
   <li><a href="#December2007">December, 2007</a></li>
   <li><a href="#November2007">November, 2007</a></li>
   <li><a href="#August2007">August, 2007</a></li>
@@ -238,11 +239,29 @@ function MM_initTimelines() { //v4.0
   <li><a href="#Dec2005">December, 2005</a></li>
   <li><a href="#Oct2005">October, 2005</a></li>
 </ol>
+<h1><a name="January2008"></a>January, 2008 - VisIt 1.8.0 released</h1>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 1.8.0, which can be <a href="download.html">downloaded from this site</a>, contains many bug-fixes and new features. <!-- is primarily a bug-fix release. --></p>
+<h2>1. Visual Studio 2005 is now supported on Windows.</h2>
+<p>Support for building VisIt on Windows using Microsoft Visual Studio 2005 has been added.  There are now project and solution files for 2003 and 2005 versions of Microsoft Visual Studio.</p>
+<h2>2. There is more per-plot control.</h2>
+<p>VisIt now features a context (right-click) menu in the <b>Plot List</b>, which allows the user to Hide/Show, Delete, Draw, Clear, Redraw, or Copy the currently active plot in the list.</p>
+<h2>3. Add background images to your visualizations.</h2>
+<p>VisIt now supports setting the background for a visualization to a user-specified image. VisIt can display the background image under all of its plots and can optionally tile the image. You can choose to set an image background by opening the <b>Colors</b> tab of the <b>Annotation Window</b> and from there, you can choose the <i>Image</i> background style. Once you choose the <i>Image</i> background style, you must choose an image file by entering a filename into the <b>Background image</b> file box. Note that you currently must provide a file local to the computer on which you ran VisIt. <i>Support for image annotations in distributed mode will be added in a future version of VisIt.</i></p>
+<p>In addition to support for flat background images, VisIt also now supports <i>Image sphere</i> backgrounds. This style of background image takes a flat image and warps it around a sphere that contains the whole visualization. As you move the camera in the visualization window via rotations, the visible region of the image sphere will change, simulating movement within a larger environment. Image spheres are useful for adding backgrounds such as star fields to your visualization. It is also possible to tile images by setting the number of repetitions in X and Y.</p></p>
+<h2>4. Add 3D text annotations to your visualizations.</h2>
+<p>VisIt has a new 3D text annotation type that can be used to insert extruded text into a 3D visualization. The new annotation object is available on the <b>Objects</b> tab of the <b>Annotation Window</b>.</p>
+<h2>5. VisIt's query infrastructure has been improved and a new query was added.</h2>
+<p>VisIt's query infrastructure was extended to allow queries to return structured data to the CLI. This type of result is obtained via the GetQueryOutputObject() python method, which typically returns a Python dictionary containing various fields returned from a query. Structured query output is currently only implemented by the <i>Shapelet Decomposition</i> query but in the future, more queries will be adapted so they return structured output.</p>
+<p>VisIt now provides a <i>Shapelet Decomposition</i> Query that calculates the cartesian shapelet coefficients of an image using the overlap integral decomposition method.</p>
+<h2>6. Console output from remote components is now displayed locally.</h2>
+<p>VisIt now displays console output from components that it launches on remote computers. For example, this makes it possible to see the launch string used for a parallel batch system on a remote computer.</p>
+<p class="small">[<a href="#top">Top</a>]</p>
+
 <h1><a name="December2007"></a>December, 2007 - VisIt 1.7.1 released</h1>
 <p>VisIt 1.7.1 was primarily a bug-fix release and resolved over 10 important issues.</p>
 <p class="small">[<a href="#top">Top</a>]</p>
 <h1><a name="November2007"></a>November, 2007 - VisIt 1.7 released </h1>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 1.7, which can be <a href="download.html">downloaded from this site</a>, <!--includes many new features and includes several important bug-fixes.--> is primarily a bug-fix release.</p>
+<p>VisIt 1.7 includes many bug-fixes and new features, including:</p>
 <h2>1. The simulation steering window was updated with a new strip chart tab window.</h2>
 <p>This is a postable/unpostable window that allows the simulation writer to monitor up to five simulation variables at a time in separate strip chart windows. The ability to reset a strip chart was added so that a user could restart without spurious startup values interfering with the interpretation of the data. The tab labels can be set via the running simulation to identify the variable being plotted. The current value of the data is now displayed in addition to the min and max data.</p>
 <h2>2. Added better support for lower resolution desktops.</h2>
