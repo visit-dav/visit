@@ -9332,3 +9332,25 @@ ViewerWindow::GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE wm)
         rs = LINEAR; 
     }
 }
+// ****************************************************************************
+//  Method: ViewerWindow::SetPlotFollowsTime
+//
+//  Purpose: Set the follows time flag
+//
+//  Arguments:
+//
+//  Programmer: Ellen Tarwater
+//  Creation:   December 27, 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetPlotFollowsTime()
+{
+
+    // toggle the follows time flag:
+    GetPlotList()->SetPlotFollowsTime();
+
+}

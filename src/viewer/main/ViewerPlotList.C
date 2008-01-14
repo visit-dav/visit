@@ -3859,6 +3859,50 @@ ViewerPlotList::HideActivePlots()
     //
     UpdateFrame();
 }
+// ****************************************************************************
+//  Method: ViewerPlotList::SetPlotFollowsTime
+//
+//  Purpose:
+//    Disconnect the active plots from the time slider.
+//
+//  Programmer: Ellen Tarwater
+//  Creation:   Dec 6, 2007
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerPlotList::SetPlotFollowsTime()
+{
+
+    //
+    // Loop over the list, toggling the disconnect flag on any active plots.
+    //
+    for (int i = 0; i < nPlots; i++)
+    {
+        //
+        // If the plot is active toggle the hide flag.
+       //
+       if (plots[i].active == true)
+        {
+            if (plots[i].plot->FollowsTime()) 
+	       plots[i].plot->SetFollowsTime( false );
+	    else
+	       plots[i].plot->SetFollowsTime( true );
+       }
+    }
+ 
+    //
+    // Update the client attributes.
+    //
+    UpdatePlotList();
+
+    //
+    // Update the frame.
+    //
+    UpdateFrame();
+}
 
 // ****************************************************************************
 //  Method: ViewerPlotList::RealizePlots
@@ -6609,6 +6653,9 @@ ViewerPlotList::GetPlotAtts(
 //    I made it use the new NotActivePlotList method to determine whether the
 //    plot list belongs to the active window so the check is more isolated.
 //
+//    Ellen Tarwater, Thurs Dec 20, 2007
+//    I made it update the followsTime flag
+//
 // ****************************************************************************
 
 void
@@ -6640,6 +6687,7 @@ ViewerPlotList::UpdatePlotList() const
         plots[i].plot->InitializePlot(plot);
         plot.SetActiveFlag(plots[i].active);
         plot.SetHiddenFlag(plots[i].hidden);
+	plot.SetFollowsTime(plots[i].followsTime);
 
         // Figure out the stage of completion that the plot is at.
         if (plots[i].plot->GetErrorFlag())

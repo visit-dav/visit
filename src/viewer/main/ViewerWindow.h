@@ -677,6 +677,8 @@ public:
 
     void SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE);
     void GetScaleMode(ScaleMode &ds, ScaleMode &rs, WINDOW_MODE);
+    
+    void SetPlotFollowsTime();
 
 private:
     void RecenterViewCurve(const double *limits);

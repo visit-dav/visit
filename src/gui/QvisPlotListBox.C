@@ -444,18 +444,19 @@ QvisPlotListBox::NeedToUpdateSelection(const PlotList *pl) const
 // Modifications:
 //   Kathleen Bonnell, Wed Nov 28 09:36:22 PST 2007
 //   Fix compile errror on Windows -- make maxNwins const.
+//
+//   Ellen Tarwater, Thurs, Dec 27, 2007
+//   Commenting out CopyToWin option... incomplete.
 //   
 // ****************************************************************************
 void
 QvisPlotListBox::contextMenuCreateActions()
 {
-//et This is an intermediate check-in... I've decided to check in the context menu
-//et without the Copy To Window options first, but I've started on them (and commented
-//et them out) here...
+// this should be updated so that nothing is enabled unless a plot is selected!
 
-     //et  = DEBUGGING - need to get the max # of wins from somewhere else...
-     const int maxNwins = 10;
-     int selectWindow[maxNwins];
+     //  - need to get the max # of wins for copyToWin...
+     // const int maxNwins = 10;
+     // int selectWindow[maxNwins];
      
      hideShowAct = new QAction(tr("&Hide/Show"), 0, this);
      hideShowAct->setStatusTip(tr("Hide or Show this plot"));
@@ -480,11 +481,24 @@ QvisPlotListBox::contextMenuCreateActions()
      
      copyAct = new QAction(tr("Copy"), 0, this);
      copyAct->setStatusTip(tr("Copy this plot"));
-     connect( copyAct, SIGNAL(activated()), this, SIGNAL(copyThisPlot()));    
-
-     //et copyToWinAct = new QAction(tr("Copy To Window"), 0, this);
-     //et copyToWinAct->setStatusTip(tr("Copy this plot to different window"));
-     //et connect( copyToWinAct, SIGNAL(activated()), this, SIGNAL(copyToWinThisPlot()));    
+     connect( copyAct, SIGNAL(activated()), this, SIGNAL(copyThisPlot()));  
+       
+     // build the menu
+     plotContextMenu = new QPopupMenu(this);
+     hideItem = hideShowAct->addTo( plotContextMenu );
+     deleteItem = deleteAct->addTo( plotContextMenu );
+     drawAct->addTo( plotContextMenu );
+     plotContextMenu->insertSeparator();
+     clearAct->addTo( plotContextMenu );
+     redrawAct->addTo( plotContextMenu );  
+     plotContextMenu->insertSeparator();
+     copyAct->addTo( plotContextMenu );
+    
+    
+// copy to window incomplete!!!!! Commented out below...
+     copyToWinAct = new QAction(tr("Copy To Window"), 0, this);
+     copyToWinAct->setStatusTip(tr("Copy this plot to different window"));
+     connect( copyToWinAct, SIGNAL(activated()), this, SIGNAL(copyToWinThisPlot()));    
      win1Act = new QAction(tr("Window 1"), 0, this);
      win2Act = new QAction(tr("Window 2"), 0, this);
      win1Act->setStatusTip(tr("Copy this plot to different window"));
@@ -492,30 +506,27 @@ QvisPlotListBox::contextMenuCreateActions()
      connect( win1Act, SIGNAL(activated()), this, SIGNAL(copyToWinThisPlot()));    
      connect( win2Act, SIGNAL(activated()), this, SIGNAL(copyToWinThisPlot()));    
 
-    plotContextMenu = new QPopupMenu(this);
-    hideShowAct->addTo( plotContextMenu );
-    deleteAct->addTo( plotContextMenu );
-    drawAct->addTo( plotContextMenu );
-    plotContextMenu->insertSeparator();
-    clearAct->addTo( plotContextMenu );
-    redrawAct->addTo( plotContextMenu );  
-    plotContextMenu->insertSeparator();
-    copyAct->addTo( plotContextMenu );
-    //et copyToWinAct->addTo( plotContextMenu );
-    
     // adding a popup menu to the copyToWin option:
-    // how many windows are open?
-    //et see p 54 of "C++ GUI Programming with Qt" : ...
-    int nWindows = 3;               //et DEBUGGING - find this val somewhere in code!!!!!
-    for (int i = 0; i < nWindows; ++i)
-    {
-        selectWindow[i] = -1;
-    }
+    // how many windows are open? hard-coding to 3 while debugging...
+//    int nWindows = 3;    
+//    for (int i = 0; i < nWindows; ++i)
+//    {
+//        selectWindow[i] = -1;
+//    }
     
-    copyWinSubMenu = new QPopupMenu(this);
-    win1Act->addTo(copyWinSubMenu);
-    win2Act->addTo(copyWinSubMenu);
-    //et plotContextMenu->insertItem(tr("Copy To Window"), copyWinSubMenu);
+//    copyWinSubMenu = new QPopupMenu(this);
+//    win1Act->addTo(copyWinSubMenu);
+//    win2Act->addTo(copyWinSubMenu);
+//    plotContextMenu->insertItem(tr("Copy To Window"), copyWinSubMenu);
+
+     plotContextMenu->insertSeparator();
+    
+     // Now, for the "Disconnect From TimeSlider" option:
+     disconnectAct = new QAction(tr("Disconnect From TimeSlider"), 0, this);
+     disconnectAct->setStatusTip(tr("Disconnect this plot from time slider"));
+     disconnectAct->setToggleAction(true);
+     connect( disconnectAct, SIGNAL(toggled(bool)), this, SIGNAL(disconnectThisPlot()));
+     disconnectAct->addTo( plotContextMenu );
     
     
 }
@@ -534,13 +545,49 @@ QvisPlotListBox::contextMenuCreateActions()
 // Creation:   Mon June 11 2007
 //
 // Modifications:
+//    Ellen Tarwater December 28, 2007
+//    disabling menu items if no plots active
 //   
 // ****************************************************************************
 
 void
 QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
 {
-    // FYI viewportMousePressEvent is called first...
+    
+    // setEnabled(false) if no active plots (plots are 'active' without being
+    // highlighted/selected, non-intuitive...??)
+    
+    bool anyActive = false;
+    for(int i = 0; i < count(); ++i)
+    {
+        QvisPlotListBoxItem *lbi = (QvisPlotListBoxItem *)item(i);
+        Plot &currentPlot = lbi->GetPlot();
+
+        if(currentPlot.GetActiveFlag())
+        {
+            anyActive = true;
+        }
+    }
+    if( !anyActive ) 
+    {
+        hideShowAct->setEnabled(false);
+        deleteAct->setEnabled(false);
+        drawAct->setEnabled(false);
+        clearAct->setEnabled(false);
+        copyAct->setEnabled(false);
+        redrawAct->setEnabled(false);
+        disconnectAct->setEnabled(false);
+    }
+    else
+    {
+        hideShowAct->setEnabled(true);
+        deleteAct->setEnabled(true);
+        drawAct->setEnabled(true);
+        clearAct->setEnabled(true);
+        copyAct->setEnabled(true);
+        redrawAct->setEnabled(true);
+        disconnectAct->setEnabled(true);
+    }
     
     plotContextMenu->exec( e->globalPos() );
     

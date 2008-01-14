@@ -115,6 +115,7 @@ signals:
     void copyThisPlot();
     void copyToWinThisPlot();
     void redrawThisPlot();
+    void disconnectThisPlot();
     void setActivePlot();
 private:
     void contextMenuCreateActions();
@@ -127,6 +128,10 @@ private:
     QAction    *copyAct;
     QAction    *copyToWinAct;
     QAction    *redrawAct;
+    QAction    *disconnectAct;
+    
+    int         hideItem;
+    int         deleteItem;
 
     QPopupMenu *copyWinSubMenu;
     QAction    *win1Act;

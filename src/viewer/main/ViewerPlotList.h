@@ -278,8 +278,11 @@ typedef std::map<std::string, int> StringIntMap;
 //    Kathleen Bonnell, Fri Sep 28 08:34:36 PDT 2007 
 //    Added scaleModeSet.
 //
-//    Ellen Tarwater )ctober 12, 2007
+//    Ellen Tarwater October 12, 2007
 //    Added flag to RealizePlots
+//
+//   Ellen Tarwater, Thurs, Dec 6, 2007
+//   Added SetPlotFollowsTime & followsTime flag to ViewerPlotListElement
 //
 // ****************************************************************************
 
@@ -290,6 +293,7 @@ struct ViewerPlotListElement
     bool       hidden;
     bool       active;
     bool       realized;
+    bool       followsTime;
     int        id;
 };
     
@@ -390,6 +394,7 @@ public:
                         const intVector &expandedPlots,
                         bool moreThanPlotsValid);
     void CopyActivePlots();
+    void SetPlotFollowsTime();
 
     void SetPlotSILRestriction(bool applyToAll = false);
 

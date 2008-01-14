@@ -386,6 +386,9 @@ typedef struct {
 //    Cyrus Harrison, Wed Nov 28 12:01:16 PST 2007
 //    Added SetCreateVectorMagnitudeExpressions.
 //
+//    Ellen Tarwater, Wed Dec 26, 2007
+//    Added SetPlotFollowsTime
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -527,6 +530,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     bool SetCreateMeshQualityExpressions(bool val);
     bool SetCreateTimeDerivativeExpressions(bool val);
     bool SetCreateVectorMagnitudeExpressions(bool val);
+    bool SetPlotFollowsTime();
 
     void ReplaceDatabase(const EngineKey &key,
                          const std::string &database,
