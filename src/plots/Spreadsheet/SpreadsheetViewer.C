@@ -969,11 +969,11 @@ SpreadsheetViewer::displayStructuredGrid(int meshDims[3])
 
     // Try to adjust for real dims
     vtkDataArray *realDims = input->GetFieldData()->GetArray("avtRealDims");
-    if(realDims != 0 && realDims->GetNumberOfTuples() == 3)
+    if(realDims != 0 && realDims->GetNumberOfTuples() == 6)
     {
         base_index[0] -= (int)realDims->GetTuple1(0);
-        base_index[1] -= (int)realDims->GetTuple1(1);
-        base_index[2] -= (int)realDims->GetTuple1(2);
+        base_index[1] -= (int)realDims->GetTuple1(2);
+        base_index[2] -= (int)realDims->GetTuple1(4);
         debug5 << mName << "Ghost zones change base_index to  base_index = {"
              << base_index[0] << ", "
              << base_index[1] << ", "

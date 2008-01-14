@@ -96,6 +96,9 @@
 /* Define to 1 if you have the `strtof' function. */
 #undef HAVE_STRTOF
 
+/* Define if you have the prototype for strtof in the <stdlib.h>. */
+#undef HAVE_STRTOF_PROTOTYPE
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
