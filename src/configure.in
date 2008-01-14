@@ -3548,11 +3548,13 @@ AC_CHECK_FUNCS(strtof)
 # the function is not good enough.
 #
 AC_MSG_CHECKING(for prototype for strtof)
+AC_LANG_PUSH(C++)
 AC_TRY_COMPILE([#include <stdlib.h>],
                [char *endptr; float f = strtof("3.5", &endptr)],
                AC_MSG_RESULT(yes)
                AC_DEFINE(HAVE_STRTOF_PROTOTYPE, [1], [Define if you have the prototype for strtof in the <stdlib.h>.]),
                AC_MSG_RESULT(no))
+AC_LANG_POP()
                
 #
 # Checks for typedefs, structures, and compiler characteristics.
