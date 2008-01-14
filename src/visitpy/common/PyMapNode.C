@@ -90,7 +90,7 @@ PyMapNode_Wrap(const MapNode &node)
             continue;
         PyObject *child = PyMapNode_Wrap(*child_node);
 #if (PY_MAJOR_VERSION < 2) || ((PY_MAJOR_VERSION == 2) && (PY_MINOR_VERSION < 5))
-        char *str = new char[entry_names[i].length()+1]
+        char *str = new char[entry_names[i].length()+1];
         strcpy(str, entry_names[i].c_str());
         PyDict_SetItemString(dict, str, child);   
         delete [] str;

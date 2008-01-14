@@ -307,7 +307,7 @@ vtkVisItDataReader::IssueReadWarning(const char *buf, int eval)
 //
 //    Eric Brugger, Fri Jan 11 13:11:57 PST 2008
 //    Made to use strtod instead of strtof if on Windows or HAVE_STRTOF is
-//    not defined.
+//    not defined or HAVE_STRTOF_PROTOTYPE is not defined.
 //
 // ***************************************************************************
 double vtkVisItDataReader::ReadVal(int mode)
@@ -326,7 +326,7 @@ double vtkVisItDataReader::ReadVal(int mode)
     }
     else if (mode == 1) // float
     {
-#if defined(_WIN32) || !defined(HAVE_STRTOF)
+#if defined(_WIN32) || !defined(HAVE_STRTOF) || !defined(HAVE_STRTOF_PROTOTYPE)
         retval = (double) strtod(buf, &tmpstr);
 #else
         retval = (double) strtof(buf, &tmpstr);
