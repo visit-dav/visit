@@ -774,12 +774,16 @@ avtExtractor::Restrict(int minw, int maxw, int minh, int maxh)
 //    Hank Childs, Sat Feb  3 15:53:44 PST 2001
 //    Pushed down to base class and sliced by x instead of z.
 //
+//    Hank Childs, Tue Jan 15 09:49:01 PST 2008
+//    Add special handling for being coincident with the problem's "min-x".
+//
 // ****************************************************************************
 
 int
 avtExtractor::IndexToTriangulationTable(const float (*pts)[3],int npts,float x)
 {
     int triIndex = 0;
+    bool allHi  = true;
     for (int i = npts-1 ; i >= 0 ; i--)
     {
         //
@@ -788,8 +792,30 @@ avtExtractor::IndexToTriangulationTable(const float (*pts)[3],int npts,float x)
         //
         triIndex <<= 1;
         if (pts[i][0] >= x)
-        {
             triIndex |= 1;
+        else
+            allHi  = false;
+    }
+
+    // The logic below is to prevent the case where:
+    // 1) X == FRUSTUM_MIN_X 
+    // 2) a face of the element is coincident with X' 
+    // 3) and the rest of the element is strictly greater than X'.  
+    // In the test above , we mark a node as "Hi" if it
+    // is greater than or equal to X'.  In that case, each node of the element
+    // would be "Hi", meaning that no extraction would take place.  Typically,
+    // this isn't a problem, since there is another cell on the other side that
+    // *will* get extracted.  But, if this cell is at the minimum X value for
+    // the domain (FRUSTUM_MIN_X), then nothing will get put there.  
+    // So detect this case and change the test from >= to >.
+    if ((x == FRUSTUM_MIN_X) && allHi)
+    {
+        triIndex = 0;
+        for (int i = npts-1 ; i >= 0 ; i--)
+        {
+            triIndex <<= 1;
+            if (pts[i][0] > x)
+                triIndex |= 1;
         }
     }
 
