@@ -111,6 +111,9 @@
 #   Thomas R. Treadway, Wed Oct 24 14:03:41 PDT 2007
 #   Path to versionwriter executable added.
 #
+#   Brad Whitlock, Tue Jan 15 13:55:47 PST 2008
+#   Added SILArrayAttributes.java.
+#
 ##############################################################################
 
 ##
@@ -200,6 +203,7 @@ QueryList.java \
 QueryOverTimeAttributes.java \
 RenderingAttributes.java \
 SaveWindowAttributes.java \
+SILArrayAttributes.java \
 SILAttributes.java \
 SILMatrixAttributes.java \
 SILRestrictionAttributes.java \
