@@ -16,22 +16,25 @@ TXN="$2"
 
 function runtest_sh()
 {
-	TEST="$@"
-	bash ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
-	if [ $? != 0 ]; then
-		exit 1
-	fi
+   TEST="$@"
+   bash ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
+   if [ $? != 0 ]; then
+      exit 1
+   fi
 }
 function runtest_py()
 {
-    TEST="$@"
-    /usr/bin/python ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
-	if [ $? != 0 ]; then
-		exit 1
-	fi
+   TEST="$@"
+   /usr/bin/python ${REPOS}/hooks/${TEST} ${REPOS} ${TXN}
+   if [ $? != 0 ]; then
+      exit 1
+   fi
 }
 
-runtest_sh "verify_versioning.sh"
+# Unfortunately we want something more warning-esque, which isn't quite
+# possible with subversion's hooks.
+#runtest_sh "verify_versioning.sh"
+
 # Cyrus says the TRY/ENDTRY test is rejecting too much valid code right now.
 # Until we have time to make it a bit smarter, we're disabling that test.
 #runtest_py "exceptions.py"
