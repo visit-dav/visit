@@ -55,6 +55,11 @@
 //  Programmer: Hank Childs
 //  Creation:   March 5, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jan 14 20:47:27 PST 2008
+//    Allow constants to be created as singletons.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtTimeExpression : public avtUnaryMathFilter
@@ -74,6 +79,8 @@ class EXPRESSION_API avtTimeExpression : public avtUnaryMathFilter
     virtual int              GetNumberOfComponentsInOutput(int) { return 1; };
     virtual int              GetVariableDimension(void) { return 1; };
     virtual vtkDataArray    *CreateArray(vtkDataArray *);
+    virtual bool             FilterCreatesSingleton(void) { return true; };
+    virtual bool             CanHandleSingletonConstants(void) {return true;};
 };
 
 

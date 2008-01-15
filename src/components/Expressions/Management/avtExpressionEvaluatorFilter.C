@@ -153,6 +153,9 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //    Directly use 'lastUsedSpec's data specification, since it has the
 //    best description of the data we want.
 //
+//    Hank Childs, Mon Jan 14 20:47:54 PST 2008
+//    Make sure no singleton constants escape out of the EEF.
+//
 // ****************************************************************************
 
 void
@@ -191,6 +194,11 @@ avtExpressionEvaluatorFilter::Execute(void)
     } else {
         GetOutput()->Copy(*dObj);
     }
+
+    // Make sure no singleton constants escape from the EEF.  This should
+    // be essentially a no-op for the case where there are no singletons.
+    bool success = true;
+    GetDataTree()->Traverse(CExpandSingletonConstants, NULL, success);
 
     VerifyVariableTypes();
 

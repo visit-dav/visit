@@ -168,6 +168,9 @@ avtExpressionStreamer::~avtExpressionStreamer()
 //    Hank Childs, Fri Jun  9 14:18:11 PDT 2006
 //    Remove unused variable.
 //
+//    Hank Childs, Sun Jan 13 20:26:34 PST 2008
+//    Add support for constant singletons.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -227,6 +230,10 @@ avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
         isPoint = true;
     }
     else if ((ntups == npts) && (ntups == ncells))
+    {
+        isPoint = IsPointVariable();
+    }
+    else if (ntups == 1) // Constant singleton.
     {
         isPoint = IsPointVariable();
     }

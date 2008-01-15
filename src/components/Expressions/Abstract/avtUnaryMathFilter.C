@@ -145,6 +145,9 @@ avtUnaryMathFilter::~avtUnaryMathFilter()
 //    Hank Childs, Tue Mar 13 09:59:08 PDT 2007
 //    Refine method for determining centering of the output variable.
 //
+//    Hank Childs, Sun Jan 13 20:07:56 PST 2008
+//    Add support for creating singletons.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -254,7 +257,9 @@ avtUnaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     //
     int ncomps = 0;
     int nvals = 0;
-    if (activeVariable == NULL || data == NULL)
+    if (FilterCreatesSingleton())
+        nvals = 1;
+    else if (activeVariable == NULL || data == NULL)
         nvals = (IsPointVariable() ? in_ds->GetNumberOfPoints() 
                                    : in_ds->GetNumberOfCells());
     else

@@ -105,6 +105,9 @@ class     ExprPipelineState;
 //    Sean Ahern, Mon Dec 10 09:59:51 EST 2007
 //    Added an expression name to Recenter for error messages.
 //
+//    Hank Childs, Sun Jan 13 13:46:15 PST 2008
+//    Add method for handling singleton constants.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtExpressionFilter : virtual public 
@@ -151,6 +154,8 @@ class EXPRESSION_API avtExpressionFilter : virtual public
     avtVarType               DetermineVariableType(std::string &);
 
     void                     UpdateExtents(avtDataTree_p);
+    virtual bool             CanHandleSingletonConstants(void) 
+                                                             { return false; };
 };
 
 

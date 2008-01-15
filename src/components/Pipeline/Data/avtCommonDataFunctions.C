@@ -1017,6 +1017,74 @@ CSetActiveVariable(avtDataRepresentation &data, void *arg, bool &success)
 
 
 // ****************************************************************************
+//  Function: CExpandSingletonConstants
+//
+//  Purpose:
+//      Expands all constants that are stored as singletons.
+//
+//  Arguments:
+//    data      The data whose constants should be expanded.
+//    <unused>  An unused variable.
+//    success   Assigned true if operation successful, false otherwise. 
+//
+//  Programmer: Hank Childs
+//  Creation:   January 13, 2008
+//
+// ****************************************************************************
+
+void
+CExpandSingletonConstants(avtDataRepresentation &data, void *, bool &success)
+{
+    //
+    // Perform some checks of the input.
+    //
+    if (!data.Valid())
+    {
+        EXCEPTION0(NoInputException);
+    }
+    vtkDataSet *ds = data.GetDataVTK();
+    if (ds == NULL)
+    {
+        EXCEPTION0(NoInputException);
+    }
+
+    vtkDataSetAttributes *atts[2];
+    atts[0] = ds->GetPointData();
+    atts[1] = ds->GetCellData();
+   
+    int ntups[2];
+    ntups[0] = ds->GetNumberOfPoints();
+    ntups[1] = ds->GetNumberOfCells();
+
+    for (int i = 0 ; i < 2 ; i++)
+    {
+        if (ntups[i] <= 1)
+            continue;
+
+        int nvars = atts[i]->GetNumberOfArrays(); 
+        for (int j = 0 ; j < nvars ; j++)
+        {
+            vtkDataArray *arr = atts[i]->GetArray(j);
+            if (arr->GetNumberOfTuples() == 1)
+            {
+                int ncomps = arr->GetNumberOfComponents();
+                double *constVals = new double[ncomps];
+                int k;
+                for (k = 0 ; k < ncomps ; k++)
+                    constVals[k] = arr->GetComponent(0, k);
+                arr->SetNumberOfTuples(ntups[i]);
+                for (k = 0 ; k < ntups[i] ; k++)
+                    arr->SetTuple(k, constVals);
+                delete [] constVals;
+            }
+        }
+    }
+
+    success = true;
+}
+
+
+// ****************************************************************************
 //  Function: CRemoveVariable
 //
 //  Purpose:

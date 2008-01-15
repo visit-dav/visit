@@ -113,6 +113,9 @@ avtBinaryDivideFilter::~avtBinaryDivideFilter()
 //    Hank Childs, Fri Oct  7 10:43:28 PDT 2005
 //    Add support for dividing by zero.
 //
+//    Hank Childs, Mon Jan 14 17:58:58 PST 2008
+//    Add support for singleton constants.
+//
 // ****************************************************************************
 
 void
@@ -120,21 +123,26 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                    vtkDataArray *out, int ncomponents,
                                    int ntuples)
 {
+    bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
+    bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();
     if ((in1ncomps == 1) && (in2ncomps == 1))
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float val1 = in1->GetTuple1(i);
-            float val2 = in2->GetTuple1(i);
+            int tup1 = (var1IsSingleton ? 0 : i);
+            int tup2 = (var2IsSingleton ? 0 : i);
+            float val1 = in1->GetTuple1(tup1);
+            float val2 = in2->GetTuple1(tup2);
             if (val1 == 0. && val2 == 0.)
             {
                 out->SetTuple1(i, 1.);
             }
             else if (val2 == 0. && val1 != 0.)
             {
-                EXCEPTION2(ExpressionException, outputVariableName, "You can't divide by zero");
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                           "You can't divide by zero");
             }
             else
                 out->SetTuple1(i, val1 / val2);
@@ -144,14 +152,17 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float val2 = in2->GetTuple1(i);
+            int tup2 = (var2IsSingleton ? 0 : i);
+            float val2 = in2->GetTuple1(tup2);
             if (val2 == 0)
             {
-                EXCEPTION2(ExpressionException, outputVariableName, "You can't divide by zero");
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                           "You can't divide by zero");
             }
             for (int j = 0 ; j < in1ncomps ; j++)
             {
-                float val1 = in1->GetComponent(i, j);
+                int tup1 = (var1IsSingleton ? 0 : i);
+                float val1 = in1->GetComponent(tup1, j);
                 out->SetComponent(i, j, val1/val2);
             }
         }
@@ -160,13 +171,16 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     {
         for (int i = 0 ; i < ntuples ; i++)
         {
-            float val1 = in1->GetTuple1(i);
+            int tup1 = (var1IsSingleton ? 0 : i);
+            float val1 = in1->GetTuple1(tup1);
             for (int j = 0 ; j < in2ncomps ; j++)
             {
-                float val2 = in2->GetComponent(i, j);
+                int tup2 = (var2IsSingleton ? 0 : i);
+                float val2 = in2->GetComponent(tup2, j);
                 if (val2 == 0)
                 {
-                    EXCEPTION2(ExpressionException, outputVariableName, "You can't divide by zero");
+                    EXCEPTION2(ExpressionException, outputVariableName, 
+                               "You can't divide by zero");
                 }
                 out->SetComponent(i, j, val1/val2);
             }
@@ -174,7 +188,8 @@ avtBinaryDivideFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Division of vectors in undefined.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Division of vectors in undefined.");
     }
 }
 

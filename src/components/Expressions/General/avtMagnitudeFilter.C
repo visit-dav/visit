@@ -118,6 +118,9 @@ avtMagnitudeFilter::~avtMagnitudeFilter()
 //    assuming that the PoinData Vectors and CellData Vectors will have 
 //    different names.
 //
+//    Hank Childs, Mon Jan 14 17:58:58 PST 2008
+//    Clean up some wrapped lines.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -139,13 +142,14 @@ avtMagnitudeFilter::DeriveVariable(vtkDataSet *in_ds)
     }
     if (vectorValues == NULL)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable for "
-                                        "magnitude expression");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                  "Unable to locate variable for magnitude expression");
     }
 
     if (vectorValues->GetNumberOfComponents() != 3)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Can only take magnitude of vectors.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Can only take magnitude of vectors.");
     }
     int ntuples = vectorValues->GetNumberOfTuples();
 

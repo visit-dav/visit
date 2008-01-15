@@ -915,7 +915,12 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Add more information about number of tuples, components and fixed 
 //    bug where some info was droped in the output string.
 //
+//    Hank Childs, Mon Jan 14 20:27:10 PST 2008
+//    Prevent ABRs (array bounds reads) when dealing with bad array sizes.
+//    This is particularly needed for singleton expressions.
+//
 // **************************************************************************** 
+
 const char *
 avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 {
@@ -932,8 +937,35 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 
     if(datasetDump)
     {
+        int  i;
         static int times = 0;
         
+        // Construct a data set where all mis-sized arrays are added as
+        // field data.  This prevents array bounds reads.  It is also
+        // necessary for the way we do singletons with constant expressions.
+        vtkDataSet *newDS = (vtkDataSet *) asVTK->NewInstance();
+        newDS->ShallowCopy(asVTK);
+        int  npt = newDS->GetPointData()->GetNumberOfArrays();
+        for (i = npt-1 ; i >= 0 ; i--)
+        {
+            vtkDataArray *arr = newDS->GetPointData()->GetArray(i);
+            if (arr->GetNumberOfTuples() != newDS->GetNumberOfPoints())
+            {
+                newDS->GetPointData()->RemoveArray(arr->GetName());
+                newDS->GetFieldData()->AddArray(arr);
+            }
+        }
+        int  ncell = newDS->GetCellData()->GetNumberOfArrays();
+        for (i = ncell-1 ; i >= 0 ; i--)
+        {
+            vtkDataArray *arr = newDS->GetCellData()->GetArray(i);
+            if (arr->GetNumberOfTuples() != newDS->GetNumberOfCells())
+            {
+                newDS->GetCellData()->RemoveArray(arr->GetName());
+                newDS->GetFieldData()->AddArray(arr);
+            }
+        }
+
         if (PAR_Size() > 1)
         {
             int rank = PAR_Rank();
@@ -943,10 +975,11 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             SNPRINTF(name,strsize,"%s%d.vtk", prefix, times);
         times++;
         vtkDataSetWriter *wrtr = vtkDataSetWriter::New();
-        wrtr->SetInput(asVTK);
+        wrtr->SetInput(newDS);
         wrtr->SetFileName(name);
         wrtr->Write();
         wrtr->Delete();
+        newDS->Delete();
     }
 
     string mesh_type = "<unknown mesh type>";

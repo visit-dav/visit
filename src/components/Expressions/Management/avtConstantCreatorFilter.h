@@ -66,6 +66,9 @@
 //    Hank Childs, Mon Jan 23 11:32:14 PST 2006
 //    Make sure constants are always scalars.
 //
+//    Hank Childs, Sun Jan 13 20:07:56 PST 2008
+//    Allow constants to be created as singletons.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtConstantCreatorFilter : public avtUnaryMathFilter
@@ -86,6 +89,8 @@ class EXPRESSION_API avtConstantCreatorFilter : public avtUnaryMathFilter
     virtual int              GetNumberOfComponentsInOutput(int) { return 1; };
     virtual int              GetVariableDimension(void) { return 1; };
     virtual vtkDataArray    *CreateArray(vtkDataArray *);
+    virtual bool             FilterCreatesSingleton(void) { return true; };
+    virtual bool             CanHandleSingletonConstants(void) {return true;};
 
     double                   value;
 };

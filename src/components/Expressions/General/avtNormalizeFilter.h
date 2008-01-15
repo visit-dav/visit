@@ -58,6 +58,9 @@
 //
 //  Modifications:
 //
+//    Hank Childs, Mon Jan 14 17:58:58 PST 2008
+//    Allow constants to be created as singletons.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtNormalizeFilter : public avtSingleInputExpressionFilter
@@ -72,6 +75,7 @@ class EXPRESSION_API avtNormalizeFilter : public avtSingleInputExpressionFilter
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension() { return 3; }
+    virtual bool              CanHandleSingletonConstants(void) {return true;};
 };
 
 

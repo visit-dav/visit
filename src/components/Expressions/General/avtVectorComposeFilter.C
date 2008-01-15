@@ -152,6 +152,9 @@ avtVectorComposeFilter::GetVariableDimension(void)
 //    Hank Childs, Fri Sep 19 13:46:13 PDT 2003
 //    Added support for tensors, symmetric tensors.
 //
+//    Hank Childs, Sun Jan 13 20:11:35 PST 2008
+//    Add support for singleton constants.
+//
 // ****************************************************************************
 vtkDataArray *
 avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
@@ -208,7 +211,18 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
         }
     }
 
-    int nvals  = data1->GetNumberOfTuples();
+    int nvals1 = data1->GetNumberOfTuples();
+    int nvals2 = data2->GetNumberOfTuples();
+    int nvals3 = 1;
+    if (numinputs == 3)
+        nvals3 = data3->GetNumberOfTuples();
+    
+    int nvals = nvals1;
+    if (nvals == 1)
+        nvals  = nvals2;
+    if (nvals == 1 && numinputs == 3)
+        nvals  = nvals3;
+
     vtkDataArray *dv = data1->NewInstance();
     if (twoDVector)
     {
@@ -225,8 +239,8 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
 
                 for (int i = 0 ; i < nvals ; i++)
                 {
-                    double val1 = data1->GetTuple1(i);
-                    double val2 = data2->GetTuple1(i);
+                    double val1 = data1->GetTuple1((nvals1>1 ? i : 0));
+                    double val2 = data2->GetTuple1((nvals2>1 ? i : 0));
                     dv->SetTuple3(i, val1, val2, 0.);
                 }
             }
@@ -242,11 +256,11 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
                 for (int i = 0 ; i < nvals ; i++)
                 {
                     double vals[9];
-                    vals[0] = data1->GetComponent(i, 0);
-                    vals[1] = data1->GetComponent(i, 1);
+                    vals[0] = data1->GetComponent((nvals1>1 ? i : 0), 0);
+                    vals[1] = data1->GetComponent((nvals2>1 ? i : 0), 1);
                     vals[2] = 0.;
-                    vals[3] = data2->GetComponent(i, 0);
-                    vals[4] = data2->GetComponent(i, 1);
+                    vals[3] = data2->GetComponent((nvals1>1 ? i : 0), 0);
+                    vals[4] = data2->GetComponent((nvals2>1 ? i : 0), 1);
                     vals[5] = 0.;
                     vals[6] = 0.;
                     vals[7] = 0.;
@@ -286,9 +300,9 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
                 
                 for (int i = 0 ; i < nvals ; i++)
                 {
-                    double val1 = data1->GetTuple1(i);
-                    double val2 = data2->GetTuple1(i);
-                    double val3 = data3->GetTuple1(i);
+                    double val1 = data1->GetTuple1((nvals1>1 ? i : 0));
+                    double val2 = data2->GetTuple1((nvals2>1 ? i : 0));
+                    double val3 = data3->GetTuple1((nvals3>1 ? i : 0));
                     dv->SetTuple3(i, val1, val2, val3);
                 }
             }
@@ -308,9 +322,9 @@ avtVectorComposeFilter::DeriveVariable(vtkDataSet *in_ds)
                 for (int i = 0 ; i < nvals ; i++)
                 {
                     double entry[9];
-                    data1->GetTuple(i, entry);
-                    data2->GetTuple(i, entry+3);
-                    data3->GetTuple(i, entry+6);
+                    data1->GetTuple((nvals1>1 ? i : 0), entry);
+                    data2->GetTuple((nvals2>1 ? i : 0), entry+3);
+                    data3->GetTuple((nvals3>1 ? i : 0), entry+6);
                     dv->SetTuple(i, entry);
                 }
             }

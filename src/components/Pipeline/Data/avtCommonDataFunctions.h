@@ -113,6 +113,9 @@ class     vtkDataArray;
 //    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
 //    Added ignoreGhost as an argument to GetDataRange.
 //
+//    Hank Childs, Sun Jan 13 14:36:38 PST 2008
+//    Added CExpandSingletonConstants.
+//
 // ****************************************************************************
 
 //
@@ -140,6 +143,8 @@ PIPELINE_API void CGetArray(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetVariableCentering(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfNodes(avtDataRepresentation &, void *, bool &);
 PIPELINE_API void CGetNumberOfRealZones(avtDataRepresentation &, void *, bool &);
+PIPELINE_API void CExpandSingletonConstants(avtDataRepresentation &,
+                                                     void *, bool &);
 PIPELINE_API void CConvertUnstructuredGridToPolyData(avtDataRepresentation &,
                                                      void *, bool &);
 PIPELINE_API void CApplyTransformToRectGrid(avtDataRepresentation &,
