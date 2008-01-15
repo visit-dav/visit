@@ -1583,6 +1583,9 @@ QvisGUIApplication::Exec()
 //
 // Modifications:
 //   
+//    Cyrus Harrison, Tue Jan 15 11:14:45 PST 2008
+//    Exclude close warning for cli launched b/c of visitrc file.
+//
 // ****************************************************************************
 
 void
@@ -1590,27 +1593,36 @@ QvisGUIApplication::Quit()
 {
     if(!viewerInitiatedQuit)
     {
-        if(GetViewerState()->GetClientInformationList()->
-           GetNumClients() > 1)
+        int num_clients = GetViewerState()->GetClientInformationList()
+                            ->GetNumClients();
+        bool have_visitrc = QFile(GetUserVisItRCFile().c_str()).exists();
+
+        closeAllClients = true;
+        
+        if(num_clients > 1)
         {
             // disconnect some slots so we don't keep getting the dialog.
-            disconnect(mainApp, SIGNAL(aboutToQuit()), mainApp, SLOT(closeAllWindows()));
-            disconnect(mainApp, SIGNAL(lastWindowClosed()), this, SLOT(Quit()));
+            disconnect(mainApp, SIGNAL(aboutToQuit()), 
+                       mainApp, SLOT(closeAllWindows()));
+            disconnect(mainApp, SIGNAL(lastWindowClosed()), 
+                       this, SLOT(Quit()));
+            
+            // if the user does not have a visitrc file, or if we have 3 
+            // or more clients ask user if they want to close all clients.
 
-            if(QMessageBox::information(mainWin,
-               "VisIt", "There is more than 1 VisIt client connected to the "
-               "viewer. Do you want to quit everything? \n\n"
-               "Answering No will just detach the GUI and leave the viewer "
-               "and its remaining clients running.",
-               QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+            if(!have_visitrc || num_clients > 2)
             {
-                closeAllClients = true;
+                if(QMessageBox::information(mainWin,
+                "VisIt", "There is more than 1 VisIt client connected to the "
+                "viewer. Do you want to quit everything? \n\n"
+                "Answering No will just detach the GUI and leave the viewer "
+                "and its remaining clients running.",
+                QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+                {
+                    closeAllClients = false;
+                }
             }
-            else
-                closeAllClients = false;
         }
-        else
-            closeAllClients = true;
     }
 
     mainApp->quit();
