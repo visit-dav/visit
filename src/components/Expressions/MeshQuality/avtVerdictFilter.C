@@ -273,12 +273,15 @@ avtVerdictFilter::DeriveVariable(vtkDataSet *in_ds)
 //    Jeremy Meredith, Thu Feb 15 11:54:16 EST 2007
 //    Execute inherited PreExecute unconditionally before everything else.
 //
+//    Hank Childs, Sun Jan 13 13:39:05 PST 2008
+//    Call PreExecute of immediate base class.
+//
 // ****************************************************************************
 
 void
 avtVerdictFilter::PreExecute()
 {
-    avtExpressionFilter::PreExecute();
+    avtSingleInputExpressionFilter::PreExecute();
 
 #ifdef HAVE_VERDICT
     if (!RequiresSizeCalculation())

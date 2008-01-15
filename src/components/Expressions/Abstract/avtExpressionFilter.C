@@ -198,11 +198,20 @@ avtExpressionFilter::SetOutputVariableName(const char *name)
 //    Call avtDatasetToDatasetFilter's PreExecute, since that is now the base 
 //    class.
 //
+//    Hank Childs, Sun Jan 13 13:46:15 PST 2008
+//    Add support for derived types that cannot handle singleton constants.
+//
 // ****************************************************************************
  
 void
 avtExpressionFilter::PreExecute(void)
 {
+    if (!CanHandleSingletonConstants())
+    {
+        bool success = true;
+        GetInputDataTree()->Traverse(CExpandSingletonConstants, NULL, success);
+    }
+
     avtDatasetToDatasetFilter::PreExecute();
     double exts[2] = {FLT_MAX, -FLT_MAX};
     GetOutput()->GetInfo().GetAttributes().GetCumulativeTrueDataExtents()

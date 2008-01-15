@@ -103,12 +103,20 @@ avtMinMaxExpression::~avtMinMaxExpression()
 //  Programmer: Hank Childs
 //  Creation:   March 13, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jan 14 18:26:58 PST 2008
+//    Add support for singleton constants.
+//
 // ****************************************************************************
 
 void
 avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                 vtkDataArray *out, int ncomponents,int ntuples)
 {
+    bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
+    bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
+
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();
     if (in1ncomps == in2ncomps)
@@ -117,8 +125,10 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         {
             for (int j = 0 ; j < in1ncomps ; j++)
             {
-                float val1 = in1->GetComponent(i, j);
-                float val2 = in2->GetComponent(i, j);
+                int tup1 = (var1IsSingleton ? 0 : i);
+                int tup2 = (var2IsSingleton ? 0 : i);
+                float val1 = in1->GetComponent(tup1, j);
+                float val2 = in2->GetComponent(tup2, j);
                 bool val1Bigger = (val1 > val2);
                 // Circumflex (^) is the exclusive or.
                 // doMin == true  && val1Bigger == true  --> val2
@@ -133,7 +143,8 @@ avtMinMaxExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Don't know how to take minimums or "
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                         "Don't know how to take minimums or "
                          "maximums with data of differing dimensions.");
     }
 }

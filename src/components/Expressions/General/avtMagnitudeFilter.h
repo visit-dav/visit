@@ -68,6 +68,9 @@ class     vtkDataArray;
 //    Hank Childs, Mon Jan 23 09:45:07 PST 2006
 //    Declare the correct variable dimension.
 //
+//    Hank Childs, Mon Jan 14 17:58:58 PST 2008
+//    Allow constants to be created as singletons.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMagnitudeFilter : public avtSingleInputExpressionFilter
@@ -82,6 +85,7 @@ class EXPRESSION_API avtMagnitudeFilter : public avtSingleInputExpressionFilter
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension(void) { return 1; };
+    virtual bool              CanHandleSingletonConstants(void) {return true;};
 };
 
 

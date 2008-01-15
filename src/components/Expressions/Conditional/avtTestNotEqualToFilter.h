@@ -63,6 +63,9 @@ class     vtkDataArray;
 //    Moved inlined constructor and destructor definitions to .C files
 //    because certain compilers have problems with them.
 //
+//    Hank Childs, Mon Jan 14 20:01:04 PST 2008
+//    Allow constants to be created as singletons.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtTestNotEqualToFilter 
@@ -80,6 +83,7 @@ class EXPRESSION_API avtTestNotEqualToFilter
   protected:
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                  vtkDataArray *out, int ncomps, int ntuples);
+    virtual bool     CanHandleSingletonConstants(void) {return true;};
 };
 
 

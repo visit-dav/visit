@@ -102,6 +102,9 @@ avtNormalizeFilter::~avtNormalizeFilter()
 //
 //  Modifications:
 //
+//    Hank Childs, Mon Jan 14 18:23:40 PST 2008
+//    Clean up wrapped lines.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -122,12 +125,14 @@ avtNormalizeFilter::DeriveVariable(vtkDataSet *in)
     }
     if (vectorValues == NULL)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable for normalize expression");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Unable to locate variable for normalize expression");
     }
 
     if (vectorValues->GetNumberOfComponents() != 3)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "Can only normalize vectors.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "Can only normalize vectors.");
     }
 
     int ntuples = vectorValues->GetNumberOfTuples();

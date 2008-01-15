@@ -132,6 +132,9 @@ avtBinaryMathFilter::~avtBinaryMathFilter()
 //    Hank Childs, Thu Jan 12 10:01:41 PST 2006
 //    Make sure that all arrays are valid.
 //
+//    Hank Childs, Mon Jan 14 17:29:34 PST 2008
+//    Add support for singletons.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -156,8 +159,9 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
 
     if (data1 == NULL)
     {
-        EXCEPTION2(ExpressionException, outputVariableName, "An internal error occurred when "
-              "calculating an expression.  Please contact a VisIt developer.");
+        EXCEPTION2(ExpressionException, outputVariableName, 
+                   "An internal error occurred when calculating an expression."
+                   "  Please contact a VisIt developer.");
     }
 
     // Get the second variable.
@@ -171,12 +175,13 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
             data2 = in_ds->GetPointData()->GetArray(varnames[1]);
             if (data2 != NULL)
             {
-                data2 = Recenter(in_ds, data2, AVT_NODECENT, outputVariableName);
+                data2 = Recenter(in_ds, data2,AVT_NODECENT,outputVariableName);
                 ownData2 = true;
             }
             else
             {
-                EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable");
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                           "Unable to locate variable");
             }
         }
     }
@@ -195,7 +200,8 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
             }
             else
             {
-                EXCEPTION2(ExpressionException, outputVariableName, "Unable to locate variable");
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                           "Unable to locate variable");
             }
         }
     }
@@ -207,6 +213,9 @@ avtBinaryMathFilter::DeriveVariable(vtkDataSet *in_ds)
     int ncomps2 = data2->GetNumberOfComponents();
     int ncomps = GetNumberOfComponentsInOutput(ncomps1, ncomps2);
     int nvals  = data1->GetNumberOfTuples();
+    if (nvals == 1)  // data1 is a singleton
+        nvals = data2->GetNumberOfTuples();
+         
 
     vtkDataArray *dv = CreateArray(data1);
     dv->SetNumberOfComponents(ncomps);

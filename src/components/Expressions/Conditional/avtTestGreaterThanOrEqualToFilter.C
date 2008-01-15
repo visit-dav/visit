@@ -36,7 +36,8 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* // //                     avtTestGreaterThanOrEqualToFilter.C                   //
+// ************************************************************************* //
+//                     avtTestGreaterThanOrEqualToFilter.C                   //
 // ************************************************************************* //
 
 #include <avtTestGreaterThanOrEqualToFilter.h>
@@ -99,13 +100,20 @@ avtTestGreaterThanOrEqualToFilter::~avtTestGreaterThanOrEqualToFilter()
 //  Programmer: Hank Childs
 //  Creation:   August 21, 2003
 //
+//  Modifications:
+//
+//    Hank Childs, Mon Jan 14 20:01:04 PST 2008
+//    Add support for singleton constants.
+//
 // ****************************************************************************
  
 void
 avtTestGreaterThanOrEqualToFilter::DoOperation(vtkDataArray *in1, 
-                                          vtkDataArray *in2, vtkDataArray *out,
-                                          int ncomponents, int ntuples)
+                                               vtkDataArray *in2, vtkDataArray *out,
+                                               int ncomponents, int ntuples)
 {
+    bool var1IsSingleton = (in1->GetNumberOfTuples() == 1);
+    bool var2IsSingleton = (in2->GetNumberOfTuples() == 1);
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();
     if (in1ncomps != 1 || in2ncomps != 1)
@@ -116,7 +124,9 @@ avtTestGreaterThanOrEqualToFilter::DoOperation(vtkDataArray *in1,
 
     for (int i = 0 ; i < ntuples ; i++)
     {
-        unsigned char outval = (in1->GetTuple1(i) >= in2->GetTuple1(i)
+        int tup1 = (var1IsSingleton ? 0 : i);
+        int tup2 = (var2IsSingleton ? 0 : i);
+        unsigned char outval = (in1->GetTuple1(tup1) >= in2->GetTuple1(tup2)
                                 ? '\1' : '\0');
         out->SetTuple1(i, outval);
     }

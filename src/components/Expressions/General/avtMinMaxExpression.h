@@ -63,6 +63,9 @@ class     vtkDataArray;
 //    Hank Childs, Fri Jun  9 14:26:59 PDT 2006
 //    Change return value of SetDoMinimum from bool (mistake) to void (correct)
 //
+//    Hank Childs, Mon Jan 14 17:58:58 PST 2008
+//    Allow constants to be created as singletons.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathFilter
@@ -82,6 +85,7 @@ class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathFilter
 
     virtual void     DoOperation(vtkDataArray *in1, vtkDataArray *in2,
                                  vtkDataArray *out, int ncomps, int ntuples);
+    virtual bool     CanHandleSingletonConstants(void) {return true;};
 };
 
 

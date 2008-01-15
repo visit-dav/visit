@@ -104,8 +104,8 @@ avtLogicalAndFilter::~avtLogicalAndFilter()
  
 void
 avtLogicalAndFilter::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
-                                     vtkDataArray *out, int ncomponents,
-                                     int ntuples)
+                                 vtkDataArray *out, int ncomponents,
+                                 int ntuples)
 {
     int in1ncomps = in1->GetNumberOfComponents();
     int in2ncomps = in2->GetNumberOfComponents();

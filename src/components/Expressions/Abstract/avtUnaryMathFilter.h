@@ -75,6 +75,9 @@ class     vtkDataArray;
 //    Added support for rectilinear grids with an inherent transform.
 //    Unary math filters can handle these with no modifications.
 //
+//    Hank Childs, Sun Jan 13 20:07:56 PST 2008
+//    Add support for constants creating a singleton.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtUnaryMathFilter : public avtSingleInputExpressionFilter
@@ -96,6 +99,8 @@ class EXPRESSION_API avtUnaryMathFilter : public avtSingleInputExpressionFilter
     virtual int               GetVariableDimension(void);
 
     virtual bool              FilterUnderstandsTransformedRectMesh();
+    virtual bool              FilterCreatesSingleton(void) { return false; };
+    virtual bool              CanHandleSingletonConstants(void){ return true; };
 
     avtCentering              centering;
     vtkDataSet               *cur_mesh;

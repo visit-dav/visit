@@ -64,6 +64,9 @@
 //      Moved inlined constructor and destructor definitions to .C files
 //      because certain compilers have problems with them.
 //
+//      Hank Childs, Sun Jan 13 20:11:35 PST 2008
+//      Add support for singleton constants.
+//
 // ****************************************************************************
 
 class EXPRESSION_API avtVectorComposeFilter 
@@ -82,6 +85,7 @@ class EXPRESSION_API avtVectorComposeFilter
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual int               GetVariableDimension(void);
+    virtual bool              CanHandleSingletonConstants(void) {return true;};
 };
 
 
