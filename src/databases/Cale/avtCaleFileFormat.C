@@ -215,12 +215,15 @@ SymbolInformation(PDBfile *pdb, const char *name, TypeEnum *t,
 // Creation:   Fri Sep 21 11:29:35 PDT 2007
 //
 // Modifications:
-//   
+//   Rob Managan, Tue Jan 15 15:15:58 PST 2008
+//   Changed to support other related files.
+//
 // ****************************************************************************
 
 void
 avtCaleFileFormat::Identify(const char *filename)
-   {
+{
+   const char *mName = "avtCaleFileFormat::Identify: ";
    PDBfile *pdb = PD_open((char *)filename,"r") ;
    
    if (pdb == NULL)
@@ -230,9 +233,17 @@ avtCaleFileFormat::Identify(const char *filename)
       }
    else
       {
-      char cname[10] ;
-      int pdberr = PD_read(pdb,"/parameters/cname",cname) ;
-      if ((!pdberr) || ((strcmp(cname,"cale")) && (strcmp(cname,"caleicf"))))
+      int nnalls = 0, kmax = 0, lmax = 0;
+      int pdberr ;
+      pdberr  = PD_read(pdb,"/parameters/nnalls",&nnalls) ;
+      pdberr |= PD_read(pdb,"/parameters/kmax",&kmax) ;
+      pdberr |= PD_read(pdb,"/parameters/lmax",&lmax) ;
+
+      debug5 << mName << "nnalls = " << nnalls << endl;
+      debug5 << mName << "kmax = " << kmax << endl;
+      debug5 << mName << "lmax = " << lmax << endl;
+
+      if ((!pdberr) || (nnalls != (kmax + 2)*(lmax + 2)))
          {
          PD_close(pdb);
 
@@ -242,7 +253,7 @@ avtCaleFileFormat::Identify(const char *filename)
 
       }
    PD_close(pdb);
-   }
+}
 
 // ****************************************************************************
 //  Method: avtCaleFileFormat constructor
