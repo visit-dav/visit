@@ -685,6 +685,10 @@ void
 avtExtractor::ContributeSmallCell(const float (*pts)[3],
                              const float (*vals)[AVT_VARIABLE_LIMIT], int npts)
 {
+    // This method ends up causing virtually all resampling artifacts.  I am
+    // disabling it for now.
+    return;
+
     //
     // Note that this assumes the cell is very small, that it does not span
     // multiple sample points.
