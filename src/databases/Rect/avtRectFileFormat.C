@@ -52,6 +52,7 @@
 #include <vector>
 #include <string>
 
+#include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkFloatArray.h>
 
@@ -179,6 +180,11 @@ avtRectFileFormat::GetMesh(int ts, int dom, const char *mesh)
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  7, 2003
 //
+//  Modifications:
+//
+//    Mark C. Miller, Wed Jan 16 11:29:24 PST 2008
+//    Added support for rectilinear grids
+//
 // ****************************************************************************
 vtkDataSet *
 avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
@@ -192,6 +198,14 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
         EXCEPTION1(InvalidVariableException, name);
     }
 
+    int dims[3];
+    dims[0] = dxsize[dom];
+    dims[1] = dysize[dom];
+    dims[2] = dzsize[dom];
+    cerr << "dims[0] = " << dims[0] << endl;
+    cerr << "dims[1] = " << dims[1] << endl;
+    cerr << "dims[2] = " << dims[2] << endl;
+
     //
     // Open the file
     //
@@ -200,8 +214,43 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     ifstream in(fname, ios::in);
     if (!in)
     {
-        cerr << "Unable to open grid file " << fname << endl;
-        return NULL;
+	int i,j;
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+        rgrid->SetDimensions(dims);
+
+        //
+        // Populate the coordinates.  Put in 3D points with z=0 if the mesh is 2D.
+        //
+        vtkFloatArray   *coords[3];
+        for (i = 0 ; i < 3 ; i++)
+        {
+            // Default number of components for an array is 1.
+            coords[i] = vtkFloatArray::New();
+
+            if (dims[i] == 0 || dims[i] == 1)
+            {
+                coords[i]->SetNumberOfTuples(1);
+                coords[i]->SetComponent(0, 0, 0.);
+            }
+	    else
+	    {
+                coords[i]->SetNumberOfTuples(dims[i]);
+                for (j = 0 ; j < dims[i] ; j++)
+                {
+                    coords[i]->SetComponent(j, 0, (float)j);
+                }
+            }
+	}
+
+        rgrid->SetDimensions(dims);
+        rgrid->SetXCoordinates(coords[0]);
+        coords[0]->Delete();
+        rgrid->SetYCoordinates(coords[1]);
+        coords[1]->Delete();
+        rgrid->SetZCoordinates(coords[2]);
+        coords[2]->Delete();
+
+        return rgrid;
     }
 
     //
@@ -215,10 +264,6 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     //
     // Tell the grid what its dimensions are and populate the points array.
     //
-    int dims[3];
-    dims[0] = dxsize[dom];
-    dims[1] = dysize[dom];
-    dims[2] = dzsize[dom];
     sgrid->SetDimensions(dims);
 
     //
@@ -492,29 +537,34 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
         EXCEPTION1(InvalidFilesException, filename.c_str());
 
     in >> basename;
+    debug1 << "basename = " << basename << endl;
 
     in >> buff;
     if (buff != "domains")
         EXCEPTION1(InvalidFilesException, filename.c_str());
 
     in >> ndomains;
+    debug1 << "ndomains = " << ndomains << endl;
 
     in >> buff;
     if (buff != "timesteps")
         EXCEPTION1(InvalidFilesException, filename.c_str());
 
     in >> ntimesteps;
+    debug1 << "ntimesteps = " << ntimesteps << endl;
 
     in >> buff;
     if (buff != "variables")
         EXCEPTION1(InvalidFilesException, filename.c_str());
 
     in >> nvars;
+    debug1 << "nvars = " << nvars << endl;
 
     for (i=0; i<nvars;i++)
     {
         in >> buff;
         varnames.push_back(buff);
+        debug1 << "    varname = " << buff << endl;
     }
 
     in >> buff;
@@ -522,6 +572,9 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
         EXCEPTION1(InvalidFilesException, filename.c_str());
 
     in >> xsize >> ysize >> zsize;
+    debug1 << "xsize = " << xsize << endl;
+    debug1 << "ysize = " << ysize << endl;
+    debug1 << "zsize = " << zsize << endl;
 
     for (i=0; i<ndomains; i++)
     {
