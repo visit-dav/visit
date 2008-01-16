@@ -68,6 +68,7 @@
 #include <avtPointExtractor.h>
 #include <avtPyramidExtractor.h>
 #include <avtRayFunction.h>
+#include <avtRelativeValueSamplePointArbitrator.h>
 #include <avtSamplePoints.h>
 #include <avtTetrahedronExtractor.h>
 #include <avtVolume.h>
@@ -119,6 +120,9 @@
 //    Timo Bremer, Thu Sep 13 14:02:40 PDT 2007
 //    Added hex20 extractor.
 //
+//    Hank Childs, Tue Jan 15 14:26:06 PST 2008
+//    Initialize members for sample point arbitration.
+//
 // ****************************************************************************
 
 avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
@@ -152,6 +156,10 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
 
     modeIs3D = true;
     SetKernelBasedSampling(false);
+
+    shouldSetUpArbitrator    = false;
+    arbitratorPrefersMinimum = false;
+    arbitrator               = NULL;
 }
 
 
@@ -171,6 +179,9 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
 //
 //    Timo Bremer, Thu Sep 13 14:02:40 PDT 2007
 //    Deleted hex20Extractor.
+//
+//    Hank Childs, Tue Jan 15 21:25:01 PST 2008
+//    Delete arbitrator.
 //
 // ****************************************************************************
 
@@ -210,6 +221,11 @@ avtSamplePointExtractor::~avtSamplePointExtractor()
     {
         delete pyramidExtractor;
         pyramidExtractor = NULL;
+    }
+    if (arbitrator != NULL)
+    {
+        delete arbitrator;
+        arbitrator = NULL;
     }
 }
 
@@ -448,6 +464,26 @@ avtSamplePointExtractor::SetUpExtractors(void)
 
 
 // ****************************************************************************
+//  Method: avtSamplePointExtractor::SetUpArbitrator
+//
+//  Purpose:
+//      Tells this module that it should set up an arbitrator.
+//
+//  Programmer: Hank Childs
+//  Creation:   January 15, 2008
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::SetUpArbitrator(std::string &name, bool pm)
+{
+    arbitratorVarName        = name;
+    arbitratorPrefersMinimum = pm;
+    shouldSetUpArbitrator    = true;
+}
+
+
+// ****************************************************************************
 //  Method: avtSamplePointExtractor::PreExecute
 //
 //  Purpose:
@@ -457,12 +493,46 @@ avtSamplePointExtractor::SetUpExtractors(void)
 //  Programmer: Hank Childs
 //  Creation:   February 28, 2006
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Jan 15 21:23:49 PST 2008
+//    Set up the sample point arbitrator.
+//
 // ****************************************************************************
 
 void
 avtSamplePointExtractor::PreExecute(void)
 {
     avtDatasetToSamplePointsFilter::PreExecute();
+
+    if (shouldSetUpArbitrator)
+    {
+        avtSamplePoints_p samples = GetTypedOutput();
+        int nvars = samples->GetNumberOfRealVariables();
+        int theMatch = -1;
+        int tmpIndex = 0;
+        for (int i = 0 ; i < nvars ; i++)
+        {
+            bool foundMatch = false;
+            if (samples->GetVariableName(i) == arbitratorVarName)
+                foundMatch = true;
+
+            if (foundMatch)
+            {
+                theMatch = tmpIndex;
+                break;
+            }
+            else
+                tmpIndex += samples->GetVariableSize(i);
+        }
+
+        if (theMatch != -1)
+        {
+            arbitrator = new avtRelativeValueSamplePointArbitrator(
+                                      arbitratorPrefersMinimum, tmpIndex);
+            avtRay::SetArbitrator(arbitrator);
+        }
+    }
 
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
@@ -486,6 +556,34 @@ avtSamplePointExtractor::PreExecute(void)
         double exp = (dim == 3 ? 0.333333 : 0.5);
         double side_length = pow(vol_per_point, exp) / 2;
         point_radius = side_length * 1.1; // a little extra
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtSamplePointExtractor::PostExecute
+//
+//  Purpose:
+//      Unregisters the sample point arbitrator
+//
+//  Programmer: Hank Childs
+//  Creation:   January 15, 2008
+//
+// ****************************************************************************
+
+void
+avtSamplePointExtractor::PostExecute(void)
+{
+    avtDatasetToSamplePointsFilter::PostExecute();
+
+    if (shouldSetUpArbitrator)
+    {
+        avtRay::SetArbitrator(NULL);
+        if (arbitrator != NULL)
+        {
+            delete arbitrator;
+            arbitrator = NULL;
+        }
     }
 }
 

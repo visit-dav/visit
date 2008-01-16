@@ -56,7 +56,6 @@
 #include <avtParallel.h>
 #include <avtPointExtractor.h>
 #include <avtRay.h>
-#include <avtRelativeValueSamplePointArbitrator.h>
 #include <avtResampleSelection.h>
 #include <avtSamplePointExtractor.h>
 #include <avtSamplePointCommunicator.h>
@@ -359,6 +358,10 @@ avtResampleFilter::BypassResample(void)
 //    Fix problem where parallel resamples could not get values less than
 //    the default value.
 //
+//    Hank Childs, Tue Jan 15 21:25:01 PST 2008
+//    No longer set up the sample point arbitrator, since we have insufficient
+//    information when this method is first called.
+//
 // ****************************************************************************
 
 void
@@ -366,7 +369,6 @@ avtResampleFilter::ResampleInput(void)
 {
     int  i, j, k;
 
-    avtRelativeValueSamplePointArbitrator *arb = NULL;
     bool is3D = true;
 
     avtDataset_p output = GetTypedOutput();
@@ -519,38 +521,12 @@ avtResampleFilter::ResampleInput(void)
         samples = communicator.GetTypedOutput();
     }
 
-    if (atts.GetUseArbitrator())
-    {
-        int tmpIndex = 0;
-        int theMatch = -1;
-        int nvars = samples->GetNumberOfRealVariables();
-        for (i = 0 ; i < nvars ; i++)
-        {
-            bool foundMatch = false;
-            if (samples->GetVariableName(i) == atts.GetArbitratorVarName())
-                foundMatch = true;
-            if (atts.GetArbitratorVarName() == "default" &&
-                samples->GetVariableName(i) == primaryVariable)
-                foundMatch = true;
-
-            if (foundMatch)
-            {
-                theMatch = tmpIndex;
-                break;
-            }
-            else
-                tmpIndex += samples->GetVariableSize(i);
-        }
-        
-        if (theMatch != -1)
-        {
-            arb = new avtRelativeValueSamplePointArbitrator(
-                                      atts.GetArbitratorLessThan(), theMatch);
-            avtRay::SetArbitrator(arb);
-        }
-    }
-    else
-        avtRay::SetArbitrator(NULL);
+    // Always set up an arbitrator, even if user selected random.
+    bool arbLessThan = !atts.GetUseArbitrator() || atts.GetArbitratorLessThan();
+    std::string arbName = atts.GetArbitratorVarName();
+    if (arbName == "default")
+        arbName = primaryVariable;
+    extractor.SetUpArbitrator(arbName, arbLessThan);
 
     //
     // Since this is Execute, forcing an update is okay...
@@ -726,11 +702,6 @@ avtResampleFilter::ResampleInput(void)
         vars[i]->Delete();
     }
     delete [] vars;
-    if (arb != NULL)
-    {
-        delete arb;
-        avtRay::SetArbitrator(NULL);
-    }
 }
 
 

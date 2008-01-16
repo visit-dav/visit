@@ -67,6 +67,7 @@ class  avtHexahedron20Extractor;
 class  avtMassVoxelExtractor;
 class  avtPointExtractor;
 class  avtPyramidExtractor;
+class  avtSamplePointArbitrator;
 class  avtTetrahedronExtractor;
 class  avtWedgeExtractor;
 
@@ -122,6 +123,10 @@ class  avtRayFunction;
 //    Hank Childs, Thu Sep 13 14:02:40 PDT 2007
 //    Added support for hex-20s.
 //
+//    Hank Childs, Tue Jan 15 14:17:15 PST 2008
+//    Have this class set up custom sample point arbitrators, since it has
+//    the most knowledge.
+//
 // ****************************************************************************
 
 class AVTFILTERS_API avtSamplePointExtractor 
@@ -147,6 +152,8 @@ class AVTFILTERS_API avtSamplePointExtractor
     void                      Set3DMode(bool m) { modeIs3D = m; };
     void                      SetKernelBasedSampling(bool);
 
+    void                      SetUpArbitrator(std::string &name, bool min);
+
   protected:
     int                       width, height, depth;
     int                       currentNode, totalNodes;
@@ -157,6 +164,11 @@ class AVTFILTERS_API avtSamplePointExtractor
     bool                      modeIs3D;
     bool                      kernelBasedSampling;
     double                    point_radius;
+
+    bool                      shouldSetUpArbitrator;
+    std::string               arbitratorVarName;
+    bool                      arbitratorPrefersMinimum;
+    avtSamplePointArbitrator *arbitrator;
 
     avtHexahedronExtractor   *hexExtractor;
     avtHexahedron20Extractor *hex20Extractor;
@@ -175,6 +187,7 @@ class AVTFILTERS_API avtSamplePointExtractor
 
     virtual void              Execute(void);
     virtual void              PreExecute(void);
+    virtual void              PostExecute(void);
     virtual void              ExecuteTree(avtDataTree_p);
     void                      SetUpExtractors(void);
 

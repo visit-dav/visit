@@ -180,6 +180,9 @@ class PIPELINE_API avtRay
 //    Hank Childs, Sun Jan  1 12:34:29 PST 2006
 //    Added support for kernel based sampling.
 //
+//    Hank Childs, Tue Jan 15 14:49:26 PST 2008
+//    Fix bad indexing bug with arbitrator.
+//
 // ****************************************************************************
 
 inline void
@@ -207,7 +210,7 @@ avtRay::SetSample(const int &si, const float val[AVT_VARIABLE_LIMIT])
             {
                 int index = arbitrator->GetArbitrationVariable();
                 shouldOverwrite = arbitrator->ShouldOverwrite(sample[index][si],
-                                                              val[si]);
+                                                              val[index]);
             }
             if (shouldOverwrite)
             {
