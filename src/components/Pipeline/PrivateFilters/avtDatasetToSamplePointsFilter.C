@@ -162,7 +162,7 @@ avtDatasetToSamplePointsFilter::PreExecute(void)
             realNVars++;
         }
 
-        // Some contortions here to use existing calls in avtParalell.
+        // Some contortions here to use existing calls in avtParallel.
         int nvars = UnifyMaximumValue(varnames.size());
         GetListToRootProc(varnames, nvars);
         BroadcastStringVector(varnames, PAR_Rank());

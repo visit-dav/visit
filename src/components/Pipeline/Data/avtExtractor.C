@@ -675,6 +675,10 @@ avtExtractor::ConstructBounds(const float (*pts)[3], int npts)
 //    Hank Childs, Tue Dec 21 11:30:28 PST 2004
 //    Change test for 'out of frustum' to accomodate tiling.
 //
+//    Hank Childs, Tue Jan 15 10:54:24 PST 2008
+//    Contribute to the closest sample point, not the most convenient nearby
+//    one.
+//
 // ****************************************************************************
 
 void
@@ -707,15 +711,35 @@ avtExtractor::ContributeSmallCell(const float (*pts)[3],
         }
 
         //
-        // Identify the closest sample.  It doesn't really matter which of the
-        // eight surrounding samples we choose as long as we have a policy.
+        // Identify the closest sample.  
         //
-        int x = SnapXRight(pts[i][0]);
-        int y = SnapYTop(pts[i][1]);
-        int z = SnapZBack(pts[i][2]);
+        int X_idx = 0;
+        if (x_step > 0.)
+        {
+            double close_to_X_idx = (pts[i][0] - FRUSTUM_MIN_X) / x_step;
+            X_idx                 = (int) floor(close_to_X_idx);
+            if ((close_to_X_idx - (double)X_idx) > 0.5)
+                X_idx++;
+        }
+        int Y_idx = 0;
+        if (y_step > 0.)
+        {
+            double close_to_Y_idx = (pts[i][1] - FRUSTUM_MIN_Y) / y_step;
+            Y_idx                 = (int) floor(close_to_Y_idx);
+            if ((close_to_Y_idx - (double)Y_idx) > 0.5)
+                Y_idx++;
+        }
+        int Z_idx = 0;
+        if (z_step > 0.)
+        {
+            double close_to_Z_idx = (pts[i][2] - FRUSTUM_MIN_Z) / z_step;
+            Z_idx                 = (int) floor(close_to_Z_idx);
+            if ((close_to_Z_idx - (double)Z_idx) > 0.5)
+                Z_idx++;
+        }
 
-        avtRay *ray = volume->GetRay(x, y);
-        ray->SetSample(z, vals[i]);
+        avtRay *ray = volume->GetRay(X_idx, Y_idx);
+        ray->SetSample(Z_idx, vals[i]);
     }
 }
 
@@ -808,13 +832,17 @@ avtExtractor::IndexToTriangulationTable(const float (*pts)[3],int npts,float x)
     // *will* get extracted.  But, if this cell is at the minimum X value for
     // the domain (FRUSTUM_MIN_X), then nothing will get put there.  
     // So detect this case and change the test from >= to >.
+    //
+    // Also: all of the transformations can lead to numerical precision.  Add fudge
+    // factor (x_step / 1000.) to fix.
     if ((x == FRUSTUM_MIN_X) && allHi)
     {
+        double fudge_factor = x_step/1000.;
         triIndex = 0;
         for (int i = npts-1 ; i >= 0 ; i--)
         {
             triIndex <<= 1;
-            if (pts[i][0] > x)
+            if (pts[i][0] > (x + fudge_factor))
                 triIndex |= 1;
         }
     }
