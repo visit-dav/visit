@@ -312,6 +312,25 @@ VolumeAttributes_GetColorControlPoints(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+VolumeAttributes_SetColorControlPoints(PyObject *self, PyObject *args)
+{
+    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
+
+    PyObject *ct = NULL;
+    if(!PyArg_ParseTuple(args, "O", &ct))
+        return NULL;
+    if(!PyColorControlPointList_Check(ct))
+        return NULL;
+
+    ColorControlPointList *ccpl = PyColorControlPointList_FromPyObject(ct);
+    if(ccpl != NULL)
+        obj->data->SetColorControlPoints(*ccpl);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
 VolumeAttributes_SetOpacityAttenuation(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
@@ -423,41 +442,65 @@ VolumeAttributes_GetOpacityVariable(PyObject *self, PyObject *args)
     return retval;
 }
 
+//****************************************************************************
+//  Modifications:
+//    Kathleen Bonnell, Fri Oct 14 08:24:34 PDT 2005
+//    Added custom code, to parse different types of args:
+//    (int index, int val) -- sets the opacity value at the specified index
+//    (list or tuple object) --  as long as it is numeric and has length
+//    of 256, will set the opacity values to the values in the list or tuple.
+//
+//****************************************************************************
+
 static PyObject *
 VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
 {
+//
+// THIS METHOD IS CUSTOM CODED!!!!!!.
+//
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
 
     unsigned char *cvals = obj->data->GetFreeformOpacity();
-    if(!PyArg_ParseTuple(args, "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", &cvals[0], &cvals[1], &cvals[2], &cvals[3], &cvals[4], &cvals[5], &cvals[6], &cvals[7], &cvals[8], &cvals[9], &cvals[10], &cvals[11], &cvals[12], &cvals[13], &cvals[14], &cvals[15], &cvals[16], &cvals[17], &cvals[18], &cvals[19], &cvals[20], &cvals[21], &cvals[22], &cvals[23], &cvals[24], &cvals[25], &cvals[26], &cvals[27], &cvals[28], &cvals[29], &cvals[30], &cvals[31], &cvals[32], &cvals[33], &cvals[34], &cvals[35], &cvals[36], &cvals[37], &cvals[38], &cvals[39], &cvals[40], &cvals[41], &cvals[42], &cvals[43], &cvals[44], &cvals[45], &cvals[46], &cvals[47], &cvals[48], &cvals[49], &cvals[50], &cvals[51], &cvals[52], &cvals[53], &cvals[54], &cvals[55], &cvals[56], &cvals[57], &cvals[58], &cvals[59], &cvals[60], &cvals[61], &cvals[62], &cvals[63], &cvals[64], &cvals[65], &cvals[66], &cvals[67], &cvals[68], &cvals[69], &cvals[70], &cvals[71], &cvals[72], &cvals[73], &cvals[74], &cvals[75], &cvals[76], &cvals[77], &cvals[78], &cvals[79], &cvals[80], &cvals[81], &cvals[82], &cvals[83], &cvals[84], &cvals[85], &cvals[86], &cvals[87], &cvals[88], &cvals[89], &cvals[90], &cvals[91], &cvals[92], &cvals[93], &cvals[94], &cvals[95], &cvals[96], &cvals[97], &cvals[98], &cvals[99], &cvals[100], &cvals[101], &cvals[102], &cvals[103], &cvals[104], &cvals[105], &cvals[106], &cvals[107], &cvals[108], &cvals[109], &cvals[110], &cvals[111], &cvals[112], &cvals[113], &cvals[114], &cvals[115], &cvals[116], &cvals[117], &cvals[118], &cvals[119], &cvals[120], &cvals[121], &cvals[122], &cvals[123], &cvals[124], &cvals[125], &cvals[126], &cvals[127], &cvals[128], &cvals[129], &cvals[130], &cvals[131], &cvals[132], &cvals[133], &cvals[134], &cvals[135], &cvals[136], &cvals[137], &cvals[138], &cvals[139], &cvals[140], &cvals[141], &cvals[142], &cvals[143], &cvals[144], &cvals[145], &cvals[146], &cvals[147], &cvals[148], &cvals[149], &cvals[150], &cvals[151], &cvals[152], &cvals[153], &cvals[154], &cvals[155], &cvals[156], &cvals[157], &cvals[158], &cvals[159], &cvals[160], &cvals[161], &cvals[162], &cvals[163], &cvals[164], &cvals[165], &cvals[166], &cvals[167], &cvals[168], &cvals[169], &cvals[170], &cvals[171], &cvals[172], &cvals[173], &cvals[174], &cvals[175], &cvals[176], &cvals[177], &cvals[178], &cvals[179], &cvals[180], &cvals[181], &cvals[182], &cvals[183], &cvals[184], &cvals[185], &cvals[186], &cvals[187], &cvals[188], &cvals[189], &cvals[190], &cvals[191], &cvals[192], &cvals[193], &cvals[194], &cvals[195], &cvals[196], &cvals[197], &cvals[198], &cvals[199], &cvals[200], &cvals[201], &cvals[202], &cvals[203], &cvals[204], &cvals[205], &cvals[206], &cvals[207], &cvals[208], &cvals[209], &cvals[210], &cvals[211], &cvals[212], &cvals[213], &cvals[214], &cvals[215], &cvals[216], &cvals[217], &cvals[218], &cvals[219], &cvals[220], &cvals[221], &cvals[222], &cvals[223], &cvals[224], &cvals[225], &cvals[226], &cvals[227], &cvals[228], &cvals[229], &cvals[230], &cvals[231], &cvals[232], &cvals[233], &cvals[234], &cvals[235], &cvals[236], &cvals[237], &cvals[238], &cvals[239], &cvals[240], &cvals[241], &cvals[242], &cvals[243], &cvals[244], &cvals[245], &cvals[246], &cvals[247], &cvals[248], &cvals[249], &cvals[250], &cvals[251], &cvals[252], &cvals[253], &cvals[254], &cvals[255]))
+    int opacity, index;
+    if(PyArg_ParseTuple(args, "ii", &index, &opacity))
+    {
+        if(index >= 0 && index < 256)
+        {
+            if(opacity < 0) opacity = 0;
+            if(opacity > 255) opacity = 255;
+            cvals[index] = (unsigned char)(opacity);
+        }
+    }
+    else
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
-            return NULL;
-
-        if(PyTuple_Check(tuple))
         {
-            if(PyTuple_Size(tuple) != 256)
+            return NULL;
+        }
+        if(PyTuple_Check(tuple) || PyList_Check(tuple))
+        {
+            if(PySequence_Size(tuple) != 256)
                 return NULL;
 
             PyErr_Clear();
-            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            for(int i = 0; i < PySequence_Size(tuple); ++i)
             {
                 int c;
-                PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                if(PyFloat_Check(item))
-                    c = int(PyFloat_AS_DOUBLE(item));
-                else if(PyInt_Check(item))
+                PyObject *item = PySequence_GetItem(tuple, i);
+                if(PyInt_Check(item))
                     c = int(PyInt_AS_LONG(item));
+                else if(PyFloat_Check(item))
+                    c = int(PyFloat_AS_DOUBLE(item));
                 else if(PyLong_Check(item))
                     c = int(PyLong_AsDouble(item));
                 else
                     c = 0;
-
+                Py_DECREF(item);
                 if(c < 0) c = 0;
                 if(c > 255) c = 255;
                 cvals[i] = (unsigned char)(c);
-            }
+           }
         }
         else
             return NULL;
@@ -935,6 +978,7 @@ static struct PyMethodDef VolumeAttributes_methods[] = {
     {"SetLightingFlag", VolumeAttributes_SetLightingFlag, METH_VARARGS},
     {"GetLightingFlag", VolumeAttributes_GetLightingFlag, METH_VARARGS},
     {"GetColorControlPoints", VolumeAttributes_GetColorControlPoints, METH_VARARGS},
+    {"SetColorControlPoints", VolumeAttributes_SetColorControlPoints, METH_VARARGS},
     {"SetOpacityAttenuation", VolumeAttributes_SetOpacityAttenuation, METH_VARARGS},
     {"GetOpacityAttenuation", VolumeAttributes_GetOpacityAttenuation, METH_VARARGS},
     {"SetFreeformFlag", VolumeAttributes_SetFreeformFlag, METH_VARARGS},
@@ -1107,10 +1151,7 @@ VolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "lightingFlag") == 0)
         retval = (VolumeAttributes_SetLightingFlag(self, tuple) != NULL);
     if (strcmp(name, "colorControlPoints") == 0)
-    {
-        cerr << "You cannot access this data member directly.";
-        cerr << "\nUse GetColorControlPoints().field = value\n\n";
-    }
+        retval = VolumeAttributes_SetColorControlPoints(self, tuple);
     else if(strcmp(name, "opacityAttenuation") == 0)
         retval = (VolumeAttributes_SetOpacityAttenuation(self, tuple) != NULL);
     else if(strcmp(name, "freeformFlag") == 0)

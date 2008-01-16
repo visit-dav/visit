@@ -8,6 +8,7 @@
       $(SLIVR_LIBS)
       $(GLEW_LIBS)
       $(GL_LIBS)
+      -lGLU
     </LIBS>
     <Files components="V">
       avtVolumeRenderer.C
