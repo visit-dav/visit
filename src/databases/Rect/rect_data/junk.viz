@@ -1,0 +1,7 @@
+name bar
+domains 1
+timesteps 1
+variables 1 myTest
+
+size 4 3 1
+domain0000 4 3 1
