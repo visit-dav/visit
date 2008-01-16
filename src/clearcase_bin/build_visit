@@ -254,6 +254,9 @@
 #     Thomas R. Treadway, Mon Nov 26 10:03:38 PST 2007
 #     Changed web pages from www.llnl.gov/VisIt to wci.llnl.gov/codes/visit 
 #
+#     Sean Ahern, Wed Jan 16 15:47:12 EST 2008
+#     Fixed spelling, grammar, general prettying-up.
+#
 #     Thomas R. Treadway, Thu Jan  3 17:24:29 PST 2008
 #     Put a check for wget version 1.8
 #     Added explicit check for mesa 6.4.2
