@@ -28,9 +28,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>VisIt has a new feature for checking which Subversion revision it was built against. This feature is useful for determining mismatches when having problems running client-server. You can access this by running "visit -svn_version".</li>
 <li>VisIt now provides a Shapelet Decomposition Query that calculates the cartesian shapelet coefficients of an image using the overlap integral decomposition method.</li>
 <li>VisIt's query infrastructure was extended to allow queries to return structured data to the CLI. This type of result is obtained via the GetQueryOutputObject() python method and is currently only implemented by the Shapelet Decomposition query.</li>
-<li>Support for building VisIt on Windows using Visual Studio .2005 has been added. There a now projects/solutions for version 7 and version 8 of MSVC.</li>
+<li>Support for building VisIt on Windows using Visual Studio 2005 has been added. There a now projects/solutions for version 7 and version 8 of MSVC.</li>
 <li>VisIt's Pick output window now has a button for Clearing pick points.</li>
-<li>Options can now be set when exporting databases in the GUI and CLI</li>
+<li>Options can now be set when exporting databases in the GUI and CLI.</li>
 <li>The VASP file reader has been enhanced to support POSCAR files and multi-timestep CHG/CHGCAR files.</li>
 <li>VisIt now supports a context (right-click) menu in the Plot List box, which allows the user to Hide/Show, Delete, Draw, Clear, Redraw, or Copy the currently active plot in the list.</li>
 <li>Improved CSG mesh management GUI to indicate meaning of control parameters.</li>
@@ -62,8 +62,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <li>A bug was fixed where <i>Node Pick</i> of sliced, Material-selected data could return incorrect results.</li>
 <li>The simulation interface infrastructure now supports Mac OS X.</li>
 <li>VisIt will return a proper error message when screen capture is attempted without onscreen windows and Mesa is disabled.</li>
-<li>Made VTK plugin issue warnings when encountering numeric errors in ascii data.</li>
-<li>Made SAMRAI plugin create the default plot if there is at least one patch and, if so, create a subset plot of 'levels' if there is more than 1 level, otherwise a subset plot of patches</li>
+<li>Enhanced the VTK plugin to issue warnings when encountering numeric errors in ascii data.</li>
+<li>Enhanced the SAMRAI plugin to create the default plot if there is at least one patch and, if so, create a subset plot of 'levels' if there is more than 1 level, otherwise a subset plot of patches.</li>
 <li>Tuning was performed to better handle data with large numbers of small domains.</li>
 <li>The Spreadsheet plot now displayes correct indices if ghost data is present.</li>
 <li>A VTK bug with ghost zone filtering that in rare cases could cause cell connectivity problems was resolved.</li>
