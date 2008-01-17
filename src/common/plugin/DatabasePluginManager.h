@@ -77,6 +77,11 @@ class EngineDatabasePluginInfo;
 //
 //    Mark C. Miller, Thu Aug  9 09:16:01 PDT 2007
 //    Made GetMatchingPluginIds return a vector of strings
+//    
+//    Sean Ahern, Thu Jan 17 16:40:08 EST 2008
+//    Added a pluginDir argument to Initialize to make it conform to the other
+//    plugin managers.
+//
 // ****************************************************************************
 
 class PLUGIN_API DatabasePluginManager : public PluginManager
@@ -84,7 +89,9 @@ class PLUGIN_API DatabasePluginManager : public PluginManager
   public:
     virtual                        ~DatabasePluginManager();
 
-    static void                     Initialize(const PluginCategory, bool=false);
+    static void                     Initialize(const PluginCategory, bool parallel=false,
+                                               const char *pluginDir=0);
+
     static DatabasePluginManager   *Instance();
 
     virtual void                    ReloadPlugins();

@@ -1409,29 +1409,49 @@ void *dlsym(void *handle, const char *symbol)
 //    Brad Whitlock, Wed Nov 22 16:25:19 PST 2006
 //    I made it possible to pass in the plugin directory. If it does not
 //    get passed in (the default) then we use VISITPLUGINDIR.
+//    
+//    Sean Ahern, Thu Jan 17 15:52:42 EST 2008
+//    Only fail the environment exception if the plugin directory hasn't been
+//    set in a prior call to SetPluginDir.
 //
 // ****************************************************************************
 
 void
 PluginManager::SetPluginDir(const char *PluginDir)
 {
-    // Get the plugin directory from the environment.
     const char *plugindir = 0;
-    if(PluginDir == 0)
+    if (PluginDir == 0)
     {
+        // Get the plugin directory from the environment.
         plugindir = getenv("VISITPLUGINDIR");
         if (!plugindir)
         {
+            // No environment variable found.  If we have directories in the
+            // list already, this isn't a problem.
+            if (pluginDirs.empty())
+            {
+                debug5 << "No environment variable!" << endl;
 #if defined(_WIN32)
-            plugindir = "C:\\VisItWindows\\bin";
+                plugindir = "C:\\VisItWindows\\bin";
 #else
-            EXCEPTION1(VisItException,
-                   "The environment variable VISITPLUGINDIR must be defined.");
+                EXCEPTION1(VisItException,
+                    "The environment variable VISITPLUGINDIR must be defined.");
 #endif
+            }
+            else
+            {
+                // The pluginDirs list is already populated.  So not having an
+                // environment variable is okay.  We got the list from somewhere
+                // else (-plugindir option?).
+                return;
+            }
         }
     }
     else
+    {
+        // Manually set the plugin directory.
         plugindir = PluginDir;
+    }
 
 #if defined(_WIN32)
     pluginDirs.push_back(string(plugindir) + SLASH_STRING + managerName + "s");

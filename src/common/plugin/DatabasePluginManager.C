@@ -68,12 +68,14 @@ DatabasePluginManager *DatabasePluginManager::instance=0;
 //    I made it call SetPluginDir since it's no longer done in the base
 //    class's constructor.
 //
+//    Sean Ahern, Thu Jan 17 16:06:20 EST 2008
+//    Moved the call to SetPluginDir to Initialize to make it conform
+//    with the rest of the plugin managers.
+//
 // ****************************************************************************
 
 DatabasePluginManager::DatabasePluginManager() : PluginManager("database")
 {
-    // Make it use VISITPLUGINDIR.
-    SetPluginDir(0);
 }
 
 // ****************************************************************************
@@ -104,16 +106,21 @@ DatabasePluginManager::~DatabasePluginManager()
 //  Creation:    August 22, 2002
 //
 //  Modifications:
+//      Sean Ahern, Thu Jan 17 16:10:00 EST 2008
+//      Added SetPluginDir so that we can find plugins correctly.  Arguably,
+//      this is better here than the constructor.
 //
 // ****************************************************************************
 
 void
 DatabasePluginManager::Initialize(const PluginCategory pluginCategory,
-                                  bool                 parallel)
+                                  bool                 parallel,
+                                  const char *         pluginDir)
 {
     Instance();
     instance->category = pluginCategory;
     instance->parallel = parallel;
+    instance->SetPluginDir(pluginDir);
     instance->ReadPluginInfo();
 }
 
