@@ -215,6 +215,9 @@ avtSamplePoints::GetVariableSize(int idx)
 //    Hank Childs, Thu May 31 10:40:50 PDT 2007
 //    Remove reference to removed data member "numVars".
 //
+//    Hank Childs, Wed Jan 16 08:47:59 PST 2008
+//    Create better error message.
+//
 // ****************************************************************************
 
 avtCellList *
@@ -222,7 +225,9 @@ avtSamplePoints::GetCellList(void)
 {
     if (varnames.size() <= 0)
     {
-        EXCEPTION0(ImproperUseException);
+        EXCEPTION1(VisItException, 
+            "Degenerate case: asked to resample a data set with no variables."
+            "  This has not been implemented.");
     }
 
     if (celllist == NULL)
