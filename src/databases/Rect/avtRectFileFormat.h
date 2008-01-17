@@ -44,6 +44,7 @@
 #define AVT_RECT_FILE_FORMAT_H
 
 #include <avtMTMDFileFormat.h>
+#include <avtTypes.h>
 
 #include <vector>
 #include <string>
@@ -51,6 +52,12 @@
 
 
 class     vtkUnstructuredGrid;
+
+typedef  struct origin_t {
+    int x0;
+    int y0;
+    int z0;
+} origin_t;
 
 
 // ****************************************************************************
@@ -67,6 +74,8 @@ class     vtkUnstructuredGrid;
 //    Mark C. Miller, Tue May 17 18:48:38 PDT 2005
 //    Added timeState arg to PopulateDatabaseMetaData
 //
+//    Mark C. Miller, Wed Jan 16 17:25:43 PST 2008
+//    Added support for multiple rect blocks
 // ****************************************************************************
 
 class avtRectFileFormat : public avtMTMDFileFormat
@@ -98,6 +107,8 @@ class avtRectFileFormat : public avtMTMDFileFormat
     std::vector<std::string>            varnames;
     int                                 xsize,  ysize,  zsize;
     std::vector<int>                    dxsize, dysize, dzsize, numpts;
+    std::vector<origin_t>               origins;
+    avtMeshType                         gridType;
 
     void                                ReadVizFile(ifstream &);
     void                                SetUpDomainConnectivity();
