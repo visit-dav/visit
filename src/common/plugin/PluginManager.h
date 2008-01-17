@@ -91,6 +91,10 @@
 //    Hank Childs, Fri Oct  5 13:10:38 PDT 2007
 //    Changed argument for ReadPluginDir.
 //
+//    Sean Ahern, Thu Jan 17 15:12:09 EST 2008
+//    Made SetPluginDir be a public function so we can change the directory if
+//    we need to.
+//
 // ****************************************************************************
 
 class PLUGIN_API PluginManager
@@ -134,11 +138,11 @@ class PLUGIN_API PluginManager
     int                             GetEnabledIndex(const std::string &);
 
     std::string                     GetPluginInitializationErrors();
+    void                            SetPluginDir(const char *dir = 0);
 
   protected:
                                     PluginManager(const std::string&);
     void                            ReadPluginInfo();
-    void                            SetPluginDir(const char *);
     void                            ReadPluginDir(std::vector<
                                                    std::vector<
                                                     std::pair<std::string,

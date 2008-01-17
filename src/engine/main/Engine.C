@@ -351,6 +351,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 
     debug1 << "ENGINE started\n";
 #ifdef PARALLEL
+    cerr << "ENGINE is MPI task " << PAR_Rank() << endl;
     visitTimer->StopTimer(initTimer, "Initializing the engine (including MPI_Init())");
 #else
     visitTimer->StopTimer(initTimer, "Initializing the engine");
@@ -1089,6 +1090,10 @@ Engine::ProcessInput()
 //    Made to use putenv instead of setenv if on Windows or HAVE_SETENV is
 //    not defined.
 //
+//    Sean Ahern, Thu Jan 17 16:34:14 EST 2008
+//    Got rid of the setenv thing entirely and instead called SetPluginDir on
+//    the individual plugin managers.
+//
 // ****************************************************************************
 
 void
@@ -1243,15 +1248,10 @@ Engine::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-plugindir") == 0  && (i+1) < argc )
         {
-#if defined(WIN32) || !defined(HAVE_SETENV)
-            char *pluginDir = new char[strlen(argv[i+1])+1+30];
-            sprintf(pluginDir, "VISITPLUGINDIR=%s", argv[i+1]);
-            putenv(pluginDir); 
-            delete [] pluginDir;
-#else
-	    setenv( "VISITPLUGINDIR", argv[i+1], 1 );
-#endif
-	    ++i;
+            PlotPluginManager::Instance()->SetPluginDir(argv[i+1]);
+            OperatorPluginManager::Instance()->SetPluginDir(argv[i+1]);
+            DatabasePluginManager::Instance()->SetPluginDir(argv[i+1]);
+            ++i;
         }
 	
     }
@@ -2173,7 +2173,7 @@ Engine::EngineWarningCallback(void *data, const char *msg)
     if (!rpc)
     {
         debug1 << "EngineWarningCallback called with no RPC set. Message was..." << endl;
-	debug1 << msg << endl;
+        debug1 << msg << endl;
     }
     else
     {
