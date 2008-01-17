@@ -362,6 +362,10 @@ avtResampleFilter::BypassResample(void)
 //    No longer set up the sample point arbitrator, since we have insufficient
 //    information when this method is first called.
 //
+//    Hank Childs, Wed Jan 16 16:29:20 PST 2008
+//    Allow for data set with no variables to get pushed through, for the case
+//    where a mesh plot is resampled.
+//
 // ****************************************************************************
 
 void
@@ -422,6 +426,40 @@ avtResampleFilter::ResampleInput(void)
     CreateViewFromBounds(view, bounds, scale);
 
     //
+    // What we want the width, height, and depth to be depends on the
+    // attributes.
+    //
+    int width, height, depth;
+    GetDimensions(width, height, depth, bounds, is3D);
+
+    //
+    // If there are no variables, then just create the mesh and exit.
+    //
+    bool thereAreNoVariables = 
+          (GetInput()->GetInfo().GetAttributes().GetNumberOfVariables() <= 0);
+    if (thereAreNoVariables)
+    {
+        if (PAR_Rank() == 0)
+        {
+            vtkRectilinearGrid *rg = CreateGrid(bounds, width, height, depth,
+                                      0, width, 0, height, cellCenteredOutput);
+            avtDataTree_p tree = new avtDataTree(rg, 0);
+            rg->Delete();
+            SetOutputDataTree(tree);
+        }
+        else
+        {
+            //
+            // Putting in a NULL data tree can lead to seg faults, etc.
+            //
+            avtDataTree_p dummy = new avtDataTree();
+            SetOutputDataTree(dummy);
+        }
+
+        return;
+    }
+
+    //
     // World space is a right-handed coordinate system.  Image space (as used
     // in the sample point extractor) is a left-handed coordinate system.
     // This is because large X is at the right and large Y is at the top.
@@ -446,13 +484,6 @@ avtResampleFilter::ResampleInput(void)
     //
     avtWorldSpaceToImageSpaceTransform trans(view, scale);
     trans.SetInput(termsrc.GetOutput());
-
-    //
-    // What we want the width, height, and depth to be depends on the
-    // attributes.
-    //
-    int width, height, depth;
-    GetDimensions(width, height, depth, bounds, is3D);
 
     bool doKernel = 
         (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0);
