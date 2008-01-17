@@ -68,6 +68,11 @@
 #
 #   Mark C. Miller, Tue Sep 18 17:57:50 PDT 2007
 #   Added -list command line option to list plugins installed
+#
+#   Mark C. Miller, Wed Jan 16 16:43:35 PST 2008
+#   If fixed some problems with cleanPluginDir where it would not correctly
+#   set permissions on subdirs in the plugin dir and not correctly remove
+#   .svn dirs.
 # ----------------------------------------------------------------------------
 #
 
@@ -80,11 +85,12 @@
 #
 cleanPluginDir () {
     pushd $1
-    rm -rf .svn
+    find . -type d -name .svn -exec rm -rf {} \;
     rm -f *.d .depend .pardepend .cmake.depend .cmake.state Makefile *.o findmerge*
     rm -f *.contrib* *.keep*
 #    rm -f *PluginInfo*.[Ch]
-    chmod -f 664 *
+    chmod -R a+rX,g+w
+    chgrp -R visit
     popd
 }
 
