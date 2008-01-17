@@ -14,6 +14,13 @@
 #    Widen color range of vector plot to sidestep precision issues between
 #    optimized and non-optimized binaries.
 #
+#    Hank Childs, Thu Jan 17 15:44:06 PST 2008
+#    Explicitly specify the color table for the vector plot.  This is an issue
+#    because this test runs with "-config" (*not* "-noconfig") and the default
+#    color table can get confused if the user has a color table in his .visit
+#    directory that collides with the normal default ("hot").  So we're 
+#    skirting that issue by explicitly specifying the color table.
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -136,6 +143,7 @@ v.min = 0.5
 v.max = 1.5
 v.minFlag = 1
 v.maxFlag = 1
+v.colorTableName = "hot"
 SetPlotOptions(v)
 
 AddOperator("ExternalSurface")
@@ -152,6 +160,9 @@ c.contourMethod = c.Value
 c.contourValue = (500)
 SetPlotOptions(c)
 AddPlot("Vector", "normals")
+v = VectorAttributes()
+v.colorTableName = "hot"
+SetPlotOptions(v)
 AddOperator("Isosurface")
 i = IsosurfaceAttributes()
 i.contourMethod = i.Value
@@ -206,6 +217,9 @@ Test("defer_expr_12")
 DeleteAllPlots()
 DefineVectorExpression("sn", "recenter(-surface_normal(mesh1))")
 AddPlot("Vector", "sn")
+v = VectorAttributes()
+v.colorTableName = "hot"
+SetPlotOptions(v)
 AddOperator("ExternalSurface")
 AddOperator("DeferExpression")
 d.exprs = "sn"
