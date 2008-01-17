@@ -175,8 +175,8 @@
       SetCreateTimeDerivativeExpressionsRPC
       SetCreateVectorMagnitudeExpressionsRPC
       CopyActivePlotsRPC
-      MaxRPC
       SetPlotFollowsTimeRPC
+      MaxRPC
     </Enum>
     <Field name="RPCType" label="RPCType" type="enum" subtype="ViewerRPCType">
       CloseRPC
