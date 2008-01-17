@@ -26,6 +26,9 @@
 #    Hank Childs, Thu Jan 10 15:52:00 PST 2008
 #    Add test for recenter expression with material plot.
 #
+#    Hank Childs, Wed Jan 16 17:26:03 PST 2008
+#    Add testing for the "zeroFlag".
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -128,5 +131,19 @@ elevate_atts.variable = "d2"
 SetOperatorOptions(elevate_atts)
 DrawPlots()
 Test("elevate11")
+
+# Boundary plots that are elevated by zero height (no variable). '8346.
+DeleteAllPlots()
+OpenDatabase("../data/ucd2d.silo")
+AddPlot("Boundary", "mat1")
+AddOperator("Elevate")
+e = ElevateAttributes()
+e.zeroFlag = 1
+SetOperatorOptions(e)
+DrawPlots()
+v = GetView3D()
+v.viewNormal = (0.5, 0.5, 0.5)
+SetView3D(v)
+Test("elevate12")
 
 Exit()
