@@ -264,6 +264,10 @@ $0 = shift @ARGV;
 #    Brad Whitlock, Thu Dec 20 17:19:56 PST 2007
 #    Added -debug-malloc for the Mac.
 #
+#    Eric Brugger, Thu Jan 17 13:42:58 PST 2008
+#    Removed the extra spaces between the comma seperated list of
+#    variable=value pairs that get passed to the -v option for qsub or msub.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -1782,7 +1786,7 @@ if ($procs_set or ($parallel and $parlaunch_set))
             @parcmd = ($plauncher);
 
 	    # Add the env variables.
-	    push @parcmd, "-v LIBPATH=$ENV{LIBPATH}, LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}, VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
+	    push @parcmd, "-v LIBPATH=$ENV{LIBPATH},LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH},VISITPLUGINDIR=$ENV{VISITPLUGINDIR}";
 
             # parse for '-l vis' so it can be separated from the
             # launchargs
