@@ -58,6 +58,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtStructuredDomainBoundaries.h>
+#include <avtTypes.h>
 #include <avtVariableCache.h>
 
 #include <BadIndexException.h>
@@ -113,6 +114,8 @@ avtRectFileFormat::avtRectFileFormat(const char *fname)
     cachedMeshes = new vtkDataSet*[ndomains];
     for (int d=0; d<ndomains; d++)
         cachedMeshes[d] = NULL;
+
+    gridType = AVT_CURVILINEAR_MESH;
 }
 
 // ****************************************************************************
@@ -185,6 +188,8 @@ avtRectFileFormat::GetMesh(int ts, int dom, const char *mesh)
 //    Mark C. Miller, Wed Jan 16 11:29:24 PST 2008
 //    Added support for rectilinear grids
 //
+//    Mark C. Miller, Wed Jan 16 17:25:43 PST 2008
+//    Added support for multiple rect blocks
 // ****************************************************************************
 vtkDataSet *
 avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
@@ -202,9 +207,6 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     dims[0] = dxsize[dom];
     dims[1] = dysize[dom];
     dims[2] = dzsize[dom];
-    cerr << "dims[0] = " << dims[0] << endl;
-    cerr << "dims[1] = " << dims[1] << endl;
-    cerr << "dims[2] = " << dims[2] << endl;
 
     //
     // Open the file
@@ -212,7 +214,7 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
     char fname[256];
     sprintf(fname, "%sgrid/domain%04d", dirname.c_str(), dom);
     ifstream in(fname, ios::in);
-    if (!in)
+    if (!in && gridType != AVT_RECTILINEAR_MESH)
     {
 	int i,j;
         vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
@@ -224,6 +226,13 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
         vtkFloatArray   *coords[3];
         for (i = 0 ; i < 3 ; i++)
         {
+	    int origin = 0;
+	    switch (i) {
+	    case 0: origin = origins[dom].x0; break;
+	    case 1: origin = origins[dom].y0; break;
+	    case 2: origin = origins[dom].z0; break;
+	    }
+
             // Default number of components for an array is 1.
             coords[i] = vtkFloatArray::New();
 
@@ -237,7 +246,7 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
                 coords[i]->SetNumberOfTuples(dims[i]);
                 for (j = 0 ; j < dims[i] ; j++)
                 {
-                    coords[i]->SetComponent(j, 0, (float)j);
+                    coords[i]->SetComponent(j, 0, (float) (origin + j));
                 }
             }
 	}
@@ -251,6 +260,10 @@ avtRectFileFormat::ReadMesh(int ts, int dom, const char *name)
         coords[2]->Delete();
 
         return rgrid;
+    }
+    else
+    {
+        EXCEPTION1(InvalidFilesException, fname);
     }
 
     //
@@ -525,6 +538,10 @@ avtRectFileFormat::SetUpDomainConnectivity()
 //  Programmer:  Jeremy Meredith
 //  Creation:    April  4, 2003
 //
+//  Modifications:
+//    Mark C. Miller, Wed Jan 16 17:25:43 PST 2008
+//    Added support for multiple rect blocks
+//
 // ****************************************************************************
 void
 avtRectFileFormat::ReadVizFile(ifstream &in)
@@ -576,6 +593,17 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
     debug1 << "ysize = " << ysize << endl;
     debug1 << "zsize = " << zsize << endl;
 
+    gridType = AVT_CURVILINEAR_MESH;
+    in >> buff;
+    if (buff == "gridtype")
+    {
+        in >> buff;
+	if (buff == "rect")
+	    gridType = AVT_RECTILINEAR_MESH;
+        else if (buff == "curv")
+	    gridType = AVT_CURVILINEAR_MESH;
+    }
+
     for (i=0; i<ndomains; i++)
     {
         in >> buff;
@@ -585,6 +613,12 @@ avtRectFileFormat::ReadVizFile(ifstream &in)
         dysize.push_back(y);
         dzsize.push_back(z);
         numpts.push_back(x*y*z);
+	if (gridType == AVT_RECTILINEAR_MESH)
+	{
+	    origin_t o;
+            in >> o.x0 >> o.y0 >> o.z0;
+	    origins.push_back(o);
+	}
     }
 }
 
