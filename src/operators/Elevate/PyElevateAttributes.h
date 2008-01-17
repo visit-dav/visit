@@ -46,13 +46,15 @@
 //
 void            PyElevateAttributes_StartUp(ElevateAttributes *subj, void *data);
 void            PyElevateAttributes_CloseDown();
-PyMethodDef    *PyElevateAttributes_GetMethodTable(int *nMethods);
+ PyMethodDef *   PyElevateAttributes_GetMethodTable(int *nMethods);
 bool            PyElevateAttributes_Check(PyObject *obj);
-ElevateAttributes *PyElevateAttributes_FromPyObject(PyObject *obj);
-PyObject       *PyElevateAttributes_NewPyObject();
-PyObject       *PyElevateAttributes_WrapPyObject(const ElevateAttributes *attr);
-std::string     PyElevateAttributes_GetLogString();
+ ElevateAttributes *  PyElevateAttributes_FromPyObject(PyObject *obj);
+ PyObject *      PyElevateAttributes_New();
+ PyObject *      PyElevateAttributes_Wrap(const ElevateAttributes *attr);
+void            PyElevateAttributes_SetParent(PyObject *obj, PyObject *parent);
 void            PyElevateAttributes_SetDefaults(const ElevateAttributes *atts);
+std::string     PyElevateAttributes_GetLogString();
+std::string     PyElevateAttributes_ToString(const ElevateAttributes *, const char *);
 
 #endif
 
