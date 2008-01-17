@@ -51,7 +51,6 @@
 #endif
 #include <new.h>
 
-#include <visit-config.h>
 #include <visitstream.h>
 #include <snprintf.h>
 
