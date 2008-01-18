@@ -1,4 +1,4 @@
-#                            Copyright 2000 - 2006
+#                            Copyright 2000 - 2008
 #                  Lawrence Livermore National Security, LLC.
 #                             All rights reserved.
 #
@@ -37,6 +37,9 @@
 #   Brad Whitlock, Thu Jan 25 15:48:50 PST 2007
 #   Added targets for updateplots and material examples.
 #
+#   Brad Whitlock, Thu Jan 17 17:34:53 PST 2008
+#   Added materials example.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -46,7 +49,7 @@
 # Override some make variables
 #
 CFLAGS=@CFLAGS@ -g -I. -I$(TOPDIR)/include -I$(TOPDIR)/include/visit
-LDFLAGS=@LDFLAGS@ -Wl,--export-dynamic -L$(TOPDIR)/archives
+LDFLAGS=@LDFLAGS@ @EXPORT_DYNAMIC@ -L$(TOPDIR)/archives
 LIBS=@LIBS@ -lsim
 F77FLAGS=-I$(TOPDIR)/include/visit
 FLIBS=@LIBS@ -lsimf -lsim
@@ -152,6 +155,10 @@ FOBJ_SCALAR_PAR=fscalarp.o
 FMATERIAL=fmaterial
 FOBJ_MATERIAL=fmaterial.o
 
+MATERIAL=material
+SRC_MATERIAL=material.c materialhelpers.c
+OBJ_MATERIAL=material.o materialhelpers.o
+
 # Writeback demonstration
 WRITEBACK=writeback
 WRITEBACK_PAR=writeback_par
@@ -174,7 +181,7 @@ FOBJ_UPDATEPLOTS=fupdateplots.o
 
 all: allc @BUILD_FORTRAN@
 
-allc: libsimdemo metadata meshsims scalarsims
+allc: libsimdemo metadata meshsims scalarsims materialsims
 
 allfortran: flibsimdemo fmetadata fmeshsims fscalarsims fmaterialsims
 
@@ -189,6 +196,8 @@ fmetadata: $(FSIM5) $(FSIM6) $(FSIM7) $(FSIM8) $(FSIM9) $(FSIM10) $(FSIM11) $(FS
 meshsims: $(MESH) $(UNSTRUCTURED) $(CURVE) $(POINT)
 
 fmeshsims: $(FMESH) $(FUNSTRUCTURED) $(FCURVE) $(FPOINT)
+
+materialsims: $(MATERIAL)
 
 fmaterialsims: $(FMATERIAL)
 
@@ -229,6 +238,7 @@ cleanscalar:
 	$(RM) $(SCALAR) $(OBJ_SCALAR) $(FSCALAR) $(FOBJ_SCALAR) $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR)
 
 cleanmaterial:
+	$(RM) $(MATERIAL) $(OBJ_MATERIAL)
 	$(RM) $(FMATERIAL) $(FOBJ_MATERIAL)
 
 $(SIM1): $(OBJ_SIM1)
@@ -347,6 +357,9 @@ fscalarp.o:
 
 $(FSCALAR_PAR): $(FOBJ_SCALAR_PAR)
 	mpif77 -o $(FSCALAR_PAR) $(FOBJ_SCALAR_PAR) $(LDFLAGS) $(FLIBS) $(PARLIBS)
+
+$(MATERIAL): $(OBJ_MATERIAL)
+	$(CC) -o $(MATERIAL) $(OBJ_MATERIAL) $(LDFLAGS) $(LIBS) -lm
 
 $(FMATERIAL): $(FOBJ_MATERIAL)
 	$(F77) -o $(FMATERIAL) $(FOBJ_MATERIAL) $(LDFLAGS) $(FLIBS)

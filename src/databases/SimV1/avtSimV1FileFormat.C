@@ -1332,10 +1332,17 @@ avtSimV1FileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Jeremy Meredith, Thu Apr 28 18:00:32 PDT 2005
 //    Added true data array structures in place of raw array pointers.
 //
+//    Brad Whitlock, Fri Jan 18 10:22:59 PST 2008
+//    Added code to detect when the material numbers are not 0..N so we can
+//    use a constructor that will reorder them into that range so VisIt will
+//    be happy.
+//
 // ****************************************************************************
+
 avtMaterial *
 avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
 {
+    const char *mName = "avtSimV1FileFormat::GetMaterial: ";
     if (!cb.GetMaterial)
         return NULL;
 
@@ -1353,15 +1360,78 @@ avtSimV1FileFormat::GetMaterial(int domain, const char *varname)
     for (int m=0; m<md->nMaterials; m++)
         matNames[m] = md->materialNames[m];
 
-    avtMaterial *mat = new avtMaterial(md->nMaterials,
-                                       matNames,
-                                       md->nzones,
-                                       md->matlist.iArray,
-                                       md->mixlen,
-                                       md->mix_mat,
-                                       md->mix_next,
-                                       md->mix_zone,
-                                       md->mix_vf);
+    avtMaterial *mat = 0;
+    // Scan the material numbers to see if they are 0..N-1. If not then use
+    // the contructor that will perform re-ordering.
+    bool *matUsed = new bool[md->nMaterials];
+    bool reorderRequired = false;
+    int i;
+    for(int i = 0; i < md->nMaterials; ++i)
+        matUsed[i] = false;
+    for(int i = 0; i < md->nzones; ++i)
+    {
+        if(md->matlist.iArray[i] < 0)
+            continue;
+        else if(md->matlist.iArray[i] >= 0 && md->matlist.iArray[i] < md->nMaterials)
+            matUsed[md->matlist.iArray[i]] = true;
+        else
+        {
+            reorderRequired = true;
+            break;
+        }
+    }
+    if(!reorderRequired)
+    {
+        for(i = 0; i < md->mixlen; ++i)
+        {
+            if(md->mix_mat[i] >= 0 && md->mix_mat[i] < md->nMaterials)
+                matUsed[md->mix_mat[i]] = true;
+            else
+            {
+                reorderRequired = true;
+                break;
+            }
+        }
+    }
+    if(!reorderRequired)
+    {
+        bool allUsed = true;
+        for(i = 0; i < md->nMaterials; ++i)
+            allUsed &= matUsed[i];
+        reorderRequired = !allUsed;
+    }
+    delete [] matUsed;
+
+    if(reorderRequired)
+    {
+        debug5 << mName << "Reordering of material numbers is needed." << endl;
+        mat = new avtMaterial(md->nMaterials,
+                              md->materialNumbers,
+                              (char **)md->materialNames,
+                              1,
+                              &md->nzones,
+                              0,
+                              md->matlist.iArray,
+                              md->mixlen,
+                              md->mix_mat,
+                              md->mix_next,
+                              md->mix_zone,
+                              md->mix_vf,
+                              "domain", 1);
+    }
+    else
+    {
+        debug5 << mName << "No reordering of material numbers is needed." << endl;
+        mat = new avtMaterial(md->nMaterials,
+                              matNames,
+                              md->nzones,
+                              md->matlist.iArray,
+                              md->mixlen,
+                              md->mix_mat,
+                              md->mix_next,
+                              md->mix_zone,
+                              md->mix_vf);
+    }
 
     FreeDataArray(md->matlist);
 
