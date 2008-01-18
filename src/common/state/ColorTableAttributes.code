@@ -136,12 +136,23 @@ Definition:
 //   Make sure that a pre-existing color table with the same name is removed
 //   before adding the new color table.
 //
+//   Hank Childs, Thu Jan 17 16:41:34 PST 2008
+//   Preserve the active continuous/discrete status if a color table is
+//   being replaced.
+//
 // ****************************************************************************
 
 void
 ColorTableAttributes::AddColorTable(const std::string &name,
     const ColorControlPointList &cpts)
 {
+    bool activeContinuous = false;
+    if (GetActiveContinuous() == name)
+        activeContinuous = true;
+    bool activeDiscrete = false;
+    if (GetActiveDiscrete() == name)
+        activeDiscrete = true;
+
     // Remove the color table if it already exists in the list.
     int index = GetColorTableIndex(name);
     if(index != -1)
@@ -165,6 +176,11 @@ ColorTableAttributes::AddColorTable(const std::string &name,
         names[i] = pos->first;
         colorTables[i] = pos->second;
     }
+
+    if (activeContinuous)
+        SetActiveContinuous(name);
+    if (activeDiscrete)
+        SetActiveDiscrete(name);
 
     Select(0, (void *)&names);
 }
