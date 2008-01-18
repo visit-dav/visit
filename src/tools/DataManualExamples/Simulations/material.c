@@ -36,12 +36,12 @@
 *
 *****************************************************************************/
 
-/* SIMPLE SIMULATION SKELETON */
 #include <VisItControlInterface_V1.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <materialhelpers.h>
 
 void simulate_one_timestep(void);
 void read_input_deck(void) { }
@@ -57,7 +57,7 @@ static double simtime = 0.;
  * Purpose: Callback function for control commands.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:39:59 PST 2007
+ * Date:       Thu Jan 17 15:25:37 PST 2008
  *
  * Input Arguments:
  *   cmd         : The command string that we want the sim to execute.
@@ -86,7 +86,7 @@ void ControlCommandCallback(const char *cmd,
  * Purpose: This is the main event loop function.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:35:53 PST 2007
+ * Date:       Thu Jan 17 15:25:37 PST 2008
  *
  * Modifications:
  *
@@ -144,15 +144,13 @@ void mainloop(void)
  * Purpose: This is the main function for the program.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:36:17 PST 2007
+ * Date:       Thu Jan 17 15:25:37 PST 2008
  *
  * Input Arguments:
  *   argc : The number of command line arguments.
  *   argv : The command line arguments.
  *
  * Modifications:
- *    Shelly Prevost,Thu Jul 26 16:34:40 PDT 2007
- *    Added a absolute filename argument to VisItInitializeSocketAndDumpSimFile.
  *
  *****************************************************************************/
 
@@ -161,8 +159,8 @@ int main(int argc, char **argv)
     /* Initialize environment variables. */
     VisItSetupEnvironment();
     /* Write out .sim file that VisIt uses to connect. */
-    VisItInitializeSocketAndDumpSimFile("curve",
-        "Demonstrates curve data access function",
+    VisItInitializeSocketAndDumpSimFile("materials",
+        "Demonstrates material data access function",
         "/path/to/where/sim/was/started",
         NULL, NULL, NULL);
 
@@ -188,12 +186,40 @@ void simulate_one_timestep(void)
 /* DATA ACCESS FUNCTIONS */
 #include <VisItDataInterface_V1.h>
 
+/*#define FANCY_MATERIAL*/
+/* Define FANCY_MATERIAL to get a more complex material defined on the fly. */
+#ifdef FANCY_MATERIAL
+#define NX 40
+#define NY 50
+#define XMIN 10.f
+#define XMAX 20.f
+#define YMIN 0.f
+#define YMAX 10.f
+const char *matNames[] = {"Copper", "Silver", "Gold"};
+#else
+/* Values to match the Fortran example. */
+#define NX 5
+#define NY 4
+#define XMIN 0.f
+#define XMAX 4.f
+#define YMIN 0.f
+#define YMAX 3.f
+const char *matNames[] = {"Water", "Membrane", "Air"};
+#endif
+#define DX (XMAX - XMIN)
+
+/* Rectilinear mesh */
+static float rmesh_x[NX];
+static float rmesh_y[NY];
+static const int   rmesh_dims[] = {NX, NY, 1};
+static const int   rmesh_ndims = 2;
+
 /******************************************************************************
  *
  * Purpose: This callback function returns simulation metadata.
  *
  * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
+ * Date:       Thu Jan 17 15:40:23 PST 2008
  *
  * Modifications:
  *
@@ -213,8 +239,8 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->currentTime = simtime;
 
 #define NDOMAINS 1
-    /* Allocate enough room for 2 meshes in the metadata. */
-    md->numMeshes = 2;
+    /* Allocate enough room for 1 mesh in the metadata. */
+    md->numMeshes = 1;
     sz = sizeof(VisIt_MeshMetaData) * md->numMeshes;
     md->meshes = (VisIt_MeshMetaData *)malloc(sz);
     memset(md->meshes, 0, sz);
@@ -233,60 +259,17 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     md->meshes[0].yLabel = strdup("Height");
     md->meshes[0].zLabel = strdup("Depth");
 
-    /* Set the second mesh's properties.*/
-    md->meshes[1].name = strdup("mesh3d");
-    md->meshes[1].meshType = VISIT_MESHTYPE_CURVILINEAR;
-    md->meshes[1].topologicalDimension = 3;
-    md->meshes[1].spatialDimension = 3;
-    md->meshes[1].numBlocks = NDOMAINS;
-    md->meshes[1].blockTitle = strdup("Domains");
-    md->meshes[1].blockPieceName = strdup("domain");
-    md->meshes[1].numGroups = 0;
-    md->meshes[1].units = strdup("Miles");
-    md->meshes[1].xLabel = strdup("Width");
-    md->meshes[1].yLabel = strdup("Height");
-    md->meshes[1].zLabel = strdup("Depth");
-
-    /* Add some scalar variables. */
-    md->numScalars = 2;
-    sz = sizeof(VisIt_ScalarMetaData) * md->numScalars;
-    md->scalars = (VisIt_ScalarMetaData *)malloc(sz);
-    memset(md->scalars, 0, sz);
-
-    /* Add a zonal variable on mesh2d. */
-    md->scalars[0].name = strdup("zonal");
-    md->scalars[0].meshName = strdup("mesh2d");
-    md->scalars[0].centering = VISIT_VARCENTERING_ZONE;
-
-    /* Add a nodal variable on mesh3d. */
-    md->scalars[1].name = strdup("nodal");
-    md->scalars[1].meshName = strdup("mesh3d");
-    md->scalars[1].centering = VISIT_VARCENTERING_NODE;
-
-    /* Add a curve variable. */
-    md->numCurves = 1;
-    sz = sizeof(VisIt_CurveMetaData) * md->numCurves;
-    md->curves = (VisIt_CurveMetaData *)malloc(sz);
-    memset(md->curves, 0, sz);
-
-    md->curves[0].name = strdup("sine");
-    md->curves[0].xUnits = strdup("radians");
-    md->curves[0].xLabel = strdup("angle");
-    md->curves[0].yLabel = strdup("amplitude");
-
-    /* Add some expressions. */
-    md->numExpressions = 2;
-    sz = sizeof(VisIt_ExpressionMetaData) * md->numExpressions;
-    md->expressions = (VisIt_ExpressionMetaData *)malloc(sz);
-    memset(md->expressions, 0, sz);
-
-    md->expressions[0].name = strdup("zvec");
-    md->expressions[0].definition = strdup("{zonal, zonal}");
-    md->expressions[0].vartype = VISIT_VARTYPE_VECTOR;
-
-    md->expressions[1].name = strdup("nid");
-    md->expressions[1].definition = strdup("nodeid(mesh3d)");
-    md->expressions[1].vartype = VISIT_VARTYPE_SCALAR;
+    /* Add a material */
+    sz = sizeof(VisIt_MaterialMetaData);
+    md->numMaterials = 1;
+    md->materials = (VisIt_MaterialMetaData *)malloc(sz);
+    md->materials[0].name = strdup("Material");
+    md->materials[0].meshName = strdup("mesh2d");
+    md->materials[0].numMaterials = 3;
+    md->materials[0].materialNames = (const char **)malloc(3*sizeof(const char*));
+    md->materials[0].materialNames[0] = strdup(matNames[0]);
+    md->materials[0].materialNames[1] = strdup(matNames[1]);
+    md->materials[0].materialNames[2] = strdup(matNames[2]);
 
     /* Add some custom commands. */
     md->numGenericCommands = 3;
@@ -309,33 +292,6 @@ VisIt_SimulationMetaData *VisItGetMetaData(void)
     return md;
 }
 
-/* Rectilinear mesh */
-float rmesh_x[] = {0., 1., 2.5, 5.};
-float rmesh_y[] = {0., 2., 2.25, 2.55,  5.};
-int   rmesh_dims[] = {4, 5, 1};
-int   rmesh_ndims = 2;
-float zonal[] = {1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.};
-
-/* Curvilinear mesh */
-float cmesh_x[2][3][4] = {
-   {{0.,1.,2.,3.},{0.,1.,2.,3.}, {0.,1.,2.,3.}},
-   {{0.,1.,2.,3.},{0.,1.,2.,3.}, {0.,1.,2.,3.}}
-};
-float cmesh_y[2][3][4] = {
-   {{0.5,0.,0.,0.5},{1.,1.,1.,1.}, {1.5,2.,2.,1.5}},
-   {{0.5,0.,0.,0.5},{1.,1.,1.,1.}, {1.5,2.,2.,1.5}}
-};
-float cmesh_z[2][3][4] = {
-   {{0.,0.,0.,0.},{0.,0.,0.,0.},{0.,0.,0.,0.}},
-   {{1.,1.,1.,1.},{1.,1.,1.,1.},{1.,1.,1.,1.}}
-};
-int cmesh_dims[] = {4, 3, 2};
-int cmesh_ndims = 3;
-double nodal[2][3][4] = {
-   {{1.,2.,3.,4.},{5.,6.,7.,8.},{9.,10.,11.,12}},
-   {{13.,14.,15.,16.},{17.,18.,19.,20.},{21.,22.,23.,24.}}
-};
-
 /******************************************************************************
  *
  * Purpose: This callback function returns meshes.
@@ -354,6 +310,8 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
 
     if(strcmp(name, "mesh2d") == 0)
     {
+        int i;
+
         /* Allocate VisIt_MeshData. */
         mesh = (VisIt_MeshData *)malloc(sz);
         memset(mesh, 0, sz);
@@ -384,55 +342,90 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
         mesh->rmesh->maxRealIndex[1] = rmesh_dims[1]-1;
         mesh->rmesh->maxRealIndex[2] = rmesh_dims[2]-1;
 
+        /* Initialize X coords. */
+        for(i = 0; i < NX; ++i)
+        {
+            float t = (float)i / (float)(NX-1);
+            rmesh_x[i] = (1.f-t)*XMIN + t*XMAX;
+        }
+        /* Initialize Y coords. */
+        for(i = 0; i < NY; ++i) 
+        {
+            float t = (float)i / (float)(NY-1);
+            rmesh_y[i] = (1.f-t)*YMIN + t*YMAX;
+        }
+
         /* Let VisIt use the simulation's copy of the mesh coordinates. */
         mesh->rmesh->xcoords = VisIt_CreateDataArrayFromFloat(
            VISIT_OWNER_SIM, rmesh_x);
         mesh->rmesh->ycoords = VisIt_CreateDataArrayFromFloat(
            VISIT_OWNER_SIM, rmesh_y);
     }
-    else if(strcmp(name, "mesh3d") == 0)
-    {
-        /* Allocate VisIt_MeshData. */
-        mesh = (VisIt_MeshData *)malloc(sz);
-        memset(mesh, 0, sz);
-        /* Make VisIt_MeshData contain a VisIt_CurvilinearMesh. */
-        sz = sizeof(VisIt_CurvilinearMesh);
-        mesh->cmesh = (VisIt_CurvilinearMesh *)malloc(sz);
-        memset(mesh->cmesh, 0, sz);
-
-        /* Tell VisIt which mesh object to use. */
-        mesh->meshType = VISIT_MESHTYPE_CURVILINEAR;
-
-        /* Set the mesh's number of dimensions. */
-        mesh->cmesh->ndims = cmesh_ndims;
-
-        /* Set the mesh dimensions. */
-        mesh->cmesh->dims[0] = cmesh_dims[0];
-        mesh->cmesh->dims[1] = cmesh_dims[1];
-        mesh->cmesh->dims[2] = cmesh_dims[2];
-
-        mesh->cmesh->baseIndex[0] = 0;
-        mesh->cmesh->baseIndex[1] = 0;
-        mesh->cmesh->baseIndex[2] = 0;
-
-        mesh->cmesh->minRealIndex[0] = 0;
-        mesh->cmesh->minRealIndex[1] = 0;
-        mesh->cmesh->minRealIndex[2] = 0;
-        mesh->cmesh->maxRealIndex[0] = cmesh_dims[0]-1;
-        mesh->cmesh->maxRealIndex[1] = cmesh_dims[1]-1;
-        mesh->cmesh->maxRealIndex[2] = cmesh_dims[2]-1;
-
-        /* Let VisIt use the simulation's copy of the mesh coordinates. */
-        mesh->cmesh->xcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, (float *)cmesh_x);
-        mesh->cmesh->ycoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, (float *)cmesh_y);
-        mesh->cmesh->zcoords = VisIt_CreateDataArrayFromFloat(
-           VISIT_OWNER_SIM, (float *)cmesh_z);
-    }
 
     return mesh;
 }
+
+/*
+ * Rule to get the list of materials for a cell in the mesh. This is just for
+ * example purposes only.
+ */
+#ifdef FANCY_MATERIAL
+#define SX 4
+#define SY 4
+void
+GetMaterialsForCell(int i, int j, int *allids, int *nmats, int *matnos, float *matvf)
+{
+    float cw, ch, cx, cy, cx0, cx1, cy0, cy1;
+    int m,ii,jj,samples[SY][SX];
+    cw = (float)(XMAX - XMIN) / (float)(NX-1);
+    ch = (float)(YMAX - YMIN) / (float)(NY-1);
+    cx = (XMAX + XMIN) / 2.f;
+    cy = (YMAX + YMIN) / 2.f;
+    cx0 = rmesh_x[i] - cw / 2.f;
+    cx1 = rmesh_x[i] + cw / 2.f;
+    cy0 = rmesh_y[j] - ch / 2.f;
+    cy1 = rmesh_y[j] + ch / 2.f;
+
+    /* Sample over cell SX*SY times. */
+    for(jj = 0; jj < SY; ++jj)
+    {
+        float y, ty;
+        ty = (float)jj / (float)(SY-1);
+        y = (1.f-ty)*cy0 + ty*cy1;
+        for(ii = 0; ii < SX; ++ii)
+        {
+            float x, tx, r;
+            tx = (float)ii / (float)(SX-1);
+            x = (1.f-tx)*cx0 + tx*cx1;
+
+            /* Classify a sample based on radial distance. */
+            r = sqrt((cx-x)*(cx-x) + (cy-y)*(cy-y));
+            if(r < (DX/2.)*0.3f)
+                samples[jj][ii] = allids[2];
+            else if(r < (DX/2.)*0.7f)
+                samples[jj][ii] = allids[1];
+            else
+                samples[jj][ii] = allids[0];
+        }
+    }
+
+    /* Now that we've supersampled the cell, figure its matnos, matvf*/
+    *nmats = 0;
+    for(m = 0; m < 3; ++m)
+    {
+        int nsamp = 0;
+        for(jj = 0; jj < SY; ++jj)
+            for(ii = 0; ii < SX; ++ii)
+                nsamp += ((samples[jj][ii] == allids[m]) ? 1 : 0);
+        if(nsamp > 0)
+        {
+            matnos[*nmats] = allids[m];
+            matvf[*nmats] = (float)nsamp / (float)(SX * SY);
+            *nmats = *nmats + 1;
+        }
+    }
+}
+#endif
 
 /******************************************************************************
  *
@@ -445,111 +438,97 @@ VisIt_MeshData *VisItGetMesh(int domain, const char *name)
  *
  *****************************************************************************/
 
-VisIt_ScalarData *VisItGetScalar(int domain, const char *name)
+VisIt_MaterialData *VisItGetMaterial(int domain, const char *name)
 {
-    size_t sz = sizeof(VisIt_ScalarData);
-    VisIt_ScalarData *scalar = (VisIt_ScalarData*)malloc(sz);
-    memset(scalar, 0, sz);
+    int i, j, m, cell = 0, arrlen = 0;
+    VisIt_MaterialData *handle = NULL;
+    int nmats, cellmat[10], matnos[3];
+    float cellmatvf[10];
 
-    if(strcmp(name, "zonal") == 0)
+    /* Allocate a VisIt_MaterialData */
+    handle = VisIt_MaterialData_alloc((NX-1)*(NY-1), &arrlen);
+
+    /* Fill in the VisIt_MaterialData */
+    matnos[0] = VisIt_MaterialData_addMaterial(handle, matNames[0]);
+    matnos[1] = VisIt_MaterialData_addMaterial(handle, matNames[1]);
+    matnos[2] = VisIt_MaterialData_addMaterial(handle, matNames[2]);
+
+#ifndef FANCY_MATERIAL
+    /* Matches the Fortran example. */
+
+    /* The matlist table indicates the material numbers that are found in
+     * each cell. Every 3 numbers indicates the material numbers in a cell.
+     * A material number of 0 means that the material entry is not used.
+     */
+    int matlist[NY-1][NX-1][3] = {
+        {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
+        {{3,0,0},{2,3,0},{1,2,0},{1,0,0}},
+        {{3,0,0},{2,3,0},{1,2,3},{1,2,0}}
+    };
+
+    /* The mat_vf table indicates the material volume fractions that are
+     * found in a cell.
+     */
+    float mat_vf[NY-1][NX-1][3] = {
+        {{1.,0.,0.},{0.75,0.25,0.},  {0.8125,0.1875, 0.},{1.,0.,0.}},
+        {{1.,0.,0.},{0.625,0.375,0.},{0.5625,0.4375,0.}, {1.,0.,0.}},
+        {{1.,0.,0.},{0.3,0.7,0.},    {0.2,0.4,0.4},      {0.55,0.45,0.}}
+    };
+
+    for(j = 0; j < NY-1; ++j)
     {
-        scalar->len = (rmesh_dims[0]-1) * (rmesh_dims[1]-1);
-        scalar->data = VisIt_CreateDataArrayFromFloat(
-            VISIT_OWNER_SIM, zonal);
-    }
-    else if(strcmp(name, "nodal") == 0)
-    {
-        scalar->len = cmesh_dims[0] * cmesh_dims[1] *
-            cmesh_dims[2];
-        scalar->data = VisIt_CreateDataArrayFromDouble(
-            VISIT_OWNER_SIM, (double*)nodal);
-    }
-    else 
-    {
-        free(scalar);
-        scalar = NULL;
-    }
-
-    return scalar;
-}
-
-/******************************************************************************
- *
- * Purpose: This callback function returns a curve.
- *
- * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
- *
- * Modifications:
- *
- *****************************************************************************/
-
-VisIt_CurveData *VisItGetCurve(const char *name)
-{
-    size_t sz = sizeof(VisIt_CurveData);
-    VisIt_CurveData *curve = (VisIt_CurveData*)malloc(sz);
-    memset(curve, 0, sz);
-
-    if(strcmp(name, "sine") == 0)
-    {
-        int i;
-        float *x = NULL, *y = NULL;
-        x = (float*)malloc(200 * sizeof(float));
-        y = (float*)malloc(200 * sizeof(float));
-        
-        for(i = 0; i < 200; ++i)
+        for(i = 0; i < NX-1; ++i, ++cell)
         {
-            x[i] = ((float)i / (float)(200-1)) * 4. * 3.14159;
-            y[i] = sin(x[i]);
+            nmats = 0;
+            for(m = 0; m < 3; ++m)
+            {
+                if(matlist[j][i][m] > 0)
+                {
+                    cellmat[nmats] = matnos[matlist[j][i][m] - 1];
+                    cellmatvf[nmats] = mat_vf[j][i][m];
+                    nmats++;
+                }
+            }        
+            if(nmats > 1)
+                VisIt_MaterialData_addMixedCell(handle, cell, cellmat, cellmatvf, nmats, &arrlen);
+            else
+                VisIt_MaterialData_addCleanCell(handle, cell, cellmat[0]);
         }
-
-        /* Give the arrays to VisIt. VisIt will free them. */
-        curve->len = 200;
-        curve->x = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, x);
-        curve->y = VisIt_CreateDataArrayFromFloat(VISIT_OWNER_VISIT, y);
     }
-    else 
+#else
+    /* Make a fancier material on the fly. */
+    for(j = 0; j < NY-1; ++j)
     {
-        free(curve);
-        curve = NULL;
+        for(i = 0; i < NX-1; ++i, ++cell)
+        {
+            /* Execute a per cell rule to determine the list of
+             * materials in the cell. This is just an example.
+             */
+            GetMaterialsForCell(i, j, handle->materialNumbers, &nmats, cellmat,
+                cellmatvf);
+
+            /* Now that we know which materials exist in the cell, 
+             * store that information in the material object.
+             */
+            if(nmats == 1)
+                VisIt_MaterialData_addCleanCell(handle, cell, cellmat[0]);
+            else
+                VisIt_MaterialData_addMixedCell(handle, cell, cellmat, 
+                    cellmatvf, nmats, &arrlen);
+        }
     }
-
-    return curve;
-}
-
-/******************************************************************************
- *
- * Purpose: This callback function returns a domain list.
- *
- * Programmer: Brad Whitlock
- * Date:       Fri Jan 12 13:37:17 PST 2007
- *
- * Modifications:
- *
- *****************************************************************************/
-
-VisIt_DomainList *VisItGetDomainList(void)
-{
-    int np = 1, rank = 0;
-    size_t sz = sizeof(VisIt_DomainList);
-    VisIt_DomainList *dl = (VisIt_DomainList*)malloc(sz);
-    memset(dl, 0, sz);
-
-    dl->nTotalDomains = np;
-    dl->nMyDomains = 1;
-    dl->myDomains = VisIt_CreateDataArrayFromInt(
-        VISIT_OWNER_SIM, &rank);
-    return dl;
+#endif
+    return handle;
 }
 
 VisIt_SimulationCallback visitCallbacks =
 {
     &VisItGetMetaData,
     &VisItGetMesh,
-    NULL, /* GetMaterial */
+    &VisItGetMaterial,
     NULL, /* GetSpecies */
-    &VisItGetScalar, /* GetScalar */
-    &VisItGetCurve, /* GetCurve */
+    NULL, /* GetScalar */
+    NULL, /* GetCurve */
     NULL, /* GetMixedScalar */
     NULL /* GetDomainList */
 };

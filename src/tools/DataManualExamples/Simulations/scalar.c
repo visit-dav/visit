@@ -40,6 +40,7 @@
 #include <VisItControlInterface_V1.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 void simulate_one_timestep(void);
 void read_input_deck(void) { }

@@ -41,6 +41,7 @@
 /* DATA ACCESS FUNCTIONS */
 #include <VisItDataInterface_V1.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void simulate_one_timestep(void);
