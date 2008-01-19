@@ -99,6 +99,9 @@ class SimpleObserver;
 //   Brad Whitlock, Tue Feb 13 09:21:03 PDT 2007
 //   I added GetViewerMethods and GetViewerState.
 //
+//   Brad Whitlock, Fri Jan 18 14:38:53 PST 2008
+//   Added Information method.
+//
 // ****************************************************************************
 
 class GUI_API GUIBase
@@ -118,6 +121,8 @@ protected:
     void Error(const QString &msg);
     void Warning(const QString &msg);
     void Message(const QString &msg);
+    // Shows right away, cleared by other message types
+    void Information(const QString &msg);
 
     void Status(const QString &msg, int milliseconds = 10000);
     void ClearStatus();

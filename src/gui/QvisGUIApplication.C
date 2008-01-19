@@ -1220,6 +1220,10 @@ QvisGUIApplication::Synchronize(int tag)
 //   Brad Whitlock, Thu Feb 2 18:55:30 PST 2006
 //   Added a tag to open up the "Save movie" wizard.
 //
+//   Brad Whitlock, Fri Jan 18 16:53:02 PST 2008
+//   Don't open the file if it's "notset". This prevents an error message when
+//   opening the GUI from the CLI.
+//
 // ****************************************************************************
 
 void
@@ -1238,9 +1242,12 @@ QvisGUIApplication::HandleSynchronize(int val)
     else if(val == LOAD_ACTIVESOURCE_TAG)
     {
         // Check the window information for the active source.
-        loadFile = QualifiedFilename(GetViewerState()->GetWindowInformation()->
-            GetActiveSource());
-        LoadFile(loadFile, false);
+        if(GetViewerState()->GetWindowInformation()->GetActiveSource() != "notset")
+        {
+            loadFile = QualifiedFilename(GetViewerState()->GetWindowInformation()->
+                GetActiveSource());
+            LoadFile(loadFile, false);
+        }
     }
     else if(val == INTERPRETER_SYNC_TAG)
     {
@@ -7251,6 +7258,10 @@ QvisGUIApplication::SaveMovie()
 //   Brad Whitlock, Wed Sep 27 14:12:58 PST 2006
 //   Added support for movie templates and changed how stereo works.
 //
+//   Brad Whitlock, Fri Jan 18 14:14:38 PST 2008
+//   Changed the code so it uses our Message dialog so users can paste the 
+//   command into another window.
+//
 // ****************************************************************************
 
 void
@@ -7443,7 +7454,7 @@ QvisGUIApplication::SaveMovieMain()
 
             if (movieAtts->GetGenerationMethod() == MovieAttributes::NowNewInstance)
             {
-                msg = "VisIt executed ";
+                msg = "VisIt executed the following command line to begin making your movie:\n\n";
 
                 // Fire off "visit -movie" under the covers. Perhaps have some
                 // stuff to send back progress to this process.
@@ -7460,13 +7471,16 @@ QvisGUIApplication::SaveMovieMain()
             }
             else
             {
-                msg = "Execute";
+                msg = "Execute the following command at the command prompt "
+                      "on your local computer to begin making your movie. "
+                      "All settings, including the number of processors, "
+                      "will be the same as your current VisIt session when "
+                      "you invoke:\n\n";
             }
 
             if(!errFlag)
             {
                 // Finish creating the message.
-                msg += " the following command line to begin making your movie:\n\n";
                 for(int i = 0; i < args.size(); ++i)
                 {
                     msg += args[i].c_str();
@@ -7475,7 +7489,7 @@ QvisGUIApplication::SaveMovieMain()
 
                 // Open a dialog that lists the "visit -movie" command that 
                 // you have to run to make the movie.
-                QMessageBox::information(mainWin, "VisIt", msg, QMessageBox::Ok);
+                Information(msg);
             }
         }
     }

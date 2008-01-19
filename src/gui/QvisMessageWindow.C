@@ -72,12 +72,17 @@
 //   Brad Whitlock, Mon May 12 13:00:03 PST 2003
 //   I made the text read only.
 //
+//   Brad Whitlock, Fri Jan 18 16:11:07 PST 2008
+//   Added preserveInformation, doHide slot, and made the window wider&taller by default.
+//
 // *************************************************************************************
 
 QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     const char *captionString) : QvisWindowBase(captionString),
     Observer(msgAttr)
 {
+    preserveInformation = false;
+
     // Create the central widget and the top layout.
     QWidget *central = new QWidget( this );
     setCentralWidget( central );
@@ -87,8 +92,9 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     messageText = new QMultiLineEdit( central, "outputText" );
     messageText->setWordWrap( QMultiLineEdit::WidgetWidth );
     messageText->setReadOnly(true);
-    messageText->setMinimumWidth(fontMetrics().width("Closed the compute "
-        "engine on host sunburn.llnl.gov.  "));
+    messageText->setMinimumWidth(3 * fontMetrics().width("Closed the compute "
+        "engine on host sunburn.llnl.gov.  ") / 2);
+    messageText->setMinimumHeight(8 * fontMetrics().lineSpacing());
     severityLabel = new QLabel(messageText, "Message", central, "Severity Label");
     QFont f("helvetica", 18);
     f.setBold(true);
@@ -104,7 +110,7 @@ QvisMessageWindow::QvisMessageWindow(MessageAttributes *msgAttr,
     QPushButton *dismissButton = new QPushButton("Dismiss", central, "dismiss");
     buttonLayout->addStretch(10);
     buttonLayout->addWidget(dismissButton);
-    connect(dismissButton, SIGNAL(clicked()), this, SLOT(hide()));
+    connect(dismissButton, SIGNAL(clicked()), this, SLOT(doHide()));
 }
 
 // *************************************************************************************
@@ -154,6 +160,12 @@ QvisMessageWindow::~QvisMessageWindow()
 //   Brad Whitlock, Thu May 11 15:01:21 PST 2006
 //   Return if the message is ErrorClear.
 //
+//   Brad Whitlock, Fri Jan 18 14:34:55 PST 2008
+//   Added Information, which is similar to Message but shows the window.
+//   The Information message is shown until a new information, error, or
+//   warning message comes in. Incoming "Message" messages do not overwrite
+//   an Information message while the window is showing.
+//
 // *************************************************************************************
 
 void
@@ -177,44 +189,110 @@ QvisMessageWindow::Update(Subject *)
             oldSeverity = MessageAttributes::Warning;
         else if (oldSeverityLabel == "Message")
             oldSeverity = MessageAttributes::Message;
+        else if (oldSeverityLabel == "Information")
+            oldSeverity = MessageAttributes::Information;
         else
             oldSeverity = MessageAttributes::Error;
 
-        // set severity to whichever is worse
-        if (oldSeverity < severity)
-            severity = oldSeverity;
-
-        // catenate new message onto old 
-        msgText = messageText->text();
-        QString newMsgText = QString(ma->GetText().c_str());
-        if (msgText.find(newMsgText) == -1)
+        // If we're not in information mode, append the incoming messages
+        if(!preserveInformation)
         {
-            msgText += "\n\nShortly thereafter, the following occured...\n\n";
-            msgText += newMsgText;
+            // set severity to whichever is worse
+            if (oldSeverity < severity)
+                severity = oldSeverity;
+
+            // catenate new message onto old 
+            msgText = messageText->text();
+            QString newMsgText = QString(ma->GetText().c_str());
+            if (msgText.find(newMsgText) == -1)
+            {
+                msgText += "\n\nShortly thereafter, the following occured...\n\n";
+                msgText += newMsgText;
+            }
+        }
+        else if(severity == MessageAttributes::Information)
+        {
+            msgText = ma->GetText().c_str();
+            preserveInformation = false;
+        }
+        else if((severity == MessageAttributes::Error ||
+                 severity == MessageAttributes::Warning) &&
+                 oldSeverity == MessageAttributes::Information)
+        {
+            // Incoming Error, Warnings may overwrite Information.
+            msgText = ma->GetText().c_str();
+            preserveInformation = false;
         }
     }
     else
     {
         msgText = QString(ma->GetText().c_str());
+        
+        // Don't preserve information if a new information message is
+        // coming in. Also let error, warning override the existing
+        // information message.
+        if(preserveInformation && 
+           (severity == MessageAttributes::Error ||
+            severity == MessageAttributes::Warning ||
+            severity == MessageAttributes::Information))
+        {
+            preserveInformation = false;
+        }
     }
 
-    // Set the severity label text.
-    if(severity == MessageAttributes::Error)
+    if(!preserveInformation)
     {
-        show();
-        qApp->beep();
-        severityLabel->setText(QString("Error!"));
-        RestoreCursor();
-    }
-    else if(severity == MessageAttributes::Warning)
-    {
-        show();
-        severityLabel->setText(QString("Warning"));
-        RestoreCursor();
-    }
-    else if(severity == MessageAttributes::Message)
-        severityLabel->setText(QString("Message"));
+        // Set the severity label text.
+        if(severity == MessageAttributes::Error)
+        {
+            show();
+            qApp->beep();
+            severityLabel->setText(QString("Error!"));
+            RestoreCursor();
+        }
+        else if(severity == MessageAttributes::Warning)
+        {
+            show();
+            severityLabel->setText(QString("Warning"));
+            RestoreCursor();
+        }
+        else if(severity == MessageAttributes::Message)
+            severityLabel->setText(QString("Message"));
+        else if(severity == MessageAttributes::Information)
+        {
+            show();
+            severityLabel->setText(QString("Information"));
+            RestoreCursor();
+            preserveInformation = true;
+        }
 
-    // Set the message text.
-    messageText->setText(msgText);
+        // Set the message text.
+        messageText->setText(msgText);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisMessageWindow::doHide
+//
+// Purpose: 
+//   Hides the window and turns off the preserveInformation mode.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 18 15:30:48 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMessageWindow::doHide()
+{
+    preserveInformation = false;
+    hide();
 }

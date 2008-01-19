@@ -325,6 +325,43 @@ GUIBase::Message(const QString &msg)
     // Write to the log as well.
     debug3 << "Message: " << msg.latin1() << endl;
 }
+// ****************************************************************************
+// Method: GUIBase::Information
+//
+// Purpose: 
+//   This method writes an informative message into the message state
+//   object. This causes the message to be displayed.
+//
+// Arguments:
+//   msg : The text to put in the message.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Jan 18 14:40:00 PST 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+GUIBase::Information(const QString &msg)
+{
+    if(msgAttr == 0)
+        return;
+
+    if(writeToConsole)
+    {
+        cerr << "Message: " << msg.latin1() << endl;
+    }
+    else
+    {
+        msgAttr->SetText(std::string(msg.latin1()));
+        msgAttr->SetSeverity(MessageAttributes::Information);
+        msgAttr->Notify();
+    }
+
+    // Write to the log as well.
+    debug3 << "Message: " << msg.latin1() << endl;
+}
 
 // ****************************************************************************
 // Method: GUIBase::Status

@@ -497,6 +497,9 @@ QvisSaveMovieWizard::showPage(QWidget *page)
 //   Brad Whitlock, Wed Sep 27 09:46:42 PDT 2006
 //   Added code to write out the template options file.
 //
+//   Brad Whitlock, Fri Jan 18 16:06:27 PST 2008
+//   Force the dialog to be raised and to get focus.
+//
 // ****************************************************************************
 
 int
@@ -507,6 +510,8 @@ QvisSaveMovieWizard::Exec()
 
     UpdatePageLinking(0);
     showPage(page(0));
+    raise();
+    setActiveWindow();
 
     // Go through the wizard.
     int retval = exec();
