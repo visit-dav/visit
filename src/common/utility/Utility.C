@@ -1100,7 +1100,7 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 
     ConfigStateEnum code2;
     int nStartups = firstTime ? 0 : ConfigStateGetRunCount(code2);
-    if(!fistTime && code2 == CONFIGSTATE_IOERROR)
+    if(!firstTime && code2 == CONFIGSTATE_IOERROR)
         nStartups = 0;
     FILE *f = 0;
     if((f = fopen(rcFile.c_str(), "w")) != 0)
