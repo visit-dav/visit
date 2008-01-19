@@ -168,6 +168,7 @@ Ghost_src= \
   Ghost/avtDomainBoundaries.C \
   Ghost/avtStructuredDomainBoundaries.C \
   Ghost/avtUnstructuredDomainBoundaries.C \
+  Ghost/avtNekDomainBoundaries.C \
   Ghost/avtStructuredDomainNesting.C \
   Ghost/avtUnstructuredPointBoundaries.C
 
