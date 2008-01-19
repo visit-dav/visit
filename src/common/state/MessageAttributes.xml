@@ -5,6 +5,7 @@
       Warning
       Message
       ErrorClear
+      Information
     </Enum>
     <Field name="text" type="string">""</Field>
     <Field name="severity" type="enum" subtype="Severity">Message</Field>

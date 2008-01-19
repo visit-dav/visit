@@ -59,7 +59,9 @@ class QMultiLineEdit;
 // Creation:   Wed Aug 30 18:09:22 PST 2000
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 18 15:32:51 PST 2008
+//   Added preserveInformation flag.
+//
 // *******************************************************************
 
 class GUI_API QvisMessageWindow : public QvisWindowBase, public Observer
@@ -70,9 +72,12 @@ public:
                       const char *captionString = 0);
     virtual ~QvisMessageWindow();
     virtual void Update(Subject *);
+private slots:
+    void doHide();
 private:
     QLabel         *severityLabel;
     QMultiLineEdit *messageText;
+    bool            preserveInformation;
 };
 
 #endif

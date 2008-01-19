@@ -250,13 +250,16 @@ struct AttributesObject
 //   Added suppression level; 4 means nothing is suppressed; 1 means
 //   everything is suppressed.
 //
+//   Brad Whitlock, Fri Jan 18 15:00:41 PST 2008
+//   Added Information printing.
+//
 class VisItMessageObserver : public Observer
 {
 public:
     VisItMessageObserver(Subject *s) : Observer(s), lastError("")
     {
         errorFlag = 0;
-    suppressLevel = 4;
+        suppressLevel = 4;
     };
 
     virtual ~VisItMessageObserver() { };
@@ -268,8 +271,8 @@ public:
     int SetSuppressLevel(int newLevel)
     {
         int oldLevel = suppressLevel;
-    suppressLevel = newLevel;
-    return oldLevel;
+        suppressLevel = newLevel;
+        return oldLevel;
     };
 
     int GetSuppressLevel() const { return suppressLevel; };
@@ -286,7 +289,7 @@ public:
             errorFlag = 1;
             lastError = m->GetText();
 
-        if (suppressLevel > 1)
+            if (suppressLevel > 1)
                 fprintf(stderr, "VisIt: Error - %s\n", m->GetText().c_str());
 //            // This can't really be done this way since this code is only
 //            // ever called by the 2nd thread. It cannot use Python.
@@ -298,7 +301,12 @@ public:
             suppressLevel > 2)
             fprintf(stderr, "VisIt: Warning - %s\n", m->GetText().c_str());
         else if (suppressLevel > 3)
-            fprintf(stderr, "VisIt: Message - %s\n", m->GetText().c_str());
+        {
+            if(m->GetSeverity() == MessageAttributes::Message)
+                fprintf(stderr, "VisIt: Message - %s\n", m->GetText().c_str());
+            else
+                fprintf(stderr, "VisIt: Information - %s\n", m->GetText().c_str());
+        }
     }
 private:
     int         errorFlag;
