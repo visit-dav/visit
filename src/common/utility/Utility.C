@@ -1077,6 +1077,11 @@ ConfigStateGetRunCount(ConfigStateEnum &code)
 //   Kathleen Bonnell, Thu Jan 10 14:01:59 PST 2008 
 //   Removed Windows-specific code as it didn't work right on diskless boxes. 
 //
+//   Kathleen Bonnell, Fri Jan 18 18:11:12 PST 2008 
+//   code2 was being used before set, causing a crash on Windows, I changed
+//   the if-statement so code2 is referenced only after it has been set
+//   (when !firstTime).
+//
 // ****************************************************************************
 
 void
@@ -1095,7 +1100,7 @@ ConfigStateIncrementRunCount(ConfigStateEnum &code)
 
     ConfigStateEnum code2;
     int nStartups = firstTime ? 0 : ConfigStateGetRunCount(code2);
-    if(code2 == CONFIGSTATE_IOERROR)
+    if(!fistTime && code2 == CONFIGSTATE_IOERROR)
         nStartups = 0;
     FILE *f = 0;
     if((f = fopen(rcFile.c_str(), "w")) != 0)
