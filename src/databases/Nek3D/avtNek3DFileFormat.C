@@ -46,6 +46,7 @@
 #else
 #include <direct.h>
 #endif
+#include <float.h>
 
 #include <string>
 #include <iostream>
@@ -57,6 +58,9 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <avtDatabaseMetaData.h>
+#include <avtDatabase.h>
+#include <avtNekDomainBoundaries.h>
+#include <avtVariableCache.h>
 
 #include <Expression.h>
 
@@ -64,6 +68,11 @@
 #include <InvalidVariableException.h>
 #include <InvalidDBTypeException.h>
 
+#include <TimingsManager.h>
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#endif
 
 using     std::string;
 #ifndef STREQUAL
@@ -694,6 +703,9 @@ avtNek3DFileFormat::FreeUpResources(void)
 //
 //    Dave Bremer, Wed Nov 14 15:00:13 PST 2007
 //    Changed block numbering from 0 based to 1 based.
+//
+//    Dave Bremer, Fri Jan 18 16:21:34 PST 2008
+//    Added domain boundary metadata.
 // ****************************************************************************
 
 void
@@ -725,6 +737,16 @@ avtNek3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*time
         char scalarVarName[32];
         sprintf(scalarVarName, "s%d", ii+1);
         AddScalarVarToMetaData(md, scalarVarName, meshname, AVT_NODECENT);
+    }
+
+    if (!avtDatabase::OnlyServeUpMetaData())
+    {
+        avtNekDomainBoundaries *db = new avtNekDomainBoundaries;
+        db->SetDomainInfo(iNumBlocks, iBlockSize);
+
+        void_ref_ptr vr = void_ref_ptr(db, avtNekDomainBoundaries::Destruct);
+        cache->CacheVoidRef("any_mesh",
+                       AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION, -1, -1, vr);
     }
 }
 
@@ -1528,3 +1550,226 @@ avtNek3DFileFormat::FindAsciiDataStart(FILE *fd, int &outDataStart, int &outLine
 
 
 
+
+
+
+/*
+void
+avtNek3DFileFormat::CreateNeighborList(vector<int> &outList)
+{
+    int ii, ff, pp;
+    float corners[24];
+
+    int  f[6][4] = { {0, 2, 4, 6},
+                     {1, 3, 5, 7},
+                     {0, 1, 4, 5}, 
+                     {2, 3, 6, 7},
+                     {0, 1, 2, 3},
+                     {4, 5, 6, 7} };
+
+    outList.resize(iNumBlocks*6);
+
+    Face *faces = new Face[iNumBlocks*6];
+
+    //Fill in the face structs
+    for (ii = 0; ii < iNumBlocks; ii++)
+    {
+        GetDomainCorners(ii, corners);
+
+        for (ff = 0; ff < 6; ff++)
+        {
+            for (pp = 0; pp < 4; pp++)
+            {
+                faces[ii*6 + ff].pts[pp*3  ] = corners[f[ff][pp]*3  ];
+                faces[ii*6 + ff].pts[pp*3+1] = corners[f[ff][pp]*3+1];
+                faces[ii*6 + ff].pts[pp*3+2] = corners[f[ff][pp]*3+2];
+            }
+            faces[ii*6 + ff].domain = ii;
+            faces[ii*6 + ff].side = ff;
+            faces[ii*6 + ff].Sort();
+        }
+    }
+
+    //Sort the face structs
+    qsort(faces, iNumBlocks*6, sizeof(Face), avtNek3DFileFormat::CompareFaces);
+
+    //Scan the faces for matching pairs
+    for (ii = 0; ii < iNumBlocks*6; ii++)
+    {
+        if ( ii == iNumBlocks*6-1 )
+        {
+            outList[faces[ii].domain*6   + faces[ii].side]   = -1;
+        }
+        else if ( CompareFaces(faces+ii, faces+ii+1) == 0 )
+        {
+            outList[faces[ii].domain*6   + faces[ii].side]   = faces[ii+1].domain;
+            outList[faces[ii+1].domain*6 + faces[ii+1].side] = faces[ii].domain;
+            ii++;
+        }
+        else
+        {
+            outList[faces[ii].domain*6   + faces[ii].side]   = -1;
+        }
+    }
+
+    delete[] faces;
+}
+
+
+void
+avtNek3DFileFormat::Face::Sort()
+{
+    //Do a bubble sort on the 4 points
+    int hh, ii, jj, kk;
+    for (hh = 0; hh < 3; hh++)
+    {    
+        bool anySwaps = false;
+        for (ii = 0; ii < 3; ii++)       //iterate over 3 pairs
+        {
+            for (jj = 0; jj < 3; jj++)   //compare the current pair of points
+            {
+                if (pts[ii*3+jj] < pts[(ii+1)*3+jj])
+                {
+                    break;
+                }
+                else if (pts[ii*3+jj] > pts[(ii+1)*3+jj])
+                {
+                    float tmp;
+                    for (kk = 0; kk < 3; kk++)   //swap points
+                    {
+                        tmp = pts[ii*3+kk];  
+                        pts[ii*3+kk] = pts[(ii+1)*3+kk];  
+                        pts[(ii+1)*3+kk] = tmp;
+                    }
+                    anySwaps = true;
+                    break;
+                }
+            }
+        }
+        if (!anySwaps)
+            break;
+    }
+}
+
+
+int
+avtNek3DFileFormat::CompareFaces(const void *f0, const void *f1)
+{
+    Face *face0 = (Face *)f0;
+    Face *face1 = (Face *)f1;
+
+    for (int ii = 0; ii < 12; ii++)
+    {
+        if (face0->pts[ii] < face1->pts[ii])
+            return -1;
+        else if (face0->pts[ii] > face1->pts[ii])
+            return 1;
+    }
+    return 0;
+}
+*/
+
+
+
+void
+avtNek3DFileFormat::GetDomainCorners(int domain, float *outCorners)
+{
+int iRank = 0;
+#ifdef PARALLEL
+MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
+printf("rank %d, getting domain %d\n", iRank, domain);    
+#endif
+    
+    const int nPts = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+    int ii, dd, cc;
+    UpdateCyclesAndTimes();   //This call also finds which timesteps have a mesh.
+
+    if (fdMesh == NULL || 
+        (iNumOutputDirs > 1 && aBlockLocs[domain*2] != iCurrMeshProc))
+    {
+        if (fdMesh)
+            fclose(fdMesh);
+
+        char *meshfilename = new char[ fileTemplate.size() + 256 ];
+
+        if (iNumOutputDirs == 1)
+        {
+            sprintf(meshfilename, fileTemplate.c_str(), iTimestepsWithMesh[0]);
+        }
+        else
+        {
+            iCurrMeshProc = aBlockLocs[domain*2];
+            sprintf(meshfilename, fileTemplate.c_str(), 
+                    iCurrMeshProc, iCurrMeshProc, iTimestepsWithMesh[0]);
+        }
+        fdMesh = fopen(meshfilename, "rb");
+        if (!fdMesh)
+            EXCEPTION1(InvalidFilesException, meshfilename);
+        delete [] meshfilename;
+
+        if (!bBinary)
+            FindAsciiDataStart(fdMesh, iAsciiMeshFileStart, iAsciiMeshFileLineLen);
+    }
+
+    if (iNumOutputDirs > 1)
+        domain = aBlockLocs[domain*2 + 1];
+
+    int nFloatsInDomain = 0, d1, d2, d3;
+    GetDomainSizeAndVarOffset(iTimestepsWithMesh[0], NULL, nFloatsInDomain, 
+                              d1, d2, d3);
+
+    int aCornerOffsets[8] = {0, 
+                             iBlockSize[0]-1, 
+                             iBlockSize[0]*(iBlockSize[1]-1),
+                             iBlockSize[0]*(iBlockSize[1]-1) + iBlockSize[0]-1,
+                             iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1),
+                             iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1) + iBlockSize[0]-1,
+                             iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1) + iBlockSize[0]*(iBlockSize[1]-1),
+                             iBlockSize[0]*iBlockSize[1]*(iBlockSize[2]-1) + iBlockSize[0]*(iBlockSize[1]-1) + iBlockSize[0]-1};
+    if (bBinary)
+    {
+        //In the parallel format, the whole mesh comes before all the vars.
+        if (iNumOutputDirs > 1)
+            nFloatsInDomain = iDim*iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
+
+        double tmp[24];
+        for (dd = 0; dd < 3; dd++)   //for each dim
+        {
+            for (cc = 0; cc < 8; cc++)
+            {
+                fseek(fdMesh, 
+                      iHeaderSize + 
+                      (nFloatsInDomain*domain + nPts*dd + aCornerOffsets[cc])*iPrecision,
+                      SEEK_SET);
+                if (iPrecision == 4)
+                    fread(outCorners + cc*3+dd, sizeof(float), 1, fdMesh);
+                else
+                    fread(tmp + cc*3+dd, sizeof(double), 1, fdMesh);
+            }
+        }
+
+        if (iPrecision == 4)
+        {
+            if (bSwapEndian)
+                ByteSwap32(outCorners, 24);
+        }
+        else 
+        {
+            if (bSwapEndian)
+                ByteSwap64(tmp, 24);
+            for (ii = 0; ii < 24; ii++)
+                outCorners[ii] = (float)tmp[ii];
+        }
+    }
+    else
+    {
+        for (cc = 0; cc < 8; cc++)
+        {
+            fseek(fdMesh, iAsciiMeshFileStart + 
+                          domain*iAsciiMeshFileLineLen*nPts + 
+                          aCornerOffsets[cc]*iAsciiMeshFileLineLen, SEEK_SET);
+            fscanf(fdMesh, " %f %f %f", outCorners, outCorners+1, outCorners+2);
+            outCorners += 3;
+        }
+    }
+}
