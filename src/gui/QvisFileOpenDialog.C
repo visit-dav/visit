@@ -45,6 +45,9 @@
 #include <HostProfileList.h>
 #include <DBPluginInfoAttributes.h>
 
+#include <BadHostException.h>
+#include <ChangeDirectoryException.h>
+
 const int QvisFileOpenDialog::Accepted = 0;
 const int QvisFileOpenDialog::Rejected = 1;
 
@@ -255,25 +258,52 @@ QvisFileOpenDialog::getOpenFileName(const QString &initialFile,
 // Creation:   Wed Nov 15 16:36:28 PST 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 22 11:39:38 PST 2008
+//   Added code to handle bad hosts and paths so the window does not disappear
+//   outright.
+//
 // ****************************************************************************
 
 void
 QvisFileOpenDialog::changeThePath()
 {
-    TRY
+    // Set the host and path to that of the initial file.
+    QualifiedFilename f(filename.latin1());
+    bool retry_loop = false;
+    int nTries = 0;
+    QString msg;
+    do
     {
-        // Set the host and path to that of the initial file.
-        QualifiedFilename f(filename.latin1());
-        fileServer->SetHost(f.host);
-        fileServer->SetPath(f.path);
-        fileServer->Notify();
-    }
-    CATCH(VisItException)
-    {
-        reject();
-    }
-    ENDTRY
+        TRY
+        {
+            fileServer->SetHost(f.host);
+            fileServer->SetPath(f.path);
+            fileServer->Notify();
+            retry_loop = false;
+        }
+        CATCH(BadHostException)
+        {
+            msg.sprintf("VisIt could not access host %s.", f.host.c_str());
+            Error(msg);
+            f.host = "localhost";
+            retry_loop = true;
+        }
+        CATCH(ChangeDirectoryException)
+        {
+            msg.sprintf("VisIt could not access the directory: %s so your "
+                        "home directory will be used..", f.path.c_str());
+            Error(msg);
+            f.path = "~";
+            retry_loop = true;
+        }
+        CATCH(VisItException)
+        {
+            reject();
+            retry_loop = false;
+        }
+        ENDTRY
+        ++nTries;
+    } while(retry_loop && nTries < 4);
 }
 
 // ****************************************************************************
