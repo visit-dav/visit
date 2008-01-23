@@ -38,6 +38,7 @@
 
 #include <qpushbutton.h>
 #include <qlayout.h>
+#include <qscrollview.h>
 
 #include <QvisPostableWindow.h>
 #include <QvisNotepadArea.h>
@@ -607,6 +608,9 @@ QvisPostableWindow::GetShortCaption()
 //   Brad Whitlock, Mon Nov 14 10:38:48 PDT 2005
 //   Added code to disable the post button if posting is not enabled.
 //
+//   Brad Whitlock, Tue Jan 22 16:49:54 PST 2008
+//   Embed the contents in a scrollview if there's no notepad.
+//
 // ****************************************************************************
 
 void
@@ -617,25 +621,49 @@ QvisPostableWindow::CreateEntireWindow()
         return;
 
     // Create the central widget and the top layout.
-    central = new QWidget( this );
-    setCentralWidget( central );
-    topLayout = new QVBoxLayout(central, 10);
+    QWidget *topCentral = 0;
+    QVBoxLayout *vLayout = 0;
+    if(notepad)
+    {
+        central = new QWidget( this );
+        setCentralWidget( central );
+        topCentral = central;
+        topLayout = new QVBoxLayout(central, 10);
+        vLayout = topLayout;
+    }
+    else
+    {
+        topCentral = new QWidget(this);
+        vLayout = new QVBoxLayout(topCentral, 10);
+        vLayout->setSpacing(5);
+        setCentralWidget( topCentral );
+        
+        QScrollView *sv = new QScrollView(topCentral);
+        sv->setHScrollBarMode(QScrollView::Auto);
+        sv->setVScrollBarMode(QScrollView::Auto);
+        sv->setResizePolicy(QScrollView::AutoOneFit);
+        central = new QWidget(sv->viewport());
+        sv->addChild(central);
+        vLayout->addWidget(sv);
+        topLayout = new QVBoxLayout(central, 10);
+    }
 
     // Call the Sub-class's CreateWindowContents function to create the
     // internal parts of the window.
     CreateWindowContents();
 
     // Create a button layout and the buttons.
-    topLayout->addSpacing(10);
-    QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
+    vLayout->addSpacing(10);
+    QHBoxLayout *buttonLayout = new QHBoxLayout(vLayout);
     buttonLayout->addStretch();
-    postButton = new QPushButton("Post", central,
+    postButton = new QPushButton("Post", topCentral,
         "postButton");
     buttonLayout->addWidget(postButton);
-    QPushButton *dismissButton = new QPushButton("Dismiss", central,
+    QPushButton *dismissButton = new QPushButton("Dismiss", topCentral,
         "dismissButton");
     buttonLayout->addWidget(dismissButton);
-    topLayout->addStretch(0);
+    if(notepad != 0)
+        vLayout->addStretch(0);
 
     // Make the window post itself when the post button is clicked.
     if(notepad)

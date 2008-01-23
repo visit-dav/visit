@@ -40,6 +40,7 @@
 #include <qlayout.h>
 #include <qmessagebox.h>
 #include <qpushbutton.h>
+#include <qscrollview.h>
 
 #include <GlobalAttributes.h>
 #include <ViewerProxy.h>
@@ -192,6 +193,9 @@ QvisPostableWindowSimpleObserver::SelectedSubject()
 //   Brad Whitlock, Mon Nov 14 10:36:48 PDT 2005
 //   Disable post button if posting is not enabled.
 //
+//   Brad Whitlock, Tue Jan 22 16:45:13 PST 2008
+//   If posting is disabled, put the contents of the window into a scrollview.
+//
 // ****************************************************************************
 
 void
@@ -202,40 +206,63 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         return;
 
     // Create the central widget and the top layout.
-    central = new QWidget( this );
-    setCentralWidget( central );
-    topLayout = new QVBoxLayout(central, 10);
+    QWidget *topCentral = 0;
+    QVBoxLayout *vLayout = 0;
+    if(notepad)
+    {
+        central = new QWidget( this );
+        setCentralWidget( central );
+        topCentral = central;
+        topLayout = new QVBoxLayout(central, 10);
+        vLayout = topLayout;
+    }
+    else
+    {
+        topCentral = new QWidget(this);
+        vLayout = new QVBoxLayout(topCentral, 10);
+        vLayout->setSpacing(5);
+        setCentralWidget( topCentral );
+        
+        QScrollView *sv = new QScrollView(topCentral);
+        sv->setHScrollBarMode(QScrollView::Auto);
+        sv->setVScrollBarMode(QScrollView::Auto);
+        sv->setResizePolicy(QScrollView::AutoOneFit);
+        central = new QWidget(sv->viewport());
+        sv->addChild(central);
+        vLayout->addWidget(sv);
+        topLayout = new QVBoxLayout(central, 10);
+    }
 
     // Call the Sub-class's CreateWindowContents function to create the
     // internal parts of the window.
     CreateWindowContents();
 
     // Create a button layout and the buttons.
-    topLayout->addSpacing(10);
+    vLayout->addSpacing(10);
     int nrows = ((buttonCombination & MakeDefaultButton) ||
                  (buttonCombination & ResetButton)) ? 2 : 1;
-    QGridLayout *buttonLayout = new QGridLayout(topLayout, nrows, 4);
+    QGridLayout *buttonLayout = new QGridLayout(vLayout, nrows, 4);
     buttonLayout->setColStretch(1, 50);
 
     // Create the extra buttons if necessary.
     if(buttonCombination & MakeDefaultButton)
     {
         QPushButton *makeDefaultButton = new QPushButton("Make default",
-            central, "makeDefaultButton");
+            topCentral, "makeDefaultButton");
         connect(makeDefaultButton, SIGNAL(clicked()),
                 this, SLOT(makeDefaultHelper()));
         buttonLayout->addWidget(makeDefaultButton, 0, 0);
     }
     if(buttonCombination & ResetButton)
     {
-        QPushButton *resetButton = new QPushButton("Reset", central,
+        QPushButton *resetButton = new QPushButton("Reset", topCentral,
                                                    "resetButton");
         connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
         buttonLayout->addWidget(resetButton, 0, 3);
     }
     if(buttonCombination & ApplyButton)
     {
-        QPushButton *applyButton = new QPushButton("Apply", central,
+        QPushButton *applyButton = new QPushButton("Apply", topCentral,
             "applyButton");
         connect(applyButton, SIGNAL(clicked()), this, SLOT(apply()));
         buttonLayout->addWidget(applyButton, 1, 0);
@@ -247,7 +274,7 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
         buttonLayout->addColSpacing(1, 50);
     }
 
-    postButton = new QPushButton("Post", central, "postButton");
+    postButton = new QPushButton("Post", topCentral, "postButton");
     // Make the window post itself when the post button is clicked.
     if(notepad)
     {
@@ -257,12 +284,12 @@ QvisPostableWindowSimpleObserver::CreateEntireWindow()
     else
         postButton->setEnabled(false);
     buttonLayout->addWidget(postButton, 1, 2);
-    QPushButton *dismissButton = new QPushButton("Dismiss", central,
+    QPushButton *dismissButton = new QPushButton("Dismiss", topCentral,
         "dismissButton");
     connect(dismissButton, SIGNAL(clicked()), this, SLOT(hide()));
     buttonLayout->addWidget(dismissButton, 1, 3);
-    if(stretchWindow)
-        topLayout->addStretch(0);
+    if(notepad != 0 && stretchWindow)
+        vLayout->addStretch(0);
 
     // Set the isCreated flag.
     isCreated = true;
