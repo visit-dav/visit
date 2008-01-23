@@ -231,6 +231,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Wed Mar 14 18:16:12 PST 2007
 //   Updated some state object interfaces and added metadata functions.
 //
+//   Brad Whitlock, Wed Jan 23 10:26:28 PST 2008
+//   Added TurnOFfAllLocks, SetPlotFollowsTime.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -1751,6 +1754,20 @@ public class ViewerProxy implements SimpleObserver
         rpc.SetWindowLayout(h);
         rpc.Notify();
         return synchronous ? Synchronize() : true;
+    }
+
+    public boolean TurnOffAllLocks()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_TURNOFFALLLOCKSRPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;    
+    }
+
+    public boolean SetPlotFollowsTime()
+    {
+        rpc.SetRPCType(ViewerRPC.VIEWERRPCTYPE_SETPLOTFOLLOWSTIMERPC);
+        rpc.Notify();
+        return synchronous ? Synchronize() : true;    
     }
 
     public synchronized boolean Synchronize()

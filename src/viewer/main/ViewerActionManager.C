@@ -415,6 +415,9 @@ public:
 //   Ellen Tarwater, Weds, Dec 26, 2007
 //   Added SetPlotFollowsTimeAction.
 //
+//   Brad Whitlock, Wed Jan 23 10:37:43 PST 2008
+//   Added TurnOffAllLocksAction.
+//
 // ****************************************************************************
 
 
@@ -438,6 +441,7 @@ ViewerActionManager::ViewerActionManager(ViewerWindow *win) :
 
     AddAction(new ToggleLockViewAction(win), ViewerRPC::ToggleLockViewModeRPC);
     AddAction(new ToggleLockTimeAction(win), ViewerRPC::ToggleLockTimeRPC);
+    AddAction(new TurnOffAllLocksAction(win), ViewerRPC::TurnOffAllLocksRPC);
 
     AddAction(new AddWindowAction(win), ViewerRPC::AddWindowRPC);
     AddAction(new CloneWindowAction(win), ViewerRPC::CloneWindowRPC);
@@ -570,6 +574,9 @@ ViewerActionManager::CopyFrom(const ViewerActionManager *mgr)
 //   Brad Whitlock, Tue Mar 16 14:24:36 PST 2004
 //   I added another flag to RealizeActionGroups.
 //
+//   Brad Whitlock, Wed Jan 23 11:11:50 PST 2008
+//   Changed because ViewerWindowManagerAttributes was regenerated.
+//
 // ****************************************************************************
 
 void
@@ -579,9 +586,9 @@ ViewerActionManager::EnableActions(ViewerWindowManagerAttributes *wma)
     // Now that we're sure that wma has some action groups in it, use it
     // to create the action groups.
     //    
-    for(int i = 0; i < wma->GetNumActionGroupDescriptions(); ++i)
+    for(int i = 0; i < wma->GetNumActionConfigurations(); ++i)
     {
-        const ActionGroupDescription &ag = wma->GetActionGroupDescription(i);
+        const ActionGroupDescription &ag = wma->GetActionConfigurations(i);
 
         // Create an ActionGroup object based on the ActionGroupDescription
         // object and add the new action group to the manager.
@@ -884,12 +891,15 @@ ViewerActionManager::UpdateActionConstruction(ViewerActionBase *action)
 //   I added code to clear out the action group descriptions stored in the
 //   window manager attributes.
 //
+//   Brad Whitlock, Wed Jan 23 11:12:47 PST 2008
+//   Changed because ViewerWindowManagerAttributes was regenerated.
+//
 // ****************************************************************************
 
 void
 ViewerActionManager::UpdateActionInformation(ViewerWindowManagerAttributes *wma)
 {
-    wma->ClearActionGroupDescriptions();
+    wma->ClearActionConfigurations();
 
     for(int i = 0; i < actionGroups.size(); ++i)
     {
@@ -907,7 +917,7 @@ ViewerActionManager::UpdateActionInformation(ViewerWindowManagerAttributes *wma)
                 }
             }
 
-            wma->AddActionGroupDescription(description);
+            wma->AddActionConfigurations(description);
         }
     }
 }
@@ -1187,6 +1197,9 @@ ViewerActionManager::GetNumberOfActionGroupMemberships(ActionIndex index) const
 //   I added code to update the window manager attributes so new windows
 //   get the same toolbars as the last updated window.
 //
+//   Brad Whitlock, Wed Jan 23 11:12:47 PST 2008
+//   Changed because ViewerWindowManagerAttributes was regenerated.
+//
 // ****************************************************************************
 
 void
@@ -1224,7 +1237,7 @@ ViewerActionManager::SetActionGroupEnabled(int index, bool val, bool update)
         // that we can pass settings on to newly created windows.
         ViewerWindowManagerAttributes *wma;
         wma = ViewerWindowManager::Instance()->GetWindowAtts();
-        if(index < wma->GetNumActionGroupDescriptions())
+        if(index < wma->GetNumActionConfigurations())
         {
             ActionGroupDescription &ag = wma->operator[](index);
             ag.SetVisible(val);

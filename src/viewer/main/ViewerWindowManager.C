@@ -3643,9 +3643,39 @@ ViewerWindowManager::ToggleLockViewMode(int windowIndex)
             }
         }
 
-        // Update the view information.
+        // Update the window information.
         UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::TurnOffAllLocks
+//
+// Purpose: 
+//   Turns off all locks in all windows.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 23 10:43:36 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindowManager::TurnOffAllLocks()
+{
+    for(int index = 0; index < maxWindows; ++index)
+    {
+        if(windows[index] != 0)
+        {
+            windows[index]->SetViewIsLocked(false);
+            windows[index]->SetToolLock(false);
+            windows[index]->SetTimeLock(false);
+        }
+    }
+
+    // Update the window information.
+    UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, activeWindow);
 }
 
 // ****************************************************************************

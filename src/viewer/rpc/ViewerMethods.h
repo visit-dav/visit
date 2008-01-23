@@ -91,6 +91,9 @@ class ViewerState;
 //   Ellen Tarwater, Thurs, Dec 6, 2007
 //   Added SetPlotFollowsTime
 //
+//   Brad Whitlock, Wed Jan 23 10:24:04 PST 2008
+//   Added TurnOffAllLocks.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -223,6 +226,7 @@ public:
     void ToggleLockViewMode();
     void ToggleLockTime();
     void ToggleLockTools();
+    void TurnOffAllLocks();
     void ToggleSpinMode();
     void ToggleCameraViewMode();
     void ToggleFullFrameMode();

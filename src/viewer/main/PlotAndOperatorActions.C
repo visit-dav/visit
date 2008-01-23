@@ -2395,7 +2395,7 @@ CopyPlotAction::Enabled() const
 SetPlotFollowsTimeAction::SetPlotFollowsTimeAction(ViewerWindow *win) : ViewerAction(win,
     "SetPlotFollowsTimeAction")
 {
-    SetAllText("Disconnect Plot from Time Slider");
+    SetAllText("Disconnect from time slider");
     // Think of an icon...
 }
 
