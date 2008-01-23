@@ -98,7 +98,7 @@ ViewerWindowManagerAttributes::SetFromNode(DataNode *parentNode)
     if(attNode)
     {
         // Clear all the ActionGroupDescriptions.
-        ClearActionGroupDescriptions();
+        ClearActionConfigurations();
 
         // Go through all of the children and construct a new
         // ActionGroupDescription for each one of them.
@@ -109,7 +109,7 @@ ViewerWindowManagerAttributes::SetFromNode(DataNode *parentNode)
             {
                 ActionGroupDescription temp;
                 temp.SetFromNode(children[i]);
-                AddActionGroupDescription(temp);
+                AddActionConfigurations(temp);
             }
         }
     }
@@ -160,6 +160,9 @@ Definition:
 //
 //   Brad Whitlock, Tue Mar 7 18:14:53 PST 2006
 //   Added redo view.
+//
+//   Brad Whitlock, Wed Jan 23 10:58:27 PST 2008
+//   Added "Copy active plots", "Disconnect from time slider".
 //
 // ****************************************************************************
 
@@ -319,6 +322,19 @@ ViewerWindowManagerAttributes::ProcessOldVersions(DataNode *parentNode,
         AddAction(actionNode, "View", ViewerRPC::ToggleFullFrameRPC);
         AddAction(actionNode, "View", ViewerRPC::SaveViewRPC);
         AddAction(actionNode, "View", ViewerRPC::ChooseCenterOfRotationRPC);
+    }
+
+    // Add actions that are new in 1.8.0
+    if(VersionLessThan(configVersion, "1.8.0"))
+    {
+        AddAction(actionNode, "Plots", ViewerRPC::CopyActivePlotsRPC);
+    }
+
+    // Add actions that are new in 1.9.0
+    if(VersionLessThan(configVersion, "1.9.0"))
+    {
+        AddAction(actionNode, "Plots", ViewerRPC::SetPlotFollowsTimeRPC);
+        AddAction(actionNode, "Lock", ViewerRPC::TurnOffAllLocksRPC);
     }
 
     //

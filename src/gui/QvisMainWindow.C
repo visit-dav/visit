@@ -510,6 +510,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     lockTimeId  = lockPopup->insertItem( tr("Time"), this, SLOT(lockTime()));
     lockToolsId = lockPopup->insertItem( tr("Tools"), this, SLOT(lockTools()));
     lockViewId  = lockPopup->insertItem( tr("View"), this, SLOT(lockView()));
+    lockPopup->insertSeparator();
+    lockPopup->insertItem(tr("Unlock everything"), this, SLOT(unlockEverything()));
     lockPopupId = winPopup->insertItem(lockIcon, tr("Lock"), lockPopup);
 
     // Other options.
@@ -2695,4 +2697,23 @@ void
 QvisMainWindow::lockView()
 {
     GetViewerMethods()->ToggleLockViewMode();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::unlockEverything
+//
+// Purpose: 
+//   This is a Qt slot function that turns off all of the locks.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 23 10:48:12 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::unlockEverything()
+{
+    GetViewerMethods()->TurnOffAllLocks();
 }

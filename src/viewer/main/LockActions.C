@@ -128,3 +128,46 @@ ToggleLockTimeAction::Toggled() const
 {
     return window->GetTimeLock();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: TurnOffAllLocksAction::TurnOffAllLocksAction
+//
+// Purpose: 
+//   Constructor for the TurnOffAllLocksAction class.
+//
+// Arguments:
+//   win : The viewer window that owns this action.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 23 10:35:14 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+TurnOffAllLocksAction::TurnOffAllLocksAction(ViewerWindow *win) :
+    ViewerAction(win, "TurnOffAllLocksAction")
+{
+    SetAllText("Unlock everything");
+}
+
+// ****************************************************************************
+// Method: TurnOffAllLocksAction::Execute
+//
+// Purpose: 
+//   Turns off all of the locks for all windows.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 23 10:36:28 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+TurnOffAllLocksAction::Execute()
+{
+    windowMgr->TurnOffAllLocks();
+}

@@ -197,6 +197,9 @@ class WindowInformation;
 //   Brad Whitlock, Fri Jun 15 09:32:04 PDT 2007
 //   Added activateMacroWindow.
 //
+//   Brad Whitlock, Wed Jan 23 10:48:53 PST 2008
+//   Added unlockEverything.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -332,6 +335,7 @@ private slots:
     void lockTime();
     void lockTools();
     void lockView();
+    void unlockEverything();
 private:
     void CreateGlobalArea(QWidget *par);
     void UpdateFileMenuPopup(QPopupMenu *, int);

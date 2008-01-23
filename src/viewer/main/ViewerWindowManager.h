@@ -389,6 +389,9 @@ typedef struct {
 //    Ellen Tarwater, Wed Dec 26, 2007
 //    Added SetPlotFollowsTime
 //
+//    Brad Whitlock, Wed Jan 23 10:40:12 PST 2008
+//    Added TurnOffAllLocks.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -474,12 +477,15 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     void TogglePerspective(int windowIndex = -1);
     void ToggleMaintainViewMode(int windowIndex = -1);
     void ToggleMaintainDataMode(int windowIndex = -1);
-    void ToggleLockViewMode(int windowIndex = -1);
     void ToggleSpinMode(int windowIndex = -1);
     void ToggleCameraViewMode(int windowIndex = -1);
+    void ToggleFullFrameMode(int windowIndex = -1);
+
     void ToggleLockTime(int windowIndex = -1);
     void ToggleLockTools(int windowIndex = -1);
-    void ToggleFullFrameMode(int windowIndex = -1);
+    void ToggleLockViewMode(int windowIndex = -1);
+    void TurnOffAllLocks();
+
     void SetViewExtentsType(avtExtentType, int windowIndex = -1);
     void UpdateColorTable(const char *ctName);
     void ResetLineoutDesignation(int windowIndex = -1); 

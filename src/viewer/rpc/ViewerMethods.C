@@ -1909,6 +1909,7 @@ ViewerMethods::SetPlotFollowsTime()
     //
     state->GetViewerRPC()->Notify();
 }
+
 // ****************************************************************************
 //  Method: ViewerMethods::DrawPlots
 //
@@ -3772,7 +3773,7 @@ ViewerMethods::ToggleLockTime()
 }
 
 // ****************************************************************************
-// Method: ViewerMethods::ToggleLockTools
+// Method: ViewerMethods::TurnOffAllLocks
 //
 // Purpose: 
 //   Toggles the viewer's lock tools flag.
@@ -3785,9 +3786,29 @@ ViewerMethods::ToggleLockTime()
 // ****************************************************************************
 
 void
+ViewerMethods::TurnOffAllLocks()
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::TurnOffAllLocksRPC);
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::TurnOffAllLocks
+//
+// Purpose: 
+//   Turns off view, tool, time locks in all windows.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 23 10:25:19 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
 ViewerMethods::ToggleLockTools()
 {
-    state->GetViewerRPC()->SetRPCType(ViewerRPC::ToggleLockToolsRPC);
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::TurnOffAllLocksRPC);
     state->GetViewerRPC()->Notify();
 }
 

@@ -92,4 +92,29 @@ public:
     virtual bool Toggled() const;
 };
 
+// ****************************************************************************
+// Class: TurnOffAllLocksAction
+//
+// Purpose:
+//   Handles the turn off all locks action.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 23 10:33:47 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWER_API TurnOffAllLocksAction : public ViewerAction
+{
+public:
+    TurnOffAllLocksAction(ViewerWindow *win);
+    virtual ~TurnOffAllLocksAction(){}
+
+    virtual void Execute();
+    virtual bool AllowInToolbar() const { return false; }
+};
+
 #endif
