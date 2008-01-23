@@ -294,6 +294,9 @@
 //    Brad Whitlock, Fri Jun 15 09:32:23 PDT 2007
 //    Added Macro window.
 //
+//    Brad Whitlock, Tue Jan 22 16:49:30 PST 2008
+//    Don't even create the notepad on short displays.
+//
 // ****************************************************************************
 
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
@@ -560,22 +563,25 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     plotManager->ConnectWindowInformation(GetViewerState()->GetWindowInformation());
     plotManager->ConnectDatabaseMetaData(GetViewerState()->GetDatabaseMetaData());
 
-    // Create the notepad widget. Use a big stretch factor so the
-    // notpad widget will fill all the remaining space.
-    notepad = new QvisNotepadArea( splitter );
-
     QValueList<int> splitterSizes;
     int nVisiblePanels = 2;
 
     if(qApp->desktop()->height() < 1024)
     {
+        // No notepad
+        notepad = 0;
+
         debug1 << "The screen's vertical resolution is less than 1024 "
                   "so the notepad will not be available." << endl;
-        notepad->hide();
         QvisPostableWindow::SetPostEnabled(false);
     }
-    else
+    else 
+    {
+        // Create the notepad widget. Use a big stretch factor so the
+        // notpad widget will fill all the remaining space.
+        notepad = new QvisNotepadArea( splitter );
         ++nVisiblePanels;
+    }
 
     // May want to read these from the config file but here are the defaults.
     int hgt = qApp->desktop()->height();
@@ -1561,7 +1567,9 @@ QvisMainWindow::CreateNode(DataNode *parentNode)
 // Creation:   Tue Jul 25 10:13:38 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Jan 22 16:03:57 PST 2008
+//   Check for NULL notepad.
+//
 // ****************************************************************************
 
 void
@@ -1653,7 +1661,7 @@ QvisMainWindow::SetFromNode(DataNode *parentNode, bool overrideGeometry,
     if(splitterSizes.size() == 0)
     {
         debug1 << mName << "Using default splitter values." << endl;
-        if(notepad->isVisible())
+        if(notepad != 0 && notepad->isVisible())
         {
             splitterSizes.push_back(int(0.3 * h));
             splitterSizes.push_back(int(0.3 * h));
