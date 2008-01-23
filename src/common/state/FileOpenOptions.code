@@ -1,0 +1,92 @@
+Function: MergeNewFromPluginInfo
+Declaration: void MergeNewFromPluginInfo(const DBPluginInfoAttributes*);
+Definition:
+void
+FileOpenOptions::MergeNewFromPluginInfo(const DBPluginInfoAttributes *dbinfo)
+{
+    int n = dbinfo->GetNumDbReadOptions();
+    for (int i=0; i<n; i++)
+    {
+        DBOptionsAttributes opts_from = dbinfo->GetDbReadOptions(i);
+        const std::string &id = dbinfo->GetTypesFullNames()[i];
+        const std::string &name = dbinfo->GetTypes()[i];
+        int index = -1;
+        for (int j=0; j<typeIDs.size(); j++)
+        {
+            if (typeIDs[j] == id)
+                index = j;
+        }
+        if (index == -1)
+        {
+            typeNames.push_back(name);
+            typeIDs.push_back(id);
+            AddOpenOptions(opts_from);
+        }
+        else
+        {
+            DBOptionsAttributes &opts_cur = GetOpenOptions(index);
+            int n_cur  = opts_cur.GetNumberOfOptions();
+            int n_from = opts_from.GetNumberOfOptions();
+            for (int j=0; j<n_from; j++)
+            {
+                std::string optname = opts_from.GetName(j);
+                int match = -1;
+                for (int k=0; k<n_cur; k++)
+                {
+                    if (opts_cur.GetName(k) == optname)
+                    {
+                        match = k;
+                        break;
+                    }
+                }
+                if (match < 0)
+                {
+                    // We didn't have this option yet; add the new
+                    // default value we just got
+                    switch (opts_from.GetType(j))
+                    {
+                      case DBOptionsAttributes::Bool:
+                        opts_cur.SetBool(optname, opts_from.GetBool(optname));
+                        break;
+                      case DBOptionsAttributes::Int:
+                        opts_cur.SetInt(optname, opts_from.GetInt(optname));
+                        break;
+                      case DBOptionsAttributes::Float:
+                        opts_cur.SetFloat(optname, opts_from.GetFloat(optname));
+                        break;
+                      case DBOptionsAttributes::Double:
+                        opts_cur.SetDouble(optname, opts_from.GetDouble(optname));
+                        break;
+                      case DBOptionsAttributes::String:
+                        opts_cur.SetString(optname, opts_from.GetString(optname));
+                        break;
+                      case DBOptionsAttributes::Enum:
+                        opts_cur.SetEnum(optname, opts_from.GetEnum(optname));
+                        opts_cur.SetEnumStrings(optname, opts_from.GetEnumStrings(optname));
+                        break;
+                    }
+                }
+                else
+                {
+                    // We have this one already; don't override it
+                    // because we could be overriding something the
+                    // user had already set, e.g. via a config file
+                }
+            }
+        }
+    }
+}
+
+Function: GetOpenOptionsForID
+Declaration: const DBOptionsAttributes *GetOpenOptionsForID(const std::string&);
+Definition:
+const DBOptionsAttributes*
+FileOpenOptions::GetOpenOptionsForID(const std::string &id)
+{
+    for (int i=0; i<typeIDs.size(); i++)
+    {
+        if (typeIDs[i] == id)
+            return (const DBOptionsAttributes*)(openOptions[i]);
+    }
+    return NULL;
+}

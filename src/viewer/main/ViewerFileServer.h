@@ -51,6 +51,7 @@ class DatabaseCorrelation;
 class DatabaseCorrelationList;
 class DataNode;
 class DBPluginInfoAttributes;
+class FileOpenOptions;
 class ExpressionList;
 class SILAttributes;
 
@@ -175,6 +176,11 @@ class SILAttributes;
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Removed methods to Set/Get TryHarderCyclesTimes and
 //    TreatAllDBsAsTimeVarying
+//
+//    Jeremy Meredith, Wed Jan 23 16:25:45 EST 2008
+//    Store the current default file opening options.  Added method that can
+//    be used to update existing mdservers with new ones when they change.
+//
 // ****************************************************************************
 
 class ViewerFileServer : public ViewerServerManager
@@ -324,6 +330,9 @@ public:
     void                       UpdateDBPluginInfo(const std::string &host);
     DBPluginInfoAttributes    *GetDBPluginInfoAtts(void)
                                                   { return dbPluginInfoAtts; };
+    FileOpenOptions           *GetFileOpenOptions() { return fileOpenOptions; }
+    void                       BroadcastUpdatedFileOpenOptions();
+
 protected:
     ViewerFileServer();
     ViewerFileServer(const ViewerFileServer&);
@@ -346,6 +355,7 @@ private:
     FileSILMap                fileSIL;
     DatabaseCorrelationList  *databaseCorrelationList;
     DBPluginInfoAttributes   *dbPluginInfoAtts;
+    FileOpenOptions          *fileOpenOptions;
     stringVector              declinedFiles;
     intVector                 declinedFilesLength;
 };

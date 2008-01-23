@@ -43,6 +43,7 @@
 #include <vector>
 #include <vectortypes.h>
 #include <GetFileListRPC.h>
+#include <FileOpenOptions.h>
 
 // Forward declarations
 class avtDatabase;
@@ -79,6 +80,8 @@ class DBPluginInfoAttributes;
 class SILAttributes;
 class QuitRPC;
 class QuitRPCExecutor;
+class SetMFileOpenOptionsRPC;
+class SetMFileOpenOptionsRPCExecutor;
 class Xfer;
 
 // ****************************************************************************
@@ -190,8 +193,11 @@ class Xfer;
 //    Added flags to ReadMetaData for controlling creation of MeshQuality 
 //    and TimeDerivative expressions.
 //
-//   Cyrus Harrison, Wed Nov 28 11:17:23 PST 2007
-//   Added flag for creation of vector magnitude expressions
+//    Cyrus Harrison, Wed Nov 28 11:17:23 PST 2007
+//    Added flag for creation of vector magnitude expressions
+//
+//    Jeremy Meredith, Wed Jan 23 16:18:17 EST 2008
+//    Added ability to set default file open options.
 //
 // ****************************************************************************
 
@@ -267,6 +273,8 @@ public:
     void GetFilteredFileList(GetFileListRPC::FileList &files);
     void SetFileGroupingOptions(const std::string &, bool);
     std::string ExpandPath(const std::string &path);
+    void SetDefaultFileOpenOptions(const FileOpenOptions &opts);
+
 private:
     std::string FilteredPath(const std::string &path) const;
     void        ReadCWD();
@@ -303,6 +311,7 @@ private:
     LoadPluginsRPC             *loadPluginsRPC;
     GetPluginErrorsRPC         *getPluginErrorsRPC;
     GetDBPluginInfoRPC         *getDBPluginInfoRPC;
+    SetMFileOpenOptionsRPC     *setMFileOpenOptionsRPC;
 
     // RPC Executors.
     QuitRPCExecutor            *quitExecutor;
@@ -319,6 +328,7 @@ private:
     LoadPluginsRPCExecutor     *loadPluginsExecutor;
     GetPluginErrorsRPCExecutor *getPluginErrorsRPCExecutor;
     GetDBPluginInfoRPCExecutor *getDBPluginInfoRPCExecutor;
+    SetMFileOpenOptionsRPCExecutor *setMFileOpenOptionsRPCExecutor;
 
     // State information for the program using this MDServer.
     avtDatabaseMetaData        *currentMetaData;

@@ -123,6 +123,9 @@
 #    Hank Childs, Mon Feb 13 21:59:53 PST 2006
 #    Added ConstructDDFRPC.
 #
+#    Jeremy Meredith, Wed Jan 23 16:52:27 EST 2008
+#    Added SetEFileOpenOptionsRPC.
+#
 ###############################################################################
 
 ##
@@ -153,6 +156,7 @@ SRC= \
     ReadRPC.C \
     ReleaseDataRPC.C \
     RenderRPC.C \
+    SetEFileOpenOptionsRPC.C \
     SetWinAnnotAttsRPC.C \
     SimulationCommandRPC.C \
     StartPickRPC.C \

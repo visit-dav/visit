@@ -91,6 +91,8 @@
 #include <KeepAliveRPCExecutor.h>
 #include <LoadPluginsRPC.h>
 #include <LoadPluginsRPCExecutor.h>
+#include <SetMFileOpenOptionsRPC.h>
+#include <SetMFileOpenOptionsRPCExecutor.h>
 #include <CouldNotConnectException.h>
 #include <IncompatibleVersionException.h>
 #include <InvalidFilesException.h>
@@ -245,6 +247,10 @@ MDServerConnection::VirtualFileInformationMap MDServerConnection::virtualFiles;
 //
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added support for specifying cycle number regular expression 
+//
+//    Jeremy Meredith, Wed Jan 23 16:18:17 EST 2008
+//    Added SetMFileOpenOptionsRPC and its Executor.
+//
 // ****************************************************************************
 
 MDServerConnection::MDServerConnection(int *argc, char **argv[])
@@ -326,6 +332,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     loadPluginsRPC = new LoadPluginsRPC;
     getPluginErrorsRPC = new GetPluginErrorsRPC;
     getDBPluginInfoRPC = new GetDBPluginInfoRPC;
+    setMFileOpenOptionsRPC = new SetMFileOpenOptionsRPC;
 
     // Hook up the RPCs to the xfer object.
     xfer->Add(quitRPC);
@@ -342,6 +349,7 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     xfer->Add(loadPluginsRPC);
     xfer->Add(getPluginErrorsRPC);
     xfer->Add(getDBPluginInfoRPC);
+    xfer->Add(setMFileOpenOptionsRPC);
 
     // Create the RPC Observers.
     quitExecutor = new QuitRPCExecutor(quitRPC);
@@ -359,6 +367,8 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
     loadPluginsExecutor = new LoadPluginsRPCExecutor(this, loadPluginsRPC);
     getPluginErrorsRPCExecutor = new GetPluginErrorsRPCExecutor(this, getPluginErrorsRPC);
     getDBPluginInfoRPCExecutor = new GetDBPluginInfoRPCExecutor(this, getDBPluginInfoRPC);
+    setMFileOpenOptionsRPCExecutor =
+        new SetMFileOpenOptionsRPCExecutor(this, setMFileOpenOptionsRPC);
 
     // Indicate that the file list is not valid since we have not read
     // one yet.
@@ -401,6 +411,9 @@ MDServerConnection::MDServerConnection(int *argc, char **argv[])
 //   Jeremy Meredith, Tue Feb  8 08:48:34 PST 2005
 //   Added the ability to query for plugin initialization errors.
 //
+//   Jeremy Meredith, Wed Jan 23 16:18:17 EST 2008
+//   Added SetMFileOpenOptionsRPCExecutor.
+//
 // ****************************************************************************
 
 MDServerConnection::~MDServerConnection()
@@ -419,6 +432,7 @@ MDServerConnection::~MDServerConnection()
     delete closeDatabaseExecutor;
     delete loadPluginsExecutor;
     delete getPluginErrorsRPCExecutor;
+    delete setMFileOpenOptionsRPCExecutor;
 
     // Delete the RPCs
     delete quitRPC;
@@ -434,6 +448,7 @@ MDServerConnection::~MDServerConnection()
     delete closeDatabaseRPC;
     delete loadPluginsRPC;
     delete getPluginErrorsRPC;
+    delete setMFileOpenOptionsRPC;
 
     // Delete the database.
     if(currentDatabase)
@@ -2961,4 +2976,23 @@ MDServerConnection::VirtualFileInformation::operator = (
     path = obj.path;
     files = obj.files;
     digitLength = obj.digitLength;
+}
+
+// ****************************************************************************
+//  Method:  MDServerConnection::SetDefaultFileOpenOptions
+//
+//  Purpose:
+//    Set the new default file opening options in the database factory.
+//
+//  Arguments:
+//    opts       the new options
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+void
+MDServerConnection::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
+{
+    avtDatabaseFactory::SetDefaultFileOpenOptions(opts);
 }

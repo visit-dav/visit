@@ -182,6 +182,7 @@ MDServerProxy::SetupComponentRPCs()
     xfer.Add(&loadPluginsRPC);
     xfer.Add(&getPluginErrorsRPC);
     xfer.Add(&getDBPluginInfoRPC);
+    xfer.Add(&setMFileOpenOptionsRPC);
 
     // Determine the separator to use in filenames.
     DetermineSeparator();
@@ -615,6 +616,25 @@ void
 MDServerProxy::CloseDatabase(const std::string &db)
 {
     closeDatabaseRPC(db);
+}
+
+// ****************************************************************************
+//  Method:  MDServerProxy::SetDefaultFileOpenOptions
+//
+//  Purpose:
+//    Sets new default file open options.
+//
+//  Arguments:
+//    opts       the new options
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 18, 2008
+//
+// ****************************************************************************
+void
+MDServerProxy::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
+{
+    setMFileOpenOptionsRPC(opts);
 }
 
 // ****************************************************************************

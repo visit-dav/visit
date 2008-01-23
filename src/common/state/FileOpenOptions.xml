@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <Attribute name="FileOpenOptions" purpose="This class contains the file opening options for all the database plugins." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="FileOpenOptions.code">
+    <Field name="typeNames" label="typeNames" type="stringVector">
+    </Field>
+    <Field name="typeIDs" label="typeIDs" type="stringVector">
+    </Field>
+    <Field name="openOptions" label="openOptions" type="attVector" subtype="DBOptionsAttributes">
+    </Field>
+    <Function name="MergeNewFromPluginInfo" user="true" member="true">
+    </Function>
+    <Function name="GetOpenOptionsForID" user="true" member="true">
+    </Function>
+    <Include file="header" quoted="false">
+      DBPluginInfoAttributes.h
+    </Include>
+  </Attribute>

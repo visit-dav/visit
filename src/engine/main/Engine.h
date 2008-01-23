@@ -64,6 +64,7 @@ class UpdatePlotAttsRPC;
 class UseNetworkRPC;
 class ProcInfoRPC;
 class SimulationCommandRPC;
+class SetEFileOpenOptionsRPC;
 
 // Other classes
 class avtDatabaseMetaData;
@@ -158,6 +159,9 @@ class ProcessAttributes;
 //
 //    Brad Whitlock, Thu Jan 25 15:26:45 PST 2007
 //    Added SimulationInitiateCommand.
+//
+//    Jeremy Meredith, Wed Jan 23 16:50:36 EST 2008
+//    Added setEFileOpenOptionsRPC.
 //
 // ****************************************************************************
 
@@ -303,6 +307,7 @@ class Engine
     SimulationCommandRPC     *simulationCommandRPC;
     ExportDatabaseRPC        *exportDatabaseRPC;
     ConstructDDFRPC          *constructDDFRPC;
+    SetEFileOpenOptionsRPC   *setEFileOpenOptionsRPC;
 
     // The metadata, filename, format, control data for a simulation
     std::string               filename;

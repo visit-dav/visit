@@ -78,6 +78,9 @@ class QvisRecentPathRemovalWindow;
 //   I added support for DBPluginInfoAttributes to be associated with
 //   separate hosts.
 //
+//   Jeremy Meredith, Wed Jan 23 15:32:24 EST 2008
+//   Added button to let the user set the default opening options.
+//
 // ****************************************************************************
 
 class GUI_API QvisFileOpenWindow : public QvisDelayedWindowSimpleObserver
@@ -144,6 +147,8 @@ private slots:
     void refreshFiles();
     void currentDir(bool val);
     void fileGroupingChanged(int val);
+    void setDefaultOptionsForFormatButtonClicked();
+    void fileFormatChanged(const QString&);
 private:
     FileServerList         *fs;
     HostProfileList        *profiles;
@@ -163,6 +168,7 @@ private:
     QPushButton     *okButton;
     QPushButton     *cancelButton;
     QComboBox       *fileFormatComboBox;
+    QPushButton     *setDefaultOptionsForFormatButton;
 
     QvisRecentPathRemovalWindow *recentPathsRemovalWindow;
 

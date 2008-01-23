@@ -99,7 +99,8 @@
     VIEWER_REGISTER_OBJECT(MovieAttributes,          MovieAttributes, true)\
     VIEWER_REGISTER_OBJECT(MeshManagementAttributes, MeshManagementAttributes, true)\
     VIEWER_REGISTER_OBJECT(LogRPC                  , ViewerRPC, true)\
-    VIEWER_REGISTER_OBJECT(PlotInfoAttributes,       PlotInfoAttributes, false)
+    VIEWER_REGISTER_OBJECT(PlotInfoAttributes,       PlotInfoAttributes, false)\
+    VIEWER_REGISTER_OBJECT(FileOpenOptions,          FileOpenOptions, false)
 
 //
 // Do forward class declarations

@@ -52,6 +52,7 @@
 #include <ExportDBAttributes.h>
 #include <ExpressionList.h>
 #include <EngineList.h>
+#include <FileOpenOptions.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>

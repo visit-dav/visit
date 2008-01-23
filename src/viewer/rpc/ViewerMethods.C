@@ -3210,6 +3210,33 @@ ViewerMethods::InvertBackgroundColor()
 }
 
 // ****************************************************************************
+//  Method: ViewerMethods::SetDefaultFileOpenOptions
+//
+//  Purpose:
+//    Applies the default file open options.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 18, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetDefaultFileOpenOptions()
+{
+    //
+    // Set the rpc type.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetDefaultFileOpenOptionsRPC);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 //  Method: ViewerMethods::WriteConfigFile
 //
 //  Purpose:

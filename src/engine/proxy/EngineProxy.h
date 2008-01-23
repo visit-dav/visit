@@ -69,6 +69,8 @@
 #include <UpdatePlotAttsRPC.h>
 #include <UseNetworkRPC.h>
 #include <ExpressionList.h>
+#include <FileOpenOptions.h>
+#include <SetEFileOpenOptionsRPC.h>
 
 #include <avtDataObjectReader.h>
 #include <avtDatabaseMetaData.h>
@@ -295,6 +297,10 @@ class ExportDBAttributes;
 //    Added two bool args to OpenDatabase and DefineVirtualDatabase to support 
 //    turning on/off creation of MeshQuality and TimeDerivative expressions.
 //
+//    Jeremy Meredith, Wed Jan 23 16:10:37 EST 2008
+//    Added ability to notify engines of the file opening options for the
+//    database reader plugins.
+//
 // ****************************************************************************
 
 class ENGINE_PROXY_API EngineProxy : public RemoteProxyBase
@@ -371,6 +377,8 @@ public:
                                              const std::string,
                                              const int winID);
 
+    void                     SetDefaultFileOpenOptions(const FileOpenOptions&);
+
     avtDataObjectReader_p    Render(bool, const intVector&, int, int, bool,
                                  void (*waitCB)(void *), void *cbData);
 
@@ -432,6 +440,7 @@ private:
     SimulationCommandRPC     simulationCommandRPC;
     ExportDatabaseRPC        exportDatabaseRPC;
     ConstructDDFRPC          constructDDFRPC;
+    SetEFileOpenOptionsRPC   setEFileOpenOptionsRPC;
 
     // For indicating status.
     StatusAttributes        *statusAtts;

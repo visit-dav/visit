@@ -114,6 +114,9 @@
 #   Brad Whitlock, Tue Jan 15 13:55:47 PST 2008
 #   Added SILArrayAttributes.java.
 #
+#   Jeremy Meredith, Wed Jan 23 12:14:22 EST 2008
+#   Added FileOpenOptions.java.
+#
 ##############################################################################
 
 ##
@@ -170,6 +173,7 @@ EngineList.java \
 ExportDBAttributes.java \
 Expression.java \
 ExpressionList.java \
+FileOpenOptions.java \
 GaussianControlPoint.java \
 GaussianControlPointList.java \
 GlobalAttributes.java \

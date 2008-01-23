@@ -267,6 +267,9 @@
 #    Dave Bremer, Thu Dec 20 17:15:22 PST 2007
 #    Added SILArrayAttributes
 #
+#    Jeremy Meredith, Fri Jan 18 11:12:10 EST 2008
+#    Added FileOpenOptions.
+#
 ##############################################################################
 
 ##
@@ -314,6 +317,7 @@ SRC=    AnimationAttributes.C \
         Expression.C \
         ExpressionList.C \
         ExtentsAttributes.C \
+        FileOpenOptions.C \
         GaussianControlPoint.C \
         GaussianControlPointList.C \
         GlobalAttributes.C \

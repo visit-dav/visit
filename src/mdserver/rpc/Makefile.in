@@ -75,6 +75,9 @@
 #    Hank Childs, Mon May 23 13:49:48 PDT 2005
 #    Added GetDBPluginInfoRPC.
 #
+#    Jeremy Meredith, Wed Jan 23 16:25:19 EST 2008
+#    Added SetMFileOpenOptionsRPC.
+#
 ##############################################################################
 
 ##
@@ -93,7 +96,8 @@ SRC=ChangeDirectoryRPC.C ChangeDirectoryException.C CloseDatabaseRPC.C \
     GetFileListRPC.C GetFileListException.C \
     GetDirectoryRPC.C ConnectRPC.C CreateGroupListRPC.C \
     ExpandPathRPC.C GetMetaDataRPC.C GetMetaDataException.C \
-    GetSILRPC.C LoadPluginsRPC.C GetPluginErrorsRPC.C GetDBPluginInfoRPC.C
+    GetSILRPC.C LoadPluginsRPC.C GetPluginErrorsRPC.C GetDBPluginInfoRPC.C \
+    SetMFileOpenOptionsRPC.C
 OBJ=$(SRC:.C=.o)
 LIB=libmdserverrpc
 LIBS=-ldbatts -lmisc -lstate -lcomm -lexpr -lparser -lutility -lavtexceptions

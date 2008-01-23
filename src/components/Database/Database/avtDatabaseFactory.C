@@ -58,6 +58,7 @@
 #include <DatabasePluginManager.h>
 #include <DatabasePluginInfo.h>
 #include <Utility.h>
+#include <DBOptionsAttributes.h>
 
 #include <BadPermissionException.h>
 #include <FileDoesNotExistException.h>
@@ -81,6 +82,7 @@ char    *avtDatabaseFactory::defaultFormat = "Silo";
 bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;
+FileOpenOptions avtDatabaseFactory::defaultFileOpenOptions;
 
 //
 // Function Prototypes
@@ -116,6 +118,27 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
     strcpy(defaultFormat, f);
 }
 
+
+// ****************************************************************************
+//  Method:  avtDatabaseFactory::SetDefaultFileOpenOptions
+//
+//  Purpose:
+//    Store off the default file opening options.  We use this when we
+//    initialize database plugin readers.
+//
+//  Arguments:
+//    opts       the new default options
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+
+void
+avtDatabaseFactory::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
+{
+    defaultFileOpenOptions = opts;
+}
 
 // ****************************************************************************
 //  Method: avtDatabaseFactory::FileList
@@ -195,6 +218,11 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
 //    Hank Childs, Fri Oct  5 16:28:42 PDT 2007
 //    Catch any type of exception that a file format may throw.
 //
+//    Jeremy Meredith, Wed Jan 23 16:15:41 EST 2008
+//    Set the options from the current set of default options before
+//    calling SetupDatabase, no matter how we determined which plugin
+//    we're using.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -261,6 +289,11 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
         }
         CommonDatabasePluginInfo *info = 
             dbmgr->GetCommonPluginInfo(formatid);
+        // Set the opening options
+        const DBOptionsAttributes *opts = 
+            defaultFileOpenOptions.GetOpenOptionsForID(formatid);
+        if (opts && info)
+            info->SetReadOptions(new DBOptionsAttributes(*opts));
         plugins.push_back(info ? info->GetName(): "");
         rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                            nBlocks, forceReadAllCyclesAndTimes,
@@ -284,6 +317,11 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     for (int i = 0; i < ids.size() && rv == 0; i++)
     {
         CommonDatabasePluginInfo *info = dbmgr->GetCommonPluginInfo(ids[i]);
+        // Set the opening options
+        const DBOptionsAttributes *opts = 
+            defaultFileOpenOptions.GetOpenOptionsForID(ids[i]);
+        if (opts && info)
+            info->SetReadOptions(new DBOptionsAttributes(*opts));
         TRY
         {
             plugins.push_back(info ? info->GetName() : "");
@@ -310,6 +348,11 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
             string defaultid = dbmgr->GetAllID(defaultindex);
             CommonDatabasePluginInfo *info = 
                                          dbmgr->GetCommonPluginInfo(defaultid);
+            // Set the opening options
+            const DBOptionsAttributes *opts = 
+                defaultFileOpenOptions.GetOpenOptionsForID(defaultid);
+            if (opts && info)
+                info->SetReadOptions(new DBOptionsAttributes(*opts));
             plugins.push_back(info ? info->GetName() : "");
             rv = SetupDatabase(info, filelist, filelistN, timestep, fileIndex,
                                nBlocks, forceReadAllCyclesAndTimes,

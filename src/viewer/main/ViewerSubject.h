@@ -440,6 +440,9 @@ class avtDefaultPlotMetaData;
 //    Cyrus Harrison, Wed Nov 28 12:03:27 PST 2007
 //    Added SetCreateVectorMagnitudeExpressions
 //
+//    Jeremy Meredith, Wed Jan 23 16:25:45 EST 2008
+//    Added call to update the current default file opening options.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -622,6 +625,8 @@ private:
 
     void OpenClient();
     void UpdatePlotInfoAtts();
+
+    void SetDefaultFileOpenOptions();
 
 private slots:
     void AddInputToXfer(ViewerClientConnection *, AttributeSubject *subj);

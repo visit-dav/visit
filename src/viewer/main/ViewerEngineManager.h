@@ -70,6 +70,7 @@ class WindowAttributes;
 class ExportDBAttributes;
 class ConstructDDFAttributes;
 class avtDatabaseMetaData;
+class FileOpenOptions;
 
 // ****************************************************************************
 //  Class: ViewerEngineManager
@@ -276,6 +277,11 @@ class avtDatabaseMetaData;
 //    Cyrus Harrison, Thu Mar 15 11:24:38 PDT 2007
 //    Added SetFromNode
 //
+//    Jeremy Meredith, Wed Jan 23 15:40:12 EST 2008
+//    Keep track of default file opening options so we can send them
+//    to new engines.  Also, allow clients to set new ones which will
+//    get broadcast to existing engines.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerEngineManager : public ViewerServerManager,
@@ -350,6 +356,8 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
 
     static ConstructDDFAttributes *GetConstructDDFAtts();
     static void SetConstructDDFAtts(ConstructDDFAttributes *);
+
+    void UpdateDefaultFileOpenOptions(FileOpenOptions*);
 
     //
     // Engine RPCs
@@ -427,6 +435,7 @@ class VIEWER_API ViewerEngineManager : public ViewerServerManager,
     static MeshManagementAttributes *meshManagementDefaultAtts;
     static ExportDBAttributes *exportDBAtts;
     static ConstructDDFAttributes *constructDDFAtts;
+    static FileOpenOptions *defaultFileOpenOptions;
 };
 
 #endif
