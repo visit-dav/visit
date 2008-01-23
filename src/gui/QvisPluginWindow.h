@@ -39,12 +39,13 @@
 #ifndef QVIS_PLUGIN_WINDOW_H
 #define QVIS_PLUGIN_WINDOW_H
 #include <gui_exports.h>
-#include <QvisPostableWindowObserver.h>
+#include <QvisPostableWindowSimpleObserver.h>
 #include <vector>
 #include <string>
 
 // Forward declarations.
 class PluginManagerAttributes;
+class FileOpenOptions;
 class QButtonGroup;
 class QCheckBox;
 class QComboBox;
@@ -53,7 +54,9 @@ class QLabel;
 class QTabWidget;
 class QVBox;
 class QListView;
+class QListViewItem;
 class QCheckListItem;
+class QPushButton;
 
 // ****************************************************************************
 // Class: QvisPluginWindow
@@ -70,14 +73,16 @@ class QCheckListItem;
 //    Added a pluginSettingsChanged signal.
 //    Added ability to keep track of which items are checked/unchecked.
 //
+//    Jeremy Meredith, Wed Jan 23 16:49:01 EST 2008
+//    Populate database tab.  Also observe FileOpenOptions.
+//
 // ****************************************************************************
 
-class GUI_API QvisPluginWindow : public QvisPostableWindowObserver
+class GUI_API QvisPluginWindow : public QvisPostableWindowSimpleObserver
 {
     Q_OBJECT
 public:
-    QvisPluginWindow(PluginManagerAttributes *subj,
-                     const char *caption = 0,
+    QvisPluginWindow(const char *caption = 0,
                      const char *shortName = 0,
                      QvisNotepadArea *notepad = 0);
     virtual ~QvisPluginWindow();
@@ -86,6 +91,11 @@ public:
     virtual void CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *, const int *borders);
     virtual void Update(Subject *TheChangedSubject);
+
+    virtual void ConnectSubjects(PluginManagerAttributes *p,
+                                 FileOpenOptions *f);
+    virtual void SubjectRemoved(Subject*);
+                     
 signals:
     void pluginSettingsChanged();
 protected:
@@ -94,8 +104,11 @@ protected:
 private slots:
     virtual void apply();
     void tabSelected(const QString &tabLabel);
+    void databaseOptionsSetButtonClicked();
+    void databaseSelectedItemChanged(QListViewItem*);
 private:
     PluginManagerAttributes *pluginAtts;
+    FileOpenOptions         *fileOpenOptions;
 
     QTabWidget      *tabs;
     QVBox           *pagePlots;
@@ -104,11 +117,14 @@ private:
     QListView       *listOperators;
     QVBox           *pageDatabases;
     QListView       *listDatabases;
+    QPushButton     *databaseOptionsSetButton;
 
     std::vector<QCheckListItem*> plotItems;
     std::vector<std::string>     plotIDs;
     std::vector<QCheckListItem*> operatorItems;
     std::vector<std::string>     operatorIDs;
+    std::vector<QListViewItem*>  databaseItems;
+    std::vector<int>             databaseIndexes;
 
     int             activeTab;
     bool            pluginsInitialized;

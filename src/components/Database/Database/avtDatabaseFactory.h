@@ -50,6 +50,8 @@
 #include <string>
 #include <vector>
 
+#include <FileOpenOptions.h>
+
 class avtDatabase;
 class CommonDatabasePluginInfo;
 
@@ -96,6 +98,9 @@ class CommonDatabasePluginInfo;
 //    Cyrus Harrison, Wed Nov 28 10:38:17 PST 2007
 //    Added preference for automatic creation of Vector Magnitude expressions. 
 //
+//    Jeremy Meredith, Wed Jan 23 16:14:13 EST 2008
+//    Store the default file opening options for database plugins.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -110,6 +115,8 @@ class DATABASE_API avtDatabaseFactory
                                            const char * = NULL, bool = false,
                                            bool = false);
     static void                  SetDefaultFormat(const char *);
+    static void                  SetDefaultFileOpenOptions(const
+                                                           FileOpenOptions &f);
 
     static void                  SetCreateMeshQualityExpressions(bool f)
                                      {createMeshQualityExpressions = f;}
@@ -134,6 +141,7 @@ class DATABASE_API avtDatabaseFactory
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;
     static bool                  createVectorMagnitudeExpressions;
+    static FileOpenOptions       defaultFileOpenOptions;
 };
 
 

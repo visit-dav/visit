@@ -79,6 +79,7 @@
 #include <ReadRPC.h>
 #include <ReleaseDataRPC.h>
 #include <RenderRPC.h>
+#include <SetEFileOpenOptionsRPC.h>
 #include <SetWinAnnotAttsRPC.h>
 #include <SimulationCommandRPC.h>
 #include <StartPickRPC.h>
@@ -1559,5 +1560,27 @@ RPCExecutor<ExportDatabaseRPC>::Execute(ExportDatabaseRPC *rpc)
                                Engine::EngineInitializeProgressCallback, NULL);
     avtCallback::RegisterWarningCallback(Engine::EngineWarningCallback, NULL);
 }
+
+// ****************************************************************************
+//  Method:  RPCExecutor<SetEFileOpenOptionsRPC>::Execute
+//
+//  Purpose:
+//    Set the new default file opening options in the database factory.
+//
+//  Arguments:
+//    opts       the new options
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+template<>
+void
+RPCExecutor<SetEFileOpenOptionsRPC>::Execute(SetEFileOpenOptionsRPC *rpc)
+{
+    avtDatabaseFactory::SetDefaultFileOpenOptions(rpc->GetFileOpenOptions());
+    rpc->SendReply();
+}
+
 
 #endif

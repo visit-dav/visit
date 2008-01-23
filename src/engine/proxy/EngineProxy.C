@@ -201,6 +201,9 @@ EngineProxy::~EngineProxy()
 //    Brad Whitlock, Thu Jan 25 13:54:02 PST 2007
 //    Added commandFromSim.
 //
+//    Jeremy Meredith, Wed Jan 23 16:11:41 EST 2008
+//    Added setEFileOpenOptionsRPC.
+//
 // ****************************************************************************
 void
 EngineProxy::SetupComponentRPCs()
@@ -229,6 +232,7 @@ EngineProxy::SetupComponentRPCs()
     xfer.Add(&simulationCommandRPC);
     xfer.Add(&exportDatabaseRPC);
     xfer.Add(&constructDDFRPC);
+    xfer.Add(&setEFileOpenOptionsRPC);
 
     //
     // Add other state objects to the transfer object
@@ -1602,4 +1606,24 @@ EngineProxy::ExecuteSimulationControlCommand(const std::string &cmd,
                                              const std::string &arg)
 {
     simulationCommandRPC(cmd, 0,0,arg);
+}
+
+// ****************************************************************************
+//  Method:  EngineProxy::SetDefaultFileOpenOptions
+//
+//  Purpose:
+//    Tells the engine about the latest default file opening options.
+//
+//  Arguments:
+//    opts       the new options
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+
+void
+EngineProxy::SetDefaultFileOpenOptions(const FileOpenOptions &opts)
+{
+    setEFileOpenOptionsRPC(opts);
 }

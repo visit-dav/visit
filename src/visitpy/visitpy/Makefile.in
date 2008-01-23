@@ -33,6 +33,8 @@
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Modifications:
+#    Jeremy Meredith, Wed Jan 23 15:33:13 EST 2008
+#    Added PyFileOpenOptions.
 #
 ##############################################################################
 
@@ -78,6 +80,7 @@ WRAPPER_SRC= \
     PyExportDBAttributes.C \
     PyExpression.C \
     PyExpressionList.C \
+    PyFileOpenOptions.C \
     PyGaussianControlPoint.C \
     PyGaussianControlPointList.C \
     PyGlobalAttributes.C \

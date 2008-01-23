@@ -74,6 +74,7 @@
 #include <EngineKey.h>
 #include <EngineList.h>
 #include <ExportDBAttributes.h>
+#include <FileOpenOptions.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
 #include <HostProfile.h>
@@ -703,6 +704,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Brad Whitlock, Mon Feb 12 11:05:27 PDT 2007
 //   Rewrote to use ViewerState.
 //
+//   Jeremy Meredith, Wed Jan 23 16:30:13 EST 2008
+//   Added file open options.
+//
 // ****************************************************************************
 
 void
@@ -722,6 +726,7 @@ ViewerSubject::CreateState()
     // paradigm then we can delete this code!
 
     s->SetDBPluginInfoAttributes(ViewerFileServer::Instance()->GetDBPluginInfoAtts(), false);
+    s->SetFileOpenOptions(ViewerFileServer::Instance()->GetFileOpenOptions(), false);
     s->SetExportDBAttributes(ViewerEngineManager::Instance()->GetExportDBAtts(),  false);
     s->SetConstructDDFAttributes(ViewerEngineManager::Instance()->GetConstructDDFAtts(),  false);
     s->SetGlobalAttributes(ViewerWindowManager::GetClientAtts(), false);
@@ -954,6 +959,9 @@ ViewerSubject::ConnectObjectsAndHandlers()
 //    Brad Whitlock, Fri Feb 23 11:33:26 PDT 2007
 //    Made it use ViewerState when only client attributes are needed.
 //
+//    Jeremy Meredith, Wed Jan 23 16:30:24 EST 2008
+//    Added file open options.
+//
 // ****************************************************************************
 
 void
@@ -988,6 +996,7 @@ ViewerSubject::ConnectConfigManager()
     configMgr->Add(ViewerQueryManager::Instance()->GetQueryOverTimeDefaultAtts());
     configMgr->Add(ViewerWindowManager::Instance()->GetInteractorDefaultAtts());
     configMgr->Add(GetViewerState()->GetMovieAttributes());
+    configMgr->Add(GetViewerState()->GetFileOpenOptions());
 }
 
 // ****************************************************************************
@@ -1612,6 +1621,12 @@ ViewerSubject::LoadOperatorPlugins()
 //
 //   Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //   Added mesh management attributes
+//
+//   Jeremy Meredith, Wed Jan 23 16:31:06 EST 2008
+//   We might start an mdserver before reading the config files, so
+//   make sure we send default file opening options from the config file
+//   to all existing mdservers.
+//
 // ****************************************************************************
 
 void
@@ -1667,6 +1682,10 @@ ViewerSubject::ProcessConfigFileSettings()
 
     // Copy the default mesh management atts to the client material atts
     ViewerEngineManager::SetClientMeshManagementAttsFromDefault();
+
+    // If we started an mdserver before the default file open options were
+    // obtained from the config file, we need to re-notify mdservers.
+    SetDefaultFileOpenOptions();
 
     visitTimer->StopTimer(timeid, "Processing config file data.");
 }
@@ -7293,6 +7312,9 @@ ViewerSubject::SendKeepAlives()
 //    Cyrus Harrison, Wed Nov 28 12:04:31 PST 2007
 //    Add SetCreateVectorMagnitudeExpressions
 //
+//    Jeremy Meredith, Wed Jan 23 16:32:35 EST 2008
+//    Added SetDefaultFileOpenOptionsRPC.
+//
 // ****************************************************************************
 
 void
@@ -7658,6 +7680,9 @@ ViewerSubject::HandleViewerRPC()
 	break;
     case ViewerRPC::SetCreateVectorMagnitudeExpressionsRPC:
         SetCreateVectorMagnitudeExpressions();
+	break;
+    case ViewerRPC::SetDefaultFileOpenOptionsRPC:
+        SetDefaultFileOpenOptions();
 	break;
     case ViewerRPC::MaxRPC:
         break;
@@ -9112,3 +9137,29 @@ ViewerSubject::SetCreateVectorMagnitudeExpressions()
 }
 
 
+// ****************************************************************************
+//  Method:  ViewerSubject::SetDefaultFileOpenOptions
+//
+//  Purpose:
+//    Makes the current state file open options the default for all
+//    future opening actions by broadcasting them to the existing
+//    metadata servers and engines, and having the file server and
+//    engine manager keep track of them and send them to new engines/
+//    mdservers.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+
+void
+ViewerSubject::SetDefaultFileOpenOptions()
+{
+    ViewerFileServer *fs = ViewerFileServer::Instance();
+    fs->BroadcastUpdatedFileOpenOptions();
+    ViewerEngineManager *em = ViewerEngineManager::Instance();
+    em->UpdateDefaultFileOpenOptions(fs->GetFileOpenOptions());
+}

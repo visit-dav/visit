@@ -95,6 +95,7 @@
 #include <DBPluginInfoAttributes.h>
 #include <EngineList.h>
 #include <ExportDBAttributes.h>
+#include <FileOpenOptions.h>
 #include <GlobalAttributes.h>
 #include <GlobalLineoutAttributes.h>
 #include <InteractorAttributes.h>
@@ -134,6 +135,7 @@
 #include <PyConstructDDFAttributes.h>
 #include <PyExportDBAttributes.h>
 #include <PyDatabaseCorrelation.h>
+#include <PyFileOpenOptions.h>
 #include <PyGaussianControlPoint.h>
 #include <PyGaussianControlPointList.h>
 #include <PyGlobalAttributes.h>
@@ -5538,6 +5540,130 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
     }
 
     return dict;
+}
+
+// ****************************************************************************
+//  Method:  visit_GetDefaultFileOpenOptions
+//
+//  Purpose:
+//    Gets the options for a single plugin from the global default
+//    file open options, and returns them as a dictionary.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+STATIC PyObject *
+visit_GetDefaultFileOpenOptions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *plugin = NULL;
+    // Try and get the export attributes and database options.
+    if(!PyArg_ParseTuple(args,"s",&plugin))
+        return NULL;
+
+    MUTEX_LOCK();
+    FileOpenOptions *foo = GetViewerState()->GetFileOpenOptions();
+    MUTEX_UNLOCK();
+
+    PyObject *dict = NULL;
+    const stringVector &types = foo->GetTypeNames();
+    bool foundMatch = false;
+    for (int i = 0 ; i < types.size() ; i++)
+    {
+        if (types[i] == plugin)
+        {
+            foundMatch = true;
+            DBOptionsAttributes *opts = (DBOptionsAttributes*)
+                                        foo->GetOpenOptions()[i];
+            if (opts)
+            {
+                dict = CreateDictionaryFromDBOptions(*opts);
+            }
+            break;
+        }
+    }
+
+    if (!foundMatch)
+    {
+        char msg[1024];
+        sprintf(msg, "\"%s\" is not a valid plugin type.", plugin);
+        VisItErrorFunc(msg);
+        return NULL;
+    }
+    if (!dict)
+    {
+        char msg[1024];
+        sprintf(msg, "\"%s\" is a valid plugin, but appear to have "
+                "have no options for opening files.", plugin);
+        VisItErrorFunc(msg);
+        return NULL;
+    }
+
+    return dict;
+}
+
+// ****************************************************************************
+//  Method:  visit_GetDefaultFileOpenOptions
+//
+//  Purpose:
+//    Takes the name of a plugin and a set of options for it as a dictionary,
+//    and sets those values in the global default file open options.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+STATIC PyObject *
+visit_SetDefaultFileOpenOptions(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *plugin = NULL;
+    PyObject *optsdict = NULL;
+    // Try and get the export attributes and database options.
+    if(!PyArg_ParseTuple(args,"sO",&plugin,&optsdict))
+        return NULL;
+
+    MUTEX_LOCK();
+    FileOpenOptions *foo = GetViewerState()->GetFileOpenOptions();
+    MUTEX_UNLOCK();
+
+    const stringVector &types = foo->GetTypeNames();
+    bool foundMatch = false;
+    for (int i = 0 ; i < types.size() ; i++)
+    {
+        if (types[i] == plugin)
+        {
+            foundMatch = true;
+            DBOptionsAttributes *opts = (DBOptionsAttributes*)
+                                        foo->GetOpenOptions()[i];
+            if (optsdict)
+            {
+                DBOptionsAttributes newopts(*opts);
+                bool ok = FillDBOptionsFromDictionary(optsdict, newopts);
+                if (!ok)
+                    return NULL;
+                *opts = newopts;
+                MUTEX_LOCK();
+                GetViewerState()->GetFileOpenOptions()->Notify();
+                GetViewerMethods()->SetDefaultFileOpenOptions();
+                MUTEX_UNLOCK();
+            }
+            break;
+        }
+    }
+
+    if (!foundMatch)
+    {
+        char msg[1024];
+        sprintf(msg, "\"%s\" is not a valid plugin type.", plugin);
+        VisItErrorFunc(msg);
+        return NULL;
+    }
+
+    return IntReturnValue(Synchronize());
 }
 
 // ****************************************************************************
@@ -12390,6 +12516,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Cyrus Harrison, Mon Dec 17 14:49:25 PST 2007
 //   Added GetQueryOutputXML() and GetQueryOutputObject() 
 //
+//   Jeremy Meredith, Wed Jan 23 15:27:20 EST 2008
+//   Added Get/SetDefaultFileOpenOptions.
+//
 // ****************************************************************************
 
 static void
@@ -12517,6 +12646,8 @@ AddDefaultMethods()
                                                                          NULL);
     AddMethod("GetDatabaseNStates", visit_GetDatabaseNStates,
                                                  visit_GetDatabaseNStates_doc);
+    AddMethod("GetDefaultFileOpenOptions", visit_GetDefaultFileOpenOptions,
+                                          visit_GetDefaultFileOpenOptions_doc);
     AddMethod("GetEngineList", visit_GetEngineList, visit_GetEngineList_doc);
     AddMethod("GetExportOptions", visit_GetExportOptions, NULL);
     AddMethod("GetGlobalAttributes", visit_GetGlobalAttributes,
@@ -12645,6 +12776,8 @@ AddDefaultMethods()
     AddMethod("SetCloneWindowOnFirstRef", visit_SetCloneWindowOnFirstRef);
     AddMethod("SetDefaultAnnotationAttributes", visit_SetDefaultAnnotationAttributes,
                                             visit_SetAnnotationAttributes_doc);
+    AddMethod("SetDefaultFileOpenOptions", visit_SetDefaultFileOpenOptions,
+                                          visit_SetDefaultFileOpenOptions_doc);
     AddMethod("SetDefaultInteractorAttributes", visit_SetDefaultInteractorAttributes,
                                             visit_SetInteractorAttributes_doc);
     AddMethod("SetDefaultMaterialAttributes", visit_SetDefaultMaterialAttributes,

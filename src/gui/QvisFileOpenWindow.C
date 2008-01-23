@@ -63,6 +63,8 @@
 #include <HostProfile.h>
 #include <ViewerProxy.h>
 #include <DBPluginInfoAttributes.h>
+#include <DBOptionsAttributes.h>
+#include <QvisDBOptionsDialog.h>
 
 #include <visit-config.h>
 
@@ -186,6 +188,9 @@ QvisFileOpenWindow::SetUsageMode(QvisFileOpenWindow::UsageMode m)
 // Modifications:
 //   Brad Whitlock, Wed Nov 15 15:37:44 PST 2006
 //   Added usageMode.
+//
+//   Jeremy Meredith, Wed Jan 23 15:32:24 EST 2008
+//   Added button to let the user set the default opening options.
 //
 // ****************************************************************************
 
@@ -323,7 +328,15 @@ QvisFileOpenWindow::CreateWindowContents()
     fileFormatLayout->addWidget(new QLabel("Open file as type:", central));
     fileFormatComboBox = new QComboBox(false, central, "fileFormatComboBox");
     fileFormatLayout->addWidget(fileFormatComboBox, 10);
+    setDefaultOptionsForFormatButton = new QPushButton(
+           "Set default open options...", central);
+    setDefaultOptionsForFormatButton->setEnabled(false);
+    fileFormatLayout->addWidget(setDefaultOptionsForFormatButton, 1);
     fileFormatLayout->addStretch(5);
+    connect(fileFormatComboBox, SIGNAL(activated(const QString&)),
+            this, SLOT(fileFormatChanged(const QString&)));
+    connect(setDefaultOptionsForFormatButton, SIGNAL(clicked()),
+            this, SLOT(setDefaultOptionsForFormatButtonClicked()));
 
     // create the lower button layout
     QHBoxLayout *buttonLayout = new QHBoxLayout(topLayout);
@@ -2115,4 +2128,79 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
             }
         }
     }
+}
+
+// ****************************************************************************
+//  Method:  QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked
+//
+//  Purpose:
+//    When the button allowing the user to set the default opening options
+//    is clicked, bake it happen.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+void
+QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
+{
+    QString format = fileFormatComboBox->currentText();
+    FileOpenOptions *foo = GetViewerState()->GetFileOpenOptions();
+    for (int i=0; i<foo->GetNumOpenOptions(); i++)
+    {
+        if (foo->GetTypeNames()[i] == format)
+        {
+            DBOptionsAttributes &opts = foo->GetOpenOptions(i);
+            QvisDBOptionsDialog *optsdlg = new QvisDBOptionsDialog(&opts, NULL,
+                                                                  "opts");
+            QString caption = QString("Default file opening options for ") +
+                                          format + " reader";
+            optsdlg->setCaption(caption);
+            int result = optsdlg->exec();
+            delete optsdlg;
+            if (result == QDialog::Accepted)
+            {
+                foo->Notify();
+                GetViewerMethods()->SetDefaultFileOpenOptions();
+            }
+            break;
+        }
+    }
+    
+}
+
+// ****************************************************************************
+//  Method:  QvisFileOpenWindow::fileFormatChanged
+//
+//  Purpose:
+//    Set the enabled state of the button to set the default opening options
+//    based on whether or not the selected plugin has any options to set.
+//
+//  Arguments:
+//    format     the name of the format plugin
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+void
+QvisFileOpenWindow::fileFormatChanged(const QString &format)
+{
+    bool enabled = false;
+    FileOpenOptions *opts = GetViewerState()->GetFileOpenOptions();
+    for (int i=0; i<opts->GetNumOpenOptions(); i++)
+    {
+        if (opts->GetTypeNames()[i] == format)
+        {
+            if (opts->GetOpenOptions(i).GetNumberOfOptions() > 0)
+            {
+                enabled = true;
+            }
+            break;
+        }
+    }
+    setDefaultOptionsForFormatButton->setEnabled(enabled);
 }

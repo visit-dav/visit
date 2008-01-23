@@ -77,6 +77,7 @@
 #include <MaterialAttributes.h>
 #include <MeshManagementAttributes.h>
 #include <TimingsManager.h>
+#include <FileOpenOptions.h>
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
@@ -300,6 +301,7 @@ MeshManagementAttributes *ViewerEngineManager::meshManagementClientAtts=0;
 MeshManagementAttributes *ViewerEngineManager::meshManagementDefaultAtts=0;
 ExportDBAttributes *ViewerEngineManager::exportDBAtts=0;
 ConstructDDFAttributes *ViewerEngineManager::constructDDFAtts=0;
+FileOpenOptions *ViewerEngineManager::defaultFileOpenOptions=0;
 
 //
 // Function prototypes.
@@ -570,6 +572,10 @@ ViewerEngineManager::EngineExists(const EngineKey &ek) const
 //    Added SSH tunneling option to EngineProxy::Create, and set it to false.
 //    If we need to tunnel, the VCL will do the host/port translation for us.
 //
+//    Jeremy Meredith, Wed Jan 23 15:41:02 EST 2008
+//    For new engines, make sure they get our current default file opening
+//    options.
+//
 // ****************************************************************************
 
 bool
@@ -688,6 +694,9 @@ ViewerEngineManager::CreateEngine(const EngineKey &ek,
 
         // Make the engine manager observe the proxy's status atts.
         newEngine.proxy->GetStatusAttributes()->Attach(this);
+
+        // Tell the new engine what the default file open options are.
+        newEngine.proxy->SetDefaultFileOpenOptions(*defaultFileOpenOptions);
 
         // Now that the new engine is in the list, tell the GUI.
         UpdateEngineList();
@@ -3173,6 +3182,36 @@ ViewerEngineManager::SetDefaultMeshManagementAttsFromClient()
         *meshManagementDefaultAtts = *meshManagementClientAtts;
     }
 }
+
+// ****************************************************************************
+//  Method: ViewerEngineManager::UpdateDefaultFileOpenOptions
+//
+//  Purpose:
+//      Sets the default file open options.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 22, 2008
+//
+// ****************************************************************************
+
+void
+ViewerEngineManager::UpdateDefaultFileOpenOptions(FileOpenOptions *opts)
+{
+    if (defaultFileOpenOptions == 0)
+    {
+        defaultFileOpenOptions = new FileOpenOptions;
+    }
+
+    // Update the local copy we use when starting a new engine.
+    *defaultFileOpenOptions = *opts;
+
+    // And send the updated one to the existing engines.
+    for (EngineMap::iterator it = engines.begin() ; it != engines.end(); it++)
+    {
+        it->second.proxy->SetDefaultFileOpenOptions(*defaultFileOpenOptions);
+    }    
+}
+
 
 // ****************************************************************************
 //  Method: ViewerEngineManager::GetExportDBAtts

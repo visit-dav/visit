@@ -60,6 +60,7 @@
 #include <avtDatabaseMetaData.h>
 #include <SILAttributes.h>
 #include <GetPluginErrorsRPC.h>
+#include <SetMFileOpenOptionsRPC.h>
 
 #include <string>
 #include <vector>
@@ -170,6 +171,10 @@ class     DBPluginInfoAttributes;
 //    Added flag to GetMetaData for controlling auto creation of vector
 //    magnitude expressions.
 //
+//    Jeremy Meredith, Wed Jan 23 16:10:37 EST 2008
+//    Added ability to notify mdservers of the file opening options for the
+//    database reader plugins.
+//
 // ****************************************************************************
 
 class MDSERVER_PROXY_API MDServerProxy : public RemoteProxyBase
@@ -241,6 +246,8 @@ public:
     void                       CloseDatabase(const std::string &);
     void                       LoadPlugins();
     const DBPluginInfoAttributes *GetDBPluginInfo(void);
+    void                       SetDefaultFileOpenOptions(
+                                                       const FileOpenOptions&);
 
     std::string                GetPluginErrors();
 
@@ -265,6 +272,7 @@ private:
     LoadPluginsRPC             loadPluginsRPC;
     GetPluginErrorsRPC         getPluginErrorsRPC;
     GetDBPluginInfoRPC         getDBPluginInfoRPC;
+    SetMFileOpenOptionsRPC     setMFileOpenOptionsRPC;
 
     FileList                   fileList;
     avtDatabaseMetaData        metaData;

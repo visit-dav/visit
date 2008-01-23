@@ -50,9 +50,12 @@
 #include <qlistview.h>
 
 #include <PluginManagerAttributes.h>
+#include <FileOpenOptions.h>
+#include <DBOptionsAttributes.h>
 #include <DataNode.h>
 #include <ViewerProxy.h>
 
+#include <QvisDBOptionsDialog.h>
 
 // ****************************************************************************
 //  Method: QvisPluginWindow::QvisPluginWindow
@@ -71,14 +74,18 @@
 //    Jeremy Meredith, Fri Sep 28 13:52:35 PDT 2001
 //    Removed default settings capabilities.
 //
+//    Jeremy Meredith, Wed Jan 23 15:35:39 EST 2008
+//    We're observer two subjects now, so inherit from simpleobserver.
+//
 // ****************************************************************************
 
-QvisPluginWindow::QvisPluginWindow(PluginManagerAttributes *subj,
-    const char *caption, const char *shortName, QvisNotepadArea *notepad) :
-    QvisPostableWindowObserver(subj, caption, shortName, notepad,
-                               QvisPostableWindowObserver::ApplyButton, false)
+QvisPluginWindow::QvisPluginWindow(const char *caption, const char *shortName,
+                                   QvisNotepadArea *notepad) :
+    QvisPostableWindowSimpleObserver(caption, shortName, notepad,
+                               QvisPostableWindowSimpleObserver::ApplyButton)
 {
-    pluginAtts = subj;
+    pluginAtts = NULL;
+    fileOpenOptions = NULL;
     activeTab = 0;
     pluginsInitialized = false;
 }
@@ -93,13 +100,67 @@ QvisPluginWindow::QvisPluginWindow(PluginManagerAttributes *subj,
 //  Creation:   August 31, 2001
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Jan 23 15:36:03 EST 2008
+//    Also observer fileOpenOptions for the database options.
 //   
 // ****************************************************************************
 
 QvisPluginWindow::~QvisPluginWindow()
 {
-    pluginAtts = 0;
+    pluginAtts = NULL;
+    fileOpenOptions = NULL;
 }
+
+
+// ****************************************************************************
+// Method: QvisPluginWindow::ConnectSubjects
+//
+// Purpose: 
+//   This function connects subjects so that the window observes them.
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 23, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPluginWindow::ConnectSubjects(PluginManagerAttributes *p,
+                                       FileOpenOptions *f)
+{
+    pluginAtts = p;
+    pluginAtts->Attach(this);
+
+    fileOpenOptions = f;
+    fileOpenOptions->Attach(this);
+}
+
+// ****************************************************************************
+// Method: QvisPluginWindow::SubjectRemoved
+//
+// Purpose: 
+//   This function is called when a subject is removed.
+//
+// Arguments:
+//   TheRemovedSubject : The subject being removed.
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 23, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPluginWindow::SubjectRemoved(Subject *TheRemovedSubject)
+{
+    if (TheRemovedSubject == pluginAtts)
+        pluginAtts = NULL;
+    else if (TheRemovedSubject == fileOpenOptions)
+        fileOpenOptions = NULL;
+}
+
 
 // ****************************************************************************
 //  Method: QvisPluginWindow::CreateWindowContents
@@ -114,6 +175,12 @@ QvisPluginWindow::~QvisPluginWindow()
 //    Jeremy Meredith, Tue Mar 22 14:02:59 PST 2005
 //    Remove the databases tab.
 //
+//    Jeremy Meredith, Wed Jan 23 15:37:24 EST 2008
+//    Enabled contents in the database tab; for this tab, you can
+//    not disable plugins, but you can set the default options.
+//    Also, made the tab widget resize instead of the empty space
+//    when the window grows.
+//
 // ****************************************************************************
 
 void
@@ -123,7 +190,7 @@ QvisPluginWindow::CreateWindowContents()
     QTabWidget *tabs = new QTabWidget(central, "tabs");
     connect(tabs, SIGNAL(selected(const QString &)),
             this, SLOT(tabSelected(const QString &)));
-    topLayout->addWidget(tabs);    
+    topLayout->addWidget(tabs,10000);
 
     //
     // Create the plot page
@@ -166,17 +233,17 @@ QvisPluginWindow::CreateWindowContents()
     pageDatabases->setMargin(10);
     tabs->addTab(pageDatabases, "Databases");
 
-    new QLabel("Database plugins are not yet accessible from the GUI",
-               pageDatabases);
-    /*
     listDatabases = new QListView(pageDatabases, "listDatabases");
-    listDatabases->addColumn("  ");
     listDatabases->addColumn("Name");
-    listDatabases->addColumn("Version");
     listDatabases->setAllColumnsShowFocus(true);
-    listDatabases->setColumnAlignment(0, Qt::AlignHCenter);
-    listDatabases->setColumnAlignment(2, Qt::AlignHCenter);
-    */
+    //listDatabases->setColumnAlignment(1, Qt::AlignHCenter);
+
+    databaseOptionsSetButton = new QPushButton("Set Default Open Options",
+                                              pageDatabases);
+    connect(databaseOptionsSetButton, SIGNAL(clicked()),
+            this, SLOT(databaseOptionsSetButtonClicked()));
+    connect(listDatabases, SIGNAL(selectionChanged(QListViewItem*)),
+            this, SLOT(databaseSelectedItemChanged(QListViewItem*)));
 
     // Show the appropriate page based on the activeTab setting.
     tabs->blockSignals(true);
@@ -200,17 +267,26 @@ QvisPluginWindow::CreateWindowContents()
 // Creation:   September 27, 2001
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Wed Jan 23 15:38:11 EST 2008
+//    Handle two subjects.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::Update(Subject *s)
 {
-    QvisPostableWindowObserver::Update(s);
-    if (!pluginsInitialized)
+    QvisPostableWindowSimpleObserver::Update(s);
+    if (s==pluginAtts)
     {
-        pluginsInitialized = true;
-        emit pluginSettingsChanged();
+        if (!pluginsInitialized)
+        {
+            pluginsInitialized = true;
+            emit pluginSettingsChanged();
+        }
+    }
+    else if (s==fileOpenOptions)
+    {
+        // GUI got new file open options
     }
 }
 
@@ -237,42 +313,70 @@ QvisPluginWindow::Update(Subject *s)
 //    Jeremy Meredith, Fri Sep 28 13:52:35 PDT 2001
 //    Added ability to keep track of which items are checked/unchecked.
 //
+//    Jeremy Meredith, Wed Jan 23 15:38:27 EST 2008
+//    Handle two observed subjects, including the new database opening options.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::UpdateWindow(bool doAll)
 {
-    listPlots->clear();
-    listPlots->setSorting(1, true);
     int i;
-    for (i=0; i<pluginAtts->GetName().size(); i++)
+    if (selectedSubject == pluginAtts)
     {
-        if (pluginAtts->GetType()[i] == "plot")
+        listPlots->clear();
+        listPlots->setSorting(1, true);
+        plotIDs.clear();
+        plotItems.clear();
+        for (i=0; i<pluginAtts->GetName().size(); i++)
         {
-            QCheckListItem *item = new QCheckListItem(listPlots, "", QCheckListItem::CheckBox);
-            item->setOn(pluginAtts->GetEnabled()[i]);
-            item->setText(1,pluginAtts->GetName()[i].c_str());
-            item->setText(2,pluginAtts->GetVersion()[i].c_str());
+            if (pluginAtts->GetType()[i] == "plot")
+            {
+                QCheckListItem *item = new QCheckListItem(listPlots, "", QCheckListItem::CheckBox);
+                item->setOn(pluginAtts->GetEnabled()[i]);
+                item->setText(1,pluginAtts->GetName()[i].c_str());
+                item->setText(2,pluginAtts->GetVersion()[i].c_str());
 
-            plotItems.push_back(item);
-            plotIDs.push_back(pluginAtts->GetId()[i]);
+                plotItems.push_back(item);
+                plotIDs.push_back(pluginAtts->GetId()[i]);
+            }
+        }
+
+        listOperators->clear();
+        listOperators->setSorting(1, true);
+        operatorIDs.clear();
+        operatorItems.clear();
+        for (i=0; i<pluginAtts->GetName().size(); i++)
+        {
+            if (pluginAtts->GetType()[i] == "operator")
+            {
+                QCheckListItem *item = new QCheckListItem(listOperators, "", QCheckListItem::CheckBox);
+                item->setOn(pluginAtts->GetEnabled()[i]);
+                item->setText(1,pluginAtts->GetName()[i].c_str());
+                item->setText(2,pluginAtts->GetVersion()[i].c_str());
+
+                operatorItems.push_back(item);
+                operatorIDs.push_back(pluginAtts->GetId()[i]);
+            }
         }
     }
-
-    listOperators->clear();
-    listOperators->setSorting(1, true);
-    for (i=0; i<pluginAtts->GetName().size(); i++)
+    else if (selectedSubject == fileOpenOptions)
     {
-        if (pluginAtts->GetType()[i] == "operator")
+        listDatabases->clear();
+        listDatabases->setSorting(0,true);
+        databaseItems.clear();
+        databaseIndexes.clear();
+        for (i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
         {
-            QCheckListItem *item = new QCheckListItem(listOperators, "", QCheckListItem::CheckBox);
-            item->setOn(pluginAtts->GetEnabled()[i]);
-            item->setText(1,pluginAtts->GetName()[i].c_str());
-            item->setText(2,pluginAtts->GetVersion()[i].c_str());
+            QListViewItem *item = new QListViewItem(listDatabases);
+            item->setText(0,fileOpenOptions->GetTypeNames()[i]);
+            databaseItems.push_back(item);
+            databaseIndexes.push_back(i);
 
-            operatorItems.push_back(item);
-            operatorIDs.push_back(pluginAtts->GetId()[i]);
+            if (fileOpenOptions->GetOpenOptions(i).GetNumberOfOptions() == 0)
+                item->setEnabled(false);
         }
+        databaseOptionsSetButton->setEnabled(false);
     }
 }
 
@@ -297,27 +401,48 @@ QvisPluginWindow::UpdateWindow(bool doAll)
 //    Added warning to inform user about the need to save settings and
 //    restart visit to pick up changes to plugins.
 //
+//    Jeremy Meredith, Wed Jan 23 15:38:46 EST 2008
+//    Only issue the warning if the enabled/disabled plugins are changed.
+//    Do updates for the default file opening options.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::Apply(bool dontIgnore)
 {
+    bool dirty = false;
     int i;
     for (i=0; i<plotItems.size(); i++)
     {
-        pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(plotIDs[i])] =
-            plotItems[i]->isOn();
+        bool newvalue = plotItems[i]->isOn();
+        int  &value =
+            pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(plotIDs[i])];
+        if (bool(value) != newvalue)
+            dirty = true;
+        value = newvalue;
     }
     for (i=0; i<operatorItems.size(); i++)
     {
-        pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(operatorIDs[i])] =
-            operatorItems[i]->isOn();
+        bool newvalue = operatorItems[i]->isOn();
+        int  &value =
+            pluginAtts->GetEnabled()[pluginAtts->GetIndexByID(operatorIDs[i])];
+        if (bool(value) != newvalue)
+            dirty = true;
+        value = newvalue;
     }
 
+    // Notify the viewer about the plugin enabled attributes
     pluginAtts->Notify();
 
-    GUIBase::Warning("Note:  Plugins are loaded at startup.  Please save "
+    // And then about the new file opening options
+    fileOpenOptions->Notify();
+    GetViewerMethods()->SetDefaultFileOpenOptions();
+
+    if (dirty)
+    {
+        GUIBase::Warning("Note:  Plugins are loaded at startup.  Please save "
                      "your settings and restart VisIt to apply your changes.");
+    }
 }
 
 // ****************************************************************************
@@ -333,6 +458,8 @@ QvisPluginWindow::Apply(bool dontIgnore)
 //  Creation:   August 31, 2001
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Jan 23 15:39:32 EST 2008
+//    Handle two observed subjects.
 //   
 // ****************************************************************************
 
@@ -340,7 +467,7 @@ void
 QvisPluginWindow::CreateNode(DataNode *parentNode)
 {
     // Call the base class's method to save the generic window attributes.
-    QvisPostableWindowObserver::CreateNode(parentNode);
+    QvisPostableWindowSimpleObserver::CreateNode(parentNode);
 
     if(saveWindowDefaults)
     {
@@ -365,6 +492,8 @@ QvisPluginWindow::CreateNode(DataNode *parentNode)
 //  Creation:   August 31, 2001
 //
 //  Modifications:
+//    Jeremy Meredith, Wed Jan 23 15:39:32 EST 2008
+//    Handle two observed subjects.
 //   
 // ****************************************************************************
 
@@ -385,7 +514,7 @@ QvisPluginWindow::SetFromNode(DataNode *parentNode, const int *borders)
     }
 
     // Call the base class's function.
-    QvisPostableWindowObserver::SetFromNode(parentNode, borders);
+    QvisPostableWindowSimpleObserver::SetFromNode(parentNode, borders);
 }
 
 // ****************************************************************************
@@ -434,4 +563,96 @@ QvisPluginWindow::tabSelected(const QString &tabLabel)
         activeTab = 1;
     else
         activeTab = 2;
+}
+
+
+// ****************************************************************************
+//  Method:  QvisPluginWindow::databaseOptionsSetButtonClicked
+//
+//  Purpose:
+//    Action to take when the user tries to set the default file opening
+//    options for the selected plugin.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+void
+QvisPluginWindow::databaseOptionsSetButtonClicked()
+{
+    QListViewItem *item = listDatabases->selectedItem();
+    if (!item)
+        return;
+
+    int index = -1;
+    for (int i=0; i<databaseItems.size(); i++)
+    {
+        if (item == databaseItems[i])
+        {
+            index = i;
+            break;
+        }
+    }
+    if (index == -1)
+        return;
+
+    DBOptionsAttributes &opts =
+        fileOpenOptions->GetOpenOptions(databaseIndexes[index]);
+    if (opts.GetNumberOfOptions() > 0)
+    {
+        QvisDBOptionsDialog *optsdlg = new QvisDBOptionsDialog(&opts, NULL,
+                                                               "opts");
+        QString caption = std::string("Default file opening options for " +
+                                      fileOpenOptions->GetTypeNames()[index] +
+                                      " reader").c_str();
+        optsdlg->setCaption(caption);
+        int result = optsdlg->exec();
+        delete optsdlg;
+        if (result == QDialog::Accepted)
+        {
+            // We don't need to do anything here:
+            //  First, because we set it up so the options dialog sets the
+            //  default file opening options if and only if they hit okay.
+            //  And second, we wait to notify the viewer about changes
+            //  until the user hits Apply.
+        }
+        else // rejected
+        {
+            // Again, nothing to do because the options dialog is a
+            // complete no-op if the user hit Cancel.
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  QvisPluginWindow::databaseSelectedItemChanged
+//
+//  Purpose:
+//    Set the enabled state of the button to set the default opening options
+//    based on whether or not there are any options to set.
+//
+//  Arguments:
+//    item       the newly highlighted item
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+void
+QvisPluginWindow::databaseSelectedItemChanged(QListViewItem *item)
+{
+    for (int i=0; i<databaseItems.size(); i++)
+    {
+        if (item == databaseItems[i])
+        {
+            const DBOptionsAttributes &opts =
+                fileOpenOptions->GetOpenOptions(databaseIndexes[i]);
+            databaseOptionsSetButton->setEnabled(opts.GetNumberOfOptions()>0);
+            break;
+        }
+    }
 }

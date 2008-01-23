@@ -385,19 +385,19 @@ DBOptionsAttributes::SetEnumStrings(const std::string &name,
 }
 
 Function: GetNumberOfOptions
-Declaration: int GetNumberOfOptions(void);
+Declaration: int GetNumberOfOptions(void) const;
 Definition:
 int
-DBOptionsAttributes::GetNumberOfOptions(void)
+DBOptionsAttributes::GetNumberOfOptions(void) const
 {
     return names.size();
 }
 
 Function: GetType
-Declaration: DBOptionsAttributes::OptionType GetType(int);
+Declaration: DBOptionsAttributes::OptionType GetType(int) const;
 Definition:
 DBOptionsAttributes::OptionType
-DBOptionsAttributes::GetType(int index)
+DBOptionsAttributes::GetType(int index) const
 {
     if (index < 0 || index >= types.size())
         EXCEPTION0(BadDeclareFormatString);
@@ -429,10 +429,10 @@ DBOptionsAttributes::GetEnumStrings(const std::string &name)
 }
 
 Function: GetName
-Declaration: std::string GetName(int);
+Declaration: std::string GetName(int) const;
 Definition:
 std::string
-DBOptionsAttributes::GetName(int idx)
+DBOptionsAttributes::GetName(int idx) const
 {
     return names[idx];
 }

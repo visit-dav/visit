@@ -2924,6 +2924,10 @@ QvisGUIApplication::SetupWindows()
 //   Jeremy Meredith, Tue Jul 17 11:34:02 EDT 2007
 //   Made ExportDB window observe both the export atts and DB plugin info.
 //
+//   Jeremy Meredith, Wed Jan 23 16:40:33 EST 2008
+//   The plugin window now also observes the default file open options
+//   for database plugins.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -3004,8 +3008,13 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_PLUGINMANAGER:
         // Create the plugin manager window.
-        win = new QvisPluginWindow(GetViewerState()->GetPluginManagerAttributes(),
-            windowNames[i], "Plugins", mainWin->GetNotepad());
+        {
+          QvisPluginWindow *pwin = new QvisPluginWindow(windowNames[i],
+                                             "Plugins", mainWin->GetNotepad());
+          pwin->ConnectSubjects(GetViewerState()->GetPluginManagerAttributes(),
+                                GetViewerState()->GetFileOpenOptions());
+          win = pwin;
+        }
         break;
     case WINDOW_VIEW:
         // Create the view window.

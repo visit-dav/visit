@@ -179,6 +179,9 @@
 #    Eric Brugger, Thu Jun 28 16:12:04 PDT 2007
 #    Removed the setting of the DISTRIB variable.
 #
+#    Jeremy Meredith, Wed Jan 23 16:17:16 EST 2008
+#    Added SetMFileOpenOptionsRPCExecutor.
+#
 ##############################################################################
 
 ##
@@ -227,6 +230,7 @@ SRC=ChangeDirectoryRPCExecutor.C \
     GetSILRPCExecutor.C \
     KeepAliveRPCExecutor.C \
     LoadPluginsRPCExecutor.C \
+    SetMFileOpenOptionsRPCExecutor.C \
     MDServerApplication.C \
     MDServerConnection.C \
     QuitRPCExecutor.C \

@@ -94,6 +94,9 @@ class ViewerState;
 //   Brad Whitlock, Wed Jan 23 10:24:04 PST 2008
 //   Added TurnOffAllLocks.
 //
+//   Jeremy Meredith, Wed Jan 23 16:36:06 EST 2008
+//   Added SetDefaultFileOpenOptions.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -307,6 +310,8 @@ public:
                                                const stringVector &sources);
 
     void SetPlotSILRestriction();
+
+    void SetDefaultFileOpenOptions();
 
     // Methods for querying
     void SuppressQueryOutput(bool onOff);

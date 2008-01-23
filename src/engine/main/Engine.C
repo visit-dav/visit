@@ -150,6 +150,9 @@ const int INTERRUPT_MESSAGE_TAG = GetUniqueStaticMessageTag();
 //    Sean Ahern, Wed Dec 12 16:24:46 EST 2007
 //    Moved the execution timeout back to 30 minutes.
 //
+//    Jeremy Meredith, Wed Jan 23 16:50:36 EST 2008
+//    Added setEFileOpenOptionsRPC.
+//
 // ****************************************************************************
 
 Engine::Engine()
@@ -191,6 +194,7 @@ Engine::Engine()
     cloneNetworkRPC = NULL;
     procInfoRPC = NULL;
     simulationCommandRPC = NULL;
+    setEFileOpenOptionsRPC = NULL;
 }
 
 // ****************************************************************************
@@ -209,6 +213,9 @@ Engine::Engine()
 //
 //    Brad Whitlock, Thu Jan 25 13:56:24 PST 2007
 //    Added commandFromSim.
+//
+//    Jeremy Meredith, Wed Jan 23 16:50:36 EST 2008
+//    Added setEFileOpenOptionsRPC.
 //
 // ****************************************************************************
 
@@ -245,6 +252,7 @@ Engine::~Engine()
     delete cloneNetworkRPC;
     delete procInfoRPC;
     delete simulationCommandRPC;
+    delete setEFileOpenOptionsRPC;
 }
 
 // ****************************************************************************
@@ -460,6 +468,9 @@ Engine::Finalize(void)
 //    ProcessCommandLine now takes an optional plugindir argument which
 //    must be set before the plugins are activated.
 //
+//    Jeremy Meredith, Wed Jan 23 16:50:36 EST 2008
+//    Added setEFileOpenOptionsRPC.
+//
 // ****************************************************************************
 
 void
@@ -538,6 +549,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     simulationCommandRPC            = new SimulationCommandRPC;
     exportDatabaseRPC               = new ExportDatabaseRPC;
     constructDDFRPC                 = new ConstructDDFRPC;
+    setEFileOpenOptionsRPC          = new SetEFileOpenOptionsRPC;
 
     xfer->Add(quitRPC);
     xfer->Add(keepAliveRPC);
@@ -562,6 +574,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     xfer->Add(simulationCommandRPC);
     xfer->Add(exportDatabaseRPC);
     xfer->Add(constructDDFRPC);
+    xfer->Add(setEFileOpenOptionsRPC);
 
     // Create an object to implement the RPCs
     rpcExecutors.push_back(new RPCExecutor<QuitRPC>(quitRPC));
@@ -590,6 +603,7 @@ Engine::SetUpViewerInterface(int *argc, char **argv[])
     rpcExecutors.push_back(new RPCExecutor<SimulationCommandRPC>(simulationCommandRPC));
     rpcExecutors.push_back(new RPCExecutor<ExportDatabaseRPC>(exportDatabaseRPC));
     rpcExecutors.push_back(new RPCExecutor<ConstructDDFRPC>(constructDDFRPC));
+    rpcExecutors.push_back(new RPCExecutor<SetEFileOpenOptionsRPC>(setEFileOpenOptionsRPC));
 
     // Hook up the expression list as an observed object.
     Parser *p = new ExprParser(new avtExprNodeFactory());

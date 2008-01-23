@@ -49,6 +49,7 @@
 #include <DatabaseCorrelationList.h>
 #include <DataNode.h>
 #include <DBPluginInfoAttributes.h>
+#include <FileOpenOptions.h>
 #include <GetMetaDataException.h>
 #include <GlobalAttributes.h>
 #include <HostProfileList.h>
@@ -162,6 +163,10 @@ static bool GetCreateTimeDerivativeExpressions()
 //   Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //   Replaced tryHarderCyclesTimes and treatAllDBsAsTimeVarying with
 //   static functions calling VWM
+//
+//   Jeremy Meredith, Wed Jan 23 16:25:45 EST 2008
+//   Store the current default file opening options.
+//
 // ****************************************************************************
 
 ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
@@ -169,6 +174,7 @@ ViewerFileServer::ViewerFileServer() : ViewerServerManager(), servers(),
 {
     databaseCorrelationList = new DatabaseCorrelationList;
     dbPluginInfoAtts = new DBPluginInfoAttributes;
+    fileOpenOptions = new FileOpenOptions;
 }
 
 // ****************************************************************************
@@ -1284,6 +1290,9 @@ ViewerFileServer::StartServer(const std::string &host)
 //    Hank Childs, Sun Nov 11 22:21:55 PST 2007
 //    Clean up gracefully for any exception type.
 //
+//    Jeremy Meredith, Wed Jan 23 16:25:45 EST 2008
+//    Tell new mdservers what the current default file opening options are.
+//
 // ****************************************************************************
 
 void
@@ -1347,6 +1356,9 @@ ViewerFileServer::StartServer(const std::string &host, const stringVector &args)
         UpdateDBPluginInfo(host);
         if (oldhost != "")
             UpdateDBPluginInfo(oldhost);
+
+        // Send the new server our current options for opening files.
+        newServer->SetDefaultFileOpenOptions(*fileOpenOptions);
     }
     CATCH(BadHostException)
     {
@@ -1867,6 +1879,11 @@ ViewerFileServer::TerminateConnectionRequest(const stringVector &args, int failC
 //    can tell which host the attributes apply to if they weren't the
 //    ones that requested the update.
 //
+//    Jeremy Meredith, Wed Jan 23 16:28:21 EST 2008
+//    When we get new database plugin info, merge that into what we know
+//    about existing file opening options.  These will not override, but
+//    instead append to, existing options (like ones saved in a config file).
+//
 // ****************************************************************************
 void
 ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
@@ -1876,6 +1893,8 @@ ViewerFileServer::UpdateDBPluginInfo(const std::string &host)
         *dbPluginInfoAtts = *(servers[host]->proxy->GetDBPluginInfo());
         dbPluginInfoAtts->SetHost(host);
         dbPluginInfoAtts->Notify();
+        fileOpenOptions->MergeNewFromPluginInfo(dbPluginInfoAtts);
+        fileOpenOptions->Notify();
     }
 }
 
@@ -3191,3 +3210,28 @@ ViewerFileServer::ServerInfo::~ServerInfo()
 {
     delete proxy;
 }
+
+// ****************************************************************************
+//  Method:  ViewerFileServer::BroadcastUpdatedFileOpenOptions
+//
+//  Purpose:
+//    The default file opening options have changed; let all the existin
+//    mdservers know about them.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 23, 2008
+//
+// ****************************************************************************
+void
+ViewerFileServer::BroadcastUpdatedFileOpenOptions()
+{
+    ServerMap::iterator it;
+    for (it = servers.begin(); it != servers.end(); it++)
+    {
+        it->second->proxy->SetDefaultFileOpenOptions(*fileOpenOptions);
+    }
+}
+

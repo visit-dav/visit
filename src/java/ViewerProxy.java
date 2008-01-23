@@ -234,6 +234,9 @@ import java.util.prefs.BackingStoreException;
 //   Brad Whitlock, Wed Jan 23 10:26:28 PST 2008
 //   Added TurnOFfAllLocks, SetPlotFollowsTime.
 //
+//   Jeremy Meredith, Wed Jan 23 16:39:05 EST 2008
+//   Added fileOpenOptions to match viewer state.
+//
 // ****************************************************************************
 
 public class ViewerProxy implements SimpleObserver
@@ -302,6 +305,7 @@ public class ViewerProxy implements SimpleObserver
         logRPC = new ViewerRPC();
         plotInfoAtts = new PlotInfoAttributes();
         metaData = new avtDatabaseMetaData();
+        fileOpenOptions = new FileOpenOptions();
 
         // Create the plugin managers.
         plotPlugins = new PluginManager("plot");
@@ -430,6 +434,7 @@ public class ViewerProxy implements SimpleObserver
             xfer.Add(meshManagementAtts);
             xfer.Add(logRPC);
             xfer.Add(plotInfoAtts);
+            xfer.Add(fileOpenOptions);
 
             // hook up the message observer.
             messageObserver.Attach(messageAtts);
@@ -2031,4 +2036,5 @@ public class ViewerProxy implements SimpleObserver
     private MeshManagementAttributes meshManagementAtts;
     private ViewerRPC                logRPC;
     private PlotInfoAttributes       plotInfoAtts;
+    private FileOpenOptions          fileOpenOptions;
 }
