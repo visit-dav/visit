@@ -49,7 +49,7 @@
 #include <process.h>     // for _getpid()
 #include <winsock.h>     // for gethostname()
 #endif
-#include <new.h>
+#include <new>
 
 #include <visitstream.h>
 #include <snprintf.h>
@@ -304,6 +304,11 @@ Engine *Engine::Instance()
 //
 //    Mark C. Miller, Wed Aug  2 19:58:44 PDT 2006
 //    Added timer
+//
+//    Cyrus Harrison, Wed Jan 23 09:21:18 PST 2008
+//    Changed set_new_handler to std::set_new_handler b/c of change from 
+//    deprecated <new.h> to <new>
+//  
 // ****************************************************************************
 void
 Engine::Initialize(int *argc, char **argv[], bool sigs)
@@ -337,7 +342,7 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
     // Set a different new handler for the engine
     //
 #if !defined(_WIN32)
-    set_new_handler(Engine::NewHandler);
+    std::set_new_handler(Engine::NewHandler);
 #endif
 
 #ifdef PARALLEL

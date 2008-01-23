@@ -52,7 +52,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #endif
-#include <new.h>
+#include <new>
 
 #include <DebugStream.h>
 #include <TimingsManager.h>
@@ -194,6 +194,9 @@ NewHandler(void)
 //    Hank Childs, Tue Dec 18 15:53:10 PST 2007
 //    Add support for -svn_revision.
 //
+//    Cyrus Harrison, Wed Jan 23 09:23:19 PST 2008
+//    Changed set_new_handler to std::set_new_handler b/c of change from 
+//    deprecated <new.h> to <new>
 // ****************************************************************************
 
 void
@@ -317,7 +320,7 @@ Init::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool sigs)
         visitTimer->Enable();
 
 #if !defined(_WIN32)
-    set_new_handler(NewHandler);
+    std::set_new_handler(NewHandler);
 #endif
 
 #if defined(_WIN32)
