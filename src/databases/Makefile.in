@@ -298,6 +298,9 @@
 #   Hank Childs, Tue Jan  8 13:43:59 PST 2008
 #   Move XDMF to HDF5 section.
 #
+#   Jeremy Meredith, Thu Jan 24 15:40:17 EST 2008
+#   Added PlainText.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -356,6 +359,7 @@ REQUIRED=\
  PATRAN \
  PLOT2D \
  PLOT3D \
+ PlainText \
  Point3D \
  ProteinDataBank \
  RAW \
