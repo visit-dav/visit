@@ -338,7 +338,7 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
     //
     // If we have a format we're supposed to try first, do that now.
     //
-    if (formatToTryFirst != NULL)
+    if (rv == NULL && formatToTryFirst != NULL)
     {
         int formatindex = dbmgr->GetAllIndexFromName(formatToTryFirst);
         if (formatindex >= 0)
