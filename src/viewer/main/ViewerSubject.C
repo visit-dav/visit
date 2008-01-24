@@ -168,6 +168,12 @@ static int nConfigArgs = 1;
 static std::string getToken(std::string buff, bool reset);
 static int getVectorTokens(std::string buff, std::vector<std::string> &tokens, int nodeType);
 
+struct DeferredCommandFromSimulation
+{
+    EngineKey   key;
+    std::string db;
+    std::string command;
+};
 
 // Global variables.  This is a hack, they should be removed.
 ViewerSubject  *viewerSubject=0;
@@ -3933,8 +3939,8 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                         SIGNAL(execute(const EngineKey&,const std::string&,
                                        const std::string &)),
                         this,
-                        SLOT(HandleCommandFromSimulation(const EngineKey&,const std::string&,
-                                                         const std::string &)));
+                        SLOT(DeferCommandFromSimulation(const EngineKey&,const std::string&,
+                                                        const std::string &)));
 
             }
         }
@@ -6866,6 +6872,9 @@ ViewerSubject::EnableSocketSignals()
 //    Brad Whitlock, Tue Mar 20 11:59:36 PDT 2007
 //    Added updateAOL to update the annotation object list.
 //
+//    Brad Whitlock, Thu Jan 24 09:45:18 PST 2008
+//    Added simcmd to handle deferred simulation commands.
+//
 // ****************************************************************************
 
 void
@@ -7006,6 +7015,17 @@ ViewerSubject::ProcessRendererMessage()
         else if (strncmp(msg, "updateAOL", 9) == 0)
         {
             ViewerWindowManager::Instance()->UpdateAnnotationObjectList();
+        }
+        else if (strncmp(msg, "simcmd", 6) == 0)
+        {
+            DeferredCommandFromSimulation *simCmd = 0;
+            int offset = 7;  // = strlen("simcmd ");
+            sscanf (&msg[offset], "%p", &simCmd);
+            if(simCmd != 0)
+            {
+                HandleCommandFromSimulation(simCmd->key, simCmd->db, simCmd->command);
+                delete simCmd;
+            }
         }
     }
 }
@@ -8700,6 +8720,49 @@ ViewerSubject::HandleColorTable()
         // Update all of the QvisColorTableButton widgets.
         QvisColorTableButton::updateColorTableButtons();
     }
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::DeferCommandFromSimulation
+//
+// Purpose: 
+//   This method is called when we get a command from a simulation. We save it
+//   for later when we can call it from the top of the event loop. This is done
+//   for safety since it should prevent us from trying to service more engine
+//   RPCs while we may already be waiting on a blocking RPC.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 24 09:40:58 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::DeferCommandFromSimulation(const EngineKey &key, 
+    const std::string &db, const std::string &command)
+{
+    debug1 << "DeferCommandFromSimulation: key=" << key.ID().c_str()
+           << ", db=" << db.c_str() << ", command=\"" << command.c_str() << "\""
+           << endl;
+
+    // Save the arguments for later.
+    DeferredCommandFromSimulation *simCmd = new DeferredCommandFromSimulation;
+    simCmd->key = key;
+    simCmd->db = db;
+    simCmd->command = command;
+
+    // Send a message to process the simulation command from the top level
+    // of the event loop.
+    char msg[200];
+    SNPRINTF(msg, 200, "simcmd %p;", (void*)simCmd);
+    MessageRendererThread(msg);
 }
 
 // ****************************************************************************
