@@ -281,9 +281,14 @@ typedef std::map<std::string, int> StringIntMap;
 //    Ellen Tarwater October 12, 2007
 //    Added flag to RealizePlots
 //
-//   Ellen Tarwater, Thurs, Dec 6, 2007
-//   Added SetPlotFollowsTime & followsTime flag to ViewerPlotListElement
+//    Ellen Tarwater, Thurs, Dec 6, 2007
+//    Added SetPlotFollowsTime & followsTime flag to ViewerPlotListElement
 //
+//    Brad Whitlock, Tue Jan 22 13:54:58 PST 2008
+//    Added a returnDefault bool argument to GetDefaultSILRestriction. Removed
+//    followsTime from the ViewerPlotListElement because it's not necessary.
+//    Added inheritSILRestriction bool argument to AddPlot.
+//   
 // ****************************************************************************
 
 
@@ -293,7 +298,6 @@ struct ViewerPlotListElement
     bool       hidden;
     bool       active;
     bool       realized;
-    bool       followsTime;
     int        id;
 };
     
@@ -349,7 +353,8 @@ public:
     int  GetNumRealizedPlots() const;
     int  GetNumVisiblePlots() const;
     int  AddPlot(int type, const std::string &var, bool replacePlots = false,
-                 bool applyToAll = false, DataNode *attributesNode = 0);
+                 bool applyToAll = false, bool inheritSILRestriction = false,
+                 DataNode *attributesNode = 0);
 
     int GetNumberOfCells(bool polysOnly = false) const;
 
@@ -450,7 +455,8 @@ public:
     avtSILRestriction_p GetDefaultSILRestriction(const std::string &host,
                                                  const std::string &database,
                                                  const std::string &var,
-                                                 int state);
+                                                 int state,
+                                                 bool returnDefault=false);
     bool SetFullFrameScaling(bool, double *);
 
     void CreateNode(DataNode *, const std::map<std::string, std::string> &);
@@ -468,6 +474,7 @@ public:
     ViewerPlot *NewPlot(int type, const EngineKey &ek,
                         const std::string &host, const std::string &db,
                         const std::string &var, bool applyOperators,
+                        bool inheritSILRestriction,
                         const char *optionalPlotName = 0);
     int         SimpleAddPlot(ViewerPlot *plot, bool replacePlots);
     void        SetNextState(int nextState, int boundary);

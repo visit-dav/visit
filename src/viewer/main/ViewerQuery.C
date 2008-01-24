@@ -169,6 +169,8 @@ ViewerQuery::ViewerQuery(ViewerWindow *origWin, ViewerWindow *resWin,
 //  Creation:   June 10, 2002 
 //
 //  Modifications:
+//    Brad Whitlock, Thu Jan 24 11:55:42 PDT 2008
+//    Added new argument to AddPlot.
 //
 // ***********************************************************************
 
@@ -203,7 +205,7 @@ ViewerQuery::ViewerQuery(const ViewerQuery *obj, int ts) : SimpleObserver()
 
     int plotType = PlotPluginManager::Instance()->GetEnabledIndex("Curve_1.0");
 
-    int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
+    int pid = plotList->AddPlot(plotType, vName, replacePlots, false, false);
     resultsPlot = plotList->GetPlot(pid);
     resultsPlot->SetSILRestriction(originatingPlot->GetSILRestriction());
 
@@ -404,6 +406,9 @@ ViewerQuery::StopObservingPlot()
 //    Added optional bool arg, forceSampling. Resend lineAtts to Lineout
 //    if forceSampling is true. 
 //
+//    Brad Whitlock, Thu Jan 24 11:56:11 PDT 2008
+//    Added new argument to AddPlot.
+//
 // ****************************************************************************
 
 void
@@ -444,7 +449,7 @@ ViewerQuery::CreateLineout(const bool fromDefault, const bool forceSampling)
     plotList->SetHostDatabaseName(hdbName);
     plotList->SetEngineKey(originatingPlot->GetEngineKey());
  
-    int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
+    int pid = plotList->AddPlot(plotType, vName, replacePlots, false, false);
     resultsPlot = plotList->GetPlot(pid);
 
     resultsPlot->SetSILRestriction(originatingPlot->GetSILRestriction()); 

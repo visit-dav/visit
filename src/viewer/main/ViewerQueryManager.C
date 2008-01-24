@@ -1859,6 +1859,9 @@ ViewerQueryManager::ClearPickPoints()
 //    Kathleen Bonnell, Tue Nov 27 15:44:08 PST 2007 
 //    Return early if time curve and preserving picked coordinates.
 //
+//    Brad Whitlock, Thu Jan 24 11:57:14 PDT 2008
+//    Added new arguments to ViewerPlotList::AddPlot.
+//
 // ****************************************************************************
 
 bool
@@ -2338,7 +2341,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                                           ->GetEnabledIndex("Spreadsheet_1.0");
                     bool replacePlots = false;
                     int pid = plotList->AddPlot(plotType, varname,
-                                                replacePlots, false);
+                                                replacePlots, false, true);
                     vector<int> opListBogus;
                     vector<int> exListBogus;
                     bool shouldUseBogusInfo = false;
@@ -2442,7 +2445,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
                     plotList->SetActiveTimeSlider(hdbName);
                 }
                 int pid = plotList->AddPlot(plotType,arrayname,
-                                            replacePlots,false);
+                                            replacePlots,false, true);
                 ViewerPlot *resultsPlot = plotList->GetPlot(pid);
     
                 // This is a bit subtle.  We are sending the pick attributes in
@@ -4272,7 +4275,7 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin, QueryAttributes *qA)
     plotList->SetHostDatabaseName(hdbName);
     plotList->SetEngineKey(origPlot->GetEngineKey());
 
-    int pid = plotList->AddPlot(plotType, vName, replacePlots, false);
+    int pid = plotList->AddPlot(plotType, vName, replacePlots, false, false);
     ViewerPlot *resultsPlot = plotList->GetPlot(pid);
 
     timeQueryAtts->SetQueryAtts(*qA);

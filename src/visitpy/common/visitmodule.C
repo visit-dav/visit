@@ -3278,6 +3278,12 @@ visit_InvertBackgroundColor(PyObject *self, PyObject *args)
 //   Brad Whitlock, Fri Jul 26 12:16:56 PDT 2002
 //   I made it return a success value.
 //
+//   Brad Whitlock, Wed Jan 23 09:27:52 PDT 2008
+//   I made adding a plot set the new "plots inherit sil restriction"
+//   setting to true if it is not provided since the viewer now does not apply
+//   default SIL selections unless that flag is set. This change here ensures
+//   script compatibility.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -3285,10 +3291,16 @@ visit_AddPlot(PyObject *self, PyObject *args)
 {
     ENSURE_VIEWER_EXISTS();
 
-    char *plotName;
-    char *varName;
+    char *plotName = 0;
+    char *varName = 0;
+    int inherit = 1;
     if (!PyArg_ParseTuple(args, "ss", &plotName, &varName))
-       return NULL;
+    {
+        if(!PyArg_ParseTuple(args, "ssi", &plotName, &varName, &inherit))
+            return NULL;
+        else
+            PyErr_Clear();    
+    }
 
     // Find the plot index from the name. Throw a python exception if we are
     // allowing python exceptions and the plot index is -1.
@@ -3316,7 +3328,24 @@ visit_AddPlot(PyObject *self, PyObject *args)
     }
    
     MUTEX_LOCK();
+        // Set the apply to all plots toggle.
+        bool inheritSILRestriction = inherit != 0;
+        bool value = GetViewerState()->GetGlobalAttributes()->GetNewPlotsInheritSILRestriction();
+        if(inheritSILRestriction != value)
+        {
+            GetViewerState()->GetGlobalAttributes()->SetNewPlotsInheritSILRestriction(inheritSILRestriction);
+            GetViewerState()->GetGlobalAttributes()->Notify();
+        }
+
+        // Add the plot
         GetViewerMethods()->AddPlot(plotTypeIndex, varName);
+
+        // Restore the old value
+        if(inheritSILRestriction != value)
+        {
+            GetViewerState()->GetGlobalAttributes()->SetNewPlotsInheritSILRestriction(value);
+            GetViewerState()->GetGlobalAttributes()->Notify();
+        }
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -3391,6 +3420,7 @@ visit_AddOperator(PyObject *self, PyObject *args)
 
         // Add the operator
         GetViewerMethods()->AddOperator(operTypeIndex);
+
     MUTEX_UNLOCK();
 
     // Return the success value.
@@ -6968,7 +6998,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
-
+ 
         // If the active operator was set, change the plot selection so we can set
         // the active operator.
         intVector selectedPlots, newActiveOperators, newExpandedPlots;
@@ -7030,7 +7060,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
 // Creation:   Thu Apr 17 15:39:18 PST 2003
 //
 // Modifications:
-//   
+//    
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7409,6 +7439,9 @@ visit_SetPlotOptions(PyObject *self, PyObject *args)
 //   Hank Childs, Mon Dec  2 14:11:12 PST 2002
 //   Use reference counted SIL restrictions to meet new interface.
 //
+//   Brad Whitlock, Wed Jan 23 10:05:43 PDT 2008
+//   Changed how the applyToAllPlots works a little.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -7421,7 +7454,7 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
     //
     // Try and get the object pointer.
     //
-    bool applyToAllPlots = false;
+    int applyToAllPlots = 0;
     if(!PyArg_ParseTuple(args, "O", &obj))
     {
         if(!PyArg_ParseTuple(args, "Oi", &obj, &applyToAllPlots))

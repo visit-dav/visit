@@ -3747,6 +3747,9 @@ ViewerSubject::CreateAttributesDataNode(const avtDefaultPlotMetaData *dp) const
 //    Brad Whitlock, Thu Jan 25 18:48:15 PST 2007
 //    Hooked up code to handle requests from the simulation.
 //
+//    Brad Whitlock, Thu Jan 24 12:00:29 PDT 2008
+//    Added argument to ViewerPlotList::AddPlot().
+//
 // ****************************************************************************
 
 int
@@ -4006,7 +4009,7 @@ ViewerSubject::OpenDatabaseHelper(const std::string &entireDBName,
                 {
                     debug4 << "Adding default plot: type=" << type
                            << " var=" << dp->plotVar.c_str() << endl;
-                    plotList->AddPlot(type, dp->plotVar, false, false, adn);
+                    plotList->AddPlot(type, dp->plotVar, false, false, true, adn);
                     defaultPlotsAdded = true;
                 }
             }
