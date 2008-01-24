@@ -82,6 +82,53 @@ static void      FindCells(float *x, float *y, float *z, int nx, int ny,
 static void      ProjectExtentsCallback(const double *in, double *out,
                                         void *args);
 
+// ****************************************************************************
+// Class: vtkVisItMatrixToLinearTransform
+//
+// Purpose:
+//   Linear transform subclass that has the option of not transforming vectors.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 23 15:22:52 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class vtkVisItMatrixToLinearTransform : public vtkMatrixToLinearTransform
+{
+public:
+  static vtkVisItMatrixToLinearTransform *New() { return new vtkVisItMatrixToLinearTransform; }
+
+  void PrintSelf (ostream& os, vtkIndent indent)
+  {
+      vtkMatrixToLinearTransform::PrintSelf(os, indent);
+  }
+
+  void SetDoTransformVectors(bool val)
+  {
+      doTransformVectors = val;
+      this->Modified();
+  }
+
+  virtual void TransformVectors (vtkDataArray *inVrs, vtkDataArray *outVrs)
+  {
+      if(doTransformVectors)
+          vtkMatrixToLinearTransform::TransformVectors(inVrs, outVrs);
+      else
+      {
+          for(vtkIdType id = 0; id < inVrs->GetNumberOfTuples(); ++id)
+              outVrs->SetTuple(id, inVrs->GetTuple(id));
+      }
+  }
+protected:
+  bool doTransformVectors;
+
+  vtkVisItMatrixToLinearTransform()  { doTransformVectors = true; }
+  ~vtkVisItMatrixToLinearTransform() { }
+};
 
 // ****************************************************************************
 //  Method: avtSliceFilter constructor
@@ -137,6 +184,7 @@ avtSliceFilter::avtSliceFilter()
     cachedOrigin[0] = 0.;
     cachedOrigin[1] = 0.;
     cachedOrigin[2] = 0.;
+    doTransformVectors = true;
 }
 
 
@@ -386,6 +434,9 @@ avtSliceFilter::Equivalent(const AttributeGroup *a)
 //    Hank Childs, Fri Nov  2 16:40:46 PDT 2007
 //    If the spatial meta data is invalidated, then don't use it.
 //
+//    Brad Whitlock, Wed Jan 23 15:49:00 PST 2008
+//    Set the doTransformVectors flag.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -415,7 +466,10 @@ avtSliceFilter::PerformRestriction(avtPipelineSpecification_p spec)
         rv->GetDataSpecification()->TurnNodeNumbersOn();
     }
 
-
+    // Get the flag indicating whether vectors must be projected during 
+    // project to 2D and save for later.
+    doTransformVectors = rv->GetDataSpecification()->TransformVectorsDuringProject();
+         
 #if 0
     if (atts.GetProject2d() && rv->GetDataSpecification()->MayRequireZones())
     {
@@ -614,6 +668,10 @@ avtSliceFilter::PreExecute(void)
 //    precision problems in a matrix inversion can lead to projections 
 //    that didn't actually go to 0.
 //
+//    Brad Whitlock, Wed Jan 23 15:49:33 PST 2008
+//    Use a different, derived transform type and set whether it will 
+//    transform its vectors based on doTransformVectors.
+//
 // ****************************************************************************
 
 void
@@ -716,8 +774,9 @@ avtSliceFilter::SetUpProjection(void)
     vtkMatrix4x4::Multiply4x4(reallyProject,xformToXYPlane,realXformToXYPlane);
 
     // Set the projection matrix for the transform.
-    vtkMatrixToLinearTransform *mtlt = vtkMatrixToLinearTransform::New();
+    vtkVisItMatrixToLinearTransform *mtlt = vtkVisItMatrixToLinearTransform::New();
     mtlt->SetInput(realXformToXYPlane);
+    mtlt->SetDoTransformVectors(doTransformVectors);
     transform->SetTransform(mtlt);
     mtlt->Delete();
 
@@ -746,6 +805,8 @@ avtSliceFilter::SetUpProjection(void)
 //  Programmer:  Dave Pugmire
 //  Creation:    Oct 22, 2007
 //
+// ****************************************************************************
+
 void
 avtSliceFilter::GetNormal(double &nx, double &ny, double &nz)
 {
