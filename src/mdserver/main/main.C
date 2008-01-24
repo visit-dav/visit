@@ -201,6 +201,9 @@ main(int argc, char *argv[])
 //   Hank Childs, Sun May  9 11:52:45 PDT 2004
 //   Added the default_format argument.
 //
+//   Jeremy Meredith, Thu Jan 24 14:46:20 EST 2008
+//   Added the assume_format argument.
+//
 // ****************************************************************************
 
 bool
@@ -227,6 +230,14 @@ ProcessCommandLine(int argc, char *argv[])
             if ((i+1) < argc)
             {
                 avtDatabaseFactory::SetDefaultFormat(argv[i+1]);
+                i++;
+            }
+        }
+        else if (strcmp(argv[i], "-assume_format") == 0)
+        {
+            if ((i+1) < argc)
+            {
+                avtDatabaseFactory::SetFormatToTryFirst(argv[i+1]);
                 i++;
             }
         }

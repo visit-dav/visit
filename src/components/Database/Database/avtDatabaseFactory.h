@@ -101,6 +101,10 @@ class CommonDatabasePluginInfo;
 //    Jeremy Meredith, Wed Jan 23 16:14:13 EST 2008
 //    Store the default file opening options for database plugins.
 //
+//    Jeremy Meredith, Thu Jan 24 14:45:14 EST 2008
+//    Added ability to specify a format to try *before* the ones guessed
+//    from file extensions.
+//
 // ****************************************************************************
 
 class DATABASE_API avtDatabaseFactory
@@ -115,6 +119,7 @@ class DATABASE_API avtDatabaseFactory
                                            const char * = NULL, bool = false,
                                            bool = false);
     static void                  SetDefaultFormat(const char *);
+    static void                  SetFormatToTryFirst(const char *);
     static void                  SetDefaultFileOpenOptions(const
                                                            FileOpenOptions &f);
 
@@ -138,6 +143,7 @@ class DATABASE_API avtDatabaseFactory
                                                int, int, int, bool, bool);
 
     static char                 *defaultFormat;
+    static char                 *formatToTryFirst;
     static bool                  createMeshQualityExpressions;
     static bool                  createTimeDerivativeExpressions;
     static bool                  createVectorMagnitudeExpressions;
