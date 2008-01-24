@@ -135,8 +135,12 @@
 //    Hank Childs, Tue Nov 27 09:10:45 PST 2007
 //    Fix type (cyle -> cycle).
 //
-//   Hank Childs, Thu Jan 10 14:33:30 PST 2008
-//   Added filenames, specifiedFilenames.
+//    Hank Childs, Thu Jan 10 14:33:30 PST 2008
+//    Added filenames, specifiedFilenames.
+//
+//    Jeremy Meredith, Thu Jan 24 15:37:47 EST 2008
+//    Changed the example for EnumStrings in the options to match the
+//    current interface.
 //
 // ****************************************************************************
 
@@ -2494,7 +2498,7 @@ class AVTGeneratorPlugin
         h << "    dims.push_back(\"1D\");" << endl;
         h << "    dims.push_back(\"2D\");" << endl;
         h << "    dims.push_back(\"3D\");" << endl;
-        h << "    rv->SetEnumStrings(2, dims);" << endl;
+        h << "    rv->SetEnumStrings(\"Dimension\", dims);" << endl;
         h << "    rv->SetInt(\"Number of variables\", 5);" << endl;
         h << "    rv->SetString(\"Name of auxiliary file\", "");" << endl;
         h << "    rv->SetDouble(\"Displacement factor\", 1.0);" << endl;
