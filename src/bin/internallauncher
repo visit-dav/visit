@@ -514,6 +514,8 @@ $fullusage = "$usage
         -default_format      Sets the database plugin format to use as a
                              default if a file type cannot be determined
                              from its extension.
+        -assume_format       Sets the database plugin format to try before
+                             all others when attempting to guess the format.
         -dir <directory>     Run a version of VisIt in the specified directory.
                              The directory argument should specify the 
                              path to a visit installation directory.

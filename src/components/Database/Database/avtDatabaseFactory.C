@@ -79,6 +79,7 @@ using std::vector;
 // Static data members
 //
 char    *avtDatabaseFactory::defaultFormat = "Silo";
+char    *avtDatabaseFactory::formatToTryFirst = NULL;
 bool    avtDatabaseFactory::createMeshQualityExpressions = true;
 bool    avtDatabaseFactory::createTimeDerivativeExpressions = true;
 bool    avtDatabaseFactory::createVectorMagnitudeExpressions = true;
@@ -116,6 +117,30 @@ avtDatabaseFactory::SetDefaultFormat(const char *f)
     // bytes.
     defaultFormat = new char[strlen(f)+1];
     strcpy(defaultFormat, f);
+}
+
+
+// ****************************************************************************
+//  Method: avtDatabaseFactory::SetFormatToTryFirst
+//
+//  Purpose:
+//      Sets the format to use before trying various ones from a file
+//      extension pattern.
+//
+//  Arguments:
+//      format  The name of the format to use (example: "Silo")
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 24, 2008
+//
+// ****************************************************************************
+
+void
+avtDatabaseFactory::SetFormatToTryFirst(const char *f)
+{
+    // Safer to allocate and leak a small string.
+    formatToTryFirst = new char[strlen(f)+1];
+    strcpy(formatToTryFirst, f);
 }
 
 
@@ -307,6 +332,33 @@ avtDatabaseFactory::FileList(const char * const * filelist, int filelistN,
                     "that format is not a match for file %s",
                     format, filelist[0]);
             EXCEPTION1(ImproperUseException, msg);
+        }
+    }
+ 
+    //
+    // If we have a format we're supposed to try first, do that now.
+    //
+    if (formatToTryFirst != NULL)
+    {
+        int formatindex = dbmgr->GetAllIndexFromName(formatToTryFirst);
+        if (formatindex >= 0)
+        {
+            string formatid = dbmgr->GetAllID(formatindex);
+            if (dbmgr->PluginAvailable(formatid))
+            {
+                CommonDatabasePluginInfo *info = 
+                    dbmgr->GetCommonPluginInfo(formatid);
+                // Set the opening options
+                const DBOptionsAttributes *opts = 
+                    defaultFileOpenOptions.GetOpenOptionsForID(formatid);
+                if (opts && info)
+                    info->SetReadOptions(new DBOptionsAttributes(*opts));
+                plugins.push_back(info ? info->GetName(): "");
+                rv = SetupDatabase(info, filelist, filelistN,
+                                   timestep, fileIndex,
+                                   nBlocks, forceReadAllCyclesAndTimes,
+                                   treatAllDBsAsTimeVarying);
+            }
         }
     }
  
