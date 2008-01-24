@@ -539,7 +539,9 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
 // Creation:   Mon Oct 25 08:53:04 PDT 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Jan 23 15:54:26 PST 2008
+//   Don't transform vectors during projection.
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -557,6 +559,7 @@ avtLabelPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     nds->TurnZoneNumbersOn();
     nds->TurnNodeNumbersOn();
     nds->SetNeedStructuredIndices(true);
+    nds->SetTransformVectorsDuringProject(false);
     avtPipelineSpecification_p rv = new avtPipelineSpecification(spec, nds);
 
     debug3 << "avtLabelPlot::EnhanceSpecification: 1" << endl;

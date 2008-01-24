@@ -159,6 +159,9 @@ using     std::map;
 //    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
 //    to getBoundarySurfaceRep for consistency.
 //
+//    Brad Whitlock, Wed Jan 23 15:43:52 PST 2008
+//    Added transformVectorsDuringProject.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts,
@@ -197,6 +200,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 #endif
     discBoundaryOnly = false;
     passNativeCSG = false;
+    transformVectorsDuringProject = true;
 
     InitAdmissibleDataTypes();
 
@@ -303,6 +307,9 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts,
 //    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
 //    to getBoundarySurfaceRep for consistency.
 //
+//    Brad Whitlock, Wed Jan 23 15:44:19 PST 2008
+//    Added transformVectorsDuringProject.
+//
 // ****************************************************************************
 
 avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
@@ -336,6 +343,7 @@ avtDataSpecification::avtDataSpecification(const char *var, int ts, int ch)
     discMode = 1; // adaptive
     discBoundaryOnly = false;
     passNativeCSG = false;
+    transformVectorsDuringProject = true;
 
     InitAdmissibleDataTypes();
 
@@ -586,6 +594,9 @@ avtDataSpecification::avtDataSpecification(avtDataSpecification_p spec)
 //    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
 //    to getBoundarySurfaceRep for consistency.
 //
+//    Brad Whitlock, Wed Jan 23 15:44:43 PST 2008
+//    Added transformVectorsDuringProject.
+//
 // ****************************************************************************
 
 avtDataSpecification &
@@ -648,6 +659,7 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
     discMode                        = spec.discMode;
     discBoundaryOnly                = spec.discBoundaryOnly;
     passNativeCSG                   = spec.passNativeCSG;
+    transformVectorsDuringProject   = spec.transformVectorsDuringProject;
 
     secondaryVariables = spec.secondaryVariables;
 
@@ -753,6 +765,9 @@ avtDataSpecification::operator=(const avtDataSpecification &spec)
 //    Hank Childs, Wed Jul 25 14:11:26 PDT 2007
 //    Added support for getSimplifiedNestingRep.  Renamed needBoundarySurfaces
 //    to getBoundarySurfaceRep for consistency.
+//
+//    Brad Whitlock, Wed Jan 23 15:45:02 PST 2008
+//    Added transformVectorsDuringProject.
 //
 // ****************************************************************************
 
@@ -944,6 +959,9 @@ avtDataSpecification::operator==(const avtDataSpecification &ds)
     if (passNativeCSG != ds.passNativeCSG)
         return false;
 
+    if (transformVectorsDuringProject != ds.transformVectorsDuringProject)
+        return false;
+ 
     return true;
 }
 
@@ -1658,6 +1676,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Hank Childs, Tue Jul 31 09:21:25 PDT 2007
 //    Add missing entry: mayRequireZones.
 //
+//    Brad Whitlock, Wed Jan 23 15:46:10 PST 2008
+//    Added transformVectorsDuringProject.
+//
 // ****************************************************************************
 
 static const char *
@@ -1740,6 +1761,7 @@ avtDataSpecification::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("discBoundaryOnly", YesOrNo(discBoundaryOnly));
     webpage->AddTableEntry2("passNativeCSG", YesOrNo(passNativeCSG));
     webpage->AddTableEntry2("usesAllDomains", YesOrNo(usesAllDomains));
+    webpage->AddTableEntry2("transformVectorsDuringProject", YesOrNo(transformVectorsDuringProject));
     webpage->EndTable();
 }
 

@@ -123,6 +123,8 @@ class avtPointAttribute;
 //    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
 //    Added cachedNormal data memeber.
 //
+//    Brad Whitlock, Wed Jan 23 15:55:37 PST 2008
+//    Added doTransformVectors.
 //
 // ****************************************************************************
 
@@ -147,6 +149,7 @@ class avtSliceFilter : public avtPluginStreamer
     float                         D;
     double                        cachedOrigin[3];
     double                        cachedNormal[3];
+    bool                          doTransformVectors;
 
     vtkSlicer                    *slicer;
     vtkTransformFilter           *transform;

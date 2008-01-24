@@ -193,6 +193,9 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //    Define private copy constructor to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Brad Whitlock, Wed Jan 23 15:43:25 PST 2008
+//    Added transformVectorsDuringProject.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataSpecification
@@ -405,6 +408,11 @@ class PIPELINE_API avtDataSpecification
     bool                         PassNativeCSG() const
                                      { return passNativeCSG; };
 
+    bool                         TransformVectorsDuringProject() const
+                                     { return transformVectorsDuringProject; }
+    void                         SetTransformVectorsDuringProject(bool b)
+                                     { transformVectorsDuringProject = b; }
+
     void                         DebugDump(avtWebpage *);
 
   protected:
@@ -452,6 +460,7 @@ class PIPELINE_API avtDataSpecification
     int                          discMode;
     bool                         discBoundaryOnly;
     bool                         passNativeCSG;
+    bool                         transformVectorsDuringProject;
 
     //
     // If we are processing in parallel, this information may have been lost.
