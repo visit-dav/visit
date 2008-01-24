@@ -66,9 +66,14 @@ class avtMaterial;
 //    - domains touch at the corners
 //    - only bit-wise identical corners are counted as matches
 //
-//  Programmer:  David Bremer
+//  Programmer:  Dave Bremer
 //  Creation:    Tue Jan  8 16:19:08 PST 2008
 //
+//  Modifications:
+//    Dave Bremer, Thu Jan 24 14:53:27 PST 2008
+//    Rewrote the matching algorithm to scale better.  Changed face matching
+//    to match 3 points instead of 4.  Added a flag to enable/disable caching
+//    the adjacency structure.
 // ****************************************************************************
 
 class DATABASE_API avtNekDomainBoundaries
@@ -102,7 +107,7 @@ class DATABASE_API avtNekDomainBoundaries
                                         const vector<avtMaterial*>   mats,
                                         vector<avtMixedVariable*>    mixvars);
 
-    // These are inherited, and have real implementations.
+    // These are inherited and have real implementations.
     virtual void                      CreateGhostNodes(vector<int>   domainNum,
                                                vector<vtkDataSet*>   meshes,
                                                vector<int> &allDomains);
@@ -116,26 +121,37 @@ class DATABASE_API avtNekDomainBoundaries
     // These are unique to this class
     virtual void                      SetDomainInfo(int num_domains, 
                                                     const int dims[3]);
+    virtual void                      SetCacheDomainAdjacency(bool bCache) 
+                                          {bSaveDomainInfo = bCache;}
 
   protected:
     struct Face
     {
+        void  Set(const float *points);
         void  Sort();
 
-        float pts[12];
+        float pts[9];
         int   domain;
         int   side;
+        int   proc;
     };
-    static int             CompareFaces(const void *f0, const void *f1);
-    void                   CreateNeighborList(const vector<int>         &domainNum,
-                                              const vector<vtkDataSet*> &meshes);
+    static int CompareFaces(const void *f0, const void *f1);
+    static int CompareFaceProcs(const void *f0, const void *f1);
+
+    void       CreateNeighborList(const vector<int>         &domainNum,
+                                  const vector<vtkDataSet*> &meshes);
+    int        ExtractMatchingFaces(Face *faces, int nFaces, 
+                                    vector<int> &aMatchedFaces, 
+                                    bool bCompressFaces);
 
 
     //There are 6 entries for each domain in the data, holding the 
     //number of the domain adjacent to each face, or -1 if it is an
     //exterior face.
     int *aNeighborDomains;
-    bool bFullDomainInfo;
+    bool bFullDomainInfo; //true if data in aNeighborDomains covers all domains
+    bool bSaveDomainInfo; //true if this class should save aNeighborDomains to
+                          //use in future calls to CreateGhostNodes
 
     int  nDomains;
     int  iBlockSize[3];

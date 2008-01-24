@@ -45,6 +45,8 @@
 #include <vtkDataSet.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
+#include <float.h>
+#include <string.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -54,7 +56,7 @@
 #include <InvalidVariableException.h>
 #include <ImproperUseException.h>
 
-
+#include <TimingsManager.h>
 
 // ****************************************************************************
 //  Method:  avtNekDomainBoundaries::avtNekDomainBoundaries
@@ -79,6 +81,8 @@ avtNekDomainBoundaries::avtNekDomainBoundaries()
         iBlockSize[ii] = 0;
     for (ii = 0; ii < 8; ii++)
         aCornerOffsets[ii] = 0;
+        
+    bSaveDomainInfo = false;
 }
 
 
@@ -143,6 +147,62 @@ avtNekDomainBoundaries::SetDomainInfo(int num_domains,
 }
 
 
+
+
+// ****************************************************************************
+//  Method:  avtNekDomainBoundaries::Face::Set
+//
+//  Purpose:
+//    Set the points that make up a face.  Four points are passed in but 
+//    only three are stored, because if the first three match, so will the
+//    fourth.  So, the max point is found and removed, and the other three
+//    are stored in sorted order.
+//
+//  Programmer:  Dave Bremer
+//  Creation:    Fri Jan 18 16:21:34 PST 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtNekDomainBoundaries::Face::Set(const float *points)
+{
+    int iMaxPt = 0;
+    int ii, jj;
+
+    //Find the biggest point, which will be excluded from the Face struct    
+    for (ii = 1; ii < 4; ii++)
+    {
+        for (jj = 0; jj < 3; jj++)
+        {
+            if (points[iMaxPt*3+jj] < points[ii*3+jj])
+            {
+                iMaxPt = ii;
+                break;
+            }
+            else if (points[iMaxPt*3+jj] > points[ii*3+jj])
+            {
+                break;
+            }
+        }
+    }
+    const float *src = points;
+    float *dst = pts;
+    for (ii = 0; ii < 4; ii++, src += 3)
+    {
+        if (ii == iMaxPt)
+            continue;
+
+        dst[0] = src[0];    
+        dst[1] = src[1];    
+        dst[2] = src[2];
+        dst += 3;
+    }
+    Sort();
+}
+
+
 // ****************************************************************************
 //  Method:  avtNekDomainBoundaries::Face::Sort
 //
@@ -153,20 +213,22 @@ avtNekDomainBoundaries::SetDomainInfo(int num_domains,
 //  Creation:    Fri Jan 18 16:21:34 PST 2008
 //
 //  Modifications:
-//
+//    Dave Bremer, Thu Jan 24 14:53:27 PST 2008
+//    Only sort 3 points now.  The fourth point was 
+//    not necessary for finding a match.
 // ****************************************************************************
 
 void
 avtNekDomainBoundaries::Face::Sort()
 {
-    //Do a bubble sort on the 4 points
+    //Do a bubble sort on the 3 points
     int hh, ii, jj, kk;
-    for (hh = 0; hh < 3; hh++)
+    for (hh = 0; hh < 2; hh++)           //make 2 passes
     {    
         bool anySwaps = false;
-        for (ii = 0; ii < 3; ii++)       //iterate over 3 pairs
+        for (ii = 0; ii < 2-hh; ii++)    //iterate over 2 pairs
         {
-            for (jj = 0; jj < 3; jj++)   //compare the current pair of points
+            for (jj = 0; jj < 3; jj++)   //compare 3 components of the current pair of points
             {
                 if (pts[ii*3+jj] < pts[(ii+1)*3+jj])
                 {
@@ -212,7 +274,7 @@ avtNekDomainBoundaries::CompareFaces(const void *f0, const void *f1)
     Face *face0 = (Face *)f0;
     Face *face1 = (Face *)f1;
 
-    for (int ii = 0; ii < 12; ii++)
+    for (int ii = 0; ii < 9; ii++)
     {
         if (face0->pts[ii] < face1->pts[ii])
             return -1;
@@ -220,6 +282,29 @@ avtNekDomainBoundaries::CompareFaces(const void *f0, const void *f1)
             return 1;
     }
     return 0;
+}
+
+
+// ****************************************************************************
+//  Method:  avtNekDomainBoundaries::CompareFaceProcs
+//
+//  Purpose:
+//    Used to order faces by proc id
+//
+//  Programmer:  Dave Bremer
+//  Creation:    Fri Jan 18 16:21:34 PST 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtNekDomainBoundaries::CompareFaceProcs(const void *f0, const void *f1)
+{
+    Face *face0 = (Face *)f0;
+    Face *face1 = (Face *)f1;
+
+    return (face0->proc - face1->proc);
 }
 
 
@@ -234,22 +319,26 @@ avtNekDomainBoundaries::CompareFaces(const void *f0, const void *f1)
 //    
 //    If running in parallel, each process will get a different subset of
 //    domains to work on.  Faces are extracted and matched on the local
-//    data, then all the lists of matches and unmatched faces are sent to
-//    process 0, which matches the remaining faces, builds aNeighborList,
-//    and broadcasts aNeighborList to the rest of the processes.
+//    data.  Unmatched faces are then distributed across all processes
+//    using a spatial subdivision, and each process looks for matches again.
+//    All matches found are sent to process 0, which consolidates them into
+//    one table, and then broadcasts the table to all processes.
 //
 //  Programmer:  Dave Bremer
 //  Creation:    Fri Jan 18 16:21:34 PST 2008
 //
 //  Modifications:
-//
+//    Dave Bremer, Thu Jan 24 14:53:27 PST 2008
+//    Rewrote the algorithm to divide up the faces spatially, rather than
+//    sending them to proc 0 to perform much of the matching.  This allows
+//    much less memory to be used by proc 0, and also made the code run in
+//    about 0.4 instead of 1.4 seconds in one big test.
 // ****************************************************************************
 
 void
 avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
                                            const vector<vtkDataSet*> &meshes)
 {
-
     int nLocalDomains = meshes.size();
     int ii, jj, ff, pp, cc;
     const int  f[6][4] = { {0, 2, 4, 6},
@@ -259,11 +348,16 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
                            {0, 1, 2, 3},
                            {4, 5, 6, 7} };
     
-    aNeighborDomains = new int[nDomains*6 + 1];
+    aNeighborDomains = new int[nDomains*6];
     
     double corners[24];
-    Face *faces      = (Face *)malloc(sizeof(Face)*nLocalDomains*6);
-        
+    float  facePts[12];
+    Face *faces = new Face[nLocalDomains*6];
+
+    //range of all the first points for each face.
+    float min[3] = { FLT_MAX, FLT_MAX, FLT_MAX};
+    float max[3] = {-FLT_MAX,-FLT_MAX,-FLT_MAX};
+    
     for (ii = 0; ii < nLocalDomains; ii++)
     {
         for (cc = 0; cc < 8; cc++)
@@ -273,28 +367,33 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
         {
             for (pp = 0; pp < 4; pp++)
             {
-                faces[ii*6 + ff].pts[pp*3  ] = (float)corners[f[ff][pp]*3  ];
-                faces[ii*6 + ff].pts[pp*3+1] = (float)corners[f[ff][pp]*3+1];
-                faces[ii*6 + ff].pts[pp*3+2] = (float)corners[f[ff][pp]*3+2];
+                facePts[pp*3  ] = (float)corners[f[ff][pp]*3  ];
+                facePts[pp*3+1] = (float)corners[f[ff][pp]*3+1];
+                facePts[pp*3+2] = (float)corners[f[ff][pp]*3+2];
             }
             faces[ii*6 + ff].domain = domainNum[ii];
             faces[ii*6 + ff].side = ff;
-            faces[ii*6 + ff].Sort();
+            faces[ii*6 + ff].Set(facePts);
+        
+            for (pp = 0; pp < 3; pp++)
+            {
+                if (faces[ii*6 + ff].pts[pp] < min[pp])
+                    min[pp] = faces[ii*6 + ff].pts[pp];
+                
+                if (faces[ii*6 + ff].pts[pp] > max[pp])
+                    max[pp] = faces[ii*6 + ff].pts[pp];
+            }
         }
     }
 
     //Sort the face structs
     qsort(faces, nLocalDomains*6, sizeof(Face), avtNekDomainBoundaries::CompareFaces);
-
+    
 #ifndef PARALLEL
     //Scan the faces for matching pairs
     for (ii = 0; ii < nLocalDomains*6; ii++)
     {
-        if ( ii == nLocalDomains*6-1 )
-        {
-            aNeighborDomains[faces[ii].domain*6   + faces[ii].side]   = -1;
-        }
-        else if ( CompareFaces(faces+ii, faces+ii+1) == 0 )
+        if (ii != nLocalDomains*6-1 && CompareFaces(faces+ii, faces+ii+1) == 0)
         {
             aNeighborDomains[faces[ii].domain*6   + faces[ii].side]   = faces[ii+1].domain;
             aNeighborDomains[faces[ii+1].domain*6 + faces[ii+1].side] = faces[ii].domain;
@@ -308,25 +407,232 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
     bFullDomainInfo = (nDomains == meshes.size());
 
 #else
-    int nProcs, iRank;
+    int nProcs, iRank, err;
     MPI_Comm_rank(VISIT_MPI_COMM, &iRank);
     MPI_Comm_size(VISIT_MPI_COMM, &nProcs);
 
 
     //Scan the faces for matching pairs
-    int iCurrUnmatchedFace = 0;
     vector<int> aMatchedFaces;
     aMatchedFaces.reserve(16384);
+    int nUnmatchedFaces = ExtractMatchingFaces(faces, nLocalDomains*6, aMatchedFaces, true);
     
-    for (ii = 0; ii < nLocalDomains*6; ii++)
+    float globalMin[3], globalMax[3];
+    MPI_Allreduce(min, globalMin, 3, MPI_FLOAT, MPI_MIN, VISIT_MPI_COMM);
+    MPI_Allreduce(max, globalMax, 3, MPI_FLOAT, MPI_MAX, VISIT_MPI_COMM);
+
+    //Find some constants used for dividing up space.
+    float blockSize[3] = {globalMax[0]-globalMin[0],
+                          globalMax[1]-globalMin[1],
+                          globalMax[1]-globalMin[2]};
+    int nBlocks[3] = {1,1,1};
+    int nProcsUsed = 1;
+    while (nProcsUsed*2 <= nProcs)
     {
-        if ( ii == nLocalDomains*6-1 )
+        if (blockSize[0] > blockSize[1] && blockSize[0] > blockSize[2])
         {
-            if (ii != iCurrUnmatchedFace)
-                memcpy(faces+iCurrUnmatchedFace, faces+ii, sizeof(Face));
-            iCurrUnmatchedFace++;
+            nBlocks[0]*=2;
+            blockSize[0] /= 2.0;
         }
-        else if ( CompareFaces(faces+ii, faces+ii+1) == 0 )
+        else if (blockSize[1] > blockSize[2] && blockSize[1] > blockSize[0])
+        {
+            nBlocks[1]*=2;
+            blockSize[1] /= 2.0;
+        }
+        else
+        {
+            nBlocks[2]*=2;
+            blockSize[2] /= 2.0;
+        }
+            
+        nProcsUsed *= 2;
+    }
+    
+    int *nFacesToSend = new int[nProcs];
+    int *nFacesToRecv = new int[nProcs];
+    
+    int *aFaceSendOffsets = new int[nProcs];
+    int *aFaceRecvOffsets = new int[nProcs];
+
+    for (ii = 0; ii < nProcs; ii++)
+        nFacesToSend[ii] = 0;
+        
+    //Assign each unmatched face to a proc.  This algorithm only sends data to
+    //processes with a rank < (the largest power of 2 <= nProcs).
+    for (ii = 0; ii < nUnmatchedFaces; ii++)
+    {
+        int tmp[3];
+        for (jj = 0; jj < 3; jj++)
+        {
+            tmp[jj] = (int)floor((faces[ii].pts[jj] - globalMin[jj]) / blockSize[jj]);
+            if (tmp[jj] < 0)
+                tmp[jj] = 0;
+            else if (tmp[jj] >= nBlocks[jj])
+                tmp[jj] = nBlocks[jj]-1;
+        }
+        faces[ii].proc = tmp[2]*nBlocks[0]*nBlocks[1] + tmp[1]*nBlocks[0] + tmp[0];
+        nFacesToSend[faces[ii].proc]++;
+    }
+    
+    //Sort by proc
+    qsort(faces, nUnmatchedFaces, sizeof(Face), avtNekDomainBoundaries::CompareFaceProcs);
+
+    //All procs exchange info on the number of faces sent to and received from
+    //all other procs.    
+    err = MPI_Alltoall(nFacesToSend, 1, MPI_INT,
+                       nFacesToRecv, 1, MPI_INT,
+                       VISIT_MPI_COMM);
+    if (err != MPI_SUCCESS)
+        EXCEPTION1(ImproperUseException,
+            "Error in MPI_Alltoall, in "
+            "avtNekDomainBoundaries::CreateNeighborListScalably");
+
+    int nFacesToMatch = 0;
+    for (ii = 0; ii < nProcs; ii++)
+    {
+        nFacesToMatch += nFacesToRecv[ii];
+        
+        nFacesToSend[ii] *= sizeof(Face);
+        nFacesToRecv[ii] *= sizeof(Face);
+    }
+    aFaceSendOffsets[0] = 0;
+    aFaceRecvOffsets[0] = 0;
+    for (ii = 1; ii < nProcs; ii++)
+    {
+        aFaceSendOffsets[ii] = aFaceSendOffsets[ii-1] + nFacesToSend[ii-1];
+        aFaceRecvOffsets[ii] = aFaceRecvOffsets[ii-1] + nFacesToRecv[ii-1];
+    }
+
+    Face *moreFaces = new Face[nFacesToMatch];
+    
+    //All procs exchange faces, which are now divided up spatially
+    err = MPI_Alltoallv(faces,     nFacesToSend, aFaceSendOffsets, MPI_BYTE,
+                        moreFaces, nFacesToRecv, aFaceRecvOffsets, MPI_BYTE,
+                        VISIT_MPI_COMM);
+    if (err != MPI_SUCCESS)
+        EXCEPTION1(ImproperUseException,
+            "Error in MPI_Alltoallv, in "
+            "avtNekDomainBoundaries::CreateNeighborListScalably");
+
+    //Sort the new faces received and extract matches.
+    qsort(moreFaces, nFacesToMatch, sizeof(Face), avtNekDomainBoundaries::CompareFaces);
+    ExtractMatchingFaces(moreFaces, nFacesToMatch, aMatchedFaces, false);
+
+    delete[] moreFaces;
+    delete[] nFacesToSend;
+    delete[] nFacesToRecv;
+    delete[] aFaceSendOffsets;
+    delete[] aFaceRecvOffsets;
+
+    //Send all the matches to proc 0
+    int *aNumMatches = NULL;
+    int  nMatches = aMatchedFaces.size() / 4;
+    if (iRank == 0)
+        aNumMatches = new int[nProcs];
+    
+    err = MPI_Gather(&nMatches,   1, MPI_INT,
+                     aNumMatches, 1, MPI_INT,
+                     0, VISIT_MPI_COMM);
+    if (err != MPI_SUCCESS)
+        EXCEPTION1(ImproperUseException,
+            "Error in MPI_Gather, in avtNekDomainBoundaries::CreateNeighborListScalably");
+
+    MPI_Status status;
+    if (iRank == 0)
+    {
+        for (ii = 0; ii < nDomains*6; ii++)
+            aNeighborDomains[ii] = -1;
+        
+        //Process one set of matches at a time, to keep the max memory usage down.
+        //Find the max number of matches, and resize aMatchedFaces to use as a 
+        //destination buffer, once the matches for rank 0 have been pulled out.
+        int iMaxMatchedFaces = 0;
+        for (ii = 0; ii < nProcs; ii++)
+        {
+            if (iMaxMatchedFaces < aNumMatches[ii])
+                iMaxMatchedFaces = aNumMatches[ii];
+        }
+        aMatchedFaces.resize(iMaxMatchedFaces*4);
+        
+        for (ii = 0; ii < nProcs; ii++)
+        {
+            if (ii >= 1)
+            {
+                err = MPI_Recv( &(aMatchedFaces[0]), aNumMatches[ii]*4, 
+                                MPI_INT,  ii, 888, VISIT_MPI_COMM, &status);
+                if (err != MPI_SUCCESS)
+                    EXCEPTION1(ImproperUseException,
+                        "Error in MPI_Recv, in avtNekDomainBoundaries::CreateNeighborListScalably");
+            }
+            //for each match...
+            for (jj = 0; jj < aNumMatches[ii]; jj++)
+            {
+                int dom0  = aMatchedFaces[jj*4];
+                int face0 = aMatchedFaces[jj*4+1];
+                int dom1  = aMatchedFaces[jj*4+2];
+                int face1 = aMatchedFaces[jj*4+3];
+            
+                aNeighborDomains[dom0*6+face0] = dom1;
+                aNeighborDomains[dom1*6+face1] = dom0;
+            }
+        }
+
+        delete[] aNumMatches;
+    }
+    else
+    {
+        err = MPI_Send( &(aMatchedFaces[0]), aMatchedFaces.size(), 
+                        MPI_INT,  0, 888, VISIT_MPI_COMM);
+        if (err != MPI_SUCCESS)
+            EXCEPTION1(ImproperUseException, 
+                "Error in MPI_Send, in avtNekDomainBoundaries::CreateNeighborListScalably");
+    }
+
+    //aNeighborDomains is now fully populated on rank 0, 
+    //so broadcast to all procs
+    err = MPI_Bcast( aNeighborDomains, nDomains*6, MPI_INT,
+                     0, VISIT_MPI_COMM );
+    if (err != MPI_SUCCESS)
+        EXCEPTION1(ImproperUseException, 
+            "Error in MPI_Bcast, in avtNekDomainBoundaries::CreateNeighborListScalably");
+
+    //One last thing...determine if aNeighborDomains contains adjacency info
+    //for all the domains in the mesh, or if some were excluded
+    int iSumOfNumLocalDomains;
+    MPI_Allreduce(&nLocalDomains, &iSumOfNumLocalDomains, 1, MPI_INT, MPI_SUM, VISIT_MPI_COMM);
+
+    bFullDomainInfo = (iSumOfNumLocalDomains == nDomains);
+#endif
+    delete[] faces;
+}
+
+
+// ****************************************************************************
+//  Method:  avtNekDomainBoundaries::ExtractMatchingFaces
+//
+//  Purpose:
+//    Iterate through a sorted list of faces, find matches, and add the matches
+//    to an array.  Optionally compress the faces list to put all the 
+//    unmatched faces adjacent to one another, and return the number 
+//    of unmatched faces.
+//
+//  Programmer:  Dave Bremer
+//  Creation:    Thu Jan 24 14:53:27 PST 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtNekDomainBoundaries::ExtractMatchingFaces(Face *faces, int nFaces, 
+                                             vector<int> &aMatchedFaces, 
+                                             bool bCompressFaces)
+{
+    int iCurrUnmatchedFace = 0;
+    int ii;
+    for (ii = 0; ii < nFaces; ii++)
+    {
+        if (ii != (nFaces-1) && CompareFaces(faces+ii, faces+ii+1) == 0)
         {
             //Try to avoid lots of reallocs by reserving lots of space.
             if (aMatchedFaces.size() == aMatchedFaces.capacity())
@@ -340,170 +646,12 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
         }
         else
         {
-            if (ii != iCurrUnmatchedFace)
+            if (bCompressFaces && ii != iCurrUnmatchedFace)
                 memcpy(faces+iCurrUnmatchedFace, faces+ii, sizeof(Face));
             iCurrUnmatchedFace++;
         }
     }
-
-    int sendBuf[2], err;
-    sendBuf[0] = aMatchedFaces.size()/4;
-    sendBuf[1] = iCurrUnmatchedFace;
-    
-    int *aBufSizes = NULL;
-    if (iRank == 0)
-        aBufSizes = new int[2*nProcs];
-    
-    err = MPI_Gather(sendBuf,   2, MPI_INT,
-                     aBufSizes, 2, MPI_INT,
-                     0, VISIT_MPI_COMM);
-    if (err != MPI_SUCCESS)
-        EXCEPTION1(ImproperUseException,
-            "Error in MPI_Gather, in avtNekDomainBoundaries::CreateNeighborList");
-
-    MPI_Status status;
-    if (iRank == 0)
-    {
-        int nMatchedFaces = 0, nUnmatchedFaces = 0, iMaxMatchedFaces = 0;
-        for (ii = 0; ii < nProcs; ii++)
-        {
-            if (iMaxMatchedFaces < aBufSizes[ii*2])
-                iMaxMatchedFaces = aBufSizes[ii*2];
-
-            nMatchedFaces   += aBufSizes[ii*2];
-            nUnmatchedFaces += aBufSizes[ii*2+1];
-        }
-        aMatchedFaces.resize(iMaxMatchedFaces*4);
-        faces = (Face *)realloc( faces, sizeof(Face) * nUnmatchedFaces );
-
-        //printf("sizeof unmatched faces: %d.  sizeof aNeighborDomains: %d\n", 
-        //    sizeof(Face) * nUnmatchedFaces, 
-        //    sizeof(int) * (nDomains * 6 + 1));
-        
-        Face *currFace = faces;
-        
-        //Process the matches right away, and collect all the 
-        //unmatched faces into the faces array
-        for (ii = 0; ii < nProcs; ii++)
-        {
-            if (ii >= 1)
-            {
-                err = MPI_Recv( &(aMatchedFaces[0]), aBufSizes[ii*2]*4, 
-                                MPI_INT,  ii, 888, VISIT_MPI_COMM, &status);
-                if (err != MPI_SUCCESS)
-                    EXCEPTION1(ImproperUseException,
-                        "Error in MPI_Recv (1), in avtNekDomainBoundaries::CreateNeighborList");
-        
-                err = MPI_Recv( currFace, aBufSizes[ii*2+1] * sizeof(Face), 
-                                MPI_BYTE, ii, 999, VISIT_MPI_COMM, &status);
-                if (err != MPI_SUCCESS)
-                    EXCEPTION1(ImproperUseException, 
-                        "Error in MPI_Recv (2), in avtNekDomainBoundaries::CreateNeighborList");
-            }
-            //for each match...
-            for (jj = 0; jj < aBufSizes[ii*2]; jj++)
-            {
-                int dom0  = aMatchedFaces[jj*4];
-                int face0 = aMatchedFaces[jj*4+1];
-                int dom1  = aMatchedFaces[jj*4+2];
-                int face1 = aMatchedFaces[jj*4+3];
-            
-                aNeighborDomains[dom0*6+face0] = dom1;
-                aNeighborDomains[dom1*6+face1] = dom0;
-            }
-            
-            currFace += aBufSizes[ii*2+1];
-        }
-        delete[] aBufSizes;
-        
-        qsort(faces, nUnmatchedFaces, sizeof(Face), avtNekDomainBoundaries::CompareFaces);
-
-        for (ii = 0; ii < nUnmatchedFaces; ii++)
-        {
-            if ( ii == nUnmatchedFaces-1 )
-            {
-                aNeighborDomains[faces[ii].domain*6   + faces[ii].side]   = -1;
-            }
-            else if ( CompareFaces(faces+ii, faces+ii+1) == 0 )
-            {
-                aNeighborDomains[faces[ii].domain*6   + faces[ii].side]   = faces[ii+1].domain;
-                aNeighborDomains[faces[ii+1].domain*6 + faces[ii+1].side] = faces[ii].domain;
-                ii++;
-            }
-            else
-            {
-                aNeighborDomains[faces[ii].domain*6   + faces[ii].side]   = -1;
-            }
-        }
-        //Write in a bool at the end of aNeighborDomains, telling 
-        //whether aNeighborDomains accounts for all domains.
-        aNeighborDomains[nDomains*6] = (nUnmatchedFaces+nMatchedFaces)/6 == nDomains;
-    }
-    else
-    {
-        err = MPI_Send( &(aMatchedFaces[0]), aMatchedFaces.size(), 
-                        MPI_INT,  0, 888, VISIT_MPI_COMM);
-        if (err != MPI_SUCCESS)
-            EXCEPTION1(ImproperUseException, 
-                "Error in MPI_Send (1), in avtNekDomainBoundaries::CreateNeighborList");
-
-        err = MPI_Send( faces, iCurrUnmatchedFace * sizeof(Face), 
-                        MPI_BYTE, 0, 999, VISIT_MPI_COMM);
-        if (err != MPI_SUCCESS)
-            EXCEPTION1(ImproperUseException, 
-                "Error in MPI_Send (2), in avtNekDomainBoundaries::CreateNeighborList");
-    
-    }
-    
-#if 1
-    
-//int *orig = new int[nDomains*6+1];
-//memcpy(orig, aNeighborDomains, 4*(nDomains*6+1));
-
-//printf("rank %d:  num domains: %d \n", iRank, nDomains);
-/*
-    //Done making the structure.  Now send it to all procs.
-    err = MPI_Scatter( aNeighborDomains, nDomains*6+1, MPI_INT,
-                       aNeighborDomains, nDomains*6+1, MPI_INT,
-                       0, VISIT_MPI_COMM );
-    if (err != MPI_SUCCESS)
-        EXCEPTION1(ImproperUseException, 
-            "Error in MPI_Scatter, in avtNekDomainBoundaries::CreateNeighborList");
-*/
-    err = MPI_Bcast( aNeighborDomains, nDomains*6+1, MPI_INT,
-                     0, VISIT_MPI_COMM );
-    if (err != MPI_SUCCESS)
-        EXCEPTION1(ImproperUseException, 
-            "Error in MPI_Bcast, in avtNekDomainBoundaries::CreateNeighborList");
-    
-
-            
-//int nChanged = 0;
-//for (ii=0; ii<nDomains*6+1; ii++)
-//{
-//    printf("rank: %02d %03d   old: %d\tnew %d\n",  iRank, ii, orig[ii], aNeighborDomains[ii]);
-//}
-//delete[] orig;
-#else
-    //Homemade scatter
-    if (iRank==0)
-    {
-        for (ii=1; ii<nProcs; ii++)
-        {
-            MPI_Send( aNeighborDomains, nDomains*6 + 1, 
-                      MPI_INT, ii, 777, VISIT_MPI_COMM);
-        }
-    }
-    else
-    {
-        MPI_Recv( aNeighborDomains, nDomains*6 + 1,
-                  MPI_INT, 0, 777, VISIT_MPI_COMM, &status);
-    }
-#endif
-    
-    bFullDomainInfo = aNeighborDomains[nDomains*6];
-#endif
-    free(faces);
+    return iCurrUnmatchedFace;
 }
 
 
@@ -517,7 +665,8 @@ avtNekDomainBoundaries::CreateNeighborList(const vector<int>         &domainNum,
 //  Creation:    Fri Jan 18 16:21:34 PST 2008
 //
 //  Modifications:
-//
+//    Dave Bremer, Thu Jan 24 14:53:27 PST 2008
+//    Only optionally cache aNeighborDomains now.
 // ****************************************************************************
 
 void                      
@@ -525,7 +674,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
                                          vector<vtkDataSet*>  meshes,
                                          vector<int>         &allDomains)
 {
-    if (!bFullDomainInfo)
+    if (!aNeighborDomains)
     {
         CreateNeighborList(domainNum, meshes);
     }
@@ -654,7 +803,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
 
     //Delete the table if it covers a subset of the data, otherwise 
     //save it for future calls.
-    if (!bFullDomainInfo)
+    if (!bSaveDomainInfo || !bFullDomainInfo)
     {
         delete[] aNeighborDomains;
         aNeighborDomains = NULL;
