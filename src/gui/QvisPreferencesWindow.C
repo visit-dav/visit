@@ -157,6 +157,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Cyrus Harrison, Wed Nov 28 13:31:30 PST 2007
 //   Added creation of createVectorMagnitudeToggle check box
 //
+//   Brad Whitlock, Thu Jan 24 11:23:13 PDT 2008
+//   Added newPlotsInheritSILRestrictionToggle, grouped database options.
+//
 // ****************************************************************************
 
 void
@@ -183,13 +186,6 @@ QvisPreferencesWindow::CreateWindowContents()
             this, SLOT(makeDefaultConfirmToggled(bool)));
     topLayout->addWidget(makeDefaultConfirmToggle);
 
-    tryHarderCyclesTimesToggle =
-        new QCheckBox("Try harder to get accurate cycles/times",
-                      central, "tryHarderCyclesTimesToggle");
-    connect(tryHarderCyclesTimesToggle, SIGNAL(toggled(bool)),
-            this, SLOT(tryHarderCyclesTimesToggled(bool)));
-    topLayout->addWidget(tryHarderCyclesTimesToggle);
-
     automaticallyApplyOperatorToggle =
         new QCheckBox("Prompt before applying new operator",
                       central, "automaticallyApplyOperatorToggle");
@@ -197,33 +193,60 @@ QvisPreferencesWindow::CreateWindowContents()
             this, SLOT(automaticallyApplyOperatorToggled(bool)));
     topLayout->addWidget(automaticallyApplyOperatorToggle);
 
+    newPlotsInheritSILRestrictionToggle =
+        new QCheckBox("New plots inherit SIL restriction",
+                      central, "newPlotsInheritSILRestrictionToggle");
+    connect(newPlotsInheritSILRestrictionToggle, SIGNAL(toggled(bool)),
+            this, SLOT(newPlotsInheritSILRestrictionToggled(bool)));
+    topLayout->addWidget(newPlotsInheritSILRestrictionToggle);
+
+    //
+    // Create group box for database controls.
+    //
+    QGroupBox *dbControlsGroup = new QGroupBox(central, "dbControlsGroup");
+    dbControlsGroup->setTitle("Databases");
+    topLayout->addWidget(dbControlsGroup, 5);
+    QVBoxLayout *dbInnerTopLayout = new QVBoxLayout(dbControlsGroup);
+    dbInnerTopLayout->setMargin(10);
+    dbInnerTopLayout->addSpacing(15);
+    dbInnerTopLayout->setSpacing(10);
+    QVBoxLayout *dbOptionsLayout = new QVBoxLayout(dbInnerTopLayout);
+    dbOptionsLayout->setSpacing(5);
+
+    tryHarderCyclesTimesToggle =
+        new QCheckBox("Try harder to get accurate cycles/times",
+                      dbControlsGroup, "tryHarderCyclesTimesToggle");
+    connect(tryHarderCyclesTimesToggle, SIGNAL(toggled(bool)),
+            this, SLOT(tryHarderCyclesTimesToggled(bool)));
+    dbOptionsLayout->addWidget(tryHarderCyclesTimesToggle);
+
     treatAllDBsAsTimeVaryingToggle =
         new QCheckBox("Treat all databases as time-varying",
-                      central, "treatAllDBsAsTimeVaryingToggle");
+                      dbControlsGroup, "treatAllDBsAsTimeVaryingToggle");
     connect(treatAllDBsAsTimeVaryingToggle, SIGNAL(toggled(bool)),
             this, SLOT(treatAllDBsAsTimeVaryingToggled(bool)));
-    topLayout->addWidget(treatAllDBsAsTimeVaryingToggle);
+    dbOptionsLayout->addWidget(treatAllDBsAsTimeVaryingToggle);
 
     createMeshQualityToggle =
         new QCheckBox("Automatically create mesh quality expressions",
-                      central, "createMeshQualityToggle");
+                      dbControlsGroup, "createMeshQualityToggle");
     connect(createMeshQualityToggle, SIGNAL(toggled(bool)),
             this, SLOT(createMeshQualityToggled(bool)));
-    topLayout->addWidget(createMeshQualityToggle);
+    dbOptionsLayout->addWidget(createMeshQualityToggle);
 
     createTimeDerivativeToggle =
         new QCheckBox("Automatically create time derivative expressions",
-                      central, "createTimeDerivativeToggle");
+                      dbControlsGroup, "createTimeDerivativeToggle");
     connect(createTimeDerivativeToggle, SIGNAL(toggled(bool)),
             this, SLOT(createTimeDerivativeToggled(bool)));
-    topLayout->addWidget(createTimeDerivativeToggle);
+    dbOptionsLayout->addWidget(createTimeDerivativeToggle);
     
     createVectorMagnitudeToggle =
         new QCheckBox("Automatically create vector magnitude expressions",
-                      central, "createVectorMagnitudeToggle ");
+                      dbControlsGroup, "createVectorMagnitudeToggle ");
     connect(createVectorMagnitudeToggle, SIGNAL(toggled(bool)),
             this, SLOT(createVectorMagnitudeToggled(bool)));
-    topLayout->addWidget(createVectorMagnitudeToggle);
+    dbOptionsLayout->addWidget(createVectorMagnitudeToggle);
 
     //
     // Create group box for time controls.
@@ -375,6 +398,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Fri Dec 14 15:53:39 PST 2007
 //   Made it use ids.
 //
+//   Brad Whitlock, Thu Jan 24 11:30:29 PDT 2008
+//   Set the inherit SIL restriction toggle.
+//
 // ****************************************************************************
 
 void
@@ -411,6 +437,17 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
         automaticallyApplyOperatorToggle->setChecked(
             !atts->GetAutomaticallyAddOperator());
         automaticallyApplyOperatorToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_newPlotsInheritSILRestriction))
+    {
+        //
+        // New plots inherit SIL restriction
+        //
+        newPlotsInheritSILRestrictionToggle->blockSignals(true);
+        newPlotsInheritSILRestrictionToggle->setChecked(
+            atts->GetNewPlotsInheritSILRestriction());
+        newPlotsInheritSILRestrictionToggle->blockSignals(false);
     }
 
     if (doAll || atts->IsSelected(GlobalAttributes::ID_tryHarderCyclesTimes))
@@ -650,6 +687,31 @@ void
 QvisPreferencesWindow::automaticallyApplyOperatorToggled(bool val)
 {
     atts->SetAutomaticallyAddOperator(!val);
+    atts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::newPlotsInheritSILRestrictionToggled
+//
+// Purpose: 
+//   This is a Qt slot function that gets the flag that tells whether new plots
+//   should inherit the SIL retriction of a previous plot.
+//
+// Arguments:
+//   val : The new value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 24 11:33:33 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::newPlotsInheritSILRestrictionToggled(bool val)
+{
+    atts->SetNewPlotsInheritSILRestriction(val);
+    SetUpdate(false);
     atts->Notify();
 }
 

@@ -2444,11 +2444,15 @@ ViewerPlotList::GetNumVisiblePlots() const
 //    Moved Getting/Setting of scale mode to more appropriate place, to support
 //    2d as well as curve log scaling. 
 //
+//    Brad Whitlock, Tue Jan 22 13:47:50 PST 2008
+//    Only override the default SIL restriction from another plot if
+//    we're allowing plots to inherit a SIL restriction.
+//    
 // ****************************************************************************
 
 int
 ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
-    bool applyOperators, DataNode *attributesNode)
+    bool applyOperators, bool inheritSILRestriction, DataNode *attributesNode)
 {
     if (databaseName.size() < 1)
     {
@@ -2464,7 +2468,7 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     TRY
     {
         newPlot = NewPlot(type, engineKey, hostName, databaseName,
-                          var, applyOperators, 0);
+                          var, applyOperators, inheritSILRestriction, 0);
         if (newPlot == 0)
         {
             Error("VisIt could not create the desired plot.");
@@ -2505,16 +2509,19 @@ ViewerPlotList::AddPlot(int type, const std::string &var, bool replacePlots,
     //
     // Find a compatible plot to set the new plot's SIL restriction.
     //
-    int compatiblePlotIndex = FindCompatiblePlot(newPlot);
-
-    if (compatiblePlotIndex > -1)
+    if(inheritSILRestriction)
     {
-        avtSILRestriction_p new_silr = GetDefaultSILRestriction(
-            newPlot->GetHostName(), newPlot->GetDatabaseName(),
-            newPlot->GetVariableName(), newPlot->GetState());
-        ViewerPlot *matchedPlot = plots[compatiblePlotIndex].plot;
-        new_silr->SetFromCompatibleRestriction(matchedPlot->GetSILRestriction());
-        newPlot->SetSILRestriction(new_silr);
+        int compatiblePlotIndex = FindCompatiblePlot(newPlot);
+
+        if (compatiblePlotIndex > -1)
+        {
+            avtSILRestriction_p new_silr = GetDefaultSILRestriction(
+                newPlot->GetHostName(), newPlot->GetDatabaseName(),
+                newPlot->GetVariableName(), newPlot->GetState());
+            ViewerPlot *matchedPlot = plots[compatiblePlotIndex].plot;
+            new_silr->SetFromCompatibleRestriction(matchedPlot->GetSILRestriction());
+            newPlot->SetSILRestriction(new_silr);
+        }
     }
     UpdateSILRestrictionAtts();
 
@@ -3180,12 +3187,17 @@ ViewerPlotList::SimpleAddPlot(ViewerPlot *plot, bool replacePlots)
 //   Added code to set the plot name so we can use it later to match
 //   legend annotation objects to plots.
 //
+//   Brad Whitlock, Tue Jan 22 13:56:20 PST 2008
+//   Changed code so the new plot's SIL restriction is brand new in the event
+//   that we're not inheriting it from another the default SIL.
+//
 // ****************************************************************************
 
 ViewerPlot *
 ViewerPlotList::NewPlot(int type, const EngineKey &ek,
                         const std::string &host, const std::string &db,
                         const std::string &var, bool applyOperators,
+                        bool inheritSILRestriction,
                         const char *optionalPlotName)
 {
     //
@@ -3241,7 +3253,8 @@ ViewerPlotList::NewPlot(int type, const EngineKey &ek,
     // Get the default SIL restriction.
     //
     avtSILRestriction_p silr(0);
-    silr = GetDefaultSILRestriction(host, db, newVarName, plotState);
+    silr = GetDefaultSILRestriction(host, db, newVarName, plotState,
+                                    !inheritSILRestriction);
 
     if (*silr == 0)
     {
@@ -3859,6 +3872,7 @@ ViewerPlotList::HideActivePlots()
     //
     UpdateFrame();
 }
+
 // ****************************************************************************
 //  Method: ViewerPlotList::SetPlotFollowsTime
 //
@@ -3869,6 +3883,9 @@ ViewerPlotList::HideActivePlots()
 //  Creation:   Dec 6, 2007
 //
 //  Modifications:
+//    Brad Whitlock, Tue Jan 22 14:04:36 PST 2008
+//    Reindented, removed UpdateFrame since disconnecting should not cause a
+//    redraw because time has not changed.
 //
 // ****************************************************************************
 
@@ -3883,25 +3900,20 @@ ViewerPlotList::SetPlotFollowsTime()
     {
         //
         // If the plot is active toggle the hide flag.
-       //
-       if (plots[i].active == true)
+        //
+        if (plots[i].active)
         {
             if (plots[i].plot->FollowsTime()) 
-	       plots[i].plot->SetFollowsTime( false );
+                plots[i].plot->SetFollowsTime( false );
 	    else
-	       plots[i].plot->SetFollowsTime( true );
-       }
+                plots[i].plot->SetFollowsTime( true );
+        }
     }
  
     //
     // Update the client attributes.
     //
     UpdatePlotList();
-
-    //
-    // Update the frame.
-    //
-    UpdateFrame();
 }
 
 // ****************************************************************************
@@ -4690,7 +4702,8 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
 //   database : The name of the database.
 //   var      : The variable name for which we want the top set.
 //   state    : The state at which we want the SIL restriction.
-//
+//   returnDefault : If true, returns default SIL restriction even if one that
+//                   has sets turned off is available.
 // Returns:    A pointer to a new SIL restriction that the caller must delete.
 //
 // Note:       
@@ -4743,7 +4756,8 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
 
 avtSILRestriction_p
 ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
-    const std::string &database, const std::string &var, int state)
+    const std::string &database, const std::string &var, int state,
+    bool returnDefault)
 {
     avtSILRestriction_p silr(0);
     ViewerFileServer *server = ViewerFileServer::Instance();
@@ -4827,6 +4841,11 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
         // in the default SIL restrictions.
         SILRestrictions[key] = new avtSILRestriction((avtSIL *)sil);
 
+        // Create a new SIL restriction for the plot.
+        silr = new avtSILRestriction((avtSIL *)sil);
+    }
+    else if(returnDefault)
+    {
         // Create a new SIL restriction for the plot.
         silr = new avtSILRestriction((avtSIL *)sil);
     }
@@ -6656,6 +6675,9 @@ ViewerPlotList::GetPlotAtts(
 //    Ellen Tarwater, Thurs Dec 20, 2007
 //    I made it update the followsTime flag
 //
+//    Brad Whitlock, Tue Jan 22 14:06:08 PST 2008
+//    I made it use ViewerPlot::FollowsTime.
+//
 // ****************************************************************************
 
 void
@@ -6687,7 +6709,7 @@ ViewerPlotList::UpdatePlotList() const
         plots[i].plot->InitializePlot(plot);
         plot.SetActiveFlag(plots[i].active);
         plot.SetHiddenFlag(plots[i].hidden);
-	plot.SetFollowsTime(plots[i].followsTime);
+	plot.SetFollowsTime(plots[i].plot->FollowsTime());
 
         // Figure out the stage of completion that the plot is at.
         if (plots[i].plot->GetErrorFlag())
@@ -7861,6 +7883,9 @@ ViewerPlotList::CreateNode(DataNode *parentNode,
 //   Brad Whitlock, Fri Nov 10 10:05:39 PDT 2006
 //   I added support for restoring with a new list of sources.
 //
+//   Brad Whitlock, Thu Jan 24 11:53:57 PDT 2008
+//   Added another argument to NewPlot().
+//
 // ****************************************************************************
 
 bool
@@ -8225,7 +8250,7 @@ ViewerPlotList::SetFromNode(DataNode *parentNode,
                     TRY
                     {
                         plot = NewPlot(type,engineKey,plotHost,
-                                       plotDB,plotVar,false,plotName);
+                                       plotDB,plotVar,false,false,plotName);
                     }
                     CATCHALL(...)
                     {

@@ -89,6 +89,9 @@ class QSpinBox;
 //   Cyrus Harrison, Wed Nov 28 13:28:47 PST 2007
 //   Removed apply functions b/c the apply button was removed.
 //
+//   Brad Whitlock, Thu Jan 24 11:21:56 PDT 2008
+//   Added newPlotsInheritSILRestriction check box.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -126,6 +129,7 @@ private slots:
     void createMeshQualityToggled(bool);
     void createTimeDerivativeToggled(bool);
     void createVectorMagnitudeToggled(bool);
+    void newPlotsInheritSILRestrictionToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -140,6 +144,7 @@ private:
     QCheckBox        *createMeshQualityToggle;
     QCheckBox        *createTimeDerivativeToggle;
     QCheckBox        *createVectorMagnitudeToggle;
+    QCheckBox        *newPlotsInheritSILRestrictionToggle;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;

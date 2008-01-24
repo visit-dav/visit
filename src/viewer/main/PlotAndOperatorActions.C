@@ -968,7 +968,9 @@ AddPlotAction::Update()
 // Creation:   Thu Mar 20 12:44:42 PDT 2003
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jan 24 11:39:15 PDT 2008
+//   Made inheriting the SIL restriction optional.
+//
 // ****************************************************************************
 
 void
@@ -976,12 +978,15 @@ AddPlotAction::Execute(int)
 {
     bool replacePlots = windowMgr->GetClientAtts()->GetReplacePlots();
     bool applyOperator = windowMgr->GetClientAtts()->GetApplyOperator();
+    bool inheritSILRestriction = windowMgr->GetClientAtts()->
+        GetNewPlotsInheritSILRestriction();
 
     //
     // Try and create the plot.
     //
     window->GetPlotList()->AddPlot(args.GetPlotType(),
-        args.GetVariable().c_str(), replacePlots, applyOperator);
+        args.GetVariable().c_str(), replacePlots, applyOperator,
+        inheritSILRestriction);
 }
 
 // ****************************************************************************
