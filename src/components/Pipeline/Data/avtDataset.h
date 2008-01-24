@@ -113,6 +113,9 @@ class   avtWebpage;
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Hank Childs, Thu Jan 24 12:58:59 PST 2008
+//    Add friend status for avtLineSurfaceFilter.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -125,6 +128,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtCompactTreeFilter;
     friend                   class avtSymmEvalExpression;
     friend                   class avtLineScanQuery;
+    friend                   class avtLineSurfaceFilter;
 
   public:
                              avtDataset(avtDataObjectSource *);
