@@ -17,3 +17,4 @@ treatAllDBsAsTimeVarying = 0
 createMeshQualityExpressions = 1
 createTimeDerivativeExpressions = 1
 createVectorMagnitudeExpressions = 1
+newPlotsInheritSILRestriction = 1
