@@ -443,6 +443,9 @@ class avtDefaultPlotMetaData;
 //    Jeremy Meredith, Wed Jan 23 16:25:45 EST 2008
 //    Added call to update the current default file opening options.
 //
+//    Brad Whitlock, Thu Jan 24 09:49:27 PST 2008
+//    Added DeferCommandFromSimulation.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -643,6 +646,8 @@ private slots:
                                const avtDatabaseMetaData *md);
     void HandleSILAttsUpdated(const std::string &host, const std::string &db,
                               const SILAttributes *md);
+    void DeferCommandFromSimulation(const EngineKey &key, const std::string &db,
+                                    const std::string &command);
     void HandleCommandFromSimulation(const EngineKey &key, const std::string &db,
                                      const std::string &command);
     void HandleColorTable();
