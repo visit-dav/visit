@@ -316,13 +316,16 @@ QvisPluginWindow::Update(Subject *s)
 //    Jeremy Meredith, Wed Jan 23 15:38:27 EST 2008
 //    Handle two observed subjects, including the new database opening options.
 //
+//    Jeremy Meredith, Thu Jan 24 09:54:25 EST 2008
+//    Forgot to add doAll as a condition to force updates.  Fixed now.
+//
 // ****************************************************************************
 
 void
 QvisPluginWindow::UpdateWindow(bool doAll)
 {
     int i;
-    if (selectedSubject == pluginAtts)
+    if (doAll || selectedSubject == pluginAtts)
     {
         listPlots->clear();
         listPlots->setSorting(1, true);
@@ -360,7 +363,8 @@ QvisPluginWindow::UpdateWindow(bool doAll)
             }
         }
     }
-    else if (selectedSubject == fileOpenOptions)
+
+    if (doAll || selectedSubject == fileOpenOptions)
     {
         listDatabases->clear();
         listDatabases->setSorting(0,true);
