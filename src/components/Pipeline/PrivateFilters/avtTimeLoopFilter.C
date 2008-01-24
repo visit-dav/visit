@@ -126,6 +126,9 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //    Coordinate with the terminating source (which issues progress
 //    updates) to get better progress.
 //
+//    Hank Childs, Thu Jan 24 12:56:48 PST 2008
+//    Add debug statement.
+//
 // ****************************************************************************
 
 bool
@@ -152,6 +155,8 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
            currentTime = i; 
         else 
            currentTime = endTime; 
+        debug5 << "Time loop filter updating with time slice #" 
+               << currentTime << endl;
 
         avtSIL *sil = GetInput()->GetTerminatingSource()->GetSIL(currentTime);
         if (sil == NULL)

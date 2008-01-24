@@ -226,6 +226,9 @@
 #    Kathleen Bonnell, Mon Oct 15 13:55:20 PDT 2007 
 #    Added avtDataRangeSelection.
 #
+#    Hank Childs, Tue Jan 22 09:11:49 PST 2008
+#    Add avtTimeLoopCollectorFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -341,6 +344,7 @@ PrivateFilters_src= \
   PrivateFilters/avtStructuredMeshChunker.C \
   PrivateFilters/avtStructuredMeshPartitionStrategy.C \
   PrivateFilters/avtSweepPlanePartitionStrategy.C \
+  PrivateFilters/avtTimeLoopCollectorFilter.C \
   PrivateFilters/avtTimeLoopFilter.C
 
 Sinks_src= \
