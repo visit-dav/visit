@@ -415,19 +415,21 @@ LongFileName(const std::string &shortName)
 static void
 GUI_LogQtMessages(QtMsgType type, const char *msg)
 {
-    const int n_strs_to_print = 1;
-    const char *strs_to_print[n_strs_to_print] = 
-       { "cannot connect to X server" };
-    bool shouldPrint = false;
-    for (int i = 0 ; i < n_strs_to_print ; i++)
+    const int n_strs_to_suppress = 1;
+    const char *strs_to_suppress[] = 
+       { "Invalid XLFD" };
+    bool shouldPrint = true;
+    for (int i = 0 ; i < n_strs_to_suppress ; i++)
     {
-        if (strstr(msg, strs_to_print[i]) != NULL)
-            shouldPrint = true;
+        if (strstr(msg, strs_to_suppress[i]) != NULL)
+        {
+            shouldPrint = false;
+            break;
+        }
     }
+
     if (shouldPrint)
-    {
-        cerr << "Error: " << msg << endl;
-    }
+        cerr << msg << endl;
 
     switch(type)
     {

@@ -22,7 +22,7 @@
       Deflate
     </Enum>
     <Enum name="ResConstraint">
-      NoConstaint
+      NoConstraint
       EqualWidthHeight
       ScreenProportions
     </Enum>

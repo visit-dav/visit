@@ -906,6 +906,8 @@ class VisItMovieTemplate:
     # Date:       Thu Sep 21 11:37:01 PDT 2006
     #
     # Modifications:
+    #   Brad Whitlock, Fri Jan 25 14:23:47 PST 2008
+    #   Fixed so the image size is not constrained, which fixes some templates.
     #
     ###########################################################################
 
@@ -921,6 +923,7 @@ class VisItMovieTemplate:
             s.screenCapture = 0
             s.stereo = old_sw.stereo
             s.format = s.PPM
+            s.resConstraint = s.NoConstraint
 
             currentRA = GetRenderingAttributes()
 
