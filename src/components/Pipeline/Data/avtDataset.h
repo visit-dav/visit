@@ -116,6 +116,9 @@ class   avtWebpage;
 //    Hank Childs, Thu Jan 24 12:58:59 PST 2008
 //    Add friend status for avtLineSurfaceFilter.
 //
+//    Hank Childs, Thu Jan 24 15:48:41 PST 2008
+//    Add friend status for avtExecuteThenTimeLoopFilter.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataset : public avtDataObject
@@ -129,6 +132,7 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtSymmEvalExpression;
     friend                   class avtLineScanQuery;
     friend                   class avtLineSurfaceFilter;
+    friend                   class avtExecuteThenTimeLoopFilter;
 
   public:
                              avtDataset(avtDataObjectSource *);
