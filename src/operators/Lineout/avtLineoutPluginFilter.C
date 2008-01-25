@@ -108,8 +108,8 @@ avtLineoutPluginFilter::Create()
 //
 //  Modifications:
 //
-//    Hank Childs, Fri Sep 30 09:16:06 PDT 2005
-//    Add support for distributed resampling.
+//    Hank Childs, Fri Jan 25 09:59:29 PST 2008
+//    Remove ignoreGlobal, which was unused.
 //
 // ****************************************************************************
 
@@ -129,7 +129,6 @@ avtLineoutPluginFilter::SetAtts(const AttributeGroup *a)
     lineouter = new avtLineoutFilter();
     lineouter->SetPoint1(atts.GetPoint1());
     lineouter->SetPoint2(atts.GetPoint2());
-    lineouter->SetIgnoreGlobal(atts.GetIgnoreGlobal());
     lineouter->SetSamplingOn(atts.GetSamplingOn());
     lineouter->SetNumberOfSamplePoints(atts.GetNumberOfSamplePoints());
 }

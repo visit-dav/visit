@@ -102,6 +102,9 @@ struct CellInfo
 //    Hank Childs, Thu Jan 24 09:44:45 PST 2008
 //    Initialized new data members.
 //
+//    Hank Childs, Fri Jan 25 09:59:29 PST 2008
+//    Remove ignoreGlobal, which was unused.
+//
 // ****************************************************************************
 
 avtLineoutFilter::avtLineoutFilter()
@@ -116,7 +119,6 @@ avtLineoutFilter::avtLineoutFilter()
     point2[0] = 1.;
     point2[1] = 1.;
     point2[2] = 0.;
-    ignoreGlobal = false;
     samplingOn   = false;
     numberOfSamplePoints = 50;
 }
@@ -155,12 +157,16 @@ avtLineoutFilter::avtLineoutFilter()
 //    Hank Childs, Thu Jan 24 09:44:45 PST 2008
 //    Make use of new data members.
 //
+//    Hank Childs, Fri Jan 25 09:59:29 PST 2008
+//    Fix stupid mistake (missing negation of samplingOn when stripping out
+//    the LineoutAttributes).
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtLineoutFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 {
-    if (samplingOn)
+    if (!samplingOn)
         return NoSampling(in_ds, domain);
     else 
         return Sampling(in_ds, domain);

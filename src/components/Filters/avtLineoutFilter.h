@@ -89,6 +89,9 @@ class vtkRectilinearGrid;
 //    Hank Childs, Thu Jan 24 09:44:45 PST 2008
 //    Moved to /components/Filters and divorced from LineoutAttributes.
 //
+//    Hank Childs, Fri Jan 25 09:59:29 PST 2008
+//    Remove ignoreGlobal, which was unused.
+//
 // ****************************************************************************
 
 class avtLineoutFilter : public avtStreamer
@@ -106,8 +109,6 @@ class avtLineoutFilter : public avtStreamer
                                { point1[0] = p[0]; point1[1] = p[1]; point1[2] = p[2]; };
     void                     SetPoint2(double *p)
                                { point2[0] = p[0]; point2[1] = p[1]; point2[2] = p[2]; };
-    void                     SetIgnoreGlobal(bool ig)
-                               { ignoreGlobal = ig; };
     void                     SetSamplingOn(bool so)
                                { samplingOn = so; };
     void                     SetNumberOfSamplePoints(int nosp)
@@ -116,7 +117,6 @@ class avtLineoutFilter : public avtStreamer
   protected:
     double                   point1[3];
     double                   point2[3];
-    bool                     ignoreGlobal;
     bool                     samplingOn;
     int                      numberOfSamplePoints;
 
