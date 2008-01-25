@@ -555,7 +555,7 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             oneToOneResButton->blockSignals(true);
             screenResButton->blockSignals(true);
             heightLineEdit->blockSignals(true);
-            if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::NoConstaint)
+            if (saveWindowAtts->GetResConstraint() == SaveWindowAttributes::NoConstraint)
             {
                 noResButton->setChecked(true);
                 oneToOneResButton->setChecked(false);
@@ -999,7 +999,7 @@ QvisSaveWindow::resConstraintToggled(bool val)
 
     if (noResButton->isOn())
     {
-        saveWindowAtts->SetResConstraint(SaveWindowAttributes::NoConstaint);
+        saveWindowAtts->SetResConstraint(SaveWindowAttributes::NoConstraint);
         heightLineEdit->setEnabled(true);
     }
     else if (oneToOneResButton->isOn())
