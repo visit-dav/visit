@@ -55,7 +55,6 @@
 
 #include <DBOptionsAttributes.h>
 #include <Expression.h>
-#include <sstream>
 
 #include <InvalidVariableException.h>
 #include <InvalidFilesException.h>
@@ -424,6 +423,11 @@ avtPlainTextFileFormat::GetVectorVar(const char *varname)
 //  Programmer: Jeremy Meredith
 //  Creation:   January 24, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Jan 25 17:53:13 EST 2008
+//    Support both CSV and whitespace-delimited files.  Sped up
+//    parsing as well.
+//
 // ****************************************************************************
 
 void
@@ -443,44 +447,97 @@ avtPlainTextFileFormat::ReadFile()
         in.getline(buff, 4096);
     }
 
-    // get variable names from the first row
-    if (firstRowIsHeader)
-    {
-        in.getline(buff, 4096);
-        std::stringstream ss(buff);
-        string name;
-        while (ss >> name)
-        {
-            variableNames.push_back(name);
-        }
-    }
-
     // actually read the data; one vector per row
     ncolumns = 0;
     nrows = 0;
     bool firstRow = true;
     in.getline(buff, 4096);
+    bool comma = false;
+    for (char *p=buff; *p!='\0'; p++)
+        if (*p == ',')
+            comma = true;
+
     while (!!in)
     {
-        std::stringstream ss(buff);
-        char value_as_string[200];
-
+        int len = strlen(buff);
+        char *start = buff;
         vector<float> row;
-        while (ss >> value_as_string)
+
+        if (comma)
         {
-            row.push_back(atof(value_as_string));
+            while ((start-buff)<=len)
+            {
+                char *end = start;
+                while (*end != '\0' && (end-buff)<=len &&
+                       !(*end == ','))
+                {
+                    end++;
+                }
+                *end = '\0';
+                if (firstRowIsHeader && firstRow)
+                {
+                    variableNames.push_back(start);
+                }
+                else
+                {
+                    float value = atof(start);
+                    row.push_back(value);
+                }
+                start = end+1;
+            }
+        }
+        else
+        {
+            while (*start != '\0' && (start-buff)<=len &&
+                   (*start == ' ' || *start == '\t'))
+            {
+                start++;
+            }
+            while ((start-buff)<=len)
+            {
+                char *end = start;
+                while (*end != '\0' && (end-buff)<=len &&
+                       !(*end == ' ' || *end == '\t'))
+                {
+                    end++;
+                }
+                *end = '\0';
+                while (*(end+1) != '\0' && (end+1-buff)<=len &&
+                       (*(end+1) == ' ' || *(end+1) == '\t'))
+                {
+                    end++;
+                    *end = '\0';
+                }
+                if (start != end)
+                {
+                    if (firstRowIsHeader && firstRow)
+                    {
+                        variableNames.push_back(start);
+                    }
+                    else
+                    {
+                        float value = atof(start);
+                        row.push_back(value);
+                    }
+                }
+                start = end+1;
+            }
         }
 
+        int rowlen = (firstRowIsHeader && firstRow) ? variableNames.size() : row.size();
         if (firstRow)
         {
-            ncolumns = row.size();
+            ncolumns = rowlen;
         }
-        else if (row.size() != ncolumns)
+        else if (rowlen != ncolumns)
         {
             break;
         }
-        data.push_back(row);
-        nrows++;
+        if (!(firstRowIsHeader && firstRow))
+        {
+            data.push_back(row);
+            nrows++;
+        }
         firstRow = false;
         in.getline(buff, 4096);
 
