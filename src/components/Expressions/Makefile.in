@@ -187,6 +187,9 @@
 #   Gunther H. Weber, Wed Jan  9 10:21:48 PST 2008
 #   Added avtPerformColorTableLookupFilter.C
 #
+#   Hank Childs, Thu Jan 24 15:48:41 PST 2008
+#   Added avtExecuteThenTimeLoopFilter.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -297,6 +300,7 @@ ImageProcessing_src= \
   ImageProcessing/avtMedianFilterExpression.C
 
 Management_src= \
+  Management/avtExecuteThenTimeLoopFilter.C \
   Management/avtExpressionEvaluatorFilter.C \
   Management/avtConstantCreatorFilter.C \
   Management/avtExprNode.C \
