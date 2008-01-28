@@ -81,6 +81,7 @@ class DBATTS_API avtSILArray
     avtSILSet_p         GetSILSet(int index) const;
     avtSILCollection_p  GetSILCollection() const;
 
+    int                 GetSILSetID(int index) const;
     int                 GetParent() const    { return iColParent; }
     void                SetFirstSetIndex(int s)    {iFirstSet = s;}
     void                SetCollectionIndex(int c)  {iColIndex = c;}

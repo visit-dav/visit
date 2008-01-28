@@ -276,6 +276,25 @@ avtSILMatrix::GetSILSet(int index) const
 
 
 // ****************************************************************************
+//  Method: avtSILMatrix::GetSILSetID
+//
+//  Purpose:
+//      Gets a SIL set ID without having to construct a new avtSILSet.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Fri Jan 25 13:07:02 PST 2008
+//
+// ****************************************************************************
+
+int
+avtSILMatrix::GetSILSetID(int index) const
+{
+    int row = index / set2.size();
+    return sil->GetSILSetID(set1[row]);
+}
+
+
+// ****************************************************************************
 //  Method: avtSILMatrix::GetSILCollection
 //
 //  Purpose:

@@ -392,8 +392,7 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
             continue;
         }
 
-        avtSILSet_p set = silr->GetSILSet(setid);
-        int id = set->GetIdentifier();
+        int id = silr->GetSILSetID(setid);
         if (id >= 0)
         {
             if (!allProcs)
@@ -420,14 +419,16 @@ avtSILRestrictionTraverser::GetDomainList(vector<int> &list, bool allProcs)
         }
         else
         {
-            // If a collection is part of a matrix, all of the subsets, must
+            avtSILSet_p set = silr->GetSILSet(setid);
+            // If a collection is part of a matrix, all of the subsets must
             // have the same identifier, so we don't need to consider them.
-            const vector<int> outmaps = set->GetRealMapsOut();
+            const vector<int> &outmaps = set->GetRealMapsOut();
             for (j = 0 ; j < outmaps.size() ; j++)
             {
                 avtSILCollection_p coll = silr->GetSILCollection(outmaps[j]);
                 const vector<int> &subsets =
                                           coll->GetSubsets()->GetAllElements();
+                setList.reserve(setList.size() + subsets.size());
                 for (k = 0 ; k < subsets.size() ; k++)
                 {
                     setList.push_back(subsets[k]);

@@ -104,6 +104,7 @@ class DBATTS_API avtSILMatrix
     avtSILSet_p           GetSILSet(int index) const;
     avtSILCollection_p    GetSILCollection(int index) const;
 
+    int                   GetSILSetID(int index) const;
     int                   GetNumSets(void) const;
     int                   GetNumCollections(void) const;
 

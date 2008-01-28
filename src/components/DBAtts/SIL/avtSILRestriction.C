@@ -1168,8 +1168,7 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
     setsToProcess.push_back(topSet);
     for (i = 0 ; i < setsToProcess.size() ; i++)
     {
-        avtSILSet_p currentSet = GetSILSet(setsToProcess[i]);
-        int id = currentSet->GetIdentifier();
+        int id = GetSILSetID(setsToProcess[i]);
         if (id < 0)
         {
             //
@@ -1179,6 +1178,7 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
             // matrix, and we will let the 'other dimension' handle it (ie this
             // is a material and we will let the domains handle it).
             //
+            avtSILSet_p currentSet = GetSILSet(setsToProcess[i]);
             const vector<int> &mapsOut = currentSet->GetMapsOut();
             for (int j = 0 ; j < mapsOut.size() ; j++)
             {
@@ -1223,6 +1223,11 @@ avtSILRestriction::RestrictDomains(const vector<int> &domains,
                 {
                     useSet[setsToTurnOff[j]] = NoneUsed;
                 }
+
+                //Early out, to avoid creating a lot of unneeded avtSILSets
+                if (!SILSetHasMapsOut(setsToTurnOff[j]))
+                    continue;
+
                 avtSILSet_p set = GetSILSet(setsToTurnOff[j]);
                 const vector<int> &mapsOut = set->GetMapsOut();
                 for (int k = 0 ; k < mapsOut.size() ; k++)
