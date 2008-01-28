@@ -188,6 +188,27 @@ avtSILArray::GetSILCollection() const
 
 
 // ****************************************************************************
+//  Method: avtSILArray::GetSILSet
+//
+//  Purpose:
+//      Create an avtSILSet on demand, using a templated name.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Thu Dec 20 12:12:30 PST 2007
+//
+// ****************************************************************************
+
+int
+avtSILArray::GetSILSetID(int index) const
+{
+    if (bUseUniqueIDs)
+        return index;
+    else
+        return -1;
+}
+
+
+// ****************************************************************************
 //  Method: avtSILArray::GetSetState
 //
 //  Purpose:

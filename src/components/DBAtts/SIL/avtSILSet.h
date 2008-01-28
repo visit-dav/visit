@@ -89,7 +89,7 @@ class DBATTS_API avtSILSet
     void                    AddMapOut(int);
     void                    AddMatrixMapOut(int);
 
-    int                     GetIdentifier(void) { return id; };
+    int                     GetIdentifier(void) const { return id; };
 
     void                    Print(ostream &) const;
 

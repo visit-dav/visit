@@ -151,6 +151,9 @@ class DBATTS_API avtSIL
     int                               GetNumSets() const;
     int                               GetNumCollections() const;
 
+    int                               GetSILSetID(int index) const;
+    bool                              SILSetHasMapsOut(int index) const;
+
     typedef enum { 
         WHOLE_SET, 
         SUBSET, 

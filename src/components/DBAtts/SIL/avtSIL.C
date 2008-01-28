@@ -688,6 +688,133 @@ avtSIL::GetSILSet(int index, bool &isTemporary) const
 }
 
 
+// ****************************************************************************
+//  Method: avtSIL::GetSILSetID
+//
+//  Purpose:
+//      Gets the ID of a set from a SIL.  Functionally this is the same as
+//      GetSILSet(index)->GetIdentifier(), but potentially avoids the work
+//      of constructing a new avtSILSet, when only the id is needed.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Fri Jan 25 13:07:02 PST 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtSIL::GetSILSetID(int index) const
+{
+    if (index < 0)
+        EXCEPTION2(BadIndexException, index, GetNumSets());
+
+    int tmpIndex = index, ii = 0, jj = 0, 
+        iCurrSet = 0, iCurrMat = 0, iCurrArray = 0;
+
+    for (ii = 0; ii < order.size(); ii++)
+    {
+        if (order[ii] == WHOLE_SET || order[ii] == SUBSET)
+        {
+            if (tmpIndex == 0)
+            {
+                return sets[iCurrSet]->GetIdentifier();
+            }
+            else
+            {
+                tmpIndex--;
+                iCurrSet++;
+            }
+        }
+        else if (order[ii] == ARRAY)
+        {
+            if (tmpIndex < arrays[iCurrArray]->GetNumSets())
+            {
+                return arrays[iCurrArray]->GetSILSetID(tmpIndex);
+            }
+            else
+            {
+                tmpIndex -= arrays[iCurrArray]->GetNumSets();
+                iCurrArray++;
+            }
+        }
+        else if (order[ii] == MATRIX)
+        {
+            if (tmpIndex < matrices[iCurrMat]->GetNumSets())
+            {
+                return matrices[iCurrMat]->GetSILSetID(tmpIndex);
+            }
+            else
+            {
+                tmpIndex -= matrices[iCurrMat]->GetNumSets();
+                iCurrMat++;
+            }
+        }
+    }
+    EXCEPTION2(BadIndexException, index, GetNumSets());
+}
+
+
+
+bool
+avtSIL::SILSetHasMapsOut(int index) const
+{
+    if (index < 0)
+        EXCEPTION2(BadIndexException, index, GetNumSets());
+
+    int tmpIndex = index, ii = 0, jj = 0, 
+        iCurrSet = 0, iCurrMat = 0, iCurrArray = 0;
+
+    for (ii = 0; ii < order.size(); ii++)
+    {
+        if (order[ii] == WHOLE_SET || order[ii] == SUBSET)
+        {
+            if (tmpIndex == 0)
+            {
+                return (sets[iCurrSet]->GetMapsOut().size() > 0);
+            }
+            else
+            {
+                tmpIndex--;
+                iCurrSet++;
+            }
+        }
+        else if (order[ii] == ARRAY)
+        {
+            if (tmpIndex < arrays[iCurrArray]->GetNumSets())
+            {
+                int jj;
+                for (jj = 0; jj < matrices.size(); jj++)
+                {
+                    int col = matrices[jj]->SetIsInCollection(index);
+                    if (col >= 0)
+                        return true;
+                }
+                return false;
+            }
+            else
+            {
+                tmpIndex -= arrays[iCurrArray]->GetNumSets();
+                iCurrArray++;
+            }
+        }
+        else if (order[ii] == MATRIX)
+        {
+            if (tmpIndex < matrices[iCurrMat]->GetNumSets())
+            {
+                return false;
+            }
+            else
+            {
+                tmpIndex -= matrices[iCurrMat]->GetNumSets();
+                iCurrMat++;
+            }
+        }
+    }
+    EXCEPTION2(BadIndexException, index, GetNumSets());
+}
+
+
 
 // ****************************************************************************
 //  Method: avtSIL::AddMapsToTemporarySet
