@@ -64,6 +64,9 @@ class SILArrayAttributes;
 //  Programmer: Dave Bremer
 //  Creation:   Thu Dec 20 12:12:30 PST 2007
 //
+//  Modifications:
+//    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
+//    Added GetSILSetID method.
 // ****************************************************************************
 
 class DBATTS_API avtSILArray

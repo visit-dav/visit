@@ -81,6 +81,9 @@ class     SILMatrixAttributes;
 //    Dave Bremer, Thu Dec 20 10:31:43 PST 2007
 //    Added method to see if a set is contained in one of this matrix's 
 //    collections.
+//
+//    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
+//    Added GetSILSetID method.
 // ****************************************************************************
 
 class DBATTS_API avtSILMatrix

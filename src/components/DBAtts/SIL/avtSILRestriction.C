@@ -1117,6 +1117,9 @@ avtSILRestriction::RestrictDomainsForLoadBalance(const vector<int> &domains)
 //
 //    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
 //    Updated to handle avtSILArrays
+//
+//    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
+//    Optimized by avoiding some calls to create avtSILSets.
 // ****************************************************************************
 
 void

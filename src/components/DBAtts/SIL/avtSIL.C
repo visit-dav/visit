@@ -755,6 +755,19 @@ avtSIL::GetSILSetID(int index) const
 }
 
 
+// ****************************************************************************
+//  Method: avtSIL::SILSetHasMapsOut
+//
+//  Purpose:
+//      Tells whether a set has any maps out, potentially avoiding the work
+//      of constructing a new avtSILSet that is unneeded.
+//
+//  Programmer: Dave Bremer
+//  Creation:   Fri Jan 25 13:07:02 PST 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
 
 bool
 avtSIL::SILSetHasMapsOut(int index) const

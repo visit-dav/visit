@@ -366,6 +366,10 @@ avtSILRestrictionTraverser::GetDomainListAllProcs(vector<int> &list)
 //    Mark C. Miller
 //    Made private, added bool for query on all procs or just owner
 //
+//    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
+//    Optimized to avoid some calls to create avtSILSets on demand, and
+//    reserved some space in an array to avoid reallocating memory during
+//    push_backs.
 // ****************************************************************************
  
 void
