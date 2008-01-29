@@ -74,6 +74,9 @@
 //    Dave Bremer, Thu Dec 20 10:31:43 PST 2007
 //    Removed unused data used in matrix operations, and consolidated
 //    AddMatrixRow and AddMatrixColumn into AddMatrixMapOut.
+//
+//    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
+//    Made GetIdentifier() a const method.
 // ****************************************************************************
 
 class DBATTS_API avtSILSet

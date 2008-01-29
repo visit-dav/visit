@@ -113,6 +113,10 @@ class   SILAttributes;
 //    Added SIL arrays to hold sets that can be created using a name
 //    template, and added the ability to add sets, arrays, and matrices in
 //    any order.
+//
+//    Dave Bremer, Fri Jan 25 13:07:02 PST 2008
+//    Added the methods GetSILSetID and SILSetHasMapsOut, which can give info
+//    about a set without actually creating it, possibly avoiding some work.
 // ****************************************************************************
 
 class DBATTS_API avtSIL
