@@ -750,6 +750,10 @@ avtSILRestrictionTraverser::GetMaterials(int chunk, bool &sms)
 //
 //    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
 //    Updated to handle avtSILArrays
+//
+//    Dave Bremer, Mon Jan 28 18:58:05 PST 2008
+//    Added an early out if a given set would have no maps out.  
+//    In that case it can avoid creating the set on demand.
 // ****************************************************************************
  
 void
@@ -771,6 +775,11 @@ avtSILRestrictionTraverser::PrepareForMaterialSearches(void)
         {
             continue;
         }
+        if (!silr->SILSetHasMapsOut(setsToProcess[i]))
+        {
+            continue;
+        }
+
         avtSILSet_p currentSet = silr->GetSILSet(setsToProcess[i]);
         int chunk = currentSet->GetIdentifier();
         const vector<int> &mapsOut = currentSet->GetMapsOut();
