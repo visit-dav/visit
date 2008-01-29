@@ -233,6 +233,9 @@
 #
 #    Mark C. Miller, Mon Dec 17 16:06:48 PST 2007
 #    Added ability to skip specific test cases in a .py file
+#
+#    Mark C. Miller, Tue Jan 29 14:59:48 PST 2008
+#    Modified setting of PYTHONPATH to include 
 # ----------------------------------------------------------------------------
 
 cleanTmpFiles () {
@@ -531,7 +534,11 @@ curdate=`date +%Y-%m-%d-%p%I%M`
 #
 export PYTHONPATH
 export LD_LIBRARY_PATH
-PYTHONPATH=.
+if test -n "$PYTHONPATH"; then
+    PYTHONPATH=".:$PYTHONPATH"
+else
+    PYTHONPATH=.
+fi
 LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 
 #
