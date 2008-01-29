@@ -122,5 +122,28 @@ main(int argc, char **argv)
     DBPutUcdvar1(dbfile, "nodal_var", "mesh", nc_var, 12, NULL, 0, DB_FLOAT,
         DB_NODECENT, NULL);
 
+    float x1[] = {0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3};
+    float y1[] = {0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3};
+    int zonelist2[] = {0,1,5,4,   1,2,6,5,   2,3,7,6,
+                       4,5,9,8,   5,6,10,9,  6,7,11,10,
+		       8,9,13,12, 9,10,14,13,10,11,15,14};
+
+    zshapecnt = 9;
+    DBPutZonelist2(dbfile, "zl2d2", 9, 2, zonelist2, sizeof(zonelist2)/sizeof(zonelist2[0]), 0,
+                   0, 0, &zshapetype, &zshapesize,
+                   &zshapecnt, 1, NULL);
+
+    coords[0] = x1; coords[1] = y1;
+    DBPutUcdmesh(dbfile, "mesh2", 2, coordnames, coords, 16, 9,
+                     "zl2d2", NULL, DB_FLOAT, NULL);
+
+    float zc_var2[] = {1, 0, -1, 0, 0, 0, -1, 0, 1};
+    DBPutUcdvar1(dbfile, "zonal_var2", "mesh2", zc_var2, 9, NULL, 0, DB_FLOAT,
+        DB_ZONECENT, NULL);
+
+    float nc_var2[] = {2, 1, -1, -2, 1, 1, -1, -1, -1, -1, 1, 1, -2, -1, 1, 2};
+    DBPutUcdvar1(dbfile, "nodal_var2", "mesh2", nc_var2, 16, NULL, 0, DB_FLOAT,
+        DB_NODECENT, NULL);
+
     DBClose(dbfile);
 }
