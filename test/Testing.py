@@ -1058,11 +1058,22 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 #
 # Purpose:
 #  Filters words from the test text before it gets saved.
+#
+# Modifications:
+#   Mark C. Miller, Tue Jan 29 18:57:45 PST 2008
+#   Moved code to filter VISIT_TOP_DIR to top of routine to ensure it is
+#   executed always, not just in the case where numdifftol is zero. I also
+#   fixed cases where a floating point number occuring at the end of a
+#   sentence ending in a period ('.') was not getting correctly interpreted
+#   and filtered.
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
     global numdifftol
 
+    # note, this substitution is applied to the entire string
+    inText = string.replace(inText, "%s/data/"%visitTopDir, "VISIT_TOP_DIR/data/")
+    inText = string.replace(inText, "%s/test/"%visitTopDir, "VISIT_TOP_DIR/test/")
     if numdifftol != 0.0:
         if silo == 1:
             tmpText = string.replace(inText, "/view/visit_VOBowner_testsilo", "")      
@@ -1074,24 +1085,27 @@ def FilterTestText(inText, baseText):
         transTab = string.maketrans(string.digits, string.digits)
 	for w in range(len(baseWords)):
             try:
-	        inVal = string.atof(string.translate(inWords[w], transTab, '><,)('))
-	        baseVal = string.atof(string.translate(baseWords[w], transTab, '><,)('))
-		if baseVal != 0.0:
-		    valDiff = (inVal - baseVal) / baseVal
-                else:
+		inWordsT = string.translate(inWords[w], transTab, '><,()')
+		baseWordsT = string.translate(baseWords[w], transTab, '><,()')
+		if inWordsT.count(".") > 1 and inWordsT.endswith("."):
+		    inWordsT = inWordsT.rstrip(".")
+		if baseWordsT.count(".") > 1 and baseWordsT.endswith("."):
+		    baseWordsT = baseWordsT.rstrip(".")
+	        inVal = string.atof(inWordsT)
+	        baseVal = string.atof(baseWordsT)
+		if baseVal == 0:
 		    valDiff = inVal - baseVal
+                else:
+		    valDiff = (inVal - baseVal) / baseVal
 		if valDiff < 0:
 		    valDiff = -valDiff
                 if valDiff != 0:
                     if valDiff < numdifftol:
-                        tmpText = string.replace(tmpText, "%f"%inVal, "%f"%baseVal, 1)
+                        tmpText = string.replace(tmpText, "%s"%inWordsT, "%s"%baseWordsT, 1)
             except ValueError:
 	        outText = outText + inWords[w]
         return tmpText
     else:
-	# note, this substitution is applied to the entire string
-	inText = string.replace(inText, "%s/data/"%visitTopDir, "VISIT_TOP_DIR/data/")
-	inText = string.replace(inText, "%s/test/"%visitTopDir, "VISIT_TOP_DIR/test/")
         if silo == 1:
             return string.replace(inText, "/view/visit_VOBowner_testsilo", "")
 	else:
