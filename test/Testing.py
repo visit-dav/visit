@@ -1066,6 +1066,11 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 #   fixed cases where a floating point number occuring at the end of a
 #   sentence ending in a period ('.') was not getting correctly interpreted
 #   and filtered.
+#
+#   Mark C. Miller, Tue Jan 29 19:37:54 PST 2008
+#   Adjusted case with the absolute value of the base values are very near
+#   zero (e.g. less than square of numdifftol), to switch to absolute
+#   diffs.
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
@@ -1093,7 +1098,7 @@ def FilterTestText(inText, baseText):
 		    baseWordsT = baseWordsT.rstrip(".")
 	        inVal = string.atof(inWordsT)
 	        baseVal = string.atof(baseWordsT)
-		if baseVal == 0:
+		if baseVal < numdifftol * numdifftol:
 		    valDiff = inVal - baseVal
                 else:
 		    valDiff = (inVal - baseVal) / baseVal
