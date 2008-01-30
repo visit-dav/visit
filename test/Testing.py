@@ -1098,15 +1098,21 @@ def FilterTestText(inText, baseText):
 		    baseWordsT = baseWordsT.rstrip(".")
 	        inVal = string.atof(inWordsT)
 	        baseVal = string.atof(baseWordsT)
+		tooSmall = False
 		if baseVal < numdifftol * numdifftol:
 		    valDiff = inVal - baseVal
+		    tooSmall = True
                 else:
 		    valDiff = (inVal - baseVal) / baseVal
 		if valDiff < 0:
 		    valDiff = -valDiff
                 if valDiff != 0:
-                    if valDiff < numdifftol:
-                        tmpText = string.replace(tmpText, "%s"%inWordsT, "%s"%baseWordsT, 1)
+		    if tooSmall:
+		        if valDiff < numdifftol * numdifftol:
+                            tmpText = string.replace(tmpText, "%s"%inWordsT, "%s"%baseWordsT, 1)
+		    else:
+                        if valDiff < numdifftol:
+                            tmpText = string.replace(tmpText, "%s"%inWordsT, "%s"%baseWordsT, 1)
             except ValueError:
 	        outText = outText + inWords[w]
         return tmpText
