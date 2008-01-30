@@ -271,6 +271,7 @@ nowin="-nowin"
 dlb=""
 pixdiff="-pixdiff=0"
 avgdiff="-avgdiff=0"
+numdiff="-numdiff=0"
 otherArgs=""
 for options
 do
@@ -394,6 +395,15 @@ do
              shift 2
 	 fi
 	 ;;
+      -numdiff)
+         if test -z "$2"; then
+             echo "Expected an argument for $1"
+             opterror=1
+	 else
+	     numdiff="-numdiff=$2"
+             shift 2
+	 fi
+	 ;;
       -notrackmem)
          notrackMem="-notrackmem"
 	 shift
@@ -454,9 +464,10 @@ if test "$opterror" = "1"; then
     echo "                                      up CLI and let user Source() the .py file explicitly." 
     echo "        -pixdiff                      Allowed % of pixels different [default = 0%]" 
     echo "        -avgdiff                      If pixdiff exceeded, allowed mean grayscale diff [default = 0]" 
-    echo "        -notrackmem                  Turn off memory usage tracking while tests run." 
-    echo "        -nonowin                     Don't put '-nowin' on the command lines to visit." 
-    echo "        -vargs                       Arguments to pass directly to VisIt (surround them \" or ')"
+    echo "        -numdiff                      Allowed relative numerical difference in text results [default = 0]" 
+    echo "        -notrackmem                   Turn off memory usage tracking while tests run." 
+    echo "        -nonowin                      Don't put '-nowin' on the command lines to visit." 
+    echo "        -vargs                        Arguments to pass directly to VisIt (surround them \" or ')"
     exit 1
 fi
 
@@ -795,25 +806,25 @@ for t in $testcases; do
 	starttime=`date +%s`
         if test "$interactive" = "-interactive"; then
             if test -n "$theArgs"; then
-                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry
+                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry
 	    else
-                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile
+                env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb -verbose -numrestarts 0 $timeLimit $notrackMem $interactive $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile
 	    fi
 	else
             if test -n "$verbose"; then
 	        if test -n "$theArgs"; then
-                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing $configoptions < $t &
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing $configoptions < $t &
     	            testProcId=$!
 		else
-                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t &
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t &
     	            testProcId=$!
 		fi
 	    else
 	        if test -n "$theArgs"; then
-                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing $configoptions < $t 2> /dev/null & 
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $theArgs $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing $configoptions < $t 2> /dev/null & 
 	            testProcId=$!
 		else
-                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t 2> /dev/null &
+                    env PURIFYOPTIONS="$purifyoptions" $theEnv $exepath $otherArgs $dlb $verbose -numrestarts 0 $timeLimit $notrackMem $noPIL $nowin $pixdiff $avgdiff $numdiff -timing -cli $configoptions -geometry $geometry -s $testpyfile < $t 2> /dev/null &
 	            testProcId=$!
 		fi
             fi

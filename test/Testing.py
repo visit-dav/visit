@@ -1061,7 +1061,9 @@ def DiffUsingPIL(file, cur, diff, baseline, altbase):
 # ----------------------------------------------------------------------------
 
 def FilterTestText(inText, baseText):
-    if optimized == 1:
+    global numdifftol
+
+    if numdifftol != 0.0:
         if silo == 1:
             tmpText = string.replace(inText, "/view/visit_VOBowner_testsilo", "")      
 	else:
@@ -1074,16 +1076,15 @@ def FilterTestText(inText, baseText):
             try:
 	        inVal = string.atof(string.translate(inWords[w], transTab, '><,)('))
 	        baseVal = string.atof(string.translate(baseWords[w], transTab, '><,)('))
-		valDiff = inVal - baseVal
+		if baseVal != 0.0:
+		    valDiff = (inVal - baseVal) / baseVal
+                else:
+		    valDiff = inVal - baseVal
 		if valDiff < 0:
 		    valDiff = -valDiff
                 if valDiff != 0:
-                    if baseVal != 0:
-                        if ((baseVal > 0.0) and ((valDiff / baseVal) < 0.0001)) or ((baseVal < 0.0) and ((valDiff / -baseVal) < 0.0001)):
-                             tmpText = string.replace(tmpText, "%f"%inVal, "%f"%baseVal, 1)
-                    else:
-                        if valDiff < 0.0001:
-                             tmpText = string.replace(tmpText, "%f"%inVal, "%f"%baseVal, 1)
+                    if valDiff < numdifftol:
+                        tmpText = string.replace(tmpText, "%f"%inVal, "%f"%baseVal, 1)
             except ValueError:
 	        outText = outText + inWords[w]
         return tmpText
@@ -1380,6 +1381,10 @@ def TurnOffAllAnnotations():
 #    Mark C. Miller, hu Feb  8 17:13:14 PST 2007
 #    Added population of 'silo' mode and logic to FilterTestText to
 #    deal with test view used for silo's tests
+#
+#    Mark C. Miller, Tue Jan 29 16:37:53 PST 2008
+#    Removed 'optimized' mode. Added -numdifftol command line option
+#    and numdifftol global tolerance for relative numerical differences.
 # ----------------------------------------------------------------------------
 
 import string, sys, time, os, commands, thread, HtmlDiff, HtmlPython
@@ -1393,6 +1398,7 @@ from stat import *
 maxds = 0
 avgdifftol = 0.0
 pixdifftol = 0
+numdifftol = 0.0
 
 # Some globals needed for plotting the memory usage of the test.
 keepSampling = 1
@@ -1418,6 +1424,8 @@ for arg in sys.argv:
         pixdifftol = float(subargs[1])
     if (subargs[0] == "-avgdiff"):
         avgdifftol = float(subargs[1])
+    if (subargs[0] == "-numdiff"):
+        numdifftol = float(subargs[1])
 
 # find our file name
 visitTopDir = os.environ['VISIT_TOP_DIR']
@@ -1447,7 +1455,6 @@ scalable = 0
 parallel = 0
 purify = 0
 leakcheck = 0
-optimized = 0
 silo = 0
 leakHistory=""
 modeStr=""
@@ -1466,8 +1473,6 @@ for mode in modes:
       purify = 1
    if mode == "leakcheck":
       leakcheck = 1
-   if mode == "optimized":
-      optimized = 1
    if mode == "silo":
       silo = 1
 
