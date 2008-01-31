@@ -197,12 +197,17 @@ VisitPointTool::Disable()
 // Programmer: Akira Haddox
 // Creation:   Mon Jun  9 09:21:40 PDT 2003
 //
+// Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:36:26 EST 2008
+//    Disabled for AxisArray window mode.
+//
 // ****************************************************************************
 
 bool
 VisitPointTool::IsAvailable() const
 {
-    return proxy.HasPlots();
+
+    return proxy.GetMode() != WINMODE_AXISARRAY && proxy.HasPlots();
 }
 
 // ****************************************************************************

@@ -6,6 +6,8 @@
     </Field>
     <Field name="view3D" label="view3D" type="att" subtype="View3DAttributes">
     </Field>
+    <Field name="viewAxisArray" label="viewAxisArray" type="att" subtype="ViewAxisArrayAttributes">
+    </Field>
     <Field name="lights" label="lights" type="att" subtype="LightList">
     </Field>
     <Field name="renderAtts" label="renderAtts" type="att" subtype="RenderingAttributes">

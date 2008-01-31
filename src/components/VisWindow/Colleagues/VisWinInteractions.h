@@ -84,6 +84,9 @@ class VisitHotPointInteractor;
 //     Brad Whitlock, Wed Sep 10 15:27:35 PST 2003
 //     Added support for temporarily suspending spin mode.
 //
+//     Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//     Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinInteractions : public VisWinColleague
@@ -108,6 +111,8 @@ class VISWINDOW_API VisWinInteractions : public VisWinColleague
     virtual void             Stop3DMode();
     virtual void             StartCurveMode();
     virtual void             StopCurveMode();
+    virtual void             StartAxisArrayMode();
+    virtual void             StopAxisArrayMode();
 
     virtual void             NoPlots();
     virtual void             HasPlots();

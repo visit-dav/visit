@@ -51,6 +51,7 @@
 #include <avtViewCurve.h>
 #include <avtView2D.h>
 #include <avtView3D.h>
+#include <avtViewAxisArray.h>
 #include <vectortypes.h>
 #include <map>
 
@@ -392,6 +393,9 @@ typedef struct {
 //    Brad Whitlock, Wed Jan 23 10:40:12 PST 2008
 //    Added TurnOffAllLocks.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -464,6 +468,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     void SetViewCurveFromClient();
     void SetView2DFromClient();
     void SetView3DFromClient();
+    void SetViewAxisArrayFromClient();
     void ClearViewKeyframes();
     void DeleteViewKeyframe(const int frame);
     void MoveViewKeyframe(int oldFrame, int newFrame);
@@ -511,7 +516,8 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
 
     void UpdateGlobalAtts() const;
     void UpdateViewAtts(int windowIndex = -1, bool updateCurve = true,
-                        bool update2d = true, bool update3d = true);
+                        bool update2d = true, bool update3d = true,
+                        bool updateAxisArray = true);
     void UpdateAnimationAtts();
     void UpdateAnnotationAtts();
     void UpdateLightListAtts();
@@ -564,6 +570,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     static GlobalAttributes              *GetClientAtts();
     static SaveWindowAttributes          *GetSaveWindowClientAtts();
     static ViewCurveAttributes           *GetViewCurveClientAtts();
+    static ViewAxisArrayAttributes       *GetViewAxisArrayClientAtts();
     static View2DAttributes              *GetView2DClientAtts();
     static View3DAttributes              *GetView3DClientAtts();
     static AnimationAttributes           *GetAnimationClientAtts();
@@ -639,6 +646,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
     static ViewCurveAttributes           *viewCurveClientAtts;
     static View2DAttributes              *view2DClientAtts;
     static View3DAttributes              *view3DClientAtts;
+    static ViewAxisArrayAttributes       *viewAxisArrayClientAtts;
     static AnimationAttributes           *animationClientAtts;
     static AnnotationAttributes          *annotationClientAtts;
     static AnnotationAttributes          *annotationDefaultAtts;

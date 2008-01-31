@@ -72,6 +72,7 @@
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
+#include <ViewAxisArrayAttributes.h>
 #include <WindowInformation.h>
 #include <ViewerActionManager.h>
 #include <ViewerEngineManager.h>
@@ -124,6 +125,7 @@ SaveWindowAttributes *ViewerWindowManager::saveWindowClientAtts=0;
 ViewCurveAttributes *ViewerWindowManager::viewCurveClientAtts=0;
 View2DAttributes *ViewerWindowManager::view2DClientAtts=0;
 View3DAttributes *ViewerWindowManager::view3DClientAtts=0;
+ViewAxisArrayAttributes *ViewerWindowManager::viewAxisArrayClientAtts=0;
 AnimationAttributes *ViewerWindowManager::animationClientAtts=0;
 AnnotationAttributes *ViewerWindowManager::annotationClientAtts=0;
 AnnotationAttributes *ViewerWindowManager::annotationDefaultAtts=0;
@@ -4413,11 +4415,14 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    Brad Whitlock, Tue Mar 7 17:28:48 PST 2006
 //    Moved code to ViewerWindow::PushViews.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
 ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
-    bool update2d, bool update3d)
+                            bool update2d, bool update3d, bool updateAxisArray)
 {
     int index = (windowIndex == -1 ? activeWindow : windowIndex);
     const avtViewCurve &viewCurve = windows[index]->GetViewCurve();
@@ -4894,6 +4899,33 @@ ViewerWindowManager::GetViewCurveClientAtts()
     }
 
     return viewCurveClientAtts;
+}
+
+// ****************************************************************************
+// Method: ViewerWindowManager::GetViewAxisArrayClientAtts
+//
+// Purpose: 
+//   Returns a pointer to the axis array view attributes.
+//
+// Returns:    A pointer to the axis array view attributes.
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 28, 2008
+//
+// ****************************************************************************
+
+ViewAxisArrayAttributes *
+ViewerWindowManager::GetViewAxisArrayClientAtts()
+{
+    //
+    // If the client attributes haven't been allocated then do so.
+    //
+    if (viewAxisArrayClientAtts == 0)
+    {
+        viewAxisArrayClientAtts = new ViewAxisArrayAttributes;
+    }
+
+    return viewAxisArrayClientAtts;
 }
 
 // ****************************************************************************
@@ -7072,6 +7104,9 @@ ViewerWindowManager::GetWindowInformation()
 //   Brad Whitlock, Fri Jan 6 11:15:25 PDT 2006
 //   Added code to set the view dimension since it was not getting set.
 //
+//   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//   Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -7194,10 +7229,12 @@ ViewerWindowManager::UpdateWindowInformation(int flags, int windowIndex)
         // misinform the client.
         if(win->GetWindowMode() == WINMODE_3D)
             windowInfo->SetViewDimension(3);
-        else if(win->GetWindowMode() == WINMODE_CURVE)
+        else if (win->GetWindowMode() == WINMODE_CURVE)
             windowInfo->SetViewDimension(1);
-        else
+        else if (win->GetWindowMode() == WINMODE_2D)
             windowInfo->SetViewDimension(2);
+        else
+            windowInfo->SetViewDimension(4); // axis array supports >3 dims
 
         windowInfo->Notify();
     }
@@ -7729,6 +7766,9 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
 //    I added a call to mark the view as changed if the window is in
 //    curve mode.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -7754,10 +7794,12 @@ ViewerWindowManager::ViewCallback(VisWindow *vw)
     //
     // Mark the view as having been modified.
     //
-    if(instance->windows[index]->GetWindowMode() == WINMODE_CURVE)
+    if (instance->windows[index]->GetWindowMode() == WINMODE_CURVE)
         instance->windows[index]->SetViewModifiedCurve();
     else if(instance->windows[index]->GetWindowMode() == WINMODE_2D)
         instance->windows[index]->SetViewModified2d();
+    else if(instance->windows[index]->GetWindowMode() == WINMODE_AXISARRAY)
+        instance->windows[index]->SetViewModifiedAxisArray();
 
     //
     // Update the view attributes in the client and any locked windows.
@@ -7771,6 +7813,7 @@ ViewerWindowManager::ViewCallback(VisWindow *vw)
     winAtts.SetViewCurve(*GetViewCurveClientAtts());
     winAtts.SetView2D(*GetView2DClientAtts());
     winAtts.SetView3D(*GetView3DClientAtts());
+    winAtts.SetViewAxisArray(*GetViewAxisArrayClientAtts());
     avtCallback::SetCurrentWindowAtts(winAtts);
 }
 

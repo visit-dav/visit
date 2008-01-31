@@ -49,6 +49,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //  Modifications:
 //    Kathleen Bonnell, Wed Mar  6 15:14:29 PST 2002 
 //    Replace 'New' method with Macro to match VTK 4.0 API.
+//
+//    Jeremy Meredith, Thu Jan 31 10:30:25 EST 2008
+//    Made use of new string offsets to center the titles of
+//    each axis of the triad a little better.
+//
 // *****************************************************************
 
 vtkStandardNewMacro(vtkTriad2D);
@@ -68,6 +73,8 @@ vtkTriad2D::vtkTriad2D()
   this->XAxis->SetLabelVisibility(0);
   this->XAxis->SetShadow(0);
   this->XAxis->SetTitleAtEnd(1);
+  this->XAxis->SetEndStringHOffsetFactor(-0.5);
+  this->XAxis->SetEndStringVOffsetFactor(-0.5);
   this->XAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->XAxis->GetPoint2Coordinate()
@@ -79,6 +86,8 @@ vtkTriad2D::vtkTriad2D()
   this->YAxis->SetLabelVisibility(0);
   this->YAxis->SetShadow(0);
   this->YAxis->SetTitleAtEnd(1);
+  this->YAxis->SetEndStringHOffsetFactor(-0.5);
+  this->YAxis->SetEndStringVOffsetFactor(-0.5);
   this->YAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->YAxis->GetPoint2Coordinate()
@@ -90,6 +99,8 @@ vtkTriad2D::vtkTriad2D()
   this->ZAxis->SetLabelVisibility(0);
   this->ZAxis->SetShadow(0);
   this->ZAxis->SetTitleAtEnd(1);
+  this->ZAxis->SetEndStringHOffsetFactor(-0.5);
+  this->ZAxis->SetEndStringVOffsetFactor(-0.5);
   this->ZAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->ZAxis->GetPoint2Coordinate()

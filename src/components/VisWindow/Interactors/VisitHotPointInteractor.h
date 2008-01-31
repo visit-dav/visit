@@ -50,6 +50,7 @@ class Lineout2D;
 class Navigate2D;
 class Navigate3D;
 class NavigateCurve;
+class NavigateAxisArray;
 class NullInteractor;
 class Pick;
 class Zoom2D;
@@ -93,6 +94,9 @@ class ZoomCurve;
 //    Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
 //    Replaced Pick3D and Pick2D interactors with Pick.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitHotPointInteractor : public VisitInteractor
@@ -121,9 +125,11 @@ public:
     void              Start2DMode(INTERACTION_MODE mode);
     void              Start3DMode(INTERACTION_MODE mode);
     void              StartCurveMode(INTERACTION_MODE mode);
+    void              StartAxisArrayMode(INTERACTION_MODE mode);
     void              Stop2DMode();
     void              Stop3DMode();
     void              StopCurveMode();
+    void              StopAxisArrayMode();
 private:
     VisitInteractor  *currentInteractor;
 
@@ -136,6 +142,7 @@ private:
     Navigate3D       *navigate3D;
     Navigate2D       *navigate2D;
     NavigateCurve    *navigateCurve;
+    NavigateAxisArray *navigateAxisArray;
     NullInteractor   *nullInteractor;
     Pick             *pick;
     Zoom2D           *zoom2D;

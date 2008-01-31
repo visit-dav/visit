@@ -52,6 +52,7 @@
 #include <Navigate2D.h>
 #include <Navigate3D.h>
 #include <NavigateCurve.h>
+#include <NavigateAxisArray.h>
 #include <NullInteractor.h>
 #include <Pick.h>
 #include <Zoom2D.h>
@@ -90,6 +91,9 @@
 //   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
 //   Replaced Pick3D and Pick2D with Pick.
 //
+//   Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//   Added navigate interactor for new AxisArray window mode.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
@@ -101,6 +105,7 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
     navigate2D        = NULL;
     navigate3D        = NULL;
     navigateCurve     = NULL;
+    navigateAxisArray = NULL;
     pick              = NULL;
     zoom2D            = NULL;
     zoom3D            = NULL;
@@ -137,6 +142,9 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 //   Kathleen Bonnell, Thu Jan 12 13:58:25 PST 2006 
 //   Replaced Pick3D and Pick2D with Pick.
 //
+//   Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//   Added navigate interactor for new AxisArray window mode.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::~VisitHotPointInteractor()
@@ -170,6 +178,11 @@ VisitHotPointInteractor::~VisitHotPointInteractor()
     {
         navigateCurve->Delete();
         navigateCurve = NULL;
+    }
+    if(navigateAxisArray != NULL)
+    {
+        navigateAxisArray->Delete();
+        navigateAxisArray = NULL;
     }
     if(nullInteractor != NULL)
     {
@@ -550,6 +563,66 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
 }
 
 // ****************************************************************************
+//  Method:  VisitHotPointInteractor::StartAxisArrayMode
+//
+//  Purpose:
+//    Sets up the interactors for axis array window mode.
+//
+//  Arguments:
+//    mode       the interaction mode
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 31, 2008
+//
+// ****************************************************************************
+void
+VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
+{
+    if (!proxy.HasPlots())
+    {
+        return;
+    }
+
+    VisitInteractor  *newInteractor  = NULL;
+    switch(mode)
+    {
+      case ZOOM:
+      case LINEOUT:
+      // We don't have a lineout or zoom interaction.
+      // Fall through to navigation mode.
+      case NAVIGATE:
+        if (navigateAxisArray == NULL)
+        {
+            navigateAxisArray = new NavigateAxisArray(proxy);
+        }
+        newInteractor = navigateAxisArray;
+        break;
+      case ZONE_PICK:
+      case NODE_PICK:
+        if (pick == NULL)
+        {
+            pick = new Pick(proxy);
+        }
+        newInteractor = pick;
+        break;
+    }
+
+    if (newInteractor == NULL)
+    {
+        //
+        // We have an invalid navigation mode or an invalid window mode.
+        //
+        EXCEPTION1(BadInteractorException, mode);
+    }
+
+    //
+    // No reason to set the interactor again if it is the same one.
+    //
+    if (newInteractor != currentInteractor)
+        SetInteractor(newInteractor);
+}
+
+// ****************************************************************************
 // Method: VisitHotPointInteractor::Stop2DMode
 //
 // Purpose: 
@@ -596,6 +669,23 @@ VisitHotPointInteractor::Stop3DMode()
 
 void
 VisitHotPointInteractor::StopCurveMode()
+{
+    SetNullInteractor();
+}
+
+// ****************************************************************************
+// Method: VisitHotPointInteractor::StopAxisArrayMode
+//
+// Purpose: 
+//   Ends AxisArray interaction mode.
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 29, 2008
+//
+// ****************************************************************************
+
+void
+VisitHotPointInteractor::StopAxisArrayMode()
 {
     SetNullInteractor();
 }

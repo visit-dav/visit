@@ -278,13 +278,15 @@ VisitLineTool::Disable()
 // Creation:   Tue Jun 18 15:46:43 PST 2002
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Jan 31 14:36:26 EST 2008
+//    Disabled for AxisArray window mode.
+//
 // ****************************************************************************
 
 bool
 VisitLineTool::IsAvailable() const
 {
-    return proxy.HasPlots();
+    return proxy.GetMode() != WINMODE_AXISARRAY && proxy.HasPlots();
 }
 
 // ****************************************************************************

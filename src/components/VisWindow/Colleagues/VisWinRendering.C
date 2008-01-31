@@ -361,12 +361,17 @@ VisWinRendering::GetForeground(void)
 //    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
 //    Added support for curve mode. 
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 void
 VisWinRendering::SetViewport(double vl, double vb, double vr, double vt)
 {
-    if (mediator.GetMode() == WINMODE_2D || mediator.GetMode() == WINMODE_CURVE)
+    if (mediator.GetMode() == WINMODE_2D ||
+        mediator.GetMode() == WINMODE_CURVE ||
+        mediator.GetMode() == WINMODE_AXISARRAY)
     {
         canvas->SetViewport(vl, vb, vr, vt);
         canvas->ComputeAspect();
@@ -516,6 +521,59 @@ VisWinRendering::StopCurveMode(void)
     canvas->ComputeAspect();
 }
      
+// ****************************************************************************
+//  Method: VisWinRendering::StartAxisArrayMode
+//
+//  Purpose:
+//      Puts the rendering module in AxisArray mode.  This means that the 
+//      camera should have orthographic projection.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 30, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::StartAxisArrayMode(void)
+{
+    //
+    // The canvas should now be snapped to a smaller viewport.
+    //
+    double vport[4];
+    mediator.GetViewport(vport);
+    canvas->SetViewport(vport);
+    canvas->ComputeAspect();
+}
+
+
+// ****************************************************************************
+//  Method: VisWinRendering::StopAxisArrayMode
+//
+//  Purpose:
+//      Takes the rendering module out of AxisArray mode.  This means that
+//      the camera should be put in perspective projection mode if it was in
+//      that mode previously.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 30, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinRendering::StopAxisArrayMode(void)
+{
+    //
+    // We made the canvas' viewport when we entered 2D mode.  Make it be the
+    // whole screen again.
+    //
+    canvas->SetViewport(0., 0., 1., 1.);
+    canvas->ComputeAspect();
+}
+
 // ****************************************************************************
 //  Method: VisWinRendering::EnableUpdates
 //
@@ -765,6 +823,10 @@ VisWinRendering::Realize(void)
 //  Programmer: Mark C. Miller
 //  Creation:   July 26, 2004 
 //
+//  Modifications:
+//     Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//     Added new AxisArray window mode.
+//
 // ****************************************************************************
 void
 VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
@@ -793,6 +855,13 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
         {
             VisWindow *vw = mediator;
             avtViewCurve v = vw->GetViewCurve();
+            v.GetViewport(viewPort);
+            haveViewport = true;
+        }
+        else if (mediator.GetMode() == WINMODE_AXISARRAY)
+        {
+            VisWindow *vw = mediator;
+            avtViewAxisArray v = vw->GetViewAxisArray();
             v.GetViewport(viewPort);
             haveViewport = true;
         }

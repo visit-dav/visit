@@ -71,6 +71,9 @@
 //    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
 //    Added support for curve mode. 
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinView : public VisWinColleague
@@ -89,6 +92,9 @@ class VISWINDOW_API VisWinView : public VisWinColleague
 
     virtual void         StartCurveMode(void);
     virtual void         StopCurveMode(void);
+
+    virtual void         StartAxisArrayMode(void);
+    virtual void         StopAxisArrayMode(void);
 
   protected:
     avtViewInfo          viewInfo;

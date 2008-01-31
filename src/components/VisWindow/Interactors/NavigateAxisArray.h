@@ -36,71 +36,60 @@
 *
 *****************************************************************************/
 
-#ifndef VIEW_STACK_H
-#define VIEW_STACK_H
-#include <viewer_exports.h>
-#include <avtViewCurve.h>
-#include <avtView2D.h>
-#include <avtView3D.h>
-#include <avtViewAxisArray.h>
+// ************************************************************************* //
+//                           NavigateAxisArray.h                             //
+// ************************************************************************* //
 
-#define VSTACK_SIZE 15
+#ifndef NAVIGATE_AXIS_ARRAY_H
+#define NAVIGATE_AXIS_ARRAY_H
+#include <viswindow_exports.h>
+
+
+#include <VisitInteractor.h>
+
+
+class VisWindowInteractorProxy;
+
 
 // ****************************************************************************
-// Class: ViewStack
+//  Class: NavigateAxisArray
 //
-// Purpose:
-//   Contains the stacks that allow us to stack different view types.
+//  Purpose:
+//      Defines what Visit's AxisArray Navigation interaction should look like.
 //
-// Notes:      
+//  Programmer: Jeremy Meredith
+//  Creation:   January 29, 2008
 //
-// Programmer: Brad Whitlock
-// Creation:   Tue Mar 7 17:24:46 PST 2006
+//  Modifications:
 //
-// Modifications:
-//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
-//    Added new axis array window mode.
-//   
 // ****************************************************************************
 
-class VIEWER_API ViewStack
+class VISWINDOW_API NavigateAxisArray : public VisitInteractor
 {
-public:
-    ViewStack();
-    ViewStack(bool);
-    ViewStack(const ViewStack &);
-    ~ViewStack();
+  public:
+                        NavigateAxisArray(VisWindowInteractorProxy &);
+ 
+    virtual void        OnTimer(void);
 
-    void Clear();
+    virtual void        StartLeftButtonAction();
+    virtual void        EndLeftButtonAction();
+    virtual void        StartMiddleButtonAction();
+    virtual void        EndMiddleButtonAction();
+    virtual void        OnMouseWheelForward();
+    virtual void        OnMouseWheelBackward();
 
-    bool PopViewCurve(avtViewCurve &);
-    bool PopView2D(avtView2D &);
-    bool PopView3D(avtView3D &);
-    bool PopViewAxisArray(avtViewAxisArray &);
+  private:
+    void                PanCamera(const int x, const int y, bool snap_horiz);
+    void                ZoomCamera(const int x, const int y);
+    void                ZoomHorizontal(double f);
+    void                ZoomHorizontalFixed(double f);
+    void                ZoomVertical(double f);
 
-    void PushViewCurve(const avtViewCurve &);
-    void PushView2D(const avtView2D &);
-    void PushView3D(const avtView3D &);
-    void PushViewAxisArray(const avtViewAxisArray &);
-
-    bool HasViewCurves() const;
-    bool HasView2Ds() const;
-    bool HasView3Ds() const;
-    bool HasViewAxisArrays() const;
-
-    // Assignment operator.
-    void operator = (const ViewStack &);
-private:
-    bool         preventPopFirst;
-
-    avtViewCurve     viewCurveStack[VSTACK_SIZE];
-    int              viewCurveStackTop;
-    avtView2D        view2DStack[VSTACK_SIZE];
-    int              view2DStackTop;
-    avtView3D        view3DStack[VSTACK_SIZE];
-    int              view3DStackTop;
-    avtViewAxisArray viewAxisArrayStack[VSTACK_SIZE];
-    int              viewAxisArrayStackTop;
+    bool                shiftKeyDown;
+    bool                controlKeyDown;
 };
 
+
 #endif
+
+

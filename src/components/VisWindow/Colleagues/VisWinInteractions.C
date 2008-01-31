@@ -126,6 +126,9 @@ VisWinInteractions::~VisWinInteractions()
 //    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002  
 //    Added support for curve mode. 
 //
+//    Jeremy Meredith, Mon Jan 28 17:59:07 EST 2008
+//    Added axis array mode.
+//
 // ****************************************************************************
 
 void
@@ -141,6 +144,9 @@ VisWinInteractions::SetInteractionMode(INTERACTION_MODE m)
         break;
       case WINMODE_CURVE:
         StopCurveMode();
+        break;
+      case WINMODE_AXISARRAY:
+        StopAxisArrayMode();
         break;
       case WINMODE_NONE:
       default:
@@ -159,6 +165,9 @@ VisWinInteractions::SetInteractionMode(INTERACTION_MODE m)
         break;
       case WINMODE_CURVE:
         StartCurveMode();
+        break;
+      case WINMODE_AXISARRAY:
+        StartAxisArrayMode();
         break;
       case WINMODE_NONE:
       default:
@@ -262,6 +271,28 @@ VisWinInteractions::StartCurveMode(void)
 }
 
 // ****************************************************************************
+//  Method: VisWinInteractions::StartAxisArrayMode
+//
+//  Purpose:
+//      Sets the appropriate interactor for AxisArray mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 29, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinInteractions::StartAxisArrayMode(void)
+{
+    if(hotPointInteractor != NULL)
+    {
+        hotPointInteractor->StartAxisArrayMode(mode);
+    }
+}
+
+// ****************************************************************************
 //  Method: VisWinInteractions::Stop2DMode
 //
 //  Purpose:
@@ -331,6 +362,29 @@ VisWinInteractions::StopCurveMode(void)
     if(hotPointInteractor != NULL)
     {
         hotPointInteractor->StopCurveMode();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinInteractions::StopAxisArrayMode
+//
+//  Purpose:
+//      Stops the AxisArray interactions.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 29, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinInteractions::StopAxisArrayMode(void)
+{
+    if(hotPointInteractor != NULL)
+    {
+        hotPointInteractor->StopAxisArrayMode();
     }
 }
 
@@ -491,12 +545,17 @@ VisWinInteractions::NoPlots(void)
 //    Kathleen Bonnell, Thu May 16 08:54:34 PDT 2002  
 //    Lineout not valid for 3D, so test and set mode to Navigate if necessary. 
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode; no lineout support for it.
+//
 // ****************************************************************************
 
 void
 VisWinInteractions::HasPlots(void)
 {
-    if (!(mediator.GetMode() == WINMODE_3D && mode == LINEOUT))
+    if (!((mediator.GetMode() == WINMODE_3D
+           || mediator.GetMode() == WINMODE_AXISARRAY) &&
+          mode == LINEOUT))
     {
         SetInteractionMode(mode);
     }

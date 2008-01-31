@@ -431,6 +431,10 @@ class ViewerToolbar;
 //
 //    Dave Bremer, Wed Oct 31 15:48:16 PDT 2007
 //    Added flag to clear the external renderer's cached image if disabling it.
+//
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindow : public ViewerBase
@@ -532,11 +536,14 @@ public:
     void SetViewCurve(const avtViewCurve &v);
     void SetView2D(const avtView2D &v);
     void SetView3D(const avtView3D &v);
+    void SetViewAxisArray(const avtViewAxisArray &v);
     const avtViewCurve &GetViewCurve() const;
     const avtView2D &GetView2D() const;
     const avtView3D &GetView3D() const;
+    const avtViewAxisArray &GetViewAxisArray() const;
     void SetViewModifiedCurve() { viewModifiedCurve = true; }
     void SetViewModified2d() { viewModified2d = true; }
+    void SetViewModifiedAxisArray() { viewModifiedAxisArray = true; }
     void SetMergeViewLimits(bool mode) { mergeViewLimits = mode; }
     void CopyViewAttributes(const ViewerWindow *);
     void UpdateCameraView();
@@ -684,14 +691,17 @@ private:
     void RecenterViewCurve(const double *limits);
     void RecenterView2d(const double *limits);
     void RecenterView3d(const double *limits);
+    void RecenterViewAxisArray(const double *limits);
     void ResetViewCurve();
     void ResetView2d();
     void ResetView3d();
+    void ResetViewAxisArray();
     void AdjustView3d(const double *limits);
     void SetInitialView3d();
     void UpdateViewCurve(const double *limits);
     void UpdateView2d(const double *limits);
     void UpdateView3d(const double *limits);
+    void UpdateViewAxisArray(const double *limits);
 
     void ClearExternalRenderRequestInfo(ExternalRenderRequestInfo&) const;
     void ClearLastExternalRenderRequestInfo();
@@ -726,12 +736,14 @@ private:
     ViewerPlotList      *plotList;
     ViewerActionManager *actionMgr;
 
-    ViewCurveAttributes *curViewCurve;
-    View2DAttributes    *curView2D;
-    View3DAttributes    *curView3D;
-    AttributeSubjectMap *viewCurveAtts;
-    AttributeSubjectMap *view2DAtts;
-    AttributeSubjectMap *view3DAtts;
+    ViewCurveAttributes     *curViewCurve;
+    View2DAttributes        *curView2D;
+    View3DAttributes        *curView3D;
+    ViewAxisArrayAttributes *curViewAxisArray;
+    AttributeSubjectMap     *viewCurveAtts;
+    AttributeSubjectMap     *view2DAtts;
+    AttributeSubjectMap     *view3DAtts;
+    AttributeSubjectMap     *viewAxisArrayAtts;
 
     ExternalRenderRequestInfo lastExternalRenderRequest;
 
@@ -771,9 +783,15 @@ private:
     bool            viewSetIn3d;
     bool            viewPartialSetIn3d;
 
+    double          boundingBoxAxisArray[4];
+    bool            boundingBoxValidAxisArray;
+    bool            viewSetInAxisArray;
+    bool            viewModifiedAxisArray;
+
     bool            centeringValidCurve;
     bool            centeringValid2d;
     bool            centeringValid3d;
+    bool            centeringValidAxisArray;
 
     bool            mergeViewLimits;
 

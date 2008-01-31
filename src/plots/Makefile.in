@@ -138,6 +138,9 @@
 #    Jeremy Meredith, Thu Sep  6 16:53:41 EDT 2007
 #    Use ALLSUBDIRS for distclean.
 #
+#    Jeremy Meredith, Thu Jan 31 15:09:59 EST 2008
+#    Added ParallelCoordinates plot.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -149,8 +152,8 @@ all: message
 OPTIONAL=Topology
 
 REQUIRED=Boundary Contour Curve FilledBoundary Histogram Label Mesh Molecule \
-         ParallelAxis Pseudocolor Scatter Spreadsheet Streamline Subset Surface \
-         Tensor Truecolor Vector Volume
+         ParallelAxis ParallelCoordinates Pseudocolor Scatter Spreadsheet \
+         Streamline Subset Surface Tensor Truecolor Vector Volume
 
 # The following is a minimal subset of the OPTIONAL/REQUIRED plugins
 MINIMAL=Curve Mesh Pseudocolor

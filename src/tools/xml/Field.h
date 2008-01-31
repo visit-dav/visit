@@ -552,7 +552,7 @@ class DoubleArray : public virtual Field
         {
             out << "            value: ";
             for (int i=0; i<length; i++)
-                out << int(val[i]) << "  ";
+                out << val[i] << "  ";
             out << endl;
         }
     }

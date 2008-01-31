@@ -45,6 +45,8 @@
 // Creation:   Wed Mar 8 17:01:56 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //   
 // ****************************************************************************
 
@@ -54,6 +56,7 @@ ViewStack::ViewStack()
     viewCurveStackTop = -1;
     view2DStackTop = -1;
     view3DStackTop = -1;
+    viewAxisArrayStackTop = -1;
 }
 
 ViewStack::ViewStack(bool val)
@@ -62,6 +65,7 @@ ViewStack::ViewStack(bool val)
     viewCurveStackTop = -1;
     view2DStackTop = -1;
     view3DStackTop = -1;
+    viewAxisArrayStackTop = -1;
 }
 
 ViewStack::ViewStack(const ViewStack &obj)
@@ -78,6 +82,10 @@ ViewStack::ViewStack(const ViewStack &obj)
     view3DStackTop = obj.view3DStackTop;
     for(i = 0; i < view3DStackTop+1; ++i)
         view3DStack[i] = obj.view3DStack[i];
+
+    viewAxisArrayStackTop = obj.viewAxisArrayStackTop;
+    for(i = 0; i < viewAxisArrayStackTop+1; ++i)
+        viewAxisArrayStack[i] = obj.viewAxisArrayStack[i];
 
     preventPopFirst = obj.preventPopFirst;
 }
@@ -109,6 +117,8 @@ ViewStack::~ViewStack()
 // Creation:   Wed Mar 8 17:02:21 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //   
 // ****************************************************************************
 
@@ -128,6 +138,10 @@ ViewStack::operator = (const ViewStack &obj)
     for(i = 0; i < view3DStackTop+1; ++i)
         view3DStack[i] = obj.view3DStack[i];
 
+    viewAxisArrayStackTop = obj.viewAxisArrayStackTop;
+    for(i = 0; i < viewAxisArrayStackTop+1; ++i)
+        viewAxisArrayStack[i] = obj.viewAxisArrayStack[i];
+
     preventPopFirst = obj.preventPopFirst;
 }
 
@@ -141,6 +155,8 @@ ViewStack::operator = (const ViewStack &obj)
 // Creation:   Wed Mar 8 17:02:50 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //   
 // ****************************************************************************
 
@@ -150,6 +166,7 @@ ViewStack::Clear()
     viewCurveStackTop = -1;
     view2DStackTop = -1;
     view3DStackTop = -1;
+    viewAxisArrayStackTop = -1;
 }
 
 // ****************************************************************************
@@ -169,6 +186,8 @@ ViewStack::Clear()
 // Creation:   Wed Mar 8 17:03:06 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array view.
 //   
 // ****************************************************************************
 
@@ -234,6 +253,26 @@ ViewStack::PopView3D(avtView3D &v)
     return retval;
 }
 
+bool
+ViewStack::PopViewAxisArray(avtViewAxisArray &v)
+{
+    bool retval = false;
+    // Pop the top off of the stack
+    if(preventPopFirst && viewAxisArrayStackTop > 0)
+    {
+        --viewAxisArrayStackTop;
+        v = viewAxisArrayStack[viewAxisArrayStackTop];
+        retval = true;
+    }
+    else if(viewAxisArrayStackTop >= 0)
+    {
+        v = viewAxisArrayStack[viewAxisArrayStackTop];
+        --viewAxisArrayStackTop;
+        retval = true;
+    }
+    return retval;
+}
+
 // ****************************************************************************
 // Method: ViewStack::PushView*
 //
@@ -247,6 +286,8 @@ ViewStack::PopView3D(avtView3D &v)
 // Creation:   Wed Mar 8 17:03:49 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array view.
 //   
 // ****************************************************************************
 
@@ -295,6 +336,21 @@ ViewStack::PushView3D(const avtView3D &v)
     view3DStack[view3DStackTop] = v;
 }
 
+void
+ViewStack::PushViewAxisArray(const avtViewAxisArray &v)
+{
+    if(viewAxisArrayStackTop == VSTACK_SIZE - 1)
+    {
+        // Shift down
+        for(int i = 0; i < VSTACK_SIZE - 1; ++i)
+            viewAxisArrayStack[i] = viewAxisArrayStack[i+1];
+    }
+    else
+        ++viewAxisArrayStackTop;
+
+    viewAxisArrayStack[viewAxisArrayStackTop] = v;
+}
+
 // ****************************************************************************
 // Method: ViewStack::HasView*
 //
@@ -305,6 +361,8 @@ ViewStack::PushView3D(const avtView3D &v)
 // Creation:   Wed Mar 8 17:04:18 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array view.
 //   
 // ****************************************************************************
 
@@ -327,5 +385,12 @@ ViewStack::HasView3Ds() const
 {
     int empty = preventPopFirst ? 0 : -1;
     return view3DStackTop != empty;
+}
+
+bool
+ViewStack::HasViewAxisArrays() const
+{
+    int empty = preventPopFirst ? 0 : -1;
+    return viewAxisArrayStackTop != empty;
 }
 

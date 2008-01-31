@@ -1392,6 +1392,9 @@ ViewerQueryManager::DatabaseQuery(ViewerWindow *oWin, const string &qName,
 //    Kathleen Bonnell, Tue May 15 14:04:22 PDT 2007 
 //    Added optional bool arg forceSampling. 
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void         
@@ -1419,6 +1422,11 @@ ViewerQueryManager::StartLineQuery(const char *qName, const double *pt1,
         if (win->GetWindowMode() == WINMODE_CURVE)
         {
             Error("Lineout cannot be performed on curve windows.");
+            return;
+        }
+        else if (win->GetWindowMode() == WINMODE_AXISARRAY)
+        {
+            Error("Lineout cannot be performed on axis array windows.");
             return;
         }
         else if ((win->GetWindowMode() == WINMODE_2D) &&
@@ -2725,6 +2733,9 @@ ViewerQueryManager::GetColor()
 //    Suspend socket signals in the viewer so that Lineout does not cause 
 //    synchronization events to be processed before we are ready for them. 
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -2737,6 +2748,11 @@ ViewerQueryManager::StartLineout(ViewerWindow *win, bool fromDefault)
     if (win->GetWindowMode() == WINMODE_CURVE)
     {
         Error("Lineout cannot be performed on curve windows.");
+        return;
+    }
+    if (win->GetWindowMode() == WINMODE_AXISARRAY)
+    {
+        Error("Lineout cannot be performed on axis array windows.");
         return;
     }
 

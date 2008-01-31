@@ -65,6 +65,7 @@
 #include <avtView2D.h>
 #include <avtView3D.h>
 #include <avtViewCurve.h>
+#include <avtViewAxisArray.h>
 #include <avtViewInfo.h>
 #include <PickPointInfo.h>
 #include <LineoutInfo.h>
@@ -77,6 +78,7 @@ class AnnotationObjectList;
 class VisWinAnnotations;
 class VisWinAxes;
 class VisWinAxes3D;
+class VisWinAxesArray;
 class VisWinBackground;
 class VisWinColleague;
 class VisWinFrame;
@@ -376,6 +378,9 @@ class VisitInteractor;
 //    Brad Whitlock, Wed Nov 14 15:29:34 PST 2007
 //    Added support for image backgrounds.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -469,6 +474,8 @@ public:
     const avtView3D     &GetView3D(void);
     void                 SetViewCurve(const avtViewCurve &);
     const avtViewCurve  &GetViewCurve();
+    void                 SetViewAxisArray(const avtViewAxisArray &);
+    const avtViewAxisArray &GetViewAxisArray();
 
     WINDOW_MODE          GetWindowMode() const;
     void                 GetScaleFactorAndType(double &s, int &t);
@@ -607,6 +614,7 @@ protected:
     VisWinAxes                        *axes;
     VisWinAxes3D                      *axes3D;
     VisWinFrame                       *frame;
+    VisWinAxesArray                   *axesArray;
     VisWinInteractions                *interactions;
     VisWinLegends                     *legends;
     VisWinLighting                    *lighting;
@@ -644,6 +652,7 @@ protected:
     avtView2D                          view2D;
     avtView3D                          view3D;
     avtViewCurve                       viewCurve;
+    avtViewAxisArray                   viewAxisArray;
 
     VisCallback                       *showMenuCallback;
     void                              *showMenuCallbackData;
@@ -664,9 +673,11 @@ protected:
     void                 Start2DMode();
     void                 Start3DMode();
     void                 StartCurveMode();
+    void                 StartAxisArrayMode();
     void                 Stop2DMode();
     void                 Stop3DMode();
     void                 StopCurveMode();
+    void                 StopAxisArrayMode();
     void                 UpdatePlotList(std::vector<avtActor_p> &);
 
     void                 HasPlots(bool);
@@ -695,6 +706,7 @@ protected:
     void                 EndBoundingBox(void);
     void                 UpdateAxes2D(void);
     void                 UpdateAxes3D(void);
+    void                 UpdateAxesArray(void);
     void                 UpdateTextAnnotations(void);
 
     void                 MotionBegin(void);
