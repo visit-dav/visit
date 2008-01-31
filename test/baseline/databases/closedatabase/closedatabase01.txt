@@ -18,3 +18,5 @@ createMeshQualityExpressions = 1
 createTimeDerivativeExpressions = 1
 createVectorMagnitudeExpressions = 1
 newPlotsInheritSILRestriction = 1
+userDirForSessionFiles = 0
+saveCrashRecoveryFile = 1
