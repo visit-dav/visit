@@ -46,6 +46,9 @@
 #    Hank Childs, Fri Sep 14 11:52:39 PDT 2007
 #    Add test for identify filters and meshes ['7465].
 #
+#    Cyrus Harrison, Thu Jan 31 09:19:57 PST 2008
+#    Added a test for the value_for_material filter. 
+#
 # ----------------------------------------------------------------------------
 
 # Turn off all annotation
@@ -378,5 +381,33 @@ DefineScalarExpression("ident_mesh", "quadmesh2d")
 AddPlot("Pseudocolor", "ident_mesh")
 DrawPlots()
 Test("ident_mesh")
+
+DeleteAllPlots()
+CloseDatabase("../data/globe.silo")
+
+OpenDatabase("../data/thinplane.silo")
+atts = PseudocolorAttributes()
+atts.minFlag = 1
+atts.min = 0.0
+atts.maxFlag = 1
+atts.max = 10.0
+SetDefaultPlotOptions(atts)
+
+DefineScalarExpression("vfm_1", "value_for_material(den,1)")
+AddPlot("Pseudocolor", "vfm_1")
+DrawPlots()
+Test("value_for_mat_1")
+
+DeleteAllPlots()
+DefineScalarExpression("vfm_2", "value_for_material(den,2)")
+AddPlot("Pseudocolor", "vfm_2")
+DrawPlots()
+Test("value_for_mat_2")
+
+DeleteAllPlots()
+DefineScalarExpression("vfm_3", "value_for_material(den,\"3\")")
+AddPlot("Pseudocolor", "vfm_3")
+DrawPlots()
+Test("value_for_mat_3")
 
 Exit()
