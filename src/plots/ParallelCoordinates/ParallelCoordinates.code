@@ -1,0 +1,187 @@
+Function: InsertAxis
+Declaration: void InsertAxis(const std::string &axisName_);
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::InsertAxis
+//
+// Purpose: Inserts an axis (assuming at the end)
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Note: Taken largely from Mark Blair's Parallel Axis plot.
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
+{
+    std::string newAxisName = axisName_;
+
+    int curAxisCount = orderedAxisNames.size();
+    int axisOrdinal;
+    double saveAxisMin, saveAxisMax, saveExtentMin, saveExtentMax;
+
+    stringVector::iterator axisNamesIt;
+    doubleVector::iterator axisMinIt;
+    doubleVector::iterator axisMaxIt;
+    doubleVector::iterator extentMinIt;
+    doubleVector::iterator extentMaxIt;
+    
+    for (axisOrdinal = 0; axisOrdinal < curAxisCount; axisOrdinal++)
+    {
+        if (orderedAxisNames[axisOrdinal] == newAxisName) break;
+    }
+
+    if (axisOrdinal < curAxisCount)
+    {
+        saveAxisMin    = axisMinima[axisOrdinal];
+        saveAxisMax    = axisMaxima[axisOrdinal];
+        saveExtentMin  = extentMinima[axisOrdinal];
+        saveExtentMax  = extentMaxima[axisOrdinal];
+
+        axisNamesIt  = orderedAxisNames.begin() + axisOrdinal;
+        axisMinIt    = axisMinima.begin()       + axisOrdinal;
+        axisMaxIt    = axisMaxima.begin()       + axisOrdinal;
+        extentMinIt  = extentMinima.begin()     + axisOrdinal;
+        extentMaxIt  = extentMaxima.begin()     + axisOrdinal;
+
+        orderedAxisNames.erase(axisNamesIt);
+        axisMinima.erase(axisMinIt);
+        axisMaxima.erase(axisMaxIt);
+        extentMinima.erase(extentMinIt);
+        extentMaxima.erase(extentMaxIt);
+    }
+    else
+    {
+        saveAxisMin    = -1e+37;
+        saveAxisMax    = +1e+37;
+        saveExtentMin  = 0.0;
+        saveExtentMax  = 1.0;
+    }
+
+    int insertOrdinal = orderedAxisNames.size();
+
+    axisNamesIt  = orderedAxisNames.begin() + insertOrdinal;
+    axisMinIt    = axisMinima.begin()       + insertOrdinal;
+    axisMaxIt    = axisMaxima.begin()       + insertOrdinal;
+    extentMinIt  = extentMinima.begin()     + insertOrdinal;
+    extentMaxIt  = extentMaxima.begin()     + insertOrdinal;
+
+    orderedAxisNames.insert(axisNamesIt, newAxisName);
+    axisMinima.insert(axisMinIt, saveAxisMin);
+    axisMaxima.insert(axisMaxIt, saveAxisMax);
+    extentMinima.insert(extentMinIt, saveExtentMin);
+    extentMaxima.insert(extentMaxIt, saveExtentMax);
+    
+    SelectAll();
+}
+
+Function: DeleteAxis
+Declaration: void DeleteAxis(const std::string &axisName_, int minAxisCount);
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::DeleteAxis
+//
+// Purpose: Deletes an axis (as long as there are enough remaining)
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Note: Taken largely from Mark Blair's Parallel Axis plot.
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
+                                          int minAxisCount)
+{
+    if (orderedAxisNames.size() <= minAxisCount) return;
+
+    std::string newAxisName = axisName_;
+
+    int curAxisCount = orderedAxisNames.size();
+    int leftSelectedAxisID, rightSelectedAxisID;
+    int axisOrdinal;
+
+    for (axisOrdinal = 0; axisOrdinal < curAxisCount; axisOrdinal++)
+    {
+        if (orderedAxisNames[axisOrdinal] == newAxisName) break;
+    }
+
+    if (axisOrdinal < curAxisCount)
+    {
+        orderedAxisNames.erase(orderedAxisNames.begin() + axisOrdinal);
+        axisMinima.erase(axisMinima.begin() + axisOrdinal);
+        axisMaxima.erase(axisMaxima.begin() + axisOrdinal);
+        extentMinima.erase(extentMinima.begin() + axisOrdinal);
+        extentMaxima.erase(extentMaxima.begin() + axisOrdinal);
+        
+        SelectAll();
+    }
+}
+
+Function: AttributesAreConsistent
+Declaration: bool AttributesAreConsistent() const;
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::AttributesAreConsistent
+//
+// Purpose: Returns true only if (1) all vector attributes are the same length,
+//          (2) all axis names are unique, and (3) the index of the currently
+//          displayable axis information in the GUI is in range.
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Note: Taken largely from Mark Blair's Parallel Axis plot.
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ParallelCoordinatesAttributes::AttributesAreConsistent() const
+{
+    int axisNamesSize = orderedAxisNames.size();
+    int axisNum, axis2Num;
+    std::string axisName;
+    
+    if (axisNamesSize < 2)
+        return false;
+    
+    if ((axisMinima.size()       != axisNamesSize) ||
+        (axisMaxima.size()       != axisNamesSize) ||
+        (extentMinima.size()     != axisNamesSize) ||
+        (extentMaxima.size()     != axisNamesSize))
+    {
+        return false;
+    }
+    
+    for (axisNum = 0; axisNum < axisNamesSize - 1; axisNum++)
+    {
+        axisName = orderedAxisNames[axisNum];
+
+        for (axis2Num = axisNum + 1; axis2Num < axisNamesSize; axis2Num++ )
+        {
+            if (orderedAxisNames[axis2Num] == axisName)
+                return false;
+        }
+    }
+    
+    return true;
+}
+
+Function: ChangesRequireRecalculation
+Declaration: bool ChangesRequireRecalculation(const ParallelCoordinatesAttributes &obj);
+Definition:
+bool
+ParallelCoordinatesAttributes::ChangesRequireRecalculation(
+    const ParallelCoordinatesAttributes &obj)
+{
+    return true;
+}

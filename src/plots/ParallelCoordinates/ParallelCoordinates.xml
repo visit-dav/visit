@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+  <Plugin name="ParallelCoordinates" type="plot" label="Parallel Coordinates" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="scalar,array" iconFile="ParallelCoordinates.xpm">
+    <Files components="G">
+      QvisParallelCoordinatesWidget.C
+      QvisParallelCoordinatesPlotWizard.C
+    </Files>
+    <Files components="V">
+      avtParallelCoordinatesFilter.C
+    </Files>
+    <Files components="E">
+      avtParallelCoordinatesFilter.C
+    </Files>
+    <Files components="W">
+      QvisParallelCoordinatesWidget.h
+      QvisParallelCoordinatesPlotWizard.h
+    </Files>
+    <Attribute name="ParallelCoordinatesAttributes" purpose="This class contains the plot attributes for the ParallelCoordinates plot." persistent="true" exportAPI="" exportInclude="" codefile="ParallelCoordinates.code">
+      <Field name="orderedAxisNames" label="orderedAxisNames" type="stringVector">
+        default
+      </Field>
+      <Field name="axisMinima" label="axisMinima" type="doubleVector">
+        -1e+37
+      </Field>
+      <Field name="axisMaxima" label="axisMaxima" type="doubleVector">
+        1e+37
+      </Field>
+      <Field name="extentMinima" label="extentMinima" type="doubleVector">
+        0.000000
+      </Field>
+      <Field name="extentMaxima" label="extentMaxima" type="doubleVector">
+        1.000000
+      </Field>
+      <Field name="drawLines" label="Draw individual lines" type="bool">
+        true
+      </Field>
+      <Field name="linesColor" label="Line color" type="color" length="4">
+        128
+        0
+        0
+        255
+      </Field>
+      <Field name="drawContext" label="Draw context" type="bool">
+        true
+      </Field>
+      <Field name="contextGamma" label="Gamma brightness adjustment" type="float">
+        2.000000
+      </Field>
+      <Field name="contextNumPartitions" label="Number of partitions" type="int">
+        512
+      </Field>
+      <Field name="contextColor" label="Context color" type="color" length="4">
+        0
+        220
+        0
+        255
+      </Field>
+      <Field name="drawLinesOnlyIfExtentsOn" label="Draw lines only when extents have been limited" type="bool">
+        true
+      </Field>
+      <Function name="InsertAxis" user="true" member="true">
+      </Function>
+      <Function name="DeleteAxis" user="true" member="true">
+      </Function>
+      <Function name="AttributesAreConsistent" user="true" member="true">
+      </Function>
+      <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+    </Attribute>
+  </Plugin>
