@@ -2897,6 +2897,9 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 //    Hank Childs, Tue Feb 15 07:21:10 PST 2005
 //    Make translations when we have hidden characters.
 //
+//    Cyrus Harrison, Wed Jan 30 13:26:28 PST 2008
+//    Added support for passing variable name from a mixed variable request. 
+//
 // ****************************************************************************
 
 void
@@ -2914,7 +2917,8 @@ avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
     avtSILSpecification sil = spec->GetSIL();
     const char *var = spec->GetVariable();
     if ((strcmp(type, AUXILIARY_DATA_SPATIAL_EXTENTS) == 0) ||
-        (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0))
+        (strcmp(type, AUXILIARY_DATA_DATA_EXTENTS) == 0) || 
+        (strcmp(type, AUXILIARY_DATA_MIXED_VARIABLE) == 0))
     {
         if (args != NULL)
             var = (char *) args;

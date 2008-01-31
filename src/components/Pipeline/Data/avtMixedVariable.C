@@ -45,6 +45,7 @@
 // For NULL
 #include <stdio.h>
 
+#include <avtMaterial.h>
 
 using std::string;
 
@@ -119,6 +120,46 @@ avtMixedVariable::Destruct(void *p)
     {
         delete mv;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtMixedVariable::GetValuesForZone
+//
+//  Purpose:
+//    Constructs the per material value list for the given zone. 
+//
+//  Mote: This will return 0 for all materials in the non-mixed case.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   January 30, 2008
+//
+// ****************************************************************************
+
+void
+avtMixedVariable::GetValuesForZone(int zone_id,
+                                   avtMaterial *mat,
+                                   std::vector<float> &vals)
+{
+    int n_mats = mat->GetNMaterials();
+    vals.clear();
+    for (int m=0; m<n_mats; m++)
+        vals.push_back(0.0);
+        
+    const int *mat_list = mat->GetMatlist();
+    const int *mix_mat  = mat->GetMixMat();
+    const int *mix_next = mat->GetMixNext();
+    
+    // mixed case
+    if(mat_list[zone_id] < 0)
+    {
+        int mix_idx = -mat_list[zone_id] - 1;
+        while(mix_idx >=0)
+        {
+            vals[mix_mat[mix_idx]] = buffer[mix_idx];
+            mix_idx = mix_next[mix_idx] -1;
+        }
+    } 
 }
 
 

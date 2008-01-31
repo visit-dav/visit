@@ -265,6 +265,9 @@ avtMinMaxQuery::PreExecute()
 //    Kathleen Bonnell, Mon Jul 31 08:19:38 PDT 2006 
 //    Curves now respresented as 1D RectilinearGrids. 
 //
+//    Cyrus Harrison, Wed Jan 30 14:07:03 PST 2008
+//    Added variable name to GetMixedVar call.
+//
 // ****************************************************************************
 
 void 
@@ -334,7 +337,8 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     if (OriginalData() && !nodeCentered)
     {
         avtMetaData *md = GetInput()->GetTerminatingSource()->GetMetaData();
-        mv = md->GetMixedVar(domain, ts);
+        mv = md->GetMixedVar(var.c_str(),domain, ts);
+        
         if (mv != NULL)
         {
             mat = md->GetMaterial(domain, ts);

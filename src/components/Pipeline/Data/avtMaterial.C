@@ -1563,6 +1563,40 @@ avtMaterial::Initialize(int nMats, const vector<string> &matnames,
     }
 }
 
+// ****************************************************************************
+//  Method: GetVolFracsForZone
+//
+//  Purpose:
+//    Constructs the per material volume fraction list for the given zone. 
+//
+//  Programmer:  Cyrus Harrison
+//  Creation:    January 30, 2008
+//
+// ****************************************************************************
+void
+avtMaterial::GetVolFracsForZone(int zone_id, std::vector<float> &vfs)
+{
+    // init with zeros
+    vfs.clear();
+    for (int m=0; m<nMaterials; m++)
+        vfs.push_back(0.0);
+
+    // mixed case
+    if(matlist[zone_id] < 0)
+    {
+        int mix_idx = -matlist[zone_id] - 1;
+        while(mix_idx >=0)
+        {
+            vfs[mix_mat[mix_idx]] = mix_vf[mix_idx];
+            mix_idx = mix_next[mix_idx] -1;
+        }
+    }
+    else // clean case the vf  = 1.0 for the only material in the zone
+    {
+        vfs[matlist[zone_id]] = 1.0;
+    }
+}
+
 
 // ****************************************************************************
 //  Method: ExtractCellMatInfo 

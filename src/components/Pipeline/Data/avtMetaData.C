@@ -374,11 +374,15 @@ avtMetaData::GetPipelineSpecification(int domain)
 //  Creation:   July 1, 2004 
 //
 //  Modifications:
+//    Cyrus Harrison, Wed Jan 30 13:23:30 PST 2008
+//    Added variable name argument to GetMixedVar, allowing this method
+//    to be used when the desired mixed var differs from the active
+//    variable in the contract. 
 //
 // ****************************************************************************
 
 avtMixedVariable *
-avtMetaData::GetMixedVar(int domain, int timestep)
+avtMetaData::GetMixedVar(const char *varname, int domain, int timestep)
 {
     VoidRefList list;
     avtPipelineSpecification_p spec = GetPipelineSpecification(domain);
@@ -388,7 +392,11 @@ avtMetaData::GetMixedVar(int domain, int timestep)
     if (timestep != -1)
         spec->GetDataSpecification()->SetTimestep(timestep);
 
-    source->GetVariableAuxiliaryData(AUXILIARY_DATA_MIXED_VARIABLE, NULL, spec,list);
+    // pass the varname, so the source can obtain the proper mixed var.
+    source->GetVariableAuxiliaryData(AUXILIARY_DATA_MIXED_VARIABLE, 
+                                     (void*)varname, 
+                                     spec,
+                                     list);
     if (list.nList == 0)
     {
         return NULL;
