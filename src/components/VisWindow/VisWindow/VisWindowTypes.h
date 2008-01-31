@@ -47,6 +47,9 @@
 //    Brad Whitlock, Tue Jul 15 16:34:53 PST 2003
 //    Added methods to convert INTERACTION_MODE to and from string.
 //
+//    Jeremy Meredith, Mon Jan 28 17:36:52 EST 2008
+//    Added new Axis Array window mode.
+//
 // ************************************************************************* //
 
 
@@ -68,10 +71,11 @@ typedef enum
 
 typedef enum
 {
-    WINMODE_2D        = 0,
-    WINMODE_3D,      /* 1 */
-    WINMODE_CURVE,   /* 2 */
-    WINMODE_NONE     /* 3 */
+    WINMODE_2D          = 0,
+    WINMODE_3D,        /* 1 */
+    WINMODE_CURVE,     /* 2 */
+    WINMODE_AXISARRAY, /* 3 */
+    WINMODE_NONE       /* 4 */
 }  WINDOW_MODE;
 
 typedef enum {
@@ -118,7 +122,10 @@ VISWINDOW_API bool        INTERACTION_MODE_FromString(const std::string &,
 inline bool
 ValidMode(WINDOW_MODE mode)
 {
-    if (mode == WINMODE_2D || mode == WINMODE_3D || mode == WINMODE_CURVE) 
+    if (mode == WINMODE_2D ||
+        mode == WINMODE_3D ||
+        mode == WINMODE_CURVE ||
+        mode == WINMODE_AXISARRAY)
     {
         return true;
     }

@@ -397,7 +397,7 @@ private:
     QString CrashRecoveryFile() const;
 public slots:
     void newExpression();
-    void saveCrashRecoveryFile();
+    void SaveCrashRecoveryFile();
     void Interpret(const QString &);
 private slots:
     void Quit();
@@ -436,7 +436,6 @@ private slots:
     void sessionFileHelper_LoadSessionWithDifferentSources(const QString &,
              const stringVector &);
     void UpdateSavedConfigFile();
-    void SaveCrashRecoveryFile();
 
     // Plot, operator related slots.
     void AddPlot(int, const QString &);

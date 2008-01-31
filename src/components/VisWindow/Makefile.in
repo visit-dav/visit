@@ -142,6 +142,9 @@
 #    Brad Whitlock, Wed Nov 7 16:56:34 PDT 2007
 #    Added avtText3DColleague.
 #
+#    Jeremy Meredith, Thu Jan 31 14:37:17 EST 2008
+#    Added VisWinAxesArray and NavigateAxisArray.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -154,6 +157,7 @@ Colleagues_src= \
   Colleagues/VisWinAnnotations.C \
   Colleagues/VisWinAxes.C \
   Colleagues/VisWinAxes3D.C \
+  Colleagues/VisWinAxesArray.C \
   Colleagues/VisWinBackground.C \
   Colleagues/VisWinColleague.C \
   Colleagues/VisWinFrame.C \
@@ -182,6 +186,7 @@ Interactors_src= \
   Interactors/Lineout2D.C \
   Interactors/Navigate2D.C \
   Interactors/Navigate3D.C \
+  Interactors/NavigateAxisArray.C \
   Interactors/NavigateCurve.C \
   Interactors/NullInteractor.C \
   Interactors/Pick.C \

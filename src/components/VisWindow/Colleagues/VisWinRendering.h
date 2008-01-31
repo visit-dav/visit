@@ -190,6 +190,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Mon Sep 18 11:06:09 PDT 2006
 //    Added color texturing support.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinRendering : public VisWinColleague
@@ -213,6 +216,9 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     virtual void             StartCurveMode(void);
     virtual void             StopCurveMode(void);
+
+    virtual void             StartAxisArrayMode(void);
+    virtual void             StopAxisArrayMode(void);
 
     virtual void             EnableUpdates(void);
     virtual void             MotionBegin(void);

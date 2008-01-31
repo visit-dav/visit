@@ -270,6 +270,9 @@
 #    Jeremy Meredith, Fri Jan 18 11:12:10 EST 2008
 #    Added FileOpenOptions.
 #
+#    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+#    Added attributes for new axis array window mode.
+#
 ##############################################################################
 
 ##
@@ -374,6 +377,7 @@ SRC=    AnimationAttributes.C \
         View2DAttributes.C \
         View3DAttributes.C \
         ViewAttributes.C \
+        ViewAxisArrayAttributes.C \
         ViewCurveAttributes.C \
         VisItRPC.C \
         VisualCueInfo.C \

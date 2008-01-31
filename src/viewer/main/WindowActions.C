@@ -1119,6 +1119,10 @@ SetWindowModeAction::Enabled() const
 //   Kathleen Bonnell, Tue Dec  2 17:36:44 PST 2003 
 //   Allow pick to work in curve windows.
 //
+//   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//   Added new axis array window mode.  Most interaction modes are disabled
+//   for this type of window.
+//
 // ****************************************************************************
 
 bool
@@ -1129,11 +1133,17 @@ SetWindowModeAction::ChoiceEnabled(int i) const
     if(i == 0)
         retval = true;
     else if(i == 1) // zone pick
-        retval = true; 
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
+    }
     else if(i == 2) // node pick
-        retval = true; 
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
+    }
     else if(i == 3) // zoom
-        retval = true;
+    {
+        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
+    }
     else if(i == 4)
     {
         retval = (window->GetWindowMode() == WINMODE_2D) &&

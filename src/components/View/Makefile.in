@@ -43,6 +43,9 @@
 #    Thomas R. Treadway, Tue Mar 27 12:09:41 PDT 2007
 #    Added Mesa libraries.
 #
+#    Jeremy Meredith, Mon Jan 28 17:10:05 EST 2008
+#    Added axis array window mode.
+#
 ##############################################################################
 
 ##
@@ -54,7 +57,7 @@
 ##
 ## Files...
 ##
-SRC=avtView2D.C avtView3D.C avtViewCurve.C avtViewInfo.C 
+SRC=avtView2D.C avtView3D.C avtViewCurve.C avtViewInfo.C avtViewAxisArray.C
 
 
 CPPFLAGS=-I../../include/visit @COMPONENT_CPPFLAGS@ @CPPFLAGS@

@@ -348,3 +348,53 @@ VisWinView::StopCurveMode(void)
 }
 
 
+// ****************************************************************************
+//  Method: VisWinView::StartAxisArrayMode
+//
+//  Purpose:
+//    Takes the camera out of perspective projection because it doesn't make
+//    sense for AxisArray.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 29, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinView::StartAxisArrayMode(void)
+{
+    vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
+    if (!viewInfo.orthographic)
+    {
+        camera->SetParallelProjection(1);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: VisWinView::StopAxisArrayMode
+//
+//  Purpose:
+//    Takes the camera back into perspective projection if it should be, but
+//    we disabled it for AxisArray mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 29, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinView::StopAxisArrayMode(void)
+{
+    vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
+    if (!viewInfo.orthographic)
+    {
+        camera->SetParallelProjection(0);
+    }
+}
+
+

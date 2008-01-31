@@ -59,6 +59,9 @@
 //    Jeremy Meredith, Thu Oct 17 15:58:29 PDT 2002
 //    Added some enhancements for the XML editor.
 //
+//    Jeremy Meredith, Thu Jan 31 14:55:32 EST 2008
+//    Prevent hang on badly formatted .code files.
+//
 // ****************************************************************************
 class CodeFile
 {
@@ -116,6 +119,8 @@ class CodeFile
                     ParseInitialization(buff, name, in);
                 }
             }
+            else
+                break;
         }
 
         in.close();

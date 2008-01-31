@@ -112,6 +112,9 @@ class     ColorAttribute;
 //    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
 //    Added background image support.
 //
+//    Jeremy Meredith, Mon Jan 28 17:09:12 EST 2008
+//    Added AxisArray mode.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinColleague
@@ -134,9 +137,11 @@ class VISWINDOW_API VisWinColleague
     virtual void              Start2DMode(void)    {;};
     virtual void              Start3DMode(void)    {;};
     virtual void              StartCurveMode(void) {;};
+    virtual void              StartAxisArrayMode(void) {;};
     virtual void              Stop2DMode(void)     {;};
     virtual void              Stop3DMode(void)     {;};
     virtual void              StopCurveMode(void)  {;};
+    virtual void              StopAxisArrayMode(void)  {;};
 
     virtual void              EnableUpdates(void)  {;};
     virtual void              DisableUpdates(void) {;};

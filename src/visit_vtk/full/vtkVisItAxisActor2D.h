@@ -276,10 +276,19 @@ public:
   vtkGetMacro(TitleFontHeight, double);
 
   // Description:
-  // Set/Get visibility of the axis line.
+  // Set/Get scaling of the axis.
   vtkSetMacro(LogScale, int);
   vtkGetMacro(LogScale, int);
   vtkBooleanMacro(LogScale, int);
+
+  // Description:
+  // Set/Get the string width multiplier e.g. for horizontal centering
+  vtkSetMacro(EndStringHOffsetFactor, double);
+  vtkGetMacro(EndStringHOffsetFactor, double);
+
+  // Set/Get the string height multiplier e.g. for vertical centering
+  vtkSetMacro(EndStringVOffsetFactor, double);
+  vtkGetMacro(EndStringVOffsetFactor, double);
 
 
   // Description:
@@ -374,6 +383,9 @@ protected:
   int    LastPoint2[2];
 
   int    LogScale;
+
+  double EndStringHOffsetFactor;
+  double EndStringVOffsetFactor;
   
 private:
   vtkVisItAxisActor2D(const vtkVisItAxisActor2D&);
@@ -383,7 +395,8 @@ private:
   static double ComputeStringOffset(double width, double height, double theta);
   static void SetOffsetPosition(double xTick[3], double theta, int stringHeight, 
                                 int stringWidth, int offset, vtkActor2D *actor,
-                                int titleAtEnd);
+                                int titleAtEnd, double endStringHOffsetFactor,
+                                double endStringVOffsetFactor);
 
   void           SetNumberOfLabelsBuilt(const int);
   vtkTextMapper *TitleMapper;

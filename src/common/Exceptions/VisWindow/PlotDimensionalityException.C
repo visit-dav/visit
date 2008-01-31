@@ -54,6 +54,9 @@
 //    Kathleen Bonnell, Tue May  7 08:33:54 PDT 2002
 //    Added WINMODE_CURVE.  
 //
+//    Jeremy Meredith, Mon Jan 28 17:39:51 EST 2008
+//    Added WINMODE_AXISARRAY.
+//
 // ****************************************************************************
 
 PlotDimensionalityException::PlotDimensionalityException(WINDOW_MODE oldMode,
@@ -70,6 +73,9 @@ PlotDimensionalityException::PlotDimensionalityException(WINDOW_MODE oldMode,
         break;
       case WINMODE_CURVE:
         oldModeS = "Curve";
+        break;
+      case WINMODE_AXISARRAY:
+        oldModeS = "AxisArray";
         break;
       case WINMODE_NONE:
         oldModeS = "None";
@@ -90,6 +96,9 @@ PlotDimensionalityException::PlotDimensionalityException(WINDOW_MODE oldMode,
         break;
       case WINMODE_CURVE:
         newModeS = "Curve";
+        break;
+      case WINMODE_AXISARRAY:
+        newModeS = "AxisArray";
         break;
       case WINMODE_NONE:
         newModeS = "None";

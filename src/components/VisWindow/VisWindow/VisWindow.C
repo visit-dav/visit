@@ -75,6 +75,7 @@
 #include <VisWinAnnotations.h>
 #include <VisWinAxes.h>
 #include <VisWinAxes3D.h>
+#include <VisWinAxesArray.h>
 #include <VisWinBackground.h>
 #include <VisWinFrame.h>
 #include <VisWinInteractions.h>
@@ -229,6 +230,9 @@ VisWindow::VisWindow(bool callInit)
 //    Brad Whitlock, Mon Nov 19 12:21:11 PST 2007
 //    Added background image support.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 void
@@ -309,6 +313,9 @@ VisWindow::Initialize(VisWinRendering *ren)
 
     axes3D       = new VisWinAxes3D(colleagueProxy);
     AddColleague(axes3D);
+
+    axesArray    = new VisWinAxesArray(colleagueProxy);
+    AddColleague(axesArray);
 
     windowBackground = new VisWinBackground(colleagueProxy);
     AddColleague(windowBackground);
@@ -485,6 +492,9 @@ VisWindow::~VisWindow()
 //    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
 //    Added background image support.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 void
@@ -540,6 +550,9 @@ VisWindow::AddColleague(VisWinColleague *col)
         break;
       case WINMODE_CURVE:
         col->StartCurveMode();
+        break;
+      case WINMODE_AXISARRAY:
+        col->StartAxisArrayMode();
         break;
       case WINMODE_NONE:
       default:
@@ -900,6 +913,9 @@ VisWindow::UpdatePlotList(vector<avtActor_p> &lst)
 //    Kathleen Bonnell, Fri May 10 15:38:14 PDT 2002   
 //    Added support for WINMODE_CURVE. 
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 void
@@ -937,6 +953,9 @@ VisWindow::ChangeMode(WINDOW_MODE newMode)
       case WINMODE_CURVE:
         StopCurveMode();
         break;
+      case WINMODE_AXISARRAY:
+        StopAxisArrayMode();
+        break;
       case WINMODE_NONE:
         break;
       default:
@@ -966,6 +985,9 @@ VisWindow::ChangeMode(WINDOW_MODE newMode)
             break;
           case WINMODE_CURVE:
             StartCurveMode();
+            break;
+          case WINMODE_AXISARRAY:
+            StartAxisArrayMode();
             break;
           default:
             { EXCEPTION1(BadWindowModeException, mode); }
@@ -1090,6 +1112,34 @@ VisWindow::StartCurveMode(void)
 
 
 // ****************************************************************************
+//  Method: VisWindow::StartAxisArrayMode
+//
+//  Purpose:
+//      Has all of its modules start AxisArray mode.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 28, 2008
+//
+// ****************************************************************************
+
+void
+VisWindow::StartAxisArrayMode(void)
+{
+    //
+    // Update the view.  In the future this should probably go into
+    // VisWinView's StartAxisArrayMode, but for now we will do it here.
+    //
+    UpdateView();
+
+    std::vector< VisWinColleague * >::iterator it;
+    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    {
+        (*it)->StartAxisArrayMode();
+    }
+}
+
+
+// ****************************************************************************
 //  Method: VisWindow::Stop2DMode
 //
 //  Purpose:
@@ -1150,6 +1200,27 @@ VisWindow::StopCurveMode(void)
     for (it = colleagues.begin() ; it != colleagues.end() ; it++)
     {
         (*it)->StopCurveMode();
+    }
+}
+
+// ****************************************************************************
+//  Method: VisWindow::StopAxisArrayMode
+//
+//  Purpose:
+//      Has all of its modules stop AxisArray mode.
+//
+//  Programmer: Jeremy Meredith 
+//  Creation:   January 28, 2008
+//
+// ****************************************************************************
+
+void
+VisWindow::StopAxisArrayMode(void)
+{
+    std::vector< VisWinColleague * >::iterator it;
+    for (it = colleagues.begin() ; it != colleagues.end() ; it++)
+    {
+        (*it)->StopAxisArrayMode();
     }
 }
 
@@ -2616,6 +2687,56 @@ VisWindow::GetViewCurve(void)
 
 
 // ****************************************************************************
+//  Method:  VisWindow::SetViewAxisArray
+//
+//  Purpose:
+//    Sets the axisarray view for the window.
+//
+//  Arguments:
+//    v          the new view
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 31, 2008
+//
+// ****************************************************************************
+void
+VisWindow::SetViewAxisArray(const avtViewAxisArray &v)
+{
+    if (viewAxisArray == v)
+        return;
+
+    //
+    // In the future this should propably be done by the VisWinView
+    // colleague.
+    //
+    viewAxisArray = v;
+
+    UpdateView();
+}
+
+
+// ****************************************************************************
+//  Method:  VisWindow::GetViewAxisArray
+//
+//  Purpose:
+//    returns the axisarray view for the window
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 31, 2008
+//
+// ****************************************************************************
+const avtViewAxisArray &
+VisWindow::GetViewAxisArray(void)
+{
+    return viewAxisArray;
+}
+
+
+
+// ****************************************************************************
 //  Method: VisWindow::GetWindowMode
 //
 //  Purpose:
@@ -2754,6 +2875,9 @@ VisWindow::Render(void)
 //    If viewport is special viewport preferred by ParallelAxis plot and Extents
 //    tool, make sure that it is recorded in window's avtCurveView object.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // *****************************************************************************
 
 void
@@ -2835,6 +2959,22 @@ VisWindow::UpdateView()
         FullFrameOff();
         FullFrameOn(viewCurve.GetScaleFactor(size), 1);
         Render();
+    }
+    else if (mode == WINMODE_AXISARRAY)
+    {
+        avtViewInfo viewInfo;
+        int *size=rendering->GetFirstRenderer()->GetSize();
+        if (viewAxisArray.viewport[0] != viewportLeft ||
+            viewAxisArray.viewport[1] != viewportRight ||
+            viewAxisArray.viewport[2] != viewportBottom ||
+            viewAxisArray.viewport[3] != viewportTop)
+        {
+            SetViewport(viewAxisArray.viewport[0], viewAxisArray.viewport[2],
+                        viewAxisArray.viewport[1], viewAxisArray.viewport[3]);
+        }
+        viewAxisArray.SetViewInfoFromView(viewInfo, size);
+        FullFrameOn(viewAxisArray.GetScaleFactor(size), 1);
+        view->SetViewInfo(viewInfo);
     }
 }
 
@@ -3307,6 +3447,9 @@ VisWindow::SetShowCallback(VisCallback *cb, void *data)
 //   Brad Whitlock, Wed Nov 14 15:37:34 PST 2007
 //   I added support for image backgrounds.
 //
+//   Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//   Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 void
@@ -3344,6 +3487,7 @@ VisWindow::SetAnnotationAtts(const AnnotationAttributes *atts)
         // Update the axes using the new annotation attributes.
         UpdateAxes2D();
         UpdateAxes3D();
+        UpdateAxesArray();
         UpdateTextAnnotations();
 
         // Re-render the window.
@@ -3857,6 +4001,26 @@ VisWindow::UpdateAxes2D()
         annotationAtts.GetAxesLineWidth2D())));
     frame->SetLineWidth(LineWidth2Int(Int2LineWidth(
         annotationAtts.GetAxesLineWidth2D())));
+}
+
+
+// ****************************************************************************
+//  Method:  VisWindow::UpdateAxesArray
+//
+//  Purpose:
+//    Update necessary aspects of the VisWinAxesArray
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 31, 2008
+//
+// ****************************************************************************
+void
+VisWindow::UpdateAxesArray()
+{
+    axesArray->SetVisibility(true);
 }
 
 
@@ -4683,6 +4847,9 @@ VisWindow::QueryIsValid(const VisualCueInfo *pickCue, const VisualCueInfo *lineC
 //    Modified to match changes in avtView2D and avtViewCurve made to handle
 //    full frame mode properly.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode.
+//
 // ****************************************************************************
 
 void
@@ -4699,6 +4866,12 @@ VisWindow::GetScaleFactorAndType(double &s, int &t)
         int *size=rendering->GetFirstRenderer()->GetSize();
 
         s = viewCurve.GetScaleFactor(size);
+    }
+    else if (mode == WINMODE_AXISARRAY)
+    {
+        int *size=rendering->GetFirstRenderer()->GetSize();
+
+        s = viewAxisArray.GetScaleFactor(size);
     }
     else // this really doesn't apply, set scale to 0. 
     {
@@ -5618,13 +5791,17 @@ VisWindow::FullFrameOn(const double scale, const int type)
 //    Kathleen  Bonnell, Tue Dec  2 16:36:00 PST 2003 
 //    CurveMode is always in FullFrameMode. 
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new AxisArray window mode (always fullframe).
+//
 // ****************************************************************************
 
 bool
 VisWindow::GetFullFrameMode()
 {
     if ((mode == WINMODE_2D && view2D.fullFrame) ||
-        (mode == WINMODE_CURVE))
+        (mode == WINMODE_CURVE) ||
+        (mode == WINMODE_AXISARRAY))
         return true;
     else 
         return false; 

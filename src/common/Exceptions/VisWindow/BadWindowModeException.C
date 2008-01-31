@@ -53,6 +53,9 @@
 //    Kathleen Bonnell, Tue May  7 08:21:01 PDT 2002
 //    Add  WINMODE_CURVE.
 //
+//    Jeremy Meredith, Mon Jan 28 17:40:55 EST 2008
+//    Added WINMODE_AXISARRAY.
+//
 // ****************************************************************************
 
 BadWindowModeException::BadWindowModeException(WINDOW_MODE mode)
@@ -68,6 +71,9 @@ BadWindowModeException::BadWindowModeException(WINDOW_MODE mode)
         break;
       case WINMODE_CURVE:
         modeS = "Curve";
+        break;
+      case WINMODE_AXISARRAY:
+        modeS = "AxisArray";
         break;
       case WINMODE_NONE:
         modeS = "None";

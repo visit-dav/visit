@@ -1951,6 +1951,9 @@ NetworkManager::HasNonMeshPlots(const intVector plotIds)
 //    Retrieve scaling modes from 2d and curve view atts and set them in the
 //    plot before it executes so the plot will be created with correct scaling. 
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -2151,7 +2154,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
                 {
                     determinedFFScale = true;
                     setFFScale = viswin->GetWindowMode() == WINMODE_2D ||
-                                 viswin->GetWindowMode() == WINMODE_CURVE;
+                                 viswin->GetWindowMode() == WINMODE_CURVE ||
+                                 viswin->GetWindowMode() == WINMODE_AXISARRAY;
                     useFFScale = viswin->GetFullFrameMode();
                     if(setFFScale)
                     {
@@ -2333,7 +2337,8 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
             int t3 = visitTimer->StartTimer();
             bool viewportedMode = (annotMode != 1) || 
                                   (viswin->GetWindowMode() == WINMODE_2D) ||
-                                  (viswin->GetWindowMode() == WINMODE_CURVE);
+                                  (viswin->GetWindowMode() == WINMODE_CURVE) ||
+                                  (viswin->GetWindowMode() == WINMODE_AXISARRAY);
 
 
             // ************************************************************
@@ -2712,6 +2717,9 @@ NetworkManager::Render(intVector plotIds, bool getZBuffer, int annotMode,
 //    Brad Whitlock, Mon Nov 19 14:41:47 PST 2007
 //    Added support for image backgrounds.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 void
 NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
@@ -2793,6 +2801,11 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     avtView3D view3D;
     view3D.SetFromView3DAttributes(&view3DAtts);
     viswin->SetView3D(view3D);
+
+    const ViewAxisArrayAttributes& viewAxisArrayAtts = atts.GetViewAxisArray();
+    avtViewAxisArray viewAxisArray;
+    viewAxisArray.SetFromViewAxisArrayAttributes(&viewAxisArrayAtts);
+    viswin->SetViewAxisArray(viewAxisArray);
 
     //
     // Set the color tables

@@ -442,6 +442,10 @@ avtDataAttributes::DestructSelf(void)
 //    Hank Childs, Sun Oct 28 09:42:50 PST 2007
 //    Added containsExteriorBoundaryGhosts.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added new axis array window mode.
+//    Added ability for variables to be associated with an axis.
+//
 // ****************************************************************************
 
 void
@@ -522,6 +526,9 @@ avtDataAttributes::Print(ostream &out)
         break;
       case WINMODE_CURVE:
         out << "The window mode is curve" << endl;
+        break;
+      case WINMODE_AXISARRAY:
+        out << "The window mode is axis-array" << endl;
         break;
       case WINMODE_NONE:
         out << "The window mode is none" << endl;
@@ -664,6 +671,8 @@ avtDataAttributes::Print(ostream &out)
         }
         if (variables[i].treatAsASCII)
             out << "Treat as ASCII." << endl;
+
+        out << "Used for axis " << variables[i].useForAxis << endl;
 
         if (variables[i].trueData != NULL)
         {
@@ -906,6 +915,9 @@ avtDataAttributes::Print(ostream &out)
 //    Hank Childs, Sun Oct 28 09:42:50 PST 2007
 //    Added containsExteriorBoundaryGhosts.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added ability for variables to be associated with an axis.
+//
 // ****************************************************************************
 
 void
@@ -964,6 +976,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
         SetVariableDimension(di.variables[i].dimension, vname);
         SetCentering(di.variables[i].centering, vname);
         SetTreatAsASCII(di.variables[i].treatAsASCII, vname);
+        SetUseForAxis(di.variables[i].useForAxis, vname);
         *(variables[i].trueData)              = *(di.variables[i].trueData);
         *(variables[i].cumulativeTrueData)    = 
                                       *(di.variables[i].cumulativeTrueData);
@@ -1127,6 +1140,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //    Hank Childs, Sun Oct 28 09:42:50 PST 2007
 //    Added containsExteriorBoundaryGhosts.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added ability for variables to be associated with an axis.
+//
 // ****************************************************************************
 
 void
@@ -1180,6 +1196,10 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
                        da.variables[i].centering);
         }
         if (variables[i].treatAsASCII != da.variables[i].treatAsASCII)
+        {
+            EXCEPTION0(InvalidMergeException);
+        }
+        if (variables[i].useForAxis != da.variables[i].useForAxis)
         {
             EXCEPTION0(InvalidMergeException);
         }
@@ -2484,6 +2504,9 @@ avtDataAttributes::SetTime(double d)
 //    Hank Childs, Sun Oct 28 09:42:50 PST 2007
 //    Added containsExteriorBoundaryGhosts.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added ability for variables to be associated with an axis.
+//
 // ****************************************************************************
 
 void
@@ -2492,7 +2515,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
 {
     int   i, j;
 
-    int varSize = 6;
+    int varSize = 7;
     int numVals = 31 + varSize*variables.size();
     int *vals = new int[numVals];
     i = 0;
@@ -2536,6 +2559,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
         vals[basei+varSize*i+3] = variables[i].vartype;
         vals[basei+varSize*i+4] = variables[i].subnames.size();
         vals[basei+varSize*i+5] = variables[i].binRange.size();
+        vals[basei+varSize*i+6] = variables[i].useForAxis;
     }
     wrtr->WriteInt(str, vals, numVals);
     wrtr->WriteDouble(str, dtime);
@@ -2759,6 +2783,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //    Hank Childs, Sun Oct 28 09:42:50 PST 2007
 //    Added containsExteriorBoundaryGhosts.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added ability for variables to be associated with an axis.
+//
 // ****************************************************************************
 
 int
@@ -2899,6 +2926,7 @@ avtDataAttributes::Read(char *input)
     avtVarType *vartypes = new avtVarType[numVars];
     int *subnames_size = new int[numVars];
     int *binRange_size = new int[numVars];
+    int *useForAxis = new int[numVars];
     for (i = 0 ; i < numVars ; i++)
     {
         memcpy(&tmp, input, sizeof(int));
@@ -2924,6 +2952,10 @@ avtDataAttributes::Read(char *input)
         memcpy(&tmp, input, sizeof(int));
         input += sizeof(int); size += sizeof(int);
         binRange_size[i] = tmp;
+
+        memcpy(&tmp, input, sizeof(int));
+        input += sizeof(int); size += sizeof(int);
+        useForAxis[i] = tmp;
     }
 
     memcpy(&dtmp, input, sizeof(double));
@@ -3002,6 +3034,7 @@ avtDataAttributes::Read(char *input)
         SetCentering(centerings[i], varname.c_str());
         SetVariableDimension(varDims[i], varname.c_str());
         SetTreatAsASCII(ascii[i], varname.c_str());
+        SetUseForAxis(useForAxis[i], varname.c_str());
         SetVariableType(vartypes[i], varname.c_str());
  
         s = variables[i].trueData->Read(input);
@@ -3018,6 +3051,7 @@ avtDataAttributes::Read(char *input)
     delete [] varDims;
     delete [] centerings;
     delete [] ascii;
+    delete [] useForAxis;
     delete [] vartypes;
     delete [] subnames_size;
     delete [] binRange_size;
@@ -3609,6 +3643,9 @@ avtDataAttributes::SetActiveVariable(const char *v)
 //    Hank Childs, Fri Aug  5 16:29:41 PDT 2005
 //    Initialize vartype.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added ability for variables to be associated with an axis.
+//
 // ****************************************************************************
 
 void
@@ -3643,6 +3680,7 @@ avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
     new_var.effectiveData = NULL;
     new_var.currentData = NULL;
     new_var.cumulativeCurrentData = NULL;
+    new_var.useForAxis = -1;
     variables.push_back(new_var);
 }
 
@@ -4132,6 +4170,103 @@ avtDataAttributes::ReadTransform(char *input)
 }
 
 // ****************************************************************************
+//  Method: avtDataAttributes::ClearAllUseForAxis
+//
+//  Purpose:
+//    Sets all variables to not be associated with *any* axis.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:    Jeremy Meredith
+//  Creation:      January 30, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::ClearAllUseForAxis()
+{
+    for (int i=0; i<variables.size(); i++)
+        variables[i].useForAxis = -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::SetUseForAxis
+//
+//  Purpose:
+//    Sets which acis (e.g. in a parallel coordinates plot) this variable
+//    should be used for.
+//
+//  Arguments:
+//    ufa          The new useForAxis value
+//
+//  Programmer:    Jeremy Meredith
+//  Creation:      January 30, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataAttributes::SetUseForAxis(const int ufa, const char *varname)
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the useForAxis value of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to set UseForAxis of non-existent";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    variables[index].useForAxis = ufa;
+}
+
+
+// ****************************************************************************
+//  Method: avtDataAttributes::GetUseForAxis
+//
+//  Purpose:
+//    Gets the value specifying which axis (e.g. in a parallel coordinates
+//    plot) this variable is used for.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 30, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtDataAttributes::GetUseForAxis(const char *varname) const
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to get the useForAxis of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to retrieve UseForAxis of non-existent";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    return variables[index].useForAxis;
+}
+
+
+// ****************************************************************************
 //  Method: avtDataAttributes::SetTreatAsASCII
 //
 //  Purpose:
@@ -4463,6 +4598,9 @@ avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
 //    Hank Childs, Sun Oct 28 09:42:50 PST 2007
 //    Added containsExteriorBoundaryGhosts.
 //
+//    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
+//    Added ability for variables to be associated with an axis.
+//
 // ****************************************************************************
 
 static const char *
@@ -4672,6 +4810,8 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Centering", str);
             webpage->AddTableEntry3(NULL, "Treat variable as ASCII characters?",
                                     YesOrNo(variables[i].treatAsASCII));
+            sprintf(str, "%d", variables[i].useForAxis);
+            webpage->AddTableEntry3(NULL, "Use for axis", str);
             ExtentsToString(variables[i].cumulativeTrueData, str);
             webpage->AddTableEntry3(NULL, "Cumulative true data extents", str);
             ExtentsToString(variables[i].effectiveData, str);

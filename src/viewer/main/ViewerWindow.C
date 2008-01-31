@@ -255,6 +255,9 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
 //    Added initialization of depth cueing properties.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
@@ -294,6 +297,9 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
     boundingBoxValid3d = false;
     viewSetIn3d = false;
     viewPartialSetIn3d = false;
+    boundingBoxValidAxisArray = false;
+    viewSetInAxisArray = false;
+    viewModifiedAxisArray = false;
     mergeViewLimits = false;
     plotExtentsType = AVT_ORIGINAL_EXTENTS;
     timeLocked = false;
@@ -364,12 +370,25 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
     viewCurve.viewport[3] = 0.95;
     visWindow->SetViewCurve(viewCurve);
 
-    curViewCurve  = new ViewCurveAttributes;
-    curView2D     = new View2DAttributes;
-    curView3D     = new View3DAttributes;
-    viewCurveAtts = new AttributeSubjectMap;
-    view2DAtts    = new AttributeSubjectMap;
-    view3DAtts    = new AttributeSubjectMap;
+    //
+    // Initialize the axis array view information.
+    //
+    avtViewAxisArray viewAxisArray;
+
+    viewAxisArray.viewport[0] = 0.2;
+    viewAxisArray.viewport[1] = 0.95;
+    viewAxisArray.viewport[2] = 0.15;
+    viewAxisArray.viewport[3] = 0.95;
+    visWindow->SetViewAxisArray(viewAxisArray);
+
+    curViewCurve     = new ViewCurveAttributes;
+    curView2D        = new View2DAttributes;
+    curView3D        = new View3DAttributes;
+    curViewAxisArray = new ViewAxisArrayAttributes;
+    viewCurveAtts    = new AttributeSubjectMap;
+    view2DAtts       = new AttributeSubjectMap;
+    view3DAtts       = new AttributeSubjectMap;
+    viewAxisArrayAtts= new AttributeSubjectMap;
 
     //
     // Create the window's action manager.
@@ -412,6 +431,9 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
 //    Brad Whitlock, Tue Jan 27 17:03:28 PST 2004
 //    I removed animation and put plotList.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 ViewerWindow::~ViewerWindow()
@@ -424,9 +446,11 @@ ViewerWindow::~ViewerWindow()
     delete curViewCurve;
     delete curView2D;
     delete curView3D;
+    delete curViewAxisArray;
     delete viewCurveAtts;
     delete view2DAtts;
     delete view3DAtts;
+    delete viewAxisArrayAtts;
     delete actionMgr;
 }
 
@@ -1061,6 +1085,9 @@ ViewerWindow::GetToolName(int index) const
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -1081,6 +1108,10 @@ ViewerWindow::RecenterView()
       case WINMODE_3D:
         GetExtents(3, limits);
         RecenterView3d(limits);
+        break;
+      case WINMODE_AXISARRAY:
+        GetExtents(2, limits);
+        RecenterViewAxisArray(limits);
         break;
       default:
         break;
@@ -1121,6 +1152,9 @@ ViewerWindow::RecenterView()
 //    Modified the routine to reset the view for all the view modes and
 //    then actually reset the view for current view mode.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -1136,6 +1170,8 @@ ViewerWindow::ResetView()
     boundingBoxValid3d = false;
     viewSetIn3d = false;
     viewPartialSetIn3d = false;
+    viewSetInAxisArray = false;
+    boundingBoxValidAxisArray = false;
 
     //
     // Reset the view for the current mode.  This will actually reset
@@ -1151,6 +1187,9 @@ ViewerWindow::ResetView()
         break;
       case WINMODE_3D:
         ResetView3d();
+        break;
+      case WINMODE_AXISARRAY:
+        ResetViewAxisArray();
         break;
       default:
         break;
@@ -1170,6 +1209,9 @@ ViewerWindow::ResetView()
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -1178,6 +1220,7 @@ ViewerWindow::ClearViewKeyframes()
     viewCurveAtts->ClearAtts();
     view2DAtts->ClearAtts();
     view3DAtts->ClearAtts();
+    viewAxisArrayAtts->ClearAtts();
 }
 
 // ****************************************************************************
@@ -1198,6 +1241,9 @@ ViewerWindow::ClearViewKeyframes()
 //
 //    Brad Whitlock, Wed Apr 7 13:54:35 PST 2004
 //    I rewrote it for multiple time sliders.
+//
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //
 // ****************************************************************************
 
@@ -1234,6 +1280,7 @@ ViewerWindow::DeleteViewKeyframe(const int index)
         viewCurveAtts->DeleteAtts(index, i0, i1);
         view2DAtts->DeleteAtts(index, i0, i1);
         view3DAtts->DeleteAtts(index, i0, i1);
+        viewAxisArrayAtts->DeleteAtts(index, i0, i1);
         i1 = i1 < (nIndices - 1) ? i1 : (nIndices - 1);
 
         //
@@ -1266,6 +1313,9 @@ ViewerWindow::DeleteViewKeyframe(const int index)
 //
 //    Brad Whitlock, Wed Apr 7 13:54:35 PST 2004
 //    I rewrote it for multiple time sliders.
+//
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //
 // ****************************************************************************
 
@@ -1306,6 +1356,8 @@ ViewerWindow::MoveViewKeyframe(int oldIndex, int newIndex)
             return;
         if (!view3DAtts->MoveAtts(oldIndex, newIndex, i0, i1))
             return;
+        if (!viewAxisArrayAtts->MoveAtts(oldIndex, newIndex, i0, i1))
+            return;
         i1 = i1 < (nIndices - 1) ? i1 : (nIndices - 1);
 
         //
@@ -1344,6 +1396,9 @@ ViewerWindow::MoveViewKeyframe(int oldIndex, int newIndex)
 //
 //    Brad Whitlock, Wed Apr 7 13:54:35 PST 2004
 //    I rewrote it for multiple time sliders.
+//
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //
 // ****************************************************************************
 
@@ -1395,6 +1450,15 @@ ViewerWindow::SetViewKeyframe()
         curView3D->SetPerspective(view3d.perspective);
         curView3D->SetEyeAngle(view3d.eyeAngle);
         view3DAtts->SetAtts(curIndex, curView3D);
+
+        //
+        // Set an axis array view keyframe.
+        //
+        const avtViewAxisArray &viewAxisArray = visWindow->GetViewAxisArray();
+        curViewAxisArray->SetDomainCoords(viewAxisArray.domain);
+        curViewAxisArray->SetRangeCoords(viewAxisArray.range);
+        curViewAxisArray->SetViewportCoords(viewAxisArray.viewport);
+        viewAxisArrayAtts->SetAtts(curIndex, curViewAxisArray);
     }
 }
 
@@ -2526,6 +2590,9 @@ ViewerWindow::SendDeleteMessage()
 //    Eric Brugger, Wed Aug 20 11:15:07 PDT 2003
 //    I added a curve view.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -2545,6 +2612,9 @@ ViewerWindow::UpdateView(const WINDOW_MODE mode, const double *limits)
         break;
       case WINMODE_3D:
         UpdateView3d(limits);
+        break;
+      case WINMODE_AXISARRAY:
+        UpdateViewAxisArray(limits);
         break;
       default:
         break;
@@ -2668,6 +2738,29 @@ ViewerWindow::SetView3D(const avtView3D &v)
 }
 
 // ****************************************************************************
+//  Method:  ViewerWindow::SetViewAxisArray
+//
+//  Purpose:
+//    Set the view for AxisArray mode and update window if needed.
+//
+//  Arguments:
+//    v          the new view
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 31, 2008
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetViewAxisArray(const avtViewAxisArray &v)
+{
+    visWindow->SetViewAxisArray(v);
+
+    viewSetInAxisArray = true;
+    viewModifiedAxisArray = true;
+}
+
+// ****************************************************************************
 //  Method: ViewerWindow::GetViewCurve
 //
 //  Purpose: 
@@ -2732,6 +2825,27 @@ ViewerWindow::GetView3D() const
     return visWindow->GetView3D();
 }
 
+
+// ****************************************************************************
+//  Method: ViewerWindow::GetViewAxisArray 
+//
+//  Purpose:
+//    Return the current AxisArray view.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    January 31, 2008
+//
+// ****************************************************************************
+
+const avtViewAxisArray &
+ViewerWindow::GetViewAxisArray() const
+{
+    return visWindow->GetViewAxisArray();
+}
+
 // ****************************************************************************
 // Method: ViewerWindow::CopyViewAttributes
 //
@@ -2776,6 +2890,9 @@ ViewerWindow::GetView3D() const
 //    Brad Whitlock, Tue Mar 7 17:40:05 PST 2006
 //    Copy the view stacks.
 //
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -2789,6 +2906,7 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
     visWindow->SetViewCurve(source->visWindow->GetViewCurve());
     visWindow->SetView2D(source->visWindow->GetView2D());
     visWindow->SetView3D(source->visWindow->GetView3D());
+    visWindow->SetViewAxisArray(source->visWindow->GetViewAxisArray());
 
     //
     // Copy the view stacks
@@ -2802,6 +2920,7 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
     *viewCurveAtts = *(source->viewCurveAtts);
     *view2DAtts = *(source->view2DAtts);
     *view3DAtts = *(source->view3DAtts);
+    *viewAxisArrayAtts = *(source->viewAxisArrayAtts);
 
     //
     // Copy the bounding boxes.
@@ -2818,6 +2937,9 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
     centeringValid3d      = source->centeringValid3d;
     viewSetIn3d           = source->viewSetIn3d;
     viewPartialSetIn3d    = source->viewPartialSetIn3d;
+    centeringValidAxisArray= source->centeringValidAxisArray;
+    viewSetInAxisArray    = source->viewSetInAxisArray;
+    viewModifiedAxisArray = source->viewModifiedAxisArray;
 
     int       i;
     for (i = 0; i < 4; i++)
@@ -2826,7 +2948,8 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
         boundingBox2d[i] = source->boundingBox2d[i];
     for (i = 0; i < 6; i++)
         boundingBox3d[i] = source->boundingBox3d[i];
-
+    for (i = 0; i < 4; i++)
+        boundingBoxAxisArray[i] = source->boundingBoxAxisArray[i];
 }
 
 // ****************************************************************************
@@ -2861,6 +2984,9 @@ ViewerWindow::CopyViewAttributes(const ViewerWindow *source)
 //   sliders. I also changed the code so it does not copy view components
 //   value by value since there are helper methods already for that.
 //
+//   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//   Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -2892,12 +3018,19 @@ ViewerWindow::UpdateCameraView()
             view2d.SetFromView2DAttributes(curView2D);
             visWindow->SetView2D(view2d);
         }
-        else
+        else if (visWindow->GetWindowMode() == WINMODE_3D)
         {
             view3DAtts->GetAtts(curIndex, curView3D);
             avtView3D view3d;
             view3d.SetFromView3DAttributes(curView3D);
             visWindow->SetView3D(view3d);
+        }
+        else if (visWindow->GetWindowMode() == WINMODE_AXISARRAY)
+        {
+            viewAxisArrayAtts->GetAtts(curIndex, curViewAxisArray);
+            avtViewAxisArray viewAxisArray;
+            viewAxisArray.SetFromViewAxisArrayAttributes(curViewAxisArray);
+            visWindow->SetViewAxisArray(viewAxisArray);
         }
     }
 }
@@ -2913,6 +3046,9 @@ ViewerWindow::UpdateCameraView()
 //
 // Modifications:
 //   
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -2960,6 +3096,20 @@ ViewerWindow::UndoView()
             SetView3D(view);
         }
     }
+    else if(GetWindowMode() == WINMODE_AXISARRAY)
+    {
+        avtViewAxisArray view;
+
+        // Pop off the previous view.
+        if(undoViewStack.PopViewAxisArray(view))
+        {
+            // Put the current view on the redo stack.
+            redoViewStack.PushViewAxisArray(GetViewAxisArray());
+
+            // Restore the previous view
+            SetViewAxisArray(view);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -2972,7 +3122,9 @@ ViewerWindow::UndoView()
 // Creation:   Tue Mar 7 17:51:17 PST 2006
 //
 // Modifications:
-//   
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -3005,6 +3157,15 @@ ViewerWindow::RedoView()
             SetView3D(view);
         }
     }
+    else if(GetWindowMode() == WINMODE_AXISARRAY)
+    {
+        avtViewAxisArray view;
+        if(redoViewStack.PopViewAxisArray(view))
+        {
+            undoViewStack.PushViewAxisArray(view);
+            SetViewAxisArray(view);
+        }
+    }
 }
 
 // ****************************************************************************
@@ -3017,6 +3178,8 @@ ViewerWindow::RedoView()
 // Creation:   Tue Mar 7 17:52:06 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //   
 // ****************************************************************************
 
@@ -3029,6 +3192,8 @@ ViewerWindow::PushCurrentViews()
         undoViewStack.PushView2D(GetView2D());
     else if(GetWindowMode() == WINMODE_3D)
         undoViewStack.PushView3D(GetView3D());
+    else if(GetWindowMode() == WINMODE_AXISARRAY)
+        undoViewStack.PushViewAxisArray(GetViewAxisArray());
 }
 
 // ****************************************************************************
@@ -3041,6 +3206,8 @@ ViewerWindow::PushCurrentViews()
 // Creation:   Tue Mar 7 17:52:23 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //   
 // ****************************************************************************
 
@@ -3054,6 +3221,8 @@ ViewerWindow::UndoViewEnabled() const
         retval = undoViewStack.HasView2Ds();
     else if(GetWindowMode() == WINMODE_3D)
         retval = undoViewStack.HasView3Ds();
+    else if(GetWindowMode() == WINMODE_AXISARRAY)
+        retval = undoViewStack.HasViewAxisArrays();
     return retval;
 }
 
@@ -3067,6 +3236,8 @@ ViewerWindow::UndoViewEnabled() const
 // Creation:   Tue Mar 7 17:52:23 PST 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//    Added new axis array window mode.
 //   
 // ****************************************************************************
 
@@ -3080,6 +3251,8 @@ ViewerWindow::RedoViewEnabled() const
         retval = redoViewStack.HasView2Ds();
     else if(GetWindowMode() == WINMODE_3D)
         retval = redoViewStack.HasView3Ds();
+    else if(GetWindowMode() == WINMODE_AXISARRAY)
+        retval = redoViewStack.HasViewAxisArrays();
     return retval;
 }
 
@@ -4203,6 +4376,63 @@ ViewerWindow::RecenterView3d(const double *limits)
 }
 
 // ****************************************************************************
+//  Method: ViewerWindow::RecenterViewAxisArray
+//
+//  Purpose: 
+//    Recenter the window's axis array view using the specified limits.
+//
+//  Arguments:
+//    limits    The limits of all the plots.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 31, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::RecenterViewAxisArray(const double *limits)
+{
+    //
+    // If the plot limits are invalid then there are no plots so mark the
+    // bounding box as invalid so that the view is set from scratch the
+    // next time it is updated.
+    //
+    if (limits[0] == DBL_MAX && limits[1] == -DBL_MAX)
+    {
+        centeringValidAxisArray = false;
+        return;
+    }
+
+    //
+    // Set the new window.
+    //
+    int       i;
+
+    for (i = 0; i < 4; i++)
+    {
+        boundingBoxAxisArray[i] = limits[i];
+    }
+
+    //
+    // Update the view.
+    //
+    avtViewAxisArray viewAxisArray=visWindow->GetViewAxisArray();
+    viewAxisArray.domain[0] = boundingBoxAxisArray[0];
+    viewAxisArray.domain[1] = boundingBoxAxisArray[1];
+    viewAxisArray.range[0]  = boundingBoxAxisArray[2];
+    viewAxisArray.range[1]  = boundingBoxAxisArray[3];
+
+    visWindow->SetViewAxisArray(viewAxisArray);
+
+    //
+    // Flag the view as unmodified.
+    //
+    viewModifiedAxisArray = false;
+}
+
+// ****************************************************************************
 //  Method: ViewerWindow::ResetViewCurve
 //
 //  Purpose: 
@@ -4653,6 +4883,64 @@ ViewerWindow::ResetView3d()
     // Update the view.
     //
     visWindow->SetView3D(view3D);
+}
+
+// ****************************************************************************
+//  Method: ViewerWindow::ResetViewAxisArray
+//
+//  Purpose: 
+//    Reset the window's AxisArray view.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 31, 2008
+//
+//  Modifications:
+// ****************************************************************************
+void
+ViewerWindow::ResetViewAxisArray()
+{
+    avtViewAxisArray viewAxisArray=visWindow->GetViewAxisArray();
+
+    //
+    // Set the bounding box based on the plot limits.
+    //
+    GetExtents(2, boundingBoxAxisArray);
+
+    //
+    // If the plot limits are invalid then there are no plots so mark the
+    // bounding box as invalid so that the view is set from scratch the
+    // next time it is updated.
+    //
+    if (boundingBoxAxisArray[0] == DBL_MAX &&
+        boundingBoxAxisArray[1] == -DBL_MAX)
+    {
+        boundingBoxValidAxisArray = false;
+        centeringValidAxisArray = false;
+        viewSetInAxisArray = false;
+        return;
+    }
+
+    //
+    // Mark the view as valid.
+    //
+    boundingBoxValidAxisArray = true;
+    centeringValidAxisArray = true;
+    viewSetInAxisArray = true;
+
+    //
+    // Set the window.
+    //
+    viewAxisArray.domain[0]   = boundingBoxAxisArray[0];
+    viewAxisArray.domain[1]   = boundingBoxAxisArray[1];
+    viewAxisArray.range[0]    = boundingBoxAxisArray[2];
+    viewAxisArray.range[1]    = boundingBoxAxisArray[3];
+
+    visWindow->SetViewAxisArray(viewAxisArray);
+
+    //
+    // Flag the view as unmodified.
+    //
+    viewModifiedAxisArray = false;
 }
 
 // ****************************************************************************
@@ -5312,6 +5600,97 @@ ViewerWindow::UpdateView3d(const double *limits)
 }
 
 // ****************************************************************************
+//  Method: ViewerWindow::UpdateViewAxisArray
+//
+//  Purpose: 
+//    Update the axis array view for the window.
+//
+//  Arguments:
+//    limits    The limits of all the plots.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   January 31, 2008
+//
+//  Modifications:
+// ****************************************************************************
+void
+ViewerWindow::UpdateViewAxisArray(const double *limits)
+{
+    //
+    // If this is the first time that this routine is being called for this
+    // window, set the limits and reset the view.
+    //
+    if (boundingBoxValidAxisArray == false)
+    {
+        for (int i = 0; i < 4; i++)
+            boundingBoxAxisArray[i] = limits[i];
+
+        boundingBoxValidAxisArray = true;
+        centeringValidAxisArray   = true;
+        const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
+
+        if (!viewSetInAxisArray)
+        {
+            ResetViewAxisArray();
+        }
+        else
+        {
+            //
+            // Update the view to scale any new plots appropriately.
+            //
+            visWindow->UpdateView();
+        }
+
+        ViewerWindowManager::Instance()->UpdateViewAtts(-1, true, false, false);
+    }
+    //
+    // If the centering is invalid or if maintain view is off, the view has
+    // not been modified and the limits have changed, recenter the view.
+    // The recentering uses the current limits or the merged limits from
+    // the previous plots based on the mergeViewLimits flag.
+    //
+    else if (centeringValidAxisArray == false ||
+             maintainView == false && viewModifiedAxisArray == false &&
+             (limits[0] != boundingBoxAxisArray[0] ||
+              limits[1] != boundingBoxAxisArray[1] ||
+              limits[2] != boundingBoxAxisArray[2] ||
+              limits[3] != boundingBoxAxisArray[3]))
+    {
+        if (centeringValidAxisArray == true && mergeViewLimits == true)
+        {
+            boundingBoxAxisArray[0] = boundingBoxAxisArray[0] < limits[0] ?
+                                      boundingBoxAxisArray[0] : limits[0];
+            boundingBoxAxisArray[1] = boundingBoxAxisArray[1] > limits[1] ?
+                                      boundingBoxAxisArray[1] : limits[1];
+            boundingBoxAxisArray[2] = boundingBoxAxisArray[2] < limits[2] ?
+                                      boundingBoxAxisArray[2] : limits[2];
+            boundingBoxAxisArray[3] = boundingBoxAxisArray[3] > limits[3] ?
+                                      boundingBoxAxisArray[3] : limits[3];
+
+            RecenterViewAxisArray(boundingBoxAxisArray);
+        }
+        else
+        {
+            centeringValidAxisArray   = true;
+
+            RecenterViewAxisArray(limits);
+        }
+
+        ViewerWindowManager::Instance()->UpdateViewAtts(-1, true, false, false);
+    }
+    //
+    // Update the view to scale any new plots appropriately.
+    //
+    else
+    {
+        const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
+        visWindow->UpdateView();
+    }
+
+    viewSetInAxisArray = true;
+}
+
+// ****************************************************************************
 // Method: ViewerWindow::SetCenterOfRotation
 //
 // Purpose: 
@@ -5845,6 +6224,9 @@ ViewerWindow::SetLargeIcons(bool val)
 //   Brad Whitlock, Mon Nov 19 14:37:52 PST 2007
 //   Added support for background images.
 //
+//   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//   Added new axis array window mode.
+//
 // ****************************************************************************
 
 WindowAttributes
@@ -5869,6 +6251,11 @@ ViewerWindow::GetWindowAttributes() const
     const avtView3D &view3d = GetView3D();
     view3d.SetToView3DAttributes(&view3DAtts);
     winAtts.SetView3D(view3DAtts);
+
+    ViewAxisArrayAttributes viewAxisArrayAtts;
+    const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
+    viewAxisArray.SetToViewAxisArrayAttributes(&viewAxisArrayAtts);
+    winAtts.SetViewAxisArray(viewAxisArrayAtts);
 
     //
     // Set the size
@@ -7530,6 +7917,9 @@ ViewerWindow::GetIsCompressingScalableImage() const
 //   Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
 //   Added depth cueing properties.
 //
+//   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//   Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -7642,6 +8032,11 @@ ViewerWindow::CreateNode(DataNode *parentNode,
             const avtView3D &view3d = GetView3D();
             view3d.SetToView3DAttributes(&tmpView3DAtts);
             tmpView3DAtts.CreateNode(windowNode, true, true);
+
+            ViewAxisArrayAttributes tmpViewAxisArrayAtts;
+            const avtViewAxisArray &viewAxisArray = GetViewAxisArray();
+            viewAxisArray.SetToViewAxisArrayAttributes(&tmpViewAxisArrayAtts);
+            tmpViewAxisArrayAtts.CreateNode(windowNode, true, true);
         }
 
         //
@@ -7664,6 +8059,12 @@ ViewerWindow::CreateNode(DataNode *parentNode,
             windowNode->AddNode(view3DNode);
         else
             delete view3DNode;
+
+        DataNode *viewAxisArrayNode = new DataNode("viewAxisArrayKeyframes");
+        if(viewAxisArrayAtts->CreateNode(viewAxisArrayNode))
+            windowNode->AddNode(viewAxisArrayNode);
+        else
+            delete viewAxisArrayNode;
 
         //
         // Save the annotation object list.
@@ -7763,6 +8164,9 @@ ViewerWindow::CreateNode(DataNode *parentNode,
 //   Jeremy Meredith, Wed Aug 29 15:21:38 EDT 2007
 //   Added depth cueing properties.
 //
+//   Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
+//   Added new axis array window mode.
+//
 // ****************************************************************************
 
 void
@@ -7789,10 +8193,14 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     boundingBoxValid3d = false;
     viewSetIn3d = false;
     viewPartialSetIn3d = false;
+    boundingBoxValidAxisArray = false;
+    viewSetInAxisArray = false;
+    viewModifiedAxisArray = false;
     mergeViewLimits = false;
     centeringValidCurve = false;
     centeringValid2d = false;
     centeringValid3d = false;
+    centeringValidAxisArray = false;
 
     //
     // Delete the plots first and update the frame so when we set the 
@@ -7936,6 +8344,15 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         view3d.SetFromView3DAttributes(&view3dAtts);
         SetView3D(view3d);
         viewSetIn3d = true;
+    }
+    if(windowNode->GetNode("ViewAxisArrayAttributes") != 0)
+    {
+        ViewAxisArrayAttributes viewAxisArrayAtts;
+        avtViewAxisArray viewAxisArray;
+
+        viewAxisArrayAtts.SetFromNode(windowNode);
+        viewAxisArray.SetFromViewAxisArrayAttributes(&viewAxisArrayAtts);
+        SetViewAxisArray(viewAxisArray);
     }
     if((node = windowNode->GetNode("boundingBoxMode")) != 0)
         SetBoundingBoxMode(node->AsBool());
@@ -8134,6 +8551,9 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
     View3DAttributes tmpView3D;
     if((node = windowNode->GetNode("view3DKeyframes")) != 0)
         view3DAtts->SetFromNode(node, &tmpView3D);
+    ViewAxisArrayAttributes tmpViewAxisArray;
+    if((node = windowNode->GetNode("viewAxisArrayKeyframes")) != 0)
+        viewAxisArrayAtts->SetFromNode(node, &tmpViewAxisArray);
 
     //
     // Let other objects get their information.

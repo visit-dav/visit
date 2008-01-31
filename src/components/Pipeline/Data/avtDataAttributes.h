@@ -234,6 +234,10 @@ class     PlotInfoAttributes;
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Jeremy Meredith, Wed Jan 30 13:11:46 EST 2008
+//    Added ability to specify that a variable is supposed to be used for
+//    an axis (and which one), e.g. for a parallel coordinates plot.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -316,6 +320,10 @@ class PIPELINE_API avtDataAttributes
 
     bool                     GetTreatAsASCII(const char * = NULL) const;
     void                     SetTreatAsASCII(const bool, const char * = NULL);
+
+    int                      GetUseForAxis(const char * = NULL) const;
+    void                     SetUseForAxis(const int, const char * = NULL);
+    void                     ClearAllUseForAxis();
 
     int                      GetCellOrigin(void) const
                                    { return cellOrigin; };
@@ -548,6 +556,7 @@ class PIPELINE_API avtDataAttributes
         avtExtents          *effectiveData;
         avtExtents          *currentData;
         avtExtents          *cumulativeCurrentData;
+        int                  useForAxis;
         std::vector<std::string>  subnames; // Only used for 'array' vars
                                             // at this point.
         std::vector<double>       binRange; // Only used for 'array' vars

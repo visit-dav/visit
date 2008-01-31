@@ -93,6 +93,9 @@ vtkStandardNewMacro(vtkVisItAxisActor2D);
 //    Kathleen Bonnell, Thu Apr  5 14:16:47 PDT 2007 
 //    Added LogLabelFormat.
 //
+//    Jeremy Meredith, Thu Jan 31 14:35:33 EST 2008
+//    Added offsets to allow centering of strings for tttleAtEnd mode.
+//
 // **********************************************************************
 vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 {
@@ -163,6 +166,9 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
   this->GridlineYLength = 1.;  
 
   this->LogScale = 0;  
+
+  this->EndStringHOffsetFactor = 0;
+  this->EndStringVOffsetFactor = 0;
   nDecades = 2;  
 }
 
@@ -448,6 +454,10 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //
 //   Kathleen Bonnell, Wed May  9 09:31:42 PDT 2007 
 //   For log scale, if too many decades, only print every other label.
+//
+//   Jeremy Meredith, Thu Jan 31 10:16:04 EST 2008
+//   Use a string offset factor variable to allow appropriate
+//   centering for the titleAtEnd mode.
 //
 // ****************************************************************************
 
@@ -744,7 +754,9 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       stringSize[1] = (int) (0.68 * stringSize[1]);
       this->SetOffsetPosition(xTick, theta, stringSize[0], stringSize[1],
                               this->TickOffset, 
-                              this->LabelActors[labelCount++], 0);
+                              this->LabelActors[labelCount++], 0,
+                              this->EndStringHOffsetFactor,
+                              this->EndStringVOffsetFactor);
       maxLabelStringSize[0] = stringSize[0] > maxLabelStringSize[0] ?
                               stringSize[0] : maxLabelStringSize[0];
       maxLabelStringSize[1] = stringSize[1] > maxLabelStringSize[1] ?
@@ -787,7 +799,9 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
     this->TitleMapper->GetSize(viewport, stringSize);
     this->SetOffsetPosition(xTick, theta, stringSize[0], stringSize[1], 
                             static_cast<int>(offset), this->TitleActor, 
-                            this->TitleAtEnd);
+                            this->TitleAtEnd,
+                            this->EndStringHOffsetFactor,
+                            this->EndStringVOffsetFactor);
     } //if title visible
 
   if ( this->AxisVisibility )
@@ -1124,18 +1138,26 @@ void vtkVisItAxisActor2D::AdjustLabelsComputeRange(double inRange[2],
 // Posiion text with respect to a point (xTick) where the angle of the line
 // from the point to the center of the text is given by theta. The offset
 // is the spacing between ticks and labels.
+//
+// Modifications:
+//    Jeremy Meredith, Thu Jan 31 10:16:04 EST 2008
+//    Use a string offset factor variable to allow appropriate
+//    centering for the titleAtEnd mode.
+//
 void vtkVisItAxisActor2D::SetOffsetPosition(double xTick[3], double theta, 
                                        int stringWidth, int stringHeight, 
                                        int offset, vtkActor2D *actor,
-                                       int titleAtEnd)
+                                       int titleAtEnd,
+                                       double endStringHOffsetFactor,
+                                       double endStringVOffsetFactor)
 {
   double x, y, center[2];
   int pos[2];
    
   if ( titleAtEnd )
     {
-    pos[0] = (int)xTick[0];
-    pos[1] = (int)xTick[1];
+    pos[0] = (int)(xTick[0] + stringWidth * endStringHOffsetFactor);
+    pos[1] = (int)(xTick[1] + stringHeight * endStringVOffsetFactor);
     }
   else
     {
