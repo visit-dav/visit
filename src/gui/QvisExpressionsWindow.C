@@ -130,6 +130,9 @@
 //    Gunther H. Weber, Thu Jan 10 12:00:23 PST 2008
 //    Added colorlookup.
 //
+//    Cyrus Harrison, Thu Jan 31 09:45:30 PST 2008
+//    Added value_for_material
+//
 // ****************************************************************************
 
 struct ExprNameList
@@ -260,6 +263,7 @@ const char *expr_materials[] = {
     "matvf",
     "nmats",
     "specmf",
+    "value_for_material",
     NULL
 };
 
@@ -1046,6 +1050,9 @@ QvisExpressionsWindow::displayAllVarsChanged()
 //    Brad Whitlock, Mon Apr 23 17:35:13 PST 2007
 //    Added color expression.
 //
+//    Cyrus Harrison, Thu Jan 31 09:45:30 PST 2008
+//    Added value_for_material
+//
 // ****************************************************************************
 
 void
@@ -1130,6 +1137,11 @@ QvisExpressionsWindow::insertFunction(int id)
     {
         definitionEdit->insert("(<var1>, <var2>, <var3>)");
         doParens = false;      
+    }
+    else if(str == "value_for_material")
+    {
+        definitionEdit->insert("(<var>, <material-name-or-number>)");
+        doParens = false;
     }
 
     if (doParens)
