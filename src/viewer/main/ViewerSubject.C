@@ -56,6 +56,7 @@
 #endif
 #endif
 
+#include <qfile.h>
 #include <qtimer.h>
 #include <qwidgetlist.h>
 
@@ -1293,6 +1294,9 @@ ViewerSubject::DisconnectClient(ViewerClientConnection *client)
 //    Correct logic from last change ... exit normally when we have a normal
 //    exit condition.
 //
+//    Brad Whitlock, Thu Jan 31 12:36:52 PST 2008
+//    Added code to remove the crash recovery file.
+//
 // ****************************************************************************
 
 int
@@ -1332,6 +1336,9 @@ ViewerSubject::Execute()
         }
         ENDTRY
     }
+
+    // Remove the crash recovery file.
+    RemoveCrashRecoveryFile();
 
     return retval;
 }
@@ -5641,6 +5648,39 @@ ViewerSubject::ImportEntireStateWithDifferentSources()
                                   GetViewerState()->GetViewerRPC()->GetBoolFlag(),
                                   GetViewerState()->GetViewerRPC()->GetProgramOptions(), true);
      configMgr->NotifyIfSelected();
+}
+
+// ****************************************************************************
+// Method: ViewerSubject::RemoveCrashRecoveryFile
+//
+// Purpose: 
+//   Removes the viewer's crash recovery file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 12:06:32 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::RemoveCrashRecoveryFile() const
+{
+    QString filename(GetUserVisItDirectory().c_str());
+    filename += "crash_recovery";
+#if defined(_WIN32)
+    filename += ".vses";
+#else
+    filename += ".session";
+#endif
+    // Remove the viewer's crash recovery file if it exists.
+    QFile cr(filename);
+    if(cr.exists())
+    {
+        debug1 << "Removing crash recovery file: "
+               << cr.name().latin1() << endl;
+        cr.remove();
+    }
 }
 
 // ****************************************************************************

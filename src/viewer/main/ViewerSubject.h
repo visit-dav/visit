@@ -446,6 +446,9 @@ class avtDefaultPlotMetaData;
 //    Brad Whitlock, Thu Jan 24 09:49:27 PST 2008
 //    Added DeferCommandFromSimulation.
 //
+//    Brad Whitlock, Thu Jan 31 12:01:12 PST 2008
+//    Added RemoveCrashRecoveryFile.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -551,6 +554,7 @@ private:
     void ExportEntireState();
     void ImportEntireState();
     void ImportEntireStateWithDifferentSources();
+    void RemoveCrashRecoveryFile() const;
 
     void SetAnnotationAttributes();
     void SetDefaultAnnotationAttributes();

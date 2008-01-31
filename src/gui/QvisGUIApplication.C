@@ -179,11 +179,14 @@
 
 // Some defines
 #define VISIT_GUI_CONFIG_FILE "guiconfig"
-#define VIEWER_READY_TAG       100
-#define SET_FILE_HIGHLIGHT_TAG 101
-#define LOAD_ACTIVESOURCE_TAG  102
-#define INTERPRETER_SYNC_TAG   103
-#define SAVE_MOVIE_SYNC_TAG    104
+#define VIEWER_READY_TAG          100
+#define SET_FILE_HIGHLIGHT_TAG    101
+#define LOAD_ACTIVESOURCE_TAG     102
+#define INTERPRETER_SYNC_TAG      103
+#define SAVE_MOVIE_SYNC_TAG       104
+#define REMOVE_CRASH_RECOVERY_TAG 105
+#define CLEAR_STATUS_TAG          106
+#define INITIALIZE_SESSIONDIR_TAG 107
 
 #define WINDOW_FILE_SELECTION    0
 #define WINDOW_FILE_INFORMATION  1
@@ -612,12 +615,16 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
 //   Added sessionDir and UpdateSessionDir.
 //
+//   Brad Whitlock, Thu Jan 31 10:19:48 PST 2008
+//   sessionDir is now initialized later in the startup according to user
+//   preferences.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     ConfigManager(), GUIBase(), message(), plotWindows(),
     operatorWindows(), otherWindows(), foregroundColor(), backgroundColor(),
-    applicationStyle(), loadFile(), sessionFile(), movieArguments()
+    applicationStyle(), loadFile(), sessionFile(), sessionDir(), movieArguments()
 {
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
@@ -661,7 +668,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     localOnly = false;
     readConfig = true;
     sessionCount = 0;
-    sessionDir = "./"; //Default is the dir where visit was launched.
     initStage = 0;
     heavyInitStage = 0;
     windowInitStage = 0;
@@ -1230,6 +1236,9 @@ QvisGUIApplication::Synchronize(int tag)
 //   Don't open the file if it's "notset". This prevents an error message when
 //   opening the GUI from the CLI.
 //
+//   Brad Whitlock, Thu Jan 31 12:47:09 PST 2008
+//   Added code to remove the crash recovery file.
+//
 // ****************************************************************************
 
 void
@@ -1262,6 +1271,22 @@ QvisGUIApplication::HandleSynchronize(int val)
     else if(val == SAVE_MOVIE_SYNC_TAG)
     {
         QTimer::singleShot(10, this, SLOT(SaveMovieMain()));
+    }
+    else if(val == REMOVE_CRASH_RECOVERY_TAG)
+    {
+        RemoveCrashRecoveryFile(true);
+    }
+    else if(val == CLEAR_STATUS_TAG)
+    {
+        ClearStatus();
+    }
+    else if(val == INITIALIZE_SESSIONDIR_TAG)
+    {
+        if(GetViewerState()->GetGlobalAttributes()->GetUserDirForSessionFiles())
+            sessionDir = GetUserVisItDirectory();
+        else
+            sessionDir = std::string(QDir(".").absPath().latin1());
+        debug5 << "Session dir: " << sessionDir.c_str() << endl;
     }
 }
 
@@ -1371,6 +1396,9 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //
 //   Brad Whitlock, Thu Dec 20 16:05:28 PST 2007
 //   Added code to delete the splash screen in order to save memory.
+//
+//   Brad Whitlock, Thu Jan 31 10:51:02 PST 2008
+//   Added code to restore the crash recovery file and fixed timings.
 //
 // ****************************************************************************
 
@@ -1490,6 +1518,7 @@ QvisGUIApplication::FinalInitialization()
         // If the visitrc file exists then make sure that we load the CLI.
         if(QFile(GetUserVisItRCFile().c_str()).exists())
             Interpret("");
+        visitTimer->StopTimer(timeid, "stage 10 - Check for visitrc file.");
         break;
     case 11:
         // Show the release notes if this is the first time that the
@@ -1507,16 +1536,7 @@ QvisGUIApplication::FinalInitialization()
                 QTimer::singleShot(1000, this, SLOT(displayReleaseNotesIfAvailable()));
         }
 
-        // If we were reverse launched, do a synchronize to try and open
-        // the active source later.
-        if(reverseLaunch)
-            Synchronize(LOAD_ACTIVESOURCE_TAG);
-
-        visitTimer->StopTimer(timeid, "stage 10 - Incrementing run count");
-        visitTimer->StopTimer(stagedInit, "FinalInitialization");
-        visitTimer->StopTimer(completeInit, "VisIt to be ready");
-        moreInit = false;
-        ++initStage;
+        visitTimer->StopTimer(timeid, "stage 11 - Increment run count");
         break;
     case 12:
         // If we have a splashscreen, we've hidden it by now. Delete it to
@@ -1526,9 +1546,37 @@ QvisGUIApplication::FinalInitialization()
             delete splash;
             splash = 0;
         }
-        ++initStage;
+        visitTimer->StopTimer(timeid, "stage 12 - Deleting splashscreen");
+        break;
+    case 13:
+        // Initialize sessionDir
+        Synchronize(INITIALIZE_SESSIONDIR_TAG);
+
+        // If we have a crash recovery file, restore it?
+        if(sessionFile.isEmpty())
+            RestoreCrashRecoveryFile();
+        else
+        {
+            debug1 << "The user wants to load a session file so blow away any "
+                      "crash recovery file that may be present." << endl;
+            RemoveCrashRecoveryFile(true);
+        }
+        // Set the timer indicating that it's okay to save the crash 
+        // recovery file.
+        mainWin->OkayToSaveRecoveryFile();
+        visitTimer->StopTimer(timeid, "stage 13 - Handling recovery file");
+        break;
+    case 14:
+        // If we were reverse launched, do a synchronize to try and open
+        // the active source later.
+        if(reverseLaunch)
+            Synchronize(LOAD_ACTIVESOURCE_TAG);
+        visitTimer->StopTimer(timeid, "stage 14 - Sync active source");
         break;
     default:
+        visitTimer->StopTimer(stagedInit, "FinalInitialization");
+        visitTimer->StopTimer(completeInit, "VisIt to be ready");
+
         moreInit = false;
     }
 
@@ -1599,6 +1647,9 @@ QvisGUIApplication::Exec()
 //    Cyrus Harrison, Tue Jan 15 11:14:45 PST 2008
 //    Exclude close warning for cli launched b/c of visitrc file.
 //
+//    Brad Whitlock, Thu Jan 31 12:04:57 PST 2008
+//    Remove the gui's crash recovery file.
+//
 // ****************************************************************************
 
 void
@@ -1637,6 +1688,12 @@ QvisGUIApplication::Quit()
             }
         }
     }
+
+    // Remove the gui's crash recovery file if present. Don't remove the 
+    // viewer's crash recovery file though since that's what we check for
+    // in determining whether we have a crash recovery file and it makes
+    // sense for the viewer to remove its file.
+    RemoveCrashRecoveryFile(false);
 
     mainApp->quit();
 }
@@ -2651,6 +2708,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Tue Nov 14 15:37:51 PST 2006
 //   Connected new restoreSessionWithSources signal from Main window.
 //
+//   Brad Whitlock, Thu Jan 31 12:33:17 PST 2008
+//   Connected new saveCrashRecoveryFile signal from Main window.
+//
 // ****************************************************************************
 
 void
@@ -2694,6 +2754,8 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(restoreSession()), this, SLOT(RestoreSession()));
     connect(mainWin, SIGNAL(restoreSessionWithSources()), this, SLOT(RestoreSessionWithDifferentSources()));
     connect(mainWin, SIGNAL(saveSession()), this, SLOT(SaveSession()));
+    connect(mainWin, SIGNAL(saveCrashRecoveryFile()), 
+           this, SLOT(SaveCrashRecoveryFile()));
 #if QT_VERSION < 0x030100
     mainWin->updateNotAllowed();
 #else
@@ -7197,12 +7259,15 @@ QvisGUIApplication::GetNumMovieFrames()
 // Creation:   Thu Jan 31 10:47:06 EST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Thu Jan 31 10:07:59 PST 2008
+//   Windows portability.
+//
 // ****************************************************************************
+
 void
 QvisGUIApplication::UpdateSessionDir( const std::string &sessionFileName )
 {
-    int idx = sessionFileName.rfind( "/" );
+    int idx = sessionFileName.rfind(SLASH_STRING);
     if ( idx != 0 )
         sessionDir = sessionFileName.substr( 0, idx+1 );
 }
@@ -7618,6 +7683,136 @@ void
 QvisGUIApplication::InterpreterSync()
 {
     Synchronize(INTERPRETER_SYNC_TAG);
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::CrashRecoveryFile
+//
+// Purpose: 
+//   Returns the name of the crash recovery file.
+//
+// Returns:    The name of the crash recovery file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 11:05:37 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+QString
+QvisGUIApplication::CrashRecoveryFile() const
+{
+    QString s(GetUserVisItDirectory().c_str());
+    s += "crash_recovery";
+#if defined(_WIN32)
+    s += ".vses";
+#else
+    s += ".session";
+#endif
+    return s;
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::RestoreCrashRecoveryFile
+//
+// Purpose: 
+//   Asks the user whether the crash recovery file should be restored.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 11:05:58 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::RestoreCrashRecoveryFile()
+{
+    QString filename(CrashRecoveryFile());
+    QFile cr(filename);
+    if(cr.exists())
+    {
+        int btn = QMessageBox::question(0, "Crash recovery",
+            "VisIt found a crash recovery session file. Would you like to "
+            "restore it to return to the last saved state?", QMessageBox::Yes,
+            QMessageBox::No);
+        if(btn == QMessageBox::Yes)
+        {
+            stringVector files;
+            debug1 << "Restoring a crash recovery file: "
+                   << filename.latin1() << endl;
+            RestoreSessionFile(filename, files);
+        }
+
+        // Remove the crash recovery file since we've consumed it. Note that
+        // we don't remove it when the GUI exits because we let the viewer
+        // do that since it's more crash prone. That way, if the viewer does
+        // not exit cleanly, we encounter the crash file when we run the gui
+        // the next time,
+        Synchronize(REMOVE_CRASH_RECOVERY_TAG);
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::RemoveCrashRecoveryFile
+//
+// Purpose: 
+//   Removes the crash recovery file.
+//
+// Notes:
+//    
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 11:06:26 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::RemoveCrashRecoveryFile(bool removeViewerFile) const
+{
+    if(removeViewerFile)
+    {
+        QFile cr(CrashRecoveryFile());
+        if(cr.exists())
+        {
+            debug1 << "Removing crash recovery file: "
+                   << cr.name().latin1() << endl;
+            cr.remove();
+        }
+    }
+
+    QFile gcr(CrashRecoveryFile() + ".gui");
+    if(gcr.exists())
+    {
+        debug1 << "Removing crash recovery gui file: "
+               << gcr.name().latin1() << endl;
+        gcr.remove();
+    }
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SaveCrashRecoveryFile
+//
+// Purpose: 
+//   Saves the crash recovery file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 11:06:42 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SaveCrashRecoveryFile()
+{
+    debug1 << "Saving crash recovery file: "
+          << CrashRecoveryFile().latin1() << endl;
+    Status("Saving crash recovery file...");
+    SaveSessionFile(CrashRecoveryFile());
+    Synchronize(CLEAR_STATUS_TAG);
 }
 
 //

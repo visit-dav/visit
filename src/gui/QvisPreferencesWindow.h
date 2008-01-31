@@ -92,6 +92,9 @@ class QSpinBox;
 //   Brad Whitlock, Thu Jan 24 11:21:56 PDT 2008
 //   Added newPlotsInheritSILRestriction check box.
 //
+//   Brad Whitlock, Thu Jan 31 10:20:52 PST 2008
+//   Added session related options.
+//
 // ****************************************************************************
 
 class GUI_API QvisPreferencesWindow : public QvisPostableWindowObserver
@@ -130,6 +133,8 @@ private slots:
     void createTimeDerivativeToggled(bool);
     void createVectorMagnitudeToggled(bool);
     void newPlotsInheritSILRestrictionToggled(bool);
+    void userDirForSessionFilesToggled(bool);
+    void saveCrashRecoveryFileToggled(bool);
 private:
     QCheckBox        *cloneWindowOnFirstRefToggle;
     QCheckBox        *postWindowsWhenShownToggle;
@@ -145,6 +150,8 @@ private:
     QCheckBox        *createTimeDerivativeToggle;
     QCheckBox        *createVectorMagnitudeToggle;
     QCheckBox        *newPlotsInheritSILRestrictionToggle;
+    QCheckBox        *userDirForSessionFilesToggle;
+    QCheckBox        *saveCrashRecoveryFileToggle;
     GlobalAttributes *atts;
 
     TimeFormat        tsFormat;
