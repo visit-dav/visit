@@ -1285,7 +1285,7 @@ QvisGUIApplication::HandleSynchronize(int val)
         if(GetViewerState()->GetGlobalAttributes()->GetUserDirForSessionFiles())
             sessionDir = GetUserVisItDirectory();
         else
-            sessionDir = std::string(QDir(".").absPath().latin1());
+            sessionDir = std::string(QString(QDir(".").absPath() + SLASH_STRING).latin1());
         debug5 << "Session dir: " << sessionDir.c_str() << endl;
     }
 }
