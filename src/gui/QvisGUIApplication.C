@@ -609,6 +609,9 @@ GUI_LogQtMessages(QtMsgType type, const char *msg)
 //   Brad Whitlock, Thu Mar 22 02:25:20 PDT 2007
 //   Added output handler.
 //
+//   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
+//   Added sessionDir and UpdateSessionDir.
+//
 // ****************************************************************************
 
 QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
@@ -658,6 +661,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv) :
     localOnly = false;
     readConfig = true;
     sessionCount = 0;
+    sessionDir = "./"; //Default is the dir where visit was launched.
     initStage = 0;
     heavyInitStage = 0;
     windowInitStage = 0;
@@ -3819,6 +3823,9 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 //   Brad Whitlock, Mon Nov 10 15:11:20 PST 2003
 //   I made sessions use the .vses extension when we're on Windows.
 //
+//   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
+//   Use sessionDir for the default directory.
+//
 // ****************************************************************************
 
 void
@@ -3832,7 +3839,7 @@ QvisGUIApplication::SaveSession()
 
     // Create the name of a VisIt session file to use.
     QString defaultFile;
-    defaultFile.sprintf("%svisit%04d", GetUserVisItDirectory().c_str(),
+    defaultFile.sprintf("%svisit%04d", sessionDir.c_str(),
                         sessionCount);
     defaultFile += sessionExtension;
 
@@ -3846,6 +3853,7 @@ QvisGUIApplication::SaveSession()
     {
         ++sessionCount;
         SaveSessionFile(fileName);
+        UpdateSessionDir(fileName);
     }
 }
 
@@ -4086,13 +4094,16 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 //   Brad Whitlock, Tue Nov 14 14:58:13 PST 2006
 //   I added an argument to RestoreSessionFile.
 //
+//   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
+//   Use sessionDir for the default directory.
+//
 // ****************************************************************************
 
 void
 QvisGUIApplication::RestoreSession()
 {
     // Get the name of the session to load.
-    QString s(QFileDialog::getOpenFileName(GetUserVisItDirectory().c_str(),
+    QString s(QFileDialog::getOpenFileName(sessionDir.c_str(),
 #if defined(_WIN32)
               "VisIt session (*.vses)"));
 #else
@@ -4102,6 +4113,11 @@ QvisGUIApplication::RestoreSession()
     // Restore the session.
     stringVector noSources;
     RestoreSessionFile(s, noSources);
+    if ( !s.isNull() )
+    {
+        std::string fileName = s;
+        UpdateSessionDir(fileName);
+    }
 }
 
 // ****************************************************************************
@@ -4115,6 +4131,9 @@ QvisGUIApplication::RestoreSession()
 // Creation:   Tue Nov 14 15:15:03 PST 2006
 //
 // Modifications:
+//
+//   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
+//   Use sessionDir for the default directory.
 //   
 // ****************************************************************************
 
@@ -4124,7 +4143,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
     const char *mName = "QvisGUIApplication::RestoreSessionWithDifferentSources: ";
 
     // Get the name of the session to load.
-    QString s(QFileDialog::getOpenFileName(GetUserVisItDirectory().c_str(),
+    QString s(QFileDialog::getOpenFileName(sessionDir.c_str(),
 #if defined(_WIN32)
               "VisIt session (*.vses)"));
 #else
@@ -4178,6 +4197,9 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
             stringVector noSources;
             RestoreSessionFile(s, noSources);
         }
+        
+        std::string fileName = s;
+        UpdateSessionDir(fileName);
     }
 }
 
@@ -7165,6 +7187,25 @@ QvisGUIApplication::GetNumMovieFrames()
     return nTotalStates;
 }
 
+// ****************************************************************************
+// Function: QvisGUIApplication::UpdateSessionDir
+//
+// Purpose: 
+//   Update the current sessionDir based on the user's file selection.
+//
+// Programmer: Dave Pugmire
+// Creation:   Thu Jan 31 10:47:06 EST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+QvisGUIApplication::UpdateSessionDir( const std::string &sessionFileName )
+{
+    int idx = sessionFileName.rfind( "/" );
+    if ( idx != 0 )
+        sessionDir = sessionFileName.substr( 0, idx+1 );
+}
 
 
 // ****************************************************************************

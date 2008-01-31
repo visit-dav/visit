@@ -323,6 +323,9 @@ class SplashScreen;
 //    Brad Whitlock, Fri Jun 15 09:34:43 PDT 2007
 //    Added macroWindow.
 //
+//    Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
+//    Added sessionDir and UpdateSessionDir.
+//
 // ****************************************************************************
 
 class GUI_API QvisGUIApplication : public QObject, public ConfigManager, public GUIBase
@@ -387,6 +390,7 @@ private:
 
     void RestoreSessionFile(const QString &, const stringVector &);
     int  GetNumMovieFrames();
+    void UpdateSessionDir( const std::string &sessionFileName );
 
 public slots:
     void newExpression();
@@ -561,6 +565,7 @@ private:
     // Session variables
     QString                      sessionFile;
     int                          sessionCount;
+    std::string                  sessionDir;
 
     // Movie variables
     stringVector                 movieArguments;
