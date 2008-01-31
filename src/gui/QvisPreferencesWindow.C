@@ -160,6 +160,9 @@ QvisPreferencesWindow::~QvisPreferencesWindow()
 //   Brad Whitlock, Thu Jan 24 11:23:13 PDT 2008
 //   Added newPlotsInheritSILRestrictionToggle, grouped database options.
 //
+//   Brad Whitlock, Thu Jan 31 10:22:59 PST 2008
+//   Added session file options.
+//
 // ****************************************************************************
 
 void
@@ -247,6 +250,33 @@ QvisPreferencesWindow::CreateWindowContents()
     connect(createVectorMagnitudeToggle, SIGNAL(toggled(bool)),
             this, SLOT(createVectorMagnitudeToggled(bool)));
     dbOptionsLayout->addWidget(createVectorMagnitudeToggle);
+
+    //
+    // Create group box for session file controls.
+    //
+    QGroupBox *sessionControlsGroup = new QGroupBox(central, "sessionControlsGroup");
+    sessionControlsGroup->setTitle("Session files");
+    topLayout->addWidget(sessionControlsGroup, 5);
+    QVBoxLayout *sessionInnerTopLayout = new QVBoxLayout(sessionControlsGroup);
+    sessionInnerTopLayout->setMargin(10);
+    sessionInnerTopLayout->addSpacing(15);
+    sessionInnerTopLayout->setSpacing(10);
+    QVBoxLayout *sessionOptionsLayout = new QVBoxLayout(sessionInnerTopLayout);
+    sessionOptionsLayout->setSpacing(5);
+
+    userDirForSessionFilesToggle =
+        new QCheckBox("User directory is default location for session files",
+                      sessionControlsGroup, "userDirForSessionFilesToggle");
+    connect(userDirForSessionFilesToggle, SIGNAL(toggled(bool)),
+            this, SLOT(userDirForSessionFilesToggled(bool)));
+    sessionOptionsLayout->addWidget(userDirForSessionFilesToggle);
+
+    saveCrashRecoveryFileToggle =
+        new QCheckBox("Periodically save a crash recovery file",
+                      sessionControlsGroup, "saveCrashRecoveryFileToggle");
+    connect(saveCrashRecoveryFileToggle, SIGNAL(toggled(bool)),
+            this, SLOT(saveCrashRecoveryFileToggled(bool)));
+    sessionOptionsLayout->addWidget(saveCrashRecoveryFileToggle);
 
     //
     // Create group box for time controls.
@@ -401,6 +431,9 @@ QvisPreferencesWindow::Update(Subject *TheChangedSubject)
 //   Brad Whitlock, Thu Jan 24 11:30:29 PDT 2008
 //   Set the inherit SIL restriction toggle.
 //
+//   Brad Whitlock, Thu Jan 31 10:35:13 PST 2008
+//   Added userDirForSessionFiles, saveCrashRecoveryFile.
+//
 // ****************************************************************************
 
 void
@@ -492,7 +525,23 @@ QvisPreferencesWindow::UpdateWindow(bool doAll)
             atts->GetCreateVectorMagnitudeExpressions());
         createVectorMagnitudeToggle->blockSignals(false);
     }
-    
+
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_userDirForSessionFiles))
+    {
+        userDirForSessionFilesToggle->blockSignals(true);
+        userDirForSessionFilesToggle->setChecked(
+            atts->GetUserDirForSessionFiles());
+        userDirForSessionFilesToggle->blockSignals(false);
+    }
+
+    if (doAll || atts->IsSelected(GlobalAttributes::ID_saveCrashRecoveryFile))
+    {
+        saveCrashRecoveryFileToggle->blockSignals(true);
+        saveCrashRecoveryFileToggle->setChecked(
+            atts->GetSaveCrashRecoveryFile());
+        saveCrashRecoveryFileToggle->blockSignals(false);
+    }
+
     if(doAll)
     {
         postWindowsWhenShownToggle->blockSignals(true);
@@ -930,3 +979,61 @@ QvisPreferencesWindow::createVectorMagnitudeToggled(bool val)
     fileServer->SetCreateVectorMagnitudeExpressions(val);
     atts->Notify();
 }
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::userDirForSessionFilesToggled
+//
+// Purpose: 
+//   This is a Qt slot function called when userDirForSessionFiles is toggled.
+//
+// Arguments:
+//   val : The new value.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 10:32:48 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPreferencesWindow::userDirForSessionFilesToggled(bool val)
+{
+    atts->SetUserDirForSessionFiles(val);
+    SetUpdate(false);
+    atts->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisPreferencesWindow::saveCrashRecoveryFileToggled
+//
+// Purpose: 
+//   This is a Qt slot function called when saveCrashRecoveryFile is toggled.
+//
+// Arguments:
+//   val : The new value.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 10:32:48 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+
+void
+QvisPreferencesWindow::saveCrashRecoveryFileToggled(bool val)
+{
+    atts->SetSaveCrashRecoveryFile(val);
+    SetUpdate(false);
+    atts->Notify();
+}
+

@@ -49,6 +49,7 @@ class QPushButton;
 class QComboBox;
 class QCheckBox;
 class QSplitter;
+class QTimer;
 class QvisFilePanel;
 class QvisNotepadArea;
 class QvisPlotManagerWidget;
@@ -200,6 +201,9 @@ class WindowInformation;
 //   Brad Whitlock, Wed Jan 23 10:48:53 PST 2008
 //   Added unlockEverything.
 //
+//   Brad Whitlock, Thu Jan 31 10:36:22 PST 2008
+//   Added saveCrashRecoveryFile.
+//
 // ****************************************************************************
 
 class GUI_API QvisMainWindow : public QvisWindowBase, public SimpleObserver
@@ -222,6 +226,7 @@ public:
     const TimeFormat &GetTimeStateFormat() const;
     bool GetShowSelectedFiles() const;
     bool GetAllowFileSelectionChange() const;
+    void OkayToSaveRecoveryFile();
 
     virtual void CreateNode(DataNode *);
     virtual void SetFromNode(DataNode *, bool, const int *, const int *, const int *);
@@ -282,6 +287,9 @@ signals:
     void restoreSession();
     void restoreSessionWithSources();
     void reopenOnNextFrame();
+
+    void saveCrashRecoveryFile();
+    void setSessionDir();
 public slots:
     virtual void show();
 
@@ -342,6 +350,7 @@ private:
     void UpdateGlobalArea(bool doAll);
     void UpdateWindowList(bool doList);
     void UpdateWindowMenu(bool updateWindowNums);
+    void UpdateCrashRecoveryTimer();
 private:
     QSplitter                 *splitter;
     QBoxLayout                *topLayout;
@@ -388,6 +397,9 @@ private:
     int                       fullFrameModeId;
     QPopupMenu                *helpPopup;
     int                       updateVisItId;
+
+    QTimer                    *recoveryFileTimer;
+    bool                       okayToSaveRecoveryFile;
 
     // Subjects that the window observes.
     GlobalAttributes          *globalAtts;

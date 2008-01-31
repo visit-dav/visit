@@ -47,6 +47,7 @@
 #include <qsplitter.h>
 #include <qstatusbar.h>
 #include <qpushbutton.h>
+#include <qtimer.h>
 #include <qtooltip.h>
 
 #include <QvisMainWindow.h>
@@ -296,6 +297,9 @@
 //
 //    Brad Whitlock, Tue Jan 22 16:49:30 PST 2008
 //    Don't even create the notepad on short displays.
+//
+//    Brad Whitlock, Thu Jan 31 10:45:58 PST 2008
+//    Added crash recovery timer.
 //
 // ****************************************************************************
 
@@ -611,6 +615,12 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     statusBar()->setSizeGripEnabled(false);
     unreadOutputFlag = false;
 
+    // Create a timer.
+    okayToSaveRecoveryFile = false;
+    recoveryFileTimer = new QTimer(this);
+    connect(recoveryFileTimer, SIGNAL(timeout()),
+            this, SIGNAL(saveCrashRecoveryFile()));
+
 #ifdef Q_WS_X11
     // Move the window to a known position on the screen
     // so we can take some measurements later
@@ -808,6 +818,9 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
 //   Brad Whitlock, Fri Jan 23 17:29:21 PST 2004
 //   Made it work with the regenerated GlobalAttributes.
 //
+//   Brad Whitlock, Thu Jan 31 13:06:19 PST 2008
+//   Added code to handle the crash recovery timer.
+//
 // ****************************************************************************
 
 void
@@ -922,6 +935,10 @@ QvisMainWindow::Update(Subject *TheChangedSubject)
         UpdateGlobalArea(false);
         UpdateWindowMenu(globalAtts->IsSelected(GlobalAttributes::ID_windows) ||
                          globalAtts->IsSelected(GlobalAttributes::ID_activeWindow));
+
+        // Set the crash recovery timer.
+        if(okayToSaveRecoveryFile && globalAtts->IsSelected(GlobalAttributes::ID_saveCrashRecoveryFile))
+            UpdateCrashRecoveryTimer();
     }
     else if(TheChangedSubject == plotList)
     {
@@ -2225,6 +2242,64 @@ void
 QvisMainWindow::SetAllowFileSelectionChange(bool val)
 {
     filePanel->SetAllowFileSelectionChange(val);
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::OkayToSaveRecoveryFile
+//
+// Purpose: 
+//   Sets whether VisIt is launched enough to consider saving the recovery file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 10:48:01 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::OkayToSaveRecoveryFile()
+{
+    okayToSaveRecoveryFile = true;
+    UpdateCrashRecoveryTimer();
+}
+
+// ****************************************************************************
+// Method: QvisMainWindow::UpdateCrashRecoveryTimer
+//
+// Purpose: 
+//   Updates the crash recovery timer based on the preference in globalAtts.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 31 12:28:33 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisMainWindow::UpdateCrashRecoveryTimer()
+{
+    if(globalAtts->GetSaveCrashRecoveryFile())
+    {
+        // Start the timer to save the recovery file every 5 minutes
+        if(!recoveryFileTimer->isActive())
+        {
+            debug1 << "Starting crash recovery file timer." << endl;
+            recoveryFileTimer->start(5 * 60 * 1000);
+        }
+    }
+    else
+    {
+        debug1 << "Stopping crash recovery file timer." << endl;
+        recoveryFileTimer->stop();
+    }
 }
 
 // ****************************************************************************

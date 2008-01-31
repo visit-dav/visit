@@ -72,6 +72,9 @@ Definition:
 //   Brad Whitlock, Thu Jan 24 11:34:45 PDT 2008
 //   Made it save newPlotsInheritSILRestriction.
 //
+//   Brad Whitlock, Thu Jan 31 10:03:01 PST 2008
+//   Made it save userDirForSessionFiles, saveCrashRecovery.
+//
 // ****************************************************************************
 
 bool
@@ -181,6 +184,20 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
                       newPlotsInheritSILRestriction));
     }
 
+    if(completeSave || !FieldsEqual(ID_userDirForSessionFiles, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("userDirForSessionFiles",
+                      userDirForSessionFiles));
+    }
+
+    if(completeSave || !FieldsEqual(ID_saveCrashRecoveryFile, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("saveCrashRecoveryFile",
+                      saveCrashRecoveryFile));
+    }
+
     // Add the node to the parent node.
     if(addToParent || forceAdd)
         parentNode->AddNode(node);
@@ -250,6 +267,9 @@ Definition:
 //   Brad Whitlock, Thu Jan 24 11:35:54 PDT 2008
 //   Added newPlotsInheritSILRestriction.
 //
+//   Brad Whitlock, Thu Jan 31 10:03:01 PST 2008
+//   Made it read userDirForSessionFiles, saveCrashRecovery.
+//
 // ****************************************************************************
 
 void
@@ -293,5 +313,9 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetCreateVectorMagnitudeExpressions(node->AsBool());
     if((node = searchNode->GetNode("newPlotsInheritSILRestriction")) != 0)
         SetNewPlotsInheritSILRestriction(node->AsBool());
+    if((node = searchNode->GetNode("userDirForSessionFiles")) != 0)
+        SetUserDirForSessionFiles(node->AsBool());
+    if((node = searchNode->GetNode("saveCrashRecoveryFile")) != 0)
+        SetSaveCrashRecoveryFile(node->AsBool());
 }
 
