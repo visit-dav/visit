@@ -154,6 +154,7 @@
 #include <avtTensorContractionFilter.h>
 #include <avtViscousStressFilter.h>
 #include <avtPerformColorTableLookupFilter.h>
+#include <avtPerMaterialValueFilter.h>
 
 #include <stdio.h>
 #include <ExpressionException.h>
@@ -466,6 +467,9 @@ avtVectorExpr::CreateFilters(ExprPipelineState *state)
 //    Gunther H. Weber, Wed Jan  9 10:22:55 PST 2008
 //    Added colorlookup.
 //
+//    Cyrus Harrison, Tue Jan 29 08:51:41 PST 2008
+//    Added value_for_material (& val4mat alias)
+//
 // ****************************************************************************
 
 avtExpressionFilter *
@@ -525,6 +529,10 @@ avtFunctionExpr::CreateFilters(string functionName)
         return new avtMIRvfFilter();
     if (functionName == "materror")
         return new avtMatErrorFilter();
+    if (functionName == "value_for_material")
+        return new avtPerMaterialValueFilter();     
+    if (functionName == "val4mat")
+        return new avtPerMaterialValueFilter();
     if (functionName == "specmf")
         return new avtSpecMFFilter();
     if (functionName == "nmats")

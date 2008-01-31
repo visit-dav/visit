@@ -190,6 +190,9 @@
 #   Hank Childs, Thu Jan 24 15:48:41 PST 2008
 #   Added avtExecuteThenTimeLoopFilter.
 #
+#   Cyrus Harrison, Tue Jan 29 08:35:15 PST 2008
+#   Added avtPerMaterialValueFilter.C
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -278,6 +281,7 @@ General_src= \
   General/avtNeighborEvaluatorFilter.C \
   General/avtNormalizeFilter.C \
   General/avtPerformColorTableLookupFilter.C \
+  General/avtPerMaterialValueFilter.C \
   General/avtProcessorIdFilter.C \
   General/avtRelativeDifferenceFilter.C \
   General/avtResradFilter.C \

@@ -101,6 +101,11 @@ class     avtTerminatingSource;
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Cyrus Harrison, Wed Jan 30 13:23:30 PST 2008
+//    Added variable name argument to GetMixedVar, allowing this method
+//    to be used when the desired mixed var differs from the active
+//    variable in the contract. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtMetaData
@@ -115,7 +120,7 @@ class PIPELINE_API avtMetaData
     avtFacelist                 *GetExternalFacelist(int);
     avtMaterial                 *GetMaterial(int, int = -1);
     avtSpecies                  *GetSpecies(int, int = -1);
-    avtMixedVariable            *GetMixedVar(int, int = -1);
+    avtMixedVariable            *GetMixedVar(const char *,int, int = -1);
 
   protected:
     avtTerminatingSource        *source;
