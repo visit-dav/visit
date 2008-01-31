@@ -317,6 +317,10 @@ Engine *Engine::Instance()
 //    Changed set_new_handler to std::set_new_handler b/c of change from 
 //    deprecated <new.h> to <new>
 //  
+//    Cyrus Harrison, Thu Jan 31 14:48:18 PST 2008
+//    Removed a lingering cerr message showing the MPI rank of the engine 
+//    process.
+//  
 // ****************************************************************************
 void
 Engine::Initialize(int *argc, char **argv[], bool sigs)
@@ -364,7 +368,6 @@ Engine::Initialize(int *argc, char **argv[], bool sigs)
 
     debug1 << "ENGINE started\n";
 #ifdef PARALLEL
-    cerr << "ENGINE is MPI task " << PAR_Rank() << endl;
     visitTimer->StopTimer(initTimer, "Initializing the engine (including MPI_Init())");
 #else
     visitTimer->StopTimer(initTimer, "Initializing the engine");
