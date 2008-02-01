@@ -54,6 +54,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //    Made use of new string offsets to center the titles of
 //    each axis of the triad a little better.
 //
+//    Jeremy Meredith, Fri Feb  1 13:07:30 EST 2008
+//    Removed the setting of the text offsets.  It wasn't
+//    enough of an improvement to justify the effort in updating
+//    baselines.  Plus, the full 0.5 offset for vertical was too
+//    much, possibly due to whitespace being included in the height.
+//    If this is reinstated, it should be more like 0.25 to 0.40.
+//
 // *****************************************************************
 
 vtkStandardNewMacro(vtkTriad2D);
@@ -73,8 +80,6 @@ vtkTriad2D::vtkTriad2D()
   this->XAxis->SetLabelVisibility(0);
   this->XAxis->SetShadow(0);
   this->XAxis->SetTitleAtEnd(1);
-  this->XAxis->SetEndStringHOffsetFactor(-0.5);
-  this->XAxis->SetEndStringVOffsetFactor(-0.5);
   this->XAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->XAxis->GetPoint2Coordinate()
@@ -86,8 +91,6 @@ vtkTriad2D::vtkTriad2D()
   this->YAxis->SetLabelVisibility(0);
   this->YAxis->SetShadow(0);
   this->YAxis->SetTitleAtEnd(1);
-  this->YAxis->SetEndStringHOffsetFactor(-0.5);
-  this->YAxis->SetEndStringVOffsetFactor(-0.5);
   this->YAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->YAxis->GetPoint2Coordinate()
@@ -99,8 +102,6 @@ vtkTriad2D::vtkTriad2D()
   this->ZAxis->SetLabelVisibility(0);
   this->ZAxis->SetShadow(0);
   this->ZAxis->SetTitleAtEnd(1);
-  this->ZAxis->SetEndStringHOffsetFactor(-0.5);
-  this->ZAxis->SetEndStringVOffsetFactor(-0.5);
   this->ZAxis->GetPoint1Coordinate()
                    ->SetCoordinateSystemToNormalizedViewport(); 
   this->ZAxis->GetPoint2Coordinate()
