@@ -48,11 +48,13 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <vtkSetGet.h>
 #include <vtkSystemIncludes.h>
 
 #include <vector>
 #include <map>
 
+#include <snprintf.h>
 #include <visit-config.h>
 
 using     std::vector;
@@ -1679,6 +1681,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Brad Whitlock, Wed Jan 23 15:46:10 PST 2008
 //    Added transformVectorsDuringProject.
 //
+//    Hank Childs, Fri Feb  1 12:51:44 PST 2008
+//    Add dumping of admissibleDataTypes.
+//
 // ****************************************************************************
 
 static const char *
@@ -1741,6 +1746,19 @@ avtDataSpecification::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("maxMatsPerZone", str);
     webpage->AddTableEntry2("maintainOriginalConnectivity", YesOrNo(maintainOriginalConnectivity));
     webpage->AddTableEntry2("needNativePrecision", YesOrNo(needNativePrecision));
+    webpage->AddTableEntry2("admissibleDataTypes", "");
+    std::map<int,bool>::iterator it;
+    for (it = admissibleDataTypes.begin();
+         it != admissibleDataTypes.end(); it++)
+    {
+        bool isAnAdmissibleType = false;
+        const char *type = vtkImageScalarTypeNameMacro(it->first);
+        bool val = it->second;
+        char entry[1024];
+        SNPRINTF(entry, 1024, "%s = %s", type, (val ? "true" : "false"));
+        webpage->AddTableEntry2("", entry);
+    }
+
     switch (desiredGhostDataType)
     {
       case NO_GHOST_DATA:

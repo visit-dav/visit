@@ -67,6 +67,9 @@ class     avtSpreadsheetMapper;
 //    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007
 //    Set CanDo2DViewScaling to false.
 //
+//    Hank Childs, Fri Feb  1 13:16:26 PST 2008
+//    Define UtilizeRenderingFilters.
+//
 // ****************************************************************************
 
 class avtSpreadsheetPlot : public avtVolumeDataPlot
@@ -99,6 +102,8 @@ class avtSpreadsheetPlot : public avtVolumeDataPlot
     virtual void                CustomizeMapper(avtDataObjectInformation &);
 
     virtual avtLegend_p         GetLegend(void) { return NULL; };
+
+    virtual bool                UtilizeRenderingFilters(void) { return false; };
 };
 
 
