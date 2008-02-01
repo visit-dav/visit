@@ -976,7 +976,7 @@ VisitPointTool::Translate(CB_ENUM e, int ctrl, int shift, int x, int y, int)
 //
 void
 VisitPointTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitPointTool *lt = (VisitPointTool *)it;
     lt->Translate(e, ctrl, shift, x, y, 0);

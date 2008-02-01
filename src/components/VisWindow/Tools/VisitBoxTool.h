@@ -74,6 +74,9 @@ class vtkTextActor;
 //   Brad Whitlock, Tue Jul 13 14:12:33 PST 2004
 //   Added new handlers for the new hotpoints.
 //
+//   Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
+//   Added new value to callback used to pass the hotpoint's "data" field.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
@@ -102,21 +105,21 @@ class VISWINDOW_API VisitBoxTool : public VisitInteractiveTool
   protected:
     // Callback functions for the tool's hot points.
     static void TranslateCallback(VisitInteractiveTool *, CB_ENUM,
-                                  int, int, int, int);
+                                  int, int, int, int, int);
     static void ResizeCallback(VisitInteractiveTool *, CB_ENUM,
-                               int, int, int, int);
+                               int, int, int, int, int);
     static void XMINCallback(VisitInteractiveTool *, CB_ENUM,
-                             int, int, int, int);
+                             int, int, int, int, int);
     static void XMAXCallback(VisitInteractiveTool *, CB_ENUM,
-                             int, int, int, int);
+                             int, int, int, int, int);
     static void YMINCallback(VisitInteractiveTool *, CB_ENUM,
-                             int, int, int, int);
+                             int, int, int, int, int);
     static void YMAXCallback(VisitInteractiveTool *, CB_ENUM,
-                             int, int, int, int);
+                             int, int, int, int, int);
     static void ZMINCallback(VisitInteractiveTool *, CB_ENUM,
-                             int, int, int, int);
+                             int, int, int, int, int);
     static void ZMAXCallback(VisitInteractiveTool *, CB_ENUM,
-                             int, int, int, int);
+                             int, int, int, int, int);
 
     virtual void CallCallback();
     void Translate(CB_ENUM, int, int, int, int);

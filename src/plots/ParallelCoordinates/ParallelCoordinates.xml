@@ -65,5 +65,10 @@
       </Function>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
+      <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Include file="header" quoted="false">
+        AxisRestrictionAttributes.h
+      </Include>
     </Attribute>
   </Plugin>

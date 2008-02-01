@@ -82,6 +82,9 @@ typedef std::vector<HotPoint> HotPointVector;
 //   Mark Blair, Wed Sep 13 12:18:53 PDT 2006
 //   Added ShowsHotPointHighlights method.
 //
+//   Jeremy Meredith, Fri Feb  1 18:10:41 EST 2008
+//   Added virtual UpdatePlotList.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitInteractiveTool
@@ -103,6 +106,7 @@ class VISWINDOW_API VisitInteractiveTool
     virtual void          Start3DMode() {; };
     virtual void          Stop3DMode() {; };
     virtual void          NoPlots() {; };
+    virtual void          UpdatePlotList(std::vector<avtActor_p> &list) { }
 
     virtual void          SetBackgroundColor(double, double, double) {; };
     virtual void          SetForegroundColor(double, double, double) {; };

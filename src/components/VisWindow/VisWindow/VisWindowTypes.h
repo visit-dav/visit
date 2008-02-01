@@ -50,6 +50,11 @@
 //    Jeremy Meredith, Mon Jan 28 17:36:52 EST 2008
 //    Added new Axis Array window mode.
 //
+//    Jeremy Meredith, Fri Feb  1 15:45:02 EST 2008
+//    Added two more data values to hotpoints: shape and an arbitrary data
+//    value that gets passed along to the callbacks.  Also added a default
+//    constructor so the new values get appropriate defaults.
+//
 // ************************************************************************* //
 
 
@@ -87,14 +92,18 @@ typedef enum {
 // Forward declaration.
 class VisitInteractiveTool;
 
-typedef void (hotPointCallback)(VisitInteractiveTool *,CB_ENUM,int,int,int,int);
+typedef void (hotPointCallback)(VisitInteractiveTool *,CB_ENUM,int,int,int,int,int);
 
 struct HotPoint
 {
     avtVector             pt;
     double                radius;
+    int                   data;  // passed along to callback
+    int                   shape; // 0 = square, 1 = tri up, 2 = tri down
     VisitInteractiveTool *tool;
     hotPointCallback     *callback;
+
+    HotPoint() : radius(0), data(0), shape(0), tool(NULL), callback(NULL) { }
 };
 
 // Functions to convert INTERACTION_MODE to/from string.

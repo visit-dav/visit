@@ -83,6 +83,9 @@ class vtkTextActor;
 //   Kathleen Bonnell, Wed May 28 16:14:22 PDT 2003 
 //   Added method ReAddToWindow.
 //
+//   Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
+//   Added new value to callback used to pass the hotpoint's "data" field.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
@@ -113,17 +116,17 @@ class VISWINDOW_API VisitPlaneTool : public VisitInteractiveTool
   protected:
     // Callback functions for the tool's hot points.
     static void TranslateCallback(VisitInteractiveTool *, CB_ENUM,
-                                  int, int, int, int);
+                                  int, int, int, int, int);
     static void TranslateNormalCallback(VisitInteractiveTool *, CB_ENUM,
-                                  int, int, int, int);
+                                  int, int, int, int, int);
     static void RotateXCallback(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int);
+                                int, int, int, int, int);
     static void RotateYCallback(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int);
+                                int, int, int, int, int);
     static void FreeRotateCallback(VisitInteractiveTool *, CB_ENUM,
-                                   int, int, int, int);
+                                   int, int, int, int, int);
     static void ResizeCallback(VisitInteractiveTool *, CB_ENUM,
-                               int, int, int, int);
+                               int, int, int, int, int);
 
     avtVector Normal() const;
 

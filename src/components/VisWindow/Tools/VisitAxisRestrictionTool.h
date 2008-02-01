@@ -36,11 +36,11 @@
 *
 *****************************************************************************/
 
-#ifndef VISIT_SPHERE_TOOL_H
-#define VISIT_SPHERE_TOOL_H
+#ifndef VISIT_AXIS_RESTRICTION_TOOL_H
+#define VISIT_AXIS_RESTRICTION_TOOL_H
 #include <viswindow_exports.h>
 #include <VisitInteractiveTool.h>
-#include <avtSphereToolInterface.h>
+#include <avtAxisRestrictionToolInterface.h>
 #include <avtMatrix.h>
 #include <avtQuaternion.h>
 #include <avtTrackball.h>
@@ -53,68 +53,53 @@ class vtkPolyData;
 class vtkTextActor;
 
 // ****************************************************************************
-// Class: VisitSphereTool
+// Class: VisitAxisRestrictionTool
 //
 // Purpose:
-//   This class contains an interactive sphere tool that can be used to define
-//   a slicing sphere.
+//   This class contains an interactive tool that can be used to define
+//   restrictions along arrays of parallel axes.
 //
 // Notes:      
 //
-// Programmer: Brad Whitlock
-// Creation:   Thu May 2 16:52:57 PST 2002
+// Programmer: Jeremy Meredith
+// Creation:   February  1, 2008
 //
 // Modifications:
-//   Kathleen Bonnell, Fri Dec 13 16:41:12 PST 2002
-//   Replace vtkActor2d/vtkTextMapper pairs with vtkTextActor.
-//
-//   Kathleen Bonnell, Wed May 28 16:14:22 PDT 2003 
-//   Added method ReAddToWindow.
-//
-//   Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
-//   Added new value to callback used to pass the hotpoint's "data" field.
 //
 // ****************************************************************************
 
-class VISWINDOW_API VisitSphereTool : public VisitInteractiveTool
+class VISWINDOW_API VisitAxisRestrictionTool : public VisitInteractiveTool
 {
   public:
-             VisitSphereTool(VisWindowToolProxy &);
-    virtual ~VisitSphereTool();
+             VisitAxisRestrictionTool(VisWindowToolProxy &);
+    virtual ~VisitAxisRestrictionTool();
 
     virtual void Enable();
     virtual void Disable();
     virtual bool IsAvailable() const;
 
-    virtual void Start2DMode();
-    virtual void Stop3DMode();
+    virtual void StopAxisArrayMode();
 
     virtual void SetForegroundColor(double, double, double);
 
-    virtual const char *  GetName() const { return "Sphere"; };
+    virtual const char *  GetName() const { return "AxisRestriction"; };
     virtual avtToolInterface &GetInterface() { return Interface; };
 
     virtual void UpdateView();
     virtual void UpdateTool();
     virtual void ReAddToWindow();
+    virtual void UpdatePlotList(std::vector<avtActor_p> &list);
+    virtual void FullFrameOn(const double, const int);
+    virtual void FullFrameOff();
 
   protected:
     // Callback functions for the tool's hot points.
-    static void TranslateCallback(VisitInteractiveTool *, CB_ENUM,
-                                  int, int, int, int, int);
-    static void ResizeCallback1(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int, int);
-    static void ResizeCallback2(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int, int);
-    static void ResizeCallback3(VisitInteractiveTool *, CB_ENUM,
-                                int, int, int, int, int);
-    static int activeResizeHotpoint;
+    static void MoveCallback(VisitInteractiveTool *, CB_ENUM,
+                             int, int, int, int, int);
 
     virtual void CallCallback();
-    void Translate(CB_ENUM, int, int, int, int);
-    void Resize(CB_ENUM, int, int, int, int);
+    void Move(CB_ENUM, int, int, int, int, int);
 
-    void CreateSphereActor();
     void CreateTextActors();
     void DeleteTextActors();
     void AddText();
@@ -124,28 +109,21 @@ class VISWINDOW_API VisitSphereTool : public VisitInteractiveTool
     void InitialActorSetup();
     void FinalActorSetup();
 
-    void DoTransformations();
+    void DoClampAndTransformations();
 
-    double              focalDepth;
-    double              originalScale;
-    double              originalDistance;
-    double             translationDistance;
-    bool               normalAway;
-    bool               disableWhenNoPlots;
-    vtkActor          *sphereActor;
-    vtkPolyDataMapper *sphereMapper;
-    vtkPolyData       *sphereData;
-    vtkTextActor      *originTextActor;
-    vtkTextActor      *radiusTextActor[3];
+    static const float         radius;
+    double                     focalDepth;
+    std::vector<vtkTextActor*> posTextActors;
+    std::vector<double>        axesMin;
+    std::vector<double>        axesMax;
+    double                     color[3];
 
-    avtSphereToolInterface Interface;
+    avtAxisRestrictionToolInterface Interface;
 
     HotPointVector     origHotPoints;
-    avtMatrix          TMtx;
-    avtMatrix          SMtx;
 
-    bool               addedOutline;
     bool               addedBbox;
+    bool               textAdded;
 };
 
 #endif

@@ -41,6 +41,7 @@
 #include <VisWindowColleagueProxy.h>
 
 #include <VisitInteractiveTool.h>
+#include <VisitAxisRestrictionTool.h>
 #include <VisitBoxTool.h>
 #include <VisitLineTool.h>
 #include <VisitPlaneTool.h>
@@ -139,6 +140,9 @@ protected:
 //   Mark Blair, Wed Aug 30 14:19:00 PDT 2006
 //   Added the extents tool.
 //
+//   Jeremy Meredith, Fri Feb  1 18:01:15 EST 2008
+//   Added new axis restriction tool.
+//
 // ****************************************************************************
 
 VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
@@ -159,6 +163,7 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     pointTool = new VisitPointTool(toolProxy);
     sphereTool = new VisitSphereTool(toolProxy);
     extentsTool = new VisitExtentsTool(toolProxy);
+    axisRestrictionTool = new VisitAxisRestrictionTool(toolProxy);
 
     // Add the tools to the tools array.
     tools[numTools++] = boxTool;
@@ -167,6 +172,7 @@ VisWinTools::VisWinTools(VisWindowColleagueProxy &v) : VisWinColleague(v),
     tools[numTools++] = sphereTool;
     tools[numTools++] = pointTool;
     tools[numTools++] = extentsTool;
+    tools[numTools++] = axisRestrictionTool;
 }
 
 // ****************************************************************************
@@ -959,6 +965,10 @@ void vtkHighlightActor2D::SetHelperRenderer(vtkRenderer *ren)
 //   Mark Blair, Wed Sep 13 14:11:22 PDT 2006
 //   Add a tool's highlights to the actor only if that tool shows highlights.
 //
+//   Jeremy Meredith, Fri Feb  1 18:04:34 EST 2008
+//   Added new shapes to the hotpoints: an up and down triangle.  This is
+//   for the axis restriction tool.
+//
 // ****************************************************************************
 
 void
@@ -1022,18 +1032,53 @@ vtkHighlightActor2D::RegenerateHighlight()
                 double dX = double((hpts[j].radius * winWidth) / SQRT_OF_2);
                 double dY = double((hpts[j].radius * winHeight) / SQRT_OF_2);
 
-                coord[0] = v[0] + dX;
-                coord[1] = v[1] + dY;
-                pts->SetPoint(ptIndex, coord);
-                coord[0] = v[0] + dX;
-                coord[1] = v[1] - dY;
-                pts->SetPoint(ptIndex + 1, coord);
-                coord[0] = v[0] - dX;
-                coord[1] = v[1] - dY;
-                pts->SetPoint(ptIndex + 2, coord);
-                coord[0] = v[0] - dX;
-                coord[1] = v[1] + dY;
-                pts->SetPoint(ptIndex + 3, coord);
+                if (hpts[j].shape == 0) // square
+                {
+                    coord[0] = v[0] + dX;
+                    coord[1] = v[1] + dY;
+                    pts->SetPoint(ptIndex, coord);
+                    coord[0] = v[0] + dX;
+                    coord[1] = v[1] - dY;
+                    pts->SetPoint(ptIndex + 1, coord);
+                    coord[0] = v[0] - dX;
+                    coord[1] = v[1] - dY;
+                    pts->SetPoint(ptIndex + 2, coord);
+                    coord[0] = v[0] - dX;
+                    coord[1] = v[1] + dY;
+                    pts->SetPoint(ptIndex + 3, coord);
+                }
+                else if (hpts[j].shape == 1) // tri up
+                {
+                    // Yeah, we're making it have four points.  It's easier.
+                    coord[0] = v[0] + dX;
+                    coord[1] = v[1] + dY;
+                    pts->SetPoint(ptIndex, coord);
+                    coord[0] = v[0];
+                    coord[1] = v[1];
+                    pts->SetPoint(ptIndex + 1, coord);
+                    coord[0] = v[0] - dX;
+                    coord[1] = v[1] + dY;
+                    pts->SetPoint(ptIndex + 2, coord);
+                    coord[0] = v[0];
+                    coord[1] = v[1] + dY;
+                    pts->SetPoint(ptIndex + 3, coord);
+                }
+                else if (hpts[j].shape == 2) // tri down
+                {
+                    // Yeah, we're making it have four points.  It's easier.
+                    coord[0] = v[0] - dX;
+                    coord[1] = v[1] - dY;
+                    pts->SetPoint(ptIndex, coord);
+                    coord[0] = v[0];
+                    coord[1] = v[1];
+                    pts->SetPoint(ptIndex + 1, coord);
+                    coord[0] = v[0] + dX;
+                    coord[1] = v[1] - dY;
+                    pts->SetPoint(ptIndex + 2, coord);
+                    coord[0] = v[0];
+                    coord[1] = v[1] - dY;
+                    pts->SetPoint(ptIndex + 3, coord);
+                }
 
                 for(int k = 0; k < 4; ++k)
                 {
@@ -1111,3 +1156,27 @@ VisWinTools::FullFrameOff()
     for(int i = 0; i < numTools; ++i)
         tools[i]->FullFrameOff();
 }
+
+
+// ****************************************************************************
+//  Method:  VisWinTools::UpdatePlotList
+//
+//  Purpose:
+//    Tells tools about an updated plot list.
+//
+//  Arguments:
+//    list       the plot list.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  1, 2008
+//
+// ****************************************************************************
+
+void
+VisWinTools::UpdatePlotList(std::vector<avtActor_p> &list)
+{
+    for(int i = 0; i < numTools; ++i)
+        tools[i]->UpdatePlotList(list);
+    toolProxy.Render();
+}
+

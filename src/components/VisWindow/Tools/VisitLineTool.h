@@ -79,6 +79,9 @@ class vtkTextActor;
 //   Kathleen Bonnell, Fri Jun  6 15:36:24 PDT 2003 
 //   Add FullFrameOn/Off methods. 
 //
+//   Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
+//   Added new value to callback used to pass the hotpoint's "data" field.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitLineTool : public VisitInteractiveTool
@@ -110,11 +113,11 @@ class VISWINDOW_API VisitLineTool : public VisitInteractiveTool
   protected:
     // Callback functions for the tool's hot points.
     static void TranslatePoint1Callback(VisitInteractiveTool *, CB_ENUM,
-                                        int, int, int, int);
+                                        int, int, int, int, int);
     static void TranslatePoint2Callback(VisitInteractiveTool *, CB_ENUM,
-                                        int, int, int, int);
+                                        int, int, int, int, int);
     static void TranslateCallback(VisitInteractiveTool *, CB_ENUM,
-                                  int, int, int, int);
+                                  int, int, int, int, int);
 
     virtual void CallCallback();
     void Translate(CB_ENUM, int, int, int, int, int);

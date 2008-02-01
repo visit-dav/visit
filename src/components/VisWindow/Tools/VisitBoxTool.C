@@ -1465,7 +1465,7 @@ VisitBoxTool::ReAddToWindow()
 
 void
 VisitBoxTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(0);
@@ -1474,7 +1474,7 @@ VisitBoxTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitBoxTool::XMINCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(1);
@@ -1483,7 +1483,7 @@ VisitBoxTool::XMINCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitBoxTool::XMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(2);
@@ -1492,7 +1492,7 @@ VisitBoxTool::XMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitBoxTool::YMINCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(3);
@@ -1501,7 +1501,7 @@ VisitBoxTool::YMINCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitBoxTool::YMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(4);
@@ -1510,7 +1510,7 @@ VisitBoxTool::YMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitBoxTool::ZMINCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(5);
@@ -1519,7 +1519,7 @@ VisitBoxTool::ZMINCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitBoxTool::ZMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(6);
@@ -1528,7 +1528,7 @@ VisitBoxTool::ZMAXCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitBoxTool::ResizeCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitBoxTool *bt = (VisitBoxTool *)it;
     bt->SetActiveHotPoint(7);

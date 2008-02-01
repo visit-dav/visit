@@ -4331,11 +4331,14 @@ VisitExtentsTool::FullFrameOff()
 //    Mark Blair, Thu Dec  7 12:47:17 PST 2006
 //    Added callbacks for buttons.
 //
+//    Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
+//    Added new value to callback used to pass the hotpoint's "data" field.
+//
 // ****************************************************************************
 
 void
 VisitExtentsTool::MoveLeftMarkOneAxisLeftButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_LEFT_MOVE_LEFT_BUTTON_ID);
@@ -4344,7 +4347,7 @@ VisitExtentsTool::MoveLeftMarkOneAxisLeftButtonCallback(
 
 void
 VisitExtentsTool::MoveRightMarkOneAxisLeftButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_RIGHT_MOVE_LEFT_BUTTON_ID);
@@ -4353,7 +4356,7 @@ VisitExtentsTool::MoveRightMarkOneAxisLeftButtonCallback(
 
 void
 VisitExtentsTool::MoveLeftMarkOneAxisRightButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_LEFT_MOVE_RIGHT_BUTTON_ID);
@@ -4362,7 +4365,7 @@ VisitExtentsTool::MoveLeftMarkOneAxisRightButtonCallback(
 
 void
 VisitExtentsTool::MoveRightMarkOneAxisRightButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_RIGHT_MOVE_RIGHT_BUTTON_ID);
@@ -4371,7 +4374,7 @@ VisitExtentsTool::MoveRightMarkOneAxisRightButtonCallback(
 
 void
 VisitExtentsTool::ShowAxisInfoAtLeftMarkIfOnButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_LEFT_MARK_INFO_ON_BUTTON_ID);
@@ -4380,7 +4383,7 @@ VisitExtentsTool::ShowAxisInfoAtLeftMarkIfOnButtonCallback(
 
 void
 VisitExtentsTool::ShowAxisInfoAtRightMarkIfOnButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_RIGHT_MARK_INFO_ON_BUTTON_ID);
@@ -4389,7 +4392,7 @@ VisitExtentsTool::ShowAxisInfoAtRightMarkIfOnButtonCallback(
 
 void
 VisitExtentsTool::ExpandBetweenMarkedAxesButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_EXPAND_BETWEEN_BUTTON_ID);
@@ -4398,7 +4401,7 @@ VisitExtentsTool::ExpandBetweenMarkedAxesButtonCallback(
 
 void
 VisitExtentsTool::UndoLastAxisSectionExpansionButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_UNDO_LAST_EXPANSION_BUTTON_ID);
@@ -4407,7 +4410,7 @@ VisitExtentsTool::UndoLastAxisSectionExpansionButtonCallback(
 
 void
 VisitExtentsTool::ThresholdBetweenMarkedAxesOnlyIfOnButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_THRESHOLD_BETWEEN_BUTTON_ID);
@@ -4416,7 +4419,7 @@ VisitExtentsTool::ThresholdBetweenMarkedAxesOnlyIfOnButtonCallback(
 
 void
 VisitExtentsTool::ShowAxisTitlesOnlyIfOnButtonCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->ButtonAction(e, ctrl, shift, x, y, VET_SHOW_TITLES_ONLY_BUTTON_ID);
@@ -4425,7 +4428,7 @@ VisitExtentsTool::ShowAxisTitlesOnlyIfOnButtonCallback(
 
 void
 VisitExtentsTool::LeftAxisSelectionMarkCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->LeftAxisSelectionMark(e, ctrl, shift, x, y);
@@ -4434,7 +4437,7 @@ VisitExtentsTool::LeftAxisSelectionMarkCallback(
 
 void
 VisitExtentsTool::RightAxisSelectionMarkCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->RightAxisSelectionMark(e, ctrl, shift, x, y);
@@ -4443,7 +4446,7 @@ VisitExtentsTool::RightAxisSelectionMarkCallback(
 
 void
 VisitExtentsTool::AxisSliderMinimumCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->AxisSliderMinimum(e, ctrl, shift, x, y);
@@ -4452,7 +4455,7 @@ VisitExtentsTool::AxisSliderMinimumCallback(
 
 void
 VisitExtentsTool::AxisSliderMaximumCallback(
-    VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y)
+   VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y, int)
 {
     VisitExtentsTool *et = (VisitExtentsTool *)it;
     et->AxisSliderMaximum(e, ctrl, shift, x, y);
