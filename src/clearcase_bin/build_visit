@@ -917,6 +917,12 @@ function check_visit_source_code
 # --------------------------------------------------------------------------- #
 # This function will check to make sure that all of the necessary source      #
 # files for the optional 3rd party libraries actually exist.                  #
+#                                                                             #
+#  Modifications:                                                             #
+#                                                                             #
+#    Hank Childs, Fri Feb  1 09:38:58 PST 2008                                #
+#    Issue a better error message for Mili.                                   #
+#                                                                             #
 # *************************************************************************** #
 
 function check_optional_3rdparty
@@ -1103,6 +1109,12 @@ function check_optional_3rdparty
         fi
         if [[ "$HAVE_MILI_ALREADY" = "NO" && \
               "$HAVE_MILI_TARBALL" = "NO" ]] ; then
+            if [[ "$DO_SVN" != "yes" ]] ; then
+                echo "You have requested to build the Mili library.  Mili is not "
+                echo "available for public download and is only available through "
+                echo "Subversion access."
+                exit 1
+            fi
             download_3rdparty ${MILI_FILE}
             if [[ $? == 0 ]] ; then
                 echo "Unable to build Mili.  ${MILI_FILE} not found."
@@ -3332,7 +3344,7 @@ function build_hdf5
 
 
 # *************************************************************************** #
-#                          Function 8.2, build_mili                            #
+#                          Function 8.2, build_mili                           #
 # *************************************************************************** #
 
 function build_mili
