@@ -2067,6 +2067,9 @@ Engine::EngineAbortCallback(void *data)
 //    but the current logic makes sure each stage is reported.  If there is
 //    a ton of stages, then we should allow for some stages to not be reported.
 //
+//    Hank Childs, Thu Jan 31 16:58:34 PST 2008
+//    Make sure all percentage completes are correct. 
+//
 // ****************************************************************************
 
 void
@@ -2109,7 +2112,7 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
 
         double timeBetween = 1.0;
         if (rpc->GetMaxStageNum() >= 30)
-            timeBetween = 0.1;
+            timeBetween = 0.2;
         if (total == 0 && cur != 0)
             rpc->SetCurStageNum(rpc->GetCurStageNum()+1);
         if (timeOfThisProgressCallback < timeOfLastProgressCallback + timeBetween)
@@ -2117,7 +2120,12 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
 
         timeOfLastProgressCallback = timeOfThisProgressCallback;
 
-        rpc->SendStatus(int(100. * float(cur)/float(total)),
+        int cur1 = rpc->GetCurStageNum();
+        int tot1 = rpc->GetMaxStageNum();
+        int percent = int(100. * float(cur)/float(total));
+        percent = (percent < 0 ? 0 : percent);
+        percent = (percent > 100 ? 100 : percent);
+        rpc->SendStatus(percent,
                         rpc->GetCurStageNum(),
                         desc ? desc : type,
                         rpc->GetMaxStageNum());

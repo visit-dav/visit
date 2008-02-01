@@ -133,6 +133,11 @@ class avtExpressionEvaluatorFilter;
 //    
 //    Mark C. Miller, Tue Mar 27 08:39:55 PDT 2007
 //    Added support for node origin
+//
+//    Hank Childs, Thu Jan 31 16:49:22 PST 2008
+//    Add GetNFilters, since that will get the number of stages more accurate
+//    for queries over time.
+//
 // ****************************************************************************
 
 class QUERY_API avtPickQuery : public avtDatasetQuery
@@ -148,6 +153,10 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
                                              { return "Picking"; };
 
     virtual bool                    OriginalData(void) { return true; };
+
+    // There are two distinct stages from the database, plus one for the query 
+    // itself, so pretend we have three filters.
+    virtual int                     GetNFilters(void) { return 3; };
 
     void                            SetPickAtts(const PickAttributes *pa);
     void                            SetPickAttsForTimeQuery(const PickAttributes *pa);

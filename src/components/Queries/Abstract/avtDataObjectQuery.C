@@ -200,6 +200,10 @@ avtDataObjectQuery::UpdateProgress(int current, int total)
 //     timestep, which means the progress will be re-initialized 
 //     inappropriately.)
 //
+//    Hank Childs, Thu Jan 31 16:35:44 PST 2008
+//    Improve the test for whether or not to call the initialize progress 
+//    callback.
+//
 // ****************************************************************************
 
 void
@@ -212,7 +216,7 @@ avtDataObjectQuery::Init(const int nTimesteps)
         //
         int nstages = (GetNFilters() + 1) * nTimesteps;
 
-        if (nTimesteps <= 1)
+        if (!timeVarying)
             initializeProgressCallback(initializeProgressCallbackArgs,nstages);
     }
 }
