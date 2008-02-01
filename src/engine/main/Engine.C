@@ -2070,6 +2070,9 @@ Engine::EngineAbortCallback(void *data)
 //    Hank Childs, Thu Jan 31 16:58:34 PST 2008
 //    Make sure all percentage completes are correct. 
 //
+//    Hank Childs, Fri Feb  1 09:03:22 PST 2008
+//    Avoid a divide by zero.
+//
 // ****************************************************************************
 
 void
@@ -2122,7 +2125,7 @@ Engine::EngineUpdateProgressCallback(void *data, const char *type, const char *d
 
         int cur1 = rpc->GetCurStageNum();
         int tot1 = rpc->GetMaxStageNum();
-        int percent = int(100. * float(cur)/float(total));
+        int percent = int(100. * float(cur)/(total+0.0001));
         percent = (percent < 0 ? 0 : percent);
         percent = (percent > 100 ? 100 : percent);
         rpc->SendStatus(percent,
