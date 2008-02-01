@@ -12,6 +12,8 @@ Definition:
 // Note: Taken largely from Mark Blair's Parallel Axis plot.
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb  1 17:55:14 EST 2008
+//    Made it use float min/max for non-limiting extents values.
 //   
 // ****************************************************************************
 
@@ -58,8 +60,8 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
     {
         saveAxisMin    = -1e+37;
         saveAxisMax    = +1e+37;
-        saveExtentMin  = 0.0;
-        saveExtentMax  = 1.0;
+        saveExtentMin  = -1e+37;
+        saveExtentMax  = +1e+37;
     }
 
     int insertOrdinal = orderedAxisNames.size();
@@ -183,5 +185,53 @@ bool
 ParallelCoordinatesAttributes::ChangesRequireRecalculation(
     const ParallelCoordinatesAttributes &obj)
 {
+
     return true;
+}
+
+Function: CopyAttributes
+Declaration: virtual bool CopyAttributes(const AttributeGroup *);
+Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::CopyAttributes
+//
+// Purpose: Sets the attributes from another attribute group
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Modifications:
+//    Jeremy Meredith, Fri Feb  1 17:56:21 EST 2008
+//    Added support for axis restrictions.
+//   
+// ****************************************************************************
+bool
+ParallelCoordinatesAttributes::CopyAttributes(const AttributeGroup *atts)
+{
+    bool retval = false;
+
+    if(TypeName() == atts->TypeName())
+    {
+        // Call assignment operator.
+        const ParallelCoordinatesAttributes *tmp =
+            (const ParallelCoordinatesAttributes *)atts;
+        *this = *tmp;
+        retval = true;
+    }
+    else if (atts->TypeName() == "AxisRestrictionAttributes")
+    {
+        const AxisRestrictionAttributes *ar =
+            (const AxisRestrictionAttributes *)atts;
+
+        for (int i=0; i<extentMinima.size(); i++)
+        {
+            extentMinima[i] = ar->GetMinima()[i];
+            extentMaxima[i] = ar->GetMaxima()[i];
+        }
+        SelectExtentMinima();
+        SelectExtentMaxima();
+
+        retval = true;
+    }
+    return retval;
 }

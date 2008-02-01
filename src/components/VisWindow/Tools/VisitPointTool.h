@@ -67,6 +67,9 @@ class vtkTextActor;
 //   Akira Haddox, Mon Aug  4 12:48:02 PDT 2003
 //   Removed unneeded point actor.
 //
+//   Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
+//   Added new value to callback used to pass the hotpoint's "data" field.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
@@ -94,7 +97,7 @@ class VISWINDOW_API VisitPointTool : public VisitInteractiveTool
   protected:
     // Callback functions for the tool's hot points.
     static void TranslateCallback(VisitInteractiveTool *, CB_ENUM,
-                                  int, int, int, int);
+                                  int, int, int, int, int);
 
     virtual void CallCallback();
     void Translate(CB_ENUM, int, int, int, int, int);

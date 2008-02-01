@@ -2136,7 +2136,7 @@ VisitPlaneTool::DoTransformations()
 
 void
 VisitPlaneTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitPlaneTool *pt = (VisitPlaneTool *)it;
     pt->Translate(e, ctrl, shift, x, y);
@@ -2144,7 +2144,7 @@ VisitPlaneTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitPlaneTool::TranslateNormalCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitPlaneTool *pt = (VisitPlaneTool *)it;
     pt->TranslateNormal(e, ctrl, shift, x, y);
@@ -2152,7 +2152,7 @@ VisitPlaneTool::TranslateNormalCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitPlaneTool::RotateXCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitPlaneTool *pt = (VisitPlaneTool *)it;
     pt->RotateX(e, ctrl, shift, x, y);
@@ -2160,7 +2160,7 @@ VisitPlaneTool::RotateXCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitPlaneTool::RotateYCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitPlaneTool *pt = (VisitPlaneTool *)it;
     pt->RotateY(e, ctrl, shift, x, y);
@@ -2168,7 +2168,7 @@ VisitPlaneTool::RotateYCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitPlaneTool::FreeRotateCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitPlaneTool *pt = (VisitPlaneTool *)it;
     pt->FreeRotate(e, ctrl, shift, x, y);
@@ -2176,7 +2176,7 @@ VisitPlaneTool::FreeRotateCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitPlaneTool::ResizeCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitPlaneTool *pt = (VisitPlaneTool *)it;
     pt->Resize(e, ctrl, shift, x, y);

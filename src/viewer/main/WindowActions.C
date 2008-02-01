@@ -1198,6 +1198,9 @@ SetWindowModeAction::ChoiceToggled(int i) const
 //    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
 //    Added support for Extents tool.
 //   
+//    Jeremy Meredith, Fri Feb  1 17:59:23 EST 2008
+//    Added Axis restriction tool.
+//
 // ****************************************************************************
 
 EnableToolAction::EnableToolAction(ViewerWindow *win) :
@@ -1223,6 +1226,8 @@ EnableToolAction::EnableToolAction(ViewerWindow *win) :
                 AddChoice(tool.c_str(), "Point tool", QPixmap(pointtool_xpm));
             else if(tool == "Extents")
                 AddChoice(tool.c_str(), "Extents tool", QPixmap(extentstool_xpm));
+            else if(tool == "AxisRestriction")
+                AddChoice(tool.c_str(), "Axis Restriction tool", QPixmap(extentstool_xpm));
             else
                 AddChoice(tool.c_str());
         }

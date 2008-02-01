@@ -43,10 +43,12 @@
 #include <VisWindowTypes.h>
 #include <VisWindowToolProxy.h>
 #include <avtToolInterface.h>
+#include <vector>
 
 // Forward declarations.
 class VisWindowColleagueProxy;
 class VisitInteractiveTool;
+class VisitAxisRestrictionTool;
 class VisitBoxTool;
 class VisitLineTool;
 class VisitPlaneTool;
@@ -97,6 +99,10 @@ class vtkHighlightActor2D;
 //   Mark Blair, Wed Aug 30 14:19:00 PDT 2006
 //   Added the extents tool.
 //
+//   Jeremy Meredith, Fri Feb  1 12:17:28 EST 2008
+//   Added the axis restriction tool.
+//   Added UpdatePlotList.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinTools : public VisWinColleague
@@ -115,6 +121,7 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
     virtual void     NoPlots();
     virtual void     UpdateView();
     virtual void     ReAddToolsToWindow();
+    virtual void     UpdatePlotList(std::vector<avtActor_p> &);
 
     bool             GetHotPoint(int x, int y, HotPoint &h) const;
     int              NumToolsEnabled() const;
@@ -145,12 +152,13 @@ class VISWINDOW_API VisWinTools : public VisWinColleague
     VisitInteractiveTool *tools[10];
     int                   numTools;
 
-    VisitBoxTool         *boxTool;
-    VisitLineTool        *lineTool;
-    VisitPlaneTool       *planeTool;
-    VisitPointTool       *pointTool;
-    VisitSphereTool      *sphereTool;
-    VisitExtentsTool     *extentsTool;
+    VisitBoxTool             *boxTool;
+    VisitLineTool            *lineTool;
+    VisitPlaneTool           *planeTool;
+    VisitPointTool           *pointTool;
+    VisitSphereTool          *sphereTool;
+    VisitExtentsTool         *extentsTool;
+    VisitAxisRestrictionTool *axisRestrictionTool;
 };
 
 #endif

@@ -280,6 +280,9 @@ class vtkUnsignedCharArray;
 //    Added lastAttsFromPlot plot attribute comparison vector.  Also removed
 //    BroadcastStateAndUpdate method.
 //   
+//    Jeremy Meredith, Fri Feb  1 18:07:16 EST 2008
+//    Added new value to callback used to pass the hotpoint's "data" field.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
@@ -345,33 +348,47 @@ class VISWINDOW_API VisitExtentsTool : public VisitInteractiveTool
     void RemoveAllActors();
 
     static void MoveLeftMarkOneAxisLeftButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void MoveRightMarkOneAxisLeftButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void MoveLeftMarkOneAxisRightButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void MoveRightMarkOneAxisRightButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void ShowAxisInfoAtLeftMarkIfOnButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void ShowAxisInfoAtRightMarkIfOnButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void ExpandBetweenMarkedAxesButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void UndoLastAxisSectionExpansionButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void ThresholdBetweenMarkedAxesOnlyIfOnButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void ShowAxisTitlesOnlyIfOnButtonCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void LeftAxisSelectionMarkCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void RightAxisSelectionMarkCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int ctrl, int shift,
+                  int x, int y, int);
     static void AxisSliderMinimumCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int crtl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int crtl, int shift,
+                  int x, int y, int);
     static void AxisSliderMaximumCallback(
-        VisitInteractiveTool *it, CB_ENUM e, int crtl, int shift, int x, int y);
+                  VisitInteractiveTool *it, CB_ENUM e, int crtl, int shift,
+                  int x, int y, int);
 
     void ButtonAction(CB_ENUM e, int ctrl, int shift, int x, int y, int buttonID);
     void PressButton(int buttonID);

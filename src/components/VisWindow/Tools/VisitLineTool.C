@@ -1232,7 +1232,7 @@ VisitLineTool::FullFrameOff()
 
 void
 VisitLineTool::TranslatePoint1Callback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+                                       int ctrl, int shift, int x, int y, int)
 {
     VisitLineTool *lt = (VisitLineTool *)it;
     lt->Translate(e, ctrl, shift, x, y, 0);
@@ -1240,7 +1240,7 @@ VisitLineTool::TranslatePoint1Callback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitLineTool::TranslatePoint2Callback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+                                       int ctrl, int shift, int x, int y, int)
 {
     VisitLineTool *lt = (VisitLineTool *)it;
     lt->Translate(e, ctrl, shift, x, y, 1);
@@ -1248,7 +1248,7 @@ VisitLineTool::TranslatePoint2Callback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitLineTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+                                 int ctrl, int shift, int x, int y, int)
 {
     VisitLineTool *lt = (VisitLineTool *)it;
     lt->Translate(e, ctrl, shift, x, y, 2);

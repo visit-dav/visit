@@ -273,6 +273,9 @@
 #    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 #    Added attributes for new axis array window mode.
 #
+#    Jeremy Meredith, Fri Feb  1 17:58:56 EST 2008
+#    Added AxisRestrictionAttributes.
+#
 ##############################################################################
 
 ##
@@ -292,6 +295,7 @@ SRC=    AnimationAttributes.C \
         AnnotationObject.C \
         AnnotationObjectList.C \
         AppearanceAttributes.C \
+        AxisRestrictionAttributes.C \
         AttributeGroup.C \
         AttributeSubject.C \
         AttributeSubjectMap.C \

@@ -859,7 +859,7 @@ VisitSphereTool::ReAddToWindow()
 
 void
 VisitSphereTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitSphereTool *pt = (VisitSphereTool *)it;
     pt->Translate(e, ctrl, shift, x, y);
@@ -867,7 +867,7 @@ VisitSphereTool::TranslateCallback(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitSphereTool::ResizeCallback1(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitSphereTool *pt = (VisitSphereTool *)it;
     activeResizeHotpoint = 1;
@@ -876,7 +876,7 @@ VisitSphereTool::ResizeCallback1(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitSphereTool::ResizeCallback2(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitSphereTool *pt = (VisitSphereTool *)it;
     activeResizeHotpoint = 2;
@@ -885,7 +885,7 @@ VisitSphereTool::ResizeCallback2(VisitInteractiveTool *it, CB_ENUM e,
 
 void
 VisitSphereTool::ResizeCallback3(VisitInteractiveTool *it, CB_ENUM e,
-    int ctrl, int shift, int x, int y)
+    int ctrl, int shift, int x, int y, int)
 {
     VisitSphereTool *pt = (VisitSphereTool *)it;
     activeResizeHotpoint = 3;

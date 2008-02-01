@@ -796,6 +796,9 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
 //
+//    Jeremy Meredith, Fri Feb  1 17:58:21 EST 2008
+//    Use actual values for extents, not normlized to 0..1.
+//
 // ****************************************************************************
 
 void
@@ -813,10 +816,16 @@ avtParallelCoordinatesFilter::SetupParallelCoordinates (int plotAxisNum)
     plotAxisMinima.push_back(plotAxisMin);
     plotAxisMaxima.push_back(curAxisMaxima[plotAxisNum]);
 
-    subrangeMinima.push_back(
-        plotAxisMin + plotAxisRange*curExtentMinima[plotAxisNum]);
-    subrangeMaxima.push_back(
-        plotAxisMin + plotAxisRange*curExtentMaxima[plotAxisNum]);
+
+    // the old way expected the extents to be limited in the range (0,1)
+    // but that's not very intuitive if you're setting them e.g. via
+    // the cli, so instead, use the actual extents.
+    subrangeMinima.push_back(curExtentMinima[plotAxisNum]);
+    subrangeMaxima.push_back(curExtentMaxima[plotAxisNum]);
+    //subrangeMinima.push_back(
+    //    plotAxisMin + plotAxisRange*curExtentMinima[plotAxisNum]);
+    //subrangeMaxima.push_back(
+    //    plotAxisMin + plotAxisRange*curExtentMaxima[plotAxisNum]);
 }
 
 

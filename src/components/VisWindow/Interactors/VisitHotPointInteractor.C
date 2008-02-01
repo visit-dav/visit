@@ -721,6 +721,9 @@ VisitHotPointInteractor::StopAxisArrayMode()
 //    Removed arguments to match vtk's new interactor api.  The values are
 //    now accessed directly from the RenderWindowInteractor. 
 //    
+//    Jeremy Meredith, Fri Feb  1 18:01:15 EST 2008
+//    Added new data value to hotpoints that is passed to callback.
+//
 // ****************************************************************************
 
 void
@@ -751,7 +754,8 @@ VisitHotPointInteractor::StartLeftButtonAction()
         {
             currentHotPoint.tool->SetLastLocation(x, y);
             (*currentHotPoint.callback)(currentHotPoint.tool,
-                                         CB_START, ctrl, shift, x, y);
+                                        CB_START, ctrl, shift, x, y,
+                                        currentHotPoint.data);
         }
     }
     else
@@ -795,6 +799,9 @@ VisitHotPointInteractor::StartLeftButtonAction()
 //    Removed arguments to match vtk's new interactor api.  The values are
 //    now accessed directly from the RenderWindowInteractor. 
 //
+//    Jeremy Meredith, Fri Feb  1 18:01:15 EST 2008
+//    Added new data value to hotpoints that is passed to callback.
+//
 // ****************************************************************************
 
 void
@@ -820,7 +827,8 @@ VisitHotPointInteractor::EndLeftButtonAction()
         if(currentHotPoint.callback != NULL && currentHotPoint.tool != NULL)
         {
             (*currentHotPoint.callback)(currentHotPoint.tool, CB_END,
-                                         ctrl, shift, x, y);
+                                        ctrl, shift, x, y,
+                                        currentHotPoint.data);
             currentHotPoint.tool->SetLastLocation(-1, -1);
         }
 
@@ -1029,6 +1037,9 @@ VisitHotPointInteractor::AbortMiddleButtonAction()
 //    Removed arguments to match vtk's new interactor api.  They are now
 //    accessed directly from the RenderWindowInteractor.
 //   
+//    Jeremy Meredith, Fri Feb  1 18:01:15 EST 2008
+//    Added new data value to hotpoints that is passed to callback.
+//
 // ****************************************************************************
 
 void
@@ -1049,7 +1060,8 @@ VisitHotPointInteractor::OnMouseMove()
             if(currentHotPoint.callback != NULL && currentHotPoint.tool != NULL)
             {
                 (*currentHotPoint.callback)(currentHotPoint.tool,
-                                         CB_MIDDLE, ctrl, shift, x, y);
+                                            CB_MIDDLE, ctrl, shift, x, y,
+                                            currentHotPoint.data);
                 currentHotPoint.tool->SetLastLocation(x, y);
             }
         }

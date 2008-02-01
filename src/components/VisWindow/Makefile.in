@@ -145,6 +145,9 @@
 #    Jeremy Meredith, Thu Jan 31 14:37:17 EST 2008
 #    Added VisWinAxesArray and NavigateAxisArray.
 #
+#    Jeremy Meredith, Fri Feb  1 18:06:42 EST 2008
+#    Added VisitAxisRestrictionTool and avtAxisRestrictionToolInterface.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -200,12 +203,14 @@ Proxies_src= \
   Proxies/VisWindowProtectionProxy.C
 Tools_src= \
   Tools/VisitInteractiveTool.C \
+  Tools/VisitAxisRestrictionTool.C \
   Tools/VisitBoxTool.C \
   Tools/VisitLineTool.C \
   Tools/VisitPlaneTool.C \
   Tools/VisitPointTool.C \
   Tools/VisitSphereTool.C \
   Tools/VisitExtentsTool.C \
+  Tools/avtAxisRestrictionToolInterface.C \
   Tools/avtBoxToolInterface.C \
   Tools/avtLineToolInterface.C \
   Tools/avtPlaneToolInterface.C \

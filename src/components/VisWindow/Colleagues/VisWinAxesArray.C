@@ -412,8 +412,6 @@ void
 VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
 {
     int nActors = list.size();
-    string x, y;
-    string lx, ly;
 
     // Find the highest-valued axis index for any variable
     int naxes = 0;

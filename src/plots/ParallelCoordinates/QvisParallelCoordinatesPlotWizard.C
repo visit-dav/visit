@@ -397,6 +397,8 @@ QvisParallelCoordinatesPlotWizard::CreateFinishPage(QFrame **f,
 // Creation:   January 31, 2008
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb  1 17:56:59 EST 2008
+//    Made limits be in terms of actual values, not normalized 0..1.
 //
 // ****************************************************************************
 
@@ -413,8 +415,8 @@ QvisParallelCoordinatesPlotWizard::InitializeParallelCoordinatesAttributes(
     axisNames.push_back(varName);
     axisMins.push_back(-1e+37);
     axisMaxs.push_back(+1e+37);
-    extMins.push_back(0.0);
-    extMaxs.push_back(1.0);
+    extMins.push_back(-1e+37);
+    extMaxs.push_back(+1e+37);
 
     parAxisAtts->SetOrderedAxisNames(axisNames);
     parAxisAtts->SetAxisMinima(axisMins);
