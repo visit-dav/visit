@@ -234,6 +234,9 @@ class     WindowAttributes;
 //    Removed unused method GetScaleMode, added separate scale modes for 2D
 //    and curve.  Added ScaleModeRequiresUpdate.
 //
+//    Hank Childs, Fri Feb  1 13:14:21 PST 2008
+//    Add new virtual method "UtilizeRenderingFilters".
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -338,6 +341,7 @@ class PLOTTER_API avtPlot
     virtual avtLegend_p        GetLegend(void) = 0;
 
     virtual int                GetSmoothingLevel() { return 0; }
+    virtual bool               UtilizeRenderingFilters(void) { return true; };
 
     virtual int                TargetTopologicalDimension(void) = 0;
 

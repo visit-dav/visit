@@ -476,6 +476,9 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 //    Tell the intermediate data object that it is not transient (we need it
 //    for queries).
 //
+//    Hank Childs, Fri Feb  1 13:14:21 PST 2008
+//    Make use of UtilizeRenderingFilters.
+//
 // ****************************************************************************
 
 avtDataObjectWriter_p
@@ -501,7 +504,8 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
     intermediateDataObject->SetTransientStatus(false);
     dob = ApplyRenderingTransformation(dob);
 
-    if (strcmp(dob->GetType(), "avtDataset") == 0)
+    if (UtilizeRenderingFilters() && 
+        strcmp(dob->GetType(), "avtDataset") == 0)
     {
         dob = ReduceGeometry(dob);
         dob = CompactTree(dob);
