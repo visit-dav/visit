@@ -24,8 +24,8 @@ SetActiveWindow(1)
 # I=Image, G=Geometry, C=Curve formats
 CFormats=[swa.CURVE, swa.POSTSCRIPT, swa.ULTRA]
 # PNG not yet working, re-enable it when it is fixed
-#IFormats=[swa.BMP, swa.JPEG, swa.PNG, swa.PPM, swa.RGB, swa.TIFF]
-IFormats=[swa.BMP, swa.JPEG, swa.PPM, swa.RGB, swa.TIFF]
+IFormats=[swa.BMP, swa.JPEG, swa.PNG, swa.PPM, swa.RGB, swa.TIFF]
+#IFormats=[swa.BMP, swa.JPEG, swa.PPM, swa.RGB, swa.TIFF]
 GFormats=[swa.STL, swa.OBJ, swa.VTK]
 
 a = AnnotationAttributes()
