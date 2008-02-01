@@ -267,6 +267,10 @@
 #     Eric Brugger, Fri Feb  1 08:57:04 PST 2008
 #     Changed the version to 1.8.0.
 #
+#     Hank Childs, Fri Feb  1 15:06:35 PST 2008
+#     Change MESA_TARGET from linux-x86 to linux, since linux-x86 does not
+#     appear to work anywhere.
+#
 # *****************************************************************************
 
 
@@ -301,12 +305,12 @@ elif [[ "$OPSYS" == "Linux" ]]; then
    export ARCH=${ARCH-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
    if [[ "$(uname -m)" == "i686" ]] ; then
-      export MESA_TARGET=${MESA_TARGET-"linux-x86"}
+      export MESA_TARGET=${MESA_TARGET-"linux"}
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
 ###   export MESA_TARGET=${MESA_TARGET-"linux-x86-64"}
-      export MESA_TARGET=${MESA_TARGET-"linux-x86"}
+      export MESA_TARGET=${MESA_TARGET-"linux"}
       QT_PLATFORM="linux-g++-64"
    elif [[ "$(uname -m)" == "ia64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -fPIC"
