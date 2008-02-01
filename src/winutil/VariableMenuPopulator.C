@@ -317,6 +317,10 @@ VariableMenuPopulator::ClearGroupingInfo()
 //   many times for the same "treat as time varying" file and we don't have
 //   to recreate menus each time; only when the variable lists change.
 //
+//    Dave Bremer, Thu Jan 31 17:52:55 PST 2008
+//    Small tweak to guard against a case in which the MapsOut are 
+//    requested from an avtSILSet, but the set goes out of scope and its maps
+//    out are deleted before this method is done using them.
 // ****************************************************************************
 
 bool
@@ -460,7 +464,8 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     for(i = 0; i < topSets.size(); ++i)
     {
         int tsIndex = topSets[i];
-        const intVector &maps = sil->GetSILSet(tsIndex)->GetMapsOut();
+        avtSILSet_p pTopset = sil->GetSILSet(tsIndex);
+        const intVector &maps = pTopset->GetMapsOut();
         for (int j = 0; j < maps.size(); ++j)
         {
             int idx = maps[j];
@@ -473,7 +478,8 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     for(i = 0; i < topSets.size(); ++i)
     {
         int tsIndex = topSets[i];
-        const intVector &maps = sil->GetSILSet(tsIndex)->GetMapsOut();
+        avtSILSet_p pTopset = sil->GetSILSet(tsIndex);
+        const intVector &maps = pTopset->GetMapsOut();
         string setName("(" + sil->GetSILSet(tsIndex)->GetName() + ")");
         for(int j = 0; j < maps.size(); ++j)
         {

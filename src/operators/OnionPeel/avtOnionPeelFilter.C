@@ -597,6 +597,10 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    Beef up logic to handle species selection.  We were turning those sets
 //    off, which resulted in all zeroes.
 //
+//    Dave Bremer, Thu Jan 31 17:52:55 PST 2008
+//    Small tweak to guard against a case in which the RealMapsOut are 
+//    requested from an avtSILSet, but the set goes out of scope and its maps
+//    out are deleted before this method is done using them.
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -661,7 +665,9 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
         unsigned int i;
 
         int topset = silr->GetTopSet();
-        const std::vector<int> &mapsOut = silr->GetSILSet(topset)->GetRealMapsOut();
+        avtSILSet_p pTopset = silr->GetSILSet(topset);
+        const std::vector<int> &mapsOut = pTopset->GetRealMapsOut();
+
         for (i = 0 ; i < mapsOut.size() ; i++)
         {
             avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
