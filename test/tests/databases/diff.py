@@ -3,7 +3,7 @@
 #
 #  Special args to launch VisIt for this test...
 #
-#  CLARGS: -cli -s ../bin/visitdiff.py -vdiff ../data/visitdiff_test_data/a/ubl_005.visit ../data/visitdiff_test_data/b/ubl_005.visit
+#  CLARGS: -cli -s ../src/bin/visitdiff.py -vdiff ../data/visitdiff_test_data/a/ubl_005.visit ../data/visitdiff_test_data/b/ubl_005.visit
 #
 #  Test Case:  diff.py 
 #
