@@ -765,6 +765,9 @@ avtSiloWriter::CloseFile(void)
 //    Cyrus Harrison, Tue Sep 11 10:16:11 PDT 2007
 //    Fixed node order for wedges.
 //
+//    Hank Childs, Fri Feb  1 09:15:25 PST 2008
+//    Re-order nodes for voxels.
+//
 // ****************************************************************************
 
 void
@@ -868,6 +871,16 @@ avtSiloWriter::WriteUnstructuredMesh(DBfile *dbfile, vtkUnstructuredGrid *ug,
             int tmp = zonelist[startOfZone+1];
             zonelist[startOfZone+1] = zonelist[startOfZone+3];
             zonelist[startOfZone+3] = tmp;
+        }
+        if (dim == 3 && (cell->GetCellType() == VTK_VOXEL))
+        {
+            int startOfZone = zonelist.size() - 8;
+            int tmp = zonelist[startOfZone+2];
+            zonelist[startOfZone+2] = zonelist[startOfZone+3];
+            zonelist[startOfZone+3] = tmp;
+            tmp = zonelist[startOfZone+6];
+            zonelist[startOfZone+6] = zonelist[startOfZone+7];
+            zonelist[startOfZone+7] = tmp;
         }
     }
     
