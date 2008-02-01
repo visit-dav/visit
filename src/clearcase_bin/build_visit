@@ -264,6 +264,9 @@
 #     Thomas R. Treadway, Fri Jan  4 10:23:18 PST 2008
 #     Linux defaults to Mesa-5.0, because of driver problems
 #
+#     Eric Brugger, Fri Feb  1 08:57:04 PST 2008
+#     Changed the version to 1.8.0.
+#
 # *****************************************************************************
 
 
@@ -451,7 +454,7 @@ if [[ "$VISIT_FILE" != "" ]] ; then
   USE_VISIT_FILE="yes"
   ON_USE_VISIT_FILE="on"
 fi
-export VISIT_VERSION=${VISIT_VERSION-"1.8"}
+export VISIT_VERSION=${VISIT_VERSION-"1.8.0"}
 export VISIT_FILE=${VISIT_FILE-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
