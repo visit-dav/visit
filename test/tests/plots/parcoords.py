@@ -72,10 +72,16 @@ Test("parcoords_03")
 p.orderedAxisNames = ("hardyglobal", "shepardglobal", "chromeVf", "radial")
 p.axisMinima = (0,0,0,0)
 p.axisMaxima = (0,0,0,0)
-p.extentMinima = (0,0,0,0)
-p.extentMaxima = (0,0,0,0)
+p.extentMinima = (-1e+37, -1e+37, -1e+37, -1e+37)
+p.extentMaxima = (+1e+37, +1e+37, +1e+37, +1e+37)
 p.drawLinesOnlyIfExtentsOn = 1
 SetPlotOptions(p)
 Test("parcoords_04")
+
+# Make sure the extents work for limiting the lines
+p.extentMinima = (5.7, -1e+37, -1e+37, -1e+37)
+p.extentMaxima = (5.8, +1e+37, +1e+37, +1e+37)
+SetPlotOptions(p)
+Test("parcoords_05")
 
 Exit()
