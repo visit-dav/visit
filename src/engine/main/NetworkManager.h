@@ -305,6 +305,10 @@ typedef void   (*ProgressCallback)(void *, const char *, const char *,int,int);
 //    Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //    Added bools to GetDBFromCache and StartNetwork to support to treat
 //    all databases as time varying
+//
+//    Hank Childs, Fri Feb  1 15:44:46 PST 2008
+//    Add an arguement to GetDBFromCache for loading plugins.
+//
 // ****************************************************************************
 
 class NetworkManager
@@ -318,7 +322,8 @@ class NetworkManager
     void          ClearNetworksWithDatabase(const std::string &);
 
     NetnodeDB*    GetDBFromCache(const string &filename, int time,
-                                 const char * = NULL, bool=false);
+                                 const char * = NULL, bool=false,
+                                 bool=false);
     void          StartNetwork(const std::string&, const std::string &,
                                const std::string &, int,
                                const CompactSILRestrictionAttributes &,

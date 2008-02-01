@@ -447,11 +447,16 @@ NetworkManager::ClearNetworksWithDatabase(const std::string &db)
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added treatAllDBsAsTimeVarying to GetSIL call
+//
+//    Hank Childs, Fri Feb  1 15:45:28 PST 2008
+//    Added argument for loading database plugins.
+//
 // ****************************************************************************
 
 NetnodeDB *
 NetworkManager::GetDBFromCache(const string &filename, int time,
-    const char *format, bool treatAllDBsAsTimeVarying)
+    const char *format, bool treatAllDBsAsTimeVarying, 
+    bool fileMayHaveUnloadedPlugin)
 {
     // If we don't have a load balancer, we're dead.
     if (loadBalancer == NULL)
@@ -501,6 +506,8 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
     debug3 << "Loading new database" << endl;
     TRY
     {
+        if (fileMayHaveUnloadedPlugin)
+             DatabasePluginManager::Instance()->LoadPluginsNow();
         avtDatabase *db = NULL;
         NetnodeDB *netDB = NULL;
         const char *filename_c = filename.c_str();
@@ -696,6 +703,10 @@ NetworkManager::GetDBFromCache(const string &filename, int time,
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Added treatAllDBsAsTimeVarying to GetSIL call.
+//
+//    Hank Childs, Fri Feb  1 15:48:01 PST 2008
+//    Add new Boolean argument to GetDBFromCache. 
+//
 // ****************************************************************************
 
 void
@@ -719,8 +730,10 @@ NetworkManager::StartNetwork(const string &format,
 
     // Start up the DataNetwork and add the database to it.
     workingNet = new DataNetwork;
+    bool fileMayHaveUnloadedPlugin = false;
     NetnodeDB *netDB = GetDBFromCache(filename, time, defaultFormat,
-                                      treatAllDBsAsTimeVarying);
+                                      treatAllDBsAsTimeVarying, 
+                                      fileMayHaveUnloadedPlugin);
     workingNet->SetNetDB(netDB);
     netDB->SetDBInfo(filename, leaf, time);
 
@@ -4422,13 +4435,24 @@ DumpImage(avtImage_p img, const char *fmt, bool allprocs)
 //  Programmer:  Hank Childs
 //  Creation:    August 26, 2005
 //
+//  Modifications:
+//
+//    Hank Childs, Fri Feb  1 15:49:59 PST 2008
+//    Added argument to GetDBFromCache to indicate we might not have loaded
+//    the right plugin.
+//
 // ****************************************************************************
 
 static ref_ptr<avtDatabase>
 GetDatabase(void *nm, const std::string &filename, int time,const char *format)
 {
     NetworkManager *nm2 = (NetworkManager *) nm;
-    NetnodeDB *db = nm2->GetDBFromCache(filename, time, format);
+    bool treatAllDBsAsTimeVarying = false;
+    // This database is being requested by an AVT filter (likely a CMFE 
+    // expression), so we have no idea if the right plugin has been loaded.
+    bool fileMayHaveUnloadedPlugin = true;
+    NetnodeDB *db = nm2->GetDBFromCache(filename, time, format,
+                          treatAllDBsAsTimeVarying, fileMayHaveUnloadedPlugin);
     return db->GetDB();
 }
 
