@@ -22,4 +22,4 @@ bash ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
 # Uncomment if you want to grab the committing user's email.
 #email=`sh ${REPOS}/hooks/output_email.sh ${REPOS} ${REV}`
 
-runtest_sh "state_update.sh"
+run_sh "state_update.sh"
