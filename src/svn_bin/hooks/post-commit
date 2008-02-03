@@ -9,3 +9,5 @@ REV="$2"
 # background it -- this might take some time, and shouldnt slow down the
 # users commit.
 bash ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
+
+email=`sh ${REPOS}/hooks/output_email.sh ${REPOS} ${REV}`
