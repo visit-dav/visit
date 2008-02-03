@@ -6,8 +6,20 @@
 REPOS="$1"
 REV="$2"
 
+function run_sh()
+{
+   SCRIPT="$@"
+   bash ${REPOS}/hooks/${SCRIPT} ${REPOS} ${REV}
+   if [ $? != 0 ]; then
+      exit 1
+   fi
+}
+
 # background it -- this might take some time, and shouldnt slow down the
 # users commit.
 bash ${REPOS}/hooks/ciabot_svn.sh "${REPOS}" "${REV}" &
 
-email=`sh ${REPOS}/hooks/output_email.sh ${REPOS} ${REV}`
+# Uncomment if you want to grab the committing user's email.
+#email=`sh ${REPOS}/hooks/output_email.sh ${REPOS} ${REV}`
+
+runtest_sh "state_update.sh"
