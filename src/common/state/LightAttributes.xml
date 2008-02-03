@@ -28,8 +28,8 @@
     <Field name="brightness" label="brightness" type="double">
       1.000000
     </Field>
-    <Function name="operator =" user="false" member="true"> 
+    <Function name="operator =" user="false" member="true">
     </Function>
-    <Function name="SetEnabledFlag" user="false" member="true"> 
+    <Function name="SetEnabledFlag" user="false" member="true">
     </Function>
   </Attribute>
