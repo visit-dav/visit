@@ -29,7 +29,7 @@
 #####
 #
 # Script file location: location of the script relative to the repository root.
-SCRIPTFILE="scripts/email.sh"
+SCRIPTFILE="trunk/src/clearcase_bin/nersc_username_to_email"
 # What should we use for the temporary file?
 TMPFILE="/tmp/email.sh"
 #### Program locations.
@@ -62,5 +62,5 @@ if test "x$?" = "x1"; then
     error "email script does not exist in repository."
 fi
 address=`${BASH} ${TMPFILE} $author`
-/bin/rm -f ${TMPFILE}
-echo "${address}"
+${RM} -f ${TMPFILE}
+/bin/echo "${address}"

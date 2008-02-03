@@ -20,6 +20,7 @@ files="${files} pre-commit"
 files="${files} post-commit"
 files="${files} exceptions.py"
 files="${files} ciabot_svn.sh"
+files="${files} output_email.sh"
 for f in ${files} ; do
         if test -f ${f} ; then
             /bin/echo "copying/fixing ${f}..."
