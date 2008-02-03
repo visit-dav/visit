@@ -53,10 +53,15 @@ class     ExprPipelineState;
 //  Class: avtArrayDecomposeFilter
 //
 //  Purpose:
-//      Composes scalar variables into an array.
+//      Extract a scalar variables from an array.
 //          
 //  Programmer: Hank Childs
 //  Creation:   July 21, 2005
+//
+//  Modifications:
+//
+//    Hank Childs, Sun Feb  3 13:43:20 PST 2008
+//    Declare the variable dimension.
 //
 // ****************************************************************************
 
@@ -79,6 +84,8 @@ class EXPRESSION_API avtArrayDecomposeFilter
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual void              PreExecute(void);
+    virtual int               GetVariableDimension(void) { return 1; };
+    virtual avtVarType        GetVariableType(void) { return AVT_SCALAR_VAR; };
 };
 
 
