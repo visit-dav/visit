@@ -2143,6 +2143,10 @@ QvisFileOpenWindow::UpdateFileFormatComboBox()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 23, 2008
 //
+//  Modifications:
+//   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
+//   Resolved AIX linking error w/ auto std::string to QString conversion.
+//
 // ****************************************************************************
 void
 QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
@@ -2151,7 +2155,7 @@ QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
     FileOpenOptions *foo = GetViewerState()->GetFileOpenOptions();
     for (int i=0; i<foo->GetNumOpenOptions(); i++)
     {
-        if (foo->GetTypeNames()[i] == format)
+        if (foo->GetTypeNames()[i].c_str() == format)
         {
             DBOptionsAttributes &opts = foo->GetOpenOptions(i);
             QvisDBOptionsDialog *optsdlg = new QvisDBOptionsDialog(&opts, NULL,
@@ -2185,6 +2189,10 @@ QvisFileOpenWindow::setDefaultOptionsForFormatButtonClicked()
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 23, 2008
 //
+//  Modifications:
+//   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
+//   Resolved AIX linking error w/ auto std::string to QString conversion.
+//
 // ****************************************************************************
 void
 QvisFileOpenWindow::fileFormatChanged(const QString &format)
@@ -2193,7 +2201,7 @@ QvisFileOpenWindow::fileFormatChanged(const QString &format)
     FileOpenOptions *opts = GetViewerState()->GetFileOpenOptions();
     for (int i=0; i<opts->GetNumOpenOptions(); i++)
     {
-        if (opts->GetTypeNames()[i] == format)
+        if (opts->GetTypeNames()[i].c_str() == format)
         {
             if (opts->GetOpenOptions(i).GetNumberOfOptions() > 0)
             {
