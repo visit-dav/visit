@@ -96,12 +96,15 @@
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
 //
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Some more distillation and related cleanup.
+//
 // ****************************************************************************
 
-avtParallelCoordinatesFilter::avtParallelCoordinatesFilter(ParallelCoordinatesAttributes &atts)
+avtParallelCoordinatesFilter::avtParallelCoordinatesFilter(
+                                           ParallelCoordinatesAttributes &atts)
 {
     parCoordsAtts = atts;
-    parallelRank = PAR_Rank();
 }
 
 
@@ -127,36 +130,6 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 
 
 // ****************************************************************************
-//  Method: avtParallelCoordinatesFilter::VerifyInput
-//
-//  Purpose: Verifies that the input is 3D data, throws an exception if not.
-//
-//  Programmer: Mark Blair
-//  Creation:   Mon Mar 27 18:24:00 PST 2006
-//
-//  Modifications:
-//    Mark Blair, Fri Feb 23 12:19:33 PST 2007
-//    Now accepts input data of any dimension.
-//
-//    Jeremy Meredith, Thu Jan 31 13:56:50 EST 2008
-//    Adapted from Parallel Axis plot and repurposed into this new
-//    Parallel Coordinates plot.
-//
-// ****************************************************************************
- 
-void
-avtParallelCoordinatesFilter::VerifyInput(void)
-{
-/*
-    if  (GetInput()->GetInfo().GetAttributes().GetSpatialDimension() != 3)
-    {
-        EXCEPTION2(InvalidDimensionsException, "ParallelCoordinates", " 3-D ");
-    }
- */
-}
-
-
-// ****************************************************************************
 //  Method: avtParallelCoordinatesFilter::PerformRestriction
 //
 //  Purpose: Restrict input domains if an interval tree is available.  Also set
@@ -172,6 +145,9 @@ avtParallelCoordinatesFilter::VerifyInput(void)
 //    Jeremy Meredith, Thu Jan 31 13:56:50 EST 2008
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
+//
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Some more distillation and related cleanup.
 //
 // ****************************************************************************
 
@@ -205,69 +181,6 @@ avtParallelCoordinatesFilter::PerformRestriction(avtPipelineSpecification_p in_s
     avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
     
     outSpec->NoDynamicLoadBalancing();
-    
-/* Add this interval tree code eventually (mb)
-    bool atLeastOneTree = false;
-    avtIntervalTree *it;
-    int varDomNum, curDomNum, curDomain;
-    intVector varDomains;
-    intVector curDomains;
-    intVector outDomains;
-
-    doubleVector curExtentMinima = parCoordsAtts.GetExtentMinima();
-    doubleVector curExtentMaxima = parCoordsAtts.GetExtentMaxima();
-    double extentMin, extentMax;
-
-    for (axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++)
-    {
-        axisVarName = curAxisVarNames[axisNum];
-        
-        if ((it = GetMetaData()->GetDataExtents(axisVarName.c_str())) != NULL)
-        {
-            extentMin = curExtentMinima[axisNum];
-            extentMax = curExtentMaxima[axisNum];
-
-            if (atLeastOneTree)
-            {
-                it->GetElementsListFromRange(&extentMin, &extentMax, varDomains);
-
-                for (curDomNum = 0; curDomNum < curDomains.size(); curDomNum++)
-                {
-                    if ((curDomain = curDomains[curDomNum]) != -1)
-                    {
-                        for (varDomNum=0; varDomNum<varDomains.size(); varDomNum++)
-                        {
-                            if (varDomains[varDomNum] == curDomain) break;
-                        }
-
-                        if (varDomNum >= varDomains.size())
-                        {
-                            curDomains[curDomNum] = -1;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                it->GetElementsListFromRange(&extentMin, &extentMax, curDomains);
-                atLeastOneTree = true;
-            }
-        }
-    }
-
-    if (atLeastOneTree)
-    {
-        for (curDomNum = 0; curDomNum < curDomains.size(); curDomNum++)
-        {
-            if (curDomains[curDomNum] != -1)
-            {
-                outDomains.push_back(curDomains[curDomNum]);
-            }
-        }
-
-        outSpec->GetDataSpecification()->GetRestriction()->RestrictDomains(outDomains);
-    }
-*/
 
     return outSpec;
 }
@@ -297,6 +210,9 @@ avtParallelCoordinatesFilter::PerformRestriction(avtPipelineSpecification_p in_s
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
 //
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Some more distillation and related cleanup.
+//
 // *****************************************************************************
 
 void
@@ -304,8 +220,6 @@ avtParallelCoordinatesFilter::PreExecute(void)
 {
     avtDatasetToDatasetFilter::PreExecute();
 
-    domainCount = GetInputDataTree()->GetNumberOfLeaves();
-    
     if (!parCoordsAtts.AttributesAreConsistent())
     {
         debug3 << "PCP/aPAF/PE1: ParallelCoordinates plot attributes are inconsistent."
@@ -321,6 +235,7 @@ avtParallelCoordinatesFilter::PreExecute(void)
     sendNullOutput = false;
 
     ComputeCurrentDataExtentsOverAllDomains();
+    InitializeDataTupleInput();
     
     if (sendNullOutput) return;
     
@@ -468,6 +383,9 @@ avtParallelCoordinatesFilter::PostExecute(void)
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
 //
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Some more distillation and related cleanup.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -575,24 +493,11 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
         varComponentCounts.push_back(dataArray->GetNumberOfComponents());
     }
     
-    InitializePlotAtts();
-
-    for (axisNum = 0; axisNum < axisCount; axisNum++)
-    {
-        SetupParallelCoordinates(axisNum);
-    }
 
     floatVector inputTuple = floatVector(axisCount);
     
-    InitializeDataTupleInput();
     InitializeOutputDataSets();
-    
-    bool extentsApplied = false;
-    for (int axisID = 0; axisID < axisCount; axisID++)
-    {
-        if (applySubranges[axisID])
-            extentsApplied = true;
-    }
+    outputCurveCount = 0;
 
     bool drawLines = false;
     if (parCoordsAtts.GetDrawLines() &&
@@ -775,61 +680,6 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 
 
 // ****************************************************************************
-//  Method: avtParallelCoordinatesFilter::SetupParallelCoordinates
-//
-//  Purpose: Set up parallel axis plot data associated with one of plot's axes.
-//
-//  Notes: Adapted from more general "parallel coordinate plot" package developed
-//         earlier.
-//
-//  Programmer: Mark Blair
-//  Creation:   Thu Jun  8 17:18:00 PDT 2006
-//
-//  Modifications:
-//    Mark Blair, Wed Dec 20 17:52:01 PST 2006
-//    Added support for non-uniform axis spacing.
-//
-//    Mark Blair, Fri Feb 23 12:19:33 PST 2007
-//    Removed the aesthetic 5% margin between data extrema and axis extrema.
-//
-//    Jeremy Meredith, Thu Jan 31 13:56:50 EST 2008
-//    Adapted from Parallel Axis plot and repurposed into this new
-//    Parallel Coordinates plot.
-//
-//    Jeremy Meredith, Fri Feb  1 17:58:21 EST 2008
-//    Use actual values for extents, not normlized to 0..1.
-//
-// ****************************************************************************
-
-void
-avtParallelCoordinatesFilter::SetupParallelCoordinates (int plotAxisNum)
-{
-    const stringVector curAxisVarNames   = parCoordsAtts.GetOrderedAxisNames();
-    const doubleVector curAxisMinima     = parCoordsAtts.GetAxisMinima();
-    const doubleVector curAxisMaxima     = parCoordsAtts.GetAxisMaxima();
-    const doubleVector curExtentMinima   = parCoordsAtts.GetExtentMinima();
-    const doubleVector curExtentMaxima   = parCoordsAtts.GetExtentMaxima();
-
-    double plotAxisMin   = curAxisMinima[plotAxisNum];
-    double plotAxisRange = curAxisMaxima[plotAxisNum] - plotAxisMin;
-
-    plotAxisMinima.push_back(plotAxisMin);
-    plotAxisMaxima.push_back(curAxisMaxima[plotAxisNum]);
-
-
-    // the old way expected the extents to be limited in the range (0,1)
-    // but that's not very intuitive if you're setting them e.g. via
-    // the cli, so instead, use the actual extents.
-    subrangeMinima.push_back(curExtentMinima[plotAxisNum]);
-    subrangeMaxima.push_back(curExtentMaxima[plotAxisNum]);
-    //subrangeMinima.push_back(
-    //    plotAxisMin + plotAxisRange*curExtentMinima[plotAxisNum]);
-    //subrangeMaxima.push_back(
-    //    plotAxisMin + plotAxisRange*curExtentMaxima[plotAxisNum]);
-}
-
-
-// *****************************************************************************
 //  Method: avtParallelCoordinatesPlot::ComputeCurrentDataExtentsOverAllDomains
 //
 //  Purpose: Computes extent of each axis's scalar variable.
@@ -842,7 +692,10 @@ avtParallelCoordinatesFilter::SetupParallelCoordinates (int plotAxisNum)
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
 //
-// *****************************************************************************
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Some more distillation and related cleanup.
+//
+// ****************************************************************************
 
 void
 avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
@@ -857,78 +710,44 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
         return;
     }
 
-    doubleVector curAxisMinima   = parCoordsAtts.GetAxisMinima();
-    doubleVector curAxisMaxima   = parCoordsAtts.GetAxisMaxima();
+    plotAxisMinima.resize(axisCount);
+    plotAxisMaxima.resize(axisCount);
 
     int axisNum;
-    std::string axisVarName;
-    double dataAverage;
-    double *axisMinimum, *axisMaximum;
-    double varDataExtent[2];
 
     for (axisNum = 0; axisNum < axisCount; axisNum++)
     {
-        axisVarName = curAxisVarNames[axisNum];
+        std::string axisVarName = curAxisVarNames[axisNum];
 
+        double varDataExtent[2];
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
         GetDataExtents(varDataExtent, axisVarName.c_str());
-
         outAtts.GetCumulativeTrueDataExtents(axisVarName.c_str())->Set(varDataExtent);
         outAtts.SetUseForAxis(axisNum, axisVarName.c_str());
 
-        curAxisMinima[axisNum] = varDataExtent[0];
-        curAxisMaxima[axisNum] = varDataExtent[1];
+        plotAxisMinima[axisNum] = varDataExtent[0];
+        plotAxisMaxima[axisNum] = varDataExtent[1];
     }
 
-    for (axisNum = 0; axisNum < curAxisMinima.size(); axisNum++)
+    for (axisNum = 0; axisNum < plotAxisMinima.size(); axisNum++)
     {
-        axisMinimum = &curAxisMinima[axisNum];
-        axisMaximum = &curAxisMaxima[axisNum];
+        double &axisMinimum = plotAxisMinima[axisNum];
+        double &axisMaximum = plotAxisMaxima[axisNum];
 
-        if (fabs(*axisMinimum) < 1e-20) *axisMinimum = 0.0;
-        if (fabs(*axisMaximum) < 1e-20) *axisMaximum = 0.0;
+        if (fabs(axisMinimum) < 1e-20)
+            axisMinimum = 0.0;
+        if (fabs(axisMaximum) < 1e-20)
+            axisMaximum = 0.0;
 
-        if (fabs(*axisMaximum-*axisMinimum) < 1e-20)
+        if (fabs(axisMaximum - axisMinimum) < 1e-20)
         {
-            dataAverage = (*axisMinimum + *axisMaximum) * 0.5;
-            *axisMinimum = dataAverage - 1e-20;
-            *axisMaximum = dataAverage + 1e-20;
+            double dataAverage = (axisMinimum + axisMaximum) * 0.5;
+            axisMinimum = dataAverage - 1e-20;
+            axisMaximum = dataAverage + 1e-20;
         }
     }
-    
-    parCoordsAtts.SetAxisMinima(curAxisMinima);
-    parCoordsAtts.SetAxisMaxima(curAxisMaxima);
 }
 
-
-
-// *****************************************************************************
-// Method: avtParallelCoordinatesFilter::InitializePlotAtts
-//
-// Purpose: Initializes general attributes of the parallel axis plot.
-//
-// Notes: Adapted from more general "parallel coordinate plot" package developed
-//        earlier.
-//
-// Programmer: Mark Blair
-// Creation:   Thu Jun  8 17:18:00 PDT 2006
-//
-// Modifications:
-//    Mark Blair, Wed Dec 20 17:52:01 PST 2006
-//    Added support for non-uniform axis spacing.
-//
-//    Jeremy Meredith, Thu Jan 31 13:56:50 EST 2008
-//    Adapted from Parallel Axis plot and repurposed into this new
-//    Parallel Coordinates plot.
-//
-// *****************************************************************************
-
-void
-avtParallelCoordinatesFilter::InitializePlotAtts()
-{
-    plotAxisMinima.clear(); plotAxisMaxima.clear();
-    subrangeMinima.clear(); subrangeMaxima.clear();
-}
 
 
 // *****************************************************************************
@@ -957,57 +776,32 @@ avtParallelCoordinatesFilter::InitializePlotAtts()
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
 //
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Some more distillation and related cleanup.
+//
 // *****************************************************************************
 
 void
 avtParallelCoordinatesFilter::InitializeDataTupleInput()
 {
-    double plotWidth = axisCount-1;
-
-    double axisHeight = 1;
-
-    dataTransforms.clear();
-
-    int axisNum;
-    double axisScale;
-    doubleVector *dataTransform;
-
-    for (axisNum = 0; axisNum < axisCount; axisNum++)
-    {
-        dataTransform = new doubleVector;
-
-        axisScale = axisHeight / (plotAxisMaxima[axisNum] - plotAxisMinima[axisNum]);
-
-        dataTransform->push_back(plotWidth*double(axisNum)/double(axisCount-1));
-        dataTransform->push_back(axisScale);
-        dataTransform->push_back(0 - axisScale*plotAxisMinima[axisNum]);
-
-        dataTransforms.push_back(*dataTransform);
-    }
-
     applySubranges.clear();
-
-    for (axisNum = 0; axisNum < axisCount; axisNum++)
+    extentsApplied = false;
+    for (int axisNum = 0; axisNum < axisCount; axisNum++)
     {
-        applySubranges.push_back(false);
-    }
-
-    double axisSpan, axisMinSpan, axisMaxSpan;
-
-    for (axisNum = 0; axisNum < axisCount; axisNum++)
-    {
+        double axisSpan, axisMinSpan, axisMaxSpan;
         axisSpan = plotAxisMaxima[axisNum] - plotAxisMinima[axisNum];
 
-        axisMinSpan = subrangeMinima[axisNum] - plotAxisMinima[axisNum];
-        axisMaxSpan = plotAxisMaxima[axisNum] - subrangeMaxima[axisNum];
+        axisMinSpan = parCoordsAtts.GetExtentMinima()[axisNum] -
+                      plotAxisMinima[axisNum];
+        axisMaxSpan = plotAxisMaxima[axisNum] -
+                      parCoordsAtts.GetExtentMaxima()[axisNum];
 
-        if ((axisMinSpan/axisSpan > 0.0001) || (axisMaxSpan/axisSpan > 0.0001))
-        {
-            applySubranges[axisNum] = true;
-        }
+        bool applySubrange = (axisMinSpan/axisSpan > 0.0001) ||
+                             (axisMaxSpan/axisSpan > 0.0001);
+
+        applySubranges.push_back(applySubrange);
+        extentsApplied |= applySubrange;
     }
-    
-    outputCurveCount = 0;
 }
 
 
@@ -1072,6 +866,9 @@ avtParallelCoordinatesFilter::InitializeOutputDataSets()
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
 //
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Some more distillation and related cleanup.
+//
 // *****************************************************************************
 
 void
@@ -1079,7 +876,6 @@ avtParallelCoordinatesFilter::InputDataTuple(const floatVector &inputTuple)
 {
     int axisID;
     double plotAxisMin, plotAxisMax, inputCoord;
-    doubleVector dTrans;
 
     float outputCoords[3];
     outputCoords[2] = 0.0;
@@ -1088,8 +884,10 @@ avtParallelCoordinatesFilter::InputDataTuple(const floatVector &inputTuple)
     {
         if (applySubranges[axisID])
         {
-            if (inputTuple[axisID] < subrangeMinima[axisID]) break;
-            if (inputTuple[axisID] > subrangeMaxima[axisID]) break;
+            if (inputTuple[axisID] < parCoordsAtts.GetExtentMinima()[axisID])
+                break;
+            if (inputTuple[axisID] > parCoordsAtts.GetExtentMaxima()[axisID])
+                break;
         }
     }
     
@@ -1105,10 +903,8 @@ avtParallelCoordinatesFilter::InputDataTuple(const floatVector &inputTuple)
         else if (inputCoord > plotAxisMax)
             inputCoord = plotAxisMax;
 
-        dTrans = dataTransforms[axisID];
-
-        outputCoords[0] = (float)dTrans[0];
-        outputCoords[1] = (float)(dTrans[1]*inputCoord + dTrans[2]);
+        outputCoords[0] = axisID;
+        outputCoords[1] = (inputCoord-plotAxisMin)/(plotAxisMax-plotAxisMin);
         
         dataCurvePoints->InsertNextPoint(outputCoords);
     }
@@ -1233,6 +1029,9 @@ avtParallelCoordinatesFilter::DrawDataCurves()
 //    Jeremy Meredith, Thu Jan 31 13:56:50 EST 2008
 //    Adapted from Parallel Axis plot and repurposed into this new
 //    Parallel Coordinates plot.
+//
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Some more distillation and related cleanup.
 // ****************************************************************************
 
 void
@@ -1298,8 +1097,8 @@ avtParallelCoordinatesFilter::DrawContext()
             float val = varmin+part*((varmax-varmin)/float(nparts));
 
             float pt[3];
-            pt[0] = dataTransforms[axisNum][0];
-            pt[1] = dataTransforms[axisNum][1]*val+dataTransforms[axisNum][2];
+            pt[0] = axisNum;
+            pt[1] = (val-varmin)/(varmax-varmin);
             pt[2] = 0.0;
             for (int i = 0 ; i < PCP_CTX_BRIGHTNESS_LEVELS ; i++)
             {

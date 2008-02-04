@@ -69,6 +69,8 @@ class vtkPoints;
 //        earlier version of Mark Blair's ParallelAxis plot.
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
+//    Cleaned up some unused things and other refactoring.
 //
 // ****************************************************************************
 
@@ -94,15 +96,12 @@ protected:
     virtual void                RefashionDataObjectInfo(void);
     virtual void                PreExecute(void);
     virtual void                PostExecute(void);
-    virtual void                VerifyInput(void);
 
     void                        CreateLabels(void);
 
 private:
-    void                        SetupParallelCoordinates (int plotAxisNum);
     void                        ComputeCurrentDataExtentsOverAllDomains();
 
-    void                        InitializePlotAtts();
     void                        InitializeDataTupleInput();
     void                        InitializeOutputDataSets();
     void                        InputDataTuple(const floatVector &inputTuple);
@@ -117,29 +116,19 @@ private:
     ParallelCoordinatesAttributes parCoordsAtts;
     
     bool                        sendNullOutput;
-    
-    int                         parallelRank;
 
     stringVector                curveAndAxisLabels;
     stringVector                contextLabels;
 
-    int                         domainCount;
-
     intVector                   varTupleIndices;
-    
-    doubleVector                axisAttsArray;
 
     int                         axisCount;
 
-    doubleVector                plotAxisXPositions;
-    doubleVector                plotAxisMinima;
-    doubleVector                plotAxisMaxima;
-    doubleVector                subrangeMinima;
-    doubleVector                subrangeMaxima;
+    doubleVector                axisMinima;
+    doubleVector                axisMaxima;
     
     boolVector                  applySubranges;
-
-    std::vector<doubleVector>   dataTransforms;
+    bool                        extentsApplied;
 
     int                         outputCurveCount;
 

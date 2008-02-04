@@ -185,8 +185,18 @@ bool
 ParallelCoordinatesAttributes::ChangesRequireRecalculation(
     const ParallelCoordinatesAttributes &obj)
 {
-
-    return true;
+    if (extentMinima != obj.extentMinima ||
+        extentMaxima != obj.extentMaxima ||
+        drawLines != obj.drawLines ||
+        drawContext != obj.drawContext ||
+        drawLinesOnlyIfExtentsOn != obj.drawLinesOnlyIfExtentsOn ||
+        contextNumPartitions != obj.contextNumPartitions ||
+        contextGamma != obj.contextGamma ||
+        orderedAxisNames != obj.orderedAxisNames)
+    {
+        return true;
+    }
+    return false;
 }
 
 Function: CopyAttributes
