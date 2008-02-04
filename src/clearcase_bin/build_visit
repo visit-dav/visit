@@ -48,7 +48,7 @@
 #          Python	Python-2.5.tgz
 #          VTK		vtk-5.0.0c.tar.gz
 #          CMake	cmake-2.4.5.tar.gz
-#          Silo		silo060605.sh          
+#          Silo		silo-4.6.1.tar.gz
 #
 #        The following optional libraries need to be in the current directory
 #        to be built. You must explicitly select which option library to
@@ -56,16 +56,21 @@
 #        the tarballs don't exist they will not be built or downloaded
 #           Library  Version  Source Tarball Name    Command Option
 #           Boxlib   2.5      boxlib.tar.gz          -b
+#           CCMIO    2.6.1    libccmio-2.6.1.tar.gz  -C
 #           CFITSIO  3006     cfitsio3006.tar.gz     -f
 #           CGNS     2.4.3    cgnslib_2.4-3.tar.gz   -c
 #           ExodusII 4.46     exodusii-4.46.tar.gz   -e
 #           GDAL     1.3.2    gdal-1.3.2.tar.gz      -g (no AIX)
-#           H5part   1.3.3    H5Part-20070711.tar.gz -r
+#           H5part   1.4.0    H5Part-1.4.0.tar.gz    -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
 #           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
-#           Mili     1.09     mili-1.10a.tar.gz      -m
+#           Mili     1.09     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
 #           szip     2.1      szip-2.1.tar.gz
+#
+#         Experimental (interal)
+#           ITAPS             ITAPS-MOAB-26Jun07.tar.gz -I
+#           ViSUS             visus_26Feb07.tar.gz      -V
 #
 #   Layout:
 #     Section 1:                    setting up inputs/environment variables
@@ -89,6 +94,7 @@
 #     Function 8.8, build_boxlib:   build Boxlib
 #     Function 8.9, build_cfitsio:  build CFITSIO
 #     Function 8.10, build_h5part:  build H5Part
+#     Function 8.11, build_ccmio:   build CCMIO
 #     Function 8, build_silo:       build Silo
 #     Function 9, build_hostconf:   build the config-site/host.conf file
 #     Function 9.1, build_visit:    build the VisIt source code
@@ -269,11 +275,18 @@
 #
 #     Hank Childs, Fri Feb  1 15:06:35 PST 2008
 #     Change MESA_TARGET from linux-x86 to linux, since linux-x86 does not
-#     appear to work anywhere.
+#
+#     Thomas R. Treadway, Fri Feb  1 15:52:08 PST 2008
+#     Updated Silo release to 4.6.1
+#     Updated H5Part release to 1.4.0
+#     Added --enable-slivr support
+#     Added support for CCMIO library
+#     Hooks for ITAPS, and ViSUS libraries, but no implementation
+#     Modified the third party untar behavior
+#
 #
 # *****************************************************************************
-
-
+#
 # *************************************************************************** #
 #                       Section 1, setting up inputs                          #
 # --------------------------------------------------------------------------- #
@@ -294,6 +307,12 @@ if [[ "$OPSYS" == "Darwin" ]]; then
 # Check for Panther, because MACOSX_DEPLOYMENT_TARGET will default to 10.1
    if (( ${VER%%.*} < 8 )) ; then
       export MACOSX_DEPLOYMENT_TARGET=10.3
+   elif [[ ${VER%%.*} == 8 ]] ; then
+      export MACOSX_DEPLOYMENT_TARGET=10.4
+   elif [[ ${VER%%.*} == 9 ]] ; then
+      export MACOSX_DEPLOYMENT_TARGET=10.5
+   else
+      export MACOSX_DEPLOYMENT_TARGET=10.5
    fi
    export C_COMPILER=${C_COMPILER-"gcc"}
    export CXX_COMPILER=${CXX_COMPILER-"g++"}
@@ -305,11 +324,12 @@ elif [[ "$OPSYS" == "Linux" ]]; then
    export ARCH=${ARCH-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
    export SO_EXT="so"
    if [[ "$(uname -m)" == "i686" ]] ; then
+###   export MESA_TARGET=${MESA_TARGET-"linux-x86"} # Mesa-6.x
       export MESA_TARGET=${MESA_TARGET-"linux"}
    elif [[ "$(uname -m)" == "x86_64" ]] ; then
       C_OPT_FLAGS="$C_OPT_FLAGS -m64 -fPIC"
       CXX_OPT_FLAGS="$CXX_OPT_FLAGS -m64 -fPIC"
-###   export MESA_TARGET=${MESA_TARGET-"linux-x86-64"}
+###   export MESA_TARGET=${MESA_TARGET-"linux-x86-64"} # Mesa-6.x
       export MESA_TARGET=${MESA_TARGET-"linux"}
       QT_PLATFORM="linux-g++-64"
    elif [[ "$(uname -m)" == "ia64" ]] ; then
@@ -431,6 +451,14 @@ export DO_SILO="yes"
 export ON_SILO="on"
 export DO_SZIP="no"
 export ON_SZIP="off"
+export DO_CCMIO="no"
+export ON_CCMIO="off"
+export DO_ITAPS="no"
+export ON_ITAPS="off"
+export DO_SLIVR="no"
+export ON_SLIVR="off"
+export DO_VISUS="no"
+export ON_VISUS="off"
 GRAPHICAL="yes"
 ON_GRAPHICAL="on"
 verify="no"
@@ -463,9 +491,12 @@ export VISIT_FILE=${VISIT_FILE-"visit${VISIT_VERSION}.tar.gz"}
 
 export VTK_FILE=${VTK_FILE-"vtk-5.0.0c.tar.gz"}
 export VTK_VERSION=${VTK_VERSION-"5.0.0c"}
+export VTK_DIR=${VTK_DIR-"VTK"}
 
 export CMAKE_FILE=${CMAKE_FILE-"cmake-2.4.5.tar.gz"}
 export CMAKE_VERSION=${CMAKE_VERSION-"2.4.5"}
+export CMAKE_DIR=${CMAKE_DIR-"cmake-2.4.5"}
+
 if [[ "$OPSYS" == "Linux" ]]; then
 export MESA_FILE=${MESA_FILE-"Mesa-5.0-mangled.tar.gz"}
 export MESA_VERSION=${MESA_VERSION-"5.0"}
@@ -482,6 +513,7 @@ export PYTHON_VERSION=${PYTHON_VERSION-"2.5"}
 # Need this for the dylib build
 export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION-"2.5"}
 export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
+export PYTHON_DIR=${PYTHON_DIR-"Python-$PYTHON_VERSION"}
 
 if [[ "$OPSYS" == "Darwin" ]] ; then
    export QT_FILE=${QT_FILE-"qt-mac-free-3.3.8.tar.gz"}
@@ -490,55 +522,82 @@ else
    export QT_FILE=${QT_FILE-"qt-x11-free-3.3.8.tar.gz"}
    export QT_VERSION=${QT_VERSION-"3.3.8"}
 fi
+export QT_DIR=${QT_DIR-"${QT_FILE%.tar*}"}
 
-export SILO_FILE=${SILO_FILE-"silo060605.sh"}
-export SILO_VERSION=${SILO_VERSION-"4.5.1"}
-export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.5"}
+export SILO_FILE=${SILO_FILE-"silo-4.6.1.tar.gz"}
+export SILO_VERSION=${SILO_VERSION-"4.6.1"}
+export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION-"4.6"}
+export SILO_DIR=${SILO_DIR-"silo-4.6.1"}
 
 export SZIP_FILE=${SZIP_FILE-"szip-2.1.tar.gz"}
 export SZIP_VERSION=${SZIP_VERSION-"2.1"}
 export SZIP_COMPATIBILITY_VERSION=${SZIP_COMPATIBILITY_VERSION-"2.0"}
+export SZIP_DIR=${SZIP_DIR-"szip-2.1"}
 
 export HDF5_FILE=${HDF5_FILE-"hdf5-1.6.5.tar.gz"}
 export HDF5_VERSION=${HDF5_VERSION-"1.6.5"}
 export HDF5_COMPATIBILITY_VERSION=${HDF5_COMPATIBILITY_VERSION-"1.6"}
+export HDF5_DIR=${HDF5_DIR-"hdf5-1.6.5"}
 
 export HDF4_FILE=${HDF4_FILE-"HDF4.2r1.tar.gz"}
 export HDF4_VERSION=${HDF4_VERSION-"4.2.1"}
 export HDF4_COMPATIBILITY_VERSION=${HDF4_COMPATIBILITY_VERSION-"4.0"}
+export HDF4_DIR=${HDF4_DIR-"HDF4.2r1"}
 
 export MILI_FILE=${MILI_FILE-"mili-1.10a.tar.gz"}
 export MILI_VERSION=${MILI_VERSION-"1.10.0"}
 export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION-"1.0"}
+export MILI_DIR=${MILI_DIR-"mili"}
 
 export NETCDF_FILE=${NETCDF_FILE-"netcdf.tar.gz"}
 export NETCDF_VERSION=${NETCDF_VERSION-"3.6.0"}
 export NETCDF_COMPATIBILITY_VERSION=${NETCDF_COMPATIBILITY_VERSION-"3.6"}
+export NETCDF_DIR=${NETCDF_DIR-"netcdf-3.6.0-p1/src"}
 
 export CGNS_FILE=${CGNS_FILE-"cgnslib_2.4-3.tar.gz"}
 export CGNS_VERSION=${CGNS_VERSION-"2.4"}
 export CGNS_COMPATIBILITY_VERSION=${CGNS_COMPATIBILITY_VERSION-"2.4"}
+export CGNS_DIR=${CGNS_DIR-${CGNS_FILE%-3.tar*}}
 
 export GDAL_FILE=${GDAL_FILE-"gdal-1.3.2.tar.gz"}
 export GDAL_VERSION=${GDAL_VERSION-"1.3.2"}
 export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION-"1.3"}
+export GDAL_DIR=${GDAL_DIR-"gdal-1.3.2"}
 
 export EXODUS_FILE=${EXODUS_FILE-"exodusii-4.46.tar.gz"}
 export EXODUS_VERSION=${EXODUS_VERSION-"4.46"}
 export EXODUS_COMPATIBILITY_VERSION=${EXODUS_COMPATIBILITY_VERSION-"4.0"}
+export EXODUS_DIR=${EXODUS_DIR-"exodusii-4.46"}
 
 export BOXLIB_FILE=${BOXLIB_FILE-"boxlib.tar.gz"}
 export BOXLIB_VERSION=${BOXLIB_VERSION-"2.5"}
 export BOXLIB_COMPATIBILITY_VERSION=${BOXLIB_COMPATIBILITY_VERSION-"2.0"}
+export BOXLIB_DIR=${BOXLIB_DIR-"CCSEApps/BoxLib"}
 
 export CFITSIO_FILE=${CFITSIO_FILE-"cfitsio3006.tar.gz"}
 export CFITSIO_VERSION=${CFITSIO_VERSION-"3006"}
 export CFITSIO_COMPATIBILITY_VERSION=${CFITSIO_COMPATIBILITY_VERSION-"3.0"}
+export CFITSIO_DIR=${CFITSIO_DIR-"cfitsio"}
 
-export H5PART_FILE=${H5PART_FILE-"H5Part-20070711.tar.gz"}
-export H5PART_VERSION=${H5PART_VERSION-"1.3.3"}
+export H5PART_FILE=${H5PART_FILE-"H5Part-1.4.0.tar.gz"}
+export H5PART_VERSION=${H5PART_VERSION-"1.4.0"}
 export H5PART_COMPATIBILITY_VERSION=${H5PART_COMPATIBILITY_VERSION-"1.0"}
-export H5PART_DIR=${H5PART_DIR-"H5Part-1.3.3"}
+export H5PART_DIR=${H5PART_DIR-"H5Part-1.4.0"}
+
+export CCMIO_FILE=${CCMIO_FILE-"libccmio-2.6.1.tar.gz"}
+export CCMIO_VERSION=${CCMIO_VERSION-"2.6.1"}
+export CCMIO_COMPATIBILITY_VERSION=${CCMIO_COMPATIBILITY_VERSION-"2.0"}
+export CCMIO_DIR=${CCMIO_DIR-"libccmio-2.6.1"}
+
+export ITAPS_FILE=${ITAPS_FILE-"ITAPS-MOAB-26Jun07.tar.gz"}
+export ITAPS_VERSION=${ITAPS_VERSION-"1.0.0"}
+export ITAPS_COMPATIBILITY_VERSION=${ITAPS_COMPATIBILITY_VERSION-"1.0"}
+export ITAPS_DIR=${ITAPS_DIR-"${ITAPS_FILE%.tar*}"}
+
+export VISUS_FILE=${VISUS_FILE-"visus_26Feb07.tar.gz"}
+export VISUS_VERSION=${VISUS_VERSION-"1.0.0"}
+export VISUS_COMPATIBILITY_VERSION=${VISUS_COMPATIBILITY_VERSION-"1.0"}
+export VISUS_DIR=${VISUS_DIR-"visus"}
 
 # Dialog-related variables.
 DLG="dialog"
@@ -738,6 +797,12 @@ function check_files
 # --------------------------------------------------------------------------- #
 # This function will check to make sure that all of the necessary files       #
 # for the required third party libraries actually exist.                      #
+#
+# Modifications:                                                              #
+#
+#    Thomas R. Treadway, Fri Feb  1 15:14:10 PST 2008
+#    Check if the directory has already be untarred.
+#
 # *************************************************************************** #
 
 function check_required_3rdparty
@@ -753,25 +818,31 @@ function check_required_3rdparty
     #
     # Check for CMake
     #
+    HAVE_CMAKE_ALREADY="NO"
     HAVE_CMAKE_TARBALL="NO"
+    if [[ -d "$VISITDIR/cmake/$CMAKE_VERSION/$VISITARCH" || \
+       -d $CMAKE_DIR ]] ; then
+       HAVE_CMAKE_ALREADY="YES"
+    fi
     if [[ -e ${CMAKE_FILE%.gz} || -e ${CMAKE_FILE} ]] ; then
         HAVE_CMAKE_TARBALL="YES"
     fi
     
-    if [[ "$HAVE_CMAKE_TARBALL" = "NO" ]] ; then
+    if [[ "$HAVE_CMAKE_ALREADY" = "NO" && "$HAVE_CMAKE_TARBALL" = "NO" ]] ; then
         download_3rdparty ${CMAKE_FILE}
         if [[ $? == 0 ]] ; then
-            echo "Unable to build VisIt.  CMAKE is not available."
+            echo "Unable to build VisIt.  CMake is not available."
             return 1
         fi
-    fi  
+    fi
 
     #
     # VTK
     #
     HAVE_VTK_ALREADY="NO"
     HAVE_VTK_TARBALL="NO"
-    if [[ -d "$VISITDIR/vtk/$VTK_VERSION/$VISITARCH" ]] ; then
+    if [[ -d "$VISITDIR/vtk/$VTK_VERSION/$VISITARCH" || \
+       -d $VTK_DIR ]] ; then
        HAVE_VTK_ALREADY="YES"
     fi
     if [[ -e ${VTK_FILE%.gz} || -e ${VTK_FILE} ]] ; then
@@ -791,7 +862,8 @@ function check_required_3rdparty
     #
     HAVE_MESA_ALREADY="NO"
     HAVE_MESA_TARBALL="NO"
-    if [[ -d "$VISITDIR/mesa/$MESA_VERSION/$VISITARCH" ]] ; then
+    if [[ -d "$VISITDIR/mesa/$MESA_VERSION/$VISITARCH" || \
+       -d $MESA_DIR ]] ; then
        HAVE_MESA_ALREADY="YES"
     fi
     if [[ -e ${MESA_FILE%.gz} || -e ${MESA_FILE} ]] ; then
@@ -811,7 +883,8 @@ function check_required_3rdparty
     #
     HAVE_QT_ALREADY="NO"
     HAVE_QT_TARBALL="NO"
-    if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" ]] ; then
+    if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" || \
+       -d $QT_DIR ]] ; then
        HAVE_QT_ALREADY="YES"
     fi
     if [[ -e ${QT_FILE%.gz} || -e ${QT_FILE} ]] ; then
@@ -830,7 +903,8 @@ function check_required_3rdparty
     #
     HAVE_PYTHON_ALREADY="NO"
     HAVE_PYTHON_TARBALL="NO"
-    if [[ -d "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" ]] ; then
+    if [[ -d "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH" || \
+       -d $PYTHON_DIR ]] ; then
        HAVE_PYTHON_ALREADY="YES"
     fi
     if [[ -e ${PYTHON_FILE%$PYTHON_FILE_SUFFIX}tar || \
@@ -852,7 +926,8 @@ function check_required_3rdparty
     #
     HAVE_SILO_ALREADY="NO"
     HAVE_SILO_TARBALL="NO"
-    if [[ -d "$VISITDIR/silo/$SILO_VERSION/$VISITARCH" ]] ; then
+    if [[ -d "$VISITDIR/silo/$SILO_VERSION/$VISITARCH" || \
+       -d $SILO_DIR ]] ; then
        HAVE_SILO_ALREADY="YES"
     fi
     if [[ -e $SILO_FILE ]] ; then
@@ -921,12 +996,15 @@ function check_visit_source_code
 # --------------------------------------------------------------------------- #
 # This function will check to make sure that all of the necessary source      #
 # files for the optional 3rd party libraries actually exist.                  #
-#                                                                             #
-#  Modifications:                                                             #
-#                                                                             #
-#    Hank Childs, Fri Feb  1 09:38:58 PST 2008                                #
-#    Issue a better error message for Mili.                                   #
-#                                                                             #
+#
+# Modifications:                                                              #
+#
+#    Hank Childs, Fri Feb  1 09:38:58 PST 2008
+#    Issue a better error message for Mili.
+#
+#    Thomas R. Treadway, Fri Feb  1 15:14:10 PST 2008
+#    Check if the directory has already be untarred.
+#
 # *************************************************************************** #
 
 function check_optional_3rdparty
@@ -937,7 +1015,8 @@ function check_optional_3rdparty
     if [[ "$DO_BOXLIB" == "yes" ]] ; then
         HAVE_BOXLIB_ALREADY="NO"
         HAVE_BOXLIB_TARBALL="NO"
-        if [[ -d "$VISITDIR/boxlib/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/boxlib/$VISITARCH" || \
+           -d $BOXLIB_DIR ]] ; then
            HAVE_BOXLIB_ALREADY="YES"
         fi
         if [[ -e ${BOXLIB_FILE%.gz} || -e ${BOXLIB_FILE} ]] ; then
@@ -953,12 +1032,36 @@ function check_optional_3rdparty
         fi
     fi
     #
+    # CCMIO
+    #
+    if [[ "$DO_CCMIO" == "yes" ]] ; then
+        HAVE_CCMIO_ALREADY="NO"
+        HAVE_CCMIO_TARBALL="NO"
+        if [[ -d "$VISITDIR/ccmio/$CCMIO_VERSION/$VISITARCH" || \
+           -d $CCMIO_DIR ]] ; then
+           HAVE_CCMIO_ALREADY="YES"
+        fi
+        if [[ -e ${CCMIO_FILE%.gz} || -e ${CCMIO_FILE} ]] ; then
+           HAVE_CCMIO_TARBALL="YES"
+        fi
+        if [[ "$HAVE_CCMIO_ALREADY" = "NO" && \
+              "$HAVE_CCMIO_TARBALL" = "NO" ]] ; then
+            download_3rdparty ${CCMIO_FILE}
+            if [[ $? == 0 ]] ; then
+                echo "Unable to build CCMIO.  ${CCMIO_FILE} not found."
+                DO_CCMIO="no"
+            fi
+        fi
+    fi
+    #
+    #
     # CFITSIO
     #
     if [[ "$DO_CFITSIO" == "yes" ]] ; then
         HAVE_CFITSIO_ALREADY="NO"
         HAVE_CFITSIO_TARBALL="NO"
-        if [[ -d "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/cfitsio/$CFITSIO_VERSION/$VISITARCH" || \
+           -d $CFITSIO_DIR ]] ; then
            HAVE_CFITSIO_ALREADY="YES"
         fi
         if [[ -e ${CFITSIO_FILE%.gz} || -e ${CFITSIO_FILE} ]] ; then
@@ -979,7 +1082,8 @@ function check_optional_3rdparty
     if [[ "$DO_CGNS" == "yes" ]] ; then
         HAVE_CGNS_ALREADY="NO"
         HAVE_CGNS_TARBALL="NO"
-        if [[ -d "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/cgns/$CGNS_VERSION/$VISITARCH" || \
+           -d $CGNS_DIR ]] ; then
            HAVE_CGNS_ALREADY="YES"
         fi
         if [[ -e ${CGNS_FILE%.gz} || -e ${CGNS_FILE} ]] ; then
@@ -1000,7 +1104,8 @@ function check_optional_3rdparty
     if [[ "$DO_EXODUS" == "yes" ]] ; then
         HAVE_EXODUS_ALREADY="NO"
         HAVE_EXODUS_TARBALL="NO"
-        if [[ -d "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/exodus/$EXODUS_VERSION/$VISITARCH" || \
+           -d $EXODUS_DIR ]] ; then
            HAVE_EXODUS_ALREADY="YES"
         fi
         if [[ -e ${EXODUS_FILE%.gz} || -e ${EXODUS_FILE} ]] ; then
@@ -1021,7 +1126,8 @@ function check_optional_3rdparty
     if [[ "$DO_GDAL" == "yes" ]] ; then
         HAVE_GDAL_ALREADY="NO"
         HAVE_GDAL_TARBALL="NO"
-        if [[ -d "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/gdal/$GDAL_VERSION/$VISITARCH" || \
+           -d $GDAL_DIR ]] ; then
            HAVE_GDAL_ALREADY="YES"
         fi
         if [[ -e ${GDAL_FILE%.gz} || -e ${GDAL_FILE} ]] ; then
@@ -1042,7 +1148,8 @@ function check_optional_3rdparty
     if [[ "$DO_H5PART" == "yes" ]] ; then
         HAVE_H5PART_ALREADY="NO"
         HAVE_H5PART_TARBALL="NO"
-        if [[ -d "$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/h5part/$H5PART_VERSION/$VISITARCH" || \
+           -d $H5PART_DIR ]] ; then
            HAVE_H5PART_ALREADY="YES"
         fi
         if [[ -e ${H5PART_FILE%.gz} || -e ${H5PART_FILE} ]] ; then
@@ -1063,7 +1170,8 @@ function check_optional_3rdparty
     if [[ "$DO_HDF4" == "yes" ]] ; then
         HAVE_HDF4_ALREADY="NO"
         HAVE_HDF4_TARBALL="NO"
-        if [[ -d "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH" || \
+           -d $HDF4_DIR ]] ; then
            HAVE_HDF4_ALREADY="YES"
         fi
         if [[ -e ${HDF4_FILE%.gz} || -e ${HDF4_FILE} ]] ; then
@@ -1084,7 +1192,8 @@ function check_optional_3rdparty
     if [[ "$DO_HDF5" == "yes" ]] ; then
         HAVE_HDF5_ALREADY="NO"
         HAVE_HDF5_TARBALL="NO"
-        if [[ -d "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH" || \
+           -d $HDF5_DIR ]] ; then
            HAVE_HDF5_ALREADY="YES"
         fi
         if [[ -e ${HDF5_FILE%.gz} || -e ${HDF5_FILE} ]] ; then
@@ -1100,12 +1209,35 @@ function check_optional_3rdparty
         fi
     fi
     #
+    # ITAPS
+    #
+    if [[ "$DO_ITAPS" == "yes" ]] ; then
+        HAVE_ITAPS_ALREADY="NO"
+        HAVE_ITAPS_TARBALL="NO"
+        if [[ -d "$VISITDIR/itaps/$ITAPS_VERSION/$VISITARCH" || \
+           -d $ITAPS_DIR ]] ; then
+           HAVE_ITAPS_ALREADY="YES"
+        fi
+        if [[ -e ${ITAPS_FILE%.gz} || -e ${ITAPS_FILE} ]] ; then
+           HAVE_ITAPS_TARBALL="YES"
+        fi
+        if [[ "$HAVE_ITAPS_ALREADY" = "NO" && \
+              "$HAVE_ITAPS_TARBALL" = "NO" ]] ; then
+           download_3rdparty ${ITAPS_FILE}
+           if [[ $? == 0 ]] ; then
+               echo "Unable to build ITAPS.  ${ITAPS_FILE} not found."
+               DO_ITAPS="no"
+           fi
+        fi
+    fi
+    #
     # Mili
     #
     if [[ "$DO_MILI" == "yes" ]] ; then
         HAVE_MILI_ALREADY="NO"
         HAVE_MILI_TARBALL="NO"
-        if [[ -d "$VISITDIR/mili/$MILI_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/mili/$MILI_VERSION/$VISITARCH" || \
+           -d $MILI_DIR ]] ; then
            HAVE_MILI_ALREADY="YES"
         fi
         if [[ -e ${MILI_FILE%.gz} || -e ${MILI_FILE} ]] ; then
@@ -1114,9 +1246,9 @@ function check_optional_3rdparty
         if [[ "$HAVE_MILI_ALREADY" = "NO" && \
               "$HAVE_MILI_TARBALL" = "NO" ]] ; then
             if [[ "$DO_SVN" != "yes" ]] ; then
-                echo "You have requested to build the Mili library.  Mili is not "
-                echo "available for public download and is only available through "
-                echo "Subversion access."
+                echo "You have requested to build the Mili library."
+                echo "Mili is not available for public download and"
+                echo "is only available through Subversion access."
                 exit 1
             fi
             download_3rdparty ${MILI_FILE}
@@ -1132,7 +1264,8 @@ function check_optional_3rdparty
     if [[ "$DO_NETCDF" == "yes" ]] ; then
         HAVE_NETCDF_ALREADY="NO"
         HAVE_NETCDF_TARBALL="NO"
-        if [[ -d "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH" ]] ; then
+        if [[ -d "$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH" || \
+           -d ${NETCDF_DIR} ]] ; then
            HAVE_NETCDF_ALREADY="YES"
         fi
         if [[ -e ${NETCDF_FILE%.gz} || -e ${NETCDF_FILE} ]] ; then
@@ -1149,23 +1282,46 @@ function check_optional_3rdparty
     fi
     #
     # SZIP
-     #
-     if [[ "$DO_SZIP" == "yes" ]] ; then
-         HAVE_SZIP_ALREADY="NO"
-         HAVE_SZIP_TARBALL="NO"
-         if [[ -d "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ]] ; then
-            HAVE_SZIP_ALREADY="YES"
+    #
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+        HAVE_SZIP_ALREADY="NO"
+        HAVE_SZIP_TARBALL="NO"
+        if [[ -d "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" || \
+           -d $SZIP_DIR ]] ; then
+           HAVE_SZIP_ALREADY="YES"
         fi
         if [[ -e ${SZIP_FILE%.gz} || -e ${SZIP_FILE} ]] ; then
            HAVE_SZIP_TARBALL="YES"
         fi
         if [[ "$HAVE_SZIP_ALREADY" = "NO" && \
               "$HAVE_SZIP_TARBALL" = "NO" ]] ; then
-            download_3rdparty ${SZIP_FILE}
-            if [[ $? == 0 ]] ; then
-                echo "Unable to build SZIP.  ${SZIP_FILE} not found."
-                DO_SZIP="no"
-            fi
+           download_3rdparty ${SZIP_FILE}
+           if [[ $? == 0 ]] ; then
+               echo "Unable to build SZIP.  ${SZIP_FILE} not found."
+               DO_SZIP="no"
+           fi
+        fi
+    fi
+    #
+    # ViSUS
+    #
+    if [[ "$DO_VISUS" == "yes" ]] ; then
+        HAVE_VISUS_ALREADY="NO"
+        HAVE_VISUS_TARBALL="NO"
+        if [[ -d "$VISITDIR/visus/$VISUS_VERSION/$VISITARCH" || \
+           -d $VISUS_DIR ]] ; then
+           HAVE_VISUS_ALREADY="YES"
+        fi
+        if [[ -e ${VISUS_FILE%.gz} || -e ${VISUS_FILE} ]] ; then
+           HAVE_VISUS_TARBALL="YES"
+        fi
+        if [[ "$HAVE_VISUS_ALREADY" = "NO" && \
+              "$HAVE_VISUS_TARBALL" = "NO" ]] ; then
+           download_3rdparty ${VISUS_FILE}
+           if [[ $? == 0 ]] ; then
+               echo "Unable to build ViSUS.  ${VISUS_FILE} not found."
+               DO_VISUS="no"
+           fi
         fi
     fi
     #
@@ -1497,7 +1653,9 @@ function build_mesa
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -e ${MESA_FILE} ]] ; then
+    if [[ -d ${MESA_DIR} ]] ; then
+       info_box "Found ${MESA_DIR} . . ." 1>&3
+    elif [[ -e ${MESA_FILE} ]] ; then
        info_box "Unzipping/untarring ${MESA_FILE} . . ." 1>&3
        uncompress_untar ${MESA_FILE}
        if [[ $? != 0 ]] ; then
@@ -1505,7 +1663,7 @@ function build_mesa
 "Unable to untar $MESA_FILE  Corrupted file or out of space on device?"
           return 1
        fi
-    elif [[ -e ${MESA_FILE%.*} ]] ; then
+    elif [[ -e ${MESA_FILE%.gz} ]] ; then
        info_box "Untarring ${MESA_FILE%.*} . . ." 1>&3
        tar xf ${MESA_FILE%.*}
        if [[ $? != 0 ]] ; then
@@ -1945,8 +2103,8 @@ EOF
         cd ..
     fi
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/mesa/${MESA_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/mesa"
+       chgrp -R ${GROUP} "$VISITDIR/mesa"
     fi
     cd "$START_DIR"
     echo "Done with Mesa"
@@ -1963,7 +2121,9 @@ function build_qt
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -e ${QT_FILE} ]] ; then
+    if [[ -d ${QT_DIR} ]] ; then
+       info_box "Found ${QT_DIR} . . ." 1>&3
+    elif [[ -e ${QT_FILE} ]] ; then
        info_box "Unzipping/Untarring ${QT_FILE} . . ." 1>&3
        uncompress_untar ${QT_FILE}
        if [[ $? != 0 ]] ; then
@@ -1971,7 +2131,7 @@ function build_qt
 "Unable to untar $QT_FILE  Corrupted file or out of space on device?"
           return 1
        fi
-    elif [[ -e ${QT_FILE%.*} ]] ; then
+    elif [[ -e ${QT_FILE%.gz} ]] ; then
        info_box "Untarring ${QT_FILE%.*} . . ." 1>&3
        tar xf ${QT_FILE%.*}
        if [[ $? != 0 ]] ; then
@@ -1982,13 +2142,15 @@ function build_qt
     fi
     echo "Done with untar"
 
-    #
-    # If we are running on MacOS X 10.5, patch Qt so that it compiles
-    #
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        VER=$(uname -r)
-        if (( ${VER%%.*} > 8 )) ; then
-            patch -p0 <<\EOF
+    # Patching
+    if [[ ${QT_VERSION} == 3.3.8 ]] ; then
+        #
+        # If we are running on MacOS X 10.5, patch Qt so that it compiles
+        #
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            VER=$(uname -r)
+            if (( ${VER%%.*} > 8 )) ; then
+                patch -p0 <<\EOF
 diff -rp qt-mac-free-3.3.8/config.tests/mac/mac_version.test qt-mac-free-3.3.8.patched/config.tests/mac/mac_version.test
 *** qt-mac-free-3.3.8/config.tests/mac/mac_version.test	2004-04-23 09:40:40.000000000 -0700
 --- qt-mac-free-3.3.8.patched/config.tests/mac/mac_version.test	2007-11-16 16:08:27.000000000 -0800
@@ -2124,13 +2286,13 @@ diff -rp qt-mac-free-3.3.8/src/tools/qglobal.h qt-mac-free-3.3.8.patched/src/too
   #  endif
   #endif
 EOF
+            fi
         fi
     fi
  
     #
     # Set up environment variables for Qt.
     #
-    QT_DIR=${QT_FILE%.tar*}
     cd ${QT_DIR}
     export QTDIR="$PWD"
     export PATH="$QTDIR"/bin:"$PATH"
@@ -2286,8 +2448,8 @@ EOF
           "$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib/libqui.$SO_EXT"
     fi
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/qt/${QT_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/qt/${QT_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/qt"
+       chgrp -R ${GROUP} "$VISITDIR/qt"
     fi
     cd "$START_DIR"
     echo "Done with Qt"
@@ -2304,7 +2466,9 @@ function build_cmake
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${CMAKE_FILE} ]] ; then
+    if [[ -d ${CMAKE_DIR} ]] ; then
+       info_box "Found ${CMAKE_DIR} . . ." 1>&3
+    elif [[ -f ${CMAKE_FILE} ]] ; then
        info_box "Unzipping/Tarring ${CMAKE_FILE} . . ." 1>&3
        uncompress_untar ${CMAKE_FILE}
        if [[ $? != 0 ]] ; then
@@ -2325,9 +2489,10 @@ function build_cmake
     #
     # Patching cmake.
     #
-    if [[ "$OPSYS" == "AIX" ]]; then
-        info_box "Patching cmake . . ." 1>&3
-        patch -p0 <<\EOF
+    if [[ ${CMAKE_VERSION} == 2.4.5 ]] ; then
+        if [[ "$OPSYS" == "AIX" ]]; then
+            info_box "Patching cmake . . ." 1>&3
+            patch -p0 <<\EOF
 diff -c cmake-2.4.5.orig/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/zconf.h
 *** cmake-2.4.5.orig/Utilities/cmzlib/zconf.h	Mon Dec  4 08:04:11 2006
 --- cmake-2.4.5/Utilities/cmzlib/zconf.h	Mon May 21 15:59:54 2007
@@ -2347,9 +2512,10 @@ diff -c cmake-2.4.5.orig/Utilities/cmzlib/zconf.h cmake-2.4.5/Utilities/cmzlib/z
   #  define NO_DUMMY_DECL
 --- 89,94 ----
 EOF
-        if [[ $? != 0 ]] ; then
-            echo "Unable to patch cmake. Wrong version?"
-            return 1
+            if [[ $? != 0 ]] ; then
+                echo "Unable to patch cmake. Wrong version?"
+                return 1
+            fi
         fi
     fi
 
@@ -2357,7 +2523,6 @@ EOF
     # Issue "bootstrap", which takes the place of configure for CMake.
     #
     info_box "Bootstrapping CMake . . ." 1>&3
-    CMAKE_DIR=${CMAKE_FILE%.tar*}
     cd ${CMAKE_DIR}
     if [[ "$OPSYS" == "AIX" ]]; then
         env CXX=xlC CC=xlc CXXFLAGS="" CFLAGS="" ./bootstrap
@@ -2379,7 +2544,21 @@ EOF
        return 1
     fi
 
+    info_box "Installing Cmake . . ." 1>&3
+    echo "Installing Cmake"
+    mkdir "$VISITDIR/cmake"
+    mkdir "$VISITDIR/cmake/${CMAKE_VERSION}"
+    mkdir "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH"
+    mkdir "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    cp bin/ccmake "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    cp bin/cmake "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    cp bin/cpack "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    cp bin/ctest "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
     echo "Successfully built CMake"
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/cmake"
+       chgrp -R ${GROUP} "$VISITDIR/cmake"
+    fi
     cd ..
 }
 
@@ -2394,7 +2573,8 @@ function build_vtk
     # CMake is the build system for VTK.  Call another script that will build
     # that program.
     #
-    if [[ -e ../${CMAKE_FILE%.tar*}/bin/cmake ]] ; then
+    CMAKE_INSTALL="$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"
+    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
        echo "cmake found"
     else
        build_cmake
@@ -2407,7 +2587,9 @@ function build_vtk
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${VTK_FILE} ]] ; then
+    if [[ -d ${VTK_DIR} ]] ; then
+       info_box "Found ${VTK_DIR} . . ." 1>&3
+    elif [[ -f ${VTK_FILE} ]] ; then
        info_box "Unzipping/Untarring ${VTK_FILE} . . ." 1>&3
        uncompress_untar ${VTK_FILE}
        if [[ $? != 0 ]] ; then
@@ -2425,12 +2607,13 @@ function build_vtk
        fi
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        #
-        # Apply patches
-        #
-        info_box "Patching VTK . . ." 1>&3
-        patch -p0 << \EOF
+    #
+    # Apply patches
+    #
+    if [[ ${VTK_VERSION} == 5.0.0c ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            info_box "Patching VTK . . ." 1>&3
+            patch -p0 << \EOF
 diff -rp VTK.orig/CMakeLists.txt VTK/CMakeLists.txt
 *** VTK.orig/CMakeLists.txt     Mon Mar 26 14:28:51 2007
 --- VTK/CMakeLists.txt  Wed Apr 25 15:41:25 2007
@@ -2556,17 +2739,17 @@ diff -rp VTK.orig/Utilities/ftgl/CMakeLists.txt VTK/Utilities/ftgl/CMakeLists.tx
   #
   # We obviously need FreeType
 EOF
-       if [[ $? != 0 ]] ; then
-          echo "Unable to patch VTK. Wrong version?"
-          return 1
-       fi
-    fi
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        # Check for version 6.x.x (MacOS 10.2, Jaguar)
-        VER=$(uname -r)
-        if (( ${VER%%.*} < 7 )) ; then
-           info_box "Patching VTK . . ." 1>&3
-           patch -p0 << \EOF
+           if [[ $? != 0 ]] ; then
+              echo "Unable to patch VTK. Wrong version?"
+              return 1
+           fi
+        fi
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            # Check for version 6.x.x (MacOS 10.2, Jaguar)
+            VER=$(uname -r)
+            if (( ${VER%%.*} < 7 )) ; then
+               info_box "Patching VTK . . ." 1>&3
+               patch -p0 << \EOF
 diff -rp VTK.orig/Rendering/vtkCarbonRenderWindow.cxx VTK/Rendering/vtkCarbonRenderWindow.cxx
 *** VTK.orig/Rendering/vtkCarbonRenderWindow.cxx      Wed Aug 31 11:39:33 2005
 --- VTK/Rendering/vtkCarbonRenderWindow.cxx   Wed Aug 15 17:57:10 2007
@@ -2632,21 +2815,22 @@ diff -rp VTK.orig/Rendering/vtkCarbonRenderWindow.cxx VTK/Rendering/vtkCarbonRen
           case kEventControlBoundsChanged:
             vtk_win->UpdateGLRegion();
 EOF
-          if [[ $? != 0 ]] ; then
-             echo "Unable to patch VTK. Wrong version?"
-             return 1
-          fi
-       fi
+              if [[ $? != 0 ]] ; then
+                 echo "Unable to patch VTK. Wrong version?"
+                 return 1
+              fi
+           fi
+        fi
     fi
 
     #
     # Execute CMake, which will set up the Makefiles for VTK.  (like configure)
     #
     info_box "Executing CMake on VTK" 1>&3
-    cd VTK
-    CMAKE_DIR=../${CMAKE_FILE%.tar*}/bin/
+    cd $VTK_DIR
+    CMAKE_BIN=../${CMAKE_DIR}/bin/cmake
     if [[ "$OPSYS" == "Darwin" ]]; then
-    ${CMAKE_DIR}/cmake \
+    ${CMAKE_BIN} \
         -DBUILD_SHARED_LIBS:BOOL=ON\
         -DBUILD_TESTING:BOOL=OFF\
         -DUSE_ANSI_STD_LIB:BOOL=ON\
@@ -2663,7 +2847,7 @@ EOF
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
     elif [[ "$OPSYS" == "IRIX64" ]]; then
-    ${CMAKE_DIR}/cmake \
+    ${CMAKE_BIN} \
         -DBUILD_SHARED_LIBS:BOOL=ON\
         -DBUILD_TESTING:BOOL=OFF\
         -DUSE_ANSI_STD_LIB:BOOL=ON\
@@ -2682,7 +2866,7 @@ EOF
         -DMANGLED_OSMESA_LIBRARY:FILEPATH="$VISITDIR/mesa/${MESA_VERSION}/${VISITARCH}/lib/libOSMesa.${SO_EXT}"\
         .
     else
-    ${CMAKE_DIR}/cmake \
+    ${CMAKE_BIN} \
         -DBUILD_SHARED_LIBS:BOOL=ON\
         -DBUILD_TESTING:BOOL=OFF\
         -DUSE_ANSI_STD_LIB:BOOL=ON\
@@ -2851,8 +3035,8 @@ EOF
        mv -f tmp.h $i
     done
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/vtk/${VTK_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/vtk"
+       chgrp -R ${GROUP} "$VISITDIR/vtk"
     fi
     cd "$START_DIR"
     echo "Done with VTK"
@@ -2869,19 +3053,24 @@ function build_python
     #
     # Untar the file.
     #
-    info_box "Extracting Python source . . ." 1>&3
-    uncompress_untar ${PYTHON_FILE}
-    if [[ $? != 0 ]] ; then
-       echo \
+    if [[ -d ${PYTHON_DIR} ]] ; then
+       info_box "Found ${PYTHON_DIR} . . ." 1>&3
+    else
+       info_box "Extracting Python source . . ." 1>&3
+       uncompress_untar ${PYTHON_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
 "Unable to untar $PYTHON_FILE.  Corrupted file or out of space on device?"
-       return 1
+          return 1
+       fi
     fi
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        # Check for version >= 7.0.0 (MacOS 10.3, Panther)
-        VER=$(uname -r)
-        if (( ${VER%%.*} < 7 )) ; then
-           info_box "Patching VTK . . ." 1>&3
-           patch -p0 << \EOF
+    if [[ $PYTHON__VERSION} == 2.5 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            # Check for version >= 7.0.0 (MacOS 10.3, Panther)
+            VER=$(uname -r)
+            if (( ${VER%%.*} < 7 )) ; then
+               info_box "Patching VTK . . ." 1>&3
+               patch -p0 << \EOF
 diff -rp Python-2.5.orig/Modules/getpath.c Python-2.5/Modules/getpath.c
 *** Python-2.5.orig/Modules/getpath.c Sun Jul  9 18:18:57 2006
 --- Python-2.5/Modules/getpath.c      Wed Aug 15 18:25:14 2007
@@ -2896,18 +3085,18 @@ diff -rp Python-2.5.orig/Modules/getpath.c Python-2.5/Modules/getpath.c
   #include <string.h>
   
 EOF
-          if [[ $? != 0 ]] ; then
-             echo "Unable to patch VTK. Wrong version?"
-             return 1
-          fi
-       fi
+              if [[ $? != 0 ]] ; then
+                 echo "Unable to patch VTK. Wrong version?"
+                 return 1
+              fi
+           fi
+        fi
     fi
 
     #
     # Call configure
     #
     info_box "Configuring Python . . ." 1>&3
-    PYTHON_DIR=${PYTHON_FILE%.$PYTHON_FILE_SUFFIX}
     cd ${PYTHON_DIR}
     PYTHON_OPT="$C_OPT_FLAGS"
     echo \
@@ -3007,8 +3196,8 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
 "$VISITDIR/python/$PYTHON_VERSION/$VISITARCH/lib/python$PYTHON_VERSION/config/"
     fi
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/python/${PYTHON_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/python/${PYTHON_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/python"
+       chgrp -R ${GROUP} "$VISITDIR/python"
     fi
     cd "$START_DIR"
     echo "Done with Python"
@@ -3023,43 +3212,80 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
 function build_silo
 {
     #
-    # Run the shell script that effectively "untars" Silo.
+    # Unzip the file, provided a gzipped file exists.
     #
-    info_box "Extracting Silo sources" 1>&3
-    sh ${SILO_FILE}
-    if [[ $? != 0 ]] ; then
-       echo \
-"Unable to run Silo script.  Corrupted file or out of space on device?"
-       return 1
+    if [[ -d ${SILO_DIR} ]] ; then
+       info_box "Found ${SILO_DIR} . . ." 1>&3
+    elif [[ -f ${SILO_FILE} ]] ; then
+       info_box "Unzipping/Untarring ${SILO_FILE} . . ." 1>&3
+       uncompress_untar ${SILO_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar $SILO_FILE  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${SILO_FILE%.gz} ]] ; then
+       info_box "Untarring ${SILO_FILE%.gz} . . ." 1>&3
+       tar xf ${SILO_FILE%.*}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${SILO_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
     fi
-
     #
     # Call configure
     #
     info_box "Configuring Silo . . ." 1>&3
-    SILO_DIR=${SILO_FILE%.sh}
     cd ${SILO_DIR}
     echo "Invoking command to configure Silo"
-    MAKEOPT=""
+    SILO_LINK_OPT=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
        export HDF5INCLUDE="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/include"
        export HDF5LIB="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib"
-       SILO_HDF5LINK_OPT="-L$HDF5LIB -lhdf5 -lsz"
        WITHHDF5ARG="--with-hdf5=$HDF5INCLUDE,$HDF5LIB"
-       cat configure | sed 's/-lhdf5/-lhdf5 -lsz/' > tmp.conf
-       mv configure configure.orig
-       mv tmp.conf configure
-       cat configure | sed "s?\$hdf5_lib/libhdf5\.a?\$hdf5_lib/libhdf5.a \$hdf5_lib/libsz.a?" > tmp.conf
-       mv configure configure.orig2
-       mv tmp.conf configure
-       chmod +x configure
+       SILO_LINK_OPT="-L$HDF5LIB -lhdf5"
     else
        WITHHDF5ARG="--without-hdf5"
     fi
+    if [[ "$DO_SZIP" == "yes" ]] ; then
+       export SZIPDIR="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH"
+       WITHSZIPARG="--with-szlib=$SZIPDIR"
+       SILO_LINK_OPT="$SILO_LINK_OPT -L$SZIPDIR/lib -lsz"
+    else
+       WITHSZIPARG="--without-szlib"
+    fi
+    WITHQTINCARG="--with-Qt-include-dir=\
+$VISITDIR/qt/${QT_VERSION}/$VISITARCH/include"
+    WITHQTBINARG="--with-Qt-bin-dir=\
+$VISITDIR/qt/${QT_VERSION}/$VISITARCH/bin"
+    WITHQTLIBARG="--with-Qt-lib-dir=\
+$VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib"
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        WITHQTLIBSARG="--with-Qt-lib=\
+qt -framework Carbon -framework QuickTime -framework OpenGL -framework AGL"
+    elif [[ "$OPSYS" == "Linux" ]]; then
+        WITHQTLIBSARG="--with-Qt-lib=\
+qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi"
+    elif [[ "$OPSYS" == "AIX" ]]; then
+        WITHQTLIBSARG="--with-Qt-lib=\
+qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXt -lXi"
+    elif [[ "$OPSYS" == "IRIX64" ]]; then
+        WITHQTLIBSARG="--with-Qt-lib=\
+qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi"
+    elif [[ "$OPSYS" == "SunOS" ]]; then
+        WITHQTLIBSARG="--with-Qt-lib=\
+qt-mt -L/usr/openwin/lib -L/usr/openwin/lib -lGL -lXmu -lXext -lX11 \
+-lresolv -lsocket -lnsl -lSM -lICE -ldl -lpthread -lrt"
+    else
+        WITHQTLIBSARG="--with-Qt-lib=\
+qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi"
+    fi
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
-        --without-readline "$WITHHDF5ARG" --without-exodus \
-        --disable-sdx --without-python --disable-browser
+        "$WITHHDF5ARG" "$WITHSZIPARG" \
+        "$WITHQTINCARG" "$WITHQTBINARG" "$WITHQTLIBARG" "$WITHQTLIBSARG" \
+        --without-readline --disable-fortran --disable-browser --enable-silex
     if [[ $? != 0 ]] ; then
        echo "Silo configure failed.  Giving up"
        return 1
@@ -3068,19 +3294,31 @@ function build_silo
     #
     # Build Silo
     #
-    if [[ "$OPSYS" == "Darwin" ]]; then
-       # Darwin make fails during link
-       MAKEOPT="-i"
-    fi
     info_box "Building Silo . . . (~2 minutes)" 1>&3
     echo "Building Silo"
-    $MAKE $MAKEOPT
+    $MAKE
     if [[ $? != 0 ]] ; then
        echo "Silo build failed.  Giving up"
        return 1
     fi
+    #
+    # Install into the VisIt third party location.
+    #
+    info_box "Installing Silo . . ." 1>&3
+    echo "Installing Silo"
 
     if [[ "$OPSYS" == "Darwin" ]]; then
+        mkdir "$VISITDIR/silo"
+        mkdir "$VISITDIR/silo/${SILO_VERSION}"
+        mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
+        mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+        mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
+        cp src/silo/silo.h   \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+        cp src/silo/silo.inc \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
+        cp src/silo/pmpio.h \
+"$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
         #
         # Make dynamic executable
         #
@@ -3089,40 +3327,31 @@ function build_silo
         else
            INSTALLNAMEPATH="@executable_path/../lib"
         fi
-        $C_COMPILER -dynamiclib -o libsilo.${SO_EXT} silo/*/*.o \
+        mkdir tmp
+        cd tmp
+        ar x ../src/.libs/libsiloh5.a
+        $C_COMPILER -dynamiclib -o libsiloh5.${SO_EXT} *.o \
            -Wl,-headerpad_max_install_names \
-           -Wl,-install_name,$INSTALLNAMEPATH/libsilo.${SO_EXT} \
+           -Wl,-install_name,$INSTALLNAMEPATH/libsiloh5.${SO_EXT} \
            -Wl,-compatibility_version,${SILO_COMPATIBILITY_VERSION} \
-           -Wl,-current_version,${SILO_VERSION} $SILO_HDF5LINK_OPT
+           -Wl,-current_version,${SILO_VERSION} $SILO_LINK_OPT
 
         if [[ $? != 0 ]] ; then
            echo "Silo dynamic library build failed.  Giving up"
            return 1
         fi
+        cp libsiloh5.${SO_EXT}  "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
+    else
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+           echo "Silo install failed.  Giving up"
+           return 1
+        fi
     fi
 
-    #
-    # Install into the VisIt third party location.
-    #
-    info_box "Installing Silo . . ." 1>&3
-    echo "Installing Silo"
-    mkdir "$VISITDIR/silo"
-    mkdir "$VISITDIR/silo/${SILO_VERSION}"
-    mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
-    mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-    mkdir "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
-    cp silo/silo/silo.h   "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-    cp silo/silo/silo.inc "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-    cp silo/sdx/sdx.h     "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-    cp silo/sdx/sdx.inc   "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/include"
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        cp libsilo.${SO_EXT}  "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
-    else
-        cp lib/libsilo.a  "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH/lib"
-    fi
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/silo/${SILO_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/silo"
+       chgrp -R ${GROUP} "$VISITDIR/silo"
     fi
     cd "$START_DIR"
     echo "Done with Silo"
@@ -3130,17 +3359,17 @@ function build_silo
 }
 
 # *************************************************************************** #
-#                          Function 8.0, build_szip                           
- #
-# *************************************************************************** 
-#
+#                          Function 8.0, build_szip                           #
+# *************************************************************************** #
 
 function build_szip
 {
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${SZIP_FILE} ]] ; then
+    if [[ -d ${SZIP_DIR} ]] ; then
+       info_box "Found ${SZIP_DIR} . . ." 1>&3
+    elif [[ -f ${SZIP_FILE} ]] ; then
        info_box "Unzipping/Tarring ${SZIP_FILE} . . ." 1>&3
        uncompress_untar ${SZIP_FILE}
        if [[ $? != 0 ]] ; then
@@ -3148,7 +3377,7 @@ function build_szip
 "Unable to untar $SZIP_FILE  Corrupted file or out of space on device?"
           return 1
        fi
-    elif [[ -f ${SZIP_FILE%.*} ]] ; then
+    elif [[ -f ${SZIP_FILE%.gz} ]] ; then
        info_box "Tarring ${SZIP_FILE%.*} . . ." 1>&3
        tar xf ${SZIP_FILE%.*}
        if [[ $? != 0 ]] ; then
@@ -3160,7 +3389,6 @@ function build_szip
 
     #
     info_box "Configuring SZIP . . ." 1>&3
-    SZIP_DIR=${SZIP_FILE%.tar*}
     cd ${SZIP_DIR}
     echo "Invoking command to configure SZIP"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
@@ -3226,8 +3454,8 @@ function build_szip
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/szip/${SZIP_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/szip"
+       chgrp -R ${GROUP} "$VISITDIR/szip"
     fi
     cd "$START_DIR"
     echo "Done with SZIP"
@@ -3235,7 +3463,7 @@ function build_szip
 }
 
 # *************************************************************************** #
-#                          Function 8.1, build_hdf5                            #
+#                          Function 8.1, build_hdf5                           #
 # *************************************************************************** #
 
 function build_hdf5
@@ -3243,7 +3471,9 @@ function build_hdf5
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${HDF5_FILE} ]] ; then
+    if [[ -d ${HDF5_DIR} ]] ; then
+       info_box "Found ${HDF5_DIR} . . ." 1>&3
+    elif [[ -f ${HDF5_FILE} ]] ; then
        info_box "Unzipping/Tarring ${HDF5_FILE} . . ." 1>&3
        uncompress_untar ${HDF5_FILE}
        if [[ $? != 0 ]] ; then
@@ -3263,7 +3493,6 @@ function build_hdf5
 
     #
     info_box "Configuring HDF5 . . ." 1>&3
-    HDF5_DIR=${HDF5_FILE%.tar*}
     cd ${HDF5_DIR}
     if [[ "$OPSYS" == "Darwin" ]]; then
         export DYLD_LIBRARY_PATH="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":$DYLD_LIBRARY_PATH
@@ -3338,8 +3567,8 @@ function build_hdf5
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/hdf5/${HDF5_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/hdf5"
+       chgrp -R ${GROUP} "$VISITDIR/hdf5"
     fi
     cd "$START_DIR"
     echo "Done with HDF5"
@@ -3356,7 +3585,9 @@ function build_mili
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${MILI_FILE} ]] ; then
+    if [[ -d ${MILI_DIR} ]] ; then
+       info_box "Found ${MILI_DIR} . . ." 1>&3
+    elif [[ -f ${MILI_FILE} ]] ; then
        info_box "Unzipping/Tarring ${MILI_FILE} . . ." 1>&3
        uncompress_untar ${MILI_FILE}
        if [[ $? != 0 ]] ; then
@@ -3375,12 +3606,12 @@ function build_mili
     fi
 
     #
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        #
-        # Apply patches
-        #
-        info_box "Patching Mili . . ." 1>&3
-        patch -p0 << \EOF
+    # Apply patches
+    #
+    if [[ ${MILI_VERSION} == 1.10.0 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            info_box "Patching Mili . . ." 1>&3
+            patch -p0 << \EOF
 diff -rp mili.orig/src/mili_internal.h mili/src/mili_internal.h
 *** mili.orig/src/mili_internal.h       Thu Oct 12 14:31:40 2006
 --- mili/src/mili_internal.h    Thu Mar 22 16:39:39 2007
@@ -3395,14 +3626,15 @@ diff -rp mili.orig/src/mili_internal.h mili/src/mili_internal.h
   #include "misc.h"
   #include "mili.h"
 EOF
-       if [[ $? != 0 ]] ; then
-          echo "Unable to patch Mili. Wrong version?"
-          return 1
+          if [[ $? != 0 ]] ; then
+             echo "Unable to patch Mili. Wrong version?"
+             return 1
+          fi
        fi
     fi
 
     info_box "Configuring Mili . . ." 1>&3
-    cd mili
+    cd $MILI_DIR
 
     echo "Invoking command to configure Mili"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
@@ -3464,8 +3696,8 @@ EOF
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/mili/${MILI_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/mili/${MILI_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/mili"
+       chgrp -R ${GROUP} "$VISITDIR/mili"
     fi
     cd "$START_DIR"
     echo "Done with Mili"
@@ -3474,7 +3706,7 @@ EOF
 
 
 # *************************************************************************** #
-#                          Function 8.3, build_hdf4                            #
+#                          Function 8.3, build_hdf4                           #
 # *************************************************************************** #
 
 function build_hdf4
@@ -3482,7 +3714,9 @@ function build_hdf4
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${HDF4_FILE} ]] ; then
+    if [[ -d ${HDF4_DIR} ]] ; then
+       info_box "Found ${HDF4_DIR} . . ." 1>&3
+    elif [[ -f ${HDF4_FILE} ]] ; then
        info_box "Unzipping/Tarring ${HDF4_FILE} . . ." 1>&3
        uncompress_untar ${HDF4_FILE}
        if [[ $? != 0 ]] ; then
@@ -3500,12 +3734,13 @@ function build_hdf4
        fi
     fi
 
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        #
-        # Apply patches
-        #
-        info_box "Patching HDF4 . . ." 1>&3
-        patch -p0 << \EOF
+    #
+    # Apply patches
+    #
+    if [[ ${HDF4_VERSION} == 4.2.1 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            info_box "Patching HDF4 . . ." 1>&3
+            patch -p0 << \EOF
 *** HDF4.2r1.orig/configure	Tue Feb  8 10:29:27 2005
 --- HDF4.2r1/configure	Thu Apr 26 13:30:56 2007
 *************** done
@@ -4342,15 +4577,15 @@ function build_hdf4
   #if defined _M_ALPHA || defined _M_IX86 || defined INTEL86 || defined M_I86 || defined M_I386 || defined DOS386 || defined __i386 || defined UNIX386 || defined i386
   #ifndef INTEL86
 EOF
-       if [[ $? != 0 ]] ; then
-          echo "Unable to patch HDF4. Wrong version?"
-          return 1
-       fi
+           if [[ $? != 0 ]] ; then
+              echo "Unable to patch HDF4. Wrong version?"
+              return 1
+           fi
+        fi
     fi
 
     #
     info_box "Configuring HDF4 . . ." 1>&3
-    HDF4_DIR=${HDF4_FILE%.tar*}
     cd ${HDF4_DIR}
     echo "Invoking command to configure HDF4"
     MAKEOPS=""
@@ -4446,8 +4681,8 @@ EOF
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/hdf4/${HDF4_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/hdf4"
+       chgrp -R ${GROUP} "$VISITDIR/hdf4"
     fi
     cd "$START_DIR"
     echo "Done with HDF4"
@@ -4464,7 +4699,9 @@ function build_netcdf
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${NETCDF_FILE} ]] ; then
+    if [[ -d ${NETCDF_DIR} ]] ; then
+       info_box "Found ${NETCDF_DIR} . . ." 1>&3
+    elif [[ -f ${NETCDF_FILE} ]] ; then
        info_box "Unzipping/Tarring ${NETCDF_FILE} . . ." 1>&3
        uncompress_untar ${NETCDF_FILE}
        if [[ $? != 0 ]] ; then
@@ -4485,8 +4722,9 @@ function build_netcdf
     #
     # Apply patches
     #
-    info_box "Patching NetCDF . . ." 1>&3
-    patch -p0 << \EOF
+    if [[ ${NETCDF_VERSION} == 3.6.0 ]] ; then
+        info_box "Patching NetCDF . . ." 1>&3
+        patch -p0 << \EOF
 *** netcdf-3.6.0-p1.orig/src/libsrc/netcdf.h	Tue Sep 14 06:41:22 2004
 --- netcdf-3.6.0-p1/src/libsrc/netcdf.h	Thu Apr 26 14:14:41 2007
 *************** typedef enum {
@@ -4515,14 +4753,15 @@ function build_netcdf
   
   /*
 EOF
-    if [[ $? != 0 ]] ; then
-        echo "Unable to patch NetCDF. Wrong version?"
-        return 1
+        if [[ $? != 0 ]] ; then
+            echo "Unable to patch NetCDF. Wrong version?"
+            return 1
+        fi
     fi
 
     #
     info_box "Configuring NetCDF . . ." 1>&3
-    cd netcdf-3.6.0-p1/src
+    cd $NETCDF_DIR
     echo "Invoking command to configure NetCDF"
     if [[ "$OPSYS" == "Darwin" ]]; then
         EXTRA_FLAGS="--enable-largefile"
@@ -4611,8 +4850,8 @@ EOF
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/netcdf/${NETCDF_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/netcdf"
+       chgrp -R ${GROUP} "$VISITDIR/netcdf"
     fi
     cd "$START_DIR"
     echo "Done with NetCDF"
@@ -4629,7 +4868,9 @@ function build_cgns
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${CGNS_FILE} ]] ; then
+    if [[ -d ${CGNS_DIR} ]] ; then
+       info_box "Found ${CGNS_DIR} . . ." 1>&3
+    elif [[ -f ${CGNS_FILE} ]] ; then
        info_box "Unzipping/Tarring ${CGNS_FILE} . . ." 1>&3
        uncompress_untar ${CGNS_FILE}
        if [[ $? != 0 ]] ; then
@@ -4649,7 +4890,6 @@ function build_cgns
 
     #
     info_box "Configuring CGNS . . ." 1>&3
-    CGNS_DIR=${CGNS_FILE%-3.tar*}
     cd ${CGNS_DIR}
     echo "Invoking command to configure CGNS"
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
@@ -4717,8 +4957,8 @@ function build_cgns
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/cgns/${CGNS_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/cgns"
+       chgrp -R ${GROUP} "$VISITDIR/cgns"
     fi
     cd "$START_DIR"
     echo "Done with CGNS"
@@ -4735,7 +4975,9 @@ function build_gdal
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${GDAL_FILE} ]] ; then
+    if [[ -d ${GDAL_DIR} ]] ; then
+       info_box "Found ${GDAL_DIR} . . ." 1>&3
+    elif [[ -f ${GDAL_FILE} ]] ; then
        info_box "Unzipping/Tarring ${GDAL_FILE} . . ." 1>&3
        uncompress_untar ${GDAL_FILE}
        if [[ $? != 0 ]] ; then
@@ -4755,7 +4997,6 @@ function build_gdal
 
     #
     info_box "Configuring GDAL . . ." 1>&3
-    GDAL_DIR=${GDAL_FILE%.tar*}
     cd ${GDAL_DIR}
     echo "Invoking command to configure GDAL"
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -4867,8 +5108,8 @@ EOF
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/gdal"
+       chgrp -R ${GROUP} "$VISITDIR/gdal"
     fi
     cd "$START_DIR"
     echo "Done with GDAL"
@@ -4885,7 +5126,9 @@ function build_exodus
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${EXODUS_FILE} ]] ; then
+    if [[ -d ${EXODUS_DIR} ]] ; then
+       info_box "Found ${EXODUS_DIR} . . ." 1>&3
+    elif [[ -f ${EXODUS_FILE} ]] ; then
        info_box "Unzipping/Tarring ${EXODUS_FILE} . . ." 1>&3
        uncompress_untar ${EXODUS_FILE}
        if [[ $? != 0 ]] ; then
@@ -4903,7 +5146,6 @@ function build_exodus
        fi
     fi
 
-    EXODUS_DIR=${EXODUS_FILE%.tar*}
     cd ${EXODUS_DIR}
     #
     # Build Exodus
@@ -4976,8 +5218,8 @@ function build_exodus
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/exodus/${EXODUS_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/exodus"
+       chgrp -R ${GROUP} "$VISITDIR/exodus"
     fi
     cd "$START_DIR"
     echo "Done with Exodus"
@@ -4994,7 +5236,9 @@ function build_boxlib
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${BOXLIB_FILE} ]] ; then
+    if [[ -d ${BOXLIB_DIR} ]] ; then
+       info_box "Found ${BOXLIB_DIR} . . ." 1>&3
+    elif [[ -f ${BOXLIB_FILE} ]] ; then
        info_box "Unzipping/Tarring ${BOXLIB_FILE} . . ." 1>&3
        uncompress_untar ${BOXLIB_FILE}
        if [[ $? != 0 ]] ; then
@@ -5015,9 +5259,10 @@ function build_boxlib
     #
     # Apply patches
     #
-    info_box "Patching Boxlib 3D . . ." 1>&3
-    if [[ "$OPSYS" == "AIX" ]]; then
-       patch -p0 << \EOF
+    if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
+       info_box "Patching Boxlib 3D . . ." 1>&3
+       if [[ "$OPSYS" == "AIX" ]]; then
+          patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
 *** CCSEApps.orig/BoxLib/GNUmakefile	Sun Jul 22 21:32:20 2001
 --- CCSEApps/BoxLib/GNUmakefile	Fri May 18 15:54:14 2007
@@ -5045,8 +5290,8 @@ diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
   NAMESPACE = FALSE
   
 EOF
-    else
-       patch -p0 << \EOF
+       else
+          patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
 *** CCSEApps.orig/BoxLib/GNUmakefile	Sun Jul 22 21:32:20 2001
 --- CCSEApps/BoxLib/GNUmakefile	Fri May 18 15:54:14 2007
@@ -5074,17 +5319,17 @@ diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
   NAMESPACE = FALSE
   
 EOF
-    fi
-    if [[ $? != 0 ]] ; then
-        echo "Unable to patch Boxlib 3D. Wrong version?"
-        return 1
-    fi
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        #
-        # Apply patches
-        #
-        info_box "Patching Boxlib 3D . . ." 1>&3
-        patch -p0 << \EOF
+       fi
+       if [[ $? != 0 ]] ; then
+           echo "Unable to patch Boxlib 3D. Wrong version?"
+           return 1
+       fi
+       if [[ "$OPSYS" == "Darwin" ]]; then
+           #
+           # Apply patches
+           #
+           info_box "Patching Boxlib 3D . . ." 1>&3
+           patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/BaseFab.cpp CCSEApps/BoxLib/BaseFab.cpp
 *** CCSEApps.orig/BoxLib/BaseFab.cpp	Wed Mar 19 10:11:09 2003
 --- CCSEApps/BoxLib/BaseFab.cpp	Fri Apr 27 15:09:29 2007
@@ -5335,14 +5580,15 @@ diff -rp CCSEApps.orig/BoxLib/Make.package CCSEApps/BoxLib/Make.package
 ! #F$(BOXLIB_BASE)_sources += SPECIALIZE_$(DIM)D.F
 ! #F$(BOXLIB_BASE)_headers += SPECIALIZE_F.H
 EOF
-       if [[ $? != 0 ]] ; then
-          echo "Unable to patch Boxlib 3D. Wrong version?"
-          return 1
+          if [[ $? != 0 ]] ; then
+             echo "Unable to patch Boxlib 3D. Wrong version?"
+             return 1
+          fi
        fi
     fi
 
     #
-    cd CCSEApps/BoxLib
+    cd $BOXLIB_DIR
     #
     # Build Boxlib 3D
     #
@@ -5403,10 +5649,11 @@ EOF
     #
     # Apply patches
     #
-    info_box "Patching Boxlib 2D . . ." 1>&3
-    cd $START_DIR
-    if [[ "$OPSYS" == "AIX" ]]; then
-       patch -p0 << \EOF
+    if [[ ${BOXLIB_VERSION} == 2.5 ]] ; then
+       info_box "Patching Boxlib 2D . . ." 1>&3
+       cd $START_DIR
+       if [[ "$OPSYS" == "AIX" ]]; then
+          patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
 *** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
 --- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
@@ -5428,8 +5675,8 @@ diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
   USE_MPI   = FALSE
   #NAMESPACE = TRUE
 EOF
-    else
-       patch -p0 << \EOF
+       else
+          patch -p0 << \EOF
 diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
 *** CCSEApps.orig/BoxLib/GNUmakefile	Fri Apr 27 15:18:35 2007
 --- CCSEApps/BoxLib/GNUmakefile	Fri Apr 27 15:18:54 2007
@@ -5451,12 +5698,13 @@ diff -rp CCSEApps.orig/BoxLib/GNUmakefile CCSEApps/BoxLib/GNUmakefile
   USE_MPI   = FALSE
   #NAMESPACE = TRUE
 EOF
+       fi
+       if [[ $? != 0 ]] ; then
+           echo "Unable to patch Boxlib 2D. Wrong version?"
+           return 1
+       fi
     fi
-    if [[ $? != 0 ]] ; then
-        echo "Unable to patch Boxlib 2D. Wrong version?"
-        return 1
-    fi
-    cd CCSEApps/BoxLib
+    cd $BOXLIB_DIR
     #
     # Build Boxlib 2D
     #
@@ -5515,8 +5763,8 @@ EOF
     tar xf Boxlib3D.h.tar
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/boxlib/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/boxlib/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/boxlib"
+       chgrp -R ${GROUP} "$VISITDIR/boxlib"
     fi
     cd "$START_DIR"
     echo "Done with Boxlib"
@@ -5533,7 +5781,9 @@ function build_cfitsio
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${CFITSIO_FILE} ]] ; then
+    if [[ -d ${CFITSIO_DIR} ]] ; then
+       info_box "Found ${CFITSIO_DIR} . . ." 1>&3
+    elif [[ -f ${CFITSIO_FILE} ]] ; then
        info_box "Unzipping/Tarring ${CFITSIO_FILE} . . ." 1>&3
        uncompress_untar ${CFITSIO_FILE}
        if [[ $? != 0 ]] ; then
@@ -5553,7 +5803,7 @@ function build_cfitsio
 
     #
     info_box "Configuring CFITSIO . . ." 1>&3
-    cd cfitsio
+    cd $CFITSIO_DIR
     echo "Invoking command to configure CFITSIO"
     env CXX="$CXX_COMPILER" CC="$C_COMPILER" \
        CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
@@ -5618,8 +5868,8 @@ function build_cfitsio
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/cfitsio/${CFITSIO_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/cfitsio"
+       chgrp -R ${GROUP} "$VISITDIR/cfitsio"
     fi
     cd "$START_DIR"
     echo "Done with CFITSIO"
@@ -5635,7 +5885,9 @@ function build_h5part
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -f ${H5PART_FILE} ]] ; then
+    if [[ -d ${H5PART_DIR} ]] ; then
+       info_box "Found ${H5PART_DIR} . . ." 1>&3
+    elif [[ -f ${H5PART_FILE} ]] ; then
        info_box "Unzipping/Tarring ${H5PART_FILE} . . ." 1>&3
        uncompress_untar ${H5PART_FILE}
        if [[ $? != 0 ]] ; then
@@ -5738,11 +5990,103 @@ $DYLD_LIBRARY_PATH
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
-       chmod -R ug+w,a+r "$VISITDIR/h5part/${H5PART_VERSION}/$VISITARCH"
-       chgrp -R ${GROUP} "$VISITDIR/h5part/${H5PART_VERSION}/$VISITARCH"
+       chmod -R ug+w,a+rX "$VISITDIR/h5part"
+       chgrp -R ${GROUP} "$VISITDIR/h5part"
     fi
     cd "$START_DIR"
     echo "Done with H5Part"
+    return 0
+}
+
+# *************************************************************************** #
+#                         Function 8.11, build_ccmio                         #
+# *************************************************************************** #
+
+function build_ccmio
+{
+    #
+    # Unzip the file, provided a gzipped file exists.
+    #
+    if [[ -d ${CCMIO_DIR} ]] ; then
+       info_box "Found ${CCMIO_DIR} . . ." 1>&3
+    elif [[ -f ${CCMIO_FILE} ]] ; then
+       info_box "Unzipping/Tarring ${CCMIO_FILE} . . ." 1>&3
+       uncompress_untar ${CCMIO_FILE}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${CCMIO_FILE}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    elif [[ -f ${CCMIO_FILE%.*} ]] ; then
+       info_box "Tarring ${CCMIO_FILE%.*} . . ." 1>&3
+       tar xf ${CCMIO_FILE%.*}
+       if [[ $? != 0 ]] ; then
+          echo \
+"Unable to untar ${CCMIO_FILE%.*}.  Corrupted file or out of space on device?"
+          return 1
+       fi
+    fi
+
+    #
+    info_box "Configuring CCMIO . . ." 1>&3
+    cd ${CCMIO_DIR}
+
+    #
+    # Build CCMIO
+    #
+    info_box "Building CCMIO . . . (~1 minutes)" 1>&3
+    echo "Building CCMIO"
+    $MAKE batch
+##  if [[ $? != 0 ]] ; then
+##     echo "CCMIO build failed.  Giving up"
+##     return 1
+##  fi
+    info_box "Installing CCMIO . . ." 1>&3
+    echo "Installing CCMIO"
+    mkdir $VISITDIR/ccmio
+    mkdir $VISITDIR/ccmio/${CCMIO_VERSION}
+    mkdir $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH
+    mkdir $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib
+    mkdir $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/include
+    ln -s $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/include \
+        $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/include/libccmio
+    cp libccmio/ccmio*.h $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/include
+
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        #
+        # Make dynamic executable
+        #
+        info_box "Creating dynamic libraries for CCMIO . . ." 1>&3
+        echo "Creating dynamic libraries for CCMIO"
+        if [[ $ABS_PATH == "Yes" ]]; then
+           INSTALLNAMEPATH="$VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib"
+        else
+           INSTALLNAMEPATH="@executable_path/../lib"
+        fi
+        install_name_tool -id \
+          "$INSTALLNAMEPATH/libadf.$SO_EXT" "libadf.$SO_EXT"
+        install_name_tool -id \
+          "$INSTALLNAMEPATH/libccmio.$SO_EXT" "libccmio.$SO_EXT"
+        install_name_tool -change \
+          libadf.dylib.5.01.000 "$INSTALLNAMEPATH/libadf.$SO_EXT" \
+          "libccmio.$SO_EXT"
+        cp "libadf.$SO_EXT" \
+          "$VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib/libadf.$SO_EXT"
+        cp "libccmio.$SO_EXT" \
+          "$VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib/libccmio.$SO_EXT"
+    else
+        cp `ls lib/*/release-static/libadf.a` \
+           $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib
+        cp `ls lib/*/release-static/libccmio.a` \
+           $VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH/lib
+    fi
+
+    if [[ "$DO_GROUP" == "yes" ]] ; then
+       chmod -R ug+w,a+rX "$VISITDIR/ccmio"
+       chgrp -R ${GROUP} "$VISITDIR/ccmio"
+    fi
+    cd "$START_DIR"
+    echo "Done with CCMIO"
     return 0
 }
 
@@ -5790,6 +6134,13 @@ function build_hostconf
 "## Specify the location of the vtk include files and libraries." >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo "VTK=\$VISITHOME/vtk/$VTK_VERSION/$VISITARCH" >> $HOSTCONF
+    echo >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo \
+"## Specify the location of cmake." >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    echo "DEFAULT_CMAKE=\$VISITHOME/cmake/$CMAKE_VERSION/$VISITARCH/bin/cmake" \
+>> $HOSTCONF
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     echo \
@@ -5965,6 +6316,33 @@ function build_hostconf
 "DEFAULT_SZIP_LIB=\$VISITHOME/szip/$SZIP_VERSION/$VISITARCH/lib" \
         >> $HOSTCONF
     fi
+    echo "##" >> $HOSTCONF
+    echo "## CCMIO" >> $HOSTCONF
+    echo "##" >> $HOSTCONF
+    if [[ "$DO_CCMIO" == "yes" ]] ; then
+        echo \
+"DEFAULT_CCMIO_INCLUDE=\$VISITHOME/ccmio/$CCMIO_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_CCMIO_LIB=\$VISITHOME/ccmio/$CCMIO_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_VISUS" == "yes" ]] ; then
+        echo \
+"DEFAULT_VISUS_INCLUDE=\$VISITHOME/visus/$VISUS_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_VISUS_LIB=\$VISITHOME/visus/$VISUS_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
+    if [[ "$DO_ITAPS" == "yes" ]] ; then
+        echo \
+"DEFAULT_ITAPS_INCLUDE=\$VISITHOME/itaps/$ITAPS_VERSION/$VISITARCH/include" \
+        >> $HOSTCONF
+        echo \
+"DEFAULT_ITAPS_LIB=\$VISITHOME/itaps/$ITAPS_VERSION/$VISITARCH/lib" \
+        >> $HOSTCONF
+    fi
     echo >> $HOSTCONF
     echo "##" >> $HOSTCONF
     cd "$START_DIR"
@@ -6036,6 +6414,9 @@ function build_visit
     if [[ "${DO_JAVA}" == "yes" ]] ; then
        EXTRA_FEATURES="${EXTRA_FEATURES} --enable-java"
     fi
+    if [[ "${DO_SLIVR}" == "yes" ]] ; then
+       EXTRA_FEATURES="${EXTRA_FEATURES} --enable-slivr"
+    fi
     ./configure ${PARFLAGS} ${EXTRA_FEATURES}
     if [[ $? != 0 ]] ; then
        echo "VisIt configure failed.  Giving up"
@@ -6074,6 +6455,11 @@ function build_visit
            mv -f databases/SimV1Writer/Makefile \
              databases/SimV1Writer/Makefile.orig
            mv -f Make.tmp databases/SimV1Writer/Makefile
+           cat components/Expressions/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
+           mv -f components/Expressions/Makefile \
+             components/Expressions/Makefile.orig
+           mv -f Make.tmp components/Expressions/Makefile
         else
            cat databases/SimV1/Makefile | \
               sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
@@ -6086,6 +6472,12 @@ function build_visit
            mv -f databases/SimV1Writer/Makefile \
              databases/SimV1Writer/Makefile.orig
            mv -f Make.tmp databases/SimV1Writer/Makefile
+           cat components/Expressions/Makefile | \
+              sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
+              Make.tmp
+           mv -f components/Expressions/Makefile \
+             components/Expressions/Makefile.orig
+           mv -f Make.tmp components/Expressions/Makefile
         fi
     elif [[ "$OPSYS" == "SunOS" ]]; then
         # Some Solaris systems hang when compiling Fluent when optimizations
@@ -6109,7 +6501,7 @@ function build_visit
 }
 
 usage () {
-  printf "Usage: %s [-45bcdefghijkmnopswxyz] [-a opt] [-l opt]\n" $0
+  printf "Usage: %s [-45bCcdefghIijkmnopSsVwxyz] [-a opt] [-l opt]\n" $0
   printf "       [-t opt] [-u opt] [-v opt] [-D opt]\n"
   printf "\n"
   printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
@@ -6119,6 +6511,7 @@ usage () {
   printf "%s\n" "       library path usually set to something like"
   printf "%s\n" "       linux_gcc-3.4.6 or Darwin_gcc-4.0.1"
   printf "%s %s %s\n" "-b     Build Boxlib from [" $BOXLIB_FILE "]"
+  printf "%s %s %s\n" "-C     Build Star-CD support from [" $CCMIO_FILE "]"
   printf "%s %s %s\n" "-c     Build CGNS from [" $CGNS_FILE "]"
   printf "%s\n" "-D opt Select -g level debugging flag in CFLAGS/CXXFLAGS"
   printf "%s\n" "       The default level is 2 (-g2). Level 1 produces"
@@ -6128,6 +6521,7 @@ usage () {
   printf "%s %s %s\n" "-f     Build CFITSIO from [" $CFITSIO_FILE "]"
   printf "%s %s %s\n" "-g     Build GDAL from [" $GDAL_FILE "]"
   printf "%s\n" "-h     display this message"
+  printf "%s %s %s\n" "-I     Build ITAPS from [" $ITAPS_FILE "]"
   printf "%s\n" "-i     Change the behavior of the install name path for"
   printf "%s\n" "       the Darwin dynamic libraries. Enabling this flag"
   printf "%s\n" "       will used the THIRD_PARTY_PATH path for creating"
@@ -6141,6 +6535,7 @@ usage () {
   printf "%s\n" "-o     Display build log to stdout not to build_visit_log file"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
   printf "%s %s %s\n" "-r     Build H5Part from [" $H5PART_FILE "]"
+  printf "%s\n" "-S     Build with SLIVR shader support"
   printf "%s\n" "-s     Use the SVN server for the VisIt distribution"
   printf "%s %s %s\n" "       [ svn co $SVN_ROOT_PATH/trunk/src ]"
   printf "%s\n" "-t opt The name of the distribution tarball, the VISIT_FILE"
@@ -6153,6 +6548,7 @@ usage () {
   printf "%s\n" "       installed some where like /usr/gapps/visit. The"
   printf "%s\n" "       default assumes 3rd party libraries are to be built"
   printf "%s\n" "       and installed in [./visit]"
+  printf "%s %s %s\n" "-V     Build ViSUS from:[" $ViSUS_FILE "]"
   printf "%s %s %s\n" "-v opt The VISIT_VERSION value [" $VISIT_VERSION "]"
   printf "%s\n" "-w     Build with the VisIt Python module"
   printf "%s\n" "-x     Turn on SHELL debugging"
@@ -6172,22 +6568,24 @@ while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCD:EFGHIJKL:MNOPRST:U:V:WXYZ A
 do
     argcur=$ARG
     case $ARG in
-      4) DO_HDF4="yes"
-         ON_HDF4="on"
-         DO_SZIP="yes"
-         ON_SZIP="on";;
-      5) DO_HDF5="yes"
-         ON_HDF5="on"
-         DO_SZIP="yes"
-         ON_SZIP="on";;
+      4)   DO_HDF4="yes"
+           ON_HDF4="on"
+           DO_SZIP="yes"
+           ON_SZIP="on";;
+      5)   DO_HDF5="yes"
+           ON_HDF5="on"
+           DO_SZIP="yes"
+           ON_SZIP="on";;
       a|A) VISITARCH="$OPTARG";;
       b|B) DO_BOXLIB="yes"
            ON_BOXLIB="on";;
-      c|C) DO_CGNS="yes"
+      C)   DO_CCMIO="yes"
+           ON_CCMIO="on";;
+      c)   DO_CGNS="yes"
            ON_CGNS="on";;
-      D) C_OPT_FLAGS="$C_OPT_FLAGS -g$OPTARG"
+      D)   C_OPT_FLAGS="$C_OPT_FLAGS -g$OPTARG"
            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g$OPTARG";;
-      d) C_OPT_FLAGS="$C_OPT_FLAGS -g"
+      d)   C_OPT_FLAGS="$C_OPT_FLAGS -g"
            CXX_OPT_FLAGS="$CXX_OPT_FLAGS -g";;
       e|E) DO_EXODUS="yes"
            ON_EXODUS="on"
@@ -6198,7 +6596,9 @@ do
       g|G) DO_GDAL="yes"
            ON_GDAL="on";;
       h|H) usage; exit 2;;
-      i|I) ABS_PATH="yes"
+      I)   DO_ITAPS="yes"
+           ON_ITAPS="on";;
+      i)   ABS_PATH="yes"
            ON_ABS_PATH="on";;
       j|J) DO_VISIT="no"
            ON_VISIT="off";;
@@ -6220,14 +6620,18 @@ do
            ON_HDF5="on"
            DO_SZIP="yes"
            ON_SZIP="on";;
-      s|S) DO_SVN="yes"
+      S)   DO_SLIVR="yes"
+           ON_SLIVR="on";;
+      s)   DO_SVN="yes"
            ON_SVN="on";;
       t|T) VISIT_FILE="$OPTARG"
            USE_VISIT_FILE="yes"
            ON_USE_VISIT_FILE="on";;
       u|U) THIRD_PARTY_PATH="$OPTARG"
            ON_THIRD_PARTY_PATH="on";;
-      v|V) VISIT_VERSION=$OPTARG
+      V)   DO_VISUS="yes"
+           ON_VISUS="on";;
+      v)   VISIT_VERSION=$OPTARG
            VISIT_FILE="visit${VISIT_VERSION}.tar.gz";;
       w|W) DO_MODULE="yes"
            ON_MODULE="on";;
@@ -6236,8 +6640,8 @@ do
            ON_JAVA="on";;
       z|Z) GRAPHICAL="no"
            ON_GRAPHICAL="on";;
-      :) echo "$0: \"$argcur\" requires a value"; exit 2;;
-      \?) echo "$0: INVALID option \"$argcur\" at $OPTIND"; exit 2;;
+      :)   echo "$0: \"$argcur\" requires a value"; exit 2;;
+      \?)  echo "$0: INVALID option \"$argcur\" at $OPTIND"; exit 2;;
     esac
 done
 # Show a splashscreen. This routine also determines if we have "dialog"
@@ -6286,6 +6690,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
            "Parallel"   "specify parallel build flags"    $ON_parallel\
            "Python"     "enable VisIt python module"      $ON_MODULE\
            "Java"       "enable java client library"      $ON_JAVA\
+           "SLIVR"      "enable SLIVR rendering library"  $ON_SLIVR\
            "Variables"  "specify build variable values"   $ON_verify\
            "More"       "select more options"             $ON_MORE  2> tmp$$
     retval=$?
@@ -6300,6 +6705,7 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
         parallel="no"
         DO_MODULE="no"
         DO_JAVA="no"
+        DO_SLIVR="no"
         verify="no"
         DO_MORE="no"
         for OPTION in $choice
@@ -6317,13 +6723,14 @@ if [[ "$GRAPHICAL" == "yes" ]] ; then
                  DO_MODULE="yes";;
               Java)
                  DO_JAVA="yes";;
+              SLIVR)
+                 DO_SLIVR="yes";;
               Variables)
                  verify="yes";;
               More)
                  DO_MORE="yes";;
             esac
         done
-        break
         ;;
       1)
         echo "Cancel pressed."
@@ -6345,6 +6752,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
 "Select the optional 3rd party libraries "\
 "to be built and installed:" 0 0 0 \
            "Boxlib"   "2.5    $BOXLIB_FILE"    $ON_BOXLIB \
+           "CCMIO"    "2.6.1  $CCMIO_FILE"     $ON_CCMIO \
            "CFITSIO"  "3006   $CFITSIO_FILE"   $ON_CFITSIO \
            "CGNS"     "2.4.3  $CGNS_FILE"      $ON_CGNS \
            "ExodusII" "4.46   $EXODUS_FILE"    $ON_EXODUS \
@@ -6361,6 +6769,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
     case $retval in
       0)
         DO_BOXLIB="no"
+        DO_CCMIO="no"
         DO_CFITSIO="no"
         DO_CGNS="no"
         DO_EXODUS="no"
@@ -6376,6 +6785,8 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
             case $OPTION in
               Boxlib)
                  DO_BOXLIB="yes";;
+              CCMIO)
+                 DO_CCMIO="yes";;
               CFITSIO)
                  DO_CFITSIO="yes";;
               CGNS)
@@ -6927,6 +7338,24 @@ if [[ "$DO_H5PART" == "yes" ]] ; then
          exit 1
       fi
       echo "Done building H5Part"
+   fi
+fi
+cd "$START_DIR"
+if [[ "$DO_CCMIO" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/ccmio/${CCMIO_VERSION}/$VISITARCH" ]] ; then
+      echo "Skipping CCMIO build.  CCMIO is already installed."
+   else
+      echo "Building CCMIO (~1 minutes)"
+      build_ccmio 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install CCMIO.  Bailing out."
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
+         exit 1
+      fi
+      echo "Done building CCMIO"
    fi
 fi
 
