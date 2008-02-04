@@ -50,6 +50,7 @@
 #include <vtkFieldData.h>
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkRectilinearGrid.h>
@@ -1561,6 +1562,9 @@ avtChomboFileFormat::GetMesh(int patch, const char *meshname)
 //    Gunther H. Weber, Mon Nov  5 17:07:26 PST 2007
 //    Use 64-bit arithmetic for offset calculations.
 //
+//    Gunther H. Weber, Mon Feb  4 14:37:49 PST 2008
+//    Read doubles instead of floats from Chombo files
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1639,10 +1643,10 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
                 "enabled may help.");
     }
 
-    vtkFloatArray *farr = vtkFloatArray::New();
+    vtkDoubleArray *farr = vtkDoubleArray::New();
     farr->SetNumberOfComponents(1);
     farr->SetNumberOfTuples(amt);
-    float *ptr = farr->GetPointer(0);
+    double *ptr = farr->GetPointer(0);
 
     // 
     // Now do the HDF magic.  Disclosure: this code was cobbled together
@@ -1672,7 +1676,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
     
     hid_t memdataspace = H5Screate_simple(1, &amt, NULL);
     
-    H5Dread(data, H5T_NATIVE_FLOAT, memdataspace, space_id, H5P_DEFAULT, ptr);
+    H5Dread(data, H5T_NATIVE_DOUBLE, memdataspace, space_id, H5P_DEFAULT, ptr);
 
     H5Sclose(memdataspace);
     H5Sclose(space_id);
@@ -1690,7 +1694,7 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         //
         if (numGhostI > 0 || numGhostJ > 0 || numGhostK > 0)
         {
-            vtkFloatArray *new_farr = vtkFloatArray::New();
+            vtkDoubleArray *new_farr = vtkDoubleArray::New();
             size_t new_amt = size_t(hiI[patch]-lowI[patch])
                            * size_t(hiJ[patch]-lowJ[patch]);
             if (dimension == 3)
@@ -1703,8 +1707,8 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
             size_t nJ2 = nJ + 2*numGhostJ;
             size_t nI2 = nI + 2*numGhostI;
     
-            float *new_ptr = new_farr->GetPointer(0);
-            float *old_ptr = farr->GetPointer(0);
+            double *new_ptr = new_farr->GetPointer(0);
+            double *old_ptr = farr->GetPointer(0);
             if (dimension == 3)
             {
                 size_t nK = hiK[patch] - lowK[patch];
