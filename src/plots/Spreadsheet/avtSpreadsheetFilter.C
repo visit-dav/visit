@@ -114,6 +114,9 @@ avtSpreadsheetFilter::SetAtts(const SpreadsheetAttributes &a)
 //   Brad Whitlock, Wed Mar 28 18:25:33 PST 2007
 //   Force MIR to be off.
 //
+//   Gunther H. Weber, Mon Feb  4 14:41:06 PST 2008
+//   Use doubles if they are a file's native precision
+//
 // ****************************************************************************
 
 avtPipelineSpecification_p
@@ -192,9 +195,18 @@ avtSpreadsheetFilter::PerformRestriction(avtPipelineSpecification_p spec)
         }
     }
 
-    // Force material interface reconstuction to be off.
+    // Force material interface reconstruction to be off.
     rv->GetDataSpecification()->ForceMaterialInterfaceReconstructionOff();
     rv->GetDataSpecification()->SetNeedMixedVariableReconstruction(false);
+
+    // Force native precision
+    rv->GetDataSpecification()->SetNeedNativePrecision(true);
+
+    // Add double to the permissible types
+    vector<int> adTypes;
+    adTypes.push_back(VTK_FLOAT);
+    adTypes.push_back(VTK_DOUBLE);
+    rv->GetDataSpecification()->UpdateAdmissibleDataTypes(adTypes);
 
     return rv;
 }
