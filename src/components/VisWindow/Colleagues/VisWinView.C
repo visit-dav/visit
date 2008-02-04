@@ -162,6 +162,11 @@ VisWinView::SetViewInfo(const avtViewInfo &vI)
 //  Modifications:
 //    Kathleen Bonnell, Wed May  8 14:06:50 PDT 2002 
 //    Add support for curve mode, which behaves similarly to 2D.
+//
+//    Jeremy Meredith, Mon Feb  4 16:30:24 EST 2008
+//    This seems to be difficult to trigger, so I simply made the AxesArray
+//    window mode behave the same as the 2D and Curve modes.
+//
 // ****************************************************************************
 
 void
@@ -170,7 +175,9 @@ VisWinView::ResetView(void)
     double bounds[6];
     mediator.GetBounds(bounds);
 
-    if (mediator.GetMode() == WINMODE_2D || mediator.GetMode() == WINMODE_CURVE)
+    if (mediator.GetMode() == WINMODE_2D ||
+        mediator.GetMode() == WINMODE_CURVE ||
+        mediator.GetMode() == WINMODE_AXISARRAY)
     {
         vtkCamera *camera = mediator.GetCanvas()->GetActiveCamera();
         double x_diff = fabs(bounds[0] - bounds[1]);

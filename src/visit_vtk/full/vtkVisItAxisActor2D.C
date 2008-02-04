@@ -96,6 +96,11 @@ vtkStandardNewMacro(vtkVisItAxisActor2D);
 //    Jeremy Meredith, Thu Jan 31 14:35:33 EST 2008
 //    Added offsets to allow centering of strings for tttleAtEnd mode.
 //
+//    Jeremy Meredith, Mon Feb  4 17:11:24 EST 2008
+//    Allowed the title-at-end option to have the orientation backwards
+//    from the label orientation.  This is useful to allow the labels
+//    to be either on the left or right, but have the title at the top.
+//
 // **********************************************************************
 vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 {
@@ -167,6 +172,7 @@ vtkVisItAxisActor2D::vtkVisItAxisActor2D()
 
   this->LogScale = 0;  
 
+  this->EndStringReverseOrientation = false;
   this->EndStringHOffsetFactor = 0;
   this->EndStringVOffsetFactor = 0;
   nDecades = 2;  
@@ -458,6 +464,11 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Jeremy Meredith, Thu Jan 31 10:16:04 EST 2008
 //   Use a string offset factor variable to allow appropriate
 //   centering for the titleAtEnd mode.
+//
+//   Jeremy Meredith, Mon Feb  4 17:11:24 EST 2008
+//   Allowed the title-at-end option to have the orientation backwards
+//   from the label orientation.  This is useful to allow the labels
+//   to be either on the left or right, but have the title at the top.
 //
 // ****************************************************************************
 
@@ -778,8 +789,16 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
 
     if ( this->TitleAtEnd )
       {
-      xTick[0] = p2[0] + cos_theta*(this->TickLength+this->TickOffset);
-      xTick[1] = p2[1] + sin_theta*(this->TickLength+this->TickOffset);
+      if ( this->EndStringReverseOrientation)
+        {
+        xTick[0] = p2[0] + cos_theta*(this->TickLength+this->TickOffset);
+        xTick[1] = p2[1] - sin_theta*(this->TickLength+this->TickOffset);
+        }
+      else
+        {
+        xTick[0] = p2[0] + cos_theta*(this->TickLength+this->TickOffset);
+        xTick[1] = p2[1] + sin_theta*(this->TickLength+this->TickOffset);
+        }
       }
     else
       {
@@ -797,7 +816,9 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       }
 
     this->TitleMapper->GetSize(viewport, stringSize);
-    this->SetOffsetPosition(xTick, theta, stringSize[0], stringSize[1], 
+    this->SetOffsetPosition(xTick,
+      (this->EndStringReverseOrientation && this->TitleAtEnd) ? -theta : theta,
+                            stringSize[0], stringSize[1], 
                             static_cast<int>(offset), this->TitleActor, 
                             this->TitleAtEnd,
                             this->EndStringHOffsetFactor,

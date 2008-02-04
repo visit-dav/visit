@@ -1016,6 +1016,14 @@ VisWinAxesArray::SetLineWidth(int width)
 //    downwards -- this obviates the need for a positive vertical string
 //    offset.
 //
+//    Jeremy Meredith, Mon Feb  4 17:09:59 EST 2008
+//    I didn't like all the major tick value labels being on the right
+//    side of the axes, so I added a new option to vtkVisItAxisActor2D
+//    to allow the title to use the opposite orientation from the labels.
+//    I'm now using it to make the rightmost axis have the labels on the
+//    right and the others on the left.  This should probably be
+//    configurable by the user.....
+//
 // ****************************************************************************
 
 void
@@ -1050,7 +1058,16 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             ax->SetEndStringVOffsetFactor(0);
             ax->SetEndStringHOffsetFactor(-0.5);
             ax->SetUseOrientationAngle(1);
-            ax->SetOrientationAngle(+1.5707963);
+            if (i < n-1)
+            {
+                ax->SetOrientationAngle(-1.5707963);
+                ax->SetEndStringReverseOrientation(true);
+            }
+            else
+            {
+                ax->SetOrientationAngle(+1.5707963);
+                ax->SetEndStringReverseOrientation(false);
+            }
             ax->SetTitleAtEnd(1);
 
             AxisInfo a(ax, 0, 3, 0, 0);
