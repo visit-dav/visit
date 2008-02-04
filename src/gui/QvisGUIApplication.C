@@ -3892,6 +3892,9 @@ QvisGUIApplication::WritePluginWindowConfigs(DataNode *parentNode)
 //   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
 //   Use sessionDir for the default directory.
 //
+//    Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
+//    Resolved AIX linking error w/ auto std::string to QString conversion.
+//
 // ****************************************************************************
 
 void
@@ -3919,7 +3922,7 @@ QvisGUIApplication::SaveSession()
     {
         ++sessionCount;
         SaveSessionFile(fileName);
-        UpdateSessionDir(fileName);
+        UpdateSessionDir(fileName.latin1());
     }
 }
 
@@ -4163,6 +4166,9 @@ QvisGUIApplication::ReadConfigFile(const char *filename)
 //   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
 //   Use sessionDir for the default directory.
 //
+//   Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
+//   Resolved AIX linking error w/ auto std::string to QString conversion.
+//
 // ****************************************************************************
 
 void
@@ -4181,8 +4187,7 @@ QvisGUIApplication::RestoreSession()
     RestoreSessionFile(s, noSources);
     if ( !s.isNull() )
     {
-        std::string fileName = s;
-        UpdateSessionDir(fileName);
+        UpdateSessionDir(s.latin1());
     }
 }
 
@@ -4201,6 +4206,9 @@ QvisGUIApplication::RestoreSession()
 //   Dave Pugmire, Thu Jan 31 10:47:06 EST 2008
 //   Use sessionDir for the default directory.
 //   
+//    Cyrus Harrison, Mon Feb  4 09:45:22 PST 2008
+//    Resolved AIX linking error w/ auto std::string to QString conversion.
+//
 // ****************************************************************************
 
 void
@@ -4264,8 +4272,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
             RestoreSessionFile(s, noSources);
         }
         
-        std::string fileName = s;
-        UpdateSessionDir(fileName);
+        UpdateSessionDir(s.latin1());
     }
 }
 
