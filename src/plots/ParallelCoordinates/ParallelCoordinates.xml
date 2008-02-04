@@ -18,12 +18,6 @@
       <Field name="orderedAxisNames" label="orderedAxisNames" type="stringVector">
         default
       </Field>
-      <Field name="axisMinima" label="axisMinima" type="doubleVector">
-        -1e+37
-      </Field>
-      <Field name="axisMaxima" label="axisMaxima" type="doubleVector">
-        1e+37
-      </Field>
       <Field name="extentMinima" label="extentMinima" type="doubleVector">
         0.000000
       </Field>

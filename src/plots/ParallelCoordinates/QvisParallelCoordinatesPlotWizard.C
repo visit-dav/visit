@@ -400,6 +400,9 @@ QvisParallelCoordinatesPlotWizard::CreateFinishPage(QFrame **f,
 //    Jeremy Meredith, Fri Feb  1 17:56:59 EST 2008
 //    Made limits be in terms of actual values, not normalized 0..1.
 //
+//    Jeremy Meredith, Mon Feb  4 16:06:57 EST 2008
+//    Drop the axis extents in the plot attributes -- they were not used.
+//
 // ****************************************************************************
 
 void
@@ -407,20 +410,14 @@ QvisParallelCoordinatesPlotWizard::InitializeParallelCoordinatesAttributes(
                                                          const std::string &varName)
 {
     stringVector axisNames;
-    doubleVector axisMins;
-    doubleVector axisMaxs;
     doubleVector extMins;
     doubleVector extMaxs;
     
     axisNames.push_back(varName);
-    axisMins.push_back(-1e+37);
-    axisMaxs.push_back(+1e+37);
     extMins.push_back(-1e+37);
     extMaxs.push_back(+1e+37);
 
     parAxisAtts->SetOrderedAxisNames(axisNames);
-    parAxisAtts->SetAxisMinima(axisMins);
-    parAxisAtts->SetAxisMaxima(axisMaxs);
     parAxisAtts->SetExtentMinima(extMins);
     parAxisAtts->SetExtentMaxima(extMaxs);
 }
