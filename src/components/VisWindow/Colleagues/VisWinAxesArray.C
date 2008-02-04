@@ -1024,6 +1024,10 @@ VisWinAxesArray::SetLineWidth(int width)
 //    right and the others on the left.  This should probably be
 //    configurable by the user.....
 //
+//    Jeremy Meredith, Mon Feb  4 17:25:28 EST 2008
+//    Made it default to all labels on the left, since axis restriction
+//    labels are always on the right, and this avoids conflicts.
+//
 // ****************************************************************************
 
 void
@@ -1058,17 +1062,21 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             ax->SetEndStringVOffsetFactor(0);
             ax->SetEndStringHOffsetFactor(-0.5);
             ax->SetUseOrientationAngle(1);
-            if (i < n-1)
-            {
+            ax->SetTitleAtEnd(1);
+            // Note -- this little bit of logic makes the
+            // last axis have its labels on the right and the
+            // others on the left, but that's not always ideal.
+            // Should probably allow a user to configure this.
+            //if (i < n-1)
+            //{
                 ax->SetOrientationAngle(-1.5707963);
                 ax->SetEndStringReverseOrientation(true);
-            }
-            else
-            {
-                ax->SetOrientationAngle(+1.5707963);
-                ax->SetEndStringReverseOrientation(false);
-            }
-            ax->SetTitleAtEnd(1);
+            //}
+            //else
+            //{
+            //    ax->SetOrientationAngle(+1.5707963);
+            //    ax->SetEndStringReverseOrientation(false);
+            //}
 
             AxisInfo a(ax, 0, 3, 0, 0);
             SNPRINTF(a.title, 8,  "Axis%02d", i);
