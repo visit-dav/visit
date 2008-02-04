@@ -272,6 +272,9 @@ $0 = shift @ARGV;
 #    Removed Gig-E hack for tidalwave, white and edgewater. Added
 #    management of PYTHONPATH to support specifying where PIL is for testing. 
 #
+#    Dave Pugmire, Mon Feb  4 12:19:22 EST 2008
+#    Added jaguarcnl.ornl.gov specific code.
+#
 ###############################################################################
 
 use POSIX qw(ceil);
@@ -981,6 +984,37 @@ if ($host eq "redrose1.sandia.gov" || $host eq "redrose2.sandia.gov")
        ("/apps/x86_64/mpi/openmpi/intel-9.1/openmpi-1.1.2-ofed/lib",
         "/projects/global/x86_64/compilers/intel/intel-9.1-cce-045/lib",
         "/apps/torque/lib"); 
+}
+
+# ----
+# HACK for jaguarcnl @ ORNL
+#
+# ----
+chomp($domain   = `hostname -d`);
+$IsRunningOnJaguarCNL_ORNL = 0;
+
+if ( $domain eq "ccs.ornl.gov" and ($parallel) and $exe_name eq "engine" ) 
+{
+    if ( $host eq "jaguar1" ) 
+    {
+	$IsRunningOnJaguarCNL_ORNL = 1;
+	$remotehost = "192.168.0.9";
+    }
+    if ( $host eq "jaguar2" )
+    {
+	$IsRunningOnJaguarCNL_ORNL = 1;
+	$remotehost = "192.168.0.13";
+    }
+    if ( $host eq "jaguar3" )
+    {
+	$IsRunningOnJaguarCNL_ORNL = 1;
+	$remotehost = "192.168.0.17";
+    }
+    if ( $host eq "jaguar4" )
+    {
+	$IsRunningOnJaguarCNL_ORNL = 1;
+	$remotehost = "192.168.0.21";
+    }
 }
 
 # ----
@@ -1808,8 +1842,10 @@ if ($procs_set or ($parallel and $parlaunch_set))
             push @parcmd, @newlaunchargs if $newlaunchargs_set;
             $nodes = $procs if (!$nodes_set);
             $ppn = ceil($procs / $nodes);
-            if ($use_vis) { push @parcmd, "-l", "nodes=$nodes:ppn=$ppn:vis";}
-            else { push @parcmd, "-l", "nodes=$nodes:ppn=$ppn"; }
+	    $qsubNumNodeStr = "nodes";
+	    if ( $IsRunningOnJaguarCNL_ORNL ) {$qsubNumNodeStr = "size";}
+	    if ($use_vis) { push @parcmd, "-l $qsubNumNodeStr=$nodes";}
+	    else { push @parcmd, "-l $qsubNumNodeStr=$nodes"; }
             push @parcmd, "-l", "walltime=$time" if $time_set;
             push @parcmd, "-q",  $part  if $part_set;
             push @parcmd, "-A",  $bank  if $bank_set;
