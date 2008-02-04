@@ -10,6 +10,8 @@
 #  Date:       January 31, 2008
 #
 #  Modifications:
+#    Jeremy Meredith, Mon Feb  4 16:11:21 EST 2008
+#    Removed axis extents from plot attributes since they were unused.
 #
 # ----------------------------------------------------------------------------
 
@@ -36,8 +38,6 @@ OpenDatabase("../data/noise.silo")
 #
 p = ParallelCoordinatesAttributes()
 p.orderedAxisNames = ("hardyglobal", "shepardglobal", "chromeVf")
-p.axisMinima = (-1e+37, -1e+37, -1e+37)
-p.axisMaxima = (+1e+37, +1e+37, +1e+37)
 p.extentMinima = (-1e+37, -1e+37, -1e+37)
 p.extentMaxima = (+1e+37, +1e+37, +1e+37)
 p.drawLines = 1
@@ -70,8 +70,6 @@ Test("parcoords_03")
 
 # Add an axis and make sure it works
 p.orderedAxisNames = ("hardyglobal", "shepardglobal", "chromeVf", "radial")
-p.axisMinima = (0,0,0,0)
-p.axisMaxima = (0,0,0,0)
 p.extentMinima = (-1e+37, -1e+37, -1e+37, -1e+37)
 p.extentMaxima = (+1e+37, +1e+37, +1e+37, +1e+37)
 p.drawLinesOnlyIfExtentsOn = 1
