@@ -15,6 +15,9 @@ Definition:
 //    Jeremy Meredith, Fri Feb  1 17:55:14 EST 2008
 //    Made it use float min/max for non-limiting extents values.
 //   
+//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
+//    Remove the axis extents; they were unusued.
+//
 // ****************************************************************************
 
 void
@@ -24,11 +27,9 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
 
     int curAxisCount = orderedAxisNames.size();
     int axisOrdinal;
-    double saveAxisMin, saveAxisMax, saveExtentMin, saveExtentMax;
+    double saveExtentMin, saveExtentMax;
 
     stringVector::iterator axisNamesIt;
-    doubleVector::iterator axisMinIt;
-    doubleVector::iterator axisMaxIt;
     doubleVector::iterator extentMinIt;
     doubleVector::iterator extentMaxIt;
     
@@ -39,27 +40,19 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
 
     if (axisOrdinal < curAxisCount)
     {
-        saveAxisMin    = axisMinima[axisOrdinal];
-        saveAxisMax    = axisMaxima[axisOrdinal];
         saveExtentMin  = extentMinima[axisOrdinal];
         saveExtentMax  = extentMaxima[axisOrdinal];
 
         axisNamesIt  = orderedAxisNames.begin() + axisOrdinal;
-        axisMinIt    = axisMinima.begin()       + axisOrdinal;
-        axisMaxIt    = axisMaxima.begin()       + axisOrdinal;
         extentMinIt  = extentMinima.begin()     + axisOrdinal;
         extentMaxIt  = extentMaxima.begin()     + axisOrdinal;
 
         orderedAxisNames.erase(axisNamesIt);
-        axisMinima.erase(axisMinIt);
-        axisMaxima.erase(axisMaxIt);
         extentMinima.erase(extentMinIt);
         extentMaxima.erase(extentMaxIt);
     }
     else
     {
-        saveAxisMin    = -1e+37;
-        saveAxisMax    = +1e+37;
         saveExtentMin  = -1e+37;
         saveExtentMax  = +1e+37;
     }
@@ -67,14 +60,10 @@ ParallelCoordinatesAttributes::InsertAxis(const std::string &axisName_)
     int insertOrdinal = orderedAxisNames.size();
 
     axisNamesIt  = orderedAxisNames.begin() + insertOrdinal;
-    axisMinIt    = axisMinima.begin()       + insertOrdinal;
-    axisMaxIt    = axisMaxima.begin()       + insertOrdinal;
     extentMinIt  = extentMinima.begin()     + insertOrdinal;
     extentMaxIt  = extentMaxima.begin()     + insertOrdinal;
 
     orderedAxisNames.insert(axisNamesIt, newAxisName);
-    axisMinima.insert(axisMinIt, saveAxisMin);
-    axisMaxima.insert(axisMaxIt, saveAxisMax);
     extentMinima.insert(extentMinIt, saveExtentMin);
     extentMaxima.insert(extentMaxIt, saveExtentMax);
     
@@ -95,6 +84,8 @@ Definition:
 // Note: Taken largely from Mark Blair's Parallel Axis plot.
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
+//    Remove the axis extents; they were unusued.
 //   
 // ****************************************************************************
 
@@ -118,8 +109,6 @@ ParallelCoordinatesAttributes::DeleteAxis(const std::string &axisName_,
     if (axisOrdinal < curAxisCount)
     {
         orderedAxisNames.erase(orderedAxisNames.begin() + axisOrdinal);
-        axisMinima.erase(axisMinima.begin() + axisOrdinal);
-        axisMaxima.erase(axisMaxima.begin() + axisOrdinal);
         extentMinima.erase(extentMinima.begin() + axisOrdinal);
         extentMaxima.erase(extentMaxima.begin() + axisOrdinal);
         
@@ -143,6 +132,8 @@ Definition:
 // Note: Taken largely from Mark Blair's Parallel Axis plot.
 //
 // Modifications:
+//    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
+//    Remove the axis extents; they were unusued.
 //   
 // ****************************************************************************
 
@@ -156,9 +147,7 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
     if (axisNamesSize < 2)
         return false;
     
-    if ((axisMinima.size()       != axisNamesSize) ||
-        (axisMaxima.size()       != axisNamesSize) ||
-        (extentMinima.size()     != axisNamesSize) ||
+    if ((extentMinima.size()     != axisNamesSize) ||
         (extentMaxima.size()     != axisNamesSize))
     {
         return false;

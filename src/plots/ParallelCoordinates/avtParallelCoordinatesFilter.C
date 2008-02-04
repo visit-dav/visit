@@ -166,7 +166,6 @@ avtParallelCoordinatesFilter::PerformRestriction(avtPipelineSpecification_p in_s
     std::string curPipelineVar(inPipelineVar);
     
     stringVector curAxisVarNames = parCoordsAtts.GetOrderedAxisNames();
-    doubleVector curAxisMinima = parCoordsAtts.GetAxisMinima();
 
     varTupleIndices.clear();
 
