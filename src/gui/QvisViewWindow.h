@@ -53,6 +53,7 @@ class QRadioButton;
 class QSlider;
 class QTabWidget;
 class QVBox;
+class ViewAxisArrayAttributes;
 class ViewCurveAttributes;
 class View2DAttributes;
 class View3DAttributes;
@@ -117,6 +118,10 @@ class QPushButton;
 //   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007 
 //   Added radio buttons for 2d log scaling.
 //
+//   Jeremy Meredith, Mon Feb  4 13:44:33 EST 2008
+//   Added support for axis-array views.  Renamed some curve view
+//   buttons to avoid namespace collisions.
+//
 // ****************************************************************************
 
 class GUI_API QvisViewWindow : public QvisPostableWindowSimpleObserver
@@ -129,6 +134,7 @@ public:
     virtual void CreateWindowContents();
     void SubjectRemoved(Subject *TheRemovedSubject);
 
+    void ConnectAxisArrayAttributes(ViewAxisArrayAttributes *v);
     void ConnectCurveAttributes(ViewCurveAttributes *v);
     void Connect2DAttributes(View2DAttributes *v);
     void Connect3DAttributes(View3DAttributes *v);
@@ -142,17 +148,23 @@ public slots:
 protected:
     void Apply(bool ignore = false);
     void GetCurrentValues(int which_widget);
+    void GetCurrentValuesAxisArray(int which_widget);
     void GetCurrentValuesCurve(int which_widget);
     void GetCurrentValues2d(int which_widget);
     void GetCurrentValues3d(int which_widget);
 
     virtual void UpdateWindow(bool doAll);
+    void UpdateAxisArray(bool doAll);
     void UpdateCurve(bool doAll);
     void Update2D(bool doAll);
     void Update3D(bool doAll);
     void UpdateGlobal(bool doAll);
 private slots:
     void processCommandText();
+
+    void processViewportAxisArrayText();
+    void processDomainAxisArrayText();
+    void processRangeAxisArrayText();
 
     void processViewportCurveText();
     void processDomainText();
@@ -200,6 +212,7 @@ private:
     void Window(const double *window);
     void UpdateEyeAngleSliderFromAtts(void);
 
+    ViewAxisArrayAttributes *viewAxisArray;
     ViewCurveAttributes *viewCurve;
     View2DAttributes    *view2d;
     View3DAttributes    *view3d;
@@ -211,8 +224,8 @@ private:
     QVBox        *pageCurve;
     QGroupBox    *viewCurveGroup;
     QLineEdit    *viewportCurveLineEdit;
-    QLineEdit    *domainLineEdit;
-    QLineEdit    *rangeLineEdit;
+    QLineEdit    *domainCurveLineEdit;
+    QLineEdit    *rangeCurveLineEdit;
     QLabel       *domainScaleLabel;
     QButtonGroup *domainScaleMode;
     QRadioButton *domainLinear;
@@ -257,6 +270,13 @@ private:
     QSlider     *eyeAngleSlider;
     QCheckBox   *perspectiveToggle;
     QComboBox   *alignComboBox;
+
+    // AxisArray widgets
+    QVBox        *pageAxisArray;
+    QGroupBox    *viewAxisArrayGroup;
+    QLineEdit    *viewportAxisArrayLineEdit;
+    QLineEdit    *domainAxisArrayLineEdit;
+    QLineEdit    *rangeAxisArrayLineEdit;
 
     // Global and advanced option widgets
     QTabWidget  *tabs;

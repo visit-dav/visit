@@ -714,6 +714,9 @@ ViewerSubject::ReadConfigFiles(int argc, char **argv)
 //   Jeremy Meredith, Wed Jan 23 16:30:13 EST 2008
 //   Added file open options.
 //
+//   Jeremy Meredith, Mon Feb  4 13:31:02 EST 2008
+//   Added remaining axis array view support.
+//
 // ****************************************************************************
 
 void
@@ -746,6 +749,7 @@ ViewerSubject::CreateState()
     s->SetExpressionList(ParsingExprList::Instance()->GetList(), false);
     s->SetAnnotationAttributes(ViewerWindowManager::Instance()->GetAnnotationClientAtts(), false);
     s->SetSILRestrictionAttributes(ViewerPlotList::GetClientSILRestrictionAtts(), false);
+    s->SetViewAxisArrayAttributes(ViewerWindowManager::Instance()->GetViewAxisArrayClientAtts(), false);
     s->SetViewCurveAttributes(ViewerWindowManager::Instance()->GetViewCurveClientAtts(), false);
     s->SetView2DAttributes(ViewerWindowManager::Instance()->GetView2DClientAtts(), false);
     s->SetView3DAttributes(ViewerWindowManager::Instance()->GetView3DClientAtts(), false);
@@ -5266,6 +5270,30 @@ ViewerSubject::ResetOperatorOptions()
 }
 
 // ****************************************************************************
+// Method: ViewerSubject::SetViewAxisArray
+//
+// Purpose: 
+//   Tells the viewer window manager to apply the axis array view
+//   attributes to the active window.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  4, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerSubject::SetViewAxisArray()
+{
+    //
+    // Perform the rpc.
+    //
+    ViewerWindowManager *wM = ViewerWindowManager::Instance();
+    wM->SetViewAxisArrayFromClient();
+}
+
+// ****************************************************************************
 // Method: ViewerSubject::SetViewCurve
 //
 // Purpose: 
@@ -7378,6 +7406,9 @@ ViewerSubject::SendKeepAlives()
 //    Jeremy Meredith, Wed Jan 23 16:32:35 EST 2008
 //    Added SetDefaultFileOpenOptionsRPC.
 //
+//    Jeremy Meredith, Mon Feb  4 13:31:02 EST 2008
+//    Added remaining axis array view support.
+//
 // ****************************************************************************
 
 void
@@ -7494,6 +7525,9 @@ ViewerSubject::HandleViewerRPC()
         break;
     case ViewerRPC::SetKeyframeAttributesRPC:
         SetKeyframeAttributes();
+        break;
+    case ViewerRPC::SetViewAxisArrayRPC:
+        SetViewAxisArray();
         break;
     case ViewerRPC::SetViewCurveRPC:
         SetViewCurve();

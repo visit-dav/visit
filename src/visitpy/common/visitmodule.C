@@ -115,6 +115,7 @@
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
 #include <ViewAttributes.h>
+#include <ViewAxisArrayAttributes.h>
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
@@ -161,6 +162,7 @@
 #include <PyQueryOverTimeAttributes.h>
 #include <PyTimeSliderObject.h>
 #include <PyViewAttributes.h>
+#include <PyViewAxisArrayAttributes.h>
 #include <PyViewCurveAttributes.h>
 #include <PyView2DAttributes.h>
 #include <PyView3DAttributes.h>
@@ -5739,6 +5741,82 @@ visit_ConstructDDF(PyObject *self, PyObject *args)
     MUTEX_UNLOCK();
 
     return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_SetViewAxisArray
+//
+// Purpose:
+//   Tells the viewer to use the new axis array view we're giving it.
+//
+// Notes:      
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  4, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetViewAxisArray(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    PyObject *view = NULL;
+    // Try and get the view pointer.
+    if(!PyArg_ParseTuple(args,"O",&view))
+    {
+        VisItErrorFunc("SetViewAxisArray: Cannot parse object!");
+        return NULL;
+    }
+    if(!PyViewAxisArrayAttributes_Check(view))
+    {
+        VisItErrorFunc("Argument is not a ViewAxisArrayAttributes object");
+        return NULL;
+    }
+
+    MUTEX_LOCK();
+        ViewAxisArrayAttributes *va =
+            PyViewAxisArrayAttributes_FromPyObject(view);
+
+        // Copy the object into the view attributes.
+        *(GetViewerState()->GetViewAxisArrayAttributes()) = *va;
+        GetViewerState()->GetViewAxisArrayAttributes()->Notify();
+        GetViewerMethods()->SetViewAxisArray();
+    MUTEX_UNLOCK();
+
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
+// Function: visit_GetViewAxisArray
+//
+// Purpose:
+//   Returns the axis array view.
+//
+// Notes:      
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  4, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+STATIC PyObject *
+visit_GetViewAxisArray(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    NO_ARGUMENTS();
+
+    PyObject *retval = PyViewAxisArrayAttributes_New();
+    ViewAxisArrayAttributes *va = PyViewAxisArrayAttributes_FromPyObject(retval);
+
+    // Copy the viewer proxy's axis array view into the return data structure.
+    *va = *(GetViewerState()->GetViewAxisArrayAttributes());
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -12552,6 +12630,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Jeremy Meredith, Wed Jan 23 15:27:20 EST 2008
 //   Added Get/SetDefaultFileOpenOptions.
 //
+//   Jeremy Meredith, Mon Feb  4 13:41:43 EST 2008
+//   Added Get/SetViewAxisArray.
+//
 // ****************************************************************************
 
 static void
@@ -12669,6 +12750,7 @@ AddDefaultMethods()
                                                        visit_GetLocalName_doc);
     AddMethod("GetSaveWindowAttributes", visit_GetSaveWindowAttributes,
                                             visit_GetSaveWindowAttributes_doc);
+    AddMethod("GetViewAxisArray", visit_GetViewAxisArray, visit_GetView_doc);
     AddMethod("GetViewCurve", visit_GetViewCurve, visit_GetView_doc);
     AddMethod("GetView2D", visit_GetView2D, visit_GetView_doc);
     AddMethod("GetView3D", visit_GetView3D, visit_GetView_doc);
@@ -12863,6 +12945,7 @@ AddDefaultMethods()
                                          visit_SetTryHarderCyclesTimes_doc);
     AddMethod("SetViewExtentsType", visit_SetViewExtentsType,
                                                  visit_SetViewExtentsType_doc);
+    AddMethod("SetViewAxisArray", visit_SetViewAxisArray, visit_SetView_doc);
     AddMethod("SetViewCurve", visit_SetViewCurve, visit_SetView_doc);
     AddMethod("SetView2D", visit_SetView2D, visit_SetView_doc);
     AddMethod("SetView3D", visit_SetView3D, visit_SetView_doc);
@@ -13020,6 +13103,9 @@ AddDefaultMethods()
 //   Brad Whitlock, Wed Dec 12 15:09:20 PST 2007
 //   Added AnimationAttributes.
 //
+//   Jeremy Meredith, Mon Feb  4 13:42:08 EST 2008
+//   Added ViewAxisArrayAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -13048,6 +13134,7 @@ AddExtensions()
     ADD_EXTENSION(PySaveWindowAttributes_GetMethodTable);
     ADD_EXTENSION(PySILRestriction_GetMethodTable);
     ADD_EXTENSION(PyViewAttributes_GetMethodTable);
+    ADD_EXTENSION(PyViewAxisArrayAttributes_GetMethodTable);
     ADD_EXTENSION(PyViewCurveAttributes_GetMethodTable);
     ADD_EXTENSION(PyView2DAttributes_GetMethodTable);
     ADD_EXTENSION(PyView3DAttributes_GetMethodTable);
@@ -13105,6 +13192,9 @@ AddExtensions()
 //   Brad Whitlock, Wed Dec 12 15:10:10 PST 2007
 //   Added PyAnimationAttributes.
 //
+//   Jeremy Meredith, Mon Feb  4 13:42:08 EST 2008
+//   Added ViewAxisArrayAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -13125,6 +13215,7 @@ InitializeExtensions()
     PySaveWindowAttributes_StartUp(GetViewerState()->GetSaveWindowAttributes(), 0);
     PyWindowInformation_StartUp(GetViewerState()->GetWindowInformation(), 0);
 
+    PyViewAxisArrayAttributes_StartUp(GetViewerState()->GetViewAxisArrayAttributes(), (void *)SS_log_ViewAxisArray);
     PyViewCurveAttributes_StartUp(GetViewerState()->GetViewCurveAttributes(), (void *)SS_log_ViewCurve);
     PyView2DAttributes_StartUp(GetViewerState()->GetView2DAttributes(), (void *)SS_log_View2D);
     PyView3DAttributes_StartUp(GetViewerState()->GetView3DAttributes(), (void *)SS_log_View3D);
@@ -13156,6 +13247,9 @@ InitializeExtensions()
 //   Brad Whitlock, Wed Dec 12 15:14:22 PST 2007
 //   Added AnimationAttributes.
 //
+//   Jeremy Meredith, Mon Feb  4 13:42:08 EST 2008
+//   Added ViewAxisArrayAttributes.
+//
 // ****************************************************************************
 
 static void
@@ -13169,6 +13263,7 @@ CloseExtensions()
     PyPickAttributes_CloseDown();
     PyPrinterAttributes_CloseDown();
     PySaveWindowAttributes_CloseDown();
+    PyViewAxisArrayAttributes_CloseDown();
     PyViewCurveAttributes_CloseDown();
     PyView2DAttributes_CloseDown();
     PyView3DAttributes_CloseDown();

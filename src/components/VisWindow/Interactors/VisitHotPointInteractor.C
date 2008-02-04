@@ -57,6 +57,7 @@
 #include <Pick.h>
 #include <Zoom2D.h>
 #include <Zoom3D.h>
+#include <ZoomAxisArray.h>
 #include <ZoomCurve.h>
 
 
@@ -94,6 +95,9 @@
 //   Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //   Added navigate interactor for new AxisArray window mode.
 //
+//   Jeremy Meredith, Mon Feb  4 13:24:08 EST 2008
+//   Added zoom interactor for AxisArray mode.
+//
 // ****************************************************************************
 
 VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
@@ -110,6 +114,7 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
     zoom2D            = NULL;
     zoom3D            = NULL;
     zoomCurve         = NULL;
+    zoomAxisArray     = NULL;
     nullInteractor    = new NullInteractor(proxy);
     currentInteractor = NULL;
     SetInteractor(nullInteractor);
@@ -144,6 +149,9 @@ VisitHotPointInteractor::VisitHotPointInteractor(VisWindowInteractorProxy &v) :
 //
 //   Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //   Added navigate interactor for new AxisArray window mode.
+//
+//   Jeremy Meredith, Mon Feb  4 13:24:08 EST 2008
+//   Added zoom interactor for AxisArray mode.
 //
 // ****************************************************************************
 
@@ -208,6 +216,11 @@ VisitHotPointInteractor::~VisitHotPointInteractor()
     {
         zoomCurve->Delete();
         zoomCurve = NULL;
+    }
+    if(zoomAxisArray != NULL)
+    {
+        zoomAxisArray->Delete();
+        zoomAxisArray = NULL;
     }
 }
 
@@ -574,6 +587,10 @@ VisitHotPointInteractor::StartCurveMode(INTERACTION_MODE mode)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2008
 //
+//  Modifications:
+//   Jeremy Meredith, Mon Feb  4 13:24:08 EST 2008
+//   Added zoom interactor for AxisArray mode.
+//
 // ****************************************************************************
 void
 VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
@@ -586,7 +603,6 @@ VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
     VisitInteractor  *newInteractor  = NULL;
     switch(mode)
     {
-      case ZOOM:
       case LINEOUT:
       // We don't have a lineout or zoom interaction.
       // Fall through to navigation mode.
@@ -596,6 +612,13 @@ VisitHotPointInteractor::StartAxisArrayMode(INTERACTION_MODE mode)
             navigateAxisArray = new NavigateAxisArray(proxy);
         }
         newInteractor = navigateAxisArray;
+        break;
+      case ZOOM:
+        if(zoomAxisArray == NULL)
+        {
+            zoomAxisArray = new ZoomAxisArray(proxy);
+        }
+        newInteractor = zoomAxisArray;
         break;
       case ZONE_PICK:
       case NODE_PICK:

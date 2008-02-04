@@ -64,6 +64,7 @@
       ResetAnnotationAttributesRPC
       SetKeyframeAttributesRPC
       SetPlotSILRestrictionRPC
+      SetViewAxisArrayRPC
       SetViewCurveRPC
       SetView2DRPC
       SetView3DRPC

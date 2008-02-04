@@ -81,6 +81,7 @@
 #include <SILRestrictionAttributes.h>
 #include <SyncAttributes.h>
 #include <QueryOverTimeAttributes.h>
+#include <ViewAxisArrayAttributes.h>
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>

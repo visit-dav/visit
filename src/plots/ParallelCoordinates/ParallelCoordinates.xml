@@ -46,7 +46,7 @@
         2.000000
       </Field>
       <Field name="contextNumPartitions" label="Number of partitions" type="int">
-        512
+        128
       </Field>
       <Field name="contextColor" label="Context color" type="color" length="4">
         0

@@ -1010,6 +1010,12 @@ VisWinAxesArray::SetLineWidth(int width)
 //  Programmer:  Jeremy Meredith
 //  Creation:    January 31, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Mon Feb  4 12:34:49 EST 2008
+//    Made the orientation angle for the title point upwards instead of
+//    downwards -- this obviates the need for a positive vertical string
+//    offset.
+//
 // ****************************************************************************
 
 void
@@ -1041,10 +1047,10 @@ VisWinAxesArray::SetNumberOfAxes(int n)
             ax->GetPoint1Coordinate()->SetCoordinateSystemToNormalizedViewport();
             ax->GetPoint2Coordinate()->SetCoordinateSystemToNormalizedViewport();
             ax->PickableOff();
-            ax->SetEndStringVOffsetFactor(+1);
+            ax->SetEndStringVOffsetFactor(0);
             ax->SetEndStringHOffsetFactor(-0.5);
             ax->SetUseOrientationAngle(1);
-            ax->SetOrientationAngle(-1.5707963);
+            ax->SetOrientationAngle(+1.5707963);
             ax->SetTitleAtEnd(1);
 
             AxisInfo a(ax, 0, 3, 0, 0);

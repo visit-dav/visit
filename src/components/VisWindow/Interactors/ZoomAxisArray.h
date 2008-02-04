@@ -36,30 +36,51 @@
 *
 *****************************************************************************/
 
-#ifndef LOGGING_H
-#define LOGGING_H
-#include <string>
+// ************************************************************************* //
+//                                 ZoomAxisArray.h                                  //
+// ************************************************************************* //
 
-// Macro functions
-void Macro_SetString(const std::string &s);
-const std::string &Macro_GetString();
-void Macro_SetRecord(bool val);
-bool Macro_GetRecord();
+#ifndef ZOOM_AXISARRAY_H
+#define ZOOM_AXISARRAY_H
+#include <viswindow_exports.h>
 
-// LogFile functions
-bool LogFile_Open(const char *filename);
-void LogFile_Close();
-void LogFile_SetEnabled(bool val);
-bool LogFile_GetEnabled();
-void LogFile_IncreaseLevel();
-void LogFile_DecreaseLevel();
-void LogFile_Write(const char *str);
 
-// Callback functions
-void LogRPCs(Subject *subj, void *);
-void SS_log_ViewAxisArray(const std::string &s);
-void SS_log_ViewCurve(const std::string &s);
-void SS_log_View2D(const std::string &s);
-void SS_log_View3D(const std::string &s);
+#include <ZoomInteractor.h>
+
+
+class VisWindowInteractorProxy;
+
+
+// ****************************************************************************
+//  Class: ZoomAxisArray
+//
+//  Purpose:
+//      Defines what Visit's AxisArray Zoom interactions should look like.  
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  4, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+class VISWINDOW_API ZoomAxisArray : public ZoomInteractor
+{
+  public:
+                        ZoomAxisArray(VisWindowInteractorProxy &);
+ 
+    virtual void        StartLeftButtonAction();
+    virtual void        EndLeftButtonAction();
+    virtual void        AbortLeftButtonAction();
+    virtual void        StartMiddleButtonAction();
+    virtual void        EndMiddleButtonAction();
+
+  protected:
+    void                ZoomCamera(void);
+    void                ZoomCamera(const int x, const int y);
+};
+
 
 #endif
+
+

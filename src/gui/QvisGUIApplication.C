@@ -2996,6 +2996,9 @@ QvisGUIApplication::SetupWindows()
 //   The plugin window now also observes the default file open options
 //   for database plugins.
 //
+//   Jeremy Meredith, Mon Feb  4 10:26:06 EST 2008
+//   Added axis array view.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -3088,6 +3091,7 @@ QvisGUIApplication::WindowFactory(int i)
         // Create the view window.
         { QvisViewWindow *viewWin = new QvisViewWindow(windowNames[i], "View",
               mainWin->GetNotepad());
+           viewWin->ConnectAxisArrayAttributes(GetViewerState()->GetViewAxisArrayAttributes());
            viewWin->ConnectCurveAttributes(GetViewerState()->GetViewCurveAttributes());
            viewWin->Connect2DAttributes(GetViewerState()->GetView2DAttributes());
            viewWin->Connect3DAttributes(GetViewerState()->GetView3DAttributes());
