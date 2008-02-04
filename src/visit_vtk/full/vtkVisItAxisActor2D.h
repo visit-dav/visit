@@ -282,14 +282,19 @@ public:
   vtkBooleanMacro(LogScale, int);
 
   // Description:
-  // Set/Get the string width multiplier e.g. for horizontal centering
+  // Set/Get the string width multiplier e.g. for horizontal title centering
   vtkSetMacro(EndStringHOffsetFactor, double);
   vtkGetMacro(EndStringHOffsetFactor, double);
 
-  // Set/Get the string height multiplier e.g. for vertical centering
+  // Set/Get the string height multiplier e.g. for vertical title centering
   vtkSetMacro(EndStringVOffsetFactor, double);
   vtkGetMacro(EndStringVOffsetFactor, double);
 
+  // Set/Get the title end string orientation as being reversed from the
+  // other centering.
+  vtkSetMacro(EndStringReverseOrientation, int);
+  vtkGetMacro(EndStringReverseOrientation, int);
+  vtkBooleanMacro(EndStringReverseOrientation, int);
 
   // Description:
   // Draw the axis. 
@@ -386,6 +391,7 @@ protected:
 
   double EndStringHOffsetFactor;
   double EndStringVOffsetFactor;
+  int    EndStringReverseOrientation;
   
 private:
   vtkVisItAxisActor2D(const vtkVisItAxisActor2D&);
