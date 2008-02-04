@@ -710,8 +710,8 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
         return;
     }
 
-    plotAxisMinima.resize(axisCount);
-    plotAxisMaxima.resize(axisCount);
+    axisMinima.resize(axisCount);
+    axisMaxima.resize(axisCount);
 
     int axisNum;
 
@@ -725,14 +725,14 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
         outAtts.GetCumulativeTrueDataExtents(axisVarName.c_str())->Set(varDataExtent);
         outAtts.SetUseForAxis(axisNum, axisVarName.c_str());
 
-        plotAxisMinima[axisNum] = varDataExtent[0];
-        plotAxisMaxima[axisNum] = varDataExtent[1];
+        axisMinima[axisNum] = varDataExtent[0];
+        axisMaxima[axisNum] = varDataExtent[1];
     }
 
-    for (axisNum = 0; axisNum < plotAxisMinima.size(); axisNum++)
+    for (axisNum = 0; axisNum < axisMinima.size(); axisNum++)
     {
-        double &axisMinimum = plotAxisMinima[axisNum];
-        double &axisMaximum = plotAxisMaxima[axisNum];
+        double &axisMinimum = axisMinima[axisNum];
+        double &axisMaximum = axisMaxima[axisNum];
 
         if (fabs(axisMinimum) < 1e-20)
             axisMinimum = 0.0;
@@ -789,11 +789,11 @@ avtParallelCoordinatesFilter::InitializeDataTupleInput()
     for (int axisNum = 0; axisNum < axisCount; axisNum++)
     {
         double axisSpan, axisMinSpan, axisMaxSpan;
-        axisSpan = plotAxisMaxima[axisNum] - plotAxisMinima[axisNum];
+        axisSpan = axisMaxima[axisNum] - axisMinima[axisNum];
 
         axisMinSpan = parCoordsAtts.GetExtentMinima()[axisNum] -
-                      plotAxisMinima[axisNum];
-        axisMaxSpan = plotAxisMaxima[axisNum] -
+                      axisMinima[axisNum];
+        axisMaxSpan = axisMaxima[axisNum] -
                       parCoordsAtts.GetExtentMaxima()[axisNum];
 
         bool applySubrange = (axisMinSpan/axisSpan > 0.0001) ||
@@ -875,7 +875,7 @@ void
 avtParallelCoordinatesFilter::InputDataTuple(const floatVector &inputTuple)
 {
     int axisID;
-    double plotAxisMin, plotAxisMax, inputCoord;
+    double axisMin, axisMax, inputCoord;
 
     float outputCoords[3];
     outputCoords[2] = 0.0;
@@ -895,16 +895,16 @@ avtParallelCoordinatesFilter::InputDataTuple(const floatVector &inputTuple)
 
     for (axisID = 0; axisID < axisCount; axisID++)
     {
-        plotAxisMin = plotAxisMinima[axisID];
-        plotAxisMax = plotAxisMaxima[axisID];
+        axisMin = axisMinima[axisID];
+        axisMax = axisMaxima[axisID];
 
-        if ((inputCoord = (double)inputTuple[axisID]) < plotAxisMin)
-            inputCoord = plotAxisMin;
-        else if (inputCoord > plotAxisMax)
-            inputCoord = plotAxisMax;
+        if ((inputCoord = (double)inputTuple[axisID]) < axisMin)
+            inputCoord = axisMin;
+        else if (inputCoord > axisMax)
+            inputCoord = axisMax;
 
         outputCoords[0] = axisID;
-        outputCoords[1] = (inputCoord-plotAxisMin)/(plotAxisMax-plotAxisMin);
+        outputCoords[1] = (inputCoord-axisMin)/(axisMax-axisMin);
         
         dataCurvePoints->InsertNextPoint(outputCoords);
     }
@@ -942,10 +942,10 @@ avtParallelCoordinatesFilter::CountDataTuple(const floatVector &inputTuple)
         int a0 = axisID;
         int a1 = axisID+1;
         // Normalize the raw values to [0,1]
-        float v0 = ((inputTuple[a0] - plotAxisMinima[a0]) / 
-                    (plotAxisMaxima[a0] - plotAxisMinima[a0]));
-        float v1 = ((inputTuple[a1] - plotAxisMinima[a1]) / 
-                    (plotAxisMaxima[a1] - plotAxisMinima[a1]));
+        float v0 = ((inputTuple[a0] - axisMinima[a0]) / 
+                    (axisMaxima[a0] - axisMinima[a0]));
+        float v1 = ((inputTuple[a1] - axisMinima[a1]) / 
+                    (axisMaxima[a1] - axisMinima[a1]));
         // Convert to [0,nparts]
         int i0 = int(nparts*v0);
         int i1 = int(nparts*v1);
@@ -1092,8 +1092,8 @@ avtParallelCoordinatesFilter::DrawContext()
     {
         for (int axisNum = 0; axisNum < axisCount; axisNum++)
         {
-            float varmin = plotAxisMinima[axisNum];
-            float varmax = plotAxisMaxima[axisNum];
+            float varmin = axisMinima[axisNum];
+            float varmax = axisMaxima[axisNum];
             float val = varmin+part*((varmax-varmin)/float(nparts));
 
             float pt[3];
