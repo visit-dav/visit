@@ -319,6 +319,9 @@ QvisPluginWindow::Update(Subject *s)
 //    Jeremy Meredith, Thu Jan 24 09:54:25 EST 2008
 //    Forgot to add doAll as a condition to force updates.  Fixed now.
 //
+//    Cyrus Harrison, Mon Feb  4 09:46:24 PST 2008
+//    Resolved AIX linking error w/ auto std::string to QString conversion.
+//
 // ****************************************************************************
 
 void
@@ -373,7 +376,7 @@ QvisPluginWindow::UpdateWindow(bool doAll)
         for (i=0; i<fileOpenOptions->GetNumOpenOptions(); i++)
         {
             QListViewItem *item = new QListViewItem(listDatabases);
-            item->setText(0,fileOpenOptions->GetTypeNames()[i]);
+            item->setText(0,fileOpenOptions->GetTypeNames()[i].c_str());
             databaseItems.push_back(item);
             databaseIndexes.push_back(i);
 
