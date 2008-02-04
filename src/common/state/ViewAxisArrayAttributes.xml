@@ -9,9 +9,9 @@
       1.000000
     </Field>
     <Field name="viewportCoords" label="viewportCoords" type="doubleArray" length="4">
-      0.200000
-      0.100000
+      0.150000
       0.900000
-      0.700000
+      0.100000
+      0.850000
     </Field>
   </Attribute>

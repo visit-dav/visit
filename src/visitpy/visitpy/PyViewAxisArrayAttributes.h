@@ -36,30 +36,26 @@
 *
 *****************************************************************************/
 
-#ifndef LOGGING_H
-#define LOGGING_H
-#include <string>
+#ifndef PY_VIEWAXISARRAYATTRIBUTES_H
+#define PY_VIEWAXISARRAYATTRIBUTES_H
+#include <Python.h>
+#include <ViewAxisArrayAttributes.h>
+#include <visitpy_exports.h>
 
-// Macro functions
-void Macro_SetString(const std::string &s);
-const std::string &Macro_GetString();
-void Macro_SetRecord(bool val);
-bool Macro_GetRecord();
-
-// LogFile functions
-bool LogFile_Open(const char *filename);
-void LogFile_Close();
-void LogFile_SetEnabled(bool val);
-bool LogFile_GetEnabled();
-void LogFile_IncreaseLevel();
-void LogFile_DecreaseLevel();
-void LogFile_Write(const char *str);
-
-// Callback functions
-void LogRPCs(Subject *subj, void *);
-void SS_log_ViewAxisArray(const std::string &s);
-void SS_log_ViewCurve(const std::string &s);
-void SS_log_View2D(const std::string &s);
-void SS_log_View3D(const std::string &s);
+//
+// Functions exposed to the VisIt module.
+//
+void VISITPY_API           PyViewAxisArrayAttributes_StartUp(ViewAxisArrayAttributes *subj, void *data);
+void VISITPY_API           PyViewAxisArrayAttributes_CloseDown();
+VISITPY_API PyMethodDef *   PyViewAxisArrayAttributes_GetMethodTable(int *nMethods);
+bool VISITPY_API           PyViewAxisArrayAttributes_Check(PyObject *obj);
+VISITPY_API ViewAxisArrayAttributes *  PyViewAxisArrayAttributes_FromPyObject(PyObject *obj);
+VISITPY_API PyObject *      PyViewAxisArrayAttributes_New();
+VISITPY_API PyObject *      PyViewAxisArrayAttributes_Wrap(const ViewAxisArrayAttributes *attr);
+void VISITPY_API           PyViewAxisArrayAttributes_SetParent(PyObject *obj, PyObject *parent);
+void VISITPY_API           PyViewAxisArrayAttributes_SetDefaults(const ViewAxisArrayAttributes *atts);
+std::string VISITPY_API    PyViewAxisArrayAttributes_GetLogString();
+std::string VISITPY_API    PyViewAxisArrayAttributes_ToString(const ViewAxisArrayAttributes *, const char *);
 
 #endif
+

@@ -55,6 +55,7 @@
 #include <QNarrowLineEdit.h>
 
 #include <DataNode.h>
+#include <ViewAxisArrayAttributes.h>
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
@@ -89,12 +90,16 @@
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I added support for curve views.
 //
+//   Jeremy Meredith, Mon Feb  4 13:44:33 EST 2008
+//   Added support for axis-array views.
+//
 // ****************************************************************************
 
 QvisViewWindow::QvisViewWindow(const char *caption, const char *shortName,
     QvisNotepadArea *notepad) : QvisPostableWindowSimpleObserver(caption,
     shortName, notepad, ApplyButton)
 {
+    viewAxisArray = 0;
     viewCurve = 0;
     view2d = 0;
     view3d = 0;
@@ -119,10 +124,16 @@ QvisViewWindow::QvisViewWindow(const char *caption, const char *shortName,
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I added support for curve views.
 //
+//   Jeremy Meredith, Mon Feb  4 13:44:33 EST 2008
+//   Added support for axis-array views.
+//
 // ****************************************************************************
 
 QvisViewWindow::~QvisViewWindow()
 {
+    if(viewAxisArray)
+        viewAxisArray->Detach(this);
+
     if(viewCurve)
         viewCurve->Detach(this);
 
@@ -192,6 +203,10 @@ QvisViewWindow::~QvisViewWindow()
 //   Kathleen Bonnell, Wed May  9 11:15:13 PDT 2007 
 //   I added radio buttons for 2d log scaling.
 //
+//   Jeremy Meredith, Mon Feb  4 13:44:33 EST 2008
+//   Added support for axis-array views.  Renamed some curve view
+//   buttons to avoid namespace collisions.
+//
 // ****************************************************************************
 
 void
@@ -228,22 +243,22 @@ QvisViewWindow::CreateWindowContents()
                                        viewCurveGroup, "viewportCurveLabel");
     LayoutCurve->addWidget(viewportCurveLabel, 0, 0);
 
-    domainLineEdit = new QLineEdit(viewCurveGroup, "domainLineEdit");
-    connect(domainLineEdit, SIGNAL(returnPressed()),
+    domainCurveLineEdit = new QLineEdit(viewCurveGroup, "domainCurveLineEdit");
+    connect(domainCurveLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processDomainText()));
-    LayoutCurve->addMultiCellWidget(domainLineEdit, 1,1, 1,3);
-    QLabel *domainLabel = new QLabel(domainLineEdit, "Domain",
-                                     viewCurveGroup, "domainLabel");
-    LayoutCurve->addWidget(domainLabel, 1, 0);
+    LayoutCurve->addMultiCellWidget(domainCurveLineEdit, 1,1, 1,3);
+    QLabel *domainCurveLabel = new QLabel(domainCurveLineEdit, "Domain",
+                                          viewCurveGroup, "domainCurveLabel");
+    LayoutCurve->addWidget(domainCurveLabel, 1, 0);
     internalLayoutCurve->addStretch(10);
 
-    rangeLineEdit = new QLineEdit(viewCurveGroup, "rangeLineEdit");
-    connect(rangeLineEdit, SIGNAL(returnPressed()),
+    rangeCurveLineEdit = new QLineEdit(viewCurveGroup, "rangeCurveLineEdit");
+    connect(rangeCurveLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processRangeText()));
-    LayoutCurve->addMultiCellWidget(rangeLineEdit, 2,2, 1,3);
-    QLabel *rangeLabel = new QLabel(rangeLineEdit, "Range",
-                                    viewCurveGroup, "rangeLabel");
-    LayoutCurve->addWidget(rangeLabel, 2, 0);
+    LayoutCurve->addMultiCellWidget(rangeCurveLineEdit, 2,2, 1,3);
+    QLabel *rangeCurveLabel = new QLabel(rangeCurveLineEdit, "Range",
+                                         viewCurveGroup, "rangeCurveLabel");
+    LayoutCurve->addWidget(rangeCurveLabel, 2, 0);
 
     QLabel *domainScaleLabel = new QLabel("Domain Scale", viewCurveGroup, 
                                           "domainScaleLabel");
@@ -479,6 +494,49 @@ QvisViewWindow::CreateWindowContents()
     Layout3d->addWidget(alignLabel, 11, 0);
 
     //
+    // Add the controls for the curve view.
+    //
+    pageAxisArray = new QVBox(central, "pageAxisArray");
+    pageAxisArray->setSpacing(5);
+    pageAxisArray->setMargin(10);
+    tabs->addTab(pageAxisArray, "AxisArray view");
+
+    viewAxisArrayGroup = new QGroupBox(pageAxisArray, "viewAxisArrayGroup");
+    viewAxisArrayGroup->setFrameStyle(QFrame::NoFrame);
+
+    QVBoxLayout *internalLayoutAxisArray = new QVBoxLayout(viewAxisArrayGroup);
+    internalLayoutAxisArray->addSpacing(10);
+    QGridLayout *LayoutAxisArray = new QGridLayout(internalLayoutAxisArray, 3, 4);
+    LayoutAxisArray->setSpacing(5);
+
+    viewportAxisArrayLineEdit = new QLineEdit(viewAxisArrayGroup, "viewportAxisArrayLineEdit");
+    connect(viewportAxisArrayLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processViewportAxisArrayText()));
+    LayoutAxisArray->addMultiCellWidget(viewportAxisArrayLineEdit, 0,0, 1,3);
+    QLabel *viewportAxisArrayLabel = new QLabel(viewportAxisArrayLineEdit, "Viewport",
+                                       viewAxisArrayGroup, "viewportAxisArrayLabel");
+    LayoutAxisArray->addWidget(viewportAxisArrayLabel, 0, 0);
+
+    domainAxisArrayLineEdit = new QLineEdit(viewAxisArrayGroup, "domainAxisArrayLineEdit");
+    connect(domainAxisArrayLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processDomainAxisArrayText()));
+    LayoutAxisArray->addMultiCellWidget(domainAxisArrayLineEdit, 1,1, 1,3);
+    QLabel *domainAxisArrayLabel = new QLabel(domainAxisArrayLineEdit, "Domain",
+                                     viewAxisArrayGroup, "domainAxisArrayLabel");
+    LayoutAxisArray->addWidget(domainAxisArrayLabel, 1, 0);
+    internalLayoutAxisArray->addStretch(10);
+
+    rangeAxisArrayLineEdit = new QLineEdit(viewAxisArrayGroup, "rangeAxisArrayLineEdit");
+    connect(rangeAxisArrayLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(processRangeAxisArrayText()));
+    LayoutAxisArray->addMultiCellWidget(rangeAxisArrayLineEdit, 2,2, 1,3);
+    QLabel *rangeAxisArrayLabel = new QLabel(rangeAxisArrayLineEdit, "Range",
+                                    viewAxisArrayGroup, "rangeAxisArrayLabel");
+    LayoutAxisArray->addWidget(rangeAxisArrayLabel, 2, 0);
+
+    internalLayoutAxisArray->addStretch(10);
+
+    //
     // The advanced view options.
     //
     pageAdvanced = new QVBox(central, "pageAdvanced");
@@ -589,6 +647,13 @@ QvisViewWindow::SubjectRemoved(Subject *TheRemovedSubject)
 }
 
 void
+QvisViewWindow::ConnectAxisArrayAttributes(ViewAxisArrayAttributes *v)
+{
+    viewAxisArray = v;
+    viewAxisArray->Attach(this);
+}
+
+void
 QvisViewWindow::ConnectCurveAttributes(ViewCurveAttributes *v)
 {
     viewCurve = v;
@@ -639,12 +704,17 @@ QvisViewWindow::ConnectWindowInformation(WindowInformation *w)
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I added support for curve views.
 //
+//   Jeremy Meredith, Mon Feb  4 13:46:48 EST 2008
+//   Added support for axis-array views.
+//
 // ****************************************************************************
 
 void
 QvisViewWindow::UpdateWindow(bool doAll)
 {
     // Update the appropriate widgets.
+    if(SelectedSubject() == viewAxisArray || doAll)
+        UpdateAxisArray(doAll);
     if(SelectedSubject() == viewCurve || doAll)
         UpdateCurve(doAll);
     if(SelectedSubject() == view2d || doAll)
@@ -671,6 +741,9 @@ QvisViewWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Mon Dec 17 10:47:02 PST 2007
 //   Made it use ids.
 //
+//   Jeremy Meredith, Mon Feb  4 13:47:04 EST 2008
+//   Renamed a couple widgets to avoid namespace collisions.
+//
 // ****************************************************************************
 
 void
@@ -691,13 +764,13 @@ QvisViewWindow::UpdateCurve(bool doAll)
         case ViewCurveAttributes::ID_domainCoords:
           { const double *v = viewCurve->GetDomainCoords();
             temp.sprintf("%g %g", v[0], v[1]);
-            domainLineEdit->setText(temp);
+            domainCurveLineEdit->setText(temp);
             break;
           }
         case ViewCurveAttributes::ID_rangeCoords:
           { const double *v = viewCurve->GetRangeCoords();
             temp.sprintf("%g %g", v[0], v[1]);
-            rangeLineEdit->setText(temp);
+            rangeCurveLineEdit->setText(temp);
             break;
           }
         case ViewCurveAttributes::ID_viewportCoords:
@@ -718,6 +791,57 @@ QvisViewWindow::UpdateCurve(bool doAll)
             rangeScaleMode->blockSignals(true);
             rangeScaleMode->setButton(viewCurve->GetRangeScale());
             rangeScaleMode->blockSignals(false);
+          }
+          break;
+        }
+    }
+}
+
+// ****************************************************************************
+// Method: QvisViewWindow::UpdateAxisArray
+//
+// Purpose: 
+//   Update the portion of the window for axis array views.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  4, 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisViewWindow::UpdateAxisArray(bool doAll)
+{
+    if(viewAxisArray == 0)
+        return;
+
+    QString temp;
+
+    for(int i = 0; i < viewAxisArray->NumAttributes(); ++i)
+    {
+        if(!viewAxisArray->IsSelected(i) && !doAll)
+            continue;
+
+        switch(i)
+        {
+        case ViewAxisArrayAttributes::ID_domainCoords:
+          { const double *v = viewAxisArray->GetDomainCoords();
+            temp.sprintf("%g %g", v[0], v[1]);
+            domainAxisArrayLineEdit->setText(temp);
+            break;
+          }
+        case ViewAxisArrayAttributes::ID_rangeCoords:
+          { const double *v = viewAxisArray->GetRangeCoords();
+            temp.sprintf("%g %g", v[0], v[1]);
+            rangeAxisArrayLineEdit->setText(temp);
+            break;
+          }
+        case ViewAxisArrayAttributes::ID_viewportCoords:
+          { const double *v = viewAxisArray->GetViewportCoords();
+            temp.sprintf("%g %g %g %g", v[0], v[1], v[2], v[3]);
+            viewportAxisArrayLineEdit->setText(temp);
+            break;
           }
           break;
         }
@@ -1100,6 +1224,9 @@ QvisViewWindow::UpdateEyeAngleSliderFromAtts(void)
 //   Eric Brugger, Wed Aug 20 14:04:21 PDT 2003
 //   I added support for curve views.
 //   
+//   Jeremy Meredith, Mon Feb  4 13:44:33 EST 2008
+//   Added support for axis-array views.
+//
 // ****************************************************************************
 
 void
@@ -1107,9 +1234,10 @@ QvisViewWindow::Apply(bool ignore)
 {
     if(AutoUpdate() || ignore)
     {
-        bool doCurve = (viewCurve->NumAttributesSelected() > 0);
-        bool do2d    = (view2d->NumAttributesSelected() > 0);
-        bool do3d    = (view3d->NumAttributesSelected() > 0);
+        bool doCurve     = (viewCurve->NumAttributesSelected() > 0);
+        bool do2d        = (view2d->NumAttributesSelected() > 0);
+        bool do3d        = (view3d->NumAttributesSelected() > 0);
+        bool doAxisArray = (viewAxisArray->NumAttributesSelected() > 0);
 
         // Get the current view attributes and tell the other
         // observers about them.
@@ -1133,6 +1261,12 @@ QvisViewWindow::Apply(bool ignore)
             view3d->Notify();
             GetViewerMethods()->SetView3D();
         }
+        // Tell the viewer to set the AxisArray view attributes.
+        if(doAxisArray || ignore)
+        {
+            viewAxisArray->Notify();
+            GetViewerMethods()->SetViewAxisArray();
+        }
     }
     else
     {
@@ -1140,6 +1274,7 @@ QvisViewWindow::Apply(bool ignore)
         viewCurve->Notify();
         view2d->Notify();
         view3d->Notify();
+        viewAxisArray->Notify();
     }
 }
 
@@ -1212,6 +1347,112 @@ QvisViewWindow::SetFromNode(DataNode *parentNode, const int *borders)
 }
 
 // ****************************************************************************
+//  Method:  QvisViewWindow::GetCurrentValuesAxisArray
+//
+//  Purpose:
+//    Get the current values for the axis array text fields.
+//
+//  Arguments:
+//    which_widget   index of the widget, or -1 for all
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  4, 2008
+//
+// ****************************************************************************
+void
+QvisViewWindow::GetCurrentValuesAxisArray(int which_widget)
+{
+    bool okay, doAll = (which_widget == -1);
+    QString msg, temp;
+
+    // Do the viewport values.
+    if(which_widget == 0 || doAll)
+    {
+        temp = viewportAxisArrayLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double v[4];
+            if(sscanf(temp.latin1(), "%lg %lg %lg %lg",
+                      &v[0], &v[1], &v[2], &v[3]) == 4)
+            {
+                viewAxisArray->SetViewportCoords(v);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The viewport values were invalid. "
+                "Resetting to the last good values of %g %g %g %g.",
+                 viewAxisArray->GetViewportCoords()[0],
+                 viewAxisArray->GetViewportCoords()[1],
+                 viewAxisArray->GetViewportCoords()[2],
+                 viewAxisArray->GetViewportCoords()[3]);
+            Error(msg);
+            viewAxisArray->SetViewportCoords(viewAxisArray->GetViewportCoords());
+        }
+    }
+
+    // Do the domain values.
+    if(which_widget == 1 || doAll)
+    {
+        temp = domainAxisArrayLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double domain[2];
+            if(sscanf(temp.latin1(), "%lg %lg",
+                      &domain[0], &domain[1]) == 2)
+            {
+                viewAxisArray->SetDomainCoords(domain);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The domain values were invalid. "
+                "Resetting to the last good values of %g %g.",
+                 viewAxisArray->GetDomainCoords()[0],
+                 viewAxisArray->GetDomainCoords()[1]);
+            Error(msg);
+            viewAxisArray->SetDomainCoords(viewAxisArray->GetDomainCoords());
+        }
+    }
+
+    // Do the range values.
+    if(which_widget == 2 || doAll)
+    {
+        temp = rangeAxisArrayLineEdit->displayText().stripWhiteSpace();
+        okay = !temp.isEmpty();
+        if(okay)
+        {
+            double range[2];
+            if(sscanf(temp.latin1(), "%lg %lg",
+                      &range[0], &range[1]) == 2)
+            {
+                viewAxisArray->SetRangeCoords(range);
+            }
+            else
+                okay = false;
+        }
+
+        if(!okay)
+        {
+            msg.sprintf("The range values were invalid. "
+                "Resetting to the last good values of %g %g.",
+                 viewAxisArray->GetRangeCoords()[0],
+                 viewAxisArray->GetRangeCoords()[1]);
+            Error(msg);
+            viewAxisArray->SetRangeCoords(viewAxisArray->GetRangeCoords());
+        }
+    }
+}
+
+// ****************************************************************************
 // Method: QvisViewWindow::GetCurrentValuesCurve
 //
 // Purpose: 
@@ -1221,6 +1462,8 @@ QvisViewWindow::SetFromNode(DataNode *parentNode, const int *borders)
 // Creation:   Wed Aug 20 14:04:21 PDT 2003
 //
 // Modifications:
+//   Jeremy Meredith, Mon Feb  4 13:47:04 EST 2008
+//   Renamed a couple widgets to avoid namespace collisions.
 //
 // ****************************************************************************
 
@@ -1263,7 +1506,7 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
     // Do the domain values.
     if(which_widget == 1 || doAll)
     {
-        temp = domainLineEdit->displayText().stripWhiteSpace();
+        temp = domainCurveLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -1291,7 +1534,7 @@ QvisViewWindow::GetCurrentValuesCurve(int which_widget)
     // Do the range values.
     if(which_widget == 2 || doAll)
     {
-        temp = rangeLineEdit->displayText().stripWhiteSpace();
+        temp = rangeCurveLineEdit->displayText().stripWhiteSpace();
         okay = !temp.isEmpty();
         if(okay)
         {
@@ -1751,6 +1994,7 @@ QvisViewWindow::GetCurrentValues3d(int which_widget)
 void
 QvisViewWindow::GetCurrentValues(int which_widget)
 {
+    GetCurrentValuesAxisArray(which_widget);
     GetCurrentValuesCurve(which_widget);
     GetCurrentValues2d(which_widget);
     GetCurrentValues3d(which_widget);
@@ -2571,6 +2815,31 @@ QvisViewWindow::tabSelected(const QString &tabLabel)
     else
         activeTab = 3;
     activeTabSetBySlot = true;
+}
+
+//
+// Slots for axis array Widgets.
+//
+
+void
+QvisViewWindow::processViewportAxisArrayText()
+{
+    GetCurrentValues(0);
+    Apply();    
+}
+
+void
+QvisViewWindow::processDomainAxisArrayText()
+{
+    GetCurrentValues(1);
+    Apply();    
+}
+
+void
+QvisViewWindow::processRangeAxisArrayText()
+{
+    GetCurrentValues(2);
+    Apply();    
 }
 
 //

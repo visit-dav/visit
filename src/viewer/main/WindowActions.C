@@ -1123,6 +1123,9 @@ SetWindowModeAction::Enabled() const
 //   Added new axis array window mode.  Most interaction modes are disabled
 //   for this type of window.
 //
+//   Jeremy Meredith, Mon Feb  4 13:24:08 EST 2008
+//   Added zoom interactor for AxisArray mode.
+//
 // ****************************************************************************
 
 bool
@@ -1142,7 +1145,7 @@ SetWindowModeAction::ChoiceEnabled(int i) const
     }
     else if(i == 3) // zoom
     {
-        retval = (window->GetWindowMode() != WINMODE_AXISARRAY);
+        retval = true;
     }
     else if(i == 4)
     {

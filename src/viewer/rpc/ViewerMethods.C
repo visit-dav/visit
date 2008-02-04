@@ -3402,6 +3402,31 @@ ViewerMethods::ChooseCenterOfRotation(double sx, double sy)
 }
 
 // ****************************************************************************
+// Method: ViewerMethods::SetViewAxisArray
+//
+// Purpose: 
+//   Tells the viewer to use the new axis array view attributes.
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  4, 2008
+//
+// ****************************************************************************
+
+void
+ViewerMethods::SetViewAxisArray()
+{
+    //
+    // Set the rpc type.
+    //
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::SetViewAxisArrayRPC);
+
+    //
+    // Issue the RPC.
+    //
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
 // Method: ViewerMethods::SetViewCurve
 //
 // Purpose: 

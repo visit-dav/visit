@@ -148,6 +148,9 @@
 #    Jeremy Meredith, Fri Feb  1 18:06:42 EST 2008
 #    Added VisitAxisRestrictionTool and avtAxisRestrictionToolInterface.
 #
+#    Jeremy Meredith, Mon Feb  4 13:28:05 EST 2008
+#    Added ZoomAxisArray.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -197,6 +200,7 @@ Interactors_src= \
   Interactors/VisitInteractor.C \
   Interactors/Zoom2D.C \
   Interactors/Zoom3D.C \
+  Interactors/ZoomAxisArray.C \
   Interactors/ZoomCurve.C \
   Interactors/ZoomInteractor.C
 Proxies_src= \

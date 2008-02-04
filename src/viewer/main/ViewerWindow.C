@@ -258,6 +258,10 @@ static void RotateAroundY(const avtView3D&, double, avtView3D&);
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Jeremy Meredith, Mon Feb  4 13:30:05 EST 2008
+//    Removed the viewport setting for avtAxisArray - it should already be
+//    set to something reasonable by the default constructor.
+//
 // ****************************************************************************
 
 ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
@@ -374,11 +378,6 @@ ViewerWindow::ViewerWindow(int windowIndex) : ViewerBase(0, "ViewerWindow"),
     // Initialize the axis array view information.
     //
     avtViewAxisArray viewAxisArray;
-
-    viewAxisArray.viewport[0] = 0.2;
-    viewAxisArray.viewport[1] = 0.95;
-    viewAxisArray.viewport[2] = 0.15;
-    viewAxisArray.viewport[3] = 0.95;
     visWindow->SetViewAxisArray(viewAxisArray);
 
     curViewCurve     = new ViewCurveAttributes;

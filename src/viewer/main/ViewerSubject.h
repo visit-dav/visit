@@ -449,6 +449,9 @@ class avtDefaultPlotMetaData;
 //    Brad Whitlock, Thu Jan 31 12:01:12 PST 2008
 //    Added RemoveCrashRecoveryFile.
 //
+//    Jeremy Meredith, Mon Feb  4 13:29:43 EST 2008
+//    Added SetViewAxisArray.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerSubject : public ViewerBase
@@ -569,6 +572,7 @@ private:
     void ResetAnnotationObjectList();
 
     void SetKeyframeAttributes();
+    void SetViewAxisArray();
     void SetViewCurve();
     void SetView2D();
     void SetView3D();

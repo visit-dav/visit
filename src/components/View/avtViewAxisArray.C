@@ -135,16 +135,19 @@ avtViewAxisArray::operator==(const avtViewAxisArray &vi)
 //  Creation:   January 31, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Mon Feb  4 13:29:03 EST 2008
+//    Set a more reasonable default for the viewport (and one that
+//    matches the defaults in the attributes).
 //
 // ****************************************************************************
 
 void
 avtViewAxisArray::SetToDefault()
 {
-    viewport[0] = 0.;
-    viewport[1] = 1.;
-    viewport[2] = 0.;
-    viewport[3] = 1.;
+    viewport[0] = 0.15;
+    viewport[1] = 0.9;
+    viewport[2] = 0.10;
+    viewport[3] = 0.85;
     domain[0]   = 0.;
     domain[1]   = 1.;
     range[0]    = 0.;

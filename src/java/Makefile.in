@@ -117,6 +117,9 @@
 #   Jeremy Meredith, Wed Jan 23 12:14:22 EST 2008
 #   Added FileOpenOptions.java.
 #
+#   Jeremy Meredith, Mon Feb  4 13:43:24 EST 2008
+#   Added ViewAxisArrayAttributes.java.
+#
 ##############################################################################
 
 ##
@@ -215,6 +218,7 @@ StatusAttributes.java \
 SyncAttributes.java \
 View2DAttributes.java \
 View3DAttributes.java \
+ViewAxisArrayAttributes.java \
 ViewCurveAttributes.java \
 ViewerRPC.java \
 WindowInformation.java

@@ -2409,6 +2409,10 @@ ViewerWindowManager::SetInteractionMode(INTERACTION_MODE m,
 //    Added error message for non-positive values when log scaling.  Only
 //    attempt to take the log of the domain/range coords if there are plots.
 //
+//    Jeremy Meredith, Mon Feb  4 13:32:04 EST 2008
+//    Have the various calls to UpdateViewAtts tell the routine not to bother
+//    updating the atttributes for the Axis Array window modality.
+//
 // ****************************************************************************
 
 void
@@ -2431,7 +2435,7 @@ ViewerWindowManager::SetViewCurveFromClient()
         if ((newDomainScale == LOG || newRangeScale == LOG) &&
            (vpl->GetNumPlots() > 0 && !vpl->CanDoLogViewScaling(WINMODE_CURVE)))
         {
-            UpdateViewAtts(activeWindow, true, false, false);
+            UpdateViewAtts(activeWindow, true, false, false, false);
             Error("There are plots in the window that do not\n"
                   "support log-scaling.  It will not be done.");
             return;
@@ -2440,7 +2444,7 @@ ViewerWindowManager::SetViewCurveFromClient()
         {
             if (domain[0] <= 0 || domain[1] <= 0) 
             {
-                UpdateViewAtts(activeWindow, true, false, false);
+                UpdateViewAtts(activeWindow, true, false, false, false);
                 Error("There are non-positive values in the domain of the\n"
                       "curve, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
@@ -2453,7 +2457,7 @@ ViewerWindowManager::SetViewCurveFromClient()
         {
             if (range[0] <= 0 || range[1] <= 0) 
             {
-                UpdateViewAtts(activeWindow, true, false, false);
+                UpdateViewAtts(activeWindow, true, false, false, false);
                 Error("There are non-positive values in the range of the\n"
                       "curve, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
@@ -2517,7 +2521,7 @@ ViewerWindowManager::SetViewCurveFromClient()
     // This will maintain our internal state and also make locked windows
     // get this view.
     //
-    UpdateViewAtts(activeWindow, true, false, false);
+    UpdateViewAtts(activeWindow, true, false, false, false);
 }
 
 // ****************************************************************************
@@ -2561,6 +2565,10 @@ ViewerWindowManager::SetViewCurveFromClient()
 //    Kathleen Bonnell, Wed May  9 17:40:35 PDT 2007 
 //    Added support for log scaling.
 //
+//    Jeremy Meredith, Mon Feb  4 13:32:04 EST 2008
+//    Have the various calls to UpdateViewAtts tell the routine not to bother
+//    updating the atttributes for the Axis Array window modality.
+//
 // ****************************************************************************
 
 void
@@ -2585,7 +2593,7 @@ ViewerWindowManager::SetView2DFromClient()
         if ((newXScale == LOG || newYScale == LOG) && 
             (vpl->GetNumPlots() > 0 && !vpl->CanDoLogViewScaling(WINMODE_2D)))
         {
-            UpdateViewAtts(activeWindow, false, true, false);
+            UpdateViewAtts(activeWindow, false, true, false, false);
             Error("There are plots in the window that do not\n" 
                   "support log-scaling.  It will not be done.");
             return;
@@ -2594,7 +2602,7 @@ ViewerWindowManager::SetView2DFromClient()
         {
             if (view2d.window[0] <= 0 || view2d.window[1] <= 0) 
             {
-                UpdateViewAtts(activeWindow, false, true, false);
+                UpdateViewAtts(activeWindow, false, true, false, false);
                 Error("There are non-positive values in the x-coords of\n"
                       "the mesh, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
@@ -2607,7 +2615,7 @@ ViewerWindowManager::SetView2DFromClient()
         {
             if (view2d.window[2] <= 0 || view2d.window[3] <= 0) 
             {
-                UpdateViewAtts(activeWindow, false, true, false);
+                UpdateViewAtts(activeWindow, false, true, false, false);
                 Error("There are non-positive values in the y-coords of\n"
                       "the mesh, so log scaling cannot be done. You must\n"
                       "limit the spatial extents to positive values.\n"
@@ -2680,7 +2688,7 @@ ViewerWindowManager::SetView2DFromClient()
     // This will maintain our internal state and also make locked windows
     // get this view.
     //
-    UpdateViewAtts(activeWindow, false, true, false);
+    UpdateViewAtts(activeWindow, false, true, false, false);
 }
 
 // ****************************************************************************
@@ -2714,6 +2722,10 @@ ViewerWindowManager::SetView2DFromClient()
 //
 //    Eric Brugger, Wed Feb 11 08:52:25 PST 2004
 //    Added code to copy center of rotation information.
+//
+//    Jeremy Meredith, Mon Feb  4 13:32:04 EST 2008
+//    Have the call to UpdateViewAtts tell the routine not to bother
+//    updating the atttributes for the Axis Array window modality.
 //
 // ****************************************************************************
 
@@ -2754,7 +2766,48 @@ ViewerWindowManager::SetView3DFromClient()
     // This will maintain our internal state and also make locked windows
     // get this view.
     //
-    UpdateViewAtts(activeWindow, false, false, true);
+    UpdateViewAtts(activeWindow, false, false, true, false);
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::SetViewAxisArrayFromClient
+//
+//  Purpose: 
+//    Sets the view for the active window using the client view attributes.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  4, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::SetViewAxisArrayFromClient()
+{
+    avtViewAxisArray viewAxisArray;
+
+    viewAxisArray.domain[0] = viewAxisArrayClientAtts->GetDomainCoords()[0];
+    viewAxisArray.domain[1] = viewAxisArrayClientAtts->GetDomainCoords()[1];
+
+    viewAxisArray.range[0] = viewAxisArrayClientAtts->GetRangeCoords()[0];
+    viewAxisArray.range[1] = viewAxisArrayClientAtts->GetRangeCoords()[1];
+
+    viewAxisArray.viewport[0] = viewAxisArrayClientAtts->GetViewportCoords()[0];
+    viewAxisArray.viewport[1] = viewAxisArrayClientAtts->GetViewportCoords()[1];
+    viewAxisArray.viewport[2] = viewAxisArrayClientAtts->GetViewportCoords()[2];
+    viewAxisArray.viewport[3] = viewAxisArrayClientAtts->GetViewportCoords()[3];
+
+    //
+    // Set the AxisArray view for the active viewer window.
+    //
+    windows[activeWindow]->SetViewAxisArray(viewAxisArray);
+
+    //
+    // This will maintain our internal state and also make locked windows
+    // get this view.
+    //
+    UpdateViewAtts(activeWindow, false, false, false, true);
 }
 
 // ****************************************************************************
@@ -4418,6 +4471,9 @@ ViewerWindowManager::UpdateGlobalAtts() const
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Jeremy Meredith, Mon Feb  4 13:33:29 EST 2008
+//    Added remaining support for axis array window modality.
+//
 // ****************************************************************************
 
 void
@@ -4428,6 +4484,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
     const avtViewCurve &viewCurve = windows[index]->GetViewCurve();
     const avtView2D &view2d = windows[index]->GetView2D();
     const avtView3D &view3d = windows[index]->GetView3D();
+    const avtViewAxisArray &viewAxisArray = windows[index]->GetViewAxisArray();
 
     if(index == activeWindow || windows[index]->GetViewIsLocked())
     {
@@ -4463,6 +4520,16 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
             haveNotified = true;
         }
 
+        //
+        // Set the 3D attributes from the window's view.
+        //
+        if(updateAxisArray)
+        {
+            viewAxisArray.SetToViewAxisArrayAttributes(viewAxisArrayClientAtts);
+            viewAxisArrayClientAtts->Notify();
+            haveNotified = true;
+        }
+
         if(haveNotified)
             UpdateWindowInformation(WINDOWINFO_WINMODEONLY, index);
     }
@@ -4481,6 +4548,7 @@ ViewerWindowManager::UpdateViewAtts(int windowIndex, bool updateCurve,
                     windows[i]->SetViewCurve(viewCurve);
                     windows[i]->SetView2D(view2d);
                     windows[i]->SetView3D(view3d);
+                    windows[i]->SetViewAxisArray(viewAxisArray);
                 }
             }
         }

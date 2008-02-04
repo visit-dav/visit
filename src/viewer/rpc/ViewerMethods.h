@@ -97,6 +97,9 @@ class ViewerState;
 //   Jeremy Meredith, Wed Jan 23 16:36:06 EST 2008
 //   Added SetDefaultFileOpenOptions.
 //
+//   Jeremy Meredith, Mon Feb  4 13:33:29 EST 2008
+//   Added remaining support for axis array window modality.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -212,6 +215,7 @@ public:
     void SetCenterOfRotation(double, double, double);
     void ChooseCenterOfRotation();
     void ChooseCenterOfRotation(double, double);
+    void SetViewAxisArray();
     void SetViewCurve();
     void SetView2D();
     void SetView3D();

@@ -63,6 +63,7 @@
 #include <PySaveWindowAttributes.h>
 #include <PySILRestriction.h>
 #include <PyQueryOverTimeAttributes.h>
+#include <PyViewAxisArrayAttributes.h>
 #include <PyViewCurveAttributes.h>
 #include <PyView2DAttributes.h>
 #include <PyView3DAttributes.h>
@@ -835,6 +836,12 @@ static void log_SetPlotSILRestrictionRPC(ViewerRPC *rpc, char *str)
     }
     s += "SetPlotSILRestriction(silr)\n";
     SNPRINTF(str, SLEN, "%s", s.c_str());
+}
+
+static void log_SetViewAxisArrayRPC(ViewerRPC *rpc, char *str)
+{
+    std::string s(PyViewAxisArrayAttributes_GetLogString());
+    SNPRINTF(str, SLEN, "%sSetViewAxisArray(ViewAxisArrayAtts)\n", s.c_str());
 }
 
 static void log_SetViewCurveRPC(ViewerRPC *rpc, char *str)
@@ -1858,6 +1865,9 @@ LogRPCs(Subject *subj, void *)
     case ViewerRPC::SetPlotSILRestrictionRPC:
         log_SetPlotSILRestrictionRPC(rpc, str);
         break;
+    case ViewerRPC::SetViewAxisArrayRPC:
+        log_SetViewAxisArrayRPC(rpc, str);
+        break;
     case ViewerRPC::SetViewCurveRPC:
         log_SetViewCurveRPC(rpc, str);
         break;
@@ -2238,6 +2248,48 @@ SpontaneousStateLogger(const std::string &s)
     }
 }
 #endif
+
+// ****************************************************************************
+// Method: SS_log_ViewAxisArray
+//
+// Purpose: 
+//   This is a callback function for when ViewAxisArray state from the viewer
+//   makes its way to the CLI as a result of a direct user interaction.
+//
+// Note:  view dimension of 4 is indicative of axis array view!
+//
+// Programmer: Jeremy Meredith
+// Creation:   February  4, 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+SS_log_ViewAxisArray(const std::string &s)
+{
+    if(LogFile_GetEnabled() && logLevel == 0 && 
+       viewer->GetViewerState()->GetWindowInformation()->GetViewDimension() == 4)
+    {
+        const char *v = "SetViewAxisArray(ViewAxisArrayAtts)\n";
+
+        if(logFile != 0)
+        {
+            fprintf(logFile, beginSpontaneousComment);
+            fprintf(logFile, "%s", s.c_str());
+            fprintf(logFile, v);
+            fprintf(logFile, endSpontaneousComment);
+        }
+
+        if(macroRecord)
+        {
+            macroString += beginSpontaneousComment;
+            macroString += s;
+            macroString += v;
+            macroString += endSpontaneousComment;
+        }
+    }
+}
 
 // ****************************************************************************
 // Method: SS_log_ViewCurve

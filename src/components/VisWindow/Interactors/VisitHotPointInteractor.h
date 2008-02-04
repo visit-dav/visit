@@ -56,6 +56,7 @@ class Pick;
 class Zoom2D;
 class Zoom3D;
 class ZoomCurve;
+class ZoomAxisArray;
 
 // ****************************************************************************
 // Class: VisitHotPointInteractor
@@ -96,6 +97,9 @@ class ZoomCurve;
 //
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new AxisArray window mode.
+//
+//    Jeremy Meredith, Mon Feb  4 13:24:08 EST 2008
+//    Added zoom interactor for AxisArray mode.
 //
 // ****************************************************************************
 
@@ -148,6 +152,7 @@ private:
     Zoom2D           *zoom2D;
     Zoom3D           *zoom3D;
     ZoomCurve        *zoomCurve;
+    ZoomAxisArray    *zoomAxisArray;
 
     void              SetInteractor(VisitInteractor *);
 };

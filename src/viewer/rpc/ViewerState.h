@@ -78,6 +78,7 @@
     VIEWER_REGISTER_OBJECT(ExpressionList,           ExpressionList, true)\
     VIEWER_REGISTER_OBJECT(AnnotationAttributes,     AnnotationAttributes, true)\
     VIEWER_REGISTER_OBJECT(SILRestrictionAttributes, SILRestrictionAttributes, true)\
+    VIEWER_REGISTER_OBJECT(ViewAxisArrayAttributes,  ViewAxisArrayAttributes, true)\
     VIEWER_REGISTER_OBJECT(ViewCurveAttributes,      ViewCurveAttributes, true)\
     VIEWER_REGISTER_OBJECT(View2DAttributes,         View2DAttributes, true)\
     VIEWER_REGISTER_OBJECT(View3DAttributes,         View3DAttributes, true)\
