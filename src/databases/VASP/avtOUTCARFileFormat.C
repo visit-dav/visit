@@ -538,6 +538,10 @@ avtOUTCARFileFormat::GetNTimesteps(void)
 //    if they *are* written out more than once, we only want to
 //    keep the last one.
 //
+//    Jeremy Meredith, Tue Feb  5 11:19:07 EST 2008
+//    Add support for single-digit elements in TITEL line with underscored
+//    suffixes.
+//
 // ****************************************************************************
 void
 avtOUTCARFileFormat::ReadAllMetaData()
@@ -667,16 +671,22 @@ avtOUTCARFileFormat::ReadAllMetaData()
             }
             else if (arg4.length() > 2)
             {
-                if (arg4[2] != '_')
+                if (arg4[1] == '_')
                 {
-                    // ERROR: expected "_" in third position
-                    cerr << "ERROR: expected '_' in third position\n";
+                    element[0] = arg4[0];
+                    element[1] = 0;
                 }
-                else
+                else if (arg4[2] == '_')
                 {
                     element[0] = arg4[0];
                     element[1] = arg4[1];
                     element[2] = 0;
+                }
+                else
+                {
+                    cerr << "ERROR: expected '_' in second or third position\n"
+                         << "when parsing species name longer than 2 chars\n"
+                         << "from TITEL line.\n";
                 }
             }
             else
