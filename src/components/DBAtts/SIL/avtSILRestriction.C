@@ -576,6 +576,9 @@ avtSILRestriction::SetTopSet(const char *meshname)
 //
 //    Dave Bremer, Thu Dec 20 16:17:25 PST 2007
 //    Updated to handle avtSILArrays
+//
+//    Dave Bremer, Mon Feb  4 17:23:52 PST 2008
+//    Added an early-out test that can avoid creating a SIL on demand.
 // ****************************************************************************
 
 SetState
@@ -592,6 +595,10 @@ avtSILRestriction::EnsureRestrictionCorrectness(int setId)
 
     // Use the state of the current set.
     SetState retval = (SetState) useSet[setId];
+
+    // Early out to avoid creating a set on demand.
+    if (!SILSetHasMapsOut(setId))
+        return retval;
 
     //
     // Get the value for all of its subsets.
