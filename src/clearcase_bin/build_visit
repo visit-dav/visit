@@ -64,7 +64,7 @@
 #           H5part   1.4.0    H5Part-1.4.0.tar.gz    -r
 #           HDF4     2.4.1    HDF4.2r1.tar.gz        -4
 #           HDF5     1.6.5    hdf5-1.6.5.tar.gz      -5
-#           Mili     1.09     mili-1.10a.tar.gz      -m (internal)
+#           Mili     1.10     mili-1.10a.tar.gz      -m (internal)
 #           NetCDF   3.6.0    netcdf.tar.gz          -n
 #           szip     2.1      szip-2.1.tar.gz
 #
@@ -284,6 +284,8 @@
 #     Hooks for ITAPS, and ViSUS libraries, but no implementation
 #     Modified the third party untar behavior
 #
+#     Hank Childs, Mon Feb  4 16:59:30 PST 2008
+#     Make it obvious that Mili cannot be downloaded from the web.
 #
 # *****************************************************************************
 #
@@ -6530,7 +6532,7 @@ usage () {
   printf "%s\n" "-j     Do not build VisIt, build 3rd party libraries only"
   printf "%s\n" "-k     Do not build required 3rd party libraries"
   printf "%s %s %s\n" "-l opt Group name of installed libraries [" $GROUP "]"
-  printf "%s %s %s\n" "-m     Build Mili from:[" $MILI_FILE "]"
+  printf "%s %s %s\n" "-m     Build Mili from:[" $MILI_FILE "].  NOTE: not available for download from web"
   printf "%s %s %s\n" "-n     Build NetCDF from [" $NETCDF_FILE "]"
   printf "%s\n" "-o     Display build log to stdout not to build_visit_log file"
   printf "%s\n" "-p     Enable parallel build, display MPI prompt"
@@ -6760,7 +6762,7 @@ if [[ "$DO_OPTIONAL" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
            "H5Part"   "1.3.3  $H5PART_FILE"    $ON_H5PART \
            "HDF4"     "2.4.1  $HDF4_FILE"      $ON_HDF4 \
            "HDF5"     "1.6.5  $HDF5_FILE"      $ON_HDF5 \
-           "Mili"     "1.10   $MILI_FILE"      $ON_MILI \
+           "Mili"     "1.10   $MILI_FILE (not available from the web)"      $ON_MILI \
            "NetCDF"   "3.6.0  $NETCDF_FILE"    $ON_NETCDF 2> tmp$$
     retval=$?
 
