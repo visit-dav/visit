@@ -786,6 +786,12 @@ avtMassVoxelExtractor::GridOnPlusSideOfPlane(const float *origin,
 //  Programmer: Hank Childs
 //  Creation:   November 21, 2004
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb  5 15:44:53 PST 2008
+//    Fix bugs with the origin or the terminus of the segment being inside 
+//    the volume.
+//
 // ****************************************************************************
 
 bool
@@ -804,6 +810,19 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
     float z_min = Z[0];
     float z_max = Z[dims[2]-1];
 
+    if (x_min <= origin[0] && origin[0] <= x_max &&
+        y_min <= origin[1] && origin[1] <= y_max &&
+        z_min <= origin[2] && origin[2] <= z_max)
+    {
+        hits[num_hits++] = 0.0;
+    }
+    if (x_min <= terminus[0] && terminus[0] <= x_max &&
+        y_min <= terminus[1] && terminus[1] <= y_max &&
+        z_min <= terminus[2] && terminus[2] <= z_max)
+    {
+        hits[num_hits++] = 1.0;
+    }
+
     //
     // If the terminus and the origin have the same X, then we will find
     // the intersection at another face.
@@ -816,7 +835,8 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
         t = (x_min - origin[0]) / (terminus[0] - origin[0]);
         y = origin[1] + t*(terminus[1] - origin[1]);
         z = origin[2] + t*(terminus[2] - origin[2]);
-        if (y_min <= y && y <= y_max && z_min <= z && z <= z_max)
+        if (y_min <= y && y <= y_max && z_min <= z && z <= z_max &&
+            t > 0. && t < 1.)
         {
             hits[num_hits++] = t;
         }
@@ -827,7 +847,8 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
         t = (x_max - origin[0]) / (terminus[0] - origin[0]);
         y = origin[1] + t*(terminus[1] - origin[1]);
         z = origin[2] + t*(terminus[2] - origin[2]);
-        if (y_min <= y && y <= y_max && z_min <= z && z <= z_max)
+        if (y_min <= y && y <= y_max && z_min <= z && z <= z_max &&
+            t > 0. && t < 1.)
         {
             hits[num_hits++] = t;
         }
@@ -845,7 +866,8 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
         t = (y_min - origin[1]) / (terminus[1] - origin[1]);
         x = origin[0] + t*(terminus[0] - origin[0]);
         z = origin[2] + t*(terminus[2] - origin[2]);
-        if (x_min <= x && x <= x_max && z_min <= z && z <= z_max)
+        if (x_min <= x && x <= x_max && z_min <= z && z <= z_max &&
+            t > 0. && t < 1.)
         {
             hits[num_hits++] = t;
         }
@@ -856,7 +878,8 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
         t = (y_max - origin[1]) / (terminus[1] - origin[1]);
         x = origin[0] + t*(terminus[0] - origin[0]);
         z = origin[2] + t*(terminus[2] - origin[2]);
-        if (x_min <= x && x <= x_max && z_min <= z && z <= z_max)
+        if (x_min <= x && x <= x_max && z_min <= z && z <= z_max &&
+            t > 0. && t < 1.)
         {
             hits[num_hits++] = t;
         }
@@ -874,7 +897,8 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
         t = (z_min - origin[2]) / (terminus[2] - origin[2]);
         x = origin[0] + t*(terminus[0] - origin[0]);
         y = origin[1] + t*(terminus[1] - origin[1]);
-        if (x_min <= x && x <= x_max && y_min <= y && y <= y_max)
+        if (x_min <= x && x <= x_max && y_min <= y && y <= y_max &&
+            t > 0. && t < 1.)
         {
             hits[num_hits++] = t;
         }
@@ -885,7 +909,8 @@ avtMassVoxelExtractor::FindSegmentIntersections(const float *origin,
         t = (z_max - origin[2]) / (terminus[2] - origin[2]);
         x = origin[0] + t*(terminus[0] - origin[0]);
         y = origin[1] + t*(terminus[1] - origin[1]);
-        if (x_min <= x && x <= x_max && y_min <= y && y <= y_max)
+        if (x_min <= x && x <= x_max && y_min <= y && y <= y_max &&
+            t > 0. && t < 1.)
         {
             hits[num_hits++] = t;
         }
