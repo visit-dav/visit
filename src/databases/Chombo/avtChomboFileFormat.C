@@ -1852,6 +1852,11 @@ avtChomboFileFormat::GetAuxiliaryData(const char *var, int dom,
 //  Programmer: Gunther H. Weber
 //  Creation:   August 8, 2007
 //
+//  Modifications:
+//
+//    Hank Childs, Tue Feb  5 16:28:31 PST 2008
+//    Fix problem with GetVar returning doubles.  Also fix memory leak.
+//
 // ****************************************************************************
     
 void *
@@ -1871,18 +1876,20 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
     }
     
     // Get the material fractions
-    vector<float *> mats(nMaterials);
+    vector<double *> mats(nMaterials);
+    vector<vtkDoubleArray *> deleteList;
     int nCells = 0;
     for (i = 0; i <= nMaterials - 2; ++i)
     {
 	sprintf(str,"fraction-%d", i);
-        vtkFloatArray *floatArray = (vtkFloatArray *)(GetVar(patch, str));
-        mats[i] = floatArray->GetPointer(0);
-	nCells = floatArray->GetNumberOfTuples();
+        vtkDoubleArray *doubleArray = (vtkDoubleArray *)(GetVar(patch, str));
+	nCells = doubleArray->GetNumberOfTuples();
+        mats[i] = doubleArray->GetPointer(0);
+        deleteList.push_back(doubleArray);
     }
 
     // Calculate fractions for additional "missing" material
-    float *addMatPtr =  new float[nCells];
+    double *addMatPtr =  new double[nCells];
 
     for(unsigned int cellNo = 0; cellNo < nCells; ++cellNo)
     {
@@ -1939,8 +1946,6 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
         // When we're done, the last entry is a '0' in the mix_next
         mix_next[mix_next.size() - 1] = 0;
     }
-    
-    delete[] addMatPtr;
 
     int mixed_size = mix_zone.size();
     avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells,
@@ -1949,6 +1954,11 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
                                         &(mix_zone[0]), &(mix_vf[0]));
      
     df = avtMaterial::Destruct;
+
+    delete[] addMatPtr;
+    for (i = 0 ; i < deleteList.size() ; i++)
+        deleteList[i]->Delete();
+
     return (void*) mat;
 }
 
