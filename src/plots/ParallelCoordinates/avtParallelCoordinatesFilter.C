@@ -212,12 +212,16 @@ avtParallelCoordinatesFilter::PerformRestriction(avtPipelineSpecification_p in_s
 //    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
 //    Some more distillation and related cleanup.
 //
+//    Jeremy Meredith, Wed Feb  6 16:13:17 EST 2008
+//    Initialize axisCount to zero right away, just in case we error out.
+//
 // *****************************************************************************
 
 void
 avtParallelCoordinatesFilter::PreExecute(void)
 {
     avtDatasetToDatasetFilter::PreExecute();
+    axisCount = 0;
 
     if (!parCoordsAtts.AttributesAreConsistent())
     {
@@ -290,12 +294,17 @@ avtParallelCoordinatesFilter::PreExecute(void)
 //     Adapted from Parallel Axis plot and repurposed into this new
 //     Parallel Coordinates plot.
 //
+//     Jeremy Meredith, Wed Feb  6 16:13:34 EST 2008
+//     About early in the case of earlier errors.
+//
 // ****************************************************************************
 
 void
 avtParallelCoordinatesFilter::PostExecute(void)
 {
     avtDatasetToDatasetFilter::PostExecute();
+    if (sendNullOutput)
+        return;
 
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
@@ -694,12 +703,17 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 //    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
 //    Some more distillation and related cleanup.
 //
+//    Jeremy Meredith, Wed Feb  6 16:14:05 EST 2008
+//    Resize axisMinima and axisMaxima early, just in case.
+//
 // ****************************************************************************
 
 void
 avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
 {
     stringVector curAxisVarNames = parCoordsAtts.GetOrderedAxisNames();
+    axisMinima.resize(axisCount);
+    axisMaxima.resize(axisCount);
     
     if (varTupleIndices.size() != curAxisVarNames.size())
     {
@@ -708,9 +722,6 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
         sendNullOutput = true;
         return;
     }
-
-    axisMinima.resize(axisCount);
-    axisMaxima.resize(axisCount);
 
     int axisNum;
 
