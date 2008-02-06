@@ -1088,6 +1088,9 @@ TakeOffPolyLine(int *seg_list,int start_pt,std::vector< std::vector<int> > &ls)
 //    Added support for a user-defined function to scale vector and
 //    vertex glyphs.  Added new atomic properties include file.
 //
+//    Jeremy Meredith, Wed Feb  6 10:53:16 EST 2008
+//    Fixed coordinate handedness mismatch correctly.
+//
 // ****************************************************************************
 
 void
@@ -1287,14 +1290,15 @@ avtDatasetFileWriter::WritePOVRayFamily(const char *filename)
     masterfile << "// Set some variables to make camera/light source positioning easier" << endl;
     masterfile << "#declare aspect       = 4/3;" << endl;
     masterfile << "#declare scene_origin = <xcenter,ycenter,zcenter>;" << endl;
-    masterfile << "#declare camera_pos   = scene_origin - z*ds_size*1.5;" << endl;
+    masterfile << "#declare camera_at    = scene_origin;" << endl;
+    masterfile << "#declare camera_pos   = scene_origin + z*ds_size*1.5;" << endl;
     masterfile << "#declare camera_up    = y;" << endl;
     masterfile << endl;
     masterfile << "// Set the camera/aspect from the given parameters" << endl;
     masterfile << "camera {" << endl;
     masterfile << "    location camera_pos" << endl;
-    masterfile << "    right    x*aspect" << endl;
-    masterfile << "    look_at  scene_origin" << endl;
+    masterfile << "    right    -x*aspect" << endl;
+    masterfile << "    look_at  camera_at" << endl;
     masterfile << "    sky      camera_up" << endl;
     masterfile << "    angle    40" << endl;
     masterfile << "}" << endl;
@@ -1429,6 +1433,9 @@ avtDatasetFileWriter::WritePOVRayTree(avtDataTree_p dt, int idx,
 //    Write out all the cell and point scalar arrays, not just the
 //    active one.
 //
+//    Jeremy Meredith, Wed Feb  6 10:53:16 EST 2008
+//    Fixed coordinate handedness mismatch correctly.
+//
 // ****************************************************************************
 
 void
@@ -1513,10 +1520,10 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
             spatialextents[2] = pt[1];
         if (spatialextents[3] < pt[1])
             spatialextents[3] = pt[1];
-        if (spatialextents[4] > -pt[2]) // yes, z values are inverted
-            spatialextents[4] = -pt[2];
-        if (spatialextents[5] < -pt[2])
-            spatialextents[5] = -pt[2];
+        if (spatialextents[4] > pt[2])
+            spatialextents[4] = pt[2];
+        if (spatialextents[5] < pt[2])
+            spatialextents[5] = pt[2];
     }
     if (cellscalars)
     {
@@ -1566,7 +1573,6 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
         {
             double pt[3];
             pd->GetPoint(i, pt);
-            pt[2] *= -1;
             out << "  <"<<pt[0]<<","<<pt[1]<<","<<pt[2]<<">";
             if (i < numPoints-1)
                 out << ",";
@@ -1626,7 +1632,6 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
             double vec[3] = {ptvectors->GetComponent(i, 0),
                              ptvectors->GetComponent(i, 1),
                              ptvectors->GetComponent(i, 2)};
-            vec[2] *= -1;
             out << "  <"<<vec[0]<<","<<vec[1]<<","<<vec[2]<<">";
             if (i < numPoints-1)
                 out << ",";
@@ -1648,7 +1653,6 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
             double vec[3] = {cellscalars->GetComponent(i, 0),
                              cellscalars->GetComponent(i, 1),
                              cellscalars->GetComponent(i, 2)};
-            vec[2] *= -1;
             out << "  <"<<vec[0]<<","<<vec[1]<<","<<vec[2]<<">";
             if (i < numCells-1)
                 out << ",";
@@ -1669,7 +1673,6 @@ avtDatasetFileWriter::WritePOVRayFile(vtkDataSet *ds,
         {
             double norm[3];
             ptnormals->GetTuple(i, norm);
-            norm[2] *= -1;
             out << "    <"<<norm[0]<<","<<norm[1]<<","<<norm[2]<<">";
             if (i < numPoints-1)
                 out << ",";
