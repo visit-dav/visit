@@ -42,6 +42,10 @@
 #   Cyrus Harrison, Mon Dec 17 16:20:01 PST 2007
 #   Added PyVariant.C and PyMapNode.C
 #
+#   Brad Whitlock, Tue Feb  5 15:37:58 PST 2008
+#   Added CallbackHandlers, CallbackManager, ViewerRPCArguments,
+#   ViewerRPCCallbacks.
+#
 ##############################################################################
 
 ##
@@ -63,8 +67,12 @@ COMMON_SRC=\
     ../common/PyText3DObject.C \
     ../common/PyTimeSliderObject.C \
     ../common/PyVariant.C \
+    ../common/CallbackHandlers.C \
+    ../common/CallbackManager.C \
     ../common/Logging.C \
     ../common/MethodDoc.C \
+    ../common/ViewerRPCArguments.C \
+    ../common/ViewerRPCCallbacks.C \
     ../common/visitmodule.C
 
 SRC=$(COMMON_SRC) \

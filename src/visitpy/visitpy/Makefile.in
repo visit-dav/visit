@@ -36,6 +36,9 @@
 #    Jeremy Meredith, Wed Jan 23 15:33:13 EST 2008
 #    Added PyFileOpenOptions.
 #
+#    Brad Whitlock, Mon Feb  4 13:27:18 PST 2008
+#    Added PyViewerRPC. 
+#
 #    Jeremy Meredith, Mon Feb  4 10:05:44 EST 2008
 #    Added PyViewAxisArrayAttributes.
 #
@@ -109,6 +112,7 @@ WRAPPER_SRC= \
     PyViewAttributes.C \
     PyViewAxisArrayAttributes.C \
     PyViewCurveAttributes.C \
+    PyViewerRPC.C \
     PyWindowInformation.C
 
 SRC=$(METADATA_SRC)\
