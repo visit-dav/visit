@@ -114,7 +114,7 @@ using std::map;
 using std::set;
 
 static void      ExceptionGenerator(char *);
-static char     *GenerateName(const char *, const char *);
+static char     *GenerateName(const char *, const char *, const char *);
 static string    PrepareDirName(const char *, const char *);
 static void      SplitDirVarName(const char *dirvar, const char *curdir,
                                  string &dir, string &var);
@@ -238,6 +238,8 @@ avtSiloFileFormat::avtSiloFileFormat(const char *toc_name)
 #ifdef PARALLEL
     canDoDynamicLoadBalancing = false;
 #endif
+
+    topDir = "/";
 }
 
 
@@ -351,6 +353,14 @@ avtSiloFileFormat::GetFile(int f)
 //
 //    Mark C. Miller, Tue Feb 13 16:24:58 PST 2007
 //    Made it fail if the file it opened didn't look like a silo file
+//
+//    Mark C. Miller, Wed Feb  6 12:27:09 PST 2008
+//    Made it handle the case a single silo file contains the whole time
+//    series. In this case, the filename passed here contains a ':'
+//    separating the name of the file as the filesystem sees it and the dir
+//    in the file to be used as the 'top dir' for this timestep. Note also,
+//    That there has to exist in the filesystem a real file (usually a symlink)
+//    named as <filename>:<dirname> that opens to the desired file. 
 // ****************************************************************************
 
 DBfile *
@@ -386,11 +396,32 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
         EXCEPTION1(InvalidFilesException, filenames[f]);
     }
 
+    bool hasSiloLibInfo = DBInqVarExists(dbfiles[f], "_silolibinfo");
+
+    //
+    // Attempt to handle case where specified file is actual a silo
+    // filename followed by ':' followed by an internal silo directory
+    // name.
+    //
+    const char *baseFilename = StringHelpers::Basename(filenames[f]);
+    char *pColon = strrchr(baseFilename, ':');
+    if (pColon != NULL)
+    {
+        pColon++; // move one passed the ':' character
+	int triedDir = DBSetDir(dbfiles[f], pColon);
+	if (triedDir == 0)
+	{
+	    debug1 << "Handling this silo file as though it is a file-dir combo" << endl;
+	    debug1 << "for the case where an entire time series is in one silo file." << endl;
+	    topDir = pColon;
+        }
+    }
+
     //
     // Lets try to make absolutely sure this is really a Silo file and
     // not just a PDB file that PD_Open succeeded on.
     //
-    if (!DBInqVarExists(dbfiles[f], "_silolibinfo")) // newer silo files have this
+    if (!hasSiloLibInfo) // newer silo files have this
     {
         //
         // See how many silo objects we have
@@ -444,6 +475,7 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
 //
 //    Mark C. Miller, Wed Dec 13 16:55:30 PST 2006
 //    Added call to GetMultivarToMultimeshMap
+//
 // ****************************************************************************
 
 void
@@ -847,7 +879,7 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     // Do a recursive search through the subdirectories.
     //
-    ReadDir(dbfile, "/", md);
+    ReadDir(dbfile, topDir.c_str(), md);
     BroadcastGlobalInfo(md);
     DoRootDirectoryWork(md);
 
@@ -1079,6 +1111,10 @@ avtSiloFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Mark C. Miller, Wed Dec 13 16:55:30 PST 2006
 //    Added calls to RegisterDomainDirs to loops over multivars, multimats
 //    and multimatspecies
+//
+//    Mark C. Miller, Wed Feb  6 12:27:09 PST 2008
+//    Changed DBSetDir("/") calls to use topDir instead. Changed interface
+//    to GenerateFileName to accept topDir too.
 // ****************************************************************************
 
 void
@@ -1237,7 +1273,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
     // meshtv_searchpath while we can.
     //
     char  *searchpath_str = NULL;
-    if (strcmp(dirname, "/") == 0)
+    if (strcmp(dirname, topDir.c_str()) == 0)
     {
 	codeNameGuess = GuessCodeNameFromTopLevelVars(dbfile);
 
@@ -1551,7 +1587,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             break;
         }
 
-        char *name_w_dir = GenerateName(dirname, multimesh_names[i]);
+        char *name_w_dir = GenerateName(dirname, multimesh_names[i], topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir,
                                    mm?mm->nblocks:0, mm?mm->blockorigin:0, cellOrigin,
                                    groupOrigin, ndims, tdims, mt);
@@ -1632,7 +1668,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             extents_to_use = extents;
         }
 
-        char *name_w_dir = GenerateName(dirname, qmesh_names[i]);
+        char *name_w_dir = GenerateName(dirname, qmesh_names[i], topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use,
                                                    name_w_dir, 1, 0,
                                                    qm->origin, 0,
@@ -1706,7 +1742,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             extents_to_use = extents;
         }
 
-        char *name_w_dir = GenerateName(dirname, ucdmesh_names[i]);
+        char *name_w_dir = GenerateName(dirname, ucdmesh_names[i], topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
                             1, 0, um->origin, 0, um->ndims, um->ndims,
                             AVT_UNSTRUCTURED_MESH);
@@ -1754,7 +1790,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             pm = DBAllocPointmesh(); // to fool code block below
         }
 
-        char *name_w_dir = GenerateName(dirname, ptmesh_names[i]);
+        char *name_w_dir = GenerateName(dirname, ptmesh_names[i], topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(name_w_dir, 1, 0,pm->origin,
                                               0, pm->ndims, 0, AVT_POINT_MESH); mmd->groupTitle = "blocks";
         mmd->groupPieceName = "block";
@@ -1796,7 +1832,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             cur = DBAllocCurve(); // to fool code block below
         }
 
-        char *name_w_dir = GenerateName(dirname, curve_names[i]);
+        char *name_w_dir = GenerateName(dirname, curve_names[i], topDir.c_str());
 
         avtCurveMetaData *cmd = new avtCurveMetaData(name_w_dir);
         if (cur->xlabel != NULL)
@@ -1858,7 +1894,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             extents_to_use = extents;
         }
 
-        char *name_w_dir = GenerateName(dirname, csgmesh_names[i]);
+        char *name_w_dir = GenerateName(dirname, csgmesh_names[i], topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
                             csgm->zones->nzones, 0, csgm->origin, 0,
                             csgm->ndims, csgm->ndims, AVT_CSG_MESH);
@@ -2047,7 +2083,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             };
         }
 
-        char *name_w_dir = GenerateName(dirname, multivar_names[i]);
+        char *name_w_dir = GenerateName(dirname, multivar_names[i], topDir.c_str());
         if (nvals == 1)
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
@@ -2106,8 +2142,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         // Get the dimension of the variable.
         //
-        char *name_w_dir = GenerateName(dirname, qvar_names[i]);
-        char *meshname_w_dir = GenerateName(dirname, meshname);
+        char *name_w_dir = GenerateName(dirname, qvar_names[i], topDir.c_str());
+        char *meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
         if (qv->nvals == 1)
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
@@ -2166,8 +2202,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         // Get the dimension of the variable.
         //
-        char *name_w_dir = GenerateName(dirname, ucdvar_names[i]);
-        char *meshname_w_dir = GenerateName(dirname, meshname);
+        char *name_w_dir = GenerateName(dirname, ucdvar_names[i], topDir.c_str());
+        char *meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
         if (uv->nvals == 1)
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
@@ -2220,8 +2256,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         // Get the dimension of the variable.
         //
-        char *name_w_dir = GenerateName(dirname, ptvar_names[i]);
-        char *meshname_w_dir = GenerateName(dirname, meshname);
+        char *name_w_dir = GenerateName(dirname, ptvar_names[i], topDir.c_str());
+        char *meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
         if (pv->nvals == 1)
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
@@ -2282,8 +2318,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
         //
         // Get the dimension of the variable.
         //
-        char *name_w_dir = GenerateName(dirname, csgvar_names[i]);
-        char *meshname_w_dir = GenerateName(dirname, meshname);
+        char *name_w_dir = GenerateName(dirname, csgvar_names[i], topDir.c_str());
+        char *meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
         if (csgv->nvals == 1)
         {
             avtScalarMetaData *smd = new avtScalarMetaData(name_w_dir,
@@ -2375,8 +2411,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
 #endif
         }
 
-        char *name_w_dir = GenerateName(dirname, mat_names[i]);
-        char *meshname_w_dir = GenerateName(dirname, meshname);
+        char *name_w_dir = GenerateName(dirname, mat_names[i], topDir.c_str());
+        char *meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
         avtMaterialMetaData *mmd;
         if (matcolors.size())
             mmd = new avtMaterialMetaData(name_w_dir, meshname_w_dir,
@@ -2498,7 +2534,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             ENDTRY
         }
 
-        char *name_w_dir = GenerateName(dirname, multimat_names[i]);
+        char *name_w_dir = GenerateName(dirname, multimat_names[i], topDir.c_str());
         avtMaterialMetaData *mmd;
         if (matcolors.size())
             mmd = new avtMaterialMetaData(name_w_dir, meshname,
@@ -2554,8 +2590,8 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
             }
             speciesNames.push_back(tmp_string_vector);
         }
-        char *name_w_dir = GenerateName(dirname, matspecies_names[i]);
-        char *meshname_w_dir = GenerateName(dirname, meshname);
+        char *name_w_dir = GenerateName(dirname, matspecies_names[i], topDir.c_str());
+        char *meshname_w_dir = GenerateName(dirname, meshname, topDir.c_str());
         avtSpeciesMetaData *smd = new avtSpeciesMetaData(name_w_dir,
                                   meshname_w_dir, spec->matname, spec->nmat,
                                   numSpecies, speciesNames);
@@ -2664,7 +2700,7 @@ avtSiloFileFormat::ReadDir(DBfile *dbfile, const char *dirname,
                 speciesNames.push_back(tmp_string_vector);
             }
         }
-        char *name_w_dir = GenerateName(dirname, multimatspecies_names[i]);
+        char *name_w_dir = GenerateName(dirname, multimatspecies_names[i], topDir.c_str());
         avtSpeciesMetaData *smd;
         if (valid_var)
             smd = new avtSpeciesMetaData(name_w_dir,
@@ -3377,7 +3413,7 @@ avtSiloFileFormat::GetConnectivityAndGroupInformationFromFile(DBfile *dbfile,
                                      needConnectivityInfo, needGroupInfo);
             }
 
-            DBSetDir(dbfile, "/");
+            DBSetDir(dbfile, topDir.c_str());
         }
 
         //
@@ -4089,7 +4125,7 @@ avtSiloFileFormat::AddCSGMultimesh(const char *const dirname, int which_mm,
     if (meshnum != -1)
     {
 
-        char *name_w_dir = GenerateName(dirname, multimesh_name);
+        char *name_w_dir = GenerateName(dirname, multimesh_name, topDir.c_str());
         avtMeshMetaData *mmd = new avtMeshMetaData(extents_to_use, name_w_dir,
                                        nregions, 0, 0, 0, ndims, ndims, AVT_CSG_MESH);
 
@@ -8942,17 +8978,36 @@ ExceptionGenerator(char *msg)
 //    Hank Childs, Mon Dec  1 14:13:30 PST 2003
 //    Do a better job of handling variables that have absolute paths.
 //
+//    Mark C. Miller, Wed Feb  6 12:23:56 PST 2008
+//    Made it handle the case where a single sile file contains multiple
+//    timesteps -- topDir is NOT "/". In this case, it has to filter everything
+//    out of either dirname or varname that is the top directory name.
+//
 // ****************************************************************************
 
 char *
-GenerateName(const char *dirname, const char *varname)
+GenerateName(const char *dirname, const char *varname, const char *topdirname)
 {
     if (varname[0] == '/')
     {
-        int len = strlen(varname);
+        //
+        // Figure out any adjustment necessary in the case that we're treating this
+        // silo file as though the 'top' dir is not "/" -- this is the case where
+        // a single silo file contains a whole time series in separate dirs.
+        //
+        int partOfPathThatIsReallyTopDirName = 0;
+        if (! (topdirname[0] == '/' && topdirname[1] == '\0'))
+        {
+            while (varname[partOfPathThatIsReallyTopDirName] == 
+                   topdirname[partOfPathThatIsReallyTopDirName])
+                partOfPathThatIsReallyTopDirName++;
+        }
+        int tdOffset = partOfPathThatIsReallyTopDirName; // shorter name
+
+        int len = strlen(&varname[tdOffset]);
         int num_slash = 0;
         for (int i = 0 ; i < len ; i++)
-            if (varname[i] == '/')
+            if (varname[tdOffset+i] == '/')
                 num_slash++;
 
         //
@@ -8962,10 +9017,25 @@ GenerateName(const char *dirname, const char *varname)
         // referred to as "Mesh", not "/Mesh".
         //
         int offset = (num_slash > 1 ? 0 : 1); 
-        char *rv = new char[strlen(varname)+1];
-        strcpy(rv, varname+offset);
+        char *rv = new char[strlen(varname+tdOffset)+1];
+        strcpy(rv, varname+offset+tdOffset);
         return rv;
     }
+
+    //
+    // Figure out any adjustment necessary in the case that we're treating this
+    // silo file as though the 'top' dir is not "/" -- this is the case where
+    // a single silo file contains a whole time series in separate dirs.
+    //
+    int partOfPathThatIsReallyTopDirName2 = 0;
+    if (! (topdirname[0] == '/' && topdirname[1] == '\0'))
+    {
+        while (dirname[partOfPathThatIsReallyTopDirName2] == 
+               topdirname[partOfPathThatIsReallyTopDirName2] &&
+	       dirname[partOfPathThatIsReallyTopDirName2] != '\0')
+                partOfPathThatIsReallyTopDirName2++;
+    }
+    int tdOffset2 = partOfPathThatIsReallyTopDirName2; // shorter name
 
     int amtForSlash = 1;
     int amtForNullChar = 1;
@@ -8975,7 +9045,7 @@ GenerateName(const char *dirname, const char *varname)
 
     char *rv = new char[len];
 
-    const char *dir_without_leading_slash = dirname+1;
+    const char *dir_without_leading_slash = dirname+1+tdOffset2;
 
     bool needMiddleSlash = false;
     if (strlen(dir_without_leading_slash) > 0)
