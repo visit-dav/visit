@@ -183,6 +183,10 @@ typedef struct
 //    Hank Childs, Mon Oct  8 13:01:31 PDT 2007
 //    Added optional argument to GetConnectivityAndGroupInformation.
 //
+//    Mark C. Miller, Wed Feb  6 12:27:09 PST 2008
+//    Added topDir data member for case where entire time series is in 
+//    a single silo file.
+//
 // ****************************************************************************
 
 class avtSiloFileFormat : public avtSTMDFileFormat
@@ -253,6 +257,8 @@ class avtSiloFileFormat : public avtSTMDFileFormat
 
     std::vector<avtDataSelection_p>           selList;
     std::vector<bool>                        *selsApplied;
+
+    std::string                               topDir;
 
     DBfile               *GetFile(int);
     DBfile               *OpenFile(int, bool skipGlobalInfo = false);
