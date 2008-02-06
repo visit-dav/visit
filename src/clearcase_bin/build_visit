@@ -287,6 +287,11 @@
 #     Hank Childs, Mon Feb  4 16:59:30 PST 2008
 #     Make it obvious that Mili cannot be downloaded from the web.
 #
+#     Hank Childs, Wed Feb  6 11:27:24 PST 2008
+#     1) Rename some variables that are conflicting with names used elsewhere.
+#     (QT_DIR by Linux, MILI_DIR by VisIt's configure script.)
+#     2) Do not do a parallel build for H5_part.
+#     
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -524,7 +529,10 @@ else
    export QT_FILE=${QT_FILE-"qt-x11-free-3.3.8.tar.gz"}
    export QT_VERSION=${QT_VERSION-"3.3.8"}
 fi
-export QT_DIR=${QT_DIR-"${QT_FILE%.tar*}"}
+# This variable should *not* be named QT_DIR, since QT_DIR
+# is often pre-defined with Linux distributions.  And we want
+# to use our own.
+export BV_QT_DIR=${BV_QT_DIR-"${QT_FILE%.tar*}"}
 
 export SILO_FILE=${SILO_FILE-"silo-4.6.1.tar.gz"}
 export SILO_VERSION=${SILO_VERSION-"4.6.1"}
@@ -549,7 +557,9 @@ export HDF4_DIR=${HDF4_DIR-"HDF4.2r1"}
 export MILI_FILE=${MILI_FILE-"mili-1.10a.tar.gz"}
 export MILI_VERSION=${MILI_VERSION-"1.10.0"}
 export MILI_COMPATIBILITY_VERSION=${MILI_COMPATIBILITY_VERSION-"1.0"}
-export MILI_DIR=${MILI_DIR-"mili"}
+# This variable should *not* be named MILI_DIR, since MILI_DIR
+# is recognized by VisIt's configure script.
+export BV_MILI_DIR=${BV_MILI_DIR-"mili"}
 
 export NETCDF_FILE=${NETCDF_FILE-"netcdf.tar.gz"}
 export NETCDF_VERSION=${NETCDF_VERSION-"3.6.0"}
@@ -886,7 +896,7 @@ function check_required_3rdparty
     HAVE_QT_ALREADY="NO"
     HAVE_QT_TARBALL="NO"
     if [[ -d "$VISITDIR/qt/$QT_VERSION/$VISITARCH" || \
-       -d $QT_DIR ]] ; then
+       -d $BV_QT_DIR ]] ; then
        HAVE_QT_ALREADY="YES"
     fi
     if [[ -e ${QT_FILE%.gz} || -e ${QT_FILE} ]] ; then
@@ -1239,7 +1249,7 @@ function check_optional_3rdparty
         HAVE_MILI_ALREADY="NO"
         HAVE_MILI_TARBALL="NO"
         if [[ -d "$VISITDIR/mili/$MILI_VERSION/$VISITARCH" || \
-           -d $MILI_DIR ]] ; then
+           -d $BV_MILI_DIR ]] ; then
            HAVE_MILI_ALREADY="YES"
         fi
         if [[ -e ${MILI_FILE%.gz} || -e ${MILI_FILE} ]] ; then
@@ -2123,8 +2133,8 @@ function build_qt
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -d ${QT_DIR} ]] ; then
-       info_box "Found ${QT_DIR} . . ." 1>&3
+    if [[ -d ${BV_QT_DIR} ]] ; then
+       info_box "Found ${BV_QT_DIR} . . ." 1>&3
     elif [[ -e ${QT_FILE} ]] ; then
        info_box "Unzipping/Untarring ${QT_FILE} . . ." 1>&3
        uncompress_untar ${QT_FILE}
@@ -2295,7 +2305,7 @@ EOF
     #
     # Set up environment variables for Qt.
     #
-    cd ${QT_DIR}
+    cd ${BV_QT_DIR}
     export QTDIR="$PWD"
     export PATH="$QTDIR"/bin:"$PATH"
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -3587,8 +3597,8 @@ function build_mili
     #
     # Unzip the file, provided a gzipped file exists.
     #
-    if [[ -d ${MILI_DIR} ]] ; then
-       info_box "Found ${MILI_DIR} . . ." 1>&3
+    if [[ -d ${BV_MILI_DIR} ]] ; then
+       info_box "Found ${BV_MILI_DIR} . . ." 1>&3
     elif [[ -f ${MILI_FILE} ]] ; then
        info_box "Unzipping/Tarring ${MILI_FILE} . . ." 1>&3
        uncompress_untar ${MILI_FILE}
@@ -3636,7 +3646,7 @@ EOF
     fi
 
     info_box "Configuring Mili . . ." 1>&3
-    cd $MILI_DIR
+    cd $BV_MILI_DIR
 
     echo "Invoking command to configure Mili"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
@@ -5919,11 +5929,6 @@ function build_h5part
        WITHHDF5ARG="--without-hdf5path"
        HDF5DYLIB=""
     fi
-    if [[ "$parallel" == "yes" ]] ; then
-       OPTIONAL="--enable-parallel"
-    else
-       OPTIONAL="--disable-parallel"
-    fi
     if [[ "$OPSYS" == "Darwin" ]]; then
        export DYLD_LIBRARY_PATH="$VISITDIR/hdf5/$HDF5_VERSION/$VISITARCH/lib":\
 "$VISITDIR/szip/$SZIP_VERSION/$VISITARCH/lib":\
@@ -6292,7 +6297,7 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     if [[ "$DO_MILI" == "yes" ]] ; then
         echo \
-"MILI_DIR=\$VISITHOME/mili/$MILI_VERSION/$VISITARCH" \
+"BV_MILI_DIR=\$VISITHOME/mili/$MILI_VERSION/$VISITARCH" \
         >> $HOSTCONF
     fi
     echo >> $HOSTCONF
