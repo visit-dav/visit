@@ -1740,6 +1740,9 @@ avtBoxlib3DFileFormat::GetAuxiliaryData(const char *var, int dom,
 //    Hank Childs, Sun Mar  6 16:21:15 PST 2005
 //    Add support for GeoDyne material names.
 //
+//    Hank Childs, Tue Feb  5 16:37:58 PST 2008
+//    Fix memory leaks.
+//
 // ****************************************************************************
     
 void *
@@ -1830,7 +1833,13 @@ avtBoxlib3DFileFormat::GetMaterial(const char *var, int patch,
         mix_next[mix_next.size() - 1] = 0;
     }
     
-    
+    // we can now free up the vtkFloatArrays we obtained via GetVar calls
+    for (i = 1; i <= nMaterials; ++i)
+    {
+        if (floatArrays[i - 1] != 0)
+            floatArrays[i - 1]->Delete();
+    }
+
     int mixed_size = mix_zone.size();
     avtMaterial * mat = new avtMaterial(nMaterials, mnames, nCells,
                                         &(material_list[0]), mixed_size,
