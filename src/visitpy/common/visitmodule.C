@@ -12218,7 +12218,10 @@ visit_GetCallbackArgumentCount(PyObject *, PyObject *args)
 // Creation:   Fri Feb  1 16:53:02 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:17:24 PST 2008
+//   Added optional callback data and made it possible to unregister a 
+//   callback by passing just the name.
+//
 // ****************************************************************************
 
 PyObject *
@@ -12228,17 +12231,28 @@ visit_RegisterCallback(PyObject *, PyObject *args)
     ENSURE_CALLBACK_MANAGER_EXISTS();
 
     char *name = 0;
-    PyObject *callback = 0;
-    if (!PyArg_ParseTuple(args, "sO", &name, &callback))
-        return NULL;
-    if(callback == 0 || !PyCallable_Check(callback))
+    PyObject *callback = 0, *callback_data = 0;
+    if (!PyArg_ParseTuple(args, "sOO", &name, &callback, &callback_data))
+    {
+        if (PyArg_ParseTuple(args, "sO", &name, &callback))
+            callback_data = 0;
+        else
+        {
+            if(PyArg_ParseTuple(args, "s", &name))
+                callback = callback_data = 0;
+            else
+                return NULL;
+        }
+        PyErr_Clear();
+    }
+    if(callback != 0 && !PyCallable_Check(callback))
     {
         VisItErrorFunc("The object passed to RegisterCallback is not callable.");
         return NULL;
     }
 
     // Try and register a ViewerRPC callback.
-    bool failed = !rpcCallbacks->RegisterCallback(name, callback);
+    bool failed = !rpcCallbacks->RegisterCallback(name, callback, callback_data);
 
     // Try and register a state callback instead.
     if(failed)
@@ -12251,7 +12265,7 @@ visit_RegisterCallback(PyObject *, PyObject *args)
         {
             if(names[i] == name)
             {
-                callbackMgr->RegisterCallback(name, callback);
+                callbackMgr->RegisterCallback(name, callback, callback_data);
                 failed = false;
                 break;
             }

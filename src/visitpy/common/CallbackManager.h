@@ -68,7 +68,9 @@ typedef bool (AddWorkCallback)(Subject *, void *data);
 // Creation:   Fri Feb  1 16:18:28 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:27:51 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 class CallbackManager : public SimpleObserver
@@ -81,6 +83,7 @@ class CallbackManager : public SimpleObserver
         AddWorkCallback  *addwork;
         void             *addwork_data;
         PyObject         *pycb;
+        PyObject         *pycb_data;
     };
 
     struct WorkItem
@@ -100,6 +103,7 @@ public:
     {
         // The Python object that will handle the callback
         PyObject         *pycb;
+        PyObject         *pycb_data;
         // An instance of the subject that has the actual object contents that
         // we had at the time the callback was received.
         AttributeSubject *data;
@@ -115,14 +119,14 @@ public:
     void RegisterHandler(Subject *, const std::string &, 
                          ObserverCallback *handler, void *handler_data,
                          AddWorkCallback  *addwork, void *addwork_data);
-    bool RegisterCallback(const std::string &, PyObject *);
+    bool RegisterCallback(const std::string &, PyObject *, PyObject *);
     void GetCallbackNames(stringVector &names) const;
     PyObject *GetCallback(Subject *) const;
 
     void WorkAllowed();
     void Work();
 private:
-    bool RegisterCallback(Subject *, PyObject *);
+    bool RegisterCallback(Subject *, PyObject *, PyObject *);
     void StartWork();
 
     StringSubjectMap       nameToSubject;
