@@ -347,6 +347,7 @@ test: ./bigsil ./curve_builder ./degen_meshes ./ghost ./global_node ./globe ./mu
 	./testall
 	./tire
 	./wave
+	./wave -single_file
 	./sid97
 	./ghost
 	./quad_disk
@@ -389,6 +390,7 @@ testh5: ./bigsil ./ghost ./global_node ./globe ./multi_test ./noise ./noise2d ./
 	   ./testall -driver DB_HDF5;\
 	   ./tire -driver DB_HDF5;\
 	   ./wave -driver DB_HDF5;\
+	   ./wave -driver DB_HDF5 -single_file;\
 	   ./sid97 -driver DB_HDF5;\
 	   ./ghost -driver DB_HDF5;\
 	   ./quad_disk -driver DB_HDF5;\

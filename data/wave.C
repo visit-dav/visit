@@ -38,6 +38,7 @@
 
 #include <math.h>
 #include <string.h>
+#include <unistd.h>
 #include <visitstream.h>
 #include <string>
 #include <vector>
@@ -67,6 +68,7 @@
 #define A  1.
 
 int driver = DB_PDB;
+int single_file = 0;
 
 void WriteFile(char *, double t, double t_minus_1, int cycle,
                bool, bool, bool);
@@ -118,9 +120,18 @@ main(int argc, char *argv[])
                    argv[i]);
             }
         }
+        else if (strcmp(argv[i], "-single_file") == 0)
+        {
+            i++;
+	    single_file = 1;
+        }
     }
 
-    ofstream ofile("wave.visit");
+    ofstream ofile;
+    if (single_file == 1)
+        ofile.open("wave_1file.visit");
+    else
+        ofile.open("wave.visit");
 
     int start(int(NT * 0.25f));
     int end(int(NT * 0.75f));
@@ -135,16 +146,28 @@ main(int argc, char *argv[])
         cycle = i * 10;
         bool writeTransient = (i >= start && i < end);
         char filename[1024];
-        sprintf(filename, "wave%.4d.silo", cycle);
+	if (single_file == 1)
+            sprintf(filename, "wave_1file.silo");
+        else
+            sprintf(filename, "wave%.4d.silo", cycle);
         WriteFile (filename, time, time_minus_1, cycle, writeTransient,
                    false, false);
+	if (single_file == 1)
+	{
+            sprintf(filename, "wave_1file.silo:cycle_%04d", cycle);
+	    symlink("wave_1file.silo", filename);
+	}
         ofile << filename << endl;
     }
 
     //
     // Write the wave dataset with a time varying SIL.
     //
-    ofstream ofile2("wave_tv.visit");
+    ofstream ofile2;
+    if (single_file == 1)
+        ofile2.open("wave_tv_1file.visit");
+    else
+        ofile2.open("wave_tv.visit");
 
     int start2(int(NT * 0.1f));
     int end2(int(NT * 0.2f));
@@ -158,9 +181,17 @@ main(int argc, char *argv[])
         bool writeTransientMesh = (i == 2);
         bool writeTransientMat  = (i >= start2 && i < end2);
         char filename[1024];
-        sprintf(filename, "wave_tv%.4d.silo", cycle);
+	if (single_file == 1)
+            sprintf(filename, "wave_tv_1file.silo");
+	else
+            sprintf(filename, "wave_tv%.4d.silo", cycle);
         WriteFile (filename, time, time_minus_1, cycle, writeTransientVar,
                    writeTransientMesh, writeTransientMat);
+	if (single_file == 1)
+	{
+            sprintf(filename, "wave_tv_1file.silo:cycle_%04d", cycle);
+	    symlink("wave_tv_1file.silo", filename);
+	}
         ofile2 << filename << endl;
     }
 
@@ -501,7 +532,26 @@ WriteFile(char *filename, double time, double time_minus_1, int cycle,
     /*
      * Create a file that contains the mesh and variables.
      */
-    dbfile = DBCreate(filename, 0, DB_LOCAL, "The Wave", driver);
+    if (single_file == 1)
+    {
+        char tmpDirName[256];
+        char tmpFileName[256];
+	if (cycle == 0)
+	{
+            dbfile = DBCreate(filename, 0, DB_LOCAL, "The Wave", driver);
+	}
+	else
+	{
+            dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
+	}
+	sprintf(tmpDirName, "cycle_%04d", cycle);
+	DBMkdir(dbfile, tmpDirName);
+	DBSetDir(dbfile, tmpDirName);
+    }
+    else
+    {
+        dbfile = DBCreate(filename, 0, DB_LOCAL, "The Wave", driver);
+    }
 
     optList = DBMakeOptlist(10);
     DBAddOption(optList, DBOPT_DTIME, &time);
