@@ -168,11 +168,15 @@
 #include <PyView3DAttributes.h>
 #include <PyWindowInformation.h>
 #include <PyavtDatabaseMetaData.h>
+#include <PyViewerRPC.h>
 
 // Variant & MapNode Helpers:
 #include <PyVariant.h>
 #include <PyMapNode.h>
 
+#include <CallbackManager.h>
+#include <ViewerRPCCallbacks.h>
+#include <CallbackHandlers.h>
 #include <MethodDoc.h>
 
 #include <avtSILRestrictionTraverser.h>
@@ -412,6 +416,8 @@ static std::vector<ClientMethod *> cachedClientMethods;
 
 static std::map<std::string, PyObject*> macroFunctions;
 
+static CallbackManager      *callbackMgr = NULL;
+static ViewerRPCCallbacks   *rpcCallbacks = NULL;
 
 typedef struct
 {
@@ -530,8 +536,35 @@ static void WakeMainThread(Subject *, void *)
 #define THREAD_INIT()
 #endif
 
+// Locks the Python interpreter by one thread.
+PyThreadState *
+VisItLockPythonInterpreter()
+{
+    // get the global lock
+    PyEval_AcquireLock();
 
+    // get a reference to the PyInterpreterState
+    PyInterpreterState * mainInterpreterState = mainThreadState->interp;
+    // create a thread state object for this thread
+    PyThreadState *myThreadState = PyThreadState_New(mainInterpreterState);
+    // swap in my thread state
+    PyThreadState_Swap(myThreadState);
+    return myThreadState;
+}
 
+// Unlocks the Python interpreter by one thread.
+void
+VisItUnlockPythonInterpreter(PyThreadState *myThreadState)
+{
+    // clear the thread state
+    PyThreadState_Swap(NULL);
+    // clear out any cruft from thread state object
+    PyThreadState_Clear(myThreadState);
+    // delete my thread state object
+    PyThreadState_Delete(myThreadState);
+    // release our hold on the global interpreter
+    PyEval_ReleaseLock();
+}
 
 //
 // VisIt module functions that are written in Python.
@@ -1207,7 +1240,7 @@ visit_Launch(PyObject *self, PyObject *args)
     //
     // Execute any client methods that came in during the Synchronize.
     //
-    debug1 << "Launch: 9, executing cached client methods." << endl;
+    debug1 << "Launch: 8, executing cached client methods." << endl;
     int size = 0;
     do
     {
@@ -12034,6 +12067,211 @@ visit_SuppressMessages(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Method: ENSURE_CALLBACK_MANAGER_EXISTS
+//
+// Purpose: 
+//   Creates the callback manager if it does not already exist.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb  5 16:23:56 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static void
+ENSURE_CALLBACK_MANAGER_EXISTS()
+{
+    //
+    // Hook up the callback manager.
+    //
+    if(callbackMgr == 0)
+    {
+        MUTEX_LOCK();
+        callbackMgr = new CallbackManager;
+        rpcCallbacks = new ViewerRPCCallbacks;
+        RegisterCallbackHandlers(callbackMgr, GetViewerState(), rpcCallbacks);
+        MUTEX_UNLOCK();
+    }
+}
+
+// ****************************************************************************
+// Method: visit_GetCallbackNames
+//
+// Purpose: 
+//   Get the names of the available objects on which the user can set callback
+//   functions.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb  1 16:53:02 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PyObject *
+visit_GetCallbackNames(PyObject *, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    ENSURE_CALLBACK_MANAGER_EXISTS();
+
+    // Get the names of the callbacks that we can set.
+    stringVector names;
+    callbackMgr->GetCallbackNames(names);
+    rpcCallbacks->GetCallbackNames(names);
+
+    // Allocate a tuple the with enough entries to hold the plugin name list.
+    PyObject *retval = PyTuple_New(names.size());
+    for(int i = 0; i < names.size(); ++i)
+    {
+        PyObject *dval = PyString_FromString(names[i].c_str());
+        if(dval == NULL)
+            continue;
+        PyTuple_SET_ITEM(retval, i, dval);
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: visit_GetCallbackArgumentCount
+//
+// Purpose: 
+//   Returns the number of arguments for a callback.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb  5 15:31:32 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PyObject *
+visit_GetCallbackArgumentCount(PyObject *, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    ENSURE_CALLBACK_MANAGER_EXISTS();
+
+    char *name = 0;
+    if (!PyArg_ParseTuple(args, "s", &name))
+        return NULL;
+
+    // Check among the callback manager names.
+    stringVector names;
+    callbackMgr->GetCallbackNames(names);
+    bool failed = true;
+    int retval = 0;
+    for(int i = 0; i < names.size(); ++i)
+    {
+        if(names[i] == name)
+        {
+            retval = 1;
+            failed = false;
+            break;
+        }
+    }
+    // Check among the viewer rpc callback names.
+    if(failed)
+    {
+        ViewerRPC::ViewerRPCType r;
+        if(ViewerRPC::ViewerRPCType_FromString(name, r))
+        {
+            extern PyObject *args_ViewerRPC(ViewerRPC *rpc);
+
+            // Get the number of argments.
+            ViewerRPC rpc;
+            rpc.SetRPCType(r);
+            PyObject *args = args_ViewerRPC(&rpc);
+            if(args == 0)
+                retval = 0;
+            else if(PyTuple_Check(args))
+                retval = PyTuple_Size(args);
+            else if(PyViewerRPC_Check(args))
+                retval = 1;
+            else
+                retval = 0;
+
+            // Delete the args.
+            if(args != 0)
+                Py_DECREF(args);
+
+            failed = false;
+        }
+    }
+
+    if(failed)
+    {
+        VisItErrorFunc("An invalid callback name was provided.");
+        return NULL;
+    }
+
+    return PyLong_FromLong((long)retval);
+}
+
+// ****************************************************************************
+// Method: visit_RegisterCallback
+//
+// Purpose: 
+//   Registers a user-defined callback with a named state object.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb  1 16:53:02 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PyObject *
+visit_RegisterCallback(PyObject *, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+    ENSURE_CALLBACK_MANAGER_EXISTS();
+
+    char *name = 0;
+    PyObject *callback = 0;
+    if (!PyArg_ParseTuple(args, "sO", &name, &callback))
+        return NULL;
+    if(callback == 0 || !PyCallable_Check(callback))
+    {
+        VisItErrorFunc("The object passed to RegisterCallback is not callable.");
+        return NULL;
+    }
+
+    // Try and register a ViewerRPC callback.
+    bool failed = !rpcCallbacks->RegisterCallback(name, callback);
+
+    // Try and register a state callback instead.
+    if(failed)
+    {
+        // Get the names of the callbacks that we can set.
+        stringVector names;
+        callbackMgr->GetCallbackNames(names);
+        failed = true;
+        for(int i = 0; i < names.size(); ++i)
+        {
+            if(names[i] == name)
+            {
+                callbackMgr->RegisterCallback(name, callback);
+                failed = false;
+                break;
+            }
+        }
+    }
+    if(failed)
+    {
+        VisItErrorFunc("An invalid callback name was provided.");
+        return NULL;
+    }
+    else
+    {
+        // Tell the callback manager that it can process callbacks now.
+        callbackMgr->WorkAllowed();
+    }
+
+    return PyLong_FromLong(1L);
+}
+
+// ****************************************************************************
 // Function: visit_exec_client_method
 //
 // Purpose:
@@ -12050,7 +12288,10 @@ visit_SuppressMessages(PyObject *self, PyObject *args)
 //    Jeremy Meredith, Thu Jul  7 10:05:26 PDT 2005
 //    On 64-bit AIX, one cannot convert a void* to an int.  I instead compare
 //    the second void* pointer with NULL to construct the boolean result.
-//   
+//
+//    Brad Whitlock, Fri Feb  1 16:58:23 PST 2008
+//    Moved interpreter locking to functions that we can call elsewhere.
+//
 // ****************************************************************************
 
 #if defined(_WIN32)
@@ -12068,17 +12309,7 @@ visit_exec_client_method(void *data)
     PyThreadState *myThreadState = 0;
 
     if(acquireLock)
-    {
-        // get the global lock
-        PyEval_AcquireLock();
-
-        // get a reference to the PyInterpreterState
-        PyInterpreterState * mainInterpreterState = mainThreadState->interp;
-        // create a thread state object for this thread
-        myThreadState = PyThreadState_New(mainInterpreterState);
-        // swap in my thread state
-        PyThreadState_Swap(myThreadState);
-    }
+        myThreadState = VisItLockPythonInterpreter();
 
     // Execute the method
     if(m->GetMethodName() == "Quit")
@@ -12104,16 +12335,7 @@ visit_exec_client_method(void *data)
     }
 
     if(acquireLock)
-    {
-        // clear the thread state
-        PyThreadState_Swap(NULL);
-        // clear out any cruft from thread state object
-        PyThreadState_Clear(myThreadState);
-        // delete my thread state object
-        PyThreadState_Delete(myThreadState);
-        // release our hold on the global interpreter
-        PyEval_ReleaseLock();
-    }
+        VisItUnlockPythonInterpreter(myThreadState);
 
     delete m;
     delete [] cbData;
@@ -12630,6 +12852,9 @@ AddMethod(const char *methodName, PyObject *(cb)(PyObject *, PyObject *),
 //   Jeremy Meredith, Wed Jan 23 15:27:20 EST 2008
 //   Added Get/SetDefaultFileOpenOptions.
 //
+//   Brad Whitlock, Fri Feb  1 16:54:17 PST 2008
+//   Added GetCallbackNames, RegisterCallback, GetCallbackArgumentCount.
+//
 //   Jeremy Meredith, Mon Feb  4 13:41:43 EST 2008
 //   Added Get/SetViewAxisArray.
 //
@@ -13028,6 +13253,10 @@ AddDefaultMethods()
     AddMethod("ExecuteMacro", visit_ExecuteMacro, NULL/*DOCUMENT ME*/);
     AddMethod("RegisterMacro", visit_RegisterMacro, NULL/*DOCUMENT ME*/);
     AddMethod("SuppressMessages", visit_SuppressMessages, visit_SuppressMessages_doc);
+
+    AddMethod("GetCallbackNames", visit_GetCallbackNames, visit_GetCallbackNames_doc);
+    AddMethod("RegisterCallback", visit_RegisterCallback, visit_RegisterCallback_doc);
+    AddMethod("GetCallbackArgumentCount", visit_GetCallbackArgumentCount, NULL/*DOCUMENT ME*/);
 
     //
     // Lighting
@@ -13888,6 +14117,9 @@ CreateListenerThread()
 //   it if we know that it's just waiting for viewer input
 //   (viewerBlockingRead == true).
 //
+//   Brad Whitlock, Fri Feb  1 16:51:42 PST 2008
+//   Close the callback manager.
+//
 // ****************************************************************************
 
 static void
@@ -13936,6 +14168,18 @@ CloseModule()
 #else
     keepGoing = false;
 #endif
+
+    // Delete the callback manager.
+    if(callbackMgr != 0)
+    {
+        delete callbackMgr;
+        callbackMgr = 0;
+    }
+    if(rpcCallbacks != 0)
+    {
+        delete rpcCallbacks;
+        rpcCallbacks = 0;
+    }
 
     // Delete the observers
     delete messageObserver;
