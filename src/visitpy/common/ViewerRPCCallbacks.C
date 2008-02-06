@@ -53,7 +53,10 @@
 ViewerRPCCallbacks::ViewerRPCCallbacks()
 {
     for(int r = 0; r < (int)ViewerRPC::MaxRPC; ++r)
+    {
         pycb[r] = 0;
+        pycb_data[r] = 0;
+    }
 }
 
 // ****************************************************************************
@@ -75,6 +78,8 @@ ViewerRPCCallbacks::~ViewerRPCCallbacks()
     {
         if(pycb[r] != 0)
             Py_DECREF(pycb[r]);
+        if(pycb_data[r] != 0)
+            Py_DECREF(pycb_data[r]);
     }
 }
 
@@ -110,10 +115,11 @@ ViewerRPCCallbacks::GetCallbackNames(stringVector &names)
 // Arguments:
 //   rpcName : The name of the ViewerRPC for which we're installing a callback.
 //   cb      : The user-provided callback.
+//   cbdata  : callback data.
 //
 // Returns:    True on success; False on failure.
 //
-// Note:       
+// Note:       Call with NULL cb, cbdata to unregister the callback.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Feb  5 11:47:52 PST 2008
@@ -123,7 +129,8 @@ ViewerRPCCallbacks::GetCallbackNames(stringVector &names)
 // ****************************************************************************
 
 bool
-ViewerRPCCallbacks::RegisterCallback(const std::string &rpcName, PyObject *cb)
+ViewerRPCCallbacks::RegisterCallback(const std::string &rpcName, PyObject *cb, 
+    PyObject *cbdata)
 {
     bool retval = false;
     ViewerRPC::ViewerRPCType r;
@@ -131,8 +138,14 @@ ViewerRPCCallbacks::RegisterCallback(const std::string &rpcName, PyObject *cb)
     {
         if(pycb[r] != 0)
             Py_DECREF(pycb[r]);
+        if(pycb_data[r] != 0)
+            Py_DECREF(pycb_data[r]);
         pycb[r] = cb;
-        Py_INCREF(pycb[r]);
+        pycb_data[r] = cbdata;
+        if(pycb[r] != 0)
+            Py_INCREF(pycb[r]);
+        if(pycb_data[r] != 0)
+            Py_INCREF(pycb_data[r]);
         retval = true;
     }
     return retval;
@@ -162,4 +175,30 @@ PyObject *
 ViewerRPCCallbacks::GetCallback(ViewerRPC::ViewerRPCType r)
 {
     return pycb[r];
+}
+
+// ****************************************************************************
+// Method: ViewerRPCCallbacks::GetCallbackData
+//
+// Purpose: 
+//   Returns the user-defined callback data for the specified rpc.
+//
+// Arguments:
+//   r : The rpc whose callback data we want to access.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Feb  6 10:26:44 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+PyObject *
+ViewerRPCCallbacks::GetCallbackData(ViewerRPC::ViewerRPCType r)
+{
+    return pycb_data[r];
 }

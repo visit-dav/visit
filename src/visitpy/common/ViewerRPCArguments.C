@@ -1380,7 +1380,8 @@ args_ViewerRPC(ViewerRPC *rpc)
     default:
         // The ViewerRPC is not handled so just wrap the whole ViewerRPC and pass
         // that to the user's callback.
-        args = ViewerRPC_wrap_ViewerRPC(rpc);
+        args = PyTuple_New(1);
+        PyTuple_SET_ITEM(args, 0, ViewerRPC_wrap_ViewerRPC(rpc));
     }
 
     return args;

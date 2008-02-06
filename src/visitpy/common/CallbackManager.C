@@ -145,7 +145,9 @@ CallbackManager::CallbackManager() : SimpleObserver(),
 // Creation:   Tue Feb  5 11:51:40 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:28:58 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 CallbackManager::~CallbackManager()
@@ -157,6 +159,8 @@ CallbackManager::~CallbackManager()
         it->first->Detach(this);
         if(it->second.pycb != 0)
             Py_DECREF(it->second.pycb);
+        if(it->second.pycb_data != 0)
+            Py_DECREF(it->second.pycb_data);
     }
     delete threading;
 }
@@ -198,7 +202,9 @@ CallbackManager::WorkAllowed()
 // Creation:   Tue Feb  5 11:52:45 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:29:21 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 void
@@ -211,6 +217,8 @@ CallbackManager::SubjectRemoved(Subject *subj)
         subj->Detach(this);
         if(it->second.pycb != 0)
             Py_DECREF(it->second.pycb);
+        if(it->second.pycb_data != 0)
+            Py_DECREF(it->second.pycb_data);
         callbacks.erase(it);
     }
     threading->MUTEX_UNLOCK();
@@ -356,7 +364,9 @@ CallbackManager::StartWork()
 // Creation:   Tue Feb  5 11:58:43 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:30:04 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 void
@@ -393,6 +403,7 @@ CallbackManager::Work()
             {
                 CallbackHandlerData cbData;
                 cbData.pycb = cb.pycb;
+                cbData.pycb_data = cb.pycb_data;
                 cbData.data = w.data;
                 cbData.userdata = cb.handler_data;
                 (*cb.handler)(key, (void *)&cbData);
@@ -437,7 +448,9 @@ CallbackManager::Work()
 // Creation:   Tue Feb  5 12:00:47 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:31:09 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 void 
@@ -458,6 +471,7 @@ CallbackManager::RegisterHandler(Subject *subj, const std::string &cbName,
     entry.addwork = addwork;
     entry.addwork_data = addwork_data;
     entry.pycb = 0;
+    entry.pycb_data = 0;
     callbacks[subj] = entry;
 
     nameToSubject[cbName] = subj;
@@ -486,11 +500,13 @@ CallbackManager::RegisterHandler(Subject *subj, const std::string &cbName,
 // Creation:   Tue Feb  5 12:05:37 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:31:27 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 bool
-CallbackManager::RegisterCallback(Subject *subj, PyObject *pycb)
+CallbackManager::RegisterCallback(Subject *subj, PyObject *pycb, PyObject *pycb_data)
 {
     bool retval = false;
     threading->MUTEX_LOCK();
@@ -498,17 +514,19 @@ CallbackManager::RegisterCallback(Subject *subj, PyObject *pycb)
     SubjectCallbackDataMap::iterator it = callbacks.find(subj);
     if(it != callbacks.end())
     {
-        if(PyCallable_Check(pycb))
-        {
-            if(it->second.pycb != 0)
-                Py_DECREF(it->second.pycb);
+        if(it->second.pycb != 0)
+            Py_DECREF(it->second.pycb);
+        if(it->second.pycb_data != 0)
+            Py_DECREF(it->second.pycb_data);
 
+        if(pycb != 0)
             Py_INCREF(pycb);
-            callbacks[subj].pycb = pycb;
-            retval = true;
-        }
-        else
-            cerr << "RegisterCallback called with uncallable object" << endl;
+        if(pycb_data != 0)
+            Py_INCREF(pycb_data);
+
+        callbacks[subj].pycb = pycb;
+        callbacks[subj].pycb_data = pycb_data;
+        retval = true;
     }
     else
         cerr << "RegisterCallback called with invalid subject." << endl;
@@ -536,17 +554,20 @@ CallbackManager::RegisterCallback(Subject *subj, PyObject *pycb)
 // Creation:   Tue Feb  5 12:05:37 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:32:46 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 bool
-CallbackManager::RegisterCallback(const std::string &name, PyObject *pycb)
+CallbackManager::RegisterCallback(const std::string &name, PyObject *pycb, 
+    PyObject *pycb_data)
 {
     bool retval = false;
     StringSubjectMap::iterator it = nameToSubject.find(name);
     if(it != nameToSubject.end())
     {
-        retval = RegisterCallback(it->second, pycb);
+        retval = RegisterCallback(it->second, pycb, pycb_data);
     }
     else
         cerr << "Could not register callback " << name.c_str() << endl;

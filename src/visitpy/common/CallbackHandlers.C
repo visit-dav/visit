@@ -119,12 +119,20 @@ default_handler_##Obj(Subject *subj, void *data) \
     CallbackManager::CallbackHandlerData *cbData = (CallbackManager::CallbackHandlerData *)data; \
     if(cbData->pycb != 0) \
     { \
-        PyObject *tuple = PyTuple_New(1);\
+        PyObject *tuple = PyTuple_New((cbData->pycb_data != 0) ? 2 : 1);\
         PyObject *state = PyWrap((const T *)cbData->data); \
-        PyTuple_SET_ITEM(tuple, 0, state); \
+        if(cbData->pycb_data != 0) \
+        {\
+            Py_INCREF(cbData->pycb_data); \
+            PyTuple_SET_ITEM(tuple, 0, state); \
+            PyTuple_SET_ITEM(tuple, 1, cbData->pycb_data); \
+        }\
+        else\
+            PyTuple_SET_ITEM(tuple, 0, state); \
         PyObject *ret = PyObject_Call(cbData->pycb, tuple, NULL); \
         Py_DECREF(tuple); \
-        Py_DECREF(ret); \
+        if(ret != 0) \
+            Py_DECREF(ret); \
     } \
 }
 SUPPORTED_STATE_OBJECTS
@@ -283,7 +291,9 @@ GetOperatorConstructorFunction(AttributeSubject *subj)
 // Creation:   Tue Feb  5 11:20:33 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:39:09 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 //
@@ -334,13 +344,26 @@ plugin_state_callback_handler(Subject *s, void *data)
 
         // Now that we've wrapped the state object, call the user's
         // Python callback function.
-        tuple = PyTuple_New(1);
-        PyTuple_SET_ITEM(tuple, 0, state);
+        if(cbData->pycb_data != 0)
+        {
+            tuple = PyTuple_New(2);
+            Py_INCREF(cbData->pycb_data);
+            PyTuple_SET_ITEM(tuple, 0, state);
+            PyTuple_SET_ITEM(tuple, 1, cbData->pycb_data);
+        }
+        else
+        {
+            tuple = PyTuple_New(1);
+            PyTuple_SET_ITEM(tuple, 0, state);
+        }
         PyObject *ret = PyObject_Call(cbData->pycb, tuple, NULL);
         // Restore the old state object
         s->data = oldState;
-        // Delete the tuple (includes state)
+        // Delete the tuple (includes state, callback data ref)
         Py_DECREF(tuple);
+        // Delete the return value
+        if(ret != 0)
+            Py_DECREF(ret);
     }
 }
 
@@ -360,7 +383,9 @@ plugin_state_callback_handler(Subject *s, void *data)
 // Creation:   Mon Feb  4 09:48:11 PST 2008
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 10:50:11 PST 2008
+//   Added support for callback data.
+//
 // ****************************************************************************
 
 static void
@@ -370,11 +395,39 @@ ViewerRPC_callback(Subject *subj, void *data)
     // If we have a handler for the particular ViewerRPC then call it.
     ViewerRPC *rpc = (ViewerRPC *)cbData->data;
     ViewerRPCCallbacks *rpcCB = (ViewerRPCCallbacks *)cbData->userdata;
-    PyObject *pycb = rpcCB->GetCallback(rpc->GetRPCType());
+    PyObject *pycb = rpcCB->GetCallback(rpc->GetRPCType()); 
+    PyObject *pycb_data = rpcCB->GetCallbackData(rpc->GetRPCType());
     if(pycb != 0)
     {
         // Get the arguments for the rpc so we can pass them to the user's callback.
         PyObject *args = args_ViewerRPC(rpc);
+
+        // If there's callback data, enlarge the tuple.
+        if(pycb_data != 0)
+        {
+            if(args == Py_None)
+            {
+                // Convert none to tuple containing callback data.
+                Py_DECREF(args);
+                args = PyTuple_New(1);
+                Py_INCREF(pycb_data);
+                PyTuple_SET_ITEM(args, 0, pycb_data);
+            }
+            else if(PyTuple_Check(args))
+            {
+                // Enlarge the tuple so we can append the callback data to it
+                PyObject *tuple = PyTuple_New(PyTuple_Size(args) + 1);
+                for(int i = 0; i < PyTuple_Size(args); ++i)
+                {
+                    Py_INCREF(PyTuple_GET_ITEM(args, i));
+                    PyTuple_SET_ITEM(tuple, i, PyTuple_GET_ITEM(args, i));
+                }
+                Py_INCREF(pycb_data);
+                PyTuple_SET_ITEM(tuple, PyTuple_Size(args), pycb_data);
+                Py_DECREF(args);
+                args = tuple;
+            }
+        }
 
         // Call the user's callback function.
         PyObject *ret = PyObject_Call(pycb, args, NULL);
@@ -383,7 +436,8 @@ ViewerRPC_callback(Subject *subj, void *data)
         Py_DECREF(args);
 
         // Delete the return value.
-        Py_DECREF(ret);
+        if(ret != 0)
+            Py_DECREF(ret);
     }
 }
 
