@@ -194,12 +194,8 @@ avtParallelCoordinatesFilter::PreExecute(void)
 {
     avtDatasetToDatasetFilter::PreExecute();
 
-    isArrayVar = false;
     axisCount = parCoordsAtts.GetOrderedAxisNames().size();
-    if (axisCount == 0)
-    {
-        PrepareForArrayVariable();
-    }
+    PrepareForArrayVariable();
 
     if (!parCoordsAtts.AttributesAreConsistent())
     {
