@@ -64,6 +64,7 @@ using     std::string;
 
 #define MESH_COORDSYS_CARTESIAN        0
 #define MESH_COORDSYS_SPHERICAL_POLAR  1
+#define MESH_COORDSYS_CYLINDRICAL      2
 
 // Prototypes
 static vtkDataArray *ReadVar(int32, int32, const char *);
@@ -189,7 +190,9 @@ avtZeusMPFileFormat::GetFileHandle()
 // Creation:   Fri Jan 13 12:16:28 PDT 2006
 //
 // Modifications:
-//   
+//   Brad Whitlock, Wed Feb  6 16:10:46 PST 2008
+//   Added support for cylindrical coordinates.
+//
 // ****************************************************************************
 
 void
@@ -294,6 +297,8 @@ avtZeusMPFileFormat::GetFileInformation()
                     debug4 << "coordsys attribute = \"" << coordsys << "\"\n";
                     if(strcmp(coordsys, "spherical polar") == 0)
                         meshCoordinateSystem = MESH_COORDSYS_SPHERICAL_POLAR;
+                    else if(strcmp(coordsys, "cylindrical") == 0)
+                        meshCoordinateSystem = MESH_COORDSYS_CYLINDRICAL;
                 }
                 else 
                     debug4 << "coordsys attribute could not be read." << endl;
@@ -404,6 +409,8 @@ avtZeusMPFileFormat::ActivateTimestep(void)
 //  Creation:   Fri Jan 13 10:36:24 PDT 2006
 //
 //  Modifications:
+//    Brad Whitlock, Wed Feb  6 16:11:31 PST 2008
+//    Added support for cylindrical coordinates.
 //
 // ****************************************************************************
 
@@ -434,7 +441,8 @@ avtZeusMPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     avtMeshMetaData *mmd = new avtMeshMetaData;
     mmd->name = "Mesh";
-    if(meshCoordinateSystem == MESH_COORDSYS_SPHERICAL_POLAR)
+    if(meshCoordinateSystem == MESH_COORDSYS_SPHERICAL_POLAR ||
+       meshCoordinateSystem == MESH_COORDSYS_CYLINDRICAL)
         mmd->meshType = AVT_CURVILINEAR_MESH;
     else
         mmd->meshType = AVT_RECTILINEAR_MESH;
@@ -528,6 +536,8 @@ avtZeusMPFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Creation:   Fri Jan 13 10:36:24 PDT 2006
 //
 //  Modifications:
+//    Brad Whitlock, Wed Feb  6 16:11:51 PST 2008
+//    Added support for cylindrical coordinates.
 //
 // ****************************************************************************
 
@@ -590,7 +600,8 @@ avtZeusMPFileFormat::GetMesh(const char *meshname)
         }
     }
 
-    if(meshCoordinateSystem == MESH_COORDSYS_SPHERICAL_POLAR)
+    if(meshCoordinateSystem == MESH_COORDSYS_SPHERICAL_POLAR ||
+       meshCoordinateSystem == MESH_COORDSYS_CYLINDRICAL)
     {
         int nnodes = dims[0] * dims[1] * dims[2];
 
@@ -626,7 +637,7 @@ avtZeusMPFileFormat::GetMesh(const char *meshname)
                 }
             }
         }
-        else
+        else if(meshCoordinateSystem == MESH_COORDSYS_SPHERICAL_POLAR)
         {
             // spherical coordinates
             for (int k = 0; k < nz; k++)
@@ -643,6 +654,27 @@ avtZeusMPFileFormat::GetMesh(const char *meshname)
                         *pts++ = rad * cos(theta) * sin(phi);
                         *pts++ = rad * sin(theta) * sin(phi);
                         *pts++ = rad * cos(phi);
+                    }
+                }
+            }            
+        }
+        else if(meshCoordinateSystem == MESH_COORDSYS_CYLINDRICAL)
+        {
+            // cylindrical coordinates
+            for (int k = 0; k < nz; k++)
+            {
+                for (int j = 0; j < ny; j++)
+                {
+                    for (int i = 0; i < nx; i++)
+                    {
+                        // Kind of guessing until this is tested.
+                        float z     = coord0[i];
+                        float rad   = coord1[j];
+                        float theta = coord2[k];
+
+                        *pts++ = rad * cos(theta);
+                        *pts++ = rad * sin(theta);
+                        *pts++ = z;
                     }
                 }
             }            
