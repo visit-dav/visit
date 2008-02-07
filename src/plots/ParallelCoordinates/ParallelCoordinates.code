@@ -135,6 +135,9 @@ Definition:
 //    Jeremy Meredith, Mon Feb  4 16:07:37 EST 2008
 //    Remove the axis extents; they were unusued.
 //   
+//    Jeremy Meredith, Thu Feb  7 17:45:11 EST 2008
+//    Allow empty axis name list; this happens for array variables.
+//
 // ****************************************************************************
 
 bool
@@ -144,9 +147,17 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
     int axisNum, axis2Num;
     std::string axisName;
     
-    if (axisNamesSize < 2)
-        return false;
+    if (axisNamesSize == 0)
+    {
+        if (extentMinima.size() != extentMaxima.size())
+            return false;
+
+        return true;
+    }
     
+    if (axisNamesSize == 1)
+        return false;
+
     if ((extentMinima.size()     != axisNamesSize) ||
         (extentMaxima.size()     != axisNamesSize))
     {
@@ -203,6 +214,9 @@ Definition:
 //    Jeremy Meredith, Fri Feb  1 17:56:21 EST 2008
 //    Added support for axis restrictions.
 //   
+//    Jeremy Meredith, Thu Feb  7 17:45:11 EST 2008
+//    Allow empty axis name list; this happens for array variables.
+//
 // ****************************************************************************
 bool
 ParallelCoordinatesAttributes::CopyAttributes(const AttributeGroup *atts)
@@ -222,10 +236,18 @@ ParallelCoordinatesAttributes::CopyAttributes(const AttributeGroup *atts)
         const AxisRestrictionAttributes *ar =
             (const AxisRestrictionAttributes *)atts;
 
-        for (int i=0; i<extentMinima.size(); i++)
+        if (orderedAxisNames.size() == 0)
         {
-            extentMinima[i] = ar->GetMinima()[i];
-            extentMaxima[i] = ar->GetMaxima()[i];
+            extentMinima = ar->GetMinima();
+            extentMaxima = ar->GetMaxima();
+        }
+        else
+        {
+            for (int i=0; i<extentMinima.size(); i++)
+            {
+                extentMinima[i] = ar->GetMinima()[i];
+                extentMaxima[i] = ar->GetMaxima()[i];
+            }
         }
         SelectExtentMinima();
         SelectExtentMaxima();
@@ -233,4 +255,30 @@ ParallelCoordinatesAttributes::CopyAttributes(const AttributeGroup *atts)
         retval = true;
     }
     return retval;
+}
+
+Function: ResetAxes
+Declaration: void ResetAxes();
+Definition:
+// ****************************************************************************
+//  Method:  ParallelCoordinatesAttributes::ResetAxes
+//
+//  Purpose:
+//    Clear out all the variable axes.
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2008
+//
+// ****************************************************************************
+void
+ParallelCoordinatesAttributes::ResetAxes()
+{
+    orderedAxisNames.clear();
+    extentMinima.clear();
+    extentMaxima.clear();
+    
+    SelectAll();
 }

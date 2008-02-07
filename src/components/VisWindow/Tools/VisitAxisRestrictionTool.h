@@ -65,6 +65,8 @@ class vtkTextActor;
 // Creation:   February  1, 2008
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
+//    Added support for array variables and bin-defined x positions.
 //
 // ****************************************************************************
 
@@ -116,6 +118,7 @@ class VISWINDOW_API VisitAxisRestrictionTool : public VisitInteractiveTool
     std::vector<vtkTextActor*> posTextActors;
     std::vector<double>        axesMin;
     std::vector<double>        axesMax;
+    std::vector<double>        axesXPos;
     double                     color[3];
 
     avtAxisRestrictionToolInterface Interface;

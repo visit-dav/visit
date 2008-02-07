@@ -63,6 +63,8 @@ class VisWindowColleagueProxy;
 //  Creation:   January 31, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
+//    Added support for array variables and bin-defined x positions.
 //
 // ****************************************************************************
 
@@ -109,15 +111,18 @@ class VISWINDOW_API VisWinAxesArray : public VisWinColleague
         char units[256];
         char title[256];
         double range[2];
+        double xpos;
         AxisInfo()
             : axis(NULL), lastPow(0), lastAxisDigits(3), pow(0), userPow(0)
         {
+            xpos = 0;
             units[0] = '\0';
             title[0] = '\0';
         }
         AxisInfo(vtkVisItAxisActor2D *a, int lp, int lad, int p, int up)
             : axis(a), lastPow(lp), lastAxisDigits(lad), pow(p), userPow(up)
         {
+            xpos = 0;
             units[0] = '\0';
             title[0] = '\0';
         }

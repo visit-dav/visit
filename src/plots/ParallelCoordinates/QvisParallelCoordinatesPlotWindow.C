@@ -277,6 +277,10 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Added a checkbox to allow the lines to be hidden when the extents
 //    tool has not limited the viewing range to a focus.
 //   
+//    Jeremy Meredith, Thu Feb  7 17:42:48 EST 2008
+//    For an empty list of axis names, disable critical widgets and
+//    put in a useful message.
+//
 // ****************************************************************************
 
 void
@@ -313,6 +317,13 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
             for (int ax=0; ax<atts->GetOrderedAxisNames().size(); ax++)
             {
                 axisList->insertItem(atts->GetOrderedAxisNames()[ax].c_str());
+            }
+            if (atts->GetOrderedAxisNames().size() == 0)
+            {
+                axisList->insertItem("(read-only; either no plot");
+                axisList->insertItem(" is current active or the");
+                axisList->insertItem(" active plot was created");
+                axisList->insertItem(" from an array variable)");
             }
             axisList->blockSignals(false);
             break;
@@ -387,6 +398,8 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
     axisDelButton->setEnabled(axisList->currentItem() >= 0);
     axisUpButton->setEnabled(axisList->currentItem() > 0);
     axisDownButton->setEnabled(axisList->currentItem() < axisList->count()-1);
+    axisNewButton->setEnabled(atts->GetOrderedAxisNames().size() > 0);
+    axisList->setEnabled(atts->GetOrderedAxisNames().size() > 0);
 }
 
 

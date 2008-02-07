@@ -60,6 +60,11 @@ class QvisParallelCoordinatesWidget;
 // Creation:   January 31, 2008
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb  7 12:58:15 EST 2008
+//    A wizard is needed because you can't reset the default plot attributes
+//    without a wizard's accept action having been called.  If you don't, then
+//    you'll have the wrong number of axes defined in the plot attributes.
+//    As such, I extended the wizard to support a "no-op" mode.
 //   
 // ****************************************************************************
 
@@ -68,7 +73,7 @@ class QvisParallelCoordinatesPlotWizard : public QvisWizard
     Q_OBJECT
 public:
     QvisParallelCoordinatesPlotWizard(AttributeSubject *s, QWidget *parent,
-        const std::string &varName, const char *name = NULL);
+       const std::string &varName, bool doNothing, const char *name = NULL);
     virtual ~QvisParallelCoordinatesPlotWizard();
 
 private slots:

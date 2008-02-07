@@ -270,8 +270,11 @@ avtExpressionFilter::PostExecute(void)
 //
 //  Modifications:
 //
-//  Thomas R. Treadway, Fri Dec  1 14:03:54 PST 2006
-//  Added check for GhostNodes in addition to the GhostZones
+//    Thomas R. Treadway, Fri Dec  1 14:03:54 PST 2006
+//    Added check for GhostNodes in addition to the GhostZones
+//
+//    Jeremy Meredith, Thu Feb  7 18:02:12 EST 2008
+//    Added support for updating the component extents of array variables.
 //
 // ****************************************************************************
 
@@ -301,61 +304,84 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
         }
 
         int nvars = dat->GetNumberOfComponents();
-        if (nvars <= 3 || nvars == 9)
+        double *compexts = new double[nvars*2];
+        for (int d=0; d<nvars; d++)
         {
-            double exts[6];
-            unsigned char *ghosts = NULL;
-            if (isPoint)
-            {
-                vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
-                                  ds->GetPointData()->GetArray("avtGhostNodes");
-                if (g != NULL)
-                {
-                    ghosts = g->GetPointer(0);
-                }
-            }
-            else
-            {
-                vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
-                                  ds->GetCellData()->GetArray("avtGhostZones");
-                if (g != NULL)
-                {
-                    ghosts = g->GetPointer(0);
-                }
-            }
-            int ntuples = dat->GetNumberOfTuples();
-            exts[0] = +FLT_MAX;
-            exts[1] = -FLT_MAX;
-            for (int i = 0 ; i < ntuples ; i++)
-            {
-                if (ghosts != NULL && ghosts[i] > 0)
-                {
-                    continue;
-                }
-                double *val = dat->GetTuple(i);
-                double value = 0;
-                if (nvars == 1)
-                    value = *val;
-                else if (nvars == 3)
-                    value = val[0]*val[0] + val[1] * val[1] + val[2] *val[2];
-                else if (nvars == 9)
-                    // This function is found in avtCommonDataFunctions.
-                    value = MajorEigenvalue(val);
-                // else ... array variable
-    
-                if (value < exts[0])
-                    exts[0] = value;
-                if (value > exts[1])
-                    exts[1] = value;
-            }
-            if (nvars == 3)
-            {
-                exts[0] = sqrt(exts[0]);
-                exts[1] = sqrt(exts[1]);
-            }
-            GetOutput()->GetInfo().GetAttributes().
-                 GetCumulativeTrueDataExtents(outputVariableName)->Merge(exts);
+            compexts[d*2+0] =  DBL_MAX;
+            compexts[d*2+1] = -DBL_MAX;
         }
+
+        double exts[6];
+        unsigned char *ghosts = NULL;
+        if (isPoint)
+        {
+            vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
+                ds->GetPointData()->GetArray("avtGhostNodes");
+            if (g != NULL)
+            {
+                ghosts = g->GetPointer(0);
+            }
+        }
+        else
+        {
+            vtkUnsignedCharArray *g = (vtkUnsignedCharArray *)
+                ds->GetCellData()->GetArray("avtGhostZones");
+            if (g != NULL)
+            {
+                ghosts = g->GetPointer(0);
+            }
+        }
+        int ntuples = dat->GetNumberOfTuples();
+        exts[0] = +FLT_MAX;
+        exts[1] = -FLT_MAX;
+        for (int i = 0 ; i < ntuples ; i++)
+        {
+            if (ghosts != NULL && ghosts[i] > 0)
+            {
+                continue;
+            }
+            double *val = dat->GetTuple(i);
+            double value = 0;
+            if (nvars == 1)
+                value = *val;
+            else if (nvars == 3)
+                value = val[0]*val[0] + val[1] * val[1] + val[2] *val[2];
+            else if (nvars == 9)
+                // This function is found in avtCommonDataFunctions.
+                value = MajorEigenvalue(val);
+            // else ... we handle array variables below
+    
+            if (value < exts[0])
+                exts[0] = value;
+            if (value > exts[1])
+                exts[1] = value;
+
+            // For array variables, update extents here
+            for (int d=0; d<nvars; d++)
+            {
+                if (val[d] < compexts[d*2+0])
+                    compexts[d*2+0] = val[d];
+                if (val[d] > compexts[d*2+1])
+                    compexts[d*2+1] = val[d];
+            }
+        }
+        if (nvars == 3)
+        {
+            exts[0] = sqrt(exts[0]);
+            exts[1] = sqrt(exts[1]);
+        }
+
+        avtDataAttributes &outatts = GetOutput()->GetInfo().GetAttributes();
+
+        outatts.GetCumulativeTrueDataExtents(outputVariableName)->Merge(exts);
+
+        // Update component extents in array variables
+        if (outatts.GetVariableType(outputVariableName) == AVT_ARRAY_VAR)
+        {
+            outatts.GetVariableComponentExtents(outputVariableName)->
+                Merge(compexts);
+        }
+        delete[] compexts;
     }
     else if (nc > 0)
         for (int i = 0 ; i < nc ; i++)

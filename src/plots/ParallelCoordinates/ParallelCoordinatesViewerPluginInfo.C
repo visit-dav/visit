@@ -208,136 +208,20 @@ ParallelCoordinatesViewerPluginInfo::AllocAvtPlot()
 //  Programmer: Jeremy Meredith
 //  Creation:   February  6, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:49:50 EST 2008
+//    Took out all the parsing.  It was never a good idea.
+//
 // ****************************************************************************
 
 void
-ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(AttributeSubject *atts,
-    ViewerPlot *plot)
+ParallelCoordinatesViewerPluginInfo::InitializePlotAtts(
+    AttributeSubject *atts, ViewerPlot *plot)
 {
     //
     // Copy over the default atts
     //
     *(ParallelCoordinatesAttributes*)atts = *defaultAtts;
-
-    //
-    // If it's not an array expression, we initalized the attributes
-    // from the wizard.
-    //
-    Expression *exp = ParsingExprList::GetExpression(plot->GetVariableName());
-    if (exp == NULL || exp->GetType() != Expression::ArrayMeshVar)
-    {
-        // Nothing to do; it's not an array expression
-        return;
-    }
-
-    //
-    // It is an array expression.  Get the variable names and
-    // ranges from it.
-    //
-    vector<string> names;
-    vector<double> values;
-
-    // Make sure it's a function...
-    ExprNode *root = ParsingExprList::GetExpressionTree(exp);
-    if (root->GetTypeName() != "Function")
-    {
-        EXCEPTION1(ImproperUseException,
-                   "Variable was not an array_compose expression.");
-    }
-    // ... that that function is one of the array_compose functions ...
-    FunctionExpr *fn = dynamic_cast<FunctionExpr*>(root);
-    if (fn->GetName() != "array_compose" &&
-        fn->GetName() != "array_compose_with_bins")
-    {
-        EXCEPTION1(ImproperUseException,
-                   "Variable was not an array_compose expression.");
-    }
-    // ... and that it has some arguments.
-    ArgsExpr *argsExpr = fn->GetArgsExpr();
-    vector<ArgExpr*> *args = argsExpr ? argsExpr->GetArgs() : NULL;
-    if (!args)
-    {
-        EXCEPTION1(ImproperUseException,
-                   "Variable was not an valid array_compose expression.");
-    }
-
-    // Okay, now walk the arguments.  It should be, in order:
-    // (var1, var2, ..., varN, [bin1, bin2, ..., binM])
-    int state = 0; //0==vars are being parsed, 1==the list has been parsed
-    for (int i=0; i<args->size(); i++)
-    {
-        if (state==1)
-        {
-            EXCEPTION1(ImproperUseException,
-                       "Unknown array_compose syntax: "
-                       "the list should be at the end of the argument list");
-        }
-        ExprNode *arg = (ExprNode*)((*args)[i]->GetExpr());
-        if (arg->GetTypeName() == "List")
-        {
-            if (fn->GetName() != "array_compose_with_bins")
-            {
-                EXCEPTION1(ImproperUseException,
-                           "Unknown array_compose syntax: "
-                           "only array_compose_with_bins supports a bin list");
-            }
-
-            vector<ListElemExpr*> *list = ((ListExpr*)arg)->GetElems();
-            for (int j=0; j<list->size(); j++)
-            {
-                if ((*list)[j]->GetEnd() || (*list)[j]->GetSkip())
-                {
-                    EXCEPTION1(ImproperUseException,
-                               "Unknown array_compose syntax: "
-                               "bin list can not have ranges");
-                }
-                ExprNode *elem = (*list)[j]->GetItem();
-                if (elem->GetTypeName() == "IntegerConst")
-                {
-                    IntegerConstExpr *i = dynamic_cast<IntegerConstExpr*>(elem);
-                    values.push_back(i->GetValue());
-                }
-                else if (elem->GetTypeName() == "FloatConst")
-                {
-                    FloatConstExpr *f = dynamic_cast<FloatConstExpr*>(elem);
-                    values.push_back(f->GetValue());
-                }
-                else
-                {
-                    EXCEPTION1(ImproperUseException,
-                               "Unknown array_compose syntax: "
-                               "only floats and ints are allowed in bin list");
-                }
-            }
-            state = 1; // the list has been parsed; this better be the end!
-        }
-        else if (arg->GetTypeName() == "Var")
-        {
-            // Got a variable; just add its full path string
-            VarExpr *var = dynamic_cast<VarExpr*>(arg);
-            names.push_back(var->GetVar()->GetFullpath());
-        }
-        else
-        {
-            // Not a variable or a list
-            EXCEPTION1(ImproperUseException,
-                       "Bad array_compose syntax.");
-        }
-    }
-
-    if (values.size() > 0 && values.size() != names.size())
-    {
-        EXCEPTION1(ImproperUseException,
-                   "There must be as many bins in the list as variables.");
-    }
-
-    int axisCount = names.size();
-    vector<double> extMin(axisCount, -1e+37);
-    vector<double> extMax(axisCount, +1e+37);
-
-    ((ParallelCoordinatesAttributes*)atts)->SetOrderedAxisNames(names);
-    ((ParallelCoordinatesAttributes*)atts)->SetExtentMinima(extMin);
-    ((ParallelCoordinatesAttributes*)atts)->SetExtentMaxima(extMax);
 }
 
 // ****************************************************************************

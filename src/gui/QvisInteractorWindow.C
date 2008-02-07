@@ -120,6 +120,9 @@ QvisInteractorWindow::~QvisInteractorWindow()
 //   Eric Brugger, Mon Dec 27 11:50:27 PST 2004
 //   I added a dolly navigation mode.
 //
+//   Jeremy Meredith, Thu Feb  7 17:51:32 EST 2008
+//   Added snap-to-horizontal grid support for axis array mode navigation.
+//
 // ****************************************************************************
 
 void
@@ -179,6 +182,24 @@ QvisInteractorWindow::CreateWindowContents()
                                                 "Flythrough");
     navigationMode->insert(flythrough);
     navigationLayout->addWidget(flythrough, 1, 3);
+
+
+    QGroupBox *axisGroup = new QGroupBox(central, "axisGroup");
+    axisGroup->setTitle("Axis Array interaction:");
+    topLayout->addWidget(axisGroup);
+
+    QVBoxLayout *axisVBoxLayout = new QVBoxLayout(axisGroup);
+    axisVBoxLayout->addSpacing(10);
+
+    QGridLayout *axisGridLayout = new QGridLayout(axisVBoxLayout, 1, 2);
+    axisVBoxLayout->setSpacing(5);
+    axisGridLayout->setMargin(10);
+
+    axisSnap = new QCheckBox("Snap to horizontal grid",
+                             axisGroup, "axisSnap");
+    connect(axisSnap, SIGNAL(toggled(bool)),
+            this, SLOT(axisSnapChanged(bool)));
+    axisGridLayout->addWidget(axisSnap, 1,0);
 }
 
 
@@ -203,6 +224,9 @@ QvisInteractorWindow::CreateWindowContents()
 //
 //   Brad Whitlock, Fri Dec 14 17:25:15 PST 2007
 //   Made it use ids.
+//
+//   Jeremy Meredith, Thu Feb  7 17:51:32 EST 2008
+//   Added snap-to-horizontal grid support for axis array mode navigation.
 //
 // ****************************************************************************
 
@@ -237,6 +261,9 @@ QvisInteractorWindow::UpdateWindow(bool doAll)
                 navigationMode->setButton(1);
             else
                 navigationMode->setButton(2);
+            break;
+          case InteractorAttributes::ID_axisArraySnap:
+            axisSnap->setChecked(atts->GetAxisArraySnap());
             break;
         }
     }
@@ -423,6 +450,29 @@ QvisInteractorWindow::navigationModeChanged(int val)
         atts->SetNavigationMode(InteractorAttributes::Dolly);
     else
         atts->SetNavigationMode(InteractorAttributes::Flythrough);
+    SetUpdate(false);
+    Apply();
+}
+
+
+
+// ****************************************************************************
+//  Method:  QvisInteractorWindow::axisSnapChanged
+//
+//  Purpose:
+//    Callback for axis snap checkbox.
+//
+//  Arguments:
+//    val        new value for axis array snap-to-horizontal grid
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2008
+//
+// ****************************************************************************
+void
+QvisInteractorWindow::axisSnapChanged(bool val)
+{
+    atts->SetAxisArraySnap(val);
     SetUpdate(false);
     Apply();
 }

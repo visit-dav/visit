@@ -46,6 +46,7 @@
 #include <QvisParallelCoordinatesPlotWizard.h>
 #include <Expression.h>
 #include <avtDatabaseMetaData.h>
+#include <ViewerMethods.h>
 
 #if defined(__APPLE__)
 #define GetGUIInfo ParallelCoordinates_GetGUIInfo
@@ -156,6 +157,11 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWindow(int type, AttributeSubject 
 // Creation:   Wed Jun 21 19:02:00 PDT 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb  7 12:58:15 EST 2008
+//    A wizard is needed because you can't reset the default plot attributes
+//    without a wizard's accept action having been called.  If you don't, then
+//    you'll have the wrong number of axes defined in the plot attributes.
+//    As such, I extended the wizard to support a "no-op" mode.
 //   
 // ****************************************************************************
 
@@ -164,6 +170,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
     QWidget *parent, const std::string &varName, const avtDatabaseMetaData *md,
     const ExpressionList *expList, const char *name)
 {
+    bool doNothing = false;
     if (md->GetScalar(varName) == NULL)
     {
         int expressionCount = expList->GetNumExpressions();
@@ -173,15 +180,18 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
         {
             if (expList->GetExpressions(expNum).GetName() == varName)
             {
-                if (expList->GetExpressions(expNum).GetType() == Expression::ScalarMeshVar)
+                if (expList->GetExpressions(expNum).GetType() ==
+                    Expression::ScalarMeshVar)
                     break;
             }
         }
         
-        if (expNum >= expressionCount) return NULL;
+        if (expNum >= expressionCount)
+            doNothing = true;
     }
 
-    return (new QvisParallelCoordinatesPlotWizard(attr, parent, varName, name));
+    return (new QvisParallelCoordinatesPlotWizard(attr, parent, varName,
+                                                  doNothing, name));
 }
 
 

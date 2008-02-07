@@ -208,6 +208,11 @@ avtArrayComposeFilter::ProcessArguments(ArgsExpr *args,
 //  Programmer:   Hank Childs
 //  Creation:     August 5, 2005
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb  7 18:01:29 EST 2008
+//    This wasn't setting the dimension of the output variable, which
+//    was necessary, so I added it.
+//
 // ****************************************************************************
 
 void
@@ -225,6 +230,7 @@ avtArrayComposeFilter::RefashionDataObjectInfo(void)
         subnames[i] = varnames[i];
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.SetVariableDimension(varnames.size(), outputVariableName);
     outAtts.SetVariableSubnames(subnames, outputVariableName);
 }
 

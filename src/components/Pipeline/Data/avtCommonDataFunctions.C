@@ -1336,6 +1336,149 @@ GetDataScalarRange(vtkDataSet *ds, double *exts, const char *vname,
 
 
 // ****************************************************************************
+//  Function: GetDataScalarRange
+//
+//  Purpose:
+//      Gets the full individual component ranges from a VTK dataset
+//
+//  Arguments:
+//      ds      The dataset to determine the range for.
+//      exts    The extents in <min, max> form.  There may be many 3 sets of
+//              extents for vector data.
+//      vname   The variable name to get the range for.
+//      ignoreGhost  A Boolean.  True if we should ignore ghosts, else false.
+//
+//  Returns:    true if it found real data, false otherwise.
+//
+//  Programmer: Jeremy Meredith
+//  Creation:   February  7, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+template <class T> static bool
+GetComponentRange(T *buf, int n, int c, int nc, double *exts, unsigned char *ghosts)
+{
+    T min; 
+    T max;
+    bool setOne = false;
+    buf += c;
+    for (int i = c; i < n*nc; i+=nc, buf+=nc)
+    {
+        if ((ghosts != NULL) && (ghosts[i] != '\0'))
+            continue;
+
+        if (!setOne)
+        {
+            min = *buf;
+            max = *buf;
+            setOne = true;
+            continue;
+        }
+
+        if (*buf < min)
+        {
+            min = *buf;
+        }
+        else
+        {
+            if (*buf > max)
+                max = *buf;
+        }
+    }
+    exts[0] = (double) min;
+    exts[1] = (double) max;
+
+    return setOne;
+}
+
+void
+GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
+                          bool ignoreGhost)
+{
+    vtkDataArray *da = NULL;
+    unsigned char *ghosts = NULL;
+    if (ds->GetPointData()->GetArray(vname))
+    {
+        da = ds->GetPointData()->GetArray(vname);
+    }
+    else
+    {
+        da = ds->GetCellData()->GetArray(vname);
+        if (ignoreGhost)
+        {
+            vtkUnsignedCharArray *ga = (vtkUnsignedCharArray *)
+                                  ds->GetCellData()->GetArray("avtGhostZones");
+            if (ga != NULL)
+                ghosts = ga->GetPointer(0);
+        }
+    }
+
+    if (da == NULL)
+        return;
+
+    int ntuples = da->GetNumberOfTuples();
+    int ncomps = da->GetNumberOfComponents();
+
+    for (int comp=0; comp<ncomps; comp++)
+    {
+        double *compexts = &(exts[2*comp]);
+        compexts[0] = +FLT_MAX;
+        compexts[1] = -FLT_MAX;
+    
+        switch (da->GetDataType())
+        {
+          case VTK_CHAR:
+            GetComponentRange((char*) da->GetVoidPointer(0), ntuples,
+                              comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_UNSIGNED_CHAR:
+            GetComponentRange((unsigned char*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_SHORT:
+            GetComponentRange((short*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_UNSIGNED_SHORT:
+            GetComponentRange((unsigned short*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps,compexts, ghosts);
+            break;
+          case VTK_INT:           
+            GetComponentRange((int*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_UNSIGNED_INT:  
+            GetComponentRange((unsigned int*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_LONG:          
+            GetComponentRange((long*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_UNSIGNED_LONG: 
+            GetComponentRange((unsigned long*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_FLOAT:         
+            GetComponentRange((float*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_DOUBLE:        
+            GetComponentRange((double*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+          case VTK_ID_TYPE:       
+            GetComponentRange((vtkIdType*) da->GetVoidPointer(0),
+                              ntuples, comp, ncomps, compexts, ghosts);
+            break;
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Function: GetDataMagnitudeRange
 //
 //  Purpose:

@@ -72,6 +72,11 @@ class vtkPoints;
 //    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
 //    Cleaned up some unused things and other refactoring.
 //
+//    Jeremy Meredith, Thu Feb  7 17:39:52 EST 2008
+//    Handle array variables as sole input variable, which makes the
+//    ordered axis array names in the attributes be empty.
+//    Also handle X positions defined by binning in array vars.
+//
 // ****************************************************************************
 
 class avtParallelCoordinatesFilter : public avtDataTreeStreamer
@@ -112,20 +117,21 @@ private:
 
     void                        DrawContext();
     void                        DrawDataCurves();
+    void                        PrepareForArrayVariable();
 
     ParallelCoordinatesAttributes parCoordsAtts;
     
+    bool                        isArrayVar;
     bool                        sendNullOutput;
 
     stringVector                curveAndAxisLabels;
     stringVector                contextLabels;
 
-    intVector                   varTupleIndices;
-
     int                         axisCount;
 
     doubleVector                axisMinima;
     doubleVector                axisMaxima;
+    doubleVector                axisXPositions;
     
     boolVector                  applySubranges;
     bool                        extentsApplied;

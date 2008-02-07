@@ -16,13 +16,10 @@
     </Files>
     <Attribute name="ParallelCoordinatesAttributes" purpose="This class contains the plot attributes for the ParallelCoordinates plot." persistent="true" exportAPI="" exportInclude="" codefile="ParallelCoordinates.code">
       <Field name="orderedAxisNames" label="orderedAxisNames" type="stringVector">
-        default
       </Field>
       <Field name="extentMinima" label="extentMinima" type="doubleVector">
-        0.000000
       </Field>
       <Field name="extentMaxima" label="extentMaxima" type="doubleVector">
-        1.000000
       </Field>
       <Field name="drawLines" label="Draw individual lines" type="bool">
         true
@@ -60,6 +57,8 @@
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="CopyAttributes" user="false" member="true">
+      </Function>
+      <Function name="ResetAxes" user="true" member="true">
       </Function>
       <Include file="header" quoted="false">
         AxisRestrictionAttributes.h

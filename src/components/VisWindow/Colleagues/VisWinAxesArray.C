@@ -340,6 +340,8 @@ VisWinAxesArray::NoPlots(void)
 //  Creation:   January 31, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
+//    Added support for array variables and bin-defined x positions.
 //
 // ****************************************************************************
 
@@ -381,7 +383,7 @@ VisWinAxesArray::UpdateView(void)
         double amax = axes[i].range[1];
         double ra = amax - amin;
 
-        double xpos = vl + (i-xmin)*dx;
+        double xpos = vl + (axes[i].xpos-xmin)*dx;
         if (xpos < vl-0.001 || xpos > vr+0.001 || ymin > 1 || ymax < 0)
         {
             axes[i].axis->SetVisibility(false);
@@ -405,6 +407,8 @@ VisWinAxesArray::UpdateView(void)
 //  Creation:   January 31, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
+//    Added support for array variables and bin-defined x positions.
 //
 // ****************************************************************************
 
@@ -412,6 +416,9 @@ void
 VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
 {
     int nActors = list.size();
+
+    int arrayActor = -1;
+    int arrayIndex = -1;
 
     // Find the highest-valued axis index for any variable
     int naxes = 0;
@@ -423,6 +430,13 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
         for (int j = 0 ; j < nvars ; j++)
         {
             const char *var = atts.GetVariableName(j).c_str();
+            if (atts.GetVariableType(var) == AVT_ARRAY_VAR)
+            {
+                naxes = atts.GetVariableDimension(var);
+                arrayActor = i;
+                arrayIndex = j;
+                break;
+            }
             int axis = atts.GetUseForAxis(var);
             if (axis == -1)
                 continue;
@@ -433,30 +447,67 @@ VisWinAxesArray::UpdatePlotList(vector<avtActor_p> &list)
     // Create the axes
     SetNumberOfAxes(naxes);
 
-    // Set the title/units/extents for the variables
-    for (int i = 0 ; i < nActors ; i++)
+    if (arrayActor>=0)
     {
         avtDataAttributes &atts = 
-                             list[i]->GetBehavior()->GetInfo().GetAttributes();
-        int nvars = atts.GetNumberOfVariables();
-        for (int j = 0 ; j < nvars ; j++)
+            list[arrayActor]->GetBehavior()->GetInfo().GetAttributes();
+        const char *var = atts.GetVariableName(arrayIndex).c_str();
+        int dim = atts.GetVariableDimension(var);
+        avtExtents *e = atts.GetVariableComponentExtents(var);
+        const vector<double> &bins = atts.GetVariableBinRanges(var);
+        if (!e || !e->HasExtents())
         {
-            const char *var = atts.GetVariableName(j).c_str();
-            int axis = atts.GetUseForAxis(var);
-            if (axis == -1)
-                continue;
-            avtExtents *ext = atts.GetCumulativeTrueDataExtents(var);
-            if (!ext)
+            char str[100];
+            sprintf(str, "Did not have valid extents for var '%s'", var);
+            EXCEPTION1(ImproperUseException, str);
+        }
+        double *extents = new double[2*dim];
+        e->CopyTo(extents);
+        for (int k=0; k<dim; k++)
+        {
+            if (bins.size() > k)
+                axes[k].xpos = (bins[k]+bins[k+1])/2;
+            else
+                axes[k].xpos = k;
+            axes[k].range[0] = extents[2*k+0];
+            axes[k].range[1] = extents[2*k+1];
+            SNPRINTF(axes[k].title, 256,
+                     atts.GetVariableSubnames(var)[k].c_str());
+            SNPRINTF(axes[k].units, 256,
+                     atts.GetVariableUnits(var).c_str());
+        }
+        delete[] extents;
+    }
+    else
+    {
+
+        // Set the title/units/extents for the variables
+        for (int i = 0 ; i < nActors ; i++)
+        {
+            avtDataAttributes &atts = 
+                list[i]->GetBehavior()->GetInfo().GetAttributes();
+            int nvars = atts.GetNumberOfVariables();
+            for (int j = 0 ; j < nvars ; j++)
             {
-                char str[100];
-                sprintf(str, "Did not have valid extents for var '%s'", var);
-                EXCEPTION1(ImproperUseException, str);
+                const char *var = atts.GetVariableName(j).c_str();
+                int axis = atts.GetUseForAxis(var);
+                if (axis == -1)
+                    continue;
+                avtExtents *ext = atts.GetCumulativeTrueDataExtents(var);
+                if (!ext)
+                {
+                    char str[100];
+                    sprintf(str, "Did not have valid extents for var '%s'", var);
+                    EXCEPTION1(ImproperUseException, str);
+                }
+                atts.GetCumulativeTrueDataExtents(var)->CopyTo(axes[axis].range);
+                axes[axis].xpos = axis;
+                SNPRINTF(axes[axis].title,256, var);
+                SNPRINTF(axes[axis].units,256, atts.GetVariableUnits(var).c_str());
             }
-            atts.GetCumulativeTrueDataExtents(var)->CopyTo(axes[axis].range);
-            SNPRINTF(axes[axis].title,256, var);
-            SNPRINTF(axes[axis].units,256, atts.GetVariableUnits(var).c_str());
         }
     }
+
     SetTitles();
 }
 

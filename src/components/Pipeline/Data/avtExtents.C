@@ -382,9 +382,11 @@ avtExtents::Merge(const double *exts)
 //  Creation:   September 4, 2001
 //
 //  Modifications:
-//
 //    Hank Childs, Wed Sep 19 10:24:02 PDT 2001
 //    Make use of new array writing facilities.
+//
+//    Jeremy Meredith, Thu Feb  7 14:44:42 EST 2008
+//    Support arbitrarily large dimension.
 //
 // ****************************************************************************
 
@@ -393,8 +395,12 @@ avtExtents::Write(avtDataObjectString &str, const avtDataObjectWriter *wrtr)
 {
     if (extents == NULL)
     {
-        double dummyExtents[6] = {DBL_MAX,-DBL_MAX,DBL_MAX,-DBL_MAX,
-                                  DBL_MAX,-DBL_MAX};
+        double *dummyExtents = new double[2*dimension];
+        for (int i=0; i<dimension; i++)
+        {
+            dummyExtents[2*i+0] =  DBL_MAX;
+            dummyExtents[2*i+1] = -DBL_MAX;
+        }
         //
         // We have no extents; write out '0' to indicate this.
         //
@@ -403,6 +409,8 @@ avtExtents::Write(avtDataObjectString &str, const avtDataObjectWriter *wrtr)
         // still write some data for extents so all processor's message
         // size will agree
         wrtr->WriteDouble(str, dummyExtents, 2*dimension);
+
+        delete[] dummyExtents;
     }
     else
     {
