@@ -396,6 +396,9 @@ typedef struct {
 //    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 //    Added new axis array window mode.
 //
+//    Hank Childs, Thu Feb  7 11:04:00 PST 2008
+//    Added method SynchronizeTimeLockedWindows.
+//
 // ****************************************************************************
 
 class VIEWER_API ViewerWindowManager : public ViewerBase
@@ -624,6 +627,7 @@ class VIEWER_API ViewerWindowManager : public ViewerBase
                                      const stringVector &dbs) const;
     DatabaseCorrelation *CreateMultiWindowCorrelationHelper(const stringVector &dbs);
     static void ToolCallback(const avtToolInterface &);
+    void       SynchronizeTimeLockedWindows(int, int);
 
   private:
     void InitWindowLimits();

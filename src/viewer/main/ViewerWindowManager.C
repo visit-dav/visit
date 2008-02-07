@@ -5509,6 +5509,11 @@ ViewerWindowManager::SetKeyframeAttsFromClient()
 //   Brad Whitlock, Mon Jan 26 16:50:40 PST 2004
 //   Changed how animation is done.
 //
+//   Hank Childs, Thu Feb  7 11:12:47 PST 2008
+//   Offload code for synchronizing time locked windows to the new method
+//   SynchronizeTimeLockedWindows.  This way PrevFrame and NextFrame can
+//   also use them.
+//
 // ****************************************************************************
 
 void
@@ -5525,89 +5530,9 @@ ViewerWindowManager::SetFrameIndex(int state, int windowIndex)
         ViewerPlotList *activePL = windows[index]->GetPlotList();
         activePL->SetTimeSliderState(state);
 
-        //
-        // If the active window is time-locked, update the other windows
-        // that are also time locked and have the same time slider or a
-        // time slider that is used by the correlation for the active
-        // window's time slider.
-        //
         if(windows[index]->GetTimeLock() && activePL->HasActiveTimeSlider())
         {
-            intVector badWindowIds;
-            for(int i = 0; i < maxWindows; ++i)
-            {
-                if(i != index && windows[i] != 0)
-                {
-                    ViewerPlotList *winPL = windows[i]->GetPlotList();
-                    if(windows[i]->GetTimeLock() &&
-                       winPL->HasActiveTimeSlider())
-                    {
-                        int tsState = -1;
-                        if(activePL->GetActiveTimeSlider() ==
-                           winPL->GetActiveTimeSlider())
-                        {
-                            //
-                            // The windows have the same active time slider
-                            // so we can just set the state.
-                            //
-                            tsState = state;
-                        }
-                        else
-                        {
-                            //
-                            // The windows have different active time sliders
-                            // so let's see if we can set the time for the i'th
-                            // time slider. If not, warn the user.
-                            //
-                            DatabaseCorrelationList *cL = 
-                                ViewerFileServer::Instance()->
-                                GetDatabaseCorrelationList();
-                            DatabaseCorrelation *c = cL->FindCorrelation(
-                                activePL->GetActiveTimeSlider());
-                            const std::string &ts = winPL->GetActiveTimeSlider();
-                            if(c != 0)
-                                tsState = c->GetCorrelatedTimeState(ts, state);
-                        }
-
-                        if(tsState != -1)
-                        {
-                            windows[i]->SetMergeViewLimits(true);
-                            windows[i]->GetPlotList()->SetTimeSliderState(tsState);
-                        }
-                        else
-                            badWindowIds.push_back(i);
-                    }
-                }
-            }
-
-            if(badWindowIds.size() > 0)
-            {
-                std::string msg("VisIt did not set the time state for window");
-                if(badWindowIds.size() > 1)
-                    msg += "s (";
-                else
-                    msg += " ";
-                char tmp[50];
-                for(int j = 0; j < badWindowIds.size(); ++j)
-                {
-                    SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
-                    msg += tmp;
-                    if(j < badWindowIds.size() - 1)
-                        msg += ", ";
-                }
-
-                if(badWindowIds.size() > 1)
-                    msg += ") because the time sliders in those windows ";
-                else
-                    msg += " because the time slider in that window ";
-
-                msg += "cannot be set by the active window's time slider "
-                       "since the correlations of the time sliders have "
-                       "nothing in common.\n\nTo avoid this warning in the "
-                       "future, make sure that locked windows have compatible "
-                       "time sliders.";
-                Warning(msg.c_str());
-            }
+            SynchronizeTimeLockedWindows(windowIndex,state);
         }
 
         //
@@ -5616,6 +5541,122 @@ ViewerWindowManager::SetFrameIndex(int state, int windowIndex)
         UpdateWindowInformation(WINDOWINFO_ANIMATION);
     }
 }
+
+
+// ****************************************************************************
+// Method: ViewerWindowManager::SynchronizeTimeLockedWindows
+//
+// Purpose: 
+//     Makes sure all of the time locked windows have a consistent state.
+//
+// Arguments:
+//   windowIndex : The index of the window for which we'll set the frame index.
+//   state       : The new active frame.
+//
+// Notes:      Initial code taken from method SetFrameIndex written by
+//             Brad Whitlock.
+//
+// Programmer: Hank Childs
+// Creation:   February 7, 2008
+//
+// ****************************************************************************
+
+void
+ViewerWindowManager::SynchronizeTimeLockedWindows(int windowIndex, int state)
+{
+    if (windowIndex < -1 || windowIndex >= maxWindows)
+        return;
+
+    int index = (windowIndex == -1) ? activeWindow : windowIndex;
+    if (windows[index] == NULL)
+        return;
+    ViewerPlotList *activePL = windows[index]->GetPlotList();
+    if (!(windows[index]->GetTimeLock()) || !(activePL->HasActiveTimeSlider()))
+        return;
+
+    //
+    // If the active window is time-locked, update the other windows
+    // that are also time locked and have the same time slider or a
+    // time slider that is used by the correlation for the active
+    // window's time slider.
+    //
+    intVector badWindowIds;
+    for (int i = 0; i < maxWindows; ++i)
+    {
+        if (i != index && windows[i] != 0)
+        {
+            ViewerPlotList *winPL = windows[i]->GetPlotList();
+            if(windows[i]->GetTimeLock() &&
+               winPL->HasActiveTimeSlider())
+            {
+                int tsState = -1;
+                if (activePL->GetActiveTimeSlider() ==
+                    winPL->GetActiveTimeSlider())
+                {
+                    //
+                    // The windows have the same active time slider
+                    // so we can just set the state.
+                    //
+                    tsState = state;
+                }
+                else
+                {
+                    //
+                    // The windows have different active time sliders
+                    // so let's see if we can set the time for the i'th
+                    // time slider. If not, warn the user.
+                    //
+                    DatabaseCorrelationList *cL = 
+                        ViewerFileServer::Instance()->
+                        GetDatabaseCorrelationList();
+                    DatabaseCorrelation *c = cL->FindCorrelation(
+                        activePL->GetActiveTimeSlider());
+                    const std::string &ts = winPL->GetActiveTimeSlider();
+                    if(c != 0)
+                        tsState = c->GetCorrelatedTimeState(ts, state);
+                }
+
+                if (tsState != -1)
+                {
+                    windows[i]->SetMergeViewLimits(true);
+                    windows[i]->GetPlotList()->SetTimeSliderState(tsState);
+                }
+                else
+                    badWindowIds.push_back(i);
+            }
+        }
+    }
+
+    if (badWindowIds.size() > 0)
+    {
+        std::string msg("VisIt did not set the time state for window");
+        if (badWindowIds.size() > 1)
+            msg += "s (";
+        else
+            msg += " ";
+        char tmp[50];
+        for (int j = 0; j < badWindowIds.size(); ++j)
+        {
+            SNPRINTF(tmp, 50, "%d", badWindowIds[j] + 1);
+            msg += tmp;
+            if(j < badWindowIds.size() - 1)
+                msg += ", ";
+        }
+
+        if (badWindowIds.size() > 1)
+            msg += ") because the time sliders in those windows ";
+        else
+            msg += " because the time slider in that window ";
+
+        msg += "cannot be set by the active window's time slider "
+               "since the correlations of the time sliders have "
+               "nothing in common.\n\nTo avoid this warning in the "
+               "future, make sure that locked windows have compatible "
+               "time sliders.";
+        Warning(msg.c_str());
+    }
+}
+
 
 // ****************************************************************************
 // Method: ViewerWindowManager::NextFrame
@@ -5634,6 +5675,10 @@ ViewerWindowManager::SetFrameIndex(int state, int windowIndex)
 //   Brad Whitlock, Mon Jan 26 16:49:06 PST 2004
 //   I changed how animation works.
 //
+//   Hank Childs, Thu Feb  7 11:12:47 PST 2008
+//   Offload work of synchronizing time locked windows to the new method
+//   SynchronizeTimeLockedWindows.  
+//
 // ****************************************************************************
 
 void
@@ -5648,24 +5693,17 @@ ViewerWindowManager::NextFrame(int windowIndex)
         // Advance one frame for the active window first.
         windows[index]->GetPlotList()->SetAnimationMode(
             ViewerPlotList::StopMode);
-        windows[index]->GetPlotList()->ForwardStep();
+        ViewerPlotList *activePL = windows[index]->GetPlotList();
+        activePL->ForwardStep();
 
-        // If the active window is time-locked, update the other windows that are
-        // also time locked.
-        if(windows[index]->GetTimeLock())
+        // If the active window is time-locked, update the other windows
+        // that are also time locked.
+        if(windows[index]->GetTimeLock() && activePL->HasActiveTimeSlider())
         {
-            for(int i = 0; i < maxWindows; ++i)
-            {
-                if(i != index && windows[i] != 0)
-                {
-                    if(windows[i]->GetTimeLock())
-                    {
-                        windows[i]->GetPlotList()->SetAnimationMode(
-                            ViewerPlotList::StopMode);
-                        windows[i]->GetPlotList()->ForwardStep();
-                    }
-                }
-            }
+            int state = 0, nstates = 1;
+            activePL->GetTimeSliderStates(activePL->GetActiveTimeSlider(), 
+                                          state, nstates);
+            SynchronizeTimeLockedWindows(windowIndex,state);
         }
 
         //
@@ -5697,6 +5735,10 @@ ViewerWindowManager::NextFrame(int windowIndex)
 //   Brad Whitlock, Mon Jan 26 16:46:08 PST 2004
 //   I changed how animation is done.
 //
+//   Hank Childs, Thu Feb  7 11:12:47 PST 2008
+//   Offload work of synchronizing time locked windows to the new method
+//   SynchronizeTimeLockedWindows.  
+//
 // ****************************************************************************
 
 void
@@ -5711,24 +5753,17 @@ ViewerWindowManager::PrevFrame(int windowIndex)
         // Back up one frame for the active window first.
         windows[index]->GetPlotList()->SetAnimationMode(
             ViewerPlotList::StopMode);
-        windows[index]->GetPlotList()->BackwardStep();
+        ViewerPlotList *activePL = windows[index]->GetPlotList();
+        activePL->BackwardStep();
 
         // If the active window is time-locked, update the other windows
         // that are also time locked.
-        if(windows[index]->GetTimeLock())
+        if(windows[index]->GetTimeLock() && activePL->HasActiveTimeSlider())
         {
-            for(int i = 0; i < maxWindows; ++i)
-            {
-                if(i != index && windows[i] != 0)
-                {
-                    if(windows[i]->GetTimeLock())
-                    {
-                        windows[i]->GetPlotList()->SetAnimationMode(
-                            ViewerPlotList::StopMode);
-                        windows[i]->GetPlotList()->BackwardStep();
-                    }
-                }
-            }
+            int state = 0, nstates = 1;
+            activePL->GetTimeSliderStates(activePL->GetActiveTimeSlider(), 
+                                          state, nstates);
+            SynchronizeTimeLockedWindows(windowIndex,state);
         }
 
         //
