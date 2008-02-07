@@ -292,6 +292,11 @@
 #     (QT_DIR by Linux, MILI_DIR by VisIt's configure script.)
 #     2) Do not do a parallel build for H5_part.
 #     
+#     Thomas R. Treadway, Wed Feb  6 15:08:07 PST 2008
+#     Corrected the silo build
+#     Added an explicit CMake build step.
+#     Added a parallel make option
+#     
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -2401,13 +2406,13 @@ EOF
     # Build Qt.  Issue only the targets that we need.
     #
     info_box "Building Qt . . . (~10 minutes)" 1>&3
-    $MAKE symlinks src-qmake src-moc sub-src
+    $MAKE $MAKE_OPT_FLAGS symlinks src-qmake src-moc sub-src
     if [[ $? != 0 ]] ; then
        echo "Qt build failed.  Giving up"
        return 1
     fi
     cd tools/designer/uilib
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "Qt build for libqui failed.  Giving up"
        return 1
@@ -2550,7 +2555,7 @@ EOF
     # Build the CMake program.
     #
     info_box "Building CMake . . ." 1>&3
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "Cannot build cmake, giving up."
        return 1
@@ -2903,7 +2908,7 @@ EOF
     # Now build VTK.
     #
     info_box "Building VTK . . . (~20 minutes)" 1>&3
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "VTK did not build correctly.  Giving up."
        return 1
@@ -3133,7 +3138,7 @@ CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
     # Build Python.
     #
     info_box "Building Python . . . (~3 minutes)" 1>&3
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "Python build failed.  Giving up"
        return 1
@@ -3277,8 +3282,13 @@ $VISITDIR/qt/${QT_VERSION}/$VISITARCH/lib"
         WITHQTLIBSARG="--with-Qt-lib=\
 qt -framework Carbon -framework QuickTime -framework OpenGL -framework AGL"
     elif [[ "$OPSYS" == "Linux" ]]; then
-        WITHQTLIBSARG="--with-Qt-lib=\
+        if [[ "$(uname -m)" == "x86_64" ]] ; then
+           WITHQTLIBSARG="--with-Qt-lib=\
+qt -lSM -lICE -L/usr/X11R6/lib64 -lX11 -lXext -lXmu -lXt -lXi"
+        else
+           WITHQTLIBSARG="--with-Qt-lib=\
 qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi"
+        fi
     elif [[ "$OPSYS" == "AIX" ]]; then
         WITHQTLIBSARG="--with-Qt-lib=\
 qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXt -lXi"
@@ -3295,6 +3305,7 @@ qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi"
     fi
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
         CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS" \
+        --prefix="$VISITDIR/silo/$SILO_VERSION/$VISITARCH" \
         "$WITHHDF5ARG" "$WITHSZIPARG" \
         "$WITHQTINCARG" "$WITHQTBINARG" "$WITHQTLIBARG" "$WITHQTLIBSARG" \
         --without-readline --disable-fortran --disable-browser --enable-silex
@@ -3308,7 +3319,7 @@ qt -lSM -lICE -L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi"
     #
     info_box "Building Silo . . . (~2 minutes)" 1>&3
     echo "Building Silo"
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "Silo build failed.  Giving up"
        return 1
@@ -3525,7 +3536,7 @@ function build_hdf5
     #
     info_box "Building HDF5 . . . (~2 minutes)" 1>&3
     echo "Building HDF5"
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "HDF5 build failed.  Giving up"
        return 1
@@ -5012,9 +5023,9 @@ function build_gdal
     cd ${GDAL_DIR}
     echo "Invoking command to configure GDAL"
     if [[ "$OPSYS" == "Darwin" ]]; then
-       EXTRA_FLAGS="F77=\"\""
+       EXTRA_FLAGS="F77=\"\"--enable-shared --disable-static"
     else
-       EXTRA_FLAGS=""
+       EXTRA_FLAGS="--enable-static --disable-shared"
     fi
     if [[ "$OPSYS" == "Darwin" ]]; then
         # Check for version 6.x.x (MacOS 10.2, Jaguar)
@@ -5083,7 +5094,7 @@ EOF
     #
     info_box "Building GDAL . . . (~4 minutes)" 1>&3
     echo "Building GDAL"
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "GDAL build failed.  Giving up"
        return 1
@@ -5949,7 +5960,7 @@ $DYLD_LIBRARY_PATH
     #
     info_box "Building H5Part . . . (~1 minutes)" 1>&3
     echo "Building H5Part"
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "H5Part build failed.  Giving up"
        return 1
@@ -6499,7 +6510,7 @@ function build_visit
     # Build VisIt
     #
     info_box "Building VisIt . . . (~50 minutes)" 1>&3
-    $MAKE
+    $MAKE $MAKE_OPT_FLAGS
     if [[ $? != 0 ]] ; then
        echo "VisIt build failed.  Giving up"
        return 1
@@ -6509,7 +6520,7 @@ function build_visit
 
 usage () {
   printf "Usage: %s [-45bCcdefghIijkmnopSsVwxyz] [-a opt] [-l opt]\n" $0
-  printf "       [-t opt] [-u opt] [-v opt] [-D opt]\n"
+  printf "       [-t opt] [-u opt] [-v opt] [-D opt] [-J opt]\n"
   printf "\n"
   printf "%s %s %s\n" "-4     Build HDF4 from [" $HDF4_FILE "]"
   printf "%s %s %s\n" "-5     Build HDF5 from [" $HDF5_FILE "]"
@@ -6534,6 +6545,7 @@ usage () {
   printf "%s\n" "       will used the THIRD_PARTY_PATH path for creating"
   printf "%s\n" "       an absolute path to the dynamic libraries and not"
   printf "%s\n" "       use the default relative path [@executable_path/../lib]"
+  printf "%s\n" "-J opt Set -j level for parallel makes"
   printf "%s\n" "-j     Do not build VisIt, build 3rd party libraries only"
   printf "%s\n" "-k     Do not build required 3rd party libraries"
   printf "%s %s %s\n" "-l opt Group name of installed libraries [" $GROUP "]"
@@ -6570,7 +6582,7 @@ usage () {
 # This section does some set up for building VisIt, and then calls the        #
 # functions to build the third party libraries and VisIt itself.              #
 # *************************************************************************** #
-while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCD:EFGHIJKL:MNOPRST:U:V:WXYZ ARG
+while getopts :45a:bcdefghijkl:mnoprst:u:v:wxyzA:BCD:EFGHIJ:KL:MNOPRST:U:V:WXYZ ARG
 
 do
     argcur=$ARG
@@ -6607,7 +6619,8 @@ do
            ON_ITAPS="on";;
       i)   ABS_PATH="yes"
            ON_ABS_PATH="on";;
-      j|J) DO_VISIT="no"
+      J)   MAKE_OPT_FLAGS="-j $OPTARG";;
+      j)   DO_VISIT="no"
            ON_VISIT="off";;
       k|K) DO_REQUIRED_THIRD_PARTY="no"
            ON_THIRD_PARTY="off";;
@@ -7098,6 +7111,29 @@ else
    echo "Skipping Qt build."
 fi
 
+#
+# Build CMake
+#
+cd "$START_DIR"
+if [[ "$DO_REQUIRED_THIRD_PARTY" == "yes" ]] ; then
+   if [[ -d "$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH" ]] ; then
+      echo "Skipping CMake build.  CMake is already installed."
+   else
+      echo "Building CMake (~2 minutes)"
+      build_cmake 3>&1 >> ${LOG_FILE} 2>&1
+      if [[ $? != 0 ]] ; then
+         echo "Unable to build or install CMake.  Bailing out."
+         if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
+            echo \
+"More information about the failed build can be found in \"${LOG_FILE}\""
+         fi
+         exit 1
+      fi
+      echo "Done building CMake"
+   fi
+else
+   echo "Skipping CMake build."
+fi
 #
 # Build VTK
 #
