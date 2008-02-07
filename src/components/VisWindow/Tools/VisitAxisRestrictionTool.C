@@ -52,6 +52,8 @@
 #include <avtExtents.h>
 #include <avtVector.h>
 
+using std::vector;
+
 const float VisitAxisRestrictionTool::radius = 1/60.;
 
 // ****************************************************************************
@@ -670,11 +672,18 @@ VisitAxisRestrictionTool::MoveCallback(VisitInteractiveTool *it, CB_ENUM e,
 //  Programmer:  Jeremy Meredith
 //  Creation:    February  1, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:59:55 EST 2008
+//    Added support for array variables and bin-defined x positions.
+//
 // ****************************************************************************
 void
 VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
 {
     int nActors = list.size();
+
+    int arrayActor = -1;
+    int arrayIndex = -1;
 
     // Find the highest-valued axis index for any variable
     int naxes = 0;
@@ -686,6 +695,13 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
         for (int j = 0 ; j < nvars ; j++)
         {
             const char *var = atts.GetVariableName(j).c_str();
+            if (atts.GetVariableType(var) == AVT_ARRAY_VAR)
+            {
+                naxes = atts.GetVariableDimension(var);
+                arrayActor = i;
+                arrayIndex = j;
+                break;
+            }
             int axis = atts.GetUseForAxis(var);
             if (axis == -1)
                 continue;
@@ -694,31 +710,63 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
     }
 
     // create the new axes limits
+    axesXPos.resize(naxes);
     axesMin.resize(naxes);
     axesMax.resize(naxes);
 
-    for (int i = 0 ; i < nActors ; i++)
+    if (arrayActor>=0)
     {
         avtDataAttributes &atts = 
-                             list[i]->GetBehavior()->GetInfo().GetAttributes();
-        int nvars = atts.GetNumberOfVariables();
-        for (int j = 0 ; j < nvars ; j++)
+            list[arrayActor]->GetBehavior()->GetInfo().GetAttributes();
+        const char *var = atts.GetVariableName(arrayIndex).c_str();
+        int dim = atts.GetVariableDimension(var);
+        avtExtents *e = atts.GetVariableComponentExtents(var);
+        const vector<double> &bins = atts.GetVariableBinRanges(var);
+        if (!e || !e->HasExtents())
         {
-            const char *var = atts.GetVariableName(j).c_str();
-            int axis = atts.GetUseForAxis(var);
-            if (axis == -1)
-                continue;
-            avtExtents *ext = atts.GetCumulativeTrueDataExtents(var);
-            if (!ext)
+            char str[100];
+            sprintf(str, "Did not have valid extents for var '%s'", var);
+            EXCEPTION1(ImproperUseException, str);
+        }
+        double *extents = new double[2*dim];
+        e->CopyTo(extents);
+        for (int k=0; k<dim; k++)
+        {
+            if (bins.size() > k)
+                axesXPos[k] = (bins[k]+bins[k+1])/2;
+            else
+                axesXPos[k] = k;
+            axesMin[k] = extents[2*k+0];
+            axesMax[k] = extents[2*k+1];
+        }
+        delete[] extents;
+    }
+    else
+    {
+        for (int i = 0 ; i < nActors ; i++)
+        {
+            avtDataAttributes &atts = 
+                list[i]->GetBehavior()->GetInfo().GetAttributes();
+            int nvars = atts.GetNumberOfVariables();
+            for (int j = 0 ; j < nvars ; j++)
             {
-                char str[100];
-                sprintf(str, "Did not have valid extents for var '%s'", var);
-                EXCEPTION1(ImproperUseException, str);
+                const char *var = atts.GetVariableName(j).c_str();
+                int axis = atts.GetUseForAxis(var);
+                if (axis == -1)
+                    continue;
+                avtExtents *ext = atts.GetCumulativeTrueDataExtents(var);
+                if (!ext)
+                {
+                    char str[100];
+                    sprintf(str, "Did not have valid extents for var '%s'", var);
+                    EXCEPTION1(ImproperUseException, str);
+                }
+                double extents[2];
+                atts.GetCumulativeTrueDataExtents(var)->CopyTo(extents);
+                axesXPos[axis] = axis;
+                axesMin[axis] = extents[0];
+                axesMax[axis] = extents[1];
             }
-            double extents[2];
-            atts.GetCumulativeTrueDataExtents(var)->CopyTo(extents);
-            axesMin[axis] = extents[0];
-            axesMax[axis] = extents[1];
         }
     }
 
@@ -734,7 +782,7 @@ VisitAxisRestrictionTool::UpdatePlotList(std::vector<avtActor_p> &list)
         h.radius = radius;
         h.tool = this;
         h.callback = MoveCallback;
-        h.pt = avtVector(i,1.,0);
+        h.pt = avtVector(axesXPos[i],1.,0);
 
         h.data = origHotPoints.size();
         h.shape = 1;

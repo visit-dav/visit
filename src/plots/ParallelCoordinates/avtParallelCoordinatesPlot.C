@@ -380,16 +380,25 @@ avtParallelCoordinatesPlot::CustomizeMapper(avtDataObjectInformation &info)
 //  Note: original implementation from Mark Blair's parallel axis plot
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:51:12 EST 2008
+//    Exit early if we had an array variable.
+//
 //
 // ****************************************************************************
 
 avtPipelineSpecification_p
 avtParallelCoordinatesPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
 {
+    if (atts.GetOrderedAxisNames().size() == 0)
+    {
+        // nothing to do; this means we have an array variable
+        return in_spec;
+    }
+
     if (!atts.AttributesAreConsistent())
     {
-        debug3 << "PCP/aPAP/ES/1: ParallelCoordinates plot attributes are inconsistent."
-               << endl;
+        debug3 << "PCP/aPAP/ES/1: ParallelCoordinates plot attributes are "
+               << "inconsistent." << endl;
         return in_spec;
     }
 

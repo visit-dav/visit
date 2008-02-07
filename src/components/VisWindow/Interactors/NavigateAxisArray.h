@@ -61,6 +61,8 @@ class VisWindowInteractorProxy;
 //  Creation:   January 29, 2008
 //
 //  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:58:11 EST 2008
+//    Added support for toggling horizontal snap-to-grid.
 //
 // ****************************************************************************
 
@@ -85,6 +87,7 @@ class VISWINDOW_API NavigateAxisArray : public VisitInteractor
     void                ZoomHorizontalFixed(double f);
     void                ZoomVertical(double f);
 
+    bool                shouldSnap;
     bool                shiftKeyDown;
     bool                controlKeyDown;
 };

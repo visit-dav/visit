@@ -53,11 +53,17 @@
 //  Programmer: Jeremy Meredith
 //  Creation:   January 31, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:58:11 EST 2008
+//    Added support for toggling horizontal snap-to-grid.
+//
 // ****************************************************************************
 
 NavigateAxisArray::NavigateAxisArray(VisWindowInteractorProxy &v) : VisitInteractor(v)
 {
     shiftKeyDown = controlKeyDown = false;
+    VisWindow *win = v;
+    shouldSnap = win->GetInteractorAtts()->GetAxisArraySnap();
 }
 
 
@@ -72,6 +78,10 @@ NavigateAxisArray::NavigateAxisArray(VisWindowInteractorProxy &v) : VisitInterac
 //  Programmer: Jeremy Meredith
 //  Creation:   January 31, 2008
 //
+//  Modifications:
+//    Jeremy Meredith, Thu Feb  7 17:58:11 EST 2008
+//    Added support for toggling horizontal snap-to-grid.
+//
 // ****************************************************************************
 
 void
@@ -82,10 +92,13 @@ NavigateAxisArray::OnTimer(void)
     int LastPos[2];
     rwi->GetLastEventPosition(LastPos);
 
+    VisWindow *win = proxy;
+    shouldSnap = win->GetInteractorAtts()->GetAxisArraySnap();
+
     switch (State)
     {
       case VTKIS_PAN:
-        PanCamera(LastPos[0], LastPos[1], true);
+        PanCamera(LastPos[0], LastPos[1], shouldSnap);
 
         rwi->CreateTimer(VTKI_TIMER_UPDATE);
         break;

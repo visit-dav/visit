@@ -203,6 +203,10 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 //    Hank Childs, Wed Oct 10 16:12:11 PDT 2007
 //    Only look at non-ghost data when calculating extents.
 //
+//    Jeremy Meredith, Thu Feb  7 17:57:33 EST 2008
+//    Added support for initializing individual component data ranges for
+//    array variables.
+//
 // ****************************************************************************
 
 void
@@ -260,6 +264,14 @@ avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
         bool ignoreGhost = true;
         GetDataRange(ds, dextents, vname, true);
         atts.GetCumulativeTrueDataExtents(vname)->Merge(dextents);
+
+        if (atts.GetVariableType(vname) == AVT_ARRAY_VAR)
+        {
+            double *compExt = new double[atts.GetVariableDimension(vname)*2];
+            GetDataAllComponentsRange(ds, compExt, vname, true);
+            atts.GetVariableComponentExtents(vname)->Merge(compExt);
+            delete[] compExt;
+        }   
     }
 }
 

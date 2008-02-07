@@ -238,6 +238,10 @@ class     PlotInfoAttributes;
 //    Added ability to specify that a variable is supposed to be used for
 //    an axis (and which one), e.g. for a parallel coordinates plot.
 //
+//    Jeremy Meredith, Thu Feb  7 17:55:39 EST 2008
+//    Added extents that can be associated with individual components of
+//    array variables.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -314,6 +318,8 @@ class PIPELINE_API avtDataAttributes
                                               const char * = NULL);
     const std::vector<double> &
                              GetVariableBinRanges(const char * = NULL) const;
+
+    avtExtents              *GetVariableComponentExtents(const char * = NULL);
 
     avtCentering             GetCentering(const char * = NULL) const;
     void                     SetCentering(avtCentering, const char * = NULL);
@@ -561,6 +567,7 @@ class PIPELINE_API avtDataAttributes
                                             // at this point.
         std::vector<double>       binRange; // Only used for 'array' vars
                                             // at this point.
+        avtExtents          *componentExtents; // Only used for 'array' vars
     };
     std::vector<VarInfo>     variables;
     int                      activeVariable;

@@ -17,4 +17,7 @@
     <Field name="navigationMode" label="navigationMode" type="enum" subtype="NavigationMode">
       Trackball
     </Field>
+    <Field name="axisArraySnap" label="axisArraySnap" type="bool">
+      true
+    </Field>
   </Attribute>

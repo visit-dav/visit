@@ -73,6 +73,9 @@ class QvisLineWidthWidget;
 //   Eric Brugger, Thu Nov 18 13:01:35 PST 2004
 //   I added the fill viewport on zoom toggle button.
 //   
+//   Jeremy Meredith, Thu Feb  7 17:51:32 EST 2008
+//   Added snap-to-horizontal grid support for axis array mode navigation.
+//
 // ****************************************************************************
 
 class QvisInteractorWindow : public QvisPostableWindowObserver
@@ -99,11 +102,13 @@ class QvisInteractorWindow : public QvisPostableWindowObserver
     void clampSquareChanged(bool val);
     void fillViewportOnZoomChanged(bool val);
     void navigationModeChanged(int val);
+    void axisSnapChanged(bool val);
   private:
     QCheckBox *showGuidelines;
     QCheckBox *clampSquare;
     QCheckBox *fillViewportOnZoom;
     QButtonGroup *navigationMode;
+    QCheckBox *axisSnap;
 
     InteractorAttributes *atts;
 };

@@ -132,51 +132,20 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 // ****************************************************************************
 //  Method: avtParallelCoordinatesFilter::PerformRestriction
 //
-//  Purpose: Restrict input domains if an interval tree is available.  Also set
-//           up axis position information needed by the plot.
+//  Purpose: Disable dynamic load balancing.  We can eventually do an
+//           interval tree here.
 //
-//  Programmer: Mark Blair
-//  Creation:   Mon Mar 27 18:24:00 PST 2006
+//  Programmer: Jeremy Meredith
+//  Creation:   February  7, 2008
 //
 //  Modifications:
-//    Mark Blair, Wed Aug 16 16:46:00 PDT 2006
-//    Added check for attribute consistency.
-//
-//    Jeremy Meredith, Thu Jan 31 13:56:50 EST 2008
-//    Adapted from Parallel Axis plot and repurposed into this new
-//    Parallel Coordinates plot.
-//
-//    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
-//    Some more distillation and related cleanup.
 //
 // ****************************************************************************
 
 avtPipelineSpecification_p
-avtParallelCoordinatesFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtParallelCoordinatesFilter::PerformRestriction(
+                                           avtPipelineSpecification_p in_spec)
 {
-    if (!parCoordsAtts.AttributesAreConsistent())
-    {
-        debug3 << "PCP/aPAF/PR1: ParallelCoordinates plot attributes are inconsistent."
-               << endl;
-
-        return in_spec;
-    }
-        
-    const char *inPipelineVar = in_spec->GetDataSpecification()->GetVariable();
-    std::string curPipelineVar(inPipelineVar);
-    
-    stringVector curAxisVarNames = parCoordsAtts.GetOrderedAxisNames();
-
-    varTupleIndices.clear();
-
-    for (int axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++)
-    {
-        if (curAxisVarNames[axisNum] == curPipelineVar)
-            varTupleIndices.push_back(0);
-        else
-            varTupleIndices.push_back(-1);
-    }
-
     avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
     
     outSpec->NoDynamicLoadBalancing();
@@ -215,13 +184,21 @@ avtParallelCoordinatesFilter::PerformRestriction(avtPipelineSpecification_p in_s
 //    Jeremy Meredith, Wed Feb  6 16:13:17 EST 2008
 //    Initialize axisCount to zero right away, just in case we error out.
 //
+//    Jeremy Meredith, Thu Feb  7 17:46:48 EST 2008
+//    Handle array variables.
+//
 // *****************************************************************************
 
 void
 avtParallelCoordinatesFilter::PreExecute(void)
 {
     avtDatasetToDatasetFilter::PreExecute();
-    axisCount = 0;
+
+    axisCount = parCoordsAtts.GetOrderedAxisNames().size();
+    if (axisCount == 0)
+    {
+        PrepareForArrayVariable();
+    }
 
     if (!parCoordsAtts.AttributesAreConsistent())
     {
@@ -232,9 +209,6 @@ avtParallelCoordinatesFilter::PreExecute(void)
         return;
     }
 
-    stringVector curAxisVarNames = parCoordsAtts.GetOrderedAxisNames();
-        
-    axisCount = curAxisVarNames.size();
     sendNullOutput = false;
 
     ComputeCurrentDataExtentsOverAllDomains();
@@ -274,30 +248,33 @@ avtParallelCoordinatesFilter::PreExecute(void)
 }
 
 
-// *****************************************************************************
+// ****************************************************************************
 //  Method: avtParallelCoordinatesFilter::PostExecute
 //
-// Purpose: Changes the vis window's spatial extents to match the viewport of
+//  Purpose: Changes the vis window's spatial extents to match the viewport of
 //          the plot's curves.
 //
 //  Programmer: Mark Blair
 //  Creation:   Mon Mar 27 18:24:00 PST 2006
 //
 //  Modifications:
-//     Mark Blair, Fri Feb 23 12:19:33 PST 2007
-//     Axis attribute for outside queries now stored after filter is executed.
+//    Mark Blair, Fri Feb 23 12:19:33 PST 2007
+//    Axis attribute for outside queries now stored after filter is executed.
 //
-//     Jeremy Meredith, Fri Mar 16 13:50:26 EDT 2007
-//     Draw the context, and clean up.
+//    Jeremy Meredith, Fri Mar 16 13:50:26 EDT 2007
+//    Draw the context, and clean up.
 //
-//     Jeremy Meredith, Thu Jan 31 13:56:50 EST 2008
-//     Adapted from Parallel Axis plot and repurposed into this new
-//     Parallel Coordinates plot.
+//    Jeremy Meredith, Thu Jan 31 13:56:50 EST 2008
+//    Adapted from Parallel Axis plot and repurposed into this new
+//    Parallel Coordinates plot.
 //
-//     Jeremy Meredith, Wed Feb  6 16:13:34 EST 2008
-//     About early in the case of earlier errors.
+//    Jeremy Meredith, Wed Feb  6 16:13:34 EST 2008
+//    Abort early in the case of earlier errors.
 //
-// ****************************************************************************
+//    Jeremy Meredith, Thu Feb  7 17:46:59 EST 2008
+//    Handle array variables and bin-defined axis x-positions.
+//
+// ***************************************************************************
 
 void
 avtParallelCoordinatesFilter::PostExecute(void)
@@ -318,8 +295,10 @@ avtParallelCoordinatesFilter::PostExecute(void)
     {
         inAtts.GetTrueSpatialExtents()->CopyTo(spatialExtents);
 
-        spatialExtents[0] = 0.0; spatialExtents[1] = axisCount-1;
-        spatialExtents[2] = 0.0; spatialExtents[3] = 1.0;
+        spatialExtents[0] = axisCount<2 ? 0 : axisXPositions[0];
+        spatialExtents[1] = axisCount<2 ? 1 : axisXPositions[axisCount-1];
+        spatialExtents[2] = 0.0;
+        spatialExtents[3] = 1.0;
 
         outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
     }
@@ -327,8 +306,10 @@ avtParallelCoordinatesFilter::PostExecute(void)
     {
         inAtts.GetCumulativeTrueSpatialExtents()->CopyTo(spatialExtents);
 
-        spatialExtents[0] = 0.0; spatialExtents[1] = axisCount-1;
-        spatialExtents[2] = 0.0; spatialExtents[3] = 1.0;
+        spatialExtents[0] = axisCount<2 ? 0 : axisXPositions[0];
+        spatialExtents[1] = axisCount<2 ? 1 : axisXPositions[axisCount-1];
+        spatialExtents[2] = 0.0;
+        spatialExtents[3] = 1.0;
 
         outAtts.GetCumulativeTrueSpatialExtents()->Set(spatialExtents);
     }
@@ -394,6 +375,9 @@ avtParallelCoordinatesFilter::PostExecute(void)
 //    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
 //    Some more distillation and related cleanup.
 //
+//    Jeremy Meredith, Thu Feb  7 17:46:59 EST 2008
+//    Handle array variables and bin-defined axis x-positions.
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -404,13 +388,6 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     if (in_ds == NULL)
     {
         debug3 << "PCP/aPAF/EDT/1: ParallelCoordinates plot input is NULL." << endl;
-        return NULL;
-    }
-
-    if (varTupleIndices.size() != axisCount)
-    {
-        debug3 << "PCP/aPAF/EDT/2: ParallelCoordinates plot internal data is "
-               << "inconsistent." << endl;
         return NULL;
     }
 
@@ -446,7 +423,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     const std::string pipeVariableName = pipelineVariable;
 
     int axisNum;
-    int tupleCount, tupleNum, varTupleIndex, componentCount;
+    int tupleCount, tupleNum, componentCount;
     int cellVertexCount, vertexNum, valueNum;
     bool arrayIsCellData, dataBadOrMissing;
     std::string arrayName;
@@ -457,26 +434,24 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
     
     std::vector<float *> varArrayValues;
     boolVector           varIsCellData;
-    intVector            varTupleCompIDs;
     intVector            varComponentCounts;
 
     for (axisNum = 0; axisNum < axisCount; axisNum++)
     {
-        if ((varTupleIndex = varTupleIndices[axisNum]) >= 0)
-            arrayName = pipeVariableName;
+        if (isArrayVar)
+            arrayName = pipelineVariable;
         else
-        {
             arrayName = curAxisVarNames[axisNum];
-            varTupleIndex = 0;
-        }
 
         dataArray = in_ds->GetCellData()->GetArray(arrayName.c_str());
-        arrayIsCellData = true; tupleCount = cellCount;
+        arrayIsCellData = true;
+        tupleCount = cellCount;
 
         if (dataArray == NULL)
         {
             dataArray = in_ds->GetPointData()->GetArray(arrayName.c_str());
-            arrayIsCellData = false; tupleCount = pointCount;
+            arrayIsCellData = false;
+            tupleCount = pointCount;
         }
 
         if (dataArray == NULL)
@@ -495,9 +470,12 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             return NULL;
         }
     
-        varArrayValues.push_back((float *)dataArray->GetVoidPointer(0));
+        if (isArrayVar)
+            varArrayValues.push_back(((float *)dataArray->GetVoidPointer(0))
+                                     + axisNum);
+        else
+            varArrayValues.push_back((float *)dataArray->GetVoidPointer(0));
         varIsCellData.push_back(arrayIsCellData);
-        varTupleCompIDs.push_back(varTupleIndex);
         varComponentCounts.push_back(dataArray->GetNumberOfComponents());
     }
     
@@ -526,13 +504,12 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             for (axisNum = 0; axisNum < axisCount; axisNum++)
             {
                 arrayValues     = varArrayValues[axisNum];
-                varTupleIndex   = varTupleCompIDs[axisNum];
                 componentCount  = varComponentCounts[axisNum];
 
                 if (varIsCellData[axisNum])
                 {
                     inputTuple[axisNum] =
-                    arrayValues[tupleNum*componentCount + varTupleIndex];
+                    arrayValues[tupleNum*componentCount];
                 }
                 else
                 {
@@ -543,8 +520,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
 
                     for (vertexNum = 0; vertexNum < cellVertexCount; vertexNum++)
                     {
-                        valueNum = pointIdList->GetId(vertexNum)*componentCount +
-                                   varTupleIndex;
+                        valueNum = pointIdList->GetId(vertexNum)*componentCount;
                         valueSum += arrayValues[valueNum];
                     }
 
@@ -566,11 +542,10 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
             for (axisNum = 0; axisNum < axisCount; axisNum++)
             {
                 arrayValues     = varArrayValues[axisNum];
-                varTupleIndex   = varTupleCompIDs[axisNum];
                 componentCount  = varComponentCounts[axisNum];
 
                 inputTuple[axisNum] =
-                arrayValues[tupleNum*componentCount + varTupleIndex];
+                arrayValues[tupleNum*componentCount];
             }
             
             if (drawLines)
@@ -706,37 +681,66 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 //    Jeremy Meredith, Wed Feb  6 16:14:05 EST 2008
 //    Resize axisMinima and axisMaxima early, just in case.
 //
+//    Jeremy Meredith, Thu Feb  7 17:46:59 EST 2008
+//    Handle array variables and bin-defined axis x-positions.
+//
 // ****************************************************************************
 
 void
 avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
 {
-    stringVector curAxisVarNames = parCoordsAtts.GetOrderedAxisNames();
+    axisXPositions.resize(axisCount);
     axisMinima.resize(axisCount);
     axisMaxima.resize(axisCount);
     
-    if (varTupleIndices.size() != curAxisVarNames.size())
-    {
-        debug3 << "PCP/aPAF/CCDEOAD/1: ParallelCoordinates plot internal data is "
-               << "inconsistent." << endl;
-        sendNullOutput = true;
-        return;
-    }
-
     int axisNum;
-
-    for (axisNum = 0; axisNum < axisCount; axisNum++)
+    if (isArrayVar)
     {
-        std::string axisVarName = curAxisVarNames[axisNum];
+        avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+        int dim = inatts.GetVariableDimension(pipelineVariable);
+        const vector<double> &bins = inatts.GetVariableBinRanges(
+                                                             pipelineVariable);
+        avtExtents *ext = inatts.GetVariableComponentExtents(pipelineVariable);
+        if (!ext || !ext->HasExtents())
+        {
+            debug3 << "PCP/aPAF/CCDEOAD/1: Didn't have array var component "
+                   << "extents." << endl;
+            sendNullOutput = true;
+            return;
+        }
 
-        double varDataExtent[2];
+        double *varDataExtents = new double[dim*2];
+        ext->CopyTo(varDataExtents);
+        for (int i=0; i<dim; i++)
+        {
+            if (bins.size() > i)
+                axisXPositions[i] = (bins[i]+bins[i+1])/2;
+            else
+                axisXPositions[i] = i;
+            axisMinima[i] = varDataExtents[i*2+0];
+            axisMaxima[i] = varDataExtents[i*2+1];
+        }
+
         avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-        GetDataExtents(varDataExtent, axisVarName.c_str());
-        outAtts.GetCumulativeTrueDataExtents(axisVarName.c_str())->Set(varDataExtent);
-        outAtts.SetUseForAxis(axisNum, axisVarName.c_str());
+        outAtts.SetUseForAxis(0, pipelineVariable);
+    }
+    else
+    {
+        stringVector curAxisVarNames = parCoordsAtts.GetOrderedAxisNames();
+        for (axisNum = 0; axisNum < axisCount; axisNum++)
+        {
+            std::string axisVarName = curAxisVarNames[axisNum];
 
-        axisMinima[axisNum] = varDataExtent[0];
-        axisMaxima[axisNum] = varDataExtent[1];
+            double varDataExtent[2];
+            avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+            GetDataExtents(varDataExtent, axisVarName.c_str());
+            outAtts.GetCumulativeTrueDataExtents(axisVarName.c_str())->Set(varDataExtent);
+            outAtts.SetUseForAxis(axisNum, axisVarName.c_str());
+
+            axisXPositions[axisNum] = axisNum;
+            axisMinima[axisNum] = varDataExtent[0];
+            axisMaxima[axisNum] = varDataExtent[1];
+        }
     }
 
     for (axisNum = 0; axisNum < axisMinima.size(); axisNum++)
@@ -879,6 +883,9 @@ avtParallelCoordinatesFilter::InitializeOutputDataSets()
 //    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
 //    Some more distillation and related cleanup.
 //
+//    Jeremy Meredith, Thu Feb  7 17:46:59 EST 2008
+//    Handle array variables and bin-defined axis x-positions.
+//
 // *****************************************************************************
 
 void
@@ -913,7 +920,7 @@ avtParallelCoordinatesFilter::InputDataTuple(const floatVector &inputTuple)
         else if (inputCoord > axisMax)
             inputCoord = axisMax;
 
-        outputCoords[0] = axisID;
+        outputCoords[0] = axisXPositions[axisID];
         outputCoords[1] = (inputCoord-axisMin)/(axisMax-axisMin);
         
         dataCurvePoints->InsertNextPoint(outputCoords);
@@ -1042,6 +1049,10 @@ avtParallelCoordinatesFilter::DrawDataCurves()
 //
 //    Jeremy Meredith, Mon Feb  4 15:46:42 EST 2008
 //    Some more distillation and related cleanup.
+//
+//    Jeremy Meredith, Thu Feb  7 17:48:46 EST 2008
+//    Handle array-bin-defined x positions and empty context-bins.
+//
 // ****************************************************************************
 
 void
@@ -1107,7 +1118,7 @@ avtParallelCoordinatesFilter::DrawContext()
             float val = varmin+part*((varmax-varmin)/float(nparts));
 
             float pt[3];
-            pt[0] = axisNum;
+            pt[0] = axisXPositions[axisNum];
             pt[1] = (val-varmin)/(varmax-varmin);
             pt[2] = 0.0;
             for (int i = 0 ; i < PCP_CTX_BRIGHTNESS_LEVELS ; i++)
@@ -1132,6 +1143,9 @@ avtParallelCoordinatesFilter::DrawContext()
             if (binnedAxisCounts[axis][bin] > maxcount)
                 maxcount = binnedAxisCounts[axis][bin];
         }
+        if (maxcount == 0)
+            continue;
+
         // Draw each bin as a polygon in the appropriately
         // colored (and layered) context polydata
         for (int a=0; a<nparts; a++)
@@ -1249,3 +1263,35 @@ avtParallelCoordinatesFilter::CleanUpPairwiseBins()
 }
 
 
+
+// ****************************************************************************
+//  Method:  avtParallelCoordinatesFilter::PrepareForArrayVariable
+//
+//  Purpose:
+//    Handle the case where our variable is an array variable
+//    (as opposed to being constructed from a bunch of scalars).
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2008
+//
+// ****************************************************************************
+void
+avtParallelCoordinatesFilter::PrepareForArrayVariable()
+{
+    isArrayVar = false;
+
+    avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
+    if (atts.GetVariableType(pipelineVariable) != AVT_ARRAY_VAR)
+        return;
+
+    isArrayVar = true;
+    axisCount = atts.GetVariableDimension(pipelineVariable);
+
+    parCoordsAtts.GetExtentMinima().resize(axisCount, -1e+37);
+    parCoordsAtts.GetExtentMaxima().resize(axisCount, +1e+37);
+
+    return;
+}

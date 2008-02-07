@@ -283,6 +283,9 @@ avtDataAttributes::~avtDataAttributes()
 //    Kathleen Bonnell, Tue Jun 20 16:02:38 PDT 2006
 //    Added plotInfoAtts. 
 //
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
+//
 // ****************************************************************************
 
 void
@@ -341,6 +344,11 @@ avtDataAttributes::DestructSelf(void)
         {
             delete variables[i].cumulativeCurrentData;
             variables[i].cumulativeCurrentData = NULL;
+        }
+        if (variables[i].componentExtents != NULL)
+        {
+            delete variables[i].componentExtents;
+            variables[i].componentExtents = NULL;
         }
     }
     variables.clear();
@@ -445,6 +453,9 @@ avtDataAttributes::DestructSelf(void)
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added new axis array window mode.
 //    Added ability for variables to be associated with an axis.
+//
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
 //
 // ****************************************************************************
 
@@ -699,6 +710,11 @@ avtDataAttributes::Print(ostream &out)
             out << "Cumulative current data = " << endl;
             variables[i].cumulativeCurrentData->Print(out);
         }
+        if (variables[i].componentExtents != NULL)
+        {
+            out << "Component extents = " << endl;
+            variables[i].componentExtents->Print(out);
+        }
     }
 
     out << "Selections Applied: ";
@@ -918,6 +934,9 @@ avtDataAttributes::Print(ostream &out)
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added ability for variables to be associated with an axis.
 //
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
+//
 // ****************************************************************************
 
 void
@@ -985,6 +1004,7 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
         *(variables[i].currentData)           = *(di.variables[i].currentData);
         *(variables[i].cumulativeCurrentData) = 
                                       *(di.variables[i].cumulativeCurrentData);
+        *(variables[i].componentExtents) = *(di.variables[i].componentExtents);
     }
     activeVariable = di.activeVariable;
 
@@ -1142,6 +1162,9 @@ avtDataAttributes::Copy(const avtDataAttributes &di)
 //
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added ability for variables to be associated with an axis.
+//
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
 //
 // ****************************************************************************
 
@@ -1384,6 +1407,8 @@ avtDataAttributes::Merge(const avtDataAttributes &da,
         variables[i].currentData->Merge(*(da.variables[i].currentData));
         variables[i].cumulativeCurrentData->Merge(
                                      *(da.variables[i].cumulativeCurrentData));
+        variables[i].componentExtents->Merge(
+                                        *(da.variables[i].componentExtents));
     }
 
     MergeLabels(da.labels);
@@ -1637,6 +1662,47 @@ avtDataAttributes::GetCumulativeTrueDataExtents(const char *varname)
 
 
 // ****************************************************************************
+//  Method: avtDataAttributes::GetVariableComponentExtents
+//
+//  Purpose:
+//      Gets the component extents for an array variable.
+//
+//  Arguments:
+//      varname  The variable to get the extents for.  If this argument is
+//               NULL, then the extents for the active variable will be 
+//               returned.
+//
+//  Returns:     the extents object for varname.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  7, 2008
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtExtents *
+avtDataAttributes::GetVariableComponentExtents(const char *varname)
+{
+    int index = VariableNameToIndex(varname);
+    if (index < 0)
+    {
+        //
+        // We were asked to set the variable dimension of a non-existent
+        // variable.
+        //
+        const char *varname_to_print = (varname != NULL ? varname
+                                         : "<null>");
+        string reason = "Attempting to retrieve data extents of non-existent ";
+        reason = reason +  " variable: " + varname_to_print + ".\n";
+        EXCEPTION1(ImproperUseException, reason);
+    }
+
+    return variables[index].componentExtents;
+}
+
+
+// ****************************************************************************
 //  Method: avtDataAttributes::GetEffectiveDataExtents
 //
 //  Purpose:
@@ -1885,6 +1951,9 @@ avtDataAttributes::SetSpatialDimension(int td)
 //    Hank Childs, Wed Dec  1 15:29:56 PST 2004
 //    Make sure varname is non-NULL, or we'll crash.
 //
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
+//
 // ****************************************************************************
 
 void
@@ -1940,6 +2009,12 @@ avtDataAttributes::SetVariableDimension(int vd, const char *varname)
         delete variables[index].cumulativeCurrentData;
     }
     variables[index].cumulativeCurrentData = new avtExtents(1);
+
+    if (variables[index].componentExtents != NULL)
+    {
+        delete variables[index].componentExtents;
+    }
+    variables[index].componentExtents = new avtExtents(vd);
 }
 
 
@@ -2507,6 +2582,9 @@ avtDataAttributes::SetTime(double d)
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added ability for variables to be associated with an axis.
 //
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
+//
 // ****************************************************************************
 
 void
@@ -2605,6 +2683,7 @@ avtDataAttributes::Write(avtDataObjectString &str,
         variables[i].effectiveData->Write(str, wrtr);
         variables[i].currentData->Write(str, wrtr);
         variables[i].cumulativeCurrentData->Write(str, wrtr);
+        variables[i].componentExtents->Write(str, wrtr);
     }
 
     wrtr->WriteInt(str, meshname.size());
@@ -2785,6 +2864,9 @@ avtDataAttributes::Write(avtDataObjectString &str,
 //
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added ability for variables to be associated with an axis.
+//
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
 //
 // ****************************************************************************
 
@@ -3046,6 +3128,8 @@ avtDataAttributes::Read(char *input)
         s = variables[i].currentData->Read(input);
         input += s; size += s;
         s = variables[i].cumulativeCurrentData->Read(input);
+        input += s; size += s;
+        s = variables[i].componentExtents->Read(input);
         input += s; size += s;
     }
     delete [] varDims;
@@ -3646,6 +3730,9 @@ avtDataAttributes::SetActiveVariable(const char *v)
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added ability for variables to be associated with an axis.
 //
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
+//
 // ****************************************************************************
 
 void
@@ -3681,6 +3768,7 @@ avtDataAttributes::AddVariable(const std::string &s, const std::string &units)
     new_var.currentData = NULL;
     new_var.cumulativeCurrentData = NULL;
     new_var.useForAxis = -1;
+    new_var.componentExtents = NULL;
     variables.push_back(new_var);
 }
 
@@ -4601,6 +4689,11 @@ avtDataAttributes::SetPlotInfoAtts(const PlotInfoAttributes *pia)
 //    Jeremy Meredith, Thu Jan 31 14:41:50 EST 2008
 //    Added ability for variables to be associated with an axis.
 //
+//    Jeremy Meredith, Thu Feb  7 17:52:59 EST 2008
+//    Added component extents for array variables.
+//    Also display subnames for array variables.
+//    Added support for arbitrarily large numbers of dimensions for extents.
+//
 // ****************************************************************************
 
 static const char *
@@ -4617,17 +4710,25 @@ YesOrNo(bool b)
 static void ExtentsToString(avtExtents *exts, char *str)
 {
     int dim = exts->GetDimension();
-    double e[6];
+    double *e = new double[dim*2];
     exts->CopyTo(e);
     if (!exts->HasExtents())
         strcpy(str, "not set");
-    else if (dim == 1)
-       sprintf(str, "(%e -> %e)", e[0], e[1]);
-    else if (dim == 2)
-       sprintf(str, "(%e -> %e, %e -> %e)", e[0], e[1], e[2], e[3]);
     else
-       sprintf(str, "(%e -> %e, %e -> %e, %e -> %e)",
-                   e[0],e[1],e[2],e[3],e[4],e[5]);
+    {
+        strcpy(str, "(");
+        char tmp[1000];
+        for (int i=0; i<dim; i++)
+        {
+            sprintf(tmp, "%e -> %e", e[i*2+0], e[i*2+1]);
+            strcat(str, tmp);
+            if (i<dim-1)
+                strcat(str, ", ");
+            else
+                strcat(str, ")");
+        }
+    }
+    delete[] e;
 }
 
 
@@ -4820,6 +4921,17 @@ avtDataAttributes::DebugDump(avtWebpage *webpage)
             webpage->AddTableEntry3(NULL, "Current data extents", str);
             ExtentsToString(variables[i].cumulativeCurrentData, str);
             webpage->AddTableEntry3(NULL, "Cumulative current data extents", str);
+            ExtentsToString(variables[i].componentExtents, str);
+            webpage->AddTableEntry3(NULL, "Component extents", str);
+            if (variables[i].subnames.size() != 0)
+            {
+                for (int j = 0 ; j < variables[i].subnames.size() ; j++)
+                {
+                    sprintf(str, "Variable subname[%d]", j);
+                    webpage->AddTableEntry3(NULL, str,
+                                            variables[i].subnames[j].c_str());
+                }
+            }
         }
         webpage->EndTable();
     }

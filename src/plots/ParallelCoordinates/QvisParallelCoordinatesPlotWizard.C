@@ -68,13 +68,35 @@
 // Creation:   Mon Jun 19 15:16:00 PDT 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb  7 12:58:15 EST 2008
+//    A wizard is needed because you can't reset the default plot attributes
+//    without a wizard's accept action having been called.  If you don't, then
+//    you'll have the wrong number of axes defined in the plot attributes.
+//    As such, I extended the wizard to support a "no-op" mode.
 //   
 // ****************************************************************************
 
-QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(AttributeSubject *s,
-    QWidget *parent, const std::string &varName, const char *name) :
-    QvisWizard(s, parent, name)
+QvisParallelCoordinatesPlotWizard::QvisParallelCoordinatesPlotWizard(
+    AttributeSubject *s, QWidget *parent, const std::string &varName,
+    bool doNothing, const char *name) : QvisWizard(s, parent, name)
 {
+    for (int pageNum = 0; pageNum < MAX_WIZARD_SELECTABLE_AXES*2 - 2; pageNum++)
+        pages[pageNum] = NULL;
+    for (int groupNum = 0; groupNum < MAX_WIZARD_SELECTABLE_AXES - 2; groupNum++)
+        yesNoButtonGroups[groupNum] = NULL;
+
+
+    if (doNothing)
+    {
+        parAxisAtts->ResetAxes();
+        CreateFinishPage(&pages[0], NULL, "The plot has successfully been "
+                         "defined by use of an array variable.");
+        addPage(pages[0], "Click Finish");
+        setHelpEnabled(pages[0], false);
+        setFinishEnabled(pages[0], true);
+        return;    
+    }
+
     InitializeParallelCoordinatesAttributes(varName);
     
     axisVarNames[0] = varName;
@@ -355,6 +377,8 @@ QvisParallelCoordinatesPlotWizard::CreateAxisYesNoPage(QFrame **f, QvisParallelC
 // Creation:   Mon Jun 19 15:16:00 PDT 2006
 //
 // Modifications:
+//    Jeremy Meredith, Thu Feb  7 12:59:42 EST 2008
+//    Allow either the widget or prompt text to be NULL.
 //   
 // ****************************************************************************
 
@@ -371,17 +395,23 @@ QvisParallelCoordinatesPlotWizard::CreateFinishPage(QFrame **f,
     QHBoxLayout *pageLRLayout = new QHBoxLayout(frameinnerLayout);
     pageLRLayout->setSpacing(10);
 
-    QvisParallelCoordinatesWidget *thumbnail =
-        new QvisParallelCoordinatesWidget(frame, "thumbnail");
-    *s = thumbnail;
-    pageLRLayout->addWidget(thumbnail);
-    pageLRLayout->addSpacing(10); // or a line?
+    if (s)
+    {
+        QvisParallelCoordinatesWidget *thumbnail =
+            new QvisParallelCoordinatesWidget(frame, "thumbnail");
+        *s = thumbnail;
+        pageLRLayout->addWidget(thumbnail);
+        pageLRLayout->addSpacing(10); // or a line?
+    }
 
-    QVBoxLayout *pageRLayout = new QVBoxLayout(pageLRLayout);
-    pageRLayout->setSpacing(10);
-    QLabel *prompt = new QLabel(promptText, frame, "prompt");
-    pageRLayout->addWidget(prompt);
-    pageRLayout->addStretch(10);
+    if (promptText)
+    {
+        QVBoxLayout *pageRLayout = new QVBoxLayout(pageLRLayout);
+        pageRLayout->setSpacing(10);
+        QLabel *prompt = new QLabel(promptText, frame, "prompt");
+        pageRLayout->addWidget(prompt);
+        pageRLayout->addStretch(10);
+    }
 }
 
 

@@ -116,6 +116,9 @@ class     vtkDataArray;
 //    Hank Childs, Sun Jan 13 14:36:38 PST 2008
 //    Added CExpandSingletonConstants.
 //
+//    Jeremy Meredith, Thu Feb  7 17:54:34 EST 2008
+//    Added GetDataAllComponentsRange.
+//
 // ****************************************************************************
 
 //
@@ -155,6 +158,9 @@ PIPELINE_API void CInsertRectilinearTransformInfoIntoDataset(
 
 PIPELINE_API void GetDataRange(vtkDataSet *, double *, const char *, 
                                bool ignoreGhost = false);
+PIPELINE_API void GetDataAllComponentsRange(vtkDataSet *, double *,
+                                            const char *,
+                                            bool ignoreGhost = false);
 PIPELINE_API double MajorEigenvalue(float *);
 PIPELINE_API double MajorEigenvalue(double *);
 
