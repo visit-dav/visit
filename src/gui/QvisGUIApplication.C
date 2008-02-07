@@ -187,6 +187,7 @@
 #define REMOVE_CRASH_RECOVERY_TAG 105
 #define CLEAR_STATUS_TAG          106
 #define INITIALIZE_SESSIONDIR_TAG 107
+#define DELAYED_LOAD_FILE_TAG     108
 
 #define WINDOW_FILE_SELECTION    0
 #define WINDOW_FILE_INFORMATION  1
@@ -1239,6 +1240,9 @@ QvisGUIApplication::Synchronize(int tag)
 //   Brad Whitlock, Thu Jan 31 12:47:09 PST 2008
 //   Added code to remove the crash recovery file.
 //
+//   Brad Whitlock, Wed Feb  6 16:59:40 PST 2008
+//   Added code to load a file later.
+//
 // ****************************************************************************
 
 void
@@ -1287,6 +1291,11 @@ QvisGUIApplication::HandleSynchronize(int val)
         else
             sessionDir = std::string(QString(QDir(".").absPath() + SLASH_STRING).latin1());
         debug5 << "Session dir: " << sessionDir.c_str() << endl;
+    }
+    else if(val == DELAYED_LOAD_FILE_TAG)
+    {
+        // Deferred from FinalInitialization
+        LoadFile(loadFile, true);
     }
 }
 
@@ -1400,6 +1409,10 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Brad Whitlock, Thu Jan 31 10:51:02 PST 2008
 //   Added code to restore the crash recovery file and fixed timings.
 //
+//   Brad Whitlock, Wed Feb  6 17:00:14 PST 2008
+//   Changed so the -o file is not loaded if there is a .visitrc file until
+//   later when the viewer is totally done.
+//
 // ****************************************************************************
 
 void
@@ -1467,6 +1480,12 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 4 - Hiding splashscreen");
         break;
     case 5:
+        // If the visitrc file exists then make sure that we load the CLI.
+        if(QFile(GetUserVisItRCFile().c_str()).exists())
+            Interpret("");
+        visitTimer->StopTimer(timeid, "stage 5 - Check for visitrc file.");
+        break;
+    case 6:
         // Load the initial data file.
         if(!loadFile.Empty() && !sessionFile.isEmpty())
         {
@@ -1474,51 +1493,56 @@ QvisGUIApplication::FinalInitialization()
                     "files specified with the -o argument are ignored.");
         }
         else
-            LoadFile(loadFile, true);
-        visitTimer->StopTimer(timeid, "stage 5 - LoadFile");
+        {
+            if(QFile(GetUserVisItRCFile().c_str()).exists())
+            {
+                // We load the file later because it gives the user's .visitrc
+                // file a chance to take effect, giving any callback functions
+                // registered for OpenDatabaseRPC a chance to get set before
+                // we actually execute the OpenDatabaseRPC.
+                Synchronize(DELAYED_LOAD_FILE_TAG);
+            }
+            else
+                LoadFile(loadFile, true);
+        }
+        visitTimer->StopTimer(timeid, "stage 6 - LoadFile");
         break;
-    case 6:
+    case 7:
         {
         stringVector noFiles;
         // Load the initial session file.
         RestoreSessionFile(sessionFile, noFiles);
-        visitTimer->StopTimer(timeid, "stage 6 - RestoreSessionFile");
+        visitTimer->StopTimer(timeid, "stage 7 - RestoreSessionFile");
         }
         break;
-    case 7:
+    case 8:
         // Create a timer that will send keep alive signals to the mdservers
         // every 5 minutes.
         keepAliveTimer = new QTimer(this, "keepAliveTimer");
         connect(keepAliveTimer, SIGNAL(timeout()),
                 this, SLOT(SendKeepAlives()));
         keepAliveTimer->start(5 * 60 * 1000);
-        visitTimer->StopTimer(timeid, "stage 7 - Create keepalive");
+        visitTimer->StopTimer(timeid, "stage 8 - Create keepalive");
         break;
-    case 8:
+    case 9:
 #ifdef Q_WS_MACX
         // In the MacOS X version, show the main window last because it 
         // trims off about 1.5 seconds off of the launch.
         mainWin->show();
 #endif
         allowSocketRead = true;
-        visitTimer->StopTimer(timeid, "stage 8");
+        visitTimer->StopTimer(timeid, "stage 9");
         break;
-    case 9:
+    case 10:
 #ifdef Q_WS_MACX
         // On MacOS X, we hide the splashscreen last thing so we are very
         // near 100% likely to get the GUI's menu in the main Mac menu.
         if(splash)
             splash->hide();
-        visitTimer->StopTimer(timeid, "stage 9 - Hiding splashscreen");
+        visitTimer->StopTimer(timeid, "stage 10 - Hiding splashscreen");
 #else
-        visitTimer->StopTimer(timeid, "stage 9 - no op");
+        visitTimer->StopTimer(timeid, "stage 10 - no op");
 #endif
-        break;
-    case 10:
-        // If the visitrc file exists then make sure that we load the CLI.
-        if(QFile(GetUserVisItRCFile().c_str()).exists())
-            Interpret("");
-        visitTimer->StopTimer(timeid, "stage 10 - Check for visitrc file.");
         break;
     case 11:
         // Show the release notes if this is the first time that the
