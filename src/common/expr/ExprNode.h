@@ -99,6 +99,9 @@ class Pos;
 //    Changed get GetLeaves to return a vector b/c stl::set sorts
 //    entries alphabetically causing problems when parsing apply_ddf.
 //
+//    Jeremy Meredith, Wed Feb  6 15:56:05 EST 2008
+//    Added a couple accessor methods for functions.
+//
 // ****************************************************************************
 class EXPR_API ExprNode : public ExprParseTreeNode
 {
@@ -327,6 +330,8 @@ class EXPR_API FunctionExpr : public virtual ExprNode
     virtual std::vector<std::string> GetVarLeaves();
     virtual std::set<ExprParseTreeNode *> GetVarLeafNodes();
     virtual const std::string GetTypeName() { return "Function"; }
+    std::string GetName() { return name; }
+    ArgsExpr *GetArgsExpr() { return args; }
   protected:
     std::string name;
     ArgsExpr   *args;
