@@ -300,6 +300,9 @@
 #     Thomas R. Treadway, Thu Feb  7 16:58:19 PST 2008
 #     Corrected the ccmio build for x86_64
 #     
+#     Thomas R. Treadway, Fri Feb  8 15:30:08 PST 2008
+#     Added David Bremer's patch for fixing QT's OpenGL path problems.
+#     
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -2358,6 +2361,42 @@ EOF
              mkspecs/${QT_PLATFORM}/qmake.conf.orig
              mv -f tmp.conf mkspecs/${QT_PLATFORM}/qmake.conf
           fi
+       fi
+    fi
+    # A couple of people, including myself, have run into a problem
+    # lately in which OpenGL libraries are installed in a place that
+    # Qt isn't expecting.  Qt compiles itself without OpenGL support,
+    # and that leads to linker problems during the visit build.
+    # 
+    # If you see libGL.so installed under /usr/lib64, and not in
+    # /usr/lib or /usr/X11R6/lib, then you have this problem, and
+    # can do this to fix it:
+    if [[ "$QT_PLATFORM" == "linux-g++-64" ]] ; then
+       if [[ -e /usr/lib64/libGL.so && ! -e /usr/lib/libGL.so &&
+          ! -e /usr/X11R6/lib/libGL.so ]] ; then
+          echo "Fixing OpenGLs path to /usr/lib64"
+          patch -p0 <<\EOF
+diff -rp qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test qt-x11-free-3.3.8/config.tests/x11/opengl.test
+*** qt-x11-free-3.3.8.orig/config.tests/x11/opengl.test	Mon Jun 16 01:50:04 2003
+--- qt-x11-free-3.3.8/config.tests/x11/opengl.test	Fri Feb  8 15:20:03 2008
+*************** done
+*** 30,36 ****
+  LIBS=`sed -n -e '/^QMAKE_LIBS_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; s/-l/ /g; p; }' $XCONFIG`
+  GLDIRS=`sed -n -e '/^QMAKE_LIBDIR_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
+  XDIRS=`sed -n -e '/^QMAKE_LIBDIR_X11[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
+! LIBDIRS="$IN_LIBDIRS $GLDIRS $XDIRS /usr/shlib /usr/lib /lib"
+  for L in $LIBS; do
+      FOUND_LIB=
+      F=
+--- 30,36 ----
+  LIBS=`sed -n -e '/^QMAKE_LIBS_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; s/-l/ /g; p; }' $XCONFIG`
+  GLDIRS=`sed -n -e '/^QMAKE_LIBDIR_OPENGL[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
+  XDIRS=`sed -n -e '/^QMAKE_LIBDIR_X11[	 ]*=/ { s/[^=]*=[	 ]*//; p; }' $XCONFIG`
+! LIBDIRS="$IN_LIBDIRS $GLDIRS $XDIRS /usr/shlib /usr/lib64 /lib"
+  for L in $LIBS; do
+      FOUND_LIB=
+      F=
+EOF
        fi
     fi
 
