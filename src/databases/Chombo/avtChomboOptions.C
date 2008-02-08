@@ -68,6 +68,8 @@ GetChomboReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
     rv->SetBool("Use ghost data (if present)", true);
+    rv->SetBool("Enable only root level by default", false);
+    rv->SetBool("Enable only explicitly defined materials by default", false);
     return rv;
 }
 

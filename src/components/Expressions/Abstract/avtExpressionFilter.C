@@ -43,6 +43,7 @@
 #include <avtExpressionFilter.h>
 
 #include <math.h>
+#include <cmath>
 #include <float.h>
 
 #include <vtkCellData.h>
@@ -273,6 +274,9 @@ avtExpressionFilter::PostExecute(void)
 //    Thomas R. Treadway, Fri Dec  1 14:03:54 PST 2006
 //    Added check for GhostNodes in addition to the GhostZones
 //
+//    Gunther H. Weber, Fri Feb  1 11:38:37 PST 2008
+//    Ignore nan, -inf and +inf
+//
 //    Jeremy Meredith, Thu Feb  7 18:02:12 EST 2008
 //    Added support for updating the component extents of array variables.
 //
@@ -350,7 +354,13 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
                 // This function is found in avtCommonDataFunctions.
                 value = MajorEigenvalue(val);
             // else ... we handle array variables below
-    
+
+            if(!std::isfinite(value))
+            {
+                // Ignore nan, -inf, and inf
+                continue;
+            }
+
             if (value < exts[0])
                 exts[0] = value;
             if (value > exts[1])

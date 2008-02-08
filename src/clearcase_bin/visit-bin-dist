@@ -318,6 +318,12 @@
 #    Brad Whitlock, Mon Dec 10 14:19:45 PST 2007
 #    Added visitprotocol.
 #
+#    Gunther H. Weber, Thu Feb  7 14:45:22 PST 2008
+#    Added a "-configuration" option that specifies which configuration
+#    referenced by the default configuration symbolic link. Check for a
+#    default guiconfig and visitrc as well and add symbolic links as
+#    necessary. If no "-configuration" option is specified then default to
+#    the "open" configuration as before.
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -336,6 +342,7 @@ set ArchGiven = "FALSE"
 set Strip = "TRUE"
 set Make = "make"
 set Help = "FALSE"
+set Configuration = "open"
 
 #
 # Parse the argument list.
@@ -419,6 +426,11 @@ while ($#argv >= 1)
                set ArchGiven = TRUE
                breaksw
 
+      case -configuration:
+               shift
+               set Configuration = $1
+               breaksw
+ 
       default:
                echo " "
                echo ">>>>>>>>>>  Illegal option $1  <<<<<<<<<<"
@@ -1292,7 +1304,26 @@ cp $VisItDir/clearcase_bin/visit-config-closed $verdir/.visit
 cp $VisItDir/clearcase_bin/visit-config-nersc  $verdir/.visit
 cp $VisItDir/clearcase_bin/visit-config-open   $verdir/.visit
 cp $VisItDir/clearcase_bin/visit-config-ornl   $verdir/.visit
-ln -s visit-config-open $verdir/.visit/config
+cp $VisItDir/clearcase_bin/visit-config-anag   $verdir/.visit
+if (-e $verdir/.visit/visit-config-$Configuration) then
+    ln -s visit-config-$Configuration $verdir/.visit/config
+endif
+
+#
+# Copy the guiconfig files
+#
+cp $VisItDir/clearcase_bin/visit-guiconfig-anag $verdir/.visit
+if (-e $verdir/.visit/visit-guiconfig-$Configuration) then
+    ln -s visit-guiconfig-$Configuration $verdir/.visit/guiconfig
+endif
+
+#
+# Copy the visitrc files.
+#
+cp $VisItDir/clearcase_bin/visit-visitrc-anag   $verdir/.visit
+if (-e $verdir/.visit/visit-visitrc-$Configuration) then
+    ln -s visit-visitrc-$Configuration $verdir/.visit/visitrc
+endif
 
 #
 # Strip the executables and shared libraries.

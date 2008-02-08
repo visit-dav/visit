@@ -190,6 +190,10 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Thu Dec 20 11:05:48 PST 2007
 //   Added methods to make recreating the plot menu easier.
 //
+//   Gunther H. Weber, Mon Jan 28 15:35:16 PST 2008
+//   Split "Apply operators and selections ..." checkbox into an apply
+//   operators and an apply selection checkbox.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QWidget, public GUIBase,
@@ -265,6 +269,7 @@ private slots:
     void addPlotHelper(int plotType, const QString &varName);
     void operatorAction(int);
     void applyOperatorToggled(bool val);
+    void applySelectionToggled(bool val);
     void sourceChanged(int);
 
 private:
@@ -280,6 +285,7 @@ private:
     QPushButton             *deleteButton;
     QPushButton             *drawButton;
     QCheckBox               *applyOperatorToggle;
+    QCheckBox               *applySelectionToggle;
     QPopupMenu              *WindowChoiceMenu;  
     QAction                 *win1Act;
     QAction                 *win2Act;

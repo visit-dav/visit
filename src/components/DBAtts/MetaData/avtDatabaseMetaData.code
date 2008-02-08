@@ -3588,3 +3588,25 @@ avtDatabaseMetaData::GetCycleFromFilenameRegex()
     return cycleFromFilenameRegex;
 }
 
+Function: AddDefaultSILRestrictionDescription
+Declaration: void AddDefaultSILRestrictionDescription(const std::string&);
+Definition:
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::AddDefaultSILRestrictionDescription
+//
+//  Purpose: Add a string to the description of a suggested default SIL
+//           restriction. This string should be "!TurnAllOn", "TurnAllOf",
+//           "+<SIL set name>" or "-<SIL set name>".
+//
+//  Programmer: Gunther H. Weber
+//  Creation:   February 04, 2008
+//
+// ****************************************************************************
+
+void
+avtDatabaseMetaData::AddDefaultSILRestrictionDescription(const std::string& setName)
+{
+    suggestedDefaultSILRestriction.push_back(setName);
+    Select(ID_suggestedDefaultSILRestriction, (void *)&suggestedDefaultSILRestriction);
+}
+

@@ -1413,6 +1413,10 @@ QvisGUIApplication::ClientMethodCallback(Subject *s, void *data)
 //   Changed so the -o file is not loaded if there is a .visitrc file until
 //   later when the viewer is totally done.
 //
+//   Gunther H. Weber, Wed Feb  6 18:12:43 PST 2008
+//   If no local settings exist, create visible windows based on global
+//   options. Added check for global visitrc file.
+//
 // ****************************************************************************
 
 void
@@ -1456,7 +1460,10 @@ QvisGUIApplication::FinalInitialization()
         // to the config file.
         //
         SplashScreenProgress("Creating visible windows...", 90);
-        CreateInitiallyVisibleWindows(localSettings);
+        if (localSettings)
+            CreateInitiallyVisibleWindows(localSettings);
+        else
+            CreateInitiallyVisibleWindows(systemSettings);
         visitTimer->StopTimer(timeid, "stage 1 - Creating visible windows");
         break;
     case 2:
@@ -1481,7 +1488,8 @@ QvisGUIApplication::FinalInitialization()
         break;
     case 5:
         // If the visitrc file exists then make sure that we load the CLI.
-        if(QFile(GetUserVisItRCFile().c_str()).exists())
+        if(QFile(GetSystemVisItRCFile().c_str()).exists() ||
+           QFile(GetUserVisItRCFile().c_str()).exists())
             Interpret("");
         visitTimer->StopTimer(timeid, "stage 5 - Check for visitrc file.");
         break;

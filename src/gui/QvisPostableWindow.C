@@ -401,12 +401,15 @@ QvisPostableWindow::raise()
 //   Brad Whitlock, Mon Nov 14 10:37:57 PDT 2005
 //   Added code to disable posting if it's not enabled.
 //
+//   Gunther H. Weber, Fri Jan 18 10:16:48 PST 2008
+//   Added check to prevent posting when window is already posted.
+//
 // ****************************************************************************
 
 void
 QvisPostableWindow::post()
 {
-    if(notepad)
+    if(!isPosted && notepad)
     {
         if(!isCreated)
         {

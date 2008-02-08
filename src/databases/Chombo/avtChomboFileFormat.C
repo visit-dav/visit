@@ -101,8 +101,15 @@ avtChomboFileFormat::avtChomboFileFormat(const char *filename,
 {
     initializedReader = false;
     useGhosts = true;
+    enableOnlyRootLevel = true;
+    enableOnlyExplicitMaterials = true;
     if (atts != NULL)
+    {
         useGhosts = atts->GetBool("Use ghost data (if present)");
+        enableOnlyRootLevel = atts->GetBool("Enable only root level by default");
+        enableOnlyExplicitMaterials = atts->GetBool("Enable only explicitly defined materials by default");
+    }
+
     file_handle = -1;
     dtime = 0.;
     cycle = 0;
@@ -1238,6 +1245,28 @@ avtChomboFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         md->AddExpression(*it);
     }
 
+    //
+    // Add information about SIL restrictions
+    //
+    if (enableOnlyRootLevel || enableOnlyExplicitMaterials)
+    {
+        if (enableOnlyRootLevel)
+        {
+            md->AddDefaultSILRestrictionDescription(std::string("!TurnOffAll"));
+            md->AddDefaultSILRestrictionDescription(std::string("+level0"));
+        }
+        else
+        {
+            md->AddDefaultSILRestrictionDescription(std::string("!TurnOnAll"));
+        }
+        if (enableOnlyExplicitMaterials && nMaterials > 1)
+        {
+            char str[32];
+            sprintf(str, "-mat%d", nMaterials);
+            md->AddDefaultSILRestrictionDescription(std::string(str));
+        }
+    }
+
     md->SetTime(timestep, dtime);
     md->SetCycle(timestep, cycle);
 }
@@ -1632,10 +1661,6 @@ avtChomboFileFormat::GetVar(int patch, const char *varname)
         amt *= hsize_t(hiK[patch]-lowK[patch])+2*numGhostK;
     start += amt*varIdx;
 
-    //std::cout << "Computed offsets into Chombo HDF5 file: patch=" << patch
-        //<< " local_patch=" << local_patch << " patchStart=" << patchStart
-        //<< " varIdx=" << varIdx << " start=" << start << " amt=" << amt << std::endl;
-
     if (amt > std::numeric_limits<vtkIdType>::max())
     {
         EXCEPTION1(InvalidFilesException, "Grid contains more cells than installed "
@@ -1893,7 +1918,7 @@ avtChomboFileFormat::GetMaterial(const char *var, int patch,
 
     for(unsigned int cellNo = 0; cellNo < nCells; ++cellNo)
     {
-	float frac = 1.0;
+	double frac = 1.0;
 	for (int matNo = 0; matNo < nMaterials - 1; ++matNo)
 	    frac -= mats[matNo][cellNo];
 	addMatPtr[cellNo] = frac;

@@ -110,6 +110,7 @@ UTILITY_API char *      GetDefaultConfigFile(const char *filename = 0, const cha
 UTILITY_API char *      GetSystemConfigFile(const char *filename = 0);
 
 std::string UTILITY_API GetUserVisItRCFile();
+std::string UTILITY_API GetSystemVisItRCFile();
 
 int         UTILITY_API ConfigStateGetRunCount(ConfigStateEnum &code);
 void        UTILITY_API ConfigStateIncrementRunCount(ConfigStateEnum &code);

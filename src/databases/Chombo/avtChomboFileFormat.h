@@ -142,7 +142,7 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     int                    nMaterials;
     double                 dtime;
     int                    cycle;
-    int                    max_level;
+    //int                    max_level;
     int                    num_levels;
     std::vector<int>       numGhosts;
     std::vector<int>       patchesPerLevel;
@@ -150,6 +150,8 @@ class avtChomboFileFormat : public avtSTMDFileFormat
     std::vector<double>    dx;
     std::list<Expression*> expressions;
     bool                   useGhosts;
+    bool                   enableOnlyRootLevel;
+    bool                   enableOnlyExplicitMaterials;
 
     std::vector<int>       lowProbI;
     std::vector<int>       hiProbI;

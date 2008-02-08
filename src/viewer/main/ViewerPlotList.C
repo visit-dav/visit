@@ -64,7 +64,7 @@
 #include <PlotPluginManager.h>
 #include <RecursiveExpressionException.h>
 #include <SILRestrictionAttributes.h>
-
+#include <GlobalAttributes.h>
 
 #include <ViewerEngineManager.h>
 #include <ParsingExprList.h>
@@ -4752,6 +4752,17 @@ ViewerPlotList::OverlayDatabase(const EngineKey &ek,
 //   variable into the ParsingExprList code because it was duplicated in other
 //   spots of the code, and this function had the best implementation of it.
 //
+//   Gunther H. Weber, Thu Feb  7 14:33:37 PST 2008
+//   Take a stringVector from the database that describes which SILs should
+//   be enabled by default. This stringVector consists of the commands
+//   "!TurnOnAll", "!TurnOffAll" (which only make sense as first entry) and
+//   a list of "+<SIL set name>" and "-<SIL set name>" to enable/disable
+//   SIL sets by their name. This functionality was added mainly for the
+//   Chombo plugin, so that it can have plots default only to the root
+//   level of an AMR hierarchy and disable the "implicit" material (i.e., the
+//   material used to fill up the remainder material fraction, since material
+//   fractions in a Chombo file will not add up to 100%).
+//
 // ****************************************************************************
 
 avtSILRestriction_p
@@ -4835,22 +4846,125 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
     //
     std::string key(SILRestrictionKey(host, database, topSet));
     SILRestrictionMap::iterator pos = SILRestrictions.find(key);
-    if (pos == SILRestrictions.end())
+    debug5 << "ViewerPlotList::GetDefaultSILRestriction(): Trying to find SIL ";
+    debug5 << "restriction for key: " << key << std::endl;
+    if (pos == SILRestrictions.end() || returnDefault)
     {
+        debug5 << "Key not found or returnDefault flag set." << std::endl;
+
         // Create a new SIL restriction that is based on the SIL and put it
         // in the default SIL restrictions.
-        SILRestrictions[key] = new avtSILRestriction((avtSIL *)sil);
+        avtSILRestriction_p tmpSilr = new avtSILRestriction((avtSIL *)sil);
+
+        stringVector defaultSILRestrictionFromDatabase =
+            md->GetSuggestedDefaultSILRestriction();
+
+        if (defaultSILRestrictionFromDatabase.size())
+        {
+            debug5 << "Making the following changes to SIL restriction: ";
+            for (stringVector::iterator it = defaultSILRestrictionFromDatabase.begin();
+                    it != defaultSILRestrictionFromDatabase.end(); ++it)
+                debug5 << *it << " ";
+            debug5 << std::endl;
+
+            // Set top set
+	    tmpSilr->SetTopSet(topSet);
+
+            // Storage for SIL set indices
+            int idx[defaultSILRestrictionFromDatabase.size()];
+
+            // Initialize to '-1' so that we can spot errors
+            for (int i=0; i<defaultSILRestrictionFromDatabase.size(); ++i)
+            {
+                idx[i] = -1;
+            }
+
+            // Find indices for SIL sets
+            const std::vector<int> &mapsOut =
+                tmpSilr->GetSILSet(topSet)->GetRealMapsOut();
+            for (int i = 0 ; i < mapsOut.size() ; i++)
+            {
+                avtSILCollection_p coll = tmpSilr->GetSILCollection(mapsOut[i]);
+                const vector<int> &subsets = coll->GetSubsetList();
+                for (int j = 0 ;j<subsets.size() ; j++)
+                    for (stringVector::iterator it = defaultSILRestrictionFromDatabase.begin();
+                            it != defaultSILRestrictionFromDatabase.end(); ++it)
+                            if (((*it)[0] == '+' || (*it)[0] == '-') &&  // entry references a sil set name?
+                                it->substr(1) == tmpSilr->GetSILSet(subsets[j])->GetName()) // name matches?
+                            {
+                                debug5 << "Index for " << it->substr(1) << " is ";
+                                debug5 << subsets[j] << std::endl;
+                                idx[it - defaultSILRestrictionFromDatabase.begin()] = subsets[j];
+                                break;
+                            }
+            }
+
+            // Perform SIL restrictions in order
+            for (stringVector::iterator it = defaultSILRestrictionFromDatabase.begin();
+                    it != defaultSILRestrictionFromDatabase.end(); ++it)
+            {
+                switch ((*it)[0])
+                {
+                    case '!':
+                        if (it->substr(1) == "TurnOnAll")
+                        {
+                            debug5 << "TurnOnAll" << std::endl;
+                            tmpSilr->TurnOnAll();
+                        }
+                        else if (it->substr(1) == "TurnOffAll")
+                        {
+                            debug5 << "TurnIffAll" << std::endl;
+                            tmpSilr->TurnOffAll();
+                        }
+                        else
+                        {
+                            debug1 << "Invalid SILR command from database ";
+                            debug1 << it->substr(1) << std::endl;
+                        }
+                        break;
+                    case '+':
+                        if (idx[it - defaultSILRestrictionFromDatabase.begin()] != -1)
+                        {
+                            debug5 << "Turning on set " << idx[it -
+                                defaultSILRestrictionFromDatabase.begin()] << std::endl;
+                            tmpSilr->TurnOnSet(idx[it -
+                                    defaultSILRestrictionFromDatabase.begin()]);
+                        }
+                        else
+                        {
+                            debug1 << "Did not find set name " << it->substr(1);
+                            debug1 << std::endl;
+                        }
+                        break;
+                    case '-':
+                        if (idx[it - defaultSILRestrictionFromDatabase.begin()] != -1)
+                        {
+                            debug5 << "Turning off set " << idx[it -
+                                defaultSILRestrictionFromDatabase.begin()] << std::endl;
+                            tmpSilr->TurnOffSet(idx[it -
+                                    defaultSILRestrictionFromDatabase.begin()]);
+                        }
+                        else
+                        {
+                            debug1 << "Did not find set name " << it->substr(1);
+                            debug1 << std::endl;
+                        }
+                        break;
+                    default:
+                        debug1 << "Invalid descriptor " << *it << std::endl;
+                }
+            }
+        }
+
+        // Save SIL restriction in cache
+        SILRestrictions[key] = tmpSilr;
 
         // Create a new SIL restriction for the plot.
-        silr = new avtSILRestriction((avtSIL *)sil);
-    }
-    else if(returnDefault)
-    {
-        // Create a new SIL restriction for the plot.
-        silr = new avtSILRestriction((avtSIL *)sil);
+        silr = new avtSILRestriction(tmpSilr);
     }
     else
     {
+        debug5 << "Found key." << std::endl;
         // Set the SIL restriction to a predefined restriction.
         silr = new avtSILRestriction(pos->second);
     }
@@ -4878,6 +4992,8 @@ ViewerPlotList::GetDefaultSILRestriction(const std::string &host,
 // Creation:   Mon Jul 29 15:57:38 PST 2002
 //
 // Modifications:
+//    Gunther H. Weber, Mon Jan 28 13:56:41 PST 2008
+//    Added diagnostic output to debug5
 //   
 // ****************************************************************************
 
@@ -4885,6 +5001,8 @@ void
 ViewerPlotList::ClearDefaultSILRestrictions(const std::string &host,
     const std::string &database)
 {
+    debug5 << "ViewerPlotList::ClearDefaultSILRestrictions(" << host << ", ";
+    debug5 << database << ")" << std::endl;
     ViewerFileServer *server = ViewerFileServer::Instance();
 
     //

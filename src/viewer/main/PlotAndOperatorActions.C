@@ -1793,7 +1793,9 @@ SetPlotSILRestrictionAction::~SetPlotSILRestrictionAction()
 // Creation:   Fri Apr 11 07:55:20 PDT 2003
 //
 // Modifications:
-//   
+//  Gunther H. Weber, Fri Jan 18 17:28:52 PST 2008
+//  Toggle setting SIL restriction to all plots independently from applying
+//  operators to all plots. 
 // ****************************************************************************
 
 void
@@ -1803,7 +1805,7 @@ SetPlotSILRestrictionAction::Execute()
     // Tell the plot list set the current SIL restriction for the
     // selected plots.
     //
-    bool apply = windowMgr->GetClientAtts()->GetApplyOperator();
+    bool apply = windowMgr->GetClientAtts()->GetApplySelection();
     window->GetPlotList()->SetPlotSILRestriction(apply);
 }
 
