@@ -70,6 +70,8 @@ class QvisVariableButton;
 // Notes: initial implementation taken from the ParallelAxis plot window.
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb  8 12:34:19 EST 2008
+//    Added ability to unify extents across all axes.
 //   
 // ****************************************************************************
 
@@ -109,6 +111,7 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     void moveAxisUp();
     void moveAxisDown();
     void linesOnlyIfExtentsToggled(bool);
+    void unifyAxisExtentsToggled(bool);
   private:
     int plotType;
 
@@ -134,6 +137,8 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     QLabel *contextGammaLabel;
     QLabel *contextNumPartitionsLabel;
     QLabel *contextColorLabel;
+
+    QCheckBox *unifyAxisExtents;
 
     ParallelCoordinatesAttributes *atts;
 };
