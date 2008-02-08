@@ -76,6 +76,8 @@
     </Field>
     <Field name="simInfo" label="Simulation information" type="att" subtype="avtSimulationInformation">
     </Field>
+    <Field name="suggestedDefaultSILRestriction" label="Description of default SIL restriction for plots suggested by database plugin" type="stringVector">
+    </Field>
     <Function name="SetNumStates" user="false" member="true">
     </Function>
     <Function name="SetTemporalExtents" user="true" member="true">
@@ -245,6 +247,8 @@
     <Function name="SetCycleFromFilenameRegex" user="true" member="true">
     </Function>
     <Function name="GetCycleFromFilenameRegex" user="true" member="true">
+    </Function>
+    <Function name="AddDefaultSILRestrictionDescription" user="true" member="true">
     </Function>
     <Include file="header" quoted="false">
       Expression.h

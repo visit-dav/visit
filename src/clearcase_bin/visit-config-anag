@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<Object name="VisIt">
+    <Field name="Version" type="string">1.7</Field>
+    <Object name="VIEWER">
+        <Object name="DEFAULT_VALUES">
+            <Object name="GlobalAttributes">
+                <Field name="autoUpdateFlag" type="bool">true</Field>
+                <Field name="applyOperator" type="bool">false</Field>
+                <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
+            </Object>
+            <Object name="SaveWindowAttributes">
+                <Field name="fileName" type="string">AMR</Field>
+                <Field name="format" type="string">PPM</Field>
+            </Object>
+            <Object name="WindowInformation">
+                <Field name="boundingBoxNavigate" type="bool">false</Field>
+            </Object>
+            <Object name="SliceAttributes">
+                <Field name="project2d" type="bool">false</Field>
+                <Field name="meshName" type="string">Mesh</Field>
+            </Object>
+        </Object>
+    </Object>
+</Object>

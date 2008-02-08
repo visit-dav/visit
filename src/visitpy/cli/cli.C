@@ -112,6 +112,10 @@ extern "C" VISITCLI_API int Py_Main(int, char **);
 //   Hank Childs, Thu Nov  8 15:49:38 PST 2007
 //   Add support for ignoring nohups.
 //
+//   Gunther H. Weber, Thu Feb  7 14:44:20 PST 2008
+//   Check for visitrc in golobal .visit directory to enable site-wide
+//   macros.
+//
 // ****************************************************************************
 
 int
@@ -233,13 +237,25 @@ main(int argc, char *argv[])
         PyRun_SimpleString((char*)"Launch()");
 
         // If a visitrc file exists, execute it.
-        std::string visitrc(GetUserVisItDirectory() + "visitrc");
+        std::string visitSystemRc(GetSystemVisItRCFile());
+        std::string visitUserRc(GetUserVisItRCFile());
+
         VisItStat_t s;
-        if(VisItStat(visitrc.c_str(), &s) == 0)
+	std::string visitrc;
+        if(VisItStat(visitUserRc.c_str(), &s) == 0)
         {
+	    visitrc = visitUserRc;
+	}
+	else if (VisItStat(visitSystemRc.c_str(), &s) == 0)
+	{
+	    visitrc = visitSystemRc;
+	}
+
+	if (visitrc.size())
+	{
             PyRun_SimpleString("ClearMacros()");
             cli_runscript(visitrc.c_str());
-        }
+	}
 
         // If a database was specified, load it.
         if(loadFile != 0)

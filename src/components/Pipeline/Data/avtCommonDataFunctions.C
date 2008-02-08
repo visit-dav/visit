@@ -43,6 +43,7 @@
 #include <avtCommonDataFunctions.h>
 
 #include <float.h>
+#include <cmath>
 #include <vector>
 
 #include <visit-config.h>
@@ -1218,6 +1219,9 @@ GetDataRange(vtkDataSet *ds, double *de, const char *vname,
 //    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
 //    Added argument for ignoring values from ghost zones.
 //
+//    Gunther H. Weber, Fri Feb  1 11:55:59 PST 2008
+//    Skip nan, -inf and +inf in min/max calculation
+//
 // ****************************************************************************
 
 template <class T> static bool
@@ -1229,6 +1233,9 @@ GetScalarRange(T *buf, int n, double *exts, unsigned char *ghosts)
     for (int i = 0; i < n; i++, buf++)
     {
         if ((ghosts != NULL) && (ghosts[i] != '\0'))
+            continue;
+
+        if (!std::isfinite(*buf))
             continue;
 
         if (!setOne)
@@ -1507,6 +1514,9 @@ GetDataAllComponentsRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
 //    Added argument for ignoring values from ghost zones.
 //
+//    Gunther H. Weber, Fri Feb  1 11:55:59 PST 2008
+//    Skip nan, -inf and +inf in min/max calculation
+//
 // ****************************************************************************
 
 template <class T> static void
@@ -1521,6 +1531,9 @@ GetMagnitudeRange(T *buf, int n, int ncomps, double *exts,
         double mag = 0.0;
         for (int j = 0; j < ncomps; j++, buf++)
             mag += *buf * *buf;
+
+        if (!std::isfinite(mag))
+            continue;
 
         if (mag < exts[0])
         {
@@ -1637,6 +1650,9 @@ GetDataMagnitudeRange(vtkDataSet *ds, double *exts, const char *vname,
 //    Hank Childs, Wed Oct 10 15:56:16 PDT 2007
 //    Added argument for ignoring values from ghost zones.
 //
+//    Gunther H. Weber, Fri Feb  1 11:55:59 PST 2008
+//    Skip nan, -inf and +inf in min/max calculation
+//
 // ****************************************************************************
 
 void
@@ -1688,6 +1704,10 @@ GetDataMajorEigenvalueRange(vtkDataSet *ds, double *exts, const char *vname,
             continue;
 
         double val = MajorEigenvalue(ptr);
+
+        if (!std::isfinite(val))
+            continue;
+
         exts[0] = (exts[0] < val ? exts[0] : val);
         exts[1] = (exts[1] > val ? exts[1] : val);
         ptr+=ncomps;

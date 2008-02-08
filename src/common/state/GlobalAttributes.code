@@ -75,6 +75,9 @@ Definition:
 //   Brad Whitlock, Thu Jan 31 10:03:01 PST 2008
 //   Made it save userDirForSessionFiles, saveCrashRecovery.
 //
+//   Gunther H. Weber, Mon Feb  4 15:13:11 PST 2008
+//   Made it save applySelection.
+//
 // ****************************************************************************
 
 bool
@@ -158,18 +161,21 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("treatAllDBsAsTimeVarying",
                       treatAllDBsAsTimeVarying));
     }
+
     if(completeSave || !FieldsEqual(ID_createMeshQualityExpressions, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("createMeshQualityExpressions",
                       createMeshQualityExpressions));
     }
+
     if(completeSave || !FieldsEqual(ID_createTimeDerivativeExpressions, &defaultObject))
     {
         addToParent = true;
         node->AddNode(new DataNode("createTimeDerivativeExpressions",
                       createTimeDerivativeExpressions));
     }
+
     if(completeSave || !FieldsEqual(ID_createVectorMagnitudeExpressions, &defaultObject))
     {
         addToParent = true;
@@ -196,6 +202,13 @@ GlobalAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         addToParent = true;
         node->AddNode(new DataNode("saveCrashRecoveryFile",
                       saveCrashRecoveryFile));
+    }
+
+    if(completeSave || !FieldsEqual(ID_applySelection, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("applySelection",
+                      applySelection));
     }
 
     // Add the node to the parent node.
@@ -270,6 +283,9 @@ Definition:
 //   Brad Whitlock, Thu Jan 31 10:03:01 PST 2008
 //   Made it read userDirForSessionFiles, saveCrashRecovery.
 //
+//   Gunther H. Weber, Mon Feb  4 15:14:51 PST 2008
+//   Made it read applySelection.
+//
 // ****************************************************************************
 
 void
@@ -317,5 +333,7 @@ GlobalAttributes::SetFromNode(DataNode *parentNode)
         SetUserDirForSessionFiles(node->AsBool());
     if((node = searchNode->GetNode("saveCrashRecoveryFile")) != 0)
         SetSaveCrashRecoveryFile(node->AsBool());
+    if((node = searchNode->GetNode("applySelection")) != 0)
+        SetApplySelection(node->AsBool());
 }
 

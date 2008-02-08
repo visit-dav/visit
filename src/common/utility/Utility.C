@@ -925,6 +925,29 @@ GetUserVisItRCFile()
     return GetUserVisItDirectory() + "visitrc";
 }
 
+// ****************************************************************************
+// Method: GetSystemVisItRCFile
+//
+// Purpose: 
+//   Returns the name of the VisIt RC file in the VisIt installation directory.
+//
+// Returns:    The name of the RC file.
+//
+// Note:       
+//
+// Programmer: Gunther H. Weber
+// Creation:   Thu Jan 17 15:10:30 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+GetSystemVisItRCFile()
+{
+    return std::string(GetDefaultConfigFile("visitrc", "VISITHOME"));
+}
+
 #if defined(_WIN32)
 //
 // Functions to get at VisIt data stored in the Windows registry.

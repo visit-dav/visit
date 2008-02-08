@@ -159,6 +159,10 @@ using std::vector;
 //   Brad Whitlock, Tue Apr 25 16:34:46 PST 2006
 //   Added operatorPlugins.
 //
+//   Gunther H. Weber, Mon Jan 28 15:35:16 PST 2008
+//   Split "Apply operators and selections ..." checkbox into an apply
+//   operators and an apply selection checkbox.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
@@ -256,12 +260,32 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,
 	    
     topLayout->addMultiCellWidget(plotListBox, 2, 2, 0, 3);
 
+    QHBoxLayout *applyLayout = new QHBoxLayout(this, 0, 0, "applyLayout");
+    veryTopLayout->addLayout(applyLayout);
+
+    // Begin label text
+    QLabel *applyText1 = new QLabel("Apply ", this);
+    applyLayout->addWidget(applyText1);
+
     // Create the "Apply operator to all plots" toggle.
-    applyOperatorToggle = new QCheckBox("Apply operators and selection to all plots", this,
-        "applyOperatorToggle");
+    applyOperatorToggle = new QCheckBox(this, "applyOperatorToggle");
     connect(applyOperatorToggle, SIGNAL(toggled(bool)),
             this, SLOT(applyOperatorToggled(bool)));
-    veryTopLayout->addWidget(applyOperatorToggle);
+    applyLayout->addWidget(applyOperatorToggle);
+
+    QLabel *applyText2 = new QLabel("operators/", this);
+    applyLayout->addWidget(applyText2);
+
+    // Create the "Apply selection to all plots" toggle.
+    applySelectionToggle = new QCheckBox(this, "applySelectionToggle");
+    connect(applySelectionToggle, SIGNAL(toggled(bool)),
+            this, SLOT(applySelectionToggled(bool)));
+    applyLayout->addWidget(applySelectionToggle);
+
+    // End label text
+    QLabel *applyText3 = new QLabel("selection to all plots", this);
+    applyLayout->addWidget(applyText3);
+    applyLayout->addStretch(1);
 
     // Create the plot and operator menus. Note that they will be empty until
     // they are populated by the main application.
@@ -620,6 +644,11 @@ QvisPlotManagerWidget::DestroyVariableMenu()
 //
 //   Mark C. Miller, Thu Jun 14 10:26:37 PDT 2007
 //   Added support to treat all databases as time varying
+//
+//   Gunther H. Weber, Mon Jan 28 15:35:16 PST 2008
+//   Split "Apply operators and selections ..." checkbox into an apply
+//   operators and an apply selection checkbox.
+//
 // ****************************************************************************
 
 void
@@ -720,6 +749,11 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
         applyOperatorToggle->blockSignals(true);
         applyOperatorToggle->setChecked(globalAtts->GetApplyOperator());
         applyOperatorToggle->blockSignals(false);
+
+        // Set the "Apply selection toggle."
+        applySelectionToggle->blockSignals(true);
+        applySelectionToggle->setChecked(globalAtts->GetApplySelection());
+        applySelectionToggle->blockSignals(false);
 
         //
         // When the globalAtts change, we might have to update the
@@ -2217,6 +2251,32 @@ QvisPlotManagerWidget::applyOperatorToggled(bool val)
     SetUpdate(false);
     globalAtts->Notify();
 }
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::applySelectionToggled
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the "Apply selection to
+//   all plots" toggle is clicked.
+//
+// Arguments:
+//   val : The new toggle value.
+//
+// Programmer: Gunther H. Weber
+// Creation:   Wed Jan 23 16:16:09 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::applySelectionToggled(bool val)
+{
+    globalAtts->SetApplySelection(val);
+    SetUpdate(false);
+    globalAtts->Notify();
+}
+
 
 // ****************************************************************************
 // Method: QvisPlotManagerWidget::sourceChanged

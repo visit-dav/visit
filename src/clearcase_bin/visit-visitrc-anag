@@ -1,0 +1,120 @@
+import time
+time.sleep(0.01)
+
+def SetupSlice():
+    # Get the name of the first variable in the file
+    filename = GetWindowInformation().activeSource
+    m = GetMetaData(filename)
+    varname = m.GetScalars(0).name
+    meshname = m.GetMeshes(0).name
+
+    if m.GetMeshes(0).spatialDimension == 2:
+        AddPlot("Mesh", meshname)
+        HideActivePlots()
+        AddPlot("Pseudocolor", varname)
+    else:
+        # Do a mesh plot. We do need a plot to perform a query
+        AddPlot("Mesh", meshname)
+
+        # Get the centroid
+        DrawPlots()
+        Query("Centroid", 0, 0, "default")
+        centroid = GetQueryOutputValue()
+
+        # Hide the mesh plot
+        HideActivePlots()
+
+        # Add a ThreeSlice
+        AddOperator("ThreeSlice")
+        ThreeSliceAtts = ThreeSliceAttributes()
+        ThreeSliceAtts.x = centroid[0]
+        ThreeSliceAtts.y = centroid[1]
+        ThreeSliceAtts.z = centroid[2]
+        SetOperatorOptions(ThreeSliceAtts)
+
+        # Add a Pseudocolor plot and the same ThreeSlice
+        AddPlot("Pseudocolor", varname)
+        AddOperator("ThreeSlice")
+        SetOperatorOptions(ThreeSliceAtts)
+
+        # Enable the point tool to control the ThreeSlice
+        EnableTool(4, 1)
+
+RegisterMacro("Slice", SetupSlice)
+
+def SetupIsosurf():
+    # Get the name of the first variable in the file
+    filename = GetWindowInformation().activeSource
+    m = GetMetaData(filename)
+    varname = m.GetScalars(0).name
+    
+    AddPlot("Pseudocolor", varname)
+    AddOperator("Isosurface")
+    IsosurfaceAtts = IsosurfaceAttributes()
+    if m.GetMeshes(0).spatialDimension == 2:
+        IsosurfaceAtts.contourNLevels = 10
+    else:
+        IsosurfaceAtts.contourNLevels = 1
+    IsosurfaceAtts.contourMethod = IsosurfaceAtts.Level  # Level, Value, Percent
+    IsosurfaceAtts.scaling = IsosurfaceAtts.Linear  # Linear, Log
+    IsosurfaceAtts.variable = varname
+    SetOperatorOptions(IsosurfaceAtts)
+
+RegisterMacro("Contours", SetupIsosurf)
+
+def SetupBoundingBox():
+    AddPlot("Subset", "patches")
+    SubsetAtts = SubsetAttributes()
+    SubsetAtts.colorType = SubsetAtts.ColorByMultipleColors  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
+    SubsetAtts.legendFlag = 1
+    SubsetAtts.lineStyle = SubsetAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
+    SubsetAtts.wireframe = 1
+    SetPlotOptions(SubsetAtts)
+
+RegisterMacro("Bounding Boxes", SetupBoundingBox)
+
+def SetupBoundary():
+    # Get the name of the first variable in the file
+    filename = GetWindowInformation().activeSource
+    m = GetMetaData(filename)
+    materialsname = m.GetMaterials(0).name
+    AddPlot("Boundary", materialsname)
+    BoundaryAtts = BoundaryAttributes()
+    BoundaryAtts.colorType = BoundaryAtts.ColorBySingleColor  # ColorBySingleColor, ColorByMultipleColors, ColorByColorTable
+    if m.GetMeshes(0).spatialDimension == 2:
+        BoundaryAtts.singleColor = (0, 0, 0, 255)
+    else:
+        BoundaryAtts.singleColor = (255, 255, 255, 255)
+    BoundaryAtts.boundaryType = BoundaryAtts.Material  # Domain, Group, Material, Unknown
+    SetPlotOptions(BoundaryAtts)
+
+RegisterMacro("Boundaries", SetupBoundary)
+
+#def SetupMesh():
+#    # Get the name of the first variable in the file
+#    filename = GetWindowInformation().activeSource
+#    m = GetMetaData(filename)
+#    meshname = m.GetMeshes(0).name
+#
+#    # Do a pseudocolor plot. We do need a plot to perform a query
+#    AddPlot("Mesh", meshname)
+#    DrawPlots()
+#
+#    # Get the spatial extents and compute the centrois
+#    Query("SpatialExtents", 0, 0, "default")
+#    exts = GetQueryOutputValue()
+#    cx = (exts[1] + exts[0]) / 2
+#    cy = (exts[3] + exts[2]) / 2
+#    cz = (exts[5] + exts[4]) / 2
+#
+#    AddOperator("Slice")
+#    SliceAtts = SliceAttributes()
+#    SliceAtts.originType = SliceAtts.Point  # Point, Intercept, Percent, Zone, Node
+#    SliceAtts.originPoint = (cx, cy, cz)
+#    SliceAtts.axisType = SliceAtts.ZAxis  # XAxis, YAxis, ZAxis, Arbitrary
+#    SliceAtts.project2d = 0 # Do not project to 2D
+#    SliceAtts.interactive = 1 # This operator will be affected by "plane tool" if it is active
+#    SetOperatorOptions(SliceAtts)
+#    DrawPlots()
+#
+#RegisterMacro("Setup mesh slice", SetupMesh)
