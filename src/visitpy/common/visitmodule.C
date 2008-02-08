@@ -3451,6 +3451,7 @@ visit_AddOperator(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Add the operator
@@ -4031,6 +4032,7 @@ visit_RemoveLastOperator(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Remove the last operator.
@@ -4073,6 +4075,7 @@ visit_RemoveAllOperators(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Remove all operators.
@@ -6851,6 +6854,7 @@ visit_ResetOperatorOptions(PyObject *self, PyObject *args)
         MUTEX_LOCK();
             // Set the apply to all plots toggle.
             GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+            GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
             GetViewerState()->GetGlobalAttributes()->Notify();
 
             // Reset the operator options.
@@ -7108,6 +7112,7 @@ visit_SetOperatorOptions(PyObject *self, PyObject *args)
     {
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
  
         // If the active operator was set, change the plot selection so we can set
@@ -7203,6 +7208,7 @@ PromoteDemoteRemoveOperatorHelper(PyObject *self, PyObject *args, int option)
     {
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Do the operation.
@@ -7592,6 +7598,7 @@ visit_SetPlotSILRestriction(PyObject *self, PyObject *args)
     {
         // Set the apply to all plots toggle.
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(applyToAllPlots != 0);
+        GetViewerState()->GetGlobalAttributes()->SetApplySelection(applyToAllPlots != 0);
         GetViewerState()->GetGlobalAttributes()->Notify();
 
         // Set the sil restriction.
@@ -8058,6 +8065,7 @@ TurnOnOffHelper(SILCategoryRole role, bool val, const stringVector &names)
 
     // Set the apply to all plots toggle.
     GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
+    GetViewerState()->GetGlobalAttributes()->SetApplySelection(false);
     GetViewerState()->GetGlobalAttributes()->Notify();
 
     // Send the modified SIL restriction to the viewer.
@@ -11004,6 +11012,7 @@ visit_Lineout(PyObject *self, PyObject *args)
     MUTEX_LOCK();
         // Lineout should not be applied to more than one plot at a time. 
         GetViewerState()->GetGlobalAttributes()->SetApplyOperator(false);
+        GetViewerState()->GetGlobalAttributes()->SetApplySelection(false);
         GetViewerState()->GetGlobalAttributes()->Notify();
         GetViewerMethods()->Lineout(p0, p1, vars, samples, haveSamples);
 
