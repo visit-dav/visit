@@ -181,6 +181,19 @@ ParallelCoordinatesAttributes::AttributesAreConsistent() const
 Function: ChangesRequireRecalculation
 Declaration: bool ChangesRequireRecalculation(const ParallelCoordinatesAttributes &obj);
 Definition:
+// ****************************************************************************
+// Method: ParallelCoordinatesAttributes::ChangesRequireRecalculation
+//
+// Purpose: Sets the attributes from another attribute group
+//
+// Programmer: Jeremy Meredith
+// Creation:   January 31, 2008
+//
+// Modifications:
+//    Jeremy Meredith, Fri Feb  8 12:35:47 EST 2008
+//    Added unifyAxisExtents.
+//
+// ****************************************************************************
 bool
 ParallelCoordinatesAttributes::ChangesRequireRecalculation(
     const ParallelCoordinatesAttributes &obj)
@@ -192,7 +205,8 @@ ParallelCoordinatesAttributes::ChangesRequireRecalculation(
         drawLinesOnlyIfExtentsOn != obj.drawLinesOnlyIfExtentsOn ||
         contextNumPartitions != obj.contextNumPartitions ||
         contextGamma != obj.contextGamma ||
-        orderedAxisNames != obj.orderedAxisNames)
+        orderedAxisNames != obj.orderedAxisNames ||
+        unifyAxisExtents != obj.unifyAxisExtents)
     {
         return true;
     }

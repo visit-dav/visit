@@ -122,6 +122,9 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //    Added a checkbox to allow the lines to be hidden when the extents
 //    tool has not limited the viewing range to a focus.
 //   
+//    Jeremy Meredith, Fri Feb  8 12:34:19 EST 2008
+//    Added ability to unify extents across all axes.
+//
 // ****************************************************************************
 
 void
@@ -260,6 +263,12 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
             this, SLOT(contextColorChanged(const QColor&)));
     contextLayout->addWidget(contextColor, 2,1);
 
+    // Unify axis extents
+    unifyAxisExtents = new QCheckBox("Unify the data extents across all axes",
+                                     central, "unifyAxisExtents");
+    connect(unifyAxisExtents, SIGNAL(toggled(bool)),
+            this, SLOT(unifyAxisExtentsToggled(bool)));
+    topLayout->addWidget(unifyAxisExtents);
 }
 
 
@@ -280,6 +289,9 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Jeremy Meredith, Thu Feb  7 17:42:48 EST 2008
 //    For an empty list of axis names, disable critical widgets and
 //    put in a useful message.
+//
+//    Jeremy Meredith, Fri Feb  8 12:34:19 EST 2008
+//    Added ability to unify extents across all axes.  Also fixed typo.
 //
 // ****************************************************************************
 
@@ -321,7 +333,7 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
             if (atts->GetOrderedAxisNames().size() == 0)
             {
                 axisList->insertItem("(read-only; either no plot");
-                axisList->insertItem(" is current active or the");
+                axisList->insertItem(" is currently active or the");
                 axisList->insertItem(" active plot was created");
                 axisList->insertItem(" from an array variable)");
             }
@@ -379,6 +391,11 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
             linesOnlyIfExtents->blockSignals(true);
             linesOnlyIfExtents->setChecked(atts->GetDrawLinesOnlyIfExtentsOn());
             linesOnlyIfExtents->blockSignals(false);
+            break;
+          case ParallelCoordinatesAttributes::ID_unifyAxisExtents:
+            unifyAxisExtents->blockSignals(true);
+            unifyAxisExtents->setChecked(atts->GetUnifyAxisExtents());
+            unifyAxisExtents->blockSignals(false);
             break;
         }
     }
@@ -898,5 +915,27 @@ void
 QvisParallelCoordinatesPlotWindow::linesOnlyIfExtentsToggled(bool val)
 {
     atts->SetDrawLinesOnlyIfExtentsOn(val);
+    Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisParallelCoordinatesPlotWindow::unifyAxisExtentsToggled
+//
+//  Purpose:
+//    Executed when the toggle button for unifying data extents across
+//    all processors is toggled.
+//
+//  Arguments:
+//    val        the new state
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  8, 2008
+//
+// ****************************************************************************
+
+void
+QvisParallelCoordinatesPlotWindow::unifyAxisExtentsToggled(bool val)
+{
+    atts->SetUnifyAxisExtents(val);
     Apply();
 }

@@ -681,6 +681,9 @@ avtParallelCoordinatesFilter::ReleaseData(void)
 //    Jeremy Meredith, Thu Feb  7 17:46:59 EST 2008
 //    Handle array variables and bin-defined axis x-positions.
 //
+//    Jeremy Meredith, Fri Feb  8 12:32:36 EST 2008
+//    Support unifying extents across all axes.
+//
 // ****************************************************************************
 
 void
@@ -694,6 +697,9 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
     if (isArrayVar)
     {
         avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
+        avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+
+        // Get the actual extents for the array variable
         int dim = inatts.GetVariableDimension(pipelineVariable);
         const vector<double> &bins = inatts.GetVariableBinRanges(
                                                              pipelineVariable);
@@ -708,6 +714,30 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
 
         double *varDataExtents = new double[dim*2];
         ext->CopyTo(varDataExtents);
+
+        // If we're unifying the extents across all axes, update
+        // with the global limits and store it in the output
+        if (parCoordsAtts.GetUnifyAxisExtents())
+        {
+            double globalMin =  DBL_MAX;
+            double globalMax = -DBL_MAX;
+            for (axisNum = 0; axisNum < axisCount; axisNum++)
+            {
+                if (varDataExtents[2*axisNum + 0] < globalMin)
+                    globalMin = varDataExtents[2*axisNum + 0];
+                if (varDataExtents[2*axisNum + 1] > globalMax)
+                    globalMax = varDataExtents[2*axisNum + 1];
+            }
+            for (axisNum = 0; axisNum < axisMinima.size(); axisNum++)
+            {
+                varDataExtents[axisNum*2 + 0] = globalMin;
+                varDataExtents[axisNum*2 + 1] = globalMax;
+            }
+            outAtts.GetVariableComponentExtents(pipelineVariable)->
+                Set(varDataExtents);
+        }
+
+        // Set the internal data members we need to have set
         for (int i=0; i<dim; i++)
         {
             if (bins.size() > i)
@@ -718,25 +748,78 @@ avtParallelCoordinatesFilter::ComputeCurrentDataExtentsOverAllDomains()
             axisMaxima[i] = varDataExtents[i*2+1];
         }
 
-        avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+        // probably not needed, since the things that use this information
+        // already know to treat array variables specially
         outAtts.SetUseForAxis(0, pipelineVariable);
+
+        delete[] varDataExtents;
     }
     else
     {
-        stringVector curAxisVarNames = parCoordsAtts.GetOrderedAxisNames();
+        avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+
+        // Get the actual extents for each axis scalar variable
+        double *varDataExtents = new double[axisCount*2];
         for (axisNum = 0; axisNum < axisCount; axisNum++)
         {
-            std::string axisVarName = curAxisVarNames[axisNum];
+            string axisVarName = parCoordsAtts.GetOrderedAxisNames()[axisNum];
+            GetDataExtents(&(varDataExtents[2*axisNum]), axisVarName.c_str());
+        }
 
-            double varDataExtent[2];
-            avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-            GetDataExtents(varDataExtent, axisVarName.c_str());
-            outAtts.GetCumulativeTrueDataExtents(axisVarName.c_str())->Set(varDataExtent);
+        // If we're unifying the extents across all axes, update
+        // with the global limits before storing it in the output
+        if (parCoordsAtts.GetUnifyAxisExtents())
+        {
+            double globalMin =  DBL_MAX;
+            double globalMax = -DBL_MAX;
+            for (axisNum = 0; axisNum < axisCount; axisNum++)
+            {
+                if (varDataExtents[2*axisNum + 0] < globalMin)
+                    globalMin = varDataExtents[2*axisNum + 0];
+                if (varDataExtents[2*axisNum + 1] > globalMax)
+                    globalMax = varDataExtents[2*axisNum + 1];
+            }
+            for (axisNum = 0; axisNum < axisCount; axisNum++)
+            {
+                varDataExtents[2*axisNum + 0] = globalMin;
+                varDataExtents[2*axisNum + 1] = globalMax;
+            }
+        }
+
+        // Update the output extents for the variables, and
+        // update the internal data members we need to have set
+        for (axisNum = 0; axisNum < axisCount; axisNum++)
+        {
+            string axisVarName = parCoordsAtts.GetOrderedAxisNames()[axisNum];
+
+            outAtts.GetCumulativeTrueDataExtents(axisVarName.c_str())->
+                Set(&(varDataExtents[2*axisNum]));
             outAtts.SetUseForAxis(axisNum, axisVarName.c_str());
 
             axisXPositions[axisNum] = axisNum;
-            axisMinima[axisNum] = varDataExtent[0];
-            axisMaxima[axisNum] = varDataExtent[1];
+            axisMinima[axisNum] = varDataExtents[2*axisNum + 0];
+            axisMaxima[axisNum] = varDataExtents[2*axisNum + 1];
+        }
+        delete[] varDataExtents;
+    }
+
+    if (parCoordsAtts.GetUnifyAxisExtents())
+    {
+        double globalMin =  DBL_MAX;
+        double globalMax = -DBL_MAX;
+        for (axisNum = 0; axisNum < axisMinima.size(); axisNum++)
+        {
+            double axisMin = axisMinima[axisNum];
+            double axisMax = axisMaxima[axisNum];
+            if (axisMin < globalMin)
+                globalMin = axisMin;
+            if (axisMax > globalMax)
+                globalMax = axisMax;
+        }
+        for (axisNum = 0; axisNum < axisMinima.size(); axisNum++)
+        {
+            axisMinima[axisNum] = globalMin;
+            axisMaxima[axisNum] = globalMax;
         }
     }
 

@@ -48,6 +48,9 @@
       <Field name="drawLinesOnlyIfExtentsOn" label="Draw lines only when extents have been limited" type="bool">
         true
       </Field>
+      <Field name="unifyAxisExtents" label="Unify the data extents across all axes" type="bool">
+        false
+      </Field>
       <Function name="InsertAxis" user="true" member="true">
       </Function>
       <Function name="DeleteAxis" user="true" member="true">
