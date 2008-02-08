@@ -424,6 +424,9 @@ VisitAxisRestrictionTool::UpdateText()
 // Creation:   February  1, 2008
 //
 // Modifications:
+//    Jeremy Meredith, Fri Feb  8 16:22:03 EST 2008
+//    Set the min/max to something that's obviously supposed to be a semantic
+//    min/max limit if the hotpoints are all the way at the end of the axis.
 //   
 // ****************************************************************************
 
@@ -433,13 +436,27 @@ VisitAxisRestrictionTool::CallCallback()
     Interface.ResetNumberOfAxes(axesMin.size());
     for (int ax=0; ax<axesMin.size(); ax++)
     {
-        float minval = origHotPoints[ax*2+1].pt.y * (axesMax[ax]-axesMin[ax])
-                       + axesMin[ax];
-        Interface.SetAxisMin(ax, minval);
+        if (origHotPoints[ax*2+1].pt.y <= 0)
+        {
+            Interface.SetAxisMin(ax, -1e+37);
+        }
+        else
+        {
+            float minval = origHotPoints[ax*2+1].pt.y *
+                           (axesMax[ax]-axesMin[ax]) + axesMin[ax];
+            Interface.SetAxisMin(ax, minval);
+        }
 
-        float maxval = origHotPoints[ax*2+0].pt.y * (axesMax[ax]-axesMin[ax])
-                       + axesMin[ax];
-        Interface.SetAxisMax(ax, maxval);
+        if (origHotPoints[ax*2+0].pt.y >= 1)
+        {
+            Interface.SetAxisMax(ax, +1e+37);
+        }
+        else
+        {
+            float maxval = origHotPoints[ax*2+0].pt.y *
+                           (axesMax[ax]-axesMin[ax]) + axesMin[ax];
+            Interface.SetAxisMax(ax, maxval);
+        }
     }
 
     Interface.ExecuteCallback();
