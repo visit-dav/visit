@@ -13,6 +13,7 @@
                 <Field name="maintainView" type="bool">false</Field>
                 <Field name="maintainData" type="bool">false</Field>
                 <Field name="automaticallyAddOperator" type="bool">false</Field>
+                <Field name="applySelection" type="bool">false</Field>
             </Object>
             <Object name="HostProfileList">
                 <Field name="activeProfile" type="int">-1</Field>

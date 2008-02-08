@@ -8,6 +8,7 @@
                 <Field name="applyOperator" type="bool">false</Field>
                 <Field name="makeDefaultConfirm" type="bool">false</Field>
                 <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
+                <Field name="applySelection" type="bool">false</Field>
             </Object>
             <Object name="HostProfileList">
                 <Object name="HostProfile">
