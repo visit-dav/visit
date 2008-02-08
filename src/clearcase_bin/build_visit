@@ -297,6 +297,9 @@
 #     Added an explicit CMake build step.
 #     Added a parallel make option
 #     
+#     Thomas R. Treadway, Thu Feb  7 16:58:19 PST 2008
+#     Corrected the ccmio build for x86_64
+#     
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -6054,7 +6057,8 @@ function build_ccmio
     #
     info_box "Building CCMIO . . . (~1 minutes)" 1>&3
     echo "Building CCMIO"
-    $MAKE batch
+    $MAKE batch CXX="$CXX_COMPILER" CC="$C_COMPILER" \
+       CFLAGS="$C_OPT_FLAGS" CXXFLAGS="$CXX_OPT_FLAGS"
 ##  if [[ $? != 0 ]] ; then
 ##     echo "CCMIO build failed.  Giving up"
 ##     return 1
