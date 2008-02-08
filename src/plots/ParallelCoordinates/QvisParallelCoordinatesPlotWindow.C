@@ -46,7 +46,7 @@
 #include <qlabel.h>
 #include <qlayout.h>
 #include <qlineedit.h>
-#include <qlistbox.h>
+#include <qlistview.h>
 #include <qradiobutton.h>
 #include <qslider.h>
 #include <qspinbox.h>
@@ -125,6 +125,10 @@ QvisParallelCoordinatesPlotWindow::~QvisParallelCoordinatesPlotWindow()
 //    Jeremy Meredith, Fri Feb  8 12:34:19 EST 2008
 //    Added ability to unify extents across all axes.
 //
+//    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
+//    Changed axis list to QListView to support multiple columns.
+//    Added min/max extents columns for each axis, and a button to reset them.
+//
 // ****************************************************************************
 
 void
@@ -140,13 +144,19 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     axisSpacingLayout->setMargin(10);
     axisSpacingLayout->addSpacing(20);
 
-    QGridLayout *axisLayout = new QGridLayout(axisSpacingLayout, 4, 2, 5);
+    QGridLayout *axisLayout = new QGridLayout(axisSpacingLayout, 5, 2, 5);
 
     // axes list
-    axisList = new QListBox(axisGroup, "axisList");
+    axisList = new QListView(axisGroup, "axisList");
+    axisList->setAllColumnsShowFocus(true);
+    axisList->setResizeMode(QListView::AllColumns);
+    axisList->setSorting(-1);
+    axisList->addColumn("Axis");
+    axisList->addColumn("Min");
+    axisList->addColumn("Max");
     axisLayout->addMultiCellWidget(axisList, 0,3, 0,0);
-    connect(axisList, SIGNAL(highlighted(int)),
-            this, SLOT(axisSelected(int)));
+    connect(axisList, SIGNAL(currentChanged(QListViewItem*)),
+            this, SLOT(axisSelected(QListViewItem*)));
 
     // axes new/del/up/down buttons
     axisNewButton = new QvisVariableButton(false, true, true,
@@ -172,6 +182,12 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
     axisLayout->addWidget(axisDownButton, 3, 1);
     connect(axisDownButton, SIGNAL(clicked()),
             this, SLOT(moveAxisDown()));
+
+    axisResetExtentsButton = new QPushButton("Reset all axis extents", axisGroup,
+                                     "axisResetExtentsButton");
+    axisLayout->addWidget(axisResetExtentsButton, 4, 0);
+    connect(axisResetExtentsButton, SIGNAL(clicked()),
+            this, SLOT(resetAxisExtents()));
 
     //
     // Draw lines, and the needed settings
@@ -293,6 +309,10 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 //    Jeremy Meredith, Fri Feb  8 12:34:19 EST 2008
 //    Added ability to unify extents across all axes.  Also fixed typo.
 //
+//    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
+//    Changed axis list to QListView to support multiple columns.
+//    Added min/max extents columns for each axis, and a button to reset them.
+//
 // ****************************************************************************
 
 void
@@ -301,7 +321,8 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
     QString temp;
     double r;
 
-    QString oldAxis = axisList->currentText();
+    QString oldAxis = axisList->currentItem() ? 
+        axisList->currentItem()->text(0) : "";
 
     for(int i = 0; i < atts->NumAttributes(); ++i)
     {
@@ -324,18 +345,25 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
         switch(i)
         {
           case ParallelCoordinatesAttributes::ID_orderedAxisNames:
+          case ParallelCoordinatesAttributes::ID_extentMinima:
+          case ParallelCoordinatesAttributes::ID_extentMaxima:
             axisList->blockSignals(true);
             axisList->clear();
-            for (int ax=0; ax<atts->GetOrderedAxisNames().size(); ax++)
+            for (int ax=0; ax<atts->GetExtentMinima().size(); ax++)
             {
-                axisList->insertItem(atts->GetOrderedAxisNames()[ax].c_str());
-            }
-            if (atts->GetOrderedAxisNames().size() == 0)
-            {
-                axisList->insertItem("(read-only; either no plot");
-                axisList->insertItem(" is currently active or the");
-                axisList->insertItem(" active plot was created");
-                axisList->insertItem(" from an array variable)");
+                QString name, emin("min"), emax("max");
+                if (atts->GetExtentMinima()[ax] > -1e+37)
+                    emin.sprintf("%f",atts->GetExtentMinima()[ax]);
+                if (atts->GetExtentMaxima()[ax] < +1e+37)
+                    emax.sprintf("%f",atts->GetExtentMaxima()[ax]);
+                if (atts->GetOrderedAxisNames().size() > ax)
+                    name = atts->GetOrderedAxisNames()[ax];
+                else
+                    name.sprintf("Axis %02d",ax);
+                QListViewItem *item =
+                    new QListViewItem(axisList,
+                                      axisList->lastItem(),
+                                      name, emin, emax);
             }
             axisList->blockSignals(false);
             break;
@@ -402,21 +430,18 @@ QvisParallelCoordinatesPlotWindow::UpdateWindow(bool doAll)
 
     // Re-select the previously selected item in case updating this window
     // regenerated the list box contents
-    axisList->setCurrentItem(-1);
-    for (int i=0; i<axisList->count(); i++)
-    {
-        if (axisList->text(i) == oldAxis)
-        {
-            axisList->setCurrentItem(i);
-        }
-    }
+    QListViewItem *item = axisList->firstChild();    
+    while (item && item->text(0) != oldAxis)
+        item = item->nextSibling();
+    axisList->setCurrentItem(item);
 
     // Set enabled states
-    axisDelButton->setEnabled(axisList->currentItem() >= 0);
-    axisUpButton->setEnabled(axisList->currentItem() > 0);
-    axisDownButton->setEnabled(axisList->currentItem() < axisList->count()-1);
+    axisDelButton->setEnabled(axisList->currentItem()!= NULL);
+    axisUpButton->setEnabled(axisList->currentItem()!= axisList->firstChild());
+    axisDownButton->setEnabled(axisList->currentItem()!= axisList->lastItem());
     axisNewButton->setEnabled(atts->GetOrderedAxisNames().size() > 0);
-    axisList->setEnabled(atts->GetOrderedAxisNames().size() > 0);
+    axisResetExtentsButton->setEnabled(atts->GetExtentMinima().size() > 0);
+    axisList->setEnabled(atts->GetExtentMinima().size() > 0);
 }
 
 
@@ -642,6 +667,36 @@ QvisParallelCoordinatesPlotWindow::contextColorChanged(const QColor &color)
 }
 
 // ****************************************************************************
+//  Method:  QvisParallelCoordinatesPlotWindow::resetAxisExtents
+//
+//  Purpose:
+//    resets all extents to the full min/max range
+//
+//  Arguments:
+//    none
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  8, 2008
+//
+// ****************************************************************************
+
+void
+QvisParallelCoordinatesPlotWindow::resetAxisExtents()
+{
+    for (int i=0; i<atts->GetExtentMinima().size(); i++)
+    {
+        atts->GetExtentMinima()[i] = -1e+37;
+    }
+    for (int i=0; i<atts->GetExtentMaxima().size(); i++)
+    {
+        atts->GetExtentMaxima()[i] = +1e+37;
+    }
+    atts->SelectExtentMinima();
+    atts->SelectExtentMaxima();
+    Apply();
+}
+
+// ****************************************************************************
 //  Method:  QvisParallelCoordinatesPlotWindow::axisSelected
 //
 //  Purpose:
@@ -654,14 +709,19 @@ QvisParallelCoordinatesPlotWindow::contextColorChanged(const QColor &color)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 16, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
+//    Changed axis list to QListView to support multiple columns.
+//    Added min/max extents columns for each axis, and a button to reset them.
+//
 // ****************************************************************************
 
 void
-QvisParallelCoordinatesPlotWindow::axisSelected(int axis)
+QvisParallelCoordinatesPlotWindow::axisSelected(QListViewItem*)
 {
-    axisDelButton->setEnabled(axisList->currentItem() >= 0);
-    axisUpButton->setEnabled(axisList->currentItem() > 0);
-    axisDownButton->setEnabled(axisList->currentItem() < axisList->count()-1);
+    axisDelButton->setEnabled(axisList->currentItem()!= NULL);
+    axisUpButton->setEnabled(axisList->currentItem()!= axisList->firstChild());
+    axisDownButton->setEnabled(axisList->currentItem()!= axisList->lastItem());
 }
 
 // ****************************************************************************
@@ -698,14 +758,21 @@ QvisParallelCoordinatesPlotWindow::addAxis(const QString &axisToAdd)
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 16, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
+//    Changed axis list to QListView to support multiple columns.
+//
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWindow::delAxis()
 {
-    QString axis = axisList->currentText();
-    atts->DeleteAxis(axis.latin1(), 2);
-    Apply();
+    if (axisList->currentItem())
+    { 
+        QString axis = axisList->currentItem()->text(0);
+        atts->DeleteAxis(axis.latin1(), 2);
+        Apply();
+    }
 }
 
 // ****************************************************************************
@@ -720,15 +787,26 @@ QvisParallelCoordinatesPlotWindow::delAxis()
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 16, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
+//    Changed axis list to QListView to support multiple columns.
+//
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWindow::moveAxisUp()
 {
-    int index = axisList->currentItem();
+    // Find the index of the current item
+    int index = 0;
+    QListViewItem *item = axisList->firstChild();
+    while (item && item != axisList->currentItem())
+    {
+        item = item->nextSibling();
+        index++;
+    }
 
     // verify something is selected
-    if (index < 0)
+    if (!item)
         return;
 
     // must make a local copy
@@ -762,15 +840,26 @@ QvisParallelCoordinatesPlotWindow::moveAxisUp()
 //  Programmer:  Jeremy Meredith
 //  Creation:    March 16, 2007
 //
+//  Modifications:
+//    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
+//    Changed axis list to QListView to support multiple columns.
+//
 // ****************************************************************************
 
 void
 QvisParallelCoordinatesPlotWindow::moveAxisDown()
 {
-    int index = axisList->currentItem();
+    // Find the index of the current item
+    int index = 0;
+    QListViewItem *item = axisList->firstChild();
+    while (item && item != axisList->currentItem())
+    {
+        item = item->nextSibling();
+        index++;
+    }
 
     // verify something is selected
-    if (index < 0)
+    if (!item)
         return;
 
     // must make a local copy

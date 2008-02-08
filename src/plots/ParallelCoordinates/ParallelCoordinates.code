@@ -271,6 +271,46 @@ ParallelCoordinatesAttributes::CopyAttributes(const AttributeGroup *atts)
     return retval;
 }
 
+Function: CreateCompatible
+Declaration: virtual AttributeSubject *CreateCompatible(const std::string &) const;
+Definition:
+// ****************************************************************************
+//  Method:  ParallelCoordinatesAttributes::CreateCompatible
+//
+//  Purpose:
+//    Creates an object of the specified type initialized with the
+//    attributes from this object.
+//
+//  Arguments:
+//    tname : The typename of the object that we want to create.
+//
+//  Returns:    A new object of the type specified by tname or 0.
+//
+//  Programmer:  Jeremy Meredith
+//  Creation:    February  8, 2008
+//
+// ****************************************************************************
+AttributeSubject *
+ParallelCoordinatesAttributes::CreateCompatible(const std::string &tname) const
+{
+    AttributeSubject *retval = 0;
+
+    if(TypeName() == tname)
+    {
+        retval = new ParallelCoordinatesAttributes(*this);
+    }
+    else if(tname == "AxisRestrictionAttributes")
+    {
+        AxisRestrictionAttributes *ar = new AxisRestrictionAttributes;
+
+        ar->SetMinima(extentMinima);
+        ar->SetMaxima(extentMaxima);
+
+        retval = ar;
+    }
+}
+
+
 Function: ResetAxes
 Declaration: void ResetAxes();
 Definition:

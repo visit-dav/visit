@@ -61,6 +61,8 @@
       </Function>
       <Function name="CopyAttributes" user="false" member="true">
       </Function>
+      <Function name="CreateCompatible" user="false" member="true">
+      </Function>
       <Function name="ResetAxes" user="true" member="true">
       </Function>
       <Include file="header" quoted="false">
