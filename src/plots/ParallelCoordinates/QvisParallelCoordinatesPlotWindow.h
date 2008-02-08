@@ -47,7 +47,7 @@ class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QListBox;
+class QListView;
 class QSlider;
 class QSpinBox;
 class QVBox;
@@ -57,6 +57,7 @@ class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
 class QvisVariableButton;
+class QListViewItem;
 
 // ****************************************************************************
 // Class: QvisParallelCoordinatesPlotWindow
@@ -73,6 +74,10 @@ class QvisVariableButton;
 //    Jeremy Meredith, Fri Feb  8 12:34:19 EST 2008
 //    Added ability to unify extents across all axes.
 //   
+//    Jeremy Meredith, Fri Feb  8 16:12:06 EST 2008
+//    Changed axis list to QListView to support multiple columns.
+//    Added min/max extents columns for each axis, and a button to reset them.
+//
 // ****************************************************************************
 
 class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
@@ -105,22 +110,24 @@ class QvisParallelCoordinatesPlotWindow : public QvisPostableWindowObserver
     void contextNumPartitionsSliderChanged(int val);
     void contextNumPartitionsSliderReleased();
     void contextColorChanged(const QColor &color);
-    void axisSelected(int);
+    void axisSelected(QListViewItem*);
     void addAxis(const QString &axisToAdd);
     void delAxis();
     void moveAxisUp();
     void moveAxisDown();
+    void resetAxisExtents();
     void linesOnlyIfExtentsToggled(bool);
     void unifyAxisExtentsToggled(bool);
   private:
     int plotType;
 
     QGroupBox *axisGroup;
-    QListBox  *axisList;
+    QListView *axisList;
     QvisVariableButton *axisNewButton;
     QPushButton *axisDelButton;
     QPushButton *axisUpButton;
     QPushButton *axisDownButton;
+    QPushButton *axisResetExtentsButton;
 
     QGroupBox *drawLines;
     QCheckBox *linesOnlyIfExtents;
