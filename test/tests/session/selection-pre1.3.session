@@ -11,6 +11,7 @@
                 <Field name="makeDefaultConfirm" type="bool">true</Field>
                 <Field name="cloneWindowOnFirstRef" type="bool">true</Field>
                 <Field name="maintainView" type="bool">false</Field>
+                <Field name="applySelection" type="bool">false</Field>
             </Object>
             <Object name="HostProfileList">
                 <Object name="HostProfile">
