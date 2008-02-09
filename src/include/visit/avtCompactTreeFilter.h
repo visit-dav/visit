@@ -1,1 +1,1 @@
-../../components/Pipeline/PrivateFilters/avtCompactTreeFilter.h
+../../components/Pipeline/AbstractFilters/avtCompactTreeFilter.h

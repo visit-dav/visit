@@ -43,7 +43,7 @@
 #ifndef AVT_VMETRIC_SKEW_H
 #define AVT_VMETRIC_SKEW_H
 #include <expression_exports.h>
-#include <avtVerdictFilter.h>
+#include <avtVerdictExpression.h>
 
 // ****************************************************************************
 //  Class: avtVMetricSkew
@@ -56,7 +56,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricSkew : public avtVerdictFilter
+class EXPRESSION_API avtVMetricSkew : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);

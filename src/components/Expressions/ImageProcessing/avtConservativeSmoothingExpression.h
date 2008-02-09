@@ -43,7 +43,7 @@
 #ifndef AVT_CONSERVATIVE_SMOOTHING_EXPRESSION_H
 #define AVT_CONSERVATIVE_SMOOTHING_EXPRESSION_H
 
-#include <avtUnaryMathFilter.h>
+#include <avtUnaryMathExpression.h>
 
 class     vtkDataArray;
 
@@ -65,7 +65,7 @@ class     vtkDataArray;
 // ****************************************************************************
 
 class EXPRESSION_API avtConservativeSmoothingExpression 
-    : public avtUnaryMathFilter
+    : public avtUnaryMathExpression
 {
   public:
                               avtConservativeSmoothingExpression();

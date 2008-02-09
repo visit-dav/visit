@@ -42,7 +42,7 @@
 
 #include <avtWeightedVariableSummationQuery.h>
 
-#include <avtBinaryMultiplyFilter.h>
+#include <avtBinaryMultiplyExpression.h>
 #include <avtRevolvedVolume.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTerminatingSource.h>
@@ -76,7 +76,7 @@ avtWeightedVariableSummationQuery::avtWeightedVariableSummationQuery()
     area = new avtVMetricArea;
     area->SetOutputVariableName("avt_weights");
 
-    multiply = new avtBinaryMultiplyFilter;
+    multiply = new avtBinaryMultiplyExpression;
     multiply->SetOutputVariableName("avt_sum");
 
     volume = new avtVMetricVolume;

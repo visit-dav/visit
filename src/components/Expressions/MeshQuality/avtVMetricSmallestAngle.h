@@ -43,7 +43,7 @@
 #ifndef AVT_VMETRIC_SmallestAngle_H
 #define AVT_VMETRIC_SmallestAngle_H
 #include <expression_exports.h>
-#include <avtVerdictFilter.h>
+#include <avtVerdictExpression.h>
 
 // ****************************************************************************
 //  Class: avtVMetricSmallestAngle
@@ -56,7 +56,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricSmallestAngle : public avtVerdictFilter
+class EXPRESSION_API avtVMetricSmallestAngle : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);

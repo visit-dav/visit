@@ -43,7 +43,7 @@
 #ifndef AVT_MINMAX_EXPRESSION_H
 #define AVT_MINMAX_EXPRESSION_H
 
-#include <avtBinaryMathFilter.h>
+#include <avtBinaryMathExpression.h>
 
 class     vtkDataArray;
 
@@ -68,7 +68,7 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathFilter
+class EXPRESSION_API avtMinMaxExpression : public avtBinaryMathExpression
 {
   public:
                               avtMinMaxExpression();

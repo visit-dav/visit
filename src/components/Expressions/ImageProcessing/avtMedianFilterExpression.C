@@ -106,7 +106,7 @@ avtMedianFilterExpression::~avtMedianFilterExpression()
 void
 avtMedianFilterExpression::PreExecute(void)
 {
-    avtUnaryMathFilter::PreExecute();
+    avtUnaryMathExpression::PreExecute();
     haveIssuedWarning = false;
 }
 

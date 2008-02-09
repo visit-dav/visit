@@ -43,7 +43,7 @@
 #ifndef AVT_VMETRIC_ODDY_H
 #define AVT_VMETRIC_ODDY_H
 #include <expression_exports.h>
-#include <avtVerdictFilter.h>
+#include <avtVerdictExpression.h>
 
 // ****************************************************************************
 //  Class: avtVMetricOddy
@@ -56,7 +56,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricOddy : public avtVerdictFilter
+class EXPRESSION_API avtVMetricOddy : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);

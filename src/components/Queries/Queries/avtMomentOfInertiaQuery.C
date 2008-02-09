@@ -53,8 +53,8 @@
 #include <vtkDataSet.h>
 #include <vtkVisItUtility.h>
 
-#include <avtAbsValFilter.h>
-#include <avtBinaryMultiplyFilter.h>
+#include <avtAbsValExpression.h>
+#include <avtBinaryMultiplyExpression.h>
 #include <avtCallback.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
@@ -92,8 +92,8 @@ using     std::vector;
 
 avtMomentOfInertiaQuery::avtMomentOfInertiaQuery()
 {
-    absval = new avtAbsValFilter;
-    multiply = new avtBinaryMultiplyFilter;
+    absval = new avtAbsValExpression;
+    multiply = new avtBinaryMultiplyExpression;
     volume = new avtVMetricVolume;
 }
 

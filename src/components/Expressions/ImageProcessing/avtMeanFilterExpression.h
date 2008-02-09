@@ -43,7 +43,7 @@
 #ifndef AVT_MEAN_FILTER_EXPRESSION_H
 #define AVT_MEAN_FILTER_EXPRESSION_H
 
-#include <avtUnaryMathFilter.h>
+#include <avtUnaryMathExpression.h>
 
 class     vtkDataArray;
 
@@ -60,7 +60,7 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtMeanFilterExpression : public avtUnaryMathFilter
+class EXPRESSION_API avtMeanFilterExpression : public avtUnaryMathExpression
 {
   public:
                               avtMeanFilterExpression();

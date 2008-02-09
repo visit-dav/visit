@@ -43,7 +43,7 @@
 #ifndef AVT_VMETRIC_DIAGONAL_H
 #define AVT_VMETRIC_DIAGONAL_H
 #include <expression_exports.h>
-#include <avtVerdictFilter.h>
+#include <avtVerdictExpression.h>
 
 // ****************************************************************************
 //  Class: avtVMetricDiagonal
@@ -56,7 +56,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricDiagonal : public avtVerdictFilter
+class EXPRESSION_API avtVMetricDiagonal : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);

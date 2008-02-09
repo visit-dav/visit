@@ -1,1 +1,1 @@
-../../components/Pipeline/PrivateFilters/avtPluginFilter.h
+../../components/Pipeline/AbstractFilters/avtPluginFilter.h

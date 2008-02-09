@@ -45,7 +45,7 @@
 
 #include <expression_exports.h>
 
-#include <avtVerdictFilter.h>
+#include <avtVerdictExpression.h>
 
 
 // ****************************************************************************
@@ -64,7 +64,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricArea : public avtVerdictFilter
+class EXPRESSION_API avtVMetricArea : public avtVerdictExpression
 {
   public:
     virtual double     Metric(double coords[][3], int type);

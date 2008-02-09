@@ -101,7 +101,7 @@ avtMeanFilterExpression::~avtMeanFilterExpression()
 void
 avtMeanFilterExpression::PreExecute(void)
 {
-    avtUnaryMathFilter::PreExecute();
+    avtUnaryMathExpression::PreExecute();
     haveIssuedWarning = false;
 }
 

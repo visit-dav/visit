@@ -44,7 +44,7 @@
 #define AVT_VMETRIC_VOLUME_H
 
 #include <expression_exports.h>
-#include <avtVerdictFilter.h>
+#include <avtVerdictExpression.h>
 
 
 // ****************************************************************************
@@ -69,7 +69,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricVolume : public avtVerdictFilter
+class EXPRESSION_API avtVMetricVolume : public avtVerdictExpression
 {
   public:
                        avtVMetricVolume();

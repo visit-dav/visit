@@ -212,7 +212,7 @@ avtConnComponentsExpression::ProcessArguments(ArgsExpr *args,
         {
 
             EXCEPTION2(ExpressionException, outputVariableName,
-            "avtGradientFilter: Expects an integer or string second "
+            "avtGradientExpression: Expects an integer or string second "
             "argument.\n"
             " Valid options are: 1,0 or \"true\",\"false\"");
         }
@@ -1206,7 +1206,7 @@ avtConnComponentsExpression::ShiftLabels(vtkIntArray *labels, int shift)
 
 
 // ****************************************************************************
-//  Method: avtGradientFilter::PerformRestriction
+//  Method: avtGradientExpression::PerformRestriction
 //
 //  Purpose:
 //      Request ghost zones.

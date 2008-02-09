@@ -48,7 +48,7 @@
 #include <avtSummationQuery.h>
 
 
-class     avtBinaryMultiplyFilter;
+class     avtBinaryMultiplyExpression;
 class     avtRevolvedVolume;
 class     avtVMetricArea;
 class     avtVMetricVolume;
@@ -85,10 +85,10 @@ class QUERY_API avtWeightedVariableSummationQuery : public avtSummationQuery
                              { return "avtWeightedVariableSummationQuery"; };
 
   protected:
-    avtVMetricArea            *area;
-    avtVMetricVolume          *volume;
-    avtRevolvedVolume         *revolvedVolume;
-    avtBinaryMultiplyFilter   *multiply;
+    avtVMetricArea              *area;
+    avtVMetricVolume            *volume;
+    avtRevolvedVolume           *revolvedVolume;
+    avtBinaryMultiplyExpression *multiply;
 
     virtual avtDataObject_p    ApplyFilters(avtDataObject_p);
     virtual int                GetNFilters(void) { return 2; };

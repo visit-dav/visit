@@ -43,7 +43,7 @@
 #ifndef AVT_TIME_EXPRESSION_H
 #define AVT_TIME_EXPRESSION_H
 
-#include <avtUnaryMathFilter.h>
+#include <avtUnaryMathExpression.h>
 
 
 // ****************************************************************************
@@ -62,7 +62,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtTimeExpression : public avtUnaryMathFilter
+class EXPRESSION_API avtTimeExpression : public avtUnaryMathExpression
 {
   public:
                              avtTimeExpression();

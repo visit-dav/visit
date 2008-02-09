@@ -1,1 +1,1 @@
-../../components/Pipeline/PrivateFilters/avtPluginStructuredChunkStreamer.h
+../../components/Pipeline/AbstractFilters/avtPluginStructuredChunkStreamer.h
