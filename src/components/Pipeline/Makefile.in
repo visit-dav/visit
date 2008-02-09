@@ -229,13 +229,16 @@
 #    Hank Childs, Tue Jan 22 09:11:49 PST 2008
 #    Add avtTimeLoopCollectorFilter.
 #
+#    Hank Childs, Sat Feb  9 10:09:47 PST 2008
+#    Renamed AbstractFilters to AbstractFilters.
+#
 ##############################################################################
 
 @SET_MAKE@
 @VARIABLES@
 
-SUBDIRS=Data Pipeline PrivateFilters Sinks Sources
-SRC=$(Data_src) $(MeshQuality_src) $(Pipeline_src) $(PrivateFilters_src) \
+SUBDIRS=Data Pipeline AbstractFilters Sinks Sources
+SRC=$(Data_src) $(MeshQuality_src) $(Pipeline_src) $(AbstractFilters_src) \
     $(Sinks_src) $(Sources_src)
 
 Data_src= \
@@ -315,37 +318,37 @@ Pipeline_src= \
   Pipeline/avtPipelineSpecification.C \
   Pipeline/avtWebpage.C
 
-PrivateFilters_src= \
-  PrivateFilters/avtCompactTreeFilter.C \
-  PrivateFilters/avtDataObjectToDatasetFilter.C \
-  PrivateFilters/avtDataObjectToImageFilter.C \
-  PrivateFilters/avtDataObjectToSamplePointsFilter.C \
-  PrivateFilters/avtDataTreeStreamer.C \
-  PrivateFilters/avtDatasetToDataObjectFilter.C \
-  PrivateFilters/avtDatasetToDatasetFilter.C \
-  PrivateFilters/avtDatasetToImageFilter.C \
-  PrivateFilters/avtDatasetToSamplePointsFilter.C \
-  PrivateFilters/avtFacadeFilter.C \
-  PrivateFilters/avtFilter.C \
-  PrivateFilters/avtImageToDataObjectFilter.C \
-  PrivateFilters/avtImageToImageFilter.C \
-  PrivateFilters/avtMultiResolutionPartitionStrategy.C \
-  PrivateFilters/avtMultipleInputToDataObjectFilter.C \
-  PrivateFilters/avtMultipleInputToDatasetFilter.C \
-  PrivateFilters/avtPluginStreamer.C \
-  PrivateFilters/avtPluginStructuredChunkStreamer.C \
-  PrivateFilters/avtSamplePointsToDataObjectFilter.C \
-  PrivateFilters/avtSamplePointsToDatasetFilter.C \
-  PrivateFilters/avtSamplePointsToImageFilter.C \
-  PrivateFilters/avtSamplePointsToSamplePointsFilter.C \
-  PrivateFilters/avtSingleFilterFacade.C \
-  PrivateFilters/avtStreamer.C \
-  PrivateFilters/avtStructuredChunkStreamer.C \
-  PrivateFilters/avtStructuredMeshChunker.C \
-  PrivateFilters/avtStructuredMeshPartitionStrategy.C \
-  PrivateFilters/avtSweepPlanePartitionStrategy.C \
-  PrivateFilters/avtTimeLoopCollectorFilter.C \
-  PrivateFilters/avtTimeLoopFilter.C
+AbstractFilters_src= \
+  AbstractFilters/avtCompactTreeFilter.C \
+  AbstractFilters/avtDataObjectToDatasetFilter.C \
+  AbstractFilters/avtDataObjectToImageFilter.C \
+  AbstractFilters/avtDataObjectToSamplePointsFilter.C \
+  AbstractFilters/avtDataTreeStreamer.C \
+  AbstractFilters/avtDatasetToDataObjectFilter.C \
+  AbstractFilters/avtDatasetToDatasetFilter.C \
+  AbstractFilters/avtDatasetToImageFilter.C \
+  AbstractFilters/avtDatasetToSamplePointsFilter.C \
+  AbstractFilters/avtFacadeFilter.C \
+  AbstractFilters/avtFilter.C \
+  AbstractFilters/avtImageToDataObjectFilter.C \
+  AbstractFilters/avtImageToImageFilter.C \
+  AbstractFilters/avtMultiResolutionPartitionStrategy.C \
+  AbstractFilters/avtMultipleInputToDataObjectFilter.C \
+  AbstractFilters/avtMultipleInputToDatasetFilter.C \
+  AbstractFilters/avtPluginStreamer.C \
+  AbstractFilters/avtPluginStructuredChunkStreamer.C \
+  AbstractFilters/avtSamplePointsToDataObjectFilter.C \
+  AbstractFilters/avtSamplePointsToDatasetFilter.C \
+  AbstractFilters/avtSamplePointsToImageFilter.C \
+  AbstractFilters/avtSamplePointsToSamplePointsFilter.C \
+  AbstractFilters/avtSingleFilterFacade.C \
+  AbstractFilters/avtStreamer.C \
+  AbstractFilters/avtStructuredChunkStreamer.C \
+  AbstractFilters/avtStructuredMeshChunker.C \
+  AbstractFilters/avtStructuredMeshPartitionStrategy.C \
+  AbstractFilters/avtSweepPlanePartitionStrategy.C \
+  AbstractFilters/avtTimeLoopCollectorFilter.C \
+  AbstractFilters/avtTimeLoopFilter.C
 
 Sinks_src= \
   Sinks/avtDataObjectSink.C \

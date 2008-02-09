@@ -103,7 +103,7 @@ avtAbelInversionExpression::~avtAbelInversionExpression()
 void
 avtAbelInversionExpression::PreExecute(void)
 {
-    avtUnaryMathFilter::PreExecute();
+    avtUnaryMathExpression::PreExecute();
     haveIssuedWarning = false;
 }
 

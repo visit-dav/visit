@@ -50,7 +50,7 @@
 #include <avtDDFFunctionInfo.h>
 #include <avtExpressionEvaluatorFilter.h>
 #include <avtExpressionFilter.h>
-#include <avtIdentityFilter.h>
+#include <avtIdentityExpression.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtTypes.h>
 
@@ -539,7 +539,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             // the form "A = B".
             debug1 << "Warning: expression logic identified expression of "
                    << "form A = B." << endl;
-            avtIdentityFilter *ident = new avtIdentityFilter();
+            avtIdentityExpression *ident = new avtIdentityExpression();
             string inputName = pipelineState.PopName();
             ident->AddInputVariableName(inputName.c_str());
             ident->SetOutputVariableName(var.c_str());

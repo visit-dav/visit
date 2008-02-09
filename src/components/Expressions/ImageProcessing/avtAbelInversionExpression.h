@@ -43,7 +43,7 @@
 #ifndef AVT_ABEL_INVERSION_EXPRESSION_H
 #define AVT_ABEL_INVERSION_EXPRESSION_H
 
-#include <avtUnaryMathFilter.h>
+#include <avtUnaryMathExpression.h>
 
 class     vtkDataArray;
 
@@ -60,7 +60,7 @@ class     vtkDataArray;
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtAbelInversionExpression : public avtUnaryMathFilter
+class EXPRESSION_API avtAbelInversionExpression : public avtUnaryMathExpression
 {
   public:
                               avtAbelInversionExpression();

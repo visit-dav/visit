@@ -1,1 +1,1 @@
-../../components/Pipeline/PrivateFilters/avtStreamer.h
+../../components/Pipeline/AbstractFilters/avtStreamer.h

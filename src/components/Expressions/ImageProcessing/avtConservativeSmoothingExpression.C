@@ -106,7 +106,7 @@ avtConservativeSmoothingExpression::~avtConservativeSmoothingExpression()
 void
 avtConservativeSmoothingExpression::PreExecute(void)
 {
-    avtUnaryMathFilter::PreExecute();
+    avtUnaryMathExpression::PreExecute();
     haveIssuedWarning = false;
 }
 

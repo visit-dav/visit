@@ -41,13 +41,13 @@
 #   Reorganized some of the other filters and names.
 #
 #   Hank Childs, Fri Mar  7 09:21:53 PST 2003 
-#   Added avtRandomFilter.
+#   Added avtRandomExpression.
 #
 #   Hank Childs, Tue Mar 18 21:38:11 PST 2003
 #   Added avtRevolvedSurfaceArea.
 #
 #   Sean Ahern, Wed Jun 11 13:30:23 PDT 2003
-#   Added avtVectorCrossProductFilter.
+#   Added avtVectorCrossProductExpression.
 #
 #   Hank Childs, Wed Aug 20 10:48:55 PDT 2003
 #   Added Conditional directory.
@@ -62,7 +62,7 @@
 #   Added Identity, Recenter filter.
 #
 #   Hank Childs, Thu Feb  5 18:11:46 PST 2004
-#   Added avtSingleInputExpressionFilter and avtComparisonFilter.
+#   Added avtSingleInputExpressionFilter and avtComparisonExpression.
 #
 #   Brad Whitlock, Thu Apr 22 17:22:04 PST 2004
 #   Changed the link line for libraries needed so we can do prebinding on
@@ -81,28 +81,28 @@
 #   Added neighbor evaluator filter.
 #
 #   Hank Childs, Thu Sep 23 09:14:00 PDT 2004
-#   Added avtDataIdFilter.
+#   Added avtDataIdExpression.
 #
 #   Jeremy Meredith, Wed Nov 24 12:23:14 PST 2004
 #   Moved the old EngineExprNode stuff here and renamed it with "avt".
 #
 #   Hank Childs, Mon Dec 27 10:58:14 PST 2004
 #   Add avtExpressionStreamer and avtMacroExpressionFilter.  Also added
-#   avtCurlFilter, avtRelativeDifferenceFilter, avtMIRvfFilter,
-#   avtMatErrorFilter, avtDivergenceFilter, and avtLaplacianFilter.
+#   avtCurlExpression, avtRelativeDifferenceExpression, avtMIRvfExpression,
+#   avtMatErrorExpression, avtDivergenceExpression, and avtLaplacianExpression.
 #
 #   Brad Whitlock, Tue Jan 4 18:14:57 PST 2005
 #   Added -lexpr so we can link on MacOS X.
 #
 #   Hank Childs, Thu Jan 20 15:47:25 PST 2005
-#   Added avtSideVolume, avtResradFilter.
+#   Added avtSideVolume, avtResradExpression.
 #
 #   Kathleen Bonnell, Thu Mar  3 11:13:22 PST 2005 
-#   Added avtVariableSkewFilter. 
+#   Added avtVariableSkewExpression. 
 #
 #   Hank Childs, Thu Jun 30 15:57:08 PDT 2005
-#   Added avtCylindricalFilter, avtExpressionComponentMacro, avtFloorFilter,
-#   avtCeilingFilter, avtModuloFilter, and avtRoundFilter.
+#   Added avtCylindricalFilter, avtExpressionComponentMacro, avtFloorExpression,
+#   avtCeilingExpression, avtModuloExpression, and avtRoundExpression.
 #
 #   Hank Childs, Thu Jul 21 11:24:46 PDT 2005
 #   Added avtArrayCompose/ArrayDecompose Filter.
@@ -117,7 +117,7 @@
 #   Added avtExternalNodeExpression, avtSurfaceNormalExpression, avtEdgeLength.
 #
 #   Brad Whitlock, Fri Nov 18 15:45:58 PST 2005
-#   Added avtDistanceToBestFitLineFilter.
+#   Added avtDistanceToBestFitLineExpression.
 #
 #   Brad Whitlock, Wed Nov 23 10:36:57 PDT 2005
 #   Added more libs for Mac linking.
@@ -150,9 +150,9 @@
 #   Added avtAbelInversionExpression.
 #
 #   Thomas R. Treadway, Tue Dec  5 14:56:31 PST 2006
-#   Added avtDisplacementFilter, avtStrainAlmansiFilter
-#   avtStrainGreenLagrangeFilter, avtStrainInfinitesimalFilter
-#   avtStrainRateFilter, and avtStrainTensorFilter
+#   Added avtDisplacementExpression, avtStrainAlmansiExpression
+#   avtStrainGreenLagrangeExpression, avtStrainInfinitesimalExpression
+#   avtStrainRateExpression, and avtStrainTensorExpression
 #
 #   Hank Childs, Fri Dec 22 09:56:13 PST 2006
 #   Added avtEvalPointExpression and avtSymmPointExpression.
@@ -164,7 +164,7 @@
 #   Added $(GLEW_LIBS)  
 #
 #   Sean Ahern, Wed Feb  7 18:59:25 EST 2007
-#   Added avtNormalizeFilter.
+#   Added avtNormalizeExpression.
 #
 #   Cyrus Harrison, Wed Feb 21 09:34:52 PST 2007
 #   Added avtConnComponentsExpression
@@ -173,25 +173,28 @@
 #   Added $(MESA_LIBS)
 #
 #   Brad Whitlock, Mon Apr 23 17:29:50 PST 2007
-#   Added avtColorComposeFilter.C
+#   Added avtColorComposeExpression.C
 #
 #   Sean Ahern, Tue May 8 10:36:36 PDT 2007
-#   Added avtArctan2Filter.C
+#   Added avtArctan2Expression.C
 #
 #   Cyrus Harrison, Fri Jun  1 14:37:42 PDT 2007
-#   Added avtTensorContractionFilter.C and avtViscousStressFilter.C
+#   Added avtTensorContractionExpression.C and avtViscousStressExpression.C
 #
 #   Jeremy Meredith, Thu Aug 30 16:04:41 EDT 2007
-#   Added avtHSVColorComposeFilter.C.
+#   Added avtHSVColorComposeExpression.C.
 #
 #   Gunther H. Weber, Wed Jan  9 10:21:48 PST 2008
-#   Added avtPerformColorTableLookupFilter.C
+#   Added avtPerformColorTableLookupExpression.C
 #
 #   Hank Childs, Thu Jan 24 15:48:41 PST 2008
 #   Added avtExecuteThenTimeLoopFilter.
 #
 #   Cyrus Harrison, Tue Jan 29 08:35:15 PST 2008
-#   Added avtPerMaterialValueFilter.C
+#   Added avtPerMaterialValueExpression.C
+#
+#   Hank Childs, Sat Feb  9 10:45:58 PST 2008
+#   Rename many modules of the form avtBlahFilter to avtBlahExpression.
 #
 ##############################################################################
 
@@ -205,26 +208,26 @@ SRC=$(Abstract_src) $(CMFE_src) $(Conditional_src) $(Derivations_src) \
     $(MeshQuality_src) 
 
 Abstract_src= \
-  Abstract/avtBinaryMathFilter.C \
-  Abstract/avtComparisonFilter.C \
+  Abstract/avtBinaryMathExpression.C \
+  Abstract/avtComparisonExpression.C \
   Abstract/avtExpressionFilter.C \
   Abstract/avtExpressionStreamer.C \
   Abstract/avtMacroExpressionFilter.C \
   Abstract/avtMultipleInputExpressionFilter.C \
   Abstract/avtSingleInputExpressionFilter.C \
-  Abstract/avtUnaryMathFilter.C
+  Abstract/avtUnaryMathExpression.C
 
 Conditional_src= \
-  Conditional/avtConditionalFilter.C \
-  Conditional/avtLogicalAndFilter.C \
-  Conditional/avtLogicalOrFilter.C \
-  Conditional/avtLogicalNegationFilter.C \
-  Conditional/avtTestEqualToFilter.C \
-  Conditional/avtTestGreaterThanFilter.C \
-  Conditional/avtTestGreaterThanOrEqualToFilter.C \
-  Conditional/avtTestLessThanFilter.C \
-  Conditional/avtTestLessThanOrEqualToFilter.C \
-  Conditional/avtTestNotEqualToFilter.C
+  Conditional/avtConditionalExpression.C \
+  Conditional/avtLogicalAndExpression.C \
+  Conditional/avtLogicalOrExpression.C \
+  Conditional/avtLogicalNegationExpression.C \
+  Conditional/avtTestEqualToExpression.C \
+  Conditional/avtTestGreaterThanExpression.C \
+  Conditional/avtTestGreaterThanOrEqualToExpression.C \
+  Conditional/avtTestLessThanExpression.C \
+  Conditional/avtTestLessThanOrEqualToExpression.C \
+  Conditional/avtTestNotEqualToExpression.C
 
 CMFE_src= \
   CMFE/avtCMFEExpression.C \
@@ -242,59 +245,59 @@ CMFE_src= \
 
 Derivations_src=\
   Derivations/avtCurvatureExpression.C \
-  Derivations/avtDisplacementFilter.C \
-  Derivations/avtEffectiveTensorFilter.C \
+  Derivations/avtDisplacementExpression.C \
+  Derivations/avtEffectiveTensorExpression.C \
   Derivations/avtLocalizedCompactnessExpression.C \
-  Derivations/avtPrincipalDeviatoricTensorFilter.C \
-  Derivations/avtPrincipalTensorFilter.C \
-  Derivations/avtStrainAlmansiFilter.C \
-  Derivations/avtStrainGreenLagrangeFilter.C \
-  Derivations/avtStrainInfinitesimalFilter.C \
-  Derivations/avtStrainRateFilter.C \
-  Derivations/avtStrainTensorFilter.C \
-  Derivations/avtTensorMaximumShearFilter.C
+  Derivations/avtPrincipalDeviatoricTensorExpression.C \
+  Derivations/avtPrincipalTensorExpression.C \
+  Derivations/avtStrainAlmansiExpression.C \
+  Derivations/avtStrainGreenLagrangeExpression.C \
+  Derivations/avtStrainInfinitesimalExpression.C \
+  Derivations/avtStrainRateExpression.C \
+  Derivations/avtStrainTensorExpression.C \
+  Derivations/avtTensorMaximumShearExpression.C
 
 General_src= \
   General/avtApplyDDFExpression.C \
-  General/avtArrayComposeFilter.C \
-  General/avtArrayComposeWithBinsFilter.C \
-  General/avtArrayDecomposeFilter.C \
-  General/avtColorComposeFilter.C \
+  General/avtArrayComposeExpression.C \
+  General/avtArrayComposeWithBinsExpression.C \
+  General/avtArrayDecomposeExpression.C \
+  General/avtColorComposeExpression.C \
   General/avtConnComponentsExpression.C \
-  General/avtCurlFilter.C \
-  General/avtDataIdFilter.C \
-  General/avtDegreeFilter.C \
-  General/avtDivergenceFilter.C \
-  General/avtDistanceToBestFitLineFilter.C \
+  General/avtCurlExpression.C \
+  General/avtDataIdExpression.C \
+  General/avtDegreeExpression.C \
+  General/avtDivergenceExpression.C \
+  General/avtDistanceToBestFitLineExpression.C \
   General/avtExpressionComponentMacro.C \
   General/avtExternalNodeExpression.C \
-  General/avtGradientFilter.C \
-  General/avtHSVColorComposeFilter.C \
-  General/avtLaplacianFilter.C \
-  General/avtMIRvfFilter.C \
-  General/avtMatvfFilter.C \
-  General/avtMatErrorFilter.C \
-  General/avtMagnitudeFilter.C \
-  General/avtMeshCoordinateFilter.C \
+  General/avtGradientExpression.C \
+  General/avtHSVColorComposeExpression.C \
+  General/avtLaplacianExpression.C \
+  General/avtMIRvfExpression.C \
+  General/avtMatvfExpression.C \
+  General/avtMatErrorExpression.C \
+  General/avtMagnitudeExpression.C \
+  General/avtMeshCoordinateExpression.C \
   General/avtMinMaxExpression.C \
-  General/avtNMatsFilter.C \
-  General/avtNeighborEvaluatorFilter.C \
-  General/avtNormalizeFilter.C \
-  General/avtPerformColorTableLookupFilter.C \
-  General/avtPerMaterialValueFilter.C \
-  General/avtProcessorIdFilter.C \
-  General/avtRelativeDifferenceFilter.C \
-  General/avtResradFilter.C \
-  General/avtRandomFilter.C \
-  General/avtRecenterFilter.C \
-  General/avtSpecMFFilter.C \
+  General/avtNMatsExpression.C \
+  General/avtNeighborEvaluatorExpression.C \
+  General/avtNormalizeExpression.C \
+  General/avtPerformColorTableLookupExpression.C \
+  General/avtPerMaterialValueExpression.C \
+  General/avtProcessorIdExpression.C \
+  General/avtRelativeDifferenceExpression.C \
+  General/avtResradExpression.C \
+  General/avtRandomExpression.C \
+  General/avtRecenterExpression.C \
+  General/avtSpecMFExpression.C \
   General/avtSurfaceNormalExpression.C \
-  General/avtTensorContractionFilter.C \
-  General/avtVariableSkewFilter.C \
-  General/avtVectorComposeFilter.C \
-  General/avtVectorDecomposeFilter.C \
-  General/avtViscousStressFilter.C \
-  General/avtZoneTypeFilter.C
+  General/avtTensorContractionExpression.C \
+  General/avtVariableSkewExpression.C \
+  General/avtVectorComposeExpression.C \
+  General/avtVectorDecomposeExpression.C \
+  General/avtViscousStressExpression.C \
+  General/avtZoneTypeExpression.C
 
 
 ImageProcessing_src= \
@@ -306,51 +309,51 @@ ImageProcessing_src= \
 Management_src= \
   Management/avtExecuteThenTimeLoopFilter.C \
   Management/avtExpressionEvaluatorFilter.C \
-  Management/avtConstantCreatorFilter.C \
+  Management/avtConstantCreatorExpression.C \
   Management/avtExprNode.C \
   Management/avtExprNodeFactory.C \
   Management/ExprPipelineState.C \
   Management/avtTimeExpression.C 
 
 Math_src= \
-  Math/avtAbsValFilter.C \
-  Math/avtArccosFilter.C \
-  Math/avtArcsinFilter.C \
-  Math/avtArctanFilter.C \
-  Math/avtArctan2Filter.C \
-  Math/avtBase10LogFilter.C \
-  Math/avtBinaryAddFilter.C \
-  Math/avtBinaryDivideFilter.C \
-  Math/avtBinaryMultiplyFilter.C \
-  Math/avtBinaryPowerFilter.C \
-  Math/avtBinarySubtractFilter.C \
-  Math/avtCeilingFilter.C \
-  Math/avtCosFilter.C \
-  Math/avtCylindricalCoordinatesFilter.C \
-  Math/avtDegreeToRadianFilter.C \
-  Math/avtDeterminantFilter.C \
-  Math/avtEigenvalueFilter.C \
-  Math/avtEigenvectorFilter.C \
-  Math/avtFloorFilter.C \
-  Math/avtIdentityFilter.C \
-  Math/avtModuloFilter.C \
-  Math/avtInverseFilter.C \
-  Math/avtNaturalLogFilter.C \
-  Math/avtPolarCoordinatesFilter.C \
-  Math/avtRadianToDegreeFilter.C \
-  Math/avtRoundFilter.C \
-  Math/avtSinFilter.C \
-  Math/avtSquareFilter.C \
-  Math/avtSquareRootFilter.C \
-  Math/avtTanFilter.C \
-  Math/avtTraceFilter.C \
-  Math/avtUnaryMinusFilter.C \
-  Math/avtVectorCrossProductFilter.C
+  Math/avtAbsValExpression.C \
+  Math/avtArccosExpression.C \
+  Math/avtArcsinExpression.C \
+  Math/avtArctanExpression.C \
+  Math/avtArctan2Expression.C \
+  Math/avtBase10LogExpression.C \
+  Math/avtBinaryAddExpression.C \
+  Math/avtBinaryDivideExpression.C \
+  Math/avtBinaryMultiplyExpression.C \
+  Math/avtBinaryPowerExpression.C \
+  Math/avtBinarySubtractExpression.C \
+  Math/avtCeilingExpression.C \
+  Math/avtCosExpression.C \
+  Math/avtCylindricalCoordinatesExpression.C \
+  Math/avtDegreeToRadianExpression.C \
+  Math/avtDeterminantExpression.C \
+  Math/avtEigenvalueExpression.C \
+  Math/avtEigenvectorExpression.C \
+  Math/avtFloorExpression.C \
+  Math/avtIdentityExpression.C \
+  Math/avtModuloExpression.C \
+  Math/avtInverseExpression.C \
+  Math/avtNaturalLogExpression.C \
+  Math/avtPolarCoordinatesExpression.C \
+  Math/avtRadianToDegreeExpression.C \
+  Math/avtRoundExpression.C \
+  Math/avtSinExpression.C \
+  Math/avtSquareExpression.C \
+  Math/avtSquareRootExpression.C \
+  Math/avtTanExpression.C \
+  Math/avtTraceExpression.C \
+  Math/avtUnaryMinusExpression.C \
+  Math/avtVectorCrossProductExpression.C
 
 MeshQuality_src= \
   MeshQuality/avtEdgeLength.C \
-  MeshQuality/avtNeighborFilter.C \
-  MeshQuality/avtNodeDegreeFilter.C \
+  MeshQuality/avtNeighborExpression.C \
+  MeshQuality/avtNodeDegreeExpression.C \
   MeshQuality/avtRevolvedSurfaceArea.C \
   MeshQuality/avtRevolvedVolume.C \
   MeshQuality/avtSideVolume.C \
@@ -374,7 +377,7 @@ MeshQuality_src= \
   MeshQuality/avtVMetricTaper.C \
   MeshQuality/avtVMetricVolume.C \
   MeshQuality/avtVMetricWarpage.C \
-  MeshQuality/avtVerdictFilter.C \
+  MeshQuality/avtVerdictExpression.C \
   MeshQuality/verdict.C
 
 

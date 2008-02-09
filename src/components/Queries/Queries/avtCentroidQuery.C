@@ -53,8 +53,8 @@
 #include <vtkDataSet.h>
 #include <vtkVisItUtility.h>
 
-#include <avtAbsValFilter.h>
-#include <avtBinaryMultiplyFilter.h>
+#include <avtAbsValExpression.h>
+#include <avtBinaryMultiplyExpression.h>
 #include <avtCallback.h>
 #include <avtParallel.h>
 #include <avtSourceFromAVTDataset.h>
@@ -93,8 +93,8 @@ using     std::vector;
 
 avtCentroidQuery::avtCentroidQuery()
 {
-    absval = new avtAbsValFilter;
-    multiply = new avtBinaryMultiplyFilter;
+    absval = new avtAbsValExpression;
+    multiply = new avtBinaryMultiplyExpression;
     area = new avtVMetricArea;
     volume = new avtVMetricVolume;
 }
@@ -280,7 +280,7 @@ avtCentroidQuery::ApplyFilters(avtDataObject_p inData)
             useVar = true;
     }
 
-    avtVerdictFilter *vf = NULL;
+    avtVerdictExpression *vf = NULL;
     if (dob->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
         vf = volume;
     else

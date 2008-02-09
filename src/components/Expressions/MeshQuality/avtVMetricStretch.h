@@ -43,7 +43,7 @@
 #ifndef AVT_VMETRIC_STRETCH_H
 #define AVT_VMETRIC_STRETCH_H
 #include <expression_exports.h>
-#include <avtVerdictFilter.h>
+#include <avtVerdictExpression.h>
 
 // ****************************************************************************
 //  Class: avtVMetricStretch
@@ -56,7 +56,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricStretch : public avtVerdictFilter
+class EXPRESSION_API avtVMetricStretch : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);

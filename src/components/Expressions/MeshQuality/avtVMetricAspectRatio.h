@@ -43,7 +43,7 @@
 #ifndef AVT_VMETRIC_ASPECT_RATIO_H
 #define AVT_VMETRIC_ASPECT_RATIO_H
 #include <expression_exports.h>
-#include <avtVerdictFilter.h> 
+#include <avtVerdictExpression.h> 
 
 // ****************************************************************************
 //  Class: avtVMetricAspectRatio
@@ -56,7 +56,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricAspectRatio : public avtVerdictFilter
+class EXPRESSION_API avtVMetricAspectRatio : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);

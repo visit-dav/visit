@@ -53,8 +53,8 @@
 class vtkDataSet;
 class vtkCell;
 
-class avtAbsValFilter;
-class avtBinaryMultiplyFilter;
+class avtAbsValExpression;
+class avtBinaryMultiplyExpression;
 class avtVMetricVolume;
 
 
@@ -88,8 +88,8 @@ class QUERY_API avtMomentOfInertiaQuery : public avtDatasetQuery
   protected:
     double                          I[9];
     avtVMetricVolume               *volume;
-    avtBinaryMultiplyFilter        *multiply;
-    avtAbsValFilter                *absval;
+    avtBinaryMultiplyExpression    *multiply;
+    avtAbsValExpression            *absval;
 
     virtual void                    Execute(vtkDataSet *, const int);
     virtual void                    PreExecute(void);

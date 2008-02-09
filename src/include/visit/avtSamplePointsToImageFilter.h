@@ -1,1 +1,1 @@
-../../components/Pipeline/PrivateFilters/avtSamplePointsToImageFilter.h
+../../components/Pipeline/AbstractFilters/avtSamplePointsToImageFilter.h

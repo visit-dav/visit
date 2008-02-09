@@ -1,1 +1,1 @@
-../../components/Pipeline/PrivateFilters/avtMultiResolutionPartitionStrategy.h
+../../components/Pipeline/AbstractFilters/avtMultiResolutionPartitionStrategy.h

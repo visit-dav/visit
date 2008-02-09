@@ -1,1 +1,1 @@
-../../components/Pipeline/PrivateFilters/avtImageToImageFilter.h
+../../components/Pipeline/AbstractFilters/avtImageToImageFilter.h

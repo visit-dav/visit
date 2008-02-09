@@ -54,7 +54,7 @@
 #include <vtkVisItUtility.h>
 
 #include <avtCallback.h>
-#include <avtConstantCreatorFilter.h>
+#include <avtConstantCreatorExpression.h>
 #include <avtDatasetExaminer.h>
 #include <avtLocalizedCompactnessExpression.h>
 #include <avtParallel.h>
@@ -237,7 +237,7 @@ avtLocalizedCompactnessFactorQuery::ApplyFilters(avtDataObject_p inData)
     double extents[6] = { 0, 0, 0, 0, 0, 0 };
     avtDatasetExaminer::GetSpatialExtents(ds, extents);
 
-    avtConstantCreatorFilter ccf;
+    avtConstantCreatorExpression ccf;
     ccf.SetValue(1.0);
     ccf.SetInput(dob);
     ccf.SetOutputVariableName("is_material");

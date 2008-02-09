@@ -43,7 +43,7 @@
 #ifndef AVT_VMETRIC_TAPER_H
 #define AVT_VMETRIC_TAPER_H
 #include <expression_exports.h>
-#include <avtVerdictFilter.h>
+#include <avtVerdictExpression.h>
 
 // ****************************************************************************
 //  Class: avtVMetricTaper
@@ -56,7 +56,7 @@
 //
 // ****************************************************************************
 
-class EXPRESSION_API avtVMetricTaper : public avtVerdictFilter
+class EXPRESSION_API avtVMetricTaper : public avtVerdictExpression
 {
     public:
         double Metric(double coords[][3], int type);
