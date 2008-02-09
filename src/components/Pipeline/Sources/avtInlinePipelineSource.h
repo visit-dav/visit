@@ -45,7 +45,7 @@
 
 #include <pipeline_exports.h>
 
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 
 // ****************************************************************************
@@ -70,28 +70,28 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtInlinePipelineSource : virtual public avtTerminatingSource
+class PIPELINE_API avtInlinePipelineSource : virtual public avtOriginatingSource
 {
   public:
                            avtInlinePipelineSource(avtDataObject_p);
     virtual               ~avtInlinePipelineSource();
 
-    virtual avtDataSpecification_p 
-                           GetFullDataSpecification(void);
+    virtual avtDataRequest_p 
+                           GetFullDataRequest(void);
 
   protected:
-    avtTerminatingSource  *realPipelineSource;
+    avtOriginatingSource  *realPipelineSource;
 
     virtual void           FetchMeshAuxiliaryData(const char *type, void *args,
-                               avtDataSpecification_p, VoidRefList &);
+                               avtDataRequest_p, VoidRefList &);
     virtual void           FetchVariableAuxiliaryData(const char *type,
-                               void *args, avtDataSpecification_p,
+                               void *args, avtDataRequest_p,
                                VoidRefList &);
     virtual void           FetchMaterialAuxiliaryData(const char *type,
-                               void *args, avtDataSpecification_p,
+                               void *args, avtDataRequest_p,
                                VoidRefList &);
     virtual void           FetchSpeciesAuxiliaryData(const char *type,
-                               void *args, avtDataSpecification_p,
+                               void *args, avtDataRequest_p,
                                VoidRefList &);
 
     virtual bool           ArtificialPipeline(void)  { return true; };

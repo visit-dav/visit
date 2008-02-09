@@ -50,7 +50,7 @@
 #include <vtkVisItCellLocator.h>
 #include <vtkVisItUtility.h>
 
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <DebugStream.h>
 
 #include <math.h>

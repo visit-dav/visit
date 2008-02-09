@@ -315,16 +315,16 @@ avtGhostZoneAndFacelistFilter::Execute(void)
     avtSourceFromAVTDataset termsrc(ds);
     avtDataObject_p data = termsrc.GetOutput(); 
 
-    avtPipelineSpecification_p specForDB = GetGeneralPipelineSpecification();
-    avtDataSpecification_p wrongVar = specForDB->GetDataSpecification();
-    avtDataSpecification_p correctVar = new avtDataSpecification(wrongVar,
+    avtContract_p specForDB = GetGeneralContract();
+    avtDataRequest_p wrongVar = specForDB->GetDataRequest();
+    avtDataRequest_p correctVar = new avtDataRequest(wrongVar,
                                                              pipelineVariable);
     // By copying the "correct var", our mechanism for telling the SIL to
     // not be used is ignored.  So turn it back on.
     correctVar->GetSIL().useRestriction = false;
     correctVar->GetSIL().dataChunk = -1;
 
-    avtPipelineSpecification_p goodSpec = new avtPipelineSpecification(
+    avtContract_p goodSpec = new avtContract(
                                                        specForDB, correctVar);
     
     if (useFaceFilter && !useGhostFilter)
@@ -386,7 +386,7 @@ avtGhostZoneAndFacelistFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtGhostZoneAndFacelistFilter::RefashionDataObjectInfo
+//  Method: avtGhostZoneAndFacelistFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Copies the mutable metadata that is associated with individual 
@@ -418,7 +418,7 @@ avtGhostZoneAndFacelistFilter::Execute(void)
 // ****************************************************************************
 
 void
-avtGhostZoneAndFacelistFilter::RefashionDataObjectInfo(void)
+avtGhostZoneAndFacelistFilter::UpdateDataObjectInfo(void)
 {
     avtDataObject_p output = GetOutput();
     output->GetInfo().GetValidity().InvalidateZones();
@@ -491,7 +491,7 @@ avtGhostZoneAndFacelistFilter::ChangedInput(void)
 
 
 // ****************************************************************************
-//  Method: avtGhostZoneAndFacelistFilter::PerformRestriction
+//  Method: avtGhostZoneAndFacelistFilter::ModifyContract
 //
 //  Purpose:
 //      Tell the database that we will need ghost nodes.
@@ -501,11 +501,11 @@ avtGhostZoneAndFacelistFilter::ChangedInput(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtGhostZoneAndFacelistFilter::PerformRestriction(
-                                            avtPipelineSpecification_p in_spec)
+avtContract_p
+avtGhostZoneAndFacelistFilter::ModifyContract(
+                                            avtContract_p in_spec)
 {
-    avtPipelineSpecification_p spec = in_spec;
+    avtContract_p spec = in_spec;
 
     //
     // Only declare that we want ghost nodes if someone downstream hasn't said
@@ -515,10 +515,10 @@ avtGhostZoneAndFacelistFilter::PerformRestriction(
     if (useFaceFilter && 
           GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 3)
     {
-        spec = new avtPipelineSpecification(in_spec);
-        if (spec->GetDataSpecification()->GetDesiredGhostDataType() !=
+        spec = new avtContract(in_spec);
+        if (spec->GetDataRequest()->GetDesiredGhostDataType() !=
                                                                GHOST_ZONE_DATA)
-            spec->GetDataSpecification()->SetDesiredGhostDataType(
+            spec->GetDataRequest()->SetDesiredGhostDataType(
                                                               GHOST_NODE_DATA);
     }
 

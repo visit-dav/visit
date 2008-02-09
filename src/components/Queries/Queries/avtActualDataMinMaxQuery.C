@@ -43,7 +43,7 @@
 #include <avtActualDataMinMaxQuery.h>
 
 #include <avtCondenseDatasetFilter.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtSourceFromAVTDataset.h>
 
 
@@ -130,8 +130,8 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
     bool zonesPreserved  = GetInput()->GetInfo().GetValidity().GetZonesPreserved();
     if (!timeVarying && zonesPreserved)
     {
-        avtPipelineSpecification_p pspec = 
-            inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+        avtContract_p contract = 
+            inData->GetOriginatingSource()->GetGeneralContract();
 
         avtDataset_p ds;
         CopyTo(ds, inData);
@@ -139,29 +139,29 @@ avtActualDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
         avtDataObject_p obj = termsrc.GetOutput();
         condense->SetInput(obj);
         avtDataObject_p retObj = condense->GetOutput();
-        retObj->Update(pspec);
+        retObj->Update(contract);
         return retObj;
     }
     else 
     {
-        avtDataSpecification_p oldSpec = inData->GetTerminatingSource()->
-            GetGeneralPipelineSpecification()->GetDataSpecification();
+        avtDataRequest_p oldSpec = inData->GetOriginatingSource()->
+            GetGeneralContract()->GetDataRequest();
 
-        avtDataSpecification_p newDS = new 
-            avtDataSpecification(oldSpec, querySILR);
+        avtDataRequest_p newDS = new 
+            avtDataRequest(oldSpec, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
         if (!zonesPreserved)
             newDS->TurnZoneNumbersOn();
 
-        avtPipelineSpecification_p pspec = 
-            new avtPipelineSpecification(newDS, queryAtts.GetPipeIndex());
+        avtContract_p contract = 
+            new avtContract(newDS, queryAtts.GetPipeIndex());
 
         avtDataObject_p temp;
         CopyTo(temp, inData);
         condense->SetInput(temp);
         avtDataObject_p retObj = condense->GetOutput();
-        retObj->Update(pspec);
+        retObj->Update(contract);
         return retObj;
     }
 }

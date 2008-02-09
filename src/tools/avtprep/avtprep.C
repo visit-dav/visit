@@ -51,7 +51,7 @@
 #include <avtDatabaseFactory.h>
 #include <avtExtentsPreprocessor.h>
 #include <avtResamplePreprocessor.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 
 using std::vector;
@@ -116,8 +116,8 @@ main(int argc, char *argv[])
         preps[i]->ProcessCommandLine(argv, argc);
     }
 
-    avtTerminatingSource  *src = dob->GetTerminatingSource();
-    avtDataSpecification_p ds  = src->GetFullDataSpecification();
+    avtOriginatingSource  *src = dob->GetOriginatingSource();
+    avtDataRequest_p ds  = src->GetFullDataRequest();
     for (i = 0 ; i < preps.size() ; i++)
     {
         //

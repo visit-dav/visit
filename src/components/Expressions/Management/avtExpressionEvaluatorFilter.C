@@ -136,7 +136,7 @@ avtExpressionEvaluatorFilter::~avtExpressionEvaluatorFilter()
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Jun 28 08:01:45 PDT 2004
-//    Use the timestep retrieved during ExamineSpecification to set the
+//    Use the timestep retrieved during ExamineContract to set the
 //    timestep for the filters.
 //
 //    Hank Childs, Wed Dec 22 10:54:41 PST 2004
@@ -184,12 +184,12 @@ avtExpressionEvaluatorFilter::Execute(void)
         //
         // Make sure that the DataSpec being used has the timestep needed.
         //
-        avtPipelineSpecification_p pspec = GetGeneralPipelineSpecification();
-        avtDataSpecification_p new_dspec = 
-                new avtDataSpecification(lastUsedSpec->GetDataSpecification());
-        new_dspec->SetTimestep(currentTimeState);
-        pspec = new avtPipelineSpecification(pspec, new_dspec);
-        bottom->Update(pspec);
+        avtContract_p contract = GetGeneralContract();
+        avtDataRequest_p new_dataRequest = 
+                new avtDataRequest(lastUsedSpec->GetDataRequest());
+        new_dataRequest->SetTimestep(currentTimeState);
+        contract = new avtContract(contract, new_dataRequest);
+        bottom->Update(contract);
         GetOutput()->Copy(*(bottom->GetOutput()));
     } else {
         GetOutput()->Copy(*dObj);
@@ -295,7 +295,7 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 
 
 // ****************************************************************************
-//  Method: avtExpressionEvaluatorFilter::PerformRestriction
+//  Method: avtExpressionEvaluatorFilter::ModifyContract
 //
 //  Purpose:
 //      Determines if any of the variables are expressions.  If so, remove
@@ -335,7 +335,7 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //
 //    Kathleen Bonnell, Tue Apr 27 11:34:23 PDT 2004 
 //    Added test to determine if new filters need to be created.  If not,
-//    don't set the pipelineSpec's DataObject to NULL, and don't create new
+//    don't set the contract's DataObject to NULL, and don't create new
 //    filters.  (QueryOverTime will re-use these filters for each time step).
 //
 //    Jeremy Meredith, Wed Nov 24 12:25:10 PST 2004
@@ -362,25 +362,25 @@ avtExpressionEvaluatorFilter::AdditionalPipelineFilters(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtExpressionEvaluatorFilter::PerformRestriction(
-                                               avtPipelineSpecification_p spec)
+avtContract_p
+avtExpressionEvaluatorFilter::ModifyContract(
+                                               avtContract_p spec)
 {
     pipelineState.Clear();
     int   i;
 
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
 
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
     bool createFilters = true;
     if (*lastUsedSpec != NULL)
     {
-        avtDataSpecification_p ds1 = lastUsedSpec->GetDataSpecification();
+        avtDataRequest_p ds1 = lastUsedSpec->GetDataRequest();
         createFilters = pipelineState.GetFilters().size() == 0 ||
                         !ds1->VariablesAreTheSame(ds);
     }
     lastUsedSpec = spec;
-    avtDataSpecification_p newds;
+    avtDataRequest_p newds;
 
     // We need to test if any of the primary or secondary variables are
     // expressions.  We keep a list "candidates" of variables whose type we
@@ -411,7 +411,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     // list and the expression list.  When the variables are found, turn the
     // parsed expression into a list of filters.  These filters are hooked
     // together, then put on a list in pipelineState for use in Execute().
-    debug5 << "EEF::PerformRestriction: Checking candidates" << endl;
+    debug5 << "EEF::ModifyContract: Checking candidates" << endl;
 
     if (createFilters)
         pipelineState.SetDataObject(NULL);
@@ -422,7 +422,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
         std::set<string>::iterator front = candidates.begin();
         string var = *front;
         candidates.erase(front);
-        debug5 << "EEF::PerformRestriction:     candidate: " << var.c_str() 
+        debug5 << "EEF::ModifyContract:     candidate: " << var.c_str() 
                << endl;
 
         // Have we seen this before?
@@ -455,28 +455,28 @@ avtExpressionEvaluatorFilter::PerformRestriction(
 
         if (exp == NULL && ddf == NULL)
         {
-            debug5 << "EEF::PerformRestriction:     not an expression" << endl;
+            debug5 << "EEF::ModifyContract:     not an expression" << endl;
             // Not an expression.  Put the name on the real list.
             real_list.insert(var);
         } 
         else if (ddf != NULL)
         {
-            debug5 << "EEF::PerformRestriction:     DDF.  Roots:" << endl;
+            debug5 << "EEF::ModifyContract:     DDF.  Roots:" << endl;
             avtDDFFunctionInfo *info = ddf->GetFunctionInfo();
             int nVars = info->GetDomainNumberOfTuples();
             for (int i = 0 ; i < nVars ; i++)
             {
                 std::string name = info->GetDomainTupleName(i);
-                debug5 << "EEF::PerformRestriction:         " << name.c_str() << endl;
+                debug5 << "EEF::ModifyContract:         " << name.c_str() << endl;
                 candidates.insert(name);
             }
             std::string name = info->GetCodomainName();
-            debug5 << "EEF::PerformRestriction:         " << name.c_str() << endl;
+            debug5 << "EEF::ModifyContract:         " << name.c_str() << endl;
             candidates.insert(name);
         }
         else  // (expr != NULL)
         {
-            debug5 << "EEF::PerformRestriction:     expression.  Roots:" 
+            debug5 << "EEF::ModifyContract:     expression.  Roots:" 
                    << endl;
             // Expression.  Put the name on the expr list.  Find the base
             // variables of the expression and put them on the candidate
@@ -490,7 +490,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
             std::vector<string>::iterator itr = roots.begin();
             for ( itr = roots.begin(); itr != roots.end(); ++itr)
             {
-                debug5 << "EEF::PerformRestriction:         " << itr->c_str()
+                debug5 << "EEF::ModifyContract:         " << itr->c_str()
                        << endl;
                 candidates.insert(*itr);
             }
@@ -600,12 +600,12 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     // variable.
 
     it = real_list.begin();
-    newds = new avtDataSpecification(ds);
+    newds = new avtDataRequest(ds);
     newds->RemoveAllSecondaryVariables();
     for ( ; it != real_list.end() ; it++)
         if (*it != ds->GetVariable())
             newds->AddSecondaryVariable((*it).c_str());
-    rv = new avtPipelineSpecification(spec, newds);
+    rv = new avtContract(spec, newds);
 
     //
     // Set up the input of the terminating source.  This is because some of
@@ -626,7 +626,7 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     // Do these in the order the pipeline would.
     for (i = filters.size()-1 ; i >= 0 ; i--)
     {
-        rv = filters[i]->PerformRestriction(rv);
+        rv = filters[i]->ModifyContract(rv);
     }
 
     // Here's the part where we swap out the active variable for a real one
@@ -634,10 +634,10 @@ avtExpressionEvaluatorFilter::PerformRestriction(
     if (!haveActiveVariable)
     {
         it = real_list.begin();
-        newds = new avtDataSpecification(rv->GetDataSpecification(), 
+        newds = new avtDataRequest(rv->GetDataRequest(), 
                                          (*it).c_str());
         newds->SetOriginalVariable(ds->GetVariable());
-        rv = new avtPipelineSpecification(rv, newds);
+        rv = new avtContract(rv, newds);
     }
 
     return rv;
@@ -835,7 +835,7 @@ avtExpressionEvaluatorFilter::QueryCoords(const std::string &var,
 
 
 // ****************************************************************************
-//  Method: avtExpressionEvaluatorFilter::ExamineSpecification
+//  Method: avtExpressionEvaluatorFilter::ExamineContract
 //
 //  Purpose:
 //    Retrieve the current timestep and save for filters.
@@ -848,9 +848,9 @@ avtExpressionEvaluatorFilter::QueryCoords(const std::string &var,
 // ****************************************************************************
 
 void
-avtExpressionEvaluatorFilter::ExamineSpecification(avtPipelineSpecification_p pspec)
+avtExpressionEvaluatorFilter::ExamineContract(avtContract_p contract)
 {
-    currentTimeState = pspec->GetDataSpecification()->GetTimestep();
+    currentTimeState = contract->GetDataRequest()->GetTimestep();
 }
 
 // ****************************************************************************

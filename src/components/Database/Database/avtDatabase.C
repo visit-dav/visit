@@ -734,7 +734,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                                           const char *var,
                                           int ts,
                                           const vector<bool> &selectionsApplied,
-                                          avtDataSpecification_p spec)
+                                          avtDataRequest_p spec)
 {
     int   i;
 
@@ -1976,7 +1976,7 @@ avtDatabase::GetIOInformation(int stateIndex)
 // ****************************************************************************
 
 bool
-avtDatabase::CanDoDynamicLoadBalancing(avtDataSpecification_p)
+avtDatabase::CanDoDynamicLoadBalancing(avtDataRequest_p)
 {
     return true;
 }
@@ -1998,7 +1998,7 @@ avtDatabase::CanDoDynamicLoadBalancing(avtDataSpecification_p)
 // ****************************************************************************
 
 int
-avtDatabase::NumStagesForFetch(avtDataSpecification_p)
+avtDatabase::NumStagesForFetch(avtDataRequest_p)
 {
     return 1;
 }
@@ -2098,7 +2098,7 @@ avtDatabase::GetFileListFromTextFile(const char *textfile,
 //    Queries the db regarding var info for a specific pick point.
 //
 //  Arguments:
-//    dspec   A database specification.
+//    dataRequest   A database specification.
 //    pa      The pick attributes in which to story the var information. 
 //
 //  Programmer:   Kathleen Bonnell 
@@ -2487,7 +2487,7 @@ avtDatabase::Query(PickAttributes *pa)
 // ****************************************************************************
 
 bool
-avtDatabase::GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
+avtDatabase::GetExtentsFromAuxiliaryData(avtDataRequest_p spec,
     const char *var, const char *type, double *extents)
 {
     if (*spec == NULL)
@@ -2495,7 +2495,7 @@ avtDatabase::GetExtentsFromAuxiliaryData(avtDataSpecification_p spec,
 
     VoidRefList list;
 
-    avtDataSpecification_p tmp_spec = new avtDataSpecification(spec, -1);
+    avtDataRequest_p tmp_spec = new avtDataRequest(spec, -1);
     GetAuxiliaryData(tmp_spec, list, type, (void *) var);
 
     if (list.nList != 1 || *(list.list[0]) == NULL)

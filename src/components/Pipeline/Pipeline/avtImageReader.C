@@ -137,7 +137,7 @@ avtImageReader::Read(char *input)
 // ****************************************************************************
 
 bool
-avtImageReader::FetchImage(avtDataSpecification_p ,avtImageRepresentation &rep)
+avtImageReader::FetchImage(avtDataRequest_p ,avtImageRepresentation &rep)
 {
     rep = imgRep;
 

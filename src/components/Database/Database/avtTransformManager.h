@@ -48,7 +48,7 @@
 #include <string>
 #include <vector>
 
-#include <avtDataSpecification.h>
+#include <avtDataRequest.h>
 #include <avtMaterial.h>
 #include <avtVariableCache.h>
 
@@ -84,20 +84,20 @@ class DATABASE_API avtTransformManager
     void                       FreeUpResources(int lastts);
 
     bool                       TransformDataset(avtDatasetCollection &ds,
-                                   intVector &domains, avtDataSpecification_p &spec,
+                                   intVector &domains, avtDataRequest_p &spec,
                                    avtSourceFromDatabase *src,
                                    boolVector &selectionsApplied,
                                    avtDatabaseMetaData *md);
 
     bool                       TransformMaterialDataset(const avtDatabaseMetaData *const md,
-                                   const avtDataSpecification_p &spec, avtMaterial **mat);
+                                   const avtDataRequest_p &spec, avtMaterial **mat);
   private:
 
     vtkDataSet                *NativeToFloat(const avtDatabaseMetaData *const md,
-                                             const avtDataSpecification_p &spec,
+                                             const avtDataRequest_p &spec,
                                              vtkDataSet *ds);
     vtkDataSet                *CSGToDiscrete(const avtDatabaseMetaData *const md,
-                                             const avtDataSpecification_p &spec,
+                                             const avtDataRequest_p &spec,
                                              vtkDataSet *ds);
     avtVariableCache           cache;
     avtVariableCache          *gdbCache;

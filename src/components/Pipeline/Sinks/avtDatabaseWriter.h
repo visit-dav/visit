@@ -43,7 +43,7 @@
 #ifndef AVT_DATABASE_WRITER_H
 #define AVT_DATABASE_WRITER_H
 
-#include <avtOriginatingDatasetSink.h>
+#include <avtTerminatingDatasetSink.h>
 
 #include <string>
 #include <vector>
@@ -97,7 +97,7 @@ class     avtDatabaseMetaData;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtDatabaseWriter : public virtual avtOriginatingDatasetSink
+class PIPELINE_API avtDatabaseWriter : public virtual avtTerminatingDatasetSink
 {
   public:
                        avtDatabaseWriter();
@@ -119,7 +119,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtOriginatingDatasetSink
     bool               SetTargetChunks(int nChunks);
     bool               SetTargetZones(VISIT_LONG_LONG nTotalZones);
     void               SetVariableList(std::vector<std::string> &);
-    void               SetPipelineSpecToUse(avtPipelineSpecification_p ps);
+    void               SetContractToUse(avtContract_p ps);
 
   protected:
     bool               shouldAlwaysDoMIR;
@@ -133,7 +133,7 @@ class PIPELINE_API avtDatabaseWriter : public virtual avtOriginatingDatasetSink
     int                nTargetChunks;
     VISIT_LONG_LONG    targetTotalZones;
 
-    avtPipelineSpecification_p savedPipelineSpec;
+    avtContract_p savedContract;
 
     virtual bool       CanHandleMaterials(void) { return false; };
 

@@ -84,7 +84,7 @@ class     ExprPipelineState;
 //    derived types can use the same routine.
 // 
 //    Kathleen Bonnell, Mon Jun 28 07:48:55 PDT 2004 
-//    Add currentTimeState, ExamineSpecification.
+//    Add currentTimeState, ExamineContract.
 //
 //    Hank Childs, Mon Dec 27 10:13:44 PST 2004
 //    Separate out parts that are related to streaming.
@@ -136,12 +136,12 @@ class EXPRESSION_API avtExpressionFilter : virtual public
 
     virtual void             PreExecute(void);
     virtual void             PostExecute(void);
-    virtual void             RefashionDataObjectInfo(void);
+    virtual void             UpdateDataObjectInfo(void);
     void                     SetExpressionAttributes(const avtDataAttributes &,
                                                      avtDataAttributes &);
-    virtual avtPipelineSpecification_p
-                             PerformRestriction(avtPipelineSpecification_p);
-    virtual void             ExamineSpecification(avtPipelineSpecification_p);
+    virtual avtContract_p
+                             ModifyContract(avtContract_p);
+    virtual void             ExamineContract(avtContract_p);
 
     virtual int              GetVariableDimension();
     virtual avtVarType       GetVariableType() { return AVT_UNKNOWN_TYPE; };

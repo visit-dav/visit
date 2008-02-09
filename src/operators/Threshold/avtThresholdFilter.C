@@ -699,7 +699,7 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 
 
 // ****************************************************************************
-//  Method: avtThresholdFilter::RefashionDataObjectInfo
+//  Method: avtThresholdFilter::UpdateDataObjectInfo
 //
 //  Purpose: Indicates the zones no longer correspond to the original problem.
 //
@@ -720,7 +720,7 @@ avtThresholdFilter::GetAssignments(vtkDataSet *in_ds, const int *dims,
 // ****************************************************************************
 
 void
-avtThresholdFilter::RefashionDataObjectInfo(void)
+avtThresholdFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 
@@ -844,7 +844,7 @@ avtThresholdFilter::PreExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtThresholdFilter::PerformRestriction
+//  Method: avtThresholdFilter::ModifyContract
 //
 //  Purpose: Restrict the data processed by looking at the data extents.
 //
@@ -898,14 +898,14 @@ avtThresholdFilter::PreExecute(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtThresholdFilter::ModifyContract(avtContract_p in_spec)
 {
     atts.SupplyMissingDefaultsIfAppropriate();
     
     if (!atts.AttributesAreConsistent()) atts.ForceAttributeConsistency();
 
-    const char *pipelineVar = in_spec->GetDataSpecification()->GetVariable();
+    const char *pipelineVar = in_spec->GetDataRequest()->GetVariable();
     const char *activeVar = activeVarName.c_str();
     
     if (activeVarName == std::string("<unused>"))
@@ -917,11 +917,11 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
     
     if (atts.GetListedVarNames().size() == 0) return in_spec;
 
-    avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
+    avtContract_p outSpec = new avtContract(in_spec);
 
     const char *curListedVar;
     const std::vector<CharStrRef> curSecondaryVars =
-        outSpec->GetDataSpecification()->GetSecondaryVariables();
+        outSpec->GetDataRequest()->GetSecondaryVariables();
     const stringVector curListedVars = atts.GetListedVarNames();
     int listedVarNum, secVarNum;
 
@@ -942,7 +942,7 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
 
             if (secVarNum >= curSecondaryVars.size())
             {
-                outSpec->GetDataSpecification()->AddSecondaryVariable(curListedVar);
+                outSpec->GetDataRequest()->AddSecondaryVariable(curListedVar);
             }
         }
     }
@@ -1005,16 +1005,16 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
             }
         }
 
-        outSpec->GetDataSpecification()->GetRestriction()->RestrictDomains(outDomains);
+        outSpec->GetDataRequest()->GetRestriction()->RestrictDomains(outDomains);
     }
 
-    if (outSpec->GetDataSpecification()->MayRequireZones() ||
-        outSpec->GetDataSpecification()->MayRequireNodes())
+    if (outSpec->GetDataRequest()->MayRequireZones() ||
+        outSpec->GetDataRequest()->MayRequireNodes())
     {
         // Turn on both Nodes and Zones, to prevent another re-execution if
         // user switches between zone and node pick.
-        outSpec->GetDataSpecification()->TurnZoneNumbersOn();
-        outSpec->GetDataSpecification()->TurnNodeNumbersOn();
+        outSpec->GetDataRequest()->TurnZoneNumbersOn();
+        outSpec->GetDataRequest()->TurnNodeNumbersOn();
     }
 
     // Add avtDataRangeSelection entries to data specs
@@ -1025,7 +1025,7 @@ avtThresholdFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         upperBound = curUpperBounds[listedVarNum];
 
         selIDs[std::string(curListedVars[listedVarNum])] =
-            outSpec->GetDataSpecification()->AddDataSelection(
+            outSpec->GetDataRequest()->AddDataSelection(
                 new avtDataRangeSelection(
                     std::string(curListedVars[listedVarNum]),
                     lowerBound, upperBound

@@ -119,7 +119,7 @@ class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
     unsigned char               ghostZoneTypesToRemove;
 
     virtual vtkDataSet         *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void                RefashionDataObjectInfo(void);
+    virtual void                UpdateDataObjectInfo(void);
     virtual bool                FilterUnderstandsTransformedRectMesh();
 };
 

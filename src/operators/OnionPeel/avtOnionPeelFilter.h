@@ -82,7 +82,7 @@ class vtkPolyDataOnionPeelFilter;
 //    Renamed some methods to fit changes in base class.
 //
 //    Kathleen bonnell, Tue Oct 16 14:55:41 PDT 2001
-//    Added VerifyInput, PerformRestriction. 
+//    Added VerifyInput, ModifyContract. 
 //
 //    Hank Childs, Wed May 22 17:25:22 PDT 2002
 //    Added BadSeedCell.
@@ -131,9 +131,9 @@ class avtOnionPeelFilter : public avtPluginStreamer
     virtual void          PostExecute();
 
     virtual void          VerifyInput(void);
-    virtual void          RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual void          UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
 
 };
 

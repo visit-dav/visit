@@ -557,7 +557,7 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtPointToGlyphFilter::RefashionDataObjectInfo
+//  Method: avtPointToGlyphFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Tell our output that it now has a topological dimension of 2.
@@ -582,7 +582,7 @@ avtPointToGlyphFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtPointToGlyphFilter::RefashionDataObjectInfo(void)
+avtPointToGlyphFilter::UpdateDataObjectInfo(void)
 {
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {

@@ -96,7 +96,7 @@ class AVTFILTERS_API avtPointToGlyphFilter : public avtStreamer
     vtkPolyData         *glyph2D;
 
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void         RefashionDataObjectInfo(void);
+    virtual void         UpdateDataObjectInfo(void);
 
     void                 SetUpGlyph();
 };

@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtTerminatingDatasetSource.C                     //
+//                         avtOriginatingDatasetSource.C                     //
 // ************************************************************************* //
 
-#include <avtTerminatingDatasetSource.h>
+#include <avtOriginatingDatasetSource.h>
 
 #include <float.h>
 
@@ -54,7 +54,7 @@
 
 
 // ****************************************************************************
-//  Method: avtTerminatingDatasetSource constructor
+//  Method: avtOriginatingDatasetSource constructor
 //
 //  Purpose:
 //      Defines the constructor.  Note: this should not be inlined in the
@@ -65,14 +65,14 @@
 //
 // ****************************************************************************
 
-avtTerminatingDatasetSource::avtTerminatingDatasetSource()
+avtOriginatingDatasetSource::avtOriginatingDatasetSource()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingDatasetSource destructor
+//  Method: avtOriginatingDatasetSource destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -83,14 +83,14 @@ avtTerminatingDatasetSource::avtTerminatingDatasetSource()
 //
 // ****************************************************************************
 
-avtTerminatingDatasetSource::~avtTerminatingDatasetSource()
+avtOriginatingDatasetSource::~avtOriginatingDatasetSource()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingDatasetSource::FetchData
+//  Method: avtOriginatingDatasetSource::FetchData
 //
 //  Purpose:
 //      Defines FetchData, a method that is called when a terminating data
@@ -136,7 +136,7 @@ avtTerminatingDatasetSource::~avtTerminatingDatasetSource()
 // ****************************************************************************
 
 bool
-avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
+avtOriginatingDatasetSource::FetchData(avtDataRequest_p spec)
 {
     bool rv = false;
     rv = FetchDataset(spec, GetDataTree());
@@ -157,7 +157,7 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 
 
 // ****************************************************************************
-//  Method: avtTerminatingDatasetSource::MergeExtents
+//  Method: avtOriginatingDatasetSource::MergeExtents
 //
 //  Purpose:
 //      Merges extents into the output.  This is used by databases that
@@ -210,7 +210,7 @@ avtTerminatingDatasetSource::FetchData(avtDataSpecification_p spec)
 // ****************************************************************************
 
 void
-avtTerminatingDatasetSource::MergeExtents(vtkDataSet *ds)
+avtOriginatingDatasetSource::MergeExtents(vtkDataSet *ds)
 {
     if (ds == NULL)
     {

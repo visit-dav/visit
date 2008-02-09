@@ -37,49 +37,45 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                     avtTerminatingNullDataSource.h                        //
+//                        avtOriginatingNullDataSource.C                     //
 // ************************************************************************* //
 
-#ifndef AVT_TERMINATING_NULL_DATA_SOURCE_H
-#define AVT_TERMINATING_NULL_DATA_SOURCE_H
-#include <pipeline_exports.h>
-
-
-#include <avtNullDataSource.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingNullDataSource.h>
 
 
 // ****************************************************************************
-//  Class: avtTerminatingNullDataSource
+//  Method: avtOriginatingNullDataSource constructor
 //
 //  Purpose:
-//      A source that terminates a pipeline.  It does an update differently
-//      than what a non-terminating source (filter) would.
+//      Defines the constructor.  Note: this should not be inlined in the
+//      header because it causes problems for certain compilers.
 //
-//  Programmer: Mark C. Miller
-//  Creation:   January 8, 2003 
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
-//    Moved inlined constructor and destructor definitions to .C files
-//    because certain compilers have problems with them.
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
 //
 // ****************************************************************************
 
-class PIPELINE_API avtTerminatingNullDataSource
-    : public virtual avtNullDataSource, public virtual avtTerminatingSource
+avtOriginatingNullDataSource::avtOriginatingNullDataSource()
 {
-  public:
-                                 avtTerminatingNullDataSource();
-    virtual                     ~avtTerminatingNullDataSource();
-
-  protected:
-    virtual bool                 FetchData(avtDataSpecification_p) 
-                                    { return false; };
-};
+    ;
+}
 
 
-#endif
+// ****************************************************************************
+//  Method: avtOriginatingNullDataSource destructor
+//
+//  Purpose:
+//      Defines the destructor.  Note: this should not be inlined in the header
+//      because it causes problems for certain compilers.
+//
+//  Programmer: Hank Childs
+//  Creation:   February 5, 2004
+//
+// ****************************************************************************
+
+avtOriginatingNullDataSource::~avtOriginatingNullDataSource()
+{
+    ;
+}
 
 

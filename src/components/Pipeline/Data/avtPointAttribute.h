@@ -78,8 +78,8 @@ class PIPELINE_API avtPointAttribute : public avtDynamicAttribute
 
     void                     GetPoint(double [3]);
 
-    virtual avtPipelineSpecification_p
-                             PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                             ModifyContract(avtContract_p);
     virtual void             ResolveAttributes(avtDataObject_p);
 
   protected:

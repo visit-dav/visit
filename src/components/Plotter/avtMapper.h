@@ -45,7 +45,7 @@
 
 #include <plotter_exports.h>
 
-#include <avtOriginatingDatasetSink.h>
+#include <avtTerminatingDatasetSink.h>
 #include <avtDrawable.h>
 
 
@@ -116,7 +116,7 @@ class   ColorAttribute;
 //
 // ****************************************************************************
 
-class PLOTTER_API avtMapper : public avtOriginatingDatasetSink
+class PLOTTER_API avtMapper : public avtTerminatingDatasetSink
 {
   public:
                                avtMapper();

@@ -53,7 +53,7 @@
 #include <avtCurveConstructorFilter.h>
 #include <avtDatasetSink.h>
 #include <avtSourceFromAVTDataset.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -159,8 +159,8 @@ avtCurveComparisonQuery::Execute(void)
     // Go through the rigamorale above to construct the curve for input 1.
     //
     avtDataObject_p input = curve1->GetInput();
-    avtPipelineSpecification_p pspec1 =
-        input->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract1 =
+        input->GetOriginatingSource()->GetGeneralContract();
 
     avtDataset_p ds;
     CopyTo(ds, input);
@@ -171,15 +171,15 @@ avtCurveComparisonQuery::Execute(void)
     ccf1.SetInput(dob1);
     avtDataObject_p objOut1 = ccf1.GetOutput();
 
-    objOut1->Update(pspec1);
+    objOut1->Update(contract1);
     curve1->SetInput(objOut1);
 
     //
     // Go through the rigamorale above to construct the curve for input 2.
     //
     input = curve2->GetInput();
-    avtPipelineSpecification_p pspec2 =
-        input->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract2 =
+        input->GetOriginatingSource()->GetGeneralContract();
 
     CopyTo(ds, input);
     avtSourceFromAVTDataset termsrc2(ds);

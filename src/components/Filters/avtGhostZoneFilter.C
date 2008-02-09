@@ -276,7 +276,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 
 
 // ****************************************************************************
-//  Method: avtGhostZoneFilter::RefashionDataObjectInfo
+//  Method: avtGhostZoneFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that the zones are invalidated after this operation.
@@ -295,7 +295,7 @@ avtGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 // ****************************************************************************
 
 void
-avtGhostZoneFilter::RefashionDataObjectInfo(void)
+avtGhostZoneFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();

@@ -152,7 +152,7 @@ class avtStreamlineFilter : public avtStreamer
     vtkRibbonFilter          *ribbons;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void              RefashionDataObjectInfo(void);
+    virtual void              UpdateDataObjectInfo(void);
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
 

@@ -95,7 +95,7 @@ avtSpreadsheetFilter::SetAtts(const SpreadsheetAttributes &a)
 }
 
 // ****************************************************************************
-// Method: avtSpreadsheetFilter::PerformRestriction
+// Method: avtSpreadsheetFilter::ModifyContract
 //
 // Purpose: 
 //   Turns off all domains except for the specified subset.
@@ -119,14 +119,14 @@ avtSpreadsheetFilter::SetAtts(const SpreadsheetAttributes &a)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtSpreadsheetFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtSpreadsheetFilter::ModifyContract(avtContract_p spec)
 {
-    const char *mName = "avtSpreadsheetFilter::PerformRestriction: ";
+    const char *mName = "avtSpreadsheetFilter::ModifyContract: ";
 
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
     std::string firstName;
-    avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
+    avtSILRestriction_p silr = spec->GetDataRequest()->GetRestriction();
     avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
     const std::vector<int> &mapsOut = current->GetMapsOut();
     int nSets = 1;
@@ -156,7 +156,7 @@ avtSpreadsheetFilter::PerformRestriction(avtPipelineSpecification_p spec)
     //
     // If we've identified which set to use, do something with it now.
     //
-    silr = rv->GetDataSpecification()->GetRestriction();
+    silr = rv->GetDataRequest()->GetRestriction();
     if(setId != -1)
     {
         debug1 << mName << "The set " << atts.GetSubsetName()
@@ -196,17 +196,17 @@ avtSpreadsheetFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
 
     // Force material interface reconstruction to be off.
-    rv->GetDataSpecification()->ForceMaterialInterfaceReconstructionOff();
-    rv->GetDataSpecification()->SetNeedMixedVariableReconstruction(false);
+    rv->GetDataRequest()->ForceMaterialInterfaceReconstructionOff();
+    rv->GetDataRequest()->SetNeedMixedVariableReconstruction(false);
 
     // Force native precision
-    rv->GetDataSpecification()->SetNeedNativePrecision(true);
+    rv->GetDataRequest()->SetNeedNativePrecision(true);
 
     // Add double to the permissible types
     vector<int> adTypes;
     adTypes.push_back(VTK_FLOAT);
     adTypes.push_back(VTK_DOUBLE);
-    rv->GetDataSpecification()->UpdateAdmissibleDataTypes(adTypes);
+    rv->GetDataRequest()->UpdateAdmissibleDataTypes(adTypes);
 
     return rv;
 }

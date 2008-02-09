@@ -60,7 +60,7 @@
 #include <avtCommonDataFunctions.h>
 #include <avtMatrix.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtVector.h>
 
 #include <DebugStream.h>
@@ -303,7 +303,7 @@ avtPickQuery::PostExecute(void)
 //    Minimize work done by creating new SIL.
 //
 //    Kathleen Bonnell, Mon Apr 19 15:40:23 PDT 2004 
-//    Simplified use of pspec and dspec.   No longer use dspec's timestep
+//    Simplified use of contract and dataRequest.   No longer use dataRequest's timestep
 //    to set pickAtts' timestep.
 //
 //    Kathleen Bonnell, Tue May  4 14:25:07 PDT 2004
@@ -369,12 +369,12 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         pickAtts.SetNeedTransformMessage(false);
     }
 
-    avtDataSpecification_p dspec = 
-        inData->GetTerminatingSource()->GetFullDataSpecification();
-    int currentTime = dspec->GetTimestep(); 
+    avtDataRequest_p dataRequest = 
+        inData->GetOriginatingSource()->GetFullDataRequest();
+    int currentTime = dataRequest->GetTimestep(); 
     intVector dlist;
-    dspec->GetSIL().GetDomainList(dlist);
-    if (dlist.size() == 1 && dspec->UsesAllDomains())
+    dataRequest->GetSIL().GetDomainList(dlist);
+    if (dlist.size() == 1 && dataRequest->UsesAllDomains())
     {
         singleDomain = true;
     }
@@ -384,7 +384,7 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
     }
 
     bool requiresUpdate = false;
-    dspec = new avtDataSpecification(pickAtts.GetActiveVariable().c_str(),
+    dataRequest = new avtDataRequest(pickAtts.GetActiveVariable().c_str(),
                                      pickAtts.GetTimeStep(), querySILR);
     //  
     //  If maxDom == -1, then all procs will be doing real work.  Otherwise,
@@ -402,11 +402,11 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         stringVector vars = pickAtts.GetVariables();
         for (int i = 0; i < vars.size(); i++)
         {
-            if (dspec->GetVariable() != vars[i]) 
+            if (dataRequest->GetVariable() != vars[i]) 
             {
-                if (!dspec->HasSecondaryVariable(vars[i].c_str()))
+                if (!dataRequest->HasSecondaryVariable(vars[i].c_str()))
                 {
-                    dspec->AddSecondaryVariable(vars[i].c_str());
+                    dataRequest->AddSecondaryVariable(vars[i].c_str());
                     requiresUpdate = true;
                 }
             }
@@ -414,16 +414,16 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
 
         if (pickAtts.GetMatSelected())
         {
-            dspec->TurnZoneNumbersOn();
-            dspec->TurnNodeNumbersOn();
+            dataRequest->TurnZoneNumbersOn();
+            dataRequest->TurnNodeNumbersOn();
             requiresUpdate = true;
         }
         if (pickAtts.GetDisplayGlobalIds() || pickAtts.GetElementIsGlobal()) 
         {
-            dspec->TurnGlobalZoneNumbersOn();
-            dspec->TurnGlobalNodeNumbersOn();
-            dspec->TurnZoneNumbersOn();
-            dspec->TurnNodeNumbersOn();
+            dataRequest->TurnGlobalZoneNumbersOn();
+            dataRequest->TurnGlobalNodeNumbersOn();
+            dataRequest->TurnZoneNumbersOn();
+            dataRequest->TurnNodeNumbersOn();
             requiresUpdate = true;
         }
     }
@@ -439,23 +439,23 @@ avtPickQuery::ApplyFilters(avtDataObject_p inData)
         {
             dlist.push_back(pickAtts.GetDomain());
         }
-        dspec->GetRestriction()->RestrictDomains(dlist);
+        dataRequest->GetRestriction()->RestrictDomains(dlist);
         //requiresUpdate = true;
     }
 
     if (!requiresUpdate)
         return inData;
 
-    avtPipelineSpecification_p pspec = new avtPipelineSpecification(dspec, 0);
+    avtContract_p contract = new avtContract(dataRequest, 0);
     // We don't want to disturb the original pipeline, so get the
     // terminating source's output, and tack on an EEF, in case any of
     // the vars are Expressions.
-    avtDataObject_p t1 = inData->GetTerminatingSource()->GetOutput();
+    avtDataObject_p t1 = inData->GetOriginatingSource()->GetOutput();
     avtDataObject_p temp;
     CopyTo(temp, t1);
     eef->SetInput(temp);
     avtDataObject_p retObj = eef->GetOutput();
-    retObj->Update(pspec);
+    retObj->Update(contract);
     return retObj;
 }
 

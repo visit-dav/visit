@@ -121,11 +121,11 @@ class PIPELINE_API avtFilter
     virtual bool                        Equivalent(const AttributeGroup *)
                                             { return false; };
 
-    virtual bool                        Update(avtPipelineSpecification_p);
+    virtual bool                        Update(avtContract_p);
 
-    virtual avtTerminatingSource       *GetTerminatingSource(void);
+    virtual avtOriginatingSource       *GetOriginatingSource(void);
     virtual avtQueryableSource         *GetQueryableSource(void);
-    avtPipelineSpecification_p          GetGeneralPipelineSpecification(void);
+    avtContract_p          GetGeneralContract(void);
     virtual void                        ReleaseData(void);
 
     static void                         DebugDump(bool d) {debugDump = d;}
@@ -140,10 +140,10 @@ class PIPELINE_API avtFilter
     std::vector<avtDynamicAttribute *>  dynamicAttributes;
 
     virtual void                        Execute(void) = 0;
-    avtPipelineSpecification_p          PerformRestrictionAndDoBookkeeping(
-                                               avtPipelineSpecification_p);
-    virtual avtPipelineSpecification_p  PerformRestriction(
-                                               avtPipelineSpecification_p);
+    avtContract_p          ModifyContractAndDoBookkeeping(
+                                               avtContract_p);
+    virtual avtContract_p  ModifyContract(
+                                               avtContract_p);
 
     virtual void                        ChangedInput(void);
     virtual void                        InitializeFilter(void);
@@ -151,14 +151,14 @@ class PIPELINE_API avtFilter
     virtual int                         AdditionalPipelineFilters(void);
 
     void                                PassOnDataObjectInfo(void);
-    virtual void                        RefashionDataObjectInfo(void);
+    virtual void                        UpdateDataObjectInfo(void);
 
     virtual bool                        FilterUnderstandsTransformedRectMesh();
 
     virtual void                        PreExecute(void);
     virtual void                        PostExecute(void);
-    virtual void                        ExamineSpecification(
-                                                   avtPipelineSpecification_p);
+    virtual void                        ExamineContract(
+                                                   avtContract_p);
 
     avtMetaData                        *GetMetaData(void);
 
@@ -183,7 +183,7 @@ class PIPELINE_API avtFilter
 
     void                                DumpDataObject(avtDataObject_p,
                                                       const char *);
-    void                                DumpContract(avtPipelineSpecification_p,
+    void                                DumpContract(avtContract_p,
                                                      const char *);
     void                                InitializeWebpage(void);
     void                                FinalizeWebpage(void);

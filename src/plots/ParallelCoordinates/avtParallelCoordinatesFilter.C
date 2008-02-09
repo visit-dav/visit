@@ -130,7 +130,7 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 
 
 // ****************************************************************************
-//  Method: avtParallelCoordinatesFilter::PerformRestriction
+//  Method: avtParallelCoordinatesFilter::ModifyContract
 //
 //  Purpose: Disable dynamic load balancing.  We can eventually do an
 //           interval tree here.
@@ -142,11 +142,11 @@ avtParallelCoordinatesFilter::~avtParallelCoordinatesFilter()
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtParallelCoordinatesFilter::PerformRestriction(
-                                           avtPipelineSpecification_p in_spec)
+avtContract_p
+avtParallelCoordinatesFilter::ModifyContract(
+                                           avtContract_p in_spec)
 {
-    avtPipelineSpecification_p outSpec = new avtPipelineSpecification(in_spec);
+    avtContract_p outSpec = new avtContract(in_spec);
     
     outSpec->NoDynamicLoadBalancing();
 
@@ -576,7 +576,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
 
 
 // ****************************************************************************
-//  Method: avtParallelCoordinatesFilter::RefashionDataObjectInfo
+//  Method: avtParallelCoordinatesFilter::UpdateDataObjectInfo
 //
 //  Purpose: Indicates that the topological dimension of the output is not the
 //           same as the input.
@@ -589,7 +589,7 @@ avtParallelCoordinatesFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, str
 // ****************************************************************************
 
 void
-avtParallelCoordinatesFilter::RefashionDataObjectInfo(void)
+avtParallelCoordinatesFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();

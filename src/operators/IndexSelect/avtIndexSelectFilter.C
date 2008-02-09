@@ -61,7 +61,7 @@
 #include <avtLogicalSelection.h>
 #include <avtSILNamespace.h>
 #include <avtSILRestrictionTraverser.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <CompactSILRestrictionAttributes.h>
 
 #include <DebugStream.h>
@@ -700,7 +700,7 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 
 
 // ****************************************************************************
-//  Method: avtIndexSelectFilter::PerformRestriction
+//  Method: avtIndexSelectFilter::ModifyContract
 //
 //  Purpose:
 //      Restricts the SIL to the domains requested by the user.
@@ -766,10 +766,10 @@ avtIndexSelectFilter::ExecuteData(vtkDataSet *in_ds, int dom, std::string)
 //    out are deleted before this method is done using them.
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtIndexSelectFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
 
     amrMesh = GetInput()->GetInfo().GetAttributes().GetMeshType() == AVT_AMR_MESH;
     bool skipSILRestriction = amrMesh && groupCategory;
@@ -778,7 +778,7 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         string category = atts.GetCategoryName();
         string subset = atts.GetSubsetName();
-        avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
+        avtSILRestriction_p silr = spec->GetDataRequest()->GetRestriction();
         avtSILRestriction_p old_values = new avtSILRestriction(silr);
         avtSILRestrictionTraverser trav(old_values);
         int collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
@@ -811,7 +811,7 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
                 setState.push_back(trav.UsesData(species[i]));
             // End logic for seeing which species is on.
 
-            silr = rv->GetDataSpecification()->GetRestriction();
+            silr = rv->GetDataRequest()->GetRestriction();
             silr->TurnOffAll();
             silr->TurnOnSet(setID);
             // We've just turned on an entire set, but some parts
@@ -841,22 +841,22 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
 
     if (amrMesh && groupCategory && amrLevel != -1)
     {
-        rv->GetDataSpecification()->SetNeedAMRIndices(amrLevel);
+        rv->GetDataRequest()->SetNeedAMRIndices(amrLevel);
     }
 
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
-        rv->GetDataSpecification()->SetNeedStructuredIndices(true);
+        rv->GetDataRequest()->SetNeedStructuredIndices(true);
     }
-    else if (rv->GetDataSpecification()->
+    else if (rv->GetDataRequest()->
                                        MustDoMaterialInterfaceReconstruction())
     {
-        rv->GetDataSpecification()->SetNeedStructuredIndices(true);
+        rv->GetDataRequest()->SetNeedStructuredIndices(true);
     }
     else 
     {
         bool needSI = false;
-        avtSILRestriction_p silr =rv->GetDataSpecification()->GetRestriction();
+        avtSILRestriction_p silr =rv->GetDataRequest()->GetRestriction();
         avtSILRestrictionTraverser trav(silr);
         if (atts.GetUseWholeCollection())
         {
@@ -875,7 +875,7 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
         }
         if (needSI)
         {
-            rv->GetDataSpecification()->SetNeedStructuredIndices(true);
+            rv->GetDataRequest()->SetNeedStructuredIndices(true);
         }
     }
 
@@ -913,10 +913,10 @@ avtIndexSelectFilter::PerformRestriction(avtPipelineSpecification_p spec)
     vec[1] = atts.GetYIncr();
     vec[2] = atts.GetZIncr();
     sel->SetStrides(vec);
-    selID = rv->GetDataSpecification()->AddDataSelection(sel);
+    selID = rv->GetDataRequest()->AddDataSelection(sel);
 
-    if (rv->GetDataSpecification()->MayRequireNodes())
-        rv->GetDataSpecification()->TurnNodeNumbersOn();
+    if (rv->GetDataRequest()->MayRequireNodes())
+        rv->GetDataRequest()->TurnNodeNumbersOn();
 
     return rv;
 }
@@ -1052,7 +1052,7 @@ avtIndexSelectFilter::ReleaseData(void)
 }
 
 // ****************************************************************************
-//  Method: avtIndexSelectFilter::RefashionDataObjectInfo
+//  Method: avtIndexSelectFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Indicates that original nodes are required for Pick, and that
@@ -1072,7 +1072,7 @@ avtIndexSelectFilter::ReleaseData(void)
 // ****************************************************************************
 
 void
-avtIndexSelectFilter::RefashionDataObjectInfo(void)
+avtIndexSelectFilter::UpdateDataObjectInfo(void)
 {
     //
     // Node Pick returns wrong results on an Index selected plot unless it has 
@@ -1143,8 +1143,8 @@ avtIndexSelectFilter::VerifyInput()
 
     std::string category = atts.GetCategoryName();
     std::string subset = atts.GetSubsetName();
-    avtSILRestriction_p silr = GetTerminatingSource()->
-        GetFullDataSpecification()->GetRestriction();
+    avtSILRestriction_p silr = GetOriginatingSource()->
+        GetFullDataRequest()->GetRestriction();
 
     int setID, collectionID;
     TRY

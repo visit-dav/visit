@@ -1412,7 +1412,7 @@ avtGradientExpression::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
 
 
 // ****************************************************************************
-//  Method: avtGradientExpression::PerformRestriction
+//  Method: avtGradientExpression::ModifyContract
 //
 //  Purpose:
 //      Request ghost zones.
@@ -1422,12 +1422,12 @@ avtGradientExpression::CalculateNodalToZonalHexGrad(vtkDataSet *ds,
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtGradientExpression::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtGradientExpression::ModifyContract(avtContract_p in_spec)
 {
-    avtPipelineSpecification_p spec2 =
-                   avtSingleInputExpressionFilter::PerformRestriction(in_spec);
-    spec2->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    avtContract_p spec2 =
+                   avtSingleInputExpressionFilter::ModifyContract(in_spec);
+    spec2->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
     return spec2;
 }
 

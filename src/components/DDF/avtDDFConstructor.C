@@ -146,7 +146,7 @@ avtDDFConstructor::~avtDDFConstructor()
 
 avtDDF *
 avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
-                                avtPipelineSpecification_p spec)
+                                avtContract_p spec)
 {
     int   i, j, k, l;
 
@@ -274,7 +274,7 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     //
     // Make the input pipeline execute again to get the variables we need.
     //
-    int timeStart = spec->GetDataSpecification()->GetTimestep();
+    int timeStart = spec->GetDataRequest()->GetTimestep();
     int timeEnd = timeStart+1;
     int timeStride = 1;
     if (atts->GetOverTime())
@@ -296,13 +296,13 @@ avtDDFConstructor::ConstructDDF(ConstructDDFAttributes *atts,
     {
         for (int time = timeStart ; time < timeEnd ; time += timeStride)
         {
-            avtPipelineSpecification_p spec2 = 
-                                            new avtPipelineSpecification(spec);
-            avtDataSpecification_p dspec = spec2->GetDataSpecification();
-            dspec->AddSecondaryVariable(atts->GetCodomainName().c_str());
+            avtContract_p spec2 = 
+                                            new avtContract(spec);
+            avtDataRequest_p dataRequest = spec2->GetDataRequest();
+            dataRequest->AddSecondaryVariable(atts->GetCodomainName().c_str());
             for (i = 0 ; i < atts->GetVarnames().size() ; i++)
-                dspec->AddSecondaryVariable(atts->GetVarnames()[i].c_str());
-            dspec->SetTimestep(time);
+                dataRequest->AddSecondaryVariable(atts->GetVarnames()[i].c_str());
+            dataRequest->SetTimestep(time);
             GetInput()->Update(spec2);
             if (GetInput()->GetInfo().GetValidity().HasErrorOccurred())
             {

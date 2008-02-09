@@ -497,7 +497,7 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
 }
 
 // ****************************************************************************
-//  Method:  avtProjectFilter::RefashionDataObjectInfo
+//  Method:  avtProjectFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Set up the atttributes and validity for the output of the filter.
@@ -518,7 +518,7 @@ avtProjectFilter::ProjectVectors(vtkDataSet *old_ds,
 //
 // ****************************************************************************
 void
-avtProjectFilter::RefashionDataObjectInfo(void)
+avtProjectFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();
@@ -530,7 +530,7 @@ avtProjectFilter::RefashionDataObjectInfo(void)
 }
 
 // ****************************************************************************
-//  Method: avtProjectFilter::PerformRestriction
+//  Method: avtProjectFilter::ModifyContract
 //
 //  Purpose:
 //    Turn on zone/node numbers if needed for pick (for example).
@@ -546,17 +546,17 @@ avtProjectFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtProjectFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtProjectFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
-    if (rv->GetDataSpecification()->MayRequireZones())
+    avtContract_p rv = new avtContract(spec);
+    if (rv->GetDataRequest()->MayRequireZones())
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
     }
-    if (rv->GetDataSpecification()->MayRequireNodes())
+    if (rv->GetDataRequest()->MayRequireNodes())
     {
-        rv->GetDataSpecification()->TurnNodeNumbersOn();
+        rv->GetDataRequest()->TurnNodeNumbersOn();
     }
     return rv;
 }

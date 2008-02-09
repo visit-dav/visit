@@ -47,7 +47,7 @@
 
 #include <avtDatabaseMetaData.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <NoInputException.h>
 
@@ -84,7 +84,7 @@ avtDatabaseWriter::avtDatabaseWriter()
     shouldChangeTotalZones = false;
     nTargetChunks = 1;
     targetTotalZones = 1;
-    savedPipelineSpec = NULL;
+    savedContract = NULL;
 }
 
 
@@ -243,13 +243,13 @@ avtDatabaseWriter::Write(const std::string &filename,
         // We will need a pipeline specification to force an update. Get that 
         // here.
         //
-        avtTerminatingSource *src = dob->GetTerminatingSource();
-        avtPipelineSpecification_p spec;
-        if (*savedPipelineSpec)
-            spec = savedPipelineSpec;
+        avtOriginatingSource *src = dob->GetOriginatingSource();
+        avtContract_p spec;
+        if (*savedContract)
+            spec = savedContract;
         else
-            spec = src->GetGeneralPipelineSpecification();
-        avtDataSpecification_p ds = spec->GetDataSpecification();
+            spec = src->GetGeneralContract();
+        avtDataRequest_p ds = spec->GetDataRequest();
         std::string meshname; 
         if (md->GetNumMeshes() > 0)
         {
@@ -524,7 +524,7 @@ avtDatabaseWriter::Write(const std::string &filename,
 
 
 // ****************************************************************************
-//  Method:  avtDatabaseWriter::SetPipelineSpecToUse
+//  Method:  avtDatabaseWriter::SetContractToUse
 //
 //  Purpose:
 //    Save a pipeline specification to use when re-executing a pipeline.
@@ -540,7 +540,7 @@ avtDatabaseWriter::Write(const std::string &filename,
 //
 // ****************************************************************************
 void
-avtDatabaseWriter::SetPipelineSpecToUse(avtPipelineSpecification_p ps)
+avtDatabaseWriter::SetContractToUse(avtContract_p ps)
 {
-    savedPipelineSpec = ps;
+    savedContract = ps;
 }

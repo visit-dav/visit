@@ -465,7 +465,7 @@ avtCurveConstructorFilter::VerifyInput(void)
 }
 
 // ****************************************************************************
-//  Method: avtCurveConstructorFilter::PerformRestriction
+//  Method: avtCurveConstructorFilter::ModifyContract
 //
 //  Purpose:
 //    Indicates that we cannot do dynamic load balancing with this filter.  
@@ -475,15 +475,15 @@ avtCurveConstructorFilter::VerifyInput(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtCurveConstructorFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtCurveConstructorFilter::ModifyContract(avtContract_p spec)
 {
     spec->NoDynamicLoadBalancing();
     return spec;
 }
 
 // ****************************************************************************
-//  Method: avtCurveConstructorFilter::PerformRestriction
+//  Method: avtCurveConstructorFilter::ModifyContract
 //
 //  Purpose:
 //      Allows the filter to change its output's data object information, which
@@ -500,7 +500,7 @@ avtCurveConstructorFilter::PerformRestriction(avtPipelineSpecification_p spec)
 // ****************************************************************************
 
 void
-avtCurveConstructorFilter::RefashionDataObjectInfo(void)
+avtCurveConstructorFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetAttributes().SetSpatialDimension(1);
 }

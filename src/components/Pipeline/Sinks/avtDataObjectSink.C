@@ -152,7 +152,7 @@ avtDataObjectSink::ChangedInput(void)
 // ****************************************************************************
 
 bool
-avtDataObjectSink::UpdateInput(avtPipelineSpecification_p spec)
+avtDataObjectSink::UpdateInput(avtContract_p spec)
 {
     return GetInput()->Update(spec);
 }

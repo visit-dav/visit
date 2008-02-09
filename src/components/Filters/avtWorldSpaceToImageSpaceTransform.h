@@ -119,10 +119,10 @@ class AVTFILTERS_API avtWorldSpaceToImageSpaceTransform : public avtTransform
                                                            vtkMatrix4x4 *);
     static void             CalculateTransform(const avtViewInfo &,
                                        vtkMatrix4x4 *, const double *, double);
-    virtual avtPipelineSpecification_p
-                            PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                            ModifyContract(avtContract_p);
 
-    virtual void            RefashionDataObjectInfo(void);
+    virtual void            UpdateDataObjectInfo(void);
     virtual void            PreExecute(void);
     virtual bool            FilterUnderstandsTransformedRectMesh();
 };

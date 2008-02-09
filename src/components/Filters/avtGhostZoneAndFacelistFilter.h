@@ -64,13 +64,13 @@ class   avtFacelistFilter;
 //  Modifications:
 //
 //    Hank Childs, Fri Jul 27 14:54:13 PDT 2001
-//    Added RefashionDataObjectInfo.
+//    Added UpdateDataObjectInfo.
 //
 //    Hank Childs, Thu Sep  6 11:14:38 PDT 2001
 //    Allowed for dynamic load balancing.
 //
 //    Hank Childs, Wed Aug 11 09:46:53 PDT 2004
-//    Added PerformRestriction.
+//    Added ModifyContract.
 //
 //    Hank Childs, Fri Sep 23 10:38:31 PDT 2005
 //    Add support for edge lists.
@@ -122,11 +122,11 @@ class AVTFILTERS_API avtGhostZoneAndFacelistFilter :
     bool                  useGhostFilter;
 
     virtual void          Execute(void);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
     virtual int           AdditionalPipelineFilters(void);
     virtual void          ChangedInput(void);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
     virtual bool          FilterUnderstandsTransformedRectMesh();
 };
 

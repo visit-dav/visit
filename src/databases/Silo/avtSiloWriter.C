@@ -58,8 +58,8 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
 #include <avtMetaData.h>
+#include <avtOriginatingSource.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
 
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
@@ -1627,7 +1627,7 @@ avtSiloWriter::WriteMaterials(DBfile *dbfile, vtkCellData *cd, int chunk)
 
     if (mustGetMaterialsAdditionally)
     {
-        avtMaterial *mat = GetInput()->GetTerminatingSource()
+        avtMaterial *mat = GetInput()->GetOriginatingSource()
                                            ->GetMetaData()->GetMaterial(chunk);
         if (mat == NULL)
         {

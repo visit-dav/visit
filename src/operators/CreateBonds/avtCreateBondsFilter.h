@@ -81,8 +81,8 @@ class avtCreateBondsFilter : public avtPluginStreamer
     CreateBondsAttributes   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p spec);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p spec);
 
     bool AtomsShouldBeBondedSimple(float *atomicnumbers,
                                    vtkPoints *pts,

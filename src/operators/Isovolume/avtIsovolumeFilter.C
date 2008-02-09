@@ -385,7 +385,7 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtIsovolumeFilter::RefashionDataObjectInfo
+//  Method: avtIsovolumeFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates the zones no longer correspond to the original problem.
@@ -400,7 +400,7 @@ avtIsovolumeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtIsovolumeFilter::RefashionDataObjectInfo(void)
+avtIsovolumeFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().ZonesSplit();
@@ -408,7 +408,7 @@ avtIsovolumeFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtIsovolumeFilter::PerformRestriction
+//  Method: avtIsovolumeFilter::ModifyContract
 //
 //  Purpose:
 //      Tell the database that we will need ghost zones.
@@ -426,16 +426,16 @@ avtIsovolumeFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtIsovolumeFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtIsovolumeFilter::ModifyContract(avtContract_p in_spec)
 {
-    avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
+    avtContract_p spec = new avtContract(in_spec);
 
     const char *varname = NULL;
     if (atts.GetVariable() != "default")
         varname = atts.GetVariable().c_str();
     else
-        varname = in_spec->GetDataSpecification()->GetVariable();
+        varname = in_spec->GetDataRequest()->GetVariable();
 
     //
     // We will need the ghost zones so that we can interpolate along domain
@@ -447,11 +447,11 @@ avtIsovolumeFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         in_atts.GetCentering(varname) == AVT_NODECENT)
         skipGhost = true;
     if (!skipGhost)
-        spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
     string iso_var = atts.GetVariable();;
     if (iso_var == "default")
-        iso_var = in_spec->GetDataSpecification()->GetVariable();
+        iso_var = in_spec->GetDataRequest()->GetVariable();
 
     avtIntervalTree *it = GetMetaData()->GetDataExtents(iso_var.c_str());
     if (it != NULL)
@@ -460,7 +460,7 @@ avtIsovolumeFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
         double max = atts.GetUbound();
         vector<int> dl;
         it->GetElementsListFromRange(&min, &max, dl);
-        spec->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
+        spec->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
     }
 
     return spec;

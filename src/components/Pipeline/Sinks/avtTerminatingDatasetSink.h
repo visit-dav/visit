@@ -37,45 +37,50 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtOriginatingNullDataSink.C                      //
+//                          avtTerminatingDatasetSink.h                      //
 // ************************************************************************* //
 
-#include <avtOriginatingNullDataSink.h>
+#ifndef AVT_TERMINATING_DATASET_SINK_H
+#define AVT_TERMINATING_DATASET_SINK_H
+#include <pipeline_exports.h>
+
+
+#include <avtDatasetSink.h>
+#include <avtTerminatingSink.h>
 
 
 // ****************************************************************************
-//  Method: avtOriginatingNullDataSink constructor
+//  Class: avtTerminatingDatasetSink
 //
 //  Purpose:
-//      Defines the constructor.  Note: this should not be inlined in the
-//      header because it causes problems for certain compilers.
+//      A dataset sink that terminates pipeline execution.
 //
 //  Programmer: Hank Childs
-//  Creation:   February 5, 2004
+//  Creation:   May 30, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Fri Sep 28 13:18:47 PDT 2001
+//    Added DynamicLoadBalanceCleanUp.
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
 //
 // ****************************************************************************
 
-avtOriginatingNullDataSink::avtOriginatingNullDataSink()
+class PIPELINE_API avtTerminatingDatasetSink
+    : virtual public avtDatasetSink, virtual public avtTerminatingSink
 {
-    ;
-}
+  public:
+                      avtTerminatingDatasetSink();
+    virtual          ~avtTerminatingDatasetSink();
+
+  protected:
+    virtual void      DynamicLoadBalanceCleanUp(void);
+};
 
 
-// ****************************************************************************
-//  Method: avtOriginatingNullDataSink destructor
-//
-//  Purpose:
-//      Defines the destructor.  Note: this should not be inlined in the header
-//      because it causes problems for certain compilers.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 5, 2004
-//
-// ****************************************************************************
-
-avtOriginatingNullDataSink::~avtOriginatingNullDataSink()
-{
-    ;
-}
+#endif
 
 

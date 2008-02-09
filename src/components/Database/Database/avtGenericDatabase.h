@@ -331,21 +331,21 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                avtGenericDatabase(avtFileFormatInterface *);
     virtual                   ~avtGenericDatabase();
 
-    virtual void               GetAuxiliaryData(avtDataSpecification_p,
+    virtual void               GetAuxiliaryData(avtDataRequest_p,
                                                 VoidRefList &,
                                                 const char *type, void *args);
-    virtual avtDataTree_p      GetOutput(avtDataSpecification_p,
+    virtual avtDataTree_p      GetOutput(avtDataRequest_p,
                                          avtSourceFromDatabase *);
 
     virtual void               FreeUpResources(void);
-    virtual int                NumStagesForFetch(avtDataSpecification_p);
+    virtual int                NumStagesForFetch(avtDataRequest_p);
 
     virtual const char        *GetFilename(int);
 
     virtual bool               HasInvariantMetaData(void) const;
     virtual bool               HasInvariantSIL(void) const;
     virtual bool               CanDoDynamicLoadBalancing(
-                                                       avtDataSpecification_p);
+                                                       avtDataRequest_p);
 
     virtual void               ActivateTimestep(int stateIndex);
 
@@ -376,49 +376,49 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
 
     vtkDataSet                *GetDataset(const char *, int, int, const char *,
                                           const std::vector<CharStrRef> &,
-                                          avtDataSpecification_p, 
+                                          avtDataRequest_p, 
                                           avtSourceFromDatabase *);
     vtkDataSet                *GetScalarVarDataset(const char *, int, int,
                                                    const char *,
-                                                   const avtDataSpecification_p);
+                                                   const avtDataRequest_p);
     vtkDataSet                *GetMeshDataset(const char *, int, int,
-                                              const char *, const avtDataSpecification_p); 
+                                              const char *, const avtDataRequest_p); 
     vtkDataSet                *GetVectorVarDataset(const char *, int, int,
                                                    const char *,
-                                                   const avtDataSpecification_p);
+                                                   const avtDataRequest_p);
     vtkDataSet                *GetSymmetricTensorVarDataset(const char *, int,
                                                             int, const char *,
-                                                            const avtDataSpecification_p);
+                                                            const avtDataRequest_p);
     vtkDataSet                *GetTensorVarDataset(const char *, int, int,
                                                    const char *,
-                                                   const avtDataSpecification_p);
+                                                   const avtDataRequest_p);
     vtkDataSet                *GetArrayVarDataset(const char *, int, int,
                                                    const char *,
-                                                   const avtDataSpecification_p);
+                                                   const avtDataRequest_p);
     vtkDataSet                *GetMaterialDataset(const char *, int, int,
                                                   const char *,
-                                                  const avtDataSpecification_p);
+                                                  const avtDataRequest_p);
     vtkDataSet                *GetSpeciesDataset(const char *, int, int,
                                                  const char *,
-                                                 const avtDataSpecification_p);
+                                                 const avtDataRequest_p);
     vtkDataSet                *GetLabelVarDataset(const char *, int, int,
                                                   const char *,
-                                                  const avtDataSpecification_p);
+                                                  const avtDataRequest_p);
     vtkDataArray              *GetScalarVariable(const char *, int, int,
                                                  const char *,
-                                                 const avtDataSpecification_p);
+                                                 const avtDataRequest_p);
     vtkDataArray              *GetVectorVariable(const char *, int, int,
                                                  const char *,
-                                                 const avtDataSpecification_p);
+                                                 const avtDataRequest_p);
     vtkDataArray              *GetSymmetricTensorVariable(const char *,int,int,
                                                           const char *,
-                                                          const avtDataSpecification_p);
+                                                          const avtDataRequest_p);
     vtkDataArray              *GetTensorVariable(const char *, int, int,
                                                  const char *,
-                                                 const avtDataSpecification_p);
+                                                 const avtDataRequest_p);
     vtkDataArray              *GetArrayVariable(const char *, int, int,
                                                  const char *,
-                                                 const avtDataSpecification_p);
+                                                 const avtDataRequest_p);
     vtkDataArray              *GetSpeciesVariable(const char *, int, int,
                                                   const char *, int);
     vtkDataArray              *GetLabelVariable(const char *, int, int,
@@ -428,9 +428,9 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     void                       AddSecondaryVariables(vtkDataSet *, int, int,
                                                      const char *,
                                               const std::vector<CharStrRef> &,
-                                              const avtDataSpecification_p);
+                                              const avtDataRequest_p);
     vtkDataSet                *GetMesh(const char *, int, int, const char *,
-                                       avtDataSpecification_p);
+                                       avtDataRequest_p);
 
     void                       AddOriginalCellsArray(vtkDataSet *, const int);
     void                       AddOriginalNodesArray(vtkDataSet *, const int);
@@ -450,56 +450,56 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                       avtMaterial *, int, bool, bool, bool,
                                       bool, int, int, float, bool, bool&, bool&,bool, 
                                       avtMaterial *&);
-    avtMaterial               *GetMaterial(int, const char *, int, const avtDataSpecification_p = 0);
+    avtMaterial               *GetMaterial(int, const char *, int, const avtDataRequest_p = 0);
     avtSpecies                *GetSpecies(int, const char *, int);
     void                       GetMaterialIndices(avtMaterial *,
                                                   stringVector &, 
                                                   intVector &);
 
     void                       ReadDataset(avtDatasetCollection &, 
-                                  intVector &, avtDataSpecification_p &,
+                                  intVector &, avtDataRequest_p &,
                                   avtSourceFromDatabase *,
                                   boolVector &);
 
     avtDomainBoundaries       *GetDomainBoundaryInformation(
                                       avtDatasetCollection &, intVector &, 
-                                      avtDataSpecification_p,
+                                      avtDataRequest_p,
                                       bool confirmInputMeshHasRightSize = true);
     bool                       CommunicateGhosts(avtGhostDataType,
                                     avtDatasetCollection &, intVector &,
-                                    avtDataSpecification_p &,
+                                    avtDataRequest_p &,
                                     avtSourceFromDatabase *, intVector &,bool);
     bool                       CommunicateGhostZonesFromDomainBoundaries(
                                     avtDomainBoundaries *,
                                     avtDatasetCollection &, intVector &, 
-                                    avtDataSpecification_p &,
+                                    avtDataRequest_p &,
                                     avtSourceFromDatabase *);
     bool                     CommunicateGhostZonesFromDomainBoundariesFromFile(
                                     avtDatasetCollection &, intVector &, 
-                                    avtDataSpecification_p &,
+                                    avtDataRequest_p &,
                                     avtSourceFromDatabase *);
     bool                     CommunicateGhostNodesFromDomainBoundariesFromFile(
                                     avtDatasetCollection &, intVector &, 
-                                    avtDataSpecification_p &,
+                                    avtDataRequest_p &,
                                     avtSourceFromDatabase *, intVector &);
     bool                       CommunicateGhostZonesFromGlobalNodeIds(
                                     avtDatasetCollection &, intVector &, 
-                                    avtDataSpecification_p &,
+                                    avtDataRequest_p &,
                                     avtSourceFromDatabase *);
     bool                       CommunicateGhostNodesFromGlobalNodeIds(
                                     avtDatasetCollection &, intVector &, 
-                                    avtDataSpecification_p &,
+                                    avtDataRequest_p &,
                                     avtSourceFromDatabase *);
 
     bool                       ApplyGhostForDomainNesting(avtDatasetCollection &,
                                   intVector &, intVector &, 
-                                  avtDataSpecification_p &, bool);
+                                  avtDataRequest_p &, bool);
     void                       MaterialSelect(avtDatasetCollection &,
-                                 intVector &, avtDataSpecification_p &,
+                                 intVector &, avtDataRequest_p &,
                                  avtSourceFromDatabase *, bool);
     void                       SpeciesSelect(avtDatasetCollection &,
                                  intVector &, boolVector &, 
-                                 avtDataSpecification_p &,
+                                 avtDataRequest_p &,
                                  avtSourceFromDatabase *);
     void                       EnumScalarSelect(avtDatasetCollection &,
                                                 const boolVector &,
@@ -514,18 +514,18 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
     void                       CreateGlobalZones(avtDatasetCollection &,
                                                    intVector &, 
                                                    avtSourceFromDatabase *,
-                                                   avtDataSpecification_p &);
+                                                   avtDataRequest_p &);
     void                       CreateGlobalNodes(avtDatasetCollection &,
                                                    intVector &, 
                                                    avtSourceFromDatabase *,
-                                                   avtDataSpecification_p &);
+                                                   avtDataRequest_p &);
     void                       CreateStructuredIndices(avtDatasetCollection &,
                                                        avtSourceFromDatabase*);
     bool                       CreateSimplifiedNestingRepresentation(
                                                    avtDatasetCollection &,
                                                    intVector &, intVector &,
                                                    avtSourceFromDatabase*,
-                                                   avtDataSpecification_p &);
+                                                   avtDataRequest_p &);
     vtkUnstructuredGrid       *CreateSimplifiedNestingRepresentation(
                                               vtkRectilinearGrid *, int,
                                               intVector &,
@@ -534,7 +534,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               avtGhostDataType);
     void                       CreateAMRIndices(avtDatasetCollection &,
                                                 intVector &,
-                                                avtDataSpecification_p &, 
+                                                avtDataRequest_p &, 
                                                 avtSourceFromDatabase*,
                                                 int level);
     void                       UpdateInternalState(int);

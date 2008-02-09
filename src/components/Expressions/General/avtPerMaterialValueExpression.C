@@ -315,7 +315,7 @@ avtPerMaterialValueExpression::ProcessArguments(ArgsExpr *args,
 
 
 // ****************************************************************************
-//  Method: avtPerMaterialValueExpression::PerformRestriction
+//  Method: avtPerMaterialValueExpression::ModifyContract
 //
 //  Purpose:
 //      This routine allows the filter to change the data specification.
@@ -335,10 +335,10 @@ avtPerMaterialValueExpression::ProcessArguments(ArgsExpr *args,
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtPerMaterialValueExpression::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtPerMaterialValueExpression::ModifyContract(avtContract_p spec)
 {
-    spec->GetDataSpecification()->SetMaintainOriginalConnectivity(true);
+    spec->GetDataRequest()->SetMaintainOriginalConnectivity(true);
     return spec;
 }
 

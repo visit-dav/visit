@@ -167,7 +167,7 @@ avtLineSurfaceFilter::Execute(void)
     avtCurveConstructorFilter ccf;
     ccf.SetInput(lineouter.GetOutput());
 
-    avtPipelineSpecification_p specForDB = GetGeneralPipelineSpecification();
+    avtContract_p specForDB = GetGeneralContract();
     ccf.Update(specForDB);
 
     avtDataObject_p ccfOutput = ccf.GetOutput();

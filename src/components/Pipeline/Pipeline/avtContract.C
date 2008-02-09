@@ -37,15 +37,15 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtPipelineSpecification.C                       //
+//                          avtContract.C                       //
 // ************************************************************************* //
 
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 
 #include <avtWebpage.h>
 
 // ****************************************************************************
-//  Method: avtPipelineSpecification constructor
+//  Method: avtContract constructor
 //
 //  Arguments:
 //      d        The data specification for this pipeline.
@@ -68,10 +68,10 @@
 //
 // ****************************************************************************
 
-avtPipelineSpecification::avtPipelineSpecification(avtDataSpecification_p d,
+avtContract::avtContract(avtDataRequest_p d,
                                                    int pi)
 {
-    data             = new avtDataSpecification(d);
+    data             = new avtDataRequest(d);
     pipelineIndex    = pi;
     canDoDynamic     = true;
     useLoadBalancing = true;
@@ -82,7 +82,7 @@ avtPipelineSpecification::avtPipelineSpecification(avtDataSpecification_p d,
 
 
 // ****************************************************************************
-//  Method: avtPipelineSpecification copy constructor
+//  Method: avtContract copy constructor
 //
 //  Arguments:
 //      ps       A pipeline specification to copy.
@@ -92,15 +92,15 @@ avtPipelineSpecification::avtPipelineSpecification(avtDataSpecification_p d,
 //
 // ****************************************************************************
 
-avtPipelineSpecification::avtPipelineSpecification(
-                                                 avtPipelineSpecification_p ps)
+avtContract::avtContract(
+                                                 avtContract_p ps)
 {
     *this = **ps;
 }
 
 
 // ****************************************************************************
-//  Method: avtPipelineSpecification copy constructor
+//  Method: avtContract copy constructor
 //
 //  Arguments:
 //      ps       A pipeline specification to copy.
@@ -116,16 +116,16 @@ avtPipelineSpecification::avtPipelineSpecification(
 //
 // ****************************************************************************
 
-avtPipelineSpecification::avtPipelineSpecification(
-                      avtPipelineSpecification_p ps, avtDataSpecification_p ds)
+avtContract::avtContract(
+                      avtContract_p ps, avtDataRequest_p ds)
 {
     *this = **ps;
-    data  = new avtDataSpecification(ds);
+    data  = new avtDataRequest(ds);
 }
 
 
 // ****************************************************************************
-//  Method: avtPipelineSpecification destructor
+//  Method: avtContract destructor
 //
 //  Purpose:
 //      Defines the destructor.  Note: this should not be inlined in the header
@@ -136,14 +136,14 @@ avtPipelineSpecification::avtPipelineSpecification(
 //
 // ****************************************************************************
 
-avtPipelineSpecification::~avtPipelineSpecification()
+avtContract::~avtContract()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtPipelineSpecification assignment operator
+//  Method: avtContract assignment operator
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2001
@@ -165,10 +165,10 @@ avtPipelineSpecification::~avtPipelineSpecification()
 //
 // ****************************************************************************
 
-avtPipelineSpecification &
-avtPipelineSpecification::operator=(const avtPipelineSpecification &ps)
+avtContract &
+avtContract::operator=(const avtContract &ps)
 {
-    data             = new avtDataSpecification(ps.data);
+    data             = new avtDataRequest(ps.data);
     pipelineIndex    = ps.pipelineIndex;
     canDoDynamic     = ps.canDoDynamic;
     useLoadBalancing = ps.useLoadBalancing;
@@ -181,7 +181,7 @@ avtPipelineSpecification::operator=(const avtPipelineSpecification &ps)
 
 
 // ****************************************************************************
-//  Method: avtPipelineSpecification::UseLoadBalancing
+//  Method: avtContract::UseLoadBalancing
 //
 //  Purpose:
 //      Allows load balancing to be turned off for situations like when you
@@ -195,14 +195,14 @@ avtPipelineSpecification::operator=(const avtPipelineSpecification &ps)
 // ****************************************************************************
 
 void
-avtPipelineSpecification::UseLoadBalancing(bool newVal)
+avtContract::UseLoadBalancing(bool newVal)
 {
     useLoadBalancing = newVal;
 }
 
 
 // ****************************************************************************
-//  Method: avtPipelineSpecification::DebugDump
+//  Method: avtContract::DebugDump
 //
 //  Purpose:
 //      Dumps data members to a webpage.
@@ -225,7 +225,7 @@ YesOrNo(bool b)
 
 
 void
-avtPipelineSpecification::DebugDump(avtWebpage *webpage)
+avtContract::DebugDump(avtWebpage *webpage)
 {
     char str[1024];
 

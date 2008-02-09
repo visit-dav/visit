@@ -255,7 +255,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtTubeFilter::RefashionDataObjectInfo
+//  Method: avtTubeFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Changes attributes of output.
@@ -268,7 +268,7 @@ avtTubeFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtTubeFilter::RefashionDataObjectInfo(void)
+avtTubeFilter::UpdateDataObjectInfo(void)
 {
     avtDataValidity   &outValidity = GetOutput()->GetInfo().GetValidity();
    

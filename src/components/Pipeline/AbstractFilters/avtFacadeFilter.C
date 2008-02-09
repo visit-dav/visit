@@ -130,7 +130,7 @@ avtFacadeFilter::GetOutput(void)
 
 
 // ****************************************************************************
-//  Method: avtFacadeFilter::GetTerminatingSource
+//  Method: avtFacadeFilter::GetOriginatingSource
 //
 //  Purpose:
 //      Gets the terminating source of the pipeline.  Since this is a facade,
@@ -148,11 +148,11 @@ avtFacadeFilter::GetOutput(void)
 //
 // ****************************************************************************
 
-avtTerminatingSource *
-avtFacadeFilter::GetTerminatingSource(void)
+avtOriginatingSource *
+avtFacadeFilter::GetOriginatingSource(void)
 {
     return GetIthFacadedFilter(GetNumberOfFacadedFilters()-1)->
-                                                        GetTerminatingSource();
+                                                        GetOriginatingSource();
 }
 
 
@@ -201,7 +201,7 @@ avtFacadeFilter::GetQueryableSource(void)
 // ****************************************************************************
 
 bool
-avtFacadeFilter::Update(avtPipelineSpecification_p spec)
+avtFacadeFilter::Update(avtContract_p spec)
 {
     return GetIthFacadedFilter(GetNumberOfFacadedFilters()-1)->Update(spec);
 }
@@ -253,7 +253,7 @@ avtFacadeFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtFacadeFilter::PerformRestriction
+//  Method: avtFacadeFilter::ModifyContract
 //
 //  Purpose:
 //      Calls perform restriction on all of the filters it is facading.
@@ -263,13 +263,13 @@ avtFacadeFilter::Execute(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtFacadeFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtFacadeFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
 
     for (int i = GetNumberOfFacadedFilters()-1 ; i >= 0 ; i--)
-        rv = GetIthFacadedFilter(i)->PerformRestriction(rv);
+        rv = GetIthFacadedFilter(i)->ModifyContract(rv);
 
     return rv;
 }
@@ -295,7 +295,7 @@ avtFacadeFilter::ReleaseData(void)
 
 
 // ****************************************************************************
-//  Method: avtFacadeFilter::RefashionDataObjectInfo
+//  Method: avtFacadeFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Calls refashion data object info on each of the facaded filters.
@@ -306,10 +306,10 @@ avtFacadeFilter::ReleaseData(void)
 // ****************************************************************************
 
 void
-avtFacadeFilter::RefashionDataObjectInfo(void)
+avtFacadeFilter::UpdateDataObjectInfo(void)
 {
     for (int i = 0 ; i < GetNumberOfFacadedFilters() ; i++)
-        GetIthFacadedFilter(i)->RefashionDataObjectInfo();
+        GetIthFacadedFilter(i)->UpdateDataObjectInfo();
 }
 
 

@@ -165,7 +165,7 @@ avtMatvfExpression::DeriveVariable(vtkDataSet *in_ds)
     // called.  We need that index to make sure we are getting the right mat.
     //
     // The 'currentTimeState' is a data member of the base class that is
-    // set to be the current timestep during ExamineSpecification. 
+    // set to be the current timestep during ExamineContract. 
     // We need that timestep to make sure we are getting the right mat.
     //
     avtMaterial *mat = GetMetaData()->GetMaterial(currentDomainsIndex,
@@ -577,7 +577,7 @@ avtMatvfExpression::AddMaterial(ConstExpr *c)
 
 
 // ****************************************************************************
-//  Method: avtMatvfExpression::PerformRestriction
+//  Method: avtMatvfExpression::ModifyContract
 //
 //  Purpose:
 //      This routine allows the filter to change the data specification.
@@ -600,10 +600,10 @@ avtMatvfExpression::AddMaterial(ConstExpr *c)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtMatvfExpression::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtMatvfExpression::ModifyContract(avtContract_p spec)
 {
-    spec->GetDataSpecification()->SetMaintainOriginalConnectivity(true);
+    spec->GetDataRequest()->SetMaintainOriginalConnectivity(true);
     return spec;
 }
 

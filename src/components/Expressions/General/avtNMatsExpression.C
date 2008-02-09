@@ -130,7 +130,7 @@ avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
     // called.  We need that index to make sure we are getting the right mat.
     //
     // The 'currentTimeState' is a data member of the base class that is
-    // set to be the current timestep during ExamineSpecification. 
+    // set to be the current timestep during ExamineContract. 
     // We need that timestep to make sure we are getting the right mat.
     //
  
@@ -196,7 +196,7 @@ avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
 
 
 // ****************************************************************************
-//  Method: avtNMatsExpression::PerformRestriction
+//  Method: avtNMatsExpression::ModifyContract
 //
 //  Purpose:
 //      State that we need the zone numbers.
@@ -206,13 +206,13 @@ avtNMatsExpression::DeriveVariable(vtkDataSet *in_ds)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtNMatsExpression::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtNMatsExpression::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = 
-                      avtSingleInputExpressionFilter::PerformRestriction(spec);
+    avtContract_p rv = 
+                      avtSingleInputExpressionFilter::ModifyContract(spec);
 
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
     ds->TurnZoneNumbersOn();
 
     return rv;

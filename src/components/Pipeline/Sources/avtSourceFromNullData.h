@@ -44,7 +44,7 @@
 #define AVT_SOURCE_FROM_NULL_DATA
 #include <pipeline_exports.h>
 
-#include <avtTerminatingNullDataSource.h>
+#include <avtOriginatingNullDataSource.h>
 
 
 // ****************************************************************************
@@ -64,7 +64,7 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtSourceFromNullData : virtual public avtTerminatingNullDataSource 
+class PIPELINE_API avtSourceFromNullData : virtual public avtOriginatingNullDataSource 
 {
   public:
                            avtSourceFromNullData();

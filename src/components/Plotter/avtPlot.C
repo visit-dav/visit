@@ -57,7 +57,7 @@
 #include <avtImageMapper.h>
 #include <avtSourceFromAVTDataset.h>
 #include <avtSourceFromDataset.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtVertexNormalsFilter.h>
 #include <avtSmoothPolyDataFilter.h>
 
@@ -386,7 +386,7 @@ avtPlot::SetVarUnits(const char *name)
 //
 // ****************************************************************************
 avtDataObjectWriter_p
-avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
+avtPlot::Execute(avtDataObject_p input, avtContract_p spec,
                  const WindowAttributes *atts)
 {
    return Execute(input, spec, atts, false);
@@ -482,10 +482,10 @@ avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
 // ****************************************************************************
 
 avtDataObjectWriter_p
-avtPlot::Execute(avtDataObject_p input, avtPipelineSpecification_p spec,
+avtPlot::Execute(avtDataObject_p input, avtContract_p spec,
                  const WindowAttributes *atts, const bool combinedExecute)
 {
-    SetVarName(spec->GetDataSpecification()->GetVariable());
+    SetVarName(spec->GetDataRequest()->GetVariable());
 
     if (*input == NULL)
     {
@@ -672,13 +672,13 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         CopyTo(geo, geometry);
 
         // Before we get the drawable, we must do an update.
-        avtTerminatingSource *src = NULL;
+        avtOriginatingSource *src = NULL;
         if (*dob != NULL)
-           src = dob->GetTerminatingSource();
+           src = dob->GetOriginatingSource();
         else
-           src = geo->GetTerminatingSource();
-        avtPipelineSpecification_p ds = 
-              new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
+           src = geo->GetOriginatingSource();
+        avtContract_p ds = 
+              new avtContract(src->GetFullDataRequest(), 0);
 
         avtDataObject_p sd;
         if (spatialDim == 2 && topologicalDim == 0)  
@@ -755,9 +755,9 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         mapper->SetInput(geo);
 
         // Before we get the drawable, we must do an update.
-        avtTerminatingSource *src = geo->GetTerminatingSource();
-        avtPipelineSpecification_p ds = 
-              new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
+        avtOriginatingSource *src = geo->GetOriginatingSource();
+        avtContract_p ds = 
+              new avtContract(src->GetFullDataRequest(), 0);
         mapper->Execute(ds);
 
         info.Copy(nullData->GetInfo());
@@ -796,9 +796,9 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         mapper->SetInput(geo);
 
         // Before we get the drawable, we must do an update.
-        avtTerminatingSource *src = geo->GetTerminatingSource();
-        avtPipelineSpecification_p ds = 
-              new avtPipelineSpecification(src->GetFullDataSpecification(), 0);
+        avtOriginatingSource *src = geo->GetOriginatingSource();
+        avtContract_p ds = 
+              new avtContract(src->GetFullDataRequest(), 0);
         GuideFunction foo;
         void *args;
         // Turn off the load balancer.
@@ -860,7 +860,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 //
 // ****************************************************************************
 avtActor_p
-avtPlot::CombinedExecute(avtDataObject_p input, avtPipelineSpecification_p spec,
+avtPlot::CombinedExecute(avtDataObject_p input, avtContract_p spec,
                  const WindowAttributes *atts)
 {
    avtDataObjectWriter_p writer = Execute(input, spec, atts, true);
@@ -1332,8 +1332,8 @@ avtPlot::SetScaleMode(avtDataObject_p curDS, ScaleMode xScaleMode,
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
+avtContract_p
+avtPlot::EnhanceSpecification(avtContract_p spec)
 {
     return spec;
 }

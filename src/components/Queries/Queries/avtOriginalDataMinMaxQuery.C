@@ -44,7 +44,7 @@
 
 #include <avtCondenseDatasetFilter.h>
 #include <avtExpressionEvaluatorFilter.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 
 
@@ -137,26 +137,26 @@ avtOriginalDataMinMaxQuery::ApplyFilters(avtDataObject_p inData)
 {
     Preparation(inData);
 
-    avtDataSpecification_p dspec = 
-        inData->GetTerminatingSource()->GetFullDataSpecification();
+    avtDataRequest_p dataRequest = 
+        inData->GetOriginatingSource()->GetFullDataRequest();
 
-    if (dspec->GetVariable() != queryAtts.GetVariables()[0] ||
-        dspec->GetTimestep() != queryAtts.GetTimeStep() ||
+    if (dataRequest->GetVariable() != queryAtts.GetVariables()[0] ||
+        dataRequest->GetTimestep() != queryAtts.GetTimeStep() ||
         timeVarying)
     {
-        dspec = new avtDataSpecification(queryAtts.GetVariables()[0].c_str(), 
+        dataRequest = new avtDataRequest(queryAtts.GetVariables()[0].c_str(), 
                                          queryAtts.GetTimeStep(), 
-                                         dspec->GetRestriction());
+                                         dataRequest->GetRestriction());
     }
 
-    avtPipelineSpecification_p pspec =
-        new avtPipelineSpecification(dspec, queryAtts.GetPipeIndex()); 
+    avtContract_p contract =
+        new avtContract(dataRequest, queryAtts.GetPipeIndex()); 
 
     avtDataObject_p temp;
     CopyTo(temp, inData);
     eef->SetInput(temp);
     avtDataObject_p retObj = eef->GetOutput();
-    retObj->Update(pspec);
+    retObj->Update(contract);
     return retObj;
 }
 

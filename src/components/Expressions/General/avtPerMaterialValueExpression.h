@@ -78,8 +78,8 @@ class EXPRESSION_API avtPerMaterialValueExpression
   protected:
     virtual int               GetVariableDimension(void) { return 1; };
     
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *);
     virtual bool              IsPointVariable(void)  { return false; };

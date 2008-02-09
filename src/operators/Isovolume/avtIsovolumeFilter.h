@@ -61,7 +61,7 @@ class vtkDataSet;
 //
 //  Modifications:
 //    Jeremy Meredith, Mon Feb 16 19:12:11 PST 2004
-//    Added RefashionDataObjectInfo.  This was needed for correct support
+//    Added UpdateDataObjectInfo.  This was needed for correct support
 //    on various mesh types.
 //
 //    Jeremy Meredith, Thu May  6 11:37:47 PDT 2004
@@ -69,7 +69,7 @@ class vtkDataSet;
 //    code duplication.
 //
 //    Hank Childs, Wed Aug 11 09:23:17 PDT 2004
-//    Added PerformRestriction.
+//    Added ModifyContract.
 //
 // ****************************************************************************
 
@@ -92,10 +92,10 @@ class avtIsovolumeFilter : public avtPluginStreamer
     IsovolumeAttributes   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
 
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
 
   private:
     virtual vtkDataSet   *ExecuteSingleClip(vtkDataSet *, float, bool);

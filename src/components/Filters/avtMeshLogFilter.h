@@ -85,7 +85,7 @@ class AVTFILTERS_API avtMeshLogFilter : public avtStreamer
 
     virtual void          PostExecute(void);
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
 
   private:
     void                  ScaleVal(float &v, bool invLog);

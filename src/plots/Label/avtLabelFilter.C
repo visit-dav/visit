@@ -502,7 +502,7 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtLabelFilter::RefashionDataObjectInfo
+//  Method: avtLabelFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Allows the filter to change its output's data object information, which
@@ -514,10 +514,10 @@ avtLabelFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 // ****************************************************************************
 
 void
-avtLabelFilter::RefashionDataObjectInfo(void)
+avtLabelFilter::UpdateDataObjectInfo(void)
 {
 //    IF YOU SEE FUNNY THINGS WITH EXTENTS, ETC, YOU CAN CHANGE THAT HERE.
-    debug3 << "avtLabelFilter::RefashionDataObjectInfo" << endl;
+    debug3 << "avtLabelFilter::UpdateDataObjectInfo" << endl;
 }
 
 // ****************************************************************************

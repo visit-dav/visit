@@ -241,7 +241,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtShiftCenteringFilter::RefashionDataObjectInfo
+//  Method: avtShiftCenteringFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Tells its meta-data object what kind of centering it has.
@@ -257,7 +257,7 @@ avtShiftCenteringFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 // ****************************************************************************
 
 void
-avtShiftCenteringFilter::RefashionDataObjectInfo(void)
+avtShiftCenteringFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &in_atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
@@ -278,7 +278,7 @@ avtShiftCenteringFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtShiftCenteringFilter::PerformRestriction
+//  Method: avtShiftCenteringFilter::ModifyContract
 //
 //  Purpose:
 //      Tell the database that we will need ghost zones.
@@ -288,11 +288,11 @@ avtShiftCenteringFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtShiftCenteringFilter::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtShiftCenteringFilter::ModifyContract(avtContract_p in_spec)
 {
-    avtPipelineSpecification_p spec = new avtPipelineSpecification(in_spec);
-    spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    avtContract_p spec = new avtContract(in_spec);
+    spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
     return spec;
 }
 

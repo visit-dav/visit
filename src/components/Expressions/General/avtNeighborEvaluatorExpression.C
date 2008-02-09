@@ -382,7 +382,7 @@ avtNeighborEvaluatorExpression::FinalizeEvaluation(int nvals)
 
 
 // ****************************************************************************
-//  Method: avtNeighborEvaluatorExpression::PerformRestriction
+//  Method: avtNeighborEvaluatorExpression::ModifyContract
 //
 //  Purpose:
 //      Declares that we need ghost data.
@@ -392,16 +392,16 @@ avtNeighborEvaluatorExpression::FinalizeEvaluation(int nvals)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtNeighborEvaluatorExpression::PerformRestriction(avtPipelineSpecification_p s)
+avtContract_p
+avtNeighborEvaluatorExpression::ModifyContract(avtContract_p s)
 {
-    avtPipelineSpecification_p spec = new avtPipelineSpecification(s);
+    avtContract_p spec = new avtContract(s);
 
     //
     // We will need the ghost zones so that we can interpolate along domain
     // boundaries and still get the biggest neighbor.
     //
-    spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
 
     return spec;
 }

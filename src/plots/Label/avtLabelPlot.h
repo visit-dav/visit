@@ -90,7 +90,7 @@ class avtLabelPlot : public avtSurfaceDataPlot
     virtual bool                SetForegroundColor(const double *);
     void                        SetLegend(bool);
 
-    virtual avtPipelineSpecification_p EnhanceSpecification(avtPipelineSpecification_p spec);
+    virtual avtContract_p EnhanceSpecification(avtContract_p spec);
 
   protected:
     LabelAttributes                atts;

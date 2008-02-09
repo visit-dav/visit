@@ -83,7 +83,7 @@ class avtCylinderFilter : public avtPluginStreamer
     vtkImplicitFunction *cylinderSlice;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
 };
 
 

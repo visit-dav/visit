@@ -46,7 +46,7 @@
 
 
 #include <avtDataObject.h>
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 
 
 // ****************************************************************************
@@ -73,8 +73,8 @@ class PIPELINE_API avtDynamicAttribute
                                avtDynamicAttribute();
     virtual                   ~avtDynamicAttribute();
 
-    virtual avtPipelineSpecification_p
-                               PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                               ModifyContract(avtContract_p);
     virtual void               ResolveAttributes(avtDataObject_p) = 0;
 };
 

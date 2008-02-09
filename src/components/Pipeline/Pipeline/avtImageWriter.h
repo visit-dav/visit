@@ -45,7 +45,7 @@
 
 #include <pipeline_exports.h>
 
-#include <avtOriginatingImageSink.h>
+#include <avtTerminatingImageSink.h>
 #include <avtDataObjectWriter.h>
 
 
@@ -75,7 +75,7 @@ class     avtDataObjectString;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtImageWriter : public avtOriginatingImageSink,
+class PIPELINE_API avtImageWriter : public avtTerminatingImageSink,
                        public avtDataObjectWriter
 {
   public:

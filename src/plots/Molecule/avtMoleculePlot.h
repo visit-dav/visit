@@ -89,7 +89,7 @@ avtMoleculePlot : public avtPointDataPlot
     void            SetLegend(bool);
     void            SetLegendRange(void);
 
-    avtPipelineSpecification_p EnhanceSpecification(avtPipelineSpecification_p);
+    avtContract_p EnhanceSpecification(avtContract_p);
   protected:
     MoleculeAttributes       atts;
 

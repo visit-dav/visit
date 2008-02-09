@@ -85,7 +85,7 @@ class avtTopologyFilter : public avtDataTreeStreamer
     vtkContourFilter *cf;
     
     virtual avtDataTree_p     ExecuteDataTree(vtkDataSet *, int, std::string);
-    virtual void              RefashionDataObjectInfo(void);
+    virtual void              UpdateDataObjectInfo(void);
     
     vtkDataArray             *GetGradient(vtkDataSet *, vtkDataArray *);
 

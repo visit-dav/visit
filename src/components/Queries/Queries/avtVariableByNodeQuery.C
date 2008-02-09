@@ -41,7 +41,7 @@
 // ************************************************************************* //
 
 #include <avtVariableByNodeQuery.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtParallel.h>
 #include <float.h>
 #include <snprintf.h>
@@ -105,11 +105,11 @@ avtVariableByNodeQuery::~avtVariableByNodeQuery()
 void 
 avtVariableByNodeQuery::Preparation(const avtDataAttributes &inAtts)
 {
-    avtDataSpecification_p dspec = 
-        GetInput()->GetTerminatingSource()->GetFullDataSpecification();
+    avtDataRequest_p dataRequest = 
+        GetInput()->GetOriginatingSource()->GetFullDataRequest();
 
     pickAtts.SetTimeStep(queryAtts.GetTimeStep());
-    pickAtts.SetActiveVariable(dspec->GetVariable());
+    pickAtts.SetActiveVariable(dataRequest->GetVariable());
     pickAtts.SetDomain(queryAtts.GetDomain());
     pickAtts.SetElementNumber(queryAtts.GetElement());
     pickAtts.SetVariables(queryAtts.GetVariables());

@@ -106,8 +106,8 @@ protected:
     virtual avtDataObject_p  ApplyRenderingTransformation(avtDataObject_p);
     virtual void             CustomizeBehavior(void);
     virtual avtLegend_p      GetLegend(void) { return varLegendRefPtr; };
-    virtual avtPipelineSpecification_p     
-                             EnhanceSpecification(avtPipelineSpecification_p);
+    virtual avtContract_p     
+                             EnhanceSpecification(avtContract_p);
 
 
     void SetScaling(int mode, float skew);

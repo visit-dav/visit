@@ -97,8 +97,8 @@
 //
 //      How does it all work? Any filter that has data selection consequences,
 //      sets the relevant parameters for an appropriate DataSelection object
-//      which is then added to the avtDataSpecification object. This should
-//      happen in each filter's PerformRestriction (legacy name) method.
+//      which is then added to the avtDataRequest object. This should
+//      happen in each filter's ModifyContract (legacy name) method.
 //      Eventually, data selection information for all the operators that
 //      advertise it arrives at avtGenericDatabase in the avtDataSpecfication
 //      object. Any database that wants this information must implement the

@@ -808,7 +808,7 @@ avtBoxFilter::RectilinearExecute(vtkRectilinearGrid *in_ds)
 
 
 // ****************************************************************************
-//  Method: avtBoxFilter::RefashionDataObjectInfo
+//  Method: avtBoxFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that the effective spatial extents have changed.
@@ -823,7 +823,7 @@ avtBoxFilter::RectilinearExecute(vtkRectilinearGrid *in_ds)
 // ****************************************************************************
 
 void
-avtBoxFilter::RefashionDataObjectInfo(void)
+avtBoxFilter::UpdateDataObjectInfo(void)
 {
     // Zone and node numberings will change
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
@@ -849,7 +849,7 @@ avtBoxFilter::RefashionDataObjectInfo(void)
 }
 
 // ****************************************************************************
-//  Method: avtBoxFilter::PerformRestriction
+//  Method: avtBoxFilter::ModifyContract
 //
 //  Purpose:
 //      Restricts the SIL to the domains requested by the user.
@@ -870,10 +870,10 @@ avtBoxFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtBoxFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
 
     //
     // First tell the file format reader that we are going to be doing a box,
@@ -888,7 +888,7 @@ avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
     double maxs[3] = {atts.GetMaxx(), atts.GetMaxy(), atts.GetMaxz()};
     sel->SetMins(mins);
     sel->SetMaxs(maxs);
-    selID = rv->GetDataSpecification()->AddDataSelection(sel);
+    selID = rv->GetDataRequest()->AddDataSelection(sel);
 
     //
     // Now, if the file format reader has produced an interval tree, determine
@@ -902,7 +902,7 @@ avtBoxFilter::PerformRestriction(avtPipelineSpecification_p spec)
     {
         vector<int> dl;
         it->GetElementsListFromRange(mins, maxs, dl);
-        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
+        rv->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
     }
 
     return rv;

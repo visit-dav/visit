@@ -51,7 +51,7 @@
 #include <PickVarInfo.h>
 
 #include <avtMatrix.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtVector.h>
 
 #include <BadCellException.h>

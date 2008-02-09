@@ -473,7 +473,7 @@ avtRayTracer::Execute(void)
             imageCommunicator.SetImagePartition(&imagePartition);
 #endif
             extractor.RestrictToTile(IStart, IEnd, JStart, JEnd);
-            image->Update(GetGeneralPipelineSpecification());
+            image->Update(GetGeneralContract());
             if (PAR_Rank() == 0)
             {
                 unsigned char *whole_rgb = 
@@ -655,7 +655,7 @@ avtRayTracer::ReleaseData(void)
 
 
 // ****************************************************************************
-//  Method: avtRayTracer::PerformRestriction
+//  Method: avtRayTracer::ModifyContract
 //
 //  Purpose:
 //      Restricts the data of interest.  Does this by getting the spatial
@@ -678,10 +678,10 @@ avtRayTracer::ReleaseData(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtRayTracer::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtRayTracer::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
     if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
     {
         vector<int> domains;
@@ -690,8 +690,8 @@ avtRayTracer::PerformRestriction(avtPipelineSpecification_p spec)
         {
             avtWorldSpaceToImageSpaceTransform::GetDomainsList(view,
                                                                domains, tree);
-            rv = new avtPipelineSpecification(spec);
-            rv->GetDataSpecification()->GetRestriction()
+            rv = new avtContract(spec);
+            rv->GetDataRequest()->GetRestriction()
                                                     ->RestrictDomains(domains);
         }
     }

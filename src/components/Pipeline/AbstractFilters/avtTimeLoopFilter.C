@@ -43,7 +43,7 @@
 #include <avtTimeLoopFilter.h>
 
 #include <avtCallback.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -96,7 +96,7 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //
 //  Purpose: 
 //    Loops through specified timesteps:  retrieves correct SILRestriction,
-//    creates appropriate avtDataSpecification and avtPipelineSpecification
+//    creates appropriate avtDataRequest and avtContract
 //    for each timestep and calls avtFilter::Update to initiate a new 
 //    pipeline execution for each timestep. 
 //
@@ -132,11 +132,11 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 // ****************************************************************************
 
 bool
-avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
+avtTimeLoopFilter::Update(avtContract_p spec)
 {
     int i;
     bool modified = false;
-    avtDataSpecification_p orig_DS = spec->GetDataSpecification();
+    avtDataRequest_p orig_DS = spec->GetDataRequest();
     avtSILRestriction_p orig_SILR = orig_DS->GetRestriction();
 
     FinalizeTimeLoop();
@@ -146,7 +146,7 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
     // That in turn will allow the progress to work correctly.
     //
     int numIters = (actualEnd-startTime)/stride+1;
-    avtTerminatingSource *src = GetTerminatingSource();
+    avtOriginatingSource *src = GetOriginatingSource();
     src->SetNumberOfExecutions(numIters);
 
     for (i = startTime; i < actualEnd; i+= stride)
@@ -158,7 +158,7 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
         debug5 << "Time loop filter updating with time slice #" 
                << currentTime << endl;
 
-        avtSIL *sil = GetInput()->GetTerminatingSource()->GetSIL(currentTime);
+        avtSIL *sil = GetInput()->GetOriginatingSource()->GetSIL(currentTime);
         if (sil == NULL)
         {
             debug4 << "Could not read the SIL at state " << currentTime << endl;
@@ -174,14 +174,14 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
                 currentSILR = orig_SILR;
             }
         }
-        avtDataSpecification_p newDS = new avtDataSpecification(orig_DS, currentSILR);
+        avtDataRequest_p newDS = new avtDataRequest(orig_DS, currentSILR);
         newDS->SetTimestep(currentTime);
 
-        avtPipelineSpecification_p pspec = 
-            new avtPipelineSpecification(newDS, spec->GetPipelineIndex());
-        pspec->NoDynamicLoadBalancing();
+        avtContract_p contract = 
+            new avtContract(newDS, spec->GetPipelineIndex());
+        contract->NoDynamicLoadBalancing();
 
-        modified |= avtFilter::Update(pspec);
+        modified |= avtFilter::Update(contract);
         
         if (ExecutionSuccessful())
         {
@@ -203,7 +203,7 @@ avtTimeLoopFilter::Update(avtPipelineSpecification_p spec)
     //
     GetOutput()->GetInfo().GetValidity().ResetErrorOccurred();
     CreateFinalOutput();
-    RefashionDataObjectInfo();
+    UpdateDataObjectInfo();
 
     //
     // Ensure the pipeline is in the same state as when we began.

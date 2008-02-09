@@ -64,7 +64,7 @@
 #include <avtMixedVariable.h>
 #include <avtParallel.h>
 #include <avtQueryableSource.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <NonQueryableInputException.h>
 #include <DebugStream.h>
@@ -336,7 +336,7 @@ avtMinMaxQuery::Execute(vtkDataSet *ds, const int dom)
     avtMixedVariable *mv = NULL;
     if (OriginalData() && !nodeCentered)
     {
-        avtMetaData *md = GetInput()->GetTerminatingSource()->GetMetaData();
+        avtMetaData *md = GetInput()->GetOriginatingSource()->GetMetaData();
         mv = md->GetMixedVar(var.c_str(),domain, ts);
         
         if (mv != NULL)
@@ -687,14 +687,14 @@ avtMinMaxQuery::PostExecute(void)
 void
 avtMinMaxQuery::Preparation(avtDataObject_p inData)
 {
-    avtDataSpecification_p dspec = inData->GetTerminatingSource()
-        ->GetGeneralPipelineSpecification()->GetDataSpecification();
+    avtDataRequest_p dataRequest = inData->GetOriginatingSource()
+        ->GetGeneralContract()->GetDataRequest();
 
     src = inData->GetQueryableSource();
 
     intVector dlist;
-    dspec->GetSIL().GetDomainList(dlist);
-    if (dlist.size() == 1 && dspec->UsesAllDomains())
+    dataRequest->GetSIL().GetDomainList(dlist);
+    if (dlist.size() == 1 && dataRequest->UsesAllDomains())
         singleDomain = true;
     else 
         singleDomain = false;

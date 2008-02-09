@@ -50,7 +50,7 @@
 #include <avtIntervalTree.h>
 #include <avtMetaData.h>
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <vtkAppendFilter.h>
 #include <vtkCharArray.h>
@@ -1206,7 +1206,7 @@ avtConnComponentsExpression::ShiftLabels(vtkIntArray *labels, int shift)
 
 
 // ****************************************************************************
-//  Method: avtGradientExpression::PerformRestriction
+//  Method: avtGradientExpression::ModifyContract
 //
 //  Purpose:
 //      Request ghost zones.
@@ -1215,12 +1215,12 @@ avtConnComponentsExpression::ShiftLabels(vtkIntArray *labels, int shift)
 //  Creation:   August 11, 2007
 //
 // ****************************************************************************
-avtPipelineSpecification_p
-avtConnComponentsExpression::PerformRestriction(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtConnComponentsExpression::ModifyContract(avtContract_p in_spec)
 {
-    avtPipelineSpecification_p spec = 
-                            avtExpressionFilter::PerformRestriction(in_spec);
-    spec->GetDataSpecification()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+    avtContract_p spec = 
+                            avtExpressionFilter::ModifyContract(in_spec);
+    spec->GetDataRequest()->SetDesiredGhostDataType(GHOST_ZONE_DATA);
     return spec;
 }
 

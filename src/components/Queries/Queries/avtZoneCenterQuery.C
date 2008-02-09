@@ -43,7 +43,7 @@
 #include <avtZoneCenterQuery.h>
 
 #include <avtParallel.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtSILRestrictionTraverser.h>
 #include <vector>
 #include <snprintf.h>
@@ -130,11 +130,11 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
     if (!qA->GetUseGlobalId())
     {
         intVector dlist;
-        avtDataSpecification_p dspec = 
-            GetInput()->GetTerminatingSource()->GetFullDataSpecification();
-        dspec->GetSIL().GetDomainList(dlist);
+        avtDataRequest_p dataRequest = 
+            GetInput()->GetOriginatingSource()->GetFullDataRequest();
+        dataRequest->GetSIL().GetDomainList(dlist);
 
-        if (dlist.size() == 1 && dspec->UsesAllDomains())
+        if (dlist.size() == 1 && dataRequest->UsesAllDomains())
         {
             singleDomain = true;
         }
@@ -187,7 +187,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         else
         {
             string domainName;
-            avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+            avtOriginatingSource *src = GetInput()->GetOriginatingSource();
             int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
             int domain      = queryAtts.GetDomain()  - blockOrigin;
             int ts          = queryAtts.GetTimeStep();
@@ -227,7 +227,7 @@ avtZoneCenterQuery::PerformQuery(QueryAttributes *qA)
         }
         else
         {
-            avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+            avtOriginatingSource *src = GetInput()->GetOriginatingSource();
             int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
             int domain      = queryAtts.GetDomain()  - blockOrigin;
             int ts          = queryAtts.GetTimeStep();
@@ -281,7 +281,7 @@ avtZoneCenterQuery::FindGlobalCenter(double coord[3])
     trav.GetDomainList(dlist);
     bool success = false;
 
-    avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+    avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     for (int i = 0; i < dlist.size() && !success; ++i) 
     {
         success = src->QueryCoords(var, dlist[i], zone, ts, coord, true, true);
@@ -316,9 +316,9 @@ avtZoneCenterQuery::FindLocalCenter(double coord[3])
 {
 
     intVector dlist;
-    avtDataSpecification_p dspec = 
-        GetInput()->GetTerminatingSource()->GetFullDataSpecification();
-    dspec->GetSIL().GetDomainList(dlist);
+    avtDataRequest_p dataRequest = 
+        GetInput()->GetOriginatingSource()->GetFullDataRequest();
+    dataRequest->GetSIL().GetDomainList(dlist);
 
     int blockOrigin = GetInput()->GetInfo().GetAttributes().GetBlockOrigin();
     int cellOrigin  = GetInput()->GetInfo().GetAttributes().GetCellOrigin();
@@ -351,7 +351,7 @@ avtZoneCenterQuery::FindLocalCenter(double coord[3])
             domainUsed = true;
     }
 
-    avtTerminatingSource *src = GetInput()->GetTerminatingSource();
+    avtOriginatingSource *src = GetInput()->GetOriginatingSource();
     if (domainUsed)
     {
         for (int i = 0; i < dlist.size() && !success; ++i) 

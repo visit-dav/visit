@@ -121,7 +121,7 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
     int                   numAdditionalFilters;
 
     virtual void          Execute(void);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
 
     virtual int           AdditionalPipelineFilters(void) 
                                             { return numAdditionalFilters; };

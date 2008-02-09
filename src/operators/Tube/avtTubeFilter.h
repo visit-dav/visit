@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Nov  1 19:28:27 PST 2002
-//    Added RefashionDataObjectInfo to tell it the zone numbers are invalid
+//    Added UpdateDataObjectInfo to tell it the zone numbers are invalid
 //    and that we don't need normals.
 //
 // ****************************************************************************
@@ -85,7 +85,7 @@ class avtTubeFilter : public avtPluginStreamer
   protected:
     TubeAttributes   atts;
 
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
 };
 

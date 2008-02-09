@@ -124,8 +124,8 @@ avtTotalRevolvedVolumeQuery::~avtTotalRevolvedVolumeQuery()
 avtDataObject_p 
 avtTotalRevolvedVolumeQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtPipelineSpecification_p pspec = 
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract = 
+        inData->GetOriginatingSource()->GetGeneralContract();
     //
     // Create an artificial pipeline.
     //
@@ -136,7 +136,7 @@ avtTotalRevolvedVolumeQuery::ApplyFilters(avtDataObject_p inData)
 
     volume->SetInput(dob);
     avtDataObject_p objOut = volume->GetOutput();
-    objOut->Update(pspec);
+    objOut->Update(contract);
     return objOut;
 }
 

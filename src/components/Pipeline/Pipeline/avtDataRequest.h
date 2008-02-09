@@ -37,11 +37,11 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtDataSpecification.h                        //
+//                                avtDataRequest.h                           //
 // ************************************************************************* //
 
-#ifndef AVT_DATA_SPECIFICATION_H
-#define AVT_DATA_SPECIFICATION_H
+#ifndef AVT_DATA_REQUEST_H
+#define AVT_DATA_REQUEST_H
 
 #include <pipeline_exports.h>
 
@@ -73,12 +73,12 @@ class PIPELINE_API avtSILSpecification
 
 
 class  avtWebpage;
-class  avtDataSpecification;
-typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
+class  avtDataRequest;
+typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 
 
 // ****************************************************************************
-//  Class: avtDataSpecification
+//  Class: avtDataRequest
 //
 //  Purpose:
 //      This is a specification of what the database should output.  That
@@ -168,7 +168,7 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //
 //    Hank Childs, Fri Sep 23 10:10:12 PDT 2005
 //    Remove "DBVariable" construct.  Also added OriginalVariable which is
-//    needed when GeneralPipelineSpecifications are requested.
+//    needed when GeneralContracts are requested.
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
 //    Added members and methods for mesh discretization 
@@ -198,23 +198,23 @@ typedef ref_ptr<avtDataSpecification> avtDataSpecification_p;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtDataSpecification
+class PIPELINE_API avtDataRequest
 {
   public:
-                                 avtDataSpecification(const char *, int,
+                                 avtDataRequest(const char *, int,
                                                       avtSILRestriction_p);
-                                 avtDataSpecification(const char *, int, int);
-                                 avtDataSpecification(avtDataSpecification_p,
+                                 avtDataRequest(const char *, int, int);
+                                 avtDataRequest(avtDataRequest_p,
                                                       avtSILRestriction_p);
-                                 avtDataSpecification(avtDataSpecification_p,
+                                 avtDataRequest(avtDataRequest_p,
                                                       int);
-                                 avtDataSpecification(avtDataSpecification_p,
+                                 avtDataRequest(avtDataRequest_p,
                                                       const char *);
-                                 avtDataSpecification(avtDataSpecification_p);
-    virtual                     ~avtDataSpecification();
+                                 avtDataRequest(avtDataRequest_p);
+    virtual                     ~avtDataRequest();
 
-    avtDataSpecification        &operator=(const avtDataSpecification &);
-    bool                         operator==(const avtDataSpecification &);
+    avtDataRequest        &operator=(const avtDataRequest &);
+    bool                         operator==(const avtDataRequest &);
 
     int                          GetTimestep(void)     { return timestep; };
     void                         SetTimestep(int t)     { timestep = t; };
@@ -370,7 +370,7 @@ class PIPELINE_API avtDataSpecification
     void                         SetMaxMaterialsPerZone(int mmpz)
                                      { maxMatsPerZone = mmpz; }
 
-    bool                         VariablesAreTheSame(const avtDataSpecification &);
+    bool                         VariablesAreTheSame(const avtDataRequest &);
 
     int                          AddDataSelection(avtDataSelection *sel);
     void                         RemoveAllDataSelections();
@@ -478,7 +478,7 @@ class PIPELINE_API avtDataSpecification
     // This method is defined to prevent accidental use of a bitwise copy
     // implementation.  If you want to re-define it to do something
     // meaningful, that's fine.
-                       avtDataSpecification(const avtDataSpecification &) {;};
+                       avtDataRequest(const avtDataRequest &) {;};
 };
 
 

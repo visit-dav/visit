@@ -230,8 +230,8 @@ avtMacroExpressionFilter::Execute(void)
     // If we use the default variable, the EEF will try to create it, so tell
     // it that the default variable is the one we are calculating.
     //
-    avtPipelineSpecification_p pspec = GetGeneralPipelineSpecification();
-    avtPipelineSpecification_p new_pspec = new avtPipelineSpecification(pspec,
+    avtContract_p contract = GetGeneralContract();
+    avtContract_p new_contract = new avtContract(contract,
                                                                     last_spec);
 
     //
@@ -241,7 +241,7 @@ avtMacroExpressionFilter::Execute(void)
     term_src->ResetTree(GetInputDataTree());
     term_src->GetOutput()->GetInfo().Copy(GetInput()->GetInfo());
     eef.SetInput(term_src->GetOutput());
-    eef.GetOutput()->Update(new_pspec);
+    eef.GetOutput()->Update(new_contract);
     GetOutput()->Copy(*(eef.GetOutput()));
 
     RestoreExpressionList();
@@ -268,7 +268,7 @@ avtMacroExpressionFilter::AdditionalPipelineFilters(void)
 
 
 // ****************************************************************************
-//  Method: avtMacroExpressionFilter::PerformRestriction
+//  Method: avtMacroExpressionFilter::ModifyContract
 //
 //  Purpose:
 //      Let the expression evaluator filter have a change to modify the 
@@ -290,8 +290,8 @@ avtMacroExpressionFilter::AdditionalPipelineFilters(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtMacroExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtMacroExpressionFilter::ModifyContract(avtContract_p spec)
 {
     ReplaceMacroInExpressionList();
     if (term_src == NULL)
@@ -302,21 +302,21 @@ avtMacroExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
     // If we use the default variable, the EEF will try to create it, so tell
     // it that the default variable is the one we are calculating.
     //
-    avtDataSpecification_p old_dspec = spec->GetDataSpecification();
+    avtDataRequest_p old_dataRequest = spec->GetDataRequest();
     const char *v = outputVariableName;
-    avtDataSpecification_p new_dspec = new avtDataSpecification(old_dspec, v);
-    new_dspec->RemoveSecondaryVariable(v);
+    avtDataRequest_p new_dataRequest = new avtDataRequest(old_dataRequest, v);
+    new_dataRequest->RemoveSecondaryVariable(v);
 
-    last_spec = new avtDataSpecification(new_dspec);
-    avtPipelineSpecification_p new_pspec = new avtPipelineSpecification(spec,
-                                                                    new_dspec);
+    last_spec = new avtDataRequest(new_dataRequest);
+    avtContract_p new_contract = new avtContract(spec,
+                                                                    new_dataRequest);
 
-    avtPipelineSpecification_p rv = eef.PerformRestriction(new_pspec);
-    avtDataSpecification_p rv_d = rv->GetDataSpecification();
-    avtDataSpecification_p rv_d2 = new avtDataSpecification(rv_d, 
-                                                     old_dspec->GetVariable());
+    avtContract_p rv = eef.ModifyContract(new_contract);
+    avtDataRequest_p rv_d = rv->GetDataRequest();
+    avtDataRequest_p rv_d2 = new avtDataRequest(rv_d, 
+                                                     old_dataRequest->GetVariable());
     rv_d2->AddSecondaryVariable(rv_d->GetVariable());
-    avtPipelineSpecification_p rv2 = new avtPipelineSpecification(rv, rv_d2);
+    avtContract_p rv2 = new avtContract(rv, rv_d2);
 
     RestoreExpressionList();
     return rv2;

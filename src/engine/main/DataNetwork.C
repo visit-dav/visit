@@ -73,8 +73,8 @@ DataNetwork::DataNetwork(void)
 {
     nid = -1;
     wid = -1;
-    pspec = NULL;
-    dspec = NULL;
+    contract = NULL;
+    dataRequest = NULL;
     writer = NULL;
     plotActor = NULL;
     clone = false;
@@ -171,7 +171,7 @@ void DataNetwork::AddFilterNodeAfterExpressionEvaluator(NetnodeFilter *f)
 //
 // ****************************************************************************
 avtDataObjectWriter_p
-DataNetwork::GetWriter(avtDataObject_p dob, avtPipelineSpecification_p pspec,
+DataNetwork::GetWriter(avtDataObject_p dob, avtContract_p contract,
                           WindowAttributes *atts)
 {
 
@@ -181,7 +181,7 @@ DataNetwork::GetWriter(avtDataObject_p dob, avtPipelineSpecification_p pspec,
    }
    else
    {
-      avtDataObjectWriter_p tmpWriter = GetPlot()->Execute(dob, pspec, atts);
+      avtDataObjectWriter_p tmpWriter = GetPlot()->Execute(dob, contract, atts);
       if (GetPlot()->CanCacheWriterExternally())
          writer = tmpWriter;
       return tmpWriter;

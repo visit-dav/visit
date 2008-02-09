@@ -106,15 +106,15 @@ class avtThresholdFilter : public avtPluginStructuredChunkStreamer
     std::string           activeVarName;
     std::map<std::string,int> selIDs;
 
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
 
     virtual vtkDataSet   *ProcessOneChunk(vtkDataSet *, int, std::string,bool);
     virtual void          GetAssignments(vtkDataSet *, const int *,
                       std::vector<avtStructuredMeshChunker::ZoneDesignation>&);
     vtkDataSet           *ThresholdToPointMesh(vtkDataSet *in_ds);
 
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
     virtual void          PreExecute(void);
 };
 

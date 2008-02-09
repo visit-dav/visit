@@ -127,11 +127,11 @@ class AVTFILTERS_API avtContourFilter : public avtDataTreeStreamer
     int                        nnodes;
     int                        current_node;
 
-    virtual avtPipelineSpecification_p
-                               PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                               ModifyContract(avtContract_p);
     virtual avtDataTree_p      ExecuteDataTree(vtkDataSet *, int, string);
 
-    virtual void               RefashionDataObjectInfo(void);
+    virtual void               UpdateDataObjectInfo(void);
     virtual void               PreExecute(void);
 
     void                       CreatePercentValues(double, double);

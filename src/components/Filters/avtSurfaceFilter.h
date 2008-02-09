@@ -77,7 +77,7 @@ class vtkSurfaceFilter;
 //
 //    Kathleen Bonnell, Tue Oct  2 17:34:53 PDT 2001
 //    Added filters to extract the edges, for wireframe rendering. 
-//    Added PreExecute and PerformRestriction.  Added members min, max,
+//    Added PreExecute and ModifyContract.  Added members min, max,
 //    Ms, Bs.
 //
 //    Kathleen Bonnell, Fri Oct 10 10:48:24 PDT 2003
@@ -135,12 +135,12 @@ class AVTFILTERS_API avtSurfaceFilter : public avtStreamer
     void                    CalculateScaleValues(double *, double*);
 
     virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void            RefashionDataObjectInfo(void);
+    virtual void            UpdateDataObjectInfo(void);
     virtual void            VerifyInput(void);
     virtual void            PreExecute(void);
     virtual void            PostExecute(void);
-    virtual avtPipelineSpecification_p
-                            PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                            ModifyContract(avtContract_p);
 };
 
 

@@ -134,8 +134,8 @@ class AVTFILTERS_API avtRayTracer : public avtDatasetToImageFilter
     avtImage_p            opaqueImage;
 
     virtual void          Execute(void);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
     static int            GetNumberOfDivisions(int, int, int);
     virtual bool          FilterUnderstandsTransformedRectMesh();
 };

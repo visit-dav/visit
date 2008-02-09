@@ -91,9 +91,9 @@ class avtReflectFilter : public virtual avtDataTreeStreamer,
     virtual void          PreExecute(void);
     virtual void          PostExecute(void);
     virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, std::string);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
-    virtual void          RefashionDataObjectInfo(void);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
+    virtual void          UpdateDataObjectInfo(void);
 
     vtkDataSet           *Reflect(vtkDataSet *, int);
     vtkDataSet           *ReflectRectilinear(vtkRectilinearGrid *, int);

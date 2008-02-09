@@ -450,7 +450,7 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtRevolveFilter::RefashionDataObjectInfo
+//  Method: avtRevolveFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Tells the output that it is now higher in topological dimension.
@@ -469,7 +469,7 @@ avtRevolveFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtRevolveFilter::RefashionDataObjectInfo(void)
+avtRevolveFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();

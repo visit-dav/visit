@@ -66,7 +66,7 @@ avtCurrentExtentFilter::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtCurrentExtentFilter::RefashionDataObjectInfo
+//  Method: avtCurrentExtentFilter::UpdateDataObjectInfo
 //
 //  Purpose:  Retrieves the actual data/spatial extents from the
 //            input and stores them in output's info.
@@ -91,7 +91,7 @@ avtCurrentExtentFilter::Execute(void)
 // ****************************************************************************
 
 void
-avtCurrentExtentFilter::RefashionDataObjectInfo(void)
+avtCurrentExtentFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();

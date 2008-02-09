@@ -56,7 +56,7 @@
 
 avtInlinePipelineSource::avtInlinePipelineSource(avtDataObject_p dob)
 {
-    realPipelineSource = dob->GetTerminatingSource();
+    realPipelineSource = dob->GetOriginatingSource();
 }
 
 
@@ -75,7 +75,7 @@ avtInlinePipelineSource::~avtInlinePipelineSource()
 
 
 // ****************************************************************************
-//  Method: avtInlinePipelineSource::GetFullDataSpecification
+//  Method: avtInlinePipelineSource::GetFullDataRequest
 //
 //  Purpose:
 //      Gets the full data specification from the real terminating source.
@@ -85,10 +85,10 @@ avtInlinePipelineSource::~avtInlinePipelineSource()
 //
 // ****************************************************************************
 
-avtDataSpecification_p
-avtInlinePipelineSource::GetFullDataSpecification(void)
+avtDataRequest_p
+avtInlinePipelineSource::GetFullDataRequest(void)
 {
-    return realPipelineSource->GetFullDataSpecification();
+    return realPipelineSource->GetFullDataRequest();
 }
 
 
@@ -111,7 +111,7 @@ avtInlinePipelineSource::GetFullDataSpecification(void)
 
 void
 avtInlinePipelineSource::FetchMeshAuxiliaryData(const char *dataType,
-                  void *args, avtDataSpecification_p spec, VoidRefList &output)
+                  void *args, avtDataRequest_p spec, VoidRefList &output)
 {
     realPipelineSource->FetchMeshAuxiliaryData(dataType, args, spec, output);
 }
@@ -137,7 +137,7 @@ avtInlinePipelineSource::FetchMeshAuxiliaryData(const char *dataType,
 
 void
 avtInlinePipelineSource::FetchVariableAuxiliaryData(const char *dataType,
-                  void *args, avtDataSpecification_p spec, VoidRefList &output)
+                  void *args, avtDataRequest_p spec, VoidRefList &output)
 {
     realPipelineSource->FetchVariableAuxiliaryData(dataType, args,spec,output);
 }
@@ -163,7 +163,7 @@ avtInlinePipelineSource::FetchVariableAuxiliaryData(const char *dataType,
 
 void
 avtInlinePipelineSource::FetchMaterialAuxiliaryData(const char *dataType,
-                  void *args, avtDataSpecification_p spec, VoidRefList &output)
+                  void *args, avtDataRequest_p spec, VoidRefList &output)
 {
     realPipelineSource->FetchMaterialAuxiliaryData(dataType, args,spec,output);
 }
@@ -189,7 +189,7 @@ avtInlinePipelineSource::FetchMaterialAuxiliaryData(const char *dataType,
 
 void
 avtInlinePipelineSource::FetchSpeciesAuxiliaryData(const char *dataType,
-                  void *args, avtDataSpecification_p spec, VoidRefList &output)
+                  void *args, avtDataRequest_p spec, VoidRefList &output)
 {
     realPipelineSource->FetchSpeciesAuxiliaryData(dataType, args,spec,output);
 }

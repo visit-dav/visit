@@ -544,23 +544,23 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtLabelPlot::EnhanceSpecification(avtPipelineSpecification_p spec)
+avtContract_p
+avtLabelPlot::EnhanceSpecification(avtContract_p spec)
 {
     debug3 << "avtLabelPlot::EnhanceSpecification: 0" << endl;
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
 
     //
     // The pipeline specification should really be const -- it is used
     // elsewhere, so we can't modify it and return it.  Make a copy and in
     // the new copy, indicate that we need structured indices.
     //
-    avtDataSpecification_p nds = new avtDataSpecification(ds);
+    avtDataRequest_p nds = new avtDataRequest(ds);
     nds->TurnZoneNumbersOn();
     nds->TurnNodeNumbersOn();
     nds->SetNeedStructuredIndices(true);
     nds->SetTransformVectorsDuringProject(false);
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec, nds);
+    avtContract_p rv = new avtContract(spec, nds);
 
     debug3 << "avtLabelPlot::EnhanceSpecification: 1" << endl;
 

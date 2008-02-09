@@ -171,7 +171,7 @@ avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 
 
 // ****************************************************************************
-//  Method: avtStructuredChunkStreamer::PerformRestriction
+//  Method: avtStructuredChunkStreamer::ModifyContract
 //
 //  Purpose:
 //      Inspect the input specification and determine what its requirements
@@ -182,15 +182,15 @@ avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtStructuredChunkStreamer::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtStructuredChunkStreamer::ModifyContract(avtContract_p spec)
 {
     downstreamRectilinearMeshOptimizations =
                                    spec->GetHaveRectilinearMeshOptimizations();
     downstreamCurvilinearMeshOptimizations =
                                    spec->GetHaveCurvilinearMeshOptimizations();
     downstreamGhostType =
-                       spec->GetDataSpecification()->GetDesiredGhostDataType();
+                       spec->GetDataRequest()->GetDesiredGhostDataType();
 
     return spec;
 }

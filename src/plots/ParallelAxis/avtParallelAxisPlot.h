@@ -104,8 +104,8 @@ protected:
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);
     virtual void                CustomizeMapper(avtDataObjectInformation &);
-    avtPipelineSpecification_p  EnhanceSpecification(
-                                    avtPipelineSpecification_p in_spec);
+    avtContract_p  EnhanceSpecification(
+                                    avtContract_p in_spec);
     virtual avtLegend_p         GetLegend(void) { return NULL; };
     void                        SetColors();
     virtual bool                SetBackgroundColor(const double *);

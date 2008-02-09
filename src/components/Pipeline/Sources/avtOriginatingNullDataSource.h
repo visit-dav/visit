@@ -37,65 +37,49 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtOriginatingDatasetSink.C                        //
+//                     avtOriginatingNullDataSource.h                        //
 // ************************************************************************* //
 
-#include <avtOriginatingDatasetSink.h>
+#ifndef AVT_ORIGINATING_NULL_DATA_SOURCE_H
+#define AVT_ORIGINATING_NULL_DATA_SOURCE_H
+#include <pipeline_exports.h>
+
+
+#include <avtNullDataSource.h>
+#include <avtOriginatingSource.h>
 
 
 // ****************************************************************************
-//  Method: avtOriginatingDatasetSink constructor
+//  Class: avtOriginatingNullDataSource
 //
 //  Purpose:
-//      Defines the constructor.  Note: this should not be inlined in the
-//      header because it causes problems for certain compilers.
+//      A source that originates a pipeline.  It does an update differently
+//      than what a non-originating source (filter) would.
 //
-//  Programmer: Hank Childs
-//  Creation:   February 5, 2004
+//  Programmer: Mark C. Miller
+//  Creation:   January 8, 2003 
+//
+//  Modifications:
+//
+//    Hank Childs, Thu Feb  5 17:11:06 PST 2004
+//    Moved inlined constructor and destructor definitions to .C files
+//    because certain compilers have problems with them.
 //
 // ****************************************************************************
 
-avtOriginatingDatasetSink::avtOriginatingDatasetSink()
+class PIPELINE_API avtOriginatingNullDataSource
+    : public virtual avtNullDataSource, public virtual avtOriginatingSource
 {
-    ;
-}
+  public:
+                                 avtOriginatingNullDataSource();
+    virtual                     ~avtOriginatingNullDataSource();
+
+  protected:
+    virtual bool                 FetchData(avtDataRequest_p) 
+                                    { return false; };
+};
 
 
-// ****************************************************************************
-//  Method: avtOriginatingDatasetSink destructor
-//
-//  Purpose:
-//      Defines the destructor.  Note: this should not be inlined in the header
-//      because it causes problems for certain compilers.
-//
-//  Programmer: Hank Childs
-//  Creation:   February 5, 2004
-//
-// ****************************************************************************
-
-avtOriginatingDatasetSink::~avtOriginatingDatasetSink()
-{
-    ;
-}
-
-
-// ****************************************************************************
-//  Method: avtOriginatingDatasetSink::DynamicLoadBalanceCleanUp
-//
-//  Purpose:
-//      A hook from the base class that allows us to clean up the data tree
-//      after dynamic load balancing.
-//
-//  Programmer: Hank Childs
-//  Creation:   September 28, 2001
-//
-// ****************************************************************************
-
-void
-avtOriginatingDatasetSink::DynamicLoadBalanceCleanUp(void)
-{
-    avtDataset_p dataset = GetTypedInput();
-    dataset->Compact();
-}
+#endif
 
 

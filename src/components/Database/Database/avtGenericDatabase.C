@@ -439,7 +439,7 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 // ****************************************************************************
 
 avtDataTree_p
-avtGenericDatabase::GetOutput(avtDataSpecification_p spec,
+avtGenericDatabase::GetOutput(avtDataRequest_p spec,
                               avtSourceFromDatabase *src)
 {
     int timerHandle = visitTimer->StartTimer();
@@ -947,7 +947,7 @@ avtGenericDatabase::ManageMemoryForNonCachableMesh(vtkDataSet *v)
 vtkDataSet *
 avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
                         const char *matname, const vector<CharStrRef> &vars2nd, 
-                        avtDataSpecification_p spec,avtSourceFromDatabase *src)
+                        avtDataRequest_p spec,avtSourceFromDatabase *src)
 {
     vtkDataSet *rv = NULL;
     avtVarType type = GetMetaData(ts)->DetermineVarType(varname);
@@ -1080,7 +1080,7 @@ avtGenericDatabase::GetDataset(const char *varname, int ts, int domain,
 vtkDataSet *
 avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                         const avtDataSpecification_p dspec)
+                                         const avtDataRequest_p dataRequest)
 {
     const avtScalarMetaData *smd = GetMetaData(ts)->GetScalar(varname);
     if (smd == NULL)
@@ -1089,7 +1089,7 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     if (mesh == NULL)
     {
@@ -1100,7 +1100,7 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material, dspec);
+    vtkDataArray *var  = GetScalarVariable(varname, ts, domain, material, dataRequest);
 
     if (var == NULL)
     {
@@ -1187,7 +1187,7 @@ avtGenericDatabase::GetScalarVarDataset(const char *varname, int ts,
 void
 avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
                   const char *material, const vector<CharStrRef> &vars2nd,
-                  const avtDataSpecification_p dspec)
+                  const avtDataRequest_p dataRequest)
 {
     int nzones = ds->GetNumberOfCells();
 
@@ -1318,22 +1318,22 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
         switch (vt)
         {
           case AVT_SCALAR_VAR:
-            dat = GetScalarVariable(varName, ts, domain, material, dspec);
+            dat = GetScalarVariable(varName, ts, domain, material, dataRequest);
             break;
           case AVT_VECTOR_VAR:
-            dat = GetVectorVariable(varName, ts, domain, material, dspec);
+            dat = GetVectorVariable(varName, ts, domain, material, dataRequest);
             break;
           case AVT_TENSOR_VAR:
-            dat = GetTensorVariable(varName, ts, domain, material, dspec);
+            dat = GetTensorVariable(varName, ts, domain, material, dataRequest);
             break;
           case AVT_SYMMETRIC_TENSOR_VAR:
-            dat = GetSymmetricTensorVariable(varName, ts, domain, material, dspec);
+            dat = GetSymmetricTensorVariable(varName, ts, domain, material, dataRequest);
             break;
           case AVT_LABEL_VAR:
             dat = GetLabelVariable(varName, ts, domain, material);
             break;
           case AVT_ARRAY_VAR:
-            dat = GetArrayVariable(varName, ts, domain, material, dspec);
+            dat = GetArrayVariable(varName, ts, domain, material, dataRequest);
             break;
           case AVT_MATSPECIES:
             dat = GetSpeciesVariable(varName, ts, domain, material, nzones);
@@ -1393,10 +1393,10 @@ avtGenericDatabase::AddSecondaryVariables(vtkDataSet *ds, int ts, int domain,
 vtkDataSet *
 avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
                                    const char *material,
-                                   const avtDataSpecification_p dspec)
+                                   const avtDataRequest_p dataRequest)
 {
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     return mesh;
 }
@@ -1456,7 +1456,7 @@ avtGenericDatabase::GetMeshDataset(const char *varname, int ts, int domain,
 vtkDataSet *
 avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const avtDataSpecification_p dspec)
+                                        const avtDataRequest_p dataRequest)
 {
     const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(varname);
     if (vmd == NULL)
@@ -1465,7 +1465,7 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     if (mesh == NULL)
     {
@@ -1476,7 +1476,7 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material, dspec);
+    vtkDataArray *var = GetVectorVariable(varname, ts, domain, material, dataRequest);
 
     if (var == NULL)
     {
@@ -1553,7 +1553,7 @@ avtGenericDatabase::GetVectorVarDataset(const char *varname, int ts,
 vtkDataSet *
 avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const avtDataSpecification_p dspec)
+                                        const avtDataRequest_p dataRequest)
 {
     const avtTensorMetaData *tmd = GetMetaData(ts)->GetTensor(varname);
     if (tmd == NULL)
@@ -1562,7 +1562,7 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     if (mesh == NULL)
     {
@@ -1573,7 +1573,7 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material, dspec);
+    vtkDataArray *var = GetTensorVariable(varname, ts, domain, material, dataRequest);
 
     if (var == NULL)
     {
@@ -1636,7 +1636,7 @@ avtGenericDatabase::GetTensorVarDataset(const char *varname, int ts,
 vtkDataSet *
 avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const avtDataSpecification_p dspec)
+                                        const avtDataRequest_p dataRequest)
 {
     const avtSymmetricTensorMetaData *tmd = 
                                          GetMetaData(ts)->GetSymmTensor(varname);
@@ -1646,7 +1646,7 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     if (mesh == NULL)
     {
@@ -1658,7 +1658,7 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
     }
 
     vtkDataArray *var = GetSymmetricTensorVariable(varname, ts, domain,
-                                                   material, dspec);
+                                                   material, dataRequest);
 
     if (var == NULL)
     {
@@ -1713,7 +1713,7 @@ avtGenericDatabase::GetSymmetricTensorVarDataset(const char *varname, int ts,
 vtkDataSet *
 avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
                                         int domain, const char *material,
-                                        const avtDataSpecification_p dspec)
+                                        const avtDataRequest_p dataRequest)
 {
     const avtArrayMetaData *tmd = GetMetaData(ts)->GetArray(varname);
     if (tmd == NULL)
@@ -1722,7 +1722,7 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     if (mesh == NULL)
     {
@@ -1733,7 +1733,7 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
         return NULL;
     }
 
-    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material, dspec);
+    vtkDataArray *var = GetArrayVariable(varname, ts, domain, material, dataRequest);
 
     if (var == NULL)
     {
@@ -1802,10 +1802,10 @@ avtGenericDatabase::GetArrayVarDataset(const char *varname, int ts,
 vtkDataSet *
 avtGenericDatabase::GetMaterialDataset(const char *matname, int ts, int domain,
                                        const char *material,
-                                       const avtDataSpecification_p dspec)
+                                       const avtDataRequest_p dataRequest)
 {
     string meshname  = GetMetaData(ts)->MeshForVar(matname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     return mesh;
 }
@@ -1851,10 +1851,10 @@ avtGenericDatabase::GetMaterialDataset(const char *matname, int ts, int domain,
 vtkDataSet *
 avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
                                       const char *material,
-                                      const avtDataSpecification_p dspec)
+                                      const avtDataRequest_p dataRequest)
 {
     string meshname  = GetMetaData(ts)->MeshForVar(specname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     if (mesh == NULL)
     {
@@ -1907,7 +1907,7 @@ avtGenericDatabase::GetSpeciesDataset(const char *specname, int ts, int domain,
 vtkDataSet *
 avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
                                        int domain, const char *material,
-                                       const avtDataSpecification_p dspec)
+                                       const avtDataRequest_p dataRequest)
 {
     const avtLabelMetaData *lmd = GetMetaData(ts)->GetLabel(varname);
     if (lmd == NULL)
@@ -1916,7 +1916,7 @@ avtGenericDatabase::GetLabelVarDataset(const char *varname, int ts,
     }
 
     string meshname  = GetMetaData(ts)->MeshForVar(varname);
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dspec);
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, domain, material, dataRequest);
 
     if (mesh == NULL)
     {
@@ -2082,7 +2082,7 @@ avtGenericDatabase::GetSpeciesVariable(const char *specname, int ts,
 vtkDataArray *
 avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
                                       const char *material,
-                                      const avtDataSpecification_p dspec)
+                                      const avtDataRequest_p dataRequest)
 {
     //
     // We have to be leery about doing any caching when the variables are
@@ -2196,7 +2196,7 @@ avtGenericDatabase::GetScalarVariable(const char *varname, int ts, int domain,
 vtkDataArray *
 avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
                                       const char *material,
-                                      const avtDataSpecification_p dspec)
+                                      const avtDataRequest_p dataRequest)
 {
     //
     // We have to be leery about doing any caching when the variables are
@@ -2297,7 +2297,7 @@ avtGenericDatabase::GetVectorVariable(const char *varname, int ts, int domain,
 vtkDataArray *
 avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
                                       const char *material,
-                                      const avtDataSpecification_p dspec)
+                                      const avtDataRequest_p dataRequest)
 {
     //
     // We have to be leery about doing any caching when the variables are
@@ -2399,7 +2399,7 @@ avtGenericDatabase::GetTensorVariable(const char *varname, int ts, int domain,
 vtkDataArray *
 avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
                                                int domain,const char *material,
-                                           const avtDataSpecification_p dspec)
+                                           const avtDataRequest_p dataRequest)
 {
     //
     // We have to be leery about doing any caching when the variables are
@@ -2495,7 +2495,7 @@ avtGenericDatabase::GetSymmetricTensorVariable(const char *varname, int ts,
 vtkDataArray *
 avtGenericDatabase::GetArrayVariable(const char *varname, int ts, int domain,
                                      const char *material,
-                                     const avtDataSpecification_p dspec)
+                                     const avtDataRequest_p dataRequest)
 {
     //
     // We have to be leery about doing any caching when the variables are
@@ -2740,7 +2740,7 @@ avtGenericDatabase::GetLabelVariable(const char *varname, int ts, int domain,
 vtkDataSet *
 avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
                             const char *material,
-                            const avtDataSpecification_p dspec)
+                            const avtDataRequest_p dataRequest)
 {
     //
     // We have to be leery about doing any caching when the variables are
@@ -2903,7 +2903,7 @@ avtGenericDatabase::GetMesh(const char *meshname, int ts, int domain,
 // ****************************************************************************
 
 void
-avtGenericDatabase::GetAuxiliaryData(avtDataSpecification_p spec,
+avtGenericDatabase::GetAuxiliaryData(avtDataRequest_p spec,
                                      VoidRefList &rv, const char *type, 
                                      void *args)
 {
@@ -3707,7 +3707,7 @@ avtGenericDatabase::GetMaterialIndices(avtMaterial *mat, stringVector &mn,
 
 avtMaterial *
 avtGenericDatabase::GetMaterial(int dom, const char *var, int ts,
-    const avtDataSpecification_p dspec)
+    const avtDataRequest_p dataRequest)
 {
     avtDatabaseMetaData *md = GetMetaData(ts);
 
@@ -3717,7 +3717,7 @@ avtGenericDatabase::GetMaterial(int dom, const char *var, int ts,
     string meshname = md->MeshForVar(var);
     string matname  = md->MaterialOnMesh(meshname);
 
-    avtDataSpecification_p spec = new avtDataSpecification(matname.c_str(),
+    avtDataRequest_p spec = new avtDataRequest(matname.c_str(),
                                                            ts, dom);
     VoidRefList mats;
     GetAuxiliaryData(spec, mats, AUXILIARY_DATA_MATERIAL, NULL);
@@ -3729,7 +3729,7 @@ avtGenericDatabase::GetMaterial(int dom, const char *var, int ts,
     avtMaterial *rv = (avtMaterial *) *(mats.list[0]);
 
     // this is a no-op unless transformation is needed
-    xformManager->TransformMaterialDataset(md, *dspec ? dspec : spec, &rv);
+    xformManager->TransformMaterialDataset(md, *dataRequest ? dataRequest : spec, &rv);
 
     return rv;
 }
@@ -3767,10 +3767,10 @@ avtGenericDatabase::GetSpecies(int dom, const char *var, int ts)
     string meshname = md->MeshForVar(var);
     string specname = md->SpeciesOnMesh(meshname);
 
-    avtDataSpecification_p dspec = new avtDataSpecification(specname.c_str(),
+    avtDataRequest_p dataRequest = new avtDataRequest(specname.c_str(),
                                                             ts, dom);
     VoidRefList specs;
-    GetAuxiliaryData(dspec, specs, AUXILIARY_DATA_SPECIES, NULL);
+    GetAuxiliaryData(dataRequest, specs, AUXILIARY_DATA_SPECIES, NULL);
     if (specs.nList != 1)
     {
         EXCEPTION0(ImproperUseException);
@@ -3818,10 +3818,10 @@ avtGenericDatabase::GetGlobalNodeIds(int dom, const char *var, int ts)
     //
     string meshname = md->MeshForVar(var);
 
-    avtDataSpecification_p dspec = new avtDataSpecification(meshname.c_str(),
+    avtDataRequest_p dataRequest = new avtDataRequest(meshname.c_str(),
                                                             ts, dom);
     VoidRefList gnodeIds;
-    GetAuxiliaryData(dspec, gnodeIds, AUXILIARY_DATA_GLOBAL_NODE_IDS, NULL);
+    GetAuxiliaryData(dataRequest, gnodeIds, AUXILIARY_DATA_GLOBAL_NODE_IDS, NULL);
     if (gnodeIds.nList > 1)
     {
         EXCEPTION0(ImproperUseException);
@@ -3879,10 +3879,10 @@ avtGenericDatabase::GetGlobalZoneIds(int dom, const char *var, int ts)
     //
     string meshname = md->MeshForVar(var);
 
-    avtDataSpecification_p dspec = new avtDataSpecification(meshname.c_str(),
+    avtDataRequest_p dataRequest = new avtDataRequest(meshname.c_str(),
                                                             ts, dom);
     VoidRefList gzoneIds;
-    GetAuxiliaryData(dspec, gzoneIds, AUXILIARY_DATA_GLOBAL_ZONE_IDS, NULL);
+    GetAuxiliaryData(dataRequest, gzoneIds, AUXILIARY_DATA_GLOBAL_ZONE_IDS, NULL);
     if (gzoneIds.nList > 1)
     {
         EXCEPTION0(ImproperUseException);
@@ -4011,7 +4011,7 @@ avtGenericDatabase::EnumScalarSelect(avtDatasetCollection &dsc,
 void
 avtGenericDatabase::SpeciesSelect(avtDatasetCollection &dsc, 
                       intVector &domains, boolVector &specList,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
     char *progressString = "Doing species selection";
     src->DatabaseProgress(0, 0, progressString);
@@ -4332,7 +4332,7 @@ avtGenericDatabase::PrepareMaterialSelect(int dom, bool forceMIROn,
 // ****************************************************************************
 
 bool
-avtGenericDatabase::CanDoDynamicLoadBalancing(avtDataSpecification_p dataspec)
+avtGenericDatabase::CanDoDynamicLoadBalancing(avtDataRequest_p dataspec)
 {
     // 
     // Make sure the plugin has registered any domain boundary information
@@ -4532,7 +4532,7 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 
 void
 avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       boolVector &selectionsApplied)
 {
     int timerHandle = visitTimer->StartTimer();
@@ -4935,7 +4935,7 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
 bool
 avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType, 
                       avtDatasetCollection &ds, intVector &doms,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       intVector &allDomains, bool canDoCollectiveCommunication)
 {
     int portion1 = visitTimer->StartTimer();
@@ -5123,7 +5123,7 @@ avtGenericDatabase::CommunicateGhosts(avtGhostDataType ghostType,
 
 avtDomainBoundaries *
 avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
-                                intVector &doms, avtDataSpecification_p spec,
+                                intVector &doms, avtDataRequest_p spec,
                                 bool confirmInputMeshHasRightSize)
 {
     //
@@ -5206,7 +5206,7 @@ avtGenericDatabase::GetDomainBoundaryInformation(avtDatasetCollection &ds,
 bool
 avtGenericDatabase::CommunicateGhostZonesFromDomainBoundariesFromFile(
                       avtDatasetCollection &ds, intVector &doms,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
     //
     //  Setup
@@ -5281,7 +5281,7 @@ bool
 avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
                       avtDomainBoundaries *dbi,
                       avtDatasetCollection &ds, intVector &doms,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
     int   i, j, k;
 
@@ -5800,7 +5800,7 @@ avtGenericDatabase::CommunicateGhostZonesFromDomainBoundaries(
 bool
 avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
                       avtDatasetCollection &ds, intVector &doms,
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src,
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src,
                       intVector &allDomains)
 {
     //
@@ -5881,7 +5881,7 @@ avtGenericDatabase::CommunicateGhostNodesFromDomainBoundariesFromFile(
 bool
 avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
                       avtDatasetCollection &ds, intVector &doms, 
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
     //
     // The game plan here is to create a domain boundaries object using the
@@ -6427,7 +6427,7 @@ avtGenericDatabase::CommunicateGhostZonesFromGlobalNodeIds(
 bool
 avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
                       avtDatasetCollection &ds, intVector &doms, 
-                      avtDataSpecification_p &spec, avtSourceFromDatabase *src)
+                      avtDataRequest_p &spec, avtSourceFromDatabase *src)
 {
     int   i, j;
 
@@ -6703,7 +6703,7 @@ avtGenericDatabase::CommunicateGhostNodesFromGlobalNodeIds(
 
 bool
 avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds, 
-   intVector &doms, intVector &allDoms, avtDataSpecification_p &spec, 
+   intVector &doms, intVector &allDoms, avtDataRequest_p &spec, 
    bool canDoCollectiveCommunication)
 {
     bool rv = false;
@@ -6845,7 +6845,7 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 
 void
 avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
-                            intVector &domains, avtDataSpecification_p &spec,
+                            intVector &domains, avtDataRequest_p &spec,
                             avtSourceFromDatabase *src, bool didGhosts)
 {
     int i, timerHandle = visitTimer->StartTimer();
@@ -6955,7 +6955,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
 void
 avtGenericDatabase::CreateGlobalZones(avtDatasetCollection &ds, 
                               intVector &domains, avtSourceFromDatabase *src,
-                              avtDataSpecification_p &spec)
+                              avtDataRequest_p &spec)
 {
     char  progressString[1024] = "Creating Global Zones Array";
     src->DatabaseProgress(0, 0, progressString);
@@ -6988,7 +6988,7 @@ avtGenericDatabase::CreateGlobalZones(avtDatasetCollection &ds,
 void
 avtGenericDatabase::CreateGlobalNodes(avtDatasetCollection &ds, 
                               intVector &domains, avtSourceFromDatabase *src,
-                              avtDataSpecification_p &spec)
+                              avtDataRequest_p &spec)
 {
     char  progressString[1024] = "Creating Global Nodes Array";
     src->DatabaseProgress(0, 0, progressString);
@@ -7027,7 +7027,7 @@ avtGenericDatabase::CreateSimplifiedNestingRepresentation(
                               avtDatasetCollection &ds, 
                               intVector &domains, intVector &allDomains,
                               avtSourceFromDatabase *src,
-                              avtDataSpecification_p &spec)
+                              avtDataRequest_p &spec)
 {
     int ts = spec->GetTimestep();
     avtDatabaseMetaData *md = GetMetaData(ts);
@@ -7902,7 +7902,7 @@ avtGenericDatabase::CreateStructuredIndices(avtDatasetCollection &dsc,
 // ****************************************************************************
 
 int
-avtGenericDatabase::NumStagesForFetch(avtDataSpecification_p spec)
+avtGenericDatabase::NumStagesForFetch(avtDataRequest_p spec)
 {
     int numStages = 1;   // Always one for I/O.
     
@@ -8051,13 +8051,13 @@ avtGenericDatabase::QueryScalars(const string &varName, const int dom,
         char temp[80];
 
         //
-        // dspec is a place-holder for
+        // dataRequest is a place-holder for
         // information that will eventually be obtained either through
         // additional args to this method or from PickVarInfo
         //
-        avtDataSpecification_p dspec;
+        avtDataRequest_p dataRequest;
         vtkDataArray *scalars = GetScalarVariable(varName.c_str(), ts, dom,
-                                                  "_all", dspec); 
+                                                  "_all", dataRequest); 
         if (scalars) 
         {
             varInfo.SetTreatAsASCII(smd->treatAsASCII);
@@ -8266,13 +8266,13 @@ avtGenericDatabase::QueryVectors(const string &varName, const int dom,
         char buff[80];
 
         //
-        // dspec is a place-holder for
+        // dataRequest is a place-holder for
         // information that will eventually be obtained either through
         // additional args to this method or from PickVarInfo
         //
-        avtDataSpecification_p dspec;
+        avtDataRequest_p dataRequest;
         vtkDataArray *vectors = GetVectorVariable(varName.c_str(), ts, dom,
-                                                  "_all", dspec); 
+                                                  "_all", dataRequest); 
         int nComponents = 0;; 
         double *temp = NULL; 
         double mag = 0.;
@@ -8410,13 +8410,13 @@ avtGenericDatabase::QueryTensors(const string &varName, const int dom,
         char buff[80];
 
         //
-        // dspec is a place-holder for
+        // dataRequest is a place-holder for
         // information that will eventually be obtained either through
         // additional args to this method or from PickVarInfo
         //
-        avtDataSpecification_p dspec;
+        avtDataRequest_p dataRequest;
         vtkDataArray *tensors = GetTensorVariable(varName.c_str(), ts, dom,
-                                                  "_all", dspec); 
+                                                  "_all", dataRequest); 
         int nComponents = 0;; 
         double *temp = NULL; 
         if (tensors)
@@ -8530,13 +8530,13 @@ avtGenericDatabase::QueryArrays(const string &varName, const int dom,
         char buff[80];
 
         //
-        // dspec is a place-holder for
+        // dataRequest is a place-holder for
         // information that will eventually be obtained either through
         // additional args to this method or from PickVarInfo
         //
-        avtDataSpecification_p dspec;
+        avtDataRequest_p dataRequest;
         vtkDataArray *array = GetArrayVariable(varName.c_str(), ts, dom,
-                                                  "_all", dspec); 
+                                                  "_all", dataRequest); 
         int nComponents = 0;; 
         double *temp = NULL; 
         if (array)
@@ -8659,13 +8659,13 @@ avtGenericDatabase::QuerySymmetricTensors(const string &varName,
         char buff[80];
 
         //
-        // dspec is a place-holder for
+        // dataRequest is a place-holder for
         // information that will eventually be obtained either through
         // additional args to this method or from PickVarInfo
         //
-        avtDataSpecification_p dspec;
+        avtDataRequest_p dataRequest;
         vtkDataArray *tensors = GetSymmetricTensorVariable(varName.c_str(), ts,
-                                                           dom, "_all", dspec);
+                                                           dom, "_all", dataRequest);
         int nComponents = 0;; 
         if (tensors)
         {
@@ -9049,10 +9049,10 @@ avtGenericDatabase::QueryNodes(const string &varName, const int dom,
                                const bool logicalDZones, const bool logicalBZones,
                                stringVector &dzCoords, stringVector &bzCoords)
 {
-    // dspec is a placeholder for when this information will come from elsewhere 
-    avtDataSpecification_p dspec;
+    // dataRequest is a placeholder for when this information will come from elsewhere 
+    avtDataRequest_p dataRequest;
     string meshName = GetMetaData(ts)->MeshForVar(varName);
-    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dspec);
+    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dataRequest);
     bool rv = false; 
     if (ds)
     {
@@ -9409,10 +9409,10 @@ avtGenericDatabase::QueryZones(const string &varName, const int dom,
                                stringVector &dzoneCoords,
                                stringVector &bzoneCoords)
 {
-    // dspec is a placeholder for when this information will come from elsewhere 
-    avtDataSpecification_p dspec;
+    // dataRequest is a placeholder for when this information will come from elsewhere 
+    avtDataRequest_p dataRequest;
     string meshName = GetMetaData(ts)->MeshForVar(varName);
-    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dspec);
+    vtkDataSet *ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dataRequest);
     bool rv = false; 
     if (ds)
     {
@@ -9851,9 +9851,9 @@ avtGenericDatabase::QuerySpecies(const string &varName, const int dom,
     // 
     string matName = smd->materialName;
     string meshname  = GetMetaData(ts)->MeshForVar(varName);
-    // dspec is a placeholder for when this information will come from elsewhere 
-    avtDataSpecification_p dspec;
-    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str(), dspec);
+    // dataRequest is a placeholder for when this information will come from elsewhere 
+    avtDataRequest_p dataRequest;
+    vtkDataSet *mesh = GetMesh(meshname.c_str(), ts, dom, matName.c_str(), dataRequest);
     vtkDataArray *species = GetSpeciesVariable(varName.c_str(), ts, dom, 
                                 matName.c_str(), mesh->GetNumberOfCells());
     mesh->Delete();
@@ -10058,10 +10058,10 @@ avtGenericDatabase::FindElementForPoint(const char *var, const int ts,
 {
     ActivateTimestep(ts);
 
-    // dspec is a placeholder for when this information will come from elsewhere 
-    avtDataSpecification_p dspec;
+    // dataRequest is a placeholder for when this information will come from elsewhere 
+    avtDataRequest_p dataRequest;
     string mesh = GetMetaData(ts)->MeshForVar(var);
-    vtkDataSet *ds = GetMeshDataset(mesh.c_str(), ts, dom, "_all", dspec);
+    vtkDataSet *ds = GetMeshDataset(mesh.c_str(), ts, dom, "_all", dataRequest);
 
     if (strcmp(elementName, "node") == 0)
     {
@@ -10213,9 +10213,9 @@ avtGenericDatabase::QueryCoords(const string &varName, const int dom,
     vtkDataSet *ds =  NULL;
     TRY
     {
-        // dspec is a placeholder for when this information will come from elsewhere 
-        avtDataSpecification_p dspec;
-        ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dspec);
+        // dataRequest is a placeholder for when this information will come from elsewhere 
+        avtDataRequest_p dataRequest;
+        ds = GetMeshDataset(meshName.c_str(), ts, dom, "_all", dataRequest);
     }
     CATCH(BadDomainException)
     {
@@ -10496,7 +10496,7 @@ GetOriginalVariableName(const avtDatabaseMetaData *md, const char *varname)
 void
 avtGenericDatabase::CreateAMRIndices(avtDatasetCollection &dsc, 
                                      intVector &domains,
-                                     avtDataSpecification_p &spec, 
+                                     avtDataRequest_p &spec, 
                                      avtSourceFromDatabase *src, int level)
 {
     char  progressString[1024] = "Creating AMR Indices";

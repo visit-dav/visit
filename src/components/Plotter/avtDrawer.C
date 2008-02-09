@@ -260,7 +260,7 @@ avtDrawer::SetViewInfo(vtkCamera *vtkcam)
 
 
 // ****************************************************************************
-//  Method: avtDrawer::PerformRestriction
+//  Method: avtDrawer::ModifyContract
 //
 //  Purpose:
 //    Calculates the domain list.  Does this by getting the spatial extents
@@ -271,18 +271,18 @@ avtDrawer::SetViewInfo(vtkCamera *vtkcam)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtDrawer::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtDrawer::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = NULL;
+    avtContract_p rv = NULL;
     if (GetInput()->GetInfo().GetValidity().GetSpatialMetaDataPreserved())
     {
         vector<int> domains;
         avtIntervalTree *tree = GetMetaData()->GetSpatialExtents();
         avtWorldSpaceToImageSpaceTransform::GetDomainsList(viewInfo,
                                                            domains, tree);
-        rv = new avtPipelineSpecification(spec);
-        rv->GetDataSpecification()->GetRestriction()->RestrictDomains(domains);
+        rv = new avtContract(spec);
+        rv->GetDataRequest()->GetRestriction()->RestrictDomains(domains);
     }
     else
     {

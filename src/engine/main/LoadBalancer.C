@@ -50,8 +50,8 @@
 
 #include <avtDatabase.h>
 #include <avtDatabaseMetaData.h>
-#include <avtOriginatingSink.h>
-#include <avtTerminatingSource.h>
+#include <avtTerminatingSink.h>
+#include <avtOriginatingSource.h>
 #include <avtIOInformation.h>
 #include <avtSILRestrictionTraverser.h>
 #include <avtTypes.h>
@@ -73,10 +73,10 @@ using     std::set;
 // Function Prototypes.
 //
 
-static avtDataSpecification_p    ReduceCallback(void *,
-                                                   avtPipelineSpecification_p);
+static avtDataRequest_p    ReduceCallback(void *,
+                                                   avtContract_p);
 static bool                      DynamicCheckerCallback(void *,
-                                                   avtPipelineSpecification_p);
+                                                   avtContract_p);
 static bool                      ContinueCallback(void *, int);
 
 //
@@ -246,9 +246,9 @@ LoadBalancer::LoadBalancer(int np, int r)
     //
     // Register callbacks with the avt pipeline.
     //
-    avtTerminatingSource::SetLoadBalancer(ReduceCallback, this);
-    avtTerminatingSource::SetDynamicChecker(DynamicCheckerCallback, this);
-    avtOriginatingSink::SetGuideFunction(ContinueCallback, this);
+    avtOriginatingSource::SetLoadBalancer(ReduceCallback, this);
+    avtOriginatingSource::SetDynamicChecker(DynamicCheckerCallback, this);
+    avtTerminatingSink::SetGuideFunction(ContinueCallback, this);
 }
 
 
@@ -316,7 +316,7 @@ LoadBalancer::CheckDynamicLoadBalancing(int index)
 // ****************************************************************************
 
 bool
-LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
+LoadBalancer::CheckDynamicLoadBalancing(avtContract_p input)
 {
     //
     // See if we have already have decided.  If so, just return our cached
@@ -350,7 +350,7 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
     // we can do dynamic load balancing (for example because we need ghost
     // data communicated or materials reconstructed).
     //
-    avtDataSpecification_p data = input->GetDataSpecification();
+    avtDataRequest_p data = input->GetDataRequest();
     std::string dbname = lbinfo.db;
     avtDatabase *db = dbMap[dbname];
     if (input->GetPipelineIndex() == 0 ||
@@ -406,7 +406,7 @@ LoadBalancer::CheckDynamicLoadBalancing(avtPipelineSpecification_p input)
 // ****************************************************************************
 
 LoadBalanceScheme
-LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
+LoadBalancer::DetermineAppropriateScheme(avtContract_p input)
 {
 
     //
@@ -418,7 +418,7 @@ LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
     std::string dbname = lbinfo.db;
     avtDatabase *db = dbMap[dbname];
 
-    avtDataSpecification_p data = input->GetDataSpecification();
+    avtDataRequest_p data = input->GetDataRequest();
     avtDatabaseMetaData *md = db->GetMetaData(db->GetMostRecentTimestep());
     string meshName;
 
@@ -541,10 +541,10 @@ LoadBalancer::DetermineAppropriateScheme(avtPipelineSpecification_p input)
 //    Changed MPI_COMM_WORLD to VISIT_MPI_COMM
 // ****************************************************************************
 
-avtDataSpecification_p
-LoadBalancer::Reduce(avtPipelineSpecification_p input)
+avtDataRequest_p
+LoadBalancer::Reduce(avtContract_p input)
 {
-    avtDataSpecification_p data = input->GetDataSpecification();
+    avtDataRequest_p data = input->GetDataRequest();
 
     //
     // Pipeline index 0 is reserved for meta-data.  It should already be
@@ -571,8 +571,8 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
             avtDataObjectSource::RegisterProgressCallback(NULL,NULL);
             avtSILRestriction_p orig_silr   = data->GetRestriction();
             avtSILRestriction_p silr        = new avtSILRestriction(orig_silr);
-            avtDataSpecification_p new_data =
-                                          new avtDataSpecification(data, silr);
+            avtDataRequest_p new_data =
+                                          new avtDataRequest(data, silr);
             avtSILRestrictionTraverser trav(silr);
 
             vector<int> list;
@@ -597,7 +597,7 @@ LoadBalancer::Reduce(avtPipelineSpecification_p input)
 
     avtSILRestriction_p orig_silr   = data->GetRestriction();
     avtSILRestriction_p silr        = new avtSILRestriction(orig_silr);
-    avtDataSpecification_p new_data = new avtDataSpecification(data, silr);
+    avtDataRequest_p new_data = new avtDataRequest(data, silr);
     avtSILRestrictionTraverser trav(silr);
 
     // set up MPI message tags
@@ -1076,8 +1076,8 @@ LoadBalancer::ContinueExecute(int index)
 //
 // ****************************************************************************
 
-static avtDataSpecification_p
-ReduceCallback(void *ptr, avtPipelineSpecification_p spec)
+static avtDataRequest_p
+ReduceCallback(void *ptr, avtContract_p spec)
 {
     LoadBalancer *lb = (LoadBalancer *) ptr;
     return lb->Reduce(spec);
@@ -1105,7 +1105,7 @@ ReduceCallback(void *ptr, avtPipelineSpecification_p spec)
 // ****************************************************************************
 
 static bool
-DynamicCheckerCallback(void *ptr, avtPipelineSpecification_p spec)
+DynamicCheckerCallback(void *ptr, avtContract_p spec)
 {
     LoadBalancer *lb = (LoadBalancer *) ptr;
     return lb->CheckDynamicLoadBalancing(spec);

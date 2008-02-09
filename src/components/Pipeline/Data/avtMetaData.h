@@ -45,14 +45,14 @@
 
 #include <pipeline_exports.h>
 
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 
 class     avtFacelist;
 class     avtIntervalTree;
 class     avtMaterial;
 class     avtMixedVariable;
 class     avtSpecies;
-class     avtTerminatingSource;
+class     avtOriginatingSource;
 
 // ****************************************************************************
 //  Class: avtMetaData
@@ -111,7 +111,7 @@ class     avtTerminatingSource;
 class PIPELINE_API avtMetaData
 {
   public:
-                                 avtMetaData(avtTerminatingSource *);
+                                 avtMetaData(avtOriginatingSource *);
     virtual                     ~avtMetaData();
 
     avtIntervalTree             *GetDataExtents(const char *var = NULL);
@@ -123,10 +123,10 @@ class PIPELINE_API avtMetaData
     avtMixedVariable            *GetMixedVar(const char *,int, int = -1);
 
   protected:
-    avtTerminatingSource        *source;
+    avtOriginatingSource        *source;
 
-    avtPipelineSpecification_p   GetPipelineSpecification(void);
-    avtPipelineSpecification_p   GetPipelineSpecification(int);
+    avtContract_p   GetContract(void);
+    avtContract_p   GetContract(int);
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy

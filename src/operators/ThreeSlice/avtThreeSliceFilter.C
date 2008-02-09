@@ -387,7 +387,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 }
 
 // ****************************************************************************
-//  Method: avtThreeSliceFilter::RefashionDataObjectInfo
+//  Method: avtThreeSliceFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Changes to topological dimension of the output to be one less that the
@@ -407,7 +407,7 @@ avtThreeSliceFilter::ExecuteData(vtkDataSet *in_ds, int domain, std::string)
 // ****************************************************************************
 
 void
-avtThreeSliceFilter::RefashionDataObjectInfo(void)
+avtThreeSliceFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();

@@ -376,12 +376,12 @@ avtPDFFilter::PostExecute(void)
     // Call this one more time.  Now we have all of the info for it to set up
     // the extents properly.
     //
-    RefashionDataObjectInfo();
+    UpdateDataObjectInfo();
 }
 
 
 // ****************************************************************************
-//  Method: avtPDFFilter::RefashionDataObjectInfo
+//  Method: avtPDFFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Modifies the data object information to reflect the new, output mesh.
@@ -392,7 +392,7 @@ avtPDFFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtPDFFilter::RefashionDataObjectInfo(void)
+avtPDFFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &in_atts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &out_atts = GetOutput()->GetInfo().GetAttributes();
@@ -452,7 +452,7 @@ avtPDFFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtPDFFilter::PerformRestriction
+//  Method: avtPDFFilter::ModifyContract
 //
 //  Purpose:
 //      States the secondary variables we need to make the PDF.
@@ -462,15 +462,15 @@ avtPDFFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtPDFFilter::PerformRestriction(avtPipelineSpecification_p s)
+avtContract_p
+avtPDFFilter::ModifyContract(avtContract_p s)
 {
-    avtPipelineSpecification_p spec = new avtPipelineSpecification(s);
-    avtDataSpecification_p dspec = spec->GetDataSpecification();
-    dspec->AddSecondaryVariable(atts.GetVar1().c_str());
-    dspec->AddSecondaryVariable(atts.GetVar2().c_str());
+    avtContract_p spec = new avtContract(s);
+    avtDataRequest_p dataRequest = spec->GetDataRequest();
+    dataRequest->AddSecondaryVariable(atts.GetVar1().c_str());
+    dataRequest->AddSecondaryVariable(atts.GetVar2().c_str());
     if (atts.GetNumAxes() == PDFAttributes::Three)
-        dspec->AddSecondaryVariable(atts.GetVar3().c_str());
+        dataRequest->AddSecondaryVariable(atts.GetVar3().c_str());
 
     return spec;
 }

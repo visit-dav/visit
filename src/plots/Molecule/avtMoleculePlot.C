@@ -475,10 +475,10 @@ avtMoleculePlot::ReleaseData(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtMoleculePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
+avtContract_p
+avtMoleculePlot::EnhanceSpecification(avtContract_p spec)
 {
-    avtDataSpecification_p ds = spec->GetDataSpecification();
+    avtDataRequest_p ds = spec->GetDataRequest();
     const char *primaryVariable = ds->GetVariable();
 
     vector<string> added_vars;
@@ -514,7 +514,7 @@ avtMoleculePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     // elsewhere, so we can't modify it and return it.  Make a copy and
     // in the new copy, add a secondary variable.
     //
-    avtDataSpecification_p nds = new avtDataSpecification(primaryVariable,
+    avtDataRequest_p nds = new avtDataRequest(primaryVariable,
                                                          ds->GetTimestep(),
                                                          ds->GetRestriction());
     for (int i=0; i<added_vars.size(); i++)
@@ -531,7 +531,7 @@ avtMoleculePlot::EnhanceSpecification(avtPipelineSpecification_p spec)
     //
     // Create the new pipeline spec from the data spec, and return
     //
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec, nds);
+    avtContract_p rv = new avtContract(spec, nds);
 
     return rv;
 }

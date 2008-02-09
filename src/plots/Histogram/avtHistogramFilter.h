@@ -61,7 +61,7 @@
 //  Modifications:
 //
 //    Hank Childs, Sat Oct 18 12:14:32 PDT 2003
-//    Added PerformRestriction to disable ghost zone generation.
+//    Added ModifyContract to disable ghost zone generation.
 //
 //    Hank Childs, Wed May 24 10:00:12 PDT 2006
 //    Added support for array variables.
@@ -98,11 +98,11 @@ class avtHistogramFilter : public avtStreamer
     int                       workingNumBins;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void              RefashionDataObjectInfo(void);
+    virtual void              UpdateDataObjectInfo(void);
     virtual void              PreExecute();
     virtual void              PostExecute();
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 
     virtual void              FreqzExecute(vtkDataSet *);
     virtual void              WeightedExecute(vtkDataSet *);

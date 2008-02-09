@@ -74,8 +74,8 @@ class avtLabelSubsetsFilter : public avtDataTreeStreamer
     void                  SetNeedMIR(bool val) { needMIR = val; };
   protected:
     virtual avtDataTree_p ExecuteDataTree(vtkDataSet *, int, string);
-    virtual avtPipelineSpecification_p
-                          PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                          ModifyContract(avtContract_p);
 
     virtual void          PostExecute(void);
 

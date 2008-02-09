@@ -500,7 +500,7 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 
 
 // ****************************************************************************
-//  Method: avtClipFilter::RefashionDataObjectInfo
+//  Method: avtClipFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that this invalidates the zone numberings.
@@ -521,7 +521,7 @@ avtClipFilter::SetUpClipFunctions(vtkImplicitBoolean *funcs, bool &inv)
 // ****************************************************************************
 
 void
-avtClipFilter::RefashionDataObjectInfo(void)
+avtClipFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().ZonesSplit();
@@ -541,18 +541,18 @@ avtClipFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtClipFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtClipFilter::ModifyContract(avtContract_p spec)
 {
  
-    if (spec->GetDataSpecification()->MayRequireZones() ||
-        spec->GetDataSpecification()->MayRequireNodes())
+    if (spec->GetDataRequest()->MayRequireZones() ||
+        spec->GetDataRequest()->MayRequireNodes())
     {
-        avtPipelineSpecification_p ns = new avtPipelineSpecification(spec);
+        avtContract_p ns = new avtContract(spec);
         // Turn on both Nodes and Zones, to prevent another re-execution if 
         // user switches between zone and node pick.
-        ns->GetDataSpecification()->TurnZoneNumbersOn();
-        ns->GetDataSpecification()->TurnNodeNumbersOn();
+        ns->GetDataRequest()->TurnZoneNumbersOn();
+        ns->GetDataRequest()->TurnNodeNumbersOn();
         return ns;
     }
     return spec;

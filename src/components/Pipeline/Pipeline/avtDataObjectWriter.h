@@ -51,7 +51,7 @@
 
 #include <avtDataset.h>
 #include <avtImage.h>
-#include <avtOriginatingSink.h>
+#include <avtTerminatingSink.h>
 
 class     avtDataObjectInformation;
 class     avtDataObjectString;
@@ -74,7 +74,7 @@ class     AttributeGroup;
 //    Added methods to get the input out for the ui process in parallel.
 //
 //    Jeremy Meredith, Thu Jul 26 12:36:30 PDT 2001
-//    Made it derive from avtOriginatingSink so we could do dynamic
+//    Made it derive from avtTerminatingSink so we could do dynamic
 //    load balancing.
 //
 //    Hank Childs, Mon Oct  1 08:56:17 PDT 2001
@@ -93,7 +93,7 @@ class     AttributeGroup;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtDataObjectWriter : virtual public avtOriginatingSink
+class PIPELINE_API avtDataObjectWriter : virtual public avtTerminatingSink
 {
   public:
                                avtDataObjectWriter();

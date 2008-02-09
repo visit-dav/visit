@@ -43,7 +43,7 @@
 
 #include <avtSubsetFilter.h>
 #include <avtDataAttributes.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -324,7 +324,7 @@ avtSubsetFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 
 
 // ****************************************************************************
-//  Method: avtSubsetFilter::RefashionDataObjectInfo
+//  Method: avtSubsetFilter::UpdateDataObjectInfo
 //
 //  Purpose:  Retrieves the subset names from the plot attributes and
 //            sets them as labels in the data attributes. 
@@ -339,7 +339,7 @@ avtSubsetFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string label)
 // ****************************************************************************
 
 void
-avtSubsetFilter::RefashionDataObjectInfo(void)
+avtSubsetFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetLabels(plotAtts.GetSubsetNames());
@@ -348,7 +348,7 @@ avtSubsetFilter::RefashionDataObjectInfo(void)
 
  
 // ****************************************************************************
-//  Method: avtSubsetFilter::PerformRestriction
+//  Method: avtSubsetFilter::ModifyContract
 //
 //  Purpose:  Turn on domain labels in the data spec if needed.
 //
@@ -377,22 +377,22 @@ avtSubsetFilter::RefashionDataObjectInfo(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtSubsetFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtSubsetFilter::ModifyContract(avtContract_p spec)
 {
     if (plotAtts.GetSubsetType() == SubsetAttributes::Material)
     {
-        spec->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
+        spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
     }
     if (plotAtts.GetDrawInternal())
     {
-        spec->GetDataSpecification()->TurnInternalSurfacesOn();
+        spec->GetDataRequest()->TurnInternalSurfacesOn();
     }
 
     if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() == 0)
     {
         string pointVar = plotAtts.GetPointSizeVar();
-        avtDataSpecification_p dspec = spec->GetDataSpecification();
+        avtDataRequest_p dataRequest = spec->GetDataRequest();
 
         //
         // Find out if we REALLY need to add the secondary variable.
@@ -400,17 +400,17 @@ avtSubsetFilter::PerformRestriction(avtPipelineSpecification_p spec)
         if (plotAtts.GetPointSizeVarEnabled() && 
             pointVar != "default" &&
             pointVar != "\0" &&
-            pointVar != dspec->GetVariable() &&
-            !dspec->HasSecondaryVariable(pointVar.c_str()))
+            pointVar != dataRequest->GetVariable() &&
+            !dataRequest->HasSecondaryVariable(pointVar.c_str()))
         {
-            spec->GetDataSpecification()->AddSecondaryVariable(pointVar.c_str());
+            spec->GetDataRequest()->AddSecondaryVariable(pointVar.c_str());
         }
 
         avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-        if (spec->GetDataSpecification()->MayRequireZones())
+        if (spec->GetDataRequest()->MayRequireZones())
         {
             keepNodeZone = true;
-            spec->GetDataSpecification()->TurnNodeNumbersOn();
+            spec->GetDataRequest()->TurnNodeNumbersOn();
         }
         else
         {
@@ -418,7 +418,7 @@ avtSubsetFilter::PerformRestriction(avtPipelineSpecification_p spec)
         }
     }
 
-    spec->GetDataSpecification()->TurnSimplifiedNestingRepresentationOn();
+    spec->GetDataRequest()->TurnSimplifiedNestingRepresentationOn();
 
     return spec;
 }

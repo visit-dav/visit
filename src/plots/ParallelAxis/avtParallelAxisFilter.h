@@ -172,11 +172,11 @@ public:
     virtual void                ReleaseData(void);
 
 protected:
-    virtual avtPipelineSpecification_p
-                                PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                                ModifyContract(avtContract_p);
     virtual avtDataTree_p       ExecuteDataTree(vtkDataSet *, int, string);
 
-    virtual void                RefashionDataObjectInfo(void);
+    virtual void                UpdateDataObjectInfo(void);
     virtual void                PreExecute(void);
     virtual void                PostExecute(void);
     virtual void                VerifyInput(void);

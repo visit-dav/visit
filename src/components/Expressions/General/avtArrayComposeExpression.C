@@ -200,7 +200,7 @@ avtArrayComposeExpression::ProcessArguments(ArgsExpr *args,
 
 
 // ****************************************************************************
-//  Method: avtArrayComposeExpression::RefashionDataObjectInfo
+//  Method: avtArrayComposeExpression::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Tell the output what the component names are.
@@ -216,9 +216,9 @@ avtArrayComposeExpression::ProcessArguments(ArgsExpr *args,
 // ****************************************************************************
 
 void
-avtArrayComposeExpression::RefashionDataObjectInfo(void)
+avtArrayComposeExpression::UpdateDataObjectInfo(void)
 {
-    avtMultipleInputExpressionFilter::RefashionDataObjectInfo();
+    avtMultipleInputExpressionFilter::UpdateDataObjectInfo();
 
     // If we don't know the name of the variable, we can't set it up in the
     // output.

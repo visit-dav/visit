@@ -78,9 +78,9 @@ class avtPseudocolorFilter : public avtStreamer
     bool                      keepNodeZone;
 
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void              RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual void              UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
   private:
     PseudocolorAttributes     plotAtts;
 };

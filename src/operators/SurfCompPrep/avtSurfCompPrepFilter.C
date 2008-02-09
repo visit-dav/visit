@@ -493,7 +493,7 @@ avtSurfCompPrepFilter::Execute(void)
     // The last few hundred lines of code have set up a network.  Now force
     // that network to execute.
     //
-    backToCartesian.Update(GetGeneralPipelineSpecification());
+    backToCartesian.Update(GetGeneralContract());
 
     //
     // Now copy the output of that execution to be the output of this filter.
@@ -525,7 +525,7 @@ avtSurfCompPrepFilter::AdditionalPipelineFilters(void)
 
 
 // ****************************************************************************
-//  Method: avtSurfCompPrepFilter::RefashionDataObjectInfo
+//  Method: avtSurfCompPrepFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Tells the output that we now have a surface, not a volume.
@@ -541,7 +541,7 @@ avtSurfCompPrepFilter::AdditionalPipelineFilters(void)
 // ****************************************************************************
 
 void
-avtSurfCompPrepFilter::RefashionDataObjectInfo(void)
+avtSurfCompPrepFilter::UpdateDataObjectInfo(void)
 {
     avtDataObject_p output = GetOutput();
     output->GetInfo().GetValidity().InvalidateZones();

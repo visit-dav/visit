@@ -83,7 +83,7 @@ class avtMetricThresholdFilter : public avtPluginStreamer
     MetricThresholdAttributes   atts;
 
     virtual vtkDataSet  *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void         RefashionDataObjectInfo();
+    virtual void         UpdateDataObjectInfo();
 
     vtkDataSet          *ExecuteOnScalarData(vtkDataSet *, vtkDataArray *);
     vtkPoints           *CreateRectilinearPoints(vtkRectilinearGrid *);

@@ -1321,7 +1321,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
 
 
 // ****************************************************************************
-//  Method:  avtLineScanFilter::RefashionDataObjectInfo
+//  Method:  avtLineScanFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Set up the atttributes and validity for the output of the filter.
@@ -1331,7 +1331,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
 //
 // ****************************************************************************
 void
-avtLineScanFilter::RefashionDataObjectInfo(void)
+avtLineScanFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();

@@ -269,10 +269,10 @@ avtLocalizedCompactnessFactorQuery::ApplyFilters(avtDataObject_p inData)
     //
     // Cause our artificial pipeline to execute.
     //
-    avtPipelineSpecification_p pspec =
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
-    pspec->GetDataSpecification()->AddSecondaryVariable("is_material");
-    dob->Update(pspec);
+    avtContract_p contract =
+        inData->GetOriginatingSource()->GetGeneralContract();
+    contract->GetDataRequest()->AddSecondaryVariable("is_material");
+    dob->Update(contract);
     return dob;
 }
 

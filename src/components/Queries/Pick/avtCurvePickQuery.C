@@ -50,7 +50,7 @@
 #include <vtkPointLocator.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <avtCurveConstructorFilter.h>
 
 
@@ -209,9 +209,9 @@ avtCurvePickQuery::Execute(vtkDataSet *inDS, const int dom)
         lines->Delete();
     }
 
-    avtDataSpecification_p dspec = 
-        GetInput()->GetTerminatingSource()->GetFullDataSpecification();
-    pickAtts.SetTimeStep(dspec->GetTimestep());
+    avtDataRequest_p dataRequest = 
+        GetInput()->GetOriginatingSource()->GetFullDataRequest();
+    pickAtts.SetTimeStep(dataRequest->GetTimestep());
  
     double pt1[3] = { 0., 0., 0.};
     double pt2[3] = { 0., 0., 0.};

@@ -49,7 +49,7 @@
 
 #include <avtCurveConstructorFilter.h>
 #include <avtSourceFromAVTDataset.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
@@ -101,8 +101,8 @@ avtCurveQuery::~avtCurveQuery()
 avtDataObject_p
 avtCurveQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtPipelineSpecification_p pspec =
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract =
+        inData->GetOriginatingSource()->GetGeneralContract();
 
     //
     // Create an artificial pipeline.
@@ -114,7 +114,7 @@ avtCurveQuery::ApplyFilters(avtDataObject_p inData)
 
     ccf->SetInput(dob);
     avtDataObject_p objOut = ccf->GetOutput();
-    objOut->Update(pspec);
+    objOut->Update(contract);
     return objOut;
 }
 

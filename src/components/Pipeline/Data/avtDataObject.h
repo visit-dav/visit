@@ -48,12 +48,12 @@
 #include <ref_ptr.h>
 
 #include <avtDataObjectInformation.h>
-#include <avtPipelineSpecification.h>
+#include <avtContract.h>
 
 class     avtDataObjectSource;
 class     avtDataObjectWriter;
 class     avtQueryableSource;
-class     avtTerminatingSource;
+class     avtOriginatingSource;
 class     avtWebpage;
 
 
@@ -95,10 +95,10 @@ class PIPELINE_API avtDataObject
                                      avtDataObject(avtDataObjectSource *);
     virtual                         ~avtDataObject();
 
-    avtTerminatingSource            *GetTerminatingSource(void);
+    avtOriginatingSource            *GetOriginatingSource(void);
     avtQueryableSource              *GetQueryableSource(void);
 
-    bool                             Update(avtPipelineSpecification_p);
+    bool                             Update(avtContract_p);
     void                             SetSource(avtDataObjectSource *);
     avtDataObjectSource             *GetSource(void) { return source; };
 

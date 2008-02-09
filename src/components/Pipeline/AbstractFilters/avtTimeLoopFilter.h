@@ -79,7 +79,7 @@ class PIPELINE_API avtTimeLoopFilter : virtual public avtFilter
                                         avtTimeLoopFilter();
     virtual                            ~avtTimeLoopFilter();
 
-    virtual bool                        Update(avtPipelineSpecification_p);
+    virtual bool                        Update(avtContract_p);
     virtual void                        ReleaseData(void);
 
     void                                SetTimeLoop(int b, int e, int s)

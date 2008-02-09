@@ -123,8 +123,8 @@ class avtZoneDumpFilter : public avtPluginStreamer
     ZoneDumpAttributes   atts;
 
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
-    virtual avtPipelineSpecification_p PerformRestriction
-                                 (avtPipelineSpecification_p pspec);
+    virtual avtContract_p ModifyContract
+                                 (avtContract_p contract);
 
     void                  PreExecute();
     void                  PostExecute();

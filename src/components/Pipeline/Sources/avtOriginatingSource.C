@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtTerminatingSource.C                          //
+//                           avtOriginatingSource.C                          //
 // ************************************************************************* //
 
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <avtMetaData.h>
 
@@ -52,17 +52,17 @@
 // Define static members.
 //
 
-LoadBalanceFunction  avtTerminatingSource::loadBalanceFunction     = NULL;
-void                *avtTerminatingSource::loadBalanceFunctionArgs = NULL;
-DynamicCheckFunction  avtTerminatingSource::dynamicCheckFunction     = NULL;
-void                 *avtTerminatingSource::dynamicCheckFunctionArgs = NULL;
+LoadBalanceFunction  avtOriginatingSource::loadBalanceFunction     = NULL;
+void                *avtOriginatingSource::loadBalanceFunctionArgs = NULL;
+DynamicCheckFunction  avtOriginatingSource::dynamicCheckFunction     = NULL;
+void                 *avtOriginatingSource::dynamicCheckFunctionArgs = NULL;
 InitializeProgressCallback
-                     avtTerminatingSource::initializeProgressCallback = NULL;
-void                *avtTerminatingSource::initializeProgressCallbackArgs=NULL;
+                     avtOriginatingSource::initializeProgressCallback = NULL;
+void                *avtOriginatingSource::initializeProgressCallbackArgs=NULL;
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource constructor
+//  Method: avtOriginatingSource constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2001
@@ -74,7 +74,7 @@ void                *avtTerminatingSource::initializeProgressCallbackArgs=NULL;
 //
 // ****************************************************************************
 
-avtTerminatingSource::avtTerminatingSource()
+avtOriginatingSource::avtOriginatingSource()
 {
     metadata = new avtMetaData(this);
     numberOfExecutions = 1;
@@ -82,14 +82,14 @@ avtTerminatingSource::avtTerminatingSource()
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource destructor
+//  Method: avtOriginatingSource destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   June 5, 2001
 //
 // ****************************************************************************
 
-avtTerminatingSource::~avtTerminatingSource()
+avtOriginatingSource::~avtOriginatingSource()
 {
     if (metadata != NULL)
     {
@@ -100,7 +100,7 @@ avtTerminatingSource::~avtTerminatingSource()
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::GetMeshAuxiliaryData
+//  Method: avtOriginatingSource::GetMeshAuxiliaryData
 //
 //  Purpose:
 //      Retrieves mesh auxiliary data from whatever the source to the pipeline
@@ -117,16 +117,16 @@ avtTerminatingSource::~avtTerminatingSource()
 // ****************************************************************************
 
 void
-avtTerminatingSource::GetMeshAuxiliaryData(const char *type, void *args,
-                          avtPipelineSpecification_p spec, VoidRefList &output)
+avtOriginatingSource::GetMeshAuxiliaryData(const char *type, void *args,
+                          avtContract_p spec, VoidRefList &output)
 {
-    avtDataSpecification_p data = BalanceLoad(spec);
+    avtDataRequest_p data = BalanceLoad(spec);
     FetchMeshAuxiliaryData(type, args, data, output);
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::GetVariableAuxiliaryData
+//  Method: avtOriginatingSource::GetVariableAuxiliaryData
 //
 //  Purpose:
 //      Retrieves variable auxiliary data from whatever the source to the
@@ -143,16 +143,16 @@ avtTerminatingSource::GetMeshAuxiliaryData(const char *type, void *args,
 // ****************************************************************************
 
 void 
-avtTerminatingSource::GetVariableAuxiliaryData(const char *type, void *args,
-                          avtPipelineSpecification_p spec, VoidRefList &output)
+avtOriginatingSource::GetVariableAuxiliaryData(const char *type, void *args,
+                          avtContract_p spec, VoidRefList &output)
 {
-    avtDataSpecification_p data = BalanceLoad(spec);
+    avtDataRequest_p data = BalanceLoad(spec);
     FetchVariableAuxiliaryData(type, args, data, output);
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::GetMaterialAuxiliaryData
+//  Method: avtOriginatingSource::GetMaterialAuxiliaryData
 //
 //  Purpose:
 //      Retrieves material auxiliary data from whatever the source to the
@@ -169,16 +169,16 @@ avtTerminatingSource::GetVariableAuxiliaryData(const char *type, void *args,
 // ****************************************************************************
 
 void 
-avtTerminatingSource::GetMaterialAuxiliaryData(const char *type, void *args,
-                          avtPipelineSpecification_p spec, VoidRefList &output)
+avtOriginatingSource::GetMaterialAuxiliaryData(const char *type, void *args,
+                          avtContract_p spec, VoidRefList &output)
 {
-    avtDataSpecification_p data = BalanceLoad(spec);
+    avtDataRequest_p data = BalanceLoad(spec);
     FetchMaterialAuxiliaryData(type, args, data, output);
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::GetSpeciesAuxiliaryData
+//  Method: avtOriginatingSource::GetSpeciesAuxiliaryData
 //
 //  Purpose:
 //      Retrieves species auxiliary data from whatever the source to the
@@ -195,16 +195,16 @@ avtTerminatingSource::GetMaterialAuxiliaryData(const char *type, void *args,
 // ****************************************************************************
 
 void 
-avtTerminatingSource::GetSpeciesAuxiliaryData(const char *type, void *args,
-                          avtPipelineSpecification_p spec, VoidRefList &output)
+avtOriginatingSource::GetSpeciesAuxiliaryData(const char *type, void *args,
+                          avtContract_p spec, VoidRefList &output)
 {
-    avtDataSpecification_p data = BalanceLoad(spec);
+    avtDataRequest_p data = BalanceLoad(spec);
     FetchSpeciesAuxiliaryData(type, args, data, output);
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::Update
+//  Method: avtOriginatingSource::Update
 //
 //  Purpose:
 //      Performs an Update.  This is the termination of a pipeline.  The
@@ -240,12 +240,12 @@ avtTerminatingSource::GetSpeciesAuxiliaryData(const char *type, void *args,
 // ****************************************************************************
 
 bool
-avtTerminatingSource::Update(avtPipelineSpecification_p spec)
+avtOriginatingSource::Update(avtContract_p spec)
 {
     if (!ArtificialPipeline())
         GetOutput()->GetInfo().GetValidity().Reset();
     int t0 = visitTimer->StartTimer();
-    avtDataSpecification_p data = BalanceLoad(spec);
+    avtDataRequest_p data = BalanceLoad(spec);
     visitTimer->StopTimer(t0, "Calling BalanceLoad in avtTermSrc::Update");
     int t1 = visitTimer->StartTimer();
     bool rv = FetchData(data);
@@ -256,7 +256,7 @@ avtTerminatingSource::Update(avtPipelineSpecification_p spec)
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::SetLoadBalancer
+//  Method: avtOriginatingSource::SetLoadBalancer
 //
 //  Purpose:
 //      Sets the load balancer to be consulted when this terminating source
@@ -272,7 +272,7 @@ avtTerminatingSource::Update(avtPipelineSpecification_p spec)
 // ****************************************************************************
 
 void
-avtTerminatingSource::SetLoadBalancer(LoadBalanceFunction foo, void *args)
+avtOriginatingSource::SetLoadBalancer(LoadBalanceFunction foo, void *args)
 {
     loadBalanceFunction     = foo;
     loadBalanceFunctionArgs = args;
@@ -280,7 +280,7 @@ avtTerminatingSource::SetLoadBalancer(LoadBalanceFunction foo, void *args)
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::SetDynamicChecker
+//  Method: avtOriginatingSource::SetDynamicChecker
 //
 //  Purpose:
 //      Sets the load balancer to be consulted to determine if load
@@ -296,7 +296,7 @@ avtTerminatingSource::SetLoadBalancer(LoadBalanceFunction foo, void *args)
 // ****************************************************************************
 
 void
-avtTerminatingSource::SetDynamicChecker(DynamicCheckFunction foo, void *args)
+avtOriginatingSource::SetDynamicChecker(DynamicCheckFunction foo, void *args)
 {
     dynamicCheckFunction     = foo;
     dynamicCheckFunctionArgs = args;
@@ -304,7 +304,7 @@ avtTerminatingSource::SetDynamicChecker(DynamicCheckFunction foo, void *args)
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::RegisterInitializeProgressCallback
+//  Method: avtOriginatingSource::RegisterInitializeProgressCallback
 //
 //  Purpose:
 //      Registers the InitializeProgressCallback.  This will be called before
@@ -321,7 +321,7 @@ avtTerminatingSource::SetDynamicChecker(DynamicCheckFunction foo, void *args)
 // ****************************************************************************
 
 void
-avtTerminatingSource::RegisterInitializeProgressCallback(
+avtOriginatingSource::RegisterInitializeProgressCallback(
                                      InitializeProgressCallback pc, void *args)
 {
     initializeProgressCallback     = pc;
@@ -330,7 +330,7 @@ avtTerminatingSource::RegisterInitializeProgressCallback(
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::FetchMeshAuxiliaryData
+//  Method: avtOriginatingSource::FetchMeshAuxiliaryData
 //
 //  Purpose:
 //      Defines an implementation for fetching auxiliary data about a mesh.
@@ -350,15 +350,15 @@ avtTerminatingSource::RegisterInitializeProgressCallback(
 //
 // ****************************************************************************  
 void
-avtTerminatingSource::FetchMeshAuxiliaryData(const char *, void *,
-                                   avtDataSpecification_p, VoidRefList &output)
+avtOriginatingSource::FetchMeshAuxiliaryData(const char *, void *,
+                                   avtDataRequest_p, VoidRefList &output)
 {
     output.nList = 0;
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::FetchVariableAuxiliaryData
+//  Method: avtOriginatingSource::FetchVariableAuxiliaryData
 //
 //  Purpose:
 //      Defines an implementation for fetching auxiliary data about a variable.
@@ -378,15 +378,15 @@ avtTerminatingSource::FetchMeshAuxiliaryData(const char *, void *,
 //
 // ****************************************************************************  
 void 
-avtTerminatingSource::FetchVariableAuxiliaryData(const char *,void *,
-                                   avtDataSpecification_p, VoidRefList &output)
+avtOriginatingSource::FetchVariableAuxiliaryData(const char *,void *,
+                                   avtDataRequest_p, VoidRefList &output)
 {
     output.nList = 0;
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::FetchMaterialAuxiliaryData
+//  Method: avtOriginatingSource::FetchMaterialAuxiliaryData
 //
 //  Purpose:
 //      Defines an implementation for fetching auxiliary data about a material.
@@ -406,15 +406,15 @@ avtTerminatingSource::FetchVariableAuxiliaryData(const char *,void *,
 //
 // ****************************************************************************  
 void
-avtTerminatingSource::FetchMaterialAuxiliaryData(const char *,void *,
-                                   avtDataSpecification_p, VoidRefList &output)
+avtOriginatingSource::FetchMaterialAuxiliaryData(const char *,void *,
+                                   avtDataRequest_p, VoidRefList &output)
 {
     output.nList = 0;
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::FetchSpeciesAuxiliaryData
+//  Method: avtOriginatingSource::FetchSpeciesAuxiliaryData
 //
 //  Purpose:
 //      Defines an implementation for fetching auxiliary data about a species.
@@ -434,15 +434,15 @@ avtTerminatingSource::FetchMaterialAuxiliaryData(const char *,void *,
 //
 // ****************************************************************************  
 void
-avtTerminatingSource::FetchSpeciesAuxiliaryData(const char *,void *,
-                                   avtDataSpecification_p, VoidRefList &output)
+avtOriginatingSource::FetchSpeciesAuxiliaryData(const char *,void *,
+                                   avtDataRequest_p, VoidRefList &output)
 {
     output.nList = 0;
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::BalanceLoad
+//  Method: avtOriginatingSource::BalanceLoad
 //
 //  Purpose:
 //      This calls a function that will take in the input data specification 
@@ -472,10 +472,10 @@ avtTerminatingSource::FetchSpeciesAuxiliaryData(const char *,void *,
 //
 // ****************************************************************************
 
-avtDataSpecification_p
-avtTerminatingSource::BalanceLoad(avtPipelineSpecification_p spec)
+avtDataRequest_p
+avtOriginatingSource::BalanceLoad(avtContract_p spec)
 {
-    bool usesAllDomains = spec->GetDataSpecification()
+    bool usesAllDomains = spec->GetDataRequest()
                                                    ->GetSIL().UsesAllDomains();
 
     //
@@ -492,17 +492,17 @@ avtTerminatingSource::BalanceLoad(avtPipelineSpecification_p spec)
     //
     // Allow the load balancer to split the load across processors.
     //
-    avtDataSpecification_p rv = NULL;
+    avtDataRequest_p rv = NULL;
     if (!UseLoadBalancer())
     {
         debug5 << "This source should not load balance the data." << endl;
-        rv = spec->GetDataSpecification();
+        rv = spec->GetDataRequest();
     }
     else if (! spec->ShouldUseLoadBalancing())
     {
         debug5 << "This pipeline has indicated that no load balancing should "
                << "be used." << endl;
-        rv = spec->GetDataSpecification();
+        rv = spec->GetDataRequest();
     }
     else if (loadBalanceFunction != NULL)
     {
@@ -512,7 +512,7 @@ avtTerminatingSource::BalanceLoad(avtPipelineSpecification_p spec)
     else
     {
         debug1 << "No load balancer exists to reduce data." << endl;
-        rv = spec->GetDataSpecification();
+        rv = spec->GetDataRequest();
     }
 
     //
@@ -524,7 +524,7 @@ avtTerminatingSource::BalanceLoad(avtPipelineSpecification_p spec)
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::InitPipeline
+//  Method: avtOriginatingSource::InitPipeline
 //
 //  Purpose:
 //      Initializes the rest of the pipeline.  This determines if the data
@@ -564,7 +564,7 @@ avtTerminatingSource::BalanceLoad(avtPipelineSpecification_p spec)
 // ****************************************************************************
 
 void
-avtTerminatingSource::InitPipeline(avtPipelineSpecification_p spec)
+avtOriginatingSource::InitPipeline(avtContract_p spec)
 {
     if (!ArtificialPipeline())
     {
@@ -577,7 +577,7 @@ avtTerminatingSource::InitPipeline(avtPipelineSpecification_p spec)
         // Determine if the data specification is *all* of the data.  This is
         // important to things like facelists.
         //
-        avtDataSpecification_p data = spec->GetDataSpecification();
+        avtDataRequest_p data = spec->GetDataRequest();
         bool uad = data->GetSIL().UsesAllData();
         GetOutput()->GetInfo().GetValidity().SetUsingAllData(uad);
     
@@ -625,7 +625,7 @@ avtTerminatingSource::InitPipeline(avtPipelineSpecification_p spec)
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::GetFullDataSpecification
+//  Method: avtOriginatingSource::GetFullDataRequest
 //
 //  Purpose:
 //      Gets a full data description.  Since this doesn't make as much sense
@@ -639,15 +639,15 @@ avtTerminatingSource::InitPipeline(avtPipelineSpecification_p spec)
 //
 // ****************************************************************************
 
-avtDataSpecification_p
-avtTerminatingSource::GetFullDataSpecification(void)
+avtDataRequest_p
+avtOriginatingSource::GetFullDataRequest(void)
 {
-    return new avtDataSpecification("dummy_specification", -1, -1);
+    return new avtDataRequest("dummy_specification", -1, -1);
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::GetGeneralPipelineSpecification
+//  Method: avtOriginatingSource::GetGeneralContract
 //
 //  Purpose:
 //       Gets a pipeline that the load balancer knows not to muck with.
@@ -657,16 +657,16 @@ avtTerminatingSource::GetFullDataSpecification(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtTerminatingSource::GetGeneralPipelineSpecification(void)
+avtContract_p
+avtOriginatingSource::GetGeneralContract(void)
 {
-    avtDataSpecification_p data = GetFullDataSpecification();
-    return new avtPipelineSpecification(data, 0);
+    avtDataRequest_p data = GetFullDataRequest();
+    return new avtContract(data, 0);
 }
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::CanDoDynamicLoadBalancing
+//  Method: avtOriginatingSource::CanDoDynamicLoadBalancing
 //
 //  Purpose:
 //      Returns whether or not this source can do dynamic load balancing.
@@ -677,7 +677,7 @@ avtTerminatingSource::GetGeneralPipelineSpecification(void)
 // ****************************************************************************
 
 bool
-avtTerminatingSource::CanDoDynamicLoadBalancing(void)
+avtOriginatingSource::CanDoDynamicLoadBalancing(void)
 {
     //
     // We'd like to do it unless we have a reason not to.
@@ -687,7 +687,7 @@ avtTerminatingSource::CanDoDynamicLoadBalancing(void)
 
 
 // ****************************************************************************
-//  Method: avtTerminatingSource::NumStagesForFetch
+//  Method: avtOriginatingSource::NumStagesForFetch
 //
 //  Purpose:
 //      This returns how many stages there are for the fetch.  Some databases
@@ -702,7 +702,7 @@ avtTerminatingSource::CanDoDynamicLoadBalancing(void)
 // ****************************************************************************
 
 int
-avtTerminatingSource::NumStagesForFetch(avtDataSpecification_p)
+avtOriginatingSource::NumStagesForFetch(avtDataRequest_p)
 {
     return 1;
 }

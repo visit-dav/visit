@@ -37,25 +37,25 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                         avtPipelineSpecification.h                        //
+//                               avtContract.h                               //
 // ************************************************************************* //
 
-#ifndef AVT_PIPELINE_SPECIFICATION_H
-#define AVT_PIPELINE_SPECIFICATION_H
+#ifndef AVT_CONTRACT_H
+#define AVT_CONTRACT_H
 
 #include <pipeline_exports.h>
 
 #include <ref_ptr.h>
 
-#include <avtDataSpecification.h>
+#include <avtDataRequest.h>
 
 class avtWebpage;
-class avtPipelineSpecification;
-typedef ref_ptr<avtPipelineSpecification> avtPipelineSpecification_p;
+class avtContract;
+typedef ref_ptr<avtContract> avtContract_p;
 
 
 // ****************************************************************************
-//  Class: avtPipelineSpecification
+//  Class: avtContract
 //
 //  Purpose:
 //      This is the specification of a pipeline.  This includes the
@@ -88,20 +88,20 @@ typedef ref_ptr<avtPipelineSpecification> avtPipelineSpecification_p;
 //
 // ****************************************************************************
 
-class PIPELINE_API avtPipelineSpecification
+class PIPELINE_API avtContract
 {
   public:
-                        avtPipelineSpecification(avtDataSpecification_p, int);
-                        avtPipelineSpecification(avtPipelineSpecification_p);
-                        avtPipelineSpecification(avtPipelineSpecification_p,
-                                                 avtDataSpecification_p);
-    virtual            ~avtPipelineSpecification();
+                        avtContract(avtDataRequest_p, int);
+                        avtContract(avtContract_p);
+                        avtContract(avtContract_p,
+                                                 avtDataRequest_p);
+    virtual            ~avtContract();
 
     bool                ShouldUseDynamicLoadBalancing(void)
                                { return canDoDynamic; };
     void                NoDynamicLoadBalancing(void)
                                { canDoDynamic = false; };
-    void                SetDataSpecification(avtDataSpecification_p ds)
+    void                SetDataRequest(avtDataRequest_p ds)
                                { data = ds; };
 
     bool                ShouldUseLoadBalancing(void)  
@@ -117,7 +117,7 @@ class PIPELINE_API avtPipelineSpecification
     bool                GetHaveCurvilinearMeshOptimizations(void)
                                { return haveCurvilinearMeshOptimizations; };
                   
-    avtDataSpecification_p    GetDataSpecification(void)
+    avtDataRequest_p    GetDataRequest(void)
                                { return data; };
     int                       GetPipelineIndex(void) 
                                { return pipelineIndex; };
@@ -125,11 +125,11 @@ class PIPELINE_API avtPipelineSpecification
     void                      AddFilter(void)  { nFilters++; };
     int                       GetNFilters(void)  { return nFilters; };
 
-    avtPipelineSpecification &operator=(const avtPipelineSpecification &);
+    avtContract &operator=(const avtContract &);
     void                      DebugDump(avtWebpage *);
 
   protected:
-    avtDataSpecification_p    data;
+    avtDataRequest_p    data;
     int                       pipelineIndex;
     bool                      canDoDynamic;
     bool                      useLoadBalancing;
@@ -141,7 +141,7 @@ class PIPELINE_API avtPipelineSpecification
     // This method is defined to prevent accidental use of a bitwise copy
     // implementation.  If you want to re-define it to do something
     // meaningful, that's fine.
-                avtPipelineSpecification(const avtPipelineSpecification &) {;};
+                avtContract(const avtContract &) {;};
 };
 
 

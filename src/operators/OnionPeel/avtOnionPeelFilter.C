@@ -53,7 +53,7 @@
 
 #include <avtSILNamespace.h>
 #include <avtSILRestrictionTraverser.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 
 #include <BadCellException.h>
 #include <BadNodeException.h>
@@ -527,7 +527,7 @@ avtOnionPeelFilter::BadSeed(int seed, int numIds, bool ghost)
 }
 
 // ****************************************************************************
-//  Method: avtOnionPeelFilter::RefashionDataObjectInfo
+//  Method: avtOnionPeelFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates that the zone numberings are no longer valid after this
@@ -539,14 +539,14 @@ avtOnionPeelFilter::BadSeed(int seed, int numIds, bool ghost)
 // ****************************************************************************
 
 void
-avtOnionPeelFilter::RefashionDataObjectInfo(void)
+avtOnionPeelFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }
 
 
 // ****************************************************************************
-//  Method: avtOnionPeelFilter::PerformRestriction
+//  Method: avtOnionPeelFilter::ModifyContract
 //
 //  Purpose:
 //    Restricts the SIL to only the domain requested by user. 
@@ -603,22 +603,22 @@ avtOnionPeelFilter::RefashionDataObjectInfo(void)
 //    out are deleted before this method is done using them.
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtOnionPeelFilter::ModifyContract(avtContract_p spec)
 {
     if (atts.GetSubsetName() == "Whole") 
     {
         if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved() || 
-            spec->GetDataSpecification()->MayRequireZones()) 
+            spec->GetDataRequest()->MayRequireZones()) 
         {
-            spec->GetDataSpecification()->TurnZoneNumbersOn();
+            spec->GetDataRequest()->TurnZoneNumbersOn();
             if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
-                spec->GetDataSpecification()->TurnNodeNumbersOn();
+                spec->GetDataRequest()->TurnNodeNumbersOn();
         }
         if (atts.GetUseGlobalId()) 
         {
-            spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
-            spec->GetDataSpecification()->TurnGlobalNodeNumbersOn();
+            spec->GetDataRequest()->TurnGlobalZoneNumbersOn();
+            spec->GetDataRequest()->TurnGlobalNodeNumbersOn();
         }
         //
         // No restriction necessary. 
@@ -627,13 +627,13 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
     if (atts.GetUseGlobalId()) 
     {
-        spec->GetDataSpecification()->TurnGlobalZoneNumbersOn();
-        spec->GetDataSpecification()->TurnGlobalNodeNumbersOn();
+        spec->GetDataRequest()->TurnGlobalZoneNumbersOn();
+        spec->GetDataRequest()->TurnGlobalNodeNumbersOn();
         if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved()) 
         {
-            spec->GetDataSpecification()->TurnZoneNumbersOn();
+            spec->GetDataRequest()->TurnZoneNumbersOn();
             if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
-                spec->GetDataSpecification()->TurnNodeNumbersOn();
+                spec->GetDataRequest()->TurnNodeNumbersOn();
         }
         //
         // Cannot determine a-priori where the global zone number
@@ -642,11 +642,11 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
         return spec;
     }
 
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
 
     string category = atts.GetCategoryName();
     string subset = atts.GetSubsetName();
-    avtSILRestriction_p silr = spec->GetDataSpecification()->GetRestriction();
+    avtSILRestriction_p silr = spec->GetDataRequest()->GetRestriction();
     int collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
     avtSILRestrictionTraverser trav(silr);
     int setID = silr->GetSetIndex(subset, collectionID);
@@ -656,7 +656,7 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     }
     TRY
     {
-        silr = rv->GetDataSpecification()->GetRestriction();
+        silr = rv->GetDataRequest()->GetRestriction();
 
         // If we've got species info, we need to maintain that.
         // So see which species are on.
@@ -697,11 +697,11 @@ avtOnionPeelFilter::PerformRestriction(avtPipelineSpecification_p spec)
     ENDTRY
     
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved() ||
-        rv->GetDataSpecification()->MayRequireZones())
+        rv->GetDataRequest()->MayRequireZones())
     {
-        rv->GetDataSpecification()->TurnZoneNumbersOn();
+        rv->GetDataRequest()->TurnZoneNumbersOn();
         if (atts.GetSeedType() == OnionPeelAttributes::SeedNode)
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
+            rv->GetDataRequest()->TurnNodeNumbersOn();
     }
     return rv;
 }
@@ -746,8 +746,8 @@ avtOnionPeelFilter::VerifyInput()
 
     std::string category = atts.GetCategoryName();
     std::string subset = atts.GetSubsetName();
-    avtSILRestriction_p silr = GetTerminatingSource()->
-        GetFullDataSpecification()->GetRestriction();
+    avtSILRestriction_p silr = GetOriginatingSource()->
+        GetFullDataRequest()->GetRestriction();
 
     int setID, collectionID;
     TRY

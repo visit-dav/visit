@@ -87,7 +87,7 @@ class EXPRESSION_API avtNeighborExpression : public avtSingleInputExpressionFilt
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *) { return NULL; }
 
     virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void             RefashionDataObjectInfo(void);
+    virtual void             UpdateDataObjectInfo(void);
 
     virtual bool             IsPointVariable()     { return true; };
     virtual int              GetVariableDimension()   { return 1; };

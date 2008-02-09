@@ -393,8 +393,8 @@ avtParallelAxisPlot::CustomizeMapper(avtDataObjectInformation &info)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtParallelAxisPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
+avtContract_p
+avtParallelAxisPlot::EnhanceSpecification(avtContract_p in_spec)
 {
     if (!atts.AttributesAreConsistent())
     {
@@ -405,12 +405,12 @@ avtParallelAxisPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
 
     stringVector curAxisVarNames = atts.GetOrderedAxisNames();
     stringVector needSecondaryVars;
-    const char *inPipelineVar = in_spec->GetDataSpecification()->GetVariable();
+    const char *inPipelineVar = in_spec->GetDataRequest()->GetVariable();
     std::string outPipelineVar(inPipelineVar);
     std::string axisVarName;
     int axisNum;
 
-    avtPipelineSpecification_p outSpec;
+    avtContract_p outSpec;
 
     for (axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++)
     {
@@ -419,15 +419,15 @@ avtParallelAxisPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
     
     if (axisNum < curAxisVarNames.size())
     {
-        outSpec = new avtPipelineSpecification(in_spec);
+        outSpec = new avtContract(in_spec);
     }
     else
     {
         outPipelineVar = curAxisVarNames[0];
         
-        avtDataSpecification_p newDataSpec = new avtDataSpecification(
-            in_spec->GetDataSpecification(), outPipelineVar.c_str());
-        outSpec = new avtPipelineSpecification(in_spec, newDataSpec);
+        avtDataRequest_p newDataSpec = new avtDataRequest(
+            in_spec->GetDataRequest(), outPipelineVar.c_str());
+        outSpec = new avtContract(in_spec, newDataSpec);
     }
 
     for (axisNum = 0; axisNum < curAxisVarNames.size(); axisNum++)
@@ -439,7 +439,7 @@ avtParallelAxisPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
     }
         
     const std::vector<CharStrRef> curSecondaryVars =
-        in_spec->GetDataSpecification()->GetSecondaryVariables();
+        in_spec->GetDataRequest()->GetSecondaryVariables();
     int needSecVNum, curSecVNum;
     const char *needSecondaryVar;
     const char *curSecondaryVar;
@@ -458,7 +458,7 @@ avtParallelAxisPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
 
         if (curSecVNum >= curSecondaryVars.size())
         {
-          outSpec->GetDataSpecification()->AddSecondaryVariable(needSecondaryVar);
+          outSpec->GetDataRequest()->AddSecondaryVariable(needSecondaryVar);
         }
     }
 
@@ -475,7 +475,7 @@ avtParallelAxisPlot::EnhanceSpecification(avtPipelineSpecification_p in_spec)
 
         if (needSecVNum >= needSecondaryVars.size())
         {
-          outSpec->GetDataSpecification()->RemoveSecondaryVariable(curSecondaryVar);
+          outSpec->GetDataRequest()->RemoveSecondaryVariable(curSecondaryVar);
         }
     }
 

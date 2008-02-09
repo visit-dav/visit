@@ -157,13 +157,13 @@ class avtSliceFilter : public avtPluginStreamer
     vtkMatrix4x4                 *invTrans;
     vtkMatrix4x4                 *origTrans;
 
-    virtual avtPipelineSpecification_p
-                            PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                            ModifyContract(avtContract_p);
     virtual vtkDataSet     *ExecuteData(vtkDataSet *, int, std::string);
     virtual void            PreExecute(void);
     virtual void            PostExecute(void);
 
-    virtual void            RefashionDataObjectInfo(void);
+    virtual void            UpdateDataObjectInfo(void);
 
     void                    CalculateRectilinearCells(vtkRectilinearGrid *);
     void                    SetPlaneOrientation(double *);

@@ -47,7 +47,7 @@
 
 
 #include <avtInlinePipelineSource.h>
-#include <avtTerminatingDatasetSource.h>
+#include <avtOriginatingDatasetSource.h>
 
 
 // ****************************************************************************
@@ -75,7 +75,7 @@
 // ****************************************************************************
 
 class PIPELINE_API avtSourceFromAVTDataset
-     : virtual public avtTerminatingDatasetSource,
+     : virtual public avtOriginatingDatasetSource,
        virtual public avtInlinePipelineSource
 {
   public:
@@ -87,7 +87,7 @@ class PIPELINE_API avtSourceFromAVTDataset
   protected:
     avtDataTree_p         tree;
 
-    virtual bool          FetchDataset(avtDataSpecification_p,avtDataTree_p &);
+    virtual bool          FetchDataset(avtDataRequest_p,avtDataTree_p &);
 };
 
 

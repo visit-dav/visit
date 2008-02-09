@@ -81,8 +81,8 @@ class avtDeferExpressionFilter : virtual public avtPluginFilter,
   protected:
     DeferExpressionAttributes      atts;
 
-    virtual avtPipelineSpecification_p 
-                               PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p 
+                               ModifyContract(avtContract_p);
 };
 
 

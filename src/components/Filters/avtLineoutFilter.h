@@ -68,7 +68,7 @@ class vtkRectilinearGrid;
 //    Re-worked memory management paradigm.
 //
 //    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
-//    Added PerformRestriction. 
+//    Added ModifyContract. 
 //
 //    Kathleen Bonnell, Wed Jan 14 12:02:38 PST 2004 
 //    Added PostExecute. 
@@ -123,9 +123,9 @@ class avtLineoutFilter : public avtStreamer
     virtual vtkDataSet       *ExecuteData(vtkDataSet *, int, std::string);
     virtual void              PostExecute(void);
     virtual void              VerifyInput(void);
-    virtual void              RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p
-                              PerformRestriction(avtPipelineSpecification_p);
+    virtual void              UpdateDataObjectInfo(void);
+    virtual avtContract_p
+                              ModifyContract(avtContract_p);
 
   private:
     bool                      useOriginalCells;

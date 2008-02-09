@@ -134,7 +134,7 @@ avtDeferExpressionFilter::Equivalent(const AttributeGroup *a)
 
 
 // ****************************************************************************
-//  Method: avtDeferExpressionFilter::PerformRestriction
+//  Method: avtDeferExpressionFilter::ModifyContract
 //
 //  Purpose:
 //      Allows the EEF to declare which variables it needs for the expressions
@@ -149,8 +149,8 @@ avtDeferExpressionFilter::Equivalent(const AttributeGroup *a)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtDeferExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtDeferExpressionFilter::ModifyContract(avtContract_p spec)
 {
     int  i, j;
 
@@ -194,10 +194,10 @@ avtDeferExpressionFilter::PerformRestriction(avtPipelineSpecification_p spec)
     ExpressionList orig_el = *el;
     *el = new_el;
 
-    avtPipelineSpecification_p rv = spec;
+    avtContract_p rv = spec;
     TRY
     {
-        rv = avtExpressionEvaluatorFilter::PerformRestriction(spec);
+        rv = avtExpressionEvaluatorFilter::ModifyContract(spec);
         *el = orig_el;
     }
     CATCHALL(...)

@@ -396,7 +396,7 @@ avtZoneDumpFilter::PostExecute()
 
 
 // ****************************************************************************
-//  Method: avtZoneDumpFilter::PerformRestriction
+//  Method: avtZoneDumpFilter::ModifyContract
 //
 //  Purpose:  Requests Original Zone Numbers
 //
@@ -405,14 +405,14 @@ avtZoneDumpFilter::PostExecute()
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtZoneDumpFilter::PerformRestriction(avtPipelineSpecification_p pspec)
+avtContract_p
+avtZoneDumpFilter::ModifyContract(avtContract_p contract)
 {
-    avtPipelineSpecification_p rv = pspec;
+    avtContract_p rv = contract;
     // get original zone numbers
-    rv->GetDataSpecification()->TurnZoneNumbersOn();
+    rv->GetDataRequest()->TurnZoneNumbersOn();
     // get original zone indices (for finding logical coords)
-    rv->GetDataSpecification()->SetNeedStructuredIndices(true);
+    rv->GetDataRequest()->SetNeedStructuredIndices(true);
     return rv;
 }
 

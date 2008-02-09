@@ -86,7 +86,7 @@ class avtRemoveCellsFilter : public avtPluginStreamer
     
     virtual vtkDataSet   *ExecuteData(vtkDataSet *, int, std::string);
 
-    virtual void          RefashionDataObjectInfo(void);
+    virtual void          UpdateDataObjectInfo(void);
 };
 
 

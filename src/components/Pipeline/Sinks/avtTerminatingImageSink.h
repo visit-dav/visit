@@ -37,26 +37,27 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                        avtOriginatingNullDataSink.h                       //
+//                           avtTerminatingImageSink.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_ORIGINATING_NULL_DATA_SINK_H
-#define AVT_ORIGINATING_NULL_DATA_SINK_H
+#ifndef AVT_TERMINATING_IMAGE_SINK_H
+#define AVT_TERMINATING_IMAGE_SINK_H
+
 #include <pipeline_exports.h>
 
 
-#include <avtNullDataSink.h>
-#include <avtOriginatingSink.h>
+#include <avtImageSink.h>
+#include <avtTerminatingSink.h>
 
 
 // ****************************************************************************
-//  Class: avtOriginatingNullDataSink
+//  Class: avtTerminatingImageSink
 //
 //  Purpose:
-//      A null data sink that originates pipeline execution.
+//      A image sink that terminates pipeline execution.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   January 7, 2003 
+//  Programmer: Hank Childs
+//  Creation:   May 30, 2001
 //
 //  Modifications:
 //
@@ -66,12 +67,12 @@
 //
 // ****************************************************************************
 
-class PIPELINE_API avtOriginatingNullDataSink
-    : virtual public avtNullDataSink, virtual public avtOriginatingSink
+class PIPELINE_API avtTerminatingImageSink
+    : virtual public avtImageSink, virtual public avtTerminatingSink
 {
   public:
-                      avtOriginatingNullDataSink();
-    virtual          ~avtOriginatingNullDataSink();
+                      avtTerminatingImageSink();
+    virtual          ~avtTerminatingImageSink();
 };
 
 

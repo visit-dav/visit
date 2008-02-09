@@ -1119,7 +1119,7 @@ avtScatterFilter::PopulateNames(const char **names) const
 }
 
 // ****************************************************************************
-//  Method: avtScatterFilter::RefashionDataObjectInfo
+//  Method: avtScatterFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //    Indicates that topological dimension of the output is 1.
@@ -1134,9 +1134,9 @@ avtScatterFilter::PopulateNames(const char **names) const
 // ****************************************************************************
 
 void
-avtScatterFilter::RefashionDataObjectInfo(void)
+avtScatterFilter::UpdateDataObjectInfo(void)
 {
-debug4 << "avtScatterFilter::RefashionDataObjectInfo" << endl;
+debug4 << "avtScatterFilter::UpdateDataObjectInfo" << endl;
     avtDataAttributes &dataAtts = GetOutput()->GetInfo().GetAttributes();
     std::string v1Units(""), v2Units(""), v3Units(""), v4Units("");
 
@@ -1341,7 +1341,7 @@ avtScatterFilter::NeedSpatialExtents() const
 }
 
 // ****************************************************************************
-// Method: avtScatterFilter::PerformRestriction
+// Method: avtScatterFilter::ModifyContract
 //
 // Purpose: 
 //   Returns an altered pipeline specification and determines which variables
@@ -1364,10 +1364,10 @@ avtScatterFilter::NeedSpatialExtents() const
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtScatterFilter::ModifyContract(avtContract_p spec)
 {
-    avtPipelineSpecification_p rv = new avtPipelineSpecification(spec);
+    avtContract_p rv = new avtContract(spec);
 
     //
     // Assign variables according to their roles. var[0] == X, var[1] == Y, 
@@ -1392,7 +1392,7 @@ avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
         if (TryDataExtents(xExtents, names[0]))
         {
             needXExtents = false;
-            debug1 << "avtScatterFilter::PerformRestriction: xExtents="
+            debug1 << "avtScatterFilter::ModifyContract: xExtents="
                    << xExtents[0] << ", " << xExtents[1] << endl;
         }
         else
@@ -1402,7 +1402,7 @@ avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
         if (TryDataExtents(yExtents, names[1]))
         {
             needYExtents = false;
-            debug1 << "avtScatterFilter::PerformRestriction: yExtents="
+            debug1 << "avtScatterFilter::ModifyContract: yExtents="
                    << yExtents[0] << ", " << yExtents[1] << endl;
         }
         else
@@ -1414,7 +1414,7 @@ avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
             if (TryDataExtents(zExtents, names[2]))
             {
                 needZExtents = false;
-                debug1 << "avtScatterFilter::PerformRestriction: zExtents="
+                debug1 << "avtScatterFilter::ModifyContract: zExtents="
                        << zExtents[0] << ", " << zExtents[1] << endl;
             }
             else
@@ -1431,7 +1431,7 @@ avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
             if (TryDataExtents(colorExtents, names[3]))
             {
                 needColorExtents = false;
-                debug1 << "avtScatterFilter::PerformRestriction: colorExtents="
+                debug1 << "avtScatterFilter::ModifyContract: colorExtents="
                        << colorExtents[0] << ", " << colorExtents[1] << endl;
             }
             else
@@ -1455,7 +1455,7 @@ avtScatterFilter::PerformRestriction(avtPipelineSpecification_p spec)
                 double maxval = var[i].useMax ? var[i].max : SCATTER_FLOAT_MAX;
                 vector<int> dl;
                 it->GetElementsListFromRange(&minval, &maxval, dl);
-                rv->GetDataSpecification()->GetRestriction()->RestrictDomains(dl);
+                rv->GetDataRequest()->GetRestriction()->RestrictDomains(dl);
             }
         }
     }

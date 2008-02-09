@@ -203,7 +203,7 @@ avtNeighborExpression::ExecuteData(vtkDataSet *in_ds, int, std::string)
 }
 
 // ****************************************************************************
-//  Method: avtNeighborExpression::RefashionDataObjectInfo
+//  Method: avtNeighborExpression::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Tells our output that we now have a variable, and that our mesh has
@@ -220,9 +220,9 @@ avtNeighborExpression::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
  
 void
-avtNeighborExpression::RefashionDataObjectInfo(void)
+avtNeighborExpression::UpdateDataObjectInfo(void)
 {
-    avtSingleInputExpressionFilter::RefashionDataObjectInfo();
+    avtSingleInputExpressionFilter::UpdateDataObjectInfo();
 
     // And we're now dealing with vertexes
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();

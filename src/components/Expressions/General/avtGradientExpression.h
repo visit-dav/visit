@@ -132,8 +132,8 @@ class EXPRESSION_API avtGradientExpression : public avtSingleInputExpressionFilt
                                                            vtkDataArray *,
                                                            int ,
                                                            double *);
-    virtual avtPipelineSpecification_p
-                               PerformRestriction(avtPipelineSpecification_p);
+    virtual avtContract_p
+                               ModifyContract(avtContract_p);
 };
 
 

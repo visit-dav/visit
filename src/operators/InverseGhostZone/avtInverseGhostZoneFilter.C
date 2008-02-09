@@ -204,7 +204,7 @@ avtInverseGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtInverseGhostZoneFilter::RefashionDataObjectInfo
+//  Method: avtInverseGhostZoneFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicates the zones no longer correspond to the original problem.
@@ -217,7 +217,7 @@ avtInverseGhostZoneFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtInverseGhostZoneFilter::RefashionDataObjectInfo(void)
+avtInverseGhostZoneFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
 }

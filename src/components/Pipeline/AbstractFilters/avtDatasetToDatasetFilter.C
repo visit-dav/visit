@@ -217,7 +217,7 @@ avtDatasetToDatasetFilter::PostExecute(void)
 
 
 // ****************************************************************************
-//  Method: avtDatasetToDatasetFilter::ExamineSpecification
+//  Method: avtDatasetToDatasetFilter::ExamineContract
 //
 //  Purpose:
 //      If we need to switch the active variable, then we need to know what
@@ -241,9 +241,9 @@ avtDatasetToDatasetFilter::PostExecute(void)
 // ****************************************************************************
 
 void
-avtDatasetToDatasetFilter::ExamineSpecification(avtPipelineSpecification_p s)
+avtDatasetToDatasetFilter::ExamineContract(avtContract_p s)
 {
-    avtDataSpecification_p ds = s->GetDataSpecification();
+    avtDataRequest_p ds = s->GetDataRequest();
 
     // 
     // We need to know what the pipeline variable is so we can switch it
@@ -285,13 +285,13 @@ avtDatasetToDatasetFilter::ExamineSpecification(avtPipelineSpecification_p s)
         {
             ds->AddSecondaryVariable(activeVariable);
             removeActiveVariableWhenDone = true;
-            debug5 << GetType() << ": ExamineSpecification: Setting primary "
+            debug5 << GetType() << ": ExamineContract: Setting primary "
                    << "variable " << activeVariable 
                    << " to be removed at PostExecute." << endl;
         } else
         {
             removeActiveVariableWhenDone = false;
-            debug5 << GetType() << ": ExamineSpecification: Leaving primary "
+            debug5 << GetType() << ": ExamineContract: Leaving primary "
                    << "variable " << activeVariable 
                    << " where it is at PostExecute." << endl;
         }
@@ -320,13 +320,13 @@ avtDatasetToDatasetFilter::ExamineSpecification(avtPipelineSpecification_p s)
         {
             ds->AddSecondaryVariable(secondaryVarList[i]);
             removeSecondaryVariable[i] = true;
-            debug5 << GetType() << ": ExamineSpecification: Setting secondary "
+            debug5 << GetType() << ": ExamineContract: Setting secondary "
                    << "variable " << secondaryVarList[i] 
                    << " to be removed at PostExecute." << endl;
         } else
         {
             removeSecondaryVariable[i] = false;
-            debug5 << GetType() << ": ExamineSpecification: Leaving secondary "
+            debug5 << GetType() << ": ExamineContract: Leaving secondary "
                    << "variable " << secondaryVarList[i] 
                    << " where it is at PostExecute." << endl;
         }

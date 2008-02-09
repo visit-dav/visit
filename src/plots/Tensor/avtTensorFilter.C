@@ -258,7 +258,7 @@ avtTensorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtTensorFilter::RefashionDataObjectInfo
+//  Method: avtTensorFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that the vector are of dimension 0.
@@ -280,7 +280,7 @@ avtTensorFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 // ****************************************************************************
 
 void
-avtTensorFilter::RefashionDataObjectInfo(void)
+avtTensorFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
@@ -326,7 +326,7 @@ avtTensorFilter::ReleaseData(void)
 
 
 // ****************************************************************************
-//  Method: avtTensorFilter::PerformRestriction
+//  Method: avtTensorFilter::ModifyContract
 //
 //  Purpose:  
 //    Request original nodes/zones when appropriate. 
@@ -338,13 +338,13 @@ avtTensorFilter::ReleaseData(void)
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtTensorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
+avtContract_p
+avtTensorFilter::ModifyContract(avtContract_p contract)
 {
-    avtPipelineSpecification_p rv = pspec;
+    avtContract_p rv = contract;
 
-    if (pspec->GetDataSpecification()->MayRequireZones() || 
-        pspec->GetDataSpecification()->MayRequireNodes())
+    if (contract->GetDataRequest()->MayRequireZones() || 
+        contract->GetDataRequest()->MayRequireNodes())
     {
         avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
         keepNodeZone = true;
@@ -352,19 +352,19 @@ avtTensorFilter::PerformRestriction(avtPipelineSpecification_p pspec)
         {
             if (data.GetCentering() == AVT_NODECENT)
             {
-                rv->GetDataSpecification()->TurnNodeNumbersOn();
+                rv->GetDataRequest()->TurnNodeNumbersOn();
             }
             else if (data.GetCentering() == AVT_ZONECENT)
             {
-                rv->GetDataSpecification()->TurnZoneNumbersOn();
+                rv->GetDataRequest()->TurnZoneNumbersOn();
             }
         }
         else 
         {
             // canot determine variable centering, so turn on both
             // node numbers and zone numbers.
-            rv->GetDataSpecification()->TurnNodeNumbersOn();
-            rv->GetDataSpecification()->TurnZoneNumbersOn();
+            rv->GetDataRequest()->TurnNodeNumbersOn();
+            rv->GetDataRequest()->TurnZoneNumbersOn();
         }
     }
     else

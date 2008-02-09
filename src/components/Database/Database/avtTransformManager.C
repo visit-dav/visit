@@ -604,7 +604,7 @@ IsInternalAVTArray(vtkDataArray *da)
 // ****************************************************************************
 //  Function: DestructDspec
 //
-//  Purpose: To support caching of avtDataSpecification objects 
+//  Purpose: To support caching of avtDataRequest objects 
 //
 //  Programmer: Mark C. Miller 
 //  Creation:   December 4, 2006 
@@ -613,8 +613,8 @@ IsInternalAVTArray(vtkDataArray *da)
 static void
 DestructDspec(void *p)
 {
-    avtDataSpecification *dspec = (avtDataSpecification *) p;
-    delete dspec;
+    avtDataRequest *dataRequest = (avtDataRequest *) p;
+    delete dataRequest;
 }
 
 avtTransformManager::avtTransformManager(avtVariableCache *_gdbCache) :
@@ -658,7 +658,7 @@ avtTransformManager::FreeUpResources(int lastts)
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
-    const avtDataSpecification_p &dspec, vtkDataSet *ds)
+    const avtDataRequest_p &dataRequest, vtkDataSet *ds)
 {
     if (!ds)
         return 0;
@@ -668,10 +668,10 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 
     bool needNativePrecision;
     vector<int> admissibleDataTypes;
-    if (*dspec)
+    if (*dataRequest)
     {
-        needNativePrecision = dspec->NeedNativePrecision();
-        admissibleDataTypes = dspec->GetAdmissibleDataTypes();
+        needNativePrecision = dataRequest->NeedNativePrecision();
+        admissibleDataTypes = dataRequest->GetAdmissibleDataTypes();
     }
     else
     {
@@ -902,7 +902,7 @@ avtTransformManager::NativeToFloat(const avtDatabaseMetaData *const md,
 // ****************************************************************************
 vtkDataSet *
 avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
-    const avtDataSpecification_p &dspec, vtkDataSet *ds)
+    const avtDataRequest_p &dataRequest, vtkDataSet *ds)
 {
 #ifndef PARALLEL
     const int rank = 0;
@@ -938,13 +938,13 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
             vtkDataSet *dgrid = (vtkDataSet *) cache.GetVTKObject(vname, type, ts, dom, mat);
             if (dgrid)
             {
-                void_ref_ptr vrdspec = cache.GetVoidRef(vname,
+                void_ref_ptr vrdataRequest = cache.GetVoidRef(vname,
                                            avtVariableCache::DATA_SPECIFICATION, ts, dom);
-                avtDataSpecification *olddspec = (avtDataSpecification *) *vrdspec;
-                if ((olddspec->DiscBoundaryOnly() != dspec->DiscBoundaryOnly()) ||
-                    (olddspec->DiscTol() != dspec->DiscTol()) ||
-                    (olddspec->FlatTol() != dspec->FlatTol()) ||
-                    (olddspec->DiscMode() != dspec->DiscMode()))
+                avtDataRequest *olddataRequest = (avtDataRequest *) *vrdataRequest;
+                if ((olddataRequest->DiscBoundaryOnly() != dataRequest->DiscBoundaryOnly()) ||
+                    (olddataRequest->DiscTol() != dataRequest->DiscTol()) ||
+                    (olddataRequest->FlatTol() != dataRequest->FlatTol()) ||
+                    (olddataRequest->DiscMode() != dataRequest->DiscMode()))
                     dgrid = 0;
 	        debug5 << "Found discretized CSG grid in cache" << endl;
             }
@@ -954,31 +954,31 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
 
                 vtkCSGGrid *csgmesh = vtkCSGGrid::SafeDownCast(ds);
                 const double *bnds = csgmesh->GetBounds();
-                if (dspec->DiscBoundaryOnly())
+                if (dataRequest->DiscBoundaryOnly())
                 {
                     dgrid = (vtkDataSet *) csgmesh->DiscretizeSurfaces(csgreg,
-                                                     dspec->DiscTol(),
+                                                     dataRequest->DiscTol(),
                                                      bnds[0], bnds[1], bnds[2],
                                                      bnds[3], bnds[4], bnds[5]);
                 }
-                else if (dspec->DiscMode() == 1)
+                else if (dataRequest->DiscMode() == 1)
                 {
                     dgrid = csgmesh->DiscretizeSpace3(csgreg, rank, nprocs,
-                                                     dspec->DiscTol(), dspec->FlatTol(),
+                                                     dataRequest->DiscTol(), dataRequest->FlatTol(),
                                                      bnds[0], bnds[1], bnds[2],
                                                      bnds[3], bnds[4], bnds[5]);
                 }
                 else
                 {
-                    dgrid = csgmesh->DiscretizeSpace(csgreg, dspec->DiscTol(),
+                    dgrid = csgmesh->DiscretizeSpace(csgreg, dataRequest->DiscTol(),
                                                      bnds[0], bnds[1], bnds[2],
                                                      bnds[3], bnds[4], bnds[5]);
                 }
                 dgrid->Update();
                 cache.CacheVTKObject(vname, type, ts, dom, mat, dgrid);
                 dgrid->Delete();
-                avtDataSpecification *newdspec = new avtDataSpecification(dspec);
-                const void_ref_ptr vr = void_ref_ptr(newdspec, DestructDspec);
+                avtDataRequest *newdataRequest = new avtDataRequest(dataRequest);
+                const void_ref_ptr vr = void_ref_ptr(newdataRequest, DestructDspec);
                 cache.CacheVoidRef(vname, avtVariableCache::DATA_SPECIFICATION,
                     ts, dom, vr);
             }
@@ -1043,7 +1043,7 @@ avtTransformManager::CSGToDiscrete(const avtDatabaseMetaData *const md,
 // ****************************************************************************
 bool
 avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const md,
-    const avtDataSpecification_p &dspec, avtMaterial **mat)
+    const avtDataRequest_p &dataRequest, avtMaterial **mat)
 {
     const char *vname, *type;
     int ts, dom;
@@ -1081,7 +1081,7 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
             {
                 EXCEPTION1(PointerNotInCacheException, ds);
             }
-            ds = CSGToDiscrete(md, dspec, ds);
+            ds = CSGToDiscrete(md, dataRequest, ds);
         }
 
         // see if we already have transformed avtMaterial result cached
@@ -1155,7 +1155,7 @@ avtTransformManager::TransformMaterialDataset(const avtDatabaseMetaData *const m
 // ****************************************************************************
 bool
 avtTransformManager::TransformDataset(avtDatasetCollection &dsc,
-    intVector &domains, avtDataSpecification_p &d_spec,
+    intVector &domains, avtDataRequest_p &d_spec,
     avtSourceFromDatabase *src, boolVector &selectionsApplied,
     avtDatabaseMetaData *md)
 {

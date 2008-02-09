@@ -43,7 +43,7 @@
 
 #include <avtLabelSubsetsFilter.h>
 #include <avtDataAttributes.h>
-#include <avtTerminatingSource.h>
+#include <avtOriginatingSource.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -275,7 +275,7 @@ avtLabelSubsetsFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
 
 
 // ****************************************************************************
-//  Method: avtLabelSubsetsFilter::PerformRestriction
+//  Method: avtLabelSubsetsFilter::ModifyContract
 //
 //  Purpose:  Turn on domain labels in the data spec if needed.
 //
@@ -286,11 +286,11 @@ avtLabelSubsetsFilter::ExecuteDataTree(vtkDataSet *in_ds, int domain, string lab
 //
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtLabelSubsetsFilter::PerformRestriction(avtPipelineSpecification_p spec)
+avtContract_p
+avtLabelSubsetsFilter::ModifyContract(avtContract_p spec)
 {
     if(needMIR)
-        spec->GetDataSpecification()->ForceMaterialInterfaceReconstructionOn();
+        spec->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
 
     return spec;
 }

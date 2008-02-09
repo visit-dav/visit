@@ -247,7 +247,7 @@ avtCylinderFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 
 
 // ****************************************************************************
-//  Method: avtCylinderFilter::RefashionDataObjectInfo
+//  Method: avtCylinderFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Changes to topological dimension of the output to be one less that the
@@ -263,7 +263,7 @@ avtCylinderFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 // ****************************************************************************
 
 void
-avtCylinderFilter::RefashionDataObjectInfo(void)
+avtCylinderFilter::UpdateDataObjectInfo(void)
 {
     avtDataAttributes &inAtts      = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes &outAtts     = GetOutput()->GetInfo().GetAttributes();

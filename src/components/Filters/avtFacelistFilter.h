@@ -91,7 +91,7 @@ class   avtMultiFacelist;
 //    Removed unused data member f2d.
 //
 //    Hank Childs, Wed Aug 11 09:46:53 PDT 2004
-//    Added PerformRestriction.
+//    Added ModifyContract.
 //
 //    Kathleen Bonnell, Fri Feb 18 11:13:16 PST 2005 
 //    Added ConvertToPolys. 
@@ -149,9 +149,9 @@ class AVTFILTERS_API avtFacelistFilter : public avtDataTreeStreamer
 
     virtual void                         InitializeFilter(void);
 
-    virtual void                         RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p   PerformRestriction(
-                                                   avtPipelineSpecification_p);
+    virtual void                         UpdateDataObjectInfo(void);
+    virtual avtContract_p   ModifyContract(
+                                                   avtContract_p);
     virtual bool                        FilterUnderstandsTransformedRectMesh();
 };
 

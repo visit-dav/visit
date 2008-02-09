@@ -160,7 +160,7 @@ avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
 
 
 // ****************************************************************************
-//  Method: avtWarpFilter::RefashionDataObjectInfo
+//  Method: avtWarpFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Indicate that the vector are of dimension 0.
@@ -173,7 +173,7 @@ avtWarpFilter::ExecuteData(vtkDataSet *inDS, int, string)
 // ****************************************************************************
 
 void
-avtWarpFilter::RefashionDataObjectInfo(void)
+avtWarpFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(0);
@@ -184,7 +184,7 @@ avtWarpFilter::RefashionDataObjectInfo(void)
 
 
 // ****************************************************************************
-//  Method: avtWarpFilter::PerformRestriction
+//  Method: avtWarpFilter::ModifyContract
 //
 //  Purpose:  Create an expression for the magnitude of the requested
 //            vector variable, so that the vectors are colored correctly.
@@ -196,10 +196,10 @@ avtWarpFilter::RefashionDataObjectInfo(void)
 // 
 // ****************************************************************************
 
-avtPipelineSpecification_p
-avtWarpFilter::PerformRestriction(avtPipelineSpecification_p pspec)
+avtContract_p
+avtWarpFilter::ModifyContract(avtContract_p contract)
 {
-    return pspec;
+    return contract;
 }
 
 

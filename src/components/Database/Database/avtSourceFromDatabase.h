@@ -45,7 +45,7 @@
 #include <database_exports.h>
 
 
-#include <avtTerminatingDatasetSource.h>
+#include <avtOriginatingDatasetSource.h>
 #include <avtDataTree.h>
 
 
@@ -71,7 +71,7 @@ class  PickAttributes;
 //    Made FetchDomain return an avtDomain.
 //
 //    Kathleen Bonnell, Tue Dec 19 09:06:23 PST 2000 
-//    Renamed avtTerminatingSource as avtTerminatingDatasetSource. 
+//    Renamed avtOriginatingSource as avtOriginatingDatasetSource. 
 //
 //    Kathleen Bonnell, Fri Feb  9 16:38:40 PST 2001 
 //    Made FetchDomain return avtDomainTree_p. 
@@ -125,7 +125,7 @@ class  PickAttributes;
 //
 // ****************************************************************************
 
-class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
+class DATABASE_API avtSourceFromDatabase : public avtOriginatingDatasetSource
 {
   public:
                         avtSourceFromDatabase(avtDatasetDatabase *, 
@@ -133,18 +133,18 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     virtual            ~avtSourceFromDatabase();
 
     virtual void        FetchMeshAuxiliaryData(const char *type, void *args,
-                                        avtDataSpecification_p, VoidRefList &);
+                                        avtDataRequest_p, VoidRefList &);
     virtual void        FetchVariableAuxiliaryData(const char *type,
-                            void *args, avtDataSpecification_p, VoidRefList &);
+                            void *args, avtDataRequest_p, VoidRefList &);
     virtual void        FetchMaterialAuxiliaryData(const char *type, 
-                            void *args, avtDataSpecification_p, VoidRefList &);
+                            void *args, avtDataRequest_p, VoidRefList &);
     virtual void        FetchSpeciesAuxiliaryData(const char *type, 
-                            void *args, avtDataSpecification_p, VoidRefList &);
+                            void *args, avtDataRequest_p, VoidRefList &);
 
     avtSIL             *GetSIL(int stateIndex);
 
-    virtual avtDataSpecification_p
-                        GetFullDataSpecification(void);
+    virtual avtDataRequest_p
+                        GetFullDataRequest(void);
 
     void                InvalidateZones(void);
     void                DatabaseProgress(int, int, const char *);
@@ -162,10 +162,10 @@ class DATABASE_API avtSourceFromDatabase : public avtTerminatingDatasetSource
     avtDatasetDatabase      *database;
     char                    *variable;
     int                      timestep;
-    avtDataSpecification_p   lastSpec;
+    avtDataRequest_p   lastSpec;
 
-    virtual bool        FetchDataset(avtDataSpecification_p, avtDataTree_p &);
-    virtual int         NumStagesForFetch(avtDataSpecification_p);
+    virtual bool        FetchDataset(avtDataRequest_p, avtDataTree_p &);
+    virtual int         NumStagesForFetch(avtDataRequest_p);
 };
 
 

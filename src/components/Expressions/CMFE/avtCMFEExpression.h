@@ -117,7 +117,7 @@ class EXPRESSION_API avtCMFEExpression : public avtExpressionFilter
     virtual avtDataTree_p     PerformCMFE(avtDataTree_p, avtDataTree_p,
                                           const std::string &, 
                                           const std::string &) = 0;
-    virtual void              ExamineSpecification(avtPipelineSpecification_p);
+    virtual void              ExamineContract(avtContract_p);
     virtual bool              UseIdenticalSIL(void) { return false; };
     virtual bool              HasDefaultVariable(void) { return false; };
     int                       GetTimestate(ref_ptr<avtDatabase>);

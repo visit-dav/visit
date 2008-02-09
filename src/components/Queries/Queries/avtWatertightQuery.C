@@ -132,8 +132,8 @@ avtWatertightQuery::VerifyInput()
 avtDataObject_p 
 avtWatertightQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtPipelineSpecification_p pspec =
-        inData->GetTerminatingSource()->GetGeneralPipelineSpecification();
+    avtContract_p contract =
+        inData->GetOriginatingSource()->GetGeneralContract();
 
     //
     // Create an artificial pipeline.
@@ -144,7 +144,7 @@ avtWatertightQuery::ApplyFilters(avtDataObject_p inData)
     avtDataObject_p dob = termsrc.GetOutput();
     external_nodes->SetInput(dob);
     avtDataObject_p objOut = external_nodes->GetOutput();
-    objOut->Update(pspec);
+    objOut->Update(contract);
     return objOut;
 }
 

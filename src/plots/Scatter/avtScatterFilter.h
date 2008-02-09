@@ -57,7 +57,7 @@
 //
 //  Modifications:
 //    Brad Whitlock, Mon Jul 18 11:53:27 PDT 2005
-//    Added overrides of PreExecute, PerformRestriction, and added new 
+//    Added overrides of PreExecute, ModifyContract, and added new 
 //    method PopulateDataInputs. Also added extents members.
 //
 // ****************************************************************************
@@ -98,9 +98,9 @@ protected:
 
     virtual void               PreExecute(void);
     virtual vtkDataSet        *ExecuteData(vtkDataSet *, int, std::string);
-    virtual void               RefashionDataObjectInfo(void);
-    virtual avtPipelineSpecification_p     
-                               PerformRestriction(avtPipelineSpecification_p spec);
+    virtual void               UpdateDataObjectInfo(void);
+    virtual avtContract_p     
+                               ModifyContract(avtContract_p spec);
     vtkDataArray              *GetDataArray(vtkDataSet *inDS,
                                             const std::string &name,
                                             avtCentering targetCentering,

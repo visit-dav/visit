@@ -734,7 +734,7 @@ avtTopologyFilter::GetLocalGradient(int which, vtkDataSet *in_ds,
 
 
 // ****************************************************************************
-//  Method: avtTopologyFilter::RefashionDataObjectInfo
+//  Method: avtTopologyFilter::UpdateDataObjectInfo
 //
 //  Purpose:
 //      Allows the filter to change its output's data object information, which
@@ -746,7 +746,7 @@ avtTopologyFilter::GetLocalGradient(int which, vtkDataSet *in_ds,
 // ****************************************************************************
 
 void
-avtTopologyFilter::RefashionDataObjectInfo(void)
+avtTopologyFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetAttributes().SetTopologicalDimension(1);
