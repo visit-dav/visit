@@ -77,7 +77,7 @@ push @files, get_norecursive  "./lib";
 push @files, get_norecursive  "./help";
 push @files, get_recursive    "./archives";
 push @files, get_recursive    "./plugins";
-push @files, get_recursive    "./clearcase_bin";
+push @files, get_recursive    "./svn_bin";
 push @files, get_recursive    "./config-site";
 push @files, get_recursive    "./cqscore";
 push @files, get_recursive    "./third_party_builtin";

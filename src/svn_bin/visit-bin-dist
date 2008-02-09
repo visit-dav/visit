@@ -324,6 +324,10 @@
 #    default guiconfig and visitrc as well and add symbolic links as
 #    necessary. If no "-configuration" option is specified then default to
 #    the "open" configuration as before.
+#
+#    Hank Childs, Sat Feb  9 14:18:54 PST 2008
+#    Change clearcase_bin to svn_bin.
+#
 #------------------------------------------------------------------------------
 
 set DataFiles = "TRUE"
@@ -1236,7 +1240,7 @@ cp $VisItDir/include/python/*.h                 $incdir/python
 cp $VisItDir/include/qt/[a-pr-zA-Z]*.h          $incdir/qt
 cp $VisItDir/include/qt/q[a-l]*.h               $incdir/qt
 cp $VisItDir/include/qt/q[m-zA-Z]*.h            $incdir/qt
-cp $VisItDir/clearcase_bin/QTLICENSE.*          $incdir/qt
+cp $VisItDir/svn_bin/QTLICENSE.*          $incdir/qt
 cp $VisItDir/include/qt/private/*.h             $incdir/qt/private
 
 #
@@ -1300,11 +1304,11 @@ endif
 # Copy the configuration files.
 #
 mkdir $verdir/.visit
-cp $VisItDir/clearcase_bin/visit-config-closed $verdir/.visit
-cp $VisItDir/clearcase_bin/visit-config-nersc  $verdir/.visit
-cp $VisItDir/clearcase_bin/visit-config-open   $verdir/.visit
-cp $VisItDir/clearcase_bin/visit-config-ornl   $verdir/.visit
-cp $VisItDir/clearcase_bin/visit-config-anag   $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-closed $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-nersc  $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-open   $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-ornl   $verdir/.visit
+cp $VisItDir/svn_bin/visit-config-anag   $verdir/.visit
 if (-e $verdir/.visit/visit-config-$Configuration) then
     ln -s visit-config-$Configuration $verdir/.visit/config
 endif
@@ -1312,7 +1316,7 @@ endif
 #
 # Copy the guiconfig files
 #
-cp $VisItDir/clearcase_bin/visit-guiconfig-anag $verdir/.visit
+cp $VisItDir/svn_bin/visit-guiconfig-anag $verdir/.visit
 if (-e $verdir/.visit/visit-guiconfig-$Configuration) then
     ln -s visit-guiconfig-$Configuration $verdir/.visit/guiconfig
 endif
@@ -1320,7 +1324,7 @@ endif
 #
 # Copy the visitrc files.
 #
-cp $VisItDir/clearcase_bin/visit-visitrc-anag   $verdir/.visit
+cp $VisItDir/svn_bin/visit-visitrc-anag   $verdir/.visit
 if (-e $verdir/.visit/visit-visitrc-$Configuration) then
     ln -s visit-visitrc-$Configuration $verdir/.visit/visitrc
 endif
