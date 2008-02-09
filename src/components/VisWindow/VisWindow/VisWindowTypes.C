@@ -99,3 +99,64 @@ INTERACTION_MODE_FromString(const std::string &s, INTERACTION_MODE &m)
 
     return false;
 }
+
+// ****************************************************************************
+// Class: VisWinTextAttributes
+//
+// Purpose:
+//   Simple text attributes class that we can use.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 29 16:35:07 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+VisWinTextAttributes::VisWinTextAttributes()
+{
+    font = Arial;
+    height = 0.02;
+    useForegroundColor = true;
+    color[0] = 0.f;
+    color[1] = 0.f;
+    color[2] = 0.f;
+    color[3] = 1.f;
+    bold = false;
+    italic = false;
+}
+
+VisWinTextAttributes::VisWinTextAttributes(const VisWinTextAttributes &obj)
+{
+    font = obj.font;
+    height = obj.height;
+    useForegroundColor = obj.useForegroundColor;
+    color[0] = obj.color[0];
+    color[1] = obj.color[1];
+    color[2] = obj.color[2];
+    color[3] = obj.color[3];
+    bold = obj.bold;
+    italic = obj.italic;
+}
+
+VisWinTextAttributes::~VisWinTextAttributes()
+{
+}
+
+VisWinTextAttributes
+VisWinTextAttributes::operator = (const VisWinTextAttributes &obj)
+{
+    font = obj.font;
+    height = obj.height;
+    useForegroundColor = obj.useForegroundColor;
+    color[0] = obj.color[0];
+    color[1] = obj.color[1];
+    color[2] = obj.color[2];
+    color[3] = obj.color[3];
+    bold = obj.bold;
+    italic = obj.italic;
+    return *this;
+}
+

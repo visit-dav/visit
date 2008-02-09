@@ -270,6 +270,10 @@
 #    Jeremy Meredith, Fri Jan 18 11:12:10 EST 2008
 #    Added FileOpenOptions.
 #
+#    Brad Whitlock, Fri Jan 25 11:32:58 PST 2008
+#    Broke up AnnotationAttributes into Axes2D, Axes3D, AxisAttributes
+#    AxisLabels, AxisTickMarks, AxisTitles, FontAttributes.
+#
 #    Jeremy Meredith, Thu Jan 31 14:56:06 EST 2008
 #    Added attributes for new axis array window mode.
 #
@@ -295,10 +299,16 @@ SRC=    AnimationAttributes.C \
         AnnotationObject.C \
         AnnotationObjectList.C \
         AppearanceAttributes.C \
-        AxisRestrictionAttributes.C \
         AttributeGroup.C \
         AttributeSubject.C \
         AttributeSubjectMap.C \
+        Axes2D.C \
+        Axes3D.C \
+        AxisAttributes.C \
+        AxisLabels.C \
+        AxisRestrictionAttributes.C \
+        AxisTickMarks.C \
+        AxisTitles.C \
         BoxExtents.C \
         ClientInformation.C \
         ClientInformationList.C \
@@ -325,6 +335,7 @@ SRC=    AnimationAttributes.C \
         ExpressionList.C \
         ExtentsAttributes.C \
         FileOpenOptions.C \
+        FontAttributes.C \
         GaussianControlPoint.C \
         GaussianControlPointList.C \
         GlobalAttributes.C \

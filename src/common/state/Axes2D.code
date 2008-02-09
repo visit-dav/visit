@@ -1,0 +1,5 @@
+Initialization: xAxis
+    xAxis.GetTitle().SetTitle("X-Axis");
+
+Initialization: yAxis
+    yAxis.GetTitle().SetTitle("Y-Axis");

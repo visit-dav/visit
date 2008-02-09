@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+  <Attribute name="AxisLabels" purpose="Contains the label properties for one axis." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="visible" label="Visible" type="bool">
+      true
+    </Field>
+    <Field name="font" label="Font" type="att" subtype="FontAttributes">
+    </Field>
+    <Field name="scaling" label="Scaling" type="int">
+      0
+    </Field>
+  </Attribute>

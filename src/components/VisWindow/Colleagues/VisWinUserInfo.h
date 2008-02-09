@@ -81,6 +81,9 @@ class VisWindowColleagueProxy;
 //    Brad Whitlock, Wed Oct 29 08:46:49 PDT 2003
 //    Added UpdateUserText method. Added override of UpdatePlotList method.
 //
+//    Brad Whitlock, Wed Jan 30 15:14:50 PST 2008
+//    Added SetTextAttributes.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinUserInfo : public VisWinColleague
@@ -96,16 +99,21 @@ class VISWINDOW_API VisWinUserInfo : public VisWinColleague
     virtual void         UpdatePlotList(std::vector<avtActor_p> &);
 
     void                 SetVisibility(bool);
+    void                 SetTextAttributes(const VisWinTextAttributes &textAtts);
 
   protected:
     vtkTextActor        *infoActor;
     char                *infoString;
+    VisWinTextAttributes textAttributes;
 
     bool                 addedUserInfo;
 
     void                 AddToWindow(void);
     void                 RemoveFromWindow(void);
     void                 UpdateUserText();
+
+    static const float   defaultUserInfoHeight;
+    static const float   defaultUserInfoWidth;
 };
 
 

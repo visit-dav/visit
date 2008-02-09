@@ -84,6 +84,9 @@ class     vtkTextActor;
 //    Added explicit pass of the database name to easily support path
 //    expansion modes.
 //
+//    Brad Whitlock, Tue Jan 29 16:16:14 PST 2008
+//    Added SetDatabaseInfoTextAttributes.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinLegends : public VisWinColleague
@@ -98,11 +101,15 @@ class VISWINDOW_API VisWinLegends : public VisWinColleague
     void                          SetVisibility(bool db,
                                                 int path_exp_mode,
                                                 bool legend);
+    void                          SetDatabaseInfoTextAttributes(
+                                      const VisWinTextAttributes &);
 
   protected:
     vtkTextActor                 *dbInfoActor;
     bool                          dbInfoIsAdded;
-    bool                          mainDBInfoVisible;
+    bool                          dbInfoVisible;
+    VisWinTextAttributes          dbInfoTextAttributes;
+
     int                           pathExpansionMode;
     bool                          legendVisible;
     bool                          homogeneous;

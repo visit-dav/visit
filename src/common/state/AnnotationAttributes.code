@@ -1,3 +1,9 @@
+Initialization: databaseInfoFont
+    databaseInfoFont.SetHeight(0.07);
+
+Initialization: userInfoFont
+    userInfoFont.SetHeight(0.05);
+
 Function: GetDiscernibleBackgroundColor
 Declaration: const ColorAttribute GetDiscernibleBackgroundColor() const;
 Definition:

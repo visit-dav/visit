@@ -65,6 +65,7 @@
 
 #include <AnnotationObjectList.h>
 #include <ColorAttribute.h>
+#include <FontAttributes.h>
 #include <LineAttributes.h>
 #include <ExtentsAttributes.h>
 
@@ -103,7 +104,7 @@ using std::vector;
 //
 
 static void      start_render(vtkObject *, unsigned long, void*, void *);
-
+static VisWinTextAttributes FontAttributes_To_VisWinTextAttributes(const FontAttributes &);
 
 // ****************************************************************************
 //  Method: VisWindow constructor
@@ -2262,7 +2263,7 @@ VisWindow::StartBoundingBox(void)
 void
 VisWindow::EndBoundingBox(void)
 {
-    axes3D->SetBBoxVisibility(annotationAtts.GetBboxFlag());
+    axes3D->SetBBoxVisibility(annotationAtts.GetAxes3D().GetBboxFlag());
     plots->EndBoundingBox();
     queries->EndBoundingBox();
 }
@@ -3891,116 +3892,124 @@ VisWindow::GetLightList() const
 //   Brad Whitlock, Thu Jul 28 08:40:31 PDT 2005
 //   Added ability to set axis titles and units.
 //
+//   Brad Whitlock, Fri Jan 25 16:10:43 PST 2008
+//   Made it use new AnnotationAttributes.
+//
 // ****************************************************************************
 
 void
 VisWindow::UpdateAxes2D()
 {
+    const Axes2D &axis2D = annotationAtts.GetAxes2D();
+
     //
     // Axes visibility
     //
-    axes->SetVisibility(annotationAtts.GetAxesFlag2D());
-    frame->SetVisibility(annotationAtts.GetAxesFlag2D());
+    axes->SetVisibility(axis2D.GetVisible());
+    frame->SetVisibility(axis2D.GetVisible());
 
     //
     // Labels
     //
-    int xLabel = annotationAtts.GetXAxisLabels2D();
-    int yLabel = annotationAtts.GetYAxisLabels2D();
+    int xLabel = axis2D.GetXAxis().GetLabel().GetVisible()?1:0;
+    int yLabel = axis2D.GetYAxis().GetLabel().GetVisible()?1:0;
     axes->SetLabelsVisibility(xLabel, yLabel);
 
-    axes->SetLabelScaling(annotationAtts.GetLabelAutoSetScaling2D(), 
-                          annotationAtts.GetXLabelScaling2D(),
-                          annotationAtts.GetYLabelScaling2D());
+    axes->SetLabelScaling(axis2D.GetAutoSetScaling(), 
+                          axis2D.GetXAxis().GetLabel().GetScaling(),
+                          axis2D.GetYAxis().GetLabel().GetScaling());
 
     //
     // Titles
     //
-    axes->SetTitleVisibility(annotationAtts.GetXAxisTitle2D(),
-                             annotationAtts.GetYAxisTitle2D());
-    axes->SetXTitle(annotationAtts.GetXAxisUserTitle2D(),
-                    annotationAtts.GetXAxisUserTitleFlag2D());
-    axes->SetXUnits(annotationAtts.GetXAxisUserUnits2D(),
-                    annotationAtts.GetXAxisUserUnitsFlag2D());
-    axes->SetYTitle(annotationAtts.GetYAxisUserTitle2D(),
-                    annotationAtts.GetYAxisUserTitleFlag2D());
-    axes->SetYUnits(annotationAtts.GetYAxisUserUnits2D(),
-                    annotationAtts.GetYAxisUserUnitsFlag2D());
+    axes->SetTitleVisibility(axis2D.GetXAxis().GetTitle().GetVisible(),
+                             axis2D.GetYAxis().GetTitle().GetVisible());
+    axes->SetXTitle(axis2D.GetXAxis().GetTitle().GetTitle(),
+                    axis2D.GetXAxis().GetTitle().GetUserTitle());
+    axes->SetXUnits(axis2D.GetXAxis().GetTitle().GetUnits(),
+                    axis2D.GetXAxis().GetTitle().GetUserUnits());
+    axes->SetYTitle(axis2D.GetYAxis().GetTitle().GetTitle(),
+                    axis2D.GetYAxis().GetTitle().GetUserTitle());
+    axes->SetYUnits(axis2D.GetYAxis().GetTitle().GetUnits(),
+                    axis2D.GetYAxis().GetTitle().GetUserUnits());
 
     //
     // GridLines
     //
-    axes->SetXGridVisibility(annotationAtts.GetXGridLines2D());
-    axes->SetYGridVisibility(annotationAtts.GetYGridLines2D());
+    axes->SetXGridVisibility(axis2D.GetXAxis().GetGrid());
+    axes->SetYGridVisibility(axis2D.GetYAxis().GetGrid());
 
     //
     // Ticks
     //
-    switch (annotationAtts.GetAxesTicks2D())
+    int xTicks = xLabel; //axis2D.GetXAxis().GetTickMarks().GetVisible()?1:0; // for now...
+    int yTicks = yLabel; //axis2D.GetYAxis().GetTickMarks().GetVisible()?1:0;
+    switch (axis2D.GetTickAxes())
     {
-        case 0 : // off 
-                 axes->SetXTickVisibility(0, xLabel); 
-                 axes->SetYTickVisibility(0, yLabel); 
+        case Axes2D::Off : // off 
+                 axes->SetXTickVisibility(0, xTicks); 
+                 axes->SetYTickVisibility(0, yTicks); 
                  frame->SetTopRightTickVisibility(0); 
                  break;
-        case 1 : // bottom 
-                 axes->SetXTickVisibility(1, xLabel); 
-                 axes->SetYTickVisibility(0, yLabel); 
+        case Axes2D::Bottom : // bottom 
+                 axes->SetXTickVisibility(1, xTicks); 
+                 axes->SetYTickVisibility(0, yTicks); 
                  frame->SetTopRightTickVisibility(0); 
                  break;
-        case 2 : // left
-                 axes->SetXTickVisibility(0, xLabel); 
-                 axes->SetYTickVisibility(1, yLabel); 
+        case Axes2D::Left : // left
+                 axes->SetXTickVisibility(0, xTicks); 
+                 axes->SetYTickVisibility(1, yTicks); 
                  frame->SetTopRightTickVisibility(0); 
                  break;
-        case 3 : //bottom-left
-                 axes->SetXTickVisibility(1, xLabel);
-                 axes->SetYTickVisibility(1, yLabel); 
+        case Axes2D::BottomLeft : //bottom-left
+                 axes->SetXTickVisibility(1, xTicks);
+                 axes->SetYTickVisibility(1, yTicks); 
                  frame->SetTopRightTickVisibility(0); 
                  break;
-        case 4 : //all
-                 axes->SetXTickVisibility(1, xLabel); 
-                 axes->SetYTickVisibility(1, yLabel); 
+        case Axes2D::All : //all
+                 axes->SetXTickVisibility(1, xTicks); 
+                 axes->SetYTickVisibility(1, yTicks); 
                  frame->SetTopRightTickVisibility(1); 
                  break;
     }
-    axes->SetTickLocation(annotationAtts.GetAxesTickLocation2D());
-    frame->SetTickLocation(annotationAtts.GetAxesTickLocation2D());
+    axes->SetTickLocation(axis2D.GetTickLocation());
+    frame->SetTickLocation(axis2D.GetTickLocation());
 
-    axes->SetAutoSetTicks(annotationAtts.GetAxesAutoSetTicks2D());
-    axes->SetMajorTickMinimum(annotationAtts.GetXMajorTickMinimum2D(),
-                              annotationAtts.GetYMajorTickMinimum2D());
-    axes->SetMajorTickMaximum(annotationAtts.GetXMajorTickMaximum2D(),
-                              annotationAtts.GetYMajorTickMaximum2D());
-    axes->SetMajorTickSpacing(annotationAtts.GetXMajorTickSpacing2D(),
-                              annotationAtts.GetYMajorTickSpacing2D());
-    axes->SetMinorTickSpacing(annotationAtts.GetXMinorTickSpacing2D(),
-                              annotationAtts.GetYMinorTickSpacing2D());
-    frame->SetAutoSetTicks(annotationAtts.GetAxesAutoSetTicks2D());
-    frame->SetMajorTickMinimum(annotationAtts.GetXMajorTickMinimum2D(),
-                               annotationAtts.GetYMajorTickMinimum2D());
-    frame->SetMajorTickMaximum(annotationAtts.GetXMajorTickMaximum2D(),
-                               annotationAtts.GetYMajorTickMaximum2D());
-    frame->SetMajorTickSpacing(annotationAtts.GetXMajorTickSpacing2D(),
-                               annotationAtts.GetYMajorTickSpacing2D());
-    frame->SetMinorTickSpacing(annotationAtts.GetXMinorTickSpacing2D(),
-                               annotationAtts.GetYMinorTickSpacing2D());
+    axes->SetAutoSetTicks(axis2D.GetAutoSetTicks());
+    axes->SetMajorTickMinimum(axis2D.GetXAxis().GetTickMarks().GetMajorMinimum(),
+                              axis2D.GetYAxis().GetTickMarks().GetMajorMinimum());
+    axes->SetMajorTickMaximum(axis2D.GetXAxis().GetTickMarks().GetMajorMaximum(),
+                              axis2D.GetYAxis().GetTickMarks().GetMajorMaximum());
+    axes->SetMajorTickSpacing(axis2D.GetXAxis().GetTickMarks().GetMajorSpacing(),
+                              axis2D.GetYAxis().GetTickMarks().GetMajorSpacing());
+    axes->SetMinorTickSpacing(axis2D.GetXAxis().GetTickMarks().GetMinorSpacing(),
+                              axis2D.GetYAxis().GetTickMarks().GetMinorSpacing());
+
+    frame->SetAutoSetTicks(axis2D.GetAutoSetTicks());
+    frame->SetMajorTickMinimum(axis2D.GetXAxis().GetTickMarks().GetMajorMinimum(),
+                               axis2D.GetYAxis().GetTickMarks().GetMajorMinimum());
+    frame->SetMajorTickMaximum(axis2D.GetXAxis().GetTickMarks().GetMajorMaximum(),
+                               axis2D.GetYAxis().GetTickMarks().GetMajorMaximum());
+    frame->SetMajorTickSpacing(axis2D.GetXAxis().GetTickMarks().GetMajorSpacing(),
+                               axis2D.GetYAxis().GetTickMarks().GetMajorSpacing());
+    frame->SetMinorTickSpacing(axis2D.GetXAxis().GetTickMarks().GetMinorSpacing(),
+                               axis2D.GetYAxis().GetTickMarks().GetMinorSpacing());
 
     //
     // Font size
     //
-    axes->SetXLabelFontHeight(annotationAtts.GetXLabelFontHeight2D());
-    axes->SetYLabelFontHeight(annotationAtts.GetYLabelFontHeight2D());
-    axes->SetXTitleFontHeight(annotationAtts.GetXTitleFontHeight2D());
-    axes->SetYTitleFontHeight(annotationAtts.GetYTitleFontHeight2D());
+    axes->SetXLabelFontHeight(axis2D.GetXAxis().GetLabel().GetFont().GetHeight());
+    axes->SetYLabelFontHeight(axis2D.GetYAxis().GetLabel().GetFont().GetHeight());
+    axes->SetXTitleFontHeight(axis2D.GetXAxis().GetTitle().GetFont().GetHeight());
+    axes->SetYTitleFontHeight(axis2D.GetYAxis().GetTitle().GetFont().GetHeight());
 
     //
     // Line width
     //
     axes->SetLineWidth(LineWidth2Int(Int2LineWidth(
-        annotationAtts.GetAxesLineWidth2D())));
+        axis2D.GetLineWidth())));
     frame->SetLineWidth(LineWidth2Int(Int2LineWidth(
-        annotationAtts.GetAxesLineWidth2D())));
+        axis2D.GetLineWidth())));
 }
 
 
@@ -4053,73 +4062,78 @@ VisWindow::UpdateAxesArray()
 //   Brad Whitlock, Thu Jul 28 10:16:47 PDT 2005
 //   Added code to set the titles and units.
 //
+//   Brad Whitlock, Fri Jan 25 16:28:53 PST 2008
+//   Made it use the new AnnotationAttributes.
+//
 // ****************************************************************************
 
 void
 VisWindow::UpdateAxes3D()
 {
+    const Axes3D &axis3D = annotationAtts.GetAxes3D();
+
     //
     // Axes visibility. 
     //
-    bool a = annotationAtts.GetAxesFlag();
-    axes3D->SetVisibility(a || annotationAtts.GetBboxFlag());
+    bool a = axis3D.GetVisible();
+    axes3D->SetVisibility(a || axis3D.GetBboxFlag());
 
     //
     // Labels
     //
-    axes3D->SetXLabelVisibility(a && annotationAtts.GetXAxisLabels());
-    axes3D->SetYLabelVisibility(a && annotationAtts.GetYAxisLabels());
-    axes3D->SetZLabelVisibility(a && annotationAtts.GetZAxisLabels());
-    axes3D->SetLabelScaling(annotationAtts.GetLabelAutoSetScaling(), 
-                            annotationAtts.GetXLabelScaling(),
-                            annotationAtts.GetYLabelScaling(),
-                            annotationAtts.GetZLabelScaling());
-    axes3D->SetXTitle(annotationAtts.GetXAxisUserTitle(),
-                      annotationAtts.GetXAxisUserTitleFlag());
-    axes3D->SetXUnits(annotationAtts.GetXAxisUserUnits(),
-                      annotationAtts.GetXAxisUserUnitsFlag());
-    axes3D->SetYTitle(annotationAtts.GetYAxisUserTitle(),
-                      annotationAtts.GetYAxisUserTitleFlag());
-    axes3D->SetYUnits(annotationAtts.GetYAxisUserUnits(),
-                      annotationAtts.GetYAxisUserUnitsFlag());
-    axes3D->SetZTitle(annotationAtts.GetZAxisUserTitle(),
-                      annotationAtts.GetZAxisUserTitleFlag());
-    axes3D->SetZUnits(annotationAtts.GetZAxisUserUnits(),
-                      annotationAtts.GetZAxisUserUnitsFlag());
+    axes3D->SetXLabelVisibility(a && axis3D.GetXAxis().GetLabel().GetVisible());
+    axes3D->SetYLabelVisibility(a && axis3D.GetYAxis().GetLabel().GetVisible());
+    axes3D->SetZLabelVisibility(a && axis3D.GetZAxis().GetLabel().GetVisible());
+    axes3D->SetLabelScaling(axis3D.GetAutoSetScaling(),
+                            axis3D.GetXAxis().GetLabel().GetScaling(),
+                            axis3D.GetYAxis().GetLabel().GetScaling(),
+                            axis3D.GetZAxis().GetLabel().GetScaling());
+    axes3D->SetXTitle(axis3D.GetXAxis().GetTitle().GetTitle(),
+                      axis3D.GetXAxis().GetTitle().GetUserTitle());
+    axes3D->SetXUnits(axis3D.GetXAxis().GetTitle().GetUnits(),
+                      axis3D.GetXAxis().GetTitle().GetUserUnits());
+    axes3D->SetYTitle(axis3D.GetYAxis().GetTitle().GetTitle(),
+                      axis3D.GetYAxis().GetTitle().GetUserTitle());
+    axes3D->SetYUnits(axis3D.GetYAxis().GetTitle().GetUnits(),
+                      axis3D.GetYAxis().GetTitle().GetUserUnits());
+    axes3D->SetZTitle(axis3D.GetZAxis().GetTitle().GetTitle(),
+                      axis3D.GetZAxis().GetTitle().GetUserTitle());
+    axes3D->SetZUnits(axis3D.GetZAxis().GetTitle().GetUnits(),
+                      axis3D.GetZAxis().GetTitle().GetUserUnits());
 
     //
     // Ticks
     //
-    axes3D->SetXTickVisibility(a && annotationAtts.GetXAxisTicks(),
-                               a && annotationAtts.GetXAxisLabels());
-    axes3D->SetYTickVisibility(a && annotationAtts.GetYAxisTicks(),
-                               a && annotationAtts.GetYAxisLabels());
-    axes3D->SetZTickVisibility(a && annotationAtts.GetZAxisTicks(),
-                               a && annotationAtts.GetZAxisLabels());
+    axes3D->SetXTickVisibility(a && axis3D.GetXAxis().GetTickMarks().GetVisible(),
+                               a && axis3D.GetXAxis().GetLabel().GetVisible());
+    axes3D->SetYTickVisibility(a && axis3D.GetYAxis().GetTickMarks().GetVisible(),
+                               a && axis3D.GetYAxis().GetLabel().GetVisible());
+    axes3D->SetZTickVisibility(a && axis3D.GetZAxis().GetTickMarks().GetVisible(),
+                               a && axis3D.GetZAxis().GetLabel().GetVisible());
 
-    axes3D->SetTickLocation(annotationAtts.GetAxesTickLocation());
+    axes3D->SetTickLocation(axis3D.GetTickLocation());
 
     //
     // Fly Mode (axes3D type).
     //
-    axes3D->SetFlyMode(annotationAtts.GetAxesType());
+    axes3D->SetFlyMode(axis3D.GetAxesType());
 
     //
     // Triad 
     //
-    triad->SetVisibility(annotationAtts.GetTriadFlag());
+    triad->SetVisibility(axis3D.GetTriadFlag());
 
     //
     // Bounding Box 
     //
-    axes3D->SetBBoxVisibility(annotationAtts.GetBboxFlag());
+    axes3D->SetBBoxVisibility(axis3D.GetBboxFlag());
 
     //
     // Gridlines 
     //  
-    axes3D->SetXGridVisibility(a && annotationAtts.GetXGridLines());
-    axes3D->SetYGridVisibility(a && annotationAtts.GetYGridLines());
-    axes3D->SetZGridVisibility(a && annotationAtts.GetZGridLines());
+    axes3D->SetXGridVisibility(a && axis3D.GetXAxis().GetGrid());
+    axes3D->SetYGridVisibility(a && axis3D.GetYAxis().GetGrid());
+    axes3D->SetZGridVisibility(a && axis3D.GetZAxis().GetGrid());
 }
 
 
@@ -4139,16 +4153,28 @@ VisWindow::UpdateAxes3D()
 //   Cyrus Harrison, Tue Jun 19 08:41:55 PDT 2007
 //   Added the passing of database path expansion mode.
 //
+//   Brad Whitlock, Tue Jan 29 16:14:56 PST 2008
+//   Added code to set the text attributes for the database and the user 
+//   information.
+//
 // ****************************************************************************
 
 void
 VisWindow::UpdateTextAnnotations()
 {
-    // Set the visibility of the user information.
+    // Set the user information properties
     userInfo->SetVisibility(annotationAtts.GetUserInfoFlag());
+    const FontAttributes &fa = annotationAtts.GetUserInfoFont();
+    userInfo->SetTextAttributes(FontAttributes_To_VisWinTextAttributes(fa));
+
+    // Set the legend and database info properties.
     legends->SetVisibility(annotationAtts.GetDatabaseInfoFlag(),
                            annotationAtts.GetDatabaseInfoExpansionMode(),
                            annotationAtts.GetLegendInfoFlag());
+    const FontAttributes &fa2 = annotationAtts.GetDatabaseInfoFont();
+    legends->SetDatabaseInfoTextAttributes(
+        FontAttributes_To_VisWinTextAttributes(fa2));
+
     plots->TriggerPlotListUpdate();
 }
 
@@ -6309,4 +6335,48 @@ bool
 VisWindow::DoAllPlotsAxesHaveSameUnits()
 {
     return plots->DoAllPlotsAxesHaveSameUnits();
+}
+
+// ****************************************************************************
+// Method: FontAttributes_To_VisWinTextAttributes
+//
+// Purpose: 
+//   Converts FontAttributes to VisWinTextAttributes
+//
+// Arguments:
+//
+// Returns:    A VisWinTextAttributes object with the same information as the
+//             FontAttributes.
+//
+// Note:       We do a format conversion so we don't have to pass around
+//             FontAttributes, though we can always do so later.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 29 16:11:43 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+static VisWinTextAttributes
+FontAttributes_To_VisWinTextAttributes(const FontAttributes &f)
+{
+    VisWinTextAttributes atts;
+    if(f.GetFont() == FontAttributes::Arial)
+        atts.font = VisWinTextAttributes::Arial;
+    else if(f.GetFont() == FontAttributes::Courier)
+        atts.font = VisWinTextAttributes::Courier;
+    else if(f.GetFont() == FontAttributes::Times)
+        atts.font = VisWinTextAttributes::Times;
+
+    atts.height = f.GetHeight();
+    atts.useForegroundColor = f.GetUseForegroundColor();
+    atts.color[0] = float(f.GetColor().Red())   / 255.f;
+    atts.color[1] = float(f.GetColor().Green()) / 255.f;
+    atts.color[2] = float(f.GetColor().Blue())  / 255.f;
+    atts.color[3] = float(f.GetColor().Alpha()) / 255.f;
+    atts.bold = f.GetBold();
+    atts.italic = f.GetItalic();
+
+    return atts;
 }

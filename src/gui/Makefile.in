@@ -380,6 +380,9 @@
 #    Brad Whitlock, Wed Nov 7 17:13:32 PST 2007
 #    Added QvisText3DInterface for text 3d annotation objects.
 #
+#    Brad Whitlock, Thu Feb 7 15:06:29 PST 2008
+#    Added QvisAxisAttributesWidget, QvisFontAttributesWidget.
+#
 ##############################################################################
 
 ##
@@ -413,6 +416,7 @@ HDRMOC = \
     QvisAnnotationWindow.h \
     QvisAppearanceWindow.h \
     QvisApplication.h \
+    QvisAxisAttributesWidget.h \
     QvisCheckListManagerWidget.h \
     QvisColorButton.h \
     QvisColorGridWidget.h \
@@ -438,6 +442,7 @@ HDRMOC = \
     QvisFileSelectionWindow.h \
     QvisFileOpenDialog.h \
     QvisFileOpenWindow.h \
+    QvisFontAttributesWidget.h \
     QvisFtp.h \
     QvisGaussianOpacityBar.h \
     QvisGlobalLineoutWindow.h \

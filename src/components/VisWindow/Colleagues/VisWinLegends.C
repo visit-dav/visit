@@ -84,20 +84,27 @@ const double   VisWinLegends::dbInfoWidth         = 0.21;
 //    Cyrus Harrison, Sun Jun 17 22:00:15 PDT 2007
 //    Added init of path expansion mode.
 //
+//    Brad Whitlock, Tue Jan 29 16:44:06 PST 2008
+//    Added dbIntoTextAttributes.
+//
 // ****************************************************************************
 
-VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p)
+VisWinLegends::VisWinLegends(VisWindowColleagueProxy &p) : VisWinColleague(p),
+    dbInfoTextAttributes()
 {
+    // Set the default db info text attributes.
+    dbInfoTextAttributes.height = dbInfoHeight;
+
     dbInfoActor  = vtkTextActor::New();
     dbInfoActor->ScaledTextOn();
     dbInfoActor->SetWidth(dbInfoWidth);
-    dbInfoActor->SetHeight(dbInfoHeight);
+    dbInfoActor->SetHeight(dbInfoTextAttributes.height);
     dbInfoActor->GetTextProperty()->SetJustificationToLeft();
     dbInfoActor->GetTextProperty()->SetLineOffset(0);
     dbInfoActor->GetTextProperty()->SetLineSpacing(1);
     dbInfoIsAdded = false;
 
-    mainDBInfoVisible = true;
+    dbInfoVisible = true;
     pathExpansionMode = 0;
     legendVisible = true;
     homogeneous = true;
@@ -174,12 +181,16 @@ VisWinLegends::UpdatePlotList(vector<avtActor_p> &lst)
 //    Eric Brugger, Mon Jul 14 16:43:13 PDT 2003
 //    Changed the way database information is handled.
 //
+//    Brad Whitlock, Tue Jan 29 16:46:56 PST 2008
+//    Don't use the foreground color unless the flag is set.
+//
 // ****************************************************************************
  
 void
 VisWinLegends::SetForegroundColor(double fr, double fg, double fb)
 {
-    dbInfoActor->GetTextProperty()->SetColor(fr, fg, fb);
+    if(dbInfoTextAttributes.useForegroundColor)
+        dbInfoActor->GetTextProperty()->SetColor(fr, fg, fb);
 }
 
 
@@ -214,7 +225,7 @@ VisWinLegends::SetForegroundColor(double fr, double fg, double fb)
 //
 //    Eric Brugger, Tue Oct  7 14:58:45 PDT 2003
 //    Modified the routine to set the database information to NULL if
-//    mainDBInfoVisible is false.
+//    dbInfoVisible is false.
 //
 //    Kathleen Bonnell, Thu Aug 12 13:07:29 PDT 2004 
 //    Added call to set legend's global visibility state. 
@@ -246,7 +257,7 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
             legend->SetGlobalVisibility(legendVisible);
             if(legendVisible && legend->GetLegendOn())
             {
-                if (homogeneous || !mainDBInfoVisible)
+                if (homogeneous || !dbInfoVisible)
                 {
                     legend->SetDatabaseInfo(NULL);
                 }
@@ -313,7 +324,7 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 //
 //    Eric Brugger, Tue Oct  7 14:58:45 PDT 2003
 //    Modified the routine to set the database information to NULL if
-//    mainDBInfoVisible is false.
+//    dbInfoVisible is false.
 //
 //    Kathleen Bonnell, Thu Nov 13 12:26:00 PST 2003 
 //    Use a slightly larger width for the dbInfoActor if CreateDatabaseInfo
@@ -325,6 +336,9 @@ VisWinLegends::UpdateLegendInfo(vector<avtActor_p> &lst)
 //    Cyrus Harrison, Tue Sep 25 09:32:50 PDT 2007
 //    Added additional path expansion mode options and adjusted db info actor
 //    width to better display long text.
+//
+//    Brad Whitlock, Tue Jan 29 16:44:23 PST 2008
+//    Added code to scale the dbInfo based on dbIntoTextAttributes.
 //
 // ****************************************************************************
 
@@ -370,7 +384,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
     // overall database information.
     //
     vtkRenderer *foreground = mediator.GetForeground();
-    if (!lst.empty() && homogeneous && mainDBInfoVisible)
+    if (!lst.empty() && homogeneous && dbInfoVisible)
     {
         avtBehavior_p b = lst[0]->GetBehavior();
         avtDataAttributes &atts = b->GetInfo().GetAttributes();
@@ -404,7 +418,8 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
         //
         //  If we are adding time, we need a larger width
         //
-        
+
+        double scale = dbInfoTextAttributes.height / dbInfoHeight;
         float info_width = dbInfoWidth; 
         if (hasTime)
             info_width += 0.03;
@@ -418,8 +433,8 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
                 info_width = .8;
         }
         
-        dbInfoActor->SetHeight(dbInfoHeight+0.04);        
-        dbInfoActor->SetWidth(info_width);   
+        dbInfoActor->SetHeight(dbInfoTextAttributes.height+0.04);        
+        dbInfoActor->SetWidth(info_width * scale);
         
         double x = leftColumnPosition;
         double y = 0.98 - dbInfoHeight;
@@ -464,7 +479,7 @@ VisWinLegends::UpdateDBInfo(vector<avtActor_p> &lst)
 void
 VisWinLegends::SetVisibility(bool db, int path_exp_mode, bool legend)
 {
-    mainDBInfoVisible = db;
+    dbInfoVisible = db;
     pathExpansionMode = path_exp_mode;
     legendVisible = legend;
 }
@@ -510,4 +525,53 @@ VisWinLegends::CreateDatabaseInfo(char *info,
         hasTime = true;
     }
     return hasTime;
+}
+
+// ****************************************************************************
+// Method: VisWinLegends::SetDatabaseInfoTextAttributes
+//
+// Purpose: 
+//   Sets the database info's text properties.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 29 16:57:27 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinLegends::SetDatabaseInfoTextAttributes(const VisWinTextAttributes &textAtts)
+{
+    dbInfoTextAttributes = textAtts;
+
+    // Update the actor's text color.
+    if(dbInfoTextAttributes.useForegroundColor)
+    {
+        double color[3];
+        mediator.GetForegroundColor(color);
+        dbInfoActor->GetTextProperty()->SetColor(color[0],color[1],color[2]);
+        dbInfoActor->GetTextProperty()->SetOpacity(1.);
+    }
+    else
+    {
+        dbInfoActor->GetTextProperty()->SetColor(
+            dbInfoTextAttributes.color[0],
+            dbInfoTextAttributes.color[1],
+            dbInfoTextAttributes.color[2]);
+        dbInfoActor->GetTextProperty()->SetOpacity(dbInfoTextAttributes.color[3]);
+    }
+
+    dbInfoActor->GetTextProperty()->SetFontFamily((int)dbInfoTextAttributes.font);
+    dbInfoActor->GetTextProperty()->SetBold(dbInfoTextAttributes.bold?1:0);
+    dbInfoActor->GetTextProperty()->SetItalic(dbInfoTextAttributes.italic?1:0);
+
+    // We're not updating the size here. The plot list has to be updated for that
+    // to happen.
 }

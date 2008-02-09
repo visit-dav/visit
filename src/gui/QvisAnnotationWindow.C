@@ -60,8 +60,10 @@
 #include <QNarrowLineEdit.h>
 #include <QvisAnnotationObjectInterface.h>
 #include <QvisAnnotationObjectInterfaceFactory.h>
+#include <QvisAxisAttributesWidget.h>
 #include <QvisColorButton.h>
 #include <QvisDialogLineEdit.h>
+#include <QvisFontAttributesWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObject.h>
@@ -101,6 +103,9 @@
 //   Brad Whitlock, Wed Mar 21 21:08:54 PST 2007
 //   Made it observe the plot list.
 //
+//   Brad Whitlock, Thu Feb 7 16:32:02 PST 2008
+//   Removed some widgets.
+//
 // ****************************************************************************
 
 QvisAnnotationWindow::QvisAnnotationWindow(const char *caption,
@@ -120,12 +125,6 @@ QvisAnnotationWindow::QvisAnnotationWindow(const char *caption,
     activeTab = 0;
 
     // Initialize parentless widgets.
-    axisLabelsButtons2D = 0;
-    axisTitlesButtons2D = 0;
-    gridLinesButtons2D = 0;
-    axisLabelsButtons = 0;
-    gridLinesButtons = 0;
-    axisTicksButtons = 0;
     backgroundStyleButtons = 0;
 
     objButtonGroup = 0;
@@ -153,6 +152,9 @@ QvisAnnotationWindow::QvisAnnotationWindow(const char *caption,
 //   Brad Whitlock, Wed Mar 21 21:09:21 PST 2007
 //   Detach plot list.
 //
+//   Brad Whitlock, Thu Feb 7 16:32:19 PST 2008
+//   Removed some widgets.
+//
 // ****************************************************************************
 
 QvisAnnotationWindow::~QvisAnnotationWindow()
@@ -167,12 +169,6 @@ QvisAnnotationWindow::~QvisAnnotationWindow()
         plotList->Detach(this);
 
     // Delete parentless widgets.
-    delete axisLabelsButtons2D;
-    delete axisTitlesButtons2D;
-    delete gridLinesButtons2D;
-    delete axisLabelsButtons;
-    delete gridLinesButtons;
-    delete axisTicksButtons;
     delete backgroundStyleButtons;
 
     delete objButtonGroup;
@@ -387,67 +383,86 @@ QvisAnnotationWindow::CreateGeneralTab()
 
     // use two layouts, so we can have a compact look
     QVBoxLayout *general_layout = new QVBoxLayout(pageGeneral);
-    QGridLayout *glayout = new QGridLayout(pageGeneral, 3, 2);
-    glayout->setSpacing(5);
+    QGridLayout *glayout = new QGridLayout(general_layout, 3, 2);
+    glayout->setSpacing(10);
     glayout->setMargin(10);
-    
-    // Create a toggle for the user information.
-    userInfo = new QCheckBox("User information", pageGeneral, "userInfo");
-    connect(userInfo, SIGNAL(toggled(bool)),
-            this, SLOT(userInfoChecked(bool)));
-    glayout->addWidget(userInfo, 0, 0);
-
-    // Create a toggle for the database information.
-    databaseInfo = new QCheckBox("Database", pageGeneral, "databaseInfo");
-    connect(databaseInfo, SIGNAL(toggled(bool)),
-            this, SLOT(databaseInfoChecked(bool)));
-    glayout->addWidget(databaseInfo, 0, 1);
-
-
-    // use parent widget to hold path expansion mode combo box w/ label.
-    databasePathExpansionModeParent = new QWidget(pageGeneral,
-                                            "databasePathExpansionModeParent");
-    QHBoxLayout *pem_layout = new QHBoxLayout(databasePathExpansionModeParent);
-
-    // create label
-    QLabel *pem_label =  new QLabel("Path Expansion: ",
-                                    databasePathExpansionModeParent,
-                                    "databasePathExpansionModeLabel");
-
-    // create path expansion mode combo box
-    databasePathExpansionMode = new QComboBox(databasePathExpansionModeParent,
-                                               "databasePathExpansionMode");
-    databasePathExpansionMode->insertItem("File", 0);
-    databasePathExpansionMode->insertItem("Directory", 1);
-    databasePathExpansionMode->insertItem("Full", 2);
-    databasePathExpansionMode->insertItem("Smart", 3);
-    databasePathExpansionMode->insertItem("Smart Directory", 4);
-        
-    connect(databasePathExpansionMode, SIGNAL(activated(int)),
-            this, SLOT(databasePathExpansionModeChanged(int)));
-
-    // add to parent widget
-    pem_layout->addWidget(pem_label);
-    pem_layout->addWidget(databasePathExpansionMode);
-
-    // add pem parent to main layout
-    glayout->addWidget(databasePathExpansionModeParent, 1, 1);
+    general_layout->addStretch(10);
 
     // Create a toggle for the legend.
+    int row = 0;
     legendInfo = new QCheckBox("Legend", pageGeneral, "legendInfo");
     connect(legendInfo, SIGNAL(toggled(bool)),
             this, SLOT(legendChecked(bool)));
-    glayout->addWidget(legendInfo, 1, 0);
+    glayout->addWidget(legendInfo, row, 0);
 
     // Create a button that can turn off all annotations.
     turnOffAllButton = new QPushButton("No annotations", pageGeneral,
         "turnOffAllButton");
     connect(turnOffAllButton, SIGNAL(clicked()),
             this, SLOT(turnOffAllAnnotations()));
-    glayout->addWidget(turnOffAllButton, 2, 1);
-    general_layout->addLayout(glayout);
-    general_layout->addStretch(10);
-    
+    glayout->addWidget(turnOffAllButton, row, 1);
+    ++row;
+
+    //
+    // Create the database information
+    //
+    databaseInfo = new QGroupBox(pageGeneral, "dbGroup");
+    databaseInfo->setTitle("Database");
+    databaseInfo->setCheckable(true);
+    connect(databaseInfo, SIGNAL(toggled(bool)),
+            this, SLOT(databaseInfoChecked(bool)));
+    glayout->addMultiCellWidget(databaseInfo, row, row, 0, 1);
+    QVBoxLayout *dbInnerLayout = new QVBoxLayout(databaseInfo);
+    dbInnerLayout->setMargin(10);
+    dbInnerLayout->addSpacing(15);
+    dbInnerLayout->setSpacing(10);
+    QGridLayout *dLayout = new QGridLayout(dbInnerLayout, 3, 2);
+    dLayout->setSpacing(5);
+    dLayout->setColStretch(1, 10);
+    ++row;
+    databasePathExpansionMode = new QComboBox(databaseInfo,
+        "databasePathExpansionMode");
+    databasePathExpansionMode->insertItem("File", 0);
+    databasePathExpansionMode->insertItem("Directory", 1);
+    databasePathExpansionMode->insertItem("Full", 2);
+    databasePathExpansionMode->insertItem("Smart", 3);
+    databasePathExpansionMode->insertItem("Smart Directory", 4);
+    connect(databasePathExpansionMode, SIGNAL(activated(int)),
+            this, SLOT(databasePathExpansionModeChanged(int)));
+    databasePathExpansionModeLabel = new QLabel(databasePathExpansionMode,
+        "Path Expansion", databaseInfo, "databasePathExpansionModeLabel");
+    dLayout->addWidget(databasePathExpansionModeLabel, 0, 0);
+    dLayout->addWidget(databasePathExpansionMode, 0, 1);
+
+    QFrame *dbSep = new QFrame(databaseInfo, "labelSep");
+    dbSep->setFrameStyle(QFrame::HLine + QFrame::Sunken);
+    dLayout->addMultiCellWidget(dbSep, 1, 1, 0, 1);
+
+    databaseInfoFont = new QvisFontAttributesWidget(databaseInfo, "databaseInfoFont");
+    connect(databaseInfoFont, SIGNAL(fontChanged(const FontAttributes &)),
+            this, SLOT(databaseInfoFontChanged(const FontAttributes &)));
+    dLayout->addMultiCellWidget(databaseInfoFont, 2, 2, 0, 1);
+
+    //
+    // Create the user information
+    //
+    userInfo = new QGroupBox(pageGeneral, "userInfo");
+    userInfo->setTitle("User information");
+    userInfo->setCheckable(true);
+    connect(userInfo, SIGNAL(toggled(bool)),
+            this, SLOT(userInfoChecked(bool)));
+    glayout->addMultiCellWidget(userInfo, row, row, 0, 1);
+    QVBoxLayout *uInnerLayout = new QVBoxLayout(userInfo);
+    uInnerLayout->setMargin(10);
+    uInnerLayout->addSpacing(15);
+    uInnerLayout->setSpacing(10);
+    QVBoxLayout *uLayout = new QVBoxLayout(uInnerLayout);
+    uLayout->setSpacing(5);
+    ++row;
+    userInfoFont = new QvisFontAttributesWidget(userInfo, "userInfoFont");
+    connect(userInfoFont, SIGNAL(fontChanged(const FontAttributes &)),
+            this, SLOT(userInfoFontChanged(const FontAttributes &)));
+    uLayout->addWidget(userInfoFont); 
 }
 
 
@@ -469,6 +484,10 @@ QvisAnnotationWindow::CreateGeneralTab()
 //   Brad Whitlock, Wed Jul 27 16:01:31 PST 2005
 //   I made it create a "Grid and Ticks" tab and a "Title and Labels" tab.
 //
+//   Brad Whitlock, Thu Feb 7 17:01:36 PST 2008
+//   I changed the method so it creates "General 2D", "X-Axis", and "Y-Axis"
+//   tabs instead of the previous organization.
+//
 // ****************************************************************************
 
 void
@@ -487,142 +506,80 @@ QvisAnnotationWindow::Create2DTab()
     connect(axesFlagToggle2D, SIGNAL(toggled(bool)),
             this, SLOT(axesFlagChecked2D(bool)));
 
-    axesGroup2D = new QGroupBox(page2D, "axesGroup2D");
-    axesGroup2D->setFrameStyle(QFrame::NoFrame);
-    QVBoxLayout *lLayout = new QVBoxLayout(axesGroup2D);
+    axes2DGroup = new QGroupBox(page2D, "axesGroup2D");
+    axes2DGroup->setFrameStyle(QFrame::NoFrame);
+    QVBoxLayout *lLayout = new QVBoxLayout(axes2DGroup);
     lLayout->setSpacing(5);
-    QTabWidget *page2DTabs = new QTabWidget(axesGroup2D, "page2DTabs");
+    QTabWidget *page2DTabs = new QTabWidget(axes2DGroup, "page2DTabs");
     lLayout->addWidget(page2DTabs);
 
-    page2DTabs->addTab(Create2DTabForGridAndTicks(page2DTabs),
-        "Grid and Ticks");
-    page2DTabs->addTab(Create2DTabForTitleAndLabels(page2DTabs),
-        "Title and Labels");
+    // Create the general options page.
+    page2DTabs->addTab(CreateGeneralTab2D(page2DTabs), "General 2D");
+
+    // Add the X-axis page.
+    axes2D[0] = new QvisAxisAttributesWidget(page2DTabs, "xAxis2D", false, true);
+    connect(axes2D[0], SIGNAL(axisChanged(const AxisAttributes &)),
+            this, SLOT(xAxisChanged2D(const AxisAttributes &)));
+    page2DTabs->addTab(axes2D[0], "X-Axis");
+
+    // Add the Y-axis page.
+    axes2D[1] = new QvisAxisAttributesWidget(page2DTabs, "yAxis2D", false, true);
+    connect(axes2D[1], SIGNAL(axisChanged(const AxisAttributes &)),
+            this, SLOT(yAxisChanged2D(const AxisAttributes &)));
+    page2DTabs->addTab(axes2D[1], "Y-Axis");
 }
 
 // ****************************************************************************
-// Method: QvisAnnotationWindow::Create2DTabForGridAndTicks
+// Method: QvisAnnotationWindow::CreateGeneralTab2D
 //
 // Purpose: 
-//   Creates the tab that we put the controls for "grid and ticks" on.
+//   Creates the options for the general 2D tab.
 //
 // Arguments:
-//   parentWidget : The tab widget that will contain the controls.
+//   parentWidget : The parent of the widgets we'll create.
 //
-// Returns:    The widget that contains all of the controls.
+// Returns:    
 //
 // Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Jul 28 09:08:43 PDT 2005
+// Creation:   Thu Feb 7 16:45:23 PST 2008
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 QWidget *
-QvisAnnotationWindow::Create2DTabForGridAndTicks(QWidget *parentWidget)
+QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
 {
     QWidget *top0 = new QWidget(parentWidget);
     QVBoxLayout *top0Layout = new QVBoxLayout(top0);
     top0Layout->addSpacing(10);
-    QGroupBox *top = new QGroupBox(top0, "Create2DTabForGridAndTicks");
+    QGroupBox *top = new QGroupBox(top0, "CreateGeneralTab2D");
     top->setFrameStyle(QFrame::NoFrame);
     top0Layout->addWidget(top);
     top0Layout->addStretch(10);
-    QGridLayout *lLayout = new QGridLayout(top, 10, 3);
+    QGridLayout *lLayout = new QGridLayout(top, 5, 2);
     lLayout->setSpacing(5);
     lLayout->setMargin(5);
+    lLayout->setColStretch(1, 10);
 
+    // Create auto set scaling check box.
+    int row = 0;
+    labelAutoSetScalingToggle2D = new QCheckBox("Auto scale label values",
+        top, "labelAutoSetScalingToggle2D");
+    connect(labelAutoSetScalingToggle2D, SIGNAL(toggled(bool)),
+            this, SLOT(labelAutoSetScalingChecked2D(bool)));
+    lLayout->addMultiCellWidget(labelAutoSetScalingToggle2D, row, row, 0, 1);
+    ++row;
+
+    // Create auto set ticks check box.
     axesAutoSetTicksToggle2D = new QCheckBox("Auto set ticks", top,
                                          "axesAutoSetTicksToggle2D");
     connect(axesAutoSetTicksToggle2D, SIGNAL(toggled(bool)),
             this, SLOT(axesAutoSetTicksChecked2D(bool)));
-    lLayout->addWidget(axesAutoSetTicksToggle2D, 0, 0);
-
-    // Create the X and Y Axes column headings
-    QLabel *l =  new QLabel("X", top, "xAxesLabel");
-    lLayout->addWidget(l, 1, 1);
-    l =  new QLabel("Y", top, "yAxesLabel");
-    lLayout->addWidget(l, 1, 2);
-
-    // Create the group of check boxes for the 2D grid lines.
-    l = new QLabel("Show grid lines", top, "gridLines2D");
-    lLayout->addWidget(l, 2, 0);
-
-    gridLinesButtons2D = new QButtonGroup(0, "gridLinesButtons2D");
-    connect(gridLinesButtons2D, SIGNAL(clicked(int)),
-            this, SLOT(gridLinesChanged2D(int)));
-    QCheckBox *cb = new QCheckBox(top, "gridLinesButtons_X");
-    gridLinesButtons2D->insert(cb);
-    lLayout->addWidget(cb, 2, 1);
-    cb = new QCheckBox(top, "gridLinesButtons_Y");
-    gridLinesButtons2D->insert(cb);
-    lLayout->addWidget(cb, 2, 2);
-
-    // Create the text fields for the 2D major tick mark minimums.
-    majorTickMinimumLabel2D = new QLabel("Major tick minimum", top,
-                                         "majorTickMinimumLabel2D");
-    lLayout->addWidget(majorTickMinimumLabel2D, 3, 0);
-
-    xMajorTickMinimumLineEdit2D = new QNarrowLineEdit(top,
-        "xMajorTickMinimumLineEdit2D");
-    connect(xMajorTickMinimumLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xMajorTickMinimumChanged2D()));
-    lLayout->addWidget(xMajorTickMinimumLineEdit2D, 3, 1);
-    yMajorTickMinimumLineEdit2D = new QNarrowLineEdit(top,
-        "yMajorTickMinimumLineEdit2D");
-    connect(yMajorTickMinimumLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yMajorTickMinimumChanged2D()));
-    lLayout->addWidget(yMajorTickMinimumLineEdit2D, 3, 2);
-
-    // Create the text fields for the 2D major tick mark maximums.
-    majorTickMaximumLabel2D = new QLabel("Major tick maximum", top,
-                                         "majorTickMaximumLabel2D");
-    lLayout->addWidget(majorTickMaximumLabel2D, 4, 0);
-
-    xMajorTickMaximumLineEdit2D = new QNarrowLineEdit(top,
-        "xMajorTickMaximumLineEdit2D");
-    connect(xMajorTickMaximumLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xMajorTickMaximumChanged2D()));
-    lLayout->addWidget(xMajorTickMaximumLineEdit2D, 4, 1);
-    yMajorTickMaximumLineEdit2D = new QNarrowLineEdit(top,
-        "yMajorTickMaximumLineEdit2D");
-    connect(yMajorTickMaximumLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yMajorTickMaximumChanged2D()));
-    lLayout->addWidget(yMajorTickMaximumLineEdit2D, 4, 2);
-
-    // Create the text fields for the 2D major tick mark spacing.
-    majorTickSpacingLabel2D = new QLabel("Major tick spacing", top,
-                                         "majorTickSpacingLabel2D");
-    lLayout->addWidget(majorTickSpacingLabel2D, 5, 0);
-
-    xMajorTickSpacingLineEdit2D = new QNarrowLineEdit(top,
-        "xMajorTickSpacingLineEdit2D");
-    connect(xMajorTickSpacingLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xMajorTickSpacingChanged2D()));
-    lLayout->addWidget(xMajorTickSpacingLineEdit2D, 5, 1);
-    yMajorTickSpacingLineEdit2D = new QNarrowLineEdit(top,
-        "yMajorTickSpacingLineEdit2D");
-    connect(yMajorTickSpacingLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yMajorTickSpacingChanged2D()));
-    lLayout->addWidget(yMajorTickSpacingLineEdit2D, 5, 2);
-
-    // Create the text fields for the 2D minor tick mark spacing.
-    minorTickSpacingLabel2D = new QLabel("Minor tick spacing", top,
-                                         "minorTickSpacingLabel2D");
-    lLayout->addWidget(minorTickSpacingLabel2D, 6, 0);
-
-    xMinorTickSpacingLineEdit2D = new QNarrowLineEdit(top,
-        "xMinorTickSpacingLineEdit2D");
-    connect(xMinorTickSpacingLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xMinorTickSpacingChanged2D()));
-    lLayout->addWidget(xMinorTickSpacingLineEdit2D, 6, 1);
-    yMinorTickSpacingLineEdit2D = new QNarrowLineEdit(top,
-        "yMinorTickSpacingLineEdit2D");
-    connect(yMinorTickSpacingLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yMinorTickSpacingChanged2D()));
-    lLayout->addWidget(yMinorTickSpacingLineEdit2D, 6, 2);
+    lLayout->addMultiCellWidget(axesAutoSetTicksToggle2D, row, row, 0, 1);
+    ++row;
 
     // Create the 2D tick mark locations combobox.
     axesTickLocationComboBox2D = new QComboBox(top,
@@ -632,10 +589,11 @@ QvisAnnotationWindow::Create2DTabForGridAndTicks(QWidget *parentWidget)
     axesTickLocationComboBox2D->insertItem("Both",    2);
     connect(axesTickLocationComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTickLocationChanged2D(int)));
-    lLayout->addMultiCellWidget(axesTickLocationComboBox2D, 7, 7, 1, 2);
-    l = new QLabel(axesTickLocationComboBox2D, "Tick mark locations",
+    lLayout->addWidget(axesTickLocationComboBox2D, row, 1);
+    QLabel *l = new QLabel(axesTickLocationComboBox2D, "Tick mark locations",
                    top, "axesTickLocationLabel2D");
-    lLayout->addWidget(l, 7, 0);
+    lLayout->addWidget(l, row, 0);
+    ++row;
 
     // Create the 2D tick marks combobox.
     axesTicksComboBox2D = new QComboBox(top, "axesTicksComboBox2D");
@@ -646,185 +604,21 @@ QvisAnnotationWindow::Create2DTabForGridAndTicks(QWidget *parentWidget)
     axesTicksComboBox2D->insertItem("All axes",    4);
     connect(axesTicksComboBox2D, SIGNAL(activated(int)),
             this, SLOT(axesTicksChanged2D(int)));
-    lLayout->addMultiCellWidget(axesTicksComboBox2D, 8, 8, 1, 2);
+    lLayout->addWidget(axesTicksComboBox2D, row, 1);
     l = new QLabel(axesTicksComboBox2D, "Show tick marks",
                    top, "axesTicksLabel2D");
-    lLayout->addWidget(l, 8, 0);
+    lLayout->addWidget(l, row, 0);
+    ++row;
 
     // Create the 2D line width widget.
     axesLineWidth2D = new QvisLineWidthWidget(0, top,
         "axesLineWidth2D");
-    lLayout->addMultiCellWidget(axesLineWidth2D, 9, 9, 1, 2);
+    lLayout->addWidget(axesLineWidth2D, row, 1);
     connect(axesLineWidth2D, SIGNAL(lineWidthChanged(int)),
             this, SLOT(axesLineWidthChanged2D(int)));
     l = new QLabel("Line width", top, "axesLineWidthLabel2D");
-    lLayout->addWidget(l, 9, 0);
-
-    return top0;
-}
-
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::Create2DTabForTitleAndLabels
-//
-// Purpose: 
-//   Creates the tab that we put the controls for "title and labels" on.
-//
-// Arguments:
-//   parentWidget : The tab widget that will contain the controls.
-//
-// Returns:    The widget that contains all of the controls.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jul 28 09:08:43 PDT 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-QWidget *
-QvisAnnotationWindow::Create2DTabForTitleAndLabels(QWidget *parentWidget)
-{
-    QWidget *top0 = new QWidget(parentWidget);
-    QVBoxLayout *top0Layout = new QVBoxLayout(top0);
-    top0Layout->addSpacing(10);
-    QGroupBox *top = new QGroupBox(top0, "Create2DTabForTitleAndLabels");
-    top->setFrameStyle(QFrame::NoFrame);
-    top0Layout->addWidget(top);
-    top0Layout->addStretch(10);
-    QGridLayout *lLayout = new QGridLayout(top, 11, 3);
-    lLayout->setSpacing(5);
-    lLayout->setMargin(5);
-
-    labelAutoSetScalingToggle2D = new QCheckBox("Auto scale label values",
-        top, "labelAutoSetScalingToggle2D");
-    connect(labelAutoSetScalingToggle2D, SIGNAL(toggled(bool)),
-            this, SLOT(labelAutoSetScalingChecked2D(bool)));
-    lLayout->addMultiCellWidget(labelAutoSetScalingToggle2D, 0, 0, 0, 1);
-
-    // Create the X and Y Axes column headings
-    QLabel *l =  new QLabel("X", top, "xAxesLabel");
-    lLayout->addWidget(l, 1, 1);
-    l =  new QLabel("Y", top, "yAxesLabel");
-    lLayout->addWidget(l, 1, 2);
-
-    // Create the group of check boxes for the 2D axis labels.
-    l = new QLabel("Show labels", top, "axesLabels2D");
-    lLayout->addWidget(l, 2, 0);
-    axisLabelsButtons2D = new QButtonGroup(0, "axisLabelsButtons2D");
-    connect(axisLabelsButtons2D, SIGNAL(clicked(int)),
-            this, SLOT(axisLabelsChanged2D(int)));
-    QCheckBox *cb = new QCheckBox(top, "axisLabelsButtons_X");
-    axisLabelsButtons2D->insert(cb);
-    lLayout->addWidget(cb, 2, 1);
-    cb = new QCheckBox(top, "axisLabelsButtons_Y");
-    axisLabelsButtons2D->insert(cb);
-    lLayout->addWidget(cb, 2, 2);
-
-    // Create the text fields for the 2D label text height.
-    l = new QLabel("Label font height", top, "labelFontHeightLabel2D");
-    lLayout->addWidget(l, 3, 0);
-    xLabelFontHeightLineEdit2D = new QNarrowLineEdit(top,
-        "xLabelFontHeightLineEdit2D");
-    connect(xLabelFontHeightLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xLabelFontHeightChanged2D()));
-    lLayout->addWidget(xLabelFontHeightLineEdit2D, 3, 1);
-    yLabelFontHeightLineEdit2D = new QNarrowLineEdit(top,
-        "yLabelFontHeightLineEdit2D");
-    connect(yLabelFontHeightLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yLabelFontHeightChanged2D()));
-    lLayout->addWidget(yLabelFontHeightLineEdit2D, 3, 2);
-
-    // Create the text fields for the 2D label scaling.
-    labelScalingLabel2D = new QLabel("Label scale (x10^?)", top, "labelScalingLabel2D");
-    lLayout->addWidget(labelScalingLabel2D, 4, 0);
-    xLabelScalingLineEdit2D = new QNarrowLineEdit(top,
-        "xLabelScalingLineEdit2D");
-    connect(xLabelScalingLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xLabelScalingChanged2D()));
-    lLayout->addWidget(xLabelScalingLineEdit2D, 4, 1);
-    yLabelScalingLineEdit2D = new QNarrowLineEdit(top,
-        "yLabelScalingLineEdit2D");
-    connect(yLabelScalingLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yLabelScalingChanged2D()));
-    lLayout->addWidget(yLabelScalingLineEdit2D, 4, 2);
-
-    // Create the group of check boxes for the 2D axis titles.
-    l = new QLabel("Show titles", top, "axesTitles2D");
-    lLayout->addWidget(l, 5, 0);
-    axisTitlesButtons2D = new QButtonGroup(0, "axisTitlesButtons2D");
-    connect(axisTitlesButtons2D, SIGNAL(clicked(int)),
-            this, SLOT(axisTitlesChanged2D(int)));
-    cb = new QCheckBox(top, "axisTitlesButtons_X");
-    axisTitlesButtons2D->insert(cb);
-    lLayout->addWidget(cb, 5, 1);
-    cb = new QCheckBox(top, "axisTitlesButtons_Y");
-    axisTitlesButtons2D->insert(cb);
-    lLayout->addWidget(cb, 5, 2);
-
-    // Create the text fields for the 2D title text height.
-    l = new QLabel("Title font height", top, "titleFontHeightLabel2D");
-    lLayout->addWidget(l, 6, 0);
-    xTitleFontHeightLineEdit2D = new QNarrowLineEdit(top,
-        "xTitleFontHeightLineEdit2D");
-    connect(xTitleFontHeightLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xTitleFontHeightChanged2D()));
-    lLayout->addWidget(xTitleFontHeightLineEdit2D, 6, 1);
-    yTitleFontHeightLineEdit2D = new QNarrowLineEdit(top,
-        "yTitleFontHeightLineEdit2D");
-    connect(yTitleFontHeightLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yTitleFontHeightChanged2D()));
-    lLayout->addWidget(yTitleFontHeightLineEdit2D, 6, 2);
-
-    // Create a toggle and line edit for setting the X-axis title.
-    xAxisUserTitleToggle2D = new QCheckBox("Set X-Axis title", top,
-        "xAxisUserTitleToggle2D");
-    connect(xAxisUserTitleToggle2D, SIGNAL(toggled(bool)),
-            this, SLOT(xAxisUserTitleChecked2D(bool)));
-    lLayout->addWidget(xAxisUserTitleToggle2D, 7, 0);
-    xAxisUserTitleLineEdit2D = new QNarrowLineEdit(top, 
-        "xAxisUserTitleLineEdit2D");
-    connect(xAxisUserTitleLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xAxisUserTitleLineEditChanged2D()));
-    lLayout->addMultiCellWidget(xAxisUserTitleLineEdit2D, 7, 7, 1, 2);
-
-    // Create a toggle and line edit for setting the X-axis Units.
-    xAxisUserUnitsToggle2D = new QCheckBox("Set X-Axis units", top,
-        "xAxisUserUnitsToggle2D");
-    connect(xAxisUserUnitsToggle2D, SIGNAL(toggled(bool)),
-            this, SLOT(xAxisUserUnitsChecked2D(bool)));
-    lLayout->addWidget(xAxisUserUnitsToggle2D, 8, 0);
-    xAxisUserUnitsLineEdit2D = new QNarrowLineEdit(top, 
-        "xAxisUserUnitsLineEdit2D");
-    connect(xAxisUserUnitsLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(xAxisUserUnitsLineEditChanged2D()));
-    lLayout->addMultiCellWidget(xAxisUserUnitsLineEdit2D, 8, 8, 1, 2);
-
-    // Create a toggle and line edit for setting the Y-axis title.
-    yAxisUserTitleToggle2D = new QCheckBox("Set Y-Axis title", top,
-        "yAxisUserTitleToggle2D");
-    connect(yAxisUserTitleToggle2D, SIGNAL(toggled(bool)),
-            this, SLOT(yAxisUserTitleChecked2D(bool)));
-    lLayout->addWidget(yAxisUserTitleToggle2D, 9, 0);
-    yAxisUserTitleLineEdit2D = new QNarrowLineEdit(top, 
-        "yAxisUserTitleLineEdit2D");
-    connect(yAxisUserTitleLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yAxisUserTitleLineEditChanged2D()));
-    lLayout->addMultiCellWidget(yAxisUserTitleLineEdit2D, 9, 9, 1, 2);
-
-    // Create a toggle and line edit for setting the Y-axis Units.
-    yAxisUserUnitsToggle2D = new QCheckBox("Set Y-Axis units", top,
-        "yAxisUserUnitsToggle2D");
-    connect(yAxisUserUnitsToggle2D, SIGNAL(toggled(bool)),
-            this, SLOT(yAxisUserUnitsChecked2D(bool)));
-    lLayout->addWidget(yAxisUserUnitsToggle2D, 10, 0);
-    yAxisUserUnitsLineEdit2D = new QNarrowLineEdit(top, 
-        "yAxisUserUnitsLineEdit2D");
-    connect(yAxisUserUnitsLineEdit2D, SIGNAL(returnPressed()),
-            this, SLOT(yAxisUserUnitsLineEditChanged2D()));
-    lLayout->addMultiCellWidget(yAxisUserUnitsLineEdit2D, 10, 10, 1, 2);
+    lLayout->addWidget(l, row, 0);
+    ++row;
 
     return top0;
 }
@@ -848,6 +642,9 @@ QvisAnnotationWindow::Create2DTabForTitleAndLabels(QWidget *parentWidget)
 //   I split it into two subtabs and added controls to set the axis titles
 //   and units.
 //
+//   Brad Whitlock, Thu Feb 7 17:03:30 PST 2008
+//   I split the tabs into "General 3D", "X-Axis", "Y-Axis", and "Z-Axis".
+//
 // ****************************************************************************
 
 void
@@ -862,9 +659,20 @@ QvisAnnotationWindow::Create3DTab()
     tabs->addTab(page3D, "3D");
 
     // Create the toggle for drawing the axes.
-    axes3DFlagToggle = new QCheckBox("Show axes", page3D, "axes3DFlagToggle");
-    connect(axes3DFlagToggle, SIGNAL(toggled(bool)),
+    QHBox *buttons = new QHBox(page3D, "buttons");
+    axes3DVisible = new QCheckBox("Show axes", buttons, "axes3DVisible");
+    connect(axes3DVisible, SIGNAL(toggled(bool)),
             this, SLOT(axes3DFlagChecked(bool)));
+
+    // Create the toggle for the triad.
+    triadFlagToggle = new QCheckBox("Show triad", buttons, "triadFlagToggle");
+    connect(triadFlagToggle, SIGNAL(toggled(bool)),
+            this, SLOT(triadFlagChecked(bool)));
+
+    // Create the toggle for the bbox.
+    bboxFlagToggle = new QCheckBox("Show bounding box", buttons, "bboxFlagToggle");
+    connect(bboxFlagToggle, SIGNAL(toggled(bool)),
+            this, SLOT(bboxFlagChecked(bool)));
 
     axes3DGroup = new QGroupBox(page3D, "axesGroup3D");
     axes3DGroup->setFrameStyle(QFrame::NoFrame);
@@ -873,45 +681,51 @@ QvisAnnotationWindow::Create3DTab()
     QTabWidget *page3DTabs = new QTabWidget(axes3DGroup, "page3DTabs");
     lLayout->addWidget(page3DTabs);
 
-    page3DTabs->addTab(Create3DTabForGridAndTicks(page3DTabs),
-        "Grid and Ticks");
-    page3DTabs->addTab(Create3DTabForTitleAndLabels(page3DTabs),
-        "Title and Labels");
+    // Create the general 3D options page.
+    page3DTabs->addTab(CreateGeneralTab3D(page3DTabs),
+        "General 3D");
 
-    // Create the toggle for the triad.
-    QHBox *toggleHBox = new QHBox(page3D);
-    triadFlagToggle = new QCheckBox("Show triad", toggleHBox, "triadFlagToggle");
-    connect(triadFlagToggle, SIGNAL(toggled(bool)),
-            this, SLOT(triadFlagChecked(bool)));
+    // Add the X-axis page.
+    axes3D[0] = new QvisAxisAttributesWidget(page3DTabs, "xAxis", true, false);
+    connect(axes3D[0], SIGNAL(axisChanged(const AxisAttributes &)),
+            this, SLOT(xAxisChanged(const AxisAttributes &)));
+    page3DTabs->addTab(axes3D[0], "X-Axis");
 
-    // Create the toggle for the bbox.
-    bboxFlagToggle = new QCheckBox("Show bounding box", toggleHBox, "bboxFlagToggle");
-    connect(bboxFlagToggle, SIGNAL(toggled(bool)),
-            this, SLOT(bboxFlagChecked(bool)));
+    // Add the Y-axis page.
+    axes3D[1] = new QvisAxisAttributesWidget(page3DTabs, "yAxis", true, false);
+    connect(axes3D[1], SIGNAL(axisChanged(const AxisAttributes &)),
+            this, SLOT(yAxisChanged(const AxisAttributes &)));
+    page3DTabs->addTab(axes3D[1], "Y-Axis");
+
+    // Add the Z-axis page.
+    axes3D[2] = new QvisAxisAttributesWidget(page3DTabs, "zAxis", true, false);
+    connect(axes3D[2], SIGNAL(axisChanged(const AxisAttributes &)),
+            this, SLOT(zAxisChanged(const AxisAttributes &)));
+    page3DTabs->addTab(axes3D[2], "Z-Axis");
 }
 
 // ****************************************************************************
-// Method: QvisAnnotationWindow::Create3DTabForGridAndTicks
+// Method: QvisAnnotationWindow::CreateGeneralTab3D
 //
 // Purpose: 
-//   Creates the grid and tick tab for 3D.
+//   Creates the general 3D options page.
 //
 // Arguments:
-//   parentWidget : The parent of all of the widgets to be created.
+//   parentWidget : The parent widget for the widgets that we're creating.
 //
-// Returns:    The widget that contains all of the widgets.
+// Returns:    
 //
 // Note:       
 //
 // Programmer: Brad Whitlock
-// Creation:   Thu Jul 28 11:00:29 PDT 2005
+// Creation:   Thu Feb 7 17:07:22 PST 2008
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 QWidget *
-QvisAnnotationWindow::Create3DTabForGridAndTicks(QWidget *parentWidget)
+QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 {
     QWidget *top0 = new QWidget(parentWidget);
     QVBoxLayout *top0Layout = new QVBoxLayout(top0);
@@ -920,43 +734,26 @@ QvisAnnotationWindow::Create3DTabForGridAndTicks(QWidget *parentWidget)
     top->setFrameStyle(QFrame::NoFrame);
     top0Layout->addWidget(top);
     top0Layout->addStretch(10);
-    QGridLayout *rLayout = new QGridLayout(top, 4, 4);
+    QGridLayout *rLayout = new QGridLayout(top, 5, 2);
     rLayout->setSpacing(5);
     rLayout->setMargin(5);
+    rLayout->setColStretch(1, 10);
 
-    // Create the group of check boxes for the 3D grid lines.
-    gridLinesButtons = new QButtonGroup(0, "gridLinesButtons");
-    connect(gridLinesButtons, SIGNAL(clicked(int)),
-            this, SLOT(gridLinesChanged(int)));
-    QCheckBox *cb = new QCheckBox("X", top, "gridLinesButtons_X");
-    gridLinesButtons->insert(cb);
-    rLayout->addWidget(cb, 0, 1);
-    cb = new QCheckBox("Y", top, "gridLinesButtons_Y");
-    gridLinesButtons->insert(cb);
-    rLayout->addWidget(cb, 0, 2);
-    cb = new QCheckBox("Z", top, "gridLinesButtons_Z");
-    gridLinesButtons->insert(cb);
-    rLayout->addWidget(cb, 0, 3);
-    QLabel *l = new QLabel(gridLinesButtons, "Show grid lines",
-        top, "gridLinesLabel");
-    rLayout->addWidget(l, 0, 0);
+    int row = 0;
+    labelAutoSetScalingToggle = new QCheckBox("Auto scale label values", top,
+                                         "labelAutoSetScalingToggle");
+    connect(labelAutoSetScalingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(labelAutoSetScalingChecked(bool)));
+    rLayout->addMultiCellWidget(labelAutoSetScalingToggle, row, row, 0, 1);
+    ++row;
 
-    // Create the group of check boxes for the 3D tick marks.
-    axisTicksButtons = new QButtonGroup(0, "axisTicksButtons");
-    connect(axisTicksButtons, SIGNAL(clicked(int)),
-            this, SLOT(axisTicksChanged(int)));
-    cb = new QCheckBox("X", top, "axisTicksButtons_X");
-    axisTicksButtons->insert(cb);
-    rLayout->addWidget(cb, 1, 1);
-    cb = new QCheckBox("Y", top, "axisTicksButtons_Y");
-    axisTicksButtons->insert(cb);
-    rLayout->addWidget(cb, 1, 2);
-    cb = new QCheckBox("Z", top, "axisTicksButtons_Z");
-    axisTicksButtons->insert(cb);
-    rLayout->addWidget(cb, 1, 3);
-    l = new QLabel(axisTicksButtons, "Show tick marks",
-                   top, "axisTicksLabel");
-    rLayout->addWidget(l, 1, 0);
+    // Create auto set ticks check box.
+    axesAutoSetTicksToggle = new QCheckBox("Auto set ticks", top,
+                                         "axesAutoSetTicksToggle");
+    connect(axesAutoSetTicksToggle, SIGNAL(toggled(bool)),
+            this, SLOT(axesAutoSetTicksChecked(bool)));
+    rLayout->addMultiCellWidget(axesAutoSetTicksToggle, row, row, 0, 1);
+    ++row;
 
     // Create the 3D tick mark locations combobox.
     axes3DTickLocationComboBox = new QComboBox(top, "axes3DTickLocationComboBox");
@@ -965,10 +762,11 @@ QvisAnnotationWindow::Create3DTabForGridAndTicks(QWidget *parentWidget)
     axes3DTickLocationComboBox->insertItem("Both",    2);
     connect(axes3DTickLocationComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTickLocationChanged(int)));
-    rLayout->addMultiCellWidget(axes3DTickLocationComboBox, 2, 2, 1, 3);
-    l = new QLabel(axes3DTickLocationComboBox, "Tick mark locations",
+    rLayout->addWidget(axes3DTickLocationComboBox, row, 1);
+    QLabel *l = new QLabel(axes3DTickLocationComboBox, "Tick mark locations",
                    top, "axes3DTickLocationLabel");
-    rLayout->addWidget(l, 2, 0);
+    rLayout->addWidget(l, row, 0);
+    ++row;
 
     // Create the 3D axes type combobox.
     axes3DTypeComboBox = new QComboBox(top, "axes3DTypeComboBox");
@@ -979,162 +777,21 @@ QvisAnnotationWindow::Create3DTabForGridAndTicks(QWidget *parentWidget)
     axes3DTypeComboBox->insertItem("Static edges",   4);
     connect(axes3DTypeComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTypeChanged(int)));
-    rLayout->addMultiCellWidget(axes3DTypeComboBox, 3, 3, 1, 3);
+    rLayout->addWidget(axes3DTypeComboBox, row, 1);
     l = new QLabel(axes3DTypeComboBox, "Axis type",
                    top, "axes3DTypeLabel");
-    rLayout->addWidget(l, 3, 0);
+    rLayout->addWidget(l, row, 0);
+    ++row;
 
-    return top0;
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::Create3DTabForTitleAndLabels
-//
-// Purpose: 
-//   Creates the title and labels tab for 3D.
-//
-// Arguments:
-//   parentWidget : The parent of all of the widgets to be created.
-//
-// Returns:    The widget that contains all of the widgets.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jul 28 11:00:29 PDT 2005
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-QWidget *
-QvisAnnotationWindow::Create3DTabForTitleAndLabels(QWidget *parentWidget)
-{
-    QWidget *top0 = new QWidget(parentWidget);
-    QVBoxLayout *top0Layout = new QVBoxLayout(top0);
-    top0Layout->addSpacing(10);
-    QGroupBox *top = new QGroupBox(top0, "Create3DTabForTitleAndLabels");
-    top->setFrameStyle(QFrame::NoFrame);
-    top0Layout->addWidget(top);
-    top0Layout->addStretch(10);
-    QGridLayout *rLayout = new QGridLayout(top, 11, 3);
-    rLayout->setSpacing(5);
-    rLayout->setMargin(5);
-
-    labelAutoSetScalingToggle = new QCheckBox("Auto scale label values", top,
-                                         "labelAutoSetScalingToggle");
-    connect(labelAutoSetScalingToggle, SIGNAL(toggled(bool)),
-            this, SLOT(labelAutoSetScalingChecked(bool)));
-    rLayout->addMultiCellWidget(labelAutoSetScalingToggle, 0, 0, 0, 2);
-
-    // Create the group of check boxes for the 3D axis labels.
-    axisLabelsButtons = new QButtonGroup(0, "axisLabelsButtons");
-    connect(axisLabelsButtons, SIGNAL(clicked(int)),
-            this, SLOT(axisLabelsChanged(int)));
-    QCheckBox *cb = new QCheckBox("X", top, "axisLabelsButtons_X");
-    axisLabelsButtons->insert(cb);
-    rLayout->addWidget(cb, 1, 1);
-    cb = new QCheckBox("Y", top, "axisLabelsButtons_Y");
-    axisLabelsButtons->insert(cb);
-    rLayout->addWidget(cb, 1, 2);
-    cb = new QCheckBox("Z", top, "axisLabelsButtons_Z");
-    axisLabelsButtons->insert(cb);
-    rLayout->addWidget(cb, 1, 3);
-    QLabel *l = new QLabel(axisLabelsButtons, "Show labels",
-                   top, "axisLabelsLabel");
-    rLayout->addWidget(l, 1, 0);
-
-    // Create the text fields for the 3D label scaling.
-    labelScalingLabel = new QLabel("Label scale (x10^?)", top, 
-                                   "labelScalingLabel");
-    rLayout->addWidget(labelScalingLabel, 2, 0);
-    xLabelScalingLineEdit = new QNarrowLineEdit(top,
-        "xLabelScalingLineEdit");
-    connect(xLabelScalingLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(xLabelScalingChanged()));
-    rLayout->addWidget(xLabelScalingLineEdit, 2, 1);
-    yLabelScalingLineEdit = new QNarrowLineEdit(top,
-        "yLabelScalingLineEdit");
-    connect(yLabelScalingLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(yLabelScalingChanged()));
-    rLayout->addWidget(yLabelScalingLineEdit, 2, 2);
-    zLabelScalingLineEdit = new QNarrowLineEdit(top,
-        "zLabelScalingLineEdit");
-    connect(zLabelScalingLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(zLabelScalingChanged()));
-    rLayout->addWidget(zLabelScalingLineEdit, 2, 3);
-
-    // Create a toggle and line edit for setting the X-axis title.
-    xAxisUserTitleToggle = new QCheckBox("Set X-Axis title", top,
-        "xAxisUserTitleToggle");
-    connect(xAxisUserTitleToggle, SIGNAL(toggled(bool)),
-            this, SLOT(xAxisUserTitleChecked(bool)));
-    rLayout->addWidget(xAxisUserTitleToggle, 3, 0);
-    xAxisUserTitleLineEdit = new QNarrowLineEdit(top, 
-        "xAxisUserTitleLineEdit");
-    connect(xAxisUserTitleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(xAxisUserTitleLineEditChanged()));
-    rLayout->addMultiCellWidget(xAxisUserTitleLineEdit, 3, 3, 1, 3);
-
-    // Create a toggle and line edit for setting the X-axis Units.
-    xAxisUserUnitsToggle = new QCheckBox("Set X-Axis units", top,
-        "xAxisUserUnitsToggle");
-    connect(xAxisUserUnitsToggle, SIGNAL(toggled(bool)),
-            this, SLOT(xAxisUserUnitsChecked(bool)));
-    rLayout->addWidget(xAxisUserUnitsToggle, 4, 0);
-    xAxisUserUnitsLineEdit = new QNarrowLineEdit(top, 
-        "xAxisUserUnitsLineEdit");
-    connect(xAxisUserUnitsLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(xAxisUserUnitsLineEditChanged()));
-    rLayout->addMultiCellWidget(xAxisUserUnitsLineEdit, 4, 4, 1, 3);
-
-    // Create a toggle and line edit for setting the Y-axis title.
-    yAxisUserTitleToggle = new QCheckBox("Set Y-Axis title", top,
-        "yAxisUserTitleToggle");
-    connect(yAxisUserTitleToggle, SIGNAL(toggled(bool)),
-            this, SLOT(yAxisUserTitleChecked(bool)));
-    rLayout->addWidget(yAxisUserTitleToggle, 5, 0);
-    yAxisUserTitleLineEdit = new QNarrowLineEdit(top, 
-        "yAxisUserTitleLineEdit");
-    connect(yAxisUserTitleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(yAxisUserTitleLineEditChanged()));
-    rLayout->addMultiCellWidget(yAxisUserTitleLineEdit, 5, 5, 1, 3);
-
-    // Create a toggle and line edit for setting the Y-axis Units.
-    yAxisUserUnitsToggle = new QCheckBox("Set Y-Axis units", top,
-        "yAxisUserUnitsToggle");
-    connect(yAxisUserUnitsToggle, SIGNAL(toggled(bool)),
-            this, SLOT(yAxisUserUnitsChecked(bool)));
-    rLayout->addWidget(yAxisUserUnitsToggle, 6, 0);
-    yAxisUserUnitsLineEdit = new QNarrowLineEdit(top, 
-        "yAxisUserUnitsLineEdit");
-    connect(yAxisUserUnitsLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(yAxisUserUnitsLineEditChanged()));
-    rLayout->addMultiCellWidget(yAxisUserUnitsLineEdit, 6, 6, 1, 3);
-
-    // Create a toggle and line edit for setting the Z-axis title.
-    zAxisUserTitleToggle = new QCheckBox("Set Z-Axis title", top,
-        "zAxisUserTitleToggle");
-    connect(zAxisUserTitleToggle, SIGNAL(toggled(bool)),
-            this, SLOT(zAxisUserTitleChecked(bool)));
-    rLayout->addWidget(zAxisUserTitleToggle, 7, 0);
-    zAxisUserTitleLineEdit = new QNarrowLineEdit(top, 
-        "zAxisUserTitleLineEdit");
-    connect(zAxisUserTitleLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(zAxisUserTitleLineEditChanged()));
-    rLayout->addMultiCellWidget(zAxisUserTitleLineEdit, 7, 7, 1, 3);
-
-    // Create a toggle and line edit for setting the Z-axis Units.
-    zAxisUserUnitsToggle = new QCheckBox("Set Z-Axis units", top,
-        "zAxisUserUnitsToggle");
-    connect(zAxisUserUnitsToggle, SIGNAL(toggled(bool)),
-            this, SLOT(zAxisUserUnitsChecked(bool)));
-    rLayout->addWidget(zAxisUserUnitsToggle, 8, 0);
-    zAxisUserUnitsLineEdit = new QNarrowLineEdit(top, 
-        "zAxisUserUnitsLineEdit");
-    connect(zAxisUserUnitsLineEdit, SIGNAL(returnPressed()),
-            this, SLOT(zAxisUserUnitsLineEditChanged()));
-    rLayout->addMultiCellWidget(zAxisUserUnitsLineEdit, 8, 8, 1, 3);
+    // Create the 2D line width widget.
+    axesLineWidth = new QvisLineWidthWidget(0, top,
+        "axesLineWidth");
+    rLayout->addWidget(axesLineWidth, row, 1);
+    connect(axesLineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(axesLineWidthChanged(int)));
+    l = new QLabel("Line width", top, "axesLineWidthLabel");
+    rLayout->addWidget(l, row, 0);
+    ++row;
 
     return top0;
 }
@@ -1464,6 +1121,133 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 }
 
 // ****************************************************************************
+// Method: QvisAnnotationWindow::UpdateAxes2D
+//
+// Purpose: 
+//   Updates the 2D axis settings in the window.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 7 17:25:58 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::UpdateAxes2D()
+{
+    const Axes2D &axes = annotationAtts->GetAxes2D();
+
+    axesFlagToggle2D->blockSignals(true);
+    axesFlagToggle2D->setChecked(axes.GetVisible());
+    axesFlagToggle2D->blockSignals(false);
+    axes2DGroup->setEnabled(axes.GetVisible());
+
+    axesAutoSetTicksToggle2D->blockSignals(true);
+    axesAutoSetTicksToggle2D->setChecked(axes.GetAutoSetTicks());
+    axesAutoSetTicksToggle2D->blockSignals(false);
+
+    labelAutoSetScalingToggle2D->blockSignals(true);
+    labelAutoSetScalingToggle2D->setChecked(axes.GetAutoSetScaling());
+    labelAutoSetScalingToggle2D->blockSignals(false);
+
+    axesLineWidth2D->blockSignals(true);
+    axesLineWidth2D->SetLineWidth(axes.GetLineWidth());
+    axesLineWidth2D->blockSignals(false);
+ 
+    axesTickLocationComboBox2D->blockSignals(true);
+    axesTickLocationComboBox2D->setCurrentItem(axes.GetTickLocation());
+    axesTickLocationComboBox2D->blockSignals(false);
+
+    axesTicksComboBox2D->blockSignals(true);
+    axesTicksComboBox2D->setCurrentItem(axes.GetTickAxes());
+    axesTicksComboBox2D->blockSignals(false);
+
+    // Update the controls in the axes.
+    axes2D[0]->setAutoScaling(axes.GetAutoSetScaling());
+    axes2D[0]->setAutoTickMarks(axes.GetAutoSetTicks());
+    axes2D[0]->setAxisAttributes(axes.GetXAxis());
+    axes2D[1]->setAutoScaling(axes.GetAutoSetScaling());
+    axes2D[1]->setAutoTickMarks(axes.GetAutoSetTicks());
+    axes2D[1]->setAxisAttributes(axes.GetYAxis());
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::UpdateAxes3D
+//
+// Purpose: 
+//   Updates the 3D axis settings in the window.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 7 17:38:52 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::UpdateAxes3D()
+{
+    const Axes3D &axes = annotationAtts->GetAxes3D();
+
+    axes3DVisible->blockSignals(true);
+    axes3DVisible->setChecked(axes.GetVisible());
+    axes3DVisible->blockSignals(false);
+    axes3DGroup->setEnabled(axes.GetVisible());
+
+    axesAutoSetTicksToggle->blockSignals(true);
+    axesAutoSetTicksToggle->setChecked(axes.GetAutoSetTicks());
+    axesAutoSetTicksToggle->blockSignals(false);
+
+    labelAutoSetScalingToggle->blockSignals(true);
+    labelAutoSetScalingToggle->setChecked(axes.GetAutoSetScaling());
+    labelAutoSetScalingToggle->blockSignals(false);
+
+    axesLineWidth->blockSignals(true);
+    axesLineWidth->SetLineWidth(axes.GetLineWidth());
+    axesLineWidth->blockSignals(false);
+
+    axes3DTickLocationComboBox->blockSignals(true);
+    axes3DTickLocationComboBox->setCurrentItem(axes.GetTickLocation());
+    axes3DTickLocationComboBox->blockSignals(false);
+
+    axes3DTypeComboBox->blockSignals(true);
+    axes3DTypeComboBox->setCurrentItem(axes.GetAxesType());
+    axes3DTypeComboBox->blockSignals(false);
+
+    triadFlagToggle->blockSignals(true);
+    triadFlagToggle->setChecked(axes.GetTriadFlag());
+    triadFlagToggle->blockSignals(false);
+
+    bboxFlagToggle->blockSignals(true);
+    bboxFlagToggle->setChecked(axes.GetBboxFlag());
+    bboxFlagToggle->blockSignals(false);
+
+    // Update the controls in the axes.
+    axes3D[0]->setAutoScaling(axes.GetAutoSetScaling());
+    axes3D[0]->setAutoTickMarks(axes.GetAutoSetTicks());
+    axes3D[0]->setAxisAttributes(axes.GetXAxis());
+    axes3D[1]->setAutoScaling(axes.GetAutoSetScaling());
+    axes3D[1]->setAutoTickMarks(axes.GetAutoSetTicks());
+    axes3D[1]->setAxisAttributes(axes.GetYAxis());
+    axes3D[2]->setAutoScaling(axes.GetAutoSetScaling());
+    axes3D[2]->setAutoTickMarks(axes.GetAutoSetTicks());
+    axes3D[2]->setAxisAttributes(axes.GetZAxis());
+}
+
+// ****************************************************************************
 // Method: QvisAnnotationWindow::UpdateAnnotationControls
 //
 // Purpose: 
@@ -1525,23 +1309,17 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 //   Brad Whitlock, Fri Dec 14 16:41:02 PST 2007
 //   Made it use ids for case labels.
 //
+//   Brad Whitlock, Thu Feb 7 17:43:01 PST 2008
+//   Updated to new AnnotationAttributes interface.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
 {
-    QColor  c;
-    QString temp;
-    bool isGradient, axesAutoSetTicks, labelAutoSetScaling;
-    bool vals[4];
-    bool setAxisLabels2D = false;
-    bool setAxisTitles2D = false;
-    bool setGridLines2D = false;
-    bool setAxisLabels = false;
-    bool setAxisTitles = false;
-    bool setGridLines = false;
-    bool setAxisTicks = false;
-    const unsigned char *cptr;
+    QColor c;
+    bool isGradient, vals[4];
+    const unsigned char *cptr = 0;
 
     // Loop through all the attributes and do something for
     // each of them that changed. This function is only responsible
@@ -1556,321 +1334,41 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
 
         switch(i)
         {
-        case AnnotationAttributes::ID_axesFlag2D:
-            axesFlagToggle2D->blockSignals(true);
-            axesFlagToggle2D->setChecked(annotationAtts->GetAxesFlag2D());
-            axesFlagToggle2D->blockSignals(false);
-            axesGroup2D->setEnabled(annotationAtts->GetAxesFlag2D());
+        case AnnotationAttributes::ID_axes2D:
+            UpdateAxes2D();
             break;
-        case AnnotationAttributes::ID_axesAutoSetTicks2D:
-            axesAutoSetTicksToggle2D->blockSignals(true);
-            axesAutoSetTicksToggle2D->setChecked(annotationAtts->GetAxesAutoSetTicks2D());
-            axesAutoSetTicksToggle2D->blockSignals(false);
+        case AnnotationAttributes::ID_axes3D:
+            UpdateAxes3D();
+            break;
+        case AnnotationAttributes::ID_userInfoFlag:
+            userInfo->blockSignals(true);
+            userInfo->setChecked(annotationAtts->GetUserInfoFlag());
+            userInfo->blockSignals(false);
+            break;
+        case AnnotationAttributes::ID_userInfoFont:
+            userInfoFont->setFontAttributes(annotationAtts->GetUserInfoFont());
+            break;
+        case AnnotationAttributes::ID_databaseInfoFlag:
+            databaseInfo->blockSignals(true);
+            databaseInfo->setChecked(annotationAtts->GetDatabaseInfoFlag());
+            databaseInfo->blockSignals(false);
 
-            axesAutoSetTicks = (annotationAtts->GetAxesAutoSetTicks2D() == 1);
-            majorTickMinimumLabel2D->setEnabled(!axesAutoSetTicks);
-            xMajorTickMinimumLineEdit2D->setEnabled(!axesAutoSetTicks);
-            yMajorTickMinimumLineEdit2D->setEnabled(!axesAutoSetTicks);
-            majorTickMaximumLabel2D->setEnabled(!axesAutoSetTicks);
-            xMajorTickMaximumLineEdit2D->setEnabled(!axesAutoSetTicks);
-            yMajorTickMaximumLineEdit2D->setEnabled(!axesAutoSetTicks);
-            majorTickSpacingLabel2D->setEnabled(!axesAutoSetTicks);
-            xMajorTickSpacingLineEdit2D->setEnabled(!axesAutoSetTicks);
-            yMajorTickSpacingLineEdit2D->setEnabled(!axesAutoSetTicks);
-            minorTickSpacingLabel2D->setEnabled(!axesAutoSetTicks);
-            xMinorTickSpacingLineEdit2D->setEnabled(!axesAutoSetTicks);
-            yMinorTickSpacingLineEdit2D->setEnabled(!axesAutoSetTicks);
+            databasePathExpansionMode->setEnabled(annotationAtts->GetDatabaseInfoFlag());
+            databasePathExpansionModeLabel->setEnabled(annotationAtts->GetDatabaseInfoFlag());
             break;
-        case AnnotationAttributes::ID_labelAutoSetScaling2D:
-            labelAutoSetScalingToggle2D->blockSignals(true);
-            labelAutoSetScalingToggle2D->setChecked(annotationAtts->GetLabelAutoSetScaling2D());
-            labelAutoSetScalingToggle2D->blockSignals(false);
-
-            labelAutoSetScaling = (annotationAtts->GetLabelAutoSetScaling2D() == 1);
-            labelScalingLabel2D->setEnabled(!labelAutoSetScaling);
-            xLabelScalingLineEdit2D->setEnabled(!labelAutoSetScaling);
-            yLabelScalingLineEdit2D->setEnabled(!labelAutoSetScaling);
+        case AnnotationAttributes::ID_databaseInfoFont:
+            databaseInfoFont->setFontAttributes(annotationAtts->GetDatabaseInfoFont());
             break;
-        case AnnotationAttributes::ID_xAxisLabels2D:
-        case AnnotationAttributes::ID_yAxisLabels2D:
-            setAxisLabels2D = true;
+        case AnnotationAttributes::ID_databaseInfoExpansionMode:
+            databasePathExpansionMode->blockSignals(true);
+            databasePathExpansionMode->setCurrentItem(
+                                annotationAtts->GetDatabaseInfoExpansionMode());
+            databasePathExpansionMode->blockSignals(false);
             break;
-        case AnnotationAttributes::ID_xAxisTitle2D:
-        case AnnotationAttributes::ID_yAxisTitle2D:
-            setAxisTitles2D = true;
-            break;
-        case AnnotationAttributes::ID_xGridLines2D:
-        case AnnotationAttributes::ID_yGridLines2D:
-            setGridLines2D = true;
-            break;
-        case AnnotationAttributes::ID_xMajorTickMinimum2D:
-            temp.setNum(annotationAtts->GetXMajorTickMinimum2D());
-            xMajorTickMinimumLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_yMajorTickMinimum2D:
-            temp.setNum(annotationAtts->GetYMajorTickMinimum2D());
-            yMajorTickMinimumLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_xMajorTickMaximum2D:
-            temp.setNum(annotationAtts->GetXMajorTickMaximum2D());
-            xMajorTickMaximumLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_yMajorTickMaximum2D:
-            temp.setNum(annotationAtts->GetYMajorTickMaximum2D());
-            yMajorTickMaximumLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_xMajorTickSpacing2D:
-            temp.setNum(annotationAtts->GetXMajorTickSpacing2D());
-            xMajorTickSpacingLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_yMajorTickSpacing2D:
-            temp.setNum(annotationAtts->GetYMajorTickSpacing2D());
-            yMajorTickSpacingLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_xMinorTickSpacing2D:
-            temp.setNum(annotationAtts->GetXMinorTickSpacing2D());
-            xMinorTickSpacingLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_yMinorTickSpacing2D:
-            temp.setNum(annotationAtts->GetYMinorTickSpacing2D());
-            yMinorTickSpacingLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_xLabelFontHeight2D:
-            temp.setNum(annotationAtts->GetXLabelFontHeight2D());
-            xLabelFontHeightLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_yLabelFontHeight2D:
-            temp.setNum(annotationAtts->GetYLabelFontHeight2D());
-            yLabelFontHeightLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_xTitleFontHeight2D:
-            temp.setNum(annotationAtts->GetXTitleFontHeight2D());
-            xTitleFontHeightLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_yTitleFontHeight2D:
-            temp.setNum(annotationAtts->GetYTitleFontHeight2D());
-            yTitleFontHeightLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_xLabelScaling2D:
-            temp.sprintf("%d", annotationAtts->GetXLabelScaling2D());
-            xLabelScalingLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_yLabelScaling2D:
-            temp.sprintf("%d", annotationAtts->GetYLabelScaling2D());
-            yLabelScalingLineEdit2D->setText(temp);
-            break;
-        case AnnotationAttributes::ID_axesLineWidth2D:
-            axesLineWidth2D->blockSignals(true);
-            axesLineWidth2D->SetLineWidth(annotationAtts->GetAxesLineWidth2D());
-            axesLineWidth2D->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_axesTickLocation2D:
-            axesTickLocationComboBox2D->blockSignals(true);
-            axesTickLocationComboBox2D->setCurrentItem(annotationAtts->GetAxesTickLocation2D());
-            axesTickLocationComboBox2D->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_axesTicks2D:
-            axesTicksComboBox2D->blockSignals(true);
-            axesTicksComboBox2D->setCurrentItem(annotationAtts->GetAxesTicks2D());
-            axesTicksComboBox2D->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_xAxisUserTitle2D:
-            xAxisUserTitleLineEdit2D->setText(annotationAtts->GetXAxisUserTitle2D().c_str());
-            break;
-        case AnnotationAttributes::ID_yAxisUserTitle2D:
-            yAxisUserTitleLineEdit2D->setText(annotationAtts->GetYAxisUserTitle2D().c_str());
-            break;
-        case AnnotationAttributes::ID_xAxisUserTitleFlag2D:
-            xAxisUserTitleToggle2D->blockSignals(true);
-            xAxisUserTitleToggle2D->setChecked(annotationAtts->GetXAxisUserTitleFlag2D());
-            xAxisUserTitleToggle2D->blockSignals(false);
-
-            xAxisUserTitleLineEdit2D->setEnabled(annotationAtts->GetXAxisUserTitleFlag2D());
-            break;
-        case AnnotationAttributes::ID_yAxisUserTitleFlag2D:
-            yAxisUserTitleToggle2D->blockSignals(true);
-            yAxisUserTitleToggle2D->setChecked(annotationAtts->GetYAxisUserTitleFlag2D());
-            yAxisUserTitleToggle2D->blockSignals(false);
-
-            yAxisUserTitleLineEdit2D->setEnabled(annotationAtts->GetYAxisUserTitleFlag2D());
-            break;
-        case AnnotationAttributes::ID_xAxisUserUnits2D:
-            xAxisUserUnitsLineEdit2D->setText(annotationAtts->GetXAxisUserUnits2D().c_str());
-            break;
-        case AnnotationAttributes::ID_yAxisUserUnits2D:
-            yAxisUserUnitsLineEdit2D->setText(annotationAtts->GetYAxisUserUnits2D().c_str());
-            break;
-        case AnnotationAttributes::ID_xAxisUserUnitsFlag2D:
-            xAxisUserUnitsToggle2D->blockSignals(true);
-            xAxisUserUnitsToggle2D->setChecked(annotationAtts->GetXAxisUserUnitsFlag2D());
-            xAxisUserUnitsToggle2D->blockSignals(false);
-
-            xAxisUserUnitsLineEdit2D->setEnabled(annotationAtts->GetXAxisUserUnitsFlag2D());
-            break;
-        case AnnotationAttributes::ID_yAxisUserUnitsFlag2D:
-            yAxisUserUnitsToggle2D->blockSignals(true);
-            yAxisUserUnitsToggle2D->setChecked(annotationAtts->GetYAxisUserUnitsFlag2D());
-            yAxisUserUnitsToggle2D->blockSignals(false);
-
-            yAxisUserUnitsLineEdit2D->setEnabled(annotationAtts->GetYAxisUserUnitsFlag2D());
-            break;
-        case AnnotationAttributes::ID_axesFlag:
-            axes3DFlagToggle->blockSignals(true);
-            axes3DFlagToggle->setChecked(annotationAtts->GetAxesFlag());
-            axes3DFlagToggle->blockSignals(false);
-            axes3DGroup->setEnabled(annotationAtts->GetAxesFlag());
-            break;
-        case AnnotationAttributes::ID_axesAutoSetTicks:
-#if 0
-            axesAutoSetTicksToggle->blockSignals(true);
-            axesAutoSetTicksToggle->setChecked(annotationAtts->GetAutoSetTicks());
-            axesAutoSetTicksToggle->blockSignals(false);
-            // Make the tick locations text fields not enabled.
-#endif
-            break;
-        case AnnotationAttributes::ID_labelAutoSetScaling:
-            labelAutoSetScalingToggle->blockSignals(true);
-            labelAutoSetScalingToggle->setChecked(
-                annotationAtts->GetLabelAutoSetScaling());
-            labelAutoSetScalingToggle->blockSignals(false);
-
-            labelAutoSetScaling = (annotationAtts->GetLabelAutoSetScaling() == 1);
-            labelScalingLabel->setEnabled(!labelAutoSetScaling);
-            xLabelScalingLineEdit->setEnabled(!labelAutoSetScaling);
-            yLabelScalingLineEdit->setEnabled(!labelAutoSetScaling);
-            zLabelScalingLineEdit->setEnabled(!labelAutoSetScaling);
-            break;
-        case AnnotationAttributes::ID_xAxisLabels:
-        case AnnotationAttributes::ID_yAxisLabels:
-        case AnnotationAttributes::ID_zAxisLabels:
-            setAxisLabels = true;
-            break;
-        case AnnotationAttributes::ID_xAxisTitle:
-        case AnnotationAttributes::ID_yAxisTitle:
-        case AnnotationAttributes::ID_zAxisTitle:
-            setAxisTitles = true;
-            break;
-        case AnnotationAttributes::ID_xGridLines:
-        case AnnotationAttributes::ID_yGridLines:
-        case AnnotationAttributes::ID_zGridLines:
-            setGridLines = true;
-            break;
-        case AnnotationAttributes::ID_xAxisTicks:
-        case AnnotationAttributes::ID_yAxisTicks:
-        case AnnotationAttributes::ID_zAxisTicks:
-            setAxisTicks = true;
-            break;
-        case AnnotationAttributes::ID_xMajorTickMinimum:
-        case AnnotationAttributes::ID_yMajorTickMinimum:
-        case AnnotationAttributes::ID_zMajorTickMinimum:
-        case AnnotationAttributes::ID_xMajorTickMaximum:
-        case AnnotationAttributes::ID_yMajorTickMaximum:
-        case AnnotationAttributes::ID_zMajorTickMaximum:
-        case AnnotationAttributes::ID_xMajorTickSpacing:
-        case AnnotationAttributes::ID_yMajorTickSpacing:
-        case AnnotationAttributes::ID_zMajorTickSpacing:
-        case AnnotationAttributes::ID_xMinorTickSpacing:
-        case AnnotationAttributes::ID_yMinorTickSpacing:
-        case AnnotationAttributes::ID_zMinorTickSpacing:
-        case AnnotationAttributes::ID_xLabelFontHeight:
-        case AnnotationAttributes::ID_yLabelFontHeight:
-        case AnnotationAttributes::ID_zLabelFontHeight:
-        case AnnotationAttributes::ID_xTitleFontHeight:
-        case AnnotationAttributes::ID_yTitleFontHeight:
-        case AnnotationAttributes::ID_zTitleFontHeight:
-            // IMPLEMENT
-            break;
-        case AnnotationAttributes::ID_xLabelScaling:
-            temp.sprintf("%d", annotationAtts->GetXLabelScaling());
-            xLabelScalingLineEdit->setText(temp);
-            break;
-        case AnnotationAttributes::ID_yLabelScaling:
-            temp.sprintf("%d", annotationAtts->GetYLabelScaling());
-            yLabelScalingLineEdit->setText(temp);
-            break;
-        case AnnotationAttributes::ID_zLabelScaling:
-            temp.sprintf("%d", annotationAtts->GetZLabelScaling());
-            zLabelScalingLineEdit->setText(temp);
-            break;
-        case AnnotationAttributes::ID_xAxisUserTitle:
-            xAxisUserTitleLineEdit->setText(annotationAtts->GetXAxisUserTitle().c_str());
-            break;
-        case AnnotationAttributes::ID_yAxisUserTitle:
-            yAxisUserTitleLineEdit->setText(annotationAtts->GetYAxisUserTitle().c_str());
-            break;
-        case AnnotationAttributes::ID_zAxisUserTitle:
-            zAxisUserTitleLineEdit->setText(annotationAtts->GetZAxisUserTitle().c_str());
-            break;
-        case AnnotationAttributes::ID_xAxisUserTitleFlag:
-            xAxisUserTitleToggle->blockSignals(true);
-            xAxisUserTitleToggle->setChecked(annotationAtts->GetXAxisUserTitleFlag());
-            xAxisUserTitleToggle->blockSignals(false);
-
-            xAxisUserTitleLineEdit->setEnabled(annotationAtts->GetXAxisUserTitleFlag());
-            break;
-        case AnnotationAttributes::ID_yAxisUserTitleFlag:
-            yAxisUserTitleToggle->blockSignals(true);
-            yAxisUserTitleToggle->setChecked(annotationAtts->GetYAxisUserTitleFlag());
-            yAxisUserTitleToggle->blockSignals(false);
-
-            yAxisUserTitleLineEdit->setEnabled(annotationAtts->GetYAxisUserTitleFlag());
-            break;
-        case AnnotationAttributes::ID_zAxisUserTitleFlag:
-            zAxisUserTitleToggle->blockSignals(true);
-            zAxisUserTitleToggle->setChecked(annotationAtts->GetZAxisUserTitleFlag());
-            zAxisUserTitleToggle->blockSignals(false);
-
-            zAxisUserTitleLineEdit->setEnabled(annotationAtts->GetZAxisUserTitleFlag());
-            break;
-        case AnnotationAttributes::ID_xAxisUserUnits:
-            xAxisUserUnitsLineEdit->setText(annotationAtts->GetXAxisUserUnits().c_str());
-            break;
-        case AnnotationAttributes::ID_yAxisUserUnits:
-            yAxisUserUnitsLineEdit->setText(annotationAtts->GetYAxisUserUnits().c_str());
-            break;
-        case AnnotationAttributes::ID_zAxisUserUnits:
-            zAxisUserUnitsLineEdit->setText(annotationAtts->GetZAxisUserUnits().c_str());
-            break;
-        case AnnotationAttributes::ID_xAxisUserUnitsFlag:
-            xAxisUserUnitsToggle->blockSignals(true);
-            xAxisUserUnitsToggle->setChecked(annotationAtts->GetXAxisUserUnitsFlag());
-            xAxisUserUnitsToggle->blockSignals(false);
-
-            xAxisUserUnitsLineEdit->setEnabled(annotationAtts->GetXAxisUserUnitsFlag());
-            break;
-        case AnnotationAttributes::ID_yAxisUserUnitsFlag:
-            yAxisUserUnitsToggle->blockSignals(true);
-            yAxisUserUnitsToggle->setChecked(annotationAtts->GetYAxisUserUnitsFlag());
-            yAxisUserUnitsToggle->blockSignals(false);
-
-            yAxisUserUnitsLineEdit->setEnabled(annotationAtts->GetYAxisUserUnitsFlag());
-            break;
-        case AnnotationAttributes::ID_zAxisUserUnitsFlag:
-            zAxisUserUnitsToggle->blockSignals(true);
-            zAxisUserUnitsToggle->setChecked(annotationAtts->GetZAxisUserUnitsFlag());
-            zAxisUserUnitsToggle->blockSignals(false);
-
-            zAxisUserUnitsLineEdit->setEnabled(annotationAtts->GetZAxisUserUnitsFlag());
-            break;
-        case AnnotationAttributes::ID_axesTickLocation:
-            axes3DTickLocationComboBox->blockSignals(true);
-            axes3DTickLocationComboBox->setCurrentItem(annotationAtts->GetAxesTickLocation());
-            axes3DTickLocationComboBox->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_axesType:
-            axes3DTypeComboBox->blockSignals(true);
-            axes3DTypeComboBox->setCurrentItem(annotationAtts->GetAxesType());
-            axes3DTypeComboBox->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_triadFlag:
-            triadFlagToggle->blockSignals(true);
-            triadFlagToggle->setChecked(annotationAtts->GetTriadFlag());
-            triadFlagToggle->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_bboxFlag:
-            bboxFlagToggle->blockSignals(true);
-            bboxFlagToggle->setChecked(annotationAtts->GetBboxFlag());
-            bboxFlagToggle->blockSignals(false);
+        case AnnotationAttributes::ID_legendInfoFlag:
+            legendInfo->blockSignals(true);
+            legendInfo->setChecked(annotationAtts->GetLegendInfoFlag());
+            legendInfo->blockSignals(false);
             break;
         case AnnotationAttributes::ID_backgroundColor:
             cptr = annotationAtts->GetBackgroundColor().GetColor();
@@ -1930,27 +1428,6 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
         case AnnotationAttributes::ID_backgroundImage:
             backgroundImage->setText(annotationAtts->GetBackgroundImage().c_str());
             break;
-        case AnnotationAttributes::ID_userInfoFlag:
-            userInfo->blockSignals(true);
-            userInfo->setChecked(annotationAtts->GetUserInfoFlag());
-            userInfo->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_databaseInfoFlag:
-            databaseInfo->blockSignals(true);
-            databaseInfo->setChecked(annotationAtts->GetDatabaseInfoFlag());
-            databaseInfo->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_databaseInfoExpansionMode:
-            databasePathExpansionMode->blockSignals(true);
-            databasePathExpansionMode->setCurrentItem(
-                                annotationAtts->GetDatabaseInfoExpansionMode());
-            databasePathExpansionMode->blockSignals(false);
-            break;
-        case AnnotationAttributes::ID_legendInfoFlag:
-            legendInfo->blockSignals(true);
-            legendInfo->setChecked(annotationAtts->GetLegendInfoFlag());
-            legendInfo->blockSignals(false);
-            break;
         case AnnotationAttributes::ID_imageRepeatX:
             imageRepeatX->blockSignals(true);
             imageRepeatX->setValue(annotationAtts->GetImageRepeatX());
@@ -1963,62 +1440,6 @@ QvisAnnotationWindow::UpdateAnnotationControls(bool doAll)
             break;
         }
     } // end for
-
-    // Set the buttons groups.
-    if(setAxisLabels2D)
-    {
-        vals[0] = annotationAtts->GetXAxisLabels2D();
-        vals[1] = annotationAtts->GetYAxisLabels2D();
-        SetButtonGroup(axisLabelsButtons2D, vals);
-    }
-
-    if(setAxisTitles2D)
-    {
-        vals[0] = annotationAtts->GetXAxisTitle2D();
-        vals[1] = annotationAtts->GetYAxisTitle2D();
-        SetButtonGroup(axisTitlesButtons2D, vals);
-    }
-
-    if(setGridLines2D)
-    {
-        vals[0] = annotationAtts->GetXGridLines2D();
-        vals[1] = annotationAtts->GetYGridLines2D();
-        SetButtonGroup(gridLinesButtons2D, vals);
-    }
-
-    if(setAxisLabels)
-    {
-        vals[0] = annotationAtts->GetXAxisLabels();
-        vals[1] = annotationAtts->GetYAxisLabels();
-        vals[2] = annotationAtts->GetZAxisLabels();
-        SetButtonGroup(axisLabelsButtons, vals);
-    }
-
-    if(setAxisTitles)
-    {
-#if 0
-        vals[0] = annotationAtts->GetXAxisTitle();
-        vals[1] = annotationAtts->GetYAxisTitle();
-        vals[2] = annotationAtts->GetZAxisTitle();
-        SetButtonGroup(axisTitlesButtons, vals);
-#endif
-    }
-
-    if(setGridLines)
-    {
-        vals[0] = annotationAtts->GetXGridLines();
-        vals[1] = annotationAtts->GetYGridLines();
-        vals[2] = annotationAtts->GetZGridLines();
-        SetButtonGroup(gridLinesButtons, vals);
-    }
-
-    if(setAxisTicks)
-    {
-        vals[0] = annotationAtts->GetXAxisTicks();
-        vals[1] = annotationAtts->GetYAxisTicks();
-        vals[2] = annotationAtts->GetZAxisTicks();
-        SetButtonGroup(axisTicksButtons, vals);
-    }
 }
 
 // ****************************************************************************
@@ -2144,561 +1565,44 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
 // Creation:   Mon Nov  4 12:21:02 PST 2002
 //
 // Modifications:
-//   Eric Brugger, Tue Jun 24 16:04:01 PDT 2003
-//   Added the ability to control the 2d axes line width and replaced the
-//   2d font size setting with individual controls for setting the x label,
-//   y label, x title, and y title font heights.
-//
-//   Kathleen Bonnell, Tue Dec 16 11:34:33 PST 2003 
-//   Added the ability to control the 2d & 3d label scaling exponents.
-//
-//   Brad Whitlock, Wed Jul 27 17:35:59 PST 2005
-//   Added code to get axis labels and units.
-//
-//   Brad Whitlock, Wed Nov 14 13:30:23 PST 2007
-//   Added support for background images.
+//   Brad Whitlock, Fri Feb 8 10:47:31 PDT 2008
+//   Totally rewrote.
 //
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::GetCurrentValues(int which_widget)
 {
-    bool okay, doAll = (which_widget == -1);
-    QString msg, temp;
+    bool doAll = (which_widget == -1);
 
-    // Do the 2d x major tick minimum value
-    if (which_widget == 0 || doAll)
+    if(which_widget == AnnotationAttributes::ID_axes2D || doAll)
     {
-        temp = xMajorTickMinimumLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetXMajorTickMinimum2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D X major tick mark minimum value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetXMajorTickMinimum2D());
-            Error(msg);
-            annotationAtts->SetXMajorTickMinimum2D(
-                annotationAtts->GetXMajorTickMinimum2D());
-        }
+        annotationAtts->GetAxes2D().SetXAxis(axes2D[0]->getAxisAttributes());
+        annotationAtts->GetAxes2D().SetYAxis(axes2D[1]->getAxisAttributes());
+        annotationAtts->SelectAxes2D();
     }
 
-    // Do the 2d y major tick minimum value
-    if (which_widget == 1 || doAll)
+    if(which_widget == AnnotationAttributes::ID_axes3D || doAll)
     {
-        temp = yMajorTickMinimumLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetYMajorTickMinimum2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D Y major tick mark minimum value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetYMajorTickMinimum2D());
-            Error(msg);
-            annotationAtts->SetYMajorTickMinimum2D(
-                annotationAtts->GetYMajorTickMinimum2D());
-        }
+        annotationAtts->GetAxes3D().SetXAxis(axes3D[0]->getAxisAttributes());
+        annotationAtts->GetAxes3D().SetYAxis(axes3D[1]->getAxisAttributes());
+        annotationAtts->GetAxes3D().SetZAxis(axes3D[2]->getAxisAttributes());
+        annotationAtts->SelectAxes3D();
     }
 
-    // Do the 2d x major tick maximum value
-    if (which_widget == 2 || doAll)
+    if(which_widget == AnnotationAttributes::ID_userInfoFont || doAll)
     {
-        temp = xMajorTickMaximumLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetXMajorTickMaximum2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D X major tick mark maximum value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetXMajorTickMaximum2D());
-            Error(msg);
-            annotationAtts->SetXMajorTickMaximum2D(
-                annotationAtts->GetXMajorTickMaximum2D());
-        }
+        annotationAtts->SetDatabaseInfoFont(userInfoFont->getFontAttributes());
     }
 
-    // Do the 2d y major tick maximum value
-    if (which_widget == 3 || doAll)
+    if(which_widget == AnnotationAttributes::ID_databaseInfoFont || doAll)
     {
-        temp = yMajorTickMaximumLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetYMajorTickMaximum2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D Y major tick mark maximum value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetYMajorTickMaximum2D());
-            Error(msg);
-            annotationAtts->SetYMajorTickMaximum2D(
-                annotationAtts->GetYMajorTickMaximum2D());
-        }
+        annotationAtts->SetDatabaseInfoFont(databaseInfoFont->getFontAttributes());
     }
 
-    // Do the 2d x major tick spacing value
-    if (which_widget == 4 || doAll)
+    if (which_widget == AnnotationAttributes::ID_backgroundImage || doAll)
     {
-        temp = xMajorTickSpacingLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetXMajorTickSpacing2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D X major tick mark spacing value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetXMajorTickSpacing2D());
-            Error(msg);
-            annotationAtts->SetXMajorTickSpacing2D(
-                annotationAtts->GetXMajorTickSpacing2D());
-        }
-    }
-
-    // Do the 2d y major tick spacing value
-    if (which_widget == 5 || doAll)
-    {
-        temp = yMajorTickSpacingLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetYMajorTickSpacing2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D Y major tick mark spacing value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetYMajorTickSpacing2D());
-            Error(msg);
-            annotationAtts->SetYMajorTickSpacing2D(
-                annotationAtts->GetYMajorTickSpacing2D());
-        }
-    }
-
-    // Do the 2d x minor tick spacing value
-    if (which_widget == 6 || doAll)
-    {
-        temp = xMinorTickSpacingLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetXMinorTickSpacing2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D X minor tick mark spacing value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetXMinorTickSpacing2D());
-            Error(msg);
-            annotationAtts->SetXMinorTickSpacing2D(
-                annotationAtts->GetXMinorTickSpacing2D());
-        }
-    }
-
-    // Do the 2d y minor tick spacing value
-    if (which_widget == 7 || doAll)
-    {
-        temp = yMinorTickSpacingLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetYMinorTickSpacing2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D Y minor tick mark spacing value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetYMinorTickSpacing2D());
-            Error(msg);
-            annotationAtts->SetYMinorTickSpacing2D(
-                annotationAtts->GetYMinorTickSpacing2D());
-        }
-    }
-
-    // Do the 2d x label text height value
-    if (which_widget == 8 || doAll)
-    {
-        temp = xLabelFontHeightLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetXLabelFontHeight2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D X label text height value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetXLabelFontHeight2D());
-            Error(msg);
-            annotationAtts->SetXLabelFontHeight2D(
-                annotationAtts->GetXLabelFontHeight2D());
-        }
-    }
-
-    // Do the 2d y label text height value
-    if (which_widget == 9 || doAll)
-    {
-        temp = yLabelFontHeightLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetYLabelFontHeight2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D Y label text height value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetYLabelFontHeight2D());
-            Error(msg);
-            annotationAtts->SetYLabelFontHeight2D(
-                annotationAtts->GetYLabelFontHeight2D());
-        }
-    }
-
-    // Do the 2d x title text height value
-    if (which_widget == 10 || doAll)
-    {
-        temp = xTitleFontHeightLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetXTitleFontHeight2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D X title text height value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetXTitleFontHeight2D());
-            Error(msg);
-            annotationAtts->SetXTitleFontHeight2D(
-                annotationAtts->GetXTitleFontHeight2D());
-        }
-    }
-
-    // Do the 2d y title text height value
-    if (which_widget == 11 || doAll)
-    {
-        temp = yTitleFontHeightLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            double v;
-            if (sscanf(temp.latin1(), "%lg", &v) == 1)
-            {
-                annotationAtts->SetYTitleFontHeight2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D Y title text height value was invalid. "
-                "Resetting to the last good value of %g.",
-                annotationAtts->GetYTitleFontHeight2D());
-            Error(msg);
-            annotationAtts->SetYTitleFontHeight2D(
-                annotationAtts->GetYTitleFontHeight2D());
-        }
-    }
-
-    // Do the 2d x label scaling value
-    if (which_widget == 12 || doAll)
-    {
-        temp = xLabelScalingLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            int v;
-            if (sscanf(temp.latin1(), "%d", &v) == 1)
-            {
-                annotationAtts->SetXLabelScaling2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D X Label scaling value was invalid. "
-                "Resetting to the last good value of %d.",
-                annotationAtts->GetXLabelScaling2D());
-            Error(msg);
-            annotationAtts->SetXLabelScaling2D(
-                annotationAtts->GetXLabelScaling2D());
-        }
-    }
-
-    // Do the 2d y label scaling value
-    if (which_widget == 13 || doAll)
-    {
-        temp = yLabelScalingLineEdit2D->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            int v;
-            if (sscanf(temp.latin1(), "%d", &v) == 1)
-            {
-                annotationAtts->SetYLabelScaling2D(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 2D Y Label scaling value was invalid. "
-                "Resetting to the last good value of %d.",
-                annotationAtts->GetYLabelScaling2D());
-            Error(msg);
-            annotationAtts->SetYLabelScaling2D(
-                annotationAtts->GetYLabelScaling2D());
-        }
-    }
-
-    // Do the 3d x label scaling value
-    if (which_widget == 14 || doAll)
-    {
-        temp = xLabelScalingLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            int v;
-            if (sscanf(temp.latin1(), "%d", &v) == 1)
-            {
-                annotationAtts->SetXLabelScaling(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 3D X Label scaling value was invalid. "
-                "Resetting to the last good value of %d.",
-                annotationAtts->GetXLabelScaling());
-            Error(msg);
-            annotationAtts->SetXLabelScaling(
-                annotationAtts->GetXLabelScaling());
-        }
-    }
-
-    // Do the 3d y label scaling value
-    if (which_widget == 15 || doAll)
-    {
-        temp = yLabelScalingLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            int v;
-            if (sscanf(temp.latin1(), "%d", &v) == 1)
-            {
-                annotationAtts->SetYLabelScaling(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 3D Y Label scaling value was invalid. "
-                "Resetting to the last good value of %d.",
-                annotationAtts->GetYLabelScaling());
-            Error(msg);
-            annotationAtts->SetYLabelScaling(
-                annotationAtts->GetYLabelScaling());
-        }
-    }
-
-    // Do the 3d z label scaling value
-    if (which_widget == 16 || doAll)
-    {
-        temp = zLabelScalingLineEdit->displayText().stripWhiteSpace();
-        okay = !temp.isEmpty();
-        if (okay)
-        {
-            int v;
-            if (sscanf(temp.latin1(), "%d", &v) == 1)
-            {
-                annotationAtts->SetZLabelScaling(v);
-            }
-            else
-                okay = false;
-        }
-
-        if (!okay)
-        {
-            msg.sprintf("The 3D Z Label scaling value was invalid. "
-                "Resetting to the last good value of %d.",
-                annotationAtts->GetZLabelScaling());
-            Error(msg);
-            annotationAtts->SetZLabelScaling(
-                annotationAtts->GetZLabelScaling());
-        }
-    }
-
-    // Do xAxisUserTitle2D
-    if (which_widget == 17 || doAll)
-    {
-        temp = xAxisUserTitleLineEdit2D->displayText().stripWhiteSpace();
-        annotationAtts->SetXAxisUserTitle2D(temp.latin1());
-    }
-
-    // Do yAxisUserTitle2D
-    if (which_widget == 18 || doAll)
-    {
-        temp = yAxisUserTitleLineEdit2D->displayText().stripWhiteSpace();
-        annotationAtts->SetYAxisUserTitle2D(temp.latin1());
-    }
-
-    // Do xAxisUserUnits2D
-    if (which_widget == 19 || doAll)
-    {
-        temp = xAxisUserUnitsLineEdit2D->displayText().stripWhiteSpace();
-        annotationAtts->SetXAxisUserUnits2D(temp.latin1());
-    }
-
-    // Do yAxisUserUnits2D
-    if (which_widget == 20 || doAll)
-    {
-        temp = yAxisUserUnitsLineEdit2D->displayText().stripWhiteSpace();
-        annotationAtts->SetYAxisUserUnits2D(temp.latin1());
-    }
-
-    // Do xAxisUserTitle
-    if (which_widget == 21 || doAll)
-    {
-        temp = xAxisUserTitleLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetXAxisUserTitle(temp.latin1());
-    }
-
-    // Do yAxisUserTitle
-    if (which_widget == 22 || doAll)
-    {
-        temp = yAxisUserTitleLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetYAxisUserTitle(temp.latin1());
-    }
-
-    // Do zAxisUserTitle
-    if (which_widget == 23 || doAll)
-    {
-        temp = zAxisUserTitleLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetZAxisUserTitle(temp.latin1());
-    }
-
-    // Do xAxisUserUnits
-    if (which_widget == 24 || doAll)
-    {
-        temp = xAxisUserUnitsLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetXAxisUserUnits(temp.latin1());
-    }
-
-    // Do yAxisUserUnits
-    if (which_widget == 25 || doAll)
-    {
-        temp = yAxisUserUnitsLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetYAxisUserUnits(temp.latin1());
-    }
-
-    // Do zAxisUserUnits
-    if (which_widget == 26 || doAll)
-    {
-        temp = zAxisUserUnitsLineEdit->displayText().stripWhiteSpace();
-        annotationAtts->SetZAxisUserUnits(temp.latin1());
-    }
-
-    // Do backgroundImage
-    if (which_widget == 27 || doAll)
-    {
-        temp = backgroundImage->displayText().stripWhiteSpace();
+        QString temp(backgroundImage->displayText().stripWhiteSpace());
         annotationAtts->SetBackgroundImage(temp.latin1());
     }
 }
@@ -2869,7 +1773,7 @@ QvisAnnotationWindow::SetFromNode(DataNode *parentNode, const int *borders)
     if((node = winNode->GetNode("activeTab")) != 0)
     {
         activeTab = node->AsInt();
-        if(activeTab != 0 && activeTab != 1 && activeTab != 2 && activeTab != 3)
+        if(activeTab < 0 || activeTab > 4)
             activeTab = 0;
     }
 
@@ -2957,6 +1861,266 @@ QvisAnnotationWindow::reset()
 }
 
 // ****************************************************************************
+// Method: QvisAnnotationWindow::tabSelected
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the tabs are changed.
+//
+// Arguments:
+//   index : The new active tab.
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Aug 27 17:14:17 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Tue Mar 20 14:33:49 PST 2007
+//   Fixed so it uses the new names.
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::tabSelected(const QString &tabLabel)
+{
+    if(tabLabel == QString("2D"))
+        activeTab = 0;
+    else if(tabLabel == QString("3D"))
+        activeTab = 1;
+    else if(tabLabel == QString("Colors"))
+        activeTab = 2;
+    else if(tabLabel == QString("Objects"))
+        activeTab = 3;
+    else
+    {
+        debug1 << "QvisAnnotationWindow::tabSelected: Unsupported tab name. FIX ME!" << endl;
+    }
+}
+
+// ****************************************************************************
+// Qt slots for the General tab
+// ****************************************************************************
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::userInfoChecked
+//
+// Purpose: 
+//   This is a Qt slot function that sets the user info flag.
+//
+// Arguments:
+//   val : The new user info value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jan 10 08:43:37 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::userInfoChecked(bool val)
+{
+    annotationAtts->SetUserInfoFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::userInfoFontChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the user font changes.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 11:29:48 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::userInfoFontChanged(const FontAttributes &f)
+{
+    annotationAtts->SetUserInfoFont(f);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::databaseInfoChecked
+//
+// Purpose:
+//   This is a Qt slot function that sets the database info flag.
+//
+// Arguments:
+//   val : The new database info value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 11 11:49:16 PDT 2002
+//
+// Modifications:
+//   Cyrus Harrison, Mon Jun 18 08:59:15 PDT 2007
+//   Added enable/disable for path expansion mode
+//
+//   Brad Whitlock, Fri Feb 8 13:56:08 PST 2008
+//   Moved db expansion coding to the UpdateWindow method.
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::databaseInfoChecked(bool val)
+{
+    annotationAtts->SetDatabaseInfoFlag(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::databasePathExpansionModeChanged
+//
+// Purpose:
+//   This is a Qt slot function that sets the database path expansion mode.
+//
+// Arguments:
+//   index : The new path expansion mode
+//
+// Programmer: Cyrus Harrison
+// Creation:   Monday June 18, 2007
+//
+// Modifications:
+//   Cyrus Harrison, Tue Jun 19 09:36:24 PDT 2007
+//   Removed cout debug print.
+//
+//   Cyrus Harrison, Thu Sep 27 09:10:25 PDT 2007
+//   Added support for new path expansion options
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::databasePathExpansionModeChanged(int index)
+{
+    if (index == 0)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::File);}
+    else if (index == 1)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Directory);}
+    else if (index == 2)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Full);}
+    else if (index == 3)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Smart);}
+    else if (index == 4)
+    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::SmartDirectory);}
+    
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::databaseInfoFontChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the database font changes.
+//
+// Arguments:
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 11:29:48 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::databaseInfoFontChanged(const FontAttributes &f)
+{
+    annotationAtts->SetDatabaseInfoFont(f);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::legendChecked
+//
+// Purpose: 
+//   This is a Qt slot function that sets the legend info flag.
+//
+// Arguments:
+//   val : The new legend info value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Apr 11 11:49:52 PDT 2002
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::legendChecked(bool val)
+{
+    annotationAtts->SetLegendInfoFlag(val);
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::turnOffAllAnnotations
+//
+// Purpose: 
+//   Turns off all annotations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Oct 31 14:40:08 PST 2003
+//
+// Modifications:
+//   Brad Whitlock, Wed Nov 26 14:48:03 PST 2003
+//   Added code to hide all of the annotation objects.
+//
+//   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
+//   Updated for new AnnotationAttributes.
+//
+// ****************************************************************************
+
+void
+QvisAnnotationWindow::turnOffAllAnnotations()
+{
+    //
+    // Hide all of the annotations that are not annotation objects.
+    //
+    annotationAtts->GetAxes2D().SetVisible(false);
+    annotationAtts->GetAxes3D().SetVisible(false);
+    annotationAtts->GetAxes3D().SetTriadFlag(false);
+    annotationAtts->GetAxes3D().SetBboxFlag(false);
+    annotationAtts->SetUserInfoFlag(false);
+    annotationAtts->SetDatabaseInfoFlag(false);
+    annotationAtts->SetLegendInfoFlag(false);
+    Apply();
+
+    //
+    // Hide all of the annotation objects.
+    //
+    if(annotationObjectList->GetNumAnnotations() > 0)
+    {
+        for(int i = 0; i < annotationObjectList->GetNumAnnotations(); ++i)
+        {           
+            AnnotationObject &annot = annotationObjectList->operator[](i);
+            annot.SetVisible(false);
+        }
+
+        ApplyObjectList();
+    }
+}
+
+// ****************************************************************************
+// Qt slots for the 2D tab
+// ****************************************************************************
+
+// ****************************************************************************
 // Method: QvisAnnotationWindow::axesFlagChecked2D
 //
 // Purpose: 
@@ -2975,12 +2139,16 @@ QvisAnnotationWindow::reset()
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Renamed the method and modified to match changes in annotationAtts.
 //   
+//   Brad Whitlock, Fri Feb 8 10:56:51 PDT 2008
+//   Updated AnnotationAttributes.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::axesFlagChecked2D(bool val)
 {
-    annotationAtts->SetAxesFlag2D(val);
+    annotationAtts->GetAxes2D().SetVisible(val);
+    annotationAtts->SelectAxes2D();
     Apply();
 }
 
@@ -3000,13 +2168,16 @@ QvisAnnotationWindow::axesFlagChecked2D(bool val)
 // Creation:   Mon Nov  4 12:21:02 PST 2002
 //
 // Modifications:
+//   Brad Whitlock, Fri Feb 8 10:56:51 PDT 2008
+//   Updated AnnotationAttributes.
 //   
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::axesAutoSetTicksChecked2D(bool val)
 {
-    annotationAtts->SetAxesAutoSetTicks2D(val);
+    annotationAtts->GetAxes2D().SetAutoSetTicks(val);
+    annotationAtts->SelectAxes2D();
     Apply();
 }
 
@@ -3027,409 +2198,18 @@ QvisAnnotationWindow::axesAutoSetTicksChecked2D(bool val)
 // Creation:   December 11, 2003 
 //
 // Modifications:
+//   Brad Whitlock, Fri Feb 8 10:56:51 PDT 2008
+//   Updated AnnotationAttributes.
 //   
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::labelAutoSetScalingChecked2D(bool val)
 {
-    annotationAtts->SetLabelAutoSetScaling2D(val);
+    annotationAtts->GetAxes2D().SetAutoSetScaling(val);
+    annotationAtts->SelectAxes2D();
     Apply();
 }
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::axisLabelsChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that tells the attributes which 2d axes will
-//   have labels.
-//
-// Arguments:
-//   index : The index of the axis. (e.g. X=0, Y=1)
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::axisLabelsChanged2D(int index)
-{
-    if(index == 0)
-       annotationAtts->SetXAxisLabels2D(!annotationAtts->GetXAxisLabels2D());
-    else if(index == 1)
-       annotationAtts->SetYAxisLabels2D(!annotationAtts->GetYAxisLabels2D());
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::axisTitlesChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that tells the attributes which 2d axes will
-//   have titles.
-//
-// Arguments:
-//   index : The index of the axis. (e.g. X=0, Y=1)
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::axisTitlesChanged2D(int index)
-{
-    if(index == 0)
-       annotationAtts->SetXAxisTitle2D(!annotationAtts->GetXAxisTitle2D());
-    else if(index == 1)
-       annotationAtts->SetYAxisTitle2D(!annotationAtts->GetYAxisTitle2D());
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::gridLinesChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that tells the attributes which 2d axes will
-//   have grid lines.
-//
-// Arguments:
-//   index : The index of the axis. (e.g. X=0, Y=1)
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::gridLinesChanged2D(int index)
-{
-    if(index == 0)
-       annotationAtts->SetXGridLines2D(!annotationAtts->GetXGridLines2D());
-    else if(index == 1)
-       annotationAtts->SetYGridLines2D(!annotationAtts->GetYGridLines2D());
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::xMajorTickMinimumChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d x major tick mark
-//   minimum is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::xMajorTickMinimumChanged2D()
-{
-    GetCurrentValues(0);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::yMajorTickMinimumChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d y major tick mark
-//   minimum is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::yMajorTickMinimumChanged2D()
-{
-    GetCurrentValues(1);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::xMajorTickMaximumChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d x major tick mark
-//   maximum is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::xMajorTickMaximumChanged2D()
-{
-    GetCurrentValues(2);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::yMajorTickMaximumChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d y major tick mark
-//   maximum is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::yMajorTickMaximumChanged2D()
-{
-    GetCurrentValues(3);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::xMajorTickSpacingChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d x major tick mark
-//   spacing is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::xMajorTickSpacingChanged2D()
-{
-    GetCurrentValues(4);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::yMajorTickSpacingChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d y major tick mark
-//   spacing is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::yMajorTickSpacingChanged2D()
-{
-    GetCurrentValues(5);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::xMinorTickSpacingChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d x minor tick mark
-//   spacing is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::xMinorTickSpacingChanged2D()
-{
-    GetCurrentValues(6);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::yMinorTickSpacingChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d y minor tick mark
-//   spacing is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Mon Nov  4 12:21:02 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::yMinorTickSpacingChanged2D()
-{
-    GetCurrentValues(7);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::xLabelFontHeightChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d x label text
-//   height is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Tue Jun 24 16:04:01 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::xLabelFontHeightChanged2D()
-{
-    GetCurrentValues(8);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::yLabelFontHeightChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d y label text
-//   height is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Tue Jun 24 16:04:01 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::yLabelFontHeightChanged2D()
-{
-    GetCurrentValues(9);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::xTitleFontHeightChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d x title text
-//   height is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Tue Jun 24 16:04:01 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::xTitleFontHeightChanged2D()
-{
-    GetCurrentValues(10);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::yTitleFontHeightChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d y title text
-//   height is changed.
-//
-// Programmer: Eric Brugger
-// Creation:   Tue Jun 24 16:04:01 PDT 2003
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::yTitleFontHeightChanged2D()
-{
-    GetCurrentValues(11);
-    SetUpdate(false);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::xLabelScalingChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d x label scaling is
-//   changed.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 11, 2003 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::xLabelScalingChanged2D()
-{
-    GetCurrentValues(12);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::yLabelScalingChanged2D
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 2d y label scaling is
-//   changed.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 11, 2003 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::yLabelScalingChanged2D()
-{
-    GetCurrentValues(13);
-    SetUpdate(false);
-    Apply();
-}
-
 
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axesLineWidthChanged2D
@@ -3445,13 +2225,16 @@ QvisAnnotationWindow::yLabelScalingChanged2D()
 // Creation:   Tue Jun 24 16:04:01 PDT 2003
 //
 // Modifications:
+//   Brad Whitlock, Fri Feb 8 10:56:51 PDT 2008
+//   Updated AnnotationAttributes.
 //
 // ****************************************************************************
  
 void
 QvisAnnotationWindow::axesLineWidthChanged2D(int index)
 {
-    annotationAtts->SetAxesLineWidth2D(index);
+    annotationAtts->GetAxes2D().SetLineWidth(index);
+    annotationAtts->SelectAxes2D();
     SetUpdate(false);
     Apply();
 }
@@ -3472,22 +2255,26 @@ QvisAnnotationWindow::axesLineWidthChanged2D(int index)
 // Modifications:
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Renamed the method and modified to match changes in annotationAtts.
-//   
+//
+//   Brad Whitlock, Fri Feb 8 11:00:54 PDT 2008
+//   Updated AnnotationAttributes.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::axesTicksChanged2D(int index)
 {
     if (index == 0)
-        annotationAtts->SetAxesTicks2D(AnnotationAttributes::Off);
+        annotationAtts->GetAxes2D().SetTickAxes(Axes2D::Off);
     else if (index == 1)
-        annotationAtts->SetAxesTicks2D(AnnotationAttributes::Bottom);
+        annotationAtts->GetAxes2D().SetTickAxes(Axes2D::Bottom);
     else if (index == 2)
-        annotationAtts->SetAxesTicks2D(AnnotationAttributes::Left);
+        annotationAtts->GetAxes2D().SetTickAxes(Axes2D::Left);
     else if (index == 3)
-        annotationAtts->SetAxesTicks2D(AnnotationAttributes::BottomLeft);
+        annotationAtts->GetAxes2D().SetTickAxes(Axes2D::BottomLeft);
     else if (index == 4)
-        annotationAtts->SetAxesTicks2D(AnnotationAttributes::All);
+        annotationAtts->GetAxes2D().SetTickAxes(Axes2D::All);
+    annotationAtts->SelectAxes2D();
     SetUpdate(false);
     Apply();
 }
@@ -3508,78 +2295,87 @@ QvisAnnotationWindow::axesTicksChanged2D(int index)
 // Modifications:
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Renamed the method and modified to match changes in annotationAtts.
-//   
+//
+//   Brad Whitlock, Fri Feb 8 11:03:19 PDT 2008
+//   Updated AnnotationAttributes.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::axesTickLocationChanged2D(int index)
 {
     if (index == 0)
-        annotationAtts->SetAxesTickLocation2D(AnnotationAttributes::Inside);
+        annotationAtts->GetAxes2D().SetTickLocation(Axes2D::Inside);
     else if (index == 1)
-        annotationAtts->SetAxesTickLocation2D(AnnotationAttributes::Outside);
+        annotationAtts->GetAxes2D().SetTickLocation(Axes2D::Outside);
     else if (index == 2)
-        annotationAtts->SetAxesTickLocation2D(AnnotationAttributes::Both);
+        annotationAtts->GetAxes2D().SetTickLocation(Axes2D::Both);
+    annotationAtts->SelectAxes2D();
     SetUpdate(false);
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisAnnotationWindow::xAxisChanged2D
+//
+// Purpose: 
+//   This is a Qt slot function that is called when anything in the 2D X-axis
+//   page changes.
+//
+// Arguments:
+//   aa : The new axis attributes.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 11:13:19 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
 
 void
-QvisAnnotationWindow::xAxisUserTitleChecked2D(bool val)
+QvisAnnotationWindow::xAxisChanged2D(const AxisAttributes &aa)
 {
-    annotationAtts->SetXAxisUserTitleFlag2D(val);
+    annotationAtts->GetAxes2D().SetXAxis(aa);
+    annotationAtts->SelectAxes2D();
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisAnnotationWindow::yAxisChanged2D
+//
+// Purpose: 
+//   This is a Qt slot function that is called when anything in the 2D Y-axis
+//   page changes.
+//
+// Arguments:
+//   aa : The new axis attributes.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 11:13:19 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
-QvisAnnotationWindow::xAxisUserTitleLineEditChanged2D()
+QvisAnnotationWindow::yAxisChanged2D(const AxisAttributes &aa)
 {
-    GetCurrentValues(17);
+    annotationAtts->GetAxes2D().SetYAxis(aa);
+    annotationAtts->SelectAxes2D();
     Apply();
 }
 
-void
-QvisAnnotationWindow::yAxisUserTitleChecked2D(bool val)
-{
-    annotationAtts->SetYAxisUserTitleFlag2D(val);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::yAxisUserTitleLineEditChanged2D()
-{
-    GetCurrentValues(18);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::xAxisUserUnitsChecked2D(bool val)
-{
-    annotationAtts->SetXAxisUserUnitsFlag2D(val);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::xAxisUserUnitsLineEditChanged2D()
-{
-    GetCurrentValues(19);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::yAxisUserUnitsChecked2D(bool val)
-{
-    annotationAtts->SetYAxisUserUnitsFlag2D(val);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::yAxisUserUnitsLineEditChanged2D()
-{
-    GetCurrentValues(20);
-    Apply();
-}
+// ****************************************************************************
+// Qt slots for the 3D tab
+// ****************************************************************************
 
 // ****************************************************************************
 // Method: QvisAnnotationWindow::axes3DFlagChecked
@@ -3599,16 +2395,19 @@ QvisAnnotationWindow::yAxisUserUnitsLineEditChanged2D()
 // Modifications:
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Modified to match changes in annotationAtts.
-//   
+//
+//   Brad Whitlock, Fri Feb 8 11:04:27 PDT 2008
+//   Updated AnnotationAttributes.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::axes3DFlagChecked(bool val)
 {
-    annotationAtts->SetAxesFlag(val);
+    annotationAtts->GetAxes3D().SetVisible(val);
+    annotationAtts->SelectAxes3D();
     Apply();
 }
-
 
 // ****************************************************************************
 // Method: QvisAnnotationWindow::labelAutoSetScaling
@@ -3626,173 +2425,43 @@ QvisAnnotationWindow::axes3DFlagChecked(bool val)
 // Creation:   December 11, 2003 
 //
 // Modifications:
+//   Brad Whitlock, Fri Feb 8 11:04:27 PDT 2008
+//   Updated AnnotationAttributes.
 //   
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::labelAutoSetScalingChecked(bool val)
 {
-    annotationAtts->SetLabelAutoSetScaling(val);
+    annotationAtts->GetAxes3D().SetAutoSetScaling(val);
+    annotationAtts->SelectAxes3D();
     Apply();
 }
 
-
 // ****************************************************************************
-// Method: QvisAnnotationWindow::axisLabelsChanged
+// Method: QvisAnnotationWindow::axesAutoSetTicksChecked
 //
 // Purpose: 
-//   This is a Qt slot function that tells the attributes which 3d axes will
-//   have labels.
+//   This is a Qt slot function that sets the 3D auto set ticks flag.
 //
 // Arguments:
-//   index : The index of the axis. (e.g. X=0, Y=1, Z=2)
+//   val : The new toggle state.
+//
+// Note:       SetUpdate(false) is not called because we want the widget
+//             sensitivity to update.
 //
 // Programmer: Brad Whitlock
-// Creation:   Sun Jun 17 23:57:47 PST 2001
+// Creation:   Fri Feb 8 12:11:47 PDT 2008
 //
 // Modifications:
 //   
 // ****************************************************************************
 
 void
-QvisAnnotationWindow::axisLabelsChanged(int index)
+QvisAnnotationWindow::axesAutoSetTicksChecked(bool val)
 {
-    if(index == 0)
-       annotationAtts->SetXAxisLabels(!annotationAtts->GetXAxisLabels());
-    else if(index == 1)
-       annotationAtts->SetYAxisLabels(!annotationAtts->GetYAxisLabels());
-    else if(index == 2)
-       annotationAtts->SetZAxisLabels(!annotationAtts->GetZAxisLabels());
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::gridLinesChanged
-//
-// Purpose: 
-//   This is a Qt slot function that tells the attributes which 3d axes will
-//   have grid lines.
-//
-// Arguments:
-//   index : The index of the axis. (e.g. X=0, Y=1, Z=2)
-//
-// Programmer: Brad Whitlock
-// Creation:   Sun Jun 17 23:57:47 PST 2001
-//
-// Modifications:
-//   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
-//   Renamed the method and modified to match changes in annotationAtts.
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::gridLinesChanged(int index)
-{
-    if(index == 0)
-       annotationAtts->SetXGridLines(!annotationAtts->GetXGridLines());
-    else if(index == 1)
-       annotationAtts->SetYGridLines(!annotationAtts->GetYGridLines());
-    else if(index == 2)
-       annotationAtts->SetZGridLines(!annotationAtts->GetZGridLines());
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::axisTicksChanged
-//
-// Purpose: 
-//   This is a Qt slot function that tells the attributes which 3d axes will
-//   have tick marks.
-//
-// Arguments:
-//   index : The index of the axis. (e.g. X=0, Y=1, Z=2)
-//
-// Programmer: Brad Whitlock
-// Creation:   Sun Jun 17 23:57:47 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::axisTicksChanged(int index)
-{
-    if(index == 0)
-       annotationAtts->SetXAxisTicks(!annotationAtts->GetXAxisTicks());
-    else if(index == 1)
-       annotationAtts->SetYAxisTicks(!annotationAtts->GetYAxisTicks());
-    else if(index == 2)
-       annotationAtts->SetZAxisTicks(!annotationAtts->GetZAxisTicks());
-    SetUpdate(false);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::xLabelScalingChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 3d x label scaling is
-//   changed.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 11, 2003 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::xLabelScalingChanged()
-{
-    GetCurrentValues(14);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::yLabelScalingChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 3d y label scaling is
-//   changed.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 11, 2003 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::yLabelScalingChanged()
-{
-    GetCurrentValues(15);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::zLabelScalingChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the 3d z label scaling is
-//   changed.
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   December 11, 2003 
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::zLabelScalingChanged()
-{
-    GetCurrentValues(16);
-    SetUpdate(false);
+    annotationAtts->GetAxes3D().SetAutoSetTicks(val);
+    annotationAtts->SelectAxes3D();
     Apply();
 }
 
@@ -3810,18 +2479,21 @@ QvisAnnotationWindow::zLabelScalingChanged()
 // Creation:   Sun Jun 17 23:59:33 PST 2001
 //
 // Modifications:
-//   
+//   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
+//   Updated AnnotationAttributes.
+//
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::axes3DTickLocationChanged(int index)
 {
     if (index == 0)
-        annotationAtts->SetAxesTickLocation(AnnotationAttributes::Inside);
+        annotationAtts->GetAxes3D().SetTickLocation(Axes3D::Inside);
     else if (index == 1)
-        annotationAtts->SetAxesTickLocation(AnnotationAttributes::Outside);
+        annotationAtts->GetAxes3D().SetTickLocation(Axes3D::Outside);
     else if (index == 1)
-        annotationAtts->SetAxesTickLocation(AnnotationAttributes::Both);
+        annotationAtts->GetAxes3D().SetTickLocation(Axes3D::Both);
+    annotationAtts->SelectAxes3D();
     SetUpdate(false);
     Apply();
 }
@@ -3842,6 +2514,9 @@ QvisAnnotationWindow::axes3DTickLocationChanged(int index)
 // Modifications:
 //   Eric Brugger, Mon Nov  4 12:21:02 PST 2002
 //   Modified to match changes in annotationAtts.
+//
+//   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
+//   Updated AnnotationAttributes.
 //   
 // ****************************************************************************
 
@@ -3849,15 +2524,16 @@ void
 QvisAnnotationWindow::axes3DTypeChanged(int index)
 {
     if (index == 0)
-        annotationAtts->SetAxesType(AnnotationAttributes::ClosestTriad);
+        annotationAtts->GetAxes3D().SetAxesType(Axes3D::ClosestTriad);
     else if (index == 1)
-        annotationAtts->SetAxesType(AnnotationAttributes::FurthestTriad);
+        annotationAtts->GetAxes3D().SetAxesType(Axes3D::FurthestTriad);
     else if (index == 2)
-        annotationAtts->SetAxesType(AnnotationAttributes::OutsideEdges);
+        annotationAtts->GetAxes3D().SetAxesType(Axes3D::OutsideEdges);
     else if (index == 3)
-        annotationAtts->SetAxesType(AnnotationAttributes::StaticTriad);
+        annotationAtts->GetAxes3D().SetAxesType(Axes3D::StaticTriad);
     else if (index == 4)
-        annotationAtts->SetAxesType(AnnotationAttributes::StaticEdges);
+        annotationAtts->GetAxes3D().SetAxesType(Axes3D::StaticEdges);
+    annotationAtts->SelectAxes3D();
     SetUpdate(false);
     Apply();
 }
@@ -3876,13 +2552,16 @@ QvisAnnotationWindow::axes3DTypeChanged(int index)
 // Creation:   Mon Jun 18 00:01:11 PDT 2001
 //
 // Modifications:
+//   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
+//   Updated AnnotationAttributes.
 //   
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::triadFlagChecked(bool val)
 {
-    annotationAtts->SetTriadFlag(val);
+    annotationAtts->GetAxes3D().SetTriadFlag(val);
+    annotationAtts->SelectAxes3D();
     SetUpdate(false);
     Apply();
 }
@@ -3901,100 +2580,136 @@ QvisAnnotationWindow::triadFlagChecked(bool val)
 // Creation:   Mon Jun 18 00:02:06 PDT 2001
 //
 // Modifications:
+//   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
+//   Updated for new AnnotationAttributes.
 //   
 // ****************************************************************************
 
 void
 QvisAnnotationWindow::bboxFlagChecked(bool val)
 {
-    annotationAtts->SetBboxFlag(val);
+    annotationAtts->GetAxes3D().SetBboxFlag(val);
+    annotationAtts->SelectAxes3D();
     SetUpdate(false);
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisAnnotationWindow::axesLineWidthChanged
+//
+// Purpose:
+//   This is a Qt slot function that is called when the 3D axes line width
+//   is changed.
+//
+// Arguments:
+//   index:    The new line width.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 11:16:17 PDT 2008
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
 void
-QvisAnnotationWindow::xAxisUserTitleChecked(bool val)
+QvisAnnotationWindow::axesLineWidthChanged(int index)
 {
-    annotationAtts->SetXAxisUserTitleFlag(val);
+    annotationAtts->GetAxes3D().SetLineWidth(index);
+    annotationAtts->SelectAxes3D();
+    SetUpdate(false);
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisAnnotationWindow::xAxisChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when anything in the 3D X-axis
+//   page changes.
+//
+// Arguments:
+//   aa : The new axis attributes.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 11:13:19 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
-QvisAnnotationWindow::xAxisUserTitleLineEditChanged()
+QvisAnnotationWindow::xAxisChanged(const AxisAttributes &aa)
 {
-    GetCurrentValues(21);
+    annotationAtts->GetAxes3D().SetXAxis(aa);
+    annotationAtts->SelectAxes3D();
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisAnnotationWindow::yAxisChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when anything in the 3D Y-axis
+//   page changes.
+//
+// Arguments:
+//   aa : The new axis attributes.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 11:13:19 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
-QvisAnnotationWindow::yAxisUserTitleChecked(bool val)
+QvisAnnotationWindow::yAxisChanged(const AxisAttributes &aa)
 {
-    annotationAtts->SetYAxisUserTitleFlag(val);
+    annotationAtts->GetAxes3D().SetYAxis(aa);
+    annotationAtts->SelectAxes3D();
     Apply();
 }
 
+// ****************************************************************************
+// Method: QvisAnnotationWindow::zAxisChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when anything in the 3D Z-axis
+//   page changes.
+//
+// Arguments:
+//   aa : The new axis attributes.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 8 11:13:19 PDT 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
 void
-QvisAnnotationWindow::yAxisUserTitleLineEditChanged()
+QvisAnnotationWindow::zAxisChanged(const AxisAttributes &aa)
 {
-    GetCurrentValues(22);
+    annotationAtts->GetAxes3D().SetZAxis(aa);
+    annotationAtts->SelectAxes3D();
     Apply();
 }
 
-void
-QvisAnnotationWindow::zAxisUserTitleChecked(bool val)
-{
-    annotationAtts->SetZAxisUserTitleFlag(val);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::zAxisUserTitleLineEditChanged()
-{
-    GetCurrentValues(23);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::xAxisUserUnitsChecked(bool val)
-{
-    annotationAtts->SetXAxisUserUnitsFlag(val);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::xAxisUserUnitsLineEditChanged()
-{
-    GetCurrentValues(24);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::yAxisUserUnitsChecked(bool val)
-{
-    annotationAtts->SetYAxisUserUnitsFlag(val);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::yAxisUserUnitsLineEditChanged()
-{
-    GetCurrentValues(25);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::zAxisUserUnitsChecked(bool val)
-{
-    annotationAtts->SetZAxisUserUnitsFlag(val);
-    Apply();
-}
-
-void
-QvisAnnotationWindow::zAxisUserUnitsLineEditChanged()
-{
-    GetCurrentValues(26);
-    Apply();
-}
+// ****************************************************************************
+// Qt slots for the Colors tab
+// ****************************************************************************
 
 // ****************************************************************************
 // Method: QvisAnnotationWindow::backgroundColorChanged
@@ -4201,7 +2916,7 @@ QvisAnnotationWindow::gradientStyleChanged(int index)
 void
 QvisAnnotationWindow::backgroundImageChanged()
 {
-    GetCurrentValues(27);
+    GetCurrentValues(AnnotationAttributes::ID_backgroundImage);
     Apply();
 }
 
@@ -4264,200 +2979,8 @@ QvisAnnotationWindow::imageRepeatYChanged(int value)
 }
 
 // ****************************************************************************
-// Method: QvisAnnotationWindow::tabSelected
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the tabs are changed.
-//
-// Arguments:
-//   index : The new active tab.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Aug 27 17:14:17 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Tue Mar 20 14:33:49 PST 2007
-//   Fixed so it uses the new names.
-//
+// Qt slots for the Objects tab
 // ****************************************************************************
-
-void
-QvisAnnotationWindow::tabSelected(const QString &tabLabel)
-{
-    if(tabLabel == QString("2D"))
-        activeTab = 0;
-    else if(tabLabel == QString("3D"))
-        activeTab = 1;
-    else if(tabLabel == QString("Colors"))
-        activeTab = 2;
-    else if(tabLabel == QString("Objects"))
-        activeTab = 3;
-    else
-    {
-        debug1 << "QvisAnnotationWindow::tabSelected: Unsupported tab name. FIX ME!" << endl;
-    }
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::userInfoChecked
-//
-// Purpose: 
-//   This is a Qt slot function that sets the user info flag.
-//
-// Arguments:
-//   val : The new user info value.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Jan 10 08:43:37 PDT 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::userInfoChecked(bool val)
-{
-    annotationAtts->SetUserInfoFlag(val);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::databaseInfoChecked
-//
-// Purpose:
-//   This is a Qt slot function that sets the database info flag.
-//
-// Arguments:
-//   val : The new database info value.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Apr 11 11:49:16 PDT 2002
-//
-// Modifications:
-//   Cyrus Harrison, Mon Jun 18 08:59:15 PDT 2007
-//   Added enable/disable for path expansion mode
-//
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::databaseInfoChecked(bool val)
-{
-    databasePathExpansionModeParent->setEnabled(val);
-    annotationAtts->SetDatabaseInfoFlag(val);
-    SetUpdate(false);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::databasePathExpansionModeChanged
-//
-// Purpose:
-//   This is a Qt slot function that sets the database path expansion mode.
-//
-// Arguments:
-//   index : The new path expansion mode
-//
-// Programmer: Cyrus Harrison
-// Creation:   Monday June 18, 2007
-//
-// Modifications:
-//   Cyrus Harrison, Tue Jun 19 09:36:24 PDT 2007
-//   Removed cout debug print.
-//
-//   Cyrus Harrison, Thu Sep 27 09:10:25 PDT 2007
-//   Added support for new path expansion options
-//
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::databasePathExpansionModeChanged(int index)
-{
-    if (index == 0)
-    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::File);}
-    else if (index == 1)
-    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Directory);}
-    else if (index == 2)
-    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Full);}
-    else if (index == 3)
-    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::Smart);}
-    else if (index == 4)
-    {annotationAtts->SetDatabaseInfoExpansionMode(AnnotationAttributes::SmartDirectory);}
-    
-    SetUpdate(false);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::legendChecked
-//
-// Purpose: 
-//   This is a Qt slot function that sets the legend info flag.
-//
-// Arguments:
-//   val : The new legend info value.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Apr 11 11:49:52 PDT 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::legendChecked(bool val)
-{
-    annotationAtts->SetLegendInfoFlag(val);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisAnnotationWindow::turnOffAllAnnotations
-//
-// Purpose: 
-//   Turns off all annotations.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Oct 31 14:40:08 PST 2003
-//
-// Modifications:
-//   Brad Whitlock, Wed Nov 26 14:48:03 PST 2003
-//   Added code to hide all of the annotation objects.
-//
-// ****************************************************************************
-
-void
-QvisAnnotationWindow::turnOffAllAnnotations()
-{
-    //
-    // Hide all of the annotations that are not annotation objects.
-    //
-    annotationAtts->SetAxesFlag2D(false);
-    annotationAtts->SetAxesFlag(false);
-    annotationAtts->SetTriadFlag(false);
-    annotationAtts->SetBboxFlag(false);
-    annotationAtts->SetUserInfoFlag(false);
-    annotationAtts->SetDatabaseInfoFlag(false);
-    annotationAtts->SetLegendInfoFlag(false);
-    Apply();
-
-    //
-    // Hide all of the annotation objects.
-    //
-    if(annotationObjectList->GetNumAnnotations() > 0)
-    {
-        for(int i = 0; i < annotationObjectList->GetNumAnnotations(); ++i)
-        {           
-            AnnotationObject &annot = annotationObjectList->operator[](i);
-            annot.SetVisible(false);
-        }
-
-        ApplyObjectList();
-    }
-}
 
 // ****************************************************************************
 // Method: QvisAnnotationWindow::setUpdateForWindow
