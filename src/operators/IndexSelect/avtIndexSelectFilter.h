@@ -44,7 +44,7 @@
 #define AVT_IndexSelect_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <IndexSelectAttributes.h>
 
 
@@ -90,7 +90,7 @@ class vtkVisItExtractRectilinearGrid;
 //
 // ****************************************************************************
 
-class avtIndexSelectFilter : public avtPluginStreamer
+class avtIndexSelectFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtIndexSelectFilter();

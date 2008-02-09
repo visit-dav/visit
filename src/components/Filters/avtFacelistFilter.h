@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 
 
 class   vtkRectilinearGridFacelistFilter;
@@ -114,7 +114,7 @@ class   avtMultiFacelist;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtFacelistFilter : public avtDataTreeStreamer
+class AVTFILTERS_API avtFacelistFilter : public avtSIMODataTreeIterator
 {
   public:
                                          avtFacelistFilter();

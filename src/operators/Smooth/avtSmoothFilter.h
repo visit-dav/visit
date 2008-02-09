@@ -44,7 +44,7 @@
 #define AVT_Smooth_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <SmoothOperatorAttributes.h>
 
 
@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtSmoothFilter : public avtPluginStreamer
+class avtSmoothFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtSmoothFilter();

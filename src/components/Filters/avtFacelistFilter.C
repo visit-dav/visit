@@ -749,7 +749,7 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label)
 //    Allow for curvilinear meshes to pass through unfacelisted.
 //
 //    Hank Childs, Thu Dec 28 09:23:45 PST 2006
-//    Change memory management, since inheritance from DataTreeStreamer,
+//    Change memory management, since inheritance from SIMODataTreeIterator,
 //    means that we can no longer access "ManageMemory".
 //
 // ****************************************************************************
@@ -904,7 +904,7 @@ avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds)
 //  Modifications:
 //
 //    Hank Childs, Thu Dec 28 09:48:44 PST 2006
-//    Change memory management, since re-inheritance from avtDataTreeStreamer,
+//    Change memory management, since re-inheritance from avtSIMODataTreeIterator,
 //    means "ManageMemory" is not available.
 //
 // ****************************************************************************

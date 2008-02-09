@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtDataTreeStreamer.C                           //
+//                           avtSIMODataTreeIterator.C                           //
 // ************************************************************************* //
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 
 #include <vtkDataSet.h>
 
@@ -53,14 +53,14 @@
 
 
 // ****************************************************************************
-//  Method: avtDataTreeStreamer constructor
+//  Method: avtSIMODataTreeIterator constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   June 20, 2001
 //
 // ****************************************************************************
 
-avtDataTreeStreamer::avtDataTreeStreamer()
+avtSIMODataTreeIterator::avtSIMODataTreeIterator()
 {
     currentNode = 0;
     totalNodes  = 0;
@@ -72,14 +72,14 @@ avtDataTreeStreamer::avtDataTreeStreamer()
 
 
 // ****************************************************************************
-//  Method: avtDataTreeStreamer destructor
+//  Method: avtSIMODataTreeIterator destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   November 6, 2001
 //
 // ****************************************************************************
 
-avtDataTreeStreamer::~avtDataTreeStreamer()
+avtSIMODataTreeIterator::~avtSIMODataTreeIterator()
 {
     if (trueSpatialExtents != NULL)
     {
@@ -95,7 +95,7 @@ avtDataTreeStreamer::~avtDataTreeStreamer()
 
 
 // ****************************************************************************
-//  Method: avtDataTreeStreamer::Execute
+//  Method: avtSIMODataTreeIterator::Execute
 //
 //  Purpose:
 //      Defines the pure virtual function execute.  This does the work of
@@ -131,7 +131,7 @@ avtDataTreeStreamer::~avtDataTreeStreamer()
 // ****************************************************************************
 
 void
-avtDataTreeStreamer::Execute(void)
+avtSIMODataTreeIterator::Execute(void)
 {
     //
     // This will walk through the data domains in a data tree.
@@ -154,7 +154,7 @@ avtDataTreeStreamer::Execute(void)
 
 
 // ****************************************************************************
-//  Method: avtDataTreeStreamer::Execute
+//  Method: avtSIMODataTreeIterator::Execute
 //
 //  Purpose:
 //    A recursive Execute method.  Walks down the tree and calls the virtual 
@@ -188,7 +188,7 @@ avtDataTreeStreamer::Execute(void)
 // ****************************************************************************
 
 avtDataTree_p
-avtDataTreeStreamer::Execute(avtDataTree_p inDT)
+avtSIMODataTreeIterator::Execute(avtDataTree_p inDT)
 {
     CheckAbort();
 
@@ -256,7 +256,7 @@ avtDataTreeStreamer::Execute(avtDataTree_p inDT)
 
 
 // ****************************************************************************
-//  Method: avtDataTreeStreamer::UpdateExtents
+//  Method: avtSIMODataTreeIterator::UpdateExtents
 //
 //  Purpose:
 //      Updates the extents that we are overriding with the current dataset.
@@ -277,7 +277,7 @@ avtDataTreeStreamer::Execute(avtDataTree_p inDT)
 // ****************************************************************************
 
 void
-avtDataTreeStreamer::UpdateExtents(avtDataTree_p tree)
+avtSIMODataTreeIterator::UpdateExtents(avtDataTree_p tree)
 {
     if (*tree == NULL)
     {

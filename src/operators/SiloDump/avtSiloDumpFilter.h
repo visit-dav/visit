@@ -44,7 +44,7 @@
 #define AVT_SiloDump_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <SiloDumpAttributes.h>
 #include <string>
 #include <vector>
@@ -64,7 +64,7 @@ struct DBfile;
 //
 // ****************************************************************************
 
-class avtSiloDumpFilter : public avtPluginStreamer
+class avtSiloDumpFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtSiloDumpFilter();

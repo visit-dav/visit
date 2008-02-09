@@ -44,7 +44,7 @@
 #define AVT_TraceHistory_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <TraceHistoryAttributes.h>
 
 

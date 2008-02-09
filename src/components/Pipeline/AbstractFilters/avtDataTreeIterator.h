@@ -37,32 +37,26 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtDataTreeStreamer.h                            //
+//                          avtDataTreeIterator.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_DATA_TREE_STREAMER_H
-#define AVT_DATA_TREE_STREAMER_H
+#ifndef AVT_DATA_TREE_ITERATOR_H
+#define AVT_DATA_TREE_ITERATOR_H
 
 #include <pipeline_exports.h>
 
-#include <avtDatasetToDatasetFilter.h>
-
-
-class  avtExtents;
+#include <avtSIMODataTreeIterator.h>
 
 
 // ****************************************************************************
-//  Class: avtDataTreeStreamer
+//  Class: avtDataTreeIterator
 //
 //  Purpose:
-//      A derived type of avtDatasetToDatasetFilter.  This will "stream" 
-//      datasets through a single filter one at a time during execution.  It
-//      could be part of the actual avtDatasetToDatasetFilter class, since
-//      almost every derived type of avtDatasetToDatasetFilter will be 
-//      interested in streaming their domains through, but it was made a
-//      separate class to separate what functionality was for a filter (or
-//      process object) in the pipeline and what sent domains through vtk
-//      filters one at a time.
+//      This is an abstract type.  Its purpose is to provide a service.  That
+//      service is that it walks through an input avtDataTree and calls the
+//      method "ExecuteData" once for each vtkDataSet in the tree.  In addition,
+//      it assembles an avtDataTree output from the outputs of each ExecuteData
+//      call.
 //
 //  Programmer: Hank Childs
 //  Creation:   July 24, 2000
@@ -70,61 +64,50 @@ class  avtExtents;
 //  Modifications:
 //
 //    Jeremy Meredith, Thu Sep 28 13:05:02 PDT 2000
-//    Nade ExecuteDomain take one vtkDataSet as input and and return
+//    Made ExecuteDomain take one vtkDataSet as input and and return
 //    a new output one.
 //
-//    Kathleen Bonnell, Fri Feb  9 14:47:10 PST 2001 
-//    Renamed this class from avtStreamer.  Made ExecuteDomain return
-//    an avtDomainTree.
+//    Kathleen Bonnell, Feb  9 14:47:10 PST 2001  
+//    Removed 'Execute' method, and made this class inherit from 
+//    avtDomainTreeDataTreeIterator.  Allows for derived types to still
+//    return vtkDataSet * from ExecuteDomain, but now wrapped in
+//    avtDomainTree.
 //
-//    Kathleen Bonnell, Thu Apr 12 10:25:04 PDT 2001 
-//    Renamed this class as avtDataTreeStreamer. Added recursive
-//    Execute method to walk down input tree.
+//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001 
+//    Change inheritance to avtSIMODataTreeIterator. 
 //
-//    Hank Childs, Wed Jun 20 09:39:01 PDT 2001
-//    Added support progress callback.
+//    Kathleen Bonnell, Wed Sep 19 13:35:35 PDT 200 
+//    Added string argument to Execute method. 
 //
-//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001
-//    Added string argument to ExecuteDataTree method. 
+//    Hank Childs, Fri Feb  1 14:48:15 PST 2002
+//    Added mechanism for managing memory for derived types.
 //
-//    Hank Childs, Wed Oct 24 14:21:18 PDT 2001
-//    Moved PreExecute and PostExecute to avtFilter.
-//
-//    Hank Childs, Tue Nov  6 11:46:10 PST 2001
-//    Add support for overriding extents.
+//    Hank Childs, Tue Sep 10 13:13:01 PDT 2002
+//    Better support for releasing data.
 //
 //    Hank Childs, Mon Dec 27 10:58:14 PST 2004
 //    Made inheritance virtual.
 //
+//    Hank Childs, Thu Dec 21 09:17:43 PST 2006
+//    Remove support for debug dumps.
+//
 // **************************************************************************** 
 
-class PIPELINE_API avtDataTreeStreamer : virtual public 
-                                                      avtDatasetToDatasetFilter
+class PIPELINE_API avtDataTreeIterator : virtual public avtSIMODataTreeIterator
 {
-   public:
-                             avtDataTreeStreamer();
-     virtual                ~avtDataTreeStreamer();
+  public:
+                             avtDataTreeIterator();
+    virtual                 ~avtDataTreeIterator();
+
+    virtual void             ReleaseData(void);
 
   protected:
-    int                      currentNode;
-    int                      totalNodes;
+    vtkDataSet              *lastDataset;
 
-    virtual void             Execute(void);
-    virtual avtDataTree_p    Execute(avtDataTree_p);
-    virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *,int,std::string) = 0;
+    virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *, int, std::string);
+    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string) = 0;
 
-    void                     OverrideTrueSpatialExtents(void)
-                                 { overrideTrueSpatialExtents = true; };
-    void                     OverrideTrueDataExtents(void)
-                                 { overrideTrueDataExtents = true; };
-
-  private:
-    bool                     overrideTrueSpatialExtents;
-    bool                     overrideTrueDataExtents;
-    avtExtents              *trueSpatialExtents;
-    avtExtents              *trueDataExtents;
-
-    void                     UpdateExtents(avtDataTree_p);
+    void                     ManageMemory(vtkDataSet *);
 };
 
 

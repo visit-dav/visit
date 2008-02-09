@@ -44,7 +44,7 @@
 #define AVT_Tube_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <TubeAttributes.h>
 
 
@@ -67,7 +67,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtTubeFilter : public avtPluginStreamer
+class avtTubeFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtTubeFilter();

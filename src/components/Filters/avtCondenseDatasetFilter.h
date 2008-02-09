@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 class vtkPolyDataRelevantPointsFilter;
@@ -87,7 +87,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtCondenseDatasetFilter : public avtStreamer
+class AVTFILTERS_API avtCondenseDatasetFilter : public avtDataTreeIterator
 {
   public:
                          avtCondenseDatasetFilter();

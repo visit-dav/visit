@@ -44,7 +44,7 @@
 #define AVT_ZoneDump_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <ZoneDumpAttributes.h>
 
 
@@ -66,7 +66,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtZoneDumpFilter : public avtPluginStreamer
+class avtZoneDumpFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtZoneDumpFilter();

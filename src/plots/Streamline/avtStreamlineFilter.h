@@ -42,7 +42,7 @@
 
 #ifndef AVT_STREAMLINE_FILTER_H
 #define AVT_STREAMLINE_FILTER_H
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 class vtkVisItStreamLine;
 class vtkTubeFilter;
@@ -93,7 +93,7 @@ class vtkAppendPolyData;
 //
 // ****************************************************************************
 
-class avtStreamlineFilter : public avtStreamer
+class avtStreamlineFilter : public avtDataTreeIterator
 {
   public:
                               avtStreamlineFilter();

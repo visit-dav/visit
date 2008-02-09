@@ -44,7 +44,7 @@
 #define AVT_Context_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <ContextAttributes.h>
 
 
@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtContextFilter : public avtPluginStreamer
+class avtContextFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtContextFilter();

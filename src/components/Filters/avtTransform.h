@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 class     vtkMatrix4x4;
 class     vtkRectilinearGrid;
@@ -87,7 +87,7 @@ class     vtkRectilinearGrid;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtTransform : public virtual avtStreamer
+class AVTFILTERS_API avtTransform : public virtual avtDataTreeIterator
 {
   public:
                                 avtTransform();

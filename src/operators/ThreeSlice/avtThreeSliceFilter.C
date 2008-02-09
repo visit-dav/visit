@@ -442,7 +442,7 @@ avtThreeSliceFilter::UpdateDataObjectInfo(void)
 void
 avtThreeSliceFilter::ReleaseData(void)
 {
-    avtPluginStreamer::ReleaseData();
+    avtPluginDataTreeIterator::ReleaseData();
 
     slicer->SetInput(NULL);
     vtkPolyData *p = vtkPolyData::New();

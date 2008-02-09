@@ -961,7 +961,7 @@ avtOnionPeelFilter::PostExecute()
 void 
 avtOnionPeelFilter::PreExecute()
 {
-    avtPluginStreamer::PreExecute();
+    avtPluginDataTreeIterator::PreExecute();
 
     successfullyExecuted = false;
 
@@ -1002,7 +1002,7 @@ avtOnionPeelFilter::PreExecute()
 void
 avtOnionPeelFilter::ReleaseData(void)
 {
-    avtPluginStreamer::ReleaseData();
+    avtPluginDataTreeIterator::ReleaseData();
     if (opf)
     {
         opf->SetInput(NULL);

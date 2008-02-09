@@ -44,7 +44,7 @@
 #define AVT_Histogram_FILTER_H
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 #include <HistogramAttributes.h>
 
@@ -77,7 +77,7 @@
 //
 // ****************************************************************************
 
-class avtHistogramFilter : public avtStreamer
+class avtHistogramFilter : public avtDataTreeIterator
 {
   public:
                               avtHistogramFilter();

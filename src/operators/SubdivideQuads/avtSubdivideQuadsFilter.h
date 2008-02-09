@@ -44,7 +44,7 @@
 #define AVT_SubdivideQuads_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <SubdivideQuadsAttributes.h>
 
 
@@ -86,7 +86,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtSubdivideQuadsFilter : public avtPluginStreamer
+class avtSubdivideQuadsFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtSubdivideQuadsFilter();

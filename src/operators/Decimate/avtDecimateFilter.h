@@ -44,7 +44,7 @@
 #define AVT_Decimate_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <DecimateAttributes.h>
 
 
@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtDecimateFilter : public avtPluginStreamer
+class avtDecimateFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtDecimateFilter();

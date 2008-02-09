@@ -1075,7 +1075,7 @@ avtContourFilter::CreateLabels()
 void
 avtContourFilter::ReleaseData(void)
 {
-    avtDataTreeStreamer::ReleaseData();
+    avtSIMODataTreeIterator::ReleaseData();
 
     cf->SetInput(NULL);
     vtkPolyData *p = vtkPolyData::New();

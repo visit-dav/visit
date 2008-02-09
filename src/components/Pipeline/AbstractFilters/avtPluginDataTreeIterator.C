@@ -36,14 +36,14 @@
 *
 *****************************************************************************/
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 
-avtPluginStreamer::avtPluginStreamer() : avtStreamer(), avtPluginFilter()
+avtPluginDataTreeIterator::avtPluginDataTreeIterator() : avtDataTreeIterator(), avtPluginFilter()
 {
     // Implementation needed for windows.
 }
 
-avtPluginStreamer::~avtPluginStreamer()
+avtPluginDataTreeIterator::~avtPluginDataTreeIterator()
 {
     // Implementation needed for windows.
 }

@@ -44,7 +44,7 @@
 #define AVT_LINEOUT_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 
 
 class vtkDataSet;
@@ -94,7 +94,7 @@ class vtkRectilinearGrid;
 //
 // ****************************************************************************
 
-class avtLineoutFilter : public avtStreamer
+class avtLineoutFilter : public avtDataTreeIterator
 {
   public:
                              avtLineoutFilter();

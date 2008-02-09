@@ -44,7 +44,7 @@
 #define AVT_RemoveCells_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <RemoveCellsAttributes.h>
 
 #include <vector>
@@ -64,7 +64,7 @@ using std::vector;
 //
 // ****************************************************************************
 
-class avtRemoveCellsFilter : public avtPluginStreamer
+class avtRemoveCellsFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtRemoveCellsFilter();

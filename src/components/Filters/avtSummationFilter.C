@@ -212,7 +212,7 @@ avtSummationFilter::IssueWarning(bool val)
 void
 avtSummationFilter::PreExecute(void)
 {
-    avtStreamer::PreExecute();
+    avtDataTreeIterator::PreExecute();
     sum = 0.;
 }
 
@@ -231,7 +231,7 @@ avtSummationFilter::PreExecute(void)
 void
 avtSummationFilter::PostExecute(void)
 {
-    avtStreamer::PostExecute();
+    avtDataTreeIterator::PostExecute();
 
     double newSum;
     SumDoubleArrayAcrossAllProcessors(&sum, &newSum, 1);

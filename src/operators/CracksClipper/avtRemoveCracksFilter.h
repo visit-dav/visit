@@ -44,7 +44,7 @@
 #define AVT_RemoveCracksFilter_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <CracksClipperAttributes.h>
 
 
@@ -66,7 +66,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtRemoveCracksFilter : public avtPluginStreamer
+class avtRemoveCracksFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtRemoveCracksFilter();

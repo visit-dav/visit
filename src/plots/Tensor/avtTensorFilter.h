@@ -44,7 +44,7 @@
 #define AVT_TENSOR_FILTER_H
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 class  vtkTensorReduceFilter;
 class  vtkVertexFilter;
@@ -66,7 +66,7 @@ class  vtkVertexFilter;
 //
 // ****************************************************************************
 
-class avtTensorFilter : public avtStreamer
+class avtTensorFilter : public avtDataTreeIterator
 {
   public:
                               avtTensorFilter(bool, int);

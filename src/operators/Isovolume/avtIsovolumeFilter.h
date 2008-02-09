@@ -44,7 +44,7 @@
 #define AVT_Isovolume_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <IsovolumeAttributes.h>
 
 
@@ -73,7 +73,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtIsovolumeFilter : public avtPluginStreamer
+class avtIsovolumeFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtIsovolumeFilter();

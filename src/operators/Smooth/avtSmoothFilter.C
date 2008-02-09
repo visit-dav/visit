@@ -148,7 +148,7 @@ avtSmoothFilter::Equivalent(const AttributeGroup *a)
 void
 avtSmoothFilter::PreExecute(void)
 {
-    avtPluginStreamer::PreExecute();
+    avtPluginDataTreeIterator::PreExecute();
 
     issuedWarning = false;
 }

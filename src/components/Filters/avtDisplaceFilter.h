@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 class vtkDataSet;
 
@@ -78,7 +78,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtDisplaceFilter : public avtStreamer
+class AVTFILTERS_API avtDisplaceFilter : public avtDataTreeIterator
 {
   public:
                          avtDisplaceFilter();

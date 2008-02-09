@@ -45,7 +45,7 @@
 
 
 #include <ParallelAxisAttributes.h>
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 
 #include <vector>
 #include <string>
@@ -157,7 +157,7 @@ class vtkPoints;
 //
 // ****************************************************************************
 
-class avtParallelAxisFilter : public avtDataTreeStreamer
+class avtParallelAxisFilter : public avtSIMODataTreeIterator
 {
 public:
                                 avtParallelAxisFilter(

@@ -44,7 +44,7 @@
 #define AVT_SLICE_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <SliceAttributes.h>
 
 class vtkDataSet;
@@ -128,7 +128,7 @@ class avtPointAttribute;
 //
 // ****************************************************************************
 
-class avtSliceFilter : public avtPluginStreamer
+class avtSliceFilter : public avtPluginDataTreeIterator
 {
   public:
                             avtSliceFilter();

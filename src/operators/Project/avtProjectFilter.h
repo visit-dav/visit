@@ -44,7 +44,7 @@
 #define AVT_Project_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <ProjectAttributes.h>
 
 class vtkDataSet;
@@ -72,7 +72,7 @@ class vtkRectilinearGrid;
 //
 // ****************************************************************************
 
-class avtProjectFilter : public avtPluginStreamer
+class avtProjectFilter : public avtPluginDataTreeIterator
 {
   public:
                         avtProjectFilter();

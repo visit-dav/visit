@@ -47,7 +47,7 @@
 
 #include <string>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 #include <avtTypes.h>
 
 class     vtkDataArray;

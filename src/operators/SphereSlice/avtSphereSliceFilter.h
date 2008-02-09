@@ -44,7 +44,7 @@
 #define AVT_SphereSlice_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <SphereSliceAttributes.h>
 
 
@@ -63,7 +63,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtSphereSliceFilter : public avtPluginStreamer
+class avtSphereSliceFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtSphereSliceFilter();

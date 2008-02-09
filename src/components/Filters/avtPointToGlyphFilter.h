@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 class vtkDataSet;
@@ -72,7 +72,7 @@ class vtkPolyData;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtPointToGlyphFilter : public avtStreamer
+class AVTFILTERS_API avtPointToGlyphFilter : public avtDataTreeIterator
 {
   public:
                          avtPointToGlyphFilter();

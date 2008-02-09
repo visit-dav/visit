@@ -108,7 +108,7 @@
 // ****************************************************************************
 
 avtScatterFilter::avtScatterFilter(const std::string &v, const ScatterAttributes &a)
-    : avtStreamer(), variableName(v), atts(a)
+    : avtDataTreeIterator(), variableName(v), atts(a)
 {
     needXExtents = false;
     xExtents[0] = 0., xExtents[1] = 1.;
@@ -192,7 +192,7 @@ avtScatterFilter::~avtScatterFilter()
 void
 avtScatterFilter::PreExecute(void)
 {
-    avtStreamer::PreExecute();
+    avtDataTreeIterator::PreExecute();
 
     const char *vars[5] = {0,0,0,0,0};
     PopulateNames(vars);

@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 #include <SurfaceFilterAttributes.h>
 
@@ -105,7 +105,7 @@ class vtkSurfaceFilter;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtSurfaceFilter : public avtStreamer
+class AVTFILTERS_API avtSurfaceFilter : public avtDataTreeIterator
 {
   public:
                             avtSurfaceFilter(const AttributeGroup*);

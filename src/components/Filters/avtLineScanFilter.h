@@ -44,7 +44,7 @@
 #define AVT_LINE_SCAN_FILTER_H
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 #include <avtVector.h>
 #include <filters_exports.h>
 #include <string>
@@ -73,7 +73,7 @@
 //    entire mesh.  FYI, this is unrelated to "CylindricalExecute"
 // ****************************************************************************
 
-class AVTFILTERS_API avtLineScanFilter : public avtStreamer
+class AVTFILTERS_API avtLineScanFilter : public avtDataTreeIterator
 {
   public:
                                     avtLineScanFilter();

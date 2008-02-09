@@ -694,7 +694,7 @@ avtSurfaceFilter::ModifyContract(avtContract_p spec)
 void
 avtSurfaceFilter::PreExecute(void)
 {
-    avtStreamer::PreExecute();
+    avtDataTreeIterator::PreExecute();
 
     if (stillNeedExtents)
     {
@@ -816,7 +816,7 @@ avtSurfaceFilter::CalculateScaleValues(double *de, double *se)
 void
 avtSurfaceFilter::ReleaseData(void)
 {
-    avtStreamer::ReleaseData();
+    avtDataTreeIterator::ReleaseData();
 
     filter->SetInput(NULL);
     vtkUnstructuredGrid *u = vtkUnstructuredGrid::New();
@@ -845,7 +845,7 @@ avtSurfaceFilter::ReleaseData(void)
 void
 avtSurfaceFilter::PostExecute(void)
 {
-    avtStreamer::PostExecute();
+    avtDataTreeIterator::PostExecute();
 
     avtDataAttributes& inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();

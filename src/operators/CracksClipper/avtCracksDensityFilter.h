@@ -44,7 +44,7 @@
 #define AVT_CracksDensity_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <CracksClipperAttributes.h>
 
 
@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtCracksDensityFilter : public avtPluginStreamer
+class avtCracksDensityFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtCracksDensityFilter();

@@ -228,7 +228,7 @@ avtReflectFilter::Equivalent(const AttributeGroup *a)
 void
 avtReflectFilter::PreExecute(void)
 {
-    avtDataTreeStreamer::PreExecute();
+    avtSIMODataTreeIterator::PreExecute();
 
     //
     // Calculating the extents may require parallel communication.  Only do

@@ -655,7 +655,7 @@ avtParallelCoordinatesFilter::CreateLabels()
 void
 avtParallelCoordinatesFilter::ReleaseData(void)
 {
-    avtDataTreeStreamer::ReleaseData();
+    avtSIMODataTreeIterator::ReleaseData();
 }
 
 

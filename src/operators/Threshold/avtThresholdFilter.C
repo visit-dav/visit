@@ -768,7 +768,7 @@ avtThresholdFilter::UpdateDataObjectInfo(void)
 void
 avtThresholdFilter::PreExecute(void)
 {
-    avtPluginStructuredChunkStreamer::PreExecute();
+    avtPluginStructuredChunkDataTreeIterator::PreExecute();
 
     int inputVarCount = GetInput()->GetInfo().GetAttributes().GetNumberOfVariables();
     int inputVarNum;

@@ -44,7 +44,7 @@
 #define AVT_VECTOR_FILTER_H
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 class  vtkVectorReduceFilter;
 class  vtkVertexFilter;
@@ -79,7 +79,7 @@ class  vtkVertexFilter;
 //
 // ****************************************************************************
 
-class avtVectorFilter : public avtStreamer
+class avtVectorFilter : public avtDataTreeIterator
 {
   public:
                               avtVectorFilter(bool, int);

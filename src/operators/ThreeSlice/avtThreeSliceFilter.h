@@ -44,7 +44,7 @@
 #define AVT_ThreeSlice_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <ThreeSliceAttributes.h>
 
 
@@ -63,7 +63,7 @@ class vtkSlicer;
 //
 // ****************************************************************************
 
-class avtThreeSliceFilter : public avtPluginStreamer
+class avtThreeSliceFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtThreeSliceFilter();

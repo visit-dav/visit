@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 // ****************************************************************************
@@ -61,7 +61,7 @@
 //
 //    Hank Childs, Tue Sep 10 15:31:39 PDT 2002
 //    Improve the way memory is handled.  Also removed stuff for making this
-//    be a plugin filter and inherited from avtStreamer.
+//    be a plugin filter and inherited from avtDataTreeIterator.
 //
 //    Hank Childs, Thu Feb  5 17:11:06 PST 2004
 //    Moved inlined constructor and destructor definitions to .C files
@@ -69,7 +69,7 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtFeatureEdgesFilter : public avtStreamer
+class AVTFILTERS_API avtFeatureEdgesFilter : public avtDataTreeIterator
 {
   public:
                              avtFeatureEdgesFilter();

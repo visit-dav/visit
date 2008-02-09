@@ -196,6 +196,9 @@
 #   Hank Childs, Sat Feb  9 10:45:58 PST 2008
 #   Rename many modules of the form avtBlahFilter to avtBlahExpression.
 #
+#   Hank Childs, Sat Feb  9 14:47:37 PST 2008
+#   Rename avtExpressionStreamer to avtExpressionDataTreeIterator.
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -211,7 +214,7 @@ Abstract_src= \
   Abstract/avtBinaryMathExpression.C \
   Abstract/avtComparisonExpression.C \
   Abstract/avtExpressionFilter.C \
-  Abstract/avtExpressionStreamer.C \
+  Abstract/avtExpressionDataTreeIterator.C \
   Abstract/avtMacroExpressionFilter.C \
   Abstract/avtMultipleInputExpressionFilter.C \
   Abstract/avtSingleInputExpressionFilter.C \

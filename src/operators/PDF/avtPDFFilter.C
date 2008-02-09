@@ -159,7 +159,7 @@ avtPDFFilter::Equivalent(const AttributeGroup *a)
 void
 avtPDFFilter::PreExecute(void)
 {
-    avtPluginStreamer::PreExecute();
+    avtPluginDataTreeIterator::PreExecute();
 
     //
     // Make sure that all the variables we need are in the input.

@@ -45,7 +45,7 @@
 
 #include <expression_exports.h>
 
-#include <avtExpressionStreamer.h>
+#include <avtExpressionDataTreeIterator.h>
 
 
 // ****************************************************************************
@@ -63,7 +63,7 @@
 //    Add destructor.
 //
 //    Hank Childs, Mon Dec 27 10:37:15 PST 2004
-//    Changed inheritance from avtExpressionFilter to avtExpressionStreamer.
+//    Changed inheritance from avtExpressionFilter to avtExpressionDataTreeIterator.
 //
 //    Hank Childs, Thu Jan  6 11:00:35 PST 2005
 //    Added MixedCenteringYieldsZonal method to give derived types a hook into
@@ -72,7 +72,7 @@
 // ****************************************************************************
 
 class EXPRESSION_API avtMultipleInputExpressionFilter 
-    : virtual public avtExpressionStreamer
+    : virtual public avtExpressionDataTreeIterator
 {
   public:
                               avtMultipleInputExpressionFilter() {}

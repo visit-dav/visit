@@ -45,7 +45,7 @@
 #include <map>
 #include <string>
 
-#include <avtPluginStructuredChunkStreamer.h>
+#include <avtPluginStructuredChunkDataTreeIterator.h>
 #include <ThresholdAttributes.h>
 
 #include <avtGhostData.h>
@@ -87,7 +87,7 @@ class     vtkDataSet;
 //
 // ****************************************************************************
 
-class avtThresholdFilter : public avtPluginStructuredChunkStreamer
+class avtThresholdFilter : public avtPluginStructuredChunkDataTreeIterator
 {
   public:
                           avtThresholdFilter();

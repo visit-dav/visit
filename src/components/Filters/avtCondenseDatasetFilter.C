@@ -331,7 +331,7 @@ avtCondenseDatasetFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 void
 avtCondenseDatasetFilter::ReleaseData(void)
 {
-    avtStreamer::ReleaseData();
+    avtDataTreeIterator::ReleaseData();
 
     rpfPD->SetInput(NULL);
     vtkPolyData *p = vtkPolyData::New();

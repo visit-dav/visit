@@ -785,7 +785,7 @@ avtTopologyFilter::UpdateDataObjectInfo(void)
 void
 avtTopologyFilter::ReleaseData()
 {
-    avtDataTreeStreamer::ReleaseData();
+    avtSIMODataTreeIterator::ReleaseData();
 
     if (cf)
     {

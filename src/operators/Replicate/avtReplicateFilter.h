@@ -44,7 +44,7 @@
 #define AVT_Replicate_FILTER_H
 
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 #include <avtPluginFilter.h>
 #include <ReplicateAttributes.h>
 
@@ -75,7 +75,7 @@ class vtkRectilinearGrid;
 //
 // ****************************************************************************
 
-class avtReplicateFilter : public virtual avtDataTreeStreamer,
+class avtReplicateFilter : public virtual avtSIMODataTreeIterator,
                          public virtual avtPluginFilter
 {
   public:

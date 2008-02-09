@@ -163,7 +163,7 @@ avtReplicateFilter::Equivalent(const AttributeGroup *a)
 void
 avtReplicateFilter::PostExecute(void)
 {
-    avtDataTreeStreamer::PostExecute();
+    avtSIMODataTreeIterator::PostExecute();
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.GetTrueSpatialExtents()->Clear();
