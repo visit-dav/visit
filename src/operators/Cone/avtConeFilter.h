@@ -44,7 +44,7 @@
 #define AVT_Cone_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <ConeAttributes.h>
 
 
@@ -78,7 +78,7 @@ class vtkPolarTransformFilter;
 //
 // ****************************************************************************
 
-class avtConeFilter : public avtPluginStreamer
+class avtConeFilter : public avtPluginDataTreeIterator
 {
   public:
                                  avtConeFilter();

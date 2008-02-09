@@ -44,7 +44,7 @@
 #define AVT_InverseGhostZone_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <InverseGhostZoneAttributes.h>
 
 
@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtInverseGhostZoneFilter : public avtPluginStreamer
+class avtInverseGhostZoneFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtInverseGhostZoneFilter();

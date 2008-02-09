@@ -539,7 +539,7 @@ class AVTGeneratorPlugin
             h << "#define AVT_"<<name<<"_FILTER_H" << endl;
             h << endl;
             h << endl;
-            h << "#include <avtPluginStreamer.h>" << endl;
+            h << "#include <avtPluginDataTreeIterator.h>" << endl;
             h << "#include <"<<atts->name<<".h>" << endl;
             h << endl;
             h << endl;
@@ -557,7 +557,7 @@ class AVTGeneratorPlugin
             h << "//" << endl;
             h << "// ****************************************************************************" << endl;
             h << endl;
-            h << "class avt"<<name<<"Filter : public avtPluginStreamer" << endl;
+            h << "class avt"<<name<<"Filter : public avtPluginDataTreeIterator" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
             h << "                         avt"<<name<<"Filter();" << endl;
@@ -592,7 +592,7 @@ class AVTGeneratorPlugin
             h << "#define AVT_"<<name<<"_FILTER_H" << endl;
             h << endl;
             h << endl;
-            h << "#include <avtStreamer.h>" << endl;
+            h << "#include <avtDataTreeIterator.h>" << endl;
             h << endl;
             h << endl;
             h << "// ****************************************************************************" << endl;
@@ -606,7 +606,7 @@ class AVTGeneratorPlugin
             h << "//" << endl;
             h << "// ****************************************************************************" << endl;
             h << endl;
-            h << "class avt"<<name<<"Filter : public avtStreamer" << endl;
+            h << "class avt"<<name<<"Filter : public avtDataTreeIterator" << endl;
             h << "{" << endl;
             h << "  public:" << endl;
             h << "                              avt"<<name<<"Filter(YOUR INITIALIZATION ARGS);" << endl;

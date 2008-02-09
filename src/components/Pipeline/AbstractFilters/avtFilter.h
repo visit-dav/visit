@@ -76,7 +76,7 @@ class     avtWebpage;
 //    Added TryCurrent and GetCurrent Data/Spatial Extents.
 //
 //    Hank Childs, Wed Oct 24 14:21:18 PDT 2001
-//    Added PreExecute and PostExecute from avtDataTreeStreamer.
+//    Added PreExecute and PostExecute from avtSIMODataTreeIterator.
 //
 //    Hank Childs, Fri Mar 15 15:25:33 PST 2002 
 //    Add support for attributes.

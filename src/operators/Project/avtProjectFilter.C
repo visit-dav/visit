@@ -232,7 +232,7 @@ avtProjectFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 void
 avtProjectFilter::PostExecute(void)
 {
-    avtPluginStreamer::PostExecute();
+    avtPluginDataTreeIterator::PostExecute();
 
     avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();
 

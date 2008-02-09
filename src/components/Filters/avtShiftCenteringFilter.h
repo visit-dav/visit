@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 class vtkDataSet;
@@ -83,7 +83,7 @@ class vtkPointDataToCellData;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtShiftCenteringFilter : public avtStreamer
+class AVTFILTERS_API avtShiftCenteringFilter : public avtDataTreeIterator
 {
   public:
                             avtShiftCenteringFilter(int);

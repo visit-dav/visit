@@ -44,7 +44,7 @@
 #define AVT_Reflect_FILTER_H
 
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 #include <avtPluginFilter.h>
 #include <ReflectAttributes.h>
 
@@ -66,7 +66,7 @@ class vtkRectilinearGrid;
 //
 // ****************************************************************************
 
-class avtReflectFilter : public virtual avtDataTreeStreamer,
+class avtReflectFilter : public virtual avtSIMODataTreeIterator,
                          public virtual avtPluginFilter
 {
   public:

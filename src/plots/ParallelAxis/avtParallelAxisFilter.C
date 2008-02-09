@@ -842,7 +842,7 @@ avtParallelAxisFilter::CreateLabels()
 void
 avtParallelAxisFilter::ReleaseData(void)
 {
-    avtDataTreeStreamer::ReleaseData();
+    avtSIMODataTreeIterator::ReleaseData();
 }
 
 

@@ -520,7 +520,7 @@ avtStreamlineFilter::SetStreamlineDirection(int dir)
 void
 avtStreamlineFilter::ReleaseData(void)
 {
-    avtStreamer::ReleaseData();
+    avtDataTreeIterator::ReleaseData();
 
     if(streamline != 0)
     {
@@ -1048,7 +1048,7 @@ avtStreamlineFilter::AddStartSphere(vtkPolyData *tubeData, float val, double pt[
 void
 avtStreamlineFilter::PreExecute(void)
 {
-    avtStreamer::PreExecute();
+    avtDataTreeIterator::PreExecute();
 
     // If we have a box source and we are using the whole box, then plug
     // the current spatial extents into the box extents.
@@ -1074,7 +1074,7 @@ avtStreamlineFilter::PreExecute(void)
 void
 avtStreamlineFilter::PostExecute(void)
 {
-    avtStreamer::PostExecute();
+    avtDataTreeIterator::PostExecute();
 
     if (coloringMethod == STREAMLINE_COLOR_VORTICITY ||
         coloringMethod == STREAMLINE_COLOR_SPEED)

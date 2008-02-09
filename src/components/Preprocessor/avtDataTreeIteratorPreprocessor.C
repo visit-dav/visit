@@ -37,158 +37,174 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                avtStreamer.C                              //
+//                           avtDataTreeIteratorPreprocessor.C                       //
 // ************************************************************************* //
+
+#include <avtDataTreeIteratorPreprocessor.h>
 
 #include <vtkDataSet.h>
 
 #include <avtDataTree.h>
-#include <avtStreamer.h>
+
+#include <DebugStream.h>
 
 
 // ****************************************************************************
-//  Method: avtStreamer constructor
+//  Method: avtDataTreeIteratorPreprocessor constructor
 //
 //  Programmer: Hank Childs
-//  Creation:   February 1, 2002
+//  Creation:   September 9, 2001
 //
 // ****************************************************************************
 
-avtStreamer::avtStreamer()
+avtDataTreeIteratorPreprocessor::avtDataTreeIteratorPreprocessor()
 {
-    lastDataset = NULL;
+    ;
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamer destructor
+//  Method: avtDataTreeIteratorPreprocessor destructor
 //
 //  Programmer: Hank Childs
-//  Creation:   February 1, 2002
+//  Creation:   September 9, 2001
 //
 // ****************************************************************************
 
-avtStreamer::~avtStreamer()
+avtDataTreeIteratorPreprocessor::~avtDataTreeIteratorPreprocessor()
 {
-    if (lastDataset != NULL)
-    {
-        lastDataset->Delete();
-        lastDataset = NULL;
-    }
+    ;
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamer::ManageMemory
+//  Method: avtDataTreeIteratorPreprocessor::Preprocess
 //
 //  Purpose:
-//      Is a resting spot for the last dataset a filter has processed.  Many
-//      filters have a problem of what to do with their datasets when they
-//      return from ExecuteData, since they have bumped the reference count
-//      and decrementing it before returning would destruct the data before
-//      it is returned.  This is a mechanism to store it so the derived types
-//      can forget about it.
+//      Does the actual preprocessing work.  Since most derived types do not
+//      want to code up how to unwrap a data tree, this does it for them.  It
+//      then calls ProcessDomain for each data tree, which the derived types
+//      must define.
 //
 //  Programmer: Hank Childs
-//  Creation:   February 1, 2002
-//
-//  Modifications:
-//    Jeremy Meredith, Thu May  6 11:35:15 PDT 2004
-//    Made sure not to delete the last reference to something if it was the
-//    thing we were about to add a reference to.  In other words, if the
-//    new dataset is the same as the old one, noop.
+//  Creation:   September 9, 2001
 //
 // ****************************************************************************
 
 void
-avtStreamer::ManageMemory(vtkDataSet *ds)
+avtDataTreeIteratorPreprocessor::Preprocess(void)
 {
-    if (ds == lastDataset)
+    avtDataTree_p tree = GetInputDataTree();
+    int totalNodes = tree->GetNumberOfLeaves();
+
+    debug3 << "Preprocessing with " << totalNodes << " nodes." << endl;
+    Initialize(totalNodes);
+
+    debug3 << "Preprocessing the top level tree" << endl;
+    PreprocessTree(tree);
+
+    debug3 << "Allowing preprocessing module to finalize." << endl;
+    Finalize();
+}
+
+
+// ****************************************************************************
+//  Method: avtDataTreeIteratorPreprocessor::PreprocessTree
+//
+//  Purpose:
+//      Unwraps a data tree and calls ProcessDomain on each leaf. 
+//
+//  Programmer: Hank Childs
+//  Creation:   September 9, 2001
+//
+//  Modifications:
+//    Kathleen Bonnell, Wed May 17 15:15:24 PDT 2006
+//    Remove call to SetSource(NULL) as it now removes information necessary
+//    for the dataset.
+//
+// ****************************************************************************
+
+void
+avtDataTreeIteratorPreprocessor::PreprocessTree(avtDataTree_p tree)
+{
+    if (*tree == NULL)
+    {
         return;
-
-    if (lastDataset != NULL)
-    {
-        lastDataset->Delete();
     }
 
-    lastDataset = ds;
-    if (lastDataset != NULL)
+    int numChildren = tree->GetNChildren();
+
+    if ( (numChildren <= 0) && (!(tree->HasData())) )
     {
-        lastDataset->Register(NULL);
+        return;
+    }
+
+    if (numChildren == 0)
+    {
+        //
+        // There is only one dataset to process (the leaf).
+        //
+        vtkDataSet *in_ds = tree->GetDataRepresentation().GetDataVTK();
+        int dom = tree->GetDataRepresentation().GetDomain();
+
+        //
+        // Ensure that there is no funny business when we do an Update.
+        //
+        // NO LONGER A GOOD IDEA
+        //in_ds->SetSource(NULL);
+
+        ProcessDomain(in_ds, dom);
+    }
+    else
+    {
+        for (int i = 0 ; i < numChildren ; i++)
+        {
+            if (tree->ChildIsPresent(i))
+            {
+                PreprocessTree(tree->GetChild(i));
+            }
+        }
     }
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamer::ReleaseData
+//  Method: avtDataTreeIteratorPreprocessor::Initialize
 //
 //  Purpose:
-//      Releases any problem-size data associated with this filter.
+//      Gives the preprocessor module a chance to initialize itself.  This
+//      implementation does nothing, but is defined so derived types can
+//      initalize themselves if appropriate.
 //
 //  Programmer: Hank Childs
-//  Creation:   September 10, 2002
+//  Creation:   September 9, 2001
 //
 // ****************************************************************************
 
 void
-avtStreamer::ReleaseData(void)
+avtDataTreeIteratorPreprocessor::Initialize(int)
 {
-    avtDataTreeStreamer::ReleaseData();
-    ManageMemory(NULL);  // Cleans out any stored datasets.
+    ;
 }
 
 
 // ****************************************************************************
-//  Method: avtStreamer::ExecuteDataTree
+//  Method: avtDataTreeIteratorPreprocessor::Finalize
 //
 //  Purpose:
-//      Defines the pure virtual function executedomaintree.  
-//      Serves as a wrapper for the ExecuteDomain method.
+//      Gives the preprocessor module a chance to finalize itself.  This
+//      implementation does nothing, but is defined so derived types can
+//      finalize themselves if appropriate.
 //
-//  Arguments:
-//      ds      The vtkDataSet to pass to the derived type.
-//      dom     The domain number of the input dataset.
-//      label   The label associated with this datset.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   February 9, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001
-//    Made this method return avtDataTree.
-//
-//    Kathleen Bonnell, Wed Sep 19 13:35:35 PDT 2001 
-//    Added string argument so that labels will get passed on. 
-// 
-//    Hank Childs, Fri Oct 19 10:56:55 PDT 2001
-//    Allow for derived types to return NULL.
-//
-//    Hank Childs, Wed Sep 11 09:17:46 PDT 2002
-//    Pass the label down to the derived types as well.
-//
-//    Hank Childs, Mon Jun 27 10:02:55 PDT 2005
-//    Choose better file names when doing a "-dump" in parallel.
-//
-//    Hank Childs, Tue Jul  5 09:41:28 PDT 2005
-//    Fix cut-n-paste bug with last change.
-//
-//    Hank Childs, Wed Aug 31 09:10:11 PDT 2005
-//    Make sure that -dump in parallel increments the dump index.
-//
-//    Hank Childs, Thu Dec 21 15:38:53 PST 2006
-//    Removed -dump functionality, since it is now handled at a lower level.
+//  Programmer: Hank Childs
+//  Creation:   September 9, 2001
 //
 // ****************************************************************************
 
-avtDataTree_p
-avtStreamer::ExecuteDataTree(vtkDataSet* ds, int dom, std::string label)
+void
+avtDataTreeIteratorPreprocessor::Finalize(void)
 {
-    vtkDataSet *out_ds = ExecuteData(ds, dom, label);
-    if (out_ds == NULL)
-    {
-        return NULL;
-    }
-
-    return new avtDataTree(out_ds, dom, label);
+    ;
 }
+
+

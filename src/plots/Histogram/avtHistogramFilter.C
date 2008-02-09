@@ -133,7 +133,7 @@ avtHistogramFilter::SetAttributes(const HistogramAttributes &h_atts)
 void
 avtHistogramFilter::PreExecute(void)
 {
-    avtStreamer::PreExecute();
+    avtDataTreeIterator::PreExecute();
 
     InputSetActiveVariable(pipelineVariable);
 
@@ -200,7 +200,7 @@ avtHistogramFilter::PreExecute(void)
 //    Added support for point histograms and true "Frequency" histograms
 //
 //    Jeremy Meredith, Wed Mar 14 11:14:56 EDT 2007
-//    Call avtStreamer::PostExecute instead of PreExecute.
+//    Call avtDataTreeIterator::PostExecute instead of PreExecute.
 //
 //    Dave Pugmire, Thu Nov 01 12:39:07 EDT 2007
 //    Support for log, sqrt scaling.    
@@ -215,7 +215,7 @@ avtHistogramFilter::PostExecute(void)
 {
     int  i;
 
-    avtStreamer::PostExecute();
+    avtDataTreeIterator::PostExecute();
 
     if (atts.GetBasedOn() == HistogramAttributes::ManyVarsForSingleZone)
     {

@@ -45,7 +45,7 @@
 
 
 #include <MoleculeAttributes.h>
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 #include <set>
 #include <vector>
 #include <string>
@@ -67,7 +67,7 @@ class  vtkVertexFilter;
 //
 // ****************************************************************************
 
-class avtMoleculeFilter : public avtStreamer
+class avtMoleculeFilter : public avtDataTreeIterator
 {
   public:
                               avtMoleculeFilter();

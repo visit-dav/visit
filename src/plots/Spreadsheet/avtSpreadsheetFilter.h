@@ -44,7 +44,7 @@
 #define AVT_Spreadsheet_FILTER_H
 
 #include <SpreadsheetAttributes.h>
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 // ****************************************************************************

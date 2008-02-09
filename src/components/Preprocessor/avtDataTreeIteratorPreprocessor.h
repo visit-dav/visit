@@ -37,80 +37,46 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                avtStreamer.h                              //
+//                     avtDataTreeIteratorPreprocessor.h                     //
 // ************************************************************************* //
 
-#ifndef AVT_STREAMER_H
-#define AVT_STREAMER_H
+#ifndef AVT_DATA_TREE_ITERATOR_PREPROCESSOR_H
+#define AVT_DATA_TREE_ITERATOR_PREPROCESSOR_H
 
-#include <pipeline_exports.h>
+#include <prep_exports.h>
 
-#include <avtDataTreeStreamer.h>
+
+#include <avtPreprocessorModule.h>
+
+class     vtkDataSet;
 
 
 // ****************************************************************************
-//  Class: avtStreamer
+//  Class: avtDataTreeIteratorPreprocessor
 //
 //  Purpose:
-//      A derived type of avtDatasetToDatasetFilter.  This will "stream" 
-//      datasets through a single filter one at a time during execution.  It
-//      could be part of the actual avtDatasetToDatasetFilter class, since
-//      almost every derived type of avtDatasetToDatasetFilter will be 
-//      interested in streaming their domains through, but it was made a
-//      separate class to separate what functionality was for a filter (or
-//      process object) in the pipeline and what sent domains through vtk
-//      filters one at a time.
+//      A base class for any preprocessor module that would like to have 
+//      domains fed through one at a time.
 //
 //  Programmer: Hank Childs
-//  Creation:   July 24, 2000
+//  Creation:   September 7, 2001
 //
-//  Modifications:
-//
-//    Jeremy Meredith, Thu Sep 28 13:05:02 PDT 2000
-//    Made ExecuteDomain take one vtkDataSet as input and and return
-//    a new output one.
-//
-//    Kathleen Bonnell, Feb  9 14:47:10 PST 2001  
-//    Removed 'Execute' method, and made this class inherit from 
-//    avtDomainTreeStreamer.  Allows for derived types to still
-//    return vtkDataSet * from ExecuteDomain, but now wrapped in
-//    avtDomainTree.
-//
-//    Kathleen Bonnell, Tue Apr 10 10:49:10 PDT 2001 
-//    Change inheritance to avtDataTreeStreamer. 
-//
-//    Kathleen Bonnell, Wed Sep 19 13:35:35 PDT 200 
-//    Added string argument to Execute method. 
-//
-//    Hank Childs, Fri Feb  1 14:48:15 PST 2002
-//    Added mechanism for managing memory for derived types.
-//
-//    Hank Childs, Tue Sep 10 13:13:01 PDT 2002
-//    Better support for releasing data.
-//
-//    Hank Childs, Mon Dec 27 10:58:14 PST 2004
-//    Made inheritance virtual.
-//
-//    Hank Childs, Thu Dec 21 09:17:43 PST 2006
-//    Remove support for debug dumps.
-//
-// **************************************************************************** 
+// ****************************************************************************
 
-class PIPELINE_API avtStreamer : virtual public avtDataTreeStreamer
+class PREP_API avtDataTreeIteratorPreprocessor : public avtPreprocessorModule
 {
   public:
-                             avtStreamer();
-    virtual                 ~avtStreamer();
-
-    virtual void             ReleaseData(void);
+                              avtDataTreeIteratorPreprocessor();
+    virtual                  ~avtDataTreeIteratorPreprocessor();
 
   protected:
-    vtkDataSet              *lastDataset;
+    virtual void              Preprocess(void);
 
-    virtual avtDataTree_p    ExecuteDataTree(vtkDataSet *, int, std::string);
-    virtual vtkDataSet      *ExecuteData(vtkDataSet *, int, std::string) = 0;
+    virtual void              Initialize(int nDomains);
+    virtual void              ProcessDomain(vtkDataSet *, int) = 0;
+    virtual void              Finalize(void);
 
-    void                     ManageMemory(vtkDataSet *);
+    void                      PreprocessTree(avtDataTree_p);
 };
 
 

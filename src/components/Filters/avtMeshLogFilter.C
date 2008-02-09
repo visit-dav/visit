@@ -142,7 +142,7 @@ avtMeshLogFilter::ExecuteData(vtkDataSet *ds, int, std::string)
 void
 avtMeshLogFilter::PostExecute()
 {
-    avtStreamer::PostExecute();
+    avtDataTreeIterator::PostExecute();
 
     avtDataAttributes& inAtts  = GetInput()->GetInfo().GetAttributes();
     avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();

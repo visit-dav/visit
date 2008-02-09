@@ -216,7 +216,7 @@ avtMoleculeFilter::UpdateDataObjectInfo(void)
 void
 avtMoleculeFilter::ReleaseData(void)
 {
-    avtStreamer::ReleaseData();
+    avtDataTreeIterator::ReleaseData();
 }
 
 
@@ -262,7 +262,7 @@ avtMoleculeFilter::ModifyContract(avtContract_p spec)
 void
 avtMoleculeFilter::PreExecute()
 {
-    avtStreamer::PreExecute();
+    avtDataTreeIterator::PreExecute();
 
     used_values.clear();
     name = "";

@@ -45,7 +45,7 @@
 #include <prep_exports.h>
 
 
-#include <avtStreamerPreprocessor.h>
+#include <avtDataTreeIteratorPreprocessor.h>
 
 
 // ****************************************************************************
@@ -60,7 +60,7 @@
 //
 // ****************************************************************************
 
-class PREP_API avtExtentsPreprocessor : public avtStreamerPreprocessor
+class PREP_API avtExtentsPreprocessor : public avtDataTreeIteratorPreprocessor
 {
   public:
                               avtExtentsPreprocessor();

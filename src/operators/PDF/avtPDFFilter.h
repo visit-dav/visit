@@ -44,7 +44,7 @@
 #define AVT_PDF_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <PDFAttributes.h>
 
 
@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtPDFFilter : public avtPluginStreamer
+class avtPDFFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtPDFFilter();

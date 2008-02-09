@@ -240,7 +240,7 @@ avtWireframeFilter::ExecuteData(vtkDataSet *inDS, int, std::string)
 void
 avtWireframeFilter::ReleaseData(void)
 {
-    avtStreamer::ReleaseData();
+    avtDataTreeIterator::ReleaseData();
 
     geoFilter->SetInput(NULL);
     geoFilter->SetLocator(NULL);

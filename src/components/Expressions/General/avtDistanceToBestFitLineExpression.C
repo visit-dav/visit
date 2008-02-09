@@ -147,7 +147,7 @@ avtDistanceToBestFitLineExpression::Execute(void)
     pass = 1;
     avtDataTree_p tree    = GetInputDataTree();
     totalNodes = 2 * tree->GetNumberOfLeaves();
-    avtDataTree_p newTree = avtDataTreeStreamer::Execute(tree);
+    avtDataTree_p newTree = avtSIMODataTreeIterator::Execute(tree);
     newTree = 0;
 
     // Sum the array values over all processors, making sure each processor
@@ -161,7 +161,7 @@ avtDistanceToBestFitLineExpression::Execute(void)
     // Make it perform the expression.
     //
     pass = 2;
-    avtDataTree_p newTree2 = avtDataTreeStreamer::Execute(tree);
+    avtDataTree_p newTree2 = avtSIMODataTreeIterator::Execute(tree);
 
     SetOutputDataTree(newTree2);
 }

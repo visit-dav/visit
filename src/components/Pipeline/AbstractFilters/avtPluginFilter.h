@@ -44,7 +44,7 @@
 class AttributeGroup;
 
 // ****************************************************************************
-//  Class:  avtPluginDataTreeStreamer
+//  Class:  avtPluginSIMODataTreeIterator
 //
 //  Purpose:
 //    A base class for plugin-style operators.

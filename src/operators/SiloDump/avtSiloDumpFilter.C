@@ -350,7 +350,7 @@ avtSiloDumpFilter::Equivalent(const AttributeGroup *a)
 void
 avtSiloDumpFilter::PreExecute()
 {
-    avtPluginStreamer::PreExecute();
+    avtPluginDataTreeIterator::PreExecute();
 
     // set up the filename
     char file[256];

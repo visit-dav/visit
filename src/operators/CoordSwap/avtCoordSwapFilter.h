@@ -44,7 +44,7 @@
 #define AVT_CoordSwap_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <CoordSwapAttributes.h>
 
 
@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtCoordSwapFilter : public avtPluginStreamer
+class avtCoordSwapFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtCoordSwapFilter();

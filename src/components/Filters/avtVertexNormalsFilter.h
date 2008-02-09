@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 // ****************************************************************************
@@ -77,7 +77,7 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtVertexNormalsFilter : public avtStreamer
+class AVTFILTERS_API avtVertexNormalsFilter : public avtDataTreeIterator
 {
   public:
                          avtVertexNormalsFilter();

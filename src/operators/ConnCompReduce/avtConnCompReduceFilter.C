@@ -159,7 +159,7 @@ avtConnCompReduceFilter::Equivalent(const AttributeGroup *a)
 void
 avtConnCompReduceFilter::PreExecute(void)
 {
-    avtPluginStreamer::PreExecute();
+    avtPluginDataTreeIterator::PreExecute();
 
     haveIssuedWarning = false;
 }

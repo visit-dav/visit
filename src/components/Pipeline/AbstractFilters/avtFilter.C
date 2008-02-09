@@ -183,7 +183,7 @@ avtFilter::UpdateProgress(int current, int total)
 //
 //    Hank Childs, Sun Feb 27 13:04:32 PST 2005
 //    If we are doing dynamic load balancing, clean up our input as we go.
-//    Moved timings code from avtDataTreeStreamer to this routine so that
+//    Moved timings code from avtSIMODataTreeIterator to this routine so that
 //    all filters are timed.
 //
 //    Hank Childs, Thu May 25 16:45:41 PDT 2006

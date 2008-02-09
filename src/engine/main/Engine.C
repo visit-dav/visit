@@ -1087,7 +1087,7 @@ Engine::ProcessInput()
 //    Added "-stereo" option to support stereo in SR mode
 //
 //    Hank Childs, Thu Dec 21 09:19:37 PST 2006
-//    Change DebugDump method from avtStreamer to avtFilter, since it is
+//    Change DebugDump method from avtDataTreeIterator to avtFilter, since it is
 //    now supported at a higher level.
 //
 //    Mark C. Miller, Wed Feb 14 15:22:33 PST 2007

@@ -608,7 +608,7 @@ avtSliceFilter::ModifyContract(avtContract_p spec)
 void
 avtSliceFilter::PreExecute(void)
 {
-    avtPluginStreamer::PreExecute();
+    avtPluginDataTreeIterator::PreExecute();
 
     double ox = 0;
     double oy = 0;
@@ -1775,7 +1775,7 @@ avtSliceFilter::RectilinearToRectilinearSlice(vtkRectilinearGrid *rg)
 void
 avtSliceFilter::ReleaseData(void)
 {
-    avtPluginStreamer::ReleaseData();
+    avtPluginDataTreeIterator::ReleaseData();
 
     slicer->SetInputConnection(0, NULL);
     vtkPolyData *p = vtkPolyData::New();

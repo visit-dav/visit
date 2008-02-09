@@ -44,7 +44,7 @@
 #define AVT_CreateBonds_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <CreateBondsAttributes.h>
 
 class vtkPoints;
@@ -62,7 +62,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtCreateBondsFilter : public avtPluginStreamer
+class avtCreateBondsFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtCreateBondsFilter();

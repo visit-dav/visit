@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 // ****************************************************************************
@@ -65,7 +65,7 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtSmoothPolyDataFilter : public avtStreamer
+class AVTFILTERS_API avtSmoothPolyDataFilter : public avtDataTreeIterator
 {
   public:
                              avtSmoothPolyDataFilter();

@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtStructuredChunkStreamer.C                         //
+//                      avtStructuredChunkDataTreeIterator.C                         //
 // ************************************************************************* //
 
-#include <avtStructuredChunkStreamer.h>
+#include <avtStructuredChunkDataTreeIterator.h>
 
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
@@ -50,14 +50,14 @@
 
 
 // ****************************************************************************
-//  Method: avtStructuredChunkStreamer constructor
+//  Method: avtStructuredChunkDataTreeIterator constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   April 27, 2005
 //
 // ****************************************************************************
 
-avtStructuredChunkStreamer::avtStructuredChunkStreamer()
+avtStructuredChunkDataTreeIterator::avtStructuredChunkDataTreeIterator()
 {
     downstreamRectilinearMeshOptimizations = false;
     downstreamCurvilinearMeshOptimizations = false;
@@ -67,20 +67,20 @@ avtStructuredChunkStreamer::avtStructuredChunkStreamer()
 
 
 // ****************************************************************************
-//  Method: avtStructuredChunkStreamer destructor
+//  Method: avtStructuredChunkDataTreeIterator destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   April 27, 2005
 //
 // ****************************************************************************
 
-avtStructuredChunkStreamer::~avtStructuredChunkStreamer()
+avtStructuredChunkDataTreeIterator::~avtStructuredChunkDataTreeIterator()
 {
 }
 
 
 // ****************************************************************************
-//  Method: avtStructuredChunkStreamer::ExecuteDataTree
+//  Method: avtStructuredChunkDataTreeIterator::ExecuteDataTree
 //
 //  Programmer: Hank Childs
 //  Creation:   April 27, 2005
@@ -93,7 +93,7 @@ avtStructuredChunkStreamer::~avtStructuredChunkStreamer()
 // ****************************************************************************
 
 avtDataTree_p
-avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
+avtStructuredChunkDataTreeIterator::ExecuteDataTree(vtkDataSet *in_ds, int domain,
                                             std::string label)
 {
     int ds_type = in_ds->GetDataObjectType();
@@ -136,7 +136,7 @@ avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
     dims[2] -= 1;
     int t0 = visitTimer->StartTimer();
     GetAssignments(in_ds, dims, designation);
-    visitTimer->StopTimer(t0, "Structured Chunk Streamer: Getting assignments");
+    visitTimer->StopTimer(t0, "Structured Chunk DataTreeIterator: Getting assignments");
     
     vtkUnstructuredGrid *ugrid = NULL;
     vector<vtkDataSet *> grids;
@@ -149,7 +149,7 @@ avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
     int t2 = visitTimer->StartTimer();
     vtkDataSet *out_ugrid = ProcessOneChunk(ugrid, domain, label, true);
     visitTimer->StopTimer(t2, 
-                      "Structured Chunk Streamer: Processing ugrid leftovers");
+                      "Structured Chunk DataTreeIterator: Processing ugrid leftovers");
     //
     // Create a data tree that has all of the structured meshes, as well
     // as the single unstructured mesh.
@@ -171,7 +171,7 @@ avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 
 
 // ****************************************************************************
-//  Method: avtStructuredChunkStreamer::ModifyContract
+//  Method: avtStructuredChunkDataTreeIterator::ModifyContract
 //
 //  Purpose:
 //      Inspect the input specification and determine what its requirements
@@ -183,7 +183,7 @@ avtStructuredChunkStreamer::ExecuteDataTree(vtkDataSet *in_ds, int domain,
 // ****************************************************************************
 
 avtContract_p
-avtStructuredChunkStreamer::ModifyContract(avtContract_p spec)
+avtStructuredChunkDataTreeIterator::ModifyContract(avtContract_p spec)
 {
     downstreamRectilinearMeshOptimizations =
                                    spec->GetHaveRectilinearMeshOptimizations();
@@ -197,7 +197,7 @@ avtStructuredChunkStreamer::ModifyContract(avtContract_p spec)
 
 
 // ****************************************************************************
-//  Method: avtStructuredChunkStreamer::PreExecute
+//  Method: avtStructuredChunkDataTreeIterator::PreExecute
 //
 //  Purpose:
 //      Initialize chunkedStructuredMesh.
@@ -208,15 +208,15 @@ avtStructuredChunkStreamer::ModifyContract(avtContract_p spec)
 // ****************************************************************************
 
 void
-avtStructuredChunkStreamer::PreExecute(void)
+avtStructuredChunkDataTreeIterator::PreExecute(void)
 {
-    avtDataTreeStreamer::PreExecute();
+    avtSIMODataTreeIterator::PreExecute();
     chunkedStructuredMeshes = false;
 }
 
 
 // ****************************************************************************
-//  Method: avtStructuredChunkStreamer::PostExecute
+//  Method: avtStructuredChunkDataTreeIterator::PostExecute
 //
 //  Purpose:
 //      If we chunked a structured mesh, indicate that we may now have ghost
@@ -228,9 +228,9 @@ avtStructuredChunkStreamer::PreExecute(void)
 // ****************************************************************************
 
 void
-avtStructuredChunkStreamer::PostExecute(void)
+avtStructuredChunkDataTreeIterator::PostExecute(void)
 {
-    avtDataTreeStreamer::PostExecute();
+    avtSIMODataTreeIterator::PostExecute();
 
     if (chunkedStructuredMeshes && downstreamGhostType != NO_GHOST_DATA)
     {

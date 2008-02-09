@@ -43,7 +43,7 @@
 #ifndef AVT_SINGLE_INPUT_EXPRESSION_FILTER_H
 #define AVT_SINGLE_INPUT_EXPRESSION_FILTER_H
 
-#include <avtExpressionStreamer.h>
+#include <avtExpressionDataTreeIterator.h>
 
 class     vtkDataArray;
 
@@ -67,12 +67,12 @@ class     vtkDataArray;
 //    because certain compilers have problems with them.
 //
 //    Hank Childs, Mon Dec 27 10:37:15 PST 2004
-//    Changed inheritance from avtExpressionFilter to avtExpressionStreamer.
+//    Changed inheritance from avtExpressionFilter to avtExpressionDataTreeIterator.
 //
 // ****************************************************************************
 
 class EXPRESSION_API avtSingleInputExpressionFilter 
-    : public avtExpressionStreamer
+    : public avtExpressionDataTreeIterator
 {
   public:
                               avtSingleInputExpressionFilter();

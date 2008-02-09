@@ -43,7 +43,7 @@
 #ifndef AVT_LABEL_SUBSETS_FILTER_H
 #define AVT_LABEL_SUBSETS_FILTER_H
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 
 // ****************************************************************************
 //  Class: avtLabelSubsetsFilter
@@ -61,7 +61,7 @@
 //
 // ****************************************************************************
 
-class avtLabelSubsetsFilter : public avtDataTreeStreamer
+class avtLabelSubsetsFilter : public avtSIMODataTreeIterator
 {
   public:
                           avtLabelSubsetsFilter();

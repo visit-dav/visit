@@ -44,7 +44,7 @@
 #define AVT_MESH_FILTER_H
 
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 #include <MeshAttributes.h>
 
 class vtkExtractEdges;
@@ -82,7 +82,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtMeshFilter : public avtDataTreeStreamer
+class avtMeshFilter : public avtSIMODataTreeIterator
 {
   public:
                                avtMeshFilter(const MeshAttributes &);

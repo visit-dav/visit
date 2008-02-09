@@ -237,6 +237,9 @@
 #    avtDataSpecification to avtDataRequest.
 #    Also swap the terms originating and terminating.
 #
+#    Hank Childs, Sat Feb  9 14:37:42 PST 2008
+#    Rename "streamer" classes to "data tree iterators".
+#
 ##############################################################################
 
 @SET_MAKE@
@@ -328,7 +331,7 @@ AbstractFilters_src= \
   AbstractFilters/avtDataObjectToDatasetFilter.C \
   AbstractFilters/avtDataObjectToImageFilter.C \
   AbstractFilters/avtDataObjectToSamplePointsFilter.C \
-  AbstractFilters/avtDataTreeStreamer.C \
+  AbstractFilters/avtDataTreeIterator.C \
   AbstractFilters/avtDatasetToDataObjectFilter.C \
   AbstractFilters/avtDatasetToDatasetFilter.C \
   AbstractFilters/avtDatasetToImageFilter.C \
@@ -340,15 +343,15 @@ AbstractFilters_src= \
   AbstractFilters/avtMultiResolutionPartitionStrategy.C \
   AbstractFilters/avtMultipleInputToDataObjectFilter.C \
   AbstractFilters/avtMultipleInputToDatasetFilter.C \
-  AbstractFilters/avtPluginStreamer.C \
-  AbstractFilters/avtPluginStructuredChunkStreamer.C \
+  AbstractFilters/avtPluginDataTreeIterator.C \
+  AbstractFilters/avtPluginStructuredChunkDataTreeIterator.C \
+  AbstractFilters/avtSIMODataTreeIterator.C \
   AbstractFilters/avtSamplePointsToDataObjectFilter.C \
   AbstractFilters/avtSamplePointsToDatasetFilter.C \
   AbstractFilters/avtSamplePointsToImageFilter.C \
   AbstractFilters/avtSamplePointsToSamplePointsFilter.C \
   AbstractFilters/avtSingleFilterFacade.C \
-  AbstractFilters/avtStreamer.C \
-  AbstractFilters/avtStructuredChunkStreamer.C \
+  AbstractFilters/avtStructuredChunkDataTreeIterator.C \
   AbstractFilters/avtStructuredMeshChunker.C \
   AbstractFilters/avtStructuredMeshPartitionStrategy.C \
   AbstractFilters/avtSweepPlanePartitionStrategy.C \

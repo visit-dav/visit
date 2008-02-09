@@ -44,7 +44,7 @@
 #define AVT_Revolve_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <RevolveAttributes.h>
 
 #include <avtTypes.h>
@@ -68,7 +68,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtRevolveFilter : public avtPluginStreamer
+class avtRevolveFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtRevolveFilter();

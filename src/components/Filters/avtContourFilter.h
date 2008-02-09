@@ -46,7 +46,7 @@
 #include <filters_exports.h>
 
 #include <ContourOpAttributes.h>
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 #include <vector>
 
 using std::string;
@@ -78,11 +78,11 @@ class vtkDataSet;
 //    Removed CreateOutputDatasets.  Changed interface to ExecuteDomain.
 //
 //    Kathleen Bonnell, Fri Feb 16 13:28:57 PST 2001 
-//    Made inherit from avtDomainTreeStreamer.  Added default constructor,
+//    Made inherit from avtDomainTreeDataTreeIterator.  Added default constructor,
 //    SetLevels method.
 //
 //    Kathleen Bonnell, Tue Apr 10 11:35:39 PDT 2001 
-//    Made inherit from avtDataTreeStreamer.  
+//    Made inherit from avtSIMODataTreeIterator.  
 //
 //    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
 //    Added string argument to Execute method. Added member isoLabels, to
@@ -98,7 +98,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtContourFilter : public avtDataTreeStreamer
+class AVTFILTERS_API avtContourFilter : public avtSIMODataTreeIterator
 {
   public:
                                avtContourFilter(const ContourOpAttributes &);

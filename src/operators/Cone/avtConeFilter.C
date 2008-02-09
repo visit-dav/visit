@@ -1005,7 +1005,7 @@ avtConeFilter::UpdateDataObjectInfo(void)
 void
 avtConeFilter::ReleaseData(void)
 {
-    avtPluginStreamer::ReleaseData();
+    avtPluginDataTreeIterator::ReleaseData();
 
     cutter->SetInput(NULL);
     vtkPolyData *p = vtkPolyData::New();

@@ -44,7 +44,7 @@
 
 
 #include <ParallelCoordinatesAttributes.h>
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 
 #include <vector>
 #include <string>
@@ -79,7 +79,7 @@ class vtkPoints;
 //
 // ****************************************************************************
 
-class avtParallelCoordinatesFilter : public avtDataTreeStreamer
+class avtParallelCoordinatesFilter : public avtSIMODataTreeIterator
 {
 public:
                                 avtParallelCoordinatesFilter(

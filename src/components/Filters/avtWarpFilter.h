@@ -44,7 +44,7 @@
 #define AVT_WARP_FILTER_H
 
 #include <filters_exports.h>
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 
@@ -63,7 +63,7 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtWarpFilter : public avtStreamer
+class AVTFILTERS_API avtWarpFilter : public avtDataTreeIterator
 {
   public:
                               avtWarpFilter();

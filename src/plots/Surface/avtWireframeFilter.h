@@ -44,7 +44,7 @@
 #define AVT_WIREFRAME_FILTER_H
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 #include <SurfaceAttributes.h>
 
 
@@ -71,7 +71,7 @@ class vtkGeometryFilter;
 //
 // ****************************************************************************
 
-class avtWireframeFilter : public avtStreamer
+class avtWireframeFilter : public avtDataTreeIterator
 {
   public:
                             avtWireframeFilter(const AttributeGroup*);

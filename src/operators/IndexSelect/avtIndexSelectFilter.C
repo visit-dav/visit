@@ -936,7 +936,7 @@ avtIndexSelectFilter::ModifyContract(avtContract_p spec)
 void
 avtIndexSelectFilter::PreExecute(void)
 {
-    avtPluginStreamer::PreExecute();
+    avtPluginDataTreeIterator::PreExecute();
     successfullyExecuted = false;
     if (!GetInput()->GetInfo().GetValidity().GetZonesPreserved())
     {
@@ -964,7 +964,7 @@ avtIndexSelectFilter::PreExecute(void)
 void
 avtIndexSelectFilter::PostExecute(void)
 {
-    avtPluginStreamer::PostExecute();
+    avtPluginDataTreeIterator::PostExecute();
 
     if (successfullyExecuted)
     {
@@ -1033,7 +1033,7 @@ avtIndexSelectFilter::PostExecute(void)
 void
 avtIndexSelectFilter::ReleaseData(void)
 {
-    avtPluginStreamer::ReleaseData();
+    avtPluginDataTreeIterator::ReleaseData();
 
     curvilinearFilter->SetInput(NULL);
     vtkStructuredGrid *s = vtkStructuredGrid::New();

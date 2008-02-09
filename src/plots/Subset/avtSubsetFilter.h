@@ -44,7 +44,7 @@
 #define AVT_SUBSET_FILTER_H
 
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 #include <SubsetAttributes.h>
 
 
@@ -59,7 +59,7 @@
 //
 //  Modifications:
 //    Eric Brugger, Fri Dec 14 13:08:12 PST 2001
-//    I modified the class to inherit from avtDataTreeStreamer so that I
+//    I modified the class to inherit from avtSIMODataTreeIterator so that I
 //    could implement an ExecuteDataTree method instead of the Execute
 //    Method.
 //
@@ -72,7 +72,7 @@
 //
 // ****************************************************************************
 
-class avtSubsetFilter : public avtDataTreeStreamer
+class avtSubsetFilter : public avtSIMODataTreeIterator
 {
   public:
                           avtSubsetFilter();

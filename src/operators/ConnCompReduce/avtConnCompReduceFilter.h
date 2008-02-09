@@ -44,7 +44,7 @@
 #define AVT_ConnCompReduce_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <ConnCompReduceAttributes.h>
 
 class vtkDataSet;
@@ -63,7 +63,7 @@ class vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class avtConnCompReduceFilter : public avtPluginStreamer
+class avtConnCompReduceFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtConnCompReduceFilter();

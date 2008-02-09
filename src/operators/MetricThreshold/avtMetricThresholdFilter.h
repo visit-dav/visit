@@ -44,7 +44,7 @@
 #define AVT_MetricThreshold_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <MetricThresholdAttributes.h>
 
 class vtkDataSet;
@@ -64,7 +64,7 @@ class vtkRectilinearGrid;
 //
 // ****************************************************************************
 
-class avtMetricThresholdFilter : public avtPluginStreamer
+class avtMetricThresholdFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtMetricThresholdFilter();

@@ -44,7 +44,7 @@
 #define AVT_Cylinder_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <CylinderAttributes.h>
 
 
@@ -63,7 +63,7 @@ class vtkImplicitFunction;
 //
 // ****************************************************************************
 
-class avtCylinderFilter : public avtPluginStreamer
+class avtCylinderFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtCylinderFilter();

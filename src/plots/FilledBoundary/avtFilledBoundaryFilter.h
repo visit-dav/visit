@@ -44,7 +44,7 @@
 #define AVT_FILLED_BOUNDARY_FILTER_H
 
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 #include <FilledBoundaryAttributes.h>
 
 
@@ -65,7 +65,7 @@
 //
 // ****************************************************************************
 
-class avtFilledBoundaryFilter : public avtDataTreeStreamer
+class avtFilledBoundaryFilter : public avtSIMODataTreeIterator
 {
   public:
                           avtFilledBoundaryFilter();

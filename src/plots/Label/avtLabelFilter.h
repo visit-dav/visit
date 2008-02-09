@@ -44,7 +44,7 @@
 #define AVT_Label_FILTER_H
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 class vtkDataSet;
 
@@ -61,7 +61,7 @@ class vtkDataSet;
 //
 // ****************************************************************************
 
-class avtLabelFilter : public avtStreamer
+class avtLabelFilter : public avtDataTreeIterator
 {
   public:
                               avtLabelFilter();

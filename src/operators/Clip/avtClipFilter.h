@@ -44,7 +44,7 @@
 #define AVT_CLIP_FILTER_H
 
 
-#include <avtPluginStructuredChunkStreamer.h>
+#include <avtPluginStructuredChunkDataTreeIterator.h>
 #include <ClipAttributes.h>
 
 
@@ -96,7 +96,7 @@ class vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class avtClipFilter : public avtPluginStructuredChunkStreamer
+class avtClipFilter : public avtPluginStructuredChunkDataTreeIterator
 {
   public:
                              avtClipFilter();

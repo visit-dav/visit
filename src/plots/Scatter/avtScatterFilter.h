@@ -43,7 +43,7 @@
 #ifndef AVT_SCATTER_FILTER_H
 #define AVT_SCATTER_FILTER_H
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 #include <ScatterAttributes.h>
 
 // ****************************************************************************
@@ -62,7 +62,7 @@
 //
 // ****************************************************************************
 
-class avtScatterFilter : public avtStreamer
+class avtScatterFilter : public avtDataTreeIterator
 {
   public:
                                avtScatterFilter(const std::string &v,

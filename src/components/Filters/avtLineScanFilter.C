@@ -241,7 +241,7 @@ avtLineScanFilter::SetCylinderDistrib(float *pos_,
 void
 avtLineScanFilter::PreExecute(void)
 {
-    avtStreamer::PreExecute();
+    avtDataTreeIterator::PreExecute();
 
     if (lines != NULL)
         delete [] lines;
@@ -449,7 +449,7 @@ AssignToProc(int val, int nlines)
 void
 avtLineScanFilter::PostExecute(void)
 {
-    avtStreamer::PostExecute();
+    avtDataTreeIterator::PostExecute();
 
     avtDataTree_p output_tree = GetDataTree();
     int nLeaves = 0;

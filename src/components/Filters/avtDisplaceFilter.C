@@ -287,7 +287,7 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 //  Modifications:
 //
 //    Hank Childs, Fri May 18 16:19:20 PDT 2007
-//    Call avtStreamer's PostExecute, not avtPluginStreamer, since the 
+//    Call avtDataTreeIterator's PostExecute, not avtPluginDataTreeIterator, since the 
 //    inheritance changed.
 //
 //    Hank Childs, Fri Sep 28 07:14:14 PDT 2007
@@ -298,7 +298,7 @@ avtDisplaceFilter::ExecuteData(vtkDataSet *in_ds, int, std::string)
 void
 avtDisplaceFilter::PreExecute(void)
 {
-    avtStreamer::PreExecute();
+    avtDataTreeIterator::PreExecute();
 
     const char *displace_var = variable.c_str();
     if (strcmp(displace_var, "default") == 0)
@@ -343,7 +343,7 @@ avtDisplaceFilter::PreExecute(void)
 //  Modifications:
 //
 //    Hank Childs, Fri May 18 16:19:20 PDT 2007
-//    Call avtStreamer's PostExecute, not avtPluginStreamer, since the 
+//    Call avtDataTreeIterator's PostExecute, not avtPluginDataTreeIterator, since the 
 //    inheritance changed.
 //
 // ****************************************************************************
@@ -351,7 +351,7 @@ avtDisplaceFilter::PreExecute(void)
 void
 avtDisplaceFilter::PostExecute(void)
 {
-    avtStreamer::PostExecute();
+    avtDataTreeIterator::PostExecute();
 
     avtDataAttributes& outAtts = GetOutput()->GetInfo().GetAttributes();
 

@@ -43,7 +43,7 @@
 #ifndef AVT_Truecolor_FILTER_H
 #define AVT_Truecolor_FILTER_H
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 
 // ****************************************************************************
@@ -66,7 +66,7 @@
 //
 // ****************************************************************************
 
-class avtTruecolorFilter : public avtStreamer
+class avtTruecolorFilter : public avtDataTreeIterator
 {
   public:
                               avtTruecolorFilter();

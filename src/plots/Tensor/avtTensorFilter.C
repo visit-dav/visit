@@ -312,7 +312,7 @@ avtTensorFilter::UpdateDataObjectInfo(void)
 void
 avtTensorFilter::ReleaseData(void)
 {
-    avtStreamer::ReleaseData();
+    avtDataTreeIterator::ReleaseData();
 
     reduce->SetInput(NULL);
     vtkPolyData *p = vtkPolyData::New();

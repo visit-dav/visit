@@ -44,7 +44,7 @@
 #define AVT_PSEUDOCOLOR_FILTER_H
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 #include <PseudocolorAttributes.h>
 
 
@@ -63,7 +63,7 @@
 //
 // ****************************************************************************
 
-class avtPseudocolorFilter : public avtStreamer
+class avtPseudocolorFilter : public avtDataTreeIterator
 {
   public:
                               avtPseudocolorFilter();

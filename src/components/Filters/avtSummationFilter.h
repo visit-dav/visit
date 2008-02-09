@@ -44,7 +44,7 @@
 #define AVT_SUMMATION_FILTER_H
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 #include <filters_exports.h>
 #include <string>
 
@@ -67,7 +67,7 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtSummationFilter : public avtStreamer
+class AVTFILTERS_API avtSummationFilter : public avtDataTreeIterator
 {
   public:
                                     avtSummationFilter();

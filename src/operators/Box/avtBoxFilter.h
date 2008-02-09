@@ -43,7 +43,7 @@
 #ifndef AVT_Box_FILTER_H
 #define AVT_Box_FILTER_H
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <BoxAttributes.h>
 
 class     vtkDataSet;
@@ -70,7 +70,7 @@ class     vtkUnstructuredGrid;
 //
 // ****************************************************************************
 
-class avtBoxFilter : public avtPluginStreamer
+class avtBoxFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtBoxFilter();

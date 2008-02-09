@@ -44,7 +44,7 @@
 #define AVT_ONION_PEEL_FILTER_H
 
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <OnionPeelAttributes.h>
 
 
@@ -94,7 +94,7 @@ class vtkPolyDataOnionPeelFilter;
 //
 // ****************************************************************************
 
-class avtOnionPeelFilter : public avtPluginStreamer
+class avtOnionPeelFilter : public avtPluginDataTreeIterator
 {
   public:
                          avtOnionPeelFilter();

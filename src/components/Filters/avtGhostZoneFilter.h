@@ -45,7 +45,7 @@
 
 #include <filters_exports.h>
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 
 class     vtkDataSet;
 class     vtkDataSetRemoveGhostCells;
@@ -65,7 +65,7 @@ class     vtkDataSetRemoveGhostCells;
 //    Added string argument to Execute method in order to match new interface.
 //
 //    Hank Childs, Tue Sep 10 12:51:33 PDT 2002
-//    Inherited from avtStreamer instead of avtDataTreeStreamer.  Re-worked
+//    Inherited from avtDataTreeIterator instead of avtSIMODataTreeIterator.  Re-worked
 //    the paradigm for memory management.
 //
 //    Hank Childs, Thu Feb  5 17:11:06 PST 2004
@@ -86,7 +86,7 @@ class     vtkDataSetRemoveGhostCells;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtGhostZoneFilter : public avtStreamer
+class AVTFILTERS_API avtGhostZoneFilter : public avtDataTreeIterator
 {
   public:
                          avtGhostZoneFilter();

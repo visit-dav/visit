@@ -238,7 +238,7 @@ avtExpressionFilter::PreExecute(void)
 //  Modifications:
 //
 //    Hank Childs, Mon Jul 21 09:35:52 PDT 2003
-//    Called avtStreamer's PostExecute, since that is the base class.
+//    Called avtDataTreeIterator's PostExecute, since that is the base class.
 //    
 //    Hank Childs, Mon Dec 27 10:28:51 PST 2004
 //    Call avtDatasetToDatasetFilter's PostExecute, since that is now the base 

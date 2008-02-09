@@ -44,7 +44,7 @@
 #define AVT_SimilarityTransform_FILTER_H
 #include <filters_exports.h>
 
-#include <avtPluginStreamer.h>
+#include <avtPluginDataTreeIterator.h>
 #include <avtTransform.h>
 #include <SimilarityTransformAttributes.h>
 #include <vtkMatrix4x4.h>

@@ -37,10 +37,10 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                          avtExpressionStreamer.C                          //
+//                          avtExpressionDataTreeIterator.C                          //
 // ************************************************************************* //
 
-#include <avtExpressionStreamer.h>
+#include <avtExpressionDataTreeIterator.h>
 
 #include <math.h>
 #include <float.h>
@@ -60,35 +60,35 @@
 
 
 // ****************************************************************************
-//  Method: avtExpressionStreamer constructor
+//  Method: avtExpressionDataTreeIterator constructor
 //
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
-avtExpressionStreamer::avtExpressionStreamer()
+avtExpressionDataTreeIterator::avtExpressionDataTreeIterator()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtExpressionStreamer destructor
+//  Method: avtExpressionDataTreeIterator destructor
 //
 //  Programmer: Hank Childs
 //  Creation:   December 27, 2004
 //
 // ****************************************************************************
 
-avtExpressionStreamer::~avtExpressionStreamer()
+avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 {
     ;
 }
 
 
 // ****************************************************************************
-//  Method: avtExpressionStreamer::ExecuteData
+//  Method: avtExpressionDataTreeIterator::ExecuteData
 //
 //  Purpose:
 //      Does the actual VTK code to modify the dataset.
@@ -147,7 +147,7 @@ avtExpressionStreamer::~avtExpressionStreamer()
 //    Rename ghost data arrays.
 //
 //    Hank Childs, Mon Dec 27 10:28:51 PST 2004
-//    Moved from avtExpressionFilter to avtExpressionStreamer.
+//    Moved from avtExpressionFilter to avtExpressionDataTreeIterator.
 //
 //    Hank Childs, Mon Jan  3 09:15:40 PST 2005
 //    Check to see if the variable already exists.  If so, no need to 
@@ -174,7 +174,7 @@ avtExpressionStreamer::~avtExpressionStreamer()
 // ****************************************************************************
 
 vtkDataSet *
-avtExpressionStreamer::ExecuteData(vtkDataSet *in_ds, int index,
+avtExpressionDataTreeIterator::ExecuteData(vtkDataSet *in_ds, int index,
                                  std::string label)
 {
     //

@@ -45,7 +45,7 @@
 #include <filters_exports.h>
 
 
-#include <avtStreamer.h>
+#include <avtDataTreeIterator.h>
 #include <enumtypes.h>
 
 // ****************************************************************************
@@ -61,7 +61,7 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtMeshLogFilter : public avtStreamer
+class AVTFILTERS_API avtMeshLogFilter : public avtDataTreeIterator
 {
   public:
                           avtMeshLogFilter();

@@ -43,7 +43,7 @@
 #ifndef AVT_Topology_FILTER_H
 #define AVT_Topology_FILTER_H
 
-#include <avtDataTreeStreamer.h>
+#include <avtSIMODataTreeIterator.h>
 
 class vtkCell;
 class vtkContourFilter;
@@ -61,7 +61,7 @@ class vtkIdList;
 //
 // ****************************************************************************
 
-class avtTopologyFilter : public avtDataTreeStreamer
+class avtTopologyFilter : public avtSIMODataTreeIterator
 {
   public:
     static const string labelNames[4];
