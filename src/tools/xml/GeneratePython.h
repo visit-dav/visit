@@ -145,6 +145,9 @@ inline char toupper(char c)
 //    Cyrus Harrison, Tue May 29 13:24:42 PDT 2007
 //    Fixed code gen problem with LineStyle.
 //
+//    Brad Whitlock, Tue Jan 29 11:18:05 PDT 2008
+//    Improved the accessibility of nested AttributeSubjects.
+//
 // ****************************************************************************
 
 // ----------------------------------------------------------------------------
@@ -313,7 +316,7 @@ class PythonGeneratorField : public virtual Field
             else
                 c << "    else if(strcmp(name, \"" << name << "\") == 0)" << endl;
 
-            c << "        retval = ("<<className<<"_"<<MethodNameSet()<<"(self, tuple) != NULL);" << endl;
+            c << "        obj = "<<className<<"_"<<MethodNameSet()<<"(self, tuple);" << endl;
         }
     }
 };
@@ -1793,33 +1796,11 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
     AttsGeneratorAtt(const QString &t, const QString &n, const QString &l)
         : Att(t,n,l), PythonGeneratorField("att",n,l), Field("att",n,l) { cerr << "**** AttType=" << AttType << endl;}
 
-    virtual void WriteSetAttr(ostream &c, const QString &className, bool first)
-    {
-        if(internal)
-            return;
-
-        // Not implemented yet!
-        c << "    if (strcmp(name, \"" << name << "\") == 0)" << endl;
-        c << "    {" << endl;
-        c << "        cerr << \"You cannot access this data member directly.\";"
-          << endl;
-        c << "        cerr << \"\\nUse " << MethodNameGet() << "().field = value\\n\\n\";" << endl;
-        c << "    }" << endl;
-    }
-
-    virtual bool HasSetAttr()
-    {
-        return false;
-    }
-
     virtual void WriteIncludedHeaders(ostream &c)
     {
         // Write the list of include files that the object needs.
         c << "#include <Py" << attType << ".h>" << endl;
     }
-
-    // So far, only allow a Set method for ColorAttributeList objects.
-    virtual bool ProvidesSetMethod() const { return AttType == "ColorAttributeList"; }
 
     virtual void WriteSetMethodBody(ostream &c, const QString &className)
     {
@@ -1992,8 +1973,16 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         }
         else
         {
-            c << "    // NOT IMPLEMENTED!!!" << endl;
-            c << "    // name=" << name << ", type=" << type << endl;
+            c << "    PyObject *newValue = NULL;" << endl;
+            c << "    if(!PyArg_ParseTuple(args, \"O\", &newValue))" << endl;
+            c << "        return NULL;" << endl;
+            c << "    if(!Py" << AttType << "_Check(newValue))" << endl;
+            c << "    {" << endl;
+            c << "        VisItErrorFunc(\"The " << name << " field can only be set with " << AttType << " objects.\");" << endl;
+            c << "        return NULL;" << endl;
+            c << "    }" << endl;
+            c << endl;
+            c << "    obj->data->Set" << Name << "(*Py" << AttType << "_FromPyObject(newValue));" << endl;
         }
     }
 
@@ -2079,10 +2068,9 @@ class AttsGeneratorAtt : public virtual Att , public virtual PythonGeneratorFiel
         else
         {
             c << "    { // new scope" << endl;
-            c << "        char tmp[200];" << endl;
             c << "        std::string objPrefix(prefix);" << endl;
-            c << "        objPrefix += \"Get" << Name << "().\";" << endl;
-            c << "         str += Py" << attType << "_ToString(";
+            c << "        objPrefix += \"" << name << ".\";" << endl;
+            c << "        str += Py" << attType << "_ToString(";
             if(accessType == Field::AccessPublic)
                 c << "atts->" << name;
             else
@@ -2934,7 +2922,7 @@ class PythonGeneratorAttribute
         c << "    PyObject *tuple = PyTuple_New(1);" << endl;
         c << "    PyTuple_SET_ITEM(tuple, 0, args);" << endl;
         c << "    Py_INCREF(args);" << endl;
-        c << "    bool retval = false;" << endl;
+        c << "    PyObject *obj = NULL;" << endl;
         c << endl;
 
         // Figure out the first field that can write a _setattr method.
@@ -2952,8 +2940,11 @@ class PythonGeneratorAttribute
             fields[i]->WriteSetAttr(c, name, i == index);
         c << endl;
 
+        c << "    if(obj != NULL)" << endl;
+        c << "        Py_DECREF(obj);" << endl;
+        c << endl;
         c << "    Py_DECREF(tuple);" << endl;
-        c << "    return retval ? 0 : -1;" << endl;
+        c << "    return (obj != NULL) ? 0 : -1;" << endl;
         c << "}" << endl;
         c << endl;
     }
@@ -3279,6 +3270,8 @@ class PythonGeneratorAttribute
         c << "#include <Py" << name << ".h>" << endl;
         c << "#include <ObserverToCallback.h>" << endl;
         WriteIncludedHeaders(c);
+        c << endl;
+        c << "extern void VisItErrorFunc(const char *);" << endl;
         c << endl;
         WriteHeaderComment(c);
         WritePyObjectStruct(c);

@@ -1,24 +1,5 @@
 <?xml version="1.0"?>
   <Attribute name="AnnotationAttributes" purpose="This class contains the attributes controlling annotations." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="AnnotationAttributes.code">
-    <Enum name="Ticks">
-      Off
-      Bottom
-      Left
-      BottomLeft
-      All
-    </Enum>
-    <Enum name="Location">
-      Inside
-      Outside
-      Both
-    </Enum>
-    <Enum name="Axes">
-      ClosestTriad
-      FurthestTriad
-      OutsideEdges
-      StaticTriad
-      StaticEdges
-    </Enum>
     <Enum name="GradientStyle">
       TopToBottom
       BottomToTop
@@ -39,257 +20,24 @@
       Smart
       SmartDirectory
     </Enum>
-    <Field name="axesFlag2D" label="axesFlag2D" type="bool">
+    <Field name="axes2D" label="2D Axes" type="att" subtype="Axes2D">
+    </Field>
+    <Field name="axes3D" label="3D Axes" type="att" subtype="Axes3D">
+    </Field>
+    <Field name="userInfoFlag" label="userInfoFlag" type="bool">
       true
     </Field>
-    <Field name="axesAutoSetTicks2D" label="axesAutoSetTicks2D" type="bool">
+    <Field name="userInfoFont" label="User font" type="att" subtype="FontAttributes" init="userInfoFont">
+    </Field>
+    <Field name="databaseInfoFlag" label="databaseInfoFlag" type="bool">
       true
     </Field>
-    <Field name="labelAutoSetScaling2D" label="labelAutoSetScaling2D" type="bool">
-      true
+    <Field name="databaseInfoFont" label="Database info font" type="att" subtype="FontAttributes" init="databaseInfoFont">
     </Field>
-    <Field name="xAxisLabels2D" label="xAxisLabels2D" type="bool">
-      true
+    <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:true">
+      File
     </Field>
-    <Field name="yAxisLabels2D" label="yAxisLabels2D" type="bool">
-      true
-    </Field>
-    <Field name="xAxisTitle2D" label="xAxisTitle2D" type="bool">
-      true
-    </Field>
-    <Field name="yAxisTitle2D" label="yAxisTitle2D" type="bool">
-      true
-    </Field>
-    <Field name="xGridLines2D" label="xGridLines2D" type="bool">
-      false
-    </Field>
-    <Field name="yGridLines2D" label="yGridLines2D" type="bool">
-      false
-    </Field>
-    <Field name="xMajorTickMinimum2D" label="xMajorTickMinimum2D" type="double">
-      0.000000
-    </Field>
-    <Field name="yMajorTickMinimum2D" label="yMajorTickMinimum2D" type="double">
-      0.000000
-    </Field>
-    <Field name="xMajorTickMaximum2D" label="xMajorTickMaximum2D" type="double">
-      1.000000
-    </Field>
-    <Field name="yMajorTickMaximum2D" label="yMajorTickMaximum2D" type="double">
-      1.000000
-    </Field>
-    <Field name="xMajorTickSpacing2D" label="xMajorTickSpacing2D" type="double">
-      0.200000
-    </Field>
-    <Field name="yMajorTickSpacing2D" label="yMajorTickSpacing2D" type="double">
-      0.200000
-    </Field>
-    <Field name="xMinorTickSpacing2D" label="xMinorTickSpacing2D" type="double">
-      0.020000
-    </Field>
-    <Field name="yMinorTickSpacing2D" label="yMinorTickSpacing2D" type="double">
-      0.020000
-    </Field>
-    <Field name="xLabelFontHeight2D" label="xLabelFontHeight2D" type="double">
-      0.020000
-    </Field>
-    <Field name="yLabelFontHeight2D" label="yLabelFontHeight2D" type="double">
-      0.020000
-    </Field>
-    <Field name="xTitleFontHeight2D" label="xTitleFontHeight2D" type="double">
-      0.020000
-    </Field>
-    <Field name="yTitleFontHeight2D" label="yTitleFontHeight2D" type="double">
-      0.020000
-    </Field>
-    <Field name="xLabelScaling2D" label="xLabelScaling2D" type="int">
-      0
-    </Field>
-    <Field name="yLabelScaling2D" label="yLabelScaling2D" type="int">
-      0
-    </Field>
-    <Field name="axesLineWidth2D" label="axesLineWidth2D" type="linewidth">
-      0
-    </Field>
-    <Field name="axesTickLocation2D" label="axesTickLocation2D" type="enum" subtype="Location">
-      Outside
-    </Field>
-    <Field name="axesTicks2D" label="axesTicks2D" type="enum" subtype="Ticks">
-      BottomLeft
-    </Field>
-    <Field name="xAxisUserTitle2D" label="xAxisUserTitle2D" type="string">
-      X-Axis
-    </Field>
-    <Field name="yAxisUserTitle2D" label="yAxisUserTitle2D" type="string">
-      Y-Axis
-    </Field>
-    <Field name="xAxisUserTitleFlag2D" label="xAxisUserTitle2D" type="bool">
-      false
-    </Field>
-    <Field name="yAxisUserTitleFlag2D" label="yAxisUserTitle2D" type="bool">
-      false
-    </Field>
-    <Field name="xAxisUserUnits2D" label="xAxisUserUnits2D" type="string">
-    </Field>
-    <Field name="yAxisUserUnits2D" label="yAxisUserUnits2D" type="string">
-    </Field>
-    <Field name="xAxisUserUnitsFlag2D" label="xAxisUserUnits2D" type="bool">
-      false
-    </Field>
-    <Field name="yAxisUserUnitsFlag2D" label="yAxisUserUnits2D" type="bool">
-      false
-    </Field>
-    <Field name="axesFlag" label="axesFlag" type="bool">
-      true
-    </Field>
-    <Field name="axesAutoSetTicks" label="axesAutoSetTicks" type="bool">
-      true
-    </Field>
-    <Field name="labelAutoSetScaling" label="labelAutoSetScaling" type="bool">
-      true
-    </Field>
-    <Field name="xAxisLabels" label="xAxisLabels" type="bool">
-      true
-    </Field>
-    <Field name="yAxisLabels" label="yAxisLabels" type="bool">
-      true
-    </Field>
-    <Field name="zAxisLabels" label="zAxisLabels" type="bool">
-      true
-    </Field>
-    <Field name="xAxisTitle" label="xAxisTitle" type="bool">
-      true
-    </Field>
-    <Field name="yAxisTitle" label="yAxisTitle" type="bool">
-      true
-    </Field>
-    <Field name="zAxisTitle" label="zAxisTitle" type="bool">
-      true
-    </Field>
-    <Field name="xGridLines" label="xGridLines" type="bool">
-      false
-    </Field>
-    <Field name="yGridLines" label="yGridLines" type="bool">
-      false
-    </Field>
-    <Field name="zGridLines" label="zGridLines" type="bool">
-      false
-    </Field>
-    <Field name="xAxisTicks" label="xAxisTicks" type="bool">
-      true
-    </Field>
-    <Field name="yAxisTicks" label="yAxisTicks" type="bool">
-      true
-    </Field>
-    <Field name="zAxisTicks" label="zAxisTicks" type="bool">
-      true
-    </Field>
-    <Field name="xMajorTickMinimum" label="xMajorTickMinimum" type="double">
-      0.000000
-    </Field>
-    <Field name="yMajorTickMinimum" label="yMajorTickMinimum" type="double">
-      0.000000
-    </Field>
-    <Field name="zMajorTickMinimum" label="zMajorTickMinimum" type="double">
-      0.000000
-    </Field>
-    <Field name="xMajorTickMaximum" label="xMajorTickMaximum" type="double">
-      1.000000
-    </Field>
-    <Field name="yMajorTickMaximum" label="yMajorTickMaximum" type="double">
-      1.000000
-    </Field>
-    <Field name="zMajorTickMaximum" label="zMajorTickMaximum" type="double">
-      1.000000
-    </Field>
-    <Field name="xMajorTickSpacing" label="xMajorTickSpacing" type="double">
-      0.200000
-    </Field>
-    <Field name="yMajorTickSpacing" label="yMajorTickSpacing" type="double">
-      0.200000
-    </Field>
-    <Field name="zMajorTickSpacing" label="zMajorTickSpacing" type="double">
-      0.200000
-    </Field>
-    <Field name="xMinorTickSpacing" label="xMinorTickSpacing" type="double">
-      0.020000
-    </Field>
-    <Field name="yMinorTickSpacing" label="yMinorTickSpacing" type="double">
-      0.020000
-    </Field>
-    <Field name="zMinorTickSpacing" label="zMinorTickSpacing" type="double">
-      0.020000
-    </Field>
-    <Field name="xLabelFontHeight" label="xLabelFontHeight" type="double">
-      0.020000
-    </Field>
-    <Field name="yLabelFontHeight" label="yLabelFontHeight" type="double">
-      0.020000
-    </Field>
-    <Field name="zLabelFontHeight" label="zLabelFontHeight" type="double">
-      0.020000
-    </Field>
-    <Field name="xTitleFontHeight" label="xTitleFontHeight" type="double">
-      0.020000
-    </Field>
-    <Field name="yTitleFontHeight" label="yTitleFontHeight" type="double">
-      0.020000
-    </Field>
-    <Field name="zTitleFontHeight" label="zTitleFontHeight" type="double">
-      0.020000
-    </Field>
-    <Field name="xLabelScaling" label="xLabelScaling" type="int">
-      0
-    </Field>
-    <Field name="yLabelScaling" label="yLabelScaling" type="int">
-      0
-    </Field>
-    <Field name="zLabelScaling" label="zLabelScaling" type="int">
-      0
-    </Field>
-    <Field name="xAxisUserTitle" label="xAxisUserTitle" type="string">
-      X-Axis
-    </Field>
-    <Field name="yAxisUserTitle" label="yAxisUserTitle" type="string">
-      Y-Axis
-    </Field>
-    <Field name="zAxisUserTitle" label="zAxisUserTitle" type="string">
-      Z-Axis
-    </Field>
-    <Field name="xAxisUserTitleFlag" label="xAxisUserTitle" type="bool">
-      false
-    </Field>
-    <Field name="yAxisUserTitleFlag" label="yAxisUserTitle" type="bool">
-      false
-    </Field>
-    <Field name="zAxisUserTitleFlag" label="zAxisUserTitle" type="bool">
-      false
-    </Field>
-    <Field name="xAxisUserUnits" label="xAxisUserUnits" type="string">
-    </Field>
-    <Field name="yAxisUserUnits" label="yAxisUserUnits" type="string">
-    </Field>
-    <Field name="zAxisUserUnits" label="zAxisUserUnits" type="string">
-    </Field>
-    <Field name="xAxisUserUnitsFlag" label="xAxisUserUnits" type="bool">
-      false
-    </Field>
-    <Field name="yAxisUserUnitsFlag" label="yAxisUserUnits" type="bool">
-      false
-    </Field>
-    <Field name="zAxisUserUnitsFlag" label="zAxisUserUnits" type="bool">
-      false
-    </Field>
-    <Field name="axesTickLocation" label="axesTickLocation" type="enum" subtype="Location">
-      Inside
-    </Field>
-    <Field name="axesType" label="axesType" type="enum" subtype="Axes">
-      ClosestTriad
-    </Field>
-    <Field name="triadFlag" label="triadFlag" type="bool">
-      true
-    </Field>
-    <Field name="bboxFlag" label="bboxFlag" type="bool">
+    <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
       true
     </Field>
     <Field name="backgroundColor" label="backgroundColor" type="color" length="4">
@@ -323,18 +71,6 @@
       Solid
     </Field>
     <Field name="backgroundImage" label="Background image" type="string">
-    </Field>
-    <Field name="userInfoFlag" label="userInfoFlag" type="bool">
-      true
-    </Field>
-    <Field name="databaseInfoFlag" label="databaseInfoFlag" type="bool">
-      true
-    </Field>
-    <Field name="databaseInfoExpansionMode" label="Path Expansion:" type="enum" subtype="PathExpansionMode" enabler="databaseInfoFlag:true">
-      File
-    </Field>
-    <Field name="legendInfoFlag" label="legendInfoFlag" type="bool">
-      true
     </Field>
     <Field name="imageRepeatX" label="Image repeat X" type="int">
       1

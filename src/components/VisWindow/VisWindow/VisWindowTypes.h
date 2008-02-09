@@ -106,6 +106,43 @@ struct HotPoint
     HotPoint() : radius(0), data(0), shape(0), tool(NULL), callback(NULL) { }
 };
 
+// ****************************************************************************
+// Class: VisWinTextAttributes
+//
+// Purpose:
+//   Simple text attributes class that we can use in VisWin.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 29 16:35:07 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+struct VisWinTextAttributes
+{
+    typedef enum // This matches VTK
+    { 
+        Arial = 0,
+        Courier,
+        Times
+    } FontID;
+
+    VisWinTextAttributes();
+    VisWinTextAttributes(const VisWinTextAttributes &);
+    ~VisWinTextAttributes();
+    VisWinTextAttributes operator = (const VisWinTextAttributes &);
+
+    FontID font;
+    double height;
+    bool   useForegroundColor;
+    double color[4];
+    bool   bold;
+    bool   italic;
+};
+
 // Functions to convert INTERACTION_MODE to/from string.
 VISWINDOW_API std::string INTERACTION_MODE_ToString(INTERACTION_MODE);
 VISWINDOW_API std::string INTERACTION_MODE_ToString(int);

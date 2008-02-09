@@ -36,6 +36,9 @@
 #    Jeremy Meredith, Wed Jan 23 15:33:13 EST 2008
 #    Added PyFileOpenOptions.
 #
+#    Brad Whitlock, Fri Jan 25 16:56:15 PST 2008
+#    Added several annotation-related objects.
+#
 #    Brad Whitlock, Mon Feb  4 13:27:18 PST 2008
 #    Added PyViewerRPC. 
 #
@@ -75,6 +78,13 @@ METADATA_SRC= \
 WRAPPER_SRC= \
     PyAnimationAttributes.C \
     PyAnnotationAttributes.C \
+    PyAnnotationAttributes_Legacy.C \
+    PyAxes2D.C \
+    PyAxes3D.C \
+    PyAxisAttributes.C \
+    PyAxisLabels.C \
+    PyAxisTickMarks.C \
+    PyAxisTitles.C \
     PyColorAttribute.C \
     PyColorAttributeList.C \
     PyColorControlPoint.C \
@@ -86,6 +96,7 @@ WRAPPER_SRC= \
     PyExportDBAttributes.C \
     PyExpression.C \
     PyExpressionList.C \
+    PyFontAttributes.C \
     PyFileOpenOptions.C \
     PyGaussianControlPoint.C \
     PyGaussianControlPointList.C \

@@ -44,6 +44,8 @@
 // Forward declarations.
 class AnnotationAttributes;
 class AnnotationObjectList;
+class AxisAttributes;
+class FontAttributes;
 class PlotList;
 
 class QButtonGroup;
@@ -58,8 +60,10 @@ class QSpinBox;
 class QTabWidget;
 class QVBox;
 class QvisAnnotationObjectInterface;
+class QvisAxisAttributesWidget;
 class QvisColorButton;
 class QvisDialogLineEdit;
+class QvisFontAttributesWidget;
 class QvisLineWidthWidget;
 
 // ****************************************************************************
@@ -115,6 +119,9 @@ class QvisLineWidthWidget;
 //   Brad Whitlock, Wed Nov 14 11:34:45 PDT 2007
 //   Added background image support.
 //
+//   Brad Whitlock, Thu Feb 7 16:18:19 PST 2008
+//   I rewrote the support for 2D,3D axes.
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -136,6 +143,8 @@ public:
     virtual void SetFromNode(DataNode *, const int *borders);
 protected:
     virtual void UpdateWindow(bool doAll);
+    void UpdateAxes2D();
+    void UpdateAxes3D();
     void UpdateAnnotationControls(bool doAll);
     void UpdateAnnotationObjectControls(bool doAll);
     void Apply(bool dontIgnore = false);
@@ -144,75 +153,50 @@ protected:
     void GetCurrentValues(int which_widget);
     void CreateGeneralTab();
     void Create2DTab();
-    QWidget *Create2DTabForGridAndTicks(QWidget *);
-    QWidget *Create2DTabForTitleAndLabels(QWidget *);
+    QWidget *CreateGeneralTab2D(QWidget *);
     void Create3DTab();
-    QWidget *Create3DTabForGridAndTicks(QWidget *);
-    QWidget *Create3DTabForTitleAndLabels(QWidget *);
+    QWidget *CreateGeneralTab3D(QWidget *);
     void CreateColorTab();
     void CreateObjectsTab();
 private slots:
     virtual void apply();
     virtual void makeDefault();
     virtual void reset();
+
+    // General option slots
+    void tabSelected(const QString &tabLabel);
+    void userInfoChecked(bool val);
+    void userInfoFontChanged(const FontAttributes &);
+    void databaseInfoChecked(bool val);
+    void databasePathExpansionModeChanged(int index);
+    void databaseInfoFontChanged(const FontAttributes &);
+    void legendChecked(bool val);
+    void turnOffAllAnnotations();
+
+    // 2D option slots
     void axesFlagChecked2D(bool val);
     void axesAutoSetTicksChecked2D(bool val);
     void labelAutoSetScalingChecked2D(bool val);
-    void axisLabelsChanged2D(int index);
-    void axisTitlesChanged2D(int index);
-    void gridLinesChanged2D(int index);
-    void xMajorTickMinimumChanged2D();
-    void yMajorTickMinimumChanged2D();
-    void xMajorTickMaximumChanged2D();
-    void yMajorTickMaximumChanged2D();
-    void xMajorTickSpacingChanged2D();
-    void yMajorTickSpacingChanged2D();
-    void xMinorTickSpacingChanged2D();
-    void yMinorTickSpacingChanged2D();
-    void xLabelFontHeightChanged2D();
-    void yLabelFontHeightChanged2D();
-    void xTitleFontHeightChanged2D();
-    void yTitleFontHeightChanged2D();
-    void xLabelScalingChanged2D();
-    void yLabelScalingChanged2D();
     void axesLineWidthChanged2D(int index);
     void axesTicksChanged2D(int index);
     void axesTickLocationChanged2D(int index);
+    void xAxisChanged2D(const AxisAttributes &);
+    void yAxisChanged2D(const AxisAttributes &);
 
-    void xAxisUserTitleChecked2D(bool);
-    void xAxisUserTitleLineEditChanged2D();
-    void yAxisUserTitleChecked2D(bool);
-    void yAxisUserTitleLineEditChanged2D();
-    void xAxisUserUnitsChecked2D(bool);
-    void xAxisUserUnitsLineEditChanged2D();
-    void yAxisUserUnitsChecked2D(bool);
-    void yAxisUserUnitsLineEditChanged2D();
-
-    void xAxisUserTitleChecked(bool);
-    void xAxisUserTitleLineEditChanged();
-    void yAxisUserTitleChecked(bool);
-    void yAxisUserTitleLineEditChanged();
-    void zAxisUserTitleChecked(bool);
-    void zAxisUserTitleLineEditChanged();
-    void xAxisUserUnitsChecked(bool);
-    void xAxisUserUnitsLineEditChanged();
-    void yAxisUserUnitsChecked(bool);
-    void yAxisUserUnitsLineEditChanged();
-    void zAxisUserUnitsChecked(bool);
-    void zAxisUserUnitsLineEditChanged();
-
+    // 3D option slots
     void axes3DFlagChecked(bool val);
+    void axesAutoSetTicksChecked(bool val);
     void labelAutoSetScalingChecked(bool val);
-    void axisLabelsChanged(int index);
-    void gridLinesChanged(int index);
-    void axisTicksChanged(int index);
-    void xLabelScalingChanged();
-    void yLabelScalingChanged();
-    void zLabelScalingChanged();
     void axes3DTickLocationChanged(int index);
     void axes3DTypeChanged(int index);
     void triadFlagChecked(bool val);
     void bboxFlagChecked(bool val);
+    void axesLineWidthChanged(int index);
+    void xAxisChanged(const AxisAttributes &);
+    void yAxisChanged(const AxisAttributes &);
+    void zAxisChanged(const AxisAttributes &);
+
+    // Color option slots
     void backgroundColorChanged(const QColor &c);
     void foregroundColorChanged(const QColor &c);
     void gradientColor1Changed(const QColor &c);
@@ -222,13 +206,6 @@ private slots:
     void backgroundImageChanged();
     void imageRepeatXChanged(int);
     void imageRepeatYChanged(int);
-
-    void tabSelected(const QString &tabLabel);
-    void userInfoChecked(bool val);
-    void databaseInfoChecked(bool val);
-    void databasePathExpansionModeChanged(int index);
-    void legendChecked(bool val);
-    void turnOffAllAnnotations();
 
     // Slots for the objects tab.
     void applyObjectListChanges();
@@ -246,111 +223,68 @@ private:
     int                             nObjectInterfaces;
     QvisAnnotationObjectInterface  *displayInterface;
 
+    QTabWidget               *tabs;
+    int                       activeTab;
+
     // General Tab widgets
-    QWidget         *pageGeneral;
-    QCheckBox       *userInfo;
-    QCheckBox       *databaseInfo;
-    QWidget         *databasePathExpansionModeParent;
-    QComboBox       *databasePathExpansionMode;
-    QCheckBox       *legendInfo;
-    QPushButton     *turnOffAllButton;
-    QTabWidget      *tabs;
+    QWidget                  *pageGeneral;
+    QGroupBox                *userInfo;
+    QvisFontAttributesWidget *userInfoFont;
+    QGroupBox                *databaseInfo;
+    QvisFontAttributesWidget *databaseInfoFont;
+    QLabel                   *databasePathExpansionModeLabel;
+    QComboBox                *databasePathExpansionMode;
+    QCheckBox                *legendInfo;
+    QPushButton              *turnOffAllButton;
 
     // 2D tab widgets
-    QVBox           *page2D;
-    QCheckBox       *axesFlagToggle2D;
-    QCheckBox       *axesAutoSetTicksToggle2D;
-    QCheckBox       *labelAutoSetScalingToggle2D;
-    QGroupBox       *axesGroup2D;
-    QButtonGroup    *axisLabelsButtons2D;
-    QButtonGroup    *axisTitlesButtons2D;
-    QButtonGroup    *gridLinesButtons2D;
-    QLabel          *majorTickMinimumLabel2D;
-    QNarrowLineEdit *xMajorTickMinimumLineEdit2D;
-    QNarrowLineEdit *yMajorTickMinimumLineEdit2D;
-    QLabel          *majorTickMaximumLabel2D;
-    QNarrowLineEdit *xMajorTickMaximumLineEdit2D;
-    QNarrowLineEdit *yMajorTickMaximumLineEdit2D;
-    QLabel          *majorTickSpacingLabel2D;
-    QNarrowLineEdit *xMajorTickSpacingLineEdit2D;
-    QNarrowLineEdit *yMajorTickSpacingLineEdit2D;
-    QLabel          *minorTickSpacingLabel2D;
-    QNarrowLineEdit *xMinorTickSpacingLineEdit2D;
-    QNarrowLineEdit *yMinorTickSpacingLineEdit2D;
-    QNarrowLineEdit *xLabelFontHeightLineEdit2D;
-    QNarrowLineEdit *yLabelFontHeightLineEdit2D;
-    QNarrowLineEdit *xTitleFontHeightLineEdit2D;
-    QNarrowLineEdit *yTitleFontHeightLineEdit2D;
-    QLabel          *labelScalingLabel2D;
-    QNarrowLineEdit *xLabelScalingLineEdit2D;
-    QNarrowLineEdit *yLabelScalingLineEdit2D;
-    QvisLineWidthWidget *axesLineWidth2D;
-    QComboBox       *axesTicksComboBox2D;
-    QComboBox       *axesTickLocationComboBox2D;
-    QCheckBox       *xAxisUserTitleToggle2D;
-    QNarrowLineEdit *xAxisUserTitleLineEdit2D;
-    QCheckBox       *yAxisUserTitleToggle2D;
-    QNarrowLineEdit *yAxisUserTitleLineEdit2D;
-    QCheckBox       *xAxisUserUnitsToggle2D;
-    QNarrowLineEdit *xAxisUserUnitsLineEdit2D;
-    QCheckBox       *yAxisUserUnitsToggle2D;
-    QNarrowLineEdit *yAxisUserUnitsLineEdit2D;
+    QVBox                    *page2D;
+    QGroupBox                *axes2DGroup;
+    QCheckBox                *axesFlagToggle2D;
+    QCheckBox                *axesAutoSetTicksToggle2D;
+    QCheckBox                *labelAutoSetScalingToggle2D;
+    QvisLineWidthWidget      *axesLineWidth2D;
+    QComboBox                *axesTicksComboBox2D;
+    QComboBox                *axesTickLocationComboBox2D;
+    QvisAxisAttributesWidget *axes2D[2];
 
     // 3D tab widgets
-    QVBox           *page3D;
-    QCheckBox       *axes3DFlagToggle;
-    QCheckBox       *labelAutoSetScalingToggle;
-    QGroupBox       *axes3DGroup;
-    QButtonGroup    *axisLabelsButtons;
-    QButtonGroup    *gridLinesButtons;
-    QButtonGroup    *axisTicksButtons;
-    QLabel          *labelScalingLabel;
-    QNarrowLineEdit *xLabelScalingLineEdit;
-    QNarrowLineEdit *yLabelScalingLineEdit;
-    QNarrowLineEdit *zLabelScalingLineEdit;
-    QComboBox       *axes3DTickLocationComboBox;
-    QComboBox       *axes3DTypeComboBox;
-    QCheckBox       *xAxisUserTitleToggle;
-    QNarrowLineEdit *xAxisUserTitleLineEdit;
-    QCheckBox       *yAxisUserTitleToggle;
-    QNarrowLineEdit *yAxisUserTitleLineEdit;
-    QCheckBox       *zAxisUserTitleToggle;
-    QNarrowLineEdit *zAxisUserTitleLineEdit;
-    QCheckBox       *xAxisUserUnitsToggle;
-    QNarrowLineEdit *xAxisUserUnitsLineEdit;
-    QCheckBox       *yAxisUserUnitsToggle;
-    QNarrowLineEdit *yAxisUserUnitsLineEdit;
-    QCheckBox       *zAxisUserUnitsToggle;
-    QNarrowLineEdit *zAxisUserUnitsLineEdit;
-    QCheckBox       *triadFlagToggle;
-    QCheckBox       *bboxFlagToggle;
+    QVBox                    *page3D;
+    QGroupBox                *axes3DGroup;
+    QCheckBox                *axes3DVisible;
+    QCheckBox                *axesAutoSetTicksToggle;
+    QCheckBox                *labelAutoSetScalingToggle;
+    QvisLineWidthWidget      *axesLineWidth;
+    QComboBox                *axes3DTickLocationComboBox;
+    QComboBox                *axes3DTypeComboBox;
+    QCheckBox                *triadFlagToggle;
+    QCheckBox                *bboxFlagToggle;
+    QvisAxisAttributesWidget *axes3D[3];
 
     // Color tab widgets
-    QGroupBox       *pageColor;
-    QvisColorButton *backgroundColorButton;
-    QvisColorButton *foregroundColorButton;
-    QButtonGroup    *backgroundStyleButtons;
-    QLabel          *gradientStyleLabel;
-    QComboBox       *gradientStyleComboBox;
-    QLabel          *gradientColor1Label;
-    QvisColorButton *gradientColor1Button;
-    QLabel          *gradientColor2Label;
-    QvisColorButton *gradientColor2Button;
-    QvisDialogLineEdit *backgroundImage;
-    QLabel             *backgroundImageLabel;
-    QSpinBox           *imageRepeatX;
-    QLabel             *imageRepeatXLabel;
-    QSpinBox           *imageRepeatY;
-    QLabel             *imageRepeatYLabel;
+    QGroupBox                *pageColor;
+    QvisColorButton          *backgroundColorButton;
+    QvisColorButton          *foregroundColorButton;
+    QButtonGroup             *backgroundStyleButtons;
+    QLabel                   *gradientStyleLabel;
+    QComboBox                *gradientStyleComboBox;
+    QLabel                   *gradientColor1Label;
+    QvisColorButton          *gradientColor1Button;
+    QLabel                   *gradientColor2Label;
+    QvisColorButton          *gradientColor2Button;
+    QvisDialogLineEdit       *backgroundImage;
+    QLabel                   *backgroundImageLabel;
+    QSpinBox                 *imageRepeatX;
+    QLabel                   *imageRepeatXLabel;
+    QSpinBox                 *imageRepeatY;
+    QLabel                   *imageRepeatYLabel;
 
     // Objects tab widgets
-    QGroupBox       *pageObjects;
-    QButtonGroup    *objButtonGroup;
-    QListBox        *annotationListBox;
-    QPushButton     *hideShowAnnotationButton;
-    QPushButton     *deleteAnnotationButton;
-
-    int             activeTab;
+    QGroupBox                *pageObjects;
+    QButtonGroup             *objButtonGroup;
+    QListBox                 *annotationListBox;
+    QPushButton              *hideShowAnnotationButton;
+    QPushButton              *deleteAnnotationButton;
 };
 
 #endif

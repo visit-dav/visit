@@ -54,6 +54,9 @@
 #include <windows.h>
 #endif
 
+const float VisWinUserInfo::defaultUserInfoHeight = 0.05;
+const float VisWinUserInfo::defaultUserInfoWidth = 0.2;
+
 // ****************************************************************************
 //  Method: VisWinUserInfo constructor
 //
@@ -74,22 +77,23 @@
 //    Brad Whitlock, Wed Oct 29 08:48:17 PDT 2003
 //    I moved some code into the UpdateUserText method.
 //
+//    Brad Whitlock, Wed Jan 30 15:21:05 PST 2008
+//    Added textAttributes. Moved size and placement code to UpdateUserText.
+//
 // ****************************************************************************
 
 VisWinUserInfo::VisWinUserInfo(VisWindowColleagueProxy &p) 
-    : VisWinColleague(p)
+    : VisWinColleague(p), textAttributes()
 {
     infoString = NULL;
+    textAttributes.height = defaultUserInfoHeight;
+
+    //
     // Create and position the actors.
     //
     infoActor = vtkTextActor::New();
     infoActor->ScaledTextOn();
     UpdateUserText();
-    vtkCoordinate *pos = infoActor->GetPositionCoordinate();
-    pos->SetCoordinateSystemToNormalizedViewport();
-    pos->SetValue(0.75, 0.015, 0.);
-    infoActor->SetWidth(0.2);
-    infoActor->SetHeight(0.1);
 
     //
     // This user info will actually be added when we determine that the
@@ -144,12 +148,16 @@ VisWinUserInfo::~VisWinUserInfo()
 //    Kathleen Bonnell, Fri Dec 13 14:07:15 PST 2002 
 //    Use new vtkTextProperty.
 //
+//    Brad Whitlock, Wed Jan 30 15:54:53 PST 2008
+//    Only use foreground color if we're supposed to.
+//
 // ****************************************************************************
 
 void
 VisWinUserInfo::SetForegroundColor(double fr, double fg, double fb)
 {
-    infoActor->GetTextProperty()->SetColor(fr, fg, fb);
+    if(textAttributes.useForegroundColor)
+        infoActor->GetTextProperty()->SetColor(fr, fg, fb);
 }
 
 
@@ -318,6 +326,9 @@ VisWinUserInfo::SetVisibility(bool val)
 //   I moved this code from the constructor to this function, which can be
 //   called again and again.
 //
+//   Brad Whitlock, Wed Jan 30 16:00:48 PST 2008
+//   Added code to set the text size.
+//
 // ****************************************************************************
 
 void
@@ -358,5 +369,60 @@ VisWinUserInfo::UpdateUserText()
                               + strlen(current_time) + 1];
         sprintf(infoString, "user: %s\n%s", user, current_time);
         infoActor->SetInput(infoString);
+
+        // Place the user info based on its size.
+        float scale = textAttributes.height / defaultUserInfoHeight;
+        vtkCoordinate *pos = infoActor->GetPositionCoordinate();
+        pos->SetCoordinateSystemToNormalizedViewport();
+        pos->SetValue(1. - ((defaultUserInfoWidth * scale) + 0.05), 0.015, 0.);
+        infoActor->SetWidth(defaultUserInfoWidth * scale);
+        infoActor->SetHeight(textAttributes.height * 2.);
     }
+}
+
+// ****************************************************************************
+// Method: VisWinUserInfo::SetTextAttributes
+//
+// Purpose: 
+//   Sets the user info's text properties.
+//
+// Arguments:
+//   textAtts : The new text attributes.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jan 29 16:57:27 PST 2008
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinUserInfo::SetTextAttributes(const VisWinTextAttributes &textAtts)
+{
+    textAttributes = textAtts;
+
+    // Update the actor's text color.
+    if(textAttributes.useForegroundColor)
+    {
+        double color[3];
+        mediator.GetForegroundColor(color);
+        infoActor->GetTextProperty()->SetColor(color[0],color[1],color[2]);
+        infoActor->GetTextProperty()->SetOpacity(1.);
+    }
+    else
+    {
+        infoActor->GetTextProperty()->SetColor(
+            textAttributes.color[0],
+            textAttributes.color[1],
+            textAttributes.color[2]);
+        infoActor->GetTextProperty()->SetOpacity(textAttributes.color[3]);
+    }
+
+    infoActor->GetTextProperty()->SetFontFamily((int)textAttributes.font);
+    infoActor->GetTextProperty()->SetBold(textAttributes.bold?1:0);
+    infoActor->GetTextProperty()->SetItalic(textAttributes.italic?1:0);
 }

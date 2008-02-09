@@ -2994,7 +2994,11 @@ NetworkManager::UpdateVisualCues(int windowID)
 //    Mark C. Miller, Mon Jan 24 19:25:44 PST 2005
 //    Made all procs render 3D visual cues not just proc 0
 //
+//    Brad Whitlock, Mon Jan 28 10:46:25 PDT 2008
+//    Changed for new AnnotationAttributes.
+//
 // ****************************************************************************
+
 void
 NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
     const AnnotationObjectList &aolist, const VisualCueList &visCues,
@@ -3029,10 +3033,10 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
               newAtts.SetUserInfoFlag(false);
               newAtts.SetDatabaseInfoFlag(false);
               newAtts.SetLegendInfoFlag(false);
-              newAtts.SetTriadFlag(false);
-              newAtts.SetBboxFlag(false);
-              newAtts.SetAxesFlag(false);
-              newAtts.SetAxesFlag2D(false);
+              newAtts.GetAxes3D().SetTriadFlag(false);
+              newAtts.GetAxes3D().SetBboxFlag(false);
+              newAtts.GetAxes3D().SetVisible(false);
+              newAtts.GetAxes2D().SetVisible(false);
               viswin->DeleteAllAnnotationObjects();
               break;
 
@@ -3041,8 +3045,8 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
               newAtts.SetUserInfoFlag(false);
               newAtts.SetDatabaseInfoFlag(false);
               newAtts.SetLegendInfoFlag(false);
-              newAtts.SetTriadFlag(false);
-              newAtts.SetAxesFlag2D(false);
+              newAtts.GetAxes3D().SetTriadFlag(false);
+              newAtts.GetAxes2D().SetVisible(false);
               viswin->DeleteAllAnnotationObjects();
               break;
 
@@ -4214,6 +4218,9 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
 //    Mark C. Miller, Mon Mar  7 13:41:45 PST 2005
 //    Made it also delete any VisWindows marked for deletion
 //
+//    Brad Whitlock, Mon Jan 28 10:47:35 PDT 2008
+//    Changed for updated AnnotationAttributes.
+//
 // ****************************************************************************
 
 void
@@ -4248,10 +4255,10 @@ NetworkManager::NewVisWindow(int winID)
     annotAtts.SetUserInfoFlag(false);
     annotAtts.SetDatabaseInfoFlag(false);
     annotAtts.SetLegendInfoFlag(false);
-    annotAtts.SetTriadFlag(false);
-    annotAtts.SetBboxFlag(false);
-    annotAtts.SetAxesFlag(false);
-    annotAtts.SetAxesFlag2D(false);
+    annotAtts.GetAxes3D().SetTriadFlag(false);
+    annotAtts.GetAxes3D().SetBboxFlag(false);
+    annotAtts.GetAxes3D().SetVisible(false);
+    annotAtts.GetAxes2D().SetVisible(false);
     viswinMap[winID].viswin->SetAnnotationAtts(&annotAtts);
 
     viswinMap[winID].viswin->DisableUpdates();

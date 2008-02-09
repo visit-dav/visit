@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+  <Attribute name="AxisTitles" purpose="Contains the title properties for one axis." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="visible" label="Show title" type="bool">
+      true
+    </Field>
+    <Field name="font" label="Title font" type="att" subtype="FontAttributes">
+    </Field>
+    <Field name="userTitle" label="User title" type="bool">
+      false
+    </Field>
+    <Field name="userUnits" label="User units" type="bool">
+      false
+    </Field>
+    <Field name="title" label="Title" type="string" enabler="userTitle:true">
+    </Field>
+    <Field name="units" label="Units" type="string" enabler="userUnits:true">
+    </Field>
+  </Attribute>

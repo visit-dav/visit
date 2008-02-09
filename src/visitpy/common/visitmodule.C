@@ -129,14 +129,21 @@
 //
 #include <PyAnimationAttributes.h>
 #include <PyAnnotationAttributes.h>
+#include <PyAxes2D.h>
+#include <PyAxes3D.h>
+#include <PyAxisAttributes.h>
+#include <PyAxisLabels.h>
+#include <PyAxisTickMarks.h>
+#include <PyAxisTitles.h>
 #include <PyColorAttribute.h>
 #include <PyColorAttributeList.h>
 #include <PyColorControlPoint.h>
 #include <PyColorControlPointList.h>
 #include <PyConstructDDFAttributes.h>
-#include <PyExportDBAttributes.h>
 #include <PyDatabaseCorrelation.h>
+#include <PyExportDBAttributes.h>
 #include <PyFileOpenOptions.h>
+#include <PyFontAttributes.h>
 #include <PyGaussianControlPoint.h>
 #include <PyGaussianControlPointList.h>
 #include <PyGlobalAttributes.h>
@@ -13355,6 +13362,10 @@ AddDefaultMethods()
 //   Brad Whitlock, Wed Dec 12 15:09:20 PST 2007
 //   Added AnimationAttributes.
 //
+//   Brad Whitlock, Fri Jan 25 16:58:12 PST 2008
+//   Added Axes2D Axes3D AxisAttributes AxisLabels AxisTickMarks AxisTitles 
+//   FontAttributes. All are part of AnnotationAttributes.
+//
 //   Jeremy Meredith, Mon Feb  4 13:42:08 EST 2008
 //   Added ViewAxisArrayAttributes.
 //
@@ -13392,6 +13403,14 @@ AddExtensions()
     ADD_EXTENSION(PyView3DAttributes_GetMethodTable);
     ADD_EXTENSION(PyWindowInformation_GetMethodTable);
     ADD_EXTENSION(PyLightAttributes_GetMethodTable);
+
+    ADD_EXTENSION(PyAxes2D_GetMethodTable);
+    ADD_EXTENSION(PyAxes3D_GetMethodTable);
+    ADD_EXTENSION(PyAxisAttributes_GetMethodTable);
+    ADD_EXTENSION(PyAxisLabels_GetMethodTable);
+    ADD_EXTENSION(PyAxisTickMarks_GetMethodTable);
+    ADD_EXTENSION(PyAxisTitles_GetMethodTable);
+    ADD_EXTENSION(PyFontAttributes_GetMethodTable);
 
     // Note that we don't add PyDatabaseCorrelation's method table
     // because we don't want to be able to create them.

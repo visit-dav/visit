@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+  <Attribute name="Axes3D" purpose="Contains the properties for the 3D axes." persistent="true" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="Axes3D.code">
+    <Enum name="Axes">
+      ClosestTriad
+      FurthestTriad
+      OutsideEdges
+      StaticTriad
+      StaticEdges
+    </Enum>
+    <Enum name="Location">
+      Inside
+      Outside
+      Both
+    </Enum>
+    <Field name="visible" label="Visible" type="bool">
+      true
+    </Field>
+    <Field name="autoSetTicks" label="Auto set ticks" type="bool">
+      true
+    </Field>
+    <Field name="autoSetScaling" label="Auto set scaling" type="bool">
+      true
+    </Field>
+    <Field name="lineWidth" label="lineWidth" type="linewidth">
+      0
+    </Field>
+    <Field name="tickLocation" label="TickLocation" type="enum" subtype="Location">
+      Inside
+    </Field>
+    <Field name="axesType" label="axesType" type="enum" subtype="Axes">
+      ClosestTriad
+    </Field>
+    <Field name="triadFlag" label="triadFlag" type="bool">
+      true
+    </Field>
+    <Field name="bboxFlag" label="bboxFlag" type="bool">
+      true
+    </Field>
+    <Field name="xAxis" label="X axis" type="att" subtype="AxisAttributes" init="xAxis">
+    </Field>
+    <Field name="yAxis" label="Y axis" type="att" subtype="AxisAttributes" init="yAxis">
+    </Field>
+    <Field name="zAxis" label="Z axis" type="att" subtype="AxisAttributes" init="zAxis">
+    </Field>
+  </Attribute>
