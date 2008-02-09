@@ -303,6 +303,9 @@
 #     Thomas R. Treadway, Fri Feb  8 15:30:08 PST 2008
 #     Added David Bremer's patch for fixing QT's OpenGL path problems.
 #     
+#     Hank Childs, Sat Feb  9 14:18:54 PST 2008
+#     Change clearcase_bin to svn_bin in help section.
+#
 # *****************************************************************************
 #
 # *************************************************************************** #
@@ -7506,12 +7509,12 @@ if [[ "$DO_VISIT" == "yes" ]] ; then
     else
         echo "${START_DIR}/${VISIT_FILE%.tar*}/src"
     fi
-   echo "then enter: \"clearcase_bin/visit-bin-dist\""
+   echo "then enter: \"svn_bin/visit-bin-dist\""
    echo "Will produce a tarball called visitVERSION.ARCH.tar.gz, where"
    echo "VERSION is the version number, and ARCH is the OS architecure."
    echo 
    echo "To install the above tarball in a directory called "INSTALL_DIR_PATH","
-   echo "enter: clearcase_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
+   echo "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
    echo 
    echo "If you run into problems, contact visit-help@llnl.gov"
 else
